@@ -1,22 +1,20 @@
-'use strict';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import sharp from 'sharp';
+import { afterAll, beforeAll, describe, it } from 'vitest';
+import * as imageTransform from '../../src/index.ts';
+import * as fixtures from './fixtures/index.ts';
 
-const sharp = require('sharp');
-const assert = require('assert');
-const imageTransform = require('../../');
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
-const fixtures = require('./fixtures/index.ts');
+let outputDir: string;
 
-let outputDir;
-
-const makeOutpath = (inPath, mod, ext) => {
-  if (!ext) {
-    ext = path.extname(inPath);
-  }
+const makeOutpath = (inPath: string, mod: string, ext: string) => {
   const fileName = path.basename(inPath, ext);
   return path.join(outputDir, `${fileName}_${mod}${ext}`);
 };
+
+const readOutput = (outPath: string) => sharp(outPath).toBuffer({ resolveWithObject: true });
 
 describe('Image compression', function () {
   // Encoded bytes vary with the platform's libvips, so keep outputs out of the repo
@@ -29,7 +27,7 @@ describe('Image compression', function () {
   });
 
   describe('JPEG', function () {
-    let fixtureBuffer;
+    let fixtureBuffer: Buffer;
 
     beforeAll(async function () {
       fixtureBuffer = await sharp(fixtures.inputJpeg).toBuffer();
@@ -41,13 +39,8 @@ describe('Image compression', function () {
 
       await imageTransform.resizeFromPath({ in: inPath, out: outPath });
 
-      await sharp(outPath).toBuffer(function (err, result) {
-        if (err) {
-          throw err;
-        }
-        assert(result instanceof Buffer);
-        assert(result.length < fixtureBuffer.length);
-      });
+      const { data } = await readOutput(outPath);
+      assert.ok(data.length < fixtureBuffer.length);
     });
 
     it('should compress JPEG images with width attribute', async function () {
@@ -56,14 +49,9 @@ describe('Image compression', function () {
 
       await imageTransform.resizeFromPath({ in: inPath, out: outPath, width: 1000 });
 
-      await sharp(outPath).toBuffer(function (err, result, info) {
-        if (err) {
-          throw err;
-        }
-        assert(result instanceof Buffer);
-        assert(result.length < fixtureBuffer.length);
-        assert(info.width === 1000);
-      });
+      const { data, info } = await readOutput(outPath);
+      assert.ok(data.length < fixtureBuffer.length);
+      assert.equal(info.width, 1000);
     });
 
     it('can create a JPEG from another format by passing the format option', async function () {
@@ -73,16 +61,13 @@ describe('Image compression', function () {
         format: 'jpeg',
       });
 
-      sharp(outputBuffer)
-        .metadata()
-        .then(function (metadata) {
-          assert.equal(metadata.format, 'jpeg');
-        });
+      const metadata = await sharp(outputBuffer).metadata();
+      assert.equal(metadata.format, 'jpeg');
     });
   });
 
   describe('PNG', function () {
-    let fixtureBuffer;
+    let fixtureBuffer: Buffer;
 
     beforeAll(async function () {
       fixtureBuffer = await sharp(fixtures.inputPng).toBuffer();
@@ -94,14 +79,9 @@ describe('Image compression', function () {
 
       await imageTransform.resizeFromPath({ in: inPath, out: outPath, width: 1000 });
 
-      await sharp(outPath).toBuffer(function (err, result, info) {
-        if (err) {
-          throw err;
-        }
-        assert(result instanceof Buffer);
-        assert(result.length < fixtureBuffer.length);
-        assert(info.width === 1000);
-      });
+      const { data, info } = await readOutput(outPath);
+      assert.ok(data.length < fixtureBuffer.length);
+      assert.equal(info.width, 1000);
     });
 
     it('can create PNG from another format by passing the format option', async function () {
@@ -111,16 +91,13 @@ describe('Image compression', function () {
         format: 'png',
       });
 
-      sharp(outputBuffer)
-        .metadata()
-        .then(function (metadata) {
-          assert.equal(metadata.format, 'png');
-        });
+      const metadata = await sharp(outputBuffer).metadata();
+      assert.equal(metadata.format, 'png');
     });
   });
 
   describe('WEBP', function () {
-    let fixtureBuffer;
+    let fixtureBuffer: Buffer;
 
     beforeAll(async function () {
       fixtureBuffer = await sharp(fixtures.inputWebp).toBuffer();
@@ -132,14 +109,9 @@ describe('Image compression', function () {
 
       await imageTransform.resizeFromPath({ in: inPath, out: outPath, width: 1000 });
 
-      await sharp(outPath).toBuffer(function (err, result, info) {
-        if (err) {
-          throw err;
-        }
-        assert(result instanceof Buffer);
-        assert(result.length < fixtureBuffer.length);
-        assert(info.width === 1000);
-      });
+      const { data, info } = await readOutput(outPath);
+      assert.ok(data.length < fixtureBuffer.length);
+      assert.equal(info.width, 1000);
     });
   });
 });

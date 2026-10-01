@@ -1,226 +1,230 @@
-// Switch these lines once there are useful utils
-const testUtils = require('../utils/index.ts');
-const fs = require('fs-extra');
-const errors = require('@tryghost/errors');
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import Module from 'node:module';
+import errors from '@tryghost/errors';
+import sinon from 'sinon';
+import { afterEach, beforeEach, describe, it } from 'vitest';
+import * as transform from '../../src/index.ts';
 
-const transform = require('../..');
+// sharp is loaded with require() on demand, so stand in for it there
+const stubSharpRequire = () =>
+  sinon.stub(Module.prototype, 'require').callThrough().withArgs('sharp');
+
+const missingModule = () =>
+  new errors.InternalServerError({
+    message: "Cannot find module 'sharp'",
+    code: 'MODULE_NOT_FOUND',
+  });
+
+const hasErrorCode = (err: unknown, ErrorClass: typeof errors.InternalServerError, code: string) =>
+  err instanceof ErrorClass && err.code === code;
 
 describe('Transform', function () {
   afterEach(function () {
     sinon.restore();
-    testUtils.modules.unmockNonExistentModule();
   });
 
   describe('canTransformFiles', function () {
     it('returns true when sharp is available', function () {
-      transform.canTransformFiles().should.be.true;
+      assert.equal(transform.canTransformFiles(), true);
     });
 
     it('returns false when sharp is not available', function () {
-      testUtils.modules.mockNonExistentModule('sharp', new Error(), true);
-      transform.canTransformFiles().should.be.false;
+      stubSharpRequire().throws(missingModule());
+      assert.equal(transform.canTransformFiles(), false);
     });
   });
 
   describe('canTransformFileExtension', function () {
     it('returns true for ".gif"', function () {
-      should.equal(transform.canTransformFileExtension('.gif'), true);
+      assert.equal(transform.canTransformFileExtension('.gif'), true);
     });
     it('returns true for ".svg"', function () {
-      should.equal(transform.canTransformFileExtension('.svg'), true);
+      assert.equal(transform.canTransformFileExtension('.svg'), true);
     });
     it('returns true for ".svgz"', function () {
-      should.equal(transform.canTransformFileExtension('.svgz'), true);
+      assert.equal(transform.canTransformFileExtension('.svgz'), true);
     });
     it('returns false for ".ico"', function () {
-      should.equal(transform.canTransformFileExtension('.ico'), false);
+      assert.equal(transform.canTransformFileExtension('.ico'), false);
     });
   });
 
   describe('shouldResizeFileExtension', function () {
     it('returns true for ".gif"', function () {
-      should.equal(transform.shouldResizeFileExtension('.gif'), true);
+      assert.equal(transform.shouldResizeFileExtension('.gif'), true);
     });
     it('returns false for ".svg"', function () {
-      should.equal(transform.shouldResizeFileExtension('.svg'), false);
+      assert.equal(transform.shouldResizeFileExtension('.svg'), false);
     });
     it('returns false for ".svgz"', function () {
-      should.equal(transform.shouldResizeFileExtension('.svgz'), false);
+      assert.equal(transform.shouldResizeFileExtension('.svgz'), false);
     });
     it('returns false for ".ico"', function () {
-      should.equal(transform.shouldResizeFileExtension('.ico'), false);
+      assert.equal(transform.shouldResizeFileExtension('.ico'), false);
     });
   });
 
   describe('canTransformToFormat', function () {
     it('returns true for supported formats', function () {
-      const assert = require('assert/strict');
-      ['gif', 'jpeg', 'jpg', 'png', 'webp', 'avif'].forEach((format) => {
+      for (const format of ['gif', 'jpeg', 'jpg', 'png', 'webp', 'avif']) {
         assert.equal(transform.canTransformToFormat(format), true, `expected true for "${format}"`);
-      });
+      }
     });
 
     it('returns false for unsupported formats', function () {
-      const assert = require('assert/strict');
-      ['ico', 'bmp', 'tiff', 'svg', ''].forEach((format) => {
+      for (const format of ['ico', 'bmp', 'tiff', 'svg', '']) {
         assert.equal(
           transform.canTransformToFormat(format),
           false,
           `expected false for "${format}"`,
         );
-      });
+      }
     });
   });
 
   describe('cases', function () {
-    let sharp;
-    let sharpInstance;
+    const original = Buffer.from('original');
+    const paths = { in: 'in.jpg', out: 'out.jpg' };
+
+    let sharpInstance: {
+      resize: sinon.SinonStub;
+      rotate: sinon.SinonStub;
+      toBuffer: sinon.SinonStub;
+      jpeg: sinon.SinonStub;
+      toFormat: sinon.SinonStub;
+      metadata: sinon.SinonStub;
+      timeout: sinon.SinonStub;
+    };
+    let writeFile: sinon.SinonStub;
 
     beforeEach(function () {
-      sinon.stub(fs, 'readFile').resolves('original');
-      sinon.stub(fs, 'writeFile').resolves();
+      sinon.stub(fs, 'readFile').resolves(original);
+      writeFile = sinon.stub(fs, 'writeFile').resolves();
 
       sharpInstance = {
         resize: sinon.stub().returnsThis(),
         rotate: sinon.stub().returnsThis(),
         toBuffer: sinon.stub(),
         jpeg: sinon.stub().returnsThis(),
-        metadata: sinon.stub().returns({ format: 'test' }),
+        toFormat: sinon.stub().returnsThis(),
+        metadata: sinon.stub().resolves({ format: 'test' }),
         timeout: sinon.stub().returnsThis(),
       };
 
-      sharp = sinon.stub().callsFake(() => {
-        return sharpInstance;
+      const sharp = Object.assign(sinon.stub().returns(sharpInstance), {
+        cache: sinon.stub(),
+        concurrency: sinon.stub(),
       });
 
-      sharp.cache = sinon.stub().returns({});
-      sharp.concurrency = sinon.stub().returns({});
-
-      testUtils.modules.mockNonExistentModule('sharp', sharp);
+      stubSharpRequire().returns(sharp);
     });
 
-    it('resize image', function () {
-      sharpInstance.toBuffer.resolves('manipulated');
+    it('resize image', async function () {
+      sharpInstance.toBuffer.resolves(Buffer.from('small'));
 
-      return transform.resizeFromPath({ width: 1000 }).then(() => {
-        sharpInstance.resize.calledOnce.should.be.true();
-        sharpInstance.rotate.calledOnce.should.be.true();
+      await transform.resizeFromPath({ ...paths, width: 1000 });
 
-        fs.writeFile.calledOnce.should.be.true();
-        fs.writeFile.calledWith('manipulated');
-      });
+      sinon.assert.calledOnce(sharpInstance.resize);
+      sinon.assert.calledOnce(sharpInstance.rotate);
+      sinon.assert.calledOnceWithExactly(writeFile, 'out.jpg', Buffer.from('small'));
     });
 
-    it('skip resizing if image is too small', function () {
-      sharpInstance.toBuffer.resolves('manipulated');
+    it('skip resizing if image is too small', async function () {
+      sharpInstance.toBuffer.resolves(Buffer.from('small'));
 
-      return transform.resizeFromPath({ width: 1000 }).then(() => {
-        sharpInstance.resize.calledOnce.should.be.true();
-        should.deepEqual(sharpInstance.resize.args[0][2], {
-          withoutEnlargement: true,
-        });
+      await transform.resizeFromPath({ ...paths, width: 1000 });
 
-        fs.writeFile.calledOnce.should.be.true();
-        fs.writeFile.calledWith('manipulated');
+      sinon.assert.calledOnceWithExactly(sharpInstance.resize, 1000, undefined, {
+        withoutEnlargement: true,
       });
     });
 
-    it('uses original image as an output when the size (bytes) is bigger after manipulation', function () {
+    it('uses original image as an output when the size (bytes) is bigger after manipulation', async function () {
       sharpInstance.toBuffer.resolves(
-        'manipulated to a very very very very very very very large size',
+        Buffer.from('manipulated to a very very very very very very very large size'),
       );
 
-      return transform.resizeFromPath({ width: 1000 }).then(() => {
-        sharpInstance.resize.calledOnce.should.be.true();
-        sharpInstance.rotate.calledOnce.should.be.true();
-        sharpInstance.toBuffer.calledOnce.should.be.true();
+      await transform.resizeFromPath({ ...paths, width: 1000 });
 
-        fs.writeFile.calledOnce.should.be.true();
-        fs.writeFile.calledWith('original');
+      sinon.assert.calledOnce(sharpInstance.toBuffer);
+      sinon.assert.calledOnceWithExactly(writeFile, 'out.jpg', original);
+    });
+
+    it('re-encodes JPEGs with mozjpeg', async function () {
+      sharpInstance.metadata.resolves({ format: 'jpeg' });
+      sharpInstance.toBuffer.resolves(Buffer.from('small'));
+
+      await transform.resizeFromBuffer(original);
+
+      sinon.assert.calledOnceWithExactly(sharpInstance.jpeg, { mozjpeg: true });
+    });
+
+    it('converts to a requested format', async function () {
+      const large = Buffer.from('manipulated to a very very very very very very very large size');
+      sharpInstance.toBuffer.resolves(large);
+
+      // A requested format is returned even when it's larger
+      assert.equal(await transform.resizeFromBuffer(original, { format: 'jpg' }), large);
+      sinon.assert.calledOnceWithExactly(sharpInstance.toFormat, 'jpeg');
+
+      await transform.resizeFromBuffer(original, { format: 'jpeg' });
+      sinon.assert.calledOnceWithExactly(sharpInstance.jpeg, { mozjpeg: true });
+    });
+
+    it('wraps processing errors', async function () {
+      sharpInstance.toBuffer.resolves(Buffer.from('small'));
+      writeFile.rejects(new errors.InternalServerError({ message: 'whoops' }));
+
+      await assert.rejects(transform.resizeFromPath({ ...paths, width: 2000 }), (err) =>
+        hasErrorCode(err, errors.InternalServerError, 'IMAGE_PROCESSING'),
+      );
+    });
+
+    it('uses the default processing timeout when resizing an image', async function () {
+      sharpInstance.toBuffer.resolves(Buffer.from('small'));
+
+      await transform.resizeFromPath({ ...paths, width: 1000 });
+
+      sinon.assert.calledOnceWithExactly(sharpInstance.timeout, {
+        seconds: transform.DEFAULT_PROCESSING_TIMEOUT_SECONDS,
       });
     });
 
-    it('sharp throws error during processing', function () {
-      sharpInstance.toBuffer.resolves('manipulated');
+    it('uses the provided processing timeout when resizing an image', async function () {
+      sharpInstance.toBuffer.resolves(Buffer.from('small'));
 
-      fs.writeFile.rejects(new Error('whoops'));
+      await transform.resizeFromPath({ ...paths, width: 1000, timeout: 10 });
 
-      return transform
-        .resizeFromPath({ width: 2000 })
-        .then(() => {
-          '1'.should.eql(1, 'Expected to fail');
-        })
-        .catch((err) => {
-          (err instanceof errors.InternalServerError).should.be.true;
-          err.code.should.eql('IMAGE_PROCESSING');
-        });
-    });
-
-    it('uses the default processing timeout when resizing an image', function () {
-      sharpInstance.toBuffer.resolves('manipulated');
-
-      return transform.resizeFromPath({ width: 1000 }).then(() => {
-        sharpInstance.resize.calledOnce.should.be.true();
-        sharpInstance.rotate.calledOnce.should.be.true();
-        sharpInstance.timeout.calledOnce.should.be.true();
-
-        sharpInstance.timeout
-          .getCall(0)
-          .args[0].should.eql({ seconds: transform.DEFAULT_PROCESSING_TIMEOUT_SECONDS });
-
-        fs.writeFile.calledOnce.should.be.true();
-        fs.writeFile.calledWith('manipulated');
-      });
-    });
-
-    it('uses the provided processing timeout when resizing an image', function () {
-      sharpInstance.toBuffer.resolves('manipulated');
-
-      const timeout = 10;
-
-      return transform.resizeFromPath({ width: 1000, timeout }).then(() => {
-        sharpInstance.resize.calledOnce.should.be.true();
-        sharpInstance.rotate.calledOnce.should.be.true();
-        sharpInstance.timeout.calledOnce.should.be.true();
-
-        sharpInstance.timeout.getCall(0).args[0].should.eql({ seconds: timeout });
-
-        fs.writeFile.calledOnce.should.be.true();
-        fs.writeFile.calledWith('manipulated');
-      });
+      sinon.assert.calledOnceWithExactly(sharpInstance.timeout, { seconds: 10 });
     });
   });
 
   describe('installation', function () {
-    beforeEach(function () {
-      testUtils.modules.mockNonExistentModule('sharp', new Error(), true);
-    });
+    it('sharp was not installed', async function () {
+      stubSharpRequire().throws(missingModule());
 
-    it('sharp was not installed', function () {
-      return transform
-        .resizeFromPath()
-        .then(() => {
-          '1'.should.eql(1, 'Expected to fail');
-        })
-        .catch((err) => {
-          (err instanceof errors.InternalServerError).should.be.true();
-          err.code.should.eql('SHARP_INSTALLATION');
-        });
+      await assert.rejects(transform.resizeFromPath({ in: 'in.jpg', out: 'out.jpg' }), (err) =>
+        hasErrorCode(err, errors.InternalServerError, 'SHARP_INSTALLATION'),
+      );
     });
   });
 
   describe('generateOriginalImageName', function () {
     it('correctly adds suffix', function () {
-      transform.generateOriginalImageName('test.jpg').should.eql('test_o.jpg');
-      transform
-        .generateOriginalImageName('content/images/test.jpg')
-        .should.eql('content/images/test_o.jpg');
-      transform
-        .generateOriginalImageName('content/images/test_o.jpg')
-        .should.eql('content/images/test_o_o.jpg');
-      transform
-        .generateOriginalImageName('content/images/test-1.jpg')
-        .should.eql('content/images/test-1_o.jpg');
+      assert.equal(transform.generateOriginalImageName('test.jpg'), 'test_o.jpg');
+      assert.equal(
+        transform.generateOriginalImageName('content/images/test.jpg'),
+        'content/images/test_o.jpg',
+      );
+      assert.equal(
+        transform.generateOriginalImageName('content/images/test_o.jpg'),
+        'content/images/test_o_o.jpg',
+      );
+      assert.equal(
+        transform.generateOriginalImageName('content/images/test-1.jpg'),
+        'content/images/test-1_o.jpg',
+      );
     });
   });
 });

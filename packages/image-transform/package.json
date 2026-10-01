@@ -2,6 +2,7 @@
   "name": "@tryghost/image-transform",
   "version": "0.0.0",
   "private": true,
+  "description": "Resizes and converts images with sharp, an optional dependency",
   "license": "MIT",
   "author": "Ghost Foundation",
   "repository": {
@@ -10,34 +11,56 @@
     "directory": "packages/image-transform"
   },
   "files": [
-    "index.js",
-    "src"
+    "build"
   ],
-  "main": "index.js",
+  "type": "module",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    }
+  },
   "scripts": {
+    "build": "tsc",
     "test:unit": "NODE_ENV=testing vitest run --coverage",
+    "test:types": "tsc --noEmit -p test/tsconfig.json",
     "test": "pnpm run '/^test:/'",
-    "lint": "eslint . --cache"
+    "lint:code": "eslint src/ --cache",
+    "lint:test": "eslint test/ --cache",
+    "lint": "pnpm run '/^lint:/'"
   },
   "dependencies": {
-    "@tryghost/errors": "catalog:",
-    "fs-extra": "catalog:image-transform-migration"
+    "@tryghost/errors": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-typescript": "workspace:*",
     "@internal/cfg-vitest": "workspace:*",
     "@types/node": "catalog:",
+    "@types/sinon": "catalog:",
+    "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
-    "should": "catalog:",
     "sinon": "catalog:",
+    "typescript": "catalog:",
     "vitest": "catalog:"
   },
   "optionalDependencies": {
     "sharp": "catalog:"
   },
   "ghostPackage": {
-    "goldenPath": "migration",
-    "reason": "Imported from TryGhost/SDK as legacy CommonJS with mocha/should tests; convert to TypeScript and the vitest/assert golden path"
+    "goldenPath": "compliant"
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "outputs": [
+          "{projectRoot}/build"
+        ]
+      }
+    }
   }
 }

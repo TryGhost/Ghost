@@ -2,8 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
-// @ts-expect-error This module lacks type definitions.
-import imageTransform from '@tryghost/image-transform';
+import * as imageTransform from '@tryghost/image-transform';
 import {
   getAllowedImageLoaders,
   restrictImageDecoders,
