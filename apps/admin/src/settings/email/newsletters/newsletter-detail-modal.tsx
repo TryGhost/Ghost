@@ -15,6 +15,7 @@ import {
   FieldLabel,
   FieldLegend,
   FieldSet,
+  FieldTitle,
   Input,
   Select,
   SelectContent,
@@ -42,7 +43,7 @@ import {
   useLimiter,
 } from '@tryghost/admin-x-framework/hooks';
 import { HostLimitError } from '@tryghost/admin-x-framework/errors';
-import { Inline, Stack } from '@tryghost/shade/primitives';
+import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import {
   type Newsletter,
@@ -99,6 +100,21 @@ const IconToggleGroup: React.FC<{
       </Tooltip>
     ))}
   </ToggleGroup>
+);
+
+// Rows share one vertical rhythm: horizontal fields are a control-height tall, and
+// stacked fields sit 8px lower so their labels line up with horizontal ones. The
+// rules target Shade fields only, as other elements can carry data-orientation too
+const SettingsSection: React.FC<{ title: string; children: React.ReactNode }> = ({
+  title,
+  children,
+}) => (
+  <FieldSet className="mt-10 gap-0 first:mt-8">
+    <FieldLegend className="mb-4 text-lg! font-semibold">{title}</FieldLegend>
+    <FieldGroup className="gap-4 [&>[data-slot=field][data-orientation=horizontal]]:min-h-(--control-height) [&>[data-slot=field][data-orientation=vertical]]:mt-2">
+      {children}
+    </FieldGroup>
+  </FieldSet>
 );
 
 const ReplyToEmailField: React.FC<{
@@ -363,72 +379,63 @@ const Sidebar: React.FC<{
       title: 'General',
       contents: (
         <>
-          <FieldSet className="mt-8">
-            <FieldLegend className="text-lg! font-semibold">Name and description</FieldLegend>
-            <FieldGroup>
-              <Field data-invalid={Boolean(errors.name) || undefined}>
-                <FieldLabel htmlFor="newsletter-detail-name">Name</FieldLabel>
-                <Input
-                  aria-invalid={Boolean(errors.name) || undefined}
-                  id="newsletter-detail-name"
-                  maxLength={191}
-                  placeholder="Weekly Roundup"
-                  value={newsletter.name || ''}
-                  onChange={(e) => updateNewsletter({ name: e.target.value })}
-                  onKeyDown={() => clearError('name')}
-                />
-                {errors.name && <FieldError>{errors.name}</FieldError>}
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="newsletter-description">Description</FieldLabel>
-                <Textarea
-                  id="newsletter-description"
-                  maxLength={2000}
-                  rows={2}
-                  value={newsletter.description || ''}
-                  onChange={(e) => updateNewsletter({ description: e.target.value })}
-                />
-              </Field>
-            </FieldGroup>
-          </FieldSet>
-          <FieldSet className="mt-8">
-            <FieldLegend className="text-lg! font-semibold">Email info</FieldLegend>
-            <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="newsletter-sender-name">Sender name</FieldLabel>
-                <Input
-                  id="newsletter-sender-name"
-                  maxLength={191}
-                  placeholder={siteTitle}
-                  value={newsletter.sender_name || ''}
-                  onChange={(e) => updateNewsletter({ sender_name: e.target.value })}
-                />
-              </Field>
-              {renderSenderEmailField()}
-              <ReplyToEmailField
-                clearError={clearError}
-                errors={errors}
-                newsletter={newsletter}
-                updateNewsletter={updateNewsletter}
-                validate={validate}
+          <SettingsSection title="Name and description">
+            <Field data-invalid={Boolean(errors.name) || undefined}>
+              <FieldLabel htmlFor="newsletter-detail-name">Name</FieldLabel>
+              <Input
+                aria-invalid={Boolean(errors.name) || undefined}
+                id="newsletter-detail-name"
+                maxLength={191}
+                placeholder="Weekly Roundup"
+                value={newsletter.name || ''}
+                onChange={(e) => updateNewsletter({ name: e.target.value })}
+                onKeyDown={() => clearError('name')}
               />
-            </FieldGroup>
-          </FieldSet>
-          <FieldSet className="mt-8">
-            <FieldLegend className="text-lg! font-semibold">Member settings</FieldLegend>
-            <FieldGroup>
-              <Field orientation="horizontal">
-                <FieldLabel htmlFor="newsletter-subscribe-on-signup">
-                  Subscribe new members on signup
-                </FieldLabel>
-                <Switch
-                  checked={Boolean(newsletter.subscribe_on_signup)}
-                  id="newsletter-subscribe-on-signup"
-                  onCheckedChange={(checked) => updateNewsletter({ subscribe_on_signup: checked })}
-                />
-              </Field>
-            </FieldGroup>
-          </FieldSet>
+              {errors.name && <FieldError>{errors.name}</FieldError>}
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="newsletter-description">Description</FieldLabel>
+              <Textarea
+                id="newsletter-description"
+                maxLength={2000}
+                rows={2}
+                value={newsletter.description || ''}
+                onChange={(e) => updateNewsletter({ description: e.target.value })}
+              />
+            </Field>
+          </SettingsSection>
+          <SettingsSection title="Email info">
+            <Field>
+              <FieldLabel htmlFor="newsletter-sender-name">Sender name</FieldLabel>
+              <Input
+                id="newsletter-sender-name"
+                maxLength={191}
+                placeholder={siteTitle}
+                value={newsletter.sender_name || ''}
+                onChange={(e) => updateNewsletter({ sender_name: e.target.value })}
+              />
+            </Field>
+            {renderSenderEmailField()}
+            <ReplyToEmailField
+              clearError={clearError}
+              errors={errors}
+              newsletter={newsletter}
+              updateNewsletter={updateNewsletter}
+              validate={validate}
+            />
+          </SettingsSection>
+          <SettingsSection title="Member settings">
+            <Field orientation="horizontal">
+              <FieldLabel htmlFor="newsletter-subscribe-on-signup">
+                Subscribe new members on signup
+              </FieldLabel>
+              <Switch
+                checked={Boolean(newsletter.subscribe_on_signup)}
+                id="newsletter-subscribe-on-signup"
+                onCheckedChange={(checked) => updateNewsletter({ subscribe_on_signup: checked })}
+              />
+            </Field>
+          </SettingsSection>
           <div className="mt-10 mb-5">
             {newsletter.status === 'active' ? (
               !onlyOne && (
@@ -460,147 +467,135 @@ const Sidebar: React.FC<{
       title: 'Content',
       contents: (
         <>
-          <FieldSet className="mt-8">
-            <FieldLegend className="text-lg! font-semibold">Header</FieldLegend>
-            <FieldGroup>
-              <HeaderImageField
-                inputId="newsletter-header-image"
-                value={newsletter.header_image || ''}
-                onChange={(headerImage) => updateNewsletter({ header_image: headerImage || null })}
-                onUploadError={handleError}
-              />
-              <Stack gap="md">
-                {icon && (
-                  <Field orientation="horizontal">
-                    <FieldLabel htmlFor="newsletter-show-header-icon">Publication icon</FieldLabel>
-                    <Switch
-                      checked={Boolean(newsletter.show_header_icon)}
-                      id="newsletter-show-header-icon"
-                      onCheckedChange={(checked) => updateNewsletter({ show_header_icon: checked })}
-                    />
-                  </Field>
-                )}
-                <Field orientation="horizontal">
-                  <FieldLabel htmlFor="newsletter-show-header-title">Publication title</FieldLabel>
-                  <Switch
-                    checked={Boolean(newsletter.show_header_title)}
-                    id="newsletter-show-header-title"
-                    onCheckedChange={(checked) => updateNewsletter({ show_header_title: checked })}
-                  />
-                </Field>
-                <Field orientation="horizontal">
-                  <FieldLabel htmlFor="newsletter-show-header-name">Newsletter name</FieldLabel>
-                  <Switch
-                    checked={Boolean(newsletter.show_header_name)}
-                    id="newsletter-show-header-name"
-                    onCheckedChange={(checked) => updateNewsletter({ show_header_name: checked })}
-                  />
-                </Field>
-              </Stack>
-            </FieldGroup>
-          </FieldSet>
-
-          <FieldSet className="mt-8">
-            <FieldLegend className="text-lg! font-semibold">Title section</FieldLegend>
-            <FieldGroup>
+          <SettingsSection title="Header">
+            <HeaderImageField
+              inputId="newsletter-header-image"
+              value={newsletter.header_image || ''}
+              onChange={(headerImage) => updateNewsletter({ header_image: headerImage || null })}
+              onUploadError={handleError}
+            />
+            {icon && (
               <Field orientation="horizontal">
-                <FieldLabel htmlFor="newsletter-show-post-title">Post title</FieldLabel>
+                <FieldLabel htmlFor="newsletter-show-header-icon">Publication icon</FieldLabel>
                 <Switch
-                  checked={Boolean(newsletter.show_post_title_section)}
-                  id="newsletter-show-post-title"
-                  onCheckedChange={(checked) =>
-                    updateNewsletter({ show_post_title_section: checked })
-                  }
+                  checked={Boolean(newsletter.show_header_icon)}
+                  id="newsletter-show-header-icon"
+                  onCheckedChange={(checked) => updateNewsletter({ show_header_icon: checked })}
                 />
               </Field>
-              {newsletter.show_post_title_section && (
-                <Field orientation="horizontal">
-                  <FieldLabel htmlFor="newsletter-show-excerpt">Post excerpt</FieldLabel>
-                  <Switch
-                    checked={Boolean(newsletter.show_excerpt)}
-                    id="newsletter-show-excerpt"
-                    onCheckedChange={(checked) => updateNewsletter({ show_excerpt: checked })}
-                  />
-                </Field>
-              )}
+            )}
+            <Field orientation="horizontal">
+              <FieldLabel htmlFor="newsletter-show-header-title">Publication title</FieldLabel>
+              <Switch
+                checked={Boolean(newsletter.show_header_title)}
+                id="newsletter-show-header-title"
+                onCheckedChange={(checked) => updateNewsletter({ show_header_title: checked })}
+              />
+            </Field>
+            <Field orientation="horizontal">
+              <FieldLabel htmlFor="newsletter-show-header-name">Newsletter name</FieldLabel>
+              <Switch
+                checked={Boolean(newsletter.show_header_name)}
+                id="newsletter-show-header-name"
+                onCheckedChange={(checked) => updateNewsletter({ show_header_name: checked })}
+              />
+            </Field>
+          </SettingsSection>
+
+          <SettingsSection title="Title section">
+            <Field orientation="horizontal">
+              <FieldLabel htmlFor="newsletter-show-post-title">Post title</FieldLabel>
+              <Switch
+                checked={Boolean(newsletter.show_post_title_section)}
+                id="newsletter-show-post-title"
+                onCheckedChange={(checked) =>
+                  updateNewsletter({ show_post_title_section: checked })
+                }
+              />
+            </Field>
+            {newsletter.show_post_title_section && (
               <Field orientation="horizontal">
-                <FieldLabel htmlFor="newsletter-show-feature-image">Feature image</FieldLabel>
+                <FieldLabel htmlFor="newsletter-show-excerpt">Post excerpt</FieldLabel>
                 <Switch
-                  checked={Boolean(newsletter.show_feature_image)}
-                  id="newsletter-show-feature-image"
-                  onCheckedChange={(checked) => updateNewsletter({ show_feature_image: checked })}
+                  checked={Boolean(newsletter.show_excerpt)}
+                  id="newsletter-show-excerpt"
+                  onCheckedChange={(checked) => updateNewsletter({ show_excerpt: checked })}
                 />
               </Field>
-            </FieldGroup>
-          </FieldSet>
-
-          <FieldSet className="mt-8">
-            <FieldLegend className="text-lg! font-semibold">Footer</FieldLegend>
-            <FieldGroup>
-              <Stack gap="lg">
-                <Field orientation="horizontal">
-                  <FieldLabel htmlFor="newsletter-feedback-enabled">
-                    Ask your readers for feedback
-                  </FieldLabel>
-                  <Switch
-                    checked={Boolean(newsletter.feedback_enabled)}
-                    id="newsletter-feedback-enabled"
-                    onCheckedChange={(checked) => updateNewsletter({ feedback_enabled: checked })}
-                  />
-                </Field>
-                {commentsEnabled && (
-                  <Field orientation="horizontal">
-                    <FieldLabel htmlFor="newsletter-show-comment-cta">
-                      Add a link to your comments
-                    </FieldLabel>
-                    <Switch
-                      checked={Boolean(newsletter.show_comment_cta)}
-                      id="newsletter-show-comment-cta"
-                      onCheckedChange={(checked) => updateNewsletter({ show_comment_cta: checked })}
-                    />
-                  </Field>
-                )}
-                <Field orientation="horizontal">
-                  <FieldLabel htmlFor="newsletter-show-share-button">Show share button</FieldLabel>
-                  <Switch
-                    checked={Boolean(newsletter.show_share_button)}
-                    id="newsletter-show-share-button"
-                    onCheckedChange={(checked) => updateNewsletter({ show_share_button: checked })}
-                  />
-                </Field>
-                <Field orientation="horizontal">
-                  <FieldLabel htmlFor="newsletter-show-latest-posts">
-                    Share your latest posts
-                  </FieldLabel>
-                  <Switch
-                    checked={Boolean(newsletter.show_latest_posts)}
-                    id="newsletter-show-latest-posts"
-                    onCheckedChange={(checked) => updateNewsletter({ show_latest_posts: checked })}
-                  />
-                </Field>
-                <Field orientation="horizontal">
-                  <FieldLabel htmlFor="newsletter-show-subscription-details">
-                    Show subscription details
-                  </FieldLabel>
-                  <Switch
-                    checked={Boolean(newsletter.show_subscription_details)}
-                    id="newsletter-show-subscription-details"
-                    onCheckedChange={(checked) =>
-                      updateNewsletter({ show_subscription_details: checked })
-                    }
-                  />
-                </Field>
-              </Stack>
-              <HtmlField
-                hint="Any extra information or legal text"
-                nodes="MINIMAL_NODES"
-                placeholder=" "
-                title="Email footer"
-                value={newsletter.footer_content || ''}
-                onChange={(html) => updateNewsletter({ footer_content: html })}
+            )}
+            <Field orientation="horizontal">
+              <FieldLabel htmlFor="newsletter-show-feature-image">Feature image</FieldLabel>
+              <Switch
+                checked={Boolean(newsletter.show_feature_image)}
+                id="newsletter-show-feature-image"
+                onCheckedChange={(checked) => updateNewsletter({ show_feature_image: checked })}
               />
-            </FieldGroup>
-          </FieldSet>
+            </Field>
+          </SettingsSection>
+
+          <SettingsSection title="Footer">
+            <Field orientation="horizontal">
+              <FieldLabel htmlFor="newsletter-feedback-enabled">
+                Ask your readers for feedback
+              </FieldLabel>
+              <Switch
+                checked={Boolean(newsletter.feedback_enabled)}
+                id="newsletter-feedback-enabled"
+                onCheckedChange={(checked) => updateNewsletter({ feedback_enabled: checked })}
+              />
+            </Field>
+            {commentsEnabled && (
+              <Field orientation="horizontal">
+                <FieldLabel htmlFor="newsletter-show-comment-cta">
+                  Add a link to your comments
+                </FieldLabel>
+                <Switch
+                  checked={Boolean(newsletter.show_comment_cta)}
+                  id="newsletter-show-comment-cta"
+                  onCheckedChange={(checked) => updateNewsletter({ show_comment_cta: checked })}
+                />
+              </Field>
+            )}
+            <Field orientation="horizontal">
+              <FieldLabel htmlFor="newsletter-show-share-button">Show share button</FieldLabel>
+              <Switch
+                checked={Boolean(newsletter.show_share_button)}
+                id="newsletter-show-share-button"
+                onCheckedChange={(checked) => updateNewsletter({ show_share_button: checked })}
+              />
+            </Field>
+            <Field orientation="horizontal">
+              <FieldLabel htmlFor="newsletter-show-latest-posts">
+                Share your latest posts
+              </FieldLabel>
+              <Switch
+                checked={Boolean(newsletter.show_latest_posts)}
+                id="newsletter-show-latest-posts"
+                onCheckedChange={(checked) => updateNewsletter({ show_latest_posts: checked })}
+              />
+            </Field>
+            <Field orientation="horizontal">
+              <FieldLabel htmlFor="newsletter-show-subscription-details">
+                Show subscription details
+              </FieldLabel>
+              <Switch
+                checked={Boolean(newsletter.show_subscription_details)}
+                id="newsletter-show-subscription-details"
+                onCheckedChange={(checked) =>
+                  updateNewsletter({ show_subscription_details: checked })
+                }
+              />
+            </Field>
+            <HtmlField
+              containerClassName="mt-2"
+              hint="Any extra information or legal text"
+              nodes="MINIMAL_NODES"
+              placeholder=" "
+              title="Email footer"
+              value={newsletter.footer_content || ''}
+              onChange={(html) => updateNewsletter({ footer_content: html })}
+            />
+          </SettingsSection>
           <Separator className="mt-8" />
           <div className="my-5 flex w-full items-start">
             <span>
@@ -633,340 +628,315 @@ const Sidebar: React.FC<{
       title: 'Design',
       contents: (
         <>
-          <FieldSet className="mt-8">
-            <FieldLegend className="text-lg! font-semibold">Global</FieldLegend>
-            <FieldGroup>
-              <div className="mb-1">
-                <ColorPickerField
-                  direction="rtl"
-                  eyedropper={true}
-                  swatches={[
-                    {
-                      hex: '#ffffff',
-                      value: 'light',
-                      title: 'White',
-                    },
-                  ]}
-                  title="Background color"
-                  value={newsletter.background_color || 'light'}
-                  onChange={(color) => updateNewsletter({ background_color: color! })}
-                />
-              </div>
-              <Inline className="w-full" gap="sm" justify="between">
-                <div className="shrink-0">Heading font</div>
-                <Field className="max-w-[200px]">
-                  <FieldLabel className="sr-only">Heading font</FieldLabel>
-                  <Select
-                    value={newsletter.title_font_category}
-                    onValueChange={changeSelectedTitleFont}
-                  >
-                    <SelectTrigger aria-label="Heading font">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {fontOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          <span className={option.className}>{option.label}</span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-              </Inline>
-              <Inline className="w-full" gap="sm" justify="between">
-                <div className="shrink-0">Heading weight</div>
-                <Field className="max-w-[200px]">
-                  <FieldLabel className="sr-only">Heading weight</FieldLabel>
-                  <Select
-                    value={getSelectedFontWeightOption().value}
-                    onValueChange={(value) => updateNewsletter({ title_font_weight: value })}
-                  >
-                    <SelectTrigger aria-label="Heading weight">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {headingFontWeightOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          <span className={option.className}>{option.label}</span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-              </Inline>
-              <Inline className="w-full" gap="sm" justify="between">
-                <div className="shrink-0">Body font</div>
-                <Field className="max-w-[200px]">
-                  <FieldLabel className="sr-only">Body font</FieldLabel>
-                  <Select
-                    value={newsletter.body_font_category}
-                    onValueChange={(value) => updateNewsletter({ body_font_category: value })}
-                  >
-                    <SelectTrigger aria-label="Body font" data-testid="body-font-select">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {fontOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          <span className={option.className}>{option.label}</span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-              </Inline>
-            </FieldGroup>
-          </FieldSet>
-          <FieldSet className="mt-8">
-            <FieldLegend className="text-lg! font-semibold">Header</FieldLegend>
-            <FieldGroup>
-              <div className="mb-1">
-                <ColorPickerField
-                  direction="rtl"
-                  eyedropper={true}
-                  swatches={[
-                    {
-                      value: 'transparent',
-                      title: 'Transparent',
-                      hex: '#00000000',
-                    },
-                  ]}
-                  title="Header background color"
-                  value={newsletter.header_background_color || 'transparent'}
-                  onChange={(color) => updateNewsletter({ header_background_color: color! })}
-                />
-              </div>
-              <div className="mb-1">
-                <ColorPickerField
-                  direction="rtl"
-                  eyedropper={true}
-                  swatches={[
-                    {
-                      value: null,
-                      title: 'Auto',
-                      hex: backgroundColorIsDark() ? '#ffffff' : '#000000',
-                    },
-                    {
-                      value: 'accent',
-                      title: 'Accent',
-                      hex: siteData.accent_color,
-                    },
-                  ]}
-                  title="Post title color"
-                  value={newsletter.post_title_color}
-                  onChange={(color) => updateNewsletter({ post_title_color: color })}
-                />
-              </div>
-              <Inline className="w-full" gap="sm" justify="between">
-                <div>Title alignment</div>
-                <IconToggleGroup
-                  label="Title alignment"
-                  options={[
-                    {
-                      value: 'left',
-                      label: 'Left',
-                      icon: <LucideIcon.AlignLeft className="size-3.5!" />,
-                      disabled: !newsletter.show_post_title_section,
-                    },
-                    {
-                      value: 'center',
-                      label: 'Center',
-                      icon: <LucideIcon.AlignCenter className="size-3.5!" />,
-                      disabled: !newsletter.show_post_title_section,
-                    },
-                  ]}
-                  value={newsletter.title_alignment}
-                  onValueChange={(titleAlignment) =>
-                    updateNewsletter({ title_alignment: titleAlignment })
-                  }
-                />
-              </Inline>
-            </FieldGroup>
-          </FieldSet>
+          <SettingsSection title="Global">
+            <ColorPickerField
+              direction="rtl"
+              eyedropper={true}
+              swatches={[
+                {
+                  hex: '#ffffff',
+                  value: 'light',
+                  title: 'White',
+                },
+              ]}
+              title="Background color"
+              value={newsletter.background_color || 'light'}
+              onChange={(color) => updateNewsletter({ background_color: color! })}
+            />
+            <Inline className="w-full" gap="sm" justify="between">
+              <FieldTitle className="shrink-0">Heading font</FieldTitle>
+              <Field className="max-w-[200px]">
+                <FieldLabel className="sr-only">Heading font</FieldLabel>
+                <Select
+                  value={newsletter.title_font_category}
+                  onValueChange={changeSelectedTitleFont}
+                >
+                  <SelectTrigger aria-label="Heading font">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {fontOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        <span className={option.className}>{option.label}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+            </Inline>
+            <Inline className="w-full" gap="sm" justify="between">
+              <FieldTitle className="shrink-0">Heading weight</FieldTitle>
+              <Field className="max-w-[200px]">
+                <FieldLabel className="sr-only">Heading weight</FieldLabel>
+                <Select
+                  value={getSelectedFontWeightOption().value}
+                  onValueChange={(value) => updateNewsletter({ title_font_weight: value })}
+                >
+                  <SelectTrigger aria-label="Heading weight">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {headingFontWeightOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        <span className={option.className}>{option.label}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+            </Inline>
+            <Inline className="w-full" gap="sm" justify="between">
+              <FieldTitle className="shrink-0">Body font</FieldTitle>
+              <Field className="max-w-[200px]">
+                <FieldLabel className="sr-only">Body font</FieldLabel>
+                <Select
+                  value={newsletter.body_font_category}
+                  onValueChange={(value) => updateNewsletter({ body_font_category: value })}
+                >
+                  <SelectTrigger aria-label="Body font" data-testid="body-font-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {fontOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        <span className={option.className}>{option.label}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+            </Inline>
+          </SettingsSection>
+          <SettingsSection title="Header">
+            <ColorPickerField
+              direction="rtl"
+              eyedropper={true}
+              swatches={[
+                {
+                  value: 'transparent',
+                  title: 'Transparent',
+                  hex: '#00000000',
+                },
+              ]}
+              title="Header background color"
+              value={newsletter.header_background_color || 'transparent'}
+              onChange={(color) => updateNewsletter({ header_background_color: color! })}
+            />
+            <ColorPickerField
+              direction="rtl"
+              eyedropper={true}
+              swatches={[
+                {
+                  value: null,
+                  title: 'Auto',
+                  hex: backgroundColorIsDark() ? '#ffffff' : '#000000',
+                },
+                {
+                  value: 'accent',
+                  title: 'Accent',
+                  hex: siteData.accent_color,
+                },
+              ]}
+              title="Post title color"
+              value={newsletter.post_title_color}
+              onChange={(color) => updateNewsletter({ post_title_color: color })}
+            />
+            <Inline className="w-full" gap="sm" justify="between">
+              <FieldTitle>Title alignment</FieldTitle>
+              <IconToggleGroup
+                label="Title alignment"
+                options={[
+                  {
+                    value: 'left',
+                    label: 'Left',
+                    icon: <LucideIcon.AlignLeft className="size-3.5!" />,
+                    disabled: !newsletter.show_post_title_section,
+                  },
+                  {
+                    value: 'center',
+                    label: 'Center',
+                    icon: <LucideIcon.AlignCenter className="size-3.5!" />,
+                    disabled: !newsletter.show_post_title_section,
+                  },
+                ]}
+                value={newsletter.title_alignment}
+                onValueChange={(titleAlignment) =>
+                  updateNewsletter({ title_alignment: titleAlignment })
+                }
+              />
+            </Inline>
+          </SettingsSection>
 
-          <FieldSet className="mt-8">
-            <FieldLegend className="text-lg! font-semibold">Body</FieldLegend>
-            <FieldGroup>
-              <div className="mb-1">
-                <ColorPickerField
-                  direction="rtl"
-                  eyedropper={true}
-                  swatches={[
-                    {
-                      value: null,
-                      title: 'Auto',
-                      hex: backgroundColorIsDark() ? '#ffffff' : '#000000',
-                    },
-                    {
-                      value: 'accent',
-                      title: 'Accent',
-                      hex: siteData.accent_color,
-                    },
-                  ]}
-                  title="Section title color"
-                  value={newsletter.section_title_color}
-                  onChange={(color) => updateNewsletter({ section_title_color: color })}
-                />
-              </div>
-              <div className="mb-1">
-                <ColorPickerField
-                  direction="rtl"
-                  eyedropper={true}
-                  swatches={[
-                    {
-                      value: 'accent',
-                      title: 'Accent',
-                      hex: siteData.accent_color,
-                    },
-                    {
-                      value: null,
-                      title: 'Auto',
-                      hex: backgroundColorIsDark() ? '#ffffff' : '#000000',
-                    },
-                  ]}
-                  title="Button color"
-                  value={newsletter.button_color}
-                  onChange={(color) => updateNewsletter({ button_color: color })}
-                />
-              </div>
-              <Inline className="w-full" gap="sm" justify="between">
-                <div>Button style</div>
-                <IconToggleGroup
-                  label="Button style"
-                  options={[
-                    {
-                      value: 'fill',
-                      label: 'Fill',
-                      icon: <LucideIcon.Squircle className="size-3.5!" fill="currentColor" />,
-                    },
-                    {
-                      value: 'outline',
-                      label: 'Outline',
-                      icon: <LucideIcon.Squircle className="size-3.5!" />,
-                    },
-                  ]}
-                  value={newsletter.button_style || 'fill'}
-                  onValueChange={(buttonStyle) => updateNewsletter({ button_style: buttonStyle })}
-                />
-              </Inline>
-              <Inline className="w-full" gap="sm" justify="between">
-                <div>Button corners</div>
-                <IconToggleGroup
-                  label="Button corners"
-                  options={[
-                    {
-                      value: 'square',
-                      label: 'Squared',
-                      icon: <LucideIcon.Square className="size-3.5!" />,
-                    },
-                    {
-                      value: 'rounded',
-                      label: 'Rounded',
-                      icon: <LucideIcon.Squircle className="size-3.5!" />,
-                    },
-                    {
-                      value: 'pill',
-                      label: 'Pill',
-                      icon: <LucideIcon.Circle className="size-3.5!" />,
-                    },
-                  ]}
-                  value={newsletter.button_corners || 'rounded'}
-                  onValueChange={(buttonCorners) =>
-                    updateNewsletter({ button_corners: buttonCorners })
-                  }
-                />
-              </Inline>
-              <div className="mb-1">
-                <ColorPickerField
-                  direction="rtl"
-                  eyedropper={true}
-                  swatches={[
-                    {
-                      value: 'accent',
-                      title: 'Accent',
-                      hex: siteData.accent_color,
-                    },
-                    {
-                      value: null,
-                      title: 'Auto',
-                      hex: backgroundColorIsDark() ? '#ffffff' : '#000000',
-                    },
-                  ]}
-                  title="Link color"
-                  value={newsletter.link_color}
-                  onChange={(color) => updateNewsletter({ link_color: color })}
-                />
-              </div>
-              <Inline className="w-full" gap="sm" justify="between">
-                <div>Link style</div>
-                <IconToggleGroup
-                  label="Link style"
-                  options={[
-                    {
-                      value: 'underline',
-                      label: 'Underline',
-                      icon: <LucideIcon.Underline className="size-3.5!" />,
-                    },
-                    {
-                      value: 'regular',
-                      label: 'Regular',
-                      icon: <LucideIcon.Type className="size-3.5!" />,
-                    },
-                    {
-                      value: 'bold',
-                      label: 'Bold',
-                      icon: <LucideIcon.Bold className="size-3.5!" />,
-                    },
-                  ]}
-                  value={newsletter.link_style || 'underline'}
-                  onValueChange={(linkStyle) => updateNewsletter({ link_style: linkStyle })}
-                />
-              </Inline>
-              <Inline className="w-full" gap="sm" justify="between">
-                <div>Image corners</div>
-                <IconToggleGroup
-                  label="Image corners"
-                  options={[
-                    {
-                      value: 'square',
-                      label: 'Squared',
-                      icon: <LucideIcon.Square className="size-3.5!" />,
-                    },
-                    {
-                      value: 'rounded',
-                      label: 'Rounded',
-                      icon: <LucideIcon.Squircle className="size-3.5!" />,
-                    },
-                  ]}
-                  value={newsletter.image_corners || 'square'}
-                  onValueChange={(imageCorners) =>
-                    updateNewsletter({ image_corners: imageCorners })
-                  }
-                />
-              </Inline>
-              <div className="mb-1">
-                <ColorPickerField
-                  direction="rtl"
-                  eyedropper={true}
-                  swatches={[
-                    {
-                      value: 'light',
-                      title: 'Light',
-                      hex: '#e0e7eb',
-                    },
-                    {
-                      value: 'accent',
-                      title: 'Accent',
-                      hex: siteData.accent_color,
-                    },
-                  ]}
-                  title="Divider color"
-                  value={newsletter.divider_color || 'light'}
-                  onChange={(color) => updateNewsletter({ divider_color: color })}
-                />
-              </div>
-            </FieldGroup>
-          </FieldSet>
+          <SettingsSection title="Body">
+            <ColorPickerField
+              direction="rtl"
+              eyedropper={true}
+              swatches={[
+                {
+                  value: null,
+                  title: 'Auto',
+                  hex: backgroundColorIsDark() ? '#ffffff' : '#000000',
+                },
+                {
+                  value: 'accent',
+                  title: 'Accent',
+                  hex: siteData.accent_color,
+                },
+              ]}
+              title="Section title color"
+              value={newsletter.section_title_color}
+              onChange={(color) => updateNewsletter({ section_title_color: color })}
+            />
+            <ColorPickerField
+              direction="rtl"
+              eyedropper={true}
+              swatches={[
+                {
+                  value: 'accent',
+                  title: 'Accent',
+                  hex: siteData.accent_color,
+                },
+                {
+                  value: null,
+                  title: 'Auto',
+                  hex: backgroundColorIsDark() ? '#ffffff' : '#000000',
+                },
+              ]}
+              title="Button color"
+              value={newsletter.button_color}
+              onChange={(color) => updateNewsletter({ button_color: color })}
+            />
+            <Inline className="w-full" gap="sm" justify="between">
+              <FieldTitle>Button style</FieldTitle>
+              <IconToggleGroup
+                label="Button style"
+                options={[
+                  {
+                    value: 'fill',
+                    label: 'Fill',
+                    icon: <LucideIcon.Squircle className="size-3.5!" fill="currentColor" />,
+                  },
+                  {
+                    value: 'outline',
+                    label: 'Outline',
+                    icon: <LucideIcon.Squircle className="size-3.5!" />,
+                  },
+                ]}
+                value={newsletter.button_style || 'fill'}
+                onValueChange={(buttonStyle) => updateNewsletter({ button_style: buttonStyle })}
+              />
+            </Inline>
+            <Inline className="w-full" gap="sm" justify="between">
+              <FieldTitle>Button corners</FieldTitle>
+              <IconToggleGroup
+                label="Button corners"
+                options={[
+                  {
+                    value: 'square',
+                    label: 'Squared',
+                    icon: <LucideIcon.Square className="size-3.5!" />,
+                  },
+                  {
+                    value: 'rounded',
+                    label: 'Rounded',
+                    icon: <LucideIcon.Squircle className="size-3.5!" />,
+                  },
+                  {
+                    value: 'pill',
+                    label: 'Pill',
+                    icon: <LucideIcon.Circle className="size-3.5!" />,
+                  },
+                ]}
+                value={newsletter.button_corners || 'rounded'}
+                onValueChange={(buttonCorners) =>
+                  updateNewsletter({ button_corners: buttonCorners })
+                }
+              />
+            </Inline>
+            <ColorPickerField
+              direction="rtl"
+              eyedropper={true}
+              swatches={[
+                {
+                  value: 'accent',
+                  title: 'Accent',
+                  hex: siteData.accent_color,
+                },
+                {
+                  value: null,
+                  title: 'Auto',
+                  hex: backgroundColorIsDark() ? '#ffffff' : '#000000',
+                },
+              ]}
+              title="Link color"
+              value={newsletter.link_color}
+              onChange={(color) => updateNewsletter({ link_color: color })}
+            />
+            <Inline className="w-full" gap="sm" justify="between">
+              <FieldTitle>Link style</FieldTitle>
+              <IconToggleGroup
+                label="Link style"
+                options={[
+                  {
+                    value: 'underline',
+                    label: 'Underline',
+                    icon: <LucideIcon.Underline className="size-3.5!" />,
+                  },
+                  {
+                    value: 'regular',
+                    label: 'Regular',
+                    icon: <LucideIcon.Type className="size-3.5!" />,
+                  },
+                  {
+                    value: 'bold',
+                    label: 'Bold',
+                    icon: <LucideIcon.Bold className="size-3.5!" />,
+                  },
+                ]}
+                value={newsletter.link_style || 'underline'}
+                onValueChange={(linkStyle) => updateNewsletter({ link_style: linkStyle })}
+              />
+            </Inline>
+            <Inline className="w-full" gap="sm" justify="between">
+              <FieldTitle>Image corners</FieldTitle>
+              <IconToggleGroup
+                label="Image corners"
+                options={[
+                  {
+                    value: 'square',
+                    label: 'Squared',
+                    icon: <LucideIcon.Square className="size-3.5!" />,
+                  },
+                  {
+                    value: 'rounded',
+                    label: 'Rounded',
+                    icon: <LucideIcon.Squircle className="size-3.5!" />,
+                  },
+                ]}
+                value={newsletter.image_corners || 'square'}
+                onValueChange={(imageCorners) => updateNewsletter({ image_corners: imageCorners })}
+              />
+            </Inline>
+            <ColorPickerField
+              direction="rtl"
+              eyedropper={true}
+              swatches={[
+                {
+                  value: 'light',
+                  title: 'Light',
+                  hex: '#e0e7eb',
+                },
+                {
+                  value: 'accent',
+                  title: 'Accent',
+                  hex: siteData.accent_color,
+                },
+              ]}
+              title="Divider color"
+              value={newsletter.divider_color || 'light'}
+              onChange={(color) => updateNewsletter({ divider_color: color })}
+            />
+          </SettingsSection>
         </>
       ),
     },

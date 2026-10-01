@@ -77,19 +77,26 @@ const ThemeSetting: React.FC<ThemeSettingProps> = ({ setting, setSetting }) => {
         </Field>
       );
     case 'boolean':
+      // The label and switch each sit in a control-height band so the row lines
+      // up with other form rows, with any description flowing beneath the label
       return (
         <Field orientation="horizontal">
           <FieldContent>
-            <FieldLabel htmlFor={`theme-setting-${setting.key}`}>
+            <FieldLabel
+              className="min-h-(--control-height) items-center"
+              htmlFor={`theme-setting-${setting.key}`}
+            >
               {humanizeSettingKey(setting.key)}
             </FieldLabel>
             {setting.description && <FieldDescription>{setting.description}</FieldDescription>}
           </FieldContent>
-          <Switch
-            checked={Boolean(setting.value)}
-            id={`theme-setting-${setting.key}`}
-            onCheckedChange={setSetting}
-          />
+          <div className="flex h-(--control-height) items-center">
+            <Switch
+              checked={Boolean(setting.value)}
+              id={`theme-setting-${setting.key}`}
+              onCheckedChange={setSetting}
+            />
+          </div>
         </Field>
       );
     case 'select':

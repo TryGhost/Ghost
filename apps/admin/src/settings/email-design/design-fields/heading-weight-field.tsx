@@ -1,5 +1,6 @@
 import { FONT_WEIGHT_OPTIONS, getValidWeight } from './font-constants';
 import {
+  FieldTitle,
   Select,
   SelectContent,
   SelectItem,
@@ -16,7 +17,7 @@ export const HeadingWeightField = () => {
   const currentWeight = getValidWeight(fontCategory, settings.title_font_weight);
   return (
     <div className="flex items-center justify-between">
-      <span>Heading weight</span>
+      <FieldTitle>Heading weight</FieldTitle>
       <Select
         value={currentWeight}
         onValueChange={(value: string) => onSettingsChange({ title_font_weight: value })}
