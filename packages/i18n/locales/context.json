@@ -413,6 +413,7 @@
     "Too many sign-up attempts, try again later": "error message",
     "Try free for {amount} days, then {originalPrice}.": "Portal - label for a free trial that lasts a specific number of days, followed by the original price",
     "Unable to initiate checkout session": "error message",
+    "Unable to verify your request, please try again": "Error shown when a sign-up or sign-in request fails the site's bot protection check",
     "Unlock access to all newsletters by becoming a paid subscriber.": "A message to encourage members to upgrade to a paid subscription",
     "Unpin": "Short hover label on the pinned comment badge button for staff users",
     "Unpin comment": "Action in the comments UI context menu for staff users to unpin a pinned top-level comment",

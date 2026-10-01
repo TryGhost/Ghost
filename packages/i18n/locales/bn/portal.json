@@ -296,6 +296,7 @@
     "Too many sign-up attempts, try again later": "",
     "Try free for {amount} days, then {originalPrice}.": "{amount} দিনের জন্য ফ্রি চেষ্টা করুন, তারপর {originalPrice}।",
     "Unable to initiate checkout session": "",
+    "Unable to verify your request, please try again": "",
     "Unlock access to all newsletters by becoming a paid subscriber.": "পেইড সাবস্ক্রাইবার হয়ে সমস্ত নিউজলেটারে প্রবেশাধিকার আনলক করুন।",
     "Unsubscribe from all emails": "সমস্ত ইমেল থেকে আনসাবস্ক্রাইব করুন",
     "Unsubscribed": "আনসাবস্ক্রাইব করা হয়েছে",

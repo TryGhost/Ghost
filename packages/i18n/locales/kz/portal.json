@@ -296,6 +296,7 @@
     "Too many sign-up attempts, try again later": "",
     "Try free for {amount} days, then {originalPrice}.": "{amount} күн тегін қолданып көріңіз, содан кейінгі бағасы {originalPrice}.",
     "Unable to initiate checkout session": "",
+    "Unable to verify your request, please try again": "",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Ақылы түрде жазылу арқылы барлық ақпараттық бюллетеньдерге қол жеткізіңіз.",
     "Unsubscribe from all emails": "Барлық хаттарға жазылымнан бас тарту",
     "Unsubscribed": "Жазылымнан бас тартылды",
