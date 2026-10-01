@@ -1152,7 +1152,7 @@ module.exports = class MemberRepository {
     // transaction, and kept on the deleted member, whose member.deleted webhook is sent
     // once the transaction commits.
     const destroy = async (transacting) => {
-      const previousMetafields = await this._metafieldValues.getValuesForMember(
+      const previousMetafields = await this._metafieldValues.getValues(
         member.id,
         ADMIN,
         transacting,

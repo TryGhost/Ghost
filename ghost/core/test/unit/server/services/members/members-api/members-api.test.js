@@ -90,7 +90,7 @@ describe('MembersAPI', function () {
         },
       },
       metafieldValues: {
-        getValuesForMembers: sinon.stub().resolves(new Map()),
+        getValuesForMany: sinon.stub().resolves(new Map()),
         planWrite: sinon.stub().resolves([]),
         applyWrite: sinon.stub().resolves(),
       },

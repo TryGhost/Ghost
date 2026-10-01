@@ -73,13 +73,14 @@ export const DbMetafieldValue = z.object({
 
 type MetafieldValueRow = z.infer<typeof DbMetafieldValue>;
 
-// The field's key travels with the row so a value assembles without a second lookup.
+// The field's key travels with the row so a value assembles without a second lookup, and
+// the record it belongs to under a name that does not depend on what kind of record it is.
 //
 // `type` takes no part in the assembly and is here as a gate: a value whose type has left
 // the catalog is one the definitions list no longer returns either, so failing to parse
 // is what drops it.
 export const DbMetafieldLeaf = z.object({
-  member_id: z.string(),
+  entity_id: z.string(),
   key: z.string(),
   type: FieldTypeSchema,
   path: z.string(),
