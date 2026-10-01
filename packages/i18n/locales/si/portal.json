@@ -296,6 +296,7 @@
     "Too many sign-up attempts, try again later": "",
     "Try free for {amount} days, then {originalPrice}.": "දින {amount}ක් නොමිලයේ භාවිතා කරන්න, ඉන් පසුව {originalPrice}ක් පමණි.",
     "Unable to initiate checkout session": "",
+    "Unable to verify your request, please try again": "",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Paid subscriber කෙනෙකු වීම හරහා සියළුම newsletters වලට access ලබාගන්න.",
     "Unsubscribe from all emails": "සියළුම email වලින් unsubscribe කරන්න",
     "Unsubscribed": "Unsubscribe කරන ලදී",

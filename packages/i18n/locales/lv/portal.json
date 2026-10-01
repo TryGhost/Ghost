@@ -297,6 +297,7 @@
     "Too many sign-up attempts, try again later": "",
     "Try free for {amount} days, then {originalPrice}.": "Mēģiniet bez maksas {amount}\u00a0dienas, pēc tam {originalPrice}.",
     "Unable to initiate checkout session": "Nevar uzsākt norēķināšanās sesiju",
+    "Unable to verify your request, please try again": "",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Atbloķējiet piekļuvi visiem biļeteniem, kļūstot par maksas abonentu.",
     "Unsubscribe from all emails": "Anulēt visu e-pasta ziņojumu abonēšanu",
     "Unsubscribed": "Anulēts abonements",
