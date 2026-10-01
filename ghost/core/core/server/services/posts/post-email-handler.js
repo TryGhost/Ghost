@@ -1,4 +1,5 @@
 const { BadRequestError } = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
@@ -137,6 +138,9 @@ class PostEmailHandler {
         if (err.code !== RETRY_UNKNOWN_OUTCOME_CODE) {
           throw err;
         }
+        logging.warn(
+          `Post ${model.id} was saved without retrying email ${postEmail.id}: delivery outcome is unknown`,
+        );
       }
     }
 
