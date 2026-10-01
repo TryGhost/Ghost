@@ -79,7 +79,7 @@ export function identityFor(
   return fields[key];
 }
 
-/** The column widths the schema gives these fields. */
+/** The longest values the server accepts for these fields. */
 export const TITLE_MAX = 255;
 export const EXCERPT_MAX = 300;
 export const CODE_INJECTION_MAX = 65535;

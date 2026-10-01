@@ -109,8 +109,7 @@ function bodyElement(): Element | null {
 
 const POST_NOT_FOUND = { errors: [{ type: 'NotFoundError', message: 'Post not found.' }] };
 // A limit the editor does not hold the writer to before saving.
-const CAPTION_REFUSED =
-  'Value in [posts_meta.feature_image_caption] exceeds maximum length of 65535 characters. posts_meta.feature_image_caption';
+const CAPTION_REFUSED = 'Validation failed for feature_image_caption.';
 // Ghost answers a request whose session has gone with this 403.
 const SESSION_GONE = { errors: [{ type: 'NoPermissionError', message: 'Authorization failed' }] };
 
@@ -555,6 +554,7 @@ describe('Post editor saving', () => {
             type: 'ValidationError',
             message: 'Validation error, cannot edit post.',
             context: CAPTION_REFUSED,
+            property: 'feature_image_caption',
           },
         ],
       },

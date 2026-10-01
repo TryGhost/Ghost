@@ -24,7 +24,7 @@ which is the save engine's command target. Both are then subject to the same
 engine policy as everything else.
 
 The excerpt, the header and footer code, and the meta and social-card text
-fields are held to the widths their columns give them: 300 characters for the
+fields are held to the lengths the server accepts: 300 characters for the
 excerpt, 65,535 for each code field, 300 for a meta or card title and 500 for a
 description, counted by code point so a multibyte character counts once. Past
 one of those the field says so where the writer is typing and nothing is saved —

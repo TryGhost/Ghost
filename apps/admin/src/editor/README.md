@@ -37,7 +37,8 @@ The title is held to 255 characters, counted as the server counts a title:
 trimmed, with an emoji and its presentation selector as one character. Past
 that the title says so beneath itself and nothing is saved, and a save the
 writer asks for is refused with the same message. The inline excerpt is held to
-300 characters the same way, and its divider turns red while it is past them.
+300 characters, counted by code point, and its divider turns red while it is
+past them.
 
 ## Opening the publish flow
 
