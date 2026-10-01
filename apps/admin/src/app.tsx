@@ -4,6 +4,7 @@ import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { EmberProvider, EmberFallback, EmberRoot } from './ember-bridge';
 import { AdminLayout } from './layout/admin-layout';
 import { useSyncEmberFullScreen } from './layout/sidebar-visibility';
+import { useSyncEmberRoutePattern } from './routes';
 import { useEmberAuthSync, useEmberDataSync, useEmberListReturnSync } from './ember-bridge';
 import { DocsBotWidgetHost } from './docsbot-widget-host';
 import { useAccentColorProperties } from './hooks/use-accent-color-properties';
@@ -24,6 +25,7 @@ function App() {
   useEmberDataSync();
   useEmberListReturnSync();
   useSyncEmberFullScreen();
+  useSyncEmberRoutePattern();
   useAuthNotice(Boolean(currentUser));
 
   return (
