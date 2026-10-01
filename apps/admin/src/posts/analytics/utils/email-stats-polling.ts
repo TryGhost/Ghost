@@ -1,7 +1,7 @@
 import type { Query } from '@tanstack/react-query';
 import type { Email } from '@tryghost/admin-x-framework/api/posts';
 
-type PollingEmail = Pick<Email, 'submitted_at' | 'status'>;
+export type PollingEmail = Pick<Email, 'submitted_at' | 'status'>;
 
 const SIXTY_MINS = 60 * 60 * 1000;
 const THREE_DAYS = 3 * 24 * 60 * 60 * 1000;
