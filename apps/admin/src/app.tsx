@@ -12,7 +12,12 @@ import {
   useEmberListReturnSync,
   useEmberNotificationsHost,
 } from './ember-bridge';
-import { AdminAlerts, createAlertsStore, useServerNotifications } from './alerts';
+import {
+  AdminAlerts,
+  createAlertsStore,
+  useServerNotifications,
+  useUpgradeStatusAlerts,
+} from './alerts';
 import { DocsBotWidgetHost } from './docsbot-widget-host';
 import { useAccentColorProperties } from './hooks/use-accent-color-properties';
 import { SignedOutApp, useAuthNotice, useAuthScreensOwner } from './auth/api';
@@ -36,6 +41,7 @@ function App() {
   useSyncEmberRoutePattern();
   useEmberNotificationsHost(alerts);
   useServerNotifications(alerts);
+  useUpgradeStatusAlerts(alerts);
   useAuthNotice(Boolean(currentUser));
 
   return (

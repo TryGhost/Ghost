@@ -26,6 +26,10 @@ export { useKoenigLinkSuggestions } from './hooks/use-koenig-link-suggestions';
 export { useFeaturebase } from './hooks/use-featurebase';
 export { useDocsBot } from './hooks/use-docsbot';
 
+// API status
+export { onUpgradeStatus } from './utils/api/upgrade-status';
+export type { UpgradeStatus } from './utils/api/upgrade-status';
+
 // Analytics utilities
 export { trackEvent, trackFilterApplications } from './utils/analytics';
 
