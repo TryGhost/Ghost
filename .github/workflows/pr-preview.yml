@@ -25,74 +25,21 @@ jobs:
       PR_NUMBER: ${{ github.event.pull_request.number }}
       REPOSITORY: ${{ github.repository }}
     steps:
+      # Only the trusted workflow commit; never the PR head or merge ref.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+          sparse-checkout: scripts
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: '24'
       - name: Check PR and image
         id: check
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BUILD_JOB_NAME: Build Docker Images
-        run: |
-          [[ "$PR_NUMBER" =~ ^[1-9][0-9]{0,9}$ ]] || exit 1
-          # Read live rather than from the event, which may be stale by now.
-          PR=$(gh api "repos/${REPOSITORY}/pulls/${PR_NUMBER}" \
-            --jq '{state, sha: .head.sha, repo: .head.repo.full_name, labels: [.labels[].name]}')
-
-          if [ "$(jq -r '.state' <<< "$PR")" != "open" ] \
-              || [ "$(jq '.labels | any(. == "preview" or startswith("preview:"))' <<< "$PR")" != "true" ]; then
-            echo "::warning::PR is closed or no longer labelled, skipping dispatch"
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          # Profile names and the default are defined in Ghost-Moya, which reads
-          # the label itself; these checks only surface mistakes on the PR.
-          PROFILES=$(jq -r '[.labels[] | select(startswith("preview:"))] | join(", ")' <<< "$PR")
-          if [[ "$PROFILES" == *,* ]]; then
-            echo "::error::Multiple preview profile labels ($PROFILES) — remove all but one"
-            exit 1
-          fi
-          if [ -n "$PROFILES" ] && ! [[ "${PROFILES#preview:}" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
-            echo "::error::Malformed profile label '${PROFILES}' — expected lowercase words separated by hyphens"
-            exit 1
-          fi
-
-          if [ "$(jq -r '.repo' <<< "$PR")" != "$REPOSITORY" ]; then
-            echo "::error::Fork PR images are not published to GHCR, so this PR cannot have a preview"
-            exit 1
-          fi
-
-          HEAD_SHA=$(jq -r '.sha' <<< "$PR")
-          [[ "$HEAD_SHA" =~ ^[a-f0-9]{40}$ ]] || exit 1
-
-          # CI dispatches a refresh to Ghost-Moya once the image is published, so
-          # only an already-built head needs dispatching from here. A head can have
-          # several CI runs (reopens, reruns), so any successful build counts.
-          RUNS=$(gh api --paginate "repos/${REPOSITORY}/actions/workflows/ci.yml/runs?head_sha=${HEAD_SHA}&per_page=100" \
-            --jq '.workflow_runs[] | "\(.id) \(.status)"')
-          BUILT="" PENDING=false FAILED=""
-          while read -r RUN_ID RUN_STATUS; do
-            [ -n "$RUN_ID" ] || continue
-            JOB=$(gh api --paginate "repos/${REPOSITORY}/actions/runs/${RUN_ID}/jobs?per_page=100" \
-              --jq ".jobs[] | select(.name == \"${BUILD_JOB_NAME}\") | \"\(.status) \(.conclusion // \"\")\"")
-            case "$JOB" in
-              "completed success") BUILT=$RUN_ID; break ;;
-              "completed "*) FAILED=${JOB#completed } ;;
-              "") [ "$RUN_STATUS" = completed ] || PENDING=true ;;
-              *) PENDING=true ;;
-            esac
-          done <<< "$RUNS"
-
-          if [ -z "$BUILT" ]; then
-            if [ "$PENDING" = true ] || [ -z "$RUNS" ]; then
-              echo "::notice::The image for ${HEAD_SHA} is not built yet; CI deploys the preview when it is"
-              echo "skip=true" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-            echo "::error::'${BUILD_JOB_NAME}' for ${HEAD_SHA} did not succeed (${FAILED:-not run}); push a fix to deploy the preview"
-            exit 1
-          fi
-
-          echo "Image for ${HEAD_SHA} is built (CI run ${BUILT})"
-          echo "head_sha=${HEAD_SHA}" >> "$GITHUB_OUTPUT"
+        run: node scripts/dispatch-pr-preview.js check
 
       # Ghost-Moya re-reads the PR before acting, so a superseded request is skipped.
       - name: Dispatch deploy to Ghost-Moya
@@ -125,22 +72,22 @@ jobs:
     permissions:
       contents: read
     steps:
+      # Only the trusted workflow commit; never the PR head or merge ref.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+          sparse-checkout: scripts
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: '24'
       - name: Re-check teardown eligibility
         id: recheck
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPOSITORY: ${{ github.repository }}
-        run: |
-          [[ "$PR_NUMBER" =~ ^[1-9][0-9]{0,9}$ ]] || exit 1
-          PR=$(gh api "repos/${REPOSITORY}/pulls/${PR_NUMBER}" \
-            --jq '{state, labels: [.labels[].name]}')
-
-          KEEP_PREVIEW=$(echo "$PR" | jq '.state == "open" and (.labels | any(. == "preview" or startswith("preview:")))')
-          if [ "$KEEP_PREVIEW" = "true" ]; then
-            echo "Preview is still enabled, skipping teardown"
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          fi
+        run: node scripts/dispatch-pr-preview.js teardown
 
       - name: Dispatch destroy to Ghost-Moya
         if: steps.recheck.outputs.skip != 'true'
