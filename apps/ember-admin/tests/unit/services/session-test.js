@@ -37,7 +37,6 @@ describe('Unit: Service: session', function () {
             sinon.stub(service.membersUtils, 'fetch').resolves();
             sinon.stub(service.frontend, 'loginIfNeeded').resolves();
             sinon.stub(service.themeManagement, 'fetch').resolves();
-            sinon.stub(service, 'loadServerNotifications');
             sinon.stub(service.koenig, 'fetch');
 
             await service.postAuthPreparation();

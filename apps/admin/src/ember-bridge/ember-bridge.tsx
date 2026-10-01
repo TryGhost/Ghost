@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { getListReturnNavigationState } from '@/shared/virtual-list';
+import type { EmberNotificationsHost } from './ember-notifications-host';
 
 export interface EmberBridge {
   state: StateBridge;
@@ -31,6 +32,7 @@ export interface StateBridge {
   setPostListQueryParams?: (resource: 'posts' | 'pages', params: Record<string, string>) => void;
   setReactFullScreen?: (isFullScreen: boolean) => void;
   setReactRoutePattern?: (routePattern: string | null) => void;
+  connectNotificationsHost?: (host: EmberNotificationsHost) => () => void;
   on<K extends keyof StateBridgeEventMap>(
     event: K,
     callback: (event: StateBridgeEventMap[K]) => void,
@@ -368,6 +370,27 @@ export function syncEmberRoutePattern(routePattern: string | null): () => void {
   return waitForStateBridge((stateBridge) => {
     stateBridge.setReactRoutePattern?.(routePattern);
   });
+}
+
+/**
+ * Hands Ember's notifications to a React host once the bridge is ready.
+ * Returns a disconnect that also cancels a connection still waiting.
+ */
+export function connectEmberNotificationsHost(host: EmberNotificationsHost): () => void {
+  let disconnect: (() => void) | undefined;
+  let isConnected = true;
+
+  const stopPolling = waitForStateBridge((stateBridge) => {
+    if (isConnected) {
+      disconnect = stateBridge.connectNotificationsHost?.(host);
+    }
+  });
+
+  return () => {
+    isConnected = false;
+    stopPolling();
+    disconnect?.();
+  };
 }
 
 /**

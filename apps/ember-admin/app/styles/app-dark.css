@@ -163,11 +163,6 @@ input,
     background: var(--dark-main-bg-color);
 }
 
-.gh-nav-search .ember-power-select-trigger {
-    border-color: color-mod(var(--lightgrey));
-    background: color-mod(var(--lightgrey));
-}
-
 .ember-power-select-multiple-trigger {
     border-color: var(--lightgrey-l2);
     background: transparent;
