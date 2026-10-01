@@ -108,7 +108,6 @@
     "@tryghost/html-to-plaintext": "1.0.12",
     "@tryghost/i18n": "workspace:*",
     "@tryghost/image-transform": "workspace:*",
-    "@tryghost/job-manager": "1.0.9",
     "@tryghost/kg-card-factory": "workspace:*",
     "@tryghost/kg-converters": "workspace:*",
     "@tryghost/kg-default-cards": "workspace:*",

@@ -166,24 +166,7 @@ async function initCore({ ghostServer, config }) {
   debug('End: Member Metafields Service');
 
   if (ghostServer) {
-    // Job Service allows parts of Ghost to run in the background
-    debug('Begin: Job Service');
-    const jobService = require('./server/services/jobs');
-
-    ghostServer.registerCleanupTask(async () => {
-      await jobService.shutdown();
-    }, 'Job Service');
-    debug('End: Job Service');
-
-    // Mentions Job Service allows mentions to be processed in the background
-    debug('Begin: Mentions Job Service');
-    const mentionsJobService = require('./server/services/mentions-jobs');
-
-    ghostServer.registerCleanupTask(async () => {
-      await mentionsJobService.shutdown();
-    }, 'Mentions Job Service');
-    debug('End: Mentions Job Service');
-
+    // Jobs Service allows parts of Ghost to run in the background
     debug('Begin: Jobs Service');
     const jobsService = require('./server/services/jobs-service');
 

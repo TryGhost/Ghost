@@ -382,16 +382,19 @@ describe('InMemoryJobsBackend', function () {
       );
     });
 
+    it('reads cron schedules in the server local time', function () {
+      assert.equal(later.date.isUTC, false);
+    });
+
     it('schedules a day-of-week cron on the correct day (0 = Sunday)', async function () {
       clock = sinon.useFakeTimers({ now: Date.UTC(2026, 7, 17) });
       const fireDays: number[] = [];
       const backend = new InMemoryJobsBackend();
       backend.start({
         processor: async () => {
-          // Bree configures the shared scheduler to use local time when loaded.
-          // Assert the cron weekday in the calendar the scheduler actually uses.
-          const now = new Date();
-          fireDays.push(later.date.isUTC ? now.getUTCDay() : now.getDay());
+          // The backend reads schedules in local time, so that is the calendar
+          // the weekday is asserted in.
+          fireDays.push(new Date().getDay());
         },
       });
 

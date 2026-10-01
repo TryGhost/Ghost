@@ -10,7 +10,6 @@ const { ZipArchive } = require('archiver');
 const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
 const configUtils = require('../../utils/config-utils');
 const jobs = require('../../../core/server/services/jobs-service');
-const legacyJobs = require('../../../core/server/services/jobs');
 const importer = require('../../../core/server/data/importer');
 const adapterManager = require('../../../core/server/services/adapter-manager').default;
 const ContentImportJob =
@@ -48,8 +47,6 @@ describe('Site content import delivery', function () {
       mockManager.mockMail();
       const dispatch = sinon.spy(jobsService, 'dispatch');
       const execute = sinon.spy(service, 'executeImport');
-      const addJob = sinon.spy(legacyJobs, 'addJob');
-      const addOneOffJob = sinon.spy(legacyJobs, 'addOneOffJob');
       const storage = adapterManager.getAdapter('storage:imports');
       const save = sinon.spy(storage, 'save');
       const remove = sinon.spy(storage, 'delete');
@@ -101,8 +98,6 @@ describe('Site content import delivery', function () {
         );
         mockManager.assert.sentEmailCount(1);
         sinon.assert.calledOnce(dispatch);
-        sinon.assert.notCalled(addJob);
-        sinon.assert.notCalled(addOneOffJob);
         const job = dispatch.firstCall.args[0];
         assert.ok(job instanceof ContentImportJob);
         sinon.assert.calledOnce(execute);
