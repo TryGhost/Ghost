@@ -78,8 +78,7 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
     pnpm install --filter "ghost..." --frozen-lockfile --prefer-offline
 
 # Copy entrypoint script that optionally loads Tinybird config
-COPY docker/ghost-dev/entrypoint.sh entrypoint.sh
-RUN chmod +x entrypoint.sh
+COPY --chmod=755 docker/ghost-dev/entrypoint.sh entrypoint.sh
 
 # Public app assets are served via /ghost/assets/* in dev mode.
 # Caddy forwards these paths to host frontend dev servers.
