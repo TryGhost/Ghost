@@ -80,6 +80,8 @@ export type Automation = AutomationSummary & {
 };
 
 export type EditAutomationData = {
+  name?: string;
+  description?: string;
   status: string;
   actions: AutomationAction[];
   edges: AutomationEdge[];
