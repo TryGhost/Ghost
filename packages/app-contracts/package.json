@@ -1,14 +1,14 @@
 {
-  "name": "@tryghost/app-manifest",
+  "name": "@tryghost/app-contracts",
   "version": "0.0.0",
   "private": true,
-  "description": "The app manifest format and its validation, shared by Ghost core and admin",
+  "description": "The contracts between Ghost and apps: formats, types and validation shared by Ghost core and admin",
   "license": "MIT",
   "author": "Ghost Foundation",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",
-    "directory": "packages/app-manifest"
+    "directory": "packages/app-contracts"
   },
   "files": [
     "build"
@@ -21,6 +21,11 @@
       "source": "./src/index.ts",
       "types": "./build/index.d.ts",
       "default": "./build/index.js"
+    },
+    "./manifest": {
+      "source": "./src/manifest/index.ts",
+      "types": "./build/manifest/index.d.ts",
+      "default": "./build/manifest/index.js"
     }
   },
   "scripts": {

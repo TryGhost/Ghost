@@ -1,10 +1,31 @@
-# @tryghost/app-manifest
+# @tryghost/app-contracts
 
-The app manifest format and its validation, shared by Ghost core and admin
+The contracts between Ghost and apps: formats, types and validation shared by
+Ghost core and admin
 
 This is an internal workspace package. See the
 [internal package golden path](../README.md) for its standing architecture and
 maintenance rules.
+
+Apps run on their developer's own servers and show up inside Ghost. Everything
+the two sides have to agree on is defined here, once, so Ghost core, admin and
+the app SDK cannot disagree about it. The package holds formats, types and
+validation only: nothing here fetches, stores or renders anything.
+
+## Entry points
+
+Each contract is its own entry point, so a consumer only loads the one it uses.
+
+| Entry point                        | What it holds                                     |
+| ---------------------------------- | ------------------------------------------------- |
+| `@tryghost/app-contracts`          | Types, and rules that depend on nothing (app IDs) |
+| `@tryghost/app-contracts/manifest` | The app manifest and its validation               |
+
+The root entry point must stay free of `zod`: some consumers ship to browsers
+that never validate anything. A lint rule enforces it.
+
+A new contract, such as the bridge between admin and an app's page, gets its own
+folder under `src/` and its own entry point.
 
 ## The manifest
 
@@ -39,12 +60,12 @@ An app describes itself to Ghost in a JSON manifest served next to the app:
   accepted, over `http` too, only when Ghost runs in development.
 
 The format is unversioned while only Ghost builds apps. Unknown fields are
-rejected, so adding one is always a deliberate change here.
+rejected, so adding one is always a deliberate change to `src/manifest/`.
 
 ## Usage
 
 ```ts
-import { parseManifest } from '@tryghost/app-manifest';
+import { parseManifest } from '@tryghost/app-contracts/manifest';
 
 const result = parseManifest(json, {
   manifestUrl: 'https://podcast.example.com/ghost-app.json',

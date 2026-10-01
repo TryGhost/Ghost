@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { APP_ID_MAX_LENGTH, isValidAppId } from '../src/index.ts';
+import { APP_ID_MAX_LENGTH, isValidAppId } from '../../src/manifest/index.ts';
 
 describe('isValidAppId', () => {
   it('accepts lowercase reverse-domain IDs', () => {

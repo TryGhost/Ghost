@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseManifest } from '../src/index.ts';
+import { parseManifest } from '../../src/manifest/index.ts';
 import { devOptions, errorsOf, manifest, manifestOf, options } from './helpers.ts';
 
 describe('parseManifest', () => {
