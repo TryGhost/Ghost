@@ -163,12 +163,15 @@ export const unsplashSearchHeading = 'Unsplash';
 // The gallery's insert control; @tryghost/kg-unsplash-selector owns the label.
 export const unsplashInsertImageButton = 'Insert image';
 export const removeFeatureImageButton = 'Remove feature image';
+export const editFeatureImageButton = 'Edit feature image';
 export const addFacebookImageLabel = 'Add Facebook image';
 export const removeFacebookImageButton = 'Remove Facebook image';
+export const editFacebookImageButton = 'Edit Facebook image';
 export const facebookImageUnsplashButton = 'Select Facebook image from Unsplash';
 export const toggleFeatureImageAltButton = 'Toggle between editing alt text and caption';
 export const addXImageLabel = 'Add X image';
 export const removeXImageButton = 'Remove X image';
+export const editXImageButton = 'Edit X image';
 export const xImageUnsplashButton = 'Select X image from Unsplash';
 export const stayInEditorButton = 'Stay';
 export const leaveEditorButton = 'Leave';

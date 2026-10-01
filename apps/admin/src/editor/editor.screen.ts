@@ -8,6 +8,9 @@ import {
   conflictCopyContentButton,
   conflictDiscardAndReloadButton,
   conflictReloadButton,
+  editFacebookImageButton,
+  editFeatureImageButton,
+  editXImageButton,
   editorBody,
   editorConflictBanner,
   editorConflictReloadConfirm,
@@ -301,6 +304,7 @@ export const editorScreen = {
   settingsXImageInput: () => page.getByLabelText(addXImageLabel),
   settingsXImageUnsplashButton: () => page.getByRole('button', { name: xImageUnsplashButton }),
   removeSettingsXImage: () => page.getByRole('button', { name: removeXImageButton }),
+  editSettingsXImage: () => page.getByRole('button', { name: editXImageButton }),
   settingsXTitle: () => page.getByTestId(settingsXTitleInput),
   settingsXDescription: () => page.getByTestId(settingsXDescriptionInput),
   settingsXPreview: () => page.getByTestId(settingsXPreview),
@@ -313,6 +317,7 @@ export const editorScreen = {
   settingsFacebookImageUnsplashButton: () =>
     page.getByRole('button', { name: facebookImageUnsplashButton }),
   removeSettingsFacebookImage: () => page.getByRole('button', { name: removeFacebookImageButton }),
+  editSettingsFacebookImage: () => page.getByRole('button', { name: editFacebookImageButton }),
 
   settingsPostHistory: () => page.getByTestId(settingsPostHistoryButton),
   postHistoryModal: () => page.getByTestId(postHistoryModal),
@@ -346,6 +351,7 @@ export const editorScreen = {
   unsplashSearchInput: () => page.getByPlaceholder('Search free high-resolution photos'),
   unsplashInsertImage: () => page.getByTestId(unsplashSearchModal).getByText('Insert image'),
   removeFeatureImage: () => page.getByRole('button', { name: removeFeatureImageButton }),
+  editFeatureImage: () => page.getByRole('button', { name: editFeatureImageButton }),
   featureImageAltToggle: () => page.getByRole('button', { name: toggleFeatureImageAltButton }),
   featureImageAltInput: () => page.getByLabelText(featureImageAltLabel),
   /** The caption's Koenig content editable. */

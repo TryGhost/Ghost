@@ -11,6 +11,7 @@ import {
   fakeAdminEndpoint,
   fakeEditorChrome,
   fakeEditorPost,
+  fakePintura,
   fakeTiers,
   fakeUnsplashPhotos,
   post,
@@ -18,6 +19,7 @@ import {
   staffRole,
   submittedPost,
   unsavedChangesGuarded,
+  withPintura,
   withoutAutosave,
   withoutUnsplash,
   type StaffRoleName,
@@ -374,5 +376,22 @@ describe('Post settings Facebook card', () => {
     await expect(editorScreen.unsplashModal()).toHaveCount(0);
     await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
     await expect.element(editorScreen.settingsFacebookTitle()).toBeVisible();
+  });
+
+  it('saves the Facebook image edited in Pintura in place of the original', async () => {
+    const pintura = fakePintura();
+    const saveApi = fakeSavablePost({ og_image: FEATURE });
+    const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', {
+      images: [{ url: UPLOADED, ref: null }],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, { ...FLAG_ON, ...withPintura() });
+    await openFacebookCard();
+
+    await editorScreen.editSettingsFacebookImage().click();
+    expect(pintura.opened[0]).toContain(FEATURE);
+    pintura.save(new File(['edited'], 'coast.png', { type: 'image/png' }));
+
+    await expect.poll(() => uploadApi.requests.length, POLL).toBe(1);
+    await expect(saveApi).toHaveSavedFields({ og_image: UPLOADED });
   });
 });

@@ -1,4 +1,5 @@
 import type { QueryClient } from '@tanstack/react-query';
+import { onTestFinished } from 'vitest';
 import { postsDataType } from '@tryghost/admin-x-framework/api/posts';
 import { buildLexicalParagraph, post, settingsResponse, type Post } from '@tryghost/test-data';
 import type { RenderAdminAppOptions } from './render-admin-app';
@@ -135,5 +136,77 @@ export function withFastAutosave(options: RenderAdminAppOptions = {}): RenderAdm
 export function withoutUnsplash(): RenderAdminAppOptions {
   return {
     boot: { browseSettings: { response: settingsResponse({ settings: { unsplash: false } }) } },
+  };
+}
+
+// Data URLs, so neither the stylesheet link nor anything that reads them fetches.
+const PINTURA_JS_URL = 'data:text/javascript,';
+const PINTURA_CSS_URL = 'data:text/css,';
+
+/** Boots a site with Pintura configured; `fakePintura()` stands in for its script. */
+export function withPintura(): RenderAdminAppOptions {
+  return {
+    boot: {
+      browseSettings: {
+        response: settingsResponse({
+          settings: {
+            pintura: true,
+            pintura_js_url: PINTURA_JS_URL,
+            pintura_css_url: PINTURA_CSS_URL,
+          },
+        }),
+      },
+    },
+  };
+}
+
+export interface FakePintura {
+  /** The `src` of every image the editor was opened on. */
+  opened: string[];
+  /** Ends the open edit as Save and close does: hands `file` to the field, then closes. */
+  save: (file: File) => void;
+}
+
+/**
+ * Stands in for the script and stylesheet `withPintura()` configures, as already
+ * loaded; both are removed again when the test finishes.
+ */
+export function fakePintura(): FakePintura {
+  const opened: string[] = [];
+  let process: ((result: { dest: File }) => void) | undefined;
+  let destroyed: (() => void) | undefined;
+
+  window.pintura = {
+    openDefaultEditor: ({ src }) => {
+      opened.push(src);
+      return {
+        on: (event, callback) => {
+          if (event === 'process') {
+            process = callback;
+          }
+          if (event === 'destroy') {
+            destroyed = callback as () => void;
+          }
+        },
+        destroy: () => {},
+      };
+    },
+  };
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = PINTURA_CSS_URL;
+  document.head.appendChild(link);
+
+  onTestFinished(() => {
+    link.remove();
+    Reflect.deleteProperty(window, 'pintura');
+  });
+
+  return {
+    opened,
+    save: (file) => {
+      process?.({ dest: file });
+      destroyed?.();
+    },
   };
 }
