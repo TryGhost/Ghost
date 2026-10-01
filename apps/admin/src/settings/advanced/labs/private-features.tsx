@@ -146,6 +146,12 @@ const features: Feature[] = [
       'Show payment-failure warnings in Admin, driven by the hosting provider via hostSettings.billing.dunning',
     flag: 'dunningWarnings',
   },
+  {
+    title: 'Apps',
+    description:
+      'Install and manage third-party apps that run on their own servers. Early and incomplete.',
+    flag: 'apps',
+  },
 ];
 
 const AlphaFeatures: React.FC = () => {
