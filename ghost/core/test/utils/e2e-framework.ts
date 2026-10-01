@@ -196,11 +196,9 @@ const getFixture = (type: string, index = 0) => {
 /**
  * Reset rate limit instances (not the brute table)
  */
-const resetRateLimits = async () => {
+const resetRateLimits = () => {
   // Reset rate limiting instances
-  // @ts-expect-error This module lacks type definitions.
-  const { default: apiMiddleware } = await import('../../core/server/web/shared/middleware/api');
-  const { spamPrevention } = apiMiddleware;
+  const { spamPrevention } = require('../../core/server/web/shared/middleware/api');
   spamPrevention.reset();
 };
 
@@ -212,9 +210,8 @@ const resetRateLimits = async () => {
  * committed snapshot expects the un-resized URL (a fresh probe of the 1x1 fixture
  * yields no dimensions). Clear it between boots so each file probes fresh.
  */
-const resetImageSizeCache = async () => {
-  // @ts-expect-error This module lacks type definitions.
-  const { default: image } = await import('../../core/server/lib/image');
+const resetImageSizeCache = () => {
+  const image = require('../../core/server/lib/image');
   image.cachedImageSizeFromUrl.cache.reset();
 };
 
@@ -232,9 +229,9 @@ const resetData = async () => {
   await db.reset({ truncate: true });
 
   // Reset rate limiting instances (resetting the table is not enough!)
-  await resetRateLimits();
+  resetRateLimits();
 
-  await resetImageSizeCache();
+  resetImageSizeCache();
 };
 
 /**
