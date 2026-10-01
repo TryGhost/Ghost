@@ -4,18 +4,12 @@ import {
   useNewsletterBasicStats,
   useNewsletterClickStats,
 } from '@tryghost/admin-x-framework/api/stats';
-import { processAndGroupTopLinks } from '@/posts/analytics/utils/link-helpers';
 import { useMemo } from 'react';
-import { useTopLinks } from '@tryghost/admin-x-framework/api/links';
-import { getEmailStatsPollingOptions } from '@/posts/analytics/utils/email-stats-polling';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
-import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
-import { useEmailTrackClicks } from '@tryghost/admin-x-framework/api/settings';
+import { usePostTopLinks } from '@/posts/analytics/hooks/use-post-top-links';
 
-export const usePostNewsletterStats = (postId: string) => {
+export const usePostNewsletterStats = () => {
   const { post, isPostLoading } = usePostAnalytics();
-  const { isNewsletterDataHidden } = useEmailSendingStatusContext();
-  const emailTrackClicksEnabled = useEmailTrackClicks();
 
   const stats = useMemo(() => {
     if (!post) {
@@ -37,27 +31,6 @@ export const usePostNewsletterStats = (postId: string) => {
         post.count?.clicks && post.email?.email_count
           ? post.count.clicks / post.email.email_count
           : 0,
-    };
-  }, [post]);
-
-  // Calculate feedback stats from the shared post
-  const feedbackStats = useMemo(() => {
-    if (!post?.count) {
-      return {
-        positiveFeedback: 0,
-        negativeFeedback: 0,
-        totalFeedback: 0,
-      };
-    }
-
-    const positiveFeedback = post.count.positive_feedback || 0;
-    const negativeFeedback = post.count.negative_feedback || 0;
-    const totalFeedback = positiveFeedback + negativeFeedback;
-
-    return {
-      positiveFeedback,
-      negativeFeedback,
-      totalFeedback,
     };
   }, [post]);
 
@@ -126,16 +99,10 @@ export const usePostNewsletterStats = (postId: string) => {
 
   // Get the top links from this post
   const {
-    data: clicksResponse,
+    topLinks,
     isLoading: isClicksLoading,
     refetch: refetchTopLinks,
-  } = useTopLinks({
-    ...getEmailStatsPollingOptions(() => post?.email),
-    enabled: !!emailTrackClicksEnabled && !isNewsletterDataHidden,
-    searchParams: {
-      filter: `post_id:'${postId}'`,
-    },
-  });
+  } = usePostTopLinks();
 
   // Calculate average open and click rates across newsletters
   const averages = useMemo(() => {
@@ -169,10 +136,6 @@ export const usePostNewsletterStats = (postId: string) => {
     };
   }, [newsletterStatsResponse]);
 
-  const topLinks = useMemo(() => {
-    return processAndGroupTopLinks(clicksResponse);
-  }, [clicksResponse]);
-
   const averageStats = useMemo(() => {
     return {
       openedRate: averages.openRate,
@@ -181,9 +144,7 @@ export const usePostNewsletterStats = (postId: string) => {
   }, [averages]);
 
   return {
-    post,
     stats,
-    feedbackStats,
     averageStats,
     topLinks,
     refetchTopLinks,

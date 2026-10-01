@@ -94,7 +94,7 @@ describe('usePostNewsletterStats', () => {
 
     server.use(http.get(POSTS_API_URL, () => HttpResponse.json({ posts: [postWithEmailStats] })));
 
-    const { result } = renderHook(() => usePostNewsletterStats(testPostId), { wrapper });
+    const { result } = renderHook(() => usePostNewsletterStats(), { wrapper });
 
     await waitFor(() => {
       expect(result.current.stats).toEqual({
@@ -113,7 +113,7 @@ describe('usePostNewsletterStats', () => {
 
     server.use(http.get(POSTS_API_URL, () => HttpResponse.json({ posts: [postWithoutEmail] })));
 
-    const { result } = renderHook(() => usePostNewsletterStats(testPostId), { wrapper });
+    const { result } = renderHook(() => usePostNewsletterStats(), { wrapper });
 
     await waitFor(() => {
       expect(result.current.stats).toEqual({
@@ -148,7 +148,7 @@ describe('usePostNewsletterStats', () => {
       ),
     );
 
-    const { result } = renderHook(() => usePostNewsletterStats(testPostId), { wrapper });
+    const { result } = renderHook(() => usePostNewsletterStats(), { wrapper });
 
     await waitFor(() => {
       // Average: (0.25 + 0.35 + 0.30) / 3 = 0.30
@@ -177,7 +177,7 @@ describe('usePostNewsletterStats', () => {
       http.get(POSTS_API_URL, () => HttpResponse.json({ posts: [postWithClicksButNoEmails] })),
     );
 
-    const { result } = renderHook(() => usePostNewsletterStats(testPostId), { wrapper });
+    const { result } = renderHook(() => usePostNewsletterStats(), { wrapper });
 
     await waitFor(() => {
       expect(result.current.stats.openedRate).toBe(0);
@@ -194,7 +194,7 @@ describe('usePostNewsletterStats', () => {
       http.get(NEWSLETTER_CLICK_STATS_API_URL, () => HttpResponse.json({ stats: [] })),
     );
 
-    const { result } = renderHook(() => usePostNewsletterStats(testPostId), { wrapper });
+    const { result } = renderHook(() => usePostNewsletterStats(), { wrapper });
 
     await waitFor(() => {
       expect(result.current.averageStats).toEqual({
@@ -223,7 +223,7 @@ describe('usePostNewsletterStats', () => {
       http.get(LINKS_API_URL, () => HttpResponse.json({ links: linksData })),
     );
 
-    const { result } = renderHook(() => usePostNewsletterStats(testPostId), { wrapper });
+    const { result } = renderHook(() => usePostNewsletterStats(), { wrapper });
 
     await waitFor(() => {
       // Should be sorted by click count (highest first) and URLs cleaned
@@ -254,7 +254,7 @@ describe('usePostNewsletterStats', () => {
       http.get(POSTS_API_URL, () => HttpResponse.json({ posts: [postWithPrecisionChallenge] })),
     );
 
-    const { result } = renderHook(() => usePostNewsletterStats(testPostId), { wrapper });
+    const { result } = renderHook(() => usePostNewsletterStats(), { wrapper });
 
     await waitFor(() => {
       // 2/7 = 0.2857142857142857... (JavaScript precision)
@@ -283,7 +283,7 @@ describe('usePostNewsletterStats', () => {
 
     server.use(http.get(POSTS_API_URL, () => HttpResponse.json({ posts: [enterprisePost] })));
 
-    const { result } = renderHook(() => usePostNewsletterStats(testPostId), { wrapper });
+    const { result } = renderHook(() => usePostNewsletterStats(), { wrapper });
 
     await waitFor(() => {
       expect(result.current.stats).toEqual({
@@ -317,7 +317,7 @@ describe('link visibility', () => {
         http.get(LINKS_API_URL, fetchLinks),
       );
 
-      const { result, rerender } = renderHook(() => usePostNewsletterStats(testPostId), {
+      const { result, rerender } = renderHook(() => usePostNewsletterStats(), {
         wrapper,
       });
       await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -364,32 +364,27 @@ describe('newsletter polling', () => {
     vi.restoreAllMocks();
   });
 
-  test('refreshes feedback and clicks from one shared post query', async ({ wrapper }) => {
+  test('refreshes stats from the shared post query', async ({ wrapper }) => {
     const { result } = renderHook(
       () => ({
-        newsletter: usePostNewsletterStats(testPostId),
+        newsletter: usePostNewsletterStats(),
         post: usePostAnalytics().post,
       }),
       { wrapper },
     );
 
-    await vi.waitFor(() =>
-      expect(result.current.newsletter.feedbackStats.positiveFeedback).toBe(1),
-    );
+    await vi.waitFor(() => expect(result.current.newsletter.stats.clicked).toBe(1));
     expect(requests).toBe(1);
 
     await act(() => vi.advanceTimersByTimeAsync(5000));
 
-    await vi.waitFor(() =>
-      expect(result.current.newsletter.feedbackStats.positiveFeedback).toBe(2),
-    );
-    expect(result.current.newsletter.stats.clicked).toBe(2);
-    expect(result.current.post?.count?.clicks).toBe(2);
+    await vi.waitFor(() => expect(result.current.newsletter.stats.clicked).toBe(2));
+    expect(result.current.post?.count?.positive_feedback).toBe(2);
     expect(requests).toBe(2);
   });
 
   test('pauses while unfocused and stops when unmounted', async ({ wrapper }) => {
-    const { result, unmount } = renderHook(() => usePostNewsletterStats(testPostId), { wrapper });
+    const { result, unmount } = renderHook(() => usePostNewsletterStats(), { wrapper });
     await vi.waitFor(() => expect(result.current.stats.opened).toBe(1));
 
     act(() => focusManager.setFocused(false));
@@ -407,7 +402,7 @@ describe('newsletter polling', () => {
     wrapper,
   }) => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    const { result } = renderHook(() => usePostNewsletterStats(testPostId), { wrapper });
+    const { result } = renderHook(() => usePostNewsletterStats(), { wrapper });
     await vi.waitFor(() => expect(result.current.stats.opened).toBe(1));
 
     server.use(

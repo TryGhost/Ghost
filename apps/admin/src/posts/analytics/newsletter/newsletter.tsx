@@ -132,7 +132,7 @@ const Newsletter: React.FC = () => {
     topLinks,
     isLoading: isNewsletterStatsLoading,
     refetchTopLinks,
-  } = usePostNewsletterStats(postId);
+  } = usePostNewsletterStats();
   const { mutate: editLinks } = useBulkEditLinks();
 
   // Calculate feedback stats from the post data
