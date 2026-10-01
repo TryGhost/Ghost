@@ -103,7 +103,7 @@ export function FeatureImage({
   return (
     <ImageField
       alt={alt}
-      className="mb-4"
+      className={image ? 'mb-8' : 'mb-4'}
       src={image}
       subject={IMAGE_SUBJECT}
       testId={editorFeatureImage}
@@ -157,7 +157,7 @@ export function FeatureImage({
             'rounded-md border px-1.5 py-0.5 text-2xs font-medium tracking-wide',
             isEditingAlt
               ? 'border-primary bg-primary text-primary-foreground'
-              : 'border-border-default bg-transparent text-text-tertiary',
+              : 'border-border-default bg-transparent text-text-secondary',
           )}
           type="button"
           onClick={() => setIsEditingAlt(!isEditingAlt)}

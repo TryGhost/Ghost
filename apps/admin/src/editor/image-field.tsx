@@ -19,11 +19,12 @@ import type { ImageFieldUpload } from './use-image-field-upload';
 const VARIANTS = {
   bar: {
     empty: 'h-14',
-    dropzone: 'group/dropzone w-auto border-0 bg-transparent px-0 shadow-none hover:bg-transparent',
+    dropzone:
+      'group/dropzone -ml-3 h-(--control-height) w-auto rounded-full border-0 bg-transparent px-3 py-2 shadow-none hover:bg-accent active:bg-accent active:shadow-control-pressed',
     prompt: 'transition-colors group-hover/dropzone:text-foreground',
     icon: LucideIcon.Plus,
     iconClassName: 'size-4',
-    label: 'text-base',
+    label: 'text-base font-medium',
     unsplash: 'static',
   },
   panel: {
@@ -90,7 +91,7 @@ export function ImageField({
       <EmptyContainer
         className={cn(styles.empty, className)}
         data-testid={testId}
-        {...(variant === 'bar' ? { gap: 'lg' as const } : {})}
+        {...(variant === 'bar' ? { gap: 'sm' as const } : {})}
       >
         <ImageUploadDropzone
           accept={ACCEPTED_IMAGE_TYPES}
@@ -130,7 +131,7 @@ export function ImageField({
   }
 
   const preview = (
-    <ImageUploadPreview>
+    <ImageUploadPreview className={variant === 'bar' ? 'rounded-none' : undefined}>
       <ImageUploadImage alt={alt ?? ''} role={alt ? 'img' : 'presentation'} src={src} />
       <ImageUploadActions>
         <ImageUploadAction aria-label={`Remove ${subject}`} onClick={() => onChange(null)}>
@@ -143,7 +144,7 @@ export function ImageField({
   if (!children) {
     return (
       <ImageUpload
-        className={cn(variant === 'panel' && 'max-h-[480px]', className)}
+        className={cn(variant === 'panel' ? 'max-h-[480px]' : 'rounded-none', className)}
         data-testid={testId}
       >
         {preview}
@@ -153,7 +154,9 @@ export function ImageField({
 
   return (
     <Stack className={className} data-testid={testId} gap="sm">
-      <ImageUpload className={cn(variant === 'panel' && 'max-h-[480px]')}>{preview}</ImageUpload>
+      <ImageUpload className={variant === 'panel' ? 'max-h-[480px]' : 'rounded-none'}>
+        {preview}
+      </ImageUpload>
       {children}
     </Stack>
   );

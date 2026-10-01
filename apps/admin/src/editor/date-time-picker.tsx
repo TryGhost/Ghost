@@ -125,7 +125,7 @@ export function DateTimePicker({
           <PopoverTrigger asChild>
             <InputGroupInput
               aria-label={dateLabel}
-              className="min-w-0"
+              className="min-w-0 text-left"
               data-testid={dateTestId}
               disabled={disabled}
               value={current.format(DATE_FORMAT)}

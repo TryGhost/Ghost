@@ -388,7 +388,10 @@ export function PostEditor({
           </Text>
         )}
         <Button
-          className="bg-background/80 text-text-secondary backdrop-blur-sm hover:text-foreground"
+          className={cn(
+            'bg-background/80 text-text-secondary backdrop-blur-sm hover:text-foreground',
+            isAdmin7 && '[&_svg]:stroke-2!',
+          )}
           shape="pill"
           size={isAdmin7 ? 'icon' : 'icon-sm'}
           variant="ghost"

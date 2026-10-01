@@ -1,4 +1,4 @@
-import { Badge, tokenFieldClasses } from '@tryghost/shade/components';
+import { Badge, type BadgeProps, tokenFieldClasses } from '@tryghost/shade/components';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import type { KeyboardEvent, ReactNode, RefObject } from 'react';
@@ -31,7 +31,8 @@ export interface ChipPickerProps<TOption, TChip> {
   /** Whether a row is a chip the field already carries. Keys are the default test. */
   isChosen?: (option: TOption, chip: TChip) => boolean;
   renderOption?: (option: TOption, state: { chosen: boolean }) => ReactNode;
-  chipVariant?: (chip: TChip) => 'default' | 'secondary';
+  chipVariant?: (chip: TChip) => BadgeProps['variant'];
+  chipClassName?: (chip: TChip) => string | undefined;
   onAdd: (option: TOption) => void;
   onRemove: (key: string) => void;
   /** Leaves the chosen rows out of the list rather than listing them ticked. */
@@ -82,6 +83,7 @@ export function ChipPicker<TOption, TChip>({
   isChosen,
   renderOption,
   chipVariant,
+  chipClassName,
   onAdd,
   onRemove,
   hideSelected = false,
@@ -306,7 +308,7 @@ export function ChipPicker<TOption, TChip>({
         {selected.map((chip) => (
           <Badge
             key={getKey(chip)}
-            className={tokenFieldClasses.chip}
+            className={cn(tokenFieldClasses.chip, chipClassName?.(chip))}
             variant={chipVariant?.(chip) ?? 'default'}
             asChild
           >

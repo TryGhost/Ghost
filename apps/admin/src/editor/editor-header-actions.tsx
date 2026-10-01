@@ -292,13 +292,15 @@ function PublishActions({
       {isDraft ? (
         <>
           {inputsError}
-          <Button
+          <PageHeader.Action
+            className="bg-background/80 font-semibold text-state-success backdrop-blur-sm hover:text-state-success disabled:text-text-secondary/60 disabled:opacity-100"
             disabled={!inputs.isReady}
-            size={isAdmin7 ? 'default' : 'sm'}
+            fallbackSize="sm"
+            label="Publish"
             onClick={openPublishFlow}
           >
             Publish
-          </Button>
+          </PageHeader.Action>
           <PostPreviewModal
             {...preview}
             animate={openFlow !== 'publish'}
@@ -322,13 +324,15 @@ function PublishActions({
               {post.status === 'scheduled' ? 'Unschedule' : 'Unpublish'}
             </PageHeader.Action>
           )}
-          <Button
+          <PageHeader.Action
+            className="bg-background/80 font-semibold text-state-success backdrop-blur-sm hover:text-state-success disabled:text-text-secondary/60 disabled:opacity-100"
             disabled={!session.isDirty() || isSaving}
-            size={isAdmin7 ? 'default' : 'sm'}
+            fallbackSize="sm"
+            label="Update"
             onClick={session.dispatchExplicit}
           >
             Update
-          </Button>
+          </PageHeader.Action>
         </>
       )}
 

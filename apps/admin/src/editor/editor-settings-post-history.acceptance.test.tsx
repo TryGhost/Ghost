@@ -575,15 +575,25 @@ describe('Post settings post history', () => {
     expect(saveApi.requests).toHaveLength(0);
   });
 
-  it('closes on Escape', async () => {
-    fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-    await openHistory();
+  it.each(['Escape', 'Close button'])(
+    'closes with %s and returns focus to the sidebar',
+    async (action) => {
+      fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openHistory();
 
-    await userEvent.keyboard('{Escape}');
+      if (action === 'Escape') {
+        await userEvent.keyboard('{Escape}');
+      } else {
+        await editorScreen
+          .postHistoryModal()
+          .getByRole('button', { name: 'Close', exact: true })
+          .click();
+      }
 
-    await expect(editorScreen.postHistoryModal()).toHaveCount(0);
-    await expect.element(editorScreen.settingsPostHistory()).toBeVisible();
-    await expect.element(editorScreen.settingsPostHistory()).toHaveFocus();
-  });
+      await expect(editorScreen.postHistoryModal()).toHaveCount(0);
+      await expect.element(editorScreen.settingsPostHistory()).toBeVisible();
+      await expect.element(editorScreen.settingsPostHistory()).toHaveFocus();
+    },
+  );
 });

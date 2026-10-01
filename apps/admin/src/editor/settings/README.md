@@ -49,8 +49,9 @@ runs full-bleed. Every pane keeps the same width as the section list.
 Only one pane is open at a time. While it is, the panel shows that section
 alone: its heading, the other sections and their rows are all out of the way,
 and the back button or Escape brings them back. The pane's title is the panel's
-heading and its accessible name, and the pane's header stays in place while the
-fields under it scroll. Opening a pane moves focus to its back button, and
+heading and its accessible name. Both the main panel and each pane keep their
+header outside the scrolling fields, so scroll bounce cannot move the title.
+Opening a pane moves focus to its back button, and
 closing one returns focus to the row it was opened from. Closing also blurs the
 focused field before removing it, so Escape commits the edit as the back button
 does.

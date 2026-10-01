@@ -248,7 +248,8 @@ describe('Post editor feature image', () => {
 
   it('clears the alt text and caption along with the image', async () => {
     const saveApi = fakeSavablePost({
-      feature_image: UPLOADED,
+      feature_image:
+        'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"/%3E',
       feature_image_alt: 'Rolling hills',
       feature_image_caption: 'Photo by me',
     });
