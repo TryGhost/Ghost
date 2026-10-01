@@ -38,6 +38,8 @@ import {
   editorStatus,
   editorTitleInput,
   editorWordCount,
+  editorEmailSizeDetails,
+  editorEmailSizeWarning,
   facebookImageUnsplashButton,
   featureImageAltLabel,
   featureImageTkIndicator,
@@ -132,6 +134,9 @@ export const editorScreen = {
   /** An item in Koenig's `/` card menu, by its label. */
   cardMenuItem: (label: string) => page.getByRole('menuitem', { name: label }),
   wordCount: () => page.getByTestId(editorWordCount),
+  /** The footer's clipping flag, and the details hovering it reveals. */
+  emailSizeWarning: () => page.getByTestId(editorEmailSizeWarning),
+  emailSizeDetails: () => page.getByTestId(editorEmailSizeDetails),
   helpLink: () => page.getByRole('link', { name: editorHelpLink }),
   /** The document's own scroll surface, independent of the editor shell. */
   scrollPane: (): HTMLElement => {

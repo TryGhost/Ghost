@@ -10,6 +10,7 @@ import {
   currentUserResponse,
   fakeAdminEndpoint,
   fakeAdminStats,
+  fakeEmailPreview,
   fakeNewsletters,
   fakePages,
   fakePosts,
@@ -80,6 +81,7 @@ function failureBody(status: number) {
 /** Every read the header's publish inputs and preview make beyond the boot table. */
 function publishChrome({ newsletters = 0 } = {}) {
   fakeSnippets([]);
+  fakeEmailPreview();
   fakePosts([]);
   fakePages([]);
   fakePostsListScreen();

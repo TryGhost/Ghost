@@ -6,11 +6,22 @@ import type { RenderAdminAppOptions } from './render-admin-app';
 import { fakeNewsletters, fakePosts, fakeSnippets } from './resources';
 import { fakeAdminEndpoint, fakeEndpoint, type EndpointCapture } from './worker';
 
-/** Supporting reads shared by the editor's header and card configuration. */
+/** Supporting reads shared by the editor's header, card configuration and email size check. */
 export function fakeEditorChrome(): void {
   fakeSnippets([]);
   fakePosts([]);
   fakeNewsletters([]);
+  fakeEmailPreview();
+}
+
+/**
+ * Renders any post's email as `bytes` bytes of HTML, a size the editor estimates
+ * as it is. A later call replaces the earlier one.
+ */
+export function fakeEmailPreview(bytes = 1024): EndpointCapture {
+  return fakeAdminEndpoint('GET', /^\/email_previews\/posts\/[^/]+\//, {
+    email_previews: [{ html: 'a'.repeat(bytes), plaintext: '', subject: 'Hello from React' }],
+  });
 }
 
 /** Saved fields are returned by later reads; each save advances the collision token. */

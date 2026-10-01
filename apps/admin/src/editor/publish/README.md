@@ -167,7 +167,7 @@ The flow is a four-way branch, taken in this order:
 | The user asked for the final review      | `ConfirmStep`                |
 | Otherwise                                | `OptionsStep`                |
 
-`OptionsStep` is an accordion of the three settings — publish type, email recipients, publish time — with at most one section open, plus the read-only row describing a send the post already had. Its continue button waits for `checkLimits()`, since a block landing late demotes the publish type and the user must not carry a stale choice into the review. `ConfirmStep` captures the publish intent on entry, so the copy on the button and in the sentence cannot change while the save is in flight. `CompleteStep` shows the post as a bookmark card and, for a schedule, offers the revert.
+`OptionsStep` is an accordion of the three settings — publish type, email recipients, publish time — with at most one section open, plus the read-only row describing a send the post already had. While `willEmail` holds, the publish type row carries the email size warning when the post's email is estimated at 100kB or more; the estimate is the editor's, described in [the editor README](../README.md#email-size). Its continue button waits for `checkLimits()`, since a block landing late demotes the publish type and the user must not carry a stale choice into the review. `ConfirmStep` captures the publish intent on entry, so the copy on the button and in the sentence cannot change while the save is in flight. `CompleteStep` shows the post as a bookmark card and, for a schedule, offers the revert.
 
 ## Gates
 
@@ -223,7 +223,3 @@ It reads the newsletter from the post rather than from the options machine, beca
 Its email copy also follows the persisted post rather than the draft-only machine. A scheduled post will email when it has a newsletter and no email record yet; a published or sent post counts as emailed only when it is a post with a non-failed email. A scheduled post with an existing email describes that record separately as a previous send.
 
 That reading depends on what the caller supplies. `newsletterName` and `newsletterStatus` need a post read that includes the newsletter relation, and the earlier-send sentence needs `emailCreatedAt`; the editor's read carries both. A caller whose read omits them gets copy that degrades rather than lying — the newsletter goes unnamed, and the sentence drops its date.
-
-## Not here yet
-
-Known gaps, listed so they are not mistaken for decisions: the size of a newsletter is not shown, so a send over the 100kB clipping threshold goes unflagged even though the options step keeps the slot the warning belongs in.

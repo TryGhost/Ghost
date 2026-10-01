@@ -44,6 +44,8 @@ export interface PostEditorProps {
   registerEditorApi?: (api: KoenigInstance | null) => void;
   registerSecondaryApi?: (api: KoenigInstance | null) => void;
   onTkCountChange?: (count: number) => void;
+  /** Rendered in the footer after the word count. */
+  wordCountAccessory?: React.ReactNode;
 }
 
 const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
@@ -116,6 +118,7 @@ export function PostEditor({
   registerEditorApi,
   registerSecondaryApi,
   onTkCountChange,
+  wordCountAccessory,
 }: PostEditorProps) {
   const { darkMode, isAdmin7 } = useFocusContext();
   const isKeyboardOpen = useOnscreenKeyboard();
@@ -414,6 +417,7 @@ export function PostEditor({
             {formatNumber(wordCount)} {wordCount === 1 ? 'word' : 'words'}
           </Text>
         )}
+        {wordCountAccessory}
         <Button
           className={cn(
             'bg-background/80 text-text-secondary backdrop-blur-sm hover:text-foreground',

@@ -147,6 +147,7 @@ export function EditorHeaderActions({
       onSave: saveBeforePreview,
     },
     isPost: postType === 'post',
+    post,
     newsletterSlug: post.newsletter ?? undefined,
     open: previewOpen,
     postId: persistedId,

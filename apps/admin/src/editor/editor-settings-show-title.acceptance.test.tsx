@@ -5,6 +5,7 @@ import {
   activeThemeResponse,
   currentUserResponse,
   fakeAdminEndpoint,
+  fakeEmailPreview,
   fakeNewsletters,
   fakePages,
   fakePosts,
@@ -86,6 +87,7 @@ function submittedPage(capture: EndpointCapture): Record<string, unknown> {
 
 function editorChrome() {
   fakeSnippets([]);
+  fakeEmailPreview();
   fakePosts([]);
   fakePages([]);
   // The header's publish inputs read the newsletter list.
