@@ -7,10 +7,8 @@ import {
   run,
   runsScroller,
   scrollRunsToEnd,
-  setupEmbeddedRootFontSize,
 } from './run-list.test-utils';
 
-setupEmbeddedRootFontSize();
 const endpoint = /\/automations\/first\/runs\/\?/;
 const region = () => page.getByRole('region', { name: 'Automation runs', exact: true });
 const pageOfRuns = (start: number, length: number, next: string | null = null) => ({

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
@@ -17,15 +17,6 @@ const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const LONG_DOCUMENT = buildLexicalParagraph(
   'A long document keeps its editor controls in reach. '.repeat(500),
 );
-let originalFontSize: string;
-
-beforeEach(() => {
-  // The production Ember host sets this baseline in patterns/global.css.
-  // This suite measures the real control sizes; the acceptance host omits that stylesheet.
-  originalFontSize = document.documentElement.style.fontSize;
-  document.documentElement.style.fontSize = '62.5%';
-});
-
 function fakeLongDocument(
   postType: 'post' | 'page',
   status: 'draft' | 'published' | 'scheduled' = 'draft',
@@ -95,7 +86,6 @@ function expectTranslucentSurface(element: Element) {
 }
 
 afterEach(async () => {
-  document.documentElement.style.fontSize = originalFontSize;
   await page.viewport(1280, 800);
 });
 
