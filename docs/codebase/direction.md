@@ -131,6 +131,14 @@ exploring repositories and direct Knex as the replacement for Bookshelf, but
 the complete data-access pattern is not settled yet. Do not create a new
 Bookshelf model or add new business logic to model lifecycle hooks.
 
+This does not mean every domain class or helper needs a top-level service
+directory. Keep service-private implementation with its owner and shared
+support in libraries. Use the
+[service placement rules](../../ghost/core/core/server/services/README.md#what-belongs-here)
+to distinguish an application-owned service root from its supporting code.
+Directory cleanup and standardizing lifecycle interfaces are separate changes;
+neither implies that all existing roots already share one lifecycle contract.
+
 Existing features still depend heavily on Bookshelf. When working in one, move
 behavior behind an explicit service or repository seam before replacing its
 persistence. Do not bypass existing behavior simply to avoid the model.
