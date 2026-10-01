@@ -1,5 +1,5 @@
-import { toMetafieldsResponse } from '../../../../../services/members-metafields/serializers';
-import type { Metafield } from '../../../../../services/members-metafields';
+import { toMetafieldsResponse } from '../../../../../services/metafields/serializers';
+import type { Metafield } from '../../../../../services/metafields';
 
 interface Frame {
   response?: unknown;

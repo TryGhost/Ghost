@@ -1,5 +1,5 @@
-import { ADMIN, actingContext, definitions } from '../../services/members-metafields';
-import { assertDefinable } from '../../services/members-metafields/namespaces';
+import { ADMIN, actingContext, definitions } from '../../services/metafields';
+import { assertDefinable } from '../../services/metafields/namespaces';
 
 const permissionsService = require('../../services/permissions');
 

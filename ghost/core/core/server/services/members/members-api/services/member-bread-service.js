@@ -1,6 +1,6 @@
 const errors = require('@tryghost/errors');
 const _ = require('lodash');
-const { ADMIN, adminWriteOrigin } = require('../../../members-metafields');
+const { ADMIN, adminWriteOrigin } = require('../../../metafields');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
@@ -47,7 +47,7 @@ module.exports = class MemberBREADService {
    * @param {import('../../../settings-helpers/settings-helpers')} deps.settingsHelpers
    * @param {import('./next-payment-calculator')} deps.nextPaymentCalculator
    * @param {IGiftsModule} deps.giftService
-   * @param {import('../../../members-metafields/values-service').MetafieldValuesService} deps.metafieldValues Required: boot builds it before the members service
+   * @param {import('../../../metafields/values-service').MetafieldValuesService} deps.metafieldValues Required: boot builds it before the members service
    * @param {<T>(fn: (transacting: import('knex').Knex.Transaction) => Promise<T>) => Promise<T>} deps.transaction
    *   Runs `fn` in a database transaction.
    */
@@ -94,7 +94,7 @@ module.exports = class MemberBREADService {
    * The member's metafields as this audience may see them, empty if they have none.
    *
    * @param {string} memberId
-   * @param {import('../../../members-metafields').Audience} audience
+   * @param {import('../../../metafields').Audience} audience
    * @param {{transacting?: import('knex').Knex.Transaction}} [options] reads inside this transaction
    * @returns {Promise<Record<string, Record<string, unknown>>>}
    */
@@ -107,7 +107,7 @@ module.exports = class MemberBREADService {
    * empty object.
    *
    * @param {string[]} memberIds
-   * @param {import('../../../members-metafields').Audience} audience
+   * @param {import('../../../metafields').Audience} audience
    * @returns {Promise<Map<string, Record<string, Record<string, unknown>>>>}
    */
   async readMetafieldsForMembers(memberIds, audience) {
@@ -389,7 +389,7 @@ module.exports = class MemberBREADService {
   /**
    * @param {object} data
    * @param {object} [options]
-   * @param {import('../../../members-metafields').Audience | null} options.metafieldsFor
+   * @param {import('../../../metafields').Audience | null} options.metafieldsFor
    *   Who the extra fields a publisher defined are being read for, or null to leave them
    *   off entirely. Null is not the same as "nobody may see them": it means this caller
    *   never shows them, so fetching them is two database queries whose results are thrown
@@ -474,7 +474,7 @@ module.exports = class MemberBREADService {
    * @private
    * @param {object} data the member payload, whose `metafields` key is removed
    * @param {object} options
-   * @returns {Promise<import('../../../members-metafields/values-service').MetafieldPlan | null>}
+   * @returns {Promise<import('../../../metafields/values-service').MetafieldPlan | null>}
    *   null when there is nothing to write
    */
   async planStaffMetafields(data, options) {
@@ -514,7 +514,7 @@ module.exports = class MemberBREADService {
    * @private
    * @param {object} data the member attributes
    * @param {object} options
-   * @param {import('../../../members-metafields/values-service').MetafieldPlan} metafields
+   * @param {import('../../../metafields/values-service').MetafieldPlan} metafields
    */
   async createWithMetafields(data, options, { writes, origin }) {
     return this.transaction(async (transacting) => {
@@ -687,7 +687,7 @@ module.exports = class MemberBREADService {
    *
    * @param {object} data the member attributes to change
    * @param {object} options must name the member by `id`
-   * @param {import('../../../members-metafields/values-service').MetafieldPlan[]} plans
+   * @param {import('../../../metafields/values-service').MetafieldPlan[]} plans
    *   applied in order, so where two write one field the last is what it holds
    */
   async updateWithMetafields(data, options, plans) {
