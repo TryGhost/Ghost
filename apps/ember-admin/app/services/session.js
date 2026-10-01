@@ -73,8 +73,11 @@ export default class SessionService extends ESASessionService {
             });
         }
 
-        // pre-emptively load editor code in the background to avoid loading state when opening editor
-        this.koenig.fetch();
+        // pre-emptively load editor code in the background to avoid loading state when opening editor;
+        // with `editorReact` on, React serves the editor and loads its own Koenig
+        if (this.feature.editorReact !== true) {
+            this.koenig.fetch();
+        }
     }
 
     // Some re-auth paths (`setup()` restoring a session, or `this.user` already

@@ -92,3 +92,9 @@ export const loadKoenig = function (): EditorResource {
   cached ??= createKoenigResource();
   return cached;
 };
+
+/** Loads Koenig ahead of any editor. Only a successful load is shared, so a failure never reaches one. */
+export async function preloadKoenig(): Promise<void> {
+  const koenig = (await fetchKoenigLexical()) as KoenigLexicalModule;
+  cached ??= { read: () => koenig };
+}
