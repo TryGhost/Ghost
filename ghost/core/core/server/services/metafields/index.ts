@@ -1,73 +1,106 @@
+import errors from '@tryghost/errors';
+import type { Knex } from 'knex';
 import { MetafieldDefinitionsService } from './definitions-service';
 import { MetafieldValuesService } from './values-service';
 import { MetafieldBindingsService } from './members/bindings-service';
-import { recordMetafieldAction, type RecordMetafieldAction } from './actions';
-import { resolveMaxDefinitions } from './config';
+import { recordMetafieldAction, type ActionRecorder, type RecordMetafieldAction } from './actions';
+import { maxDefinitionsFor } from './config';
+import { metafieldEntities, type MetafieldEntity } from './entity';
 
 export type { Metafield } from './models';
 export type { RequestContext } from './actions';
 export { actingContext, adminWriteOrigin } from './actions';
 export type { BoundField } from './members/bindings-service';
-export type { MetafieldChangeEvent, WriteOrigin, WrittenBy } from './schema';
+export type { MetafieldChangeEvent } from './members/change-events';
+export type { WriteOrigin, WrittenBy } from './schema';
+export type { MetafieldEntity } from './entity';
 
-// Which door a request came through, which is what decides how much of a member's
-// answers it may see or change. Required wherever that is asked, so a new caller
+// Which door a request came through, which is what decides how much of a record's
+// values it may see or change. Required wherever that is asked, so a new caller
 // has to name itself rather than inherit an answer by default.
 export {
   ADMIN,
   INTERNAL,
   MEMBERS,
   MEMBER_ACCESS,
-  canWrite,
+  type Access,
   type Audience,
   type MemberAccess,
 } from './access';
 
-// Three services from one module, split along aggregate boundaries rather than
-// technical layers: `definitions` owns the field definitions, which belong to the
-// site's settings, `values` owns the per-member values, which belong to the
-// member, and `bindings` owns which of a source's ports writes into which field.
-// The values service reads the definitions table directly for the reference data
-// it needs — a value referencing its definition, not a boundary crossing.
-//
+/**
+ * One entity's metafields, as two services split along aggregate boundaries rather than
+ * technical layers: `definitions` owns the field definitions, which belong to the site's
+ * settings, and `values` owns each record's values, which belong to the record. The
+ * values service reads the definitions table directly for the reference data it needs —
+ * a value referencing its definition, not a boundary crossing.
+ */
+export interface EntityMetafields {
+  entity: MetafieldEntity;
+  definitions: MetafieldDefinitionsService;
+  values: MetafieldValuesService;
+}
+
+function createMetafields(
+  entity: MetafieldEntity,
+  {
+    knex,
+    Action,
+    config,
+  }: { knex: Knex; Action: ActionRecorder; config: { get(key: string): unknown } },
+): EntityMetafields {
+  const recordAction: RecordMetafieldAction = ({ context, verb, subject, details }) =>
+    recordMetafieldAction({ Action, entity, context, verb, subject, details });
+  // Resolved here, not in the service: reading config is this module's job, and the
+  // services are handed the ceiling.
+  const getMaxDefinitions = maxDefinitionsFor(entity, config);
+
+  return {
+    entity,
+    definitions: new MetafieldDefinitionsService({ knex, entity, recordAction, getMaxDefinitions }),
+    values: new MetafieldValuesService({ knex, entity, getMaxDefinitions }),
+  };
+}
+
 // Constructed by init() at boot, not at import: knex is only available once the DB has connected.
-export let definitions: MetafieldDefinitionsService | undefined;
-export let values: MetafieldValuesService | undefined;
+const byTable = new Map<string, EntityMetafields>();
+
+/**
+ * Routes what a checkout collects into members' fields. Only members are created by a
+ * checkout, so only members have bindings.
+ */
 export let bindings: MetafieldBindingsService | undefined;
 
+/** Builds the metafields of every entity the schema gives metafield tables to. */
 export function init(): void {
-  // The three are constructed together below, so checking all of them keeps the "all or
-  // none" invariant explicit rather than trusting one to stand in for the rest.
-  if (definitions && values && bindings) {
+  if (byTable.size > 0) {
     return;
   }
 
   const { knex } = require('../../data/db');
   const models = require('../../models');
-
-  const recordAction: RecordMetafieldAction = ({ context, verb, subject, details }) =>
-    recordMetafieldAction({ Action: models.Action, context, verb, subject, details });
-
-  // Resolved here, not in the service: reading config is this module's job, and
-  // the service is handed a number. A getter rather than a value because the
-  // ceiling is an operator setting that can change between requests, and a Ghost
-  // container holds no state across them.
   const config = require('../../../shared/config');
+  const deps = { knex, Action: models.Action, config };
 
-  definitions = new MetafieldDefinitionsService({
-    knex,
-    recordAction,
-    getMaxDefinitions: () => resolveMaxDefinitions(config.get('members:metafields:maxDefinitions')),
-  });
-  // The values service reads the field definitions straight from the table, so
-  // it needs knex and the same ceiling — no handle on the definitions service.
-  values = new MetafieldValuesService({
-    knex,
-    getMaxDefinitions: () => resolveMaxDefinitions(config.get('members:metafields:maxDefinitions')),
-  });
+  for (const entity of metafieldEntities()) {
+    byTable.set(entity.table, createMetafields(entity, deps));
+  }
 
-  // Built after the values, which is what a binding routes into. It has no handle on the
-  // definitions: making a field is not part of binding to one, so a caller that needs both
-  // asks for both.
-  bindings = new MetafieldBindingsService({ knex, values });
+  // No handle on the definitions: making a field is not part of binding to one, so a
+  // caller that needs both asks for both.
+  bindings = new MetafieldBindingsService({ knex, values: metafieldsFor('members').values });
+}
+
+/**
+ * The metafields of the entity whose records live in `table`. Throws for a table the schema
+ * gives no metafield tables to, or before boot has built them.
+ */
+export function metafieldsFor(table: string): EntityMetafields {
+  const metafields = byTable.get(table);
+  if (!metafields) {
+    throw new errors.IncorrectUsageError({
+      message: `${table} has no metafields: the schema gives it none, or they have not been built yet.`,
+    });
+  }
+  return metafields;
 }

@@ -1,4 +1,4 @@
-import { ADMIN, actingContext, definitions } from '../../services/metafields';
+import { ADMIN, actingContext, metafieldsFor } from '../../services/metafields';
 import { assertDefinable } from '../../services/metafields/namespaces';
 
 const permissionsService = require('../../services/permissions');
@@ -52,7 +52,7 @@ const controller = {
     validation: { options: { namespace: { required: true } } },
     permissions: false,
     query(frame: Frame) {
-      return definitions!.browse(
+      return metafieldsFor('members').definitions.browse(
         {
           namespace: frame.options.namespace,
           filter: frame.options.filter,
@@ -68,7 +68,11 @@ const controller = {
     validation: { options: { namespace: { required: true }, key: { required: true } } },
     permissions: false,
     query(frame: Frame) {
-      return definitions!.read(frame.options.namespace, frame.options.key, ADMIN);
+      return metafieldsFor('members').definitions.read(
+        frame.options.namespace,
+        frame.options.key,
+        ADMIN,
+      );
     },
   },
 
@@ -81,7 +85,7 @@ const controller = {
       return canDefine(frame, (f) => canThis(f).add.member_custom_field());
     },
     query(frame: Frame) {
-      return definitions!.add(
+      return metafieldsFor('members').definitions.add(
         actingContext(frame.options.context),
         frame.options.namespace,
         frame.data.members_metafields,
@@ -97,7 +101,7 @@ const controller = {
       return canDefine(frame, (f) => canThis(f).edit.member_custom_field());
     },
     query(frame: Frame) {
-      return definitions!.reorder(
+      return metafieldsFor('members').definitions.reorder(
         actingContext(frame.options.context),
         frame.options.namespace,
         frame.data.members_metafields,
@@ -113,7 +117,7 @@ const controller = {
       return canDefine(frame, (f) => canThis(f).edit.member_custom_field(f.options.key));
     },
     query(frame: Frame) {
-      return definitions!.edit(
+      return metafieldsFor('members').definitions.edit(
         actingContext(frame.options.context),
         frame.options.namespace,
         frame.options.key,
@@ -131,7 +135,7 @@ const controller = {
       return canDefine(frame, (f) => canThis(f).destroy.member_custom_field(f.options.key));
     },
     async query(frame: Frame) {
-      await definitions!.destroy(
+      await metafieldsFor('members').definitions.destroy(
         actingContext(frame.options.context),
         frame.options.namespace,
         frame.options.key,
