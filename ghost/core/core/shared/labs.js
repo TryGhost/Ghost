@@ -63,6 +63,7 @@ const PRIVATE_FEATURES = [
   'selfServeArchives',
   'machinePayments',
   'editorReact',
+  'authReact',
   'globalSearchReact',
   'dunningWarnings',
 ];

@@ -11,6 +11,7 @@ export type {
 } from './hooks/use-form';
 export { default as useHandleError } from './hooks/use-handle-error';
 export { useFeatureFlag } from './hooks/use-feature-flag';
+export { useFeatureFlagOverrides } from './providers/feature-flag-overrides-context';
 export { useHostLimits } from './hooks/use-host-limits';
 export type { HostLimits } from './hooks/use-host-limits';
 export { useLimiter } from './hooks/use-limiter';

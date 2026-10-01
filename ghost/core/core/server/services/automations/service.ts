@@ -80,7 +80,7 @@ export class AutomationsService {
       try {
         const schedulerPollTime = getSchedulerPollTime(date, siteIdentifier);
         const key = await internalKeys.get('ghost-scheduler');
-        schedulerAdapter.schedule(
+        await schedulerAdapter.schedule(
           buildSignedJob({
             apiUrl,
             path: ['automations', 'poll'],

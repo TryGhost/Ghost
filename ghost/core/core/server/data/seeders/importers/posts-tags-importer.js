@@ -16,7 +16,7 @@ class PostsTagsImporter extends TableImporter {
 
     await this.importForEach(
       posts,
-      quantity
+      quantity !== undefined
         ? quantity / posts.length
         : () =>
             faker.number.int({

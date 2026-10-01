@@ -99,6 +99,19 @@ export class EmailAnalyticsServiceWrapper {
       return;
     }
 
+    // These totals describe this successful run only. Writes committed by a failed
+    // run are not carried forward, and replayed timestamps do not count as new.
+    const storedEventCounts =
+      this.#logName === 'newsletters'
+        ? {
+            new_recipient_event_count:
+              result.storedDelivered + result.storedOpened + result.storedPermanentFailed,
+            new_delivered_count: result.storedDelivered,
+            new_opened_count: result.storedOpened,
+            new_permanent_failed_count: result.storedPermanentFailed,
+          }
+        : null;
+
     const throughput = totalDurationMs > 0 ? eventCount / (totalDurationMs / 1000) : 0;
     const apiPercent =
       totalDurationMs > 0 ? Math.round((apiPollingTimeMs / totalDurationMs) * 100) : 0;
@@ -112,6 +125,11 @@ export class EmailAnalyticsServiceWrapper {
       `[Background Job] ${this.#jobType} processed ${jobType} | ${this.#logPrefix}`,
       `${eventCount} events in ${(totalDurationMs / 1000).toFixed(1)}s (${throughput.toFixed(2)} events/s)`,
       ...(lagSeconds === null ? [] : [`Lag: ${(lagSeconds / 60).toFixed(1)}m`]),
+      ...(storedEventCounts
+        ? [
+            `New recipient events: ${storedEventCounts.new_recipient_event_count} (opened=${result.storedOpened} delivered=${result.storedDelivered} failed=${result.storedPermanentFailed})`,
+          ]
+        : []),
       `Mode: ${batchMode}`,
       `Timings: API ${(apiPollingTimeMs / 1000).toFixed(1)}s (${apiPercent}%) / Processing ${(processingTimeMs / 1000).toFixed(1)}s (${processingPercent}%) / Aggregation ${(aggregationTimeMs / 1000).toFixed(1)}s (${aggregationPercent}%) [Email ${(emailAggregationTimeMs / 1000).toFixed(1)}s / Member ${(memberAggregationTimeMs / 1000).toFixed(1)}s]`,
       `Events: opened=${result.opened} delivered=${result.delivered} failed=${result.permanentFailed + result.temporaryFailed} unprocessable=${result.unprocessable}`,
@@ -124,6 +142,7 @@ export class EmailAnalyticsServiceWrapper {
           job_type: this.#jobType,
           task: jobType,
           event_count: eventCount,
+          ...storedEventCounts,
           duration_ms: totalDurationMs,
           ...(lagSeconds === null ? {} : { lag_seconds: lagSeconds }),
         },

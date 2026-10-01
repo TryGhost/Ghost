@@ -56,9 +56,9 @@ export function CodeInjectionSection({ session, postType }: CodeInjectionSection
       id="code-injection"
       label="Code injection"
       title="Code injection"
-      wide
     >
       <CodeEditor
+        clearBg={false}
         extensions={EDITOR_EXTENSIONS}
         height={EDITOR_HEIGHT}
         title={<EditorLabel helper="{{ghost_head}}" text={`${name} header`} />}
@@ -68,6 +68,7 @@ export function CodeInjectionSection({ session, postType }: CodeInjectionSection
         onChange={(value) => session.stageSettings({ codeinjection_head: value || null })}
       />
       <CodeEditor
+        clearBg={false}
         extensions={EDITOR_EXTENSIONS}
         height={EDITOR_HEIGHT}
         title={<EditorLabel helper="{{ghost_foot}}" text={`${name} footer`} />}

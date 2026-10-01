@@ -51,11 +51,12 @@ function CaptionMount({
       onError={reportKoenigError}
     >
       <KoenigComposableEditor
-        className="koenig-lexical-editor-input"
+        className="koenig-lexical-editor-input font-sans! text-base! leading-6 [&_.kg-prose]:text-base! [&_.kg-prose_p]:m-0 [&_.kg-prose_p]:font-sans! [&_.kg-prose_p]:text-base! [&_.kg-prose_p]:leading-6"
         darkMode={darkMode}
+        inheritStyles={true}
         isSnippetsEnabled={false}
         markdownTransformers={MINIMAL_TRANSFORMERS}
-        placeholderClassName="koenig-lexical-editor-input-placeholder"
+        placeholderClassName="koenig-lexical-editor-input-placeholder font-sans! text-base! leading-6"
         placeholderText={placeholder}
         registerAPI={registerAPI}
         singleParagraph={true}
@@ -75,7 +76,7 @@ export function FeatureImageCaption(props: FeatureImageCaptionProps) {
   const editor = loadKoenig();
 
   return (
-    <div className="koenig-react-editor koenig-lexical flex-1">
+    <div className="koenig-react-editor flex-1">
       <ErrorBoundary name="the feature image caption" onError={reportKoenigRenderError}>
         <Suspense fallback={null}>
           <CaptionMount {...props} editor={editor} />

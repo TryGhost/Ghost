@@ -1,7 +1,9 @@
 /** Acceptance-harness public surface — see README.md for the spec anatomy. */
+export { authToken, fakeSetupStatus, plainText, signedOut } from './auth';
 export { fakeAnalyticsOverview } from './analytics';
 export {
   UNSPLASH_PICKED,
+  editorReadLanded,
   fakeEditorChrome,
   fakeEditorPost,
   fakeUnsplashPhotos,
@@ -48,7 +50,13 @@ export type {
   ResourceSemantics,
   RespondWith,
 } from './resources';
-export { allowUnhandledRequests, fakeAdminEndpoint, fakeEndpoint, fakeSitePreview } from './worker';
+export {
+  allowUnhandledRequests,
+  fakeAdminEndpoint,
+  fakeEndpoint,
+  fakeSitePreview,
+  settleRequests,
+} from './worker';
 export type {
   CapturedEndpointRequest,
   EndpointCapture,
