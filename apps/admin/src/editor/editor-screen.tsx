@@ -493,6 +493,9 @@ function useLexicalConversion(postType: PostType) {
 function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   // A create replaces the URL with the id it acquired; the load must not restart.
   const [openedId] = useState(id);
+  // Access and conversion are judged on the read that opens the editor. Later
+  // reads belong to its session; unmounting the editor would dispose it.
+  const [openedWith, setOpenedWith] = useState<EditorRecord>();
   const navigate = useNavigate();
   const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const postQuery = useEditorPost(openedId ?? '', {
@@ -511,22 +514,28 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   const { state: conversion, convert } = useLexicalConversion(postType);
   const listPath = postType === 'page' ? '/pages' : '/posts';
 
-  const returnToList = !!currentUser && !!loaded && shouldReturnToList(currentUser, loaded);
+  const opening = openedWith ? undefined : loaded;
+  const returnToList = !!currentUser && !!opening && shouldReturnToList(currentUser, opening);
   useEffect(() => {
     if (returnToList) {
       navigate(listPath, { replace: true });
     }
   }, [returnToList, navigate, listPath]);
 
-  const needsConversion = !!currentUser && !!loaded?.mobiledoc && !loaded.lexical && !returnToList;
+  const needsConversion =
+    !!currentUser && !!opening?.mobiledoc && !opening.lexical && !returnToList;
   useEffect(() => {
-    if (needsConversion && loaded && conversion?.id !== loaded.id) {
-      void convert(loaded);
+    if (needsConversion && opening && conversion?.id !== opening.id) {
+      void convert(opening);
     }
-  }, [needsConversion, loaded, conversion?.id, convert]);
+  }, [needsConversion, opening, conversion?.id, convert]);
 
   if (!openedId) {
     return <EditorSurface createdId={id} postType={postType} />;
+  }
+
+  if (openedWith) {
+    return <EditorSurface postType={postType} record={openedWith} />;
   }
 
   // A failed refetch keeps the last post read; unmounting the editor would dispose its session.
@@ -573,6 +582,8 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
     record = converted.record;
   }
 
+  // Set while rendering: the latch holds from the render that opens the editor.
+  setOpenedWith(record);
   return <EditorSurface postType={postType} record={record} />;
 }
 

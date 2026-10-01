@@ -4,15 +4,18 @@ import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
   currentRoute,
+  currentUserResponse,
   editorReadLanded,
   fakeAdminEndpoint,
   fakeEditorChrome,
   post,
   renderAdminApp,
+  staffRole,
   submittedPost,
   unsavedChangesGuarded,
   withoutAutosave,
   type Post,
+  type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 import { deferred } from '@/utils/deferred';
@@ -23,6 +26,9 @@ const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const MY_SAVE_AT = '2026-01-01T00:00:01.000Z';
 const THEIR_SAVE_AT = '2026-01-01T00:00:02.000Z';
 const READ_ROUTE = new RegExp(`^/posts/${POST_ID}/\\?`);
+const CURRENT_USER_ID = String(currentUserResponse().users[0].id);
+const MOBILEDOC =
+  '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"Legacy"]]]]}';
 
 const UPDATE_COLLISION = {
   errors: [
@@ -34,11 +40,39 @@ const UPDATE_COLLISION = {
   ],
 };
 
+// Core's refusal of a write the role no longer allows, checked before the collision token.
+const NO_PERMISSION = {
+  errors: [
+    {
+      type: 'NoPermissionError',
+      message: 'Permission error, cannot edit post.',
+      context: 'You do not have permission to perform this action',
+    },
+  ],
+};
+
+type Role = 'Author' | 'Contributor';
+
+function bootAs(role: Role): RenderAdminAppOptions {
+  const me = currentUserResponse();
+  me.users[0].roles = [staffRole({ name: role })];
+  return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+}
+
+/** Core's rule for these roles: only posts they author, and for a Contributor only drafts. */
+function mayEdit(role: Role, stored: Post): boolean {
+  const authorIds = (stored.authors as Array<{ id: string }> | undefined)?.map(({ id }) => id);
+  return !!authorIds?.includes(CURRENT_USER_ID) && (role === 'Author' || stored.status === 'draft');
+}
+
 /**
  * A post two writers share: reads serve the stored copy and a save on a stale token is refused.
  * Core is laxer: it refuses one only when a posts-row column or its tags, authors or tiers change.
  */
-function fakeSharedPost(overrides: Partial<Post> = {}) {
+function fakeSharedPost(
+  overrides: Partial<Post> = {},
+  { canSave = () => true }: { canSave?: (stored: Post) => boolean } = {},
+) {
   fakeEditorChrome();
   fakeAdminEndpoint('GET', /^\/slugs\/post\//, ({ url }) => ({
     slugs: [{ slug: decodeURIComponent(url.split('/slugs/post/')[1].split('/')[0]) }],
@@ -70,6 +104,9 @@ function fakeSharedPost(overrides: Partial<Post> = {}) {
   });
   const saveApi = fakeAdminEndpoint('PUT', READ_ROUTE, ({ body }) => {
     const submitted = (body as { posts: Partial<Post>[] }).posts[0];
+    if (!canSave(stored)) {
+      return Response.json(NO_PERMISSION, { status: 403 });
+    }
     if (submitted.updated_at !== stored.updated_at) {
       return Response.json(UPDATE_COLLISION, { status: 409 });
     }
@@ -108,7 +145,14 @@ async function appendToBody(text: string) {
 }
 
 /** This tab's title save lands; the other writer's save lands before its refetch is read. */
-async function saveThenTheySave(shared: SharedPost, save: () => Promise<void>) {
+async function saveThenTheySave(
+  shared: SharedPost,
+  save: () => Promise<void>,
+  theirChanges: Partial<Post> = {
+    title: 'Their title',
+    lexical: buildLexicalParagraph('Their words'),
+  },
+) {
   await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
   const releaseReads = shared.holdReads();
 
@@ -117,10 +161,7 @@ async function saveThenTheySave(shared: SharedPost, save: () => Promise<void>) {
   await expect.poll(() => shared.saveApi.requests.length).toBe(1);
   await expect.poll(() => shared.readApi.requests.length).toBe(2);
 
-  shared.theySave({
-    title: 'Their title',
-    lexical: buildLexicalParagraph('Their words'),
-  });
+  shared.theySave(theirChanges);
   return releaseReads;
 }
 
@@ -242,6 +283,62 @@ describe('Post editor refetch', () => {
     await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
     await expect(editorScreen.conflictBanner()).toHaveCount(0);
     expect(shared.stored().lexical).toContain('Hello from React and more');
+  });
+
+  it.each<[string, Role, Partial<Post>]>([
+    [
+      'publishes a Contributor’s draft',
+      'Contributor',
+      { status: 'published', published_at: '2026-01-01T00:00:02.000Z' },
+    ],
+    ['drops the Author from its authors', 'Author', { authors: [{ id: 'other-user' }] }],
+  ])(
+    'keeps the editor and the unsaved text when another writer %s, and the next save is refused',
+    async (_change, role, theirChanges) => {
+      const shared = fakeSharedPost(
+        { authors: [{ id: CURRENT_USER_ID }] },
+        { canSave: (stored) => mayEdit(role, stored) },
+      );
+      const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, bootAs(role));
+      const releaseReads = await saveThenTheySave(shared, saveShortcut, theirChanges);
+      const editor = editorScreen.root().element();
+      await appendToBody(' and mine');
+
+      releaseReads();
+      await editorReadLanded(queryClient, shared.stored());
+
+      expect(editor.isConnected).toBe(true);
+      expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and mine');
+
+      await saveShortcut();
+
+      await expect
+        .element(editorScreen.saveErrorBanner())
+        .toHaveTextContent('You do not have permission to perform this action');
+      expect(shared.saveApi.requests).toHaveLength(2);
+      await expect.element(editorScreen.titleInput()).toHaveValue('My title');
+      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and mine');
+    },
+  );
+
+  it('keeps the editor open when a refetch brings a version stored only as mobiledoc', async () => {
+    const shared = fakeSharedPost();
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    const releaseReads = await saveThenTheySave(shared, saveShortcut, {
+      lexical: null,
+      mobiledoc: MOBILEDOC,
+    });
+    const editor = editorScreen.root().element();
+    await appendToBody(' and mine');
+
+    releaseReads();
+    await editorReadLanded(queryClient, shared.stored());
+
+    expect(editor.isConnected).toBe(true);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and mine');
+    // A conversion would be a second write.
+    expect(shared.saveApi.requests).toHaveLength(1);
   });
 });
 
