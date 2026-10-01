@@ -1,4 +1,5 @@
 import { afterAll, beforeAll } from 'vitest';
+import { page } from 'vitest/browser';
 import { fakeAdminEndpoint } from '@test-utils/acceptance';
 import type {
   AutomationDetail,
@@ -77,3 +78,11 @@ export const run = (overrides: Partial<AutomationRun> = {}): AutomationRun => ({
   member: { id: 'member', name: 'Noah Bennett', email: 'noah@example.com' },
   ...overrides,
 });
+
+export const runsScroller = () => page.getByTestId('automation-runs-scroll').element();
+
+export const scrollRunsToEnd = () => {
+  const scroller = runsScroller();
+  scroller.scrollTop = scroller.scrollHeight;
+  scroller.dispatchEvent(new Event('scroll'));
+};

@@ -2,11 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act } from 'react';
 import { run, setupEmbeddedRootFontSize } from './run-list.test-utils';
 
-setupEmbeddedRootFontSize();
 import { QueryCache } from '@tanstack/react-query';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import type { AutomationPerformanceStats } from '@tryghost/admin-x-framework/api/automations';
+
+setupEmbeddedRootFontSize();
 
 const flags = {
   labs: { automations: true, automationRunAnalytics: true, automationsTinybirdSync: true },

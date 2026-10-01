@@ -127,7 +127,7 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
       >
         {/* Keep content at its full width while the sidebar animates open or closed. */}
         <Stack
-          className="h-full w-[min(480px,calc(100cqw-6rem))] overflow-hidden border-r border-border-default px-6 py-4"
+          className="h-full w-[min(480px,calc(100cqw-6rem))] overflow-y-auto border-r border-border-default px-6 py-4"
           gap="none"
         >
           <Inline className="h-9 pl-10" gap="none" justify="between">

@@ -14,7 +14,10 @@ const compareEntry = (a: AutomationRun, b: AutomationRun) => {
   if (byTime !== 0) {
     return Math.sign(byTime);
   }
-  return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+  if (a.id === b.id) {
+    return 0;
+  }
+  return a.id < b.id ? -1 : 1;
 };
 
 export const isSortedByEntry = (runs: AutomationRun[], direction: RunSortDirection) => {
@@ -36,5 +39,3 @@ export const mapAutomationRun = (run: AutomationRun) => ({
   failed: run.failed,
   statusLabel: run.failed ? 'Exited early — Failed' : statusLabels[run.status],
 });
-
-export const mapAutomationRuns = (runs: AutomationRun[]) => runs.map(mapAutomationRun);

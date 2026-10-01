@@ -1,6 +1,9 @@
 import type { PerformanceDateRange } from '@/automations/utils/performance-date-range';
 import React, { forwardRef, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import type { AutomationRunStatusFilter } from '@tryghost/admin-x-framework/api/automations';
+import type {
+  AutomationRun,
+  AutomationRunStatusFilter,
+} from '@tryghost/admin-x-framework/api/automations';
 import {
   Button,
   Skeleton,
@@ -56,6 +59,53 @@ const PlaceholderRow = forwardRef<HTMLTableRowElement, { 'data-index': number }>
   },
 );
 
+const RunRow = forwardRef<HTMLTableRowElement, { run: AutomationRun; 'data-index': number }>(
+  function RunRow({ run: data, ...props }, ref) {
+    const run = mapAutomationRun(data);
+    const { Icon, color } = statusIcons[run.status];
+    return (
+      <TableRow ref={ref} {...props}>
+        <TableCell className="h-[72px] p-4">
+          <Stack className="min-w-0" gap="none">
+            <span className="truncate font-medium" title={run.memberName}>
+              {run.memberName}
+            </span>
+            {run.memberEmail && (
+              <span className="truncate text-muted-foreground" title={run.memberEmail}>
+                {run.memberEmail}
+              </span>
+            )}
+          </Stack>
+        </TableCell>
+        <TableCell className="p-4">
+          <time className="block truncate" dateTime={run.enteredAt} title={run.enteredDescription}>
+            {run.enteredLabel}
+          </time>
+        </TableCell>
+        <TableCell className="p-4 text-center">
+          <Inline
+            aria-label={run.statusLabel}
+            as="span"
+            justify="center"
+            role="img"
+            title={run.statusLabel}
+          >
+            <span className="relative">
+              <Icon aria-hidden="true" className={`size-4 ${color}`} />
+              {run.failed && (
+                <span
+                  aria-hidden="true"
+                  className="absolute -top-1 -right-1 size-1.5 rounded-full bg-state-danger"
+                />
+              )}
+            </span>
+          </Inline>
+        </TableCell>
+      </TableRow>
+    );
+  },
+);
+
 export const RunList: React.FC<{
   automationId: string;
   queryScope: string;
@@ -64,7 +114,7 @@ export const RunList: React.FC<{
   direction: RunSortDirection;
   onDirectionChange: (direction: RunSortDirection) => void;
 }> = ({ automationId, queryScope, status, dateRange, direction, onDirectionChange }) => {
-  const { runs, isLoading, isError, retry, canLoadMore, isLoadingMore, isMoreError, loadMore } =
+  const { runs, isLoading, isError, retry, canLoadMore, isLoadingMore, isNextPageError, loadMore } =
     useAutomationRuns(automationId, status, direction, queryScope, dateRange);
   const [showLoading, setShowLoading] = useState(false);
   useEffect(() => {
@@ -106,11 +156,15 @@ export const RunList: React.FC<{
     <Stack
       aria-busy={isLoading}
       aria-label="Automation runs"
-      className="min-h-0 flex-1"
+      className="min-h-[216px] flex-1"
       gap="sm"
       role="region"
     >
-      <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
+      <div
+        ref={scrollRef}
+        className="min-h-0 flex-1 overflow-y-auto"
+        data-testid="automation-runs-scroll"
+      >
         <Table aria-label="Automation runs" className="table-fixed">
           <TableHeader className="sticky top-0 z-10 bg-surface-elevated">
             <TableRow>
@@ -154,52 +208,7 @@ export const RunList: React.FC<{
               if (virtualItem.index > items.length - 1) {
                 return <PlaceholderRow key={key} {...props} />;
               }
-              const run = mapAutomationRun(item);
-              const { Icon, color } = statusIcons[run.status];
-              return (
-                <TableRow key={run.id} {...props}>
-                  <TableCell className="h-[72px] p-4">
-                    <Stack className="min-w-0" gap="none">
-                      <span className="truncate font-medium" title={run.memberName}>
-                        {run.memberName}
-                      </span>
-                      {run.memberEmail && (
-                        <span className="truncate text-muted-foreground" title={run.memberEmail}>
-                          {run.memberEmail}
-                        </span>
-                      )}
-                    </Stack>
-                  </TableCell>
-                  <TableCell className="p-4">
-                    <time
-                      className="block truncate"
-                      dateTime={run.enteredAt}
-                      title={run.enteredDescription}
-                    >
-                      {run.enteredLabel}
-                    </time>
-                  </TableCell>
-                  <TableCell className="p-4 text-center">
-                    <Inline
-                      aria-label={run.statusLabel}
-                      as="span"
-                      justify="center"
-                      role="img"
-                      title={run.statusLabel}
-                    >
-                      <span className="relative">
-                        <Icon aria-hidden="true" className={`size-4 ${color}`} />
-                        {run.failed && (
-                          <span
-                            aria-hidden="true"
-                            className="absolute -top-1 -right-1 size-1.5 rounded-full bg-state-danger"
-                          />
-                        )}
-                      </span>
-                    </Inline>
-                  </TableCell>
-                </TableRow>
-              );
+              return <RunRow key={item.id} run={item} {...props} />;
             })}
             <SpacerRow height={spaceAfter} />
           </TableBody>
@@ -234,7 +243,7 @@ export const RunList: React.FC<{
             </Button>
           </Stack>
         )}
-        {isMoreError && (
+        {isNextPageError && (
           <Stack className="px-4 py-6" gap="sm" role="alert">
             <Text size="sm" tone="secondary">
               Could not load more runs

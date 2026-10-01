@@ -7,6 +7,7 @@ import {
   prepareStatuses,
   run,
   setupEmbeddedRootFontSize,
+  runsScroller,
 } from './run-list.test-utils';
 
 setupEmbeddedRootFontSize();
@@ -101,7 +102,7 @@ describe('Automation run list', () => {
       expect(
         runsRegion().element().querySelectorAll('tbody tr[aria-hidden="true"][data-index]'),
       ).toHaveLength(10);
-      const scroller = runsRegion().element().querySelector('div.overflow-y-auto')!;
+      const scroller = runsScroller();
       expect(scroller.scrollHeight).toBeGreaterThan(scroller.clientHeight);
       await close();
     } finally {

@@ -141,10 +141,12 @@ clears the status filter. Each selection fetches fresh rows while the chart and
 counts stay unchanged. The Entered heading switches between newest and oldest
 first. Scrolling loads additional fifty-run pages; changing status, direction,
 or dates starts from the first page. A failed next page retains the loaded rows
-and retries only that page. Previous rows remain visible during status requests, with
+and retries only that page. Previous rows remain visible during status and sort requests, with
 a delayed loading indicator. Date changes clear previous rows and load both the
 summary and list for the selected period. Loading without existing rows shows ten
-skeleton rows, with a loading announcement for screen readers.
+skeleton rows, with a loading announcement for screen readers. The list scrolls
+within the panel; on short windows the panel can also scroll so the chart and
+cards never squeeze the list out of view.
 
 Empty-state messages appear only in the list: "No entries yet" for all time,
 "No entries in this period" for a date filter, and "No matching entries" for a

@@ -34,7 +34,7 @@ export const useAutomationRuns = (
   );
   const runs = unsupportedSort ? undefined : loaded;
   // A failed later page keeps the loaded rows and retries only itself.
-  const moreFailed = !query.isFetching && query.isFetchNextPageError;
+  const nextPageFailed = !query.isFetching && query.isFetchNextPageError;
   const failed = !query.isFetching && query.isError && !query.isFetchNextPageError;
   const { fetchNextPage } = query;
   // Scrolling can ask repeatedly; never cancel and restart a page already in flight.
@@ -45,13 +45,12 @@ export const useAutomationRuns = (
     runs,
     isLoading: query.isFetching && !query.isFetchingNextPage,
     isError: failed || unsupportedSort,
-    unsupportedSort,
     retry: () => {
       void query.refetch();
     },
-    canLoadMore: !!runs && !query.isPlaceholderData && query.hasNextPage && !moreFailed,
+    canLoadMore: !!runs && !query.isPlaceholderData && query.hasNextPage && !nextPageFailed,
     isLoadingMore: query.isFetchingNextPage,
-    isMoreError: moreFailed,
+    isNextPageError: nextPageFailed,
     loadMore,
   };
 };
