@@ -126,6 +126,86 @@ describe('Forms Service', function () {
             assert(addStub.calledOnce);
             assert.equal(addStub.firstCall.args[0].form_id, 'form_1');
         });
+
+        it('silently filters out bot submissions when honeypot field is filled', async function () {
+            sinon.stub(models.Form, 'findOne').resolves({
+                id: 'form_hp',
+                get(key) {
+                    if (key === 'status') {
+                        return 'active';
+                    }
+                    if (key === 'schema') {
+                        return JSON.stringify({fields: [{id: 'name', label: 'Name'}]});
+                    }
+                    return null;
+                }
+            });
+
+            const addStub = sinon.stub(models.FormSubmission, 'add');
+
+            const result = await formsService.submitForm('form_hp', {name: 'SpamBot', _hp: 'spam-link-payload'});
+            assert.equal(result.id, 'bot_filtered');
+            assert.equal(addStub.called, false);
+        });
+
+        it('rejects submission exceeding maximum field limit', async function () {
+            sinon.stub(models.Form, 'findOne').resolves({
+                id: 'form_overflow',
+                get(key) {
+                    if (key === 'status') {
+                        return 'active';
+                    }
+                    if (key === 'schema') {
+                        return JSON.stringify({fields: []});
+                    }
+                    return null;
+                }
+            });
+
+            const excessData = {};
+            for (let i = 0; i < 55; i++) {
+                excessData[`field_${i}`] = `value_${i}`;
+            }
+
+            await assert.rejects(
+                async () => {
+                    await formsService.submitForm('form_overflow', excessData);
+                },
+                (err) => {
+                    assert(err instanceof errors.BadRequestError);
+                    assert(err.message.includes('Too many fields'));
+                    return true;
+                }
+            );
+        });
+
+        it('rejects submission exceeding maximum payload length', async function () {
+            sinon.stub(models.Form, 'findOne').resolves({
+                id: 'form_huge',
+                get(key) {
+                    if (key === 'status') {
+                        return 'active';
+                    }
+                    if (key === 'schema') {
+                        return JSON.stringify({fields: []});
+                    }
+                    return null;
+                }
+            });
+
+            const hugePayload = 'a'.repeat(100001);
+
+            await assert.rejects(
+                async () => {
+                    await formsService.submitForm('form_huge', hugePayload);
+                },
+                (err) => {
+                    assert(err instanceof errors.BadRequestError);
+                    assert(err.message.includes('maximum allowed size'));
+                    return true;
+                }
+            );
+        });
     });
 
     describe('exportSubmissionsCSV', function () {
@@ -284,6 +364,31 @@ describe('Forms Service', function () {
             assert(script.includes('ghost-form-success'));
             assert(script.includes('celebrationSvg'));
             assert(script.includes('ghost-form-reset'));
+        });
+
+        it('strips dangerous CSS expressions and tags to prevent XSS breakout in embed script', async function () {
+            sinon.stub(models.Form, 'findOne').resolves({
+                get(key) {
+                    if (key === 'status') {
+                        return 'active';
+                    }
+                    if (key === 'schema') {
+                        return JSON.stringify({
+                            custom_css: '</style><script>alert("xss")</script>@import url("evil.css"); behavior: url(x); expression(alert(1)); url(javascript:alert(1)); url(data:text/css;base64,123);',
+                            fields: []
+                        });
+                    }
+                    return null;
+                }
+            });
+
+            const script = await formsService.generateEmbedScript('form_sec');
+            assert(!script.includes('<script>alert("xss")</script>'));
+            assert(!script.includes('@import'));
+            assert(!script.includes('behavior:'));
+            assert(!script.includes('expression('));
+            assert(!script.includes('javascript:alert(1)'));
+            assert(!script.includes('url(data:'));
         });
     });
 

@@ -29,7 +29,7 @@ module.exports = {
 
         frame.response = {};
 
-        if (response.data) {
+        if (Array.isArray(response.data)) {
             frame.response[docName] = response.data.map(model => mapResponse(docName, model, frame));
         } else {
             frame.response[docName] = [mapResponse(docName, response, frame)];

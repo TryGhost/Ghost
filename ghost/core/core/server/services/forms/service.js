@@ -28,7 +28,13 @@ function sanitizeCustomCss(css) {
     return css
         .replace(/<\/style/gi, '<\\/style')
         .replace(/<[^>]*>/g, '')
-        .replace(/javascript:/gi, '');
+        .replace(/javascript\s*:/gi, '')
+        .replace(/expression\s*\(/gi, '')
+        .replace(/behavior\s*:/gi, '')
+        .replace(/-moz-binding\s*:/gi, '')
+        .replace(/@import\b/gi, '')
+        .replace(/url\s*\(\s*(['"]?)\s*data:/gi, 'url($1')
+        .replace(/url\s*\(\s*(['"]?)\s*javascript:/gi, 'url($1');
 }
 
 function escapeRegExp(str) {
@@ -40,6 +46,69 @@ function escapeRegExp(str) {
 
 function isValidFormId(id) {
     return typeof id === 'string' && /^[a-zA-Z0-9_-]{1,64}$/.test(id);
+}
+
+function replaceFormInLexicalNode(node, formId, replacementHtml) {
+    let replaced = false;
+    if (!node || typeof node !== 'object') {
+        return false;
+    }
+    if (node.type === 'html' && typeof node.html === 'string' && node.html.includes(formId)) {
+        node.html = replacementHtml;
+        return true;
+    }
+    if (Array.isArray(node.children)) {
+        for (const child of node.children) {
+            if (replaceFormInLexicalNode(child, formId, replacementHtml)) {
+                replaced = true;
+            }
+        }
+    }
+    return replaced;
+}
+
+function filterFormFromLexicalNode(node, formId) {
+    if (!node || typeof node !== 'object') {
+        return;
+    }
+    if (Array.isArray(node.children)) {
+        node.children = node.children.filter((child) => {
+            return !(child.type === 'html' && typeof child.html === 'string' && child.html.includes(formId));
+        });
+        node.children.forEach(child => filterFormFromLexicalNode(child, formId));
+    }
+}
+
+function replaceFormInHtml(html, formId, fullFormSnippet) {
+    if (!html || typeof html !== 'string') {
+        return '';
+    }
+    const safeIdRegex = escapeRegExp(formId);
+    const wrappedSnippet = `\n<!--kg-card-begin: html-->\n${fullFormSnippet}\n<!--kg-card-end: html-->\n`;
+    const cardRegex = new RegExp(`\\s*<!--kg-card-begin: html-->((?:(?!<!--kg-card-(?:begin|end): html-->)[\\s\\S])*?data-ghost-form=["']${safeIdRegex}["'][\\s\\S]*?)<!--kg-card-end: html-->\\s*`, 'gi');
+    const standaloneRegex = new RegExp(`(?:<div[^>]*data-ghost-form=["']${safeIdRegex}["'][^>]*>(?:[\\s\\S]*?<\\/div>)?\\s*)?<script[^>]*forms\\/${safeIdRegex}\\/embed\\.js[^>]*><\\/script>|<div[^>]*data-ghost-form=["']${safeIdRegex}["'][^>]*>(?:[\\s\\S]*?<\\/div>)?`, 'gi');
+
+    cardRegex.lastIndex = 0;
+    if (cardRegex.test(html)) {
+        cardRegex.lastIndex = 0;
+        return html.replace(cardRegex, wrappedSnippet);
+    }
+    standaloneRegex.lastIndex = 0;
+    if (standaloneRegex.test(html)) {
+        standaloneRegex.lastIndex = 0;
+        return html.replace(standaloneRegex, wrappedSnippet);
+    }
+    return html;
+}
+
+function removeFormFromHtml(html, formId) {
+    if (!html || typeof html !== 'string') {
+        return '';
+    }
+    const safeIdRegex = escapeRegExp(formId);
+    const cardRegex = new RegExp(`\\s*<!--kg-card-begin: html-->((?:(?!<!--kg-card-(?:begin|end): html-->)[\\s\\S])*?data-ghost-form=["']${safeIdRegex}["'][\\s\\S]*?)<!--kg-card-end: html-->\\s*`, 'gi');
+    const standaloneRegex = new RegExp(`(?:<div[^>]*data-ghost-form=["']${safeIdRegex}["'][^>]*>(?:[\\s\\S]*?<\\/div>)?\\s*)?<script[^>]*forms\\/${safeIdRegex}\\/embed\\.js[^>]*><\\/script>|<div[^>]*data-ghost-form=["']${safeIdRegex}["'][^>]*>(?:[\\s\\S]*?<\\/div>)?|<div[^>]*id=["']ghost-form-container-${safeIdRegex}["'][\\s\\S]*?<\\/div>`, 'gi');
+    return html.replace(cardRegex, '\n').replace(standaloneRegex, '');
 }
 
 function getCelebrationSvg() {
@@ -102,7 +171,36 @@ class FormsService {
             order: 'created_at desc'
         });
 
-        const headers = ['Submission ID', 'Submitted At', ...fields.map(f => f.label || f.name || f.id)];
+        const sanitizeCsvCell = (val) => {
+            if (val === undefined || val === null) {
+                return '';
+            }
+            if (Array.isArray(val)) {
+                return val.map(sanitizeCsvCell).join(', ');
+            }
+            if (typeof val === 'boolean') {
+                return val ? 'Yes' : 'No';
+            }
+            if (typeof val === 'number') {
+                return isNaN(val) ? '' : val;
+            }
+            let strVal = String(val);
+            if (/^[=+@\t\r|%-]/i.test(strVal)) {
+                strVal = `'${strVal}`;
+            }
+            return strVal;
+        };
+
+        const sanitizeCsvHeader = (str) => {
+            let s = String(str || '');
+            if (/^[=+@\t\r|%-]/i.test(s)) {
+                s = `'${s}`;
+            }
+            return s;
+        };
+
+        const rawHeaders = ['Submission ID', 'Submitted At', ...fields.map(f => f.label || f.name || f.id)];
+        const headers = rawHeaders.map(sanitizeCsvHeader);
 
         const rows = submissions.map((sub) => {
             let data = sub.get('data');
@@ -123,19 +221,7 @@ class FormsService {
 
             for (const field of fields) {
                 const val = data[field.id] !== undefined ? data[field.id] : data[field.name];
-                if (val === undefined || val === null) {
-                    row.push('');
-                } else if (Array.isArray(val)) {
-                    row.push(val.join(', '));
-                } else if (typeof val === 'boolean') {
-                    row.push(val ? 'Yes' : 'No');
-                } else {
-                    let strVal = String(val);
-                    if (/^[=+@\t\r-]/i.test(strVal)) {
-                        strVal = `'${strVal}`;
-                    }
-                    row.push(strVal);
-                }
+                row.push(sanitizeCsvCell(val));
             }
 
             return row;
@@ -184,7 +270,39 @@ class FormsService {
         }
 
         const fields = (schema && Array.isArray(schema.fields)) ? schema.fields : [];
-        const data = (typeof rawData === 'string' ? JSON.parse(rawData) : rawData) || {};
+        if (typeof rawData === 'string' && rawData.length > 100000) {
+            throw new errors.BadRequestError({
+                message: 'Submission payload exceeds maximum allowed size.'
+            });
+        }
+
+        let data = {};
+        if (typeof rawData === 'string') {
+            try {
+                data = JSON.parse(rawData);
+            } catch (e) {
+                throw new errors.BadRequestError({
+                    message: 'Invalid submission data.'
+                });
+            }
+        } else if (rawData && typeof rawData === 'object') {
+            data = rawData;
+        }
+
+        // Honeypot spam defense: If hidden bot field is filled, silently discard without saving
+        if (data._hp) {
+            return {
+                id: 'bot_filtered',
+                form_id: form.id,
+                data: '{}'
+            };
+        }
+
+        if (Object.keys(data).length > 50) {
+            throw new errors.BadRequestError({
+                message: 'Too many fields submitted.'
+            });
+        }
 
         for (const field of fields) {
             if (field.required) {
@@ -206,14 +324,14 @@ class FormsService {
                 if (allowedKeys.has(key)) {
                     const val = data[key];
                     if (val !== undefined && val !== null) {
-                        sanitizedData[key] = typeof val === 'string' ? val.slice(0, 10000) : val;
+                        sanitizedData[key] = typeof val === 'string' ? val.slice(0, 5000) : val;
                     }
                 }
             }
         } else {
             for (const [key, val] of Object.entries(data)) {
-                if (key.length <= 100 && val !== undefined && val !== null) {
-                    sanitizedData[key] = typeof val === 'string' ? val.slice(0, 10000) : val;
+                if (key.length <= 64 && val !== undefined && val !== null) {
+                    sanitizedData[key] = typeof val === 'string' ? val.slice(0, 5000) : val;
                 }
             }
         }
@@ -391,6 +509,9 @@ class FormsService {
                     `<h3 class="ghost-form-title" style="margin-top: 0; margin-bottom: 10px; font-size: 26px; font-weight: 700; line-height: 1.3;">${escapeHtml(name)}</h3>` +
                     descHtml +
                     `<form id="ghost-form-${safeFormId}" class="ghost-form" onsubmit="${submitHandlerCode}">` +
+                        `<div style="position: absolute; left: -9999px; top: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none;" aria-hidden="true">` +
+                            `<input type="text" name="_hp" tabindex="-1" autocomplete="off" value="">` +
+                        `</div>` +
                         fieldsHtml +
                         `<button type="submit" id="ghost-form-btn-${safeFormId}" class="ghost-form-btn" style="width: 100%; min-height: 50px; padding: 14px 28px; background: #111827; color: #ffffff; border: none; border-radius: 8px; font-weight: 600; font-size: 16px; cursor: pointer; transition: opacity 0.2s, background-color 0.2s;">Submit</button>` +
                         `<div id="ghost-form-msg-${safeFormId}" class="ghost-form-msg" style="margin-top: 14px; font-size: 15px; display: none;"></div>` +
@@ -422,6 +543,7 @@ class FormsService {
       el.style.display = 'none';
       el.innerHTML = '';
       el.setAttribute('aria-hidden', 'true');
+      el.classList.add('ghost-form-archived');
     });
     var containers = document.querySelectorAll('#ghost-form-container-${safeFormId}');
     containers.forEach(function(el) { el.remove(); });
@@ -468,22 +590,6 @@ class FormsService {
   }
 
   function init() {
-    var target = document.querySelector('[data-ghost-form="' + formId + '"]') || document.getElementById('ghost-form-container-' + formId);
-
-    if (!target) {
-      target = document.createElement('div');
-      target.setAttribute('data-ghost-form', formId);
-      var currentScript = document.currentScript;
-      if (currentScript && currentScript.parentNode) {
-        currentScript.parentNode.insertBefore(target, currentScript);
-      } else {
-        document.body.appendChild(target);
-      }
-    }
-
-    target.style.display = '';
-    target.removeAttribute('aria-hidden');
-
     var baseRatingCss = '.ghost-rating-star:hover, .ghost-rating-star:hover ~ .ghost-rating-star, .ghost-rating-radio:checked ~ .ghost-rating-star { color: #f59e0b !important; } .ghost-form-rating-wrapper:hover .ghost-rating-star { color: #cbd5e1 !important; } .ghost-form-rating-wrapper .ghost-rating-star:hover, .ghost-form-rating-wrapper .ghost-rating-star:hover ~ .ghost-rating-star { color: #f59e0b !important; }';
     var baseFormCss = '.ghost-form-container * { box-sizing: border-box; } .ghost-form-title { font-size: 26px !important; font-weight: 700 !important; line-height: 1.3 !important; margin: 0 0 10px 0 !important; } .ghost-form-description { font-size: 16px !important; line-height: 1.5 !important; margin: 0 0 24px 0 !important; color: #64748b !important; } .ghost-form-group { margin-bottom: 22px !important; } .ghost-form-label { display: block !important; margin-bottom: 8px !important; font-weight: 600 !important; font-size: 15px !important; line-height: 1.4 !important; color: #1e293b !important; } .ghost-form-input { font-size: 16px !important; } .ghost-form-btn { font-size: 16px !important; } .ghost-form-success-title { font-size: 26px !important; font-weight: 700 !important; color: #1e293b !important; margin: 24px 0 10px 0 !important; line-height: 1.35 !important; text-align: center !important; } .ghost-form-success-desc { font-size: 16px !important; color: #64748b !important; margin: 0 0 24px 0 !important; line-height: 1.5 !important; text-align: center !important; } .ghost-form-reset-btn { display: inline-block !important; background: transparent !important; border: 1px solid #cbd5e1 !important; border-radius: 8px !important; padding: 10px 20px !important; font-size: 15px !important; font-weight: 500 !important; cursor: pointer !important; color: #475569 !important; transition: all 0.2s !important; } .ghost-form-reset-btn:hover { border-color: #94a3b8 !important; color: #1e293b !important; background: #f8fafc !important; }';
     var styleHtml = '<style>' + baseRatingCss + ' ' + baseFormCss + (customCss ? ' ' + customCss : '') + '</style>';
@@ -570,6 +676,9 @@ class FormsService {
           '<h3 class="ghost-form-title" style="margin-top: 0; margin-bottom: 10px; font-size: 26px; font-weight: 700; line-height: 1.3;">' + escapeHtml(name) + '</h3>' +
           (description ? '<p class="ghost-form-description" style="margin-top: 0; margin-bottom: 24px; color: #64748b; font-size: 16px; line-height: 1.5;">' + escapeHtml(description) + '</p>' : '') +
           '<form id="ghost-form-' + formId + '" class="ghost-form">' +
+            '<div style="position: absolute; left: -9999px; top: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none;" aria-hidden="true">' +
+              '<input type="text" name="_hp" tabindex="-1" autocomplete="off" value="">' +
+            '</div>' +
             fieldsHtml +
             '<button type="submit" id="ghost-form-btn-' + formId + '" class="ghost-form-btn" style="width: 100%; min-height: 50px; padding: 14px 28px; background: #111827; color: #ffffff; border: none; border-radius: 8px; font-weight: 600; font-size: 16px; cursor: pointer; transition: opacity 0.2s, background-color 0.2s;">Submit</button>' +
             '<div id="ghost-form-msg-' + formId + '" class="ghost-form-msg" style="margin-top: 14px; font-size: 15px; display: none;"></div>' +
@@ -583,7 +692,35 @@ class FormsService {
         '</div>' +
       '</div>';
 
-    target.innerHTML = formHtml;
+    var targets = document.querySelectorAll('[data-ghost-form="' + formId + '"]');
+    if (!targets || targets.length === 0) {
+      var container = document.getElementById('ghost-form-container-' + formId);
+      if (container) {
+        targets = [container];
+      } else {
+        var newTarget = document.createElement('div');
+        newTarget.setAttribute('data-ghost-form', formId);
+        var currentScript = document.currentScript;
+        if (currentScript && currentScript.parentNode) {
+          currentScript.parentNode.insertBefore(newTarget, currentScript);
+        } else {
+          document.body.appendChild(newTarget);
+        }
+        targets = [newTarget];
+      }
+    }
+
+    targets.forEach(function(target) {
+      target.style.display = '';
+      target.removeAttribute('aria-hidden');
+      target.classList.remove('ghost-form-archived');
+
+      target.innerHTML = formHtml;
+      var containerEl = target.querySelector('#ghost-form-container-' + formId);
+      if (containerEl) {
+        containerEl.style.display = '';
+      }
+    });
 
     var formEl = document.getElementById('ghost-form-' + formId);
     var btnEl = document.getElementById('ghost-form-btn-' + formId);
@@ -700,6 +837,12 @@ class FormsService {
             placement = target.placement || (target.forms && target.forms[0] && target.forms[0].placement) || 'end';
         }
 
+        if (!postId || !isValidFormId(postId)) {
+            throw new errors.BadRequestError({
+                message: 'Invalid post ID.'
+            });
+        }
+
         const knex = models.Base.knex;
         const post = await knex('posts').where({id: postId}).first();
         if (!post) {
@@ -721,11 +864,8 @@ class FormsService {
         let mobiledoc = post.mobiledoc;
         let html = post.html || '';
 
-        // Clean up any existing form for this formId first from HTML
-        const safeIdRegex = escapeRegExp(formId);
-        const htmlCardRegex = new RegExp(`\\s*<!--kg-card-begin: html-->[\\s\\S]*?data-ghost-form=["']${safeIdRegex}["'][\\s\\S]*?<!--kg-card-end: html-->\\s*`, 'gi');
-        const legacyRegex = new RegExp(`(<div[^>]*data-ghost-form=["']${safeIdRegex}["'][^>]*>(?:<\\/div>)?(?:\\s*<script[^>]*forms\\/${safeIdRegex}\\/embed\\.js[^>]*><\\/script>)?|<div[^>]*id=["']ghost-form-container-${safeIdRegex}["'][\\s\\S]*?<\\/div>(?:\\s*<script[\\s\\S]*?<\\/script>)?|<script[^>]*forms\\/${safeIdRegex}\\/embed\\.js[^>]*><\\/script>)`, 'gi');
-        html = html.replace(htmlCardRegex, '\n').replace(legacyRegex, '');
+        // Clean up any existing form for this formId first from HTML safely
+        html = removeFormFromHtml(html, formId);
 
         const wrappedCardHtml = `\n<!--kg-card-begin: html-->\n${fullFormSnippet}\n<!--kg-card-end: html-->\n`;
         if (placement === 'start') {
@@ -737,18 +877,16 @@ class FormsService {
         if (lexical) {
             try {
                 const lexObj = JSON.parse(lexical);
-                if (lexObj && lexObj.root && Array.isArray(lexObj.root.children)) {
-                    // Remove any existing form card for this formId first
-                    lexObj.root.children = lexObj.root.children.filter((child) => {
-                        return !(child.type === 'html' && typeof child.html === 'string' && child.html.includes(formId));
-                    });
-
+                if (lexObj && lexObj.root) {
+                    filterFormFromLexicalNode(lexObj.root, formId);
                     const newChild = {
                         type: 'html',
                         version: 1,
                         html: fullFormSnippet
                     };
-
+                    if (!Array.isArray(lexObj.root.children)) {
+                        lexObj.root.children = [];
+                    }
                     if (placement === 'start') {
                         lexObj.root.children.unshift(newChild);
                     } else {
@@ -844,6 +982,12 @@ class FormsService {
             postId = target.post_id || (target.forms && target.forms[0] && target.forms[0].post_id);
         }
 
+        if (!postId || !isValidFormId(postId)) {
+            throw new errors.BadRequestError({
+                message: 'Invalid post ID.'
+            });
+        }
+
         const knex = models.Base.knex;
         const post = await knex('posts').where({id: postId}).first();
         if (!post) {
@@ -859,10 +1003,8 @@ class FormsService {
         if (lexical) {
             try {
                 const lexObj = JSON.parse(lexical);
-                if (lexObj && lexObj.root && Array.isArray(lexObj.root.children)) {
-                    lexObj.root.children = lexObj.root.children.filter((child) => {
-                        return !(child.type === 'html' && typeof child.html === 'string' && child.html.includes(formId));
-                    });
+                if (lexObj && lexObj.root) {
+                    filterFormFromLexicalNode(lexObj.root, formId);
                     lexical = JSON.stringify(lexObj);
                 }
             } catch (e) {
@@ -901,12 +1043,7 @@ class FormsService {
             }
         }
 
-        if (html && typeof html === 'string') {
-            const safeIdRegex = escapeRegExp(formId);
-            const htmlCardRegex = new RegExp(`\\s*<!--kg-card-begin: html-->[\\s\\S]*?data-ghost-form=["']${safeIdRegex}["'][\\s\\S]*?<!--kg-card-end: html-->\\s*`, 'gi');
-            const legacyRegex = new RegExp(`(<div[^>]*data-ghost-form=["']${safeIdRegex}["'][^>]*>(?:<\\/div>)?(?:\\s*<script[^>]*forms\\/${safeIdRegex}\\/embed\\.js[^>]*><\\/script>)?|<div[^>]*id=["']ghost-form-container-${safeIdRegex}["'][\\s\\S]*?<\\/div>(?:\\s*<script[\\s\\S]*?<\\/script>)?|<script[^>]*forms\\/${safeIdRegex}\\/embed\\.js[^>]*><\\/script>)`, 'gi');
-            html = html.replace(htmlCardRegex, '\n').replace(legacyRegex, '');
-        }
+        html = removeFormFromHtml(html, formId);
 
         await knex('posts').where({id: postId}).update({
             lexical,
@@ -941,10 +1078,6 @@ class FormsService {
                         .orWhere('html', 'like', `%${formId}%`);
                 });
 
-            const safeIdRegex = escapeRegExp(formId);
-            const htmlCardRegex = new RegExp(`\\s*<!--kg-card-begin: html-->[\\s\\S]*?data-ghost-form=["']${safeIdRegex}["'][\\s\\S]*?<!--kg-card-end: html-->\\s*`, 'gi');
-            const legacyRegex = new RegExp(`(<div[^>]*data-ghost-form=["']${safeIdRegex}["'][^>]*>(?:<\\/div>)?(?:\\s*<script[^>]*forms\\/${safeIdRegex}\\/embed\\.js[^>]*><\\/script>)?|<div[^>]*id=["']ghost-form-container-${safeIdRegex}["'][\\s\\S]*?<\\/div>(?:\\s*<script[\\s\\S]*?<\\/script>)?|<script[^>]*forms\\/${safeIdRegex}\\/embed\\.js[^>]*><\\/script>)`, 'gi');
-
             for (const post of affectedPosts) {
                 let lexical = post.lexical;
                 let mobiledoc = post.mobiledoc;
@@ -953,10 +1086,8 @@ class FormsService {
                 if (lexical) {
                     try {
                         const lexObj = JSON.parse(lexical);
-                        if (lexObj && lexObj.root && Array.isArray(lexObj.root.children)) {
-                            lexObj.root.children = lexObj.root.children.filter((child) => {
-                                return !(child.type === 'html' && typeof child.html === 'string' && child.html.includes(formId));
-                            });
+                        if (lexObj && lexObj.root) {
+                            filterFormFromLexicalNode(lexObj.root, formId);
                             lexical = JSON.stringify(lexObj);
                         }
                     } catch (e) {
@@ -995,9 +1126,7 @@ class FormsService {
                     }
                 }
 
-                if (html && typeof html === 'string') {
-                    html = html.replace(htmlCardRegex, '\n').replace(legacyRegex, '');
-                }
+                html = removeFormFromHtml(html, formId);
 
                 await knex('posts').where({id: post.id}).update({
                     lexical,
@@ -1044,10 +1173,6 @@ class FormsService {
             }
 
             const fullFormSnippet = this.renderFormHtmlMarkup(form, formId);
-            const safeIdRegex = escapeRegExp(formId);
-            const htmlCardRegex = new RegExp(`\\s*<!--kg-card-begin: html-->[\\s\\S]*?data-ghost-form=["']${safeIdRegex}["'][\\s\\S]*?<!--kg-card-end: html-->\\s*`, 'gi');
-            const legacyRegex = new RegExp(`(<div[^>]*data-ghost-form=["']${safeIdRegex}["'][^>]*>(?:<\\/div>)?(?:\\s*<script[^>]*forms\\/${safeIdRegex}\\/embed\\.js[^>]*><\\/script>)?|<div[^>]*id=["']ghost-form-container-${safeIdRegex}["'][\\s\\S]*?<\\/div>(?:\\s*<script[\\s\\S]*?<\\/script>)?|<script[^>]*forms\\/${safeIdRegex}\\/embed\\.js[^>]*><\\/script>)`, 'gi');
-            const wrappedSnippet = `\n<!--kg-card-begin: html-->\n${fullFormSnippet}\n<!--kg-card-end: html-->\n`;
 
             for (const post of affectedPosts) {
                 let lexical = post.lexical;
@@ -1057,14 +1182,8 @@ class FormsService {
                 if (lexical) {
                     try {
                         const lexObj = JSON.parse(lexical);
-                        if (lexObj && lexObj.root && Array.isArray(lexObj.root.children)) {
-                            let matched = false;
-                            lexObj.root.children.forEach((child) => {
-                                if (child.type === 'html' && typeof child.html === 'string' && child.html.includes(formId)) {
-                                    child.html = fullFormSnippet;
-                                    matched = true;
-                                }
-                            });
+                        if (lexObj && lexObj.root) {
+                            const matched = replaceFormInLexicalNode(lexObj.root, formId, fullFormSnippet);
                             if (matched) {
                                 lexical = JSON.stringify(lexObj);
                             }
@@ -1094,17 +1213,7 @@ class FormsService {
                     }
                 }
 
-                if (html && typeof html === 'string') {
-                    htmlCardRegex.lastIndex = 0;
-                    legacyRegex.lastIndex = 0;
-                    if (htmlCardRegex.test(html)) {
-                        htmlCardRegex.lastIndex = 0;
-                        html = html.replace(htmlCardRegex, wrappedSnippet);
-                    } else if (legacyRegex.test(html)) {
-                        legacyRegex.lastIndex = 0;
-                        html = html.replace(legacyRegex, wrappedSnippet);
-                    }
-                }
+                html = replaceFormInHtml(html, formId, fullFormSnippet);
 
                 await knex('posts').where({id: post.id}).update({
                     lexical,

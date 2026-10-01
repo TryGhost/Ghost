@@ -1,5 +1,6 @@
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
+const {getCSVExportFileName} = require('./utils/csv-export-filename');
 const models = require('../../models');
 const formsService = require('../../services/forms');
 
@@ -66,7 +67,7 @@ const controller = {
 
     edit: {
         headers: {
-            cacheInvalidate: false
+            cacheInvalidate: true
         },
         options: [
             'id'
@@ -87,6 +88,8 @@ const controller = {
                 });
             }
 
+            await formsService.syncFormToAttachedPosts(frame.options.id);
+
             return model;
         }
     },
@@ -94,7 +97,7 @@ const controller = {
     destroy: {
         statusCode: 204,
         headers: {
-            cacheInvalidate: false
+            cacheInvalidate: true
         },
         options: [
             'id'
@@ -184,8 +187,8 @@ const controller = {
         headers: {
             disposition: {
                 type: 'csv',
-                value(frame) {
-                    return `form-${frame.options.id}-submissions-${new Date().toISOString().slice(0, 10)}.csv`;
+                value() {
+                    return getCSVExportFileName('form-submissions');
                 }
             },
             contentType: 'text/csv',
@@ -241,7 +244,7 @@ const controller = {
 
     attachToPost: {
         headers: {
-            cacheInvalidate: false
+            cacheInvalidate: true
         },
         options: [
             'id'
@@ -264,7 +267,7 @@ const controller = {
 
     detachFromPost: {
         headers: {
-            cacheInvalidate: false
+            cacheInvalidate: true
         },
         options: [
             'id'

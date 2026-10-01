@@ -182,9 +182,33 @@ export const FormSubmissionsModal: React.FC<FormSubmissionsModalProps> = ({
                                                 {fields.map((f) => {
                                                     const rawVal = subData[f.id] !== undefined ? subData[f.id] : subData[f.name];
                                                     const val: unknown = rawVal;
-                                                    let displayVal = '—';
+                                                    let displayVal: React.ReactNode = '—';
                                                     if (val !== undefined && val !== null && val !== '') {
-                                                        if (typeof val === 'boolean') {
+                                                        if (f.type === 'rating') {
+                                                            const num = Number(val);
+                                                            if (!isNaN(num) && num > 0) {
+                                                                displayVal = (
+                                                                    <span className="font-mono text-xs">
+                                                                        <span className="text-amber-500">{'★'.repeat(Math.min(5, Math.max(1, num)))}</span>
+                                                                        <span className="text-muted-foreground/40">{'★'.repeat(Math.max(0, 5 - num))}</span>
+                                                                        <span className="ml-1 text-muted-foreground">({num}/5)</span>
+                                                                    </span>
+                                                                );
+                                                            } else {
+                                                                displayVal = typeof val === 'string' || typeof val === 'number' ? String(val) : '—';
+                                                            }
+                                                        } else if (f.type === 'url' && typeof val === 'string' && (val.startsWith('http://') || val.startsWith('https://'))) {
+                                                            displayVal = (
+                                                                <a
+                                                                    className="inline-block max-w-[200px] truncate text-primary hover:underline"
+                                                                    href={val}
+                                                                    rel="noopener noreferrer"
+                                                                    target="_blank"
+                                                                >
+                                                                    {val}
+                                                                </a>
+                                                            );
+                                                        } else if (typeof val === 'boolean') {
                                                             displayVal = val ? 'Yes' : 'No';
                                                         } else if (Array.isArray(val)) {
                                                             displayVal = val.join(', ');

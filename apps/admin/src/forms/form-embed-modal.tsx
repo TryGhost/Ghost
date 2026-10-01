@@ -47,6 +47,22 @@ interface FormEmbedModalProps {
     form: Form;
 }
 
+function sanitizeCustomCss(css: string): string {
+    if (!css || typeof css !== 'string') {
+        return '';
+    }
+    return css
+        .replace(/<\/style/gi, '<\\/style')
+        .replace(/<[^>]*>/g, '')
+        .replace(/javascript\s*:/gi, '')
+        .replace(/expression\s*\(/gi, '')
+        .replace(/behavior\s*:/gi, '')
+        .replace(/-moz-binding\s*:/gi, '')
+        .replace(/@import\b/gi, '')
+        .replace(/url\s*\(\s*(['"]?)\s*data:/gi, 'url($1')
+        .replace(/url\s*\(\s*(['"]?)\s*javascript:/gi, 'url($1');
+}
+
 export const FormEmbedModal: React.FC<FormEmbedModalProps> = ({
     open,
     onOpenChange,
@@ -431,7 +447,7 @@ export const FormEmbedModal: React.FC<FormEmbedModalProps> = ({
                             <div className="bg-surface-elevated-1 flex justify-center rounded-md border border-border-default p-6">
                                 <div className="ghost-form-preview-wrapper w-full max-w-lg">
                                     {customCss && (
-                                        <style dangerouslySetInnerHTML={{__html: customCss}} />
+                                        <style dangerouslySetInnerHTML={{__html: sanitizeCustomCss(customCss)}} />
                                     )}
                                     <div className="ghost-form-container rounded-lg border border-border-default bg-card p-6 text-card-foreground shadow-sm">
                                         <h3 className="ghost-form-title mb-1 text-lg font-bold">{form.name}</h3>

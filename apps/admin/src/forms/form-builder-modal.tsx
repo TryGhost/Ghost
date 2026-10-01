@@ -16,6 +16,8 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
     Input,
     Label,
@@ -64,14 +66,48 @@ interface FormBuilderModalProps {
     form?: Form | null;
 }
 
-const FIELD_TYPES: {type: FormFieldType; label: string; icon: React.ReactNode}[] = [
-    {type: 'text', label: 'Short Text', icon: <LucideIcon.Type className="size-4" />},
-    {type: 'email', label: 'Email Address', icon: <LucideIcon.Mail className="size-4" />},
-    {type: 'textarea', label: 'Long Text', icon: <LucideIcon.AlignLeft className="size-4" />},
-    {type: 'number', label: 'Number', icon: <LucideIcon.Hash className="size-4" />},
-    {type: 'select', label: 'Dropdown Select', icon: <LucideIcon.ListFilter className="size-4" />},
-    {type: 'checkbox', label: 'Checkbox', icon: <LucideIcon.CheckSquare className="size-4" />}
+interface FieldTypeConfig {
+    type: FormFieldType;
+    label: string;
+    icon: React.ReactNode;
+    category: 'text' | 'choice' | 'date_rating';
+}
+
+const FIELD_TYPES: FieldTypeConfig[] = [
+    // Text & Contact
+    {type: 'text', label: 'Short Text', icon: <LucideIcon.Type className="size-4" />, category: 'text'},
+    {type: 'textarea', label: 'Long Text', icon: <LucideIcon.AlignLeft className="size-4" />, category: 'text'},
+    {type: 'email', label: 'Email Address', icon: <LucideIcon.Mail className="size-4" />, category: 'text'},
+    {type: 'phone', label: 'Phone Number', icon: <LucideIcon.Phone className="size-4" />, category: 'text'},
+    {type: 'url', label: 'Website / URL', icon: <LucideIcon.Globe className="size-4" />, category: 'text'},
+    {type: 'number', label: 'Number', icon: <LucideIcon.Hash className="size-4" />, category: 'text'},
+
+    // Choices & Selection
+    {type: 'select', label: 'Dropdown Select', icon: <LucideIcon.ListFilter className="size-4" />, category: 'choice'},
+    {type: 'radio', label: 'Multiple Choice', icon: <LucideIcon.CircleDot className="size-4" />, category: 'choice'},
+    {type: 'checkbox', label: 'Checkbox', icon: <LucideIcon.CheckSquare className="size-4" />, category: 'choice'},
+
+    // Date & Rating
+    {type: 'date', label: 'Date', icon: <LucideIcon.Calendar className="size-4" />, category: 'date_rating'},
+    {type: 'time', label: 'Time', icon: <LucideIcon.Clock className="size-4" />, category: 'date_rating'},
+    {type: 'rating', label: 'Star Rating', icon: <LucideIcon.Star className="size-4" />, category: 'date_rating'}
 ];
+
+function sanitizeCustomCss(css: string): string {
+    if (!css || typeof css !== 'string') {
+        return '';
+    }
+    return css
+        .replace(/<\/style/gi, '<\\/style')
+        .replace(/<[^>]*>/g, '')
+        .replace(/javascript\s*:/gi, '')
+        .replace(/expression\s*\(/gi, '')
+        .replace(/behavior\s*:/gi, '')
+        .replace(/-moz-binding\s*:/gi, '')
+        .replace(/@import\b/gi, '')
+        .replace(/url\s*\(\s*(['"]?)\s*data:/gi, 'url($1')
+        .replace(/url\s*\(\s*(['"]?)\s*javascript:/gi, 'url($1');
+}
 
 const CSS_PRESETS = [
     {
@@ -81,23 +117,37 @@ const CSS_PRESETS = [
   background: #18181b !important;
   color: #f4f4f5 !important;
   border: 1px solid #27272a !important;
-  border-radius: 1rem !important;
+  border-radius: 16px !important;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4) !important;
+  padding: 36px 32px !important;
 }
 .ghost-form-title {
   color: #fafafa !important;
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+  margin-bottom: 10px !important;
 }
 .ghost-form-description {
   color: #a1a1aa !important;
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  margin-bottom: 24px !important;
 }
 .ghost-form-label {
   color: #d4d4d8 !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  margin-bottom: 8px !important;
 }
 .ghost-form-input {
   background: #27272a !important;
   color: #ffffff !important;
   border: 1px solid #3f3f46 !important;
-  border-radius: 0.5rem !important;
+  border-radius: 8px !important;
+  font-size: 16px !important;
+  min-height: 48px !important;
+  padding: 12px 16px !important;
 }
 .ghost-form-input:focus {
   border-color: #3b82f6 !important;
@@ -106,8 +156,11 @@ const CSS_PRESETS = [
 .ghost-form-btn {
   background: #3b82f6 !important;
   color: #ffffff !important;
-  border-radius: 0.5rem !important;
+  border-radius: 8px !important;
   font-weight: 600 !important;
+  font-size: 16px !important;
+  min-height: 50px !important;
+  padding: 14px 28px !important;
 }
 .ghost-form-btn:hover {
   background: #2563eb !important;
@@ -119,17 +172,35 @@ const CSS_PRESETS = [
 .ghost-form-container {
   background: transparent !important;
   border: none !important;
-  padding: 1.5rem 0 !important;
+  padding: 24px 0 !important;
   box-shadow: none !important;
   max-width: 100% !important;
+}
+.ghost-form-title {
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+  margin-bottom: 10px !important;
+}
+.ghost-form-description {
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  margin-bottom: 24px !important;
+}
+.ghost-form-label {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  margin-bottom: 8px !important;
+  color: #1e293b !important;
 }
 .ghost-form-input {
   border: none !important;
   border-bottom: 2px solid #e2e8f0 !important;
   border-radius: 0 !important;
-  padding: 0.75rem 0 !important;
+  padding: 12px 0 !important;
   background: transparent !important;
-  font-size: 1rem !important;
+  font-size: 16px !important;
+  min-height: 48px !important;
 }
 .ghost-form-input:focus {
   border-bottom-color: #0f172a !important;
@@ -139,10 +210,10 @@ const CSS_PRESETS = [
   background: #0f172a !important;
   color: #ffffff !important;
   border-radius: 9999px !important;
-  padding: 0.75rem 2rem !important;
-  min-height: 48px !important;
+  padding: 14px 32px !important;
+  min-height: 50px !important;
   font-weight: 600 !important;
-  font-size: 1rem !important;
+  font-size: 16px !important;
   letter-spacing: 0.02em !important;
 }`
     },
@@ -152,20 +223,43 @@ const CSS_PRESETS = [
 .ghost-form-container {
   background: #ffffff !important;
   border: 1px solid #e2e8f0 !important;
-  border-radius: 1.5rem !important;
+  border-radius: 24px !important;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.06), 0 8px 10px -6px rgba(0, 0, 0, 0.02) !important;
-  padding: 2.25rem !important;
+  padding: 36px 32px !important;
+}
+.ghost-form-title {
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+  margin-bottom: 10px !important;
+}
+.ghost-form-description {
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  margin-bottom: 24px !important;
+}
+.ghost-form-label {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  margin-bottom: 8px !important;
+  color: #1e293b !important;
 }
 .ghost-form-input {
-  border-radius: 0.75rem !important;
+  border-radius: 12px !important;
   border-color: #cbd5e1 !important;
   background: #f8fafc !important;
+  font-size: 16px !important;
+  min-height: 48px !important;
+  padding: 12px 16px !important;
 }
 .ghost-form-btn {
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
   color: #ffffff !important;
-  border-radius: 0.75rem !important;
+  border-radius: 12px !important;
   font-weight: 600 !important;
+  font-size: 16px !important;
+  min-height: 50px !important;
+  padding: 14px 28px !important;
   box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35) !important;
 }`
     },
@@ -174,14 +268,41 @@ const CSS_PRESETS = [
         css: `/* Vibrant Accent Border */
 .ghost-form-container {
   border: 2px solid #06b6d4 !important;
-  border-radius: 1rem !important;
+  border-radius: 16px !important;
   box-shadow: 0 0 20px rgba(6, 182, 212, 0.15) !important;
+  padding: 36px 32px !important;
+}
+.ghost-form-title {
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+  margin-bottom: 10px !important;
+}
+.ghost-form-description {
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  margin-bottom: 24px !important;
+}
+.ghost-form-label {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  margin-bottom: 8px !important;
+  color: #1e293b !important;
+}
+.ghost-form-input {
+  border-radius: 8px !important;
+  font-size: 16px !important;
+  min-height: 48px !important;
+  padding: 12px 16px !important;
 }
 .ghost-form-btn {
   background: #06b6d4 !important;
   color: #ffffff !important;
-  border-radius: 0.5rem !important;
+  border-radius: 8px !important;
   font-weight: 700 !important;
+  font-size: 16px !important;
+  min-height: 50px !important;
+  padding: 14px 28px !important;
 }`
     }
 ];
@@ -223,6 +344,9 @@ export const FormBuilderModal: React.FC<FormBuilderModalProps> = ({
     const [fields, setFields] = useState<FormField[]>([]);
     const [customCss, setCustomCss] = useState('');
     const [nameError, setNameError] = useState('');
+    const [successTitle, setSuccessTitle] = useState('Your form was successfully submitted!');
+    const [successMessage, setSuccessMessage] = useState('Thank you! Your response has been recorded.');
+    const [previewMode, setPreviewMode] = useState<'form' | 'success'>('form');
 
     // Embed & Attach state
     const [selectedTargetId, setSelectedTargetId] = useState<string>('');
@@ -243,6 +367,7 @@ export const FormBuilderModal: React.FC<FormBuilderModalProps> = ({
         setActiveTab('fields');
         setSelectedTargetId('');
         setStatusMessage(null);
+        setPreviewMode('form');
 
         if (form) {
             setName(form.name || '');
@@ -261,11 +386,15 @@ export const FormBuilderModal: React.FC<FormBuilderModalProps> = ({
             }
             setFields(parsed.fields || []);
             setCustomCss(parsed.custom_css || form.custom_css || '');
+            setSuccessTitle(parsed.success_title || 'Your form was successfully submitted!');
+            setSuccessMessage(parsed.success_message || 'Thank you! Your response has been recorded.');
         } else {
             setName('');
             setDescription('');
             setStatus('active');
             setCustomCss('');
+            setSuccessTitle('Your form was successfully submitted!');
+            setSuccessMessage('Thank you! Your response has been recorded.');
             // Default fields for a starter contact form
             setFields([
                 {id: 'field_name', name: 'name', label: 'Your Name', type: 'text', required: true, placeholder: 'Jane Doe'},
@@ -279,14 +408,31 @@ export const FormBuilderModal: React.FC<FormBuilderModalProps> = ({
     const addField = (type: FormFieldType) => {
         const id = `field_${Date.now()}`;
         const count = fields.filter(f => f.type === type).length + 1;
+        let defaultPlaceholder = '';
+        let defaultOptions: string[] | undefined;
+
+        if (type === 'select' || type === 'radio') {
+            defaultOptions = ['Option 1', 'Option 2', 'Option 3'];
+        } else if (type === 'phone') {
+            defaultPlaceholder = '+1 (555) 000-0000';
+        } else if (type === 'url') {
+            defaultPlaceholder = 'https://example.com';
+        } else if (type === 'date') {
+            defaultPlaceholder = 'YYYY-MM-DD';
+        } else if (type === 'time') {
+            defaultPlaceholder = 'HH:MM';
+        } else if (type === 'rating') {
+            defaultPlaceholder = 'Rate 1 to 5 stars';
+        }
+
         const newField: FormField = {
             id,
             name: `${type}_${count}`,
             label: `${FIELD_TYPES.find(ft => ft.type === type)?.label || 'Field'} ${count}`,
             type,
             required: false,
-            placeholder: '',
-            options: type === 'select' ? ['Option 1', 'Option 2', 'Option 3'] : undefined
+            placeholder: defaultPlaceholder,
+            options: defaultOptions
         };
         setFields(prev => [...prev, newField]);
     };
@@ -347,9 +493,11 @@ export const FormBuilderModal: React.FC<FormBuilderModalProps> = ({
                 type: f.type,
                 required: Boolean(f.required),
                 placeholder: f.placeholder || '',
-                options: f.type === 'select' ? (f.options || []) : undefined
+                options: (f.type === 'select' || f.type === 'radio') ? (f.options || []) : undefined
             })),
-            custom_css: customCss.trim()
+            custom_css: customCss.trim(),
+            success_title: successTitle.trim() || undefined,
+            success_message: successMessage.trim() || undefined
         };
 
         const payload = {
@@ -593,6 +741,39 @@ export const FormBuilderModal: React.FC<FormBuilderModalProps> = ({
                                 </CardContent>
                             </Card>
 
+                            {/* Submission Success Screen */}
+                            <Card className="border border-border-default">
+                                <CardHeader className="pb-3">
+                                    <Inline align="center" gap="xs">
+                                        <LucideIcon.CheckCircle2 className="size-4 text-green-600" />
+                                        <CardTitle className="text-base">Submission Success Screen</CardTitle>
+                                    </Inline>
+                                    <Text size="xs" tone="secondary">
+                                        Customize the celebration title and thank-you message displayed to visitors immediately upon form submission.
+                                    </Text>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="form-success-title">Success Title</Label>
+                                        <Input
+                                            id="form-success-title"
+                                            placeholder="Your form was successfully submitted!"
+                                            value={successTitle}
+                                            onChange={e => setSuccessTitle(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="form-success-message">Success Message</Label>
+                                        <Input
+                                            id="form-success-message"
+                                            placeholder="Thank you! Your response has been recorded."
+                                            value={successMessage}
+                                            onChange={e => setSuccessMessage(e.target.value)}
+                                        />
+                                    </div>
+                                </CardContent>
+                            </Card>
+
                             {/* Active Content Embeds (Displays where this form is live) */}
                             {activeFormId && (
                                 <Card className="bg-surface-elevated-1 border border-border-default">
@@ -700,8 +881,43 @@ export const FormBuilderModal: React.FC<FormBuilderModalProps> = ({
                                                 Add Field
                                             </Button>
                                         </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end" className="w-48">
-                                            {FIELD_TYPES.map(ft => (
+                                        <DropdownMenuContent align="end" className="w-56">
+                                            <DropdownMenuLabel className="px-2 py-1 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+                                                Text & Contact
+                                            </DropdownMenuLabel>
+                                            {FIELD_TYPES.filter(ft => ft.category === 'text').map(ft => (
+                                                <DropdownMenuItem
+                                                    key={ft.type}
+                                                    className="flex cursor-pointer items-center gap-2"
+                                                    onClick={() => addField(ft.type)}
+                                                >
+                                                    {ft.icon}
+                                                    <span>{ft.label}</span>
+                                                </DropdownMenuItem>
+                                            ))}
+
+                                            <DropdownMenuSeparator />
+
+                                            <DropdownMenuLabel className="px-2 py-1 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+                                                Choices & Selection
+                                            </DropdownMenuLabel>
+                                            {FIELD_TYPES.filter(ft => ft.category === 'choice').map(ft => (
+                                                <DropdownMenuItem
+                                                    key={ft.type}
+                                                    className="flex cursor-pointer items-center gap-2"
+                                                    onClick={() => addField(ft.type)}
+                                                >
+                                                    {ft.icon}
+                                                    <span>{ft.label}</span>
+                                                </DropdownMenuItem>
+                                            ))}
+
+                                            <DropdownMenuSeparator />
+
+                                            <DropdownMenuLabel className="px-2 py-1 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+                                                Date & Rating
+                                            </DropdownMenuLabel>
+                                            {FIELD_TYPES.filter(ft => ft.category === 'date_rating').map(ft => (
                                                 <DropdownMenuItem
                                                     key={ft.type}
                                                     className="flex cursor-pointer items-center gap-2"
@@ -799,9 +1015,11 @@ export const FormBuilderModal: React.FC<FormBuilderModalProps> = ({
                                                         </div>
                                                     </div>
 
-                                                    {field.type === 'select' && (
+                                                    {(field.type === 'select' || field.type === 'radio') && (
                                                         <div className="space-y-1">
-                                                            <Label className="text-xs">Options (comma-separated)</Label>
+                                                            <Label className="text-xs">
+                                                                {field.type === 'radio' ? 'Choices (comma-separated)' : 'Options (comma-separated)'}
+                                                            </Label>
                                                             <Input
                                                                 className="h-8 text-xs"
                                                                 placeholder="Option 1, Option 2, Option 3"
@@ -810,6 +1028,15 @@ export const FormBuilderModal: React.FC<FormBuilderModalProps> = ({
                                                                     options: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
                                                                 })}
                                                             />
+                                                        </div>
+                                                    )}
+
+                                                    {field.type === 'rating' && (
+                                                        <div className="rounded border border-border-default/60 bg-surface-elevated-2 p-2">
+                                                            <Inline align="center" gap="xs">
+                                                                <LucideIcon.Star className="size-3.5 fill-amber-400 text-amber-400" />
+                                                                <Text size="xs" tone="secondary">5-star rating scale from 1 (lowest) to 5 (highest)</Text>
+                                                            </Inline>
                                                         </div>
                                                     )}
 
@@ -1211,60 +1438,159 @@ ${fields.map(f => `  "${f.name || f.id}": "sample value"`).join(',\n')}
                         </TabsContent>
 
                         {/* Tab 4: Live Preview */}
-                        <TabsContent className="m-0 flex justify-center py-6" value="preview">
-                            <div className="ghost-form-preview-wrapper w-full max-w-lg">
+                        <TabsContent className="m-0 flex flex-col items-center py-4" value="preview">
+                            {/* Toggle between Form View and Success Screen View */}
+                            <div className="bg-surface-elevated-1 mb-5 inline-flex rounded-lg border border-border-default p-1">
+                                <Button
+                                    className="h-8 px-4 text-xs font-medium"
+                                    size="sm"
+                                    variant={previewMode === 'form' ? 'secondary' : 'ghost'}
+                                    onClick={() => setPreviewMode('form')}
+                                >
+                                    Form View
+                                </Button>
+                                <Button
+                                    className="h-8 px-4 text-xs font-medium"
+                                    size="sm"
+                                    variant={previewMode === 'success' ? 'secondary' : 'ghost'}
+                                    onClick={() => setPreviewMode('success')}
+                                >
+                                    <LucideIcon.CheckCircle2 className="mr-1.5 size-3.5 text-green-600" />
+                                    Celebration Success Screen
+                                </Button>
+                            </div>
+
+                            <div className="ghost-form-preview-wrapper w-full max-w-xl">
                                 {customCss && (
-                                    <style dangerouslySetInnerHTML={{__html: customCss}} />
+                                    <style dangerouslySetInnerHTML={{__html: sanitizeCustomCss(customCss)}} />
                                 )}
-                                <div className="ghost-form-container rounded-lg border border-border-default bg-card p-6 text-card-foreground shadow-sm">
-                                    <div className="mb-4 space-y-1">
-                                        <h3 className="ghost-form-title text-xl font-bold">{name || 'Untitled Form'}</h3>
-                                        {description && <p className="ghost-form-description text-sm text-muted-foreground">{description}</p>}
-                                    </div>
-                                    <div className="ghost-form space-y-4">
-                                        {fields.length === 0 ? (
-                                            <Text className="block py-6 text-center" size="sm" tone="secondary">
-                                                No fields to preview. Add fields in the Fields Builder tab.
-                                            </Text>
-                                        ) : (
-                                            fields.map(f => (
-                                                <div key={f.id} className="ghost-form-group space-y-1.5">
-                                                    {f.type !== 'checkbox' && (
-                                                        <Label className="ghost-form-label text-sm font-medium">
-                                                            {f.label || f.name}
-                                                            {f.required && <span className="ml-0.5 text-destructive">*</span>}
-                                                        </Label>
-                                                    )}
+                                <div className="ghost-form-container rounded-2xl border border-border-default bg-card p-8 text-card-foreground shadow-sm">
+                                    {previewMode === 'form' ? (
+                                        <>
+                                            <div className="mb-6 space-y-1.5">
+                                                <h3 className="ghost-form-title text-2xl font-bold">{name || 'Untitled Form'}</h3>
+                                                {description && <p className="ghost-form-description text-base text-muted-foreground">{description}</p>}
+                                            </div>
+                                            <div className="ghost-form space-y-5">
+                                                {fields.length === 0 ? (
+                                                    <Text className="block py-6 text-center" size="sm" tone="secondary">
+                                                        No fields to preview. Add fields in the Fields Builder tab.
+                                                    </Text>
+                                                ) : (
+                                                    fields.map(f => (
+                                                        <div key={f.id} className="ghost-form-group space-y-2">
+                                                            {f.type !== 'checkbox' && (
+                                                                <Label className="ghost-form-label text-[15px] font-semibold text-foreground">
+                                                                    {f.label || f.name}
+                                                                    {f.required && <span className="ml-0.5 text-destructive">*</span>}
+                                                                </Label>
+                                                            )}
 
-                                                    {f.type === 'textarea' ? (
-                                                        <Textarea className="ghost-form-input" placeholder={f.placeholder} rows={3} disabled />
-                                                    ) : f.type === 'select' ? (
-                                                        <Select disabled>
-                                                            <SelectTrigger className="ghost-form-input">
-                                                                <SelectValue placeholder={f.placeholder || 'Select an option'} />
-                                                            </SelectTrigger>
-                                                        </Select>
-                                                    ) : f.type === 'checkbox' ? (
-                                                        <Inline align="center" gap="sm">
-                                                            <Checkbox className="ghost-form-checkbox" id={`prev-${f.id}`} disabled />
-                                                            <Label className="ghost-form-label cursor-pointer text-sm font-medium" htmlFor={`prev-${f.id}`}>
-                                                                {f.label || f.name}
-                                                                {f.required && <span className="ml-0.5 text-destructive">*</span>}
-                                                            </Label>
-                                                        </Inline>
-                                                    ) : (
-                                                        <Input className="ghost-form-input" placeholder={f.placeholder} type={f.type} disabled />
-                                                    )}
-                                                </div>
-                                            ))
-                                        )}
+                                                            {f.type === 'textarea' ? (
+                                                                <Textarea className="ghost-form-input min-h-[120px] text-base" placeholder={f.placeholder} rows={4} disabled />
+                                                            ) : f.type === 'select' ? (
+                                                                <Select disabled>
+                                                                    <SelectTrigger className="ghost-form-input min-h-[48px] text-base">
+                                                                        <SelectValue placeholder={f.placeholder || 'Select an option'} />
+                                                                    </SelectTrigger>
+                                                                </Select>
+                                                            ) : f.type === 'checkbox' ? (
+                                                                <Inline align="center" gap="sm">
+                                                                    <Checkbox className="ghost-form-checkbox size-5" id={`prev-${f.id}`} disabled />
+                                                                    <Label className="ghost-form-label cursor-pointer text-[15px] font-medium text-foreground" htmlFor={`prev-${f.id}`}>
+                                                                        {f.label || f.name}
+                                                                        {f.required && <span className="ml-0.5 text-destructive">*</span>}
+                                                                    </Label>
+                                                                </Inline>
+                                                            ) : f.type === 'radio' ? (
+                                                                <div className="space-y-2 pt-1">
+                                                                    {(f.options && f.options.length > 0 ? f.options : ['Option 1', 'Option 2', 'Option 3']).map(opt => (
+                                                                        <Inline key={`prev-radio-${f.id}-${opt}`} align="center" gap="sm">
+                                                                            <input
+                                                                                className="size-4.5 accent-foreground"
+                                                                                name={`prev-radio-${f.id}`}
+                                                                                type="radio"
+                                                                                disabled
+                                                                            />
+                                                                            <span className="text-[15px]">{opt}</span>
+                                                                        </Inline>
+                                                                    ))}
+                                                                </div>
+                                                            ) : f.type === 'rating' ? (
+                                                                <Inline align="center" className="pt-1" gap="xs">
+                                                                    {[1, 2, 3, 4, 5].map(star => (
+                                                                        <LucideIcon.Star
+                                                                            key={star}
+                                                                            className="size-7 fill-amber-400 text-amber-400"
+                                                                        />
+                                                                    ))}
+                                                                </Inline>
+                                                            ) : (
+                                                                <Input
+                                                                    className="ghost-form-input min-h-[48px] text-base"
+                                                                    placeholder={f.placeholder}
+                                                                    type={f.type === 'phone' ? 'tel' : f.type}
+                                                                    disabled
+                                                                />
+                                                            )}
+                                                        </div>
+                                                    ))
+                                                )}
 
-                                        {fields.length > 0 && (
-                                            <Button className="ghost-form-btn mt-4 w-full" disabled>
-                                                Submit
+                                                {fields.length > 0 && (
+                                                    <Button className="ghost-form-btn mt-6 min-h-[50px] w-full text-base font-semibold" disabled>
+                                                        Submit
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="ghost-form-success flex flex-col items-center py-4 text-center">
+                                            <svg
+                                                className="mx-auto block"
+                                                fill="none"
+                                                height="140"
+                                                viewBox="0 0 200 200"
+                                                width="140"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <circle cx="100" cy="100" fill="#f0f7ff" r="92" stroke="#e0f2fe" strokeWidth="1.5" />
+                                                <path d="M 44 46 C 49 40, 55 40, 60 46 C 65 52, 71 52, 76 46" fill="none" stroke="#2dd4bf" strokeLinecap="round" strokeWidth="3" />
+                                                <path d="M 148 64 C 153 58, 159 58, 164 64 C 169 70, 175 70, 180 64" fill="none" stroke="#38bdf8" strokeLinecap="round" strokeWidth="2.5" />
+                                                <path d="M 28 92 C 32 89, 36 87, 37 84" fill="none" stroke="#38bdf8" strokeLinecap="round" strokeWidth="2.5" />
+                                                <circle cx="42" cy="100" fill="none" r="5" stroke="#f472b6" strokeWidth="2" />
+                                                <circle cx="158" cy="106" fill="none" r="5.5" stroke="#f472b6" strokeWidth="2" />
+                                                <circle cx="126" cy="154" fill="none" r="5" stroke="#67e8f9" strokeWidth="2" />
+                                                <circle cx="97" cy="42" fill="#f472b6" r="2.5" />
+                                                <circle cx="48" cy="78" fill="#f472b6" r="2.5" />
+                                                <circle cx="68" cy="138" fill="#f472b6" r="2.5" />
+                                                <circle cx="51" cy="120" fill="#5eead4" fillOpacity="0.9" r="7" />
+                                                <circle cx="147" cy="76" fill="#fde047" r="2" />
+                                                <circle cx="157" cy="124" fill="#fde047" r="2" />
+                                                <polygon fill="#38bdf8" points="110,26 117,33 108,37" />
+                                                <polygon fill="#fde047" points="132,46 140,54 126,55" />
+                                                <polygon fill="#6ee7b7" points="56,60 52,68 62,67" />
+                                                <polygon fill="#6ee7b7" points="144,136 150,144 140,145" />
+                                                <polygon fill="#fde047" points="168,88 174,96 166,101 160,93" />
+                                                <circle cx="100" cy="100" fill="#e8fdf0" r="46" stroke="#22c55e" strokeWidth="7" />
+                                                <path d="M 80 100 L 94 114 L 122 84" fill="none" stroke="#22c55e" strokeLinecap="round" strokeLinejoin="round" strokeWidth="7" />
+                                            </svg>
+                                            <h3 className="ghost-form-success-title mt-6 text-2xl font-bold text-foreground">
+                                                {successTitle || 'Your form was successfully submitted!'}
+                                            </h3>
+                                            <p className="ghost-form-success-desc mt-2 text-base text-muted-foreground">
+                                                {successMessage || 'Thank you! Your response has been recorded.'}
+                                            </p>
+                                            <Button
+                                                className="ghost-form-reset-btn mt-6"
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => setPreviewMode('form')}
+                                            >
+                                                Submit another response
                                             </Button>
-                                        )}
-                                    </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </TabsContent>
