@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const linkReplacer = require('../../../../../core/server/services/lib/link-replacer');
+const linkReplacer = require('../../../../core/server/lib/link-replacer');
 const html5parser = require('html5parser');
 const sinon = require('sinon');
 
