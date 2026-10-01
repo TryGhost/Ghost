@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
-import { getListReturnNavigationState } from '@/shared/virtual-list';
+import { getListReturnNavigationState } from '@/shared/virtual-list/list-return-state';
 import type { EmberNotificationsHost } from './ember-notifications-host';
 
 export interface EmberBridge {
