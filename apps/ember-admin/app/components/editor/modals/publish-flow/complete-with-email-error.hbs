@@ -23,6 +23,7 @@
         </p>
     {{/if}}
 
+    {{#if this.canRetry}}
     <div class="gh-publish-cta">
         <GhTaskButton
             @task={{this.retryEmailTask}}
@@ -33,5 +34,6 @@
             @showIcon={{false}}
         />
     </div>
+    {{/if}}
 {{/let}}
 

@@ -2,7 +2,7 @@ import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
-import { useRetryEmail } from '@tryghost/admin-x-framework/api/emails';
+import { useEmailSendingStatus, useRetryEmail } from '@tryghost/admin-x-framework/api/emails';
 import { pagesDataType } from '@tryghost/admin-x-framework/api/pages';
 import { postsDataType } from '@tryghost/admin-x-framework/api/posts';
 import {
@@ -81,6 +81,7 @@ export interface PublishFlow extends PublishOptionActions {
   retryEmail: () => Promise<void>;
   retryStatus: ConfirmStatus;
   retryFailure: string | null;
+  canRetryEmail: boolean;
   /** Abandons any asynchronous continuation before the caller closes the modal. */
   cancel: () => void;
 }
@@ -161,7 +162,7 @@ export function usePublishFlow({
   );
 
   // The email is created by the save, so its id is only knowable from a reload.
-  const emailIdRef = useRef<string | null>(post.email?.id ?? null);
+  const [emailId, setEmailId] = useState(post.email?.id ?? null);
 
   const confirmation = useMemo(
     () =>
@@ -179,11 +180,13 @@ export function usePublishFlow({
             throw new Error('The published post was missing from its reload response.');
           }
 
-          emailIdRef.current = reloaded.email?.id ?? emailIdRef.current;
+          if (reloaded.email?.id && activeRef.current) {
+            setEmailId(reloaded.email.id);
+          }
           return { status: reloaded.status, email: reloaded.email ?? null };
         },
-        retry: async (emailId) => {
-          await retryEmailRequest({ id: emailId, sessionExpiryRedirect: false });
+        retry: async (id) => {
+          await retryEmailRequest({ id, sessionExpiryRedirect: false });
         },
       }),
     [fetchApi, retryEmailRequest],
@@ -216,6 +219,24 @@ export function usePublishFlow({
   const [emailNote, setEmailNote] = useState<string | null>(null);
   const [retryStatus, setRetryStatus] = useState<ConfirmStatus>('idle');
   const [retryFailure, setRetryFailure] = useState<string | null>(null);
+  const retryEligibility = useEmailSendingStatus(emailId ?? '', {
+    // Paused while a retry runs so the send in progress cannot hide its own button;
+    // re-enabling refetches, so every way a retry ends refreshes eligibility.
+    enabled: step === 'email-error' && Boolean(emailId) && retryStatus !== 'running',
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    retry: false,
+    defaultErrorHandler: false,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
+  const sending = retryEligibility.data?.email_statuses[0]?.sending;
+  const canRetryEmail =
+    retryEligibility.isFetchedAfterMount &&
+    !retryEligibility.isError &&
+    sending?.status === 'failed' &&
+    sending.retryable === true;
+
   const [captured, setCaptured] = useState(() => {
     if (initialEmailError(post)) {
       return {
@@ -504,15 +525,7 @@ export function usePublishFlow({
   ]);
 
   const retryEmail = useCallback(async () => {
-    const emailId = emailIdRef.current;
-
-    if (retryRunningRef.current) {
-      return;
-    }
-
-    if (!emailId) {
-      setRetryFailure(UNKNOWN_RETRY_ERROR);
-      setRetryStatus('failure');
+    if (retryRunningRef.current || !canRetryEmail || !emailId) {
       return;
     }
 
@@ -551,7 +564,7 @@ export function usePublishFlow({
         setRetryStatus('failure');
       }
     }
-  }, [complete, confirmation, post.id, refreshPostReads, showCompletion]);
+  }, [canRetryEmail, complete, confirmation, emailId, post.id, refreshPostReads, showCompletion]);
 
   return {
     ...optionActions,
@@ -573,6 +586,7 @@ export function usePublishFlow({
     retryEmail,
     retryStatus,
     retryFailure,
+    canRetryEmail,
     cancel,
   };
 }
