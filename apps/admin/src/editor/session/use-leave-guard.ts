@@ -135,7 +135,8 @@ export function useEditorLeaveGuard(
         lateStateRef.current = stateRef.current;
       },
     }).then((decision) => {
-      if (!isMountedRef.current) {
+      // An exit the router dropped meanwhile has nothing left for a dialog to settle.
+      if (!isMountedRef.current || !guardRef.current.isBlocked) {
         return;
       }
       if (decision === 'confirm') {

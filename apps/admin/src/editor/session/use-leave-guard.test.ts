@@ -426,6 +426,30 @@ describe('useEditorLeaveGuard', () => {
     }
   });
 
+  it('opens no dialog for a decision whose exit the router dropped meanwhile', async () => {
+    const decision = deferred<'proceed' | 'confirm'>();
+    const { router, guard } = renderHeldExit(() => decision.promise);
+    try {
+      await act(async () => {
+        await router.navigate('/posts');
+      });
+      // Any navigation the router completes resets the exit it had blocked.
+      await act(async () => {
+        await router.navigate('/editor/post/abc?tab=settings');
+      });
+
+      await act(async () => {
+        decision.resolve('confirm');
+        await decision.promise;
+      });
+
+      expect(guard().dialogProps.open).toBe(false);
+      expect(router.state.location.pathname).toBe('/editor/post/abc');
+    } finally {
+      router.dispose();
+    }
+  });
+
   it('leaves for the first destination when a link is clicked during the save on the way out', async () => {
     const decision = deferred<'proceed' | 'confirm'>();
     const { router, screen, guard } = renderHeldExit(() => decision.promise);

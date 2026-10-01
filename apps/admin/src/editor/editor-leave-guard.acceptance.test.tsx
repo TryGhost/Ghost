@@ -744,6 +744,24 @@ describe('Post editor leave guard on history pops', () => {
     await expect(editorScreen.root()).toHaveCount(0);
   });
 
+  it('keeps where Back leaves for when the editor URL is pushed again during the save on the way out', async () => {
+    const { saveApi, failSave } = fakeDeferredSave();
+    await openByHashChange(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await appendToBody(' and more');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+
+    window.history.back();
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    window.location.hash = `/editor/post/${POST_ID}/`;
+    failSave();
+
+    await expect.element(editorScreen.leaveDialog()).toBeVisible();
+    await editorScreen.leaveEditor().click();
+    await expect.poll(currentRoute).toBe('/posts');
+    await expect(editorScreen.root()).toHaveCount(0);
+  });
+
   it('keeps a held exit when the URL drops its trailing slash during the save on the way out', async () => {
     const { saveApi, failSave } = fakeDeferredSave();
     await renderAdminApp(`/editor/post/${POST_ID}/`, withoutAutosave(FLAG_ON));

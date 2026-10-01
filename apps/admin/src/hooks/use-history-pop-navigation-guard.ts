@@ -151,6 +151,10 @@ export function useHistoryPopNavigationGuard(
         }
         // Any navigation the router completes drops the exit it has blocked.
         entryRef.current = currentEntry();
+        // A same-screen push leaves its entry above the one a held pop reached.
+        if (blockedRef.current) {
+          isDisplacedRef.current = true;
+        }
         return true;
       }
       const reachedHref = window.location.href;
