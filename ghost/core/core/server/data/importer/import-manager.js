@@ -1,24 +1,12 @@
 const _ = require('lodash');
 const fs = require('fs-extra');
 const path = require('path');
-const config = require('../../../shared/config');
 const tpl = require('@tryghost/tpl');
 const debug = require('@tryghost/debug')('import-manager');
-const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const RevueHandler = require('./handlers/revue');
-const JSONHandler = require('./handlers/json');
-const MarkdownHandler = require('./handlers/markdown');
-const RevueImporter = require('./importers/importer-revue');
-const DataImporter = require('./importers/data');
-const urlUtils = require('../../../shared/url-utils').default;
-const { GhostMailer } = require('../../services/mail');
-const jobManager = require('../../services/jobs');
 const ImportArchive = require('./import-archive').default;
-const { createContentFileHandlers, createContentFileImporters } = require('./content-files');
 
 const { emailTemplate } = require('./email-template');
-const ghostMailer = new GhostMailer();
 
 const messages = {
   couldNotCleanUpFile: {
@@ -36,30 +24,28 @@ const defaults = {
 };
 
 class ImportManager {
-  constructor() {
-    const contentFileHandlers = createContentFileHandlers();
-    const contentFileImporters = createContentFileImporters();
-
-    /**
-     * @type {Importer[]} importers
-     */
-    this.importers = [...contentFileImporters, RevueImporter, DataImporter];
+  constructor({ jobManager, handlers, importers, mailer, config, urlUtils, logging }) {
+    this.jobManager = jobManager;
 
     /**
      * @type {Handler[]}
      */
-    this.handlers = [...contentFileHandlers, RevueHandler, JSONHandler, MarkdownHandler];
+    this.handlers = handlers;
+
+    /**
+     * @type {Importer[]} importers
+     */
+    this.importers = importers;
+
+    this.mailer = mailer;
+    this.config = config;
+    this.urlUtils = urlUtils;
+    this.logging = logging;
 
     this.archive = new ImportArchive({
       extensions: this.getExtensions(),
       directories: this.getDirectories(),
     });
-
-    // Keep track of file to cleanup at the end
-    /**
-     * @type {?string}
-     */
-    this.fileToDelete = null;
   }
 
   /**
@@ -140,9 +126,7 @@ class ImportManager {
    * @returns {Promise<string>} full path to the extracted folder
    */
   async extractZip(filePath) {
-    const tmpDir = await this.archive.extract(filePath);
-    this.fileToDelete = tmpDir;
-    return tmpDir;
+    return this.archive.extract(filePath);
   }
 
   /**
@@ -167,16 +151,34 @@ class ImportManager {
 
   /**
    * Process Zip
-   * Takes a reference to a zip file, extracts it, sends any relevant files from inside to the right handler, and
-   * returns an object in the importData format: {data: {}, images: []}
-   * The data key contains JSON representing any data that should be imported
-   * The image key contains references to images that will be stored (and where they will be stored)
+   * Takes a reference to a zip file, extracts it and reads it, returning the content to import
+   * alongside the extracted directory, which the caller owns from here on
    * @param {File} file
-   * @returns {Promise<ImportData>}
+   * @returns {Promise<LoadedImport>}
    */
   async processZip(file) {
-    const zipDirectory = await this.extractZip(file.path);
+    const cleanupDirectory = await this.extractZip(file.path);
 
+    try {
+      return {
+        data: await this.readExtractedZip(cleanupDirectory),
+        cleanupDirectory,
+      };
+    } catch (err) {
+      await this.cleanUp(cleanupDirectory);
+      throw err;
+    }
+  }
+
+  /**
+   * Send any relevant files from an extracted zip to the right handler, and return an object in
+   * the importData format: {data: {}, images: []}
+   * The data key contains JSON representing any data that should be imported
+   * The image key contains references to images that will be stored (and where they will be stored)
+   * @param {string} zipDirectory
+   * @returns {Promise<ImportData>}
+   */
+  async readExtractedZip(zipDirectory) {
     /**
      * @type {ImportData}
      */
@@ -250,13 +252,14 @@ class ImportManager {
    * Import Step 1:
    * Load the given file into usable importData in the format: {data: {}, images: []}, regardless of
    * whether the file is a single importable file like a JSON file, or a zip file containing loads of files.
+   * A zip also yields the extracted directory, which the caller owns from here on.
    * @param {File} file
-   * @returns {Promise<ImportData>}
+   * @returns {Promise<LoadedImport>}
    */
-  loadFile(file) {
-    const self = this;
+  async loadFile(file) {
     const ext = path.extname(file.name).toLowerCase();
-    return this.isZip(ext) ? self.processZip(file) : self.processFile(file, ext);
+
+    return this.isZip(ext) ? this.processZip(file) : { data: await this.processFile(file, ext) };
   }
 
   /**
@@ -313,18 +316,19 @@ class ImportManager {
 
   /**
    * Step 5:
-   * Remove files after we're done (abstracted into a function for easier testing)
+   * Remove the files an import owns, once it is done with them
+   * @param {string} [cleanupDirectory]
    * @returns {Promise<void>}
    */
-  async cleanUp() {
-    if (this.fileToDelete === null) {
+  async cleanUp(cleanupDirectory) {
+    if (!cleanupDirectory) {
       return;
     }
 
     try {
-      await fs.remove(this.fileToDelete);
+      await fs.remove(cleanupDirectory);
     } catch (err) {
-      logging.error(
+      this.logging.error(
         new errors.InternalServerError({
           err: err,
           context: tpl(messages.couldNotCleanUpFile.error),
@@ -332,8 +336,6 @@ class ImportManager {
         }),
       );
     }
-
-    this.fileToDelete = null;
   }
 
   /**
@@ -346,8 +348,8 @@ class ImportManager {
    * @returns {string}
    */
   generateCompletionEmail(result, { emailRecipient, importTag }) {
-    const siteUrl = new URL(urlUtils.urlFor('home', null, true));
-    const postsUrl = new URL('posts', urlUtils.urlFor('admin', null, true));
+    const siteUrl = new URL(this.urlUtils.urlFor('home', null, true));
+    const postsUrl = new URL('posts', this.urlUtils.urlFor('admin', null, true));
     if (importTag && result?.data?.tags) {
       const tag = result.data.tags.find((t) => t.name === importTag);
       postsUrl.searchParams.set('tag', tag.slug);
@@ -369,60 +371,74 @@ class ImportManager {
    * @returns {Promise<Object.<string, ImportResult>>}
    */
   async importFromFile(file, importOptions = {}) {
-    let importData;
+    let loaded;
     if (importOptions.data) {
-      importData = importOptions.data;
+      loaded = { data: importOptions.data };
     } else {
       // Step 1: Handle converting the file to usable data
       // Has to be completed outside of job to ensure file is processed before being deleted
-      importData = await this.loadFile(file);
+      loaded = await this.loadFile(file);
     }
 
-    debug('importFromFile completed file load', importData);
+    debug('importFromFile completed file load', loaded.data);
 
-    const env = config.get('env');
+    const env = this.config.get('env');
     if (!env?.startsWith('testing') && !importOptions.runningInJob) {
-      logging.info('[Background Job] site-content-import queued');
-      return jobManager.addJob({
-        job: async () => {
-          const startedAt = Date.now();
-          logging.info('[Background Job] site-content-import started');
-          try {
-            const result = await this.importFromFile(
-              file,
-              Object.assign({}, importOptions, {
-                runningInJob: true,
-                data: importData,
-              }),
-            );
-            // importFromFile swallows its own failures and returns undefined,
-            // so an absent result is the only signal that the import failed.
-            if (result === undefined) {
-              logging.info(
-                `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
-              );
-            } else {
-              logging.info(
-                `[Background Job] site-content-import completed in ${Date.now() - startedAt}ms`,
-              );
-            }
-            return result;
-          } catch (err) {
-            logging.error(
-              err,
-              `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
-            );
-            throw err;
-          }
-        },
+      this.logging.info('[Background Job] site-content-import queued');
+      return this.jobManager.addJob({
+        job: () => this.executeImport(loaded, importOptions),
         offloaded: false,
       });
     }
 
+    return this.processImport(loaded, importOptions);
+  }
+
+  /**
+   * Run a queued import, logging when it starts and how it ends
+   * @param {LoadedImport} loaded
+   * @param {ImportOptions} importOptions
+   * @returns {Promise<Object.<string, ImportResult>|undefined>}
+   */
+  async executeImport(loaded, importOptions) {
+    const startedAt = Date.now();
+    this.logging.info('[Background Job] site-content-import started');
+    try {
+      const result = await this.processImport(loaded, importOptions);
+      // processImport swallows import failures and resolves undefined,
+      // so an absent result is the only signal that the import failed.
+      if (result === undefined) {
+        this.logging.info(
+          `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
+        );
+      } else {
+        this.logging.info(
+          `[Background Job] site-content-import completed in ${Date.now() - startedAt}ms`,
+        );
+      }
+      return result;
+    } catch (err) {
+      this.logging.error(
+        err,
+        `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
+      );
+      throw err;
+    }
+  }
+
+  /**
+   * Import loaded content, report on it, release the files it owns, and email the user how
+   * it went. A failed import is reported in that email and resolves undefined.
+   * @param {LoadedImport} loaded
+   * @param {ImportOptions} importOptions
+   * @returns {Promise<Object.<string, ImportResult>|undefined>}
+   */
+  async processImport(loaded, importOptions) {
+    const env = this.config.get('env');
     let importResult;
     try {
       // Step 2: Let the importers pre-process the data
-      importData = await this.preProcess(importData);
+      const importData = await this.preProcess(loaded.data);
 
       // Step 3: Actually do the import
       // @TODO: It would be cool to have some sort of dry run flag here
@@ -433,12 +449,12 @@ class ImportManager {
 
       return importResult;
     } catch (err) {
-      logging.error(err, '[Background Job] site-content-import error');
+      this.logging.error(err, '[Background Job] site-content-import error');
       const errorDetails = err.errorDetails || [err];
       importResult = { data: { errors: errorDetails } };
     } finally {
-      // Step 5: Cleanup any files
-      await this.cleanUp();
+      // Step 5: Cleanup the files this import owns
+      await this.cleanUp(loaded.cleanupDirectory);
 
       if (!env?.startsWith('testing')) {
         // Step 6: Send email
@@ -446,7 +462,7 @@ class ImportManager {
           emailRecipient: importOptions.user.email,
           importTag: importOptions.importTag,
         });
-        await ghostMailer.send({
+        await this.mailer.send({
           to: importOptions.user.email,
           subject: importResult?.data?.errors
             ? 'Your content import was unsuccessful'
@@ -521,4 +537,11 @@ class ImportManager {
 /**
  * @typedef {Object} ImportResult
  */
-module.exports = new ImportManager();
+
+/**
+ * Content ready to import, with the directory its owner has to remove afterwards
+ * @typedef {Object} LoadedImport
+ * @property {ImportData} data
+ * @property {string} [cleanupDirectory]
+ */
+module.exports = ImportManager;

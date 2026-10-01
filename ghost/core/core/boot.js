@@ -464,6 +464,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const memberJobs = require('./server/services/members/jobs');
   const membersService = require('./server/services/members');
   memberJobs.init();
+  require('./server/data/importer').init();
   assert(giftService.service, 'Gift service should be initialized');
   assert(mentionsService.controller, 'Mentions controller should be initialized');
   assert(mentionsService.sendingService, 'Mentions sending service should be initialized');
