@@ -22,7 +22,7 @@ import schema from './schema';
  * Code that reads or writes these tables must stay dormant wherever the tables
  * are not created.
  */
-export const IN_DEVELOPMENT_TABLES: string[] = [];
+export const IN_DEVELOPMENT_TABLES: string[] = ['app_installations'];
 
 export function isInDevelopmentTable(tableName: string): boolean {
   return IN_DEVELOPMENT_TABLES.includes(tableName);
