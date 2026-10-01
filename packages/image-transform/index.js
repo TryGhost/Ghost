@@ -1,1 +1,1 @@
-module.exports = require('./src/transform');
+module.exports = require('./src/index.ts');

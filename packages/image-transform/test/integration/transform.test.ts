@@ -6,7 +6,7 @@ const imageTransform = require('../../');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const fixtures = require('./fixtures');
+const fixtures = require('./fixtures/index.ts');
 
 let outputDir;
 
