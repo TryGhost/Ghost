@@ -148,6 +148,7 @@ class EmailServiceWrapper {
     this.renderer = emailRenderer;
 
     this.service = new EmailService({
+      sendingStatusService,
       batchSendingService,
       sendingService,
       models: {

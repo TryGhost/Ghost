@@ -33,7 +33,10 @@ class PostEmailHandler {
 
     const existingPost = await this.models.Post.findOne(
       { id: frame.options.id, status: 'all' },
-      { columns: ['id', 'status', 'newsletter_id', 'email_recipient_filter'] },
+      {
+        columns: ['id', 'status', 'newsletter_id', 'email_recipient_filter'],
+        withRelated: ['email'],
+      },
     );
     const previousStatus = existingPost?.get('status');
 
@@ -42,6 +45,11 @@ class PostEmailHandler {
 
     if (!sendingEmail) {
       return null;
+    }
+
+    const postEmail = existingPost?.relations.email;
+    if (postEmail?.get('status') === 'failed') {
+      await this.emailService.checkCanRetryEmail(postEmail.id);
     }
 
     const emailRecipientFilter =

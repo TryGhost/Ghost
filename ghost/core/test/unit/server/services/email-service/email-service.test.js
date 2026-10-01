@@ -14,6 +14,7 @@ describe('Email Service', function () {
   let scheduleRecurringNewslettersJob;
   let domainWarmingService;
   let getMembersCount;
+  let sendingStatusService;
 
   beforeEach(function () {
     memberCount = 123;
@@ -79,7 +80,12 @@ describe('Email Service', function () {
     };
     getMembersCount = sinon.stub().callsFake(() => Promise.resolve(memberCount));
 
+    sendingStatusService = {
+      statusFor: sinon.stub().resolves({ sending: { status: 'failed', retryable: true } }),
+    };
+
     service = new EmailService({
+      sendingStatusService,
       emailSegmenter: {
         getMembersCount,
       },
@@ -534,6 +540,50 @@ describe('Email Service', function () {
   });
 
   describe('Retry email', function () {
+    it('rejects the same unknown outcome when publishing a post triggers the retry', async function () {
+      const PostEmailHandler = require('../../../../../core/server/services/posts/post-email-handler');
+      const email = createModel({ status: 'failed', post: createModel({ status: 'published' }) });
+      const post = createModel({ status: 'published', newsletter_id: 'newsletter-id' });
+      post.wasChanged = () => true;
+      post.previous = () => 'draft';
+      post.relations = { email };
+      sendingStatusService.statusFor.resolves({ sending: { status: 'failed', retryable: false } });
+      const handler = new PostEmailHandler({ models: {}, emailService: service });
+
+      await assert.rejects(
+        handler.createOrRetryEmail(post),
+        (err) => err.statusCode === 400 && /delivery outcome is unknown/.test(err.message),
+      );
+      assert.equal(email.get('status'), 'failed');
+      sinon.assert.notCalled(scheduleEmail);
+    });
+
+    it('rejects an unknown delivery outcome without changing the email or scheduling', async function () {
+      const email = createModel({
+        status: 'failed',
+        error: 'Original error',
+        post: createModel({ status: 'published' }),
+      });
+      sendingStatusService.statusFor.resolves({ sending: { status: 'failed', retryable: false } });
+
+      await assert.rejects(
+        service.retryEmail(email),
+        (err) => err.statusCode === 400 && /delivery outcome is unknown/.test(err.message),
+      );
+      assert.equal(email.get('status'), 'failed');
+      assert.equal(email.get('error'), 'Original error');
+      sinon.assert.notCalled(scheduleEmail);
+    });
+
+    it('rejects a stale failed email when the current send is already active', async function () {
+      const email = createModel({ status: 'failed', post: createModel({ status: 'sent' }) });
+      sendingStatusService.statusFor.resolves({ sending: { status: 'submitting' } });
+
+      await assert.rejects(service.retryEmail(email), (err) => err.statusCode === 400);
+      assert.equal(email.get('status'), 'failed');
+      sinon.assert.notCalled(scheduleEmail);
+    });
+
     it('Schedules email again', async function () {
       const email = createModel({
         status: 'failed',

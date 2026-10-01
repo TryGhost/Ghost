@@ -52,7 +52,7 @@ describe('Emails API', function () {
 
   beforeAll(async function () {
     agent = await agentProvider.getAdminAPIAgent();
-    await fixtureManager.init('posts', 'newsletters', 'members', 'members:emails:failed');
+    await fixtureManager.init('posts', 'newsletters', 'members', 'members:emails:failed', 'users');
     await agent.loginAsOwner();
   });
 
@@ -171,6 +171,7 @@ describe('Emails API', function () {
       })
       .expect(({ body }) => {
         assert.equal(body.email_statuses[0].id, email.id);
+        assert.equal(body.email_statuses[0].sending.retryable, true);
       });
   });
 
@@ -185,6 +186,86 @@ describe('Emails API', function () {
         'content-version': anyContentVersion,
         etag: anyEtag,
       });
+  });
+
+  it('reports and rejects unknown-outcome failures from stale retry clients', async function () {
+    const email = fixtureManager.get('emails', 1);
+    // A client may have read eligibility before a batch's outcome became unknown.
+    await agent
+      .get(`emails/${email.id}/status/`)
+      .expectStatus(200)
+      .expect(({ body }) => {
+        assert.equal(body.email_statuses[0].sending.retryable, true);
+      });
+    const batch = await models.EmailBatch.add({ email_id: email.id, status: 'submitting' });
+    try {
+      await agent
+        .get(`emails/${email.id}/status/`)
+        .expectStatus(200)
+        .expect(({ body }) => {
+          assert.equal(body.email_statuses[0].sending.retryable, false);
+        });
+      await agent
+        .put(`emails/${email.id}/retry/`)
+        .expectStatus(400)
+        .expect(({ body }) => {
+          assert.match(body.errors[0].message, /delivery outcome is unknown/, JSON.stringify(body));
+        });
+      const currentEmail = await models.Email.findOne({ id: email.id });
+      assert.equal(currentEmail.get('status'), 'failed');
+      const currentBatch = await models.EmailBatch.findOne({ id: batch.id });
+      assert.equal(currentBatch.get('status'), 'submitting');
+    } finally {
+      await db.knex('email_batches').where('id', batch.id).del();
+    }
+  });
+
+  it('rejects an unknown-outcome retry triggered by republishing a post', async function () {
+    const email = fixtureManager.get('emails', 1);
+    const originalPost = await db.knex('posts').where('id', email.post_id).first();
+    const batch = await models.EmailBatch.add({ email_id: email.id, status: 'submitting' });
+    try {
+      await db
+        .knex('posts')
+        .where('id', email.post_id)
+        .update({ status: 'draft', newsletter_id: fixtureManager.get('newsletters', 0).id });
+      await agent
+        .put(`posts/${email.post_id}/`)
+        .body({
+          posts: [{ status: 'published', updated_at: originalPost.updated_at.toISOString() }],
+        })
+        .expectStatus(400)
+        .expect(({ body }) => {
+          assert.match(body.errors[0].context, /delivery outcome is unknown/);
+        });
+      const currentEmail = await models.Email.findOne({ id: email.id });
+      assert.equal(currentEmail.get('status'), 'failed');
+      const currentPost = await db.knex('posts').where('id', email.post_id).first();
+      assert.equal(currentPost.status, 'draft');
+      assert.equal(currentPost.updated_at.toISOString(), originalPost.updated_at.toISOString());
+    } finally {
+      await db
+        .knex('posts')
+        .where('id', email.post_id)
+        .update({ status: originalPost.status, newsletter_id: originalPost.newsletter_id });
+      await db.knex('email_batches').where('id', batch.id).del();
+    }
+  });
+
+  it('allows sending-status readers to get retry eligibility without browsing batches', async function () {
+    await agent.loginAsAuthor();
+    try {
+      const email = fixtureManager.get('emails', 1);
+      await agent
+        .get(`emails/${email.id}/status/`)
+        .expectStatus(200)
+        .expect(({ body }) => {
+          assert.equal(body.email_statuses[0].sending.retryable, true);
+        });
+      await agent.get(`emails/${email.id}/batches/`).expectStatus(403);
+    } finally {
+      await agent.loginAsOwner();
+    }
   });
 
   it('Can retry a failed email', async function () {
