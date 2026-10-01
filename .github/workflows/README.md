@@ -72,8 +72,8 @@ How we write GitHub Actions workflows safely. Follow these when adding or editin
 
 ## PR preview boundary
 
-The preview dispatch workflow reads GitHub metadata only. It checks out the trusted
-workflow commit to run `scripts/dispatch-pr-preview.js`, never PR code. Ghost-Moya resolves the image digest, confirms it was built from the PR head,
+The preview dispatch workflow reads GitHub metadata only; it never checks out PR
+code. Ghost-Moya resolves the image digest, confirms it was built from the PR head,
 and builds the preview adapter image and runs
 smoke tests on a separate runner with no deployment secrets or OIDC. Publishing
 imports image data without running it, and deployment pins the registry digest.
