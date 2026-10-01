@@ -1,6 +1,5 @@
 import { type ReactNode, Suspense, lazy, useCallback, useEffect, useState } from 'react';
 import { useAdminSidebarVisibility } from '@/layout/sidebar-visibility';
-import { useFlagGatedRouteOwner } from '@/use-flag-gated-route-owner';
 import { OpenGlobalSearchContext } from './global-search-context';
 import { isSearchShortcut } from './search-shortcut';
 
@@ -13,14 +12,11 @@ const OPEN_DIALOG =
   ':is([role="dialog"], [role="alertdialog"])[data-state="open"], .epm-modal, .fullscreen-modal';
 
 /**
- * Owns the Cmd-K search modal behind the `globalSearchReact` flag: its open
- * state, the Cmd/Ctrl+K shortcut, and the lazily loaded modal.
+ * Owns the Cmd-K search modal: its open state, the Cmd/Ctrl+K shortcut, and
+ * the lazily loaded modal.
  */
 export function GlobalSearchProvider({ children }: { children: ReactNode }) {
-  // Ember's Labs state decides while Ember is present, so both sides agree on who owns search
-  const enabled = useFlagGatedRouteOwner('globalSearchReact') === 'react';
-  const sidebarVisible = useAdminSidebarVisibility();
-  const canSearch = enabled && sidebarVisible;
+  const canSearch = useAdminSidebarVisibility();
 
   // `count` remounts the modal on each open so it starts with an empty term
   const [modal, setModal] = useState({ open: false, count: 0 });
@@ -41,7 +37,6 @@ export function GlobalSearchProvider({ children }: { children: ReactNode }) {
 
     void loadGlobalSearchModal();
 
-    // not skipped when already handled: Ember's own shortcut prevents the default first
     const onKeyDown = (event: KeyboardEvent) => {
       if (!isSearchShortcut(event)) {
         return;

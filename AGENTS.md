@@ -53,7 +53,9 @@ migration, private feature flag, Shade component, or internal package.
   differ from Admin.
 - **Ghost Core:** use the [server map](docs/codebase/monorepo-structure.md#ghost-core)
   and read the [services guide](ghost/core/core/server/services/README.md) before
-  adding a service. New standalone services use TypeScript; keep CommonJS only
+  adding or relocating a service root; apply its placement rules rather than
+  inferring ownership from existing directory names. New standalone services
+  use TypeScript; keep CommonJS only
   at existing `require()` boundaries. Boot owns service initialization; do not
   initialize on the first request.
 - **ESLint:** use the shared factories and dependency rules in the

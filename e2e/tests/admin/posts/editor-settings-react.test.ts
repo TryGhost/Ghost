@@ -266,7 +266,7 @@ async function stubUnsplash(page: Page, photo: UnsplashPhoto): Promise<{ escaped
 
 /** Starts a new draft from the list and returns it once its first save has given it an id. */
 async function startDraft(page: Page, { title, body }: { title: string; body: string }) {
-  const postsPage = new PostsPage(page, { implementation: 'react' });
+  const postsPage = new PostsPage(page);
   await postsPage.goto();
   await postsPage.newPostButton.click();
 
@@ -324,9 +324,8 @@ async function readPostAsMember(
 }
 
 test.describe('Ghost Admin - Post editor settings (React)', () => {
-  // `test.use` only takes effect on the describe. Delete leaves for the list
-  // through the router, which only the React list follows.
-  test.use({ labs: { editorReact: true, postsListReact: true } });
+  // `test.use` only takes effect on the describe.
+  test.use({ labs: { editorReact: true } });
 
   let memberFactory: MemberFactory;
   let postFactory: PostFactory;
@@ -556,7 +555,7 @@ test.describe('Ghost Admin - Post editor settings (React)', () => {
     await settings.openSection('delete');
     await Promise.all([waitForPostDelete(page, created.id), settings.delete.deletePost()]);
 
-    const postsPage = new PostsPage(page, { implementation: 'react' });
+    const postsPage = new PostsPage(page);
     await postsPage.waitForPageToFullyLoad();
     await expect(postsPage.postsListItem.first()).toBeVisible();
     await expect(postsPage.getPostByTitle(title)).toHaveCount(0);

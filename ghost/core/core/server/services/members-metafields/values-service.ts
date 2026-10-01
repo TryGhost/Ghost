@@ -99,6 +99,12 @@ export interface PlannedWrite {
   value?: unknown;
 }
 
+/** Checked writes and who is making them: everything needed to store them. */
+export interface MetafieldPlan {
+  writes: PlannedWrite[];
+  origin: WriteOrigin;
+}
+
 /**
  * What a member holds for each defined field. Separate from the definitions service
  * because a value belongs to the member and a definition belongs to the site's settings,

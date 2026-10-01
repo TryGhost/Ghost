@@ -105,7 +105,7 @@ describe('Editor list breadcrumb', () => {
         tags: [tag({ name: 'Engineering', slug: 'engineering' })],
       });
       const listUrl = `/${resource}?type=draft&tag=engineering&order=title+asc`;
-      await renderAdminApp(listUrl, { labs: { editorReact: true, postsListReact: true } });
+      await renderAdminApp(listUrl, { labs: { editorReact: true } });
 
       await expect.element(postsListScreen.filterBar()).toHaveTextContent('Engineering');
       await postsListScreen.listItems().first().click();

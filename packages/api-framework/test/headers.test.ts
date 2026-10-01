@@ -257,5 +257,20 @@ describe('Headers', function () {
         assert.deepEqual(result, {});
       });
     });
+
+    it('rejects location generation when the frame URL is missing', async function () {
+      const frame = new Frame();
+      frame.docName = 'posts';
+      frame.method = 'add';
+
+      await assert.rejects(
+        shared.headers.get({ posts: [{ id: 'id_value' }] }, {}, frame),
+        (err) => {
+          assert.ok(err instanceof Error);
+          assert.equal(err.message, 'Frame URL is required to generate a Location header');
+          return true;
+        },
+      );
+    });
   });
 });

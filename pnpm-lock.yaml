@@ -1718,9 +1718,6 @@ importers:
       ember-could-get-used-to-this:
         specifier: 1.0.1
         version: 1.0.1(supports-color@10.2.2)
-      ember-css-transitions:
-        specifier: 4.4.1
-        version: 4.4.1(@babel/core@7.29.7(supports-color@10.2.2))(ember-source@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(supports-color@10.2.2)
       ember-data:
         specifier: 3.24.0
         version: 3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2)
@@ -1742,9 +1739,6 @@ importers:
       ember-in-viewport:
         specifier: 4.1.0
         version: 4.1.0(@babel/core@7.29.7(supports-color@10.2.2))(ember-source@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(supports-color@10.2.2)(webpack@5.105.4(@swc/core@1.15.43(@swc/helpers@0.5.23))(clean-css@4.2.4)(cssnano@4.1.10)(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.32.0)(postcss@8.5.26)(uglify-js@3.19.3))
-      ember-infinity:
-        specifier: 2.3.0
-        version: 2.3.0(@babel/core@7.29.7(supports-color@10.2.2))(ember-source@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(supports-color@10.2.2)(webpack@5.105.4(@swc/core@1.15.43(@swc/helpers@0.5.23))(clean-css@4.2.4)(cssnano@4.1.10)(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.32.0)(postcss@8.5.26)(uglify-js@3.19.3))
       ember-keyboard:
         specifier: 8.2.1
         version: 8.2.1(@babel/core@7.29.7(supports-color@10.2.2))(@ember/test-helpers@2.9.6(@babel/core@7.29.7(supports-color@10.2.2))(ember-source@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(supports-color@10.2.2))(ember-source@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(supports-color@10.2.2)
@@ -2550,8 +2544,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/i18n
       '@tryghost/image-transform':
-        specifier: 1.4.18
-        version: 1.4.18(@types/node@22.20.1)
+        specifier: workspace:*
+        version: link:../../packages/image-transform
       '@tryghost/job-manager':
         specifier: 1.0.9
         version: 1.0.9(supports-color@10.2.2)
@@ -4423,6 +4417,50 @@ importers:
       vitest:
         specifier: 'catalog:'
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
+
+  packages/image-transform:
+    dependencies:
+      '@tryghost/errors':
+        specifier: 3.4.0
+        version: 3.4.0
+    devDependencies:
+      '@internal/cfg-eslint':
+        specifier: workspace:*
+        version: link:../../configs/eslint
+      '@internal/cfg-typescript':
+        specifier: workspace:*
+        version: link:../../configs/typescript
+      '@internal/cfg-vitest':
+        specifier: workspace:*
+        version: link:../../configs/vitest
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.1
+      '@types/sinon':
+        specifier: 'catalog:'
+        version: 22.0.0
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
+      '@vitest/coverage-v8':
+        specifier: 'catalog:'
+        version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.4(jiti@2.7.0)(supports-color@10.2.2)
+      sinon:
+        specifier: 'catalog:'
+        version: 22.1.0
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
+    optionalDependencies:
+      sharp:
+        specifier: 'catalog:'
+        version: 0.35.5(@types/node@22.20.1)
 
   packages/limit-service:
     dependencies:
@@ -9673,9 +9711,6 @@ packages:
   '@tryghost/http-stream@2.3.16':
     resolution: {integrity: sha512-Il4zlpL8/vr555ep6opYozTa+jJvEXw12KjyqSWUfIUFrt53vkBPR7dRoSi+OnF20FazjnihllTZDEbvcKu61Q==}
 
-  '@tryghost/image-transform@1.4.18':
-    resolution: {integrity: sha512-dyYs5Zdmqx9wPOI63WNAeAgGnDOL/4QdYs7ZDaSWc0Ybz4qKs+F2k7ciHBdDtwRNyrnSNf1HZAOyv31hTvGaOA==}
-
   '@tryghost/jest-snapshot@2.3.15':
     resolution: {integrity: sha512-HzusbUXhIdGpK686psfg3VQdmAev29Qr9yt5A6EVLzexNQZNkyApyymySqrpeL7iQrcCozwsdZgVB/ccj7+ITQ==}
 
@@ -13704,9 +13739,6 @@ packages:
     resolution: {integrity: sha512-+BXc8NbJJ/DoUXZk4e3qeRvADw9ThMEW7jm+Nz+QX9jRY/5QYodnFeUEfsC4Sw3Ti2m1+RzI2Lyq0QWpgOqFYg==}
     engines: {node: 8.* || >= 10.*}
 
-  ember-css-transitions@4.4.1:
-    resolution: {integrity: sha512-QSUc+bDNMU/3vbJZuSWz14a4V/wQbHDq/zY37pzqzZRMXBANGwpjy+KXTyWqDqi1XeXvnMf2BX/nbjYSC3ycbg==}
-
   ember-data@3.24.0:
     resolution: {integrity: sha512-DdoJ573ucwXBBx3mR3eYwSCBChDGv3cDWaCu4x6lGmvHjropvoOVJmuXDhCuxtI17Zly7ATlXarfPZdmPA95QQ==}
     engines: {node: 10.* || >= 12.*}
@@ -13785,10 +13817,6 @@ packages:
   ember-in-viewport@4.1.0:
     resolution: {integrity: sha512-3y6qWXuJPPc6vX2GfxWgtr+sDjb+bdZF9babstr0lTd8t8c1b42gJ13GaJqlylZIyZz2dEXFCimX9WAeudPv9g==}
     engines: {node: 12.* || 14.* || >= 16}
-
-  ember-infinity@2.3.0:
-    resolution: {integrity: sha512-WDTBtL04g7y3OaCHvRRaGl9c6ZKDpm1rpFVnlWWBC4GZY7kDDs4WxTbngdHjWZb9BRJ3u0ltLEe3ncYDioiSyA==}
-    engines: {node: 10.* || >= 12.*}
 
   ember-inflector@3.0.1:
     resolution: {integrity: sha512-fngrwMsnhkBt51KZgwNwQYxgURwV4lxtoHdjxf7RueGZ5zM7frJLevhHw7pbQNGqXZ3N+MRkhfNOLkdDK9kFdA==}
@@ -28729,15 +28757,6 @@ snapshots:
       '@tryghost/errors': 3.4.0
       '@tryghost/request': 4.0.8
 
-  '@tryghost/image-transform@1.4.18(@types/node@22.20.1)':
-    dependencies:
-      '@tryghost/errors': 3.4.0
-      fs-extra: 11.4.0
-    optionalDependencies:
-      sharp: 0.35.5(@types/node@22.20.1)
-    transitivePeerDependencies:
-      - '@types/node'
-
   '@tryghost/jest-snapshot@2.3.15(supports-color@10.2.2)':
     dependencies:
       '@jest/expect': 30.4.1(supports-color@10.2.2)
@@ -34765,17 +34784,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-css-transitions@4.4.1(@babel/core@7.29.7(supports-color@10.2.2))(ember-source@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(supports-color@10.2.2):
-    dependencies:
-      '@ember/test-waiters': 3.1.0(supports-color@10.2.2)
-      '@embroider/addon-shim': 1.10.3(supports-color@10.2.2)
-      decorator-transforms: 2.3.2(@babel/core@7.29.7(supports-color@10.2.2))
-      ember-modifier: 4.2.0(@babel/core@7.29.7(supports-color@10.2.2))(ember-source@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(supports-color@10.2.2)
-    transitivePeerDependencies:
-      - '@babel/core'
-      - ember-source
-      - supports-color
-
   ember-data@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2):
     dependencies:
       '@ember-data/adapter': 3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2)
@@ -34958,19 +34966,6 @@ snapshots:
       fast-deep-equal: 2.0.1
       intersection-observer-admin: 0.3.4
       raf-pool: 0.1.4
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@glint/template'
-      - ember-source
-      - supports-color
-      - webpack
-
-  ember-infinity@2.3.0(@babel/core@7.29.7(supports-color@10.2.2))(ember-source@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(supports-color@10.2.2)(webpack@5.105.4(@swc/core@1.15.43(@swc/helpers@0.5.23))(clean-css@4.2.4)(cssnano@4.1.10)(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.32.0)(postcss@8.5.26)(uglify-js@3.19.3)):
-    dependencies:
-      '@ember/render-modifiers': 2.1.0(@babel/core@7.29.7(supports-color@10.2.2))(ember-source@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(supports-color@10.2.2)
-      ember-cli-babel: 7.26.11(supports-color@10.2.2)
-      ember-cli-htmlbars: 5.7.2(supports-color@10.2.2)
-      ember-in-viewport: 4.1.0(@babel/core@7.29.7(supports-color@10.2.2))(ember-source@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(supports-color@10.2.2)(webpack@5.105.4(@swc/core@1.15.43(@swc/helpers@0.5.23))(clean-css@4.2.4)(cssnano@4.1.10)(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.32.0)(postcss@8.5.26)(uglify-js@3.19.3))
     transitivePeerDependencies:
       - '@babel/core'
       - '@glint/template'

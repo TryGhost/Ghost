@@ -3,7 +3,9 @@ import fs from 'fs-extra';
 import path from 'path';
 import { globSync } from 'glob';
 // @ts-expect-error This module lacks type definitions.
-import importManager from '../../../../../core/server/data/importer/import-manager';
+import importer from '../../../../../core/server/data/importer';
+
+const importManager = importer.init({ jobsService: { dispatch() {} } });
 
 describe('Import Manager', function () {
   describe('extractZip', function () {

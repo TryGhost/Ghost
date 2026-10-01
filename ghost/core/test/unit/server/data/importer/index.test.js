@@ -5,11 +5,14 @@ const sinon = require('sinon');
 const _ = require('lodash');
 const testUtils = require('../../../../utils');
 const moment = require('moment');
+const os = require('node:os');
 const path = require('path');
 const fs = require('fs-extra');
 
 // Stuff we are testing
-const ImportManager = require('../../../../../core/server/data/importer');
+const ImportManager = require('../../../../../core/server/data/importer').init({
+  jobsService: { dispatch: sinon.stub() },
+});
 
 const JSONHandler = require('../../../../../core/server/data/importer/handlers/json');
 const ImageHandler = Object.assign(
@@ -167,16 +170,13 @@ describe('Importer', function () {
         __dirname,
         '../../../../utils/fixtures/import/zips/zip-with-base-dir',
       );
-      ImportManager.fileToDelete = file;
       const removeStub = sinon.stub(fs, 'remove').withArgs(file).returns(Promise.resolve());
 
-      await ImportManager.cleanUp();
+      await ImportManager.cleanUp(file);
       sinon.assert.calledOnce(removeStub);
-      assert.equal(ImportManager.fileToDelete, null);
     });
 
     it("doesn't clean up", async function () {
-      ImportManager.fileToDelete = null;
       const removeStub = sinon.stub(fs, 'remove').returns(Promise.resolve());
 
       await ImportManager.cleanUp();
@@ -189,20 +189,28 @@ describe('Importer', function () {
         __dirname,
         '../../../../utils/fixtures/import/zips/zip-with-base-dir',
       );
-      ImportManager.fileToDelete = file;
       const removeStub = sinon
         .stub(fs, 'remove')
         .withArgs(file)
         .returns(Promise.reject(new Error('Unknown file')));
 
-      await ImportManager.cleanUp();
+      await ImportManager.cleanUp(file);
       sinon.assert.calledOnce(removeStub);
       sinon.assert.calledOnce(loggingStub);
-      assert.equal(ImportManager.fileToDelete, null);
     });
 
     // Step 1 of importing is loadFile
     describe('loadFile', function () {
+      // A failed processZip removes the directory it extracted, so the rejection
+      // cases below hand it a disposable directory instead of a fixture.
+      async function disposableDirectory(fixture) {
+        const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'importer-fixture-'));
+        if (fixture) {
+          await fs.copy(fixture, directory);
+        }
+        return directory;
+      }
+
       it('knows when to process a file', async function () {
         const testFile = { name: 'myFile.json', path: '/my/path/myFile.json' };
         const zipSpy = sinon.stub(ImportManager, 'processZip').returns(Promise.resolve({}));
@@ -247,7 +255,7 @@ describe('Importer', function () {
           .withArgs(RevueHandler, sinon.match.string)
           .returns([{ path: '/tmp/dir/myFile.json', name: 'myFile.json' }]);
 
-        const zipResult = await ImportManager.processZip(testZip);
+        const { data: zipResult } = await ImportManager.processZip(testZip);
 
         sinon.assert.calledOnce(extractSpy);
         sinon.assert.calledOnce(validSpy);
@@ -384,7 +392,7 @@ describe('Importer', function () {
             .stub(ImportManager, 'extractZip')
             .returns(Promise.resolve(testDir));
 
-          const zipResult = await ImportManager.processZip(testZip);
+          const { data: zipResult } = await ImportManager.processZip(testZip);
           assertExists(zipResult.data);
           assert.equal(zipResult.images, undefined);
           sinon.assert.calledOnce(extractSpy);
@@ -399,7 +407,7 @@ describe('Importer', function () {
             .stub(ImportManager, 'extractZip')
             .returns(Promise.resolve(testDir));
 
-          const zipResult = await ImportManager.processZip(testZip);
+          const { data: zipResult } = await ImportManager.processZip(testZip);
           assertExists(zipResult.data);
           assert.equal(zipResult.images, undefined);
           sinon.assert.calledOnce(extractSpy);
@@ -414,7 +422,7 @@ describe('Importer', function () {
             .stub(ImportManager, 'extractZip')
             .returns(Promise.resolve(testDir));
 
-          const zipResult = await ImportManager.processZip(testZip);
+          const { data: zipResult } = await ImportManager.processZip(testZip);
           assert.equal(zipResult.images.length, 1);
           assert.equal(zipResult.data, undefined);
           sinon.assert.calledOnce(extractSpy);
@@ -429,16 +437,18 @@ describe('Importer', function () {
             .stub(ImportManager, 'extractZip')
             .returns(Promise.resolve(testDir));
 
-          const zipResult = await ImportManager.processZip(testZip);
+          const { data: zipResult } = await ImportManager.processZip(testZip);
           assert.equal(zipResult.images.length, 1);
           assert.equal(zipResult.data, undefined);
           sinon.assert.calledOnce(extractSpy);
         });
 
         it('throws zipContainsMultipleDataFormats', async function () {
-          const testDir = path.resolve(
-            __dirname,
-            '../../../../utils/fixtures/import/zips/zip-multiple-data-formats',
+          const testDir = await disposableDirectory(
+            path.resolve(
+              __dirname,
+              '../../../../utils/fixtures/import/zips/zip-multiple-data-formats',
+            ),
           );
           const extractSpy = sinon
             .stub(ImportManager, 'extractZip')
@@ -446,19 +456,18 @@ describe('Importer', function () {
 
           await assert.rejects(ImportManager.processZip(testZip), /multiple data formats/);
           sinon.assert.calledOnce(extractSpy);
+          assert.equal(await fs.pathExists(testDir), false);
         });
 
         it('throws noContentToImport', async function () {
-          const testDir = path.resolve(
-            __dirname,
-            '../../../../utils/fixtures/import/zips/zip-empty',
-          );
+          const testDir = await disposableDirectory();
           const extractSpy = sinon
             .stub(ImportManager, 'extractZip')
             .returns(Promise.resolve(testDir));
 
           await assert.rejects(ImportManager.processZip(testZip), /not include any content/);
           sinon.assert.calledOnce(extractSpy);
+          assert.equal(await fs.pathExists(testDir), false);
         });
       });
 

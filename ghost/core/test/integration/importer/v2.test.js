@@ -12,10 +12,7 @@ const errors = require('@tryghost/errors');
 const db = require('../../../core/server/data/db');
 
 const models = require('../../../core/server/models');
-const importer = require('../../../core/server/data/importer');
-const dataImporter = importer.importers.find((instance) => {
-  return instance.type === 'data';
-});
+const dataImporter = require('../../../core/server/data/importer/importers/data');
 
 const importOptions = {
   returnImportedData: true,
@@ -28,10 +25,6 @@ const { exportedBodyV2 } = require('../../utils/fixtures/export/body-generator')
 // Tests in here do an import for each test
 describe('Importer', function () {
   beforeAll(testUtils.teardownDb);
-
-  beforeEach(function () {
-    sinon.stub(importer, 'cleanUp');
-  });
 
   afterEach(testUtils.teardownDb);
   afterEach(function () {

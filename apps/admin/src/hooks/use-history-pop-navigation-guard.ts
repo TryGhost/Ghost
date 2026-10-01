@@ -4,6 +4,7 @@ import { useLocation } from '@tryghost/admin-x-framework';
 type PopHolder = () => boolean;
 
 const holders = new Set<PopHolder>();
+const replacements = new Set<(previousHref: string) => void>();
 const heldUrls: string[] = [];
 let isGateInstalled = false;
 
@@ -16,6 +17,16 @@ export function installHistoryPopGate(): void {
     return;
   }
   isGateInstalled = true;
+  // Router replaces change the browser entry before their React transition commits.
+  // Capture that entry synchronously so a Back in between cannot restore its old URL.
+  const replaceState = window.history.replaceState.bind(window.history);
+  window.history.replaceState = (...args) => {
+    const previousHref = window.location.href;
+    replaceState(...args);
+    for (const replaced of replacements) {
+      replaced(previousHref);
+    }
+  };
   window.addEventListener(
     'popstate',
     (event) => {
@@ -103,6 +114,17 @@ export function useHistoryPopNavigationGuard(when: boolean, claim: () => boolean
   }, [location]);
 
   React.useEffect(() => {
+    const replaced = (previousHref: string) => {
+      if (entryRef.current?.href !== previousHref) {
+        return;
+      }
+      entryRef.current = {
+        pathname: hashPathname(window.location.hash),
+        href: window.location.href,
+        state: window.history.state,
+      };
+    };
+    replacements.add(replaced);
     const hold: PopHolder = () => {
       const entry = entryRef.current;
       if (!whenRef.current || releasedRef.current || !entry) {
@@ -124,6 +146,7 @@ export function useHistoryPopNavigationGuard(when: boolean, claim: () => boolean
     holders.add(hold);
     return () => {
       holders.delete(hold);
+      replacements.delete(replaced);
     };
   }, []);
 

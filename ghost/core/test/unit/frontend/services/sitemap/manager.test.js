@@ -244,6 +244,8 @@ describe('Unit: sitemap/manager', function () {
 
       it('builds into fresh generators so a rebuild holds no dropped resources', async function () {
         PostGenerator.prototype.addUrl.callThrough();
+        // Asserted through the rendered sitemap, so the real renderer runs.
+        PostGenerator.prototype.getXml.callThrough();
         try {
           fetchStub
             .withArgs('posts')
@@ -254,6 +256,7 @@ describe('Unit: sitemap/manager', function () {
             ])
             .onSecondCall()
             .resolves([{ id: 'p1', slug: 'kept' }]);
+          getUrlForResource.callsFake((resource) => `http://example.com/${resource.slug}/`);
           const siteMapManager = makeManager();
           await siteMapManager.getSiteMapXml('posts');
           const firstPosts = siteMapManager.posts;
@@ -262,9 +265,23 @@ describe('Unit: sitemap/manager', function () {
           await siteMapManager.getSiteMapXml('posts');
 
           assert.notEqual(siteMapManager.posts, firstPosts);
-          assert.deepEqual([...siteMapManager.posts.nodeLookup.keys()], ['p1']);
+          const xml = await siteMapManager.getSiteMapXml('posts');
+          assert.deepEqual(
+            [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]),
+            ['http://example.com/kept/'],
+          );
         } finally {
           PostGenerator.prototype.addUrl.resetBehavior();
+          PostGenerator.prototype.getXml.resetBehavior();
+        }
+      });
+
+      it('seals the generators it swaps in', async function () {
+        const siteMapManager = makeManager();
+        await siteMapManager.getIndexXml();
+
+        for (const type of ['posts', 'pages', 'tags', 'authors']) {
+          assert.equal(siteMapManager[type].sealed, true, `${type} generator was left writable`);
         }
       });
 

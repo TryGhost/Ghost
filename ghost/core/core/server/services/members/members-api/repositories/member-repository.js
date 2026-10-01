@@ -22,6 +22,7 @@ const {
 } = require('../../../automations/events/start-automations-poll-event');
 const { MEMBER_WELCOME_EMAIL_SLUGS } = require('../../../member-welcome-emails/constants');
 const db = require('../../../../data/db');
+const schema = require('../../../../data/schema');
 const labs = require('../../../../../shared/labs');
 /** @import {Knex} from 'knex' */
 /** @import * as automationsApi from '../../../automations/automations-api' */
@@ -63,6 +64,39 @@ const MEMBER_STATUSES = ['free', 'paid', 'comped', 'gift'];
  * @prop {(token: string) => Promise<import('jsonwebtoken').JwtPayload>} decodeToken
  */
 
+/**
+ * The attribution columns shared by the member and subscription created records.
+ *
+ * The URLs, referrer and UTM tags come from the visitor's browser and have no length
+ * limit, so each is cut to its column's length: a value too long to store would
+ * otherwise fail the signup or Stripe webhook it is recorded with.
+ *
+ * @param {'members_created_events' | 'members_subscription_created_events'} table
+ * @param {Partial<import('../../../member-attribution/attribution-builder').Attribution> | undefined} attribution
+ */
+function attributionColumns(table, attribution) {
+  const columns = schema.tables[table];
+  /** @param {'attribution_url' | 'referrer_source' | 'referrer_medium' | 'referrer_url' | 'utm_source' | 'utm_medium' | 'utm_campaign' | 'utm_term' | 'utm_content'} column */
+  const fitted = (column, /** @type {string | null | undefined} */ value) =>
+    // By character rather than UTF-16 unit, as the column counts them, so an emoji
+    // is never split in half.
+    value ? Array.from(value).slice(0, columns[column].maxlength).join('') : null;
+
+  return {
+    attribution_id: attribution?.id ?? null,
+    attribution_url: fitted('attribution_url', attribution?.url),
+    attribution_type: attribution?.type ?? null,
+    referrer_source: fitted('referrer_source', attribution?.referrerSource),
+    referrer_medium: fitted('referrer_medium', attribution?.referrerMedium),
+    referrer_url: fitted('referrer_url', attribution?.referrerUrl),
+    utm_source: fitted('utm_source', attribution?.utmSource),
+    utm_medium: fitted('utm_medium', attribution?.utmMedium),
+    utm_campaign: fitted('utm_campaign', attribution?.utmCampaign),
+    utm_term: fitted('utm_term', attribution?.utmTerm),
+    utm_content: fitted('utm_content', attribution?.utmContent),
+  };
+}
+
 module.exports = class MemberRepository {
   /**
    * @param {object} deps
@@ -74,6 +108,8 @@ module.exports = class MemberRepository {
    * @param {any} deps.MemberPaidSubscriptionEvent
    * @param {any} deps.MemberStatusEvent
    * @param {any} deps.MemberProductEvent
+   * @param {any} deps.MemberCreatedEvent
+   * @param {any} deps.SubscriptionCreatedEvent
    * @param {any} deps.StripeCustomer
    * @param {any} deps.StripeCustomerSubscription
    * @param {any} deps.OfferRedemption
@@ -96,6 +132,8 @@ module.exports = class MemberRepository {
     MemberPaidSubscriptionEvent,
     MemberStatusEvent,
     MemberProductEvent,
+    MemberCreatedEvent: MemberCreatedEventModel,
+    SubscriptionCreatedEvent: SubscriptionCreatedEventModel,
     StripeCustomer,
     StripeCustomerSubscription,
     OfferRedemption,
@@ -117,6 +155,8 @@ module.exports = class MemberRepository {
     this._MemberPaidSubscriptionEvent = MemberPaidSubscriptionEvent;
     this._MemberStatusEvent = MemberStatusEvent;
     this._MemberProductEvent = MemberProductEvent;
+    this._MemberCreatedEvent = MemberCreatedEventModel;
+    this._SubscriptionCreatedEvent = SubscriptionCreatedEventModel;
     this._OfferRedemption = OfferRedemption;
     this._StripeCustomer = StripeCustomer;
     this._StripeCustomerSubscription = StripeCustomerSubscription;
@@ -129,28 +169,38 @@ module.exports = class MemberRepository {
     this._automationsApi = automationsApi;
     this._Automation = Automation;
     this._WelcomeEmailAutomationRun = WelcomeEmailAutomationRun;
+  }
 
-    DomainEvents.subscribe(OfferRedemptionEvent, async function (event) {
-      if (!event.data.offerId) {
-        return;
-      }
-
-      // To be extra safe, check if the redemption already exists before adding it
-      const existingRedemption = await OfferRedemption.findOne({
-        member_id: event.data.memberId,
-        subscription_id: event.data.subscriptionId,
-        offer_id: event.data.offerId,
-      });
-
-      if (!existingRedemption) {
-        await OfferRedemption.add({
-          member_id: event.data.memberId,
-          subscription_id: event.data.subscriptionId,
-          offer_id: event.data.offerId,
-          created_at: event.timestamp || Date.now(),
-        });
-      }
-    });
+  /**
+   * Records that a subscription redeemed an offer, once: Stripe can deliver the same
+   * subscription update more than once, so a redemption already recorded is left alone.
+   * A new redemption sends `OfferRedemptionEvent` once the change commits.
+   *
+   * @param {{memberId: string, subscriptionId: string, offerId: string, createdAt?: Date}} redemption
+   * @param {object} [options] joins `options.transacting` when given
+   */
+  async recordOfferRedemption({ memberId, subscriptionId, offerId, createdAt }, options) {
+    const transacting = _.pick(options, 'transacting');
+    const existing = await this._OfferRedemption.findOne(
+      { member_id: memberId, subscription_id: subscriptionId, offer_id: offerId },
+      transacting,
+    );
+    if (existing) {
+      return;
+    }
+    await this._OfferRedemption.add(
+      {
+        member_id: memberId,
+        subscription_id: subscriptionId,
+        offer_id: offerId,
+        created_at: createdAt ?? new Date(),
+      },
+      transacting,
+    );
+    this.dispatchEvent(
+      OfferRedemptionEvent.create({ memberId, subscriptionId, offerId }, createdAt),
+      options,
+    );
   }
 
   /**
@@ -657,6 +707,19 @@ module.exports = class MemberRepository {
         }
       }
     }
+    // Saved with the member rather than by a subscriber to the event below, so a read
+    // straight after the create already shows where the member came from.
+    await this._MemberCreatedEvent.add(
+      {
+        member_id: member.id,
+        created_at: eventData.created_at,
+        source,
+        batch_id: options.batch_id ?? null,
+        ...attributionColumns('members_created_events', data.attribution),
+      },
+      options,
+    );
+
     this.dispatchEvent(
       MemberCreatedEvent.create(
         {
@@ -1570,7 +1633,6 @@ module.exports = class MemberRepository {
 
       // CASE: Record offer redemption when offer_id changes to a new non-null value
       // This covers: null→new (free member upgrade), old→new (retention offer replacing expired signup offer)
-      // The OfferRedemptionEvent handler has a dedup check for repeated webhook deliveries
       if (
         !isIncomplete &&
         !subscriptionToRecord &&
@@ -1580,15 +1642,15 @@ module.exports = class MemberRepository {
         const redemptionTimestamp =
           subscriptionData.discount_start ||
           updatedStripeCustomerSubscriptionModel.get('created_at');
-        const offerRedemptionEvent = OfferRedemptionEvent.create(
+        await this.recordOfferRedemption(
           {
             memberId: memberModel.id,
             offerId: subscriptionData.offer_id,
             subscriptionId: updatedStripeCustomerSubscriptionModel.id,
+            createdAt: redemptionTimestamp,
           },
-          redemptionTimestamp,
+          options,
         );
-        this.dispatchEvent(offerRedemptionEvent, options);
       }
 
       if (
@@ -1760,15 +1822,30 @@ module.exports = class MemberRepository {
         batchId: options.batch_id,
       });
 
+      // Saved with the subscription, as the member's created record is, so a read
+      // straight after already shows where the subscription came from.
+      await this._SubscriptionCreatedEvent.add(
+        {
+          member_id: memberModel.id,
+          subscription_id: subscriptionToRecord.get('id'),
+          created_at: subscriptionCreatedEvent.timestamp,
+          batch_id: options.batch_id ?? null,
+          ...attributionColumns('members_subscription_created_events', attribution),
+        },
+        options,
+      );
+
       this.dispatchEvent(subscriptionCreatedEvent, options);
 
       if (offerId) {
-        const offerRedemptionEvent = OfferRedemptionEvent.create({
-          memberId: memberModel.id,
-          offerId: offerId,
-          subscriptionId: subscriptionToRecord.get('id'),
-        });
-        this.dispatchEvent(offerRedemptionEvent, options);
+        await this.recordOfferRedemption(
+          {
+            memberId: memberModel.id,
+            offerId: offerId,
+            subscriptionId: subscriptionToRecord.get('id'),
+          },
+          options,
+        );
       }
 
       if (getStatus(subscriptionToRecord) === 'active') {

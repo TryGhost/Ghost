@@ -494,22 +494,7 @@ describe('Post settings X card', () => {
 
     await expect(editorScreen.unsplashModal()).toHaveCount(0);
     await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
-    await expect.element(editorScreen.settingsXImageUnsplashButton()).toHaveFocus();
-  });
-
-  it('keeps the pane open when Escape dismisses the Unsplash search', async () => {
-    fakeSavablePost();
-    fakeUnsplashPhotos();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-    await openXCard();
-
-    await editorScreen.settingsXImageUnsplashButton().click();
-    await expect.element(editorScreen.unsplashModal()).toBeVisible();
-
-    await userEvent.keyboard('{Escape}');
-
-    await expect(editorScreen.unsplashModal()).toHaveCount(0);
-    await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
     await expect.element(editorScreen.settingsXTitle()).toBeVisible();
+    await expect.element(editorScreen.settingsXImageUnsplashButton()).toHaveFocus();
   });
 });

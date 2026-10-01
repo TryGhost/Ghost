@@ -1,3 +1,4 @@
+/* global vi */
 const crypto = require('crypto');
 const assert = require('node:assert/strict');
 const { assertArrayContainsDeep, assertObjectMatches } = require('../../utils/assertions');
@@ -21,6 +22,7 @@ const serializeWebhook = createWebhookSerializer({
 const urlServiceUtils = require('../../utils/url-service-utils');
 const urlUtils = require('../../../core/shared/url-utils').default;
 const DomainEvents = require('@tryghost/domain-events');
+const { OfferRedemptionEvent } = require('../../../core/shared/events');
 const {
   anyContentVersion,
   anyContentLength,
@@ -63,13 +65,6 @@ async function getOfferByStripeCoupon(stripeCouponId) {
 }
 
 async function assertMemberEvents({ eventType, memberId, asserts }) {
-  // These rows are not written by the request under test. Ghost dispatches the member
-  // and subscription events once the transaction that created them has committed, and a
-  // subscriber then writes a row for each one. That write is still running when the
-  // response reaches us, so read the rows only once every dispatched event has been
-  // handled.
-  await DomainEvents.allSettled();
-
   const events = (await models[eventType].where('member_id', memberId).fetchAll()).toJSON();
   for (let i = 0; i < asserts.length; i++) {
     assertObjectMatches(events[i], asserts[i]);
@@ -1533,6 +1528,74 @@ describe('Members API', function () {
             { field: 'T-shirt size', source: 'checkout', writer: 'binding' },
           ],
         );
+      });
+
+      it('tells a member.edited subscriber what the checkout collected', async function () {
+        const receiver = 'https://test-webhook-receiver.com';
+        const path = '/checkout-member-edited/';
+        // Every delivery rather than the first: the checkout also edits the member's
+        // status, which sends its own member.edited before the collected values land.
+        const delivered = [];
+        nock(receiver)
+          .persist()
+          .post(path, (body) => {
+            delivered.push(body.member);
+            return true;
+          })
+          .reply(200, { status: 'OK' });
+
+        const { body: integrations } = await adminAgent
+          .post('/integrations/')
+          .body({ integrations: [{ name: 'Checkout receiver' }] })
+          .expectStatus(201);
+        const integrationId = integrations.integrations[0].id;
+        const { body: webhooks } = await adminAgent
+          .post('/webhooks/')
+          .body({
+            webhooks: [
+              {
+                event: 'member.edited',
+                target_url: receiver + path,
+                integration_id: integrationId,
+              },
+            ],
+          })
+          .expectStatus(201);
+
+        try {
+          const member = await sendCheckoutWebhook('checkout-collected-webhook@email.com', {
+            custom_fields: [{ key: fieldKeys.question, type: 'text', text: { value: 'Large' } }],
+            shipping: {
+              name: 'Bex Jones',
+              address: { line1: '1 High Street', city: 'London', country: 'GB' },
+            },
+          });
+
+          const withValues = await vi.waitFor(() => {
+            const found = delivered.find((edit) => edit.previous.metafields);
+            assert.ok(found, 'a member.edited reporting the collected values as changed');
+            return found;
+          });
+          assert.equal(withValues.current.id, member.id);
+          // One edit carrying every collected value, however many bindings routed them.
+          assert.equal(withValues.current.metafields.custom[fieldKeys.question], 'Large');
+          assert.equal(withValues.current.metafields.custom[fieldKeys.recipient], 'Bex Jones');
+          assert.equal(
+            delivered.filter((edit) => edit.previous.metafields).length,
+            1,
+            'the collected values are one edit',
+          );
+        } finally {
+          await adminAgent.delete(`/webhooks/${webhooks.webhooks[0].id}/`).expectStatus(204);
+          await adminAgent.delete(`/integrations/${integrationId}/`).expectStatus(204);
+          // Only this interceptor: the file's Stripe mocks are interceptors too.
+          nock.removeInterceptor({
+            proto: 'https',
+            hostname: 'test-webhook-receiver.com',
+            path,
+            method: 'POST',
+          });
+        }
       });
 
       // Turning collection off has to stop the collecting, and Stripe keeps returning
@@ -4536,6 +4599,11 @@ describe('Members API', function () {
             end: null,
           };
 
+          // Stripe sends the same update more than once, and a redemption is announced
+          // only when it is first recorded.
+          const announced = [];
+          DomainEvents.subscribe(OfferRedemptionEvent, (event) => announced.push(event));
+
           await deliver('customer.subscription.created');
           await deliver('customer.subscription.updated');
           const offer = await getOfferByStripeCoupon(coupon.id);
@@ -4560,6 +4628,13 @@ describe('Members API', function () {
             asserts: activated ? [{ offer_id: offer.id, subscription_id: stored.id }] : [],
           });
           await assertConversions(activated ? 1 : 0);
+          assert.deepEqual(
+            announced.map((event) => event.data),
+            activated ? [{ memberId, offerId: offer.id, subscriptionId: stored.id }] : [],
+          );
+          // Subscribing wraps the handler, so it can't be removed by reference. Nothing
+          // in Ghost itself listens to this event.
+          DomainEvents.ee.removeAllListeners('OfferRedemptionEvent');
         });
       }
 

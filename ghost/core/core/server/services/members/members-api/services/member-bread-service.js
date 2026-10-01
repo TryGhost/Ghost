@@ -474,7 +474,7 @@ module.exports = class MemberBREADService {
    * @private
    * @param {object} data the member payload, whose `metafields` key is removed
    * @param {object} options
-   * @returns {Promise<{writes: import('../../../members-metafields/values-service').PlannedWrite[], origin: import('../../../members-metafields').WriteOrigin} | null>}
+   * @returns {Promise<import('../../../members-metafields/values-service').MetafieldPlan | null>}
    *   null when there is nothing to write
    */
   async planStaffMetafields(data, options) {
@@ -514,7 +514,7 @@ module.exports = class MemberBREADService {
    * @private
    * @param {object} data the member attributes
    * @param {object} options
-   * @param {{writes: import('../../../members-metafields/values-service').PlannedWrite[], origin: import('../../../members-metafields').WriteOrigin}} metafields
+   * @param {import('../../../members-metafields/values-service').MetafieldPlan} metafields
    */
   async createWithMetafields(data, options, { writes, origin }) {
     return this.transaction(async (transacting) => {
@@ -636,7 +636,7 @@ module.exports = class MemberBREADService {
       }
 
       model = metafields
-        ? await this.updateWithMetafields(data, options, metafields.writes, metafields.origin)
+        ? await this.updateWithMetafields(data, options, [metafields])
         : await this.memberRepository.update(data, options);
     } catch (error) {
       if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
@@ -682,16 +682,16 @@ module.exports = class MemberBREADService {
 
   /**
    * Updates a member and writes their metafields in one transaction. The `member.edited`
-   * event fires when the transaction commits, so it always sees the new metafields.
+   * event fires once, when the transaction commits, so it always sees the new metafields.
    * Without writes, updates the member as before.
    *
    * @param {object} data the member attributes to change
    * @param {object} options must name the member by `id`
-   * @param {import('../../../members-metafields/values-service').PlannedWrite[]} writes
-   * @param {import('../../../members-metafields').WriteOrigin} origin
+   * @param {import('../../../members-metafields/values-service').MetafieldPlan[]} plans
+   *   applied in order, so where two write one field the last is what it holds
    */
-  async updateWithMetafields(data, options, writes, origin) {
-    if (writes.length === 0) {
+  async updateWithMetafields(data, options, plans) {
+    if (plans.every((plan) => plan.writes.length === 0)) {
       return this.memberRepository.update(data, options);
     }
 
@@ -704,7 +704,12 @@ module.exports = class MemberBREADService {
       const memberUnchanged = !model._changed || Object.keys(model._changed).length === 0;
 
       const before = await this.readMetafieldsForMember(model.id, ADMIN, { transacting });
-      await this.metafieldValues.applyWrite(model.id, writes, { ...origin, executor: transacting });
+      for (const { writes, origin } of plans) {
+        await this.metafieldValues.applyWrite(model.id, writes, {
+          ...origin,
+          executor: transacting,
+        });
+      }
       const after = await this.readMetafieldsForMember(model.id, ADMIN, { transacting });
       if (!_.isEqual(before, after)) {
         // Metafields aren't member columns, so the model doesn't keep their old values.

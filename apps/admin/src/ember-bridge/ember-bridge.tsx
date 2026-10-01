@@ -1,8 +1,8 @@
-import { useCallback, useContext, useEffect, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
-import { EmberContext } from './ember-context';
 import { getListReturnNavigationState } from '@/shared/virtual-list';
+import type { EmberNotificationsHost } from './ember-notifications-host';
 
 export interface EmberBridge {
   state: StateBridge;
@@ -13,8 +13,6 @@ export type StateBridgeEventMap = {
   emberAuthChange: EmberAuthChangeEvent;
   subscriptionChange: SubscriptionState;
   sidebarVisibilityChange: SidebarVisibilityChangeEvent;
-  routeChange: RouteChangeEvent;
-  openGiftLinkModal: OpenGiftLinkModalEvent;
   featureFlagsChange: undefined;
   restoreListState: { path: string };
 };
@@ -33,6 +31,7 @@ export interface StateBridge {
   setPostListQueryParams?: (resource: 'posts' | 'pages', params: Record<string, string>) => void;
   setReactFullScreen?: (isFullScreen: boolean) => void;
   setReactRoutePattern?: (routePattern: string | null) => void;
+  connectNotificationsHost?: (host: EmberNotificationsHost) => () => void;
   on<K extends keyof StateBridgeEventMap>(
     event: K,
     callback: (event: StateBridgeEventMap[K]) => void,
@@ -42,11 +41,6 @@ export interface StateBridge {
     callback: (event: StateBridgeEventMap[K]) => void,
   ): void;
   sidebarVisible: boolean;
-  getRouteUrl: (routeName: string, queryParams?: Record<string, string | null> | null) => string;
-  isRouteActive: (
-    routeNames: string | string[],
-    queryParams?: Record<string, string | null> | null,
-  ) => boolean;
 }
 
 declare global {
@@ -77,18 +71,6 @@ export interface SubscriptionState {
 export interface SidebarVisibilityChangeEvent {
   isVisible: boolean;
 }
-
-export interface RouteChangeEvent {
-  routeName: string;
-  queryParams: Record<string, unknown>;
-}
-
-export interface OpenGiftLinkModalEvent {
-  id: string;
-  resource: 'posts' | 'pages';
-}
-
-export type EmberRouting = Pick<StateBridge, 'getRouteUrl' | 'isRouteActive'>;
 
 /**
  * Maps Ember Data model names to React ResponseType strings.
@@ -298,20 +280,6 @@ export function useEmberFeatureFlag(flag: string): boolean | null | undefined {
 }
 
 /**
- * Subscribes to Ember's request to open the (React-owned) gift-link modal.
- *
- * Ember surfaces — the posts/pages list context menu — fire `openGiftLinkModal`
- * over the bridge instead of rendering their own modal. The consumer owns the
- * modal's open/close state and just reacts to each request. Returns an
- * unsubscribe function.
- */
-export function subscribeOpenGiftLinkModal(
-  handler: (event: OpenGiftLinkModalEvent) => void,
-): () => void {
-  return onEmberStateBridgeEvent('openGiftLinkModal', handler);
-}
-
-/**
  * Whether Ember owns the DOM theme. In the embedded admin, Ember manages the
  * `dark` class and the dark stylesheet, and installs its own
  * prefers-color-scheme listener, so React must not apply the theme itself.
@@ -385,6 +353,27 @@ export function syncEmberRoutePattern(routePattern: string | null): () => void {
 }
 
 /**
+ * Hands Ember's notifications to a React host once the bridge is ready.
+ * Returns a disconnect that also cancels a connection still waiting.
+ */
+export function connectEmberNotificationsHost(host: EmberNotificationsHost): () => void {
+  let disconnect: (() => void) | undefined;
+  let isConnected = true;
+
+  const stopPolling = waitForStateBridge((stateBridge) => {
+    if (isConnected) {
+      disconnect = stateBridge.connectNotificationsHost?.(host);
+    }
+  });
+
+  return () => {
+    isConnected = false;
+    stopPolling();
+    disconnect?.();
+  };
+}
+
+/**
  * React -> Ember handlers for the FrameworkProvider. Feature flag overrides
  * wait for Ember to load; mutation handlers no-op when the bridge is absent.
  */
@@ -430,60 +419,6 @@ export function useSidebarVisibility(): boolean {
     getSidebarVisibility,
     getSidebarVisibility, // Server snapshot (same as client for now)
   );
-}
-
-// Default no-op routing for when the bridge isn't available yet
-const defaultRouting: EmberRouting = {
-  getRouteUrl: (routeName) => routeName,
-  isRouteActive: () => false,
-};
-
-/**
- * Hook to access Ember routing state.
- * Returns routing methods that re-render when Ember's route changes.
- *
- * @example
- * ```tsx
- * const routing = useEmberRouting();
- * const postsUrl = routing.getRouteUrl('posts');
- * const customUrl = routing.getRouteUrl('posts', {type: 'draft'});
- * const isActive = routing.isRouteActive('posts', {type: 'draft'});
- * ```
- */
-export function useEmberRouting(): EmberRouting {
-  const emberContext = useContext(EmberContext);
-  const [bridge, setBridge] = useState<StateBridge | null>(() => window.EmberBridge?.state ?? null);
-  const [, forceUpdate] = useState(0);
-
-  useEffect(() => {
-    // Wait for bridge to be available
-    if (!bridge) {
-      return waitForStateBridge(setBridge);
-    }
-
-    // Subscribe to route changes to force re-renders
-    const handleRouteChange = () => {
-      forceUpdate((n) => n + 1);
-    };
-
-    bridge.on('routeChange', handleRouteChange);
-    return () => bridge.off('routeChange', handleRouteChange);
-  }, [bridge]);
-
-  // Return default no-op routing until bridge is available
-  if (!bridge) {
-    return defaultRouting;
-  }
-
-  return {
-    getRouteUrl: bridge.getRouteUrl,
-    // React-owned navigations use pushState, which Ember does not observe.
-    // Only trust Ember's route state while the current route is actually
-    // rendering an Ember fallback. Outside EmberProvider (mainly unit tests
-    // and standalone consumers), preserve the bridge's original behaviour.
-    isRouteActive: (...args) =>
-      (emberContext?.isFallbackPresent ?? true) && bridge.isRouteActive(...args),
-  };
 }
 
 /**

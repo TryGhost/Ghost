@@ -80,7 +80,7 @@ test.describe('Ghost Admin - Deleting Posts', () => {
     await editor.settingsToggleButton.click();
     await editor.settingsMenu.deletePost();
 
-    await expect(editor.screenTitle).toContainText('Posts');
+    await expect(postsPage.pageTitle).toHaveText('Posts');
   });
 
   test('delete a post with unsaved changes - redirects to posts list', async ({ page }) => {
@@ -94,7 +94,7 @@ test.describe('Ghost Admin - Deleting Posts', () => {
     await editor.settingsToggleButton.click();
     await editor.settingsMenu.deletePost();
 
-    await expect(editor.screenTitle).toContainText('Posts');
+    await expect(postsPage.pageTitle).toHaveText('Posts');
   });
 });
 

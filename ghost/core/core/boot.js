@@ -464,6 +464,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const memberJobs = require('./server/services/members/jobs');
   const membersService = require('./server/services/members');
   memberJobs.init();
+  const siteImporter = require('./server/data/importer').init({ jobsService });
   assert(giftService.service, 'Gift service should be initialized');
   assert(mentionsService.controller, 'Mentions controller should be initialized');
   assert(mentionsService.sendingService, 'Mentions sending service should be initialized');
@@ -481,6 +482,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     mentionsSendingService: mentionsService.sendingService,
     membersService,
     emailService: emailService.service,
+    siteImporter,
   });
   await jobsService.start();
   debug('End: Register job handlers');

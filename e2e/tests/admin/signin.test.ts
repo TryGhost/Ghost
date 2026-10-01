@@ -1,4 +1,4 @@
-import { LoginPage, PostsPage, SitePage, TagsPage } from '@/admin-pages';
+import { LoginPage, PostEditorPage, PostsPage, SitePage, TagsPage } from '@/admin-pages';
 import { Page } from '@playwright/test';
 import { expect, test } from '@/helpers/playwright';
 import { usePerTestIsolation } from '@/helpers/playwright/isolation';
@@ -34,15 +34,16 @@ test.describe('Ghost Admin - Signin Redirect', () => {
   }) => {
     await logout(page);
 
-    const postsPage = new PostsPage(page);
-    await postsPage.goto();
+    const editor = new PostEditorPage(page);
+    await editor.goto();
 
     const loginPage = new LoginPage(page);
     await expect(loginPage.signInButton).toBeVisible();
 
     await loginPage.signIn(ghostAccountOwner.email, ghostAccountOwner.password);
 
-    await postsPage.waitForPageToFullyLoad();
+    await expect(page).toHaveURL(/#\/editor\/post/);
+    await expect(editor.titleInput).toBeVisible();
   });
 
   test('query params on a deep link survive signin redirect', async ({
