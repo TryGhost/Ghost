@@ -3,6 +3,11 @@ import {
   searchCursorScope,
   browseMemberSearch,
 } from './automation-member-search';
+import {
+  countCursorScope,
+  decodeCountCursor,
+  readMemberSearchCounts,
+} from './automation-member-search-counts';
 import { decodeRunCursor, encodeRunCursor, type RunCursorScope } from './automation-run-cursor';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
@@ -158,7 +163,14 @@ export async function read(automationId: string) {
   return automation;
 }
 
-export async function readPerformanceStats(automationId: string, options: unknown = {}) {
+export async function readPerformanceStats(
+  automationId: string,
+  options: Record<string, unknown> = {},
+) {
+  const query = normalizeMemberSearch(options.search);
+  if (!query && options.cursor !== undefined) {
+    throw new errors.ValidationError({ message: 'A search cursor requires a member search.' });
+  }
   const exists = await repository.exists(automationId);
   if (!exists) {
     throw new errors.NotFoundError({ message: tpl(messages.automationNotFound) });
@@ -171,6 +183,52 @@ export async function readPerformanceStats(automationId: string, options: unknow
     });
   }
   const { timezone, window: requestedWindow } = parseEntryStatsOptions(options);
+  if (query) {
+    const requestedScope = countCursorScope(
+      automationId,
+      config.get('tinybird:stats:id') || settingsCache.get('site_uuid'),
+      query,
+      {
+        date_from: requestedWindow?.date_from ?? null,
+        date_to: requestedWindow?.date_to ?? null,
+        timezone,
+      },
+    );
+    const secret = settingsCache.get('admin_session_secret');
+    const continuation =
+      options.cursor === undefined
+        ? undefined
+        : decodeCountCursor(options.cursor, requestedScope, secret, {
+            preserveEndDate: options.date_to === undefined,
+          });
+    // Resolve the calendar once, then pin it in the signed continuation. This
+    // keeps every search batch on the same hourly/daily calendar as the sidebar.
+    let window = continuation?.window;
+    if (!window) {
+      if (requestedWindow) {
+        const singleDay =
+          Date.parse(requestedWindow.date_to) - Date.parse(requestedWindow.date_from) === 86400000;
+        window = { ...requestedWindow, bucket: singleDay ? 'hour' : 'day' };
+      } else {
+        const calendar = await fetchAutomationPerformanceStats(client, automationId, { timezone });
+        if (!calendar) {
+          throw new errors.InternalServerError({
+            message: tpl(messages.tinybirdPerformanceStatsFailed),
+          });
+        }
+        window = getEntryStatsWindow(calendar.entries, timezone);
+      }
+    }
+    return readMemberSearchCounts(
+      knex,
+      client,
+      continuation?.scope ?? requestedScope,
+      query,
+      secret,
+      window,
+      continuation,
+    );
+  }
   const stats = await fetchAutomationPerformanceStats(client, automationId, {
     timezone,
     ...(requestedWindow

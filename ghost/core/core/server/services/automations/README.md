@@ -151,7 +151,7 @@ replacing a successful chart or status counts.
 
 ## Member search
 
-The run list accepts `search`, matching a literal
+Both the run list and performance stats accept `search`, matching a literal
 substring of a current member name or email. Outer whitespace is trimmed; a blank
 value uses ordinary browsing. `%`, `_`, and the escape character are literal,
 not wildcards. Matching follows MySQL's member-column collation. There is no
@@ -168,7 +168,7 @@ Search preserves the existing dates, timezone, status filter, and ordering on
 - `scanning`: the request reached its work budget; continue even if this page is empty.
 - `exhausted`: the search finished and `next_cursor` is null.
 
-Search cursors are separate from ordinary list cursors and bind the normalized
+Search uses the ordinary list cursor format with additional fields binding the normalized
 query, site, automation, status, direction, and date range. Start a new search
 when those change. A start-only range retains its original end date across
 midnight. Reads are live, so later membership/status changes can affect subsequent
@@ -179,7 +179,42 @@ ID set; larger searches scan Tinybird candidates in batches of at most 5,000,
 then match them in MySQL. Each request returns at most 50 runs, scans at most
 four batches, and checks a 1.5-second soft budget between batches. Database and
 Tinybird queries also have execution/request timeouts. Failures remain errors,
-not empty results or partial success.
+not empty results or partial success. A conclusively empty MySQL match set
+returns immediately without querying the search pipes. Invalid candidate histories
+only fail the list request after their current member matches the search; they
+follow the same cursor ordering as other candidates.
+
+### Search performance stats
+
+`performance-stats/?search=…` counts all matching entries across all three
+statuses, independently of the list's selected status and current page. It uses
+the same date cohort and hourly/daily grouping as the chart. For all time, the
+first request resolves the existing unfiltered performance calendar once so
+searching does not shrink the displayed date range. The calendar is fixed in
+subsequent continuation requests.
+
+Unlike an ordinary performance response, a search can require multiple requests:
+
+- `automation_performance_stats` is empty while scanning. The final response
+  contains the automation ID, total, and three exact status counts.
+- `meta.entry_window` describes the complete calendar, with an exclusive end.
+- `meta.entry_buckets` contains only this response's sparse `{date, count}`
+  buckets. Hourly buckets use UTC timestamps; daily buckets use local dates.
+- `meta.pagination` contains `next_cursor` and `state` (`scanning` or `exhausted`).
+
+Clients collect each cursor page once, combine its buckets, then fill missing
+calendar buckets with zero. Retrying a page replaces that page rather than adding
+it again. Do not show partial buckets or totals as a completed chart; a completed
+empty search has zero totals and empty buckets. The search response intentionally
+keeps partial buckets out of the ordinary `entries` field.
+
+Large counts scan bounded MySQL run-ID windows (30,000 runs, up to four windows
+per request) and aggregate matching IDs in Tinybird sequentially. Continuations
+carry accumulated totals and a fixed upper run-ID boundary, signed using the
+persisted admin-session secret. Continuations do not expire; start a fresh search
+to refresh live results. Individual requests are bounded without imposing a
+total-result cap. The covering index planned in NY-1620 is a separate migration;
+this API works with the existing schema.
 
 ## Availability
 
