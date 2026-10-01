@@ -79,6 +79,7 @@ export class BillingAppConnection {
 
     return () => {
       this.clearLoadMonitor();
+      this.attempts = 0;
       this.iframe = null;
     };
   }

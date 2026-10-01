@@ -66,15 +66,19 @@ export default class ProRoute extends AuthenticatedRoute {
         this.billing.toggleProWindow(isBillingTransition);
     }
 
+    // Built by hand like PostsRoute#_reactRouteUrl: router.urlFor depends on
+    // the configured location
     _reactRouteUrl(transition) {
         const sub = transition.to?.params?.sub?.replace(/\/$/, '');
-        return sub ? `/pro/${sub}` : '/pro';
+        const billingAction = transition.to?.queryParams?.action;
+        const path = sub ? `/pro/${sub}` : '/pro';
+        return billingAction ? `${path}?action=${encodeURIComponent(billingAction)}` : path;
     }
 
     // See PostsRoute#_parkOnReactFallback: keeps Ember's router state honest
     // after the abort without writing the fallback's URL.
     _parkOnReactFallback(reactRouteUrl) {
-        const fallbackPath = reactRouteUrl.replace(/^\//, '');
+        const fallbackPath = reactRouteUrl.split('?')[0].replace(/^\//, '');
         const parkedPath = this.router.currentRouteName === 'react-fallback'
             ? this.router.currentRoute?.params?.path
             : null;

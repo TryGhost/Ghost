@@ -32,9 +32,22 @@ export function billingAdminPath(subRoute: string): string {
   return subRoute === '/' ? BILLING_ROUTE_ROOT : `${BILLING_ROUTE_ROOT}${subRoute}`;
 }
 
-/** A billing app route as reported by the app: a path, never a URL. */
+/**
+ * A billing app route as reported by the app: a path, never a URL, and never
+ * one with dot segments — the router resolves `/pro/../x` to `/x`, which would
+ * let a route report reach any Admin screen.
+ */
 export function isBillingAppRoute(route: unknown): route is string {
-  return typeof route === 'string' && route.startsWith('/') && !route.startsWith('//');
+  if (
+    typeof route !== 'string' ||
+    !route.startsWith('/') ||
+    route.startsWith('//') ||
+    route.includes('\\')
+  ) {
+    return false;
+  }
+  const segments = route.split(/[?#]/)[0].split('/');
+  return !segments.some((segment) => /^(\.|%2e){1,2}$/i.test(segment));
 }
 
 const NEWSLETTERS_DESTINATION = 'newsletters';

@@ -96,6 +96,23 @@ describe('Acceptance: billing React flag', function () {
             expect(navigate.firstCall.args[0], 'target url').to.equal('/pro');
         });
 
+        it('keeps the checkout action on a named billing transition', async function () {
+            const route = this.owner.lookup('route:pro');
+            const navigate = sinon.stub(route, '_navigateToReactRoute');
+
+            await visit('/tags');
+            try {
+                await this.owner.lookup('service:router').transitionTo('pro', {queryParams: {action: 'checkout'}});
+            } catch (error) {
+                if (error?.name !== 'TransitionAborted') {
+                    throw error;
+                }
+            }
+            await settled();
+
+            expect(navigate.firstCall?.args[0], 'target url').to.equal('/pro?action=checkout');
+        });
+
         it('leaves the force upgrade redirect to React', async function () {
             setHostSettings(this.server, {forceUpgrade: true, billing: {enabled: true, url: 'about:blank'}});
             const router = this.owner.lookup('service:router');

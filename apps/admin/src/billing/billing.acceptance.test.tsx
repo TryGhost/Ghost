@@ -7,8 +7,10 @@ import {
   fakeAdminEndpoint,
   fakeFrameOrigin,
   fakeTags,
+  fakeUsers,
   renderAdminApp,
   staffRole,
+  staffUser,
   type StaffRoleName,
 } from '@test-utils/acceptance';
 import { DUNNING_PAY_RETURN_ROUTE_STORAGE_KEY } from '@tryghost/admin-x-framework/api/dunning';
@@ -196,6 +198,74 @@ describe('Ghost(Pro) billing', () => {
     expect(loads(messages)).toHaveLength(1);
   });
 
+  it('resyncs the billing app when history returns to a route it reported', async () => {
+    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+    const messages = standInMessages();
+    await renderBilling('/pro');
+    await postFromBillingApp(messages, { route: '/plans' });
+    await expect.poll(currentRoute).toBe('/pro/plans');
+
+    window.location.hash = '#/pro/domain';
+    await expect.poll(currentRoute).toBe('/pro/domain');
+    window.history.back();
+
+    await expect.poll(currentRoute).toBe('/pro/plans');
+    await expect
+      .poll(() => received(messages, 'query').at(-1))
+      .toEqual({ query: 'routeUpdate', response: '/plans' });
+  });
+
+  it('sends the billing app to checkout once it has reported where checkout is', async () => {
+    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+    const messages = standInMessages();
+    await renderBilling('/pro');
+    await postFromBillingApp(messages, {
+      subscription: { status: 'active', isActiveTrial: false, trial_end: null },
+      checkoutRoute: '/plans/checkout',
+    });
+    await billingAppSettled(messages);
+
+    window.location.hash = '#/pro?action=checkout';
+
+    await expect
+      .poll(() => received(messages, 'query').at(-1))
+      .toEqual({ query: 'routeUpdate', response: '/plans/checkout' });
+  });
+
+  it('withholds the token from staff who are not the owner', async () => {
+    fakeTags([]);
+    fakeUsers([
+      staffUser({
+        name: 'Site Owner',
+        email: 'owner@example.com',
+        roles: [staffRole({ name: 'Owner' })],
+      }),
+    ]);
+    await fakeFrameOrigin(
+      BILLING_ORIGIN,
+      billingStandIn(`parent.postMessage({ request: 'token' }, '*');`),
+    );
+    const messages = standInMessages();
+    await renderBilling('/pro', { role: 'Editor', hostSettings: { forceUpgrade: true } });
+
+    await expect
+      .poll(() => received(messages, 'request').find(({ request }) => request === 'token'))
+      .toEqual({ request: 'token', response: null });
+
+    await postFromBillingApp(messages, { request: 'forceUpgradeInfo' });
+    await expect
+      .poll(() =>
+        received(messages, 'request').find(({ request }) => request === 'forceUpgradeInfo'),
+      )
+      .toMatchObject({
+        response: {
+          forceUpgrade: true,
+          isOwner: false,
+          ownerUser: { name: 'Site Owner', email: 'owner@example.com' },
+        },
+      });
+  });
+
   it('opens approved Admin destinations and ignores anything else', async () => {
     // The settings app owns its request graph; this spec asserts the handoff.
     allowUnhandledRequests();
@@ -204,9 +274,14 @@ describe('Ghost(Pro) billing', () => {
     await renderBilling('/pro');
     await expect.element(billingScreen.frame()).toBeVisible();
 
-    await postFromBillingApp(messages, { request: 'navigateToAdmin', destination: '/members' });
-    await postFromBillingApp(messages, { request: 'navigateToAdmin', destination: 'staff' });
+    for (const destination of ['/members', '__proto__', 'https://example.com']) {
+      await postFromBillingApp(messages, { request: 'navigateToAdmin', destination });
+    }
+    await postFromBillingApp(messages, { route: '/../tags' });
+    await billingAppSettled(messages);
+    expect(currentRoute()).toBe('/pro');
 
+    await postFromBillingApp(messages, { request: 'navigateToAdmin', destination: 'staff' });
     await expect.poll(currentRoute).toBe('/settings/staff');
     await expect.element(billingScreen.frame()).not.toBeVisible();
   });
