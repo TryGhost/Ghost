@@ -100,7 +100,8 @@ const TABLES_ALLOWLIST = [
     'products_benefits',
     'offers',
     'offer_redemptions',
-    'snippets'
+    'snippets',
+    'forms'
 ];
 
 // NOTE: these are settings keys which should never end up in the export file

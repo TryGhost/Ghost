@@ -1,3 +1,4 @@
+// @ts-nocheck
 const _ = require('lodash');
 const ObjectId = require('bson-objectid').default;
 const semver = require('semver');
@@ -16,6 +17,8 @@ const StripePricesImporter = require('./stripe-prices-importer');
 const CustomThemeSettingsImporter = require('./custom-theme-settings-importer');
 const RevueSubscriberImporter = require('./revue-subscriber-importer');
 const RolesImporter = require('./roles-importer');
+const FormsImporter = require('./forms-importer');
+const FormSubmissionsImporter = require('./form-submissions-importer');
 const {slugify} = require('@tryghost/string/lib');
 
 let importers = {};
@@ -39,6 +42,8 @@ DataImporter = {
         importers.products = new ProductsImporter(importData.data);
         importers.stripe_products = new StripeProductsImporter(importData.data);
         importers.stripe_prices = new StripePricesImporter(importData.data);
+        importers.forms = new FormsImporter(importData.data);
+        importers.form_submissions = new FormSubmissionsImporter(importData.data);
         importers.posts = new PostsImporter(importData.data);
         importers.custom_theme_settings = new CustomThemeSettingsImporter(importData.data);
         importers.revue_subscribers = new RevueSubscriberImporter(importData.data);

@@ -28,6 +28,8 @@ const StripePricesImporter = require('../../../../../core/server/data/importer/i
 const PostsImporter = require('../../../../../core/server/data/importer/importers/data/posts-importer');
 const CustomThemeSettingsImporter = require('../../../../../core/server/data/importer/importers/data/custom-theme-settings-importer');
 const RevueSubscriberImporter = require('../../../../../core/server/data/importer/importers/data/revue-subscriber-importer');
+const FormsImporter = require('../../../../../core/server/data/importer/importers/data/forms-importer');
+const FormSubmissionsImporter = require('../../../../../core/server/data/importer/importers/data/form-submissions-importer');
 const Base = require('../../../../../core/server/models/base');
 const configUtils = require('../../../../utils/config-utils');
 const logging = require('@tryghost/logging');
@@ -709,7 +711,9 @@ describe('Importer', function () {
                 StripeProductsImporter,
                 StripePricesImporter,
                 CustomThemeSettingsImporter,
-                RevueSubscriberImporter
+                RevueSubscriberImporter,
+                FormsImporter,
+                FormSubmissionsImporter
             ].forEach((Importer) => {
                 sinon.stub(Importer.prototype, 'fetchExisting').resolves();
                 sinon.stub(Importer.prototype, 'beforeImport').resolves();

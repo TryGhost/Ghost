@@ -47,6 +47,8 @@ describe('Exporter', function () {
             'email_recipients',
             'email_spam_complaint_events',
             'emails',
+            'form_submissions',
+            'forms',
             'gift_deliveries',
             'gift_links',
             'gifts',

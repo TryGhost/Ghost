@@ -22,8 +22,8 @@ class PostsImporter extends BaseImporter {
                 'products',
                 'posts_products'
             ],
-            requiredImportedData: ['tags', 'products', 'newsletters'],
-            requiredExistingData: ['tags', 'products', 'newsletters']
+            requiredImportedData: ['tags', 'products', 'newsletters', 'forms'],
+            requiredExistingData: ['tags', 'products', 'newsletters', 'forms']
         });
     }
 
@@ -210,6 +210,28 @@ class PostsImporter extends BaseImporter {
             debug(`newsletter ${objectInFile.newsletter_id} not found; ignoring`);
             delete objectInFile.newsletter_id;
         });
+
+        // map form references in post content if any form IDs were remapped
+        if (this.requiredImportedData.forms && this.requiredImportedData.forms.length) {
+            const remappedForms = this.requiredImportedData.forms.filter(f => f.originalId && f.originalId !== f.id);
+            if (remappedForms.length) {
+                _.each(this.dataToImport, (post) => {
+                    for (const {originalId, id} of remappedForms) {
+                        const formAttrRegex = new RegExp(`(data-ghost-form=\\\\?["'])${originalId}(\\\\?["'])`, 'g');
+                        const formPathRegex = new RegExp(`(/forms/)${originalId}(/embed\\.js)`, 'g');
+                        if (post.html) {
+                            post.html = post.html.replace(formAttrRegex, `$1${id}$2`).replace(formPathRegex, `$1${id}$2`);
+                        }
+                        if (post.lexical) {
+                            post.lexical = post.lexical.replace(formAttrRegex, `$1${id}$2`).replace(formPathRegex, `$1${id}$2`);
+                        }
+                        if (post.mobiledoc) {
+                            post.mobiledoc = post.mobiledoc.replace(formAttrRegex, `$1${id}$2`).replace(formPathRegex, `$1${id}$2`);
+                        }
+                    }
+                });
+            }
+        }
 
         return super.replaceIdentifiers();
     }
