@@ -1,4 +1,5 @@
 import ColorPickerField from '@/settings/components/color-picker-field';
+import FormSection from '@/settings/components/form-section';
 import HeaderImageField from '@/settings/email-design/header-image-field';
 import HtmlField from '@/settings/components/html-field';
 import NewsletterPreview from './newsletter-preview';
@@ -13,8 +14,6 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
-  FieldLegend,
-  FieldSet,
   FieldTitle,
   Input,
   Select,
@@ -100,21 +99,6 @@ const IconToggleGroup: React.FC<{
       </Tooltip>
     ))}
   </ToggleGroup>
-);
-
-// Rows share one vertical rhythm: horizontal fields are a control-height tall, and
-// stacked fields sit 8px lower so their labels line up with horizontal ones. The
-// rules target Shade fields only, as other elements can carry data-orientation too
-const SettingsSection: React.FC<{ title: string; children: React.ReactNode }> = ({
-  title,
-  children,
-}) => (
-  <FieldSet className="mt-10 gap-0 first:mt-8">
-    <FieldLegend className="mb-4 text-lg! font-semibold">{title}</FieldLegend>
-    <FieldGroup className="gap-4 [&>[data-slot=field][data-orientation=horizontal]]:min-h-(--control-height) [&>[data-slot=field][data-orientation=vertical]]:mt-2">
-      {children}
-    </FieldGroup>
-  </FieldSet>
 );
 
 const ReplyToEmailField: React.FC<{
@@ -379,7 +363,7 @@ const Sidebar: React.FC<{
       title: 'General',
       contents: (
         <>
-          <SettingsSection title="Name and description">
+          <FormSection title="Name and description">
             <Field data-invalid={Boolean(errors.name) || undefined}>
               <FieldLabel htmlFor="newsletter-detail-name">Name</FieldLabel>
               <Input
@@ -403,8 +387,8 @@ const Sidebar: React.FC<{
                 onChange={(e) => updateNewsletter({ description: e.target.value })}
               />
             </Field>
-          </SettingsSection>
-          <SettingsSection title="Email info">
+          </FormSection>
+          <FormSection title="Email info">
             <Field>
               <FieldLabel htmlFor="newsletter-sender-name">Sender name</FieldLabel>
               <Input
@@ -423,8 +407,8 @@ const Sidebar: React.FC<{
               updateNewsletter={updateNewsletter}
               validate={validate}
             />
-          </SettingsSection>
-          <SettingsSection title="Member settings">
+          </FormSection>
+          <FormSection title="Member settings">
             <Field orientation="horizontal">
               <FieldLabel htmlFor="newsletter-subscribe-on-signup">
                 Subscribe new members on signup
@@ -435,7 +419,7 @@ const Sidebar: React.FC<{
                 onCheckedChange={(checked) => updateNewsletter({ subscribe_on_signup: checked })}
               />
             </Field>
-          </SettingsSection>
+          </FormSection>
           <div className="mt-10 mb-5">
             {newsletter.status === 'active' ? (
               !onlyOne && (
@@ -467,7 +451,7 @@ const Sidebar: React.FC<{
       title: 'Content',
       contents: (
         <>
-          <SettingsSection title="Header">
+          <FormSection title="Header">
             <HeaderImageField
               inputId="newsletter-header-image"
               value={newsletter.header_image || ''}
@@ -500,9 +484,9 @@ const Sidebar: React.FC<{
                 onCheckedChange={(checked) => updateNewsletter({ show_header_name: checked })}
               />
             </Field>
-          </SettingsSection>
+          </FormSection>
 
-          <SettingsSection title="Title section">
+          <FormSection title="Title section">
             <Field orientation="horizontal">
               <FieldLabel htmlFor="newsletter-show-post-title">Post title</FieldLabel>
               <Switch
@@ -531,9 +515,9 @@ const Sidebar: React.FC<{
                 onCheckedChange={(checked) => updateNewsletter({ show_feature_image: checked })}
               />
             </Field>
-          </SettingsSection>
+          </FormSection>
 
-          <SettingsSection title="Footer">
+          <FormSection title="Footer">
             <Field orientation="horizontal">
               <FieldLabel htmlFor="newsletter-feedback-enabled">
                 Ask your readers for feedback
@@ -595,7 +579,7 @@ const Sidebar: React.FC<{
               value={newsletter.footer_content || ''}
               onChange={(html) => updateNewsletter({ footer_content: html })}
             />
-          </SettingsSection>
+          </FormSection>
           <Separator className="mt-8" />
           <div className="my-5 flex w-full items-start">
             <span>
@@ -628,7 +612,7 @@ const Sidebar: React.FC<{
       title: 'Design',
       contents: (
         <>
-          <SettingsSection title="Global">
+          <FormSection title="Global">
             <ColorPickerField
               direction="rtl"
               eyedropper={true}
@@ -706,8 +690,8 @@ const Sidebar: React.FC<{
                 </Select>
               </Field>
             </Inline>
-          </SettingsSection>
-          <SettingsSection title="Header">
+          </FormSection>
+          <FormSection title="Header">
             <ColorPickerField
               direction="rtl"
               eyedropper={true}
@@ -765,9 +749,9 @@ const Sidebar: React.FC<{
                 }
               />
             </Inline>
-          </SettingsSection>
+          </FormSection>
 
-          <SettingsSection title="Body">
+          <FormSection title="Body">
             <ColorPickerField
               direction="rtl"
               eyedropper={true}
@@ -936,7 +920,7 @@ const Sidebar: React.FC<{
               value={newsletter.divider_color || 'light'}
               onChange={(color) => updateNewsletter({ divider_color: color })}
             />
-          </SettingsSection>
+          </FormSection>
         </>
       ),
     },

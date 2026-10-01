@@ -134,7 +134,7 @@ const ThemeSetting: React.FC<ThemeSettingProps> = ({ setting, setSetting }) => {
       );
     case 'image':
       return (
-        <>
+        <Field>
           <FieldLabel>{humanizeSettingKey(setting.key)}</FieldLabel>
           <ImageUpload className={setting.value ? 'h-25' : 'h-8'}>
             {setting.value ? (
@@ -156,7 +156,7 @@ const ThemeSetting: React.FC<ThemeSettingProps> = ({ setting, setSetting }) => {
             )}
           </ImageUpload>
           {setting.description && <FieldDescription>{setting.description}</FieldDescription>}
-        </>
+        </Field>
       );
   }
 };

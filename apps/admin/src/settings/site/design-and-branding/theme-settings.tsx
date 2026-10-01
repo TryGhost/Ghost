@@ -1,8 +1,8 @@
 import React from 'react';
 import ThemeSetting from './theme-setting';
+import FormSection from '@/settings/components/form-section';
 import useCustomFonts from '@/settings/hooks/use-custom-fonts';
 import { type CustomThemeSetting } from '@tryghost/admin-x-framework/api/custom-theme-settings';
-import { FieldGroup, FieldLegend, FieldSet } from '@tryghost/shade/components';
 import { type Theme, useBrowseThemes } from '@tryghost/admin-x-framework/api/themes';
 import { isCustomThemeSettingVisible } from '@/settings/utils/is-custom-theme-settings-visible';
 
@@ -40,9 +40,6 @@ const themeSettingsMap: ThemeSettingsMap = {
   wave: ['title_font', 'body_font'],
 };
 
-// Settings that render their label above the control rather than beside it
-const STACKED_SETTING_TYPES: Array<CustomThemeSetting['type']> = ['text', 'select', 'image'];
-
 const ThemeSettings: React.FC<ThemeSettingsProps> = ({ sections, updateSetting }) => {
   const { data: themesData } = useBrowseThemes();
   const activeTheme = themesData?.themes.find((theme: Theme) => theme.active);
@@ -61,40 +58,35 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ sections, updateSetting }
         );
 
         return (
-          <FieldSet key={section.id} className="gap-0 first-of-type:mt-6">
-            <FieldLegend className="mb-4 text-lg! font-semibold">{section.title}</FieldLegend>
-            <FieldGroup className="mb-10 gap-4">
-              {filteredSettings.map((setting) => {
-                // Stacked rows sit 8px lower so their labels line up with the
-                // vertically centered labels of horizontal rows
-                let spaceClass = STACKED_SETTING_TYPES.includes(setting.type) ? 'mt-2' : '';
+          <FormSection key={section.id} title={section.title}>
+            {filteredSettings.map((setting) => {
+              const themeSetting = (
+                <ThemeSetting
+                  key={setting.key}
+                  setSetting={(value) => updateSetting({ ...setting, value } as CustomThemeSetting)}
+                  setting={setting}
+                />
+              );
 
-                // hides typography related theme settings from official themes
-                // should be removed once we remove the settings from the themes in 6.0
-                const hidingSettings = themeSettingsMap[activeThemeName];
-                if (
-                  hidingSettings &&
-                  hidingSettings.includes(setting.key) &&
-                  activeThemeAuthor === 'Ghost Foundation' &&
-                  supportsCustomFonts
-                ) {
-                  spaceClass += ' hidden';
-                }
-
+              // hides typography related theme settings from official themes
+              // should be removed once we remove the settings from the themes in 6.0
+              const hidingSettings = themeSettingsMap[activeThemeName];
+              if (
+                hidingSettings &&
+                hidingSettings.includes(setting.key) &&
+                activeThemeAuthor === 'Ghost Foundation' &&
+                supportsCustomFonts
+              ) {
                 return (
-                  <div key={setting.key} className={spaceClass}>
-                    <ThemeSetting
-                      key={setting.key}
-                      setSetting={(value) =>
-                        updateSetting({ ...setting, value } as CustomThemeSetting)
-                      }
-                      setting={setting}
-                    />
+                  <div key={setting.key} className="hidden">
+                    {themeSetting}
                   </div>
                 );
-              })}
-            </FieldGroup>
-          </FieldSet>
+              }
+
+              return themeSetting;
+            })}
+          </FormSection>
         );
       })}
     </>
