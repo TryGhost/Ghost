@@ -86,6 +86,46 @@ describe('Generators', function () {
     });
   });
 
+  describe('ordering', function () {
+    const addPostAt = (gen, slug, updatedAt) =>
+      gen.addUrl(
+        `http://my-ghost-blog.com/${slug}/`,
+        testUtils.DataGenerator.forKnex.createPost({ slug, updated_at: updatedAt }),
+      );
+    const locs = (xml) => [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
+
+    it('re-sorts a resource added after a render', function () {
+      generator = new PostGenerator({ maxPerPage: 2 });
+      addPostAt(generator, 'older', '2024-01-01T00:00:00.000Z');
+      addPostAt(generator, 'middle', '2024-03-01T00:00:00.000Z');
+      generator.getXml(1);
+
+      addPostAt(generator, 'newest', '2024-06-01T00:00:00.000Z');
+
+      assert.deepEqual(locs(generator.getXml(1)), [
+        'http://my-ghost-blog.com/newest/',
+        'http://my-ghost-blog.com/middle/',
+      ]);
+      assert.deepEqual(locs(generator.getXml(2)), ['http://my-ghost-blog.com/older/']);
+    });
+
+    it('sorts once and reuses the order for later pages', function () {
+      generator = new PostGenerator({ maxPerPage: 2 });
+      addPostAt(generator, 'a', '2024-01-01T00:00:00.000Z');
+      addPostAt(generator, 'b', '2024-02-01T00:00:00.000Z');
+      addPostAt(generator, 'c', '2024-03-01T00:00:00.000Z');
+      addPostAt(generator, 'd', '2024-04-01T00:00:00.000Z');
+      addPostAt(generator, 'e', '2024-05-01T00:00:00.000Z');
+
+      generator.getXml(1);
+      const sortedIndexes = generator.sortedIndexes;
+      generator.getXml(2);
+
+      assert.ok(sortedIndexes);
+      assert.equal(generator.sortedIndexes, sortedIndexes);
+    });
+  });
+
   describe('IndexGenerator', function () {
     beforeEach(function () {
       generator = new IndexGenerator({
