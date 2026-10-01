@@ -1,12 +1,9 @@
+import type { Frame } from '@tryghost/api-framework';
 import {
   toGiftLinksResponse,
   toRevokeAllResponse,
 } from '../../../../../services/gift-links/serializers';
 import type { Post } from '../../../../../services/gift-links/models';
-
-interface Frame {
-  response?: unknown;
-}
 
 const serializeGiftLinks = (post: Post, _apiConfig: unknown, frame: Frame): void => {
   frame.response = toGiftLinksResponse.parse(post.giftLinks);

@@ -25,6 +25,28 @@ The framework we are building pipes a request through these stages in respect of
 Is a class, which holds all the information for request processing. We pass this instance by reference.
 Each function can modify the original instance. No need to return the class instance.
 
+TypeScript controllers can describe the data and options available after their
+configuration and validation stages:
+
+```ts
+import type { Controller, Frame } from '@tryghost/api-framework';
+
+type ReadFrame = Frame<{ data: { id: string } }>;
+
+const controller = {
+  read: {
+    data: ['id'],
+    query(frame: ReadFrame) {
+      return models.Post.findOne({ id: frame.data.id });
+    },
+  },
+} satisfies Controller<{ read: ReadFrame }>;
+```
+
+Use `satisfies` so the framework checks the controller configuration without
+widening its inferred methods. Frames without a custom shape expose `id` as
+`string | undefined` on both `data` and `options`.
+
 #### Structure
 
 ```
