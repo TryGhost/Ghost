@@ -43,6 +43,21 @@ Add an acceptance test for the older-backend case. The social accounts settings
 and membership tiers tests contain current examples of hiding controls until
 their supporting settings are present.
 
+### Automation run history
+
+With automation run analytics enabled, selecting a Performance row opens read-only
+history by run ID. Closing it restores the mounted editor and its unsaved draft.
+List filters, sorting, and pagination do not refresh the selected history. A new
+selection or Retry fetches it again; there is no polling or refresh control.
+
+Recorded cards use the action revisions and timestamps returned by the history
+endpoint, including saved email subjects and send/delivery evidence. Active runs
+stop at their recorded pending step; future workflow steps are not shown yet.
+Completed runs do not get an invented end timestamp.
+
+History mapping tests live in `src/automations/utils/`; the `run-history*`
+acceptance tests cover selection, drafts, retries, responsive layouts, and cards.
+
 ## Development
 
 ```bash

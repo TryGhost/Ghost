@@ -50,7 +50,7 @@ describe('Automation member search', () => {
     await expect
       .element(page.getByRole('button', { name: 'Clear date filter' }))
       .not.toBeInTheDocument();
-    await list().getByRole('button', { name: 'Entered' }).click();
+    await list().getByRole('button', { name: 'Entered', exact: true }).click();
     await expect
       .poll(() => Object.fromEntries(new URL(requests.requests.at(-1)!.url).searchParams))
       .toEqual({ search: 'a', order: 'created_at asc' });
