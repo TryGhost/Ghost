@@ -1,7 +1,7 @@
-import { createElement, useEffect, useState } from 'react';
+import { createElement, lazy, Suspense, useEffect, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { act, render, waitFor } from '@testing-library/react';
-import { createHashRouter, createMemoryRouter, RouterProvider } from 'react-router';
+import { createHashRouter, createMemoryRouter, RouterProvider, useLocation } from 'react-router';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { installHistoryPopGate } from '@/hooks/use-history-pop-navigation-guard';
 import { deferred } from '@/utils/deferred';
@@ -191,6 +191,74 @@ describe('useEditorLeaveGuard', () => {
       }
     },
   );
+
+  it('holds the created URL when Back arrives before the router commits its replacement', async () => {
+    const commit = deferred<void>();
+    const Commit = lazy(() => commit.promise.then(() => ({ default: () => null })));
+    let acknowledgeCreate!: () => void;
+    let guard!: EditorLeaveGuard;
+    const leaveRequested = vi.fn().mockResolvedValue('confirm');
+    function Editor() {
+      const [createdId, setCreatedId] = useState<string | null>(null);
+      acknowledgeCreate = () => setCreatedId('new789');
+      guard = useEditorLeaveGuard(
+        {
+          state: { kind: 'idle' },
+          createdId,
+          isDirty: () => true,
+          leaveRequested,
+        } as unknown as EditorSessionHandle,
+        'post',
+      );
+      const location = useLocation();
+      return createElement(
+        'main',
+        { 'data-testid': 'editor' },
+        location.pathname,
+        location.pathname === '/editor/post/new789' ? createElement(Commit) : null,
+      );
+    }
+    window.history.replaceState(null, '', '#/posts');
+    window.history.pushState(null, '', '#/editor/post');
+    const router = createHashRouter([
+      { path: '/editor/post/:id?', element: createElement(Editor) },
+      { path: '/posts', element: 'Posts' },
+    ]);
+    const screen = render(
+      createElement(Suspense, { fallback: 'Loading' }, createElement(RouterProvider, { router })),
+    );
+    try {
+      act(() => acknowledgeCreate());
+      await waitFor(() => expect(window.location.hash).toBe('#/editor/post/new789'));
+      // The browser entry has changed, but the mounted guard still belongs to the old commit.
+      expect(screen.getByTestId('editor').textContent).toBe('/editor/post');
+      const createdEntry: unknown = window.history.state;
+
+      await traverse(() => window.history.back(), '#/posts');
+
+      expect(window.location.hash).toBe('#/editor/post/new789');
+      expect(window.history.state).toEqual(createdEntry);
+      await act(async () => {
+        commit.resolve();
+        await commit.promise;
+      });
+      await waitFor(() => expect(guard.dialogProps.open).toBe(true));
+      act(() => guard.dialogProps.onOpenChange(false));
+      expect(window.location.hash).toBe('#/editor/post/new789');
+
+      await traverse(() => window.history.back(), '#/posts');
+      await waitFor(() => expect(guard.dialogProps.open).toBe(true));
+      act(() => guard.dialogProps.onConfirm());
+      await waitFor(() => expect(window.location.hash).toBe('#/posts'));
+      expect(leaveRequested).toHaveBeenCalledTimes(2);
+    } finally {
+      await act(async () => {
+        commit.resolve();
+        await commit.promise;
+      });
+      router.dispose();
+    }
+  });
 
   it('replaces the URL of a post created at its trailing-slash URL without asking to leave', async () => {
     const leaveRequested = vi.fn().mockResolvedValue('confirm');
