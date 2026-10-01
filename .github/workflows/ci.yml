@@ -146,6 +146,9 @@ jobs:
               - '.github/actions/**'
               - '.github/scripts/**'
               - 'scripts/**'
+              # Not an nx input (scripts/engines/packageManager would mark every
+              # project affected), so test everything when it changes.
+              - 'package.json'
             docs:
               - '**/*.md'
               - '**/*.mdx'
@@ -238,81 +241,22 @@ jobs:
 
       - name: Determine Affected Projects
         id: affected
+        # Through env, never interpolated into the script.
+        env:
+          CODE_CHANGED: ${{ steps.changed.outputs.any-code }}
+          CI_CHANGED: ${{ steps.changed.outputs.ci }}
+          UNIT_TEST_GLOBALS_CHANGED: ${{ steps.changed.outputs.unit-test-globals }}
+          CORE_UNIT_TEST_GLOBALS_CHANGED: ${{ steps.changed.outputs.core-unit-test-globals }}
         run: |
-          # Nx treats README files as project inputs. Avoid populating code-test
-          # matrices when every changed file is documentation.
-          if [[ "${{ env.IS_TAG }}" != 'true' && "${{ steps.changed.outputs.any-code }}" != 'true' ]]; then
-            echo 'affected_projects=[]' >> "$GITHUB_OUTPUT"
-            echo 'affected_projects_str=' >> "$GITHUB_OUTPUT"
-            echo 'typecheck_projects_str=' >> "$GITHUB_OUTPUT"
-            echo 'unit_test_projects_str=' >> "$GITHUB_OUTPUT"
-            echo 'affected_i18n_projects=' >> "$GITHUB_OUTPUT"
-            echo 'affected_playwright_matrix=[]' >> "$GITHUB_OUTPUT"
-            echo 'publish_public_apps_matrix=[]' >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          # if the ci files have changed or we're in a tag, ensure we don't just look at affected
-          # projects and we run the necessary jobs on all projects
-          AFFECTED_ARG="--affected"
-          if [[ "${{ steps.changed.outputs.ci }}" == 'true' || "${{ env.IS_TAG }}" == 'true' ]]; then
-            AFFECTED_ARG=""
-          fi
-
-          AFFECTED_PROJECTS=$(pnpm nx show projects ${AFFECTED_ARG} --json)
-          echo "affected_projects=$AFFECTED_PROJECTS" >> "$GITHUB_OUTPUT"
-          # string list for use in run-many commands
-          AFFECTED_PROJECTS_STR=$(pnpm nx show projects ${AFFECTED_ARG} --sep=, | tr -d '\n')
-          echo "affected_projects_str=$AFFECTED_PROJECTS_STR" >> "$GITHUB_OUTPUT"
-
-          TYPECHECK_PROJECTS_STR=$(pnpm nx show projects ${AFFECTED_ARG} --withTarget test:types --sep=, | tr -d '\n')
-          echo "typecheck_projects_str=$TYPECHECK_PROJECTS_STR" >> "$GITHUB_OUTPUT"
-
-          UNIT_TEST_AFFECTED_ARG="$AFFECTED_ARG"
-          if [[ "${{ steps.changed.outputs.unit-test-globals }}" == 'true' ]]; then
-            UNIT_TEST_AFFECTED_ARG=""
-          fi
-          UNIT_TEST_PROJECTS_STR=$(pnpm nx show projects ${UNIT_TEST_AFFECTED_ARG} --withTarget test:unit --sep=, | tr -d '\n')
-          if [[ "${{ steps.changed.outputs.core-unit-test-globals }}" == 'true' ]]; then
-            UNIT_TEST_PROJECTS_STR=$(printf '%s\n%s\n' "$UNIT_TEST_PROJECTS_STR" "ghost" | awk 'NF && !seen[$0]++' | paste -sd, -)
-          fi
-          echo "unit_test_projects_str=$UNIT_TEST_PROJECTS_STR" >> "$GITHUB_OUTPUT"
-
-          # "i18n" tag = packages whose source is scanned by @tryghost/i18n's
-          # translate:* scripts (not packages that merely import @tryghost/i18n).
-          I18N_PROJECTS=$(pnpm nx show projects ${AFFECTED_ARG} --projects 'tag:i18n' --sep=, | tr -d '\n')
-          echo "affected_i18n_projects=${I18N_PROJECTS}" >> "$GITHUB_OUTPUT"
-
-          # "playwright" tag = projects whose test:acceptance suite runs in
-          # job_apps_acceptance-tests. Tag-based rather than directory-based so
-          # the matrix isn't coupled to the workspace layout (apps/*, koenig/*, ...).
-          PLAYWRIGHT_PROJECTS=$(pnpm nx show projects ${AFFECTED_ARG} \
-            --withTarget test:acceptance \
-            --projects 'tag:playwright' \
-            --json)
-          # Split Admin across two runners; every other app keeps a single shard.
-          PLAYWRIGHT_MATRIX=$(jq -c '[.[] | . as $app |
-            (if $app == "@tryghost/admin" then 2 else 1 end) as $total |
-            range(1; $total + 1) | {app: $app, shardIndex: ., shardTotal: $total}
-          ]' <<< "$PLAYWRIGHT_PROJECTS")
-          echo "affected_playwright_matrix=$PLAYWRIGHT_MATRIX" >> "$GITHUB_OUTPUT"
-
-          # Build the publish matrix for affected public apps. Matrix context
-          # isn't available in a job-level `if:`, so the publish job can't filter
-          # itself per-app — instead we emit the matrix here and it skips when
-          # the result is `[]`. The publish job's own is_main / event gates keep
-          # tags and PRs from publishing regardless of what this lists.
-          # Publishing always uses real affected-ness, even when a CI file change
-          # widened the test lanes above to every project.
-          PUBLISH_PROJECTS="$AFFECTED_PROJECTS"
-          if [[ -z "$AFFECTED_ARG" ]]; then
-            PUBLISH_PROJECTS='[]'
-            if [[ "${{ env.IS_TAG }}" != 'true' ]]; then
-              PUBLISH_PROJECTS=$(pnpm nx show projects --affected --json)
-            fi
-          fi
-          PUBLISH_PUBLIC_APPS_MATRIX=$(node scripts/build-public-apps-matrix.js "$PUBLISH_PROJECTS")
-          echo "publish_public_apps_matrix=$PUBLISH_PUBLIC_APPS_MATRIX" >> "$GITHUB_OUTPUT"
+          node scripts/affected-projects.js \
+            --base "${NX_BASE:-}" \
+            --head "${NX_HEAD:-}" \
+            --tag "$IS_TAG" \
+            --code-changed "$CODE_CHANGED" \
+            --ci-changed "$CI_CHANGED" \
+            --unit-test-globals-changed "$UNIT_TEST_GLOBALS_CHANGED" \
+            --core-unit-test-globals-changed "$CORE_UNIT_TEST_GLOBALS_CHANGED" \
+            >> "$GITHUB_OUTPUT"
 
     outputs:
       affected_projects: ${{ steps.affected.outputs.affected_projects }}
