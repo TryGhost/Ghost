@@ -63,9 +63,7 @@ const PostAnalyticsEmailSendingStatus = () => {
         role="alert"
         wrap
       >
-        <span className="font-medium text-state-danger">
-          Emails failed to send
-        </span>
+        <span className="font-medium text-state-danger">Emails failed to send</span>
         <span aria-hidden="true">·</span>
         <span>{detail}</span>
         {!hasUnknownDeliveryOutcome && (
