@@ -482,8 +482,11 @@ export function PostPreviewModal({
                 {emailAvailable && subjectEditor && (
                   <Stack className="text-left" gap="xs">
                     <span className="text-sm text-muted-foreground">Email subject</span>
-                    {/* The retry's own save carries the subject; a field commit would save twice. */}
-                    <EmailSubject editor={{ ...subjectEditor, onCommit: retryPreparation }} />
+                    {/* The failure is the preview's own save, and retrying it carries the subject. */}
+                    <EmailSubject
+                      editor={{ ...subjectEditor, onCommit: retryPreparation }}
+                      ownsSaveError={false}
+                    />
                   </Stack>
                 )}
                 <Button className="self-center" variant="outline" onClick={retryPreparation}>

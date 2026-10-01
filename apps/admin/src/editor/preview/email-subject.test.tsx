@@ -2,21 +2,30 @@ import { useState } from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import type { SaveError } from '@/editor/engine/save-engine';
-import { UNREACHABLE_MESSAGE } from '@/editor/publish/completion-message';
+import { CONFLICT_MESSAGE, UNREACHABLE_MESSAGE } from '@/editor/publish/completion-message';
+import { POST_DELETED } from '@/editor/session/error-mapping';
 import { EMAIL_SUBJECT_TOO_LONG } from '@/editor/session/settings-fields';
 import { EmailSubject } from './email-subject';
 
 const TITLE = 'Hello from React';
+const COLLISION: SaveError = { kind: 'conflict', message: 'Saving failed!' };
 
 interface HarnessProps {
   subject?: string | null;
   title?: string;
   saveError?: SaveError | null;
+  ownsSaveError?: boolean;
   calls?: string[];
 }
 
 /** Holds the subject the way the session does, recording what the field stages and commits. */
-function Harness({ subject = null, title = TITLE, saveError = null, calls = [] }: HarnessProps) {
+function Harness({
+  subject = null,
+  title = TITLE,
+  saveError = null,
+  ownsSaveError = true,
+  calls = [],
+}: HarnessProps) {
   const [value, setValue] = useState(subject);
 
   return (
@@ -33,6 +42,7 @@ function Harness({ subject = null, title = TITLE, saveError = null, calls = [] }
         },
         onCommit: () => calls.push('commit'),
       }}
+      ownsSaveError={ownsSaveError}
     />
   );
 }
@@ -78,18 +88,41 @@ describe('EmailSubject', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
-  it('reports a failed save until the writer edits past it', () => {
-    const rejected: SaveError = { kind: 'validation', message: 'Title cannot be that long.' };
-    const { rerender } = render(<Harness saveError={rejected} />);
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      'Validation failed: Title cannot be that long.',
-    );
+  it('reports its own failed save until the writer edits past it', () => {
+    const { rerender } = render(<Harness saveError={{ kind: 'transport', message: 'offline' }} />);
+    expect(screen.getByRole('alert')).toHaveTextContent(UNREACHABLE_MESSAGE);
     expect(subjectInput()).toHaveAttribute('aria-invalid', 'true');
 
     fireEvent.change(subjectInput(), { target: { value: 'A new subject' } });
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(subjectInput()).toHaveAttribute('aria-invalid', 'false');
 
-    rerender(<Harness saveError={{ kind: 'transport', message: 'offline' }} />);
-    expect(screen.getByRole('alert')).toHaveTextContent(UNREACHABLE_MESSAGE);
+    rerender(<Harness saveError={{ kind: 'validation', message: 'Subject refused.' }} />);
+    expect(screen.getByRole('alert')).toHaveTextContent('Validation failed: Subject refused.');
+  });
+
+  it.each([
+    ['a collision', COLLISION, CONFLICT_MESSAGE],
+    ['a deleted post', POST_DELETED, POST_DELETED.message],
+  ])('keeps %s in view through an edit', (_case, saveError, message) => {
+    render(<Harness saveError={saveError} />);
+
+    fireEvent.change(subjectInput(), { target: { value: 'A new subject' } });
+    expect(screen.getByRole('alert')).toHaveTextContent(message);
+    expect(subjectInput()).toHaveAttribute('aria-invalid', 'true');
+  });
+
+  it('shows another save’s failure without marking the subject invalid', () => {
+    render(
+      <Harness
+        ownsSaveError={false}
+        saveError={{ kind: 'validation', message: 'Title cannot be that long.' }}
+      />,
+    );
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Validation failed: Title cannot be that long.',
+    );
+    expect(subjectInput()).toHaveAttribute('aria-invalid', 'false');
   });
 });

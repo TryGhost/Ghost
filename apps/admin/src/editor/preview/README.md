@@ -60,12 +60,15 @@ there is none, with the title cut to 40 characters as its placeholder. Edits are
 in the session as they are typed and committed on blur or Enter, like any settings field.
 A cleared subject is stored as no subject, so the email goes out under the title again.
 A subject over 300 characters is not committed and says so beside the field, where a
-failed save is also reported until the subject is edited. Test sending stays disabled
+failed save is also reported until the subject is edited; a collision or a deleted post
+stays reported, because no later save can get past it. Test sending stays disabled
 while edits are unsaved or a save is pending. The mobile frame shows the subject, or the
 title, as text. Closing preview preserves unsaved subject edits. If those edits prevent
 saving when preview reopens, the save-failure screen keeps the subject field available
 for correction, and committing the corrected subject retries preparation, whose save
-carries it, before displaying the preview or enabling sharing and test sends.
+carries it, before displaying the preview or enabling sharing and test sends. That
+screen's failed save is the preview's own, so it is shown beside the field without
+marking the subject invalid, which only its own length or failed save does.
 
 ## Not here yet
 

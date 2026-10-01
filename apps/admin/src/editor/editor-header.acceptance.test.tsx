@@ -29,7 +29,9 @@ import { editorScreen } from '@/editor/editor.screen';
 import type { EmberDataChangeEvent } from '@/ember-bridge';
 import { deferred } from '@/utils/deferred';
 import { previewScreen } from '@/editor/preview/preview.screen';
+import { CONFLICT_MESSAGE } from '@/editor/publish/completion-message';
 import { publishScreen } from '@/editor/publish/publish.screen';
+import { POST_DELETED } from '@/editor/session/error-mapping';
 
 const POST_ID = 'abc123';
 const POST_UUID = 'post-uuid';
@@ -72,6 +74,10 @@ function failureBody(status: number) {
 
   if (status === 401) {
     return { errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }] };
+  }
+
+  if (status === 404) {
+    return { errors: [{ type: 'NotFoundError', message: 'Post not found.' }] };
   }
 
   return { errors: [{ type: 'ValidationError', message: 'Title cannot be that long.' }] };
@@ -745,6 +751,40 @@ describe('Editor header actions', () => {
     await expect.element(previewScreen.emailSubject()).toHaveValue('Keep this subject');
     await expect.element(previewScreen.testEmailButton()).toBeDisabled();
   });
+
+  it.each([
+    ['collision', 409, CONFLICT_MESSAGE],
+    ['deleted post', 404, POST_DELETED.message],
+  ])(
+    'keeps a %s beside the subject through a later edit and sends nothing more',
+    async (_case, status, message) => {
+      publishChrome({ newsletters: 1 });
+      const saveApi = fakeSavablePost({}, { failWith: status });
+      fakeAdminEndpoint('GET', /^\/email_previews\/posts\//, {
+        email_previews: [
+          { subject: 'Hello from React', html: '<p>Email body</p>', plaintext: 'Email body' },
+        ],
+      });
+      await renderAdminApp(`/editor/post/${POST_ID}`, MAILGUN_ON);
+      await editorScreen.previewButton().click();
+      await previewScreen.emailTab().click();
+      await previewScreen.emailSubject().fill('First subject');
+      await userEvent.keyboard('{Enter}');
+      await expect.element(previewScreen.modal().getByRole('alert')).toHaveTextContent(message);
+      await expect.element(previewScreen.emailSubject()).toHaveAttribute('aria-invalid', 'true');
+
+      await previewScreen.emailSubject().fill('Second subject');
+      await userEvent.keyboard('{Enter}');
+      // A save the engine let through would reach the server well within this.
+      await new Promise((resolve) => {
+        setTimeout(resolve, 500);
+      });
+      await expect.element(previewScreen.modal().getByRole('alert')).toHaveTextContent(message);
+      await expect.element(previewScreen.emailSubject()).toHaveAttribute('aria-invalid', 'true');
+      await expect.element(previewScreen.testEmailButton()).toBeDisabled();
+      expect(saveApi.requests).toHaveLength(1);
+    },
+  );
 
   it('keeps a newer subject while an earlier subject save is pending', async () => {
     publishChrome({ newsletters: 1 });

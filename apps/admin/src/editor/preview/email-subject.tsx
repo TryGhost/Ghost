@@ -2,7 +2,7 @@ import { useId, useState } from 'react';
 import { Input } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
 import { postPreviewEmailSubject } from '@tryghost/test-data/selectors/editor';
-import type { SaveError } from '@/editor/engine/save-engine';
+import type { SaveError, SaveErrorKind } from '@/editor/engine/save-engine';
 import { describeSaveError } from '@/editor/publish/completion-message';
 import {
   EMAIL_SUBJECT_MAX,
@@ -28,23 +28,34 @@ export interface EmailSubjectEditor {
   fallback: string;
   hasUnsavedChanges: boolean;
   isSaving: boolean;
-  /** The session's failed save, reported until the writer edits past it. */
+  /** The session's failed save. */
   saveError: SaveError | null;
   onChange: (value: string | null) => void;
   onCommit: () => void;
 }
 
-export function EmailSubject({ editor }: { editor: EmailSubjectEditor }) {
+interface EmailSubjectProps {
+  editor: EmailSubjectEditor;
+  /** Whether a failed save is the subject's own, as it is wherever nothing else saves. */
+  ownsSaveError: boolean;
+}
+
+// The engine refuses every later field save after these, so an edit cannot clear them.
+const LASTING_FAILURES: ReadonlySet<SaveErrorKind> = new Set(['conflict', 'not-found']);
+
+export function EmailSubject({ editor, ownsSaveError }: EmailSubjectProps) {
   const errorId = useId();
   const [editedPast, setEditedPast] = useState<SaveError | null>(null);
   const validationError = overLength(editor.value, EMAIL_SUBJECT_MAX)
     ? EMAIL_SUBJECT_TOO_LONG
     : null;
   const saveError =
-    editor.saveError && editor.saveError !== editedPast
-      ? describeSaveError(editor.saveError).message
+    editor.saveError &&
+    (editor.saveError !== editedPast || LASTING_FAILURES.has(editor.saveError.kind))
+      ? editor.saveError
       : null;
-  const error = validationError ?? saveError;
+  const error = validationError ?? (saveError && describeSaveError(saveError).message);
+  const invalid = !!validationError || (!!saveError && ownsSaveError);
 
   const commit = () => {
     if (validationError) {
@@ -61,7 +72,7 @@ export function EmailSubject({ editor }: { editor: EmailSubjectEditor }) {
     <Stack className="min-w-0 flex-1" gap="xs">
       <Input
         aria-describedby={error ? errorId : undefined}
-        aria-invalid={!!error}
+        aria-invalid={invalid}
         aria-label="Email subject"
         className="min-w-0"
         data-testid={postPreviewEmailSubject}
