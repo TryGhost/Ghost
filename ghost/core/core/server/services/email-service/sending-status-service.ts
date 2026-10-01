@@ -1,9 +1,16 @@
 import type { Knex } from 'knex';
 import { camelKeys } from '../../lib/case-keys';
-import { DbBatchSendingRow, DbEmailSendingRow } from './sending-status-schema';
-import { buildSendingStatus, type EmailSendingStatus, type SendingBatch } from './sending-status';
+import { DbBatchSendingRow, DbEmailSendingRow, StoredSendingStatus } from './sending-status-schema';
+import {
+  buildSendingStatus,
+  isRetryable,
+  type EmailSendingStatus,
+  type SendingBatch,
+} from './sending-status';
 
 export type { EmailSendingStatus } from './sending-status';
+
+export type RetryEligibility = 'retryable' | 'not-failed' | 'unknown-outcome';
 
 export class SendingStatusService {
   #knex: Knex;
@@ -44,6 +51,20 @@ export class SendingStatusService {
         batches,
       ),
     };
+  }
+
+  /** The retry decision statusFor reports, without the recipient counts its progress needs. */
+  async retryEligibilityFor(emailId: string): Promise<RetryEligibility> {
+    const email = await this.#knex('emails').select('status').where('id', emailId).first();
+
+    if (email?.status !== 'failed') {
+      return 'not-failed';
+    }
+
+    const batches = await this.#knex('email_batches').distinct('status').where('email_id', emailId);
+    const statuses = batches.map((batch) => StoredSendingStatus.parse(batch.status));
+
+    return isRetryable(statuses) ? 'retryable' : 'unknown-outcome';
   }
 
   async #batchesFor(emailId: string, recipientAccounting: boolean): Promise<SendingBatch[]> {

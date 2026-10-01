@@ -83,7 +83,7 @@ describe('Email Service', function () {
     getMembersCount = sinon.stub().callsFake(() => Promise.resolve(memberCount));
 
     sendingStatusService = {
-      statusFor: sinon.stub().resolves({ sending: { status: 'failed', retryable: true } }),
+      retryEligibilityFor: sinon.stub().resolves('retryable'),
     };
 
     service = new EmailService({
@@ -559,20 +559,18 @@ describe('Email Service', function () {
   });
 
   describe('Retry email', function () {
-    it('rejects the same unknown outcome when publishing a post triggers the retry', async function () {
+    it('keeps the post save and withholds the retry when publishing a post with an unknown outcome', async function () {
       const PostEmailHandler = require('../../../../../core/server/services/posts/post-email-handler');
       const email = createModel({ status: 'failed', post: createModel({ status: 'published' }) });
       const post = createModel({ status: 'published', newsletter_id: 'newsletter-id' });
       post.wasChanged = () => true;
       post.previous = () => 'draft';
       post.relations = { email };
-      sendingStatusService.statusFor.resolves({ sending: { status: 'failed', retryable: false } });
+      sendingStatusService.retryEligibilityFor.resolves('unknown-outcome');
       const handler = new PostEmailHandler({ models: {}, emailService: service });
 
-      await assert.rejects(
-        handler.createOrRetryEmail(post),
-        (err) => err.statusCode === 400 && /delivery outcome is unknown/.test(err.message),
-      );
+      await handler.createOrRetryEmail(post);
+
       assert.equal(email.get('status'), 'failed');
       sinon.assert.notCalled(scheduleEmail);
     });
@@ -583,7 +581,7 @@ describe('Email Service', function () {
         error: 'Original error',
         post: createModel({ status: 'published' }),
       });
-      sendingStatusService.statusFor.resolves({ sending: { status: 'failed', retryable: false } });
+      sendingStatusService.retryEligibilityFor.resolves('unknown-outcome');
 
       await assert.rejects(
         service.retryEmail(email),
@@ -596,7 +594,7 @@ describe('Email Service', function () {
 
     it('rejects a stale failed email when the current send is already active', async function () {
       const email = createModel({ status: 'failed', post: createModel({ status: 'sent' }) });
-      sendingStatusService.statusFor.resolves({ sending: { status: 'submitting' } });
+      sendingStatusService.retryEligibilityFor.resolves('not-failed');
 
       await assert.rejects(service.retryEmail(email), (err) => err.statusCode === 400);
       assert.equal(email.get('status'), 'failed');
@@ -685,6 +683,7 @@ describe('Email Service', function () {
           status: 'published',
         }),
       });
+      sendingStatusService.retryEligibilityFor.resolves('not-failed');
 
       await assert.rejects(
         service.retryEmail(email),

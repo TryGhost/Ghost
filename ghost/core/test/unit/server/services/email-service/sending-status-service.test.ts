@@ -128,6 +128,20 @@ describe('SendingStatusService', function () {
     assert.equal(Reflect.get(unknownOutcome!.sending, 'retryable'), false);
   });
 
+  it('answers retry eligibility with the same decision as the status read', async function () {
+    assert.equal(await service.retryEligibilityFor('missing-email'), 'not-failed');
+
+    await addEmail({ status: 'submitting', emailCount: 20 });
+    await addBatch({ status: 'failed', createdAt: '2026-09-02 12:00:00' });
+    assert.equal(await service.retryEligibilityFor('email-id'), 'not-failed');
+
+    await knex('emails').where('id', 'email-id').update({ status: 'failed' });
+    assert.equal(await service.retryEligibilityFor('email-id'), 'retryable');
+
+    await knex('email_batches').where('id', 'batch-1').update({ status: 'submitting' });
+    assert.equal(await service.retryEligibilityFor('email-id'), 'unknown-outcome');
+  });
+
   it('returns null when the email does not exist', async function () {
     assert.equal(await service.statusFor('missing-email'), null);
   });

@@ -22,7 +22,6 @@ describe('PostEmailHandler', function () {
 
     mockEmailService = {
       checkCanSendEmail: sinon.stub().resolves({ emailCount: 42 }),
-      checkCanRetryEmail: sinon.stub().resolves(),
       createEmail: sinon.stub(),
       retryEmail: sinon.stub(),
     };
@@ -101,7 +100,7 @@ describe('PostEmailHandler', function () {
       newsletterId = null,
       emailRecipientFilter = null,
     } = {}) {
-      const post = { get: sinon.stub(), relations: {} };
+      const post = { get: sinon.stub() };
       post.get.withArgs('status').returns(status);
       post.get.withArgs('newsletter_id').returns(newsletterId);
       post.get.withArgs('email_recipient_filter').returns(emailRecipientFilter);
@@ -145,10 +144,7 @@ describe('PostEmailHandler', function () {
       sinon.assert.calledOnceWithExactly(
         mockModels.Post.findOne,
         { id: 'post-123', status: 'all' },
-        {
-          columns: ['id', 'status', 'newsletter_id', 'email_recipient_filter'],
-          withRelated: ['email'],
-        },
+        { columns: ['id', 'status', 'newsletter_id', 'email_recipient_filter'] },
       );
       sinon.assert.calledOnceWithExactly(mockEmailService.checkCanSendEmail, newsletter, 'all');
       assert.deepEqual(result, {
@@ -164,40 +160,6 @@ describe('PostEmailHandler', function () {
 
       await postEmailHandler.validateBeforeSave(createFrame('published'));
 
-      sinon.assert.calledOnce(mockEmailService.checkCanSendEmail);
-    });
-
-    it('rejects publishing or sending a draft whose failed email cannot be retried', async function () {
-      const post = setupExistingPost({ newsletterId: 'newsletter-456' });
-      post.relations.email = { id: 'email-123', get: sinon.stub().returns('failed') };
-      const error = new Error('Unknown delivery outcome');
-      mockEmailService.checkCanRetryEmail.rejects(error);
-
-      for (const status of ['published', 'sent']) {
-        await assert.rejects(postEmailHandler.validateBeforeSave(createFrame(status)), error);
-      }
-      sinon.assert.notCalled(mockEmailService.checkCanSendEmail);
-    });
-
-    it('allows publishing a draft whose failed email is retryable', async function () {
-      const post = setupExistingPost({ newsletterId: 'newsletter-456' });
-      post.relations.email = { id: 'email-123', get: sinon.stub().returns('failed') };
-      setupNewsletter();
-
-      await postEmailHandler.validateBeforeSave(createFrame('published'));
-
-      sinon.assert.calledOnceWithExactly(mockEmailService.checkCanRetryEmail, 'email-123');
-      sinon.assert.calledOnce(mockEmailService.checkCanSendEmail);
-    });
-
-    it('allows publishing a draft with an already submitted email', async function () {
-      const post = setupExistingPost({ newsletterId: 'newsletter-456' });
-      post.relations.email = { id: 'email-123', get: sinon.stub().returns('submitted') };
-      setupNewsletter();
-
-      await postEmailHandler.validateBeforeSave(createFrame('published'));
-
-      sinon.assert.notCalled(mockEmailService.checkCanRetryEmail);
       sinon.assert.calledOnce(mockEmailService.checkCanSendEmail);
     });
 

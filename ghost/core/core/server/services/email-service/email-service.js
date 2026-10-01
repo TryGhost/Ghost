@@ -39,6 +39,8 @@ const DEFAULT_RESUME_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 // Non-terminal email statuses, both of which the boot scanner recovers.
 const RESUMABLE_EMAIL_STATUSES = ['pending', 'submitting'];
 
+const RETRY_UNKNOWN_OUTCOME_CODE = 'EMAIL_RETRY_UNKNOWN_OUTCOME';
+
 class EmailService {
   #batchSendingService;
   #sendingService;
@@ -386,13 +388,6 @@ class EmailService {
       });
     }
 
-    if (email.get('status') !== 'failed') {
-      throw new errors.BadRequestError({
-        message: tpl(messages.retryEmailNotFailed),
-        code: 'BULK_EMAIL_RETRY_NOT_FAILED',
-      });
-    }
-
     await this.checkCanRetryEmail(email.id);
 
     await this.checkLimits();
@@ -425,18 +420,24 @@ class EmailService {
   }
 
   /**
-   * Validates retry eligibility before a post save or a retry is queued.
+   * Validates retry eligibility before a retry is queued.
    * @param {string} emailId
    * @returns {Promise<void>}
    */
   async checkCanRetryEmail(emailId) {
     // Re-read persisted state: the caller's email or eligibility can be stale.
-    const status = await this.#sendingStatusService.statusFor(emailId);
-    if (status?.sending.status !== 'failed') {
-      throw new errors.BadRequestError({ message: tpl(messages.retryEmailNotFailed) });
+    const eligibility = await this.#sendingStatusService.retryEligibilityFor(emailId);
+    if (eligibility === 'not-failed') {
+      throw new errors.BadRequestError({
+        message: tpl(messages.retryEmailNotFailed),
+        code: 'BULK_EMAIL_RETRY_NOT_FAILED',
+      });
     }
-    if (!status.sending.retryable) {
-      throw new errors.BadRequestError({ message: tpl(messages.retryEmailUnknownOutcome) });
+    if (eligibility === 'unknown-outcome') {
+      throw new errors.BadRequestError({
+        message: tpl(messages.retryEmailUnknownOutcome),
+        code: RETRY_UNKNOWN_OUTCOME_CODE,
+      });
     }
   }
 

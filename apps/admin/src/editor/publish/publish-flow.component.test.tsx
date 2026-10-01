@@ -1228,6 +1228,42 @@ describe('Publish flow', () => {
     expect(retryApi.requests).toHaveLength(1);
   });
 
+  it('refreshes retry eligibility when Core rejects the retry', async () => {
+    fakeEmailPolling({ status: 'failed', error: 'Sending failed' });
+    let retryable = true;
+    fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, () => ({
+      email_statuses: [
+        {
+          id: EMAIL_ID,
+          sending: {
+            status: 'failed',
+            retryable,
+            failed_during: 'submitting',
+            progress: { completed: 0, total: 20, estimated_seconds_remaining: null },
+          },
+        },
+      ],
+    }));
+    const retryApi = fakeAdminEndpoint(
+      'PUT',
+      `/emails/${EMAIL_ID}/retry/`,
+      { errors: [{ type: 'BadRequestError', message: 'Delivery outcome is unknown' }] },
+      { status: 400 },
+    );
+    await renderPublishFlow();
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+    await expect.element(publishScreen.retryEmailButton()).toBeInTheDocument();
+
+    // Eligibility changed after it was read, so Core rejects the stale retry.
+    retryable = false;
+    await publishScreen.retryEmailButton().click();
+
+    await expect.poll(() => retryApi.requests.length).toBe(1);
+    await expect.element(publishScreen.retryEmailButton()).not.toBeInTheDocument();
+  });
+
   it('keeps the email retry pending during navigation without showing completion', async () => {
     fakeEmailPolling({ status: 'failed', error: 'Sending failed' }, { status: 'submitted' });
     const retryApi = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, { emails: [] });

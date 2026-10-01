@@ -6,6 +6,7 @@ const messages = {
 };
 
 const EMAIL_SENDING_STATUSES = ['published', 'sent'];
+const RETRY_UNKNOWN_OUTCOME_CODE = 'EMAIL_RETRY_UNKNOWN_OUTCOME';
 
 class PostEmailHandler {
   /**
@@ -33,10 +34,7 @@ class PostEmailHandler {
 
     const existingPost = await this.models.Post.findOne(
       { id: frame.options.id, status: 'all' },
-      {
-        columns: ['id', 'status', 'newsletter_id', 'email_recipient_filter'],
-        withRelated: ['email'],
-      },
+      { columns: ['id', 'status', 'newsletter_id', 'email_recipient_filter'] },
     );
     const previousStatus = existingPost?.get('status');
 
@@ -45,11 +43,6 @@ class PostEmailHandler {
 
     if (!sendingEmail) {
       return null;
-    }
-
-    const postEmail = existingPost?.relations.email;
-    if (postEmail?.get('status') === 'failed') {
-      await this.emailService.checkCanRetryEmail(postEmail.id);
     }
 
     const emailRecipientFilter =
@@ -149,6 +142,11 @@ class PostEmailHandler {
     try {
       return await this.emailService.retryEmail(email);
     } catch (err) {
+      if (err.code === RETRY_UNKNOWN_OUTCOME_CODE) {
+        // The post is already saved. An unknown delivery outcome only withholds
+        // the resend, leaving the email failed.
+        return;
+      }
       if (err.code !== 'BULK_EMAIL_RETRY_NOT_FAILED') {
         throw err;
       }
