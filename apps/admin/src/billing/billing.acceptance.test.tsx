@@ -14,6 +14,8 @@ import {
   type StaffRoleName,
 } from '@test-utils/acceptance';
 import { DUNNING_PAY_RETURN_ROUTE_STORAGE_KEY } from '@tryghost/admin-x-framework/api/dunning';
+import { page } from 'vitest/browser';
+import { dunningWindow } from '@test-utils/fixtures/dunning';
 import { alertsScreen } from '@/alerts/alerts.screen';
 import { sidebarScreen } from '@/layout/sidebar.screen';
 import { tagsScreen } from '@/tags/tags.screen';
@@ -101,23 +103,38 @@ async function renderBilling(
   {
     role = 'Owner',
     hostSettings = {},
+    labs = {},
     billingReact = true,
-  }: { role?: StaffRoleName; hostSettings?: Record<string, unknown>; billingReact?: boolean } = {},
+  }: {
+    role?: StaffRoleName;
+    /** Read on every `/config/` request, so a function can change what a refetch returns. */
+    hostSettings?: Record<string, unknown> | (() => Record<string, unknown>);
+    labs?: Record<string, boolean>;
+    billingReact?: boolean;
+  } = {},
 ) {
   const config = configResponse();
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name: role })];
+  const hostSettingsNow = typeof hostSettings === 'function' ? hostSettings : () => hostSettings;
 
   await renderAdminApp(path, {
-    labs: { billingReact },
+    labs: { ...labs, billingReact },
     boot: {
       browseConfig: {
-        response: {
+        response: () => ({
           config: {
             ...config.config,
-            hostSettings: { billing: { enabled: true, url: BILLING_URL }, ...hostSettings },
+            hostSettings: {
+              ...hostSettingsNow(),
+              billing: {
+                enabled: true,
+                url: BILLING_URL,
+                ...(hostSettingsNow().billing as Record<string, unknown> | undefined),
+              },
+            },
           },
-        },
+        }),
       },
       browseMe: { response: me },
     },
@@ -348,6 +365,70 @@ describe('Ghost(Pro) billing', () => {
 
     await expect.element(tagsScreen.newTagLink()).toBeVisible();
     await expect.element(billingScreen.frame()).not.toBeVisible();
+  });
+
+  it('keeps staff on billing when a force upgrade lifts mid-visit, until they leave', async () => {
+    fakeTags([]);
+    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+    const messages = standInMessages();
+    await renderBilling('/pro', { role: 'Administrator', hostSettings: { forceUpgrade: true } });
+    await expect.element(billingScreen.frame()).toBeVisible();
+
+    await postFromBillingApp(messages, {
+      subscription: { status: 'active', isActiveTrial: false, trial_end: null },
+    });
+    await billingAppSettled(messages);
+
+    expect(currentRoute()).toBe('/pro');
+    await expect.element(billingScreen.frame()).toBeVisible();
+
+    window.location.hash = '#/tags';
+    await expect.element(tagsScreen.newTagLink()).toBeVisible();
+  });
+
+  it('decides the overdue alert on the config refreshed for the report', async () => {
+    fakeTags([]);
+    let hostSettings: Record<string, unknown> = {};
+    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+    const messages = standInMessages();
+    await renderBilling('/tags', {
+      hostSettings: () => hostSettings,
+      labs: { dunningWarnings: true },
+    });
+    await expect.element(tagsScreen.newTagLink()).toBeVisible();
+
+    // The refetch the report triggers brings the host's dunning block, which
+    // replaces the overdue alert with the dunning warnings
+    hostSettings = { billing: { dunning: dunningWindow(2) } };
+    await postFromBillingApp(messages, {
+      subscription: { status: 'past_due', isActiveTrial: false, trial_end: null },
+    });
+
+    await expect.element(page.getByTestId('dunning-banner')).toBeVisible();
+    await billingAppSettled(messages);
+    await expect(alertsScreen.alert(/Your billing details need updating/)).toHaveCount(0);
+  });
+
+  it('loads a deep-linked billing route once, without its query', async () => {
+    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+    const messages = standInMessages();
+    await renderBilling('/pro/plans?interval=year');
+    await expect.element(billingScreen.frame()).toBeVisible();
+    await billingAppSettled(messages);
+
+    expect(loads(messages).map((url) => url.pathname)).toEqual(['/plans']);
+    expect(loads(messages)[0]?.searchParams.has('interval')).toBe(false);
+  });
+
+  it('hands the billing app its checkout action on the overview', async () => {
+    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+    const messages = standInMessages();
+    await renderBilling('/pro?action=checkout');
+    await expect.element(billingScreen.frame()).toBeVisible();
+    await billingAppSettled(messages);
+
+    expect(loads(messages)).toHaveLength(1);
+    expect(loads(messages)[0]?.searchParams.get('action')).toBe('checkout');
   });
 
   it('leaves billing to Ember while the flag is off', async () => {

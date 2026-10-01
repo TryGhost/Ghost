@@ -14,7 +14,8 @@ export {
   preloadEmberAdminThemeStylesheet,
   applyEmberAdminThemePreference,
   navigateEmberBillingSubRoute,
-  refreshEmberBillingLimits,
+  applyEmberBillingSubscriptionUpdate,
+  reportEmberBillingLoadFailure,
   syncEmberPostListQueryParams,
   syncEmberFullScreen,
   syncEmberRoutePattern,
@@ -24,6 +25,7 @@ export type {
   AdminThemeMode,
   EmberDataChangeEvent,
   StateBridge,
+  BillingSubscriptionUpdate,
   SubscriptionState,
 } from './ember-bridge';
 export type { EmberNotificationsHost } from './ember-notifications-host';

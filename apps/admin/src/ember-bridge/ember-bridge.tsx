@@ -27,7 +27,11 @@ export interface StateBridge {
   preloadAdminThemeStylesheet?: () => Promise<void>;
   applyAdminThemePreference?: (mode: AdminThemeMode) => Promise<void> | void;
   navigateToBillingSubRoute?: (subRoute: string) => void;
-  refreshBillingLimits?: () => Promise<void>;
+  applyBillingSubscriptionUpdate?: (update: BillingSubscriptionUpdate) => Promise<void>;
+  captureBillingAppLoadFailure?: (report: {
+    billingMonitor: Record<string, unknown>;
+    tags: Record<string, string | null>;
+  }) => void;
   setPostListQueryParams?: (resource: 'posts' | 'pages', params: Record<string, string>) => void;
   setReactFullScreen?: (isFullScreen: boolean) => void;
   setReactRoutePattern?: (routePattern: string | null) => void;
@@ -66,6 +70,10 @@ export interface SubscriptionState {
     trial_end: string | null;
     status: string;
   };
+}
+
+export interface BillingSubscriptionUpdate extends SubscriptionState {
+  checkoutRoute: string;
 }
 
 export interface SidebarVisibilityChangeEvent {
@@ -329,9 +337,23 @@ export function navigateEmberBillingSubRoute(subRoute: string): boolean {
   return true;
 }
 
-/** Asks Ember to refetch config and reload its plan limits; a no-op without a bridge. */
-export function refreshEmberBillingLimits(): void {
-  void window.EmberBridge?.state.refreshBillingLimits?.();
+/**
+ * Hands a billing app subscription report to Ember, which refreshes its config
+ * and plan limits as its own billing iframe would. Resolves once Ember is done,
+ * or immediately without a bridge.
+ */
+export async function applyEmberBillingSubscriptionUpdate(
+  update: BillingSubscriptionUpdate,
+): Promise<void> {
+  await window.EmberBridge?.state.applyBillingSubscriptionUpdate?.(update);
+}
+
+/** Reports a billing app load failure through Ember's Sentry client; a no-op without a bridge. */
+export function reportEmberBillingLoadFailure(report: {
+  billingMonitor: Record<string, unknown>;
+  tags: Record<string, string | null>;
+}): void {
+  window.EmberBridge?.state.captureBillingAppLoadFailure?.(report);
 }
 
 /** Keep the Ember editor's breadcrumb in sync with the React list. */

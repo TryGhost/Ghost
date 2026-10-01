@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
-import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
+import { type ConfigResponseType, useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { parseDunningConfig } from '@tryghost/admin-x-framework/api/dunning';
 import { isOwnerUser, type UsersResponseType } from '@tryghost/admin-x-framework/api/users';
@@ -11,9 +11,10 @@ import { useFeatureFlag, useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 import type { AlertsStore } from '@/alerts';
-import { refreshEmberBillingLimits } from '@/ember-bridge';
+import { applyEmberBillingSubscriptionUpdate, reportEmberBillingLoadFailure } from '@/ember-bridge';
 import { useFlagGatedRouteOwner } from '@/use-flag-gated-route-owner';
 import { BillingAppConnection } from './billing-app-connection';
+import { useBillingScreenOpen } from './billing-screen';
 import {
   type BillingAppMessage,
   EXCEEDED_ALERT_HTML,
@@ -33,7 +34,6 @@ import {
 import {
   BILLING_REACT_FLAG,
   setBillingSubscriptionState,
-  useCanAccessBilling,
   useForceUpgrade,
 } from './subscription-status';
 
@@ -80,27 +80,38 @@ function BillingAppFrame({
   const { data: config } = useBrowseConfig();
   const { data: currentUser } = useCurrentUser();
   const forceUpgrade = useForceUpgrade();
-  const canAccessBilling = useCanAccessBilling();
+  const visible = useBillingScreenOpen();
   const automations = useFeatureFlag('automations');
   const dunningWarnings = useFeatureFlag('dunningWarnings');
-
-  const visible = isBillingPath(location.pathname) && canAccessBilling === true;
 
   const locationRef = useRef(location);
   locationRef.current = location;
   const visibleRef = useRef(visible);
   visibleRef.current = visible;
+  const forceUpgradeRef = useRef(forceUpgrade);
+  forceUpgradeRef.current = forceUpgrade;
 
   const [connection] = useState(
     () =>
       new BillingAppConnection(billingUrl, {
-        // The search rides along so `?action=…` reaches the billing app on first load
+        // As Ember's pro routes queue the route before its iframe exists: a
+        // child route loads without the query, the root keeps `?action=…`
         getLocationSubRoute: () => {
           const { pathname, search } = locationRef.current;
-          return isBillingPath(pathname)
-            ? `${billingSubRoute(pathname) ?? ''}${search}` || null
-            : null;
+          if (!isBillingPath(pathname)) {
+            return null;
+          }
+          const subRoute = billingSubRoute(pathname);
+          if (subRoute) {
+            return subRoute;
+          }
+          return new URLSearchParams(search).has('action') ? search : '/';
         },
+        getReportContext: () => ({
+          isForceUpgrade: forceUpgradeRef.current === true,
+          routeName: billingSubRoute(locationRef.current.pathname) ? 'pro.pro-sub' : 'pro.index',
+        }),
+        onLoadFailure: reportEmberBillingLoadFailure,
       }),
   );
   const { loaded, failed } = useSyncExternalStore(connection.subscribe, connection.getSnapshot);
@@ -232,18 +243,28 @@ function BillingAppFrame({
     }
   };
 
-  const handleSubscriptionUpdate = (message: BillingAppMessage) => {
-    void queryClient.refetchQueries({ queryKey: ['ConfigResponseType'] }).catch(() => {});
-    void queryClient.refetchQueries({ queryKey: ['SettingsResponseType'] }).catch(() => {});
-    refreshEmberBillingLimits();
-
-    setBillingSubscriptionState({ subscription: message.subscription });
-    checkoutRouteRef.current = isBillingAppRoute(message.checkoutRoute)
+  const handleSubscriptionUpdate = async (message: BillingAppMessage) => {
+    const checkoutRoute = isBillingAppRoute(message.checkoutRoute)
       ? message.checkoutRoute
       : '/plans';
 
+    // As Ember's billing iframe does: listeners and alerts wait for the plan's
+    // fresh config, so a changed dunning block decides the overdue alert
+    void queryClient.refetchQueries({ queryKey: ['SettingsResponseType'] }).catch(() => {});
+    await Promise.all([
+      queryClient.refetchQueries({ queryKey: ['ConfigResponseType'] }).catch(() => {}),
+      applyEmberBillingSubscriptionUpdate({ subscription: message.subscription, checkoutRoute }),
+    ]);
+
+    setBillingSubscriptionState({ subscription: message.subscription });
+    checkoutRouteRef.current = checkoutRoute;
+
+    const freshConfig = queryClient.getQueriesData<ConfigResponseType>({
+      queryKey: ['ConfigResponseType'],
+    })[0]?.[1];
     const dunningWarningsActive =
-      dunningWarnings && parseDunningConfig(config?.config.hostSettings?.billing?.dunning) !== null;
+      dunningWarnings &&
+      parseDunningConfig(freshConfig?.config.hostSettings?.billing?.dunning) !== null;
     const { overdue, exceeded } = billingAlerts(message, { dunningWarningsActive });
 
     // Shown to every user: only the owner can act, but everyone is affected
@@ -272,6 +293,7 @@ function BillingAppFrame({
       return;
     }
 
+    connection.recordPreReadyMessage(message as Record<string, unknown>);
     syncRoute(message.route);
 
     if (message.request === 'token') {
@@ -284,7 +306,7 @@ function BillingAppFrame({
       navigateToAdmin(message.destination);
     }
     if (message.subscription) {
-      handleSubscriptionUpdate(message);
+      void handleSubscriptionUpdate(message);
     }
   };
 
