@@ -35,7 +35,11 @@ describe('schema validations', function () {
       assert(_.isPlainObject(table), 'Table should be an object');
 
       _.each(table, function (column, columnName) {
-        if (['@@INDEXES@@', '@@UNIQUE_CONSTRAINTS@@', '@@PRIMARY_KEY@@'].includes(columnName)) {
+        if (
+          ['@@INDEXES@@', '@@UNIQUE_CONSTRAINTS@@', '@@PRIMARY_KEY@@', '@@FOREIGN_KEYS@@'].includes(
+            columnName,
+          )
+        ) {
           return;
         }
 
@@ -96,6 +100,13 @@ describe('schema validations', function () {
         check(name, `${tableName} unique constraint`);
       });
 
+      _.each(table['@@FOREIGN_KEYS@@'] ?? [], function (foreignKey) {
+        check(
+          foreignKey.constraintName ?? derived(tableName, foreignKey.columns, 'foreign'),
+          `${tableName} foreign key`,
+        );
+      });
+
       _.each(table, function (column, columnName) {
         if (columnName.startsWith('@@')) {
           return;
@@ -120,6 +131,52 @@ describe('schema validations', function () {
       [],
       `These names exceed MySQL's ${MAX_IDENTIFIER}-character limit. Give the index an explicit, shorter \`indexName\`.`,
     );
+  });
+
+  // A foreign key over several columns is declared on the table rather than on a column, so
+  // the column format above checks nothing about it.
+  it('points every foreign key over several columns at a unique key', function () {
+    const VALID_FOREIGN_KEY_KEYS = [
+      'columns',
+      'references',
+      'constraintName',
+      'cascadeDelete',
+      'restrictDelete',
+      'setNullDelete',
+    ];
+
+    _.each(schema, function (table, tableName) {
+      _.each(table['@@FOREIGN_KEYS@@'] ?? [], function (foreignKey) {
+        const where = `${tableName} foreign key to ${foreignKey.references?.table}`;
+        assert.deepEqual(_.difference(Object.keys(foreignKey), VALID_FOREIGN_KEY_KEYS), [], where);
+
+        const parent = schema[foreignKey.references.table];
+        assertExists(parent, `${where}: no such table`);
+        assert.equal(foreignKey.references.columns.length, foreignKey.columns.length, where);
+        for (const column of foreignKey.columns) {
+          assertExists(table[column], `${where}: no column ${column}`);
+        }
+
+        // MySQL would settle for any index that starts with these columns. SQLite needs a
+        // primary key or unique constraint over exactly them, and without one fails every
+        // write the foreign key checks, so the stricter rule is the one held here.
+        const columnsWhere = (holds) =>
+          Object.keys(parent).filter((column) => !column.startsWith('@@') && holds(parent[column]));
+        const uniqueKeys = [
+          parent['@@PRIMARY_KEY@@'] ?? columnsWhere((column) => column.primary),
+          ...columnsWhere((column) => column.unique).map((column) => [column]),
+          ...(parent['@@UNIQUE_CONSTRAINTS@@'] ?? []).map((unique) =>
+            _.isPlainObject(unique) ? unique.columns : unique,
+          ),
+        ];
+        assert(
+          uniqueKeys.some((unique) =>
+            _.isEqual([...unique].sort(), [...foreignKey.references.columns].sort()),
+          ),
+          `${where}: (${foreignKey.references.columns.join(', ')}) is not a primary key or unique constraint there`,
+        );
+      });
+    });
   });
 
   it('has correct isIn validation structure', async function () {

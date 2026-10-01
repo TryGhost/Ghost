@@ -40,6 +40,14 @@ type ColumnSpec = {
 
 type IndexSpec = string[] | { columns: string[] };
 
+type DeleteRuleSpec = Pick<ColumnSpec, 'cascadeDelete' | 'restrictDelete' | 'setNullDelete'>;
+
+type ForeignKeySpec = DeleteRuleSpec & {
+  columns: string[];
+  references: { table: string; columns: string[] };
+  constraintName?: string;
+};
+
 type NormalizedColumn = {
   type: string;
   maxlength?: number;
@@ -47,9 +55,15 @@ type NormalizedColumn = {
   nullable: boolean;
   defaultTo?: string;
   unsigned?: true;
-  references?: string;
-  constraintName?: string;
-  onDelete?: string;
+};
+
+// One per constraint, whether schema.js declares it on a column or on the table: the
+// database knows no difference, and a constraint over two columns is one constraint.
+type NormalizedForeignKey = {
+  constraintName: string;
+  columns: string[];
+  references: { table: string; columns: string[] };
+  onDelete: string;
 };
 
 type NormalizedTable = {
@@ -57,6 +71,7 @@ type NormalizedTable = {
   primaryKey: string[];
   indexes: string[][];
   uniques: string[][];
+  foreignKeys: NormalizedForeignKey[];
 };
 
 type NormalizedSchema = Record<string, NormalizedTable>;
@@ -86,6 +101,23 @@ type ForeignKeyRow = {
   REFERENCED_COLUMN_NAME: string;
   DELETE_RULE: string;
 };
+
+function deleteRule(spec: DeleteRuleSpec): string {
+  if (spec.cascadeDelete) {
+    return 'CASCADE';
+  }
+  if (spec.restrictDelete) {
+    return 'RESTRICT';
+  }
+  if (spec.setNullDelete) {
+    return 'SET NULL';
+  }
+  return 'NO ACTION';
+}
+
+function sortForeignKeys(foreignKeys: NormalizedForeignKey[]): NormalizedForeignKey[] {
+  return sortBy(foreignKeys, 'constraintName');
+}
 
 type FixtureEntry = Record<string, unknown>;
 
@@ -153,6 +185,7 @@ function normalizeSchema(tables: SchemaTables): NormalizedSchema {
     const columns: Record<string, NormalizedColumn> = {};
     const indexes: string[][] = [];
     const uniques: string[][] = [];
+    const foreignKeys: NormalizedForeignKey[] = [];
     let primaryKey: string[] = [];
 
     for (const [columnName, value] of Object.entries(tableSpec)) {
@@ -178,17 +211,13 @@ function normalizeSchema(tables: SchemaTables): NormalizedSchema {
         column.unsigned = true;
       }
       if (spec.references) {
-        column.references = spec.references;
-        column.constraintName = spec.constraintName ?? `${tableName}_${columnName}_foreign`;
-        if (spec.cascadeDelete) {
-          column.onDelete = 'CASCADE';
-        } else if (spec.restrictDelete) {
-          column.onDelete = 'RESTRICT';
-        } else if (spec.setNullDelete) {
-          column.onDelete = 'SET NULL';
-        } else {
-          column.onDelete = 'NO ACTION';
-        }
+        const [table, referencedColumn] = spec.references.split('.');
+        foreignKeys.push({
+          constraintName: spec.constraintName ?? `${tableName}_${columnName}_foreign`,
+          columns: [columnName],
+          references: { table, columns: [referencedColumn] },
+          onDelete: deleteRule(spec),
+        });
       }
 
       if (spec.primary) {
@@ -213,12 +242,22 @@ function normalizeSchema(tables: SchemaTables): NormalizedSchema {
     if (tableSpec['@@PRIMARY_KEY@@']) {
       primaryKey = tableSpec['@@PRIMARY_KEY@@'] as string[];
     }
+    for (const foreignKey of (tableSpec['@@FOREIGN_KEYS@@'] ?? []) as ForeignKeySpec[]) {
+      foreignKeys.push({
+        constraintName:
+          foreignKey.constraintName ?? `${tableName}_${foreignKey.columns.join('_')}_foreign`,
+        columns: foreignKey.columns,
+        references: foreignKey.references,
+        onDelete: deleteRule(foreignKey),
+      });
+    }
 
     result[tableName] = {
       columns,
       primaryKey,
       indexes: sortIndexes(indexes),
       uniques: sortIndexes(uniques),
+      foreignKeys: sortForeignKeys(foreignKeys),
     };
   }
 
@@ -270,6 +309,7 @@ async function readSchemaFromDatabase(knex: Knex): Promise<NormalizedSchema> {
       );
     })
     .where('k.TABLE_SCHEMA', database)
+    .orderBy(['k.TABLE_NAME', 'k.CONSTRAINT_NAME', 'k.ORDINAL_POSITION'])
     .select(
       'k.TABLE_NAME',
       'k.COLUMN_NAME',
@@ -282,7 +322,13 @@ async function readSchemaFromDatabase(knex: Knex): Promise<NormalizedSchema> {
   const result: NormalizedSchema = {};
 
   for (const row of columnRows) {
-    result[row.TABLE_NAME] ??= { columns: {}, primaryKey: [], indexes: [], uniques: [] };
+    result[row.TABLE_NAME] ??= {
+      columns: {},
+      primaryKey: [],
+      indexes: [],
+      uniques: [],
+      foreignKeys: [],
+    };
 
     const type =
       row.COLUMN_TYPE === 'tinyint(1)'
@@ -308,12 +354,21 @@ async function readSchemaFromDatabase(knex: Knex): Promise<NormalizedSchema> {
     result[row.TABLE_NAME].columns[row.COLUMN_NAME] = column;
   }
 
-  for (const row of foreignKeyRows) {
-    Object.assign(result[row.TABLE_NAME].columns[row.COLUMN_NAME], {
-      references: `${row.REFERENCED_TABLE_NAME}.${row.REFERENCED_COLUMN_NAME}`,
-      constraintName: row.CONSTRAINT_NAME,
-      onDelete: row.DELETE_RULE,
+  const constraints = groupBy(foreignKeyRows, (row) => `${row.TABLE_NAME}.${row.CONSTRAINT_NAME}`);
+  for (const rows of Object.values(constraints)) {
+    const [first] = rows;
+    result[first.TABLE_NAME].foreignKeys.push({
+      constraintName: first.CONSTRAINT_NAME,
+      columns: rows.map((row) => row.COLUMN_NAME),
+      references: {
+        table: first.REFERENCED_TABLE_NAME,
+        columns: rows.map((row) => row.REFERENCED_COLUMN_NAME),
+      },
+      onDelete: first.DELETE_RULE,
     });
+  }
+  for (const table of Object.values(result)) {
+    table.foreignKeys = sortForeignKeys(table.foreignKeys);
   }
 
   // MySQL implicitly creates an index for a foreign key that no other index

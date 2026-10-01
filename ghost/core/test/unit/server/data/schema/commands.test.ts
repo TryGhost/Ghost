@@ -120,6 +120,71 @@ describe('schema commands', function () {
     });
   });
 
+  // The database suites run on MySQL only, so this is what covers SQLite, which can only
+  // declare a foreign key while creating the table.
+  describe('a foreign key over several columns, on SQLite', function () {
+    let knex: ReturnType<typeof createKnex>;
+
+    beforeEach(async function () {
+      knex = createKnex({
+        client: 'better-sqlite3',
+        connection: { filename: ':memory:' },
+        useNullAsDefault: true,
+      });
+      await knex.raw('PRAGMA foreign_keys = ON');
+
+      await commands.createTable('fields', knex, {
+        namespace: { type: 'string', maxlength: 191, nullable: false },
+        key: { type: 'string', maxlength: 191, nullable: false },
+        '@@UNIQUE_CONSTRAINTS@@': [['namespace', 'key']],
+      });
+      await commands.createTable('field_values', knex, {
+        field_namespace: { type: 'string', maxlength: 191, nullable: false },
+        field_key: { type: 'string', maxlength: 191, nullable: false },
+        value: { type: 'string', maxlength: 191, nullable: false },
+        '@@FOREIGN_KEYS@@': [
+          {
+            columns: ['field_namespace', 'field_key'],
+            references: { table: 'fields', columns: ['namespace', 'key'] },
+            constraintName: 'field_values_field_foreign',
+            cascadeDelete: true,
+          },
+        ],
+      });
+
+      await knex('fields').insert([
+        { namespace: 'custom', key: 'company' },
+        { namespace: 'app', key: 'phone' },
+      ]);
+    });
+
+    afterEach(async function () {
+      await knex.destroy();
+    });
+
+    it('takes a row with it when the row it references is deleted', async function () {
+      await knex('field_values').insert([
+        { field_namespace: 'custom', field_key: 'company', value: 'Ghost' },
+        { field_namespace: 'app', field_key: 'phone', value: '+44' },
+      ]);
+
+      await knex('fields').where({ namespace: 'custom', key: 'company' }).del();
+
+      assert.deepEqual(await knex('field_values').pluck('value'), ['+44']);
+    });
+
+    it('refuses a row that matches a referenced row one column at a time but not as a pair', async function () {
+      await assert.rejects(
+        knex('field_values').insert({
+          field_namespace: 'custom',
+          field_key: 'phone',
+          value: '+44',
+        }),
+        /FOREIGN KEY constraint failed/,
+      );
+    });
+  });
+
   describe('createViewOrReplace', function () {
     // Guards the portability fix: views must never be created with MySQL's
     // default DEFINER security, which binds them to the migrating account

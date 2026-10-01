@@ -60,6 +60,14 @@ describe('Data Generator', function () {
           } else if (rowName === '@@PRIMARY_KEY@@') {
             table.primary(row);
             break;
+          } else if (rowName === '@@FOREIGN_KEYS@@') {
+            for (const foreignKey of row) {
+              table
+                .foreign(foreignKey.columns)
+                .references(foreignKey.references.columns)
+                .inTable(foreignKey.references.table);
+            }
+            break;
           }
 
           let rowChain = table[row.type.toLowerCase()](rowName);

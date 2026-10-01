@@ -14,6 +14,26 @@ const messages = {
 };
 
 /**
+ * What a foreign key does when the row it references is deleted. A column's own
+ * `references` and a table's `@@FOREIGN_KEYS@@` state it the same way, so both read it here.
+ *
+ * @param {{cascadeDelete?: boolean, restrictDelete?: boolean, setNullDelete?: boolean}} spec
+ * @returns {'CASCADE'|'RESTRICT'|'SET NULL'|undefined}
+ */
+function onDeleteOf(spec) {
+  if (spec.cascadeDelete === true) {
+    return 'CASCADE';
+  }
+  if (spec.restrictDelete === true) {
+    return 'RESTRICT';
+  }
+  if (spec.setNullDelete === true) {
+    return 'SET NULL';
+  }
+  return undefined;
+}
+
+/**
  * @param {string} tableName
  * @param {import('knex').knex.TableBuilder} tableBuilder
  * @param {string} columnName
@@ -67,12 +87,9 @@ function addTableColumn(
     column.withKeyName(columnSpec.constraintName);
   }
 
-  if (Object.hasOwn(columnSpec, 'cascadeDelete') && columnSpec.cascadeDelete === true) {
-    column.onDelete('CASCADE');
-  } else if (Object.hasOwn(columnSpec, 'restrictDelete') && columnSpec.restrictDelete === true) {
-    column.onDelete('RESTRICT');
-  } else if (Object.hasOwn(columnSpec, 'setNullDelete') && columnSpec.setNullDelete === true) {
-    column.onDelete('SET NULL');
+  const onDelete = onDeleteOf(columnSpec);
+  if (onDelete) {
+    column.onDelete(onDelete);
   }
   if (Object.hasOwn(columnSpec, 'defaultTo')) {
     column.defaultTo(columnSpec.defaultTo);
@@ -666,6 +683,22 @@ function createTable(table, transaction = db.knex, tableSpec = schema[table]) {
     }
     if (tableSpec['@@PRIMARY_KEY@@']) {
       t.primary(tableSpec['@@PRIMARY_KEY@@']);
+    }
+    // A foreign key over several columns, which a column's own `references` cannot state.
+    // The referenced columns must be exactly the parent's primary key or one of its unique
+    // constraints: SQLite creates the table regardless, then fails every write the key
+    // has to check.
+    if (tableSpec['@@FOREIGN_KEYS@@']) {
+      tableSpec['@@FOREIGN_KEYS@@'].forEach((foreignKey) => {
+        const constraint = t
+          .foreign(foreignKey.columns, foreignKey.constraintName)
+          .references(foreignKey.references.columns)
+          .inTable(foreignKey.references.table);
+        const onDelete = onDeleteOf(foreignKey);
+        if (onDelete) {
+          constraint.onDelete(onDelete);
+        }
+      });
     }
   });
 }

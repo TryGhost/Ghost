@@ -72,6 +72,12 @@ class DataGenerator {
         }
         return acc;
       }, table.importer.dependencies);
+      // A foreign key over several columns is declared on the table rather than a column.
+      for (const { references } of this.schemaTables[table.name]['@@FOREIGN_KEYS@@'] ?? []) {
+        if (!table.dependencies.includes(references.table)) {
+          table.dependencies.push(references.table);
+        }
+      }
 
       for (const dependency of table.dependencies) {
         if (!this.tableList.find((t) => t.name === dependency)) {
