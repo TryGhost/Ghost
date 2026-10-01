@@ -12,6 +12,7 @@ import {
   unsavedChangesGuarded,
   withoutAutosave,
 } from '@test-utils/acceptance';
+import { settingsMetaDataRow } from '@tryghost/test-data/selectors/editor';
 import { editorScreen } from '@/editor/editor.screen';
 
 const POST_ID = 'abc123';
@@ -35,17 +36,31 @@ const SAVED_CANVAS = {
   feature_image: null,
 };
 
-// The posts-row columns Core's collision check watches; relations and posts_meta are not among them.
-const POSTS_ROW = [
+// What Core's collision check watches: the posts row and the tag, author and tier
+// relations. The fields Core stores beside the post, such as the meta title, are not.
+const COLLISION_CHECKED = [
   'title',
   'slug',
   'lexical',
   'feature_image',
   'custom_excerpt',
   'featured',
+  'visibility',
   'status',
   'published_at',
+  'tags',
+  'authors',
+  'tiers',
 ] as const;
+
+/** Relations compare by identity, everything else by value. */
+function sameValue(left: unknown, right: unknown): boolean {
+  const identity = (value: unknown) =>
+    Array.isArray(value)
+      ? value.map((entry: { id?: string; name?: string }) => entry.id ?? entry.name)
+      : (value ?? null);
+  return JSON.stringify(identity(left)) === JSON.stringify(identity(right));
+}
 
 type SavedPost = ReturnType<typeof post>;
 
@@ -57,8 +72,9 @@ function refusal(status: number, error: Record<string, string>): Response {
 }
 
 /**
- * A post that answers writes as Core does: one that changes a posts-row column
- * collides unless it carries the server's token, and a tag sent by id comes back whole.
+ * A post that answers writes as Core does: one that changes what its collision
+ * check watches collides unless it carries the server's token, and a tag sent by
+ * id comes back whole.
  */
 function fakeCorePost(overrides: Partial<SavedPost>) {
   fakeEditorChrome();
@@ -78,10 +94,10 @@ function fakeCorePost(overrides: Partial<SavedPost>) {
   fakeAdminEndpoint('GET', ROUTE, () => ({ posts: [current] }));
   const saveApi = fakeAdminEndpoint('PUT', ROUTE, ({ body }) => {
     const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
-    const movesRow = POSTS_ROW.some(
-      (key) => key in submitted && (submitted[key] ?? null) !== (current[key] ?? null),
+    const checked = COLLISION_CHECKED.some(
+      (key) => key in submitted && !sameValue(submitted[key], current[key]),
     );
-    if (movesRow && submitted.updated_at !== current.updated_at) {
+    if (checked && submitted.updated_at !== current.updated_at) {
       return refusal(409, {
         code: 'UPDATE_COLLISION',
         type: 'UpdateCollisionError',
@@ -182,16 +198,24 @@ describe('Post settings saving', () => {
     await stageBodyEdit();
     writeElsewhere({ title: 'Their title', lexical: buildLexicalParagraph('Their body') });
 
-    await addNewsTag();
+    // A meta title is stored beside the post, so only the saved canvas can collide.
+    await openSidebar();
+    await editorScreen.settingsSubviewRow(settingsMetaDataRow).click();
+    await editorScreen.settingsMetaTitle().fill('A better title for search');
+    await editorScreen.settingsMetaDescription().click();
 
     await expect
       .element(editorScreen.conflictBanner())
       .toHaveTextContent('Someone else is editing this post');
     expect(saveApi.requests).toHaveLength(1);
-    expect(submittedPost(saveApi)).toMatchObject({ ...SAVED_CANVAS, updated_at: LOADED_AT });
+    expect(submittedPost(saveApi)).toMatchObject({
+      ...SAVED_CANVAS,
+      meta_title: 'A better title for search',
+      updated_at: LOADED_AT,
+    });
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React, edited');
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
-    await expect.element(editorScreen.settingsTagsField()).toHaveTextContent('News');
+    await expect.element(editorScreen.settingsMetaTitle()).toHaveValue('A better title for search');
   });
 
   it('saves a scheduled post’s Featured switch at once without moving its schedule', async () => {

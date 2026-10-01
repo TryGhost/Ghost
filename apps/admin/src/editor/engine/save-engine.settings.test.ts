@@ -6,6 +6,7 @@ import {
   PAST,
   sessionInvalid,
   setup,
+  transport,
   validation,
 } from './__test-utils__/engine-harness';
 
@@ -189,6 +190,35 @@ describe('settings saves', () => {
     });
     expect(h.engine.getPendingSave()).toEqual({ blockedBy: null });
     expect(h.execute).not.toHaveBeenCalled();
+  });
+
+  it('ends a refusal its settings met once a settings attempt finds them back to saved', async () => {
+    const h = setup({ status: 'published', publishedAt: PAST, settingsDirty: true });
+    void h.engine.dispatch('settings');
+    await h.fail(validation);
+    expect(h.engine.getState()).toEqual({ kind: 'error', intent: 'settings', error: validation });
+
+    h.edit();
+    h.patch({ settingsDirty: false });
+
+    await expect(h.engine.dispatch('settings')).resolves.toEqual({
+      kind: 'dropped',
+      reason: 'clean',
+    });
+    expect(h.engine.getState()).toEqual({ kind: 'idle' });
+    expect(h.execute).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves an Update’s error standing when only the settings are back to saved', async () => {
+    const h = setup({ status: 'published', publishedAt: PAST, settingsDirty: true });
+    void h.engine.dispatch('explicit');
+    await h.fail(transport);
+
+    h.edit();
+    h.patch({ settingsDirty: false });
+    await h.engine.dispatch('settings');
+
+    expect(h.engine.getState()).toEqual({ kind: 'error', intent: 'explicit', error: transport });
   });
 
   it('runs a frozen settings save again after re-authentication without asking', async () => {

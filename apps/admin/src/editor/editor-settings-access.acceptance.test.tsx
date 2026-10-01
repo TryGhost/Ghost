@@ -277,6 +277,64 @@ describe('Post settings access', () => {
     await expect.element(editorScreen.updateButton()).toBeDisabled();
   });
 
+  it('holds a published post’s tier picks, then sends the final set once with the next setting', async () => {
+    const saveApi = fakeSavablePost({
+      status: 'published',
+      published_at: PUBLISHED_AT,
+      visibility: 'tiers',
+      tiers: [{ id: GOLD.id }],
+      featured: false,
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openAccess();
+
+    await editorScreen.settingsTier('Silver').click();
+    await editorScreen.settingsTier('Bronze').click();
+    await editorScreen.settingsTier('Gold').click();
+
+    await expect
+      .element(editorScreen.settingsTier('Gold'))
+      .toHaveAttribute('data-state', 'unchecked');
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
+    expect(unsavedChangesGuarded()).toBe(true);
+
+    await editorScreen.settingsFeatured().click();
+
+    await expect(saveApi).toHaveSavedFields({ featured: true });
+    expect(saveApi.requests).toHaveLength(1);
+    expect(submittedPost(saveApi)).toMatchObject({
+      visibility: 'tiers',
+      tiers: [{ id: SILVER.id }, { id: BRONZE.id }],
+    });
+    await expect.element(editorScreen.updateButton()).toBeDisabled();
+  });
+
+  it('sends a published post’s held tier picks once with Update', async () => {
+    const saveApi = fakeSavablePost({
+      status: 'published',
+      published_at: PUBLISHED_AT,
+      visibility: 'tiers',
+      tiers: [{ id: GOLD.id }],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openAccess();
+
+    await editorScreen.settingsTier('Silver').click();
+    await editorScreen.settingsTier('Bronze').click();
+    await editorScreen.settingsTier('Gold').click();
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
+
+    await editorScreen.updateButton().click();
+
+    await expect(saveApi).toHaveSavedFields({ status: 'published' });
+    expect(saveApi.requests).toHaveLength(1);
+    expect(submittedPost(saveApi)).toMatchObject({
+      visibility: 'tiers',
+      tiers: [{ id: SILVER.id }, { id: BRONZE.id }],
+    });
+    await expect.poll(unsavedChangesGuarded).toBe(false);
+  });
+
   it('shows the site default for a post that carries no visibility yet', async () => {
     editorChrome();
     let created = post({

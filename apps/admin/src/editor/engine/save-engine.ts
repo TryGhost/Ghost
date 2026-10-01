@@ -752,6 +752,15 @@ export function createSaveEngine<
     const early = dropReason(slot, snapshot);
     if (early) {
       settle(slot.waiters, dropped(early));
+      // Settings back to their saved values end the refusal they met.
+      if (
+        early === 'clean' &&
+        isSettingsOnly(slot.command, snapshot) &&
+        state.kind === 'error' &&
+        state.intent === 'settings'
+      ) {
+        setState(deriveState({ keepHalt: false }));
+      }
       drain();
       return;
     }

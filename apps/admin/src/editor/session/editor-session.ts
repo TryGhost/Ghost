@@ -324,6 +324,8 @@ export function createEditorSession({
   let restoringRevision = false;
   // A failing save re-enters a held conflict; one copy per conflict is enough.
   let flushedConflictError: unknown = null;
+  // The engine is holding an error a settings save met.
+  let refusedSettings = false;
 
   function livePublishedAt(): string | null {
     return stagedPublishedAt ?? publishedAt;
@@ -613,8 +615,8 @@ export function createEditorSession({
     let payload: EditorWritableData;
 
     if (settingsOnly) {
-      // Core checks the token only when a posts-row column changes, so the saved
-      // canvas makes another writer's newer canvas collide and is a no-op otherwise.
+      // Core skips its token check for writes to fields stored beside the post, so the
+      // saved canvas makes another writer's newer canvas collide and is a no-op otherwise.
       projection = { updated_at: request.snapshot.updatedAt };
       payload = {
         title: tracker.savedValue('title'),
@@ -830,7 +832,11 @@ export function createEditorSession({
     onStateChange: (next) => {
       if (next.kind === 'error' || next.kind === 'conflict') {
         tracker.markSaveError();
+      } else if (refusedSettings && next.kind === 'idle') {
+        // The engine only goes from a settings error to idle once those settings are back to saved.
+        tracker.clearSaveError();
       }
+      refusedSettings = next.kind === 'error' && next.intent === 'settings';
       if (STUCK_ENGINE_STATES.has(next.kind)) {
         const heldConflict = next.kind === 'conflict' ? next.error : null;
         if (heldConflict === null) {

@@ -34,7 +34,7 @@ const SAVED_CANVAS = {
   feature_image: null,
 };
 
-// Core's collision check runs only for a write that changes a column of the posts row.
+// Core refuses a stale token for writes to the posts row or its relations; these tests vary the canvas.
 const POSTS_ROW_CANVAS = ['title', 'slug', 'lexical', 'feature_image'] as const;
 
 // A settings save awaits the slug port and the transport before it lands.
@@ -377,6 +377,34 @@ describe('createEditorSession', () => {
       expect(state.updates).toHaveLength(2);
       expect(session.isDirty()).toBe(false);
     });
+
+    it.each([false, true])(
+      'ends the refusal once the refused setting is back to saved (body staged: %s)',
+      async (staged) => {
+        const { session, state, update } = savedAs('published');
+        if (staged) {
+          session.patchLexical(body('A staged body'));
+        }
+        update.mockImplementationOnce((payload: EditorEditPayload) => {
+          state.updates.push({ payload });
+          return Promise.reject(serverRefusal('Something the server refused.'));
+        });
+        session.patchFields({ featured: true });
+        session.commitSettings();
+        await settle();
+        expect(session.getState()).toMatchObject({ kind: 'error', intent: 'settings' });
+
+        session.patchFields({ featured: false });
+        session.commitSettings();
+        await settle();
+
+        expect(session.getState()).toEqual({ kind: 'idle' });
+        expect(session.isDirty()).toBe(staged);
+        expect(session.hasUnsavedContent()).toBe(staged);
+        expect(session.getView().pendingSave).toEqual(staged ? { blockedBy: null } : null);
+        expect(state.updates).toHaveLength(1);
+      },
+    );
 
     it('retries a draft’s failed save explicitly', async () => {
       const { session, state } = savedAs('draft', { failSave: (count) => count === 1 });

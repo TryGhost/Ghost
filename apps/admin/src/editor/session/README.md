@@ -72,6 +72,11 @@ these requests may run.
 | `draft`                          | Saved by a field commit, or after the body debounce | Saved at once, with the whole document         |
 | `published`, `scheduled`, `sent` | Retained until an explicit save: Update or Cmd-S    | Saved at once, with the changed settings alone |
 
+Tier picks outside a draft are the one settings edit staged without a commit,
+as in Ember: every save of a published post writes a revision, so the picks go
+out once, with the next settings save or Update, and count as unsaved work
+until then.
+
 Pending content is separate from the runnable queue. It includes edits awaiting
 a commit, the autosave debounce, Update, validation, or recovery, and can
 coexist with an older request in flight. A blocked document never leaves a
@@ -109,6 +114,8 @@ recoverable after a retry fails for a different reason. The save error's retry
 repeats a failed settings save on a post that is not a draft as a settings save,
 so it does not take the retained canvas with it, and sends it even when the
 server refused those very values; any other failed save is retried explicitly.
+A settings attempt that finds the refused settings back to their saved values
+ends the refusal instead: the error goes, and the post is no longer dirty for it.
 Only accepting a server reload discards outstanding local work. Successful
 acknowledgement clears pending content only when the reconciled live document
 is clean; edits made after submission remain pending.
@@ -138,11 +145,12 @@ token, the settings fields that differ from the saved copy and a staged publish
 time, and beside them the canvas as it was last saved: the title, the slug (the
 writer's own once a manual edit has moved it), the body, the feature image, and
 the excerpt while it is edited under the title. Core checks the collision token
-only when a write changes a column of the posts row, and tags, authors, tiers
-and the fields it stores beside the post are not among them. The saved canvas
-makes a settings save collide when another writer has changed the canvas since,
-rather than be acknowledged with their token and their canvas; when nobody has,
-it changes nothing. The canvas the writer has staged and the status stay out of
+when a write changes the post's own row or its tags, authors or tiers, but not
+when it changes only the fields Core stores beside the post: the meta, Facebook
+and X fields, the email subject and the feature image's alt text and caption.
+The saved canvas makes a settings save collide when another writer has changed
+the canvas since, rather than be acknowledged with their token and their canvas;
+when nobody has, it changes nothing. The canvas the writer has staged and the status stay out of
 the request, so the canvas waits for Update and the server keeps the status it
 holds. The excerpt is canvas while it is edited under the title and a settings
 field while the sidebar owns it; whichever route last staged it decides.

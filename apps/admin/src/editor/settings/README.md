@@ -11,7 +11,8 @@ members the sections read — rather than the whole editing handle.
 
 A settings field is staged as the writer changes it and committed on the gesture
 that ends the edit — a blur for a text field, the choice itself for a toggle or
-a picker. The commit saves it, whatever the post's status. A draft's commit
+a picker. The commit saves it, whatever the post's status; only a tier pick
+outside a draft waits for a later save, as [Access](#access) describes. A draft's commit
 saves the whole document, as its other edits do. A published, scheduled or sent
 post's commit saves the changed settings alone and keeps the post's status,
 while the title, the body and the rest of the canvas wait for Update.
@@ -219,6 +220,11 @@ every paid tier, archived ones included, so switching one of those posts to
 `Specific tier(s)` selects every paid tier on the site, which a draft grants in
 the save that follows the switch. Once saved, an unrelated edit sends neither
 access field.
+
+On a post that is not a draft, ticking or unticking a tier is staged without a
+save of its own, as in Ember: every save of a published post writes a revision,
+so the picks go out once, with the next settings change or Update, and count as
+unsaved work until then. The visibility choice itself saves at once.
 
 Koenig cards read the post's access from the editor's card config, which follows
 the live field rather than the saved record: a staged visibility changes what
