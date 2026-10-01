@@ -6,6 +6,7 @@ import {
   fakeAdminEndpoint,
   fakeEditorChrome,
   fakeEditorPost,
+  fakePages,
   post,
   renderAdminApp,
   submittedPost,
@@ -18,6 +19,9 @@ import { deferred } from '@/utils/deferred';
 const POST_ID = 'abc123';
 const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
+const SCHEDULED_AT = '2099-12-01T10:00:00.000Z';
+const POST_UUID = 'post-uuid';
+const PAGE_ID = 'pg123';
 
 const POLL = { timeout: 10_000 };
 
@@ -69,6 +73,57 @@ describe('Post settings URL', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openSidebar();
     await expect(page.getByRole('link', { name: 'View post' })).toHaveCount(0);
+  });
+
+  it('links to a sent post’s saved URL and previews its email URL', async () => {
+    fakeSavablePost({
+      status: 'sent',
+      published_at: PUBLISHED_AT,
+      uuid: POST_UUID,
+      url: 'https://example.com/sent-post/',
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    await expect
+      .element(page.getByRole('link', { name: 'View post' }))
+      .toHaveAttribute('href', 'https://example.com/sent-post/');
+    await expect
+      .element(editorScreen.settingsUrlPreview())
+      .toHaveTextContent(`test.com/email/${POST_UUID}/`);
+  });
+
+  it('links a scheduled post to its preview', async () => {
+    fakeSavablePost({ status: 'scheduled', published_at: SCHEDULED_AT, uuid: POST_UUID });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    await expect
+      .element(page.getByRole('link', { name: 'Preview' }))
+      .toHaveAttribute('href', `http://test.com/p/${POST_UUID}/`);
+    await expect(page.getByRole('link', { name: 'View post' })).toHaveCount(0);
+    await expect
+      .element(editorScreen.settingsUrlPreview())
+      .toHaveTextContent('test.com/hello-from-react/');
+  });
+
+  it('links a scheduled page to its preview', async () => {
+    fakeEditorChrome();
+    fakePages([]);
+    const savedPage = post({
+      id: PAGE_ID,
+      title: 'About',
+      slug: 'about',
+      status: 'scheduled',
+      published_at: SCHEDULED_AT,
+      updated_at: PUBLISHED_AT,
+      uuid: POST_UUID,
+    });
+    fakeAdminEndpoint('GET', new RegExp(`^/pages/${PAGE_ID}/\\?`), { pages: [savedPage] });
+    await renderAdminApp(`/editor/page/${PAGE_ID}`, FLAG_ON);
+    await openSidebar();
+    await expect.element(page.getByLabelText('Page URL')).toBeVisible();
+    await expect
+      .element(page.getByRole('link', { name: 'Preview' }))
+      .toHaveAttribute('href', `http://test.com/p/${POST_UUID}/`);
   });
 
   it('saves the focused URL edit with Cmd-S while generation is pending', async () => {

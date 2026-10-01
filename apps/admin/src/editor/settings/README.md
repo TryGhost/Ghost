@@ -108,9 +108,11 @@ navigation and tab-close guards ask about it; the session owns
 [that wait](../session/README.md#the-slug).
 
 The preview under the input is the site URL without its scheme, then the slug,
-both slash-terminated. Published posts also show a View post link beside the
-label. It uses the saved record's URL, preserving custom routes and avoiding links to an unsaved slug.
-A sent post previews its site URL like any other rather than its separate email URL.
+both slash-terminated. A sent post previews its email URL instead: the site URL,
+then `email/` and the post's uuid. Published and sent posts also show a View
+post link beside the label. It uses the saved record's URL, preserving custom
+routes and avoiding links to an unsaved slug. A scheduled post shows a Preview
+link to its `/p/<uuid>/` preview instead, and a draft shows neither.
 
 ## Publish date
 
