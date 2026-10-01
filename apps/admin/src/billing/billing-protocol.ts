@@ -2,17 +2,39 @@ import {
   DUNNING_PAYMENT_SETTLED_STORAGE_KEY,
   DUNNING_PAY_RETURN_ROUTE_STORAGE_KEY,
 } from '@tryghost/admin-x-framework/api/dunning';
+import { z } from 'zod';
 import type { SubscriptionState } from '@/ember-bridge';
 
 export const BILLING_ROUTE_ROOT = '/pro';
 
 /** Messages the billing app posts to Admin. Every field is untrusted input. */
-export interface BillingAppMessage extends SubscriptionState {
+export interface BillingAppMessage {
+  subscription?: unknown;
   request?: unknown;
   route?: unknown;
   destination?: unknown;
   checkoutRoute?: unknown;
   exceededLimits?: unknown;
+}
+
+type BillingSubscription = NonNullable<SubscriptionState['subscription']>;
+
+// Only a status is required: a report the app shapes differently must still
+// lift a force upgrade, so malformed optional fields fall back instead
+const billingSubscriptionSchema = z.object({
+  status: z.string(),
+  isActiveTrial: z.boolean().catch(false),
+  trial_end: z
+    .string()
+    .refine((value) => !Number.isNaN(Date.parse(value)))
+    .nullable()
+    .catch(null),
+});
+
+/** The subscription a billing app report carries, or null when it has no usable status. */
+export function parseBillingSubscription(value: unknown): BillingSubscription | null {
+  const result = billingSubscriptionSchema.safeParse(value);
+  return result.success ? result.data : null;
 }
 
 export function isBillingPath(pathname: string): boolean {
@@ -133,7 +155,7 @@ export const EXCEEDED_ALERT_HTML = `Your audience has grown! To continue publish
  * config — otherwise the overdue alert must stay available.
  */
 export function billingAlerts(
-  message: BillingAppMessage,
+  message: { subscription?: { status: string }; exceededLimits?: unknown; checkoutRoute?: unknown },
   { dunningWarningsActive }: { dunningWarningsActive: boolean },
 ): { overdue: boolean; exceeded: boolean } {
   const status = message.subscription?.status;

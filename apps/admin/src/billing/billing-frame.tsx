@@ -11,7 +11,11 @@ import { useFeatureFlag, useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 import type { AlertsStore } from '@/alerts';
-import { applyEmberBillingSubscriptionUpdate, reportEmberBillingLoadFailure } from '@/ember-bridge';
+import {
+  type SubscriptionState,
+  applyEmberBillingSubscriptionUpdate,
+  reportEmberBillingLoadFailure,
+} from '@/ember-bridge';
 import { useFlagGatedRouteOwner } from '@/use-flag-gated-route-owner';
 import { BillingAppConnection } from './billing-app-connection';
 import { useBillingScreenOpen } from './billing-screen';
@@ -30,6 +34,7 @@ import {
   isBillingAppRoute,
   isBillingPath,
   markDunningPaymentSettled,
+  parseBillingSubscription,
   takePayNowReturnRoute,
 } from './billing-protocol';
 import {
@@ -245,7 +250,10 @@ function BillingAppFrame({
     }
   };
 
-  const handleSubscriptionUpdate = async (message: BillingAppMessage) => {
+  const handleSubscriptionUpdate = async (
+    message: BillingAppMessage,
+    subscription: NonNullable<SubscriptionState['subscription']>,
+  ) => {
     const checkoutRoute = isBillingAppRoute(message.checkoutRoute)
       ? message.checkoutRoute
       : '/plans';
@@ -259,7 +267,7 @@ function BillingAppFrame({
       queryClient.refetchQueries({ queryKey: ['ConfigResponseType'] }).catch(() => {}),
       // Ember's limits failing to reload must not hold back React's state
       applyEmberBillingSubscriptionUpdate({
-        subscription: message.subscription,
+        subscription,
         checkoutRoute,
       }).catch(() => {}),
     ]);
@@ -269,7 +277,7 @@ function BillingAppFrame({
       return;
     }
 
-    setBillingSubscriptionState({ subscription: message.subscription });
+    setBillingSubscriptionState({ subscription });
     checkoutRouteRef.current = checkoutRoute;
 
     const freshConfig = queryClient.getQueriesData<ConfigResponseType>({
@@ -278,7 +286,10 @@ function BillingAppFrame({
     const dunningWarningsActive =
       dunningWarnings &&
       parseDunningConfig(freshConfig?.config.hostSettings?.billing?.dunning) !== null;
-    const { overdue, exceeded } = billingAlerts(message, { dunningWarningsActive });
+    const { overdue, exceeded } = billingAlerts(
+      { ...message, subscription },
+      { dunningWarningsActive },
+    );
 
     // Shown to every user: only the owner can act, but everyone is affected
     if (overdue) {
@@ -318,8 +329,9 @@ function BillingAppFrame({
     if (message.request === 'navigateToAdmin') {
       navigateToAdmin(message.destination);
     }
-    if (message.subscription) {
-      void handleSubscriptionUpdate(message);
+    const subscription = parseBillingSubscription(message.subscription);
+    if (subscription) {
+      void handleSubscriptionUpdate(message, subscription);
     }
   };
 

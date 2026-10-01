@@ -393,6 +393,25 @@ describe('Ghost(Pro) billing', () => {
     await expect.element(tagsScreen.newTagLink()).toBeVisible();
   });
 
+  it('reads only well-formed trial details from a subscription report', async () => {
+    fakeTags([]);
+    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+    const messages = standInMessages();
+    await renderBilling('/tags');
+    await expect.element(tagsScreen.newTagLink()).toBeVisible();
+
+    await postFromBillingApp(messages, {
+      subscription: { status: 'trialing', isActiveTrial: 'yes', trial_end: 'soon' },
+    });
+    await billingAppSettled(messages);
+    await expect.element(sidebarScreen.upgradeNowLink()).not.toBeInTheDocument();
+
+    await postFromBillingApp(messages, {
+      subscription: { status: 'trialing', isActiveTrial: true, trial_end: null },
+    });
+    await expect.element(sidebarScreen.upgradeNowLink()).toBeVisible();
+  });
+
   it('decides the overdue alert on the config refreshed for the report', async () => {
     fakeTags([]);
     let hostSettings: Record<string, unknown> = {};

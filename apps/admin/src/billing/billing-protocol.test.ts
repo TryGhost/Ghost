@@ -8,6 +8,7 @@ import {
   initialBillingSubRoute,
   isBillingAppRoute,
   isBillingPath,
+  parseBillingSubscription,
   takePayNowReturnRoute,
 } from './billing-protocol';
 
@@ -80,6 +81,38 @@ describe('takePayNowReturnRoute', () => {
     window.sessionStorage.setItem(DUNNING_PAY_RETURN_ROUTE_STORAGE_KEY, '//evil.example.com');
 
     expect(takePayNowReturnRoute()).toBeNull();
+  });
+});
+
+describe('parseBillingSubscription', () => {
+  it('keeps a well-formed subscription', () => {
+    const subscription = {
+      status: 'active',
+      isActiveTrial: true,
+      trial_end: '2026-11-01T00:00:00Z',
+    };
+
+    expect(parseBillingSubscription({ ...subscription, plan: 'creator' })).toEqual(subscription);
+  });
+
+  it('needs only a status, so a report shaped differently still counts', () => {
+    expect(parseBillingSubscription({ status: 'active' })).toEqual({
+      status: 'active',
+      isActiveTrial: false,
+      trial_end: null,
+    });
+  });
+
+  it('drops optional fields that would mislead the trial banner', () => {
+    expect(
+      parseBillingSubscription({ status: 'trialing', isActiveTrial: 'yes', trial_end: 'soon' }),
+    ).toEqual({ status: 'trialing', isActiveTrial: false, trial_end: null });
+  });
+
+  it('ignores reports without a usable status', () => {
+    for (const value of [true, 'active', { status: 1 }, {}, null]) {
+      expect(parseBillingSubscription(value)).toBeNull();
+    }
   });
 });
 
