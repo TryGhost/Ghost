@@ -23,6 +23,8 @@ interface TagPickerProps {
   selected: ReadonlyArray<TagLike>;
   onAdd: (tag: PickedTag) => void;
   onRemove: (key: string) => void;
+  /** Lets the chips be dragged into a new order, handed back whole. */
+  onReorder?: (next: TagLike[]) => void;
   /** The accessible name of the field and of the list it opens. */
   inputLabel: string;
   /** Ties the input to a visible label the caller renders. */
@@ -48,6 +50,7 @@ export function TagPicker({
   selected,
   onAdd,
   onRemove,
+  onReorder,
   inputLabel,
   inputId,
   hideSelected = false,
@@ -139,6 +142,7 @@ export function TagPicker({
       onAdd={(tag) => onAdd({ id: tag.id, name: tag.name, slug: tag.slug })}
       onOpenChange={setOpen}
       onRemove={onRemove}
+      onReorder={onReorder}
       onSearchChange={handleSearchChange}
     />
   );

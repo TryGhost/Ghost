@@ -98,6 +98,7 @@ export function AuthorsPicker({
       onAdd={(person) => onChange([...selected, toAuthorOption(person)])}
       onOpenChange={handleOpenChange}
       onRemove={(key) => onChange(selected.filter((author) => author.id !== key))}
+      onReorder={onChange}
     />
   );
 }

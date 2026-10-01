@@ -177,7 +177,10 @@ The list offers the first hundred tags matching what is typed, in name order.
 Narrowing the search is how the rest are reached. Enter takes the highlighted
 row, and so does Tab once something is typed; Tab through an empty field moves
 on. Escape closes the list and leaves the term where it was typed. A chip is
-removed by clicking it, or with Backspace on an empty field.
+removed by clicking it, or with Backspace on an empty field. Dragging a chip
+with the mouse or a finger moves it to a new place in the order, which is an
+edit like any other; a press that moves less than a few pixels is still a click.
+There is no keyboard reorder: Enter and Space on a chip remove it.
 
 ## Access
 
@@ -250,7 +253,9 @@ last one and opens the list on the staff it can offer again. A pick that empties
 the row under the highlight moves it to the last row rather than losing it.
 
 Order is meaningful and the field keeps it: a new author joins the end of the
-list, and the post is written with its authors' identities alone, in that order.
+list, a chip dragged to a new place moves the author there, the same way tag
+chips reorder, and the post is written with its authors' identities alone, in
+that order.
 The whole staff record stays in the field and the request is what reduces it.
 A post always needs one. A new post is credited to whoever started it, which is
 what the first save sends; emptying the list instead leaves the field asking for

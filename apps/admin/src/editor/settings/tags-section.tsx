@@ -53,6 +53,7 @@ export function TagsSection({ session }: { session: EditorSettingsPort }) {
         onRemove={(key) => {
           commit(removeTag(tags, key));
         }}
+        onReorder={commit}
       />
     </SettingsSection>
   );
