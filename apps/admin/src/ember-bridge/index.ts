@@ -3,6 +3,7 @@ export { EmberProvider } from './ember-provider';
 export { useEmberContext } from './ember-context';
 export { EmberFallback } from './ember-fallback';
 export { ForceUpgradeGuard } from './force-upgrade-guard';
+export { useEmberNotificationsHost } from './ember-notifications-host';
 export {
   useEmberAuthSync,
   useEmberListReturnSync,
@@ -21,3 +22,4 @@ export {
   emberMutationHandlers,
 } from './ember-bridge';
 export type { AdminThemeMode, EmberDataChangeEvent, StateBridge } from './ember-bridge';
+export type { EmberNotificationsHost } from './ember-notifications-host';

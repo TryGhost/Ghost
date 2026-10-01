@@ -1,5 +1,9 @@
 import { describe, it, beforeAll, afterEach, afterAll } from 'vitest';
 import assert from 'node:assert/strict';
+import fs from 'fs-extra';
+import path from 'node:path';
+import os from 'node:os';
+import { pipeline } from 'node:stream/promises';
 
 import S3Storage from '../../../../core/server/adapters/storage/S3Storage';
 import {
@@ -50,6 +54,41 @@ describe.skipIf(process.env.GHOST_TEST_S3_AVAILABLE !== '1')(
 
     afterAll(async function () {
       await deleteTestBucket(adminClient, bucket);
+    });
+
+    for (const bytes of [Buffer.alloc(0), Buffer.from([0, 255, 137, 1])]) {
+      it(`streams ${bytes.length} stored bytes to disk in the correct tenant`, async function () {
+        const root = await fs.mkdtemp(path.join(os.tmpdir(), 's3-stream-'));
+        const storage = createStorage({ tenantPrefix: 'tenant-a' });
+        try {
+          const source = path.join(root, 'source');
+          await fs.writeFile(source, bytes);
+          const key = storage.urlToPath(
+            await storage.save({ name: 'opaque', path: source }, storage.storagePath),
+          );
+          const destination = path.join(root, 'destination');
+          await pipeline(
+            await storage.readStream({ path: key }),
+            fs.createWriteStream(destination),
+          );
+          assert.deepEqual(await fs.readFile(destination), bytes);
+          await assert.rejects(
+            createStorage({ tenantPrefix: 'tenant-b' }).readStream({ path: key }),
+            { errorType: 'NotFoundError' },
+          );
+        } finally {
+          await fs.remove(root);
+        }
+      });
+    }
+    it('rejects missing and invalid streaming paths', async function () {
+      const storage = createStorage();
+      await assert.rejects(storage.readStream({ path: 'missing' }), { errorType: 'NotFoundError' });
+      for (const key of ['', '../outside']) {
+        await assert.rejects(storage.readStream({ path: key }), {
+          errorType: 'IncorrectUsageError',
+        });
+      }
     });
 
     it('reads back the raw bytes of an object written to storage', async function () {
