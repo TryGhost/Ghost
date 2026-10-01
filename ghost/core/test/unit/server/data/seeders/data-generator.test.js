@@ -16,6 +16,7 @@ const { randomDateBetween } = require('../../../../../core/server/data/seeders/u
 const DataGenerator = require('../../../../../core/server/data/seeders/data-generator');
 
 const schema = require('../../../../../core/server/data/schema');
+const { commands } = schema;
 
 const schemaTables = schema.tables;
 
@@ -32,59 +33,7 @@ describe('Data Generator', function () {
     });
 
     for (const tableName of Object.keys(schema.tables)) {
-      await db.schema.createTable(tableName, function (table) {
-        for (const rowName of Object.keys(schema.tables[tableName])) {
-          const row = schema.tables[tableName][rowName];
-
-          if (rowName === '@@UNIQUE_CONSTRAINTS@@') {
-            for (const constraints of row) {
-              // A constraint is normally its columns; the object form names
-              // it, for when the derived name would overrun MySQL's limit.
-              if (constraints && typeof constraints === 'object' && !Array.isArray(constraints)) {
-                table.unique(constraints.columns, { indexName: constraints.indexName });
-              } else {
-                table.unique(constraints);
-              }
-            }
-            break;
-          } else if (rowName === '@@INDEXES@@') {
-            for (const indexes of row) {
-              // We ignore the index prefix for SQLite.
-              if (indexes && typeof indexes === 'object' && !Array.isArray(indexes)) {
-                table.index(indexes.columns);
-              } else {
-                table.index(indexes);
-              }
-            }
-            break;
-          } else if (rowName === '@@PRIMARY_KEY@@') {
-            table.primary(row);
-            break;
-          }
-
-          let rowChain = table[row.type.toLowerCase()](rowName);
-          if ('nullable' in row) {
-            if (row.nullable) {
-              rowChain = rowChain.nullable();
-            } else {
-              rowChain = rowChain.notNullable();
-            }
-          }
-          if ('defaultTo' in row) {
-            rowChain = rowChain.defaultTo(row.defaultTo);
-          }
-          if ('references' in row) {
-            const [foreignTable, foreignRow] = row.references.split('.');
-            rowChain = rowChain.references(foreignRow).inTable(foreignTable);
-          }
-          if (row.unique) {
-            table.unique([rowName]);
-          }
-          if (row.primary) {
-            table.primary(rowName);
-          }
-        }
-      });
+      await commands.createTable(tableName, db);
     }
 
     await db('email_design_settings').insert({
