@@ -401,15 +401,15 @@ describe('Ghost(Pro) billing', () => {
     await expect.element(tagsScreen.newTagLink()).toBeVisible();
 
     await postFromBillingApp(messages, {
-      subscription: { status: 'trialing', isActiveTrial: 'yes', trial_end: 'soon' },
-    });
-    await billingAppSettled(messages);
-    await expect.element(sidebarScreen.upgradeNowLink()).not.toBeInTheDocument();
-
-    await postFromBillingApp(messages, {
       subscription: { status: 'trialing', isActiveTrial: true, trial_end: null },
     });
     await expect.element(sidebarScreen.upgradeNowLink()).toBeVisible();
+
+    // Visible first, so its disappearing proves the malformed report was read
+    await postFromBillingApp(messages, {
+      subscription: { status: 'trialing', isActiveTrial: 'yes', trial_end: 'soon' },
+    });
+    await expect.element(sidebarScreen.upgradeNowLink()).not.toBeInTheDocument();
   });
 
   it('decides the overdue alert on the config refreshed for the report', async () => {
