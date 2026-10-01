@@ -261,23 +261,19 @@ describe('Post settings access', () => {
     expect(submittedPost(saveApi).tiers).toEqual([{ id: GOLD.id }, { id: SILVER.id }]);
   });
 
-  it('stages a published post’s visibility until Update', async () => {
+  it('saves a published post’s visibility on its own', async () => {
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openAccess();
 
-    await expect.element(editorScreen.updateButton()).toBeDisabled();
-
     await chooseVisibility('Paid-members only');
 
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
-    await expect.poll(unsavedChangesGuarded).toBe(true);
-    expect(saveApi.requests).toHaveLength(0);
-
-    await userEvent.keyboard('{Meta>}s{/Meta}');
-
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-    expect(submittedPost(saveApi)).toMatchObject({ visibility: 'paid', status: 'published' });
+    expect(submittedPost(saveApi)).toEqual({
+      id: POST_ID,
+      updated_at: LOADED_AT,
+      visibility: 'paid',
+    });
     await expect.element(editorScreen.updateButton()).toBeDisabled();
   });
 

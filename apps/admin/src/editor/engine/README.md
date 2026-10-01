@@ -4,7 +4,7 @@
 
 ## Save engine
 
-`save-engine.ts` is a single-flight queue over typed save intents with one coalescing pending slot, a prepare stage, typed outcomes, and a leave decision. It combines restartable and timed autosaves, field saves, explicit saves, leave saves, and status transitions without ever letting two requests overlap.
+`save-engine.ts` is a single-flight queue over typed save intents with one coalescing pending slot, a prepare stage, typed outcomes, and a leave decision. It combines restartable and timed autosaves, field saves, settings saves, explicit saves, leave saves, and status transitions without ever letting two requests overlap.
 
 ### Intents
 
@@ -12,12 +12,15 @@
 | --------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | `autosave`                        | body change; an unblocked new post fires immediately                              | 3s restartable (first create immediate) | no              | never; drafts only, pinned to `draft`                                                                                          |
 | `timed`                           | armed by an autosave dispatch, fires after 60s of continuous editing              | 60s cycle                               | no              | never; drafts only                                                                                                             |
-| `field`                           | a title, feature-image or settings commit                                         | none                                    | no              | never; drafts only. On a published/scheduled/sent post the attempt is dropped with reason `not-draft`; content remains pending |
+| `field`                           | a canvas commit: the title, the excerpt under it, the feature image               | none                                    | no              | never; drafts only. On a published/scheduled/sent post the attempt is dropped with reason `not-draft`; content remains pending |
+| `settings`                        | a settings-panel commit                                                           | none                                    | no              | never; preserves the current status                                                                                            |
 | `explicit`                        | Cmd-S / Save / Update                                                             | none                                    | yes             | never; preserves the current status (a past-scheduled post saves as `scheduled`, the server owns that transition)              |
 | `leave`                           | navigating away from a dirty draft with unrevisioned changes or an armed autosave | none                                    | yes             | never; preserves the current status                                                                                            |
 | `publish` / `schedule` / `revert` | the publish flow                                                                  | none                                    | no              | the only status-changing commands; each carries an explicit target                                                             |
 
 The autosave debounce is 3 seconds unless the caller passes `autosaveDebounceMs`, which the engine calls at each restart of the debounce and uses in place of the default.
+
+A `settings` save on a draft is a field save in all but name. On a published, scheduled or sent post it runs at once and keeps the status, and it is dropped as `clean` unless the snapshot's `settingsDirty` says it has something to carry, however dirty the rest of the post is. `isSettingsOnly(command, snapshot)` tells the caller which of the two a request is, so it can send the changed settings alone.
 
 ### Commands
 
@@ -65,7 +68,7 @@ remain unsafe while another error is being resolved.
 
 ### Queue semantics
 
-One save in flight, one pending slot. A command arriving while idle runs immediately (after its debounce); one arriving during a save lands in the pending slot and coalesces: priority `publish`/`schedule`/`revert` > `explicit` > `leave` > `field` > `timed` > `autosave`, the winner's kind executes, every waiter keeps its own command, `requiresRevision` ORs across the slot, and the payload is rebuilt from the current post at execution, so coalescing never loses newer content. A later status command supersedes only the earlier status command; its riders stay with the winner. A new autosave restarts the debounce; an explicit cancels it and carries its waiters.
+One save in flight, one pending slot. A command arriving while idle runs immediately (after its debounce); one arriving during a save lands in the pending slot and coalesces: priority `publish`/`schedule`/`revert` > `explicit` > `leave` > `settings` > `field` > `timed` > `autosave`, the winner's kind executes, every waiter keeps its own command, `requiresRevision` ORs across the slot, and the payload is rebuilt from the current post at execution, so coalescing never loses newer content. A later status command supersedes only the earlier status command; its riders stay with the winner. A new autosave restarts the debounce; an explicit cancels it and carries its waiters.
 
 Every dispatch settles with a typed `SaveCompletion`:
 
@@ -322,14 +325,14 @@ Ordering and staleness
 
 ## Invariants
 
-- A background command (`autosave`/`timed`/`field`) can never change status, publish, or send email.
+- A background command (`autosave`/`timed`/`field`/`settings`) can never change status, publish, or send email.
 - No two saves are in flight; payloads are built at execution; coalescing never loses the newest content.
 - Session expiry during a save loses nothing: re-auth completes, the save lands, content is present.
 - Save-on-leave fires at most once per attempt and only for dirty drafts.
 - Loading any post, including old-schema fixtures, is a clean verdict until the user edits.
 - A failed save leaves the post dirty and recoverable; no error path discards the payload.
 - Explicit and leave saves set `save_revision`; background saves do not; publish does not force one (coalescing ORs).
-- A published/scheduled/sent post's persisted state changes only via explicit Update, publish-flow commands, delete, or restore.
+- A published/scheduled/sent post's persisted state changes only via explicit Update, settings saves, publish-flow commands, delete, or restore.
 - Slug generation never overwrites a custom slug and never applies a stale proposal.
 - Scheduled saves serialize with zeroed milliseconds and preserve the publish time unless the user changed it.
 - Clearing a non-empty body is dirty.

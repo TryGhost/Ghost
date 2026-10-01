@@ -198,8 +198,7 @@ describe('Post editor feature image', () => {
     await editorScreen.featureImageAltToggle().click();
     await editorScreen.featureImageAltInput().fill('Rolling hills');
 
-    // A published post's background saves are dropped: the sidebar stages
-    // these edits until Update.
+    // A published post's canvas edits wait for an explicit save.
     await expect.element(editorScreen.featureImageAltInput()).toHaveValue('Rolling hills');
     await expect.poll(() => saveApi.requests.length).toBe(0);
 

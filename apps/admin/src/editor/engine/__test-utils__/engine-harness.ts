@@ -36,6 +36,7 @@ export const BASE: SnapshotFields = {
   title: 'Hello',
   slug: 'hello',
   isDirty: true,
+  settingsDirty: false,
   changedSinceLastRevision: true,
   version: 1,
 };
@@ -124,6 +125,7 @@ export function setup(
       publishedAt: prepared.target.publishedAt,
       slug: prepared.slug,
       isDirty: editedInFlight,
+      settingsDirty: editedInFlight && snapshot.settingsDirty,
     };
   });
 

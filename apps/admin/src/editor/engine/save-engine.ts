@@ -11,6 +11,7 @@ export type SaveIntent =
   | 'autosave'
   | 'timed'
   | 'field'
+  | 'settings'
   | 'explicit'
   | 'leave'
   | 'publish'
@@ -28,19 +29,33 @@ const PRIORITY: Record<SaveIntent, number> = {
   autosave: 0,
   timed: 1,
   field: 2,
-  leave: 3,
-  explicit: 4,
-  publish: 5,
-  schedule: 5,
-  revert: 5,
+  settings: 3,
+  leave: 4,
+  explicit: 5,
+  publish: 6,
+  schedule: 6,
+  revert: 6,
 };
 
 export function isBackgroundIntent(intent: SaveIntent): boolean {
+  return intent === 'autosave' || intent === 'timed' || intent === 'field' || intent === 'settings';
+}
+
+/** Background saves only a draft runs; any other status keeps their content for Update. */
+function isDraftOnlyIntent(intent: SaveIntent): boolean {
   return intent === 'autosave' || intent === 'timed' || intent === 'field';
 }
 
 export function isStatusIntent(intent: SaveIntent): intent is StatusIntent {
   return intent === 'publish' || intent === 'schedule' || intent === 'revert';
+}
+
+/** A settings save on a post that is not a draft carries the changed settings alone. */
+export function isSettingsOnly(
+  command: Pick<SaveCommand, 'kind'>,
+  snapshot: Pick<SaveSnapshot, 'status'>,
+): boolean {
+  return command.kind === 'settings' && snapshot.status !== 'draft';
 }
 
 export interface SaveTarget {
@@ -86,6 +101,8 @@ export type SaveSnapshot = PersistedIdentity & {
   /** Empty until generated */
   slug: string;
   isDirty: boolean;
+  /** Whether what a settings-only save carries differs from the saved copy. */
+  settingsDirty: boolean;
   changedSinceLastRevision: boolean;
   /** Monotonic local edit counter; validation/host-limit suppression lifts once it moves. */
   version: number;
@@ -290,13 +307,13 @@ export function deriveTarget(
   }
 }
 
-/** Background intents pin draft; explicit and leave preserve the status; status intents carry their own target. */
+/** Draft-only intents pin draft; settings, explicit and leave preserve the status; status intents carry their own target. */
 export function resolveTarget(command: SaveCommand, snapshot: TargetSource): Readonly<SaveTarget> {
   if (command.target) {
     return command.target;
   }
   return {
-    status: isBackgroundIntent(command.kind) ? 'draft' : snapshot.status,
+    status: isDraftOnlyIntent(command.kind) ? 'draft' : snapshot.status,
     publishedAt: zeroMilliseconds(snapshot.publishedAt),
   };
 }
@@ -494,9 +511,8 @@ export function createSaveEngine<
     return conflict !== null && snapshot.updatedAt === conflict.updatedAt;
   }
 
-  // Field saves on published/scheduled/sent posts are dropped: the sidebar stages those edits until Update.
-  function backgroundDropReason(snapshot: S): DropReason | null {
-    if (snapshot.status !== 'draft') {
+  function backgroundDropReason(kind: SaveIntent, snapshot: S): DropReason | null {
+    if (isDraftOnlyIntent(kind) && snapshot.status !== 'draft') {
       return 'not-draft';
     }
     if (isSuppressed(snapshot)) {
@@ -680,16 +696,17 @@ export function createSaveEngine<
 
   function dropReason(slot: Slot, snapshot: S): DropReason | null {
     releaseValidationOnClean(snapshot);
-    if (!isBackgroundIntent(slot.command.kind)) {
+    const { kind } = slot.command;
+    if (!isBackgroundIntent(kind)) {
       return null;
     }
-    if (snapshot.status !== 'draft') {
+    if (isDraftOnlyIntent(kind) && snapshot.status !== 'draft') {
       return 'not-draft';
     }
-    if (!snapshot.isDirty) {
+    if (!(isSettingsOnly(slot.command, snapshot) ? snapshot.settingsDirty : snapshot.isDirty)) {
       return 'clean';
     }
-    return backgroundDropReason(snapshot);
+    return backgroundDropReason(kind, snapshot);
   }
 
   async function run(slot: Slot): Promise<void> {
@@ -914,13 +931,13 @@ export function createSaveEngine<
       // A clean refetch can keep the edit version unchanged; release local
       // validation before the version-based suppression check.
       releaseValidationOnClean(snapshot);
-      const reason = backgroundDropReason(snapshot);
+      const reason = backgroundDropReason(kind, snapshot);
       if (reason) {
         setState(deriveState());
         resolve(dropped(reason));
         return;
       }
-      if (kind === 'field') {
+      if (kind === 'field' || kind === 'settings') {
         enqueue(waiter.command, [waiter]);
         return;
       }
@@ -987,7 +1004,11 @@ export function createSaveEngine<
       restartDebounce();
       return;
     }
-    if (snapshot.status !== 'draft' || !snapshot.isDirty || backgroundDropReason(snapshot)) {
+    if (
+      snapshot.status !== 'draft' ||
+      !snapshot.isDirty ||
+      backgroundDropReason('autosave', snapshot)
+    ) {
       return;
     }
     armTimedCycle();

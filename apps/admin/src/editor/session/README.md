@@ -59,17 +59,19 @@ a field patch would be dropped before the request is built.
 
 Every edit updates the live projection. The save engine derives pending content
 from that projection when the session reads its view. Staging alone does not
-start a request. A field commit — including title blur, image changes, and
-settings — dispatches `field` unconditionally;
-body edits dispatch `autosave`. The engine owns when these requests may run.
+start a request. A canvas commit — the title's blur, the excerpt under the title,
+and the feature image with its alt text and caption — dispatches `field`; a
+settings-panel commit — a settings field, a manual slug or the publish time —
+dispatches `settings`; body edits dispatch `autosave`. The engine owns when
+these requests may run.
 
-| Status                           | Background save request                                         | Persisted by             |
-| -------------------------------- | --------------------------------------------------------------- | ------------------------ |
-| `draft`                          | Runs immediately for a field commit, or after the body debounce | The eligible save        |
-| `published`, `scheduled`, `sent` | Retains pending content until Update                            | Explicit Update or Cmd-S |
+| Status                           | Title, body and canvas                              | Settings panel                                 |
+| -------------------------------- | --------------------------------------------------- | ---------------------------------------------- |
+| `draft`                          | Saved by a field commit, or after the body debounce | Saved at once, with the whole document         |
+| `published`, `scheduled`, `sent` | Retained until an explicit save: Update or Cmd-S    | Saved at once, with the changed settings alone |
 
 Pending content is separate from the runnable queue. It includes edits awaiting
-a field commit, the autosave debounce, Update, validation, or recovery, and can
+a commit, the autosave debounce, Update, validation, or recovery, and can
 coexist with an older request in flight. A blocked document never leaves a
 command in the runnable queue, so navigating away does not wait indefinitely.
 The live document remains the source of truth: Update enables, the post stays
@@ -99,7 +101,10 @@ and preparation occupies the save slot without displaying “Saving…”.
 
 Failures never discard pending content. Server validation, network errors and
 authentication expiry retain their recovery policies. A collision remains
-recoverable after a retry fails for a different reason.
+recoverable after a retry fails for a different reason. The save error's retry
+repeats a failed settings save on a post that is not a draft as a settings save,
+so it does not take the retained canvas with it; any other failed save is
+retried explicitly.
 Only accepting a server reload discards outstanding local work. Successful
 acknowledgement clears pending content only when the reconciled live document
 is clean; edits made after submission remain pending.
@@ -124,8 +129,18 @@ without tiers. The publish flow's email extras — the newsletter, the recipient
 segment and the email-only flag — ride on the command that carried them rather
 than on the projection.
 
+A settings save on a post that is not a draft sends less: the id and the
+collision token, the settings fields that differ from the saved copy, the slug
+once a manual edit has moved it and a staged publish time. It sends no title,
+body, feature image or status, so the server keeps the status it holds and the
+canvas waits for Update. The excerpt is canvas while it is edited under the
+title and a settings field while the sidebar owns it; whichever route last
+staged it decides.
+
 The whole payload is validated before the request: the title, then the settings
 rules above in their own order, then the publish time, then the author list. A
+settings save skips the rules of what it leaves for Update, the title and a
+canvas excerpt, so an unfinished canvas edit does not hold it. A
 failure there is typed exactly as one the server would have reported, so the
 save fails with that kind and sends nothing. Each length is counted as the
 server counts it: the title trimmed, with an emoji and its presentation selector
@@ -185,7 +200,9 @@ saved state for the rest of the session. Adopting is not an edit, so it must not
 request was built against. Normalized title and slug acknowledgements are
 synchronized back into the slug machine through its ownership-preserving
 transition, so later saves do not resend a superseded value or freeze derived
-slug behavior.
+slug behavior. Only what the request carried is adopted: a settings save sends
+no title, so the title its acknowledgement holds answers nothing and a title
+staged on the canvas stays staged.
 
 Settings fields follow the same rule. A field a section does not own is carried
 in the projection but never sent. Successful saves and reverted edits release
@@ -221,9 +238,9 @@ work until then, and a reload or disposal releases an obsolete wait.
 Only a draft's title commit drives generation, so a published URL does not move
 under the writer. A slug is regenerated whenever the post has none, for any
 status, including after the default title has been substituted for a blank one.
-The session does not persist a proposal itself: an applied proposal is patched
-into the live document and then dispatches the same engine intent as any other field,
-so a draft saves it and every other status stages it until Update.
+The session does not persist a proposal itself: an applied manual proposal is
+patched into the live document and then dispatches a settings save, as any
+settings-panel field does, so it is saved at once whatever the status.
 
 ## Restoring a revision
 

@@ -223,9 +223,14 @@ export function settingsFieldErrorFor(
  * post the server has not created yet is not held to the tier rule
  * (validators/post.js `isNew`); its write leaves the pair out instead.
  */
-export function settingsFieldError(fields: ValidatedSettingsFields, isNew: boolean): string | null {
+export function settingsFieldError(
+  fields: ValidatedSettingsFields,
+  isNew: boolean,
+  /** Fields the save leaves for a later one, whose rules wait for it. */
+  skip: ReadonlyArray<ValidatedSettingsFieldKey> = [],
+): string | null {
   for (const key of VALIDATED_SETTINGS_FIELD_KEYS) {
-    if (isNew && key === 'tiers') {
+    if ((isNew && key === 'tiers') || skip.includes(key)) {
       continue;
     }
     const error = settingsFieldErrorFor(key, fields);

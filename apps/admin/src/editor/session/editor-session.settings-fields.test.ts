@@ -479,7 +479,7 @@ describe('createEditorSession', () => {
         }),
       });
 
-      session.patchFields({ featured: true });
+      session.patchFeatureImage({ feature_image: 'https://example.com/image.png' });
       session.commitField();
       await settle();
 
@@ -531,23 +531,25 @@ describe('createEditorSession', () => {
       expect(state.creates).toHaveLength(0);
     });
 
-    it('stages a field on a published post until an explicit save', async () => {
+    it('stages a canvas field on a published post until an explicit save', async () => {
       const { session, state } = sessionHarness({
-        record: record({ status: 'published', published_at: PUBLISHED_AT, featured: false }),
+        record: record({ status: 'published', published_at: PUBLISHED_AT, feature_image: null }),
       });
 
-      session.patchFields({ featured: true });
+      session.patchFeatureImage({ feature_image: 'https://example.com/image.png' });
       session.commitField();
       await settle();
 
       expect(state.updates).toHaveLength(0);
-      expect(session.getFields().featured).toBe(true);
+      expect(session.getFields().feature_image).toBe('https://example.com/image.png');
 
       await session.dispatchExplicit();
 
       expect(state.updates).toHaveLength(1);
-      expect(state.updates[0].payload).toMatchObject({ featured: true, status: 'published' });
-      expect(session.isDirty()).toBe(false);
+      expect(state.updates[0].payload).toMatchObject({
+        feature_image: 'https://example.com/image.png',
+        status: 'published',
+      });
     });
 
     it('keeps a staged field after a rejected save', async () => {

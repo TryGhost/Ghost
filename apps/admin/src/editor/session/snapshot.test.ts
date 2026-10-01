@@ -15,6 +15,7 @@ function sources(overrides: Partial<SnapshotSources> = {}): SnapshotSources {
     status: 'draft',
     publishedAt: null,
     publishedAtDirty: false,
+    settingsDirty: false,
     title: 'Hello',
     slug: 'hello',
     slugIsCustom: false,

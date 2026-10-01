@@ -221,10 +221,11 @@ test.describe('Ghost Admin - Post editor access (React)', () => {
     const { settings } = editor;
 
     await settings.openSection('access');
-    await settings.access.setVisibility(MEMBERS_ONLY);
-    // A published post stages a settings edit until Update, so this click is
-    // the only save
-    await Promise.all([waitForPostSave(page, created.id), editor.publishSaveButton.click()]);
+    // A published post saves a settings edit as it is made.
+    await Promise.all([
+      waitForPostSave(page, created.id),
+      settings.access.setVisibility(MEMBERS_ONLY),
+    ]);
 
     const updated = await readAccess(page, created.id);
     expect(updated).toMatchObject({
