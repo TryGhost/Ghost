@@ -1,6 +1,6 @@
 import React, { lazy, Suspense } from 'react';
 
-// Keep map geometry out of the normal member-page bundle while Labs is off.
+// Load map geometry separately so it does not block the member form.
 const MemberLocationMap = lazy(() => import('./member-location-map'));
 
 // A map failure should never prevent reading or editing the member.
