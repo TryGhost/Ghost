@@ -1,8 +1,62 @@
 import React, {useState, useEffect} from 'react';
-import {Badge, Button, Card, CardContent, CardHeader, CardTitle, Checkbox, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea} from '@tryghost/shade/components';
-import {Box, Inline, Text} from '@tryghost/shade/primitives';
+import {
+    Badge,
+    Button,
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+    Checkbox,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+    Input,
+    Label,
+    LoadingIndicator,
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
+    Switch,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger,
+    Textarea
+} from '@tryghost/shade/components';
+import {Box, Inline, Stack, Text} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {useCreateForm, useEditForm, useInvalidateForms, type Form, type FormField, type FormFieldType, type FormSchema} from '@tryghost/admin-x-framework/api/forms';
+import {
+    useCreateForm,
+    useEditForm,
+    useInvalidateForms,
+    useBrowseFormAttachedPosts,
+    useAttachFormToPost,
+    useDetachFormFromPost,
+    type Form,
+    type FormField,
+    type FormFieldType,
+    type FormSchema
+} from '@tryghost/admin-x-framework/api/forms';
+import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
+import {useBrowsePages} from '@tryghost/admin-x-framework/api/pages';
+import {toast} from 'sonner';
 
 interface FormBuilderModalProps {
     open: boolean;
@@ -67,13 +121,15 @@ const CSS_PRESETS = [
   border: none !important;
   padding: 1.5rem 0 !important;
   box-shadow: none !important;
+  max-width: 100% !important;
 }
 .ghost-form-input {
   border: none !important;
   border-bottom: 2px solid #e2e8f0 !important;
   border-radius: 0 !important;
-  padding-left: 0 !important;
+  padding: 0.75rem 0 !important;
   background: transparent !important;
+  font-size: 1rem !important;
 }
 .ghost-form-input:focus {
   border-bottom-color: #0f172a !important;
@@ -83,9 +139,11 @@ const CSS_PRESETS = [
   background: #0f172a !important;
   color: #ffffff !important;
   border-radius: 9999px !important;
-  letter-spacing: 0.05em !important;
-  text-transform: uppercase !important;
-  font-size: 0.75rem !important;
+  padding: 0.75rem 2rem !important;
+  min-height: 48px !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  letter-spacing: 0.02em !important;
 }`
     },
     {
@@ -133,11 +191,32 @@ export const FormBuilderModal: React.FC<FormBuilderModalProps> = ({
     onOpenChange,
     form
 }) => {
-    const isEditing = Boolean(form?.id);
+    const [currentForm, setCurrentForm] = useState<Form | null>(form || null);
+    const activeFormId = currentForm?.id || '';
+    const isEditing = Boolean(activeFormId);
+
     const {mutateAsync: createForm, isPending: isCreating} = useCreateForm();
     const {mutateAsync: editForm, isPending: isEditingPending} = useEditForm();
     const invalidateForms = useInvalidateForms();
 
+    // Attach / Detach mutations
+    const {mutateAsync: attachForm, isPending: isAttaching} = useAttachFormToPost();
+    const {mutateAsync: detachForm, isPending: isDetaching} = useDetachFormFromPost();
+
+    // Fetch posts and pages for direct embed
+    const {data: postsData, isLoading: isLoadingPosts} = useBrowsePosts({
+        searchParams: {limit: 'all', fields: 'id,title,slug,status,updated_at'}
+    });
+    const {data: pagesData, isLoading: isLoadingPages} = useBrowsePages({
+        searchParams: {limit: 'all', fields: 'id,title,slug,status,updated_at'}
+    });
+
+    // Fetch posts currently with this form attached
+    const {data: attachedData, isLoading: isLoadingAttached, refetch: refetchAttached} = useBrowseFormAttachedPosts(activeFormId, {
+        enabled: Boolean(open && activeFormId)
+    });
+
+    const [activeTab, setActiveTab] = useState<'fields' | 'css' | 'embed' | 'preview'>('fields');
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [status, setStatus] = useState<'active' | 'archived'>('active');
@@ -145,7 +224,26 @@ export const FormBuilderModal: React.FC<FormBuilderModalProps> = ({
     const [customCss, setCustomCss] = useState('');
     const [nameError, setNameError] = useState('');
 
+    // Embed & Attach state
+    const [selectedTargetId, setSelectedTargetId] = useState<string>('');
+    const [placement, setPlacement] = useState<'end' | 'start'>('end');
+    const [copied, setCopied] = useState<string | null>(null);
+    const [statusMessage, setStatusMessage] = useState<{type: 'success' | 'error'; text: string} | null>(null);
+
+    const posts = postsData?.posts || [];
+    const pages = pagesData?.pages || [];
+    const attachedPosts = attachedData?.posts || [];
+    const attachedIds = new Set(attachedPosts.map(p => p.id));
+    const availablePosts = posts.filter(p => !attachedIds.has(p.id));
+    const availablePages = pages.filter(p => !attachedIds.has(p.id));
+    const isLoadingOptions = isLoadingPosts || isLoadingPages;
+
     useEffect(() => {
+        setCurrentForm(form || null);
+        setActiveTab('fields');
+        setSelectedTargetId('');
+        setStatusMessage(null);
+
         if (form) {
             setName(form.name || '');
             setDescription(form.description || '');
@@ -214,9 +312,30 @@ export const FormBuilderModal: React.FC<FormBuilderModalProps> = ({
         });
     };
 
-    const handleSave = async () => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const smartScriptSnippet = activeFormId
+        ? `<script src="${origin}/ghost/api/content/forms/${activeFormId}/embed.js" async></script>`
+        : `<script src="${origin}/ghost/api/content/forms/[form-id]/embed.js" async></script>`;
+
+    const smartDivSnippet = activeFormId
+        ? `<div data-ghost-form="${activeFormId}"></div>\n<script src="${origin}/ghost/api/content/forms/${activeFormId}/embed.js" async></script>`
+        : `<div data-ghost-form="[form-id]"></div>\n<script src="${origin}/ghost/api/content/forms/[form-id]/embed.js" async></script>`;
+
+    const endpointUrl = activeFormId
+        ? `${origin}/ghost/api/content/forms/${activeFormId}/submissions`
+        : `${origin}/ghost/api/content/forms/[form-id]/submissions`;
+
+    const handleCopy = (text: string, type: string) => {
+        void navigator.clipboard.writeText(text);
+        setCopied(type);
+        toast.success('Copied to clipboard!');
+        setTimeout(() => setCopied(null), 2000);
+    };
+
+    const handleSave = async (closeAfter: boolean = false) => {
         if (!name.trim()) {
             setNameError('Form name is required');
+            setActiveTab('fields');
             return;
         }
 
@@ -241,15 +360,93 @@ export const FormBuilderModal: React.FC<FormBuilderModalProps> = ({
         };
 
         try {
-            if (isEditing && form?.id) {
-                await editForm({id: form.id, ...payload});
+            let savedForm: Form;
+            if (isEditing && activeFormId) {
+                const res = await editForm({id: activeFormId, ...payload});
+                savedForm = res.forms[0] || {...currentForm!, ...payload};
             } else {
-                await createForm(payload);
+                const res = await createForm(payload);
+                savedForm = res.forms[0];
             }
+
+            // If a post or page was selected to attach to, attach it now
+            if (selectedTargetId && savedForm?.id) {
+                try {
+                    await attachForm({
+                        formId: savedForm.id,
+                        postId: selectedTargetId,
+                        placement
+                    });
+                    setSelectedTargetId('');
+                    if (isEditing) {
+                        await refetchAttached();
+                    }
+                } catch (attachErr: unknown) {
+                    const msg = attachErr instanceof Error ? attachErr.message : 'Form created, but attaching to post failed.';
+                    toast.error(msg);
+                }
+            }
+
             invalidateForms();
-            onOpenChange(false);
-        } catch {
-            // Handled by react-query error state
+
+            if (closeAfter) {
+                toast.success(isEditing ? 'Form updated successfully!' : 'Form created successfully!');
+                onOpenChange(false);
+            } else if (!isEditing) {
+                // First-time creation: set current form, show toast, and show Embed tab
+                setCurrentForm(savedForm);
+                toast.success(selectedTargetId ? 'Form created and attached to post!' : 'Form created successfully!');
+                setActiveTab('embed');
+            } else {
+                toast.success('Form updated successfully!');
+            }
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Failed to save form';
+            toast.error(msg);
+        }
+    };
+
+    const handleAttachCurrent = async () => {
+        if (!selectedTargetId || !activeFormId) {
+            return;
+        }
+        try {
+            setStatusMessage(null);
+            await attachForm({
+                formId: activeFormId,
+                postId: selectedTargetId,
+                placement
+            });
+            await refetchAttached();
+            setSelectedTargetId('');
+            setStatusMessage({type: 'success', text: 'Form successfully attached to post!'});
+            toast.success('Form attached to post successfully!');
+            setTimeout(() => setStatusMessage(null), 4000);
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Failed to attach form to post.';
+            setStatusMessage({type: 'error', text: msg});
+            toast.error(msg);
+        }
+    };
+
+    const handleDetachCurrent = async (postId: string) => {
+        if (!activeFormId) {
+            return;
+        }
+        try {
+            setStatusMessage(null);
+            await detachForm({
+                formId: activeFormId,
+                postId
+            });
+            await refetchAttached();
+            setStatusMessage({type: 'success', text: 'Form successfully detached from post.'});
+            toast.success('Form detached from post.');
+            setTimeout(() => setStatusMessage(null), 4000);
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Failed to detach form.';
+            setStatusMessage({type: 'error', text: msg});
+            toast.error(msg);
         }
     };
 
@@ -259,22 +456,31 @@ export const FormBuilderModal: React.FC<FormBuilderModalProps> = ({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="flex max-h-[90vh] max-w-4xl flex-col overflow-hidden p-0">
                 <DialogHeader className="border-b border-border-default p-6 pb-2">
-                    <DialogTitle>{isEditing ? `Edit Form: ${form?.name}` : 'Create New Form'}</DialogTitle>
+                    <DialogTitle>{isEditing ? `Edit Form: ${name || currentForm?.name}` : 'Create New Form'}</DialogTitle>
                     <DialogDescription>
-                        Design your form fields, configure responses, and collect user submissions natively.
+                        Design your form fields, configure responses, and embed directly into any Ghost Post or Page.
                     </DialogDescription>
                 </DialogHeader>
 
-                <Tabs className="flex flex-1 flex-col overflow-hidden" defaultValue="fields">
+                <Tabs className="flex flex-1 flex-col overflow-hidden" value={activeTab} onValueChange={(val: string) => setActiveTab(val as 'fields' | 'css' | 'embed' | 'preview')}>
                     <div className="border-b border-border-default px-6">
-                        <TabsList className="grid w-full max-w-md grid-cols-3">
+                        <TabsList className="grid w-full max-w-lg grid-cols-4">
                             <TabsTrigger value="fields">Fields Builder</TabsTrigger>
                             <TabsTrigger value="css">Custom CSS</TabsTrigger>
+                            <TabsTrigger value="embed">
+                                Embed & Share
+                                {attachedPosts.length > 0 && (
+                                    <Badge className="ml-1.5 h-4 px-1 text-[10px]" variant="secondary">
+                                        {attachedPosts.length}
+                                    </Badge>
+                                )}
+                            </TabsTrigger>
                             <TabsTrigger value="preview">Live Preview</TabsTrigger>
                         </TabsList>
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-6">
+                        {/* Tab 1: Fields Builder */}
                         <TabsContent className="m-0 space-y-6" value="fields">
                             {/* General Settings */}
                             <Card className="border border-border-default">
@@ -322,8 +528,162 @@ export const FormBuilderModal: React.FC<FormBuilderModalProps> = ({
                                             onChange={e => setDescription(e.target.value)}
                                         />
                                     </div>
+
+                                    {/* Quick Embed Option at Form Creation */}
+                                    <div className="bg-surface-elevated-1 space-y-1.5 rounded-lg border border-border-default p-3.5">
+                                        <Inline align="center" gap="xs">
+                                            <LucideIcon.Link className="size-4 text-primary" />
+                                            <Label className="text-xs font-semibold" htmlFor="quick-attach-select">
+                                                Quick Attach to Post or Page (Optional)
+                                            </Label>
+                                        </Inline>
+                                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                                            <div className="sm:col-span-2">
+                                                <Select
+                                                    disabled={isLoadingOptions}
+                                                    value={selectedTargetId}
+                                                    onValueChange={setSelectedTargetId}
+                                                >
+                                                    <SelectTrigger id="quick-attach-select">
+                                                        <SelectValue placeholder={isLoadingOptions ? 'Loading posts and pages...' : 'Choose a post or page...'} />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="max-h-60">
+                                                        <SelectItem value="none">-- None (Don&apos;t attach yet) --</SelectItem>
+                                                        {availablePosts.length > 0 && (
+                                                            <SelectGroup>
+                                                                <SelectLabel>Posts</SelectLabel>
+                                                                {availablePosts.map(p => (
+                                                                    <SelectItem key={p.id} value={p.id}>
+                                                                        {p.title || '(Untitled Post)'}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectGroup>
+                                                        )}
+                                                        {availablePages.length > 0 && (
+                                                            <SelectGroup>
+                                                                <SelectLabel>Pages</SelectLabel>
+                                                                {availablePages.map(pg => (
+                                                                    <SelectItem key={pg.id} value={pg.id}>
+                                                                        {pg.title || '(Untitled Page)'}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectGroup>
+                                                        )}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div>
+                                                <Select value={placement} onValueChange={(val: 'end' | 'start') => setPlacement(val)}>
+                                                    <SelectTrigger>
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="end">End of Content</SelectItem>
+                                                        <SelectItem value="start">Top of Content</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        </div>
+                                        <Text size="xs" tone="secondary">
+                                            {selectedTargetId && selectedTargetId !== 'none'
+                                                ? 'Form will be automatically embedded and published on the selected post/page upon creation.'
+                                                : 'You can choose to attach it directly here or customize dynamic script tags in the Embed & Share tab.'}
+                                        </Text>
+                                    </div>
                                 </CardContent>
                             </Card>
+
+                            {/* Active Content Embeds (Displays where this form is live) */}
+                            {activeFormId && (
+                                <Card className="bg-surface-elevated-1 border border-border-default">
+                                    <CardHeader className="pb-3">
+                                        <Inline align="center" justify="between">
+                                            <Inline align="center" gap="xs">
+                                                <LucideIcon.CheckCircle2 className="size-4 text-green-600" />
+                                                <CardTitle className="text-sm font-semibold">
+                                                    Embedded In Content ({attachedPosts.length})
+                                                </CardTitle>
+                                            </Inline>
+                                            <Button
+                                                className="h-7 text-xs"
+                                                size="sm"
+                                                variant="ghost"
+                                                onClick={() => setActiveTab('embed')}
+                                            >
+                                                Manage Embeds
+                                                <LucideIcon.ArrowRight className="ml-1 size-3" />
+                                            </Button>
+                                        </Inline>
+                                        <Text size="xs" tone="secondary">
+                                            Posts and pages where this form is currently embedded and collecting responses.
+                                        </Text>
+                                    </CardHeader>
+                                    <CardContent className="space-y-2 pt-0">
+                                        {isLoadingAttached ? (
+                                            <div className="flex justify-center p-3">
+                                                <LoadingIndicator size="sm" />
+                                            </div>
+                                        ) : attachedPosts.length === 0 ? (
+                                            <div className="rounded-md border border-dashed border-border-default p-3 text-center">
+                                                <Text size="xs" tone="secondary">
+                                                    Not currently embedded in any posts or pages. Use &ldquo;Quick Attach&rdquo; above or the Embed &amp; Share tab.
+                                                </Text>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                {attachedPosts.map(p => (
+                                                    <div
+                                                        key={p.id}
+                                                        className="flex items-center justify-between rounded-md border border-border-default bg-background p-2.5 shadow-xs"
+                                                    >
+                                                        <Inline align="center" gap="sm">
+                                                            <Badge className="text-[10px] capitalize" variant="secondary">
+                                                                {p.type || 'post'}
+                                                            </Badge>
+                                                            <Text className="text-xs font-semibold">
+                                                                {p.title || '(Untitled)'}
+                                                            </Text>
+                                                            <Badge
+                                                                className="text-[10px] capitalize"
+                                                                variant={p.status === 'published' ? 'default' : 'outline'}
+                                                            >
+                                                                {p.status}
+                                                            </Badge>
+                                                        </Inline>
+                                                        <Inline align="center" gap="xs">
+                                                            <Button
+                                                                className="h-7 text-xs"
+                                                                size="sm"
+                                                                variant="outline"
+                                                                asChild
+                                                            >
+                                                                <a
+                                                                    href={`#/editor/${p.type || 'post'}/${p.id}`}
+                                                                    rel="noreferrer"
+                                                                    target="_blank"
+                                                                >
+                                                                    <LucideIcon.ExternalLink className="mr-1 size-3" />
+                                                                    Edit in Editor
+                                                                </a>
+                                                            </Button>
+                                                            <Button
+                                                                className="h-7 text-xs text-muted-foreground hover:text-destructive"
+                                                                disabled={isDetaching}
+                                                                size="sm"
+                                                                variant="ghost"
+                                                                onClick={() => void handleDetachCurrent(p.id)}
+                                                            >
+                                                                <LucideIcon.Trash2 className="mr-1 size-3" />
+                                                                Detach
+                                                            </Button>
+                                                        </Inline>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            )}
 
                             {/* Fields List */}
                             <div className="space-y-3">
@@ -471,7 +831,7 @@ export const FormBuilderModal: React.FC<FormBuilderModalProps> = ({
                             </div>
                         </TabsContent>
 
-                        {/* Custom CSS Tab */}
+                        {/* Tab 2: Custom CSS */}
                         <TabsContent className="m-0 space-y-6" value="css">
                             <Card className="border border-border-default">
                                 <CardHeader className="pb-3">
@@ -541,7 +901,316 @@ export const FormBuilderModal: React.FC<FormBuilderModalProps> = ({
                             </Card>
                         </TabsContent>
 
-                        {/* Live Preview */}
+                        {/* Tab 3: Embed & Share */}
+                        <TabsContent className="m-0 space-y-6" value="embed">
+                            {statusMessage && (
+                                <div
+                                    className={`rounded-md border p-3 text-xs ${
+                                        statusMessage.type === 'success'
+                                            ? 'border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950/40 dark:text-green-300'
+                                            : 'border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300'
+                                    }`}
+                                >
+                                    <Inline align="center" gap="xs">
+                                        {statusMessage.type === 'success' ? (
+                                            <LucideIcon.CheckCircle2 className="size-4 shrink-0 text-green-600" />
+                                        ) : (
+                                            <LucideIcon.AlertCircle className="size-4 shrink-0 text-red-600" />
+                                        )}
+                                        <span>{statusMessage.text}</span>
+                                    </Inline>
+                                </div>
+                            )}
+
+                            {/* Section 1: 1-Click Direct Post / Page Attachment */}
+                            <Card className="border border-border-default">
+                                <CardHeader className="pb-3">
+                                    <Inline align="center" justify="between">
+                                        <div>
+                                            <CardTitle className="text-base">Attach Directly to Post or Page</CardTitle>
+                                            <Text size="xs" tone="secondary">
+                                                Embed this form directly into any Ghost post or page with zero copy-pasting. Safe lifecycle management automatically cleans up attachments if this form is removed.
+                                            </Text>
+                                        </div>
+                                    </Inline>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                                        <div className="sm:col-span-2">
+                                            <Label className="mb-1 block text-xs font-medium" htmlFor="embed-attach-select">
+                                                Select Post or Page
+                                            </Label>
+                                            <Select
+                                                disabled={isLoadingOptions}
+                                                value={selectedTargetId}
+                                                onValueChange={setSelectedTargetId}
+                                            >
+                                                <SelectTrigger className="w-full" id="embed-attach-select">
+                                                    <SelectValue placeholder={isLoadingOptions ? 'Loading posts and pages...' : 'Choose a post or page...'} />
+                                                </SelectTrigger>
+                                                <SelectContent className="max-h-60">
+                                                    <SelectItem value="none">-- None / Select a target --</SelectItem>
+                                                    {availablePosts.length > 0 && (
+                                                        <SelectGroup>
+                                                            <SelectLabel>Posts</SelectLabel>
+                                                            {availablePosts.map(p => (
+                                                                <SelectItem key={p.id} value={p.id}>
+                                                                    {p.title || '(Untitled Post)'}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectGroup>
+                                                    )}
+                                                    {availablePages.length > 0 && (
+                                                        <SelectGroup>
+                                                            <SelectLabel>Pages</SelectLabel>
+                                                            {availablePages.map(pg => (
+                                                                <SelectItem key={pg.id} value={pg.id}>
+                                                                    {pg.title || '(Untitled Page)'}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectGroup>
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div>
+                                            <Label className="mb-1 block text-xs font-medium">Placement</Label>
+                                            <Select value={placement} onValueChange={(val: 'end' | 'start') => setPlacement(val)}>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="end">End of Content</SelectItem>
+                                                    <SelectItem value="start">Top of Content</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+
+                                    {activeFormId ? (
+                                        <div className="flex justify-end">
+                                            <Button
+                                                disabled={!selectedTargetId || selectedTargetId === 'none' || isAttaching}
+                                                size="sm"
+                                                onClick={() => void handleAttachCurrent()}
+                                            >
+                                                {isAttaching ? (
+                                                    <>
+                                                        <LoadingIndicator size="sm" />
+                                                        Attaching...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <LucideIcon.Plus className="mr-1 size-3.5" />
+                                                        Attach to Post/Page
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <Text size="xs" tone="secondary">
+                                            When you click &ldquo;Create Form&rdquo; below, the form will be automatically saved and attached to this selection.
+                                        </Text>
+                                    )}
+
+                                    {/* Active attachments list for this form */}
+                                    {activeFormId && (
+                                        <Stack className="pt-2" gap="xs">
+                                            <Text className="font-semibold" size="xs">
+                                                Active Content Attachments ({attachedPosts.length})
+                                            </Text>
+                                            {isLoadingAttached ? (
+                                                <div className="flex justify-center p-4">
+                                                    <LoadingIndicator size="sm" />
+                                                </div>
+                                            ) : attachedPosts.length === 0 ? (
+                                                <Text size="xs" tone="secondary">
+                                                    Not currently attached to any posts or pages.
+                                                </Text>
+                                            ) : (
+                                                <div className="bg-surface-elevated-1 overflow-hidden rounded-md border border-border-default">
+                                                    <Table>
+                                                        <TableHeader>
+                                                            <TableRow>
+                                                                <TableHead>Title</TableHead>
+                                                                <TableHead>Type</TableHead>
+                                                                <TableHead>Status</TableHead>
+                                                                <TableHead className="text-right">Action</TableHead>
+                                                            </TableRow>
+                                                        </TableHeader>
+                                                        <TableBody>
+                                                            {attachedPosts.map(p => (
+                                                                <TableRow key={p.id}>
+                                                                    <TableCell className="text-xs font-medium">
+                                                                        {p.title || '(Untitled)'}
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        <Badge className="text-[10px] capitalize" variant="secondary">
+                                                                            {p.type || 'post'}
+                                                                        </Badge>
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        <Badge
+                                                                            className="text-[10px] capitalize"
+                                                                            variant={p.status === 'published' ? 'default' : 'outline'}
+                                                                        >
+                                                                            {p.status}
+                                                                        </Badge>
+                                                                    </TableCell>
+                                                                    <TableCell className="text-right">
+                                                                        <Inline align="center" gap="xs" justify="end">
+                                                                            <Button
+                                                                                className="h-7 text-xs"
+                                                                                size="sm"
+                                                                                variant="outline"
+                                                                                asChild
+                                                                            >
+                                                                                <a
+                                                                                    href={`#/editor/${p.type || 'post'}/${p.id}`}
+                                                                                    rel="noreferrer"
+                                                                                    target="_blank"
+                                                                                >
+                                                                                    <LucideIcon.ExternalLink className="mr-1 size-3" />
+                                                                                    Edit in Editor
+                                                                                </a>
+                                                                            </Button>
+                                                                            <Button
+                                                                                className="h-7 text-xs"
+                                                                                disabled={isDetaching}
+                                                                                size="sm"
+                                                                                variant="destructive"
+                                                                                onClick={() => void handleDetachCurrent(p.id)}
+                                                                            >
+                                                                                <LucideIcon.Trash2 className="mr-1 size-3" />
+                                                                                Detach
+                                                                            </Button>
+                                                                        </Inline>
+                                                                    </TableCell>
+                                                                </TableRow>
+                                                            ))}
+                                                        </TableBody>
+                                                    </Table>
+                                                </div>
+                                            )}
+                                        </Stack>
+                                    )}
+                                </CardContent>
+                            </Card>
+
+                            {/* Section 2: Smart Dynamic Script Embed */}
+                            <Card className="border border-border-default">
+                                <CardHeader className="pb-3">
+                                    <Inline align="center" gap="xs">
+                                        <LucideIcon.Code className="size-4 text-primary" />
+                                        <CardTitle className="text-base">Smart Dynamic Embed Script</CardTitle>
+                                    </Inline>
+                                    <Text size="xs" tone="secondary">
+                                        Insert this 1-line script into any Ghost HTML card, theme file, or external website. It loads asynchronously, renders custom CSS, and syncs form field updates automatically.
+                                    </Text>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <Stack gap="xs">
+                                        <Text className="text-xs font-semibold text-muted-foreground uppercase">
+                                            Single-Line Script (Auto-places form right where inserted)
+                                        </Text>
+                                        <div className="relative rounded-md border border-border-default bg-surface-elevated-2 p-3 font-mono text-xs">
+                                            <pre className="overflow-x-auto whitespace-pre-wrap">{smartScriptSnippet}</pre>
+                                            <Button
+                                                className="absolute top-2 right-2 h-7 text-xs"
+                                                disabled={!activeFormId}
+                                                size="sm"
+                                                variant="secondary"
+                                                onClick={() => handleCopy(smartScriptSnippet, 'script')}
+                                            >
+                                                {copied === 'script' ? (
+                                                    <>
+                                                        <LucideIcon.Check className="mr-1 size-3.5 text-green-600" />
+                                                        Copied!
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <LucideIcon.Copy className="mr-1 size-3.5" />
+                                                        Copy Snippet
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </div>
+                                    </Stack>
+
+                                    <Stack gap="xs">
+                                        <Text className="text-xs font-semibold text-muted-foreground uppercase">
+                                            Explicit Container Snippet (For targeted layout placement)
+                                        </Text>
+                                        <div className="relative rounded-md border border-border-default bg-surface-elevated-2 p-3 font-mono text-xs">
+                                            <pre className="overflow-x-auto whitespace-pre-wrap">{smartDivSnippet}</pre>
+                                            <Button
+                                                className="absolute top-2 right-2 h-7 text-xs"
+                                                disabled={!activeFormId}
+                                                size="sm"
+                                                variant="secondary"
+                                                onClick={() => handleCopy(smartDivSnippet, 'div')}
+                                            >
+                                                {copied === 'div' ? (
+                                                    <>
+                                                        <LucideIcon.Check className="mr-1 size-3.5 text-green-600" />
+                                                        Copied!
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <LucideIcon.Copy className="mr-1 size-3.5" />
+                                                        Copy Snippet
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </div>
+                                    </Stack>
+                                </CardContent>
+                            </Card>
+
+                            {/* Section 3: REST API Endpoint */}
+                            <Card className="border border-border-default">
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="text-base">REST API Endpoint</CardTitle>
+                                    <Text size="xs" tone="secondary">
+                                        Submit responses programmatically from React/Next.js frontends or mobile apps.
+                                    </Text>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="relative rounded-md border border-border-default bg-surface-elevated-2 p-3 font-mono text-xs">
+                                        <p className="font-semibold text-foreground">POST {endpointUrl}</p>
+                                        <p className="mt-2 text-muted-foreground">Headers: Content-Type: application/json</p>
+                                        <pre className="mt-2 text-muted-foreground">
+{`// Example payload:
+{
+${fields.map(f => `  "${f.name || f.id}": "sample value"`).join(',\n')}
+}`}
+                                        </pre>
+                                        <Button
+                                            className="absolute top-2 right-2 h-7 text-xs"
+                                            disabled={!activeFormId}
+                                            size="sm"
+                                            variant="secondary"
+                                            onClick={() => handleCopy(endpointUrl, 'api')}
+                                        >
+                                            {copied === 'api' ? (
+                                                <>
+                                                    <LucideIcon.Check className="mr-1 size-3.5 text-green-600" />
+                                                    Copied!
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <LucideIcon.Copy className="mr-1 size-3.5" />
+                                                    Copy Endpoint
+                                                </>
+                                            )}
+                                        </Button>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+
+                        {/* Tab 4: Live Preview */}
                         <TabsContent className="m-0 flex justify-center py-6" value="preview">
                             <div className="ghost-form-preview-wrapper w-full max-w-lg">
                                 {customCss && (
@@ -602,13 +1271,38 @@ export const FormBuilderModal: React.FC<FormBuilderModalProps> = ({
                     </div>
 
                     <DialogFooter className="border-t border-border-default p-4">
-                        <Inline gap="sm" justify="end">
-                            <Button variant="outline" onClick={() => onOpenChange(false)}>
-                                Cancel
-                            </Button>
-                            <Button disabled={isSaving} onClick={() => { void handleSave(); }}>
-                                {isSaving ? 'Saving...' : isEditing ? 'Update Form' : 'Create Form'}
-                            </Button>
+                        <Inline align="center" className="w-full" justify="between">
+                            <div>
+                                {activeFormId ? (
+                                    <Text size="xs" tone="secondary">
+                                        Form ID: <code className="font-mono font-semibold text-foreground">{activeFormId}</code>
+                                    </Text>
+                                ) : (
+                                    <Text size="xs" tone="secondary">
+                                        {selectedTargetId && selectedTargetId !== 'none'
+                                            ? 'Ready to create and attach to selected content'
+                                            : 'Configure fields & optional embed targets'}
+                                    </Text>
+                                )}
+                            </div>
+                            <Inline gap="sm">
+                                <Button variant="outline" onClick={() => onOpenChange(false)}>
+                                    {activeFormId && activeTab === 'embed' ? 'Close' : 'Cancel'}
+                                </Button>
+                                {!activeFormId ? (
+                                    <Button disabled={isSaving} onClick={() => { void handleSave(true); }}>
+                                        {isSaving ? 'Creating...' : 'Create Form'}
+                                    </Button>
+                                ) : activeTab === 'embed' ? (
+                                    <Button onClick={() => onOpenChange(false)}>
+                                        Done
+                                    </Button>
+                                ) : (
+                                    <Button disabled={isSaving} onClick={() => { void handleSave(true); }}>
+                                        {isSaving ? 'Saving...' : 'Update Form'}
+                                    </Button>
+                                )}
+                            </Inline>
                         </Inline>
                     </DialogFooter>
                 </Tabs>
@@ -616,3 +1310,5 @@ export const FormBuilderModal: React.FC<FormBuilderModalProps> = ({
         </Dialog>
     );
 };
+
+export default FormBuilderModal;

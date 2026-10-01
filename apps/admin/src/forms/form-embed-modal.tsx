@@ -356,7 +356,6 @@ export const FormEmbedModal: React.FC<FormEmbedModalProps> = ({
                             <Card className="bg-surface-elevated-1 border border-border-default p-4">
                                 <Stack gap="xs">
                                     <Inline align="center" gap="xs">
-                                        <LucideIcon.Sparkles className="size-4 text-amber-500" />
                                         <Text className="font-semibold" size="sm">
                                             Smart Dynamic Embed Script
                                         </Text>

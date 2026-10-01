@@ -20,12 +20,13 @@ const controller = {
             'limit',
             'order',
             'page',
-            'filter',
-            'include'
+            'filter'
         ],
         permissions: true,
         query(frame) {
-            return models.Form.findPage(frame.options);
+            const options = Object.assign({}, frame.options);
+            delete options.include;
+            return models.Form.findPage(options);
         }
     },
 
@@ -36,12 +37,12 @@ const controller = {
         data: [
             'id'
         ],
-        options: [
-            'include'
-        ],
+        options: [],
         permissions: true,
         async query(frame) {
-            const model = await models.Form.findOne(frame.data, frame.options);
+            const options = Object.assign({}, frame.options);
+            delete options.include;
+            const model = await models.Form.findOne(frame.data, options);
             if (!model) {
                 throw new errors.NotFoundError({
                     message: tpl(messages.formNotFound)

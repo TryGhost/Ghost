@@ -11,6 +11,12 @@ const Form = ghostBookshelf.Model.extend({
 
     submissions() {
         return this.hasMany('FormSubmission', 'form_id');
+    }
+}, {
+    orderDefaultOptions: function orderDefaultOptions() {
+        return {
+            created_at: 'DESC'
+        };
     },
 
     countRelations() {
@@ -24,12 +30,18 @@ const Form = ghostBookshelf.Model.extend({
                 });
             }
         };
-    }
-}, {
-    orderDefaultOptions: function orderDefaultOptions() {
-        return {
-            created_at: 'DESC'
-        };
+    },
+
+    defaultRelations: function defaultRelations(methodName, options) {
+        if (['findPage', 'findAll', 'findOne'].includes(methodName)) {
+            if (!options.withRelated) {
+                options.withRelated = [];
+            }
+            if (!options.withRelated.includes('count.submissions')) {
+                options.withRelated.push('count.submissions');
+            }
+        }
+        return options;
     }
 });
 

@@ -9,6 +9,7 @@ import {FormBuilderModal} from './form-builder-modal';
 import {FormSubmissionsModal} from './form-submissions-modal';
 import {FormEmbedModal} from './form-embed-modal';
 import {FormAnalyticsModal} from './form-analytics-modal';
+import {toast} from 'sonner';
 
 export const Forms: React.FC = () => {
     const {data, isLoading, isError, refetch} = useBrowseForms();
@@ -32,13 +33,34 @@ export const Forms: React.FC = () => {
 
     const forms = data?.forms || [];
 
-    useEffect(() => {
-        const query = window.location.hash.includes('?') ? window.location.hash.split('?')[1] : window.location.search.replace(/^\?/, '');
-        const params = new URLSearchParams(query);
-        if (params.get('new') === 'true' || params.get('action') === 'new') {
-            setSelectedForm(null);
-            setBuilderOpen(true);
+    const cleanUrlHash = () => {
+        if (window.location.hash.includes('?')) {
+            const cleanHash = window.location.hash.split('?')[0];
+            window.history.replaceState(null, '', window.location.pathname + window.location.search + cleanHash);
         }
+    };
+
+    const handleCloseBuilder = (open: boolean) => {
+        setBuilderOpen(open);
+        if (!open) {
+            cleanUrlHash();
+            setSelectedForm(null);
+        }
+    };
+
+    useEffect(() => {
+        const checkHash = () => {
+            const query = window.location.hash.includes('?') ? window.location.hash.split('?')[1] : window.location.search.replace(/^\?/, '');
+            const params = new URLSearchParams(query);
+            if (params.get('new') === 'true' || params.get('action') === 'new') {
+                setSelectedForm(null);
+                setBuilderOpen(true);
+            }
+        };
+
+        checkHash();
+        window.addEventListener('hashchange', checkHash);
+        return () => window.removeEventListener('hashchange', checkHash);
     }, []);
 
     const handleCreateNew = () => {
@@ -74,7 +96,11 @@ export const Forms: React.FC = () => {
             setIsDeleting(true);
             await deleteForm(formToDelete.id);
             invalidateForms();
+            toast.success(`Form "${formToDelete.name}" deleted successfully.`);
             setFormToDelete(null);
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Failed to delete form';
+            toast.error(msg);
         } finally {
             setIsDeleting(false);
         }
@@ -87,12 +113,7 @@ export const Forms: React.FC = () => {
                     <ListPage.Header>
                         <PageHeader blurredBackground={false} sticky={false}>
                             <PageHeader.Left>
-                                <PageHeader.Title>
-                                    Forms
-                                    {forms.length > 0 && (
-                                        <PageHeader.Count>{formatNumber(forms.length)}</PageHeader.Count>
-                                    )}
-                                </PageHeader.Title>
+                                <PageHeader.Title>Forms</PageHeader.Title>
                             </PageHeader.Left>
                             <PageHeader.Actions>
                                 <PageHeader.ActionGroup>
@@ -133,7 +154,6 @@ export const Forms: React.FC = () => {
                             <div className="space-y-4">
                                 <Card className="bg-surface-elevated-1 border border-border-default p-3">
                                     <Inline align="center" gap="sm">
-                                        <LucideIcon.Sparkles className="size-4 shrink-0 text-primary" />
                                         <Text size="xs" tone="secondary">
                                             <strong>Embed forms easily:</strong> Click <strong>Embed</strong> on any form to copy a ready-to-use HTML card snippet with custom CSS for any Ghost Post or Page.
                                         </Text>
@@ -269,7 +289,7 @@ export const Forms: React.FC = () => {
             <FormBuilderModal
                 form={selectedForm}
                 open={builderOpen}
-                onOpenChange={setBuilderOpen}
+                onOpenChange={handleCloseBuilder}
             />
 
             {/* Submissions Modal */}

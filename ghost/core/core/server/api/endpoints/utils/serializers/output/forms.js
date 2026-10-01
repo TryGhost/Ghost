@@ -8,5 +8,17 @@ module.exports = {
 
     exportSubmissions(response, apiConfig, frame) {
         frame.response = response;
+    },
+
+    browseAttachedPosts(response, apiConfig, frame) {
+        frame.response = response;
+    },
+
+    attachToPost(response, apiConfig, frame) {
+        frame.response = response;
+    },
+
+    detachFromPost(response, apiConfig, frame) {
+        frame.response = response;
     }
 };

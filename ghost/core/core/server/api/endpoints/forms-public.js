@@ -57,6 +57,7 @@ const controller = {
             frame.response = async function (req, res) {
                 const script = await formsService.generateEmbedScript(frame.options.id);
                 res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+                res.setHeader('Cache-Control', 'no-cache, private, no-store, must-revalidate');
                 return res.send(script);
             };
         }

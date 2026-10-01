@@ -50,9 +50,11 @@ module.exports = function apiRoutes() {
             const formsService = require('../../../../services/forms');
             const script = await formsService.generateEmbedScript(req.params.id);
             res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+            res.setHeader('Cache-Control', 'no-cache, private, no-store, must-revalidate');
             return res.send(script);
         } catch (e) {
             res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+            res.setHeader('Cache-Control', 'no-cache, private, no-store, must-revalidate');
             return res.send('');
         }
     });

@@ -24,6 +24,9 @@ const emberDataTypeMapping = {
     ThemesResponseType: {type: 'theme'},
     TiersResponseType: {type: 'tier'},
     UsersResponseType: {type: 'user'},
+    FormsResponseType: null, // forms only exist in React admin
+    FormSubmissionsResponseType: null, // form submissions only exist in React admin
+    FormAttachedPostsResponseType: null, // form attached posts only exist in React admin
     CustomThemeSettingsResponseType: null // custom theme settings no longer exist in Admin
 };
 

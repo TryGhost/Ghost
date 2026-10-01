@@ -2,7 +2,19 @@ import {Meta, createMutation, createQuery, createQueryWithId} from '../utils/api
 import {useCallback} from 'react';
 import {useQueryClient} from '@tanstack/react-query';
 
-export type FormFieldType = 'text' | 'email' | 'textarea' | 'number' | 'select' | 'checkbox';
+export type FormFieldType =
+    | 'text'
+    | 'email'
+    | 'textarea'
+    | 'number'
+    | 'select'
+    | 'checkbox'
+    | 'phone'
+    | 'url'
+    | 'date'
+    | 'time'
+    | 'radio'
+    | 'rating';
 
 export type FormField = {
     id: string;
@@ -17,6 +29,8 @@ export type FormField = {
 export type FormSchema = {
     fields: FormField[];
     custom_css?: string;
+    success_title?: string;
+    success_message?: string;
 };
 
 export type Form = {
@@ -136,7 +150,17 @@ const attachedPostsDataType = 'FormAttachedPostsResponseType';
 
 export const useBrowseFormAttachedPosts = createQueryWithId<FormAttachedPostsResponseType>({
     dataType: attachedPostsDataType,
-    path: formId => `/forms/${formId}/posts/`
+    path: formId => `/forms/${formId}/posts/`,
+    returnData: (originalData: unknown) => {
+        const data = originalData as (FormAttachedPostsResponseType & {forms?: Array<{posts?: FormAttachedPost[]}>}) | undefined;
+        if (data?.posts && Array.isArray(data.posts)) {
+            return data;
+        }
+        if (data?.forms?.[0]?.posts && Array.isArray(data.forms[0].posts)) {
+            return {posts: data.forms[0].posts};
+        }
+        return {posts: []};
+    }
 });
 
 export const useAttachFormToPost = createMutation<{post_id: string; form_id: string; attached: boolean}, {formId: string; postId: string; placement?: 'start' | 'end'}>({

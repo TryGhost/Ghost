@@ -298,6 +298,16 @@ describe('Unit: Service: state-bridge', function () {
             expect(store.unloadAll.called).to.be.false;
         });
 
+        it('skips processing for forms data types', function () {
+            run(() => {
+                service.onInvalidate('FormsResponseType');
+                service.onInvalidate('FormSubmissionsResponseType');
+                service.onInvalidate('FormAttachedPostsResponseType');
+            });
+
+            expect(store.unloadAll.called).to.be.false;
+        });
+
         it('warns when trying to invalidate singleton types', function () {
             const consoleWarnStub = sinon.stub(console, 'warn');
 

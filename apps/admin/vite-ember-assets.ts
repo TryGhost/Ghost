@@ -123,15 +123,25 @@ export function emberAssetsPlugin() {
                     const reactAssetsDir = path.resolve(config.build.outDir, 'assets');
                     const reactIndexFile = path.resolve(config.build.outDir, 'index.html');
                     
+                    const copyFilter = (src: string) => {
+                        return !src.endsWith('/activitypub') && !src.includes('/activitypub/');
+                    };
+
                     // Copy Ember assets to React build output to enable use of
                     // vite preview. This also prevents stale Ember assets from
                     // overwriting fresh ones in the next step.
-                    fs.cpSync(ghostAssetsDir, reactAssetsDir, { recursive: true });
+                    fs.cpSync(ghostAssetsDir, reactAssetsDir, {
+                        recursive: true,
+                        dereference: false,
+                        filter: copyFilter
+                    });
                     
                     // Copy combined assets back to Ghost core admin assets folder
                     fs.cpSync(reactAssetsDir, ghostAssetsDir, { 
                         recursive: true,
-                        force: true
+                        force: true,
+                        dereference: false,
+                        filter: copyFilter
                     });
                     
                     // Copy React index.html, overwriting the existing index.html
