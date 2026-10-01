@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 
-import { parseManifest, type ParseManifestOptions } from '../src/index.ts';
+import { parseManifest, type ParseManifestOptions } from '../../src/manifest/index.ts';
 
 export const options: ParseManifestOptions = {
   manifestUrl: 'https://podcast.example.com/ghost-app.json',
