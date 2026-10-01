@@ -14,6 +14,7 @@ import {
 } from './ember-bridge';
 import { AdminAlerts, createAlertsStore, useServerNotifications } from './alerts';
 import { DocsBotWidgetHost } from './docsbot-widget-host';
+import { ClientExtensionScript } from './client-extension-script';
 import { useAccentColorProperties } from './hooks/use-accent-color-properties';
 import { SignedOutApp, useAuthNotice, useAuthScreensOwner } from './auth/api';
 
@@ -46,6 +47,7 @@ function App() {
           <Outlet />
           <EmberRoot />
           <DocsBotWidgetHost />
+          <ClientExtensionScript />
         </AdminLayout>
       ) : isSignedOut && authScreensOwner === 'react' ? (
         <>

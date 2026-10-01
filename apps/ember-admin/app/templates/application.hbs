@@ -37,12 +37,6 @@
 
     </div>
 
-    {{#if this.showScriptExtension}}
-        {{{this.showScriptExtension.container}}}
-        {{!-- template-lint-disable no-forbidden-elements --}}
-        <script src="{{this.showScriptExtension.src}}"></script>
-    {{/if}}
-
     <RenderInWormhole @elementId="ember-notifications-wormhole">
         <GhNotifications />
     </RenderInWormhole>
