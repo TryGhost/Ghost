@@ -27,6 +27,18 @@ import { glob, readFile } from 'node:fs/promises';
 const GHOST_RUNTIME_SCRIPTS = new Set([]);
 
 function beforePacking(pkg) {
+  // Exclude checkout metadata and generated credentials from every workspace
+  // tarball, including packages whose broad files globs copy nested assets.
+  pkg.files = [
+    ...(pkg.files || ['*']),
+    '!**/.git',
+    '!**/gha-creds-*.json',
+    '!**/*credentials*.json',
+    '!**/.env',
+    '!**/.env.*',
+    '!**/*.pem',
+    '!**/*.key',
+  ];
   delete pkg.nx;
   delete pkg.devDependencies;
 
