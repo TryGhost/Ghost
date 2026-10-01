@@ -6,7 +6,8 @@ import { UnauthorizedError } from '@tryghost/admin-x-framework/errors';
 import { EmberProvider, EmberFallback, EmberRoot } from './ember-bridge';
 import { AdminLayout } from './layout/admin-layout';
 import { useSyncEmberFullScreen } from './layout/sidebar-visibility';
-import { useSyncEmberRoutePattern } from './routes';
+import { useEmberOwnedRouteMatcher, useSyncEmberRoutePattern } from './routes';
+import { BillingFrame } from './billing/api';
 import {
   useEmberAuthSync,
   useEmberDataSync,
@@ -57,6 +58,7 @@ function App() {
   useAuthNotice(Boolean(currentUser));
   usePreloadEditor(Boolean(currentUser));
   useGlobalShortcuts(Boolean(currentUser));
+  const isEmberOwned = useEmberOwnedRouteMatcher();
 
   return (
     <EmberProvider>
@@ -65,6 +67,7 @@ function App() {
         <AdminLayout>
           <Outlet />
           <EmberRoot />
+          <BillingFrame alerts={alerts} isEmberOwned={isEmberOwned} />
           <DocsBotWidgetHost />
           <ClientExtensionScript />
         </AdminLayout>

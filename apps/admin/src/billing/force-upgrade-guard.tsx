@@ -1,5 +1,5 @@
 import { type AdminRouteHandle, Navigate, Outlet, useMatches } from '@tryghost/admin-x-framework';
-import { useForceUpgrade } from './ember-bridge';
+import { useForceUpgrade } from './subscription-status';
 
 /**
  * Guard component that redirects to /pro when site is in force upgrade mode.

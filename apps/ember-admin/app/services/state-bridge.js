@@ -31,7 +31,9 @@ const emberDataTypeMapping = {
 
 export default class StateBridgeService extends Service.extend(Evented) {
     @service billing;
+    @service configManager;
     @service feature;
+    @service limit;
     @service membersUtils;
     @service notifications;
     @service router;
@@ -274,6 +276,18 @@ export default class StateBridgeService extends Service.extend(Evented) {
         this.trigger('sidebarVisibilityChange', {
             isVisible
         });
+    }
+
+    // Ember's publish flow enforces plan limits from its own config, so a
+    // subscription change handled by React's billing app must refresh it
+    @action
+    async refreshBillingLimits() {
+        try {
+            await this.configManager.fetch();
+        } catch (e) {
+            // re-evaluate limits against the config we have
+        }
+        this.limit.reload();
     }
 
     // A billing search result for the billing route already showing is a no-op
