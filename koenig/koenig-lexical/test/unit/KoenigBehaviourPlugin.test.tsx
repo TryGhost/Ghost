@@ -1,10 +1,11 @@
-import KoenigBehaviourPlugin, {DELETE_CARD_COMMAND, DESELECT_CARD_COMMAND, EDIT_CARD_COMMAND, PASTE_LINK_COMMAND, SELECT_CARD_COMMAND, SHOW_CARD_VISIBILITY_SETTINGS_COMMAND} from '../../src/plugins/KoenigBehaviourPlugin';
+import KoenigBehaviourPlugin, {DESELECT_CARD_COMMAND, PASTE_LINK_COMMAND} from '../../src/plugins/KoenigBehaviourPlugin';
 import {$createCodeBlockNode, CodeBlockNode} from '@tryghost/kg-default-nodes';
 import {$createNodeSelection, $createParagraphNode, $createRangeSelection, $createTextNode, $getRoot, $getSelection, $setSelection, KEY_ARROW_DOWN_COMMAND, KEY_ARROW_LEFT_COMMAND, KEY_ARROW_RIGHT_COMMAND, KEY_ARROW_UP_COMMAND, KEY_ENTER_COMMAND, KEY_TAB_COMMAND, createEditor} from 'lexical';
-import {LexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {act, cleanup, render} from '@testing-library/react';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
+const context = vi.hoisted(() => ({editor: null}));
+vi.mock('@lexical/react/LexicalComposerContext', () => ({useLexicalComposerContext: () => [context.editor]}));
 vi.mock('../../src/context/KoenigSelectedCardContext', () => ({
     useKoenigSelectedCardContext: () => ({
         selectedCardKey: null,
@@ -22,16 +23,13 @@ describe('KoenigBehaviourPlugin missing selections', () => {
     beforeEach(() => {
         onError = vi.fn();
         editor = createEditor({onError, nodes: [CodeBlockNode]});
+        context.editor = editor;
         rootElement = document.createElement('div');
         rootElement.tabIndex = 0;
         document.body.append(rootElement);
         rootElement.focus();
         vi.spyOn(editor, 'getRootElement').mockReturnValue(rootElement);
-        render(
-            <LexicalComposerContext.Provider value={[editor, {getTheme: () => ({})}]}>
-                <KoenigBehaviourPlugin containerElem={{current: rootElement}} cursorDidExitAtTop={vi.fn()} isNested={false} />
-            </LexicalComposerContext.Provider>
-        );
+        render(<KoenigBehaviourPlugin containerElem={{current: rootElement}} cursorDidExitAtTop={vi.fn()} isNested={false} />);
     });
 
     afterEach(() => {
@@ -129,57 +127,5 @@ describe('KoenigBehaviourPlugin missing selections', () => {
         });
         expect(onError).not.toHaveBeenCalled();
         expect(handled).toBe(true);
-    });
-
-    it('blocks deletion immediately when the editor becomes read-only', () => {
-        let cardKey;
-        let handled;
-        act(() => {
-            editor.update(() => {
-                const card = $createCodeBlockNode({code: 'Saved code'});
-                cardKey = card.getKey();
-                $getRoot().append(card);
-            }, {discrete: true});
-
-            editor.setEditable(false);
-            handled = editor.dispatchCommand(DELETE_CARD_COMMAND, {cardKey});
-        });
-
-        expect(onError).not.toHaveBeenCalled();
-        expect(handled).toBe(false);
-        editor.getEditorState().read(() => {
-            expect($getRoot().getFirstChild().getKey()).toBe(cardKey);
-        });
-    });
-
-    it('disables card commands while read-only and restores them when editing resumes', () => {
-        let cardKey;
-        act(() => {
-            editor.update(() => {
-                const card = $createCodeBlockNode({code: 'Saved code'});
-                cardKey = card.getKey();
-                $getRoot().append(card);
-            }, {discrete: true});
-            editor.setEditable(false);
-        });
-
-        act(() => {
-            editor.update(() => {
-                for (const command of [SELECT_CARD_COMMAND, EDIT_CARD_COMMAND, DELETE_CARD_COMMAND, SHOW_CARD_VISIBILITY_SETTINGS_COMMAND]) {
-                    expect(editor.dispatchCommand(command, {cardKey})).toBe(false);
-                }
-                expect($getSelection()).toBeNull();
-                expect($getRoot().getFirstChild().getKey()).toBe(cardKey);
-            }, {discrete: true});
-        });
-
-        act(() => editor.setEditable(true));
-        act(() => {
-            editor.update(() => {
-                editor.dispatchCommand(SELECT_CARD_COMMAND, {cardKey});
-                expect($getSelection().getNodes().map(node => node.getKey())).toEqual([cardKey]);
-            }, {discrete: true});
-        });
-        expect(onError).not.toHaveBeenCalled();
     });
 });

@@ -2,7 +2,6 @@ import React from 'react';
 import type {CardWidth} from '@tryghost/kg-default-nodes';
 
 export interface CardContextType {
-    readOnly: boolean;
     isSelected: boolean;
     captionHasFocus: boolean | null;
     isEditing: boolean;
@@ -17,7 +16,6 @@ export interface CardContextType {
 const noop = () => {};
 
 const CardContext = React.createContext<CardContextType>({
-    readOnly: false,
     isSelected: false,
     captionHasFocus: null,
     isEditing: false,

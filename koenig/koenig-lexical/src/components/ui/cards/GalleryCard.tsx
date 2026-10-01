@@ -1,11 +1,9 @@
-import CardContext from '../../../context/CardContext';
 import DeleteIcon from '../../../assets/icons/kg-trash.svg?react';
 import PropTypes from 'prop-types';
 import {CardCaptionEditor} from '../CardCaptionEditor';
 import {IconButton} from '../IconButton';
 import {MediaPlaceholder} from '../MediaPlaceholder';
 import {ProgressBar} from '../ProgressBar';
-import {useContext} from 'react';
 
 function GalleryRow({index, images, deleteImage, isDragging}) {
     const GalleryImages = images.map((image, idx) => {
@@ -26,7 +24,6 @@ function GalleryRow({index, images, deleteImage, isDragging}) {
 }
 
 function GalleryImage({image, deleteImage, position, isDragging}) {
-    const {readOnly} = useContext(CardContext);
     const aspectRatio = (image.width || 1) / (image.height || 1);
     const style = {
         flex: `${aspectRatio} 1 0%`
@@ -66,7 +63,7 @@ function GalleryImage({image, deleteImage, position, isDragging}) {
                 width={image.width}
             />
 
-            {(readOnly || isDragging) ? null : (
+            {isDragging ? null : (
                 <div className={`pointer-events-none invisible absolute inset-0 bg-gradient-to-t from-black/0 via-black/5 to-black/30 p-3 opacity-0 transition-all group-hover/image:visible group-hover/image:opacity-100 ${overlayClasses.join(' ')}`}>
                     <div className="flex flex-row-reverse">
                         <IconButton Icon={DeleteIcon} label="Delete" onClick={() => deleteImage(image)} />
@@ -165,7 +162,6 @@ export function GalleryCard({
     uploader = {},
     reorderHandler = {}
 }) {
-    const {readOnly} = useContext(CardContext);
     const openFilePicker = () => {
         fileInputRef.current.click();
     };
@@ -197,7 +193,7 @@ export function GalleryCard({
                     </div>
                 ) : null}
 
-                {!readOnly && <form onChange={onFileChange}>
+                <form onChange={onFileChange}>
                     <input
                         ref={fileInputRef}
                         accept={imageMimeTypes.join(',')}
@@ -206,7 +202,7 @@ export function GalleryCard({
                         name="image-input"
                         type='file'
                     />
-                </form>}
+                </form>
             </div>
 
             <CardCaptionEditor

@@ -1,4 +1,3 @@
-import CardContext from '../../context/CardContext';
 import DeleteIcon from '../../assets/icons/kg-trash.svg?react';
 import ImageUploadForm from './ImageUploadForm';
 import PropTypes from 'prop-types';
@@ -8,7 +7,7 @@ import {IconButton} from './IconButton';
 import {MediaPlaceholder} from './MediaPlaceholder';
 import {ProgressBar} from './ProgressBar';
 import {openFileSelection} from '../../utils/openFileSelection';
-import {useContext, useRef} from 'react';
+import {useRef} from 'react';
 
 export function MediaUploader({
     className,
@@ -34,7 +33,6 @@ export function MediaUploader({
     additionalActions,
     setFileInputRef
 }) {
-    const {readOnly} = useContext(CardContext);
     const fileInputRef = useRef(null);
 
     const onFileInputRef = (element) => {
@@ -89,11 +87,11 @@ export function MediaUploader({
             {src && (
                 <>
                     <img alt={alt} className={clsx('mx-auto h-full w-auto min-w-[5.2rem]', borderStyle === 'rounded' && 'rounded-lg', backgroundSize === 'cover' ? 'object-cover' : 'object-contain', imgClassName)} src={src} />
-                    {!readOnly && <div className={clsx('absolute inset-0 bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover/image:opacity-100', borderStyle === 'rounded' && 'rounded-lg')}></div>}
+                    <div className={clsx('absolute inset-0 bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover/image:opacity-100', borderStyle === 'rounded' && 'rounded-lg')}></div>
                 </>
             )}
 
-            {!readOnly && !isLoading && (
+            {!isLoading && (
                 <div className="absolute right-1 top-1 flex space-x-1 opacity-0 transition-all group-hover/image:opacity-100">
                     {additionalActions}
                     { isPinturaEnabled && <IconButton Icon={WandIcon} label="Edit" onClick={() => openImageEditor({

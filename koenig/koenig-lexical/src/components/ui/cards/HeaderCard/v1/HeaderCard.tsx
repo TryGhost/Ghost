@@ -1,5 +1,3 @@
-import CardContext from '../../../../../context/CardContext';
-import DOMPurify from 'dompurify';
 import KoenigNestedEditor from '../../../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
@@ -8,7 +6,6 @@ import {Button} from '../../../Button';
 import {ButtonGroupSetting, ColorOptionSetting, InputSetting, InputUrlSetting, SettingsPanel, ToggleSetting} from '../../../SettingsPanel';
 import {ReadOnlyOverlay} from '../../../ReadOnlyOverlay';
 import {isEditorEmpty} from '../../../../../utils/isEditorEmpty';
-import {useContext} from 'react';
 
 export const HEADER_COLORS = {
     dark: 'bg-black',
@@ -49,8 +46,6 @@ export function HeaderCard({isEditing,
     headerTextEditorInitialState,
     subheaderTextEditorInitialState,
     handleButtonToggle}) {
-    const {readOnly} = useContext(CardContext);
-    const previewUrl = readOnly && DOMPurify.isValidAttribute('a', 'href', buttonUrl) ? buttonUrl : undefined;
     const buttonGroupChildren = [
         {
             label: 'S',
@@ -163,7 +158,7 @@ export function HeaderCard({isEditing,
                 {/* Button */}
                 { button ?
                     <div className={`${(size === 'small') ? 'mt-6' : (size === 'medium') ? 'mt-8' : 'mt-10'}`}>
-                        {((button && (type === 'light')) && <Button dataTestId="header-card-button" href={previewUrl} placeholder={buttonPlaceholder} size={size} value={buttonText} />) || (button && <Button color='white' dataTestId="header-card-button" href={previewUrl} placeholder={buttonPlaceholder} size={size} value={buttonText} />)}
+                        {((button && (type === 'light')) && <Button dataTestId="header-card-button" placeholder={buttonPlaceholder} size={size} value={buttonText} />) || (button && <Button color='white' dataTestId="header-card-button" placeholder={buttonPlaceholder} size={size} value={buttonText} />)}
                     </div>
                     : undefined
                 }

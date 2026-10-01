@@ -1,12 +1,4 @@
-import CardContext from '../../context/CardContext';
-import {useContext} from 'react';
-
 export function ImageUploadForm({onFileChange, fileInputRef, mimeTypes = ['image/*'], multiple = false, disabled}) {
-    const {readOnly} = useContext(CardContext);
-    if (readOnly) {
-        return null;
-    }
-
     const accept = mimeTypes.join(',');
 
     return (

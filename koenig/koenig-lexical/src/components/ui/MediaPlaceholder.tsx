@@ -1,5 +1,4 @@
 import AudioPlaceholderIcon from '../../assets/icons/kg-audio-placeholder.svg?react';
-import CardContext from '../../context/CardContext';
 import FilePlaceholderIcon from '../../assets/icons/kg-file-placeholder.svg?react';
 import GalleryPlaceholderIcon from '../../assets/icons/kg-gallery-placeholder.svg?react';
 import ImgPlaceholderIcon from '../../assets/icons/kg-img-placeholder.svg?react';
@@ -7,7 +6,6 @@ import ProductPlaceholderIcon from '../../assets/icons/kg-product-placeholder.sv
 import PropTypes from 'prop-types';
 import VideoPlaceholderIcon from '../../assets/icons/kg-video-placeholder.svg?react';
 import clsx from 'clsx';
-import {useContext} from 'react';
 
 export const PLACEHOLDER_ICONS = {
     image: ImgPlaceholderIcon,
@@ -80,8 +78,6 @@ export function MediaPlaceholder({
     multiple = false,
     ...props
 }) {
-    const {readOnly} = useContext(CardContext);
-    const Placeholder = readOnly ? 'div' : 'button';
     const containerClasses = clsx(
         'relative flex h-full items-center justify-center',
         type === 'button' ? 'rounded-lg bg-grey-100' : 'border bg-grey-50',
@@ -92,8 +88,7 @@ export function MediaPlaceholder({
     );
 
     const buttonClasses = clsx(
-        'group flex select-none items-center justify-center',
-        !readOnly && 'cursor-pointer',
+        'group flex cursor-pointer select-none items-center justify-center',
         type === 'button' && 'px-3 py-1',
         type !== 'button' && (size === 'xsmall' ? 'p-4' : 'flex-col p-20')
     );
@@ -115,7 +110,7 @@ export function MediaPlaceholder({
 
     return (
         <div
-            ref={readOnly ? undefined : placeholderRef}
+            ref={placeholderRef}
             className="not-kg-prose size-full"
             {...props}
             data-testid={dataTestId}
@@ -124,11 +119,11 @@ export function MediaPlaceholder({
                 {isDraggedOver ? (
                     <CardText text={`Drop ${multiple ? '\'em' : 'it'} like it's hot 🔥`} type={type} />
                 ) : (
-                    <Placeholder
+                    <button
                         className={buttonClasses}
                         name="placeholder-button"
-                        type={readOnly ? undefined : 'button'}
-                        onClick={readOnly ? undefined : filePicker}
+                        type="button"
+                        onClick={filePicker}
                     >
                         {type === 'button'
                             ? <ButtonContents desc={desc} hasErrors={errors.length > 0} />
@@ -136,7 +131,7 @@ export function MediaPlaceholder({
                         }
 
                         {errorMessages}
-                    </Placeholder>
+                    </button>
                 )}
             </div>
         </div>

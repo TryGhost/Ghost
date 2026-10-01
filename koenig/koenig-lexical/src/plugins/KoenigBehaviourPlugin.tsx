@@ -1,5 +1,4 @@
 import React from 'react';
-import useLexicalEditable from '@lexical/react/useLexicalEditable';
 import {$createAsideNode, $isAsideNode} from '../nodes/AsideNode';
 import {$createCodeBlockNode} from '../nodes/CodeBlockNode';
 import {$createEmbedNode} from '../nodes/EmbedNode';
@@ -119,7 +118,6 @@ function $removeOrReplaceNodeWithParagraph(editor, node) {
 }
 
 function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested}) {
-    const isEditable = useLexicalEditable();
     const {
         selectedCardKey,
         setSelectedCardKey,
@@ -193,26 +191,8 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
     // cards should be selected on up/down and when deleting content around them.
     // Trigger `cursorDidExitAtTop` prop if present and cursor at beginning of doc
     React.useEffect(() => {
-        // Lexical's read-only mode does not disable custom commands. Keep card
-        // selection and editing handlers out of previews, including nested editors.
-        if (!isEditable) {
-            return;
-        }
-
-        // Editable listeners notify React before this effect can clean up. Check
-        // the live state too, so commands cannot edit during that transition.
-        const registerEditableCommand: typeof editor.registerCommand = (command, listener, priority) => editor.registerCommand(
-            command,
-            (payload, activeEditor) => editor.isEditable() && listener(payload, activeEditor),
-            priority
-        );
-
         return mergeRegister(
             editor.registerUpdateListener(({editorState, tags}) => {
-                if (!editor.isEditable()) {
-                    return;
-                }
-
                 // ignore updates triggered by other users or by card node exportJSON calls
                 if (tags.has('collaboration') || tags.has('card-export')) {
                     return;
@@ -309,7 +289,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     setIsEditingCard(true);
                 }
             }),
-            registerEditableCommand(
+            editor.registerCommand(
                 INSERT_CARD_COMMAND,
                 ({cardNode, openInEditMode}) => {
                     let focusNode;
@@ -337,7 +317,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 },
                 COMMAND_PRIORITY_LOW
             ),
-            registerEditableCommand(
+            editor.registerCommand(
                 SELECT_CARD_COMMAND,
                 ({cardKey}) => {
                     // already selected, delete if empty as we're exiting edit mode
@@ -362,7 +342,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 },
                 COMMAND_PRIORITY_LOW
             ),
-            registerEditableCommand(
+            editor.registerCommand(
                 EDIT_CARD_COMMAND,
                 ({cardKey, focusEditor}) => {
                     if (selectedCardKey && selectedCardKey !== cardKey) {
@@ -379,7 +359,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 },
                 COMMAND_PRIORITY_LOW
             ),
-            registerEditableCommand(
+            editor.registerCommand(
                 DESELECT_CARD_COMMAND,
                 ({cardKey}) => {
                     $deselectCard(editor, cardKey);
@@ -391,7 +371,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 },
                 COMMAND_PRIORITY_LOW
             ),
-            registerEditableCommand(
+            editor.registerCommand(
                 DELETE_CARD_COMMAND,
                 ({cardKey, direction = 'forward'}) => {
                     const cardNode = $getNodeByKey(cardKey);
@@ -434,7 +414,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 },
                 COMMAND_PRIORITY_LOW
             ),
-            registerEditableCommand(
+            editor.registerCommand(
                 KEY_DOWN_COMMAND,
                 (event) => {
                     // Avoid processing custom commands when inside a card's editor.
@@ -448,7 +428,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 },
                 COMMAND_PRIORITY_LOW
             ),
-            registerEditableCommand(
+            editor.registerCommand(
                 KEY_ENTER_COMMAND,
                 (event) => {
                     if (!event) {
@@ -537,7 +517,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 },
                 COMMAND_PRIORITY_LOW
             ),
-            registerEditableCommand(
+            editor.registerCommand(
                 KEY_ARROW_UP_COMMAND,
                 (event) => {
                     const selection = $getSelection();
@@ -667,7 +647,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 },
                 COMMAND_PRIORITY_LOW
             ),
-            registerEditableCommand(
+            editor.registerCommand(
                 KEY_ARROW_DOWN_COMMAND,
                 (event) => {
                     const selection = $getSelection();
@@ -808,7 +788,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 },
                 COMMAND_PRIORITY_LOW
             ),
-            registerEditableCommand(
+            editor.registerCommand(
                 KEY_ARROW_LEFT_COMMAND,
                 (event) => {
                     // avoid processing card behaviours when an inner element has focus
@@ -867,7 +847,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 },
                 COMMAND_PRIORITY_LOW
             ),
-            registerEditableCommand(
+            editor.registerCommand(
                 KEY_ARROW_RIGHT_COMMAND,
                 (event) => {
                     // avoid processing card behaviours when an inner element has focus
@@ -905,7 +885,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 },
                 COMMAND_PRIORITY_LOW
             ),
-            registerEditableCommand(
+            editor.registerCommand(
                 KEY_MODIFIER_COMMAND,
                 (event) => {
                     const {altKey, ctrlKey, metaKey, shiftKey, code, key} = event;
@@ -1028,7 +1008,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 COMMAND_PRIORITY_LOW
             ),
             // backspace when card isn't selected
-            registerEditableCommand(
+            editor.registerCommand(
                 KEY_BACKSPACE_COMMAND,
                 (event) => {
                     // avoid processing card behaviours when an inner element has focus
@@ -1168,7 +1148,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 },
                 COMMAND_PRIORITY_LOW
             ),
-            registerEditableCommand(
+            editor.registerCommand(
                 KEY_DELETE_COMMAND,
                 (event) => {
                     // avoid processing card behaviours when an inner element has focus
@@ -1227,7 +1207,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 },
                 COMMAND_PRIORITY_LOW
             ),
-            registerEditableCommand(
+            editor.registerCommand(
                 DELETE_LINE_COMMAND,
                 (isBackward) => {
                     // delete selected card if it's not a nested editor
@@ -1271,7 +1251,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 },
                 COMMAND_PRIORITY_LOW
             ),
-            registerEditableCommand(
+            editor.registerCommand(
                 KEY_TAB_COMMAND,
                 (event) => {
                     // avoid processing card behaviours when an inner element has focus
@@ -1359,7 +1339,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 },
                 COMMAND_PRIORITY_LOW
             ),
-            registerEditableCommand(
+            editor.registerCommand(
                 KEY_ESCAPE_COMMAND,
                 (event) => {
                     if (selectedCardKey && isEditingCard) {
@@ -1375,7 +1355,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 },
                 COMMAND_PRIORITY_LOW
             ),
-            registerEditableCommand(
+            editor.registerCommand(
                 PASTE_COMMAND,
                 (clipboardEvent) => {
                     // avoid Koenig behaviours when an inner element (e.g. a card input) has focus
@@ -1444,7 +1424,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 },
                 COMMAND_PRIORITY_LOW
             ),
-            registerEditableCommand(
+            editor.registerCommand(
                 PASTE_LINK_COMMAND,
                 ({linkMatch}) => {
                     const selection = $getSelection();
@@ -1492,7 +1472,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 },
                 COMMAND_PRIORITY_LOW
             ),
-            registerEditableCommand(
+            editor.registerCommand(
                 CLICK_COMMAND,
                 (event) => {
                     if (event.target.matches('[data-lexical-decorator="true"]')) {
@@ -1509,7 +1489,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 },
                 COMMAND_PRIORITY_LOW
             ),
-            registerEditableCommand(
+            editor.registerCommand(
                 CUT_COMMAND,
                 (event) => {
                     // prevent cut events inside card editors triggering lexical behaviour
@@ -1521,7 +1501,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 },
                 COMMAND_PRIORITY_LOW
             ),
-            registerEditableCommand(
+            editor.registerCommand(
                 SHOW_CARD_VISIBILITY_SETTINGS_COMMAND,
                 ({cardKey}) => {
                     editor.update(() => {
@@ -1548,7 +1528,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 },
                 COMMAND_PRIORITY_LOW
             ),
-            registerEditableCommand(
+            editor.registerCommand(
                 HIDE_CARD_VISIBILITY_SETTINGS_COMMAND,
                 ({cardKey}) => {
                     editor.update(() => {

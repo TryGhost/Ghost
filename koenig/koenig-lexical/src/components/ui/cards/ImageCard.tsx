@@ -1,4 +1,3 @@
-import CardContext from '../../../context/CardContext';
 import ImageUploadForm from '../ImageUploadForm';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -11,7 +10,6 @@ import {isGif} from '../../../utils/isGif';
 import {openFileSelection} from '../../../utils/openFileSelection';
 
 function PopulatedImageCard({src, alt, previewSrc, imageUploader, imageCardDragHandler, imageFileDragHandler, isPinturaEnabled, openImageEditor, onFileChange}) {
-    const {readOnly} = React.useContext(CardContext);
     const progressStyle = {
         width: `${imageUploader.progress?.toFixed(0)}%`
     };
@@ -47,7 +45,7 @@ function PopulatedImageCard({src, alt, previewSrc, imageUploader, imageCardDragH
                     <CardText text="Drop to replace image" />
                 </div>
             ) : null}
-            {(!readOnly && isPinturaEnabled && !isGif(src)) &&
+            {(isPinturaEnabled && !isGif(src)) &&
                 <div className={`pointer-events-none invisible absolute inset-0 bg-gradient-to-t from-black/0 via-black/5 to-black/30 p-3 opacity-0 transition-all group-hover/image:visible group-hover/image:opacity-100`}>
                     <div className="flex flex-row-reverse">
                         <IconButton Icon={WandIcon} label="Edit" onClick={() => openImageEditor({
