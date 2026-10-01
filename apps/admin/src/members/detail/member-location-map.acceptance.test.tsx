@@ -26,6 +26,18 @@ const location = JSON.stringify({
 });
 
 describe('Member location maps', () => {
+  it('shows a Réunion map for an existing member', async () => {
+    const m = fakeMemberLocation(JSON.stringify({ country_code: 'RE', country: 'Réunion' }));
+    await renderAdminApp(`/members/${m.id}`);
+    await expect
+      .element(page.getByRole('img', { name: 'Reunion — approximate country location' }))
+      .toBeVisible();
+    await expect.element(page.getByTestId('member-detail-location')).toHaveTextContent('Réunion');
+    await expect
+      .element(page.getByTestId('member-location-map-header'))
+      .toHaveAttribute('data-member-map-location', 'known');
+  });
+
   it.each(['default', 'disabled', 'missing'] as const)(
     'shows the map and profile header when the retired flag is %s',
     async (state) => {

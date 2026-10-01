@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, render, screen } from '@testing-library/react';
 import MemberLocationMap from './member-location-map';
 import atlas from './map-data/world-states.json';
+import isoCountries from 'i18n-iso-countries';
 
 beforeEach(() => {
   vi.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(956);
@@ -33,6 +34,66 @@ describe('member location map', () => {
     expect(atlas.countries.find((country) => country.id === 'sg')?.name).toBe('Singapore');
     expect(atlas.countries.find((country) => country.id === 'au')?.name).toBe('Australia');
   });
+  it('includes geometry for every ISO country and territory code', () => {
+    const codes = new Set(atlas.countries.map((country) => country.id));
+    expect(
+      Object.keys(isoCountries.getAlpha2Codes()).filter((code) => !codes.has(code.toLowerCase())),
+    ).toEqual([]);
+  });
+
+  it('keeps every anchor inside its rendered geometry, including tiny islands', () => {
+    for (const location of [...atlas.countries, ...atlas.states]) {
+      const [x, y] = location.anchor;
+      let inside = false;
+      for (const polygon of location.path.match(/M[^Z]+Z/g) ?? []) {
+        const ring = polygon
+          .slice(1, -1)
+          .split('L')
+          .map((point) => point.split(',').map(Number));
+        for (let i = 0; i < ring.length; i += 1) {
+          const [xi, yi] = ring[i];
+          const [xj, yj] = ring[(i + ring.length - 1) % ring.length];
+          const crossesY = yi > y !== yj > y;
+          if (crossesY && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) {
+            inside = !inside;
+          }
+        }
+      }
+      expect(inside, location.id).toBe(true);
+    }
+  });
+
+  it.each([
+    ['BV', 'Bouvet Island', 3, -54],
+    ['CX', 'Christmas Island', 106, -10],
+    ['CC', 'Cocos (Keeling) Islands', 97, -12],
+    ['GF', 'French Guiana', -53, 4],
+    ['GI', 'Gibraltar', -5, 36],
+    ['GP', 'Guadeloupe', -61, 16],
+    ['MQ', 'Martinique', -61, 15],
+    ['YT', 'Mayotte', 45, -13],
+    ['RE', 'Reunion', 55, -21],
+    ['SJ', 'Svalbard and Jan Mayen', 18, 78],
+    ['TK', 'Tokelau', -172, -9],
+    ['UM', 'United States Minor Outlying Islands', -162, 6],
+    ['BQ', 'Bonaire, Sint Eustatius and Saba', -68, 12],
+  ] as const)(
+    'uses %s territory geometry and a local pin',
+    async (code, name, longitude, latitude) => {
+      await renderMap(code);
+      expect(
+        screen.getByRole('img', { name: `${name} — approximate country location` }),
+      ).toBeTruthy();
+      const country = atlas.countries.find((item) => item.id === code.toLowerCase())!;
+      // Independently known territory coordinates catch aliases to a sovereign
+      // country's mainland and misplaced anchors in generated data.
+      const [x, y] = country.anchor;
+      const anchorLongitude = x - 180;
+      const anchorLatitude = (Math.atan(Math.sinh(((180 - y) * Math.PI) / 180)) * 180) / Math.PI;
+      expect(Math.abs(anchorLongitude - longitude)).toBeLessThan(3);
+      expect(Math.abs(anchorLatitude - latitude)).toBeLessThan(3);
+    },
+  );
   it('uses state boundaries and a South Carolina pin for the reported US member', async () => {
     await renderMap('US', 'South Carolina');
     expect(
