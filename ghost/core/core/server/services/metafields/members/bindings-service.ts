@@ -1,15 +1,49 @@
 import ObjectID from 'bson-objectid';
 import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
-import type { FieldType } from '@tryghost/metafield-types';
-import { INTERNAL } from './access';
-import { DbBoundField, FIELD_STATUS, type WriteOrigin } from './schema';
-import type { MetafieldPlan, MetafieldValuesService } from './values-service';
+import { z } from 'zod';
+import { FieldTypeSchema, type FieldType } from '@tryghost/metafield-types';
+import { DbDate } from '../../../lib/db-types/date';
+import { INTERNAL } from '../access';
+import { FIELD_STATUS, type WriteOrigin } from '../schema';
+import type { MetafieldPlan, MetafieldValuesService } from '../values-service';
 
+// Bindings route what a checkout collected into a member's fields. Only members are
+// created by a checkout, so only members have bindings.
 const FIELDS_TABLE = 'members_metafields';
 
 const { CUSTOM_NAMESPACE } = require('@tryghost/metafield-types/identity');
 const BINDINGS_TABLE = 'members_metafield_bindings';
+
+export const DbMetafieldBinding = z.object({
+  id: z.string(),
+  product_id: z.string(),
+  port: z.string(),
+  metafield_key: z.string(),
+  created_at: DbDate,
+  updated_at: DbDate.nullable(),
+});
+
+type MetafieldBindingRow = z.infer<typeof DbMetafieldBinding>;
+
+/** A binding joined to the field it points at, which is how a collected value is routed. */
+const DbBoundField = z.object({
+  binding_id: z.string(),
+  key: z.string(),
+  type: FieldTypeSchema,
+});
+
+declare module 'knex/types/tables' {
+  interface Tables {
+    members_metafield_bindings: Knex.CompositeTableType<
+      MetafieldBindingRow,
+      // `updated_at` is set on insert as well as update: a binding is a setting, and
+      // "when was this last stated" is the same question whichever way it got there.
+      z.input<typeof DbMetafieldBinding>,
+      Partial<MetafieldBindingRow>
+    >;
+  }
+}
 
 export interface BoundField {
   bindingId: string;
