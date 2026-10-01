@@ -220,7 +220,7 @@ describe('Emails API', function () {
     }
   });
 
-  it('rejects an unknown-outcome retry triggered by republishing a post', async function () {
+  it('republishes a post without retrying its unknown-outcome email', async function () {
     const email = fixtureManager.get('emails', 1);
     const originalPost = await db.knex('posts').where('id', email.post_id).first();
     const batch = await models.EmailBatch.add({ email_id: email.id, status: 'submitting' });
@@ -234,15 +234,13 @@ describe('Emails API', function () {
         .body({
           posts: [{ status: 'published', updated_at: originalPost.updated_at.toISOString() }],
         })
-        .expectStatus(400)
-        .expect(({ body }) => {
-          assert.match(body.errors[0].context, /delivery outcome is unknown/);
-        });
+        .expectStatus(200);
+      const currentPost = await db.knex('posts').where('id', email.post_id).first();
+      assert.equal(currentPost.status, 'published');
       const currentEmail = await models.Email.findOne({ id: email.id });
       assert.equal(currentEmail.get('status'), 'failed');
-      const currentPost = await db.knex('posts').where('id', email.post_id).first();
-      assert.equal(currentPost.status, 'draft');
-      assert.equal(currentPost.updated_at.toISOString(), originalPost.updated_at.toISOString());
+      const currentBatch = await models.EmailBatch.findOne({ id: batch.id });
+      assert.equal(currentBatch.get('status'), 'submitting');
     } finally {
       await db
         .knex('posts')

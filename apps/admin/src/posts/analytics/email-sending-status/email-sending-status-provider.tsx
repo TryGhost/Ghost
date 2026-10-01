@@ -111,7 +111,12 @@ const EmailSendingStatusProvider = ({ children }: { children: ReactNode }) => {
     retryInFlight.current = true;
     setIsRetryRefreshPending(true);
     try {
-      await retryEmail({ id: emailId });
+      try {
+        await retryEmail({ id: emailId });
+      } catch (error) {
+        handleError(error);
+      }
+      // A rejected retry means the eligibility on screen is stale, so refresh either way.
       await refetchStatus({ throwOnError: true });
     } catch (error) {
       handleError(error);

@@ -79,8 +79,7 @@ export function buildSendingStatus(email: SendingEmail, batches: SendingBatch[])
       status: 'failed',
       progress: { completed, total, estimatedSecondsRemaining: null },
       failedDuring: phase,
-      // A submitting batch may already have been accepted by the provider.
-      retryable: !batches.some((batch) => batch.status === 'submitting'),
+      retryable: isRetryable(batches.map((batch) => batch.status)),
     };
   }
 
@@ -103,6 +102,11 @@ export function buildSendingStatus(email: SendingEmail, batches: SendingBatch[])
       }),
     },
   };
+}
+
+// A submitting batch may already have been accepted by the provider.
+export function isRetryable(batchStatuses: StoredSendingStatus[]): boolean {
+  return !batchStatuses.includes('submitting');
 }
 
 function sumRecipients(batches: SendingBatch[]): number {

@@ -51,12 +51,6 @@ function seededPost(overrides: Partial<ReturnType<typeof post>> = {}) {
   });
 }
 
-function fakeSubmittingBatches(batches: Array<{ id: string; status: string }> = []) {
-  return fakeAdminEndpoint('GET', new RegExp(`^/emails/${EMAIL_ID}/batches/(?:\\?|$)`), {
-    batches,
-  });
-}
-
 /**
  * The world every post-analytics tab reads: the routed post, its growth
  * stats (referrers/growth/mrr feed both the overview and the growth tab),
@@ -403,12 +397,6 @@ describe('Post analytics overview', () => {
       },
     } as const;
     seedPostAnalyticsWorld(postOverrides);
-    const batchesApi = fakeAdminEndpoint(
-      'GET',
-      `/emails/${EMAIL_ID}/batches/`,
-      {},
-      { status: 403 },
-    );
     let hasRetried = false;
     let hasCompleted = false;
     fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, () => {
@@ -454,7 +442,6 @@ describe('Post analytics overview', () => {
     await expect.element(page.getByText(/Mailgun rejected the batch/)).toBeVisible();
     await expect.element(page.getByText('No newsletter data available')).toBeVisible();
 
-    expect(batchesApi.requests).toHaveLength(0);
     await page.getByRole('button', { name: 'Send remaining emails' }).click();
     await expect.poll(() => retryApi.requests.length).toBe(1);
     await expect.element(page.getByText('Sending emails')).toBeVisible();
@@ -488,7 +475,6 @@ describe('Post analytics overview', () => {
           },
         ],
       });
-      const batchesApi = fakeSubmittingBatches();
       await renderAdminApp(`/posts/analytics/${POST_ID}`, {
         labs: { improveSendingUI: true },
         boot: webAnalyticsBootOverrides(),
@@ -501,7 +487,6 @@ describe('Post analytics overview', () => {
           postAnalyticsScreen.emailSendingStatusLine().getByRole('button', { name: /send|retry/i }),
         )
         .not.toBeInTheDocument();
-      expect(batchesApi.requests).toHaveLength(0);
     },
   );
 
