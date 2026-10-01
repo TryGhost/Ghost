@@ -4,6 +4,9 @@ on:
   pull_request_target:
     types: [labeled, unlabeled, closed]
 
+permissions:
+  contents: read
+
 jobs:
   deploy:
     name: Deploy Preview
@@ -28,12 +31,16 @@ jobs:
       actions: read
     env:
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      REPOSITORY: ${{ github.repository }}
     steps:
       - name: Wait for Docker build job
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BUILD_JOB_NAME: Build Docker Images
         run: |
+          [[ "$PR_NUMBER" =~ ^[1-9][0-9]{0,9}$ ]] || exit 1
+          [[ "$HEAD_SHA" =~ ^[a-f0-9]{40}$ ]] || exit 1
           echo "Waiting for '${BUILD_JOB_NAME}' job to complete for $HEAD_SHA..."
           TIMEOUT=1800  # 30 minutes
           INTERVAL=30
@@ -47,7 +54,7 @@ jobs:
             fi
 
             # Find the CI run for this SHA
-            RUN=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?head_sha=${HEAD_SHA}&per_page=1" \
+            RUN=$(gh api "repos/${REPOSITORY}/actions/workflows/ci.yml/runs?head_sha=${HEAD_SHA}&per_page=1" \
               --jq '.workflow_runs[0] | {id, status}' 2>/dev/null || echo "")
 
             if [ -z "$RUN" ] || [ "$RUN" = "null" ]; then
@@ -60,7 +67,7 @@ jobs:
             RUN_STATUS=$(echo "$RUN" | jq -r '.status')
 
             # Look up the build job specifically (paginate — CI has 30+ jobs)
-            BUILD_JOB=$(gh api --paginate "repos/${{ github.repository }}/actions/runs/${RUN_ID}/jobs?per_page=100" \
+            BUILD_JOB=$(gh api --paginate "repos/${REPOSITORY}/actions/runs/${RUN_ID}/jobs?per_page=100" \
               --jq ".jobs[] | select(.name == \"${BUILD_JOB_NAME}\") | {status, conclusion}")
 
             if [ -z "$BUILD_JOB" ]; then
@@ -94,7 +101,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          PR=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}" \
+          PR=$(gh api "repos/${REPOSITORY}/pulls/${PR_NUMBER}" \
             --jq '{state, labels: [.labels[].name]}')
 
           STATE=$(echo "$PR" | jq -r '.state')
