@@ -293,6 +293,47 @@ describe('Post settings post history', () => {
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
   });
 
+  it('keeps the cards in a previewed version out of reach', async () => {
+    const withCallout = postRevision({
+      ...NEWEST,
+      lexical: JSON.stringify({
+        root: {
+          children: [
+            {
+              type: 'callout',
+              version: 1,
+              calloutText: '<p><span>A callout from the past</span></p>',
+              calloutEmoji: '💡',
+              backgroundColor: 'grey',
+            },
+          ],
+          direction: null,
+          format: '',
+          indent: 0,
+          type: 'root',
+          version: 1,
+        },
+      }),
+    });
+    fakeSavablePost({ post_revisions: [withCallout] });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openHistory();
+
+    const card = editorScreen.postHistoryPreviewBody().getByText('A callout from the past');
+    await expect.element(card, POLL).toBeVisible();
+
+    // Forced: an unreachable card fails Playwright's hit-target check by design.
+    await card.click({ force: true });
+    await card.click({ force: true });
+
+    expect(
+      editorScreen
+        .postHistoryPreviewBody()
+        .element()
+        .querySelector('[data-kg-card-selected="true"]'),
+    ).toBeNull();
+  });
+
   it('shows the version’s feature image in the preview', async () => {
     fakeSavablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
