@@ -18,6 +18,7 @@ mounts both screens lazily through it and everything else here is internal.
 | `editor-screen.tsx`                              | The route: loads the post, builds the session, and lays out the header, the surface and the sidebar                  |
 | `post-editor.tsx`, `koenig-post-editor.tsx`      | The title, excerpt and feature image around the Koenig instances, and the Koenig integration itself                  |
 | `editor-header-actions.tsx`, `editor-status.tsx` | The header's publish and preview controls, and the line saying where the post stands, with a failed send's retry     |
+| `use-save-feedback.tsx`, `save-toast.ts`         | The toast and button progress that report an explicit save, and the pure copy they show                              |
 | `card-config.ts`, `use-post-card-config.ts`      | What Koenig's cards are told about the site and the post they are being edited in                                    |
 | `local-revisions.ts`                             | Browser-local copies of drafts holding unsaved work: how they are stored, trimmed and read back                      |
 | `restore/`                                       | The `/restore` screen: lists this browser's local copies and creates a new draft from any of them                    |
@@ -88,6 +89,26 @@ upload would. While Pintura is open or the edited image is uploading, Edit and
 Remove are disabled and the preview shows the upload in progress. An edited
 image that fails to upload is reported, leaves the original in place, and is not
 counted as a saved edit.
+
+## Save feedback
+
+The header's Update button, a contributor's Save button and Cmd/Ctrl+S report
+the save they asked for. Each clears the previous save toast when it starts and,
+once the server acknowledges the save, shows one describing the post's new
+status against the status it had before: "Post updated" with a "View on site"
+link for a published post, "Post updated" for a sent one and "Post saved" for a
+draft. A scheduled post's toast reads "Post scheduled" and says when it will be
+published or sent in the site's timezone, with the newsletter's audience when
+one goes out, and links to the post's preview. A save that fails, is dropped or
+is superseded shows nothing, as does one that lands with a different status
+because a publish or revert ran ahead of it, and autosaves and the saves the preview and
+publish flows make first are never reported.
+
+The Update button reads "Updating..." while its save runs, "Updated" for two and
+a half seconds once it lands and "Retry" after a failure; a contributor's Save reads
+"Saving" and "Saved". Cmd/Ctrl+S leaves both buttons alone. Reverting a post to
+a draft from the update flow shows "Post reverted to a draft." ("Page" for a
+page).
 
 ## Adding a settings section
 

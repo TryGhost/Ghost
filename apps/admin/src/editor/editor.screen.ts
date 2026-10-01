@@ -190,6 +190,10 @@ export const editorScreen = {
     page.getByTestId(editorHeaderActions).getByRole('button', { name: editorUnpublishButton }),
   unscheduleButton: () =>
     page.getByTestId(editorHeaderActions).getByRole('button', { name: editorUnscheduleButton }),
+  /** A header button by its whole label, for a save button whose label tracks its save. */
+  headerButton: (label: string) =>
+    page.getByTestId(editorHeaderActions).getByRole('button', { name: label, exact: true }),
+  saveToast: (title: string) => page.getByRole('listitem').filter({ hasText: title }),
   publishInputsError: () => page.getByTestId(editorPublishInputsError),
   retryPublishInputs: () =>
     page.getByTestId(editorHeaderActions).getByRole('button', { name: 'Retry' }),

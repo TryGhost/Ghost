@@ -411,6 +411,7 @@ describe('Editor header actions', () => {
     await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
     expect(submittedPost(saveApi)).toMatchObject({ id: POST_ID, status: 'draft' });
     await expect.element(editorScreen.publishButton()).toBeVisible();
+    await expect.element(editorScreen.saveToast('Post reverted to a draft.')).toBeVisible();
   });
 
   it('unschedules a scheduled post', async () => {
@@ -427,6 +428,119 @@ describe('Editor header actions', () => {
 
     await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
     expect(submittedPost(saveApi)).toMatchObject({ status: 'draft', published_at: null });
+    await expect.element(editorScreen.saveToast('Post reverted to a draft.')).toBeVisible();
+  });
+
+  it('reverts a published page to a draft and says so', async () => {
+    publishChrome();
+    fakeSavablePost(
+      { status: 'published', published_at: '2026-02-01T10:00:00.000Z' },
+      { resource: 'pages' },
+    );
+    await renderAdminApp(`/editor/page/${POST_ID}`, FLAG_ON);
+
+    await editorScreen.unpublishButton().click();
+    await publishScreen.revertToDraft().click();
+
+    await expect.element(editorScreen.saveToast('Page reverted to a draft.')).toBeVisible();
+  });
+
+  it('steps the Update button through its save and reports the update with a link', async () => {
+    publishChrome();
+    const held = deferred<void>();
+    fakeSavablePost(
+      { status: 'published', published_at: '2026-02-01T10:00:00.000Z' },
+      { holdFirstSave: held.promise },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await typeIntoBody(' and more');
+    await editorScreen.updateButton().click();
+
+    await expect.element(editorScreen.headerButton('Updating...')).toBeVisible();
+    await expect(editorScreen.saveToast('Post updated')).toHaveCount(0);
+    held.resolve();
+
+    await expect.element(editorScreen.headerButton('Updated')).toBeVisible();
+    const toast = editorScreen.saveToast('Post updated');
+    await expect.element(toast).toBeVisible();
+    await expect
+      .element(toast.getByRole('link', { name: 'View on site' }))
+      .toHaveAttribute('href', `${SITE_URL}/hello-from-react/`);
+    await expect.element(editorScreen.headerButton('Update'), { timeout: 5_000 }).toBeDisabled();
+  });
+
+  it('offers Retry on the Update button when the save fails, with no toast', async () => {
+    publishChrome();
+    fakeSavablePost(
+      { status: 'published', published_at: '2026-02-01T10:00:00.000Z' },
+      { failWith: 422 },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await typeIntoBody(' and more');
+    await editorScreen.updateButton().click();
+
+    await expect.element(editorScreen.headerButton('Retry')).toBeEnabled();
+    await expect(editorScreen.saveToast('Post updated')).toHaveCount(0);
+  });
+
+  it('reports a scheduled update with its audience and time in the site timezone', async () => {
+    publishChrome({ newsletters: 1 });
+    fakeSavablePost({
+      status: 'scheduled',
+      published_at: '2030-02-01T10:00:00.000Z',
+      newsletter: newsletter({ slug: 'weekly', name: 'Weekly', status: 'active' }),
+      email_segment: 'all',
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, {
+      ...FLAG_ON,
+      boot: {
+        browseSettings: { response: settingsResponse({ settings: { timezone: 'Europe/Berlin' } }) },
+      },
+    });
+
+    await typeIntoBody(' and more');
+    await editorScreen.updateButton().click();
+
+    const toast = editorScreen.saveToast('Post scheduled');
+    await expect
+      .element(toast)
+      .toHaveTextContent(
+        'Will be published and delivered to 20 members on 1 Feb 2030 at 11:00 (UTC+1)',
+      );
+    await expect
+      .element(toast.getByRole('link', { name: 'Show preview' }))
+      .toHaveAttribute('href', `${SITE_URL}/p/${POST_UUID}/`);
+  });
+
+  it('reports a Cmd-S update without stepping the Update button', async () => {
+    publishChrome();
+    fakeSavablePost({ status: 'published', published_at: '2026-02-01T10:00:00.000Z' });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await typeIntoBody(' and more');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+
+    await expect.element(editorScreen.saveToast('Post updated')).toBeVisible();
+    await expect.element(editorScreen.headerButton('Update')).toBeDisabled();
+  });
+
+  it('steps a contributor’s Save button through its save and reports the saved draft', async () => {
+    publishChrome();
+    const held = deferred<void>();
+    fakeSavablePost({}, { holdFirstSave: held.promise });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(asRole('Contributor')));
+
+    await typeIntoBody(' and more');
+    await editorScreen.saveButton().click();
+
+    await expect.element(editorScreen.headerButton('Saving')).toBeVisible();
+    held.resolve();
+
+    await expect.element(editorScreen.headerButton('Saved')).toBeVisible();
+    await expect.element(editorScreen.saveToast('Post saved')).toBeVisible();
+    await expect.element(editorScreen.headerButton('Save'), { timeout: 5_000 }).toBeVisible();
   });
 
   it('offers a contributor Save and Preview but never Publish', async () => {
