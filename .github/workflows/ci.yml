@@ -586,6 +586,12 @@ jobs:
         working-directory: ghost/core
         run: hyperfine --show-output --warmup 3 'GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node index.js' --export-json boot-perf.json
 
+      # Native modules like sharp cost memory in every process, so they should
+      # load on first use. The list lives in scripts/lib/boot-modules.js
+      - name: Check boot skips lazy-loaded modules
+        working-directory: ghost/core
+        run: GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node --import ../../scripts/assert-boot-skips-modules.js index.js
+
       - name: Report result
         uses: ./.github/actions/report-boot-benchmark
         with:
