@@ -1,5 +1,5 @@
 import type { Controller, Frame } from '@tryghost/api-framework';
-import { MEMBERS, definitions } from '../../services/members-metafields';
+import { MEMBERS, definitions } from '../../services/metafields';
 
 /**
  * The extra fields a publisher has defined, as a member's own client reads them.

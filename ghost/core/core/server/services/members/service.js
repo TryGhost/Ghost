@@ -51,7 +51,7 @@ let verificationTrigger;
 const buildImporterDeps = ({ stripeAPIService }) => {
   // Required here, not statically: boot builds the metafields services before this
   // one (the exporter below relies on the same).
-  const metafields = require('../members-metafields');
+  const metafields = require('../metafields');
   return {
     getTimezone: () => settingsCache.get('timezone'),
     // A getter rather than a value because the threshold is an operator
@@ -269,7 +269,7 @@ module.exports = {
 
     // Constructed here rather than required statically: the exporter needs the
     // metafields services, which boot builds before this one.
-    const metafields = require('../members-metafields');
+    const metafields = require('../metafields');
     module.exports.export = makeExporter({
       definitions: metafields.definitions,
       values: metafields.values,
