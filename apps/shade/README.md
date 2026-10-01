@@ -49,6 +49,10 @@ import {ShadeApp} from '@tryghost/shade/app';
 </ShadeApp>
 ```
 
+Shade mounts its toast portal after the first client commit. Integrations that
+can emit a toast during startup can read `isToasterReady` from
+`useShade` at `@tryghost/shade/app`; it becomes true after Sonner subscribes.
+
 ## Develop
 
 This is a monorepo package.

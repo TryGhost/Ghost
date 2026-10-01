@@ -2,8 +2,9 @@
 
 Full-width bars at the top of Admin for messages that must stay visible until
 someone closes them. Today they come from server notices and from the Ember
-host in `ember-bridge`; the store is only reachable from `App`. Short-lived
-feedback belongs in a toast (`toast` from `sonner`) instead.
+host in `ember-bridge`; the store is only reachable from `App`. Ember connects
+its notification host after Shade's toaster is ready, so messages emitted as the
+host connects reach Sonner's subscriber. Short-lived feedback belongs in a toast (`toast` from `sonner`) instead.
 
 ## Pieces
 

@@ -11,6 +11,8 @@ interface ShadeContextType {
   setFocusState: (value: boolean) => void;
   darkMode: boolean;
   isAdmin7: boolean;
+  /** The portal has mounted and Sonner has subscribed to new notifications. */
+  isToasterReady: boolean;
   controlShape: ControlShape;
 }
 
@@ -21,6 +23,7 @@ const ShadeContext = createContext<ShadeContextType>({
   setFocusState: () => {},
   darkMode: false,
   isAdmin7: true,
+  isToasterReady: false,
   controlShape: 'pill',
 });
 
@@ -34,13 +37,22 @@ export const useFocusContext = () => {
   return context;
 };
 
-const ToasterPortal = () => {
+const ToasterPortal = ({ onReady }: { onReady: (ready: boolean) => void }) => {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     return () => setMounted(false);
   }, []);
+
+  useEffect(() => {
+    if (!mounted) {
+      return;
+    }
+    // Child effects run first: Sonner has subscribed before consumers may send a toast.
+    onReady(true);
+    return () => onReady(false);
+  }, [mounted, onReady]);
 
   return mounted
     ? createPortal(
@@ -86,6 +98,7 @@ const ShadeProvider: React.FC<ShadeProviderProps> = ({
   children,
 }) => {
   const [isAnyTextFieldFocused, setIsAnyTextFieldFocused] = useState(false);
+  const [isToasterReady, setIsToasterReady] = useState(false);
 
   const setFocusState = (value: boolean) => {
     setIsAnyTextFieldFocused(value);
@@ -98,6 +111,7 @@ const ShadeProvider: React.FC<ShadeProviderProps> = ({
         setFocusState,
         darkMode,
         isAdmin7,
+        isToasterReady,
         controlShape: controlShape ?? (isAdmin7 ? 'pill' : 'rounded'),
       }}
     >
@@ -106,7 +120,7 @@ const ShadeProvider: React.FC<ShadeProviderProps> = ({
             provider; inner providers still win via nearest-provider scoping. */}
         <TooltipProvider>
           {children}
-          <ToasterPortal />
+          <ToasterPortal onReady={setIsToasterReady} />
         </TooltipProvider>
       </GlobalDirtyStateProvider>
     </ShadeContext.Provider>

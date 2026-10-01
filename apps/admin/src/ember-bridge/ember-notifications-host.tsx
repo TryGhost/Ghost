@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { Stack } from '@tryghost/shade/primitives';
+import { useShade } from '@tryghost/shade/app';
 import { type AlertsStore, type RichText, RichTextContent, richTextValue } from '@/alerts';
 import { connectEmberNotificationsHost } from './ember-bridge';
 
@@ -121,5 +122,11 @@ export function createEmberNotificationsHost(alerts: AlertsStore): EmberNotifica
 
 /** Routes Ember's notifications through React while Ember is mounted. */
 export function useEmberNotificationsHost(alerts: AlertsStore) {
-  useEffect(() => connectEmberNotificationsHost(createEmberNotificationsHost(alerts)), [alerts]);
+  const { isToasterReady } = useShade();
+  useEffect(() => {
+    if (!isToasterReady) {
+      return;
+    }
+    return connectEmberNotificationsHost(createEmberNotificationsHost(alerts));
+  }, [alerts, isToasterReady]);
 }

@@ -60,6 +60,11 @@ import {useShade} from '@tryghost/shade/app';
 const {isAdmin7} = useShade();
 ```
 
+Shade mounts its toast portal after the first client commit. Integrations that
+can emit a toast during startup can read `isToasterReady` from `useShade`;
+it becomes true after Sonner subscribes. Wait for it before connecting a
+notification source that can immediately emit messages.
+
 Pure appearance differences belong in shared recipes and scoped tokens.
 `Button variant="subtle"` expresses a low-emphasis action: ghost chrome with
 `isAdmin7` enabled, outline chrome otherwise. Avoid using control shape as a

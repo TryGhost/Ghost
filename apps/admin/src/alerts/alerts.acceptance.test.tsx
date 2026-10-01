@@ -1,4 +1,5 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { flushSync } from 'react-dom';
 import type { EmberNotificationsHost, StateBridge } from '@/ember-bridge';
 import type { ServerNotification } from '@tryghost/admin-x-framework/api/notifications';
 import {
@@ -6,6 +7,7 @@ import {
   fakeAdminEndpoint,
   fakeTags,
   renderAdminApp,
+  settleRequests,
   staffRole,
 } from '@test-utils/acceptance';
 import { sidebarScreen } from '@/layout/sidebar.screen';
@@ -32,7 +34,10 @@ async function renderWithNotifications(notifications: ServerNotification[]) {
 }
 
 /** Stands in for Ember's state bridge; resolves to the host that is still connected once React settles. */
-async function renderWithEmber(notifications: ServerNotification[] = []) {
+async function renderWithEmber(
+  notifications: ServerNotification[] = [],
+  onConnect?: (host: EmberNotificationsHost) => void,
+) {
   let current: EmberNotificationsHost | undefined;
   window.EmberBridge = {
     state: {
@@ -45,6 +50,7 @@ async function renderWithEmber(notifications: ServerNotification[] = []) {
       sidebarVisible: true,
       connectNotificationsHost: (host) => {
         current = host;
+        onConnect?.(host);
         return () => {
           if (current === host) {
             current = undefined;
@@ -149,25 +155,64 @@ describe('Ember notifications', () => {
     await expect.element(alertsScreen.alert('<b>Not markup</b>')).toBeVisible();
   });
 
+  it('renders a toast emitted as Ember connects its notification host', async () => {
+    try {
+      const host = await renderWithEmber([], (connectedHost) => {
+        // Freeze expiry at the emission boundary; request delivery and intervals stay real.
+        vi.useFakeTimers({
+          toFake: ['setTimeout', 'clearTimeout', 'requestAnimationFrame', 'cancelAnimationFrame'],
+        });
+        connectedHost.show({ status: 'notification', type: 'success', message: 'Ready to write' });
+      });
+      await vi.advanceTimersByTimeAsync(0);
+      const toast = alertsScreen.toast('Ready to write');
+      expect(toast.element()).toBeVisible();
+
+      host.clearAll();
+      await vi.advanceTimersByTimeAsync(32);
+      flushSync(() => {});
+      expect(toast.element()).toHaveAttribute('data-removed', 'true');
+      flushSync(() => vi.runOnlyPendingTimers());
+      expect(toast.query()).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('renders Ember toasts with their description and action links', async () => {
     const host = await renderWithEmber();
-
-    host.show({
-      status: 'notification',
-      type: 'success',
-      message: 'Post scheduled',
-      description: { html: 'Will be published on <strong>1 Jan 2050</strong>' },
-      actions: { html: '<a href="https://example.com/post/" target="_blank">Show preview</a>' },
+    await settleRequests();
+    // The subject is toast content and explicit dismissal, not the 5s lifetime.
+    vi.useFakeTimers({
+      toFake: ['setTimeout', 'clearTimeout', 'requestAnimationFrame', 'cancelAnimationFrame'],
     });
+    try {
+      host.show({
+        status: 'notification',
+        type: 'success',
+        message: 'Post scheduled',
+        description: { html: 'Will be published on <strong>1 Jan 2050</strong>' },
+        actions: { html: '<a href="https://example.com/post/" target="_blank">Show preview</a>' },
+      });
+      await vi.advanceTimersByTimeAsync(0);
 
-    const toast = alertsScreen.toast('Post scheduled');
-    await expect.element(toast).toHaveTextContent('Will be published on 1 Jan 2050');
-    await expect
-      .element(toast.getByRole('link', { name: 'Show preview' }))
-      .toHaveAttribute('href', 'https://example.com/post/');
+      const toast = alertsScreen.toast('Post scheduled');
+      expect(toast.element()).toHaveTextContent('Will be published on 1 Jan 2050');
+      expect(toast.getByRole('link', { name: 'Show preview' }).element()).toHaveAttribute(
+        'href',
+        'https://example.com/post/',
+      );
 
-    host.clearAll();
-
-    await expect.element(toast).not.toBeInTheDocument();
+      host.clearAll();
+      // Sonner publishes dismissal on one frame and consumes it on the next.
+      await vi.advanceTimersByTimeAsync(32);
+      flushSync(() => {});
+      // A synchronous assertion cannot advance the clock through automatic expiry.
+      expect(toast.element()).toHaveAttribute('data-removed', 'true');
+      flushSync(() => vi.runOnlyPendingTimers());
+      expect(toast.query()).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
