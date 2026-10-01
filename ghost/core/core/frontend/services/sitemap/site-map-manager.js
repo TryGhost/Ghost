@@ -110,7 +110,6 @@ class SiteMapManager {
         authors: types.authors,
         tags: types.tags,
       },
-      maxPerPage: options.maxPerPage,
     });
   }
 
@@ -221,6 +220,12 @@ class SiteMapManager {
           sliceStart = performance.now();
         }
       }
+    }
+
+    // Sealed as they are swapped in: from here they only serve pages, and
+    // each drops its records once every page of it has been rendered.
+    for (const generator of Object.values(next)) {
+      generator.seal();
     }
 
     this.posts = next.posts;
