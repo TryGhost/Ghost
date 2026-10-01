@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import type { StateBridge } from '@/ember-bridge';
 
 import {
   activeThemeResponse,
@@ -8,9 +7,12 @@ import {
   currentRoute,
   fakeAdminEndpoint,
   fakeEndpoint,
+  fakeNewsletters,
+  fakePages,
   fakePosts,
   fakePostsListScreen,
   fakeTags,
+  fakeTiers,
   renderAdminApp,
   currentUserResponse,
   settingsResponse,
@@ -36,27 +38,25 @@ function fakeUnreadNotifications(count: number): void {
   fakeEndpoint('GET', UNREAD_COUNT_URL, { count });
 }
 
-function installStaleEmberRoute(activeRoute: 'members-activity' | 'pages' | 'posts'): void {
-  window.EmberBridge = {
-    state: {
-      onUpdate: () => {},
-      onInvalidate: () => {},
-      onDelete: () => {},
-      isFeatureEnabled: () => false,
-      on: () => {},
-      off: () => {},
-      sidebarVisible: true,
-      getRouteUrl: (routeName) => routeName,
-      isRouteActive: (routeNames) => {
-        const routes = Array.isArray(routeNames) ? routeNames : routeNames.split(' ');
-        return routes.includes(activeRoute);
-      },
-    } satisfies StateBridge,
-  };
+/** The Ghost(Pro) item links to Ember's billing route; it shows for the owner of a hosted site. */
+function ghostProSite(): RenderAdminAppOptions {
+  const config = configResponse();
+  config.config.hostSettings = { billing: { enabled: true, url: 'https://billing.example.com' } };
+  return { boot: { browseConfig: { response: config } } };
+}
+
+/** The lists the sidebar's top-level items open, each fetching as soon as it mounts. */
+function fakeSidebarLists(): void {
+  fakePostsListScreen();
+  fakePosts([]);
+  fakePages([]);
+  fakeAdminEndpoint('GET', /^\/members\/events\//, { events: [] });
+  // Member activity also reads the active newsletters and paid tiers.
+  fakeNewsletters([]);
+  fakeTiers([]);
 }
 
 afterEach(() => {
-  delete window.EmberBridge;
   clearStickyPostFilters();
 });
 
@@ -167,30 +167,38 @@ describe('Sidebar navigation', () => {
   });
 
   it('uses router navigation for React-owned routes and hash anchors for Ember-owned ones', async () => {
-    fakeTags([]);
-    await renderAdminApp('/site');
+    fakeSidebarLists();
+    await renderAdminApp('/site', ghostProSite());
+    const historyKey = () => (window.history.state as { key?: unknown } | null)?.key;
 
     // Router links carry the router's history state (the unsaved-changes
     // blockers rely on it); Ember's router only follows hashchange, so its
     // links must stay native anchors.
     await sidebarScreen.navLink('Tags').click();
     await expect.poll(currentRoute).toBe('/tags');
-    expect(typeof (window.history.state as { key?: unknown } | null)?.key).toBe('string');
+    expect(typeof historyKey()).toBe('string');
 
     await sidebarScreen.navLink('Posts').click();
     await expect.poll(currentRoute).toBe('/posts');
-    expect((window.history.state as { key?: unknown } | null)?.key).toBeUndefined();
+    expect(typeof historyKey()).toBe('string');
+
+    await sidebarScreen.ghostProLink().click();
+    await expect.poll(currentRoute).toBe('/pro');
+    expect(historyKey()).toBeUndefined();
   });
 
-  it('clicking Posts and Pages navigates to the Ember-owned lists', async () => {
-    // Posts/Pages active states come from the Ember routing bridge, absent in this tier.
+  it('clicking Posts and Pages navigates to the lists and marks them active', async () => {
+    fakeSidebarLists();
     await renderAdminApp('/site');
 
     await sidebarScreen.navLink('Posts').click();
     await expect.poll(currentRoute).toBe('/posts');
+    await expect.element(sidebarScreen.navLink('Posts')).toHaveAttribute('aria-current', 'page');
 
     await sidebarScreen.navLink('Pages').click();
     await expect.poll(currentRoute).toBe('/pages');
+    await expect.element(sidebarScreen.navLink('Pages')).toHaveAttribute('aria-current', 'page');
+    await expect.element(sidebarScreen.navLink('Posts')).not.toHaveAttribute('aria-current');
   });
 
   it.each([false, true])(
@@ -226,14 +234,13 @@ describe('Sidebar navigation', () => {
   });
 
   it.each([
-    { label: 'Posts', route: '/posts', emberRoute: 'posts' },
-    { label: 'Pages', route: '/pages', emberRoute: 'pages' },
-    { label: 'Members', route: '/members-activity', emberRoute: 'members-activity' },
+    { label: 'Posts', route: '/posts' },
+    { label: 'Pages', route: '/pages' },
+    { label: 'Members', route: '/members-activity' },
   ] as const)(
-    'clears the $label active state after leaving its Ember route',
-    async ({ label, route, emberRoute }) => {
-      fakeTags([]);
-      installStaleEmberRoute(emberRoute);
+    'marks $label active on its route and clears it after leaving',
+    async ({ label, route }) => {
+      fakeSidebarLists();
       await renderAdminApp(route);
 
       await expect.element(sidebarScreen.navLink(label)).toHaveAttribute('aria-current', 'page');
@@ -245,6 +252,7 @@ describe('Sidebar navigation', () => {
   );
 
   it('shows the default post views and collapses them with the toggle', async () => {
+    fakeSidebarLists();
     await renderAdminApp('/posts');
 
     await expect.element(sidebarScreen.postsToggle()).toHaveAttribute('aria-expanded', 'true');
@@ -258,13 +266,44 @@ describe('Sidebar navigation', () => {
     await expect.element(sidebarScreen.navLink('Drafts')).not.toBeInTheDocument();
   });
 
-  it('clicking a posts submenu item navigates to the filtered list', async () => {
-    // The submenu item's active state comes from the Ember routing bridge, absent in this tier.
+  it('clicking a posts submenu item navigates to the filtered list and marks only it active', async () => {
+    fakeSidebarLists();
     await renderAdminApp('/posts');
 
     await sidebarScreen.navLink('Scheduled').click();
 
     await expect.poll(currentRoute).toBe('/posts?type=scheduled');
+    await expect
+      .element(sidebarScreen.navLink('Scheduled'))
+      .toHaveAttribute('aria-current', 'page');
+    // The parent stays expanded, but only the view underneath it is current.
+    await expect.element(sidebarScreen.postsToggle()).toHaveAttribute('aria-expanded', 'true');
+    await expect.element(sidebarScreen.navLink('Posts')).not.toHaveAttribute('aria-current');
+  });
+
+  it('clicking the parent Posts link moves the active state off the submenu item', async () => {
+    fakeSidebarLists();
+    await renderAdminApp('/posts?type=scheduled');
+    await expect
+      .element(sidebarScreen.navLink('Scheduled'))
+      .toHaveAttribute('aria-current', 'page');
+
+    await sidebarScreen.navLink('Posts').click();
+
+    await expect.poll(currentRoute).toBe('/posts');
+    await expect.element(sidebarScreen.navLink('Scheduled')).not.toHaveAttribute('aria-current');
+    await expect.element(sidebarScreen.navLink('Posts')).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('marks the Posts parent active for a submenu view once the submenu is collapsed', async () => {
+    fakeSidebarLists();
+    await renderAdminApp('/posts?type=scheduled');
+    await expect.element(sidebarScreen.navLink('Posts')).not.toHaveAttribute('aria-current');
+
+    await sidebarScreen.postsToggle().click();
+
+    await expect.element(sidebarScreen.navLink('Scheduled')).not.toBeInTheDocument();
+    await expect.element(sidebarScreen.navLink('Posts')).toHaveAttribute('aria-current', 'page');
   });
 
   it('navigates to settings from the sidebar footer and hides the shell nav', async () => {

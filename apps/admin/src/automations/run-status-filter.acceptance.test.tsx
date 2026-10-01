@@ -106,6 +106,7 @@ describe('Automation run status filtering', () => {
     await renderAdminApp('/automations/first', flags);
     await open();
     await expect.element(runsRegion()).toHaveTextContent('Noah Bennett');
+    await expect.element(entries().getByRole('figure')).toBeInTheDocument();
     const height = runsRegion().element().getBoundingClientRect().height;
     const chart = entries().getByRole('figure').element();
     try {

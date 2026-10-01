@@ -117,21 +117,10 @@ const features: Feature[] = [
     flag: 'paywallImprovements',
   },
   {
-    title: 'React posts & pages lists',
-    description:
-      'Renders the posts (/posts) and pages (/pages) list screens from the React app instead of the Ember screens. Gates the migration behind a runtime toggle so we can compare both implementations.',
-    flag: 'postsListReact',
-  },
-  {
     title: 'React editor',
     description:
       'Serves the editor (/editor) from the React app instead of the Ember editor. Gates the migration behind a runtime toggle; the React side is an early placeholder.',
     flag: 'editorReact',
-  },
-  {
-    title: 'React member activity',
-    description: 'Preview the new member activity screen.',
-    flag: 'membersActivityReact',
   },
   {
     title: 'React sign-in screens',

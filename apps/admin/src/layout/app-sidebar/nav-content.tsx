@@ -22,10 +22,7 @@ import { NavMemberViews } from './nav-member-views';
 import { useMemberSidebarViews } from './member-sidebar-views';
 import { usePostNavigation } from './use-post-navigation';
 import { useIsActiveLink } from './use-is-active-link';
-import { useEmberRouting } from '@/ember-bridge';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
-
-const LEGACY_MEMBERS_ACTIVE_ROUTES = ['members-activity'];
 
 function PostsNavItemContent({ isActive, to }: { isActive: boolean; to: string }) {
   return (
@@ -85,7 +82,6 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   const memberViews = useMemberSidebarViews();
   const hasMemberViews = memberViews.length > 0;
   const memberCount = useMemberCount();
-  const routing = useEmberRouting();
   const automationsEnabled = useFeatureFlag('automations');
   const isMembersRouteActive = useIsActiveLink({ path: 'members', activeOnSubpath: true });
   const isMemberActivityActive = useIsActiveLink({ path: 'members-activity' });
@@ -102,7 +98,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   const membersExpanded = savedMembersExpanded;
   const membersNavActive = isMembersRouteActive
     ? !hasActiveMemberView || !membersExpanded
-    : isMemberActivityActive || routing.isRouteActive(LEGACY_MEMBERS_ACTIVE_ROUTES);
+    : isMemberActivityActive;
   const postsRoute = postNavigation.mainUrl;
   const postsNavActive = postNavigation.isMainActive || (!postsExpanded && hasActivePostChild);
   return (

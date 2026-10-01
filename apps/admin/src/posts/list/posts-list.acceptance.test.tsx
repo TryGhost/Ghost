@@ -1,16 +1,42 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  configResponse,
   fakePages,
   fakePosts,
   fakePostsListScreen,
   renderAdminApp,
+  settingsResponse,
+  type RenderAdminAppOptions,
   type ResourceCapture,
 } from '@test-utils/acceptance';
 import { postsListScreen } from './posts-list.screen';
+import { sidebarScreen } from '@/layout/sidebar.screen';
 
 const FLAG_ON = { labs: { postsListReact: true } };
 const FLAG_OFF = { labs: { postsListReact: false } };
+
+/** A backend that predates the flag: the key is missing from both labs sources. */
+function flagAbsent(): RenderAdminAppOptions {
+  const config = configResponse();
+  delete config.config.labs?.postsListReact;
+  const settings = settingsResponse();
+  const labsSetting = settings.settings.find(({ key }) => key === 'labs')!;
+  const labs = JSON.parse(labsSetting.value as string) as Record<string, boolean>;
+  delete labs.postsListReact;
+  labsSetting.value = JSON.stringify(labs);
+  return { boot: { browseConfig: { response: config }, browseSettings: { response: settings } } };
+}
+
+/**
+ * The shell moves its Ember host out of `body` and reveals it for an
+ * Ember-served route — and for every route until the current user loads, so
+ * read it only once the sidebar has mounted.
+ */
+function emberHostShown(): boolean {
+  const emberRoot = document.getElementById('ember-app')?.parentElement;
+  return Boolean(emberRoot && emberRoot !== document.body && !emberRoot.hidden);
+}
 
 /**
  * Proves the `postsListReact` flag swap end-to-end in the real admin app: the
@@ -59,12 +85,16 @@ describe('Posts and pages list flag', () => {
     it('defers to Ember when the flag is off', async () => {
       await renderAdminApp(route, FLAG_OFF);
 
+      await expect.element(sidebarScreen.shellNav()).toBeVisible();
+      await expect.poll(emberHostShown).toBe(true);
       await expect(postsListScreen.page(resource)).toHaveCount(0);
     });
 
     it('defers to Ember when the flag is absent entirely', async () => {
-      await renderAdminApp(route);
+      await renderAdminApp(route, flagAbsent());
 
+      await expect.element(sidebarScreen.shellNav()).toBeVisible();
+      await expect.poll(emberHostShown).toBe(true);
       await expect(postsListScreen.page(resource)).toHaveCount(0);
     });
   });
