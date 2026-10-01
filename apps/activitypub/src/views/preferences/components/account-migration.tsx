@@ -12,6 +12,7 @@ import {
 } from '@tryghost/shade/components';
 import { H2 } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
+import { isApiError } from '@src/api/activitypub';
 import {
   useAccountAliasesForUser,
   useAccountMigrationForUser,
@@ -87,7 +88,15 @@ const AccountMigration: React.FC = () => {
   } = useAccountAliasesForUser('index');
   const addAliasMutation = useAddAccountAliasMutationForUser('index');
   const removeAliasMutation = useRemoveAccountAliasMutationForUser('index');
-  const { data: migration, isError: migrationUnavailable } = useAccountMigrationForUser('index');
+  const {
+    data: migration,
+    isError: hasMigrationLoadError,
+    error: migrationLoadError,
+    refetch: refetchMigration,
+  } = useAccountMigrationForUser('index');
+  const migrationUnavailable =
+    isApiError(migrationLoadError) &&
+    [401, 403, 404, 405, 501].includes(migrationLoadError.statusCode);
   const moveAccountMutation = useMoveAccountMutationForUser('index');
   const [sourceHandle, setSourceHandle] = useState('');
   const [handleError, setHandleError] = useState<string | null>(null);
@@ -137,7 +146,7 @@ const AccountMigration: React.FC = () => {
 
   const handleMove = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!moveConfirmed) {
+    if (!moveConfirmed || moveAccountMutation.isPending) {
       return;
     }
     if (!HANDLE_REGEX.test(targetHandle.trim())) {
@@ -275,7 +284,19 @@ const AccountMigration: React.FC = () => {
           </div>
         )}
 
-        {!migrationUnavailable && migration && (
+        {hasMigrationLoadError && !migrationUnavailable && (
+          <section className="mt-12 border-t border-gray-200 pt-8 dark:border-gray-950">
+            <H2>Move followers from Ghost</H2>
+            <p className="mt-3" role="alert">
+              Could not load migration status. Please try again.
+            </p>
+            <Button className="mt-3" onClick={() => refetchMigration()}>
+              Retry
+            </Button>
+          </section>
+        )}
+
+        {!hasMigrationLoadError && migration && (
           <section className="mt-12 border-t border-gray-200 pt-8 dark:border-gray-950">
             <H2>Move followers from Ghost</H2>
             <p className="mt-3 text-base text-gray-800 dark:text-gray-600">
@@ -303,24 +324,38 @@ const AccountMigration: React.FC = () => {
                     New account handle
                   </FieldLabel>
                   <Input
+                    aria-describedby={
+                      moveError ? 'account-migration-target-handle-error' : undefined
+                    }
+                    aria-invalid={moveError ? true : undefined}
                     autoComplete="off"
                     className="mt-2"
+                    disabled={moveAccountMutation.isPending}
                     id="account-migration-target-handle"
                     placeholder="username@domain"
                     value={targetHandle}
-                    onChange={(event) => setTargetHandle(event.target.value)}
+                    onChange={(event) => {
+                      setTargetHandle(event.target.value);
+                      setMoveConfirmed(false);
+                      setMoveError(null);
+                    }}
                   />
                   <label className="mt-4 flex items-start gap-2 text-sm">
                     <input
                       checked={moveConfirmed}
                       className="mt-1"
+                      disabled={moveAccountMutation.isPending}
                       type="checkbox"
                       onChange={(event) => setMoveConfirmed(event.target.checked)}
                     />
                     I have added my Ghost account as an alias on the destination. I understand this
                     move cannot simply be undone.
                   </label>
-                  {moveError && <FieldError className="mt-3">{moveError}</FieldError>}
+                  {moveError && (
+                    <FieldError className="mt-3" id="account-migration-target-handle-error">
+                      {moveError}
+                    </FieldError>
+                  )}
                   <Button
                     className="mt-4"
                     disabled={!moveConfirmed || moveAccountMutation.isPending}

@@ -1,4 +1,5 @@
 import { ActorProperties } from '@tryghost/admin-x-framework/api/activitypub';
+import { z } from 'zod';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Actor = any;
@@ -114,10 +115,16 @@ export interface AccountAliasesResponse {
   aliases: AccountAlias[];
 }
 
-export interface AccountMigrationStatus {
-  targetApId: string | null;
-  sent: boolean;
-}
+const accountMigrationStatusSchema = z
+  .object({
+    targetApId: z.url().nullable(),
+    sent: z.boolean(),
+  })
+  .refine((status) => !status.sent || status.targetApId !== null, {
+    message: 'A sent migration must have a destination',
+  });
+
+export type AccountMigrationStatus = z.infer<typeof accountMigrationStatusSchema>;
 
 function emptyAccountAliasesResponse(): AccountAliasesResponse {
   return {
@@ -586,14 +593,16 @@ export class ActivityPubAPI {
 
   async getAccountMigration(): Promise<AccountMigrationStatus> {
     const url = new URL('.ghost/activitypub/v1/migration', this.apiUrl);
-    return (await this.fetchJSON(url)) as unknown as AccountMigrationStatus;
+    return accountMigrationStatusSchema.parse(await this.fetchJSON(url));
   }
 
   async moveAccount(targetHandle: string): Promise<AccountMigrationStatus> {
     const url = new URL('.ghost/activitypub/v1/migration', this.apiUrl);
-    return (await this.fetchJSON(url, 'POST', {
-      targetHandle,
-    })) as unknown as AccountMigrationStatus;
+    return accountMigrationStatusSchema.parse(
+      await this.fetchJSON(url, 'POST', {
+        targetHandle,
+      }),
+    );
   }
 
   async getDomain(): Promise<SocialWebDomain> {
