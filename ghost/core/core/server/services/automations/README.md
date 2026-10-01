@@ -191,3 +191,28 @@ analytics. Hourly entry dates are UTC ISO timestamps; `entry_window.bucket`
 is `hour`. Window boundaries remain local calendar dates in the requested
 timezone, with an exclusive end. Today includes buckets through the current
 hour; historical days include every hour, including 23/25-hour DST days.
+
+## Run history
+
+`GET /ghost/api/admin/automations/:id/runs/:run_id/` returns one record in
+`automation_run_history`, with the run's identity, current member (or null),
+status, failure flag, and recorded steps. It requires automation read permission
+and reads the database independently of Tinybird. Missing or differently owned
+runs return 404; malformed records return an error.
+
+Steps are ordered by creation time, then ID. They include UTC timestamps and
+content from their referenced action revision, including soft-deleted actions.
+They never substitute the current graph or add unrecorded future steps. A run
+can include revisions from multiple edits because each next step is queued when
+the preceding step finishes.
+
+- Status follows the run-list rules: `in_progress` if a step is pending,
+  `exited_early` if a step exited, otherwise `completed`. Unknown statuses, missing
+  required revision data, missing terminal timestamps, and runs without steps
+  are errors.
+- `email_sent_at` and `email_delivered_at` are the earliest recipient timestamps
+  for that step and revision. Sending does not establish delivery. Recipient
+  identity and stored historical member email are not returned.
+- Trigger/end nodes are not stored steps, and there is no stored run-end
+  timestamp. `ready_at` is eligibility to execute, not a guaranteed send time;
+  `updated_at` is not a completion time.

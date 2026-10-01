@@ -37,6 +37,7 @@ const messages = {
   tinybirdPerformanceStatsFailed: 'Could not load Tinybird automation performance stats.',
 
   automationNotFound: 'Automation not found.',
+  runNotFound: 'Automation run not found.',
   automationActionNotFound: 'Automation action not found.',
   invalidAutomationPayload: 'Automation edit payload must include status, actions, and edges.',
   invalidAutomationStatus: 'Automation status must be one of: active, inactive.',
@@ -263,6 +264,18 @@ export async function browseRuns(automationId: string, options: Record<string, u
     data: runs.map((run) => ({ ...run, member: members.get(run.id) ?? null })),
     meta: { pagination: { limit: RUN_PAGE_SIZE, next_cursor: nextCursor } },
   };
+}
+
+export async function readRunHistory(automationId: string, runId: string) {
+  const exists = await repository.exists(automationId);
+  if (!exists) {
+    throw new errors.NotFoundError({ message: tpl(messages.automationNotFound) });
+  }
+  const history = await repository.getRunHistory(automationId, runId);
+  if (!history) {
+    throw new errors.NotFoundError({ message: tpl(messages.runNotFound) });
+  }
+  return history;
 }
 
 export async function browseActionLinks(automationId: string, actionId: string) {
