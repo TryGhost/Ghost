@@ -22,6 +22,7 @@ const serializeWebhook = createWebhookSerializer({
 const urlServiceUtils = require('../../utils/url-service-utils');
 const urlUtils = require('../../../core/shared/url-utils').default;
 const DomainEvents = require('@tryghost/domain-events');
+const { OfferRedemptionEvent } = require('../../../core/shared/events');
 const {
   anyContentVersion,
   anyContentLength,
@@ -64,13 +65,6 @@ async function getOfferByStripeCoupon(stripeCouponId) {
 }
 
 async function assertMemberEvents({ eventType, memberId, asserts }) {
-  // These rows are not written by the request under test. Ghost dispatches the member
-  // and subscription events once the transaction that created them has committed, and a
-  // subscriber then writes a row for each one. That write is still running when the
-  // response reaches us, so read the rows only once every dispatched event has been
-  // handled.
-  await DomainEvents.allSettled();
-
   const events = (await models[eventType].where('member_id', memberId).fetchAll()).toJSON();
   for (let i = 0; i < asserts.length; i++) {
     assertObjectMatches(events[i], asserts[i]);
@@ -4605,6 +4599,11 @@ describe('Members API', function () {
             end: null,
           };
 
+          // Stripe sends the same update more than once, and a redemption is announced
+          // only when it is first recorded.
+          const announced = [];
+          DomainEvents.subscribe(OfferRedemptionEvent, (event) => announced.push(event));
+
           await deliver('customer.subscription.created');
           await deliver('customer.subscription.updated');
           const offer = await getOfferByStripeCoupon(coupon.id);
@@ -4629,6 +4628,13 @@ describe('Members API', function () {
             asserts: activated ? [{ offer_id: offer.id, subscription_id: stored.id }] : [],
           });
           await assertConversions(activated ? 1 : 0);
+          assert.deepEqual(
+            announced.map((event) => event.data),
+            activated ? [{ memberId, offerId: offer.id, subscriptionId: stored.id }] : [],
+          );
+          // Subscribing wraps the handler, so it can't be removed by reference. Nothing
+          // in Ghost itself listens to this event.
+          DomainEvents.ee.removeAllListeners('OfferRedemptionEvent');
         });
       }
 

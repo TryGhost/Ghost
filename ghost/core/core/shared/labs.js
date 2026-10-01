@@ -63,7 +63,6 @@ const PRIVATE_FEATURES = [
   'pictureImageFormats',
   'getHelperDeduplication',
   'membersCustomFields',
-  'memberLocationMap',
   'stripeCheckoutCollection',
   'membersImportRedesign',
   'paywallImprovements',

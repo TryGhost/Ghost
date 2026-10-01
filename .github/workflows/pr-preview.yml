@@ -10,21 +10,13 @@ permissions:
 jobs:
   deploy:
     name: Deploy Preview
-    # Runs when "preview" or a "preview:<profile>" label is added — either needs
-    # collaborator write access. Adding a profile label to an already-labelled PR
-    # has to redeploy, or the label would claim a profile the preview is not on;
-    # Ghost-Moya notices the change and reseeds.
-    #
-    # Removing a profile label redeploys for the same reason, in reverse: the
-    # labels would otherwise say "default" while the preview stayed seeded on
-    # whatever the removed label named. `startsWith` excludes the bare `preview`
-    # label, which has no colon, so removing that still only destroys.
+    # A profile label enables a preview on its own; a bare label uses the default.
     if: >-
-      (github.event.action == 'labeled'
-       && (github.event.label.name == 'preview'
-           || startsWith(github.event.label.name, 'preview:')))
-      || (github.event.action == 'unlabeled'
-          && startsWith(github.event.label.name, 'preview:'))
+      github.event.action != 'closed'
+      && (github.event.label.name == 'preview'
+          || startsWith(github.event.label.name, 'preview:'))
+      && (contains(github.event.pull_request.labels.*.name, 'preview')
+          || contains(toJSON(github.event.pull_request.labels.*.name), '"preview:'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -105,35 +97,20 @@ jobs:
             --jq '{state, labels: [.labels[].name]}')
 
           STATE=$(echo "$PR" | jq -r '.state')
-          HAS_LABEL=$(echo "$PR" | jq '.labels | any(. == "preview")')
+          HAS_LABEL=$(echo "$PR" | jq '.labels | any(. == "preview" or startswith("preview:"))')
 
           if [ "$STATE" != "open" ]; then
             echo "::warning::PR is no longer open ($STATE), skipping dispatch"
             echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          # `preview` is the switch; `preview:<profile>` only says which data to
-          # use. A profile label on its own is not a request for a preview, and
-          # saying so beats the older "label was removed" warning, which is
-          # actively misleading when it was never added.
           if [ "$HAS_LABEL" != "true" ]; then
-            if echo "$PR" | jq -e '.labels | any(startswith("preview:"))' > /dev/null; then
-              echo "::warning::A preview:<profile> label needs the 'preview' label too, skipping dispatch"
-            else
-              echo "::warning::preview label was removed, skipping dispatch"
-            fi
+            echo "::warning::Preview labels were removed, skipping dispatch"
             echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          # A `preview:<profile>` label picks how much seed data the preview starts
-          # with. The names are defined in TryGhost/Ghost-Moya's
-          # preview/profiles.json and validated there, so nothing here needs to
-          # know them — passing the suffix through keeps one source of truth.
-          # Sending nothing means Moya applies its own default.
-          # Counted with jq rather than by word-splitting: a label may contain a
-          # space, and counting words would read one such label as two profiles
-          # and reject it with a message about a conflict that does not exist.
+          # Profile names and the default are defined in Ghost-Moya.
           COUNT=$(echo "$PR" | jq '[.labels[] | select(startswith("preview:"))] | length')
           PROFILE=$(echo "$PR" | jq -r '[.labels[] | select(startswith("preview:")) | ltrimstr("preview:")] | first // ""')
 
@@ -145,18 +122,7 @@ jobs:
           fi
 
           if [ "$COUNT" -eq 1 ]; then
-            # Shape only, not a list of names — the names stay Ghost-Moya's to
-            # own. This rejects a malformed label here, with a message that says
-            # what is wrong, rather than dispatching it to fail further away.
-            #
-            # Matched with [[ =~ ]] rather than grep. grep works a line at a
-            # time, so ^ and $ bound a line, not the string, and `grep -q`
-            # succeeds if any one line matches: a label containing a newline
-            # would pass on its first line and then write a second line into
-            # GITHUB_OUTPUT, which becomes a step output of its own. This
-            # workflow is pull_request_target and carries a dispatch token, so
-            # that is worth closing rather than noting. bash anchors to the
-            # whole string, so a newline cannot match at all.
+            # Validate the whole string before writing it to GITHUB_OUTPUT.
             if ! [[ "$PROFILE" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
               echo "::error::Malformed profile label 'preview:${PROFILE}' — expected lowercase words separated by hyphens"
               echo "skip=true" >> "$GITHUB_OUTPUT"
@@ -217,15 +183,39 @@ jobs:
 
   destroy:
     name: Destroy Preview
-    # Runs when "preview" label is removed, or the PR is closed/merged while labeled
+    # Tear down only when the last preview label is removed or the PR closes.
     if: >-
-      (github.event.action == 'unlabeled' && github.event.label.name == 'preview')
-      || (github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, 'preview'))
+      (github.event.action == 'unlabeled'
+       && (github.event.label.name == 'preview'
+           || startsWith(github.event.label.name, 'preview:'))
+       && !contains(github.event.pull_request.labels.*.name, 'preview')
+       && !contains(toJSON(github.event.pull_request.labels.*.name), '"preview:'))
+      || (github.event.action == 'closed'
+          && (contains(github.event.pull_request.labels.*.name, 'preview')
+              || contains(toJSON(github.event.pull_request.labels.*.name), '"preview:')))
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
+      - name: Re-check teardown eligibility
+        id: recheck
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          [[ "$PR_NUMBER" =~ ^[1-9][0-9]{0,9}$ ]] || exit 1
+          PR=$(gh api "repos/${REPOSITORY}/pulls/${PR_NUMBER}" \
+            --jq '{state, labels: [.labels[].name]}')
+
+          KEEP_PREVIEW=$(echo "$PR" | jq '.state == "open" and (.labels | any(. == "preview" or startswith("preview:")))')
+          if [ "$KEEP_PREVIEW" = "true" ]; then
+            echo "Preview is still enabled, skipping teardown"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Dispatch destroy to Ghost-Moya
+        if: steps.recheck.outputs.skip != 'true'
         uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4
         with:
           token: ${{ secrets.CANARY_DOCKER_BUILD }}

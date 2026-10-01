@@ -5,10 +5,7 @@ const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
 const labs = require('../../../../../../../core/shared/labs');
 const MemberRepository = require('../../../../../../../core/server/services/members/members-api/repositories/member-repository');
-const {
-  SubscriptionCreatedEvent,
-  OfferRedemptionEvent,
-} = require('../../../../../../../core/shared/events');
+const { SubscriptionCreatedEvent } = require('../../../../../../../core/shared/events');
 
 describe('MemberRepository', function () {
   let Automation;
@@ -47,6 +44,8 @@ describe('MemberRepository', function () {
       MemberProductEvent,
       MemberStatusEvent,
       MemberSubscribeEventModel: MemberSubscribeEvent,
+      MemberCreatedEvent: { add: sinon.stub().resolves() },
+      SubscriptionCreatedEvent: { add: sinon.stub().resolves() },
       OfferRedemption: mockOfferRedemption,
       StripeCustomer,
       StripeCustomerSubscription,
@@ -575,7 +574,6 @@ describe('MemberRepository', function () {
   describe('linkSubscription', function () {
     let subscriptionData;
     let subscriptionCreatedNotifySpy;
-    let offerRedemptionNotifySpy;
 
     afterEach(function () {
       sinon.restore();
@@ -584,7 +582,6 @@ describe('MemberRepository', function () {
     beforeEach(async function () {
       sinon.stub(MemberRepository.prototype, '_updateCurrentSubscription').resolves();
       subscriptionCreatedNotifySpy = sinon.spy();
-      offerRedemptionNotifySpy = sinon.spy();
 
       subscriptionData = {
         id: 'sub_123',
@@ -817,7 +814,6 @@ describe('MemberRepository', function () {
       sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
 
       DomainEvents.subscribe(SubscriptionCreatedEvent, subscriptionCreatedNotifySpy);
-      DomainEvents.subscribe(OfferRedemptionEvent, offerRedemptionNotifySpy);
 
       await repo.linkSubscription(
         {
@@ -832,10 +828,10 @@ describe('MemberRepository', function () {
       );
 
       sinon.assert.calledOnce(subscriptionCreatedNotifySpy);
-      sinon.assert.notCalled(offerRedemptionNotifySpy);
+      sinon.assert.notCalled(mockOfferRedemption.add);
     });
 
-    it('dispatches the offer redemption event for a new member starting a subscription', async function () {
+    it('records the offer redemption for a new member starting a subscription', async function () {
       // When a new member starts a paid subscription, the subscription is created with the offer ID
       const repo = buildRepo({
         stripeAPIService,
@@ -852,7 +848,6 @@ describe('MemberRepository', function () {
       sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
 
       DomainEvents.subscribe(SubscriptionCreatedEvent, subscriptionCreatedNotifySpy);
-      DomainEvents.subscribe(OfferRedemptionEvent, offerRedemptionNotifySpy);
 
       await repo.linkSubscription(
         {
@@ -879,19 +874,11 @@ describe('MemberRepository', function () {
         }),
       );
 
-      sinon.assert.called(offerRedemptionNotifySpy);
-      sinon.assert.calledWith(
-        offerRedemptionNotifySpy,
-        sinon.match((event) => {
-          if (event.data.offerId === 'offer_123') {
-            return true;
-          }
-          return false;
-        }),
-      );
+      sinon.assert.called(mockOfferRedemption.add);
+      sinon.assert.calledWith(mockOfferRedemption.add, sinon.match({ offer_id: 'offer_123' }));
     });
 
-    it('dispatches the offer redemption event for an existing member upgrading to a paid subscription', async function () {
+    it('records the offer redemption for an existing member upgrading to a paid subscription', async function () {
       // When an existing free member upgrades to a paid subscription, the subscription is first created _without_ the offer id
       // Then it is updated with the offer id after the checkout.completed webhook is received
       const repo = buildRepo({
@@ -910,7 +897,6 @@ describe('MemberRepository', function () {
       });
 
       DomainEvents.subscribe(SubscriptionCreatedEvent, subscriptionCreatedNotifySpy);
-      DomainEvents.subscribe(OfferRedemptionEvent, offerRedemptionNotifySpy);
 
       await repo.linkSubscription(
         {
@@ -928,16 +914,8 @@ describe('MemberRepository', function () {
 
       sinon.assert.notCalled(subscriptionCreatedNotifySpy);
 
-      sinon.assert.called(offerRedemptionNotifySpy);
-      sinon.assert.calledWith(
-        offerRedemptionNotifySpy,
-        sinon.match((event) => {
-          if (event.data.offerId === 'offer_123') {
-            return true;
-          }
-          return false;
-        }),
-      );
+      sinon.assert.called(mockOfferRedemption.add);
+      sinon.assert.calledWith(mockOfferRedemption.add, sinon.match({ offer_id: 'offer_123' }));
     });
 
     it('creates an offer from a Stripe coupon', async function () {
@@ -1599,8 +1577,6 @@ describe('MemberRepository', function () {
         }),
       });
 
-      DomainEvents.subscribe(OfferRedemptionEvent, offerRedemptionNotifySpy);
-
       await repo.linkSubscription(
         {
           subscription: subscriptionData, // no discount, so offer_id resolves to null
@@ -1726,7 +1702,7 @@ describe('MemberRepository', function () {
       assert.equal(editedData.offer_id, null);
     });
 
-    it('dispatches OfferRedemptionEvent when offer_id changes from one offer to another', async function () {
+    it('records an offer redemption when offer_id changes from one offer to another', async function () {
       // A retention offer replaces an expired signup offer (old → new)
       // The event timestamp should use the Stripe discount start time, not the subscription created_at
       const discountStartUnix = Math.floor(Date.now() / 1000) - 60; // 1 minute ago
@@ -1771,8 +1747,6 @@ describe('MemberRepository', function () {
         }),
       });
 
-      DomainEvents.subscribe(OfferRedemptionEvent, offerRedemptionNotifySpy);
-
       await repo.linkSubscription(
         {
           id: 'member_id_123',
@@ -1787,21 +1761,19 @@ describe('MemberRepository', function () {
         },
       );
 
-      sinon.assert.called(offerRedemptionNotifySpy);
+      sinon.assert.called(mockOfferRedemption.add);
       sinon.assert.calledWith(
-        offerRedemptionNotifySpy,
-        sinon.match((event) => {
-          return event.data.offerId === 'new_retention_offer_456';
-        }),
+        mockOfferRedemption.add,
+        sinon.match({ offer_id: 'new_retention_offer_456' }),
       );
 
       // Timestamp should be the discount start, not the subscription created_at
-      const event = offerRedemptionNotifySpy.firstCall.args[0];
+      const redemption = mockOfferRedemption.add.firstCall.args[0];
 
-      assert.equal(event.timestamp.getTime(), discountStartUnix * 1000);
+      assert.equal(redemption.created_at.getTime(), discountStartUnix * 1000);
     });
 
-    it('dispatches OfferRedemptionEvent with created_at timestamp when no Stripe discount is present', async function () {
+    it('records an offer redemption with created_at timestamp when no Stripe discount is present', async function () {
       // Trial offers don't have Stripe discounts — timestamp falls back to created_at
       const subCreatedAt = new Date('2025-06-15T00:00:00Z');
 
@@ -1840,8 +1812,6 @@ describe('MemberRepository', function () {
         }),
       });
 
-      DomainEvents.subscribe(OfferRedemptionEvent, offerRedemptionNotifySpy);
-
       await repo.linkSubscription(
         {
           id: 'member_id_123',
@@ -1856,12 +1826,12 @@ describe('MemberRepository', function () {
         },
       );
 
-      sinon.assert.called(offerRedemptionNotifySpy);
+      sinon.assert.called(mockOfferRedemption.add);
 
-      const event = offerRedemptionNotifySpy.firstCall.args[0];
+      const redemption = mockOfferRedemption.add.firstCall.args[0];
 
-      assert.equal(event.data.offerId, 'trial_offer_789');
-      assert.equal(event.timestamp.getTime(), subCreatedAt.getTime());
+      assert.equal(redemption.offer_id, 'trial_offer_789');
+      assert.equal(redemption.created_at.getTime(), subCreatedAt.getTime());
     });
 
     it('overwrites offer_id when new offer arrives via Stripe even with an active trial', async function () {
@@ -1912,8 +1882,6 @@ describe('MemberRepository', function () {
         }),
       });
 
-      DomainEvents.subscribe(OfferRedemptionEvent, offerRedemptionNotifySpy);
-
       await repo.linkSubscription(
         {
           subscription: subscriptionWithDiscount,
@@ -1933,17 +1901,12 @@ describe('MemberRepository', function () {
       assert.ok('offer_id' in editedData, 'offer_id should be present in the update data');
       assert.equal(editedData.offer_id, 'offer_new'); // from offersAPI.ensureOfferForStripeCoupon stub
 
-      // Should dispatch redemption event for the new offer
-      sinon.assert.called(offerRedemptionNotifySpy);
-      sinon.assert.calledWith(
-        offerRedemptionNotifySpy,
-        sinon.match((event) => {
-          return event.data.offerId === 'offer_new';
-        }),
-      );
+      // Should record a redemption for the new offer
+      sinon.assert.called(mockOfferRedemption.add);
+      sinon.assert.calledWith(mockOfferRedemption.add, sinon.match({ offer_id: 'offer_new' }));
     });
 
-    it('does not dispatch OfferRedemptionEvent when offer_id stays the same', async function () {
+    it('does not record an offer redemption when offer_id stays the same', async function () {
       // Same offer synced again via webhook — no new event
       const subscriptionWithDiscount = {
         ...subscriptionData,
@@ -1986,8 +1949,6 @@ describe('MemberRepository', function () {
         }),
       });
 
-      DomainEvents.subscribe(OfferRedemptionEvent, offerRedemptionNotifySpy);
-
       await repo.linkSubscription(
         {
           subscription: subscriptionWithDiscount,
@@ -2000,7 +1961,7 @@ describe('MemberRepository', function () {
         },
       );
 
-      sinon.assert.notCalled(offerRedemptionNotifySpy);
+      sinon.assert.notCalled(mockOfferRedemption.add);
     });
   });
 

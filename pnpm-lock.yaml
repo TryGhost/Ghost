@@ -2544,8 +2544,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/i18n
       '@tryghost/image-transform':
-        specifier: 1.4.18
-        version: 1.4.18(@types/node@22.20.1)
+        specifier: workspace:*
+        version: link:../../packages/image-transform
       '@tryghost/job-manager':
         specifier: 1.0.9
         version: 1.0.9(supports-color@10.2.2)
@@ -4417,6 +4417,50 @@ importers:
       vitest:
         specifier: 'catalog:'
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
+
+  packages/image-transform:
+    dependencies:
+      '@tryghost/errors':
+        specifier: 3.4.0
+        version: 3.4.0
+    devDependencies:
+      '@internal/cfg-eslint':
+        specifier: workspace:*
+        version: link:../../configs/eslint
+      '@internal/cfg-typescript':
+        specifier: workspace:*
+        version: link:../../configs/typescript
+      '@internal/cfg-vitest':
+        specifier: workspace:*
+        version: link:../../configs/vitest
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.1
+      '@types/sinon':
+        specifier: 'catalog:'
+        version: 22.0.0
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
+      '@vitest/coverage-v8':
+        specifier: 'catalog:'
+        version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.4(jiti@2.7.0)(supports-color@10.2.2)
+      sinon:
+        specifier: 'catalog:'
+        version: 22.1.0
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
+    optionalDependencies:
+      sharp:
+        specifier: 'catalog:'
+        version: 0.35.5(@types/node@22.20.1)
 
   packages/limit-service:
     dependencies:
@@ -9666,9 +9710,6 @@ packages:
 
   '@tryghost/http-stream@2.3.16':
     resolution: {integrity: sha512-Il4zlpL8/vr555ep6opYozTa+jJvEXw12KjyqSWUfIUFrt53vkBPR7dRoSi+OnF20FazjnihllTZDEbvcKu61Q==}
-
-  '@tryghost/image-transform@1.4.18':
-    resolution: {integrity: sha512-dyYs5Zdmqx9wPOI63WNAeAgGnDOL/4QdYs7ZDaSWc0Ybz4qKs+F2k7ciHBdDtwRNyrnSNf1HZAOyv31hTvGaOA==}
 
   '@tryghost/jest-snapshot@2.3.15':
     resolution: {integrity: sha512-HzusbUXhIdGpK686psfg3VQdmAev29Qr9yt5A6EVLzexNQZNkyApyymySqrpeL7iQrcCozwsdZgVB/ccj7+ITQ==}
@@ -28715,15 +28756,6 @@ snapshots:
     dependencies:
       '@tryghost/errors': 3.4.0
       '@tryghost/request': 4.0.8
-
-  '@tryghost/image-transform@1.4.18(@types/node@22.20.1)':
-    dependencies:
-      '@tryghost/errors': 3.4.0
-      fs-extra: 11.4.0
-    optionalDependencies:
-      sharp: 0.35.5(@types/node@22.20.1)
-    transitivePeerDependencies:
-      - '@types/node'
 
   '@tryghost/jest-snapshot@2.3.15(supports-color@10.2.2)':
     dependencies:

@@ -28,10 +28,10 @@ function fakeExportDownload() {
   });
 }
 
-async function renderWithArchiveHost() {
+async function renderWithExportHost() {
   const config = configResponse();
   config.config.hostSettings = {
-    export: { webhookUrl: 'https://archives.example.com/generate' },
+    export: { webhookUrl: 'https://exports.example.com/generate' },
   };
   await renderAdminApp('/settings/advanced', {
     labs: { selfServeArchives: true },
@@ -131,10 +131,10 @@ describe('Migration tools export', () => {
       .not.toBeInTheDocument();
   });
 
-  it('offers media and email delivery when an archive host is configured', async () => {
+  it('offers media and email delivery when an export host is configured', async () => {
     fakeSettingsScreens();
     const exportsApi = fakeAdminEndpoint('POST', '/exports/', {}, { status: 202 });
-    await renderWithArchiveHost();
+    await renderWithExportHost();
 
     const section = await openExportTab();
     await section.getByRole('button', { name: 'All data' }).click();
@@ -178,7 +178,7 @@ describe('Migration tools export', () => {
       },
       { status: 202 },
     );
-    await renderWithArchiveHost();
+    await renderWithExportHost();
 
     const section = await openExportTab();
     await section.getByRole('button', { name: 'All data' }).click();
@@ -200,7 +200,7 @@ describe('Migration tools export', () => {
   it('sends the selected components to the exports endpoint', async () => {
     fakeSettingsScreens();
     const exportsApi = fakeAdminEndpoint('POST', '/exports/', {}, { status: 202 });
-    await renderWithArchiveHost();
+    await renderWithExportHost();
 
     const section = await openExportTab();
     await section.getByRole('button', { name: 'All data' }).click();
@@ -230,7 +230,7 @@ describe('Migration tools export', () => {
     fakeSettingsScreens();
     // An older backend without the endpoint 404s — must not crash the dialog
     fakeAdminEndpoint('POST', '/exports/', {}, { status: 404 });
-    await renderWithArchiveHost();
+    await renderWithExportHost();
 
     const section = await openExportTab();
     await section.getByRole('button', { name: 'All data' }).click();
