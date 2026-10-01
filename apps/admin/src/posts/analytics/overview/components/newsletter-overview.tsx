@@ -196,7 +196,8 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
                   <DataList className="">
                     <DataListBody>
                       {topLinks.slice(0, fullWidth ? 10 : 5).map((link) => {
-                        const percentage = stats.clicked > 0 ? link.count / stats.clicked : 0;
+                        const percentage =
+                          stats.clicked > 0 ? Math.min(link.count / stats.clicked, 1) : 0;
                         return (
                           <DataListRow key={link.link.link_id}>
                             <DataListBar
