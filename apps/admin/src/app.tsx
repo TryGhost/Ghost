@@ -15,6 +15,7 @@ import {
 import { AdminAlerts, createAlertsStore, useServerNotifications } from './alerts';
 import { DocsBotWidgetHost } from './docsbot-widget-host';
 import { useAccentColorProperties } from './hooks/use-accent-color-properties';
+import { useDocumentTitle } from './hooks/use-document-title';
 import { SignedOutApp, useAuthNotice, useAuthScreensOwner } from './auth/api';
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
   // (e.g. force-upgrade) ahead of screen-level data fetches.
   useBrowseSettings();
   useAccentColorProperties();
+  useDocumentTitle();
   useEmberAuthSync();
   useEmberDataSync();
   useEmberListReturnSync();
