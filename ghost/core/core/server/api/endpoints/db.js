@@ -106,7 +106,7 @@ const controller = {
         email = (await models.User.getOwnerUser()).get('email');
       }
 
-      return importer.importFromFile(frame.file, {
+      return importer.getInstance().importFromFile(frame.file, {
         user: {
           email: email,
         },
