@@ -1,4 +1,4 @@
-import { describe, expect, it, onTestFinished } from 'vitest';
+import { afterEach, describe, expect, it, onTestFinished } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
@@ -27,11 +27,26 @@ const CREATED_AT = '2026-01-01T00:00:05.000Z';
 // blocker sees the navigation; the hash-anchor path pins it to Ember below.
 // Each test names its own autosave regime, since the debounce decides whether a write
 // came from the exit or from an autosave; naming none leaves the editor's real 3s.
-const FLAG_ON: RenderAdminAppOptions = { labs: { editorReact: true, postsListReact: true } };
-// Only the editor is React-owned, so leaving lands on a posts route that makes no requests.
-const EDITOR_ONLY: RenderAdminAppOptions = {
-  labs: { editorReact: true, postsListReact: false },
-};
+const FLAG_ON: RenderAdminAppOptions = { labs: { editorReact: true } };
+
+/**
+ * A raw `#/…` anchor into an Ember-owned route. The router only sees it as a
+ * POP it cannot block, so the hash-link guard has to intercept the click.
+ */
+function nativeHashAnchor(): HTMLAnchorElement {
+  const anchor = document.createElement('a');
+  anchor.setAttribute('href', '#/pro');
+  anchor.textContent = 'Billing';
+  document.body.append(anchor);
+  nativeAnchors.push(anchor);
+  return anchor;
+}
+
+const nativeAnchors: HTMLAnchorElement[] = [];
+
+afterEach(() => {
+  nativeAnchors.splice(0).forEach((anchor) => anchor.remove());
+});
 
 type SavedPost = ReturnType<typeof post>;
 
@@ -210,6 +225,7 @@ function watchHashChanges(): () => string[] {
 
 /** Opens the editor with a hash change from a posts entry the router did not create. */
 async function openByHashChange(path: string, options: RenderAdminAppOptions) {
+  fakePostsListScreen();
   await renderAdminApp('/posts', options);
   window.history.replaceState(null, '');
   window.location.hash = path;
@@ -288,39 +304,52 @@ describe('Post editor leave guard', () => {
   });
 
   it.each([
-    { name: 'router link', options: withFastAutosave(FLAG_ON) },
-    { name: 'native hash link', options: EDITOR_ONLY },
-  ])('keeps the dialog open until leaving through a $name', async ({ options }) => {
-    const saveApi = fakeEditablePost({
-      status: 'published',
-      published_at: '2026-01-01T00:00:00.000Z',
-    });
-    await openDirtyEditor(options);
+    {
+      name: 'router link',
+      options: withFastAutosave(FLAG_ON),
+      destination: '/posts',
+      leave: () => editorScreen.backLink('post').click(),
+    },
+    {
+      name: 'native hash link',
+      options: FLAG_ON,
+      destination: '/pro',
+      leave: () => Promise.resolve(nativeHashAnchor().click()),
+    },
+  ])(
+    'keeps the dialog open until leaving through a $name',
+    async ({ options, destination, leave }) => {
+      const saveApi = fakeEditablePost({
+        status: 'published',
+        published_at: '2026-01-01T00:00:00.000Z',
+      });
+      await openDirtyEditor(options);
 
-    await editorScreen.backLink('post').click();
-    await expect.element(editorScreen.leaveDialog()).toBeVisible();
-    const dialog = document.querySelector(editorScreen.leaveDialogSelector)!;
-    let beganClosing = false;
-    const recordState = () => {
-      beganClosing ||= dialog.getAttribute('data-state') === 'closed';
-    };
-    const observer = new MutationObserver(recordState);
-    observer.observe(dialog, { attributes: true, attributeFilter: ['data-state'] });
-    try {
-      await editorScreen.leaveEditor().click();
+      await leave();
+      await expect.element(editorScreen.leaveDialog()).toBeVisible();
+      const dialog = document.querySelector(editorScreen.leaveDialogSelector)!;
+      let beganClosing = false;
+      const recordState = () => {
+        beganClosing ||= dialog.getAttribute('data-state') === 'closed';
+      };
+      const observer = new MutationObserver(recordState);
+      observer.observe(dialog, { attributes: true, attributeFilter: ['data-state'] });
+      try {
+        await editorScreen.leaveEditor().click();
 
-      await expect.poll(currentRoute).toBe('/posts');
-      await expect(editorScreen.root()).toHaveCount(0);
-      // The dialog must unmount with the editor, without starting its close
-      // animation and revealing the editor on the way to the destination.
-      recordState();
-      expect(beganClosing).toBe(false);
-    } finally {
-      observer.disconnect();
-    }
-    // Confirming discards the edit; nothing is written on the way out.
-    expect(saveApi.requests.length).toBe(0);
-  });
+        await expect.poll(currentRoute).toBe(destination);
+        await expect(editorScreen.root()).toHaveCount(0);
+        // The dialog must unmount with the editor, without starting its close
+        // animation and revealing the editor on the way to the destination.
+        recordState();
+        expect(beganClosing).toBe(false);
+      } finally {
+        observer.disconnect();
+      }
+      // Confirming discards the edit; nothing is written on the way out.
+      expect(saveApi.requests.length).toBe(0);
+    },
+  );
 
   it('asks before leaving when the save on the way out fails', async () => {
     const saveApi = fakeEditablePost({}, { failSaves: true });
@@ -340,15 +369,14 @@ describe('Post editor leave guard', () => {
   });
 
   it('guards a native hash anchor out of the editor', async () => {
-    // With the posts list served by Ember the back link is a raw `#/posts`
-    // anchor, which reaches the router as a POP it cannot block.
     const saveApi = fakeEditablePost({
       status: 'published',
       published_at: '2026-01-01T00:00:00.000Z',
     });
-    await openDirtyEditor(withFastAutosave(EDITOR_ONLY));
+    await openDirtyEditor(withFastAutosave(FLAG_ON));
+    const anchor = nativeHashAnchor();
 
-    await editorScreen.backLink('post').click();
+    anchor.click();
 
     await expect.element(editorScreen.leaveDialog()).toBeVisible();
     expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
@@ -361,7 +389,7 @@ describe('Post editor leave guard', () => {
     expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
 
-    await editorScreen.backLink('post').click();
+    anchor.click();
     await expect.element(editorScreen.leaveDialog()).toBeVisible();
     expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
   });
@@ -468,7 +496,7 @@ describe('Post editor leave guard', () => {
 describe('Post editor leave guard on history pops', () => {
   it('saves a dirty draft before Back leaves, holding the editor URL until the save lands', async () => {
     const { saveApi, resolveSave } = fakeDeferredSave();
-    await openByHashChange(`/editor/post/${POST_ID}`, withoutAutosave(EDITOR_ONLY));
+    await openByHashChange(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await appendToBody(' and more');
     await expect.poll(unsavedChangesGuarded).toBe(true);
@@ -532,7 +560,7 @@ describe('Post editor leave guard on history pops', () => {
 
   it('asks before Forward leaves a dirty editor', async () => {
     const saveApi = fakeEditablePost({ status: 'published', published_at: LOADED_AT });
-    await openByHashChange(`/editor/post/${POST_ID}`, withFastAutosave(EDITOR_ONLY));
+    await openByHashChange(`/editor/post/${POST_ID}`, withFastAutosave(FLAG_ON));
     await editorScreen.backLink('post').click();
     await expect(editorScreen.root()).toHaveCount(0);
     window.history.back();
@@ -552,7 +580,7 @@ describe('Post editor leave guard on history pops', () => {
 
   it('asks before a hash change made outside the router leaves the editor', async () => {
     const saveApi = fakeEditablePost({ status: 'published', published_at: LOADED_AT });
-    await openDirtyEditor(withFastAutosave(EDITOR_ONLY));
+    await openDirtyEditor(withFastAutosave(FLAG_ON));
 
     window.location.hash = '/posts';
 
@@ -566,7 +594,7 @@ describe('Post editor leave guard on history pops', () => {
 
   it('asks again after a Stay once an accepted exit kept the editor mounted', async () => {
     const saveApi = fakeEditablePost({ status: 'published', published_at: LOADED_AT });
-    await openByHashChange(`/editor/post/${POST_ID}`, withFastAutosave(EDITOR_ONLY));
+    await openByHashChange(`/editor/post/${POST_ID}`, withFastAutosave(FLAG_ON));
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await appendToBody(' and more');
     await expect.poll(unsavedChangesGuarded).toBe(true);
@@ -591,7 +619,7 @@ describe('Post editor leave guard on history pops', () => {
 
   it('stays put when the URL only drops its trailing slash', async () => {
     const saveApi = fakeEditablePost({ status: 'published', published_at: LOADED_AT });
-    await renderAdminApp(`/editor/post/${POST_ID}/`, withFastAutosave(EDITOR_ONLY));
+    await renderAdminApp(`/editor/post/${POST_ID}/`, withFastAutosave(FLAG_ON));
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await appendToBody(' and more');
     await expect.poll(unsavedChangesGuarded).toBe(true);
@@ -612,7 +640,7 @@ describe('Post editor leave guard on history pops', () => {
 
   it('holds Back at a created post URL while the writer decides', async () => {
     const { createApi, resolveCreate } = fakeNewPost({ failUpdates: true });
-    await openByHashChange('/editor/post', withoutAutosave(EDITOR_ONLY));
+    await openByHashChange('/editor/post', withoutAutosave(FLAG_ON));
     await appendToBody('First words');
     await expect.poll(() => createApi.requests.length).toBe(1);
     resolveCreate();

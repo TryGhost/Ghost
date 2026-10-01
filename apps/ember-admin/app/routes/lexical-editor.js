@@ -88,9 +88,8 @@ export default AuthenticatedRoute.extend({
         // transition never reaches updateURL. A URL intent (cold load, hash
         // change, React-driven navigation) already has the browser URL
         // pointing here, so React renders and there is nothing to do. A
-        // named intent (post list title links, Cmd-K search results, the
-        // post-success modal's revert-to-draft) has no URL yet — without
-        // writing one the click is a silent no-op.
+        // named intent (such as a Cmd-K search result) has no URL yet —
+        // without writing one the click is a silent no-op.
         if (!transition.intent?.url) {
             this._navigateToReactRoute(reactRouteUrl);
         }

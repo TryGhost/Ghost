@@ -19,22 +19,21 @@ import MyProfileRedirect from './my-profile-redirect';
 // Ember
 import { EmberFallback, ForceUpgradeGuard, syncEmberRoutePattern } from './ember-bridge';
 import HomeRedirect from './home-redirect';
-import { EmberListWithGiftLinks } from './gift-link-modal-host';
 import { EditorGate } from './editor-gate';
 import { lazyRestoreScreen } from './editor/api';
-import { PagesListGate, PostsListGate } from './posts-list-gate';
-import { MemberActivityGate } from './member-activity-gate';
 import { useFlagGatedRouteOwner } from './use-flag-gated-route-owner';
 import { type AccessRouteHandle } from './route-access';
 import { RouteAccessGuard } from './route-access-guard';
 import { lazyAutomationEditorScreen, lazyAutomationsScreen } from './automations/api';
 import { lazyCommentsScreen } from './comments/api';
 import { lazyMigrateScreen } from './migrate/api';
-import { membersRouteChildren } from './members/api';
+import { lazyMemberActivityScreen, membersRouteChildren } from './members/api';
 import { OnboardingRedirect, lazyOnboardingScreen } from './onboarding/api';
 import {
+  lazyPagesListRoute,
   lazyPostAnalyticsRoot,
   lazyPostDebugScreen,
+  lazyPostsListRoute,
   postAnalyticsRouteChildren,
 } from './posts/api';
 import { canAccessSettingsRoute, lazySettingsScreen, settingsRouteChildren } from './settings/api';
@@ -115,8 +114,8 @@ const appRoutes: RouteObject[] = [
   },
   {
     path: '/members-activity',
-    Component: MemberActivityGate,
     handle: { requiresAccess: canManageMembers } satisfies AccessRouteHandle,
+    lazy: lazyComponent(lazyMemberActivityScreen),
   },
   {
     path: '/posts/analytics/:postId/debug',
@@ -176,21 +175,20 @@ const appRoutes: RouteObject[] = [
       requiresAccess: canAccessSettingsRoute,
     } satisfies AdminRouteHandle & AccessRouteHandle,
   },
-  // Served by React or Ember depending on the `postsListReact` Labs flag.
-  { path: '/posts', Component: PostsListGate },
-  { path: '/pages', Component: PagesListGate },
+  { path: '/posts', lazy: lazyComponent(lazyPostsListRoute) },
+  { path: '/pages', lazy: lazyComponent(lazyPagesListRoute) },
   {
     // Served by React or Ember depending on the `editorReact` Labs flag.
     //
     // The editor is a focused writing surface and has always hidden the nav
     // sidebar. Ember arranges that by setting `ui.isFullScreen` when the
-    // editor route *activates* — but with `postsListReact` on, the posts
-    // route aborts its transition, so the editor route never deactivates,
+    // editor route *activates* — but the Ember posts route aborts its
+    // transition to hand off to React, so the editor route never deactivates,
     // and a second visit is a model change on an already-active route where
     // `activate()` does not run again. The sidebar came back from the second
     // post onwards. Deciding it from the route handle makes React the
     // authority, removes the cross-implementation handshake, and applies to
-    // both sides of the flag.
+    // both sides of the `editorReact` flag.
     path: '/editor/*',
     Component: EditorGate,
     handle: { ...emberFallbackHandle, hideAdminSidebar: true } satisfies AdminRouteHandle,
@@ -236,13 +234,11 @@ export const routes: RouteObject[] = [
 // React router's pushState navigation does not fire, so links into Ember-owned
 // routes must stay native hash anchors. Everything else can be a router link
 // (and so gets router history state, which the unsaved-changes blockers need).
-const EMBER_ROUTE_COMPONENTS = new Set<unknown>([EmberFallback, EmberListWithGiftLinks]);
+const EMBER_ROUTE_COMPONENTS = new Set<unknown>([EmberFallback]);
 
 /** Decides for any path whether Ember owns it, for destinations only known at event time. */
 export function useEmberOwnedRouteMatcher(): (pathname: string) => boolean {
-  const postsListOwner = useFlagGatedRouteOwner('postsListReact');
   const editorOwner = useFlagGatedRouteOwner('editorReact');
-  const memberActivityOwner = useFlagGatedRouteOwner('membersActivityReact');
   const authScreensOwner = useAuthScreensOwner();
 
   return useCallback(
@@ -251,21 +247,15 @@ export function useEmberOwnedRouteMatcher(): (pathname: string) => boolean {
       if (!leaf) {
         return true;
       }
-      if (leaf.Component === PostsListGate || leaf.Component === PagesListGate) {
-        return postsListOwner !== 'react';
-      }
       if (leaf.Component === EditorGate) {
         return editorOwner !== 'react';
-      }
-      if (leaf.Component === MemberActivityGate) {
-        return memberActivityOwner !== 'react';
       }
       if ((leaf.handle as AuthRouteHandle | undefined)?.authScreen) {
         return authScreensOwner !== 'react';
       }
       return EMBER_ROUTE_COMPONENTS.has(leaf.Component);
     },
-    [postsListOwner, editorOwner, memberActivityOwner, authScreensOwner],
+    [editorOwner, authScreensOwner],
   );
 }
 
