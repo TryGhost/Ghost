@@ -54,12 +54,6 @@ function seededPost(overrides: Partial<ReturnType<typeof post>> = {}) {
   });
 }
 
-function fakeSubmittingBatches(batches: Array<{ id: string; status: string }> = []) {
-  return fakeAdminEndpoint('GET', new RegExp(`^/emails/${EMAIL_ID}/batches/(?:\\?|$)`), {
-    batches,
-  });
-}
-
 /**
  * The world every post-analytics tab reads: the routed post, its growth
  * stats (referrers/growth/mrr feed both the overview and the growth tab),
@@ -389,7 +383,6 @@ describe('Post analytics overview', () => {
       },
     } as const;
     seedPostAnalyticsWorld(postOverrides);
-    fakeSubmittingBatches();
     let hasRetried = false;
     let hasCompleted = false;
     fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, () => {
@@ -400,6 +393,7 @@ describe('Post analytics overview', () => {
             sending: !hasRetried
               ? {
                   status: 'failed',
+                  retryable: true,
                   failed_during: 'submitting',
                   progress: { completed: 250, total: 1000, estimated_seconds_remaining: null },
                 }
@@ -452,7 +446,6 @@ describe('Post analytics overview', () => {
         error: 'Please retry sending your newsletter.',
       },
     });
-    fakeSubmittingBatches();
     // The completed batch excluded all 250 recipients; the other batch failed.
     // Progress includes exclusions and therefore cannot establish a sent count.
     fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
@@ -461,6 +454,7 @@ describe('Post analytics overview', () => {
           id: EMAIL_ID,
           sending: {
             status: 'failed',
+            retryable: true,
             failed_during: 'submitting',
             progress: { completed: 250, total: 1000, estimated_seconds_remaining: null },
           },
@@ -479,50 +473,45 @@ describe('Post analytics overview', () => {
     await expect.element(page.getByRole('button', { name: 'Retry sending email' })).toBeVisible();
   });
 
-  it('shows a generic failure without retry when a batch has an unknown delivery outcome', async () => {
-    seedPostAnalyticsWorld({
-      email: {
-        id: EMAIL_ID,
-        email_count: 250,
-        opened_count: 0,
-        status: 'failed',
-        error: 'An error occurred, and your newsletter was only partially sent.',
-      },
-    });
-    fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
-      email_statuses: [
-        {
+  it.each([false, undefined])(
+    'shows a generic failure without retry for API eligibility %s',
+    async (retryable) => {
+      seedPostAnalyticsWorld({
+        email: {
           id: EMAIL_ID,
-          sending: {
-            status: 'failed',
-            failed_during: 'submitting',
-            progress: { completed: 250, total: 1000, estimated_seconds_remaining: null },
-          },
+          email_count: 250,
+          opened_count: 0,
+          status: 'failed',
+          error: 'An error occurred, and your newsletter was only partially sent.',
         },
-      ],
-    });
-    const batchesApi = fakeSubmittingBatches([{ id: 'batch-1', status: 'submitting' }]);
-    await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { improveSendingUI: true },
-      boot: webAnalyticsBootOverrides(),
-    });
+      });
+      fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
+        email_statuses: [
+          {
+            id: EMAIL_ID,
+            sending: {
+              status: 'failed',
+              ...(retryable === undefined ? {} : { retryable }),
+              failed_during: 'submitting',
+              progress: { completed: 250, total: 1000, estimated_seconds_remaining: null },
+            },
+          },
+        ],
+      });
+      await renderAdminApp(`/posts/analytics/${POST_ID}`, {
+        labs: { improveSendingUI: true },
+        boot: webAnalyticsBootOverrides(),
+      });
 
-    await expect.element(page.getByText('Emails failed to send')).toBeVisible();
-    await expect.element(page.getByText(/only partially sent/)).toBeVisible();
-    await expect
-      .element(
-        postAnalyticsScreen.emailSendingStatusLine().getByRole('button', { name: /send|retry/i }),
-      )
-      .not.toBeInTheDocument();
-    await expect
-      .poll(() =>
-        new URL(batchesApi.lastRequest?.url ?? 'http://localhost').searchParams.get('filter'),
-      )
-      .toBe('status:submitting');
-    const batchRequestUrl = new URL(batchesApi.lastRequest!.url);
-    expect(batchRequestUrl.searchParams.get('fields')).toBe('id,status');
-    expect(batchRequestUrl.searchParams.get('limit')).toBe('1');
-  });
+      await expect.element(page.getByText('Emails failed to send')).toBeVisible();
+      await expect.element(page.getByText(/only partially sent/)).toBeVisible();
+      await expect
+        .element(
+          postAnalyticsScreen.emailSendingStatusLine().getByRole('button', { name: /send|retry/i }),
+        )
+        .not.toBeInTheDocument();
+    },
+  );
 
   it('refreshes the failure reason and does not count prepared recipients as sent', async () => {
     const postOverrides = {
@@ -546,7 +535,6 @@ describe('Post analytics overview', () => {
         ),
       ];
     });
-    fakeSubmittingBatches();
     let statusRequestCount = 0;
     fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, () => {
       statusRequestCount += 1;
@@ -561,6 +549,7 @@ describe('Post analytics overview', () => {
                 }
               : {
                   status: 'failed',
+                  retryable: true,
                   failed_during: 'preparing',
                   progress: {
                     completed: 250,
@@ -671,6 +660,7 @@ describe('Post analytics overview', () => {
           id: EMAIL_ID,
           sending: {
             status: 'failed',
+            retryable: false,
             failed_during: 'preparing',
             progress: { completed: 0, total: 1000, estimated_seconds_remaining: null },
           },
