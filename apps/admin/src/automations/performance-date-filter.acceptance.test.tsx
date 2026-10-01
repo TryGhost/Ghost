@@ -1,10 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act } from 'react';
-import { run } from './run-list.test-utils';
+import { run, setupEmbeddedRootFontSize } from './run-list.test-utils';
+
 import { QueryCache } from '@tanstack/react-query';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import type { AutomationPerformanceStats } from '@tryghost/admin-x-framework/api/automations';
+
+setupEmbeddedRootFontSize();
 
 const flags = {
   labs: { automations: true, automationRunAnalytics: true, automationsTinybirdSync: true },
@@ -56,7 +59,10 @@ const response = (start: string, counts: readonly [number, number, number]) => {
 const allTime = () => response('2023-12-01', [10, 20, 30]);
 const render = async (withRuns = false) => {
   if (!withRuns) {
-    fakeAdminEndpoint('GET', /\/automations\/dates\/runs\/\?/, { automation_runs: [] });
+    fakeAdminEndpoint('GET', /\/automations\/dates\/runs\/\?/, {
+      meta: { pagination: { limit: 50, next_cursor: null } },
+      automation_runs: [],
+    });
   }
   fakeAdminEndpoint('GET', '/automations/dates/', {
     automations: [
@@ -140,6 +146,7 @@ describe('Automation performance date filter', () => {
       const selected = params(url);
       const name = `${selected.date_from ?? 'all'} ${selected.status ?? 'any'}`;
       return {
+        meta: { pagination: { limit: 50, next_cursor: null } },
         automation_runs: [
           run({
             created_at: '2024-03-10T12:00:00.000Z',
@@ -185,9 +192,12 @@ describe('Automation performance date filter', () => {
     fakeAdminEndpoint('GET', /\/automations\/dates\/runs\/\?/, async ({ url }) => {
       if (params(url).date_from) {
         await pending;
-        return { automation_runs: [] };
+        return { meta: { pagination: { limit: 50, next_cursor: null } }, automation_runs: [] };
       }
-      return { automation_runs: [run({ created_at: '2024-03-10T12:00:00.000Z' })] };
+      return {
+        meta: { pagination: { limit: 50, next_cursor: null } },
+        automation_runs: [run({ created_at: '2024-03-10T12:00:00.000Z' })],
+      };
     });
     await render(true);
     const runs = () => page.getByRole('region', { name: 'Automation runs', exact: true });

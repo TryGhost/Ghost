@@ -11,7 +11,10 @@ import {
 setupEmbeddedRootFontSize();
 
 const read = (id: string) => {
-  fakeAdminEndpoint('GET', new RegExp(`/automations/${id}/runs/\\?`), { automation_runs: [] });
+  fakeAdminEndpoint('GET', new RegExp(`/automations/${id}/runs/\\?`), {
+    meta: { pagination: { limit: 50, next_cursor: null } },
+    automation_runs: [],
+  });
   return readAutomation(id);
 };
 const statsUrl = (id: string) =>

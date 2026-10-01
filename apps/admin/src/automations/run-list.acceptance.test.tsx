@@ -7,6 +7,7 @@ import {
   prepareStatuses,
   run,
   setupEmbeddedRootFontSize,
+  runsScroller,
 } from './run-list.test-utils';
 
 setupEmbeddedRootFontSize();
@@ -20,6 +21,7 @@ const close = () => page.getByRole('button', { name: 'Hide performance' }).click
 const runsRegion = () => page.getByRole('region', { name: 'Automation runs', exact: true });
 // Named cases make the member fallbacks and recorded statuses explicit.
 const runsResponse = () => ({
+  meta: { pagination: { limit: 50, next_cursor: null } },
   automation_runs: [
     run({ id: 'pending', status: 'in_progress' }),
     run({ id: 'repeat-entry' }),
@@ -30,7 +32,7 @@ const runsResponse = () => ({
       status: 'completed',
     }),
     run({ id: 'failed-exit', status: 'exited_early', failed: true, member: null }),
-    ...Array.from({ length: 45 }, (_, i) => run({ id: `older-${i}`, member: null })),
+    ...Array.from({ length: 5 }, (_, i) => run({ id: `older-${i}`, member: null })),
   ].map((row, index) => ({
     ...row,
     created_at: new Date(Date.UTC(2026, 8, 14 - index, 12)).toISOString(),
@@ -38,7 +40,7 @@ const runsResponse = () => ({
 });
 
 describe('Automation run list', () => {
-  it('fetches on first opening and shows fifty runs in server order with member and status fallbacks', async () => {
+  it('fetches on first opening and shows runs in server order with member and status fallbacks', async () => {
     prepareStatuses();
     const request = fakeAdminEndpoint(
       'GET',
@@ -49,7 +51,11 @@ describe('Automation run list', () => {
     await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
     expect(request.requests).toHaveLength(0);
     await open();
-    await expect(runsRegion().getByRole('row')).toHaveCount(51);
+    await expect(
+      runsRegion()
+        .getByRole('row')
+        .filter({ has: page.getByRole('cell') }),
+    ).toHaveCount(10);
     await expect(runsRegion().getByText('Noah Bennett', { exact: true })).toHaveCount(2);
     await expect(runsRegion().getByText('noah@example.com', { exact: true })).toHaveCount(2);
     await expect.element(runsRegion().getByText('Deleted member').first()).toBeVisible();
@@ -68,11 +74,11 @@ describe('Automation run list', () => {
       .element(runsRegion().getByRole('img', { name: 'Exited early — Failed', exact: true }))
       .toHaveAttribute('title', 'Exited early — Failed');
     await expect(runsRegion().getByRole('link')).toHaveCount(0);
-    await expect(runsRegion().getByRole('button')).toHaveCount(0);
+    await expect(runsRegion().getByRole('button')).toHaveCount(1);
     expect(request.requests).toHaveLength(1);
   });
 
-  it('uses a compact loading state and keeps the request running through closing', async () => {
+  it('shows a scrollable skeleton list and keeps the request running through closing', async () => {
     prepareStatuses();
     let finish!: () => void;
     const pending = new Promise<void>((resolve) => {
@@ -83,23 +89,31 @@ describe('Automation run list', () => {
       /\/automations\/first\/runs\/\?timezone=[^&]+$/,
       async () => {
         await pending;
-        return { automation_runs: [] };
+        return { meta: { pagination: { limit: 50, next_cursor: null } }, automation_runs: [] };
       },
     );
     await renderAdminApp('/automations/first', flags);
+    await open();
     try {
-      await open();
       await expect
         .element(runsRegion().getByRole('status'))
         .toHaveTextContent('Loading automation runs');
       await expect.element(runsRegion()).not.toHaveTextContent('No entries yet');
-      expect(runsRegion().element().getBoundingClientRect().height).toBeLessThan(150);
+      await expect.element(runsRegion().getByRole('status')).toHaveClass('sr-only');
+      expect(
+        runsRegion().element().querySelectorAll('tbody tr[aria-hidden="true"][data-index]'),
+      ).toHaveLength(10);
+      const scroller = runsScroller();
+      expect(scroller.scrollHeight).toBeGreaterThan(scroller.clientHeight);
       await close();
     } finally {
       finish();
     }
     await open();
     await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet');
+    expect(
+      runsRegion().element().querySelectorAll('tbody tr[aria-hidden="true"][data-index]'),
+    ).toHaveLength(0);
     expect(request.requests).toHaveLength(1);
   });
 
@@ -160,7 +174,10 @@ describe('Automation run list', () => {
   it('shows only the error when an empty result fails to refresh, then restores the empty state on retry', async () => {
     prepareStatuses();
     const endpoint = /\/automations\/first\/runs\/\?timezone=[^&]+$/;
-    fakeAdminEndpoint('GET', endpoint, { automation_runs: [] });
+    fakeAdminEndpoint('GET', endpoint, {
+      meta: { pagination: { limit: 50, next_cursor: null } },
+      automation_runs: [],
+    });
     const { queryClient } = await renderAdminApp('/automations/first', flags);
     await open();
     await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet');
@@ -174,7 +191,10 @@ describe('Automation run list', () => {
     expect(refresh.requests).toHaveLength(1);
     await expect.element(runsRegion()).not.toHaveTextContent('No entries yet');
 
-    fakeAdminEndpoint('GET', endpoint, { automation_runs: [] });
+    fakeAdminEndpoint('GET', endpoint, {
+      meta: { pagination: { limit: 50, next_cursor: null } },
+      automation_runs: [],
+    });
     await runsRegion().getByRole('button', { name: 'Retry' }).click();
     await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet');
     await expect.element(runsRegion().getByRole('alert')).not.toBeInTheDocument();
@@ -202,7 +222,11 @@ describe('Automation run list', () => {
       fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?timezone=[^&]+$/, body);
       await renderAdminApp('/automations/first', flags);
       await open();
-      await expect(runsRegion().getByRole('row')).toHaveCount(51);
+      await expect(
+        runsRegion()
+          .getByRole('row')
+          .filter({ has: page.getByRole('cell') }),
+      ).toHaveCount(10);
       await expect
         .element(runsRegion().getByRole('img', { name: 'Completed' }).first())
         .toBeVisible();

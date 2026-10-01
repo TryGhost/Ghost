@@ -22,6 +22,7 @@ const filteredRunsResponse = (
   status: 'in_progress' | 'completed' | 'exited_early',
   name: string,
 ) => ({
+  meta: { pagination: { limit: 50, next_cursor: null } },
   automation_runs: [
     {
       ...run(),
@@ -46,6 +47,7 @@ describe('Automation run status filtering', () => {
       return stats;
     });
     const all = fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?timezone=[^&]+$/, {
+      meta: { pagination: { limit: 50, next_cursor: null } },
       automation_runs: [run()],
     });
     const filteredRequests = (['in_progress', 'completed', 'exited_early'] as const).map((status) =>
@@ -89,6 +91,7 @@ describe('Automation run status filtering', () => {
   it('retains rows and summary while a status filter loads without growing the list', async () => {
     const summary = prepareStatuses();
     fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?timezone=[^&]+$/, {
+      meta: { pagination: { limit: 50, next_cursor: null } },
       automation_runs: [run()],
     });
     let finish!: () => void;
@@ -132,6 +135,7 @@ describe('Automation run status filtering', () => {
   it('supports Tab, Space and Enter on status cards', async () => {
     prepareStatuses();
     fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?timezone=[^&]+$/, {
+      meta: { pagination: { limit: 50, next_cursor: null } },
       automation_runs: [],
     });
     fakeAdminEndpoint(
@@ -155,6 +159,7 @@ describe('Automation run status filtering', () => {
   it('allows zero-count cards to show no matches and clear the filter', async () => {
     prepareStatuses();
     fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?timezone=[^&]+$/, {
+      meta: { pagination: { limit: 50, next_cursor: null } },
       automation_runs: [],
     });
     fakeAdminEndpoint(
@@ -163,6 +168,7 @@ describe('Automation run status filtering', () => {
       response('first', { inProgress: 118, completed: 0, exitedEarly: 54 }),
     );
     fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?timezone=[^&]+&status=completed$/, {
+      meta: { pagination: { limit: 50, next_cursor: null } },
       automation_runs: [],
     });
     await renderAdminApp('/automations/first', flags);
@@ -178,6 +184,7 @@ describe('Automation run status filtering', () => {
   it('refetches a failed filter on reselection and supports explicit retry while idle', async () => {
     prepareStatuses();
     fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?timezone=[^&]+$/, {
+      meta: { pagination: { limit: 50, next_cursor: null } },
       automation_runs: [],
     });
     const request = fakeAdminEndpoint(

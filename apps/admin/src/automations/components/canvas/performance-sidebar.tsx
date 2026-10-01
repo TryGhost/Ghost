@@ -7,6 +7,7 @@ import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { TotalEntries } from './total-entries';
 import { StatusCounts } from './status-counts';
+import type { RunSortDirection } from '@/automations/types';
 import { RunList } from './run-list';
 import { PerformanceDateFilter } from './performance-date-filter';
 import {
@@ -19,9 +20,20 @@ const PerformanceContent: React.FC<{
   dateRange: PerformanceDateRange;
   queryScope: string;
   runQueryScope: string;
+  direction: RunSortDirection;
+  onDirectionChange: (direction: RunSortDirection) => void;
   selectedStatus: AutomationRunStatusFilter | null;
   onStatusChange: (status: AutomationRunStatusFilter) => void;
-}> = ({ automationId, dateRange, queryScope, runQueryScope, selectedStatus, onStatusChange }) => {
+}> = ({
+  automationId,
+  dateRange,
+  queryScope,
+  runQueryScope,
+  selectedStatus,
+  onStatusChange,
+  direction,
+  onDirectionChange,
+}) => {
   const { chart, counts, isLoading, isError, retry } = useAutomationPerformanceStats(
     automationId,
     dateRange,
@@ -60,8 +72,10 @@ const PerformanceContent: React.FC<{
         key={`${automationId}:${JSON.stringify(dateRange.searchParams)}`}
         automationId={automationId}
         dateRange={dateRange}
+        direction={direction}
         queryScope={runQueryScope}
         status={selectedStatus}
+        onDirectionChange={onDirectionChange}
       />
     </>
   );
@@ -71,6 +85,7 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
   const [isOpen, setIsOpen] = useState(false);
   const [hasOpened, setHasOpened] = useState(false);
   const [status, setStatus] = useState<AutomationRunStatusFilter | null>(null);
+  const [direction, setDirection] = useState<RunSortDirection>('desc');
   const [queryRevision, setQueryRevision] = useState(0);
   const [dateRange, setDateRange] = useState(() => createPerformanceDateRange('all'));
   const rangeLabel = PERFORMANCE_RANGES.find((range) => range.value === dateRange.value)!.label;
@@ -129,7 +144,7 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
             />
           </Inline>
           {hasOpened && (
-            <Stack className="mt-4 flex-1" gap="md">
+            <Stack className="mt-4 min-h-0 flex-1" gap="md">
               {dateRange.value !== 'all' && (
                 <Button
                   aria-label="Clear date filter"
@@ -145,9 +160,14 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
               <PerformanceContent
                 automationId={automationId}
                 dateRange={dateRange}
+                direction={direction}
                 queryScope={panelId}
                 runQueryScope={runQueryScope}
                 selectedStatus={status}
+                onDirectionChange={(next) => {
+                  setDirection(next);
+                  setQueryRevision((revision) => revision + 1);
+                }}
                 onStatusChange={(selected) => {
                   setStatus(status === selected ? null : selected);
                   setQueryRevision((revision) => revision + 1);

@@ -1,4 +1,5 @@
 import { afterAll, beforeAll } from 'vitest';
+import { page } from 'vitest/browser';
 import { fakeAdminEndpoint } from '@test-utils/acceptance';
 import type {
   AutomationDetail,
@@ -65,7 +66,25 @@ export const prepareStatuses = (id = 'first') => {
   return fakeAdminEndpoint(
     'GET',
     new RegExp(`/automations/${id}/performance-stats/\\?`),
-    response(id),
+    ({ url }) => {
+      const body = response(id);
+      const stats = body.automation_performance_stats[0];
+      const params = new URL(url).searchParams;
+      const start = params.get('date_from');
+      const end = params.get('date_to');
+      if (start && end) {
+        // Requests use inclusive calendar dates; response windows end exclusively.
+        const dayMs = 86400000;
+        const days = (Date.parse(end) - Date.parse(start)) / dayMs + 1;
+        stats.entry_window.date_from = start;
+        stats.entry_window.date_to = new Date(Date.parse(end) + dayMs).toISOString().slice(0, 10);
+        stats.entries = Array.from({ length: days }, (_, day) => ({
+          date: new Date(Date.parse(start) + day * dayMs).toISOString().slice(0, 10),
+          count: day === days - 1 ? stats.total_run_count : 0,
+        }));
+      }
+      return body;
+    },
   );
 };
 
@@ -77,3 +96,11 @@ export const run = (overrides: Partial<AutomationRun> = {}): AutomationRun => ({
   member: { id: 'member', name: 'Noah Bennett', email: 'noah@example.com' },
   ...overrides,
 });
+
+export const runsScroller = () => page.getByTestId('automation-runs-scroll').element();
+
+export const scrollRunsToEnd = () => {
+  const scroller = runsScroller();
+  scroller.scrollTop = scroller.scrollHeight;
+  scroller.dispatchEvent(new Event('scroll'));
+};

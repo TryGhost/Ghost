@@ -1,6 +1,13 @@
+import type { InfiniteData } from '@tanstack/react-query';
 import ObjectId from 'bson-objectid';
 import { z } from 'zod';
-import { Meta, createMutation, createQuery, createQueryWithId } from '../utils/api/hooks';
+import {
+  Meta,
+  createInfiniteQuery,
+  createMutation,
+  createQuery,
+  createQueryWithId,
+} from '../utils/api/hooks';
 import type { ReadonlyDeep } from 'type-fest';
 
 export type AutomationStatus = 'active' | 'inactive';
@@ -198,25 +205,50 @@ export const AutomationRunsResponseSchema = z.object({
       (runs) => new Set(runs.map((run) => run.id)).size === runs.length,
       'Run IDs must be unique',
     ),
+  meta: z.object({
+    pagination: z.object({
+      limit: z.number().int().positive(),
+      next_cursor: z.string().min(1).nullable(),
+    }),
+  }),
 });
 
 export type AutomationRun = z.infer<typeof AutomationRunSchema>;
 export type AutomationRunStatusFilter = AutomationRun['status'];
+export type AutomationRunsResponseType = z.infer<typeof AutomationRunsResponseSchema>;
 
 export const useBrowseAutomationRuns = (
   id: string,
   queryScope: string,
   options: Parameters<
-    ReturnType<typeof createQueryWithId<z.infer<typeof AutomationRunsResponseSchema>>>
-  >[1],
+    ReturnType<typeof createInfiniteQuery<AutomationRun[], AutomationRunsResponseType>>
+  >[0],
 ) => {
-  // Keep results from different sidebar visits and filter selections in separate cache entries.
-  const useQuery = createQueryWithId<z.infer<typeof AutomationRunsResponseSchema>>({
+  // A new list interaction fetches fresh data even if an earlier request is still pending.
+  const useQuery = createInfiniteQuery<AutomationRun[], AutomationRunsResponseType>({
     dataType: `AutomationRunsResponseType:${queryScope}`,
-    path: (automationId) => `/automations/${automationId}/runs/`,
+    path: `/automations/${id}/runs/`,
     parseResponse: (data) => AutomationRunsResponseSchema.parse(data),
+    returnData: (originalData) => {
+      const { pages } = originalData as InfiniteData<AutomationRunsResponseType>;
+      // Pages are live reads, not a snapshot; show a run once if a later page repeats it.
+      const seen = new Set<string>();
+      return pages
+        .flatMap((page) => page.automation_runs)
+        .filter((run) => {
+          if (seen.has(run.id)) {
+            return false;
+          }
+          seen.add(run.id);
+          return true;
+        });
+    },
+    defaultNextPageParams: (page, params) => {
+      const cursor = page.meta.pagination.next_cursor;
+      return cursor ? { ...params, cursor } : undefined;
+    },
   });
-  return useQuery(id, options);
+  return useQuery(options);
 };
 
 const useBrowseAutomationActionLinksQuery = createQueryWithId<AutomationActionLinksResponseType>({
