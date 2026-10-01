@@ -380,6 +380,8 @@ minimumReleaseAgeExclude:
   - '@img/sharp-libvips-linux-x64@1.3.4'
   - '@img/sharp-libvips-linuxmusl-arm64@1.3.4'
   - '@img/sharp-libvips-linuxmusl-x64@1.3.4'
+  # Renovate security update: markdown-it@14.3.1
+  - markdown-it@14.3.1
 
 # configuration for pnpm's changeset functionality
 versioning:
