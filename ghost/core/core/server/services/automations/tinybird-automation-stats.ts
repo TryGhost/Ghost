@@ -174,7 +174,7 @@ export const automationRunRowSchema = z
 export type AutomationRunRow = z.infer<typeof automationRunRowSchema>;
 
 export function isValidRunPage(
-  rows: AutomationRunRow[],
+  rows: (AutomationRunPosition & { status: string })[],
   options: {
     status?: string;
     direction: AutomationRunSortDirection;
