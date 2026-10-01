@@ -365,7 +365,7 @@ describe('useUnsavedChangesGuard with guardHistoryPops', () => {
     try {
       renderGuarded({ when: true, guardHistoryPops: true });
       // A held pop whose hash change never follows, as when the URL is back on it first.
-      window.history.replaceState(null, '', '#/elsewhere');
+      window.history.pushState(null, '', '#/elsewhere');
       act(() => {
         window.dispatchEvent(new PopStateEvent('popstate'));
       });
