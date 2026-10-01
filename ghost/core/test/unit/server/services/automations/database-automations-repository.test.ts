@@ -75,7 +75,7 @@ const createDatabase = async (): Promise<Knex> => {
     table.text('created_at').notNullable();
     table.text('updated_at').notNullable();
     table.text('slug').unique();
-    table.text('name').notNullable();
+    table.text('name').notNullable().unique();
     table.text('description').notNullable();
     table.text('status').notNullable();
     table.text('trigger_tier_scope');
