@@ -1,5 +1,4 @@
 import type { Knex } from 'knex';
-import type { OptionsOfTextResponseBody, Response } from 'got';
 import type { ReadonlyDeep } from 'type-fest';
 import errors from '@tryghost/errors';
 import { fromDatabaseDate, toDatabaseDate, type DatabaseDate } from '../../lib/db-types/date';
@@ -15,10 +14,7 @@ export type TinybirdSyncOptions = {
   trafficAnalyticsAuth: string;
   siteUuid: string;
   now: () => Date;
-  request: (
-    url: URL,
-    options: OptionsOfTextResponseBody,
-  ) => Promise<Pick<Response<string>, 'statusCode' | 'body'>>;
+  fetch: typeof globalThis.fetch;
   createId: () => string;
   batchSize: number;
   maxPayloadBytes: number;
@@ -107,28 +103,23 @@ function* chunkByPayloadLimits(
 async function postEvents(
   lines: string[],
   { table }: TinybirdSyncTarget,
-  { endpoint, trafficAnalyticsAuth, siteUuid, request, requestTimeoutMs }: TinybirdSyncOptions,
+  { endpoint, trafficAnalyticsAuth, siteUuid, fetch, requestTimeoutMs }: TinybirdSyncOptions,
 ): Promise<void> {
-  const response = await request(endpoint, {
+  const response = await fetch(endpoint, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${trafficAnalyticsAuth}`,
       'Content-Type': 'application/x-ndjson',
+      'User-Agent': 'Ghost(https://github.com/TryGhost/Ghost)',
       'x-site-uuid': siteUuid,
     },
     body: lines.join('\n'),
-    timeout: { request: requestTimeoutMs },
     signal: AbortSignal.timeout(requestTimeoutMs),
-    retry: { limit: 0 },
-    // Preserve fetch's redirect behavior for POST requests.
-    methodRewriting: true,
-    maxRedirects: 20,
-    throwHttpErrors: false,
   });
 
-  if (response.statusCode < 200 || response.statusCode >= 300) {
+  if (!response.ok) {
     throw new errors.InternalServerError({
-      message: `Traffic Analytics returned ${response.statusCode} while syncing ${table}: ${response.body}`,
+      message: `Traffic Analytics returned ${response.status} while syncing ${table}: ${await response.text()}`,
     });
   }
 }

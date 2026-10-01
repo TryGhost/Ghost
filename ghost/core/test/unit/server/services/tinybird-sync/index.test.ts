@@ -3,7 +3,6 @@ import createKnex, { type Knex } from 'knex';
 import { afterEach, beforeEach, describe, it, vi } from 'vitest';
 import { createTinybirdSyncService } from '../../../../../core/server/services/tinybird-sync/tinybird-sync-service';
 import TinybirdSyncJob from '../../../../../core/server/services/tinybird-sync/jobs/tinybird-sync-job';
-import type { TinybirdSyncOptions } from '../../../../../core/server/services/tinybird-sync/sync-table-to-tinybird';
 import { toDatabaseDate } from '../../../../../core/server/lib/db-types/date';
 
 describe('createTinybirdSyncService', () => {
@@ -23,9 +22,7 @@ describe('createTinybirdSyncService', () => {
       logging: { info: vi.fn(), error: vi.fn() },
       random: () => 0.5,
       now: () => new Date('2026-03-01T12:00:00.000Z'),
-      request: vi
-        .fn<TinybirdSyncOptions['request']>()
-        .mockResolvedValue({ statusCode: 202, body: '' }),
+      fetch: globalThis.fetch,
       createId: () => 'watermark-id',
       ...overrides,
     };
@@ -142,17 +139,17 @@ describe('createTinybirdSyncService', () => {
 
   it('does not schedule without complete analytics config', async () => {
     const jobsService = { scheduleRecurring: vi.fn(async () => {}) };
-    const request = vi.fn();
+    const fetch = vi.fn();
     const { dependencies, service } = createService({
       config: { get: () => undefined },
-      request,
+      fetch,
     });
 
     await service.scheduleJob(jobsService);
     await service.sync();
 
     assert.equal(jobsService.scheduleRecurring.mock.calls.length, 0);
-    assert.equal(request.mock.calls.length, 0);
+    assert.equal(fetch.mock.calls.length, 0);
     assert.deepEqual(dependencies.logging.info.mock.calls, [
       ['[Tinybird sync] Not started: Traffic Analytics service is not configured'],
     ]);
@@ -167,15 +164,12 @@ describe('createTinybirdSyncService', () => {
       created_at: '2026-03-01 11:50:00',
       updated_at: '2026-03-01 11:50:00',
     });
-    const request = vi
-      .fn<TinybirdSyncOptions['request']>()
-      .mockResolvedValue({ statusCode: 202, body: '' });
-    const { service } = createService({ knex: database, request });
+    const fetch = vi.fn().mockResolvedValue({ ok: true });
+    const { service } = createService({ knex: database, fetch });
 
     await service.sync();
 
     assert.ok(timeout.mock.calls.some(([duration]) => duration === 5 * 60 * 1000));
-    assert.equal(request.mock.calls[0]?.[1].timeout?.request, 5 * 60 * 1000);
   });
 
   it('logs completed runs even when no rows are sent', async () => {
@@ -209,16 +203,16 @@ describe('createTinybirdSyncService', () => {
 
   it('skips sync when labs flag is disabled', async () => {
     const database = await createEmptyDatabase();
-    const request = vi.fn();
+    const fetch = vi.fn();
     const { dependencies, service } = createService({
       knex: database,
-      request,
+      fetch,
       labs: { isSet: vi.fn(() => false) },
     });
 
     await service.sync();
 
-    assert.equal(request.mock.calls.length, 0);
+    assert.equal(fetch.mock.calls.length, 0);
     assert.equal(dependencies.logging.info.mock.calls.length, 0);
   });
 
@@ -236,11 +230,11 @@ describe('createTinybirdSyncService', () => {
       500,
     );
     const requests: number[] = [];
-    const request: TinybirdSyncOptions['request'] = async (_input, init) => {
+    const fetch: typeof globalThis.fetch = async (_input, init) => {
       requests.push(String(init?.body).split('\n').length);
-      return { statusCode: 202, body: '' };
+      return new Response(null, { status: 202 });
     };
-    const { service } = createService({ knex: database, request });
+    const { service } = createService({ knex: database, fetch });
 
     await service.sync();
 

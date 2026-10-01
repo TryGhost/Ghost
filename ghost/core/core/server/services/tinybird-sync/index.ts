@@ -5,8 +5,6 @@ import config from '../../../shared/config';
 import labs from '../../../shared/labs';
 // @ts-expect-error This module lacks type definitions.
 import settingsCache from '../../../shared/settings-cache';
-// @ts-expect-error This module lacks type definitions.
-import request from '../../lib/request-external';
 import { knex } from '../../data/db';
 import { createTinybirdSyncService } from './tinybird-sync-service';
 
@@ -18,7 +16,7 @@ const service = createTinybirdSyncService({
   logging,
   random: Math.random,
   now: () => new Date(),
-  request,
+  fetch: globalThis.fetch,
   createId: () => ObjectId().toHexString(),
 });
 
