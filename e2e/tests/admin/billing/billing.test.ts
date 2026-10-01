@@ -3,8 +3,9 @@ import { expect, test } from '@/helpers/playwright';
 
 const MOCK_BILLING_URL = 'https://billing.mock.test';
 
-// Reports ready on the overview, then moves to the plans page the way the
-// billing app's own navigation does.
+// Reports ready on the overview. Both shells load it hidden at boot and only
+// follow its routes while billing shows, so it moves to the plans page the way
+// its own navigation would once Admin opens it on the overview.
 const BMA_HTML = `
 <!DOCTYPE html>
 <html>
@@ -12,8 +13,12 @@ const BMA_HTML = `
 <body>
 <h1>Billing overview</h1>
 <script>
+    window.addEventListener('message', (event) => {
+        if (event.data?.query === 'routeUpdate' && event.data.response === '/') {
+            window.parent.postMessage({ route: '/plans' }, '*');
+        }
+    });
     window.parent.postMessage({ request: 'billingAppReady', route: '/' }, '*');
-    window.parent.postMessage({ route: '/plans' }, '*');
 </script>
 </body>
 </html>
