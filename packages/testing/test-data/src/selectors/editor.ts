@@ -75,6 +75,7 @@ export const settingsDeleteError = 'settings-delete-error';
 export const settingsSubviewPane = 'settings-subview-pane';
 export const settingsMetaTitleInput = 'settings-meta-title-input';
 export const settingsMetaDescriptionInput = 'settings-meta-description-input';
+export const settingsCanonicalUrlInput = 'settings-canonical-url-input';
 export const settingsSerpPreview = 'settings-serp-preview';
 export const settingsXImage = 'settings-x-image';
 export const settingsXTitleInput = 'settings-x-title-input';
