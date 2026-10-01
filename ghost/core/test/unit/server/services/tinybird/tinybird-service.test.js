@@ -69,6 +69,11 @@ describe('TinybirdService', function () {
       assert.ok(
         decoded.scopes.some((scope) => scope.resource === 'api_automation_performance_stats'),
       );
+      for (const resource of ['api_automation_run_search', 'api_automation_search_counts']) {
+        const scope = decoded.scopes.find((item) => item.resource === resource);
+        assert.ok(scope);
+        assert.equal(scope.fixed_params.site_uuid, siteUuid);
+      }
       assert.ok(decoded.scopes.some((scope) => scope.resource === 'api_automation_runs'));
       decoded.scopes.forEach((scope) => {
         assert.ok(scope.type === 'PIPES:READ');

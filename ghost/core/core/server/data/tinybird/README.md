@@ -129,3 +129,29 @@ uses local midnight boundaries and fills through the current hour for today.
 Longer ranges use daily dates. Missing-parameter behavior is
 provided by Tinybird's required parameters; do not snapshot its error prose,
 which differs between CLI/runtime environments.
+
+### Automation member search
+
+`api_automation_run_search` accepts optional comma-separated `run_ids` for a
+complete match set of at most 2,000 IDs, or returns up to 5,000 candidates for
+bounded scanning. It preserves the normal run list's ordering, status/date
+filters, and cursor behavior. Classification precedes the limit; runs without
+steps are excluded, and unknown statuses are returned as invalid alongside the
+requested status. Invalid candidates follow normal cursor ordering; Core rejects
+them only if their current member matches the search.
+
+These are per-call work limits, not total-result caps. Core returns continuation
+cursors until the traversal finishes, including for empty scanning pages.
+
+`api_automation_search_counts` aggregates at most 30,000 matching IDs per call.
+`first_id` and `last_id` bound the step scan; only `run_ids` contribute to totals.
+It returns the three status counts, an invalid count that Core requires to be
+zero, and sparse entry buckets. `hourly=true` returns UTC hour timestamps;
+otherwise buckets are local calendar dates in `timezone`. Local date bounds use
+an inclusive start and exclusive end, as in the performance pipe.
+
+Both pipes use the existing site-scoped token, `FINAL` for latest versions, and
+a two-second execution limit. Core sends run IDs as POST form fields, with a
+three-second request deadline. Member names, emails, and search text never enter
+Tinybird. The fixture tests reuse the existing automation datasets; no new
+production datasource or migration is required.

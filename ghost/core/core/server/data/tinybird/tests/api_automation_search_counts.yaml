@@ -1,0 +1,54 @@
+- name: complete_set_latest_versions_and_invalid_statuses
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&run_ids=status-run-1%2Cstatus-run-2%2Cstatus-run-3%2Cstatus-run-4%2Cstatus-run-5%2Cstatus-run-6%2Cstatus-run-7%2Cstatus-run-8%2Cstatus-run-9%2Cstatus-run-10&first_id=status-run-1&last_id=status-run-9
+  expected_result: |
+    {"in_progress_run_count":1,"completed_run_count":2,"exited_early_run_count":4,"invalid_run_count":2,"entries":[["2020-01-01",7]]}
+
+- name: matching_subset_excludes_other_runs_in_step_range
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&run_ids=status-run-1%2Cstatus-run-3%2Cstatus-run-5&first_id=status-run-1&last_id=status-run-9
+  expected_result: |
+    {"in_progress_run_count":1,"completed_run_count":1,"exited_early_run_count":1,"invalid_run_count":0,"entries":[["2020-01-01",3]]}
+
+- name: other_site
+  parameters: site_uuid=15840000-0000-4000-8000-000000000001&automation_id=status-automation&run_ids=status-run-3&first_id=status-run-3&last_id=status-run-3
+  expected_result: |
+    {"in_progress_run_count":1,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0,"entries":[["2020-01-01",1]]}
+
+- name: other_automation
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=other-automation&run_ids=status-run-1%2Cstatus-run-11&first_id=status-run-1&last_id=status-run-9
+  expected_result: |
+    {"in_progress_run_count":1,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0,"entries":[["2020-01-01",1]]}
+
+- name: empty_selected_set
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&run_ids=&first_id=&last_id=
+  expected_result: |
+    {"in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0,"entries":[]}
+
+- name: missing_steps_are_excluded
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&run_ids=status-run-9&first_id=status-run-9&last_id=status-run-9
+  expected_result: |
+    {"in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0,"entries":[]}
+
+- name: timezone_groups_calendar_dates
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&run_ids=status-run-3&first_id=status-run-3&last_id=status-run-3&timezone=America%2FNew_York
+  expected_result: |
+    {"in_progress_run_count":0,"completed_run_count":1,"exited_early_run_count":0,"invalid_run_count":0,"entries":[["2019-12-31",1]]}
+
+- name: hourly_entries_use_utc_timestamps
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&run_ids=status-run-3&first_id=status-run-3&last_id=status-run-3&timezone=America%2FNew_York&hourly=true
+  expected_result: |
+    {"in_progress_run_count":0,"completed_run_count":1,"exited_early_run_count":0,"invalid_run_count":0,"entries":[["2020-01-01T00:00:00Z",1]]}
+
+- name: date_to_is_exclusive_local_midnight
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&run_ids=status-run-3&first_id=status-run-3&last_id=status-run-3&date_from=2019-12-31&date_to=2020-01-01
+  expected_result: |
+    {"in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0,"entries":[]}
+
+- name: spring_day_has_twenty_three_hours
+  parameters: site_uuid=15890000-0000-4000-8000-000000000000&automation_id=date-boundaries&run_ids=date-spring-1%2Cdate-spring-2&first_id=date-spring-1&last_id=date-spring-2&date_from=2024-03-10&date_to=2024-03-11&timezone=America%2FNew_York&hourly=true
+  expected_result: |
+    {"in_progress_run_count":1,"completed_run_count":1,"exited_early_run_count":0,"invalid_run_count":0,"entries":[["2024-03-10T05:00:00Z",1],["2024-03-11T03:00:00Z",1]]}
+
+- name: fall_day_has_twenty_five_hours
+  parameters: site_uuid=15890000-0000-4000-8000-000000000000&automation_id=date-boundaries&run_ids=date-fall-1%2Cdate-fall-2&first_id=date-fall-1&last_id=date-fall-2&date_from=2024-11-03&date_to=2024-11-04&timezone=America%2FNew_York&hourly=true
+  expected_result: |
+    {"in_progress_run_count":1,"completed_run_count":1,"exited_early_run_count":0,"invalid_run_count":0,"entries":[["2024-11-03T04:00:00Z",1],["2024-11-04T04:00:00Z",1]]}
