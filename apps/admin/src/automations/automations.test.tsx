@@ -148,6 +148,33 @@ describe('Automations', () => {
   });
 
   it.each([
+    { role: 'Owner', disabled: false },
+    { role: 'Administrator', disabled: false },
+    { role: 'Super Editor', disabled: true },
+    { role: 'Editor', disabled: true },
+    { role: 'Author', disabled: true },
+    { role: 'Contributor', disabled: true },
+    { role: undefined, disabled: true },
+  ])('sets "New automation" disabled=$disabled for role=$role', ({ role, disabled }) => {
+    mockUseBrowseConfig.mockReturnValue({
+      data: { config: { labs: { automationsPerTier: true } } },
+      isLoading: false,
+    });
+    mockUseCurrentUser.mockReturnValue({
+      data: role ? { id: 'user-1', roles: [{ name: role }] } : undefined,
+    });
+
+    renderPage();
+
+    const button = screen.getByRole('button', { name: 'New automation' });
+    if (disabled) {
+      expect(button).toBeDisabled();
+    } else {
+      expect(button).toBeEnabled();
+    }
+  });
+
+  it.each([
     { count: undefined, disabled: true },
     { count: 0, disabled: false },
     { count: 19, disabled: false },

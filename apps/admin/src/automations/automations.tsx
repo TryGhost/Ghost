@@ -5,6 +5,8 @@ import { Badge } from '@tryghost/shade/components';
 import { Box, Container } from '@tryghost/shade/primitives';
 import { ListPage } from '@tryghost/shade/page-templates';
 import { PageHeader } from '@tryghost/shade/patterns';
+import { canManageAutomations } from '@tryghost/admin-x-framework/api/users';
+import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useVisibleAutomations } from './hooks/use-visible-automations';
 
@@ -13,8 +15,12 @@ const MAX_AUTOMATIONS = 20;
 const Automations: React.FC = () => {
   const { automations, automationCount, error, isError, isLoading } = useVisibleAutomations();
   const automationsPerTierEnabled = useFeatureFlag('automationsPerTier');
+  const { data: currentUser } = useCurrentUser();
   const canCreateNewAutomations =
-    automationCount !== undefined && automationCount < MAX_AUTOMATIONS;
+    !!currentUser &&
+    canManageAutomations(currentUser) &&
+    automationCount !== undefined &&
+    automationCount < MAX_AUTOMATIONS;
 
   if (isError) {
     throw error instanceof Error ? error : new Error('Failed to load automations');
