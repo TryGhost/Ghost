@@ -1,20 +1,33 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const { randomUUID } = require('node:crypto');
-const { setImmediate: flushEventLoop } = require('node:timers/promises');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import { randomUUID } from 'node:crypto';
+import { setImmediate as flushEventLoop } from 'node:timers/promises';
 
-const {
-  StartAutomationsPollEvent,
-} = require('../../../../../core/server/services/automations/events/start-automations-poll-event');
-const { AutomationsService } = require('../../../../../core/server/services/automations/service');
+import { AutoFillingMap } from '../../../../../core/server/lib/auto-filling-map';
+import type {
+  InternalApiKey,
+  InternalIntegrationSlug,
+} from '../../../../../core/server/services/internal-keys';
+import { StartAutomationsPollEvent } from '../../../../../core/server/services/automations/events/start-automations-poll-event';
+import { AutomationsService } from '../../../../../core/server/services/automations/service';
+
+type InitOptions = Parameters<AutomationsService['init']>[0];
+type DomainEvents = InitOptions['domainEvents'];
+type SchedulerAdapter = InitOptions['schedulerAdapter'];
+type SchedulerAdapterStub = sinon.SinonStubbedInstance<SchedulerAdapter>;
 
 describe('automations service', function () {
-  let automations;
-  let domainEvents;
-  let schedulerAdapter;
-  let initOptions;
+  let automations: AutomationsService;
+  let domainEvents: DomainEvents;
+  let schedulerAdapter: SchedulerAdapterStub;
+  let initOptions: InitOptions;
 
   beforeEach(function () {
+    const internalKeys = new AutoFillingMap<InternalIntegrationSlug, Promise<InternalApiKey>>(
+      (slug) => Promise.reject(new Error(`Test internalKeys not seeded for slug ${slug}`)),
+    );
+    internalKeys.set('ghost-scheduler', Promise.resolve({ id: 'k1', secret: 'aaaa' }));
+
     automations = new AutomationsService();
     domainEvents = {
       dispatch: sinon.stub(),
@@ -29,7 +42,7 @@ describe('automations service', function () {
       apiUrl: 'https://fake.example.com/ghost/api/admin',
       schedulerAdapter,
       siteUuid: randomUUID(),
-      internalKeys: new Map([['ghost-scheduler', Promise.resolve({ id: 'k1', secret: 'aaaa' })]]),
+      internalKeys,
     };
   });
 
