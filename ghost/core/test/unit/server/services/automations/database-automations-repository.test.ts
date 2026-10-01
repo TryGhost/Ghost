@@ -1584,6 +1584,17 @@ describe('automations repository', function () {
       });
     };
 
+    it('allows keeping the current automation name', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const edited = await repo.edit(automation.id, {
+        ...automation,
+        description: 'Updated description',
+      });
+      assert(edited);
+      assert.equal(edited.name, automation.name);
+      assert.equal(edited.description, 'Updated description');
+    });
+
     it('persists optional metadata and preserves omitted fields', async function () {
       const automation = await getAutomationBySlug('member-welcome-email-free');
       const graph = {

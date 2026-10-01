@@ -55,6 +55,7 @@ const TRIGGER_TIER_SCOPE_BY_MEMBER_STATUS = {
 } as const satisfies Record<'free' | 'paid', AutomationTriggerTierScope>;
 
 const messages = {
+  duplicateAutomationName: 'An automation with this name already exists.',
   invalidAutomationActionRevision:
     'Automation action "{actionId}" of type "{actionType}" is missing required revision field "{field}".',
   conflictingAutomationActionId:
@@ -1230,14 +1231,24 @@ async function updateAutomation(
   trx: Knex.Transaction,
   automation: AutomationRow,
 ): Promise<AutomationRow> {
-  await trx('automations')
-    .update({
-      name: automation.name,
-      description: automation.description,
-      status: automation.status,
-      updated_at: automation.updated_at,
-    })
-    .where('id', automation.id);
+  try {
+    await trx('automations')
+      .update({
+        name: automation.name,
+        description: automation.description,
+        status: automation.status,
+        updated_at: automation.updated_at,
+      })
+      .where('id', automation.id);
+  } catch (error) {
+    if (error instanceof Error && 'code' in error && error.code === 'ER_DUP_ENTRY') {
+      throw new errors.ValidationError({
+        message: tpl(messages.duplicateAutomationName),
+        property: 'name',
+      });
+    }
+    throw error;
+  }
 
   return requireAutomation(await loadAutomation(trx, automation.id), automation.id);
 }
