@@ -376,6 +376,8 @@ The image comes from the file picker, a drop, or Unsplash, and an upload the
 server refuses is reported without changing the field. The Unsplash picker is
 offered only while the site's Unsplash integration is on, and it writes the
 image it is given the same way an upload does.
+A set image can be edited in Pintura when the site has it configured, as the
+feature image can; the edited image is uploaded and written the same way.
 
 Nothing here is required, and both cards fall back the same way rather than
 emptying. The title is the card's own title, else the meta title, else the title

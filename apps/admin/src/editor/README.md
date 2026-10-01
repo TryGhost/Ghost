@@ -69,6 +69,17 @@ entry, but a new post never gets it. While the link leads to analytics, the
 status line is hidden unless the post's newsletter failed to send or a save
 failed.
 
+## Images
+
+The feature image and the X and Facebook card images share one field: a file
+picker and drop target, Unsplash while the site has it on, a preview, and
+Remove. When the site has Pintura configured, a set image also offers Edit,
+which opens it in Pintura; Save and close uploads the result and writes it as an
+upload would. While Pintura is open or the edited image is uploading, Edit and
+Remove are disabled and the preview shows the upload in progress. An edited
+image that fails to upload is reported, leaves the original in place, and is not
+counted as a saved edit.
+
 ## Adding a settings section
 
 1. Add the section's id to `SETTINGS_SECTION_ORDER` in `settings/sections.ts`,
@@ -116,10 +127,16 @@ specific to the editor lives in `apps/admin/test-utils/acceptance/editor.ts`:
 - `fakeUnsplashPhotos()` serves one photo in the shape the picker lays out and
   inserts, and `UNSPLASH_PICKED` is the rendition the picker asks for.
 
-Three presets adjust the boot for a spec whose subject needs it. `withoutAutosave()`
+- `fakePintura()` stands in for an already loaded Pintura script and
+  stylesheet, records the images the editor is opened on and ends an edit with
+  `save(file)`; it removes itself when the test finishes.
+
+Four presets adjust the boot for a spec whose subject needs it. `withoutAutosave()`
 boots with a debounce no run reaches, so a debounced autosave cannot be what an
 assertion sees; `withFastAutosave()` is its opposite, for specs whose subject is
-autosave itself; and `withoutUnsplash()` boots a site with the integration off.
+autosave itself; `withoutUnsplash()` boots a site with the integration off; and
+`withPintura()` boots a site with Pintura configured, for use with
+`fakePintura()`.
 
 Assert writes with `await expect(saveApi).toHaveSavedFields({slug: "new-slug"})`,
 which waits for the write and compares the named fields of the latest payload;

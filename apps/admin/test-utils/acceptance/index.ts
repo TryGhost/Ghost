@@ -6,12 +6,15 @@ export {
   editorReadLanded,
   fakeEditorChrome,
   fakeEditorPost,
+  fakePintura,
   fakeUnsplashPhotos,
   submittedPost,
   withFastAutosave,
+  withPintura,
   withoutAutosave,
   withoutUnsplash,
 } from './editor';
+export type { FakePintura } from './editor';
 export { currentRoute, renderAdminApp } from './render-admin-app';
 export type { RenderAdminAppOptions } from './render-admin-app';
 export { InAppProviders, renderInApp } from './render-in-app';
