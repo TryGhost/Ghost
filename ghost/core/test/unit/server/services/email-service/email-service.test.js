@@ -374,7 +374,7 @@ describe('Email Service', function () {
       sinon.assert.notCalled(scheduleEmail);
     });
 
-    for (const committed of [true, false]) {
+    for (const committed of [true, false, undefined, 'true', 1, {}]) {
       it(`Schedules only after a successful commit (committed=${committed})`, async function () {
         const newsletter = createModel({ status: 'active' });
         const post = createModel({ newsletter, email_recipient_filter: 'all' });
@@ -387,8 +387,8 @@ describe('Email Service', function () {
         await new Promise((resolve) => {
           setImmediate(resolve);
         });
-        assert.equal(scheduleEmail.callCount, committed ? 1 : 0);
-        assert.equal(scheduleRecurringNewslettersJob.callCount, committed ? 1 : 0);
+        assert.equal(scheduleEmail.callCount, committed === true ? 1 : 0);
+        assert.equal(scheduleRecurringNewslettersJob.callCount, committed === true ? 1 : 0);
       });
     }
 
@@ -591,6 +591,55 @@ describe('Email Service', function () {
 
       assert.equal(email.get('status'), 'failed');
       assert.equal(email.get('error'), 'Original send error');
+    });
+
+    for (const failure of ['throws', 'rejects']) {
+      for (const transactional of [false, true]) {
+        it(`Restores failed status when scheduling ${failure} (transactional=${transactional})`, async function () {
+          const error = new Error('Scheduling failed');
+          scheduleEmail[failure](error);
+          const logError = sinon.stub(logging, 'error');
+          const email = createModel({
+            status: 'failed',
+            post: createModel({ status: 'published' }),
+          });
+          const transacting = transactional ? new EventEmitter() : undefined;
+
+          if (transacting) {
+            await service.retryEmail(email, { transacting });
+            assert.equal(email.get('status'), 'pending');
+            sinon.assert.notCalled(scheduleEmail);
+            transacting.emit('committed', true);
+            await new Promise((resolve) => {
+              setImmediate(resolve);
+            });
+            sinon.assert.calledWith(logError, error);
+          } else {
+            await assert.rejects(service.retryEmail(email), error);
+          }
+
+          assert.equal(email.get('status'), 'failed');
+          assert.equal(email.get('error'), error.message);
+          scheduleEmail.resetBehavior();
+          await service.retryEmail(email);
+          assert.equal(email.get('status'), 'pending');
+          sinon.assert.calledTwice(scheduleEmail);
+        });
+      }
+    }
+
+    it('Does not schedule a retry after rollback', async function () {
+      const email = createModel({
+        status: 'failed',
+        post: createModel({ status: 'published' }),
+      });
+      const transacting = new EventEmitter();
+      await service.retryEmail(email, { transacting });
+      transacting.emit('committed', false);
+      await new Promise((resolve) => {
+        setImmediate(resolve);
+      });
+      sinon.assert.notCalled(scheduleEmail);
     });
 
     it('Does not schedule email again if draft', async function () {

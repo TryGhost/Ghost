@@ -239,7 +239,7 @@ class EmailService {
     }
 
     transacting.once('committed', (committed) => {
-      if (committed) {
+      if (committed === true) {
         // Event listeners are not awaited by Bookshelf. Handle job failures here.
         Promise.resolve()
           .then(callback)
@@ -255,7 +255,10 @@ class EmailService {
       await email.save(
         {
           status: 'failed',
-          error: e.message || 'Something went wrong while scheduling the email',
+          error:
+            (throwOnError && email.get('error')) ||
+            e.message ||
+            'Something went wrong while scheduling the email',
         },
         { patch: true },
       );

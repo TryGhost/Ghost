@@ -1,18 +1,25 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
+import assert from 'node:assert/strict';
+import { vi } from 'vitest';
+import type { Knex } from 'knex';
+import type { GhostServer } from '../../../../core/server/ghost-server';
+import sinon, { type SinonStub } from 'sinon';
 const { agentProvider, fixtureManager, mockManager } = require('../../../utils/e2e-framework');
 const models = require('../../../../core/server/models');
 const events = require('../../../../core/server/lib/common/events');
-const jobManager = require('../../../../core/server/services/jobs/job-service');
+const jobsService = require('../../../../core/server/services/jobs-service');
+const SendEmailJob =
+  require('../../../../core/server/services/email-service/jobs/send-email-job').default;
 const EmailService = require('../../../../core/server/services/email-service/email-service');
 const getPostsService = require('../../../../core/server/services/posts/posts-service-instance');
 const scheduling = require('../../../../core/server/services/posts/post-scheduling');
 
 describe('Atomic newsletter publication', function () {
-  let agent;
-  let ghostServer;
-  let post;
-  let newsletter;
+  let agent: Awaited<ReturnType<typeof agentProvider.getAdminAPIAgent>>;
+  let ghostServer: GhostServer;
+  let post: { id: string; get(key: 'updated_at'): Date };
+  let newsletter: { slug: string };
+
+  let dispatch: SinonStub;
 
   beforeAll(async function () {
     const agents = await agentProvider.getAgentsWithFrontend();
@@ -26,7 +33,7 @@ describe('Atomic newsletter publication', function () {
   beforeEach(async function () {
     mockManager.mockMail();
     mockManager.mockStripe();
-    sinon.stub(jobManager, 'addJob');
+    dispatch = sinon.stub(jobsService.getInstance(), 'dispatch').resolves();
     post = await models.Post.add(
       {
         title: 'Atomic newsletter publication',
@@ -45,23 +52,22 @@ describe('Atomic newsletter publication', function () {
     await ghostServer.stop();
   });
 
-  const frame = (status = 'published', transacting) => ({
+  const frame = (status = 'published', transacting?: Knex.Transaction) => ({
     data: { posts: [{ status, posts_meta: { email_only: status === 'sent' } }] },
     options: {
       id: post.id,
       context: { internal: true },
       transacting,
-      newsletter: newsletter.slug,
+      newsletter: newsletter.slug as string | undefined,
       withRelated: ['email'],
     },
   });
 
   const readPost = () => models.Post.findOne({ id: post.id, status: 'all' });
-  const readEmail = (transacting) => models.Email.findOne({ post_id: post.id }, { transacting });
+  const readEmail = (transacting?: Knex.Transaction) =>
+    models.Email.findOne({ post_id: post.id }, { transacting });
   const sendingJobs = () =>
-    jobManager.addJob
-      .getCalls()
-      .filter((call) => call.args[0].name === 'batch-sending-service-job');
+    dispatch.getCalls().filter((call) => call.args[0] instanceof SendEmailJob);
 
   it('rolls back publication when the email insert fails and allows a retry', async function () {
     const addEmail = sinon.stub(models.Email, 'add').rejects(new Error('Email insert failed'));
@@ -87,7 +93,7 @@ describe('Atomic newsletter publication', function () {
 
   it('rolls back the post and inserted email when an outer transaction fails', async function () {
     await assert.rejects(
-      models.Post.transaction(async (transacting) => {
+      models.Post.transaction(async (transacting: Knex.Transaction) => {
         await getPostsService().editPost(frame('published', transacting));
         assert.ok(await readEmail(transacting));
         assert.equal(sendingJobs().length, 0);
@@ -102,13 +108,13 @@ describe('Atomic newsletter publication', function () {
 
   for (const status of ['published', 'sent']) {
     it(`commits both records before scheduling a ${status} post`, async function () {
-      await models.Post.transaction(async (transacting) => {
+      await models.Post.transaction(async (transacting: Knex.Transaction) => {
         await getPostsService().editPost(frame(status, transacting));
         assert.ok(await readEmail(transacting));
         assert.equal(sendingJobs().length, 0);
       });
       // Bookshelf's commit event listeners schedule work asynchronously.
-      await new Promise((resolve) => {
+      await new Promise<void>((resolve) => {
         setImmediate(resolve);
       });
       assert.equal((await readPost()).get('status'), status);
@@ -119,7 +125,10 @@ describe('Atomic newsletter publication', function () {
 
   it('rolls back when the saved audience differs from preparation', async function () {
     const prepare = EmailService.prototype.prepareEmail;
-    sinon.stub(EmailService.prototype, 'prepareEmail').callsFake(async function (...args) {
+    sinon.stub(EmailService.prototype, 'prepareEmail').callsFake(async function (
+      this: InstanceType<typeof EmailService>,
+      ...args: Parameters<typeof prepare>
+    ) {
       const prepared = await prepare.apply(this, args);
       return { ...prepared, emailRecipientFilter: 'status:free' };
     });
@@ -140,13 +149,14 @@ describe('Atomic newsletter publication', function () {
   it('creates one email when two publication requests overlap', async function () {
     await Promise.all([getPostsService().editPost(frame()), getPostsService().editPost(frame())]);
     assert.equal((await readPost()).get('status'), 'published');
-    assert.ok(await readEmail());
+    const emails = await models.Email.findAll({ filter: `post_id:'${post.id}'` });
+    assert.equal(emails.length, 1);
     assert.equal(sendingJobs().length, 1);
   });
 
   it('publishes without an email when no newsletter was requested', async function () {
     const postOnlyFrame = frame();
-    delete postOnlyFrame.options.newsletter;
+    postOnlyFrame.options.newsletter = undefined;
     await getPostsService().editPost(postOnlyFrame);
     assert.equal((await readPost()).get('status'), 'published');
     assert.equal(await readEmail(), null);
@@ -173,13 +183,29 @@ describe('Atomic newsletter publication', function () {
     assert.equal(sendingJobs().length, 1);
   });
 
+  it('persists a failed status when scheduling a retried publication fails', async function () {
+    await getPostsService().editPost(frame());
+    await models.Post.edit({ status: 'draft' }, { id: post.id, context: { internal: true } });
+    await (await readEmail()).save({ status: 'failed' }, { patch: true });
+    dispatch.throws(new Error('Scheduling retry failed'));
+
+    await getPostsService().editPost(frame());
+
+    assert.equal((await readPost()).get('status'), 'published');
+    await vi.waitFor(async () => {
+      const email = await readEmail();
+      assert.equal(email.get('status'), 'failed');
+      assert.equal(email.get('error'), 'Scheduling retry failed');
+    });
+  });
+
   it('rolls back a failed email retry with its publication', async function () {
     await getPostsService().editPost(frame());
     await models.Post.edit({ status: 'draft' }, { id: post.id, context: { internal: true } });
     await (await readEmail()).save({ status: 'failed' }, { patch: true });
-    jobManager.addJob.resetHistory();
+    dispatch.resetHistory();
     await assert.rejects(
-      models.Post.transaction(async (transacting) => {
+      models.Post.transaction(async (transacting: Knex.Transaction) => {
         await getPostsService().editPost(frame('published', transacting));
         assert.equal((await readEmail(transacting)).get('status'), 'pending');
         assert.equal(sendingJobs().length, 0);
