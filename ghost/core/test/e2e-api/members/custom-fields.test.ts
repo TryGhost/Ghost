@@ -161,6 +161,25 @@ describe('Member Custom Fields Members API', function () {
     assert.equal(Object.hasOwn(field, 'id'), false);
   });
 
+  it('tells a member which parts make up a field', async function () {
+    const addressKey = await defineField('Delivery address', { type: 'address' });
+
+    const { body } = await membersAgent.get('/api/member/metafields/custom/').expectStatus(200);
+    const byKey = new Map(
+      body.members_metafields.map((field: { key: string }) => [field.key, field]),
+    );
+
+    assert.deepEqual((byKey.get(addressKey) as { parts: unknown }).parts, [
+      { key: 'line1', type: 'short_text' },
+      { key: 'line2', type: 'short_text' },
+      { key: 'city', type: 'short_text' },
+      { key: 'state', type: 'short_text' },
+      { key: 'postal_code', type: 'postal_code' },
+      { key: 'country', type: 'country_code' },
+    ]);
+    assert.equal((byKey.get(fieldKey) as { parts: unknown }).parts, null);
+  });
+
   it('says nothing about a field the publisher has archived', async function () {
     // A field a member once answered, which the publisher has since retired. The
     // answer stays on the record; what changes is that the member is no longer

@@ -113,6 +113,23 @@ describe('Member Custom Fields Admin API', function () {
       assert.equal(read.members_metafields[0].key, 'favourite_topic');
     });
 
+    // An integration draws a field from its definition, so it doesn't have to know
+    // what an address is made of for whichever Ghost version the site runs.
+    it('describes the parts of a field made of several values', async function () {
+      const address = await createField({ name: 'Delivery address', type: 'address' });
+      const text = await createField({ name: 'Nickname' });
+
+      assert.deepEqual(address.parts, [
+        { key: 'line1', type: 'short_text' },
+        { key: 'line2', type: 'short_text' },
+        { key: 'city', type: 'short_text' },
+        { key: 'state', type: 'short_text' },
+        { key: 'postal_code', type: 'postal_code' },
+        { key: 'country', type: 'country_code' },
+      ]);
+      assert.equal(text.parts, null);
+    });
+
     // A key is referenced from filters, CSV columns, replacement strings and
     // themes, and the hyphen is the character those disagree about. Nothing a
     // publisher can type may put one in a key, including typing one themselves.
