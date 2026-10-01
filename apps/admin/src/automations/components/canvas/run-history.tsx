@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { ErrorBoundary } from '@sentry/react';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn, formatNumber, LucideIcon } from '@tryghost/shade/utils';
@@ -6,13 +7,52 @@ import { useAutomationRunHistory } from '@/automations/hooks/use-automation-run-
 import { HistoryFlow } from './history-flow';
 import { HistoryBackground } from './history-background';
 
-export const RunHistory: React.FC<{
+type RunHistoryProps = {
   automationId: string;
   runId: string;
   memberName?: string;
   isPerformanceOpen: boolean;
   onClose: () => void;
-}> = ({ automationId, runId, memberName, isPerformanceOpen, onClose }) => {
+};
+
+export const RunHistory: React.FC<RunHistoryProps> = (props) => (
+  <ErrorBoundary
+    fallback={(error) => (
+      <Stack
+        align="center"
+        aria-label="Run history"
+        className="absolute inset-0 bg-preview-canvas px-6 text-center"
+        gap="sm"
+        justify="center"
+        role="region"
+      >
+        <Text role="alert">Could not load run history</Text>
+        <Inline gap="sm">
+          <Button
+            ref={(button) => button?.focus({ preventScroll: true })}
+            variant="outline"
+            onClick={() => error.resetError()}
+          >
+            Retry
+          </Button>
+          <Button variant="outline" onClick={props.onClose}>
+            Back to editing
+          </Button>
+        </Inline>
+      </Stack>
+    )}
+  >
+    <RunHistoryContent {...props} />
+  </ErrorBoundary>
+);
+
+const RunHistoryContent: React.FC<RunHistoryProps> = ({
+  automationId,
+  runId,
+  memberName,
+  isPerformanceOpen,
+  onClose,
+}) => {
   const { history, summary, isLoading, isError, unavailable, retry } = useAutomationRunHistory(
     automationId,
     runId,

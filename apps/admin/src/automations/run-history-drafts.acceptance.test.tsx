@@ -15,6 +15,30 @@ import {
 } from './run-history.test-utils';
 
 describe('Run history preserves editor drafts', () => {
+  it('contains history render errors and retries without remounting the editor', async () => {
+    setup();
+    respond({ ...history('a'), status: 'exited_early' });
+    await renderAdminApp('/automations/first', flags);
+    await page.getByRole('button', { name: 'Wait: 1 day' }).click();
+    const input = page.getByRole('textbox', { name: 'Wait for' });
+    await input.fill('5');
+    const originalInput = input.element();
+    await open();
+    await select();
+    await expect
+      .element(canvas().getByRole('alert'))
+      .toHaveTextContent('Could not load run history');
+    expect(originalInput.isConnected).toBe(true);
+
+    const retried = respond(history('a'));
+    await canvas().getByRole('button', { name: 'Retry', exact: true }).click();
+    await expect.element(canvas()).toHaveTextContent('Waited 3 days');
+    expect(retried.requests).toHaveLength(1);
+    await close();
+    expect(input.element()).toBe(originalInput);
+    await expect.element(input).toHaveValue('5');
+  });
+
   it('fetches fresh history when reopening a run without changing the draft', async () => {
     const { list, counts } = setup();
     const data = history('a');
