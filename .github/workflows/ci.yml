@@ -1617,6 +1617,7 @@ jobs:
           tar -xzf "${RUNNER_TEMP}/admin-artifact/admin-build.tar.gz" -C ghost/core/core/built
 
       - name: Build & push full image
+        id: build-full
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
         env:
           BUILDKIT_PROGRESS: plain
@@ -1983,6 +1984,7 @@ jobs:
 
     outputs:
       use-artifact: ${{ steps.strategy.outputs.use-artifact }}
+      image-digest: ${{ steps.build-full.outputs.digest }}
       image-core-tags: ${{ steps.meta-core.outputs.tags }}
       image-e2e-name: ${{ steps.strategy.outputs.image-e2e-name }}
       image-e2e-tags: ${{ steps.meta-e2e.outputs.tags }}
@@ -2522,9 +2524,15 @@ jobs:
       && needs.job_build_admin.result == 'success'
       && needs.job_docker.result == 'success'
       && needs.job_docker.outputs.use-artifact != 'true'
+    permissions:
+      pull-requests: read
     steps:
       - name: Determine dispatch parameters
         id: params
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPOSITORY: ${{ github.repository }}
         run: |
           if [ "${{ needs.job_setup.outputs.is_main }}" = "true" ]; then
             echo "pr_number=" >> $GITHUB_OUTPUT
@@ -2534,6 +2542,12 @@ jobs:
             echo "deploy=" >> $GITHUB_OUTPUT
           elif [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+
+            # Read live: labels can change during the build. Ghost-Moya refreshes
+            # the preview only when this is set, and re-checks before deploying.
+            PREVIEW=$(gh api "repos/${REPOSITORY}/pulls/${PR_NUMBER}" \
+              --jq '.state == "open" and any(.labels[].name; . == "preview" or startswith("preview:"))')
+            echo "preview=${PREVIEW}" >> "$GITHUB_OUTPUT"
 
             # DISABLED: deploy-to-staging label detection is disabled.
             # The label workflow has fundamental problems — admin deploys are global
@@ -2561,7 +2575,9 @@ jobs:
               "pr_number": "${{ steps.params.outputs.pr_number }}",
               "deploy": "${{ steps.params.outputs.deploy }}",
               "admin_artifact_id": "${{ needs.job_build_admin.outputs.admin-artifact-id }}",
-              "admin_artifact_run_id": "${{ github.run_id }}"
+              "admin_artifact_run_id": "${{ github.run_id }}",
+              "image_digest": "${{ needs.job_docker.outputs.image-digest }}",
+              "preview": "${{ steps.params.outputs.preview }}"
             }
 
   # --------------------------------------------------------------------------- #
