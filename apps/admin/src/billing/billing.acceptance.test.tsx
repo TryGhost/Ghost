@@ -84,6 +84,8 @@ async function postFromBillingApp(messages: StandInMessage[], message: unknown) 
 
 /** Resolves once Admin has handled every message the stand-in posted before now. */
 async function billingAppSettled(messages: StandInMessage[]) {
+  // A ping to a frame still loading is dropped like any other message
+  await expect.poll(() => loads(messages).length).toBeGreaterThan(0);
   const pongs = messages.filter((message) => message.pong).length;
   const frame = billingScreen.frame().element() as HTMLIFrameElement;
   frame.contentWindow?.postMessage({ ping: true }, BILLING_ORIGIN);
@@ -199,6 +201,8 @@ describe('Ghost(Pro) billing', () => {
     await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
     const messages = standInMessages();
     await renderBilling('/pro');
+    // Route reports only sync the URL while the screen is showing
+    await expect.element(billingScreen.frame()).toBeVisible();
     await expect.poll(() => loads(messages)).toHaveLength(1);
 
     await postFromBillingApp(messages, { route: '/plans' });
@@ -219,11 +223,14 @@ describe('Ghost(Pro) billing', () => {
     await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
     const messages = standInMessages();
     await renderBilling('/pro');
+    await expect.element(billingScreen.frame()).toBeVisible();
     await postFromBillingApp(messages, { route: '/plans' });
     await expect.poll(currentRoute).toBe('/pro/plans');
 
     window.location.hash = '#/pro/domain';
-    await expect.poll(currentRoute).toBe('/pro/domain');
+    await expect
+      .poll(() => received(messages, 'query').at(-1))
+      .toEqual({ query: 'routeUpdate', response: '/domain' });
     window.history.back();
 
     await expect.poll(currentRoute).toBe('/pro/plans');

@@ -5,6 +5,7 @@ import {
   billingAdminPath,
   billingAlerts,
   billingSubRoute,
+  initialBillingSubRoute,
   isBillingAppRoute,
   isBillingPath,
   takePayNowReturnRoute,
@@ -23,6 +24,15 @@ describe('billing routes', () => {
     expect(billingSubRoute('/pro/domain/')).toBe('/domain');
     expect(billingAdminPath('/')).toBe('/pro');
     expect(billingAdminPath('/update-card')).toBe('/pro/update-card');
+  });
+
+  it('loads the route Ember would load for each Admin URL', () => {
+    expect(initialBillingSubRoute('/tags', '')).toBeNull();
+    expect(initialBillingSubRoute('/pro', '')).toBe('/');
+    expect(initialBillingSubRoute('/pro', '?interval=year')).toBe('/');
+    expect(initialBillingSubRoute('/pro', '?action=checkout')).toBe('?action=checkout');
+    expect(initialBillingSubRoute('/pro/plans', '?interval=year')).toBe('/plans');
+    expect(initialBillingSubRoute('/pro/plans', '?action=checkout')).toBe('/plans');
   });
 
   it('accepts paths from the billing app, never URLs', () => {
