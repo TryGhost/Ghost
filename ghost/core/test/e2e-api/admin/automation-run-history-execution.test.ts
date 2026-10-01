@@ -1,6 +1,6 @@
 import { describe, it, beforeAll, beforeEach, afterEach } from 'vitest';
 import type { Knex } from 'knex';
-import type { readRunHistory } from '../../../core/server/services/automations/automation-run-history';
+import type { AutomationRunHistory } from '../../../core/server/services/automations/automations-repository';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import ObjectId from 'bson-objectid';
@@ -21,7 +21,7 @@ const {
 
 const db: Knex = models.Base.knex;
 
-describe('Automation run history from the scheduler', function () {
+describe('Automation run history from the execution', function () {
   let agent: Awaited<ReturnType<typeof agentProvider.getAdminAPIAgent>>;
   let clock: sinon.SinonFakeTimers;
   let repository: ReturnType<typeof createDatabaseAutomationsRepository>;
@@ -59,8 +59,8 @@ describe('Automation run history from the scheduler', function () {
     mockManager.mockLabsDisabled('automationsTinybirdSync');
     member = {
       id: ObjectId().toHexString(),
-      name: 'Scheduler member',
-      email: 'scheduler@example.com',
+      name: 'Execution member',
+      email: 'execution@example.com',
       uuid: randomUUID(),
       transient_id: ObjectId().toHexString(),
       status: 'free',
@@ -99,7 +99,7 @@ describe('Automation run history from the scheduler', function () {
     await db('members').where('id', member.id).del();
   });
 
-  async function readHistory(): Promise<NonNullable<Awaited<ReturnType<typeof readRunHistory>>>> {
+  async function readHistory(): Promise<AutomationRunHistory> {
     const { body } = await agent
       .get(`automations/${run.automation_id}/runs/${run.id}`)
       .expectStatus(200);
@@ -115,7 +115,7 @@ describe('Automation run history from the scheduler', function () {
     const queued = await readHistory();
     assert.equal(queued.status, 'in_progress');
     assert.equal(queued.steps.length, 1);
-    assert.equal(queued.steps[0].action?.type, 'wait');
+    assert.equal(queued.steps[0].action.type, 'wait');
     assert.equal(queued.steps[0].status, 'pending');
     assert.equal(queued.steps[0].ready_at, '2026-09-16T12:00:00.000Z');
     assert.equal(queued.steps[0].finished_at, null);
@@ -124,7 +124,7 @@ describe('Automation run history from the scheduler', function () {
     const readyToSend = await readHistory();
     assert.equal(readyToSend.steps[0].status, 'finished');
     assert.equal(readyToSend.steps[0].finished_at, '2026-09-16T12:00:00.000Z');
-    assert.equal(readyToSend.steps[1].action?.type, 'send_email');
+    assert.equal(readyToSend.steps[1].action.type, 'send_email');
     assert.equal(readyToSend.steps[1].status, 'pending');
     assert.equal(readyToSend.steps[1].email_sent_at, null);
 
@@ -135,7 +135,7 @@ describe('Automation run history from the scheduler', function () {
     assert.equal(email.status, 'finished');
     assert.equal(email.email_sent_at, '2026-09-16T12:00:01.000Z');
     assert.equal(email.email_delivered_at, null);
-    assert.equal(sent.steps[2].action?.type, 'wait');
+    assert.equal(sent.steps[2].action.type, 'wait');
     assert.equal(sent.steps[2].ready_at, '2026-09-19T12:00:01.000Z');
     assert.equal(sent.steps[2].status, 'pending');
 
@@ -165,7 +165,6 @@ describe('Automation run history from the scheduler', function () {
     await pollAt('2026-09-19T12:00:02Z');
     const completed = await readHistory();
     assert.equal(completed.status, 'completed');
-    assert.equal(completed.history_status, 'available');
     assert.equal(completed.steps.length, 4);
     assert.ok(completed.steps.every((step: { status: string }) => step.status === 'finished'));
     assert.equal(completed.steps[3].email_sent_at, '2026-09-19T12:00:02.000Z');
@@ -175,7 +174,7 @@ describe('Automation run history from the scheduler', function () {
   it('preserves the send timestamp and later failure timestamp when advancing the run fails', async function () {
     await pollAt('2026-09-16T12:00:00Z');
     const pendingEmail = (await readHistory()).steps[1];
-    // Start at the final allowed attempt; the scheduler still acquires the lock
+    // Start at the final allowed attempt; the poller still acquires the lock
     // and records both the successful send and the terminal failure itself.
     await db('automation_run_steps')
       .where('id', pendingEmail.id)
@@ -189,7 +188,6 @@ describe('Automation run history from the scheduler', function () {
     const history = await readHistory();
     assert.equal(history.status, 'exited_early');
     assert.equal(history.failed, true);
-    assert.equal(history.history_status, 'available');
     assert.equal(history.steps.length, 2);
     assert.equal(history.steps[1].status, 'failed');
     assert.equal(history.steps[1].email_sent_at, '2026-09-16T12:00:01.000Z');
@@ -198,7 +196,7 @@ describe('Automation run history from the scheduler', function () {
     sinon.assert.calledOnce(pollOptions.memberWelcomeEmailService.api.sendAutomationEmail);
   });
 
-  it('retains a deleted member’s pending run and then exposes the scheduler’s exit without sending', async function () {
+  it('retains a deleted member’s pending run and then exposes the poller’s exit without sending', async function () {
     await db('members').where('id', member.id).del();
     const pending = await readHistory();
     assert.equal(pending.member, null);

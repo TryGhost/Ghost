@@ -15,7 +15,6 @@ import {
 } from './tinybird-automation-stats';
 import { entryDate, getEntryStatsWindow, parseEntryStatsOptions } from './automation-entry-stats';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
-import { readRunHistory as loadRunHistory } from './automation-run-history';
 
 const { knex } = require('../../data/db');
 const domainEvents = require('@tryghost/domain-events');
@@ -270,7 +269,7 @@ export async function readRunHistory(automationId: string, runId: string) {
   if (!exists) {
     throw new errors.NotFoundError({ message: tpl(messages.automationNotFound) });
   }
-  const history = await loadRunHistory(knex, automationId, runId);
+  const history = await repository.getRunHistory(automationId, runId);
   if (!history) {
     throw new errors.NotFoundError({ message: tpl(messages.runNotFound) });
   }
