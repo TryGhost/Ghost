@@ -66,6 +66,31 @@ describe('Unit: Service: state-bridge', function () {
         });
     });
 
+    describe('#refreshBillingLimits', function () {
+        it('refetches config, then reloads plan limits', async function () {
+            const configManager = this.owner.lookup('service:config-manager');
+            const limit = this.owner.lookup('service:limit');
+            sinon.stub(configManager, 'fetch').resolves();
+            sinon.stub(limit, 'reload');
+
+            await service.refreshBillingLimits();
+
+            expect(configManager.fetch.calledOnce).to.be.true;
+            expect(limit.reload.calledAfter(configManager.fetch)).to.be.true;
+        });
+
+        it('still reloads plan limits when the config request fails', async function () {
+            const configManager = this.owner.lookup('service:config-manager');
+            const limit = this.owner.lookup('service:limit');
+            sinon.stub(configManager, 'fetch').rejects(new Error('offline'));
+            sinon.stub(limit, 'reload');
+
+            await service.refreshBillingLimits();
+
+            expect(limit.reload.calledOnce).to.be.true;
+        });
+    });
+
     describe('#isFeatureEnabled', function () {
         it('does not claim route ownership before Labs settings load', function () {
             settings.settingsModel = null;

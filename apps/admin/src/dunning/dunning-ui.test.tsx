@@ -41,7 +41,7 @@ vi.mock('@tryghost/admin-x-framework/api/users', async () => {
   return { ...actual, useBrowseUsers: mockUseBrowseUsers };
 });
 
-vi.mock('@/ember-bridge', () => ({
+vi.mock('@/billing/api', () => ({
   useSubscriptionStatus: mockUseSubscriptionStatus,
 }));
 

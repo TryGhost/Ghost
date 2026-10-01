@@ -284,7 +284,8 @@ export default Route.extend(ShortcutsRoute, {
             await this.session.postAuthPreparation();
         }
 
-        if (this.config.hostSettings?.forceUpgrade) {
+        // React's ForceUpgradeGuard owns the redirect when billingReact is on
+        if (this.config.hostSettings?.forceUpgrade && this.feature.billingReact !== true) {
             // enforce opening the billing app in a force upgrade state
             this.billing.openBillingWindow(this.router.currentURL, this.billing.getBillingRouteFromHash());
         }
