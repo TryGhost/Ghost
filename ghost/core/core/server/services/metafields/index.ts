@@ -1,13 +1,13 @@
 import { MetafieldDefinitionsService } from './definitions-service';
 import { MetafieldValuesService } from './values-service';
-import { MetafieldBindingsService } from './bindings-service';
+import { MetafieldBindingsService } from './members/bindings-service';
 import { recordMetafieldAction, type RecordMetafieldAction } from './actions';
 import { resolveMaxDefinitions } from './config';
 
 export type { Metafield } from './models';
 export type { RequestContext } from './actions';
 export { actingContext, adminWriteOrigin } from './actions';
-export type { BoundField } from './bindings-service';
+export type { BoundField } from './members/bindings-service';
 export type { MetafieldChangeEvent, WriteOrigin, WrittenBy } from './schema';
 
 // Which door a request came through, which is what decides how much of a member's

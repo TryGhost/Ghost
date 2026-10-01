@@ -86,24 +86,6 @@ export const DbMetafieldLeaf = z.object({
   value_text: z.string(),
 });
 
-export const DbMetafieldBinding = z.object({
-  id: z.string(),
-  product_id: z.string(),
-  port: z.string(),
-  metafield_key: z.string(),
-  created_at: DbDate,
-  updated_at: DbDate.nullable(),
-});
-
-type MetafieldBindingRow = z.infer<typeof DbMetafieldBinding>;
-
-/** A binding joined to the field it points at, which is how a collected value is routed. */
-export const DbBoundField = z.object({
-  binding_id: z.string(),
-  key: z.string(),
-  type: FieldTypeSchema,
-});
-
 /**
  * Where a write was made (`MetafieldChangeSource`, shared with Admin): the entry point,
  * where `WrittenBy` is who answers for it.
@@ -213,13 +195,6 @@ declare module 'knex/types/tables' {
     members_metafield_change_events: Knex.CompositeTableType<
       MetafieldChangeEventRow,
       Omit<MetafieldChangeEventRow, 'created_at'> & { created_at: string }
-    >;
-    members_metafield_bindings: Knex.CompositeTableType<
-      MetafieldBindingRow,
-      // `updated_at` is set on insert as well as update: a binding is a setting, and
-      // "when was this last stated" is the same question whichever way it got there.
-      z.input<typeof DbMetafieldBinding>,
-      Partial<MetafieldBindingRow>
     >;
   }
 }
