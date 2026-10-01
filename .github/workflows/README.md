@@ -77,3 +77,12 @@ it never checks out PR code. Ghost-Moya builds the preview adapter image and run
 smoke tests on a separate runner with no deployment secrets or OIDC. Publishing
 imports image data without running it, and deployment pins the registry digest.
 Inherited base-image ONBUILD instructions and adapter validation are PR code too.
+
+## PR preview labels
+
+Either `preview` or `preview:<profile>` enables a preview. A profile label selects
+its seed dataset and takes precedence when both forms are present; `preview` alone
+uses the default. Only one profile label is allowed at a time.
+
+Removing the last preview label or closing the PR tears down the preview. Changing
+the selected profile reseeds its database, discarding any changes made on the site.
