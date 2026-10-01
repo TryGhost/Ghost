@@ -208,8 +208,6 @@ function installEmberBridge(): (modelName: string) => void {
       handlers.delete(callback);
     },
     sidebarVisible: true,
-    getRouteUrl: (routeName: string) => routeName,
-    isRouteActive: () => false,
   };
   window.EmberBridge = { state } as unknown as typeof window.EmberBridge;
 

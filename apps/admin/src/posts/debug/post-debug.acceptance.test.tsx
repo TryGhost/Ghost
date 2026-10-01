@@ -5,6 +5,7 @@ import {
   currentUserResponse,
   fakeAdminEndpoint,
   fakePosts,
+  fakePostsListScreen,
   post,
   renderAdminApp,
   staffRole,
@@ -383,6 +384,8 @@ describe('Post debug', () => {
       const me = currentUserResponse();
       me.users[0].roles = [staffRole({ name: role })];
       fakePosts([post({ id: POST_ID, authors: [{ id: 'someone-else' }], email })]);
+      // The list the redirect lands on.
+      fakePostsListScreen();
       await renderAdminApp(route, { boot: { browseMe: { response: me } } });
       await expect.poll(currentRoute).toBe('/posts');
       // Any diagnostic request would be unhandled and fail this test.
@@ -395,6 +398,7 @@ describe('Post debug', () => {
     fakePosts([
       post({ id: POST_ID, status: 'published', authors: [{ id: me.users[0].id }], email }),
     ]);
+    fakePostsListScreen();
     await renderAdminApp(route, { boot: { browseMe: { response: me } } });
     await expect.poll(currentRoute).toBe('/posts');
   });

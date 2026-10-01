@@ -43,8 +43,6 @@ async function renderWithEmber(notifications: ServerNotification[] = []) {
       on: () => {},
       off: () => {},
       sidebarVisible: true,
-      getRouteUrl: (routeName) => routeName,
-      isRouteActive: () => false,
       connectNotificationsHost: (host) => {
         current = host;
         return () => {

@@ -103,6 +103,8 @@ class PublishFlow extends BasePage {
   readonly confirmButton: Locator;
   readonly closeButton: Locator;
   readonly completeBookmark: Locator;
+  /** Ember only: the flow hands off to the list, which opens this celebration dialog. */
+  readonly celebration: Locator;
 
   constructor(
     page: Page,
@@ -158,12 +160,15 @@ class PublishFlow extends BasePage {
     this.confirmButton = react
       ? page.getByTestId(publishConfirm)
       : page.locator('[data-test-modal="publish-flow"] [data-test-button="confirm-publish"]');
+    this.celebration = page.getByRole('dialog').filter({ hasText: /published|All set/ });
+    // First: an email-only celebration repeats "Close" in its footer.
     this.closeButton = react
       ? this.modal.getByRole('button', { name: 'Close', exact: true })
-      : page.locator('[data-test-button="close-publish-flow"]');
+      : this.celebration.getByRole('button', { name: 'Close', exact: true }).first();
+    // The celebration's post preview is the one link carrying the post's heading.
     this.completeBookmark = react
       ? page.getByTestId(publishCompleteBookmark)
-      : page.locator('[data-test-complete-bookmark]');
+      : this.celebration.getByRole('link').filter({ has: page.getByRole('heading') });
   }
 
   async open(): Promise<void> {
@@ -172,6 +177,10 @@ class PublishFlow extends BasePage {
 
   async close(): Promise<void> {
     await this.closeButton.click();
+
+    if (this.implementation === 'ember') {
+      await this.celebration.waitFor({ state: 'hidden' });
+    }
   }
 
   /** The complete step offers no Close button; Escape dismisses the dialog. */
@@ -274,7 +283,6 @@ export class PostEditorPage extends AdminPage {
   readonly previewModal: PostPreviewModal;
   readonly settingsToggleButton: Locator;
   readonly publishFlow: PublishFlow;
-  readonly screenTitle: Locator;
   readonly lexicalEditor: Locator;
   readonly secondaryEditor: Locator;
   readonly publishSaveButton: Locator;
@@ -322,7 +330,6 @@ export class PostEditorPage extends AdminPage {
     this.previewModal = new PostPreviewModal(page, { implementation });
     this.settingsToggleButton = page.getByTestId(settingsMenuToggle);
     this.publishFlow = new PublishFlow(page, { implementation });
-    this.screenTitle = page.locator('[data-test-screen-title]');
     // Ember marks the Koenig container; React wraps each instance in its own
     // testid, and the contenteditable is the textbox inside the primary one.
     this.lexicalEditor = react
@@ -439,7 +446,7 @@ export class PageEditorPage extends PostEditorPage {
   constructor(page: Page) {
     super(page);
     this.pageUrl = '/ghost/#/pages';
-    this.newPageButton = page.locator('[data-test-new-page-button]');
+    this.newPageButton = page.getByRole('link', { name: 'New page', exact: true });
   }
 
   async gotoNew(): Promise<void> {

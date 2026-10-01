@@ -98,13 +98,12 @@ test.describe('Ghost Admin - Publishing (React)', () => {
     const scheduled = await readPost(page, postId);
     expect(scheduled.status).toBe('scheduled');
 
+    // The list consumes the handoff and opens its celebration over itself.
+    const listFlow = new PostEditorPage(page, { implementation: 'ember' }).publishFlow;
+    await expect(listFlow.celebration).toBeVisible();
+    await listFlow.close();
     await postsPage.waitForPageToFullyLoad();
     await expect(postsPage.getPostByTitle(title)).toContainText('Scheduled');
-    // The Ember list consumes the handoff and opens its own success modal.
-    const celebration = new PostEditorPage(page, { implementation: 'ember' }).publishFlow;
-    await expect(celebration.completeStep).toBeVisible();
-    await celebration.close();
-    await expect(celebration.completeStep).toBeHidden();
     await postsPage.getPostByTitle(title).click();
     await expect(editor.postStatus).toContainText('Scheduled');
 

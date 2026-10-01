@@ -18,6 +18,8 @@ import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
 const FLAG_ON = withFastAutosave({ labs: { editorReact: true } });
+// Ember-owned, so leaving to it unmounts the editor without mounting another React screen.
+const LEAVE_EDITOR_HASH = '#/restore';
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const THEIR_SAVE_AT = '2026-01-01T09:00:00.000Z';
 const AFTER_SAVE_AT = '2026-01-01T10:00:00.000Z';
@@ -264,7 +266,7 @@ describe('Post editor update collision', () => {
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from someone else');
     const readsAfterReload = readApi.requests.length;
 
-    window.location.hash = '#/posts';
+    window.location.hash = LEAVE_EDITOR_HASH;
     await expect(editorScreen.titleInput()).toHaveCount(0);
     window.location.hash = `#/editor/post/${POST_ID}`;
 
@@ -329,7 +331,7 @@ describe('Post editor update collision', () => {
       setTimeout(resolve, 0);
     });
 
-    window.location.hash = '#/posts';
+    window.location.hash = LEAVE_EDITOR_HASH;
     await expect(editorScreen.titleInput()).toHaveCount(0);
     window.location.hash = `#/editor/post/${POST_ID}`;
 
@@ -398,7 +400,7 @@ describe('Post editor update collision', () => {
     await expect.element(editorScreen.titleInput()).toHaveValue('Newest detail response');
     await expect(editorScreen.conflictBanner()).toHaveCount(0);
 
-    window.location.hash = '#/posts';
+    window.location.hash = LEAVE_EDITOR_HASH;
     await expect(editorScreen.titleInput()).toHaveCount(0);
     window.location.hash = `#/editor/post/${POST_ID}`;
 
