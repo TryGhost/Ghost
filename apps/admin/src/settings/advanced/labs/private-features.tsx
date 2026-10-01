@@ -130,6 +130,12 @@ const features: Feature[] = [
       'Serves the Ghost(Pro) billing screen (/pro) and its background billing app connection from the React app instead of Ember.',
     flag: 'billingReact',
   },
+  {
+    title: 'Apps',
+    description:
+      'Install and manage third-party apps that run on their own servers. Early and incomplete.',
+    flag: 'apps',
+  },
 ];
 
 const AlphaFeatures: React.FC = () => {

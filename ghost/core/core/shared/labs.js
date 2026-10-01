@@ -70,6 +70,7 @@ const PRIVATE_FEATURES = [
   'authReact',
   'navigationUrlSuggestions',
   'billingReact',
+  'apps',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
