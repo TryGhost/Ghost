@@ -211,10 +211,11 @@ describe('Post editor session expiry', () => {
       await expect.element(editorScreen.reauthResend('Sent')).toBeDisabled();
 
       vi.advanceTimersByTime(1_000);
-      await expect.element(editorScreen.reauthResend()).toBeEnabled();
     } finally {
       vi.useRealTimers();
     }
+    // Real timers drop any fake timer still pending, so a longer hold can't pass here.
+    await expect.element(editorScreen.reauthResend()).toBeEnabled();
 
     await editorScreen.reauthResend().click();
     await expect.poll(() => resendApi.requests.length).toBe(2);
