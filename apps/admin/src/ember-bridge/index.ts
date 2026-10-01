@@ -12,11 +12,17 @@ export {
   useEmberSubscriptionStatus,
   connectEmberAdminTheme,
   navigateEmberBillingSubRoute,
-  refreshEmberBillingLimits,
+  applyEmberBillingSubscriptionUpdate,
+  reportEmberBillingLoadFailure,
   syncEmberPostListQueryParams,
   syncEmberFullScreen,
   syncEmberRoutePattern,
   emberMutationHandlers,
 } from './ember-bridge';
-export type { EmberDataChangeEvent, StateBridge, SubscriptionState } from './ember-bridge';
+export type {
+  BillingSubscriptionUpdate,
+  EmberDataChangeEvent,
+  StateBridge,
+  SubscriptionState,
+} from './ember-bridge';
 export type { EmberNotificationsHost } from './ember-notifications-host';

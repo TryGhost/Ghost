@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { BillingAppConnection } from './billing-app-connection';
+import { BillingAppConnection, type BillingAppLoadFailureReport } from './billing-app-connection';
 
 const BILLING_URL = 'https://billing.example.com/';
 const ORIGIN = 'https://billing.example.com';
@@ -29,14 +29,17 @@ describe('BillingAppConnection', () => {
   });
 
   function connect() {
+    const onLoadFailure = vi.fn<(report: BillingAppLoadFailureReport) => void>();
     const connection = new BillingAppConnection(BILLING_URL, {
       getLocationSubRoute: () => locationSubRoute,
+      getReportContext: () => ({ isForceUpgrade: false, routeName: 'pro.index' }),
+      onLoadFailure,
       loadTimeoutMs: 100,
       loadRetryDelaysMs: [10],
     });
     const frame = fakeIframe();
     const detach = connection.attach(frame.iframe);
-    return { connection, detach, ...frame };
+    return { connection, detach, onLoadFailure, ...frame };
   }
 
   it('preloads the billing app root with an attempt id', () => {
@@ -184,6 +187,122 @@ describe('BillingAppConnection', () => {
     );
     expect(connection.isFromBillingApp(message({ source: window }))).toBe(false);
     expect(connection.isFromBillingApp(message({ data: null }))).toBe(false);
+  });
+
+  it("reports a visible failure with Ember's diagnostics", () => {
+    const { connection, onLoadFailure } = connect();
+    connection.setVisible(true);
+    connection.recordPreReadyMessage({ request: 'token' });
+    connection.recordPreReadyMessage({ subscription: {} });
+    connection.recordPreReadyMessage({ request: 'token' });
+
+    vi.advanceTimersByTime(210);
+
+    expect(onLoadFailure).toHaveBeenCalledOnce();
+    const [{ billingMonitor, tags }] = onLoadFailure.mock.calls[0];
+    expect(billingMonitor).toMatchObject({
+      attempts: 2,
+      attempt_source: 'retry',
+      attempt_phase: 'shell_ready',
+      iframe_reload_reason: 'timeout_retry',
+      configured_billing_origin: ORIGIN,
+      has_billing_url: true,
+      is_force_upgrade: false,
+      has_preload_failure: false,
+      ready_received: false,
+      billing_window_open: true,
+      billing_shell: 'react',
+      non_ready_message_count: 0,
+    });
+    expect(tags).toMatchObject({
+      source: 'billing-app-load-monitor',
+      attempt_source: 'retry',
+      route: 'pro.index',
+    });
+  });
+
+  it('counts messages that arrive before ready within the current attempt', () => {
+    const { connection, onLoadFailure } = connect();
+    connection.setVisible(true);
+    vi.advanceTimersByTime(110);
+    connection.recordPreReadyMessage({ request: 'token' });
+    connection.recordPreReadyMessage({ subscription: {} });
+    connection.recordPreReadyMessage({ request: 'token' });
+
+    vi.advanceTimersByTime(100);
+
+    expect(onLoadFailure.mock.calls[0][0].billingMonitor).toMatchObject({
+      non_ready_message_count: 3,
+      non_ready_message_types: 'token,subscription',
+      last_non_ready_message_type: 'token',
+    });
+  });
+
+  it('does not report a failure while hidden, then reports it with the preload snapshot', () => {
+    const { connection, onLoadFailure } = connect();
+    vi.advanceTimersByTime(110);
+    connection.recordPreReadyMessage({ request: 'token' });
+    vi.advanceTimersByTime(100);
+    expect(onLoadFailure).not.toHaveBeenCalled();
+
+    connection.setVisible(true);
+    vi.advanceTimersByTime(210);
+
+    expect(onLoadFailure.mock.calls[0][0].billingMonitor).toMatchObject({
+      attempt_source: 'retry',
+      has_preload_failure: true,
+      preload_non_ready_message_count: 1,
+      preload_non_ready_message_types: 'token',
+    });
+  });
+
+  describe('reload reasons', () => {
+    function connectWithoutRetry() {
+      const onLoadFailure = vi.fn<(report: BillingAppLoadFailureReport) => void>();
+      const connection = new BillingAppConnection(BILLING_URL, {
+        getLocationSubRoute: () => null,
+        getReportContext: () => ({ isForceUpgrade: true, routeName: 'pro.pro-sub' }),
+        onLoadFailure,
+        loadTimeoutMs: 100,
+        loadRetryDelaysMs: [],
+      });
+      connection.attach(fakeIframe().iframe);
+      const reasons = () =>
+        onLoadFailure.mock.calls.map(([report]) => report.billingMonitor.iframe_reload_reason);
+      return { connection, onLoadFailure, reasons };
+    }
+
+    it('keeps reporting a preload failure until the app loads', () => {
+      const { connection, onLoadFailure, reasons } = connectWithoutRetry();
+      vi.advanceTimersByTime(100);
+
+      connection.setVisible(true);
+      vi.advanceTimersByTime(100);
+      connection.setVisible(false);
+      connection.setVisible(true);
+      vi.advanceTimersByTime(100);
+
+      expect(reasons()).toEqual([
+        'visible_open_after_preload_failure',
+        'visible_open_after_preload_failure',
+      ]);
+      expect(onLoadFailure.mock.calls[0][0].billingMonitor).toMatchObject({
+        attempt_source: 'user_open',
+        is_force_upgrade: true,
+      });
+      expect(onLoadFailure.mock.calls[0][0].tags.route).toBe('pro.pro-sub');
+    });
+
+    it('reports reopening after a visible failure', () => {
+      const { connection, reasons } = connectWithoutRetry();
+      connection.setVisible(true);
+      vi.advanceTimersByTime(100);
+      connection.setVisible(false);
+      connection.setVisible(true);
+      vi.advanceTimersByTime(100);
+
+      expect(reasons()).toEqual(['set_src', 'visible_open_after_load_failure']);
+    });
   });
 
   it('stops the load monitor when detached', () => {
