@@ -1,6 +1,6 @@
 import { createElement, lazy, Suspense, useEffect, useState } from 'react';
 import { flushSync } from 'react-dom';
-import { act, render, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import { createHashRouter, createMemoryRouter, RouterProvider, useLocation } from 'react-router';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { installHistoryPopGate } from '@/hooks/use-history-pop-navigation-guard';
@@ -309,7 +309,11 @@ describe('useEditorLeaveGuard', () => {
         } as unknown as EditorSessionHandle,
         'post',
       );
-      return createElement('main', { 'data-testid': 'editor' });
+      return createElement(
+        'main',
+        { 'data-testid': 'editor' },
+        createElement('a', { href: '#/pro' }, 'Billing'),
+      );
     }
     const router = createMemoryRouter(
       [
@@ -417,6 +421,32 @@ describe('useEditorLeaveGuard', () => {
       });
       await waitFor(() => expect(guard().dialogProps.open).toBe(true));
       expect(leaveRequested).toHaveBeenCalledTimes(2);
+    } finally {
+      router.dispose();
+    }
+  });
+
+  it('leaves for the first destination when a link is clicked during the save on the way out', async () => {
+    const decision = deferred<'proceed' | 'confirm'>();
+    const { router, screen, guard } = renderHeldExit(() => decision.promise);
+    try {
+      await act(async () => {
+        await router.navigate('/posts');
+      });
+      fireEvent.click(screen.getByText('Billing'));
+      await act(async () => {
+        decision.resolve('confirm');
+        await decision.promise;
+      });
+      await waitFor(() => expect(guard().dialogProps.open).toBe(true));
+
+      act(() => {
+        guard().dialogProps.onConfirm();
+        guard().dialogProps.onOpenChange(false);
+      });
+
+      await waitFor(() => expect(router.state.location.pathname).toBe('/posts'));
+      expect(window.location.hash).not.toBe('#/pro');
     } finally {
       router.dispose();
     }
