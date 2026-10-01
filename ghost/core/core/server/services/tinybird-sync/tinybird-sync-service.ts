@@ -1,3 +1,4 @@
+import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import {
   getIngestConfig,
@@ -7,6 +8,7 @@ import {
 import { AUTOMATION_SYNC_TARGETS, syncTableToTinybird } from './sync-table-to-tinybird';
 import TinybirdSyncJob from './jobs/tinybird-sync-job';
 import type { JobsService } from '../jobs-service/jobs-service';
+import { randomFiveMinuteCron } from '../jobs-service/cron';
 
 const BATCH_SIZE = 5000;
 // This should be a little less than the maximum, because rows are chunked by
@@ -34,15 +36,6 @@ type TinybirdSyncDependencies = GetIngestConfigDependencies & {
   createId: () => string;
 };
 
-// Runs every five minutes at a random second and minute offset, so instances
-// do not all sync at the same time.
-function randomFiveMinuteCron(random: () => number): string {
-  const seconds = Math.floor(random() * 60); // 0-59
-  const minutes = Math.floor(random() * 5); // 0-4
-
-  return `${seconds} ${minutes}/5 * * * *`;
-}
-
 export function createTinybirdSyncService({
   config,
   settingsCache,
@@ -55,7 +48,6 @@ export function createTinybirdSyncService({
   createId,
 }: TinybirdSyncDependencies) {
   let scheduled = false;
-  let syncing = false;
 
   const syncAll = async (ingest: IngestConfig): Promise<void> => {
     const results = await Promise.allSettled(
@@ -85,12 +77,8 @@ export function createTinybirdSyncService({
     }
   };
 
-  const isEnabled = (): boolean => labs.isSet('automationsTinybirdSync');
-
-  // Runs one sync pass. A call that arrives while a pass is still running is
-  // skipped rather than run alongside it, so passes never overlap.
   const sync = async (): Promise<void> => {
-    if (!isEnabled()) {
+    if (!labs.isSet('automationsTinybirdSync')) {
       return;
     }
 
@@ -99,24 +87,16 @@ export function createTinybirdSyncService({
       return;
     }
 
-    if (syncing) {
-      logging.info('[Background Job] tinybird-sync skipped because a sync is already running');
-      return;
-    }
-
-    syncing = true;
-    try {
-      await syncAll(ingest);
-    } finally {
-      syncing = false;
-    }
+    await syncAll(ingest);
   };
 
   const scheduleJob = async (
     jobsService: Pick<JobsService, 'scheduleRecurring'>,
   ): Promise<void> => {
     if (scheduled) {
-      return;
+      throw new errors.IncorrectUsageError({
+        message: 'Tinybird sync is already scheduled.',
+      });
     }
 
     if (!getIngestConfig({ config, settingsCache })) {
@@ -143,5 +123,5 @@ export function createTinybirdSyncService({
     }
   };
 
-  return { scheduleJob, sync, isEnabled };
+  return { scheduleJob, sync };
 }

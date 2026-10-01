@@ -68,13 +68,6 @@ affects which workers run the job and how many run at once - delivery always
 routes by job type. Webmention processing runs on its own `webmentions` queue
 this way.
 
-The same handler options can also carry an `isEnabled` check for the job type,
-which runs before each delivery. While it returns false the delivery is dropped
-without running the handler or writing lifecycle logs, so a recurring job
-behind a runtime switch, such as a labs flag, stays silent while switched off.
-The check lives alongside the queue declaration, so a type that uses it also
-declares its own queue and concurrency. Tinybird sync uses this.
-
 Newsletter sends use the dedicated `email` queue with concurrency 2, so they
 do not compete with member imports, content CSV imports, and other shared jobs
 for queue slots. Each send already runs up to two batch workers. Allowing two

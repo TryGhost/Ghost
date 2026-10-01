@@ -25,7 +25,7 @@ describe('register-job-handlers', function () {
   let membersService: { handleImportJob: sinon.SinonStub };
   let siteImporter: { executeImport: sinon.SinonStub };
   let emailService: { handleSendEmailJob: sinon.SinonStub };
-  let tinybirdSync: { sync: sinon.SinonStub; isEnabled: sinon.SinonStub };
+  let tinybirdSync: { sync: sinon.SinonStub };
 
   // Handlers are looked up by their job type rather than registration order,
   // so adding a handler does not silently shift which one a test exercises.
@@ -54,7 +54,7 @@ describe('register-job-handlers', function () {
     membersService = { handleImportJob: sinon.stub().resolves() };
     siteImporter = { executeImport: sinon.stub().resolves() };
     emailService = { handleSendEmailJob: sinon.stub().resolves() };
-    tinybirdSync = { sync: sinon.stub().resolves(), isEnabled: sinon.stub().returns(true) };
+    tinybirdSync = { sync: sinon.stub().resolves() };
 
     registerJobHandlers({
       gifts: { startFetch: sinon.stub().resolves() },
@@ -296,24 +296,12 @@ describe('register-job-handlers', function () {
   it('runs tinybird-sync with the injected Tinybird sync service', async function () {
     await handlerFor('tinybird-sync')({});
 
-    assert.ok(tinybirdSync.sync.calledOnceWithExactly());
+    sinon.assert.calledOnceWithExactly(tinybirdSync.sync);
   });
 
-  // The second slot lets an overlapping tick reach the service's skip guard
-  // instead of queueing behind a running pass.
-  it('registers tinybird-sync on its own queue with room for an overlapping tick', function () {
-    const options = registrationFor('tinybird-sync').args[2]!;
+  it('registers tinybird-sync on its own queue, one pass at a time', function () {
+    const registration = registrationFor('tinybird-sync');
 
-    assert.equal(options.queue, 'tinybird-sync');
-    assert.equal(options.concurrency, 2);
-  });
-
-  it('gates tinybird-sync ticks on the Tinybird sync switch', function () {
-    const isEnabled = registrationFor('tinybird-sync').args[2]!.isEnabled!;
-
-    tinybirdSync.isEnabled.returns(false);
-    assert.equal(isEnabled(), false);
-    tinybirdSync.isEnabled.returns(true);
-    assert.equal(isEnabled(), true);
+    assert.deepEqual(registration.args[2], { queue: 'tinybird-sync', concurrency: 1 });
   });
 });

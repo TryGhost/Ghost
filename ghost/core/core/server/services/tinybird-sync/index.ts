@@ -22,4 +22,3 @@ const service = createTinybirdSyncService({
 
 export const scheduleJob = service.scheduleJob;
 export const sync = service.sync;
-export const isEnabled = service.isEnabled;

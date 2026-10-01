@@ -63,7 +63,6 @@ interface RegisterJobHandlersDependencies {
   };
   tinybirdSync: {
     sync(): Promise<void>;
-    isEnabled(): boolean;
   };
 }
 
@@ -161,19 +160,11 @@ export default function registerJobHandlers({
     EMAIL_QUEUE,
   );
 
-  // Tinybird sync runs on its own five-minute tick, away from the shared
-  // workers, with the same two-slot overlap handling as email analytics above.
-  // Ticks are dropped silently while its labs flag is off, because the flag is
-  // off on almost every site.
   jobsService.handle(
     TinybirdSyncJob,
     async () => {
       await tinybirdSync.sync();
     },
-    {
-      queue: TinybirdSyncJob.type,
-      concurrency: 2,
-      isEnabled: () => tinybirdSync.isEnabled(),
-    },
+    { queue: TinybirdSyncJob.type, concurrency: 1 },
   );
 }

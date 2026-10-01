@@ -25,15 +25,11 @@ export interface JobsServiceOptions {
   sentry?: JobsErrorReporter;
 }
 
-interface Registration {
-  deliver: (payload: string) => Promise<void> | void;
-  isEnabled?: () => boolean;
-}
+type Deliverer = (payload: string) => Promise<void> | void;
 
 // Execution policy for a job type, declared where its handler is registered:
 // either no options (the type runs on the backend's shared default lane) or a
-// queue name and concurrency together, plus an optional isEnabled switch for
-// the type that is checked before each delivery. The queue is routing metadata only -
+// queue name and concurrency together. The queue is routing metadata only -
 // delivery always routes by job type - and concurrency is a queue-level
 // declaration the backend enforces as strictly as it can (per process
 // in-memory, globally where a durable backend supports it). A tunable value
@@ -44,18 +40,13 @@ export interface JobHandlingOptions {
   queue: string;
   /** Max concurrent deliveries for the queue. */
   concurrency: number;
-  /**
-   * Checked before each delivery of this job type. While it returns false,
-   * deliveries are dropped without running the handler or logging.
-   */
-  isEnabled?: () => boolean;
 }
 
 export class JobsService {
   readonly #backend: JobsBackendBase;
   readonly #logging: JobsLogger;
   readonly #sentry?: JobsErrorReporter;
-  readonly #registry = new Map<string, Registration>();
+  readonly #registry = new Map<string, Deliverer>();
   readonly #queueByType = new Map<string, string>();
   readonly #queues = new Map<string, QueueDeclaration>();
 
@@ -82,10 +73,7 @@ export class JobsService {
       });
     }
     this.#declareQueue(type, options);
-    this.#registry.set(type, {
-      deliver: (payload) => handler(new JobClass(JSON.parse(payload))),
-      isEnabled: options?.isEnabled,
-    });
+    this.#registry.set(type, (payload) => handler(new JobClass(JSON.parse(payload))));
   }
 
   #declareQueue(type: string, options?: JobHandlingOptions): void {
@@ -194,14 +182,11 @@ export class JobsService {
   }
 
   async #process(envelope: JobEnvelope): Promise<void> {
-    const registration = this.#registry.get(envelope.type);
-    if (!registration) {
+    const deliver = this.#registry.get(envelope.type);
+    if (!deliver) {
       this.#logging.error(
         `No handler registered for job type "${envelope.type}"; dropping delivery.`,
       );
-      return;
-    }
-    if (registration.isEnabled && !registration.isEnabled()) {
       return;
     }
 
@@ -209,7 +194,7 @@ export class JobsService {
     this.#logging.info(`[Background Job] ${envelope.type} started`);
 
     try {
-      await registration.deliver(envelope.payload);
+      await deliver(envelope.payload);
     } catch (err) {
       this.#logging.error(
         err,
