@@ -4,7 +4,7 @@ export default nodeLibConfig({
   typescript: false,
   commonjs: true,
   legacyLocalFilenames: true,
-  srcGlobs: ['index.js', 'lib/**/*.js'],
+  srcGlobs: ['index.js', 'src/**/*.js'],
   testGlobs: ['test/**/*.js'],
   // Tests stand in for sharp and fs failures with plain errors
   extraTestRules: {

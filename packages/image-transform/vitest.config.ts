@@ -6,7 +6,7 @@ export default createVitestConfig({
     include: ['test/**/*.test.js'],
     setupFiles: ['test/utils/overrides.js'],
     coverage: {
-      include: ['index.js', 'lib/**/*.js'],
+      include: ['index.js', 'src/**/*.js'],
     },
   },
 });

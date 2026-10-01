@@ -1,1 +1,1 @@
-module.exports = require('./lib/transform');
+module.exports = require('./src/transform');
