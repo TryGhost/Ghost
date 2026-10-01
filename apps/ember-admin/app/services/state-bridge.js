@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/ember';
 import Evented from '@ember/object/evented';
 import Service, {inject as service} from '@ember/service';
 import {action} from '@ember/object';
@@ -43,9 +44,31 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
     @tracked postListQueryParams = {posts: {}, pages: {}};
 
+    // True while the React route hides the admin sidebar
+    @tracked isReactFullScreen = false;
+
+    // Pattern of the React route showing, e.g. `/editor/*`; null while an Ember route shows
+    reactRoutePattern = null;
+
     @action
     setPostListQueryParams(resource, params) {
         this.postListQueryParams = {...this.postListQueryParams, [resource]: params};
+    }
+
+    @action
+    setReactFullScreen(isFullScreen) {
+        this.isReactFullScreen = isFullScreen;
+    }
+
+    @action
+    setReactRoutePattern(routePattern) {
+        this.reactRoutePattern = routePattern;
+        this.tagSentryRoute();
+    }
+
+    // Ember's router misses React's pushState navigations, so a showing React route wins
+    tagSentryRoute() {
+        Sentry.setTag('route', this.reactRoutePattern ?? this.router.currentRouteName);
     }
 
     /**

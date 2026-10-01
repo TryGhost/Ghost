@@ -130,13 +130,6 @@ export class MetafieldDefinitionsService {
     this.getMaxDefinitions = getMaxDefinitions;
   }
 
-  async hasAnyReadable(audience: Audience): Promise<boolean> {
-    const [field] = await this.list(
-      definitions(this.knex, { audience, status: ACTIVE_ONLY, limit: 1 }),
-    );
-    return Boolean(field);
-  }
-
   /**
    * The fields table has no namespace column: every row in it belongs to the publisher's
    * `custom` namespace, so no other namespace can have a stored field.

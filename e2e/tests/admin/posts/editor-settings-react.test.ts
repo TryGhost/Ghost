@@ -284,13 +284,12 @@ async function startDraft(page: Page, { title, body }: { title: string; body: st
   return { editor, postId: await editor.getPostId() };
 }
 
-/** Publishes the open draft and dismisses the flow so the editor is reachable again. */
+/** Publishes the open draft and waits for the automatic return to the post list. */
 async function publish(page: Page, editor: PostEditorPage, postId: string): Promise<void> {
   await editor.publishFlow.open();
   await expect(editor.publishFlow.optionsStep).toBeVisible();
   await Promise.all([waitForPostSave(page, postId), editor.publishFlow.confirm()]);
-  await expect(editor.publishFlow.completeStep).toBeVisible();
-  await editor.publishFlow.dismiss();
+  await expect(page).toHaveURL('/ghost/#/posts');
 }
 
 /** The tag names the page head carries, in the order Ghost writes them. */

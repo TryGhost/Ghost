@@ -16,6 +16,7 @@ import {
   post,
   renderAdminApp,
   staffRole,
+  withoutAutosave,
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
@@ -84,6 +85,37 @@ function pasteText(content: string) {
  * editor-save.acceptance.test.tsx.
  */
 describe('Post editor', () => {
+  it('grows and shrinks the title with its text under the Ember host constraints', async () => {
+    // The acceptance host omits Ember's global form CSS, which still surrounds
+    // the React editor in production.
+    const hostStyles = document.createElement('style');
+    hostStyles.textContent = 'textarea { min-height: 10rem; max-width: 500px; }';
+    document.head.appendChild(hostStyles);
+
+    try {
+      fakeEditorPost({ title: 'Short title' });
+      await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
+
+      const title = editorScreen.titleInput();
+      await expect.element(title).toHaveValue('Short title');
+      const height = () => title.element().getBoundingClientRect().height;
+      const singleLineHeight = height();
+      const lineHeight = parseFloat(getComputedStyle(title.element()).lineHeight);
+      expect(singleLineHeight).toBeLessThan(lineHeight * 2);
+      expect(title.element().getBoundingClientRect().width).toBeGreaterThan(500);
+
+      await title.fill(
+        'A long post title that wraps across several lines in the writing area '.repeat(3),
+      );
+      await expect.poll(height).toBeGreaterThan(singleLineHeight * 2);
+
+      await title.fill('Short title');
+      await expect.poll(height).toBe(singleLineHeight);
+    } finally {
+      hostStyles.remove();
+    }
+  });
+
   it('loads the post into the title and body', async () => {
     const postsApi = fakeEditorPost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
@@ -284,6 +316,29 @@ describe('Post editor', () => {
       .element(editorScreen.loadError())
       .toHaveTextContent('Couldn’t convert this post for editing.');
     await expect(editorScreen.body()).toHaveCount(0);
+  });
+
+  it('shows the load error when the post cannot be read, and opens it on retry', async () => {
+    fakeEditorChrome();
+    fakeAdminEndpoint(
+      'GET',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      { errors: [{ type: 'InternalServerError', message: 'Boom' }] },
+      { status: 500 },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.loadError()).toHaveTextContent('Couldn’t load this post.');
+    await expect(editorScreen.body()).toHaveCount(0);
+
+    // A later handler for the same route wins: the retried read finds the post.
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
+      posts: [post({ id: POST_ID, lexical: buildLexicalParagraph('Hello from React') })],
+    });
+    await editorScreen.retryLoad().click();
+
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect(editorScreen.loadError()).toHaveCount(0);
   });
 
   it('shows a 404 for a post that does not exist', async () => {

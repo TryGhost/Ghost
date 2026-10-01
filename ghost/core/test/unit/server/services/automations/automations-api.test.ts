@@ -1,12 +1,37 @@
 import assert from 'node:assert/strict';
 import ObjectId from 'bson-objectid';
 import sinon from 'sinon';
+import { vi } from 'vitest';
+import { createDatabaseAutomationsRepository } from '../../../../../core/server/services/automations/database-automations-repository';
+
+vi.mock(
+  '../../../../../core/server/services/automations/database-automations-repository',
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import('../../../../../core/server/services/automations/database-automations-repository')
+      >();
+    return {
+      ...actual,
+      createDatabaseAutomationsRepository: vi.fn((options) => ({
+        ...actual.createDatabaseAutomationsRepository(options),
+        getNumberOfAutomations: vi.fn().mockResolvedValue(20),
+      })),
+    };
+  },
+);
 
 import * as automationsApi from '../../../../../core/server/services/automations/automations-api';
 import {
   EMPTY_EMAIL_LEXICAL,
   NON_EMPTY_EMAIL_LEXICAL,
 } from '../../../../utils/automations-fixtures';
+
+const buildWaitAction = () => ({
+  id: ObjectId().toHexString(),
+  type: 'wait',
+  data: { wait_hours: 1 },
+});
 
 const buildSendEmailAction = (dataOverrides = {}) => ({
   id: ObjectId().toHexString(),
@@ -19,9 +44,22 @@ const buildSendEmailAction = (dataOverrides = {}) => ({
   },
 });
 
+const buildEdge = (source: Readonly<{ id: string }>, target: Readonly<{ id: string }>) => ({
+  source_action_id: source.id,
+  target_action_id: target.id,
+});
+
 describe('automations API', function () {
   afterEach(function () {
     sinon.restore();
+  });
+
+  describe('getNumberOfAutomations', function () {
+    it('returns the repository count', async function () {
+      assert.equal(await automationsApi.getNumberOfAutomations(), 20);
+      const repository = vi.mocked(createDatabaseAutomationsRepository).mock.results[0].value;
+      expect(repository.getNumberOfAutomations).toHaveBeenCalledOnce();
+    });
   });
 
   describe('edit', function () {
@@ -126,6 +164,38 @@ describe('automations API', function () {
           edges: [],
         }),
         /well-formed Lexical document/,
+      );
+    });
+
+    it('rejects duplicate edges', async function () {
+      const first = buildWaitAction();
+      const second = buildWaitAction();
+
+      await assert.rejects(
+        automationsApi.edit(automationId, {
+          status: 'inactive',
+          actions: [first, second],
+          edges: [buildEdge(first, second), buildEdge(first, second)],
+        }),
+        /edges must be unique/,
+      );
+    });
+
+    it('rejects a path with a separate cycle', async function () {
+      // A -> B is a valid path, but C <-> D forms a disconnected cycle. The
+      // edge count and head/tail counts still look like a linear path.
+      const a = buildWaitAction();
+      const b = buildWaitAction();
+      const c = buildWaitAction();
+      const d = buildWaitAction();
+
+      await assert.rejects(
+        automationsApi.edit(automationId, {
+          status: 'inactive',
+          actions: [a, b, c, d],
+          edges: [buildEdge(a, b), buildEdge(c, d), buildEdge(d, c)],
+        }),
+        /graph must be a single linear path/,
       );
     });
   });

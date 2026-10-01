@@ -26,8 +26,10 @@ import {
 const VALID = {
   visibility: 'public',
   tiers: [],
+  email_subject: null,
   meta_title: null,
   meta_description: null,
+  canonical_url: null,
   og_title: null,
   og_description: null,
   twitter_title: null,
@@ -66,6 +68,13 @@ describe('validatedFieldsOf', () => {
 });
 
 describe('settingsFieldError', () => {
+  it('validates the email subject on every save, counting Unicode characters', () => {
+    expect(settingsFieldError({ ...VALID, email_subject: '𝔘'.repeat(300) }, false)).toBeNull();
+    expect(settingsFieldError({ ...VALID, email_subject: '𝔘'.repeat(301) }, false)).toBe(
+      'Email subject cannot be longer than 300 characters.',
+    );
+    expect(settingsFieldError({ ...VALID, email_subject: '' }, false)).toBeNull();
+  });
   it('passes fields that break no rule', () => {
     expect(settingsFieldError(VALID, false)).toBeNull();
   });
@@ -198,5 +207,32 @@ describe('settingsFieldErrorFor', () => {
       expect(settingsFieldErrorFor(key, fields)).not.toBeNull();
       expect(settingsFieldErrorFor(key, fields)).toBe(settingsFieldError(fields, false));
     }
+  });
+});
+
+describe('canonical URL validation', () => {
+  it.each(['https://example.com/original/', 'http://localhost:2368/story/', '/original/', ''])(
+    'accepts %s',
+    (canonicalUrl) => {
+      expect(
+        settingsFieldErrorFor('canonical_url', { ...VALID, canonical_url: canonicalUrl }),
+      ).toBeNull();
+    },
+  );
+  it.each([
+    'example.com/path',
+    'https://example.com/a b',
+    'https://',
+    'https://[invalid]',
+    'https://example.com:invalid',
+  ])('refuses %s', (canonicalUrl) => {
+    expect(settingsFieldErrorFor('canonical_url', { ...VALID, canonical_url: canonicalUrl })).toBe(
+      'Please enter a valid URL',
+    );
+  });
+  it('enforces the URL column limit', () => {
+    expect(
+      settingsFieldErrorFor('canonical_url', { ...VALID, canonical_url: '/' + 'a'.repeat(2000) }),
+    ).toBe('Canonical URL is too long, max 2000 chars');
   });
 });

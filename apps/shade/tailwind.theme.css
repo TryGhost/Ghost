@@ -168,6 +168,8 @@
   --color-border-default: var(--border-default);
   --color-border-strong: var(--border-strong);
   --color-focus-ring: var(--focus-ring);
+  --color-search-result-title: var(--search-result-title);
+  --color-search-result-description: var(--search-result-description);
   --color-state-info: var(--state-info);
   --color-state-info-foreground: var(--state-info-foreground);
   --color-state-success: var(--state-success);

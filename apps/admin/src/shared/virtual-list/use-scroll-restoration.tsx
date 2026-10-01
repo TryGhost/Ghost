@@ -88,6 +88,13 @@ function setStoredScrollPosition(
   window.history.replaceState(nextState, '');
 }
 
+function setScrollPosition(element: HTMLElement, position: number) {
+  element.scrollTop = position;
+  // The scroll event for a programmatic write lands next frame; until then the
+  // virtualizer corrects row resizes against its old offset and scrolls back.
+  element.dispatchEvent(new Event('scroll'));
+}
+
 interface UseScrollRestorationOptions {
   /** Reference to the element whose scroll parent should be tracked */
   parentRef: RefObject<HTMLElement>;
@@ -226,6 +233,10 @@ export function useScrollRestoration({
     };
 
     const handleScroll = () => {
+      // Until cleanup, the entry navigated away from still hears the next entry's reset.
+      if (getHistoryEntryKey(getCurrentHistoryState()) !== sourceHistoryEntryKey) {
+        return;
+      }
       latestScrollPositionRef.current = scrollContainer.scrollTop;
       rememberListReturnState(key, { scrollPosition: scrollContainer.scrollTop });
       queuePersistScrollPosition();
@@ -307,7 +318,7 @@ export function useScrollRestoration({
         // Restore the position
         if (Math.abs(savedPosition - currentScroll) > 5) {
           const targetPosition = Math.min(savedPosition, maxScroll);
-          scrollContainer.scrollTop = targetPosition;
+          setScrollPosition(scrollContainer, targetPosition);
         }
         rememberListReturnState(key, { scrollPosition: scrollContainer.scrollTop });
       };
@@ -320,7 +331,7 @@ export function useScrollRestoration({
     // visited earlier. Only Back and explicit breadcrumb state restore it.
     if (savedPosition === undefined && previousEntryRef.current !== entryKey) {
       if (resetOnNavigation) {
-        scrollContainer.scrollTop = 0;
+        setScrollPosition(scrollContainer, 0);
       }
       rememberListReturnState(key, { scrollPosition: scrollContainer.scrollTop });
     }

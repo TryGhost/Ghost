@@ -14,3 +14,4 @@ export {
   normalizeSharedViewName,
   parseAllSharedViewsJSON,
 } from './shared-views';
+export { LabelPicker } from './label-picker';

@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import {
   type AdminRouteHandle,
   type RouteObject,
@@ -6,6 +6,7 @@ import {
   lazyComponent,
   matchRoutes,
   redirect,
+  useLocation,
 } from '@tryghost/admin-x-framework';
 
 // ActivityPub
@@ -16,9 +17,10 @@ import { AnalyticsProvider, analyticsRouteChildren } from './analytics/api';
 import MyProfileRedirect from './my-profile-redirect';
 
 // Ember
-import { EmberFallback, ForceUpgradeGuard } from './ember-bridge';
+import { EmberFallback, ForceUpgradeGuard, syncEmberRoutePattern } from './ember-bridge';
 import HomeRedirect from './home-redirect';
 import { EditorGate } from './editor-gate';
+import { lazyRestoreScreen } from './editor/api';
 import { useFlagGatedRouteOwner } from './use-flag-gated-route-owner';
 import { type AccessRouteHandle } from './route-access';
 import { RouteAccessGuard } from './route-access-guard';
@@ -45,18 +47,11 @@ import {
 } from '@tryghost/admin-x-framework/api/users';
 
 import { NotFound } from './shared/not-found';
+import { type AuthRouteHandle, authRoutes, useAuthScreensOwner } from './auth/api';
 
 // Routes handled by the Ember admin app. React delegates these to Ember via
 // EmberFallback. When migrating a route to React, remove its entry from here.
-const EMBER_ROUTES: string[] = [
-  '/setup',
-  '/signin/*',
-  '/signout',
-  '/signup/*',
-  '/reset/*',
-  '/pro/*',
-  '/restore',
-];
+const EMBER_ROUTES: string[] = ['/pro/*'];
 
 const emberFallbackHandle = { allowInForceUpgrade: true } satisfies AdminRouteHandle;
 
@@ -199,6 +194,7 @@ const appRoutes: RouteObject[] = [
     handle: { ...emberFallbackHandle, hideAdminSidebar: true } satisfies AdminRouteHandle,
   },
   { path: '/site', lazy: lazyComponent(lazyViewSiteScreen) },
+  { path: '/restore', lazy: lazyComponent(lazyRestoreScreen) },
   {
     path: '/migrate/*',
     lazy: lazyComponent(lazyMigrateScreen),
@@ -217,6 +213,8 @@ const appRoutes: RouteObject[] = [
 ];
 
 export const routes: RouteObject[] = [
+  // Outside the guards: signed-out visitors have no user or settings to check.
+  ...authRoutes,
   {
     // ForceUpgradeGuard wraps all routes to redirect to /pro when in force upgrade mode.
     // Routes with handle.allowInForceUpgrade: true bypass this protection.
@@ -241,6 +239,7 @@ const EMBER_ROUTE_COMPONENTS = new Set<unknown>([EmberFallback]);
 /** Decides for any path whether Ember owns it, for destinations only known at event time. */
 export function useEmberOwnedRouteMatcher(): (pathname: string) => boolean {
   const editorOwner = useFlagGatedRouteOwner('editorReact');
+  const authScreensOwner = useAuthScreensOwner();
 
   return useCallback(
     (pathname: string) => {
@@ -251,12 +250,36 @@ export function useEmberOwnedRouteMatcher(): (pathname: string) => boolean {
       if (leaf.Component === EditorGate) {
         return editorOwner !== 'react';
       }
+      if ((leaf.handle as AuthRouteHandle | undefined)?.authScreen) {
+        return authScreensOwner !== 'react';
+      }
       return EMBER_ROUTE_COMPONENTS.has(leaf.Component);
     },
-    [editorOwner],
+    [editorOwner, authScreensOwner],
   );
 }
 
 export function useIsEmberOwnedRoute(pathname: string): boolean {
   return useEmberOwnedRouteMatcher()(pathname);
+}
+
+/** The matched route's path pattern, e.g. `/tags/:tagSlug`, never the path's own ids or slugs. */
+function matchedRoutePattern(pathname: string): string {
+  let pattern = '';
+  for (const { route } of matchRoutes(routes, pathname) ?? []) {
+    if (route.path) {
+      // An absolute child path already repeats its parents' paths
+      pattern = route.path.startsWith('/') ? route.path : `${pattern}/${route.path}`;
+    }
+  }
+  return pattern.replace(/\/\/+/g, '/') || '/';
+}
+
+/** Tells Ember which route pattern React is showing, or null while Ember serves the screen. */
+export function useSyncEmberRoutePattern(): void {
+  const { pathname } = useLocation();
+  const isEmberOwned = useIsEmberOwnedRoute(pathname);
+  const routePattern = isEmberOwned ? null : matchedRoutePattern(pathname);
+
+  useEffect(() => syncEmberRoutePattern(routePattern), [routePattern]);
 }

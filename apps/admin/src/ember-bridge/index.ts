@@ -16,6 +16,8 @@ export {
   applyEmberAdminThemePreference,
   navigateEmberBillingSubRoute,
   syncEmberPostListQueryParams,
+  syncEmberFullScreen,
+  syncEmberRoutePattern,
   emberMutationHandlers,
 } from './ember-bridge';
 export type { AdminThemeMode, EmberDataChangeEvent, StateBridge } from './ember-bridge';

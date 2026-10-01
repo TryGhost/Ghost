@@ -108,6 +108,23 @@ describe('list scroll restoration', () => {
     expect(getListReturnNavigationState('/posts')?.listReturn.scrollPosition).toBe(0);
   });
 
+  it('keeps the previous entry position when a new entry resets to the top', async () => {
+    const { rerender } = mount(true);
+    const previousKey = location.key;
+    scrollContainer.scrollTop = 1500;
+    await act(() => scrollContainer.dispatchEvent(new Event('scroll')));
+    entry += 1;
+    location.key = `entry-${entry}`;
+    window.history.replaceState({ key: location.key }, '');
+    rerender({ isLoading: false });
+    expect(scrollContainer.scrollTop).toBe(0);
+
+    location.key = previousKey;
+    window.history.replaceState({ key: previousKey }, '');
+    rerender({ isLoading: false });
+    expect(scrollContainer.scrollTop).toBe(1500);
+  });
+
   it('keeps in-place Comments thread navigation at its existing position', () => {
     location.pathname = '/comments';
     const { rerender } = mount();

@@ -5,6 +5,7 @@ import { buildLexicalParagraph } from '@tryghost/test-data';
 import {
   currentRoute,
   currentUserResponse,
+  editorReadLanded,
   fakeAdminEndpoint,
   fakeEditorChrome,
   fakeEditorPost,
@@ -98,6 +99,15 @@ async function appendToBody(text: string) {
 
 function bodyElement(): Element | null {
   return document.querySelector(`[data-testid="${editorBody}"]`);
+}
+
+const POST_NOT_FOUND = { errors: [{ type: 'NotFoundError', message: 'Post not found.' }] };
+// Ghost answers a request whose session has gone with this 403.
+const SESSION_GONE = { errors: [{ type: 'NoPermissionError', message: 'Authorization failed' }] };
+
+/** A later handler for the same route wins, so from here every read of the post fails. */
+function failReads(status: number, body: object): EndpointCapture {
+  return fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), body, { status });
 }
 
 /**
@@ -319,32 +329,144 @@ describe('Post editor saving', () => {
     await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
   });
 
-  it('reports a status the post reached elsewhere once a save refetches it', async () => {
+  it('saves its own version when a refetch finds the post published elsewhere, and collides', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
 
     // A later handler for the same route wins: from here the read answers
     // with the post as someone else has just published it.
-    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
-      posts: [
-        post({
-          id: POST_ID,
-          title: 'Hello from React',
-          slug: 'hello-from-react',
-          status: 'published',
-          lexical: buildLexicalParagraph('Hello from React'),
-          updated_at: '2026-01-01T00:01:00.000Z',
-          published_at: '2026-01-01T00:01:00.000Z',
-          tags: [],
-        }),
-      ],
+    const publishedElsewhere = post({
+      id: POST_ID,
+      title: 'Hello from React',
+      slug: 'hello-from-react',
+      status: 'published',
+      lexical: buildLexicalParagraph('Hello from React'),
+      updated_at: '2026-01-01T00:01:00.000Z',
+      published_at: '2026-01-01T00:01:00.000Z',
+      tags: [],
+    });
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), { posts: [publishedElsewhere] });
+    await appendToBody(' and more');
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    await editorReadLanded(queryClient, publishedElsewhere);
+
+    // The server holds their version now, so a save on any other token collides.
+    const collidingSaveApi = fakeAdminEndpoint(
+      'PUT',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      ({ body }) =>
+        (body as { posts: Array<{ updated_at?: string }> }).posts[0].updated_at ===
+        publishedElsewhere.updated_at
+          ? { posts: [publishedElsewhere] }
+          : Response.json(
+              {
+                errors: [
+                  {
+                    code: 'UPDATE_COLLISION',
+                    type: 'UpdateCollisionError',
+                    message: 'Saving failed! Someone else is editing this post.',
+                  },
+                ],
+              },
+              { status: 409 },
+            ),
+    );
+    await appendToBody(' again');
+
+    await expect.poll(() => collidingSaveApi.requests.length).toBe(1);
+    expect(submittedPost(collidingSaveApi)).toMatchObject({
+      status: 'draft',
+      updated_at: '2026-01-01T00:00:01.000Z',
+    });
+    await expect
+      .element(editorScreen.conflictBanner())
+      .toHaveTextContent('Someone else is editing this post');
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more again');
+  });
+
+  it('keeps the editor and what was typed when the read after a save fails with a 500', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    const mountedBody = bodyElement();
+
+    const failedRead = failReads(500, {
+      errors: [{ type: 'InternalServerError', message: 'Boom' }],
     });
     await appendToBody(' and more');
     await expect.poll(() => saveApi.requests.length).toBe(1);
+    await expect.poll(() => failedRead.requests.length).toBeGreaterThan(0);
 
-    await expect.element(editorScreen.status()).toHaveTextContent('Published');
+    await appendToBody(' and then some');
+
+    await expect.poll(() => saveApi.requests.length).toBe(2);
+    expect(submittedBody(saveApi)).toContain('Hello from React and more and then some');
+    await expect
+      .element(editorScreen.body())
+      .toHaveTextContent('Hello from React and more and then some');
+    await expect(editorScreen.loadError()).toHaveCount(0);
+    expect(bodyElement()).toBe(mountedBody);
+  });
+
+  it('leaves an expired session to the next save when the read after a save is a 403', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    const mountedBody = bodyElement();
+
+    const expiredRead = failReads(403, SESSION_GONE);
+    await appendToBody(' and more');
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    await expect.poll(() => expiredRead.requests.length).toBeGreaterThan(0);
+
+    const expiredSave = fakeAdminEndpoint(
+      'PUT',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      SESSION_GONE,
+      { status: 403 },
+    );
+    await appendToBody(' and then some');
+
+    await expect.poll(() => expiredSave.requests.length).toBe(1);
+    await expect.element(editorScreen.reauthDialog()).toBeVisible();
+    await expect
+      .element(editorScreen.bodyBehindDialog())
+      .toHaveTextContent('Hello from React and more and then some');
+    await expect(editorScreen.loadError()).toHaveCount(0);
+    expect(bodyElement()).toBe(mountedBody);
+  });
+
+  it('leaves a post deleted elsewhere to the next save when the read after a save is a 404', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    const mountedBody = bodyElement();
+
+    const goneRead = failReads(404, POST_NOT_FOUND);
+    await appendToBody(' and more');
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    await expect.poll(() => goneRead.requests.length).toBeGreaterThan(0);
+
+    const goneSave = fakeAdminEndpoint(
+      'PUT',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      POST_NOT_FOUND,
+      { status: 404 },
+    );
+    await appendToBody(' and then some');
+
+    await expect.poll(() => goneSave.requests.length).toBe(1);
+    await expect
+      .element(editorScreen.conflictBanner())
+      .toHaveTextContent('This post has been deleted');
+    await expect
+      .element(editorScreen.body())
+      .toHaveTextContent('Hello from React and more and then some');
+    await expect(editorScreen.notFound()).toHaveCount(0);
+    expect(bodyElement()).toBe(mountedBody);
   });
 
   it('leaves tags alone when it saves', async () => {

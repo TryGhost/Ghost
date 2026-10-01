@@ -1,8 +1,9 @@
 import assert from 'assert/strict';
 import { IdentityTokenService } from '../../../../../core/server/services/identity-tokens/identity-token-service';
 import crypto from 'node:crypto';
-import { verify } from 'jsonwebtoken';
+import { decode, verify } from 'jsonwebtoken';
 import { getPublicKeyInfo } from '../../../../../core/server/lib/public-jwk';
+import { staticSigningKeys } from '../../../../utils/signing-keys';
 
 describe('IdentityTokenService', function () {
   it('Can create JWTs', async function () {
@@ -37,7 +38,7 @@ m+HAlDNOZe7ryiuK7dj04wY2qoO/kCsxO9bR1M8LGRWFIHd4e8ExGWn5Qxk0/9X+
     const issuer = 'issuer.com';
     const { kid, jwk } = await getPublicKeyInfo(privateKey);
 
-    const service = new IdentityTokenService(privateKey, issuer, kid);
+    const service = new IdentityTokenService(staticSigningKeys(privateKey), issuer);
 
     const token = await service.getTokenForUser('egg@ghost.org', 'Legend');
 
@@ -55,5 +56,6 @@ m+HAlDNOZe7ryiuK7dj04wY2qoO/kCsxO9bR1M8LGRWFIHd4e8ExGWn5Qxk0/9X+
     assert.equal(claims.sub, 'egg@ghost.org');
     assert.equal(claims.role, 'Legend');
     assert.equal(claims.iss, 'issuer.com');
+    assert.equal(decode(token, { complete: true })?.header.kid, kid);
   });
 });

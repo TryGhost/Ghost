@@ -69,3 +69,11 @@ How we write GitHub Actions workflows safely. Follow these when adding or editin
 5. Third-party actions pinned to SHAs.
 6. Secrets scoped to the jobs that use them, and never passed to a local action on a `pull_request` run.
 7. No job both checks out PR code and holds a secret.
+
+## PR preview boundary
+
+The preview dispatch workflow reads GitHub metadata and public registry manifests;
+it never checks out PR code. Ghost-Moya builds the preview adapter image and runs
+smoke tests on a separate runner with no deployment secrets or OIDC. Publishing
+imports image data without running it, and deployment pins the registry digest.
+Inherited base-image ONBUILD instructions and adapter validation are PR code too.

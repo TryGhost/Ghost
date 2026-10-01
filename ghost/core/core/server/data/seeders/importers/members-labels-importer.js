@@ -15,7 +15,7 @@ class MembersLabelsImporter extends TableImporter {
     const members = await this.transaction.select('id').from('members');
     this.labels = await this.transaction.select('id').from('labels');
 
-    await this.importForEach(members, quantity ? quantity / members.length : 1);
+    await this.importForEach(members, quantity !== undefined ? quantity / members.length : 1);
   }
 
   generate() {

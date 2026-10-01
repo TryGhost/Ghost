@@ -7,12 +7,14 @@ type RouteMatch = {
 
 const useMatchesMock = vi.fn<() => RouteMatch[]>();
 const useEmberSidebarVisibilityMock = vi.fn<() => boolean>();
+const syncEmberFullScreenMock = vi.fn<(isFullScreen: boolean) => () => void>();
 
 vi.mock('@tryghost/admin-x-framework', () => ({
   useMatches: () => useMatchesMock(),
 }));
 
 vi.mock('@/ember-bridge', () => ({
+  syncEmberFullScreen: (isFullScreen: boolean) => syncEmberFullScreenMock(isFullScreen),
   useSidebarVisibility: () => useEmberSidebarVisibilityMock(),
 }));
 
@@ -53,5 +55,25 @@ describe('useAdminSidebarVisibility', () => {
     const { result } = renderHook(() => useAdminSidebarVisibility());
 
     expect(result.current).toBe(true);
+  });
+});
+
+describe('useSyncEmberFullScreen', () => {
+  it('publishes whether a matched route hides the sidebar', async () => {
+    const { useSyncEmberFullScreen } = await import('./sidebar-visibility');
+    const stopSync = vi.fn();
+    syncEmberFullScreenMock.mockReturnValue(stopSync);
+
+    useMatchesMock.mockReturnValue([{}, { handle: { hideAdminSidebar: true } }]);
+    const { rerender } = renderHook(() => useSyncEmberFullScreen());
+
+    expect(syncEmberFullScreenMock).toHaveBeenCalledExactlyOnceWith(true);
+
+    useMatchesMock.mockReturnValue([{}, { handle: { allowInForceUpgrade: true } }]);
+    rerender();
+
+    expect(stopSync).toHaveBeenCalledOnce();
+    expect(syncEmberFullScreenMock).toHaveBeenCalledTimes(2);
+    expect(syncEmberFullScreenMock).toHaveBeenLastCalledWith(false);
   });
 });

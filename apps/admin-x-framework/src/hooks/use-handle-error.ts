@@ -49,9 +49,9 @@ const useHandleError = () => {
         // but still clear lingering toasts that would block clicks the same way.
         toast.dismiss();
       } else if (error instanceof SessionExpiredError) {
-        // A redirecting request unloads the page, so a toast would only flash;
-        // one that opted out of the redirect reports the expiry itself.
-        toast.dismiss();
+        // Either the page is reloading to signin or nobody is signed in yet, so
+        // there is nothing to report; toasts the signin flow shows must survive.
+        return;
       } else if (error instanceof APIError) {
         showErrorToast(getErrorMessage(error, error.message));
       } else {

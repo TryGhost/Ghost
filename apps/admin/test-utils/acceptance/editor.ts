@@ -1,3 +1,5 @@
+import type { QueryClient } from '@tanstack/react-query';
+import { postsDataType } from '@tryghost/admin-x-framework/api/posts';
 import { buildLexicalParagraph, post, settingsResponse, type Post } from '@tryghost/test-data';
 import type { RenderAdminAppOptions } from './render-admin-app';
 import { fakeNewsletters, fakePosts, fakeSnippets } from './resources';
@@ -43,6 +45,40 @@ export function fakeEditorPost(
 export function submittedPost(capture: EndpointCapture, index = -1): Record<string, unknown> {
   const body = capture.requests.at(index)?.body as { posts: Record<string, unknown>[] } | undefined;
   return body?.posts[0] ?? {};
+}
+
+/**
+ * Resolves once a read of `version` at its `updated_at` is in the query cache and the editor
+ * has handled it; a read the editor refuses changes nothing on screen to wait for.
+ */
+export function editorReadLanded(
+  queryClient: QueryClient,
+  version: Pick<Post, 'id' | 'updated_at'>,
+): Promise<void> {
+  const cache = queryClient.getQueryCache();
+  const landed = () =>
+    cache.findAll({ queryKey: [postsDataType] }).some((query) => {
+      const data = query.state.data as { posts?: Array<Pick<Post, 'updated_at'>> } | undefined;
+      return (
+        String(query.queryKey[1]).includes(`/posts/${version.id}/`) &&
+        data?.posts?.[0]?.updated_at === version.updated_at
+      );
+    });
+
+  return new Promise((resolve) => {
+    // The cache hears of a read before its observers, which it tells on its next timer turn.
+    const handled = () => setTimeout(() => setTimeout(resolve));
+    if (landed()) {
+      handled();
+      return;
+    }
+    const unsubscribe = cache.subscribe(() => {
+      if (landed()) {
+        unsubscribe();
+        handled();
+      }
+    });
+  });
 }
 
 const UNSPLASH_REGULAR = 'https://images.unsplash.com/photo-1?ixid=1&w=1080';

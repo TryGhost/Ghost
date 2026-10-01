@@ -17,9 +17,11 @@ import {
   editorHelpLink,
   editorLeaveDialog,
   editorLoadError,
+  editorNewsletterDetailsButton,
   editorPreviewButton,
   editorPublishButton,
   editorPublishInputsError,
+  editorRetryNewsletterButton,
   editorSaveButton,
   editorUnpublishButton,
   editorUnscheduleButton,
@@ -138,6 +140,7 @@ export const editorScreen = {
     return pane;
   },
   loadError: () => page.getByTestId(editorLoadError),
+  retryLoad: () => page.getByTestId(editorLoadError).getByRole('button', { name: 'Retry' }),
   /** The sign-in dialog a save that finds no session opens, and its two steps. */
   reauthDialog: () => page.getByTestId(editorReauthDialog),
   reauthEmail: () => page.getByTestId(editorReauthDialog).getByLabelText('Email'),
@@ -162,6 +165,11 @@ export const editorScreen = {
       .getByTestId(editorConflictReloadConfirm)
       .getByRole('button', { name: conflictCancelReloadButton }),
   status: () => page.getByTestId(editorStatus),
+  /** The status line's ways back into the publish flow once a newsletter failed. */
+  retryNewsletter: () =>
+    page.getByTestId(editorStatus).getByRole('button', { name: editorRetryNewsletterButton }),
+  viewNewsletterDetails: () =>
+    page.getByTestId(editorStatus).getByRole('button', { name: editorNewsletterDetailsButton }),
   pendingSaveNotice: () =>
     page.getByRole('status').filter({ hasText: 'Changes are waiting to save.' }),
 

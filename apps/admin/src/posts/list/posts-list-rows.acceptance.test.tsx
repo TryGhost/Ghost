@@ -584,6 +584,10 @@ describe('Posts list trailing action button', () => {
     const action = postsListScreen.rowAction().first();
     await expect.element(action).toHaveAccessibleName('Post analytics');
     await expect.element(action).toHaveAttribute('href', `#/posts/analytics/${emailedPost.id}`);
+    await expect.element(action).not.toHaveAttribute('title');
+    await action.hover();
+    expect(action.element()).toHaveAttribute('data-state', 'closed');
+    await expect.element(postsListScreen.actionTooltip('Post analytics')).toBeVisible();
   });
 
   // Same post, lesser role: Ember gates the analytics screen on isAdmin.
@@ -620,6 +624,10 @@ describe('Posts list trailing action button', () => {
     const action = postsListScreen.rowAction().first();
     await expect.element(action).toHaveAccessibleName('Edit');
     await expect.element(action).toHaveAttribute('href', `#/editor/page/${page.id}`);
+    await expect.element(action).not.toHaveAttribute('title');
+    await action.hover();
+    expect(action.element()).toHaveAttribute('data-state', 'closed');
+    await expect.element(postsListScreen.actionTooltip('Edit')).toBeVisible();
   });
 });
 
