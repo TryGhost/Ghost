@@ -1,6 +1,6 @@
 import KoenigBehaviourPlugin, {DESELECT_CARD_COMMAND, PASTE_LINK_COMMAND} from '../../src/plugins/KoenigBehaviourPlugin';
 import {$createCodeBlockNode, CodeBlockNode} from '@tryghost/kg-default-nodes';
-import {$createNodeSelection, $createParagraphNode, $createRangeSelection, $createTextNode, $getRoot, $setSelection, KEY_ARROW_DOWN_COMMAND, KEY_ARROW_LEFT_COMMAND, KEY_ARROW_RIGHT_COMMAND, KEY_ARROW_UP_COMMAND, KEY_ENTER_COMMAND, KEY_TAB_COMMAND, createEditor} from 'lexical';
+import {$createNodeSelection, $createParagraphNode, $createRangeSelection, $createTextNode, $getRoot, $getSelection, $setSelection, KEY_ARROW_DOWN_COMMAND, KEY_ARROW_LEFT_COMMAND, KEY_ARROW_RIGHT_COMMAND, KEY_ARROW_UP_COMMAND, KEY_ENTER_COMMAND, KEY_TAB_COMMAND, createEditor} from 'lexical';
 import {act, cleanup, render} from '@testing-library/react';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
@@ -111,5 +111,21 @@ describe('KoenigBehaviourPlugin missing selections', () => {
             selection.focus.set(key, 1, 'text');
             return selection;
         });
+    });
+
+    it('selects the card below an empty paragraph when the native selection has no range', () => {
+        window.getSelection().removeAllRanges();
+        let handled;
+        act(() => {
+            editor.update(() => {
+                const card = $createCodeBlockNode();
+                $getRoot().append($createParagraphNode(), card);
+                $getRoot().getFirstChild().select(0, 0);
+                handled = editor.dispatchCommand(KEY_ARROW_DOWN_COMMAND, new KeyboardEvent('keydown'));
+                expect($getSelection().getNodes()).toEqual([card]);
+            }, {discrete: true});
+        });
+        expect(onError).not.toHaveBeenCalled();
+        expect(handled).toBe(true);
     });
 });

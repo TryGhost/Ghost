@@ -742,9 +742,6 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                             const topLevelElement = selection.anchor.getNode().getTopLevelElement();
                             const nativeSelection = window.getSelection();
                             const nativeTopLevelElement = getTopLevelNativeElement(nativeSelection?.anchorNode);
-                            if (!nativeTopLevelElement || !nativeSelection?.rangeCount) {
-                                return false;
-                            }
 
                             // empty paragraphs are odd because the native range won't
                             // have a rect to compare positioning
@@ -753,6 +750,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                 selection.anchor.offset === 0;
 
                             const atEndOfElement =
+                                nativeTopLevelElement &&
                                 nativeSelection.rangeCount !== 0 &&
                                 nativeSelection.anchorNode === nativeTopLevelElement &&
                                 nativeSelection.anchorOffset === nativeTopLevelElement.children.length - 1 &&
@@ -764,7 +762,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                     $selectDecoratorNode(nextSibling);
                                     return true;
                                 }
-                            } else {
+                            } else if (nativeTopLevelElement) {
                                 const range = nativeSelection.getRangeAt(0).cloneRange();
                                 const rects = range.getClientRects();
 
