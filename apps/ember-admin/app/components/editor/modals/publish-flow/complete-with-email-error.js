@@ -101,6 +101,8 @@ export default class PublishFlowCompleteWithEmailError extends Component {
                 }
 
                 this.retryErrorMessage = htmlSafe(errorMessage);
+                // A rejected retry means the eligibility on screen is stale.
+                yield this.fetchRetryEligibilityTask.perform();
                 return false;
             }
         }
