@@ -1,5 +1,5 @@
-// Translates the metafield clauses of a members filter into a query over the
-// values table. A metafield is a publisher-defined field on a member; it is
+// Translates the metafield clauses of an entity's filter into a query over its
+// values table. A metafield is a publisher-defined field on a record; it is
 // addressed as `namespace.key`, and a composite value such as an address names
 // one of its parts by appending it: `namespace.key.part`.
 //
@@ -19,6 +19,8 @@ import {
   formatIdentity,
   parseIdentity,
 } from '@tryghost/metafield-types/identity';
+import { chainTransformers } from '@tryghost/mongo-utils';
+import { metafieldTables, type MetafieldEntity } from './entity';
 
 const RELATION = 'metafields';
 const PREFIX = `${RELATION}.`;
@@ -191,15 +193,34 @@ export function createMetafieldsFilterTransformer() {
 }
 
 /**
- * The Member filter relation that exposes metafield values. A member has many leaf
- * rows (one per field, or per part of a composite field), and a predicate asks whether
- * one of them matches, so this joins the values table on member_id and mongo-knex emits
- * it as a correlated `members.id IN (…)` subquery — composing with every other member
- * filter.
+ * The filter relation that exposes an entity's metafield values to its model. A record
+ * has many leaf rows (one per field, or per part of a composite field), and a predicate
+ * asks whether one of them matches, so this joins the values table on the entity's column
+ * and mongo-knex emits it as a correlated `<table>.id IN (…)` subquery — composing with
+ * every other filter on the entity.
  */
-export const METAFIELDS_RELATION = {
-  tableName: 'members_metafield_values',
-  tableNameAs: RELATION,
-  type: 'oneToOne',
-  joinFrom: 'member_id',
-} as const;
+export function metafieldsRelation(entity: MetafieldEntity) {
+  return {
+    tableName: metafieldTables(entity.table).values,
+    tableNameAs: RELATION,
+    type: 'oneToOne',
+    joinFrom: entity.foreignKey,
+  } as const;
+}
+
+/**
+ * Chains the metafields transformer onto a model query whose filter names the relation.
+ * Every query a model filters routes through `applyDefaultAndCustomFilters`, so a model
+ * calling this there covers lists, counts, exports and bulk edits alike.
+ */
+export function withMetafieldsFilter<
+  T extends { filter?: string; mongoTransformer?: (query: object) => object },
+>(options: T): T {
+  if (options.filter && options.filter.includes(PREFIX)) {
+    const transformer = createMetafieldsFilterTransformer();
+    options.mongoTransformer = options.mongoTransformer
+      ? chainTransformers(options.mongoTransformer, transformer)
+      : transformer;
+  }
+  return options;
+}

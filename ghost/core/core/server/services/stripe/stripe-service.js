@@ -138,7 +138,7 @@ module.exports = class StripeService {
       // A getter because the metafields services are built during boot: reading the
       // binding at construction would capture the empty value it had beforehand.
       get metafieldBindings() {
-        return metafields.bindings;
+        return metafields.members.bindings;
       },
       get memberBREADService() {
         return membersService.api.memberBREADService;

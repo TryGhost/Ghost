@@ -1,4 +1,4 @@
-import { MEMBERS, definitions } from '../../services/metafields';
+import { MEMBERS, members } from '../../services/metafields';
 
 /**
  * The extra fields a publisher has defined, as a member's own client reads them.
@@ -34,7 +34,7 @@ const controller = {
       // No `filter`, which Admin offers: whether a field is archived is a
       // publisher's business, and a member is only ever shown what they can still
       // fill in.
-      return definitions!.browse({ namespace: frame.options.namespace }, MEMBERS);
+      return members!.definitions.browse({ namespace: frame.options.namespace }, MEMBERS);
     },
   },
 };

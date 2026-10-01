@@ -16,29 +16,25 @@ import {
   parseIdentity,
 } from '@tryghost/metafield-types/identity';
 import {
-  DbMetafieldChangeEventWithMember,
+  DbMetafieldChangeEvent,
   DbMetafieldLeaf,
   DbMetafieldValue,
   FIELD_STATUS,
   StoredFieldList,
-  type MetafieldChangeEvent,
-  type WriteOrigin,
+  type MetafieldChangeRecord,
 } from './schema';
 import { toDatabaseDate } from '../../lib/db-types/date';
 import { ACTIVE_ONLY, definitions, knexify, readableBy } from './queries';
-import { canWrite, type Audience, type MemberAccess } from './access';
+import {
+  SURFACES,
+  accessFromColumns,
+  canWrite,
+  type Access,
+  type AccessColumn,
+  type Audience,
+} from './access';
+import { metafieldTables, type MetafieldEntity, type OriginOf } from './entity';
 import { leavesToWrite, valuesFromLeaves, type StoredLeaf } from './storage';
-
-const FIELDS_TABLE = 'members_metafields';
-const VALUES_TABLE = 'members_metafield_values';
-const CHANGE_EVENTS_TABLE = 'members_metafield_change_events';
-const MEMBERS_TABLE = 'members';
-
-/**
- * From the canonical schema, the same source definitions-service reads, so no key a site
- * could hold is refused and this cannot drift from the `members_metafields.key` column.
- */
-const MAX_KEY_LENGTH: number = require('../../data/schema').tables[FIELDS_TABLE].key.maxlength;
 
 /**
  * Rows per insert statement, bounded by knex rather than by either database. SQLite takes
@@ -54,8 +50,16 @@ const UPSERT_CHUNK = 400;
 /** Derived, not restated, so a column changing shape in `schema.ts` changes here too. */
 type DbLeafRow = z.infer<typeof DbMetafieldValue>;
 
-const MAX_IDENTITY_LENGTH = MAX_KEY_LENGTH * 2 + 1;
-const ValuesInput = z.record(z.string().max(MAX_IDENTITY_LENGTH), z.unknown());
+/**
+ * What a write may name, bounded by the key column in the canonical schema, the same
+ * source definitions-service reads, so no key a site could hold is refused and this
+ * cannot drift from the column.
+ */
+function valuesInputFor(entity: MetafieldEntity) {
+  const maxKeyLength: number =
+    require('../../data/schema').tables[metafieldTables(entity.table).definitions].key.maxlength;
+  return z.record(z.string().max(maxKeyLength * 2 + 1), z.unknown());
+}
 
 const wireProperty = (identity: string): string => [QUALIFIER, identity].join('.');
 
@@ -90,7 +94,7 @@ interface AllowedField {
   key: string;
   name: string;
   type: FieldType;
-  memberAccess: MemberAccess;
+  access: Access;
 }
 
 /** An absent `value` means clear the field. */
@@ -100,24 +104,49 @@ export interface PlannedWrite {
 }
 
 /** Checked writes and who is making them: everything needed to store them. */
-export interface MetafieldPlan {
+export interface MetafieldPlan<E extends MetafieldEntity = MetafieldEntity> {
   writes: PlannedWrite[];
-  origin: WriteOrigin;
+  origin: OriginOf<E>;
+}
+
+/** Columns of the entity's own table read alongside each history entry, and how they parse. */
+export interface EntityColumns<T> {
+  columns: readonly string[];
+  /** Parses the columns named above, with the record's `id`. */
+  schema: z.ZodType<T>;
 }
 
 /**
- * What a member holds for each defined field. Separate from the definitions service
- * because a value belongs to the member and a definition belongs to the site's settings,
+ * What a record holds for each defined field. Separate from the definitions service
+ * because a value belongs to the record and a definition belongs to the site's settings,
  * which are different aggregates rather than different layers.
  */
-export class MetafieldValuesService {
+export class MetafieldValuesService<E extends MetafieldEntity = MetafieldEntity> {
   private knex: Knex;
+  private entity: E;
+  private tables: ReturnType<typeof metafieldTables>;
+  private valuesInput: ReturnType<typeof valuesInputFor>;
   /** A getter, not a number: the ceiling is an operator setting that changes between requests. */
   private getMaxDefinitions: () => number;
 
-  constructor({ knex, getMaxDefinitions }: { knex: Knex; getMaxDefinitions: () => number }) {
+  constructor({
+    knex,
+    entity,
+    getMaxDefinitions,
+  }: {
+    knex: Knex;
+    entity: E;
+    getMaxDefinitions: () => number;
+  }) {
     this.knex = knex;
+    this.entity = entity;
+    this.tables = metafieldTables(entity.table);
+    this.valuesInput = valuesInputFor(entity);
     this.getMaxDefinitions = getMaxDefinitions;
+  }
+
+  private get accessColumns(): AccessColumn[] {
+    return this.entity.surfaces.map((surface) => SURFACES[surface].column);
   }
 
   // The query is scoped to the audience, so a field they may not see is absent from
@@ -135,9 +164,9 @@ export class MetafieldValuesService {
     if (keys.length === 0) {
       return new Map();
     }
-    const fields = await definitions(this.knex, { audience, status: ACTIVE_ONLY })
+    const fields = await definitions(this.knex, this.entity, { audience, status: ACTIVE_ONLY })
       .whereIn('key', keys)
-      .select('id', 'key', 'name', 'type', 'member_access');
+      .select('id', 'key', 'name', 'type', ...this.accessColumns);
     return new Map(
       fields.map((field) => [
         formatIdentity({ namespace: CUSTOM_NAMESPACE, key: field.key, partPath: null }),
@@ -147,7 +176,7 @@ export class MetafieldValuesService {
           name: field.name,
           type: field.type,
           namespace: CUSTOM_NAMESPACE,
-          memberAccess: field.member_access,
+          access: accessFromColumns(field),
         },
       ]),
     );
@@ -179,26 +208,24 @@ export class MetafieldValuesService {
       return new Map();
     }
 
+    const { values: valuesTable, definitions: fieldsTable } = this.tables;
     // Not ordered by field: these rows become an object keyed by field, and an object
     // cannot carry an order. `path` is ordered so composite parts assemble the same
     // way every time.
     const rows = await readableBy(
-      executor(VALUES_TABLE).join(
-        FIELDS_TABLE,
-        `${VALUES_TABLE}.metafield_key`,
-        `${FIELDS_TABLE}.key`,
-      ),
+      executor(valuesTable).join(fieldsTable, `${valuesTable}.metafield_key`, `${fieldsTable}.key`),
       audience,
+      this.entity,
     )
-      .whereIn(`${VALUES_TABLE}.member_id`, entityIds)
-      .where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active)
-      .orderBy(`${VALUES_TABLE}.path`, 'asc')
+      .whereIn(`${valuesTable}.${this.entity.foreignKey}`, entityIds)
+      .where(`${fieldsTable}.status`, FIELD_STATUS.active)
+      .orderBy(`${valuesTable}.path`, 'asc')
       .select(
-        { entity_id: `${VALUES_TABLE}.member_id` },
-        `${FIELDS_TABLE}.key`,
-        `${FIELDS_TABLE}.type`,
-        `${VALUES_TABLE}.path`,
-        `${VALUES_TABLE}.value_text`,
+        { entity_id: `${valuesTable}.${this.entity.foreignKey}` },
+        `${fieldsTable}.key`,
+        `${fieldsTable}.type`,
+        `${valuesTable}.path`,
+        `${valuesTable}.value_text`,
       );
 
     const leaves: StoredLeaf[] = [];
@@ -208,7 +235,7 @@ export class MetafieldValuesService {
       } catch (err) {
         logging.warn(
           {
-            event: { name: 'members.metafields.value_unreadable' },
+            event: { name: `${this.entity.table}.metafields.value_unreadable` },
             err,
             metafieldKey: row.key,
             path: row.path,
@@ -227,7 +254,7 @@ export class MetafieldValuesService {
   }
 
   private parseValues(input: unknown): Record<string, unknown> {
-    const parsed = ValuesInput.safeParse(input);
+    const parsed = this.valuesInput.safeParse(input);
     if (!parsed.success) {
       throw new errors.ValidationError({
         message: 'Custom field values must be an object keyed by field identity.',
@@ -358,19 +385,29 @@ export class MetafieldValuesService {
    * Always transactional. Given an executor it joins that transaction, so the importer's
    * failed value write takes its member with it; given none it opens its own.
    *
-   * Every write also puts an entry on the member's activity feed, naming the fields it
-   * touched and who wrote them where, in the same transaction, so the feed cannot name a
-   * change that was not stored or miss one that was. A value has more than one author,
-   * and the feed is where a publisher finds out which of them changed it.
+   * Every write also puts an entry in the record's history, naming the fields it touched
+   * and who wrote them where, in the same transaction, so the history cannot name a change
+   * that was not stored or miss one that was. A value has more than one author, and the
+   * history is where a publisher finds out which of them changed it.
    */
   async applyWrite(
-    memberId: string,
+    entityId: string,
     writes: PlannedWrite[],
-    { writtenBy, source, executor = this.knex }: WriteOrigin & { executor?: Knex },
+    { writtenBy, source, executor = this.knex }: OriginOf<E> & { executor?: Knex },
   ): Promise<void> {
+    // The type admits only the entity's own writers, but a JavaScript caller is not held to
+    // it, and a value recorded against a writer the entity cannot have would be unreadable.
+    if (!this.entity.writers.includes(writtenBy.type)) {
+      throw new errors.IncorrectUsageError({
+        message: `${this.entity.table} metafields cannot be written by ${writtenBy.type}.`,
+      });
+    }
     if (writes.length === 0) {
       return;
     }
+
+    const { values, changeEvents } = this.tables;
+    const { foreignKey } = this.entity;
 
     const apply = async (trx: Knex) => {
       // Built first, then sent as whole statements: a handful per member rather
@@ -395,7 +432,7 @@ export class MetafieldValuesService {
         rows.push(
           ...set.map((leaf) => ({
             id: new ObjectID().toHexString(),
-            member_id: memberId,
+            [foreignKey]: entityId,
             metafield_key: field.key,
             path: leaf.path,
             value_text: leaf.value_text,
@@ -408,16 +445,13 @@ export class MetafieldValuesService {
       }
 
       if (clearedKeys.length > 0) {
-        await trx(VALUES_TABLE)
-          .where('member_id', memberId)
-          .whereIn('metafield_key', clearedKeys)
-          .del();
+        await trx(values).where(foreignKey, entityId).whereIn('metafield_key', clearedKeys).del();
       }
 
       if (clearedPaths.length > 0) {
         // One statement with a group per field, rather than a statement per field.
-        await trx(VALUES_TABLE)
-          .where('member_id', memberId)
+        await trx(values)
+          .where(foreignKey, entityId)
           .where((builder) => {
             for (const { fieldKey, paths } of clearedPaths) {
               builder.orWhere((pair) =>
@@ -432,11 +466,11 @@ export class MetafieldValuesService {
         // Typed as the plain row because `merge` takes its columns as `keyof` the
         // builder's record, which for a composite table registration is the scope
         // names rather than the columns.
-        await trx<DbLeafRow>(VALUES_TABLE)
+        await trx<DbLeafRow>(values)
           .insert(rows.slice(from, from + UPSERT_CHUNK))
           // Naming the columns rather than giving values takes each from the row
           // that lost the conflict, so every part updates to its own value.
-          .onConflict(['member_id', 'metafield_key', 'path'])
+          .onConflict([foreignKey, 'metafield_key', 'path'])
           // The writer is merged with the value, so a leaf names who wrote what
           // it currently holds rather than who wrote its first value.
           .merge(['value_text', 'written_by_type', 'written_by_id', 'updated_at']);
@@ -447,9 +481,9 @@ export class MetafieldValuesService {
         key: field.key,
         name: field.name,
       }));
-      await trx(CHANGE_EVENTS_TABLE).insert({
+      await trx(changeEvents).insert({
         id: new ObjectID().toHexString(),
-        member_id: memberId,
+        [foreignKey]: entityId,
         written_by_type: writtenBy.type,
         written_by_id: writtenBy.id,
         source,
@@ -469,47 +503,51 @@ export class MetafieldValuesService {
   }
 
   /**
-   * Entries from members' activity feeds, newest first, each with its member, as one page
-   * of the members events endpoint reads them.
+   * Entries from records' histories, newest first, each with the columns of its record the
+   * caller asks for, as one page of a feed reads them.
    *
    * `filter` is a parsed NQL filter over this table's own columns: mapping the feed's
    * names onto them is the feed's business, and applying them is this table's.
    */
-  async browseChangeEvents({
+  async browseChangeEvents<T>({
     limit,
     filter,
+    entity,
   }: {
     /** Absent for every entry, as the feed asks for when paging is off. */
     limit?: number;
     filter?: object;
-  }): Promise<{ events: MetafieldChangeEvent[]; total: number }> {
+    entity: EntityColumns<T>;
+  }): Promise<{ events: Array<MetafieldChangeRecord & { entity: T }>; total: number }> {
+    const { changeEvents } = this.tables;
+    const { table, foreignKey } = this.entity;
+    const entityColumn = (column: string) => `entity_${column}`;
+
     const filtered = () => {
-      const query = this.knex(CHANGE_EVENTS_TABLE);
-      return filter ? knexify(query, filter, { tableName: CHANGE_EVENTS_TABLE }) : query;
+      const query = this.knex(changeEvents);
+      return filter ? knexify(query, filter, { tableName: changeEvents }) : query;
     };
 
-    // Joined rather than looked up afterwards: an entry cannot outlive its member, whose
+    // Joined rather than looked up afterwards: an entry cannot outlive its record, whose
     // delete cascades to it, so every entry has one to join.
     const newestFirst = filtered()
-      .join(MEMBERS_TABLE, `${MEMBERS_TABLE}.id`, `${CHANGE_EVENTS_TABLE}.member_id`)
+      .join(table, `${table}.id`, `${changeEvents}.${foreignKey}`)
       .orderBy([
-        { column: `${CHANGE_EVENTS_TABLE}.created_at`, order: 'desc' },
-        { column: `${CHANGE_EVENTS_TABLE}.id`, order: 'desc' },
+        { column: `${changeEvents}.created_at`, order: 'desc' },
+        { column: `${changeEvents}.id`, order: 'desc' },
       ]);
     const page = limit === undefined ? newestFirst : newestFirst.limit(limit);
 
     const [rows, counted] = await Promise.all([
       page.select(
-        `${CHANGE_EVENTS_TABLE}.id`,
-        `${CHANGE_EVENTS_TABLE}.member_id`,
-        `${CHANGE_EVENTS_TABLE}.written_by_type`,
-        `${CHANGE_EVENTS_TABLE}.written_by_id`,
-        `${CHANGE_EVENTS_TABLE}.source`,
-        `${CHANGE_EVENTS_TABLE}.metafields`,
-        `${CHANGE_EVENTS_TABLE}.created_at`,
-        { member_uuid: `${MEMBERS_TABLE}.uuid` },
-        { member_name: `${MEMBERS_TABLE}.name` },
-        { member_email: `${MEMBERS_TABLE}.email` },
+        `${changeEvents}.id`,
+        { entity_id: `${changeEvents}.${foreignKey}` },
+        `${changeEvents}.written_by_type`,
+        `${changeEvents}.written_by_id`,
+        `${changeEvents}.source`,
+        `${changeEvents}.metafields`,
+        `${changeEvents}.created_at`,
+        ...entity.columns.map((column) => ({ [entityColumn(column)]: `${table}.${column}` })),
       ),
       filtered().count({ total: '*' }).first(),
     ]);
@@ -519,25 +557,27 @@ export class MetafieldValuesService {
     // event type, so dropping an entry would push a valid one off the end of its page for
     // good. Anything else a row can't be read for, the table's constraints rule out, so it
     // throws rather than being hidden.
-    const events = rows.map(
-      ({ member_uuid: uuid, member_name: name, member_email: email, ...event }) => {
-        const fields = StoredFieldList.safeParse(event.metafields);
-        if (!fields.success) {
-          logging.warn(
-            {
-              event: { name: 'members.metafields.change_event_unreadable' },
-              err: fields.error,
-              changeEventId: event.id,
-            },
-            'Reading an unreadable metafield change entry as naming no fields',
-          );
-        }
-        return DbMetafieldChangeEventWithMember.parse({
-          event: fields.success ? event : { ...event, metafields: StoredFieldList.encode([]) },
-          member: { id: event.member_id, uuid, name, email },
-        });
-      },
-    );
+    const events = rows.map((row: Record<string, unknown>) => {
+      const fields = StoredFieldList.safeParse(row.metafields);
+      if (!fields.success) {
+        logging.warn(
+          {
+            event: { name: `${table}.metafields.change_event_unreadable` },
+            err: fields.error,
+            changeEventId: row.id,
+          },
+          'Reading an unreadable metafield change entry as naming no fields',
+        );
+      }
+      const event = DbMetafieldChangeEvent.parse(
+        fields.success ? row : { ...row, metafields: StoredFieldList.encode([]) },
+      );
+      const record = entity.schema.parse({
+        id: event.entity_id,
+        ...Object.fromEntries(entity.columns.map((column) => [column, row[entityColumn(column)]])),
+      });
+      return { ...event, entity: record };
+    });
 
     return { events, total: Number(counted?.total ?? 0) };
   }

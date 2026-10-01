@@ -1,5 +1,6 @@
 import logging from '@tryghost/logging';
-import type { MemberAccess } from './access';
+import type { AccessColumn, AccessLevel } from './access';
+import type { MetafieldEntity } from './entity';
 import type { WriteOrigin } from './schema';
 
 /** A write made through the Admin API, by a member of staff or an integration. */
@@ -90,15 +91,15 @@ export type MetafieldVerb = keyof typeof COMMANDS;
 // when the row itself is gone. `key` rides alongside it because the key is how a field
 // is addressed publicly — its id never leaves the API.
 //
+// An access change names each setting it changed by that setting's column.
+//
 // A reorder names no field: it carries the count and the word the feed reads it by.
 export type MetafieldActionDetails =
-  | {
+  | ({
       primary_name: string;
       key: string;
       previous_name?: string;
-      member_access?: MemberAccess;
-      previous_member_access?: MemberAccess;
-    }
+    } & Partial<Record<AccessColumn | `previous_${AccessColumn}`, AccessLevel>>)
   | { action_name: 'reordered'; count: number };
 
 // `subject` is the field's row id, or null for an act that belongs to no single field.
@@ -112,12 +113,14 @@ export type RecordMetafieldAction = (input: {
 // Best-effort action-log write: a failed action must never fail the command that triggered it.
 export async function recordMetafieldAction({
   Action,
+  entity,
   context,
   verb,
   subject,
   details,
 }: {
   Action: ActionRecorder;
+  entity: MetafieldEntity;
   context: RequestContext;
   verb: MetafieldVerb;
   subject: string | null;
@@ -130,7 +133,7 @@ export async function recordMetafieldAction({
     await Action.add(
       {
         event: COMMANDS[verb],
-        resource_type: 'member_custom_field',
+        resource_type: entity.definitionResource,
         // The field's id: this column holds 24 characters, and a key minted from
         // a publisher-chosen name is bounded by the far wider key column, so only
         // the id fits every field. Null where the act had no single field.
@@ -144,14 +147,14 @@ export async function recordMetafieldAction({
   } catch (err) {
     logging.error(
       {
-        event: { name: 'members.metafields.action_log_failed' },
+        event: { name: `${entity.table}.metafields.action_log_failed` },
         err,
         verb,
         subject,
         actorType: context.actor.type,
         actorId: context.actor.id,
       },
-      'Failed to record a member metafield action',
+      'Failed to record a metafield action',
     );
   }
 }

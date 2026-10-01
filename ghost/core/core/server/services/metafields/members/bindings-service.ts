@@ -5,12 +5,16 @@ import { z } from 'zod';
 import { FieldTypeSchema, type FieldType } from '@tryghost/metafield-types';
 import { DbDate } from '../../../lib/db-types/date';
 import { INTERNAL } from '../access';
-import { FIELD_STATUS, type WriteOrigin } from '../schema';
+import { metafieldTables, type OriginOf } from '../entity';
+import { MEMBERS_ENTITY } from '../entities';
+import { FIELD_STATUS } from '../schema';
 import type { MetafieldPlan, MetafieldValuesService } from '../values-service';
 
 // Bindings route what a checkout collected into a member's fields. Only members are
 // created by a checkout, so only members have bindings.
-const FIELDS_TABLE = 'members_metafields';
+type Members = typeof MEMBERS_ENTITY;
+
+const FIELDS_TABLE = metafieldTables(MEMBERS_ENTITY.table).definitions;
 
 const { CUSTOM_NAMESPACE } = require('@tryghost/metafield-types/identity');
 const BINDINGS_TABLE = 'members_metafield_bindings';
@@ -57,11 +61,11 @@ export interface BoundField {
  * An intersection rather than `Extract`: a member writes from more than one place, so only
  * narrowing each pairing to checkout keeps the member among the writers here.
  */
-type Attribution = (binding: BoundField) => WriteOrigin & { source: 'checkout' };
+type Attribution = (binding: BoundField) => OriginOf<Members> & { source: 'checkout' };
 
 /** Plans for the values a source sent, in the order they arrived. */
 export interface RoutedPlans {
-  plans: MetafieldPlan[];
+  plans: MetafieldPlan<Members>[];
   /** The first value that couldn't be placed or was refused. The rest are still planned. */
   failure?: unknown;
 }
@@ -72,9 +76,15 @@ export interface RoutedPlans {
  */
 export class MetafieldBindingsService {
   private knex: Knex;
-  private values: Pick<MetafieldValuesService, 'planWrite'>;
+  private values: Pick<MetafieldValuesService<Members>, 'planWrite'>;
 
-  constructor({ knex, values }: { knex: Knex; values: Pick<MetafieldValuesService, 'planWrite'> }) {
+  constructor({
+    knex,
+    values,
+  }: {
+    knex: Knex;
+    values: Pick<MetafieldValuesService<Members>, 'planWrite'>;
+  }) {
     this.knex = knex;
     this.values = values;
   }
@@ -165,7 +175,7 @@ export class MetafieldBindingsService {
     values: Array<{ port: string; value: unknown }>,
     attribute: Attribution,
   ): Promise<RoutedPlans> {
-    const plans: MetafieldPlan[] = [];
+    const plans: MetafieldPlan<Members>[] = [];
     let failure: unknown;
 
     for (const { port, value } of values) {
