@@ -56,7 +56,14 @@ export function emberAssetsPlugin() {
     },
     transformIndexHtml: {
       order: 'post',
-      handler() {
+      handler(_html, context) {
+        // This standalone, dev-only feasibility harness must not boot a second Admin app.
+        if (
+          config.command === 'serve' &&
+          context.filename === path.resolve(config.root, 'canvas.html')
+        ) {
+          return [];
+        }
         // Read from Ember's own build output (not the combined output
         // in built/admin which gets overwritten by closeBundle and would
         // accumulate duplicate path prefixes on repeated builds)

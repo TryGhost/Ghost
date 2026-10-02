@@ -16,6 +16,7 @@ export function previewRuntimeBootstrap(): void {
   let selectionMode = runtimeScript?.dataset.builderSelectionMode === 'true';
   const nativeForms = runtimeScript?.dataset.builderNativeForms === 'true';
   const artifactDocument = runtimeScript?.dataset.builderArtifactDocument === 'true';
+  const canvasNavigation = runtimeScript?.dataset.builderCanvasNavigation === 'true';
   const artifactMarkers = new WeakMap<Element, string>();
   const artifactElementFingerprints = new WeakMap<Element, string>();
   const artifactElementIdentities = new WeakMap<
@@ -623,6 +624,40 @@ export function previewRuntimeBootstrap(): void {
     pending: boolean;
   };
   let activeInlineEdit: ActiveInlineEdit | null = null;
+  if (canvasNavigation) {
+    document.addEventListener(
+      'wheel',
+      (event) => {
+        if (!event.ctrlKey && !event.metaKey) {
+          return;
+        }
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        send({
+          type: 'canvas-input',
+          input: {
+            kind: 'zoom',
+            x: event.clientX,
+            y: event.clientY,
+            deltaY: event.deltaY,
+            deltaMode: event.deltaMode,
+          },
+        });
+      },
+      { capture: true, passive: false },
+    );
+    document.addEventListener(
+      'keydown',
+      (event) => {
+        if (event.key === 'Escape' && !activeInlineEdit) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          send({ type: 'canvas-input', input: { kind: 'escape' } });
+        }
+      },
+      true,
+    );
+  }
   let pendingImageEdit: {
     editId: number;
     element: HTMLImageElement;

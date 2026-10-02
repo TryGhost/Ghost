@@ -2,9 +2,43 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { copyDirectorySkippingSelfReferences } from '../vite-ember-assets';
+import { copyDirectorySkippingSelfReferences, emberAssetsPlugin } from '../vite-ember-assets';
+
+import type {
+  IndexHtmlTransformContext,
+  MinimalPluginContextWithoutEnvironment,
+  ResolvedConfig,
+} from 'vite';
+
+it('keeps the standalone canvas development harness free of Ember boot assets', () => {
+  const read = vi
+    .spyOn(fs, 'readFileSync')
+    .mockReturnValue('<script src="assets/admin.js"></script>');
+  try {
+    const plugin = emberAssetsPlugin();
+    const context = {} as MinimalPluginContextWithoutEnvironment;
+    plugin.configResolved.call(context, {
+      command: 'serve',
+      root: '/admin',
+      base: '/__admin-dev__',
+    } as ResolvedConfig);
+    expect(
+      plugin.transformIndexHtml.handler.call(context, '', {
+        filename: '/admin/canvas.html',
+      } as IndexHtmlTransformContext),
+    ).toEqual([]);
+    expect(read).not.toHaveBeenCalled();
+    expect(
+      plugin.transformIndexHtml.handler.call(context, '', {
+        filename: '/admin/index.html',
+      } as IndexHtmlTransformContext),
+    ).toEqual(expect.arrayContaining([expect.objectContaining({ tag: 'script' })]));
+  } finally {
+    read.mockRestore();
+  }
+});
 
 describe('copyDirectorySkippingSelfReferences', () => {
   const temporaryDirectories: string[] = [];
