@@ -12,31 +12,6 @@ function truncateToSeconds(ms) {
 }
 
 /**
- * @param {number} n
- * @param {number} width
- * @returns {string}
- */
-function pad(n, width) {
-  return String(n).padStart(width, '0');
-}
-
-/**
- * Formats as the `YYYY-MM-DD HH:mm:ss` UTC string the database columns store.
- *
- * @param {number} ms - epoch milliseconds
- * @returns {string}
- */
-function formatForDatabase(ms) {
-  const date = new Date(ms);
-  const year = date.getUTCFullYear();
-
-  return (
-    `${year < 0 ? '-' : ''}${pad(Math.abs(year), 4)}-${pad(date.getUTCMonth() + 1, 2)}-${pad(date.getUTCDate(), 2)} ` +
-    `${pad(date.getUTCHours(), 2)}:${pad(date.getUTCMinutes(), 2)}:${pad(date.getUTCSeconds(), 2)}`
-  );
-}
-
-/**
  * Handles the Dates MySQL hands back (and numbers) without building a moment,
  * since this runs for every date column of every row. Everything else,
  * including SQLite's UTC strings, goes through moment exactly as before.
@@ -50,7 +25,8 @@ function toEpochMilliseconds(value) {
   }
 
   if (typeof value === 'number') {
-    return value;
+    // NaN for numbers outside the range a Date can hold, like moment
+    return new Date(value).getTime();
   }
 
   // moment would read a Luxon DateTime as today's date at midnight
@@ -96,8 +72,12 @@ module.exports = function (Bookshelf) {
       for (const key in attrs) {
         if (attrs[key] && tableDef?.[key]?.type === 'dateTime') {
           const ms = toEpochMilliseconds(attrs[key]);
-          // Matches the string moment's format() produced for invalid input
-          attrs[key] = Number.isNaN(ms) ? 'Invalid date' : formatForDatabase(ms);
+          // 'Invalid date' is what moment's format() produced for invalid
+          // input. toISOString is UTC; it writes years outside 0-9999 as
+          // ±YYYYYY, but MySQL can only store 1000-9999 anyway.
+          attrs[key] = Number.isNaN(ms)
+            ? 'Invalid date'
+            : new Date(ms).toISOString().slice(0, 19).replace('T', ' ');
         }
       }
 
