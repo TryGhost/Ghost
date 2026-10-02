@@ -1,13 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
-import {
-  flags,
-  prepareStatuses,
-  run,
-  runsScroller,
-  scrollRunsToEnd,
-} from './run-list.test-utils';
+import { flags, prepareStatuses, run, runsScroller, scrollRunsToEnd } from './run-list.test-utils';
 
 const endpoint = /\/automations\/first\/runs\/\?/;
 const region = () => page.getByRole('region', { name: 'Automation runs', exact: true });
