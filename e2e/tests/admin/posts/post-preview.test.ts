@@ -38,8 +38,6 @@ for (const editorReact of [false, true]) {
     });
 
     test('preview modal closes via ESC when the iframe has focus', async () => {
-      test.fixme(editorReact, 'the React preview does not hear an Escape pressed inside its frame');
-
       const post = await postFactory.create({
         title: 'Test Post for Preview Modal',
         status: 'draft',
