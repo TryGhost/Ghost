@@ -560,19 +560,42 @@
       minimumReleaseAge: '0 days',
     },
 
-    // The shared preset automerges all `action`-type deps, which would
-    // quietly convert our SHA pins on third-party actions back into
-    // "trust whatever upstream publishes next" — the exact attack class
-    // SHA-pinning defends against (codecov 2021, tj-actions 2025). Keep
-    // own-org and GitHub-owned actions automerging; bumps to everything
-    // else (codecov, docker, pnpm, peter-evans, ...) wait for a human
-    // review per GitHub's Actions hardening guidance. Placed before the
-    // security-update rule below so vulnerability-alert action bumps can
-    // still automerge.
+    // Batch every same-major action ref bump (version, digest, or a moved
+    // floating tag) into one PR. Individual third-party action PRs each sat
+    // on needs:review and went stale; one grouped PR gets one CI run and
+    // automerges via the shared preset's `action` rule. Majors are excluded
+    // so they still open individually behind dashboard approval.
     {
-      description: 'Third-party action bumps require human merge',
+      description: 'Group + automerge non-major GitHub Action ref updates',
+      matchDepTypes: ['action'],
+      matchUpdateTypes: ['minor', 'patch', 'digest'],
+      groupName: 'GitHub Actions',
+      automerge: true,
+      automergeType: 'pr',
+    },
+
+    // A 0.x minor is a breaking bump under semver (e.g. gh-aw, ssh-agent).
+    // Ungroup it so its required review doesn't block the grouped PR.
+    {
+      description: 'Pre-1.0 action minor bumps get their own PR and require human merge',
+      matchDepTypes: ['action'],
+      matchCurrentVersion: '/^v?0\\./',
+      matchUpdateTypes: ['minor'],
+      groupName: null,
+      automerge: false,
+      addLabels: ['needs:review'],
+    },
+
+    // Third-party action majors can change behavior or ownership, so they
+    // wait for a human review per GitHub's Actions hardening guidance.
+    // Own-org and GitHub-owned action majors automerge once approved on the
+    // dashboard. Placed before the security-update rule below so
+    // vulnerability-alert action bumps can still automerge.
+    {
+      description: 'Third-party action major bumps require human merge',
       matchDepTypes: ['action'],
       matchPackageNames: ['!tryghost/**', '!actions/**', '!github/**'],
+      matchUpdateTypes: ['major'],
       automerge: false,
       addLabels: ['needs:review'],
     },
