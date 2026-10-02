@@ -52,6 +52,27 @@ are still replaced, captures reconstruct layout in inert documents, and neither
 animations, sticky/fixed behavior, nor below-fold lazy loading are established
 by a successful capture. The harness reports warnings and elapsed capture time.
 
+The development harness also feature-detects top-document
+`document.modelContext.registerTool` and registers three read-only Stage A probes:
+`ghost_canvas_probe_get_editor_state`, `ghost_canvas_probe_inspect_frame`, and
+`ghost_canvas_probe_capture_frame`. State discovers immutable workspace/frame
+handles and current device representation/revision handles. Inspection and capture
+require those explicit targets; selection and focus never retarget a read.
+Only fixed devices are addressed. Surface replacement, stale revisions, changed
+document/layout, cancellation, and out-of-bounds regions return explicit errors.
+Capture uses existing per-image limits and admits one concurrent probe capture;
+it preserves board state and device scroll.
+
+Registration uses the current WebMCP draft's abort-signal lifetime and is owned by
+the harness rather than individual frames. Presentation changes do not register
+again. Unsupported or failing APIs leave manual navigation available. The capture
+result includes an experimental PNG data URL, lineage, coverage, and fidelity
+warnings; it explicitly reports native image consumption as unverified. Mocked
+API and host-browser evidence verify this adapter and opaque preview boundary,
+not native Codex discovery/read/image consumption or the actual Admin embedding.
+Those remain required before choosing the production adapter location. The probe
+is not the shared draft controller and exposes no mutation or publication tools.
+
 The expanded comparison uses four additional opaque-origin iframes, one per
 device. Switching among captured compositions, expanded compositions, and device
 viewports retains all eight documents; opening a frame always reveals its original
@@ -80,6 +101,7 @@ From `apps/admin`:
 
 ```sh
 pnpm exec vitest run src/builder/canvas --maxWorkers=1
+pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/canvas/dev/webmcp-probe.acceptance.test.tsx --maxWorkers=1
 pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/canvas/measure-expanded-composition.acceptance.test.tsx --maxWorkers=1
 pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/canvas/canvas-board.component.test.tsx src/builder/workspaces/theme/preview/preview-canvas-input.acceptance.test.tsx src/builder/workspaces/theme/preview/preview-layout.acceptance.test.tsx src/builder/workspaces/theme/preview/screenshot.acceptance.test.tsx --maxWorkers=1
 pnpm typecheck
@@ -92,5 +114,6 @@ cancelled results, and a bridge that never answers. Browser cases cover independ
 composition/device layout and fidelity differences, label collisions,
 keyboard focus and native scrolling, the opt-in sandbox input boundary, and
 below-fold capture pixels with viewport-height media queries and unchanged device
-scroll. Full
+scroll, addressed read-only capture without changing focus, and the top-document
+registration boundary. Full
 repository validation uses `pnpm check`; see the [testing guide](../../../../../docs/contributing/testing.md).

@@ -11,11 +11,13 @@ import {
 } from '@/builder/canvas/measure-expanded-composition';
 import { IframePreviewDocumentSurface } from '@/builder/workspaces/theme/preview/preview-document';
 import { instance, loadAssets } from './fixture';
+import { CanvasProbe, registerCanvasProbe } from './webmcp-probe';
 
-import type { CanvasFrame, CanvasFrameInput } from '@/builder/canvas/canvas-board';
+import type { CanvasFrame, CanvasFrameInput, CanvasView } from '@/builder/canvas/canvas-board';
 import type { PreviewDocument } from '@/builder/workspaces/theme/preview/preview-document';
 import type { CapturedOverview } from '@/builder/canvas/capture-overview';
 import type { ExpandedComposition } from '@/builder/canvas/measure-expanded-composition';
+import type { ProbeRegistrationStatus } from './webmcp-probe';
 
 type CaptureState =
   | { status: 'pending' }
@@ -166,6 +168,7 @@ function Preview({
   captureTick,
   onCapture,
   onExpanded,
+  probe,
 }: {
   frame: CanvasFrame;
   document: PreviewDocument;
@@ -176,6 +179,7 @@ function Preview({
   captureTick: number;
   onCapture: (state: CaptureState) => void;
   onExpanded: (state: ExpandedState) => void;
+  probe: CanvasProbe;
 }) {
   const iframe = useRef<HTMLIFrameElement>(null);
   const inputHandler = useRef(onInput);
@@ -194,11 +198,13 @@ function Preview({
     setOverview(null);
     captureHandler.current({ status: 'pending' });
     const surface = new IframePreviewDocumentSurface(iframe.current!, { canvasNavigation: true });
+    const connection = probe.attach(frame.id, surface, document);
     surface.onCanvasInput((input) => inputHandler.current(input));
     // Canvas visitor links must select instead of navigating; no Browse mode.
     void surface
       .setInteractionMode('select', controller.signal)
       .then(() => surface.replaceDocument(document, null, controller.signal))
+      .then(() => connection.ready())
       .then(() => {
         if (!controller.signal.aborted) {
           setStatus('Ready');
@@ -207,6 +213,7 @@ function Preview({
       })
       .catch((error: unknown) => {
         if (!controller.signal.aborted) {
+          connection.fail();
           setStatus(error instanceof Error ? error.message : String(error));
           captureHandler.current({
             status: 'failed',
@@ -216,9 +223,10 @@ function Preview({
       });
     return () => {
       controller.abort();
+      connection.dispose();
       surface.destroy();
     };
-  }, [document]);
+  }, [document, frame.id, probe]);
   useEffect(() => {
     if (!ready || ready.document !== document) {
       return;
@@ -319,6 +327,32 @@ export function CanvasHarness() {
   const [captures, setCaptures] = useState<Record<string, CaptureState>>({});
   const [expanded, setExpanded] = useState<Record<string, ExpandedState>>({});
   const [mode, setMode] = useState<OverviewMode>('captured');
+  const [probe, setProbe] = useState<CanvasProbe | null>(null);
+  const [siteTools, setSiteTools] = useState<ProbeRegistrationStatus | 'pending'>('pending');
+  const view = useRef<CanvasView>({
+    camera: { x: 0, y: 0, scale: 1 },
+    selectedFrameId: null,
+    openedFrameId: null,
+  });
+  useEffect(() => {
+    const current = new CanvasProbe(frames, instance.siteUrl);
+    current.setView(view.current, 'captured');
+    setProbe(current);
+    const registration = registerCanvasProbe(window.document, current);
+    let disposed = false;
+    void registration.ready.then((status) => {
+      if (!disposed) {
+        setSiteTools(status);
+      }
+    });
+    return () => {
+      disposed = true;
+      registration.dispose();
+    };
+  }, []);
+  useEffect(() => {
+    probe?.setView(view.current, mode);
+  }, [probe, mode]);
   const [captureTick, setCaptureTick] = useState(0);
   const initialFitReady = frames.every(
     (frame) => captures[frame.id]?.status === 'current' || captures[frame.id]?.status === 'failed',
@@ -402,6 +436,15 @@ export function CanvasHarness() {
         <Text size="sm" tone="secondary">
           Fixed device previews · Recorded Home/Post content · {revision}
         </Text>
+        <Text data-site-tools-status={siteTools} size="xs" tone="secondary">
+          {siteTools === 'registered'
+            ? 'Read-only site tools registered · Native discovery and image consumption unverified.'
+            : siteTools === 'unsupported'
+              ? 'Site tools unavailable in this browser · Canvas navigation remains available.'
+              : siteTools === 'failed'
+                ? 'Site tool registration failed · Canvas navigation remains available.'
+                : 'Checking site tools…'}
+        </Text>
         <Text size="sm" tone="secondary">
           Compare captures and separate expanded compositions · Open a frame for its retained fixed
           device · Expanded height changes viewport-dependent layout. Captures omit external
@@ -475,7 +518,7 @@ export function CanvasHarness() {
           frames={displayFrames}
           initialFitReady={initialFitReady}
           renderFrame={(frame, onInput, { opened }) =>
-            documents[frame.id] ? (
+            documents[frame.id] && probe ? (
               <Preview
                 captureTick={captureTick}
                 document={documents[frame.id]}
@@ -483,6 +526,7 @@ export function CanvasHarness() {
                 frame={frame}
                 mode={mode}
                 opened={opened}
+                probe={probe}
                 onCapture={(state) => setCaptures((current) => ({ ...current, [frame.id]: state }))}
                 onExpanded={(state) =>
                   setExpanded((current) => ({ ...current, [frame.id]: state }))
@@ -495,6 +539,10 @@ export function CanvasHarness() {
               </Box>
             )
           }
+          onViewChange={(state) => {
+            view.current = state;
+            probe?.setView(state, mode);
+          }}
         />
       </Box>
     </Stack>

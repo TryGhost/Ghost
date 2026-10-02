@@ -18,6 +18,11 @@ export type CanvasFrame = CanvasRect & {
 export type CanvasFrameInput =
   | { kind: 'escape' }
   | { kind: 'zoom'; x: number; y: number; deltaY: number; deltaMode: number };
+export type CanvasView = {
+  camera: CanvasCamera;
+  selectedFrameId: string | null;
+  openedFrameId: string | null;
+};
 
 function frameHeaders(frames: readonly CanvasFrame[], camera: CanvasCamera) {
   const headers: { frame: CanvasFrame; x: number; y: number }[] = [];
@@ -42,9 +47,11 @@ export function CanvasBoard({
   frames,
   renderFrame,
   initialFitReady = true,
+  onViewChange,
 }: {
   frames: readonly CanvasFrame[];
   initialFitReady?: boolean;
+  onViewChange?: (view: CanvasView) => void;
   renderFrame: (
     frame: CanvasFrame,
     onInput: (input: CanvasFrameInput) => void,
@@ -56,6 +63,15 @@ export function CanvasBoard({
   const [camera, setCamera] = useState<CanvasCamera>({ x: 0, y: 0, scale: 1 });
   const [selected, setSelected] = useState<string | null>(null);
   const [focused, setFocused] = useState<string | null>(null);
+  const viewHandler = useRef(onViewChange);
+  viewHandler.current = onViewChange;
+  useEffect(() => {
+    viewHandler.current?.({
+      camera: { ...camera },
+      selectedFrameId: selected,
+      openedFrameId: focused,
+    });
+  }, [camera, selected, focused]);
   const overview = useRef<CanvasCamera | null>(null);
   const initialized = useRef(false);
   const drag = useRef<{ origin: CanvasPoint; point: CanvasPoint; moved: boolean } | null>(null);
