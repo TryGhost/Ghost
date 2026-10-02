@@ -55,8 +55,10 @@ endpoint, including saved email subjects and send/delivery evidence. Active runs
 also fetch the saved workflow and show the remaining path after the pending step,
 with upcoming cards distinct from recorded events. Both requests must succeed;
 a failure shows the history error state and Retry reloads both. Upcoming cards
-have no projected dates yet. A removed pending action or inactive automation
-explains why no further path is shown.
+estimate dates from the pending step’s recorded eligibility (or now if overdue),
+adding each downstream wait. These estimates are calculated when history loads;
+they are not scheduled send times. Deleted members have no projected dates.
+A removed pending action or inactive automation explains why no further path is shown.
 Completed runs do not get an invented end timestamp.
 
 Email snippets show up to 400 characters of ordinary text from the saved revision,

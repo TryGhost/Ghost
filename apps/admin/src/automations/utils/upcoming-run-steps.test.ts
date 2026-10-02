@@ -4,6 +4,7 @@ import type {
   AutomationRunPlan,
 } from '@tryghost/admin-x-framework/api/automation-run-history';
 import { mapUpcomingRunSteps } from './upcoming-run-steps';
+import { mapRunHistory } from './run-history';
 
 const entered = '2026-09-10T12:00:00.000Z';
 const eligible = '2026-09-13T12:00:00.000Z';
@@ -63,7 +64,42 @@ describe('upcoming downstream steps', () => {
       statusLabel: 'Not reached',
     });
     expect(upcoming.cards[1].email?.subject).toBe('Current saved email');
-    expect(upcoming.cards.every((card) => !card.timestamp)).toBe(true);
+  });
+
+  it('estimates dates from recorded eligibility and accumulates downstream waits', () => {
+    const extended = {
+      ...plan,
+      actions: [
+        ...plan.actions,
+        { id: 'short-wait', type: 'wait' as const, data: { wait_hours: 0.5 } },
+      ],
+      edges: [
+        ...plan.edges.filter((edge) => edge.target_action_id !== 'email'),
+        { source_action_id: 'next-wait', target_action_id: 'short-wait' },
+        { source_action_id: 'short-wait', target_action_id: 'email' },
+      ],
+    };
+    const { cards } = mapUpcomingRunSteps(active, extended, Date.parse(entered));
+    expect(cards.map((card) => card.timestamp?.value)).toEqual([
+      '2026-09-15T12:00:00.000Z',
+      '2026-09-15T12:30:00.000Z',
+      '2026-09-15T12:30:00.000Z',
+      undefined,
+    ]);
+    expect(cards[0].timestamp).toMatchObject({ label: 'est.', estimated: true });
+  });
+
+  it('estimates an overdue pending step from now without changing its recorded eligibility', () => {
+    const { cards } = mapUpcomingRunSteps(active, plan, Date.parse('2026-09-20T15:00:00.000Z'));
+    expect(cards[0].timestamp?.value).toBe('2026-09-22T15:00:00.000Z');
+    expect(cards[1].timestamp).toEqual(cards[0].timestamp);
+    expect(mapRunHistory(active).at(-1)?.timestamp?.value).toBe(eligible);
+  });
+
+  it('keeps upcoming steps without dates when the member has been deleted', () => {
+    const { cards } = mapUpcomingRunSteps({ ...active, member: null }, plan);
+    expect(cards).toHaveLength(3);
+    expect(cards.every((card) => !card.timestamp)).toBe(true);
   });
 
   it('shows only the end marker when the pending step is the final saved action', () => {

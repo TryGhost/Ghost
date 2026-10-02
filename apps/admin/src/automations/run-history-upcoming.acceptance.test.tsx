@@ -73,8 +73,18 @@ describe('Upcoming steps in active run history', () => {
     ]);
     await expect.element(cards.nth(2)).toHaveTextContent('Not reached');
     for (const card of [cards.nth(2), cards.nth(3)]) {
-      expect(card.element().querySelector('time')).toBeNull();
+      const time = card.element().querySelector('time')!;
+      expect(time.textContent).toBe(
+        `est. ${new Date(time.dateTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`,
+      );
+      expect(time.title).toBe(
+        `Estimated date: ${new Date(time.dateTime).toLocaleDateString(undefined, { dateStyle: 'full' })}`,
+      );
     }
+    expect(cards.nth(3).element().querySelector('time')?.dateTime).toBe(
+      cards.nth(2).element().querySelector('time')?.dateTime,
+    );
+    expect(cards.nth(4).element().querySelector('time')).toBeNull();
     expect(request.requests).toHaveLength(2);
     await close();
     await expect
