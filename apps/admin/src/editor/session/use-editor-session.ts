@@ -1,6 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { useLocation } from '@tryghost/admin-x-framework';
 import { APIError } from '@tryghost/admin-x-framework/errors';
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
@@ -60,20 +59,6 @@ export type ReloadOutcome = 'reloaded' | 'gone' | 'failed';
 interface EditorReadResponse {
   posts?: EditorRecord[];
   pages?: EditorRecord[];
-}
-
-interface EditorSessionLocationState {
-  editorSession?: string;
-}
-
-/**
- * Identifies the editing session behind the current URL. A create replaces the
- * URL and carries the key forward, so the same session survives the swap.
- */
-export function useEditorSessionKey(): string {
-  const location = useLocation();
-  const state = location.state as EditorSessionLocationState | null;
-  return state?.editorSession ?? location.key;
 }
 
 export interface EditorSessionBinding {

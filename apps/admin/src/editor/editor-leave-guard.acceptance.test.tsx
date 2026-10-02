@@ -21,6 +21,7 @@ import { postsListScreen } from '@/posts/list/posts-list.screen';
 import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
+const OTHER_POST_ID = 'other1';
 const NEW_POST_ID = 'new789';
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const CREATED_AT = '2026-01-01T00:00:05.000Z';
@@ -700,29 +701,69 @@ describe('Post editor leave guard on history pops', () => {
     expect(saveApi.requests.length).toBe(0);
   });
 
-  it('asks again after a Stay once an accepted exit kept the editor mounted', async () => {
-    const saveApi = fakeEditablePost({ status: 'published', published_at: LOADED_AT });
-    await openByHashChange(`/editor/post/${POST_ID}`, withFastAutosave(FLAG_ON));
+  it('shows the post in the URL when a hash change and Back move between two posts', async () => {
+    fakeEditablePost();
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${OTHER_POST_ID}/\\?`), {
+      posts: [
+        post({
+          id: OTHER_POST_ID,
+          title: 'Another post',
+          status: 'draft',
+          lexical: buildLexicalParagraph('Other words'),
+          updated_at: LOADED_AT,
+          published_at: null,
+          tags: [],
+        }),
+      ],
+    });
+    await openByHashChange(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
+
+    window.location.hash = `/editor/post/${OTHER_POST_ID}`;
+
+    await expect.element(editorScreen.titleInput()).toHaveValue('Another post');
+    await expect.element(editorScreen.body()).toHaveTextContent('Other words');
+
+    window.history.back();
+
+    await expect.poll(currentRoute).toBe(`/editor/post/${POST_ID}`);
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-    await appendToBody(' and more');
+  });
+
+  it('keeps a created post’s editor and unsaved text when a hash change reaches its URL again', async () => {
+    const { createApi, resolveCreate } = fakeNewPost();
+    await openByHashChange('/editor/post', withoutAutosave(FLAG_ON));
+    await appendToBody('First words');
+    await expect.poll(() => createApi.requests.length).toBe(1);
+    resolveCreate();
+    await expect.poll(currentRoute).toBe(`/editor/post/${NEW_POST_ID}`);
+    await appendToBody(' and then some');
     await expect.poll(unsavedChangesGuarded).toBe(true);
+    const editor = editorScreen.root().element();
 
-    // Plain entries for two posts share a session key, so leaving to the other keeps this editor.
-    window.location.hash = '/editor/post/other1';
-    await expect.element(editorScreen.leaveDialog()).toBeVisible();
-    await editorScreen.leaveEditor().click();
-    await expect.poll(currentRoute).toBe('/editor/post/other1');
+    window.location.hash = `/editor/post/${NEW_POST_ID}/`;
+
+    // Only the created post's own editor puts its URL back without the slash.
+    await expect.poll(currentRoute).toBe(`/editor/post/${NEW_POST_ID}`);
+    expect(editor.isConnected).toBe(true);
+    await expect.element(editorScreen.body()).toHaveTextContent('First words and then some');
     await expect(editorScreen.leaveDialog()).toHaveCount(0);
+  });
 
-    window.history.back();
-    await expect.element(editorScreen.leaveDialog()).toBeVisible();
-    await editorScreen.stayInEditor().click();
-    await expect(editorScreen.leaveDialog()).toHaveCount(0);
+  it('opens a new post when a hash change reaches the new-post URL from a post created there', async () => {
+    const { createApi, resolveCreate } = fakeNewPost();
+    await openByHashChange('/editor/post', withoutAutosave(FLAG_ON));
+    await appendToBody('First words');
+    await expect.poll(() => createApi.requests.length).toBe(1);
+    resolveCreate();
+    await expect.poll(currentRoute).toBe(`/editor/post/${NEW_POST_ID}`);
+    await expect.poll(unsavedChangesGuarded).toBe(false);
 
-    window.history.back();
+    window.location.hash = '/editor/post';
 
-    await expect.element(editorScreen.leaveDialog()).toBeVisible();
-    expect(saveApi.requests.length).toBe(0);
+    await expect.element(editorScreen.wordCount()).toHaveTextContent('0 words');
+    expect(currentRoute()).toBe('/editor/post');
   });
 
   it('keeps where Back leaves for when the hash is written during the save on the way out', async () => {

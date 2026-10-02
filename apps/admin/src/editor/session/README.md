@@ -17,6 +17,12 @@ carried from one new post to the next. Once a create acquires an id the URL is
 replaced from new to edit as a state-driven effect, with the screen keyed on the
 session so the switch does not remount the editor.
 
+The screen keeps a session while navigation stays on its post, counting the id
+a create acquired and ignoring a trailing slash, whichever history entry the
+navigation reaches, including one the router did not create. Any other post, a
+new one included, gets a new session, so two posts opened by URL each get their
+own.
+
 Requests are made without the transport's session-expiry redirect, so an expired
 session is surfaced in place rather than navigating away from unsaved content.
 

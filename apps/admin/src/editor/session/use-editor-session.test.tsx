@@ -52,10 +52,6 @@ beforeEach(() => {
   offeredReads.length = 0;
 });
 
-vi.mock('@tryghost/admin-x-framework', () => ({
-  useLocation: () => ({ key: 'editor', state: null }),
-}));
-
 vi.mock('@/editor/report-error', () => ({
   reportEditorError: vi.fn(),
   reportLeaveConfirmation: vi.fn(),

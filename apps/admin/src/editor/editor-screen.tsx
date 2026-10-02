@@ -56,7 +56,8 @@ import { PostSettingsSidebar } from './settings/post-settings-sidebar';
 import { useFeatureImageBinding } from './session/feature-image-binding';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { useEditorLeaveGuard } from './session/use-leave-guard';
-import { useEditorSession, useEditorSessionKey } from './session/use-editor-session';
+import { EditorSessionKeyProvider, useEditorScreenSessionKey } from './session/session-key';
+import { useEditorSession } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
 import type { EditorRecord } from './session/projection';
@@ -594,7 +595,7 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
 
 export default function EditorScreen() {
   const editorPath = useParams()['*'] ?? '';
-  const sessionKey = useEditorSessionKey();
+  const sessionKey = useEditorScreenSessionKey();
   const [typeSegment, id, ...rest] = editorPath.split('/').filter(Boolean);
 
   if (!typeSegment) {
@@ -605,5 +606,9 @@ export default function EditorScreen() {
     return <NotFound />;
   }
 
-  return <EditorLoader key={sessionKey} id={id} postType={typeSegment} />;
+  return (
+    <EditorSessionKeyProvider value={sessionKey}>
+      <EditorLoader key={sessionKey} id={id} postType={typeSegment} />
+    </EditorSessionKeyProvider>
+  );
 }

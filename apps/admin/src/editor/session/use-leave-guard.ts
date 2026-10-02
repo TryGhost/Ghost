@@ -9,7 +9,8 @@ import {
   LEAVE_DECISION_DEADLINE_MS,
   leaveDecisionWithin,
 } from './leave-guard';
-import { useEditorSessionKey, type EditorSessionHandle } from './use-editor-session';
+import { useEditorSessionKey } from './session-key';
+import type { EditorSessionHandle } from './use-editor-session';
 
 export interface EditorLeaveGuard {
   /** Wiring for Shade's `DirtyConfirmDialog`. */
