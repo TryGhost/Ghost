@@ -166,6 +166,13 @@ function bootedDebounceMs(value: unknown): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined;
 }
 
+/** The screen's read of the post: its URL, and the cache entry the loader and the session share. */
+function editorRead(postType: PostType, id: string) {
+  const path = postType === 'page' ? `/pages/${id}/` : `/posts/${id}/`;
+  const url = apiUrl(path, buildPostEditorReadParams());
+  return { url, queryKey: [postType === 'page' ? pagesDataType : postsDataType, url] as const };
+}
+
 export function useEditorSession({
   postType,
   record,
@@ -211,6 +218,14 @@ export function useEditorSession({
       saveFailureMessage: `Couldn’t save this ${postType}.`,
       autosaveDebounceMs: () => autosaveDebounceMs.current,
       onIdAcquired: setPersistedId,
+      // The loader opens the post again from this entry, possibly before the read
+      // that follows the save has landed.
+      onSaveAcknowledged: (saved) => {
+        queryClient.setQueryData<EditorReadResponse>(
+          editorRead(postType, saved.id).queryKey,
+          postType === 'page' ? { pages: [saved] } : { posts: [saved] },
+        );
+      },
       onError: reportEditorError,
       onSaveFailed: (failure) => reportSaveFailure(failure, postType),
       onLeaveConfirmed: (leave) => reportLeaveConfirmation(leave, postType),
@@ -356,9 +371,7 @@ export function useEditorSession({
       return 'failed';
     }
 
-    const path = postType === 'page' ? `/pages/${persistedId}/` : `/posts/${persistedId}/`;
-    const url = apiUrl(path, buildPostEditorReadParams());
-    const queryKey = [postType === 'page' ? pagesDataType : postsDataType, url] as const;
+    const { url, queryKey } = editorRead(postType, persistedId);
     let data: EditorReadResponse;
     try {
       data = await fetchApi<EditorReadResponse>(url, EDITOR_REQUEST_OPTIONS);

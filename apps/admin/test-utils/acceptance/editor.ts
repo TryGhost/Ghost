@@ -49,8 +49,8 @@ export function submittedPost(capture: EndpointCapture, index = -1): Record<stri
 }
 
 /**
- * Resolves once a read of `version` at its `updated_at` is in the query cache and the editor
- * has handled it; a read the editor refuses changes nothing on screen to wait for.
+ * Resolves once a read of `version` at its `updated_at` has landed in the query cache and the
+ * editor has handled it; a read the editor refuses changes nothing on screen to wait for.
  */
 export function editorReadLanded(
   queryClient: QueryClient,
@@ -62,6 +62,8 @@ export function editorReadLanded(
       const data = query.state.data as { posts?: Array<Pick<Post, 'updated_at'>> } | undefined;
       return (
         String(query.queryKey[1]).includes(`/posts/${version.id}/`) &&
+        // A save writes its own answer into the entry while the read after it is in flight.
+        query.state.fetchStatus === 'idle' &&
         data?.posts?.[0]?.updated_at === version.updated_at
       );
     });

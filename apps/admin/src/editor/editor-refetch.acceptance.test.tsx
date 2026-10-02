@@ -3,6 +3,7 @@ import { userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
+  currentRoute,
   editorReadLanded,
   fakeAdminEndpoint,
   fakeEditorChrome,
@@ -202,6 +203,37 @@ describe('Post editor refetch', () => {
     await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
     await expect(editorScreen.conflictBanner()).toHaveCount(0);
     expect(shared.stored()).toMatchObject({ title: 'My title' });
+    expect(shared.stored().lexical).toContain('Hello from React and more');
+  });
+
+  it('reopens on its own save before the read after it lands, and saves again without a conflict', async () => {
+    const shared = fakeSharedPost();
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
+    const releaseReads = shared.holdReads();
+
+    await editorScreen.titleInput().fill('My title');
+    await saveShortcut();
+    await expect.poll(() => shared.saveApi.requests.length).toBe(1);
+    await expect.poll(() => shared.readApi.requests.length).toBe(2);
+    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+
+    await editorScreen.backLink('post').click();
+    await expect.poll(currentRoute).toBe('/posts');
+    await expect(editorScreen.titleInput()).toHaveCount(0);
+    window.location.hash = `#/editor/post/${POST_ID}`;
+
+    await expect.element(editorScreen.titleInput()).toHaveValue('My title');
+    releaseReads();
+    await editorReadLanded(queryClient, shared.stored());
+
+    await appendToBody(' and more');
+    await saveShortcut();
+
+    await expect.poll(() => shared.saveApi.requests.length).toBe(2);
+    expect(submittedPost(shared.saveApi)).toMatchObject({ updated_at: MY_SAVE_AT });
+    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+    await expect(editorScreen.conflictBanner()).toHaveCount(0);
     expect(shared.stored().lexical).toContain('Hello from React and more');
   });
 });

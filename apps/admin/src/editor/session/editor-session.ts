@@ -128,6 +128,8 @@ export interface EditorSessionOptions {
   transport: EditorSessionTransport;
   /** Called once the create acknowledges; the caller replaces the URL. */
   onIdAcquired: (id: string) => void;
+  /** Called with the record the server answered each acknowledged save with. */
+  onSaveAcknowledged?: (saved: EditorRecord) => void;
   onError: (error: unknown, context?: EditorErrorContext) => void;
   /** Called once per request that settled as failed. */
   onSaveFailed?: (failure: EditorSaveFailure) => void;
@@ -292,6 +294,7 @@ export function createEditorSession({
   autosaveDebounceMs,
   transport,
   onIdAcquired,
+  onSaveAcknowledged,
   onError,
   onSaveFailed,
   onLeaveConfirmed,
@@ -805,6 +808,7 @@ export function createEditorSession({
     releaseSavedPublishTime();
     latestRevision = latestRevisionOf(result.post);
     live = { ...live, updated_at: result.updatedAt };
+    onSaveAcknowledged?.(result.post);
 
     if (created) {
       withLocalRevisions((writer) => writer.created());

@@ -8,6 +8,7 @@ import {
   sessionHarness,
   type HarnessHooks,
 } from '@/editor/session/__test-utils__/session-harness';
+import type { EditorRecord } from './projection';
 import { TITLE_MAX, TITLE_TOO_LONG } from './settings-fields';
 
 describe('createEditorSession', () => {
@@ -71,6 +72,33 @@ describe('createEditorSession', () => {
 
     expect(state.updates[0].payload).toMatchObject({ id: 'created-id' });
     expect(state.acquiredIds).toEqual(['created-id']);
+  });
+
+  it('hands its caller the record each acknowledged save was answered with', async () => {
+    const answered: EditorRecord[] = [];
+    const handed: EditorRecord[] = [];
+    const { session } = sessionHarness(
+      { onSaveAcknowledged: (saved) => handed.push(saved) },
+      {
+        acknowledge: (saved) => {
+          answered.push(saved);
+          return saved;
+        },
+        failSave: (saveCount) => saveCount === 3,
+      },
+    );
+
+    session.patchLexical(body('First words'));
+    await session.dispatchExplicit();
+    session.patchLexical(body('More words'));
+    await session.dispatchExplicit();
+    session.patchLexical(body('Refused words'));
+    await session.dispatchExplicit();
+
+    expect(answered).toHaveLength(2);
+    expect(handed).toHaveLength(2);
+    expect(handed[0]).toBe(answered[0]);
+    expect(handed[1]).toBe(answered[1]);
   });
 
   it('authors the create with the current user and leaves updates alone', async () => {
