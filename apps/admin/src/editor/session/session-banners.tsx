@@ -20,6 +20,8 @@ import {
 } from '@tryghost/test-data/selectors/editor';
 import type { PendingSave, SaveError, SaveEngineState } from '@/editor/engine/save-engine';
 import { EDITOR_CONFIRM_DIALOG_LAYER } from '@/editor/layering';
+import { LimitMessage } from '@/editor/publish/components/limit-message';
+import { splitUpgradeMessage } from '@/editor/publish/publish-options';
 import { reportShownAlert } from '@/editor/report-error';
 import { POST_DELETED } from './error-mapping';
 import type { ReloadOutcome } from './use-editor-session';
@@ -206,7 +208,13 @@ export function SessionBanners({
         variant="destructive"
       >
         <Inline align="center" gap="sm">
-          <Text>{saveErrorMessage(state.error)}</Text>
+          <Text>
+            {state.error.kind === 'host-limit' ? (
+              <LimitMessage parts={splitUpgradeMessage(state.error.message)} />
+            ) : (
+              saveErrorMessage(state.error)
+            )}
+          </Text>
           <Button size="sm" variant="outline" onClick={onRetrySave}>
             Retry
           </Button>

@@ -81,7 +81,7 @@ export function toSaveError(error: unknown, fallback: string): SaveError {
 
   // Core's reason for a refusal is in the body's `context`; its `message` is a generic summary.
   const message =
-    kind === 'validation'
+    kind === 'validation' || kind === 'host-limit'
       ? getErrorMessage(error, messageOf(error, fallback))
       : messageOf(error, fallback);
   return { kind, message, cause: error };

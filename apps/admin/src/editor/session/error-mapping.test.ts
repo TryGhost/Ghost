@@ -91,6 +91,22 @@ describe('toSaveError', () => {
     });
   });
 
+  it('carries the reason Core gave for a host limit', () => {
+    const refusal = new HostLimitError(
+      response(403),
+      errorBody({
+        type: 'HostLimitError',
+        message: 'Host Limit error, cannot edit post.',
+        context: 'Your plan supports up to 500 members, please upgrade to add more.',
+      }),
+    );
+
+    expect(toSaveError(refusal, 'fallback')).toMatchObject({
+      kind: 'host-limit',
+      message: 'Your plan supports up to 500 members, please upgrade to add more.',
+    });
+  });
+
   it('keeps its own message for a refused payload that carries no reason', () => {
     const tooLarge = new RequestEntityTooLargeError(response(413), '');
 
