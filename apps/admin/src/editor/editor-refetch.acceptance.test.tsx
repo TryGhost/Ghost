@@ -83,6 +83,10 @@ function fakeSharedPost(overrides: Partial<Post> = {}) {
     stored: () => stored,
     /** Another writer's save, stored under a token this tab has never been sent. */
     theySave: (changes: Partial<Post>) => store(changes),
+    /** Another writer's save of fields Core stores beside the post, which leaves the token. */
+    theySaveBeside: (changes: Partial<Post>) => {
+      stored = { ...stored, ...changes };
+    },
     /** Holds every read until the returned release is called, or the test finishes. */
     holdReads: () => {
       const gate = deferred<void>();
@@ -238,5 +242,41 @@ describe('Post editor refetch', () => {
     await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
     await expect(editorScreen.conflictBanner()).toHaveCount(0);
     expect(shared.stored().lexical).toContain('Hello from React and more');
+  });
+
+  it('keeps the alt text and caption another writer gave the image when a read at its version brings them', async () => {
+    const shared = fakeSharedPost({
+      feature_image: 'https://example.com/content/images/hills.png',
+      feature_image_alt: 'My alt',
+      feature_image_caption: 'My caption',
+    });
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
+    const releaseReads = shared.holdReads();
+
+    await editorScreen.titleInput().fill('My title');
+    await saveShortcut();
+    await expect.poll(() => shared.saveApi.requests.length).toBe(1);
+    await expect.poll(() => shared.readApi.requests.length).toBe(2);
+    shared.theySaveBeside({
+      feature_image_alt: 'Their alt',
+      feature_image_caption: 'Their caption',
+    });
+    releaseReads();
+    await editorReadLanded(queryClient, shared.stored());
+
+    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+    await appendToBody(' and mine');
+    await saveShortcut();
+
+    await expect.poll(() => shared.saveApi.requests.length).toBe(2);
+    expect(submittedPost(shared.saveApi)).toMatchObject({
+      feature_image_alt: 'Their alt',
+      feature_image_caption: 'Their caption',
+    });
+    expect(shared.stored()).toMatchObject({
+      feature_image_alt: 'Their alt',
+      feature_image_caption: 'Their caption',
+    });
   });
 });

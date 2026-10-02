@@ -190,8 +190,8 @@ A read is adopted only at the collision token the session holds. Core leaves the
 token alone unless a column of the posts row changes, so such a read can still
 carry another writer's tags, authors or tiers, or fields Core stores beside the
 post: the meta and social fields and the feature image's alt text and caption.
-The session takes the read as its saved copy, and the settings rules below
-decide which settings fields the document adopts from it. A read at any other
+The session takes the read as its saved copy, and the rules below decide which
+settings fields, alt text and caption the document adopts. A read at any other
 token is another writer's version, or the session's own save read before its
 acknowledgement landed; its content is not in the document, so the session keeps
 its token and its saved copy, marks nothing dirty and starts no save. The next
@@ -236,7 +236,8 @@ at the held token carries another value meanwhile: the next save persists the
 undo. Ownership is decided by which fields the writer moved and when, never by
 comparing the live document against a pre-save snapshot, so adopting one refetch
 inside a save window does not stop a later one from being adopted too, and
-re-emitting a value the field already holds does not claim it.
+re-emitting a value the field already holds does not claim it. The feature
+image's alt text and caption are adopted by the same rules.
 
 An acknowledgement also retains fields edited after submission that the request
 did not carry. A matching refetch may temporarily make such a field look saved,
