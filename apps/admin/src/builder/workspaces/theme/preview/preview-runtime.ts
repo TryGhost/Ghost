@@ -1255,6 +1255,7 @@ export function previewRuntimeBootstrap(): void {
       !Number.isInteger(message.requestId) ||
       ![
         'inspect-page',
+        'measure-layout',
         'inspect-element',
         'screenshot',
         'set-inline-edit-mode',
@@ -1268,6 +1269,19 @@ export function previewRuntimeBootstrap(): void {
       let result: unknown;
       if (message.command === 'inspect-page') {
         result = inspectPage();
+      } else if (message.command === 'measure-layout') {
+        result = {
+          viewport: {
+            width: window.innerWidth,
+            height: window.innerHeight,
+            scrollX: window.scrollX,
+            scrollY: window.scrollY,
+          },
+          document: {
+            width: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
+            height: Math.max(document.documentElement.scrollHeight, document.body.scrollHeight),
+          },
+        };
       } else if (message.command === 'inspect-element') {
         result = inspectElement(message.payload as { marker?: unknown; selector?: unknown });
       } else if (message.command === 'screenshot') {

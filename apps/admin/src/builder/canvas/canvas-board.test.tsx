@@ -52,6 +52,58 @@ afterEach(() => {
 });
 
 describe('canvas board', () => {
+  it('opens a composition in the fixed device bounds while retaining its mounted device', () => {
+    const compositions = frames.map((frame) => ({
+      ...frame,
+      viewport: { width: frame.width, height: frame.height },
+      height: 10_000,
+    }));
+    render(
+      <CanvasBoard
+        frames={compositions}
+        renderFrame={(frame, _onInput, state) => (
+          <>
+            <iframe title={frame.label} />
+            <span>{state.opened ? 'Live device' : 'Composition'}</span>
+          </>
+        )}
+      />,
+    );
+    const device = screen.getByTitle('Home · Mobile');
+    const host = device.parentElement;
+    expect(host).toHaveStyle({ height: '10000px' });
+    const overview = screen.getByTestId('canvas-world').style.transform;
+    fireEvent.doubleClick(screen.getByRole('button', { name: 'Home · Mobile' }));
+    expect(host).toHaveStyle({ height: '844px', width: '390px' });
+    expect(screen.getByText('Live device')).toBeVisible();
+    expect(screen.getByTitle('Home · Mobile')).toBe(device);
+    fireEvent.click(screen.getByRole('button', { name: 'Back to overview' }));
+    expect(host).toHaveStyle({ height: '10000px' });
+    expect(screen.getByTestId('canvas-world').style.transform).toBe(overview);
+  });
+
+  it('fits initial composition bounds once when ready and respects navigation before readiness', () => {
+    const renderer = (frame: (typeof frames)[number]) => <iframe title={frame.label} />;
+    const { rerender } = render(
+      <CanvasBoard frames={frames} initialFitReady={false} renderFrame={renderer} />,
+    );
+    const world = screen.getByTestId('canvas-world');
+    expect(world.style.transform).toBe('translate(0px, 0px) scale(1)');
+    fireEvent.wheel(screen.getByRole('region', { name: 'Theme canvas' }), {
+      deltaX: 40,
+      deltaY: 10,
+    });
+    const moved = world.style.transform;
+    rerender(
+      <CanvasBoard
+        frames={frames.map((frame) => ({ ...frame, height: 10_000 }))}
+        renderFrame={renderer}
+        initialFitReady
+      />,
+    );
+    expect(world.style.transform).toBe(moved);
+  });
+
   it('selects a frame without moving the camera, opens it readably, and returns to the saved overview', () => {
     render(<CanvasBoard frames={frames} renderFrame={(frame) => <iframe title={frame.label} />} />);
     const world = screen.getByTestId('canvas-world');

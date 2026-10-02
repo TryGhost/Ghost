@@ -1,25 +1,55 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@tryghost/shade/components';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { formatNumber } from '@tryghost/shade/utils';
 
 import { fitCanvas, panCanvas, screenToWorld, zoomCanvas } from './canvas-camera';
 
-import type { ReactNode } from 'react';
-import type { CanvasCamera, CanvasPoint, CanvasRect } from './canvas-camera';
+import type { ReactNode, SetStateAction } from 'react';
+import type { CanvasCamera, CanvasPoint, CanvasRect, CanvasSize } from './canvas-camera';
 
-export type CanvasFrame = CanvasRect & { id: string; label: string; group: string };
+export type CanvasFrame = CanvasRect & {
+  id: string;
+  label: string;
+  group: string;
+  viewport?: CanvasSize;
+  overviewLabel?: string;
+};
 export type CanvasFrameInput =
   | { kind: 'escape' }
   | { kind: 'zoom'; x: number; y: number; deltaY: number; deltaMode: number };
+
+function frameHeaders(frames: readonly CanvasFrame[], camera: CanvasCamera) {
+  const headers: { frame: CanvasFrame; x: number; y: number }[] = [];
+  for (const frame of frames) {
+    const x = camera.x + frame.x * camera.scale;
+    let y = camera.y + frame.y * camera.scale - 36;
+    while (
+      headers.some(
+        (header) =>
+          x < header.x + 154 && x + 154 > header.x && y < header.y + 36 && y + 36 > header.y,
+      )
+    ) {
+      y += 36;
+    }
+    headers.push({ frame, x, y });
+  }
+  return headers;
+}
 
 /** Presentation only: the caller owns documents, viewport dimensions, and surface lifetime. */
 export function CanvasBoard({
   frames,
   renderFrame,
+  initialFitReady = true,
 }: {
   frames: readonly CanvasFrame[];
-  renderFrame: (frame: CanvasFrame, onInput: (input: CanvasFrameInput) => void) => ReactNode;
+  initialFitReady?: boolean;
+  renderFrame: (
+    frame: CanvasFrame,
+    onInput: (input: CanvasFrameInput) => void,
+    state: { opened: boolean },
+  ) => ReactNode;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
@@ -29,6 +59,10 @@ export function CanvasBoard({
   const overview = useRef<CanvasCamera | null>(null);
   const initialized = useRef(false);
   const drag = useRef<{ origin: CanvasPoint; point: CanvasPoint; moved: boolean } | null>(null);
+  const navigate = useCallback((next: SetStateAction<CanvasCamera>) => {
+    initialized.current = true;
+    setCamera(next);
+  }, []);
 
   useEffect(() => {
     const element = host.current;
@@ -38,7 +72,13 @@ export function CanvasBoard({
     const measure = () => {
       const next = { width: element.clientWidth, height: element.clientHeight };
       setSize(next);
-      if (!initialized.current && next.width > 96 && next.height > 96 && frames.length) {
+      if (
+        initialFitReady &&
+        !initialized.current &&
+        next.width > 96 &&
+        next.height > 96 &&
+        frames.length
+      ) {
         initialized.current = true;
         setCamera(fitCanvas(frames, next));
       }
@@ -47,7 +87,7 @@ export function CanvasBoard({
     const observer = new ResizeObserver(measure);
     observer.observe(element);
     return () => observer.disconnect();
-  }, [frames]);
+  }, [frames, initialFitReady]);
 
   useEffect(() => {
     const element = host.current;
@@ -59,7 +99,7 @@ export function CanvasBoard({
       const rect = element.getBoundingClientRect();
       const point = { x: event.clientX - rect.left, y: event.clientY - rect.top };
       const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? element.clientHeight : 1;
-      setCamera((current) =>
+      navigate((current) =>
         event.ctrlKey || event.metaKey
           ? zoomCanvas(current, point, Math.exp(-event.deltaY * unit * 0.005))
           : panCanvas(current, { x: -event.deltaX * unit, y: -event.deltaY * unit }),
@@ -67,7 +107,7 @@ export function CanvasBoard({
     };
     element.addEventListener('wheel', wheel, { passive: false });
     return () => element.removeEventListener('wheel', wheel);
-  }, []);
+  }, [navigate]);
 
   const open = (frame: CanvasFrame) => {
     if (!focused) {
@@ -75,9 +115,10 @@ export function CanvasBoard({
     }
     setSelected(frame.id);
     setFocused(frame.id);
-    const scale = Math.min(1, Math.max(0.1, (size.width - 96) / frame.width));
-    setCamera({
-      x: (size.width - frame.width * scale) / 2 - frame.x * scale,
+    const width = frame.viewport?.width ?? frame.width;
+    const scale = Math.min(1, Math.max(0.1, (size.width - 96) / width));
+    navigate({
+      x: (size.width - width * scale) / 2 - frame.x * scale,
       y: 48 - frame.y * scale,
       scale,
     });
@@ -85,7 +126,7 @@ export function CanvasBoard({
   const back = () => {
     setFocused(null);
     if (overview.current) {
-      setCamera(overview.current);
+      navigate(overview.current);
       overview.current = null;
     }
     host.current?.focus({ preventScroll: true });
@@ -93,7 +134,7 @@ export function CanvasBoard({
   const fit = (group?: string) => {
     setFocused(null);
     overview.current = null;
-    setCamera(fitCanvas(group ? frames.filter((frame) => frame.group === group) : frames, size));
+    navigate(fitCanvas(group ? frames.filter((frame) => frame.group === group) : frames, size));
   };
   const atPoint = (point: CanvasPoint) => {
     const world = screenToWorld(camera, point);
@@ -137,7 +178,7 @@ export function CanvasBoard({
           aria-label="Zoom out"
           size="sm"
           variant="ghost"
-          onClick={() => setCamera((current) => zoomCanvas(current, center, 0.8))}
+          onClick={() => navigate((current) => zoomCanvas(current, center, 0.8))}
         >
           −
         </Button>
@@ -148,7 +189,7 @@ export function CanvasBoard({
           aria-label="Zoom in"
           size="sm"
           variant="ghost"
-          onClick={() => setCamera((current) => zoomCanvas(current, center, 1.25))}
+          onClick={() => navigate((current) => zoomCanvas(current, center, 1.25))}
         >
           +
         </Button>
@@ -178,7 +219,7 @@ export function CanvasBoard({
           };
           if (delta[event.key]) {
             event.preventDefault();
-            setCamera((current) => panCanvas(current, delta[event.key]));
+            navigate((current) => panCanvas(current, delta[event.key]));
           }
         }}
         onLostPointerCapture={() => {
@@ -211,7 +252,7 @@ export function CanvasBoard({
           current.moved = true;
           const delta = { x: event.clientX - current.point.x, y: event.clientY - current.point.y };
           current.point = { x: event.clientX, y: event.clientY };
-          setCamera((value) => panCanvas(value, delta));
+          navigate((value) => panCanvas(value, delta));
         }}
         onPointerUp={(event) => {
           if (!focused && drag.current && !drag.current.moved) {
@@ -232,26 +273,40 @@ export function CanvasBoard({
               data-canvas-frame={frame.id}
               // React 18 needs a string-valued inert attribute; its typings predate this DOM API.
               {...{ inert: focused !== frame.id ? '' : undefined }}
-              style={{ left: frame.x, top: frame.y, width: frame.width, height: frame.height }}
+              style={{
+                left: frame.x,
+                top: frame.y,
+                width: focused === frame.id ? (frame.viewport?.width ?? frame.width) : frame.width,
+                height:
+                  focused === frame.id ? (frame.viewport?.height ?? frame.height) : frame.height,
+              }}
             >
-              {renderFrame(frame, (input) => {
-                if (focused !== frame.id) {
-                  return;
-                }
-                if (input.kind === 'escape') {
-                  back();
-                } else {
-                  const anchor = {
-                    x: camera.x + (frame.x + input.x) * camera.scale,
-                    y: camera.y + (frame.y + input.y) * camera.scale,
-                  };
-                  const unit =
-                    input.deltaMode === 1 ? 16 : input.deltaMode === 2 ? frame.height : 1;
-                  setCamera((current) =>
-                    zoomCanvas(current, anchor, Math.exp(-input.deltaY * unit * 0.005)),
-                  );
-                }
-              })}
+              {renderFrame(
+                frame,
+                (input) => {
+                  if (focused !== frame.id) {
+                    return;
+                  }
+                  if (input.kind === 'escape') {
+                    back();
+                  } else {
+                    const anchor = {
+                      x: camera.x + (frame.x + input.x) * camera.scale,
+                      y: camera.y + (frame.y + input.y) * camera.scale,
+                    };
+                    const unit =
+                      input.deltaMode === 1
+                        ? 16
+                        : input.deltaMode === 2
+                          ? (frame.viewport?.height ?? frame.height)
+                          : 1;
+                    navigate((current) =>
+                      zoomCanvas(current, anchor, Math.exp(-input.deltaY * unit * 0.005)),
+                    );
+                  }
+                },
+                { opened: focused === frame.id },
+              )}
             </Box>
           ))}
         </Box>
@@ -267,7 +322,7 @@ export function CanvasBoard({
             }}
           />
         )}
-        {frames.map((frame) => (
+        {frameHeaders(frames, camera).map(({ frame, x, y }) => (
           <Button
             key={frame.id}
             aria-label={frame.label}
@@ -275,19 +330,13 @@ export function CanvasBoard({
             className="absolute z-20 h-8 justify-start truncate bg-background px-2 text-xs shadow-sm"
             size="sm"
             style={{
-              left: camera.x + frame.x * camera.scale,
-              top: camera.y + frame.y * camera.scale - 36,
-              maxWidth: Math.max(150, frame.width * camera.scale),
+              left: x,
+              top: y,
+              width: 150,
+              height: 32,
             }}
-            tabIndex={
-              camera.x + frame.x * camera.scale >= 0 &&
-              camera.x + frame.x * camera.scale + 150 <= size.width &&
-              camera.y + frame.y * camera.scale >= 36 &&
-              camera.y + frame.y * camera.scale <= size.height
-                ? 0
-                : -1
-            }
-            title={`${frame.label} · ${formatNumber(frame.width)} × ${formatNumber(frame.height)} CSS pixels`}
+            tabIndex={x >= 0 && x + 150 <= size.width && y >= 0 && y + 32 <= size.height ? 0 : -1}
+            title={`${frame.label} · ${formatNumber(frame.viewport?.width ?? frame.width)} × ${formatNumber(frame.viewport?.height ?? frame.height)} CSS pixels${frame.overviewLabel && focused !== frame.id ? ` · ${frame.overviewLabel} · ${formatNumber(frame.height)}px composition` : ''}`}
             variant="outline"
             onClick={() => setSelected(frame.id)}
             onDoubleClick={() => open(frame)}

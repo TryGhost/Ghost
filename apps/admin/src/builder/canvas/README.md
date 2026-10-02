@@ -3,7 +3,11 @@
 `CanvasBoard` presents caller-owned frames in world coordinates. Its camera
 changes only the CSS transform of the world layer; frame widths, heights,
 documents, and preview surface lifetimes remain the caller's responsibility.
-Frame labels and controls stay in screen coordinates.
+Frame labels and controls stay in screen coordinates. Labels stagger when their
+screen bounds overlap, including fitted compositions with very different lengths.
+An optional configured `viewport` distinguishes a frame's device bounds from
+its overview composition bounds. Opening it uses the device bounds and supplies
+`opened` to the caller without remounting its content.
 
 Click a header to select without moving the camera. Double-click it or press
 Enter to open the fixed device viewport at a readable scale. Back and Escape
@@ -32,10 +36,26 @@ theme. The harness uses Admin's CSS lane and a standalone Shade provider.
 entry. Its Ember boot assets are omitted so the regular Admin app cannot mount
 over this standalone harness. It exposes no theme mutations or publication.
 
-This initial slice shows device viewport crops. Full-page composition choices,
-source selection and direct editing, capture fidelity, native WebMCP, and
-performance measurements remain feasibility work. The harness is not a shipped
-theme editor or evidence that those gates have passed.
+The harness starts with an experimental captured composition overview. Each
+device remains mounted at its declared width and height; opening a frame reveals
+that same live document. Back restores the overview camera. Switching to device
+viewports or refreshing captures does not replace those documents.
+
+`captureOverview` uses the authenticated layout bridge and document-coordinate
+region screenshots. A sequence retains its backing frame/revision/document and
+capture identity, and rejects changes in document, viewport, scroll, or extent.
+The provisional per-frame aggregate budget is eight 2,048px-high images, 32 million
+pixels, and 12 MiB of encoded image characters; existing per-image limits remain.
+Coverage is geometric, independently of fidelity warnings. Uncaptured content
+keeps its full document bounds and an explicit omission message. External images
+are still replaced, captures reconstruct layout in inert documents, and neither
+animations, sticky/fixed behavior, nor below-fold lazy loading are established
+by a successful capture. The harness reports warnings and elapsed capture time.
+
+This is one overview experiment. Expanded-height comparison, Source/adversarial
+fixture evidence, source selection and direct editing, full capture fidelity,
+native WebMCP, and performance measurements remain feasibility work. The harness
+is not a shipped theme editor or evidence that Stage A has passed.
 
 ## Validation
 
@@ -43,11 +63,14 @@ From `apps/admin`:
 
 ```sh
 pnpm exec vitest run src/builder/canvas --maxWorkers=1
-pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/canvas/canvas-board.component.test.tsx src/builder/workspaces/theme/preview/preview-canvas-input.acceptance.test.tsx --maxWorkers=1
+pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/canvas/canvas-board.component.test.tsx src/builder/workspaces/theme/preview/preview-canvas-input.acceptance.test.tsx src/builder/workspaces/theme/preview/preview-layout.acceptance.test.tsx src/builder/workspaces/theme/preview/screenshot.acceptance.test.tsx --maxWorkers=1
 pnpm typecheck
 ```
 
 The unit cases cover camera bounds, pointer anchoring, selection/open/return,
-drag thresholds, and document DOM preservation. Browser cases cover keyboard
-focus and native scrolling, plus the opt-in sandbox input boundary. Full
+drag thresholds, document DOM preservation, contiguous capture coverage, budgets,
+and stale/cancelled capture rejection. Browser cases cover label collisions,
+keyboard focus and native scrolling, the opt-in sandbox input boundary, and
+below-fold capture pixels with viewport-height media queries and unchanged device
+scroll. Full
 repository validation uses `pnpm check`; see the [testing guide](../../../../../docs/contributing/testing.md).

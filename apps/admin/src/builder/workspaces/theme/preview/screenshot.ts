@@ -12,6 +12,7 @@ export const SCREENSHOT_LIMITS = {
 export type ScreenshotRequest =
   | { kind: 'viewport' }
   | { kind: 'full_page' }
+  | { kind: 'region'; x: number; y: number; width: number; height: number }
   | ({ kind: 'element' } & PreviewElementTarget);
 
 export type ScreenshotResult = {
@@ -50,6 +51,29 @@ function captureArea(
   request: ScreenshotRequest,
 ): CaptureArea {
   const root = document.documentElement;
+
+  if (request.kind === 'region') {
+    const documentWidth = Math.max(root.scrollWidth, document.body.scrollWidth);
+    const documentHeight = Math.max(root.scrollHeight, document.body.scrollHeight);
+    if (
+      ![request.x, request.y, request.width, request.height].every(Number.isSafeInteger) ||
+      request.x < 0 ||
+      request.y < 0 ||
+      request.width < 1 ||
+      request.height < 1 ||
+      request.x + request.width > documentWidth ||
+      request.y + request.height > documentHeight
+    ) {
+      throw new Error('The screenshot region has invalid or out-of-document bounds.');
+    }
+    return {
+      target: root,
+      width: request.width,
+      height: request.height,
+      x: request.x,
+      y: request.y,
+    };
+  }
 
   if (request.kind === 'element') {
     const selected = resolvePreviewElement(document, request);
@@ -254,6 +278,11 @@ export async function captureDocumentScreenshot(
     height: area.height,
     x: area.x,
     y: area.y,
+    // Capture output bounds are independent of the CSS viewport used for layout.
+    windowWidth: viewport.width,
+    windowHeight: viewport.height,
+    scrollX: viewport.scrollX,
+    scrollY: viewport.scrollY,
     scale: 1,
     logging: false,
     useCORS: false,

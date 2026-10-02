@@ -49,6 +49,12 @@ export type PreviewCanvasInput =
   | { kind: 'escape' }
   | { kind: 'zoom'; x: number; y: number; deltaY: number; deltaMode: number };
 
+export type PreviewLayout = {
+  documentId: string;
+  viewport: { width: number; height: number; scrollX: number; scrollY: number };
+  document: { width: number; height: number };
+};
+
 export interface PreviewDocumentSurface {
   replaceDocument(
     document: PreviewDocument,
@@ -113,6 +119,7 @@ type CommandResultMessage =
 
 type PreviewCommand =
   | 'inspect-page'
+  | 'measure-layout'
   | 'inspect-element'
   | 'screenshot'
   | 'set-inline-edit-mode'
@@ -988,6 +995,48 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
       );
     }
     return { ...inspection, url };
+  }
+
+  async measureLayout(signal: AbortSignal): Promise<PreviewLayout> {
+    const documentId = this.committedDocumentId;
+    const value = await this.command<unknown>('measure-layout', undefined, signal);
+    const layout = value as Partial<PreviewLayout> | null;
+    const dimensions = [
+      layout?.viewport?.width,
+      layout?.viewport?.height,
+      layout?.document?.width,
+      layout?.document?.height,
+    ];
+    const scroll = [layout?.viewport?.scrollX, layout?.viewport?.scrollY];
+    if (
+      !dimensions.every(
+        (number) =>
+          typeof number === 'number' &&
+          Number.isSafeInteger(number) &&
+          number > 0 &&
+          number <= 1_000_000,
+      ) ||
+      !scroll.every(
+        (number) =>
+          typeof number === 'number' && Number.isFinite(number) && Math.abs(number) <= 1_000_000,
+      )
+    ) {
+      throw new PreviewInspectionError(
+        'preview_inspection_failed',
+        'The preview returned invalid layout bounds.',
+      );
+    }
+    if (
+      !documentId ||
+      documentId !== this.committedDocumentId ||
+      documentId !== this.activeDocumentId
+    ) {
+      throw new PreviewInspectionError(
+        'preview_inspection_failed',
+        'The preview document changed while measuring layout.',
+      );
+    }
+    return { ...(value as Omit<PreviewLayout, 'documentId'>), documentId };
   }
 
   async inspectElement(
