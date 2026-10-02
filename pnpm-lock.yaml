@@ -360,8 +360,8 @@ catalogs:
       specifier: 2.3.16
       version: 2.3.16
     '@tryghost/url-utils':
-      specifier: 5.3.0
-      version: 5.3.0
+      specifier: 5.4.0
+      version: 5.4.0
     '@tryghost/validator':
       specifier: 3.2.16
       version: 3.2.16
@@ -2653,7 +2653,7 @@ importers:
         version: 2.3.16
       '@tryghost/url-utils':
         specifier: 'catalog:'
-        version: 5.3.0
+        version: 5.4.0
       '@tryghost/validator':
         specifier: 'catalog:'
         version: 3.2.16
@@ -3252,7 +3252,7 @@ importers:
         version: 0.3.6
       '@tryghost/url-utils':
         specifier: 'catalog:'
-        version: 5.3.0
+        version: 5.4.0
       handlebars:
         specifier: 4.7.9
         version: 4.7.9
@@ -5582,9 +5582,6 @@ packages:
 
   '@codemirror/lint@6.9.7':
     resolution: {integrity: sha512-28/+iWLYxKxsvGYhSYL7zaCZqLz5+FFFDq9tVsvGv9kv8RY4fFAchJ5WX9M3YrrRlTIsECjsXPqeNgnSmNP2dg==}
-
-  '@codemirror/search@6.7.1':
-    resolution: {integrity: sha512-uMe5UO6PamJtSHrXhhHOzSX3ReWtiJrva6GnPMwSOrZtiExb5X5eExhr2OUZQVvdxPsKpY3Ro2mFbQadpPWmHA==}
 
   '@codemirror/search@6.7.2':
     resolution: {integrity: sha512-gUYkYhT2+n/+VGZ+8EzE5WFkYZUZYm1VOKDudIsNqh42uRVQJ0a6Yss9sdKT3MeOYfuL1N6AZA57oza0Oyr0LA==}
@@ -9846,8 +9843,8 @@ packages:
   '@tryghost/tpl@2.3.16':
     resolution: {integrity: sha512-b453KdCWF9gKtsVpy9as3FiATdRDkrGh3f2+C9GSTiaa51zjBBTPOV1qqEMs/VCByxtWvpHev+dNg5ECQLAOMg==}
 
-  '@tryghost/url-utils@5.3.0':
-    resolution: {integrity: sha512-RClSF6ISlCvMtCMDe+pbvr2R4fMGEOYf4obzGc7EXF6Ry+UBIO11iAWH7R+4AWBA2yIGnr3kZ0HkSY76Z7nCtw==}
+  '@tryghost/url-utils@5.4.0':
+    resolution: {integrity: sha512-XEYx0kKnm7rYo8NG82MtWlJnI/eBNsxMLYR/1Anv+j6snTJskHpQYPje8Q5iuRQA3Rtt/3seVkHZlumwmhcG7w==}
 
   '@tryghost/validator@3.2.16':
     resolution: {integrity: sha512-ziJ0pqCeY1i9PG4Z+jhue6kaQjDenqkQm2ju7OAhiwTUEE4Otl2QERBxYRqdM3qMDI+04byp6jqS2RGqP0iLGA==}
@@ -24000,12 +23997,6 @@ snapshots:
       '@codemirror/view': 6.43.13
       crelt: 1.0.6
 
-  '@codemirror/search@6.7.1':
-    dependencies:
-      '@codemirror/state': 6.7.6
-      '@codemirror/view': 6.43.13
-      crelt: 1.0.6
-
   '@codemirror/search@6.7.2':
     dependencies:
       '@codemirror/state': 6.7.6
@@ -28873,10 +28864,11 @@ snapshots:
 
   '@tryghost/tpl@2.3.16': {}
 
-  '@tryghost/url-utils@5.3.0':
+  '@tryghost/url-utils@5.4.0':
     dependencies:
       cheerio: 1.2.0
       lodash: 4.18.1
+      lru-cache: 11.5.2
       moment: 2.30.1
       moment-timezone: 0.5.45
       remark: 11.0.2
@@ -32722,7 +32714,7 @@ snapshots:
       '@codemirror/commands': 6.11.1
       '@codemirror/language': 6.12.4
       '@codemirror/lint': 6.9.7
-      '@codemirror/search': 6.7.1
+      '@codemirror/search': 6.7.2
       '@codemirror/state': 6.7.6
       '@codemirror/view': 6.43.13
 
