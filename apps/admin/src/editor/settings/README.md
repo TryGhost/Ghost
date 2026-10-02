@@ -126,19 +126,21 @@ When the post is published, edited in the site's timezone and carried as a UTC
 instant. A post that has no publish time yet shows the current moment, and only
 an edit stages a value, so an untouched draft still leaves the time to the
 server. The fields share the row equally, with calendar and clock icons and the
-timezone inside the time field. The date is chosen from a calendar and the time entered
+timezone inside the time field. The date is typed as `YYYY-MM-DD` or chosen from
+a calendar, and the time entered
 through Shade's native `TimePicker`, whose value is `HH:mm`; an unparseable time returns to the value already held. Both fields commit at minute
 granularity, and the seconds a publish stamped are kept whenever the committed
-minute is the one already saved. Tabbing through an untouched time, retyping it,
-or choosing the displayed calendar day does not commit a value.
+minute is the one already saved. Tabbing through an untouched field, retyping the
+value it shows, or choosing the displayed calendar day does not commit a value.
 
 An edit made during a save stays staged until that save settles, even if the
 writer returns to the saved minute or a refetch already carries the chosen time.
 An older response cannot discard that choice. Once the saved time agrees and no
 older save can overwrite it, the staged edit is released.
 
-The calendar stops at today, and a draft's or published post's time may not be
-the current moment or later. Choosing one leaves the value staged and shown with
+The calendar stops at today, though a later date can still be typed, and a
+draft's or published post's time may not be the current moment or later.
+Entering one leaves the value staged and shown with
 `Please choose a past date and time.` beside the fields. A sent post is exempt
 from the rule and is re-timed like a published one.
 

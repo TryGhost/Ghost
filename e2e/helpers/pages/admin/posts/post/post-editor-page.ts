@@ -227,20 +227,17 @@ class PublishFlow extends BasePage {
     }
   }
 
-  /**
-   * React's date field is read-only behind a calendar popover, so the only
-   * reachable day is the default the schedule toggle picks.
-   */
   private async scheduleReact({ date, time }: { date?: string; time?: string }): Promise<void> {
-    if (date) {
-      throw new Error('the React publish flow picks its date from a calendar, not a text field');
-    }
-
     await this.publishAtButton.click();
     await this.optionsStep
       .getByRole('radio', { name: publishAtScheduleOption, exact: true })
       .click();
     await this.scheduleDateInput.waitFor({ state: 'visible' });
+
+    if (date) {
+      await this.scheduleDateInput.fill(date);
+      await this.scheduleDateInput.blur();
+    }
 
     if (time) {
       await this.scheduleTimeInput.fill(time);

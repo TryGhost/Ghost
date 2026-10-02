@@ -192,6 +192,7 @@ export const publishTypePublishAndEmailOption = 'Publish and email';
 export const publishTypePublishOnlyOption = 'Publish only';
 export const publishTypeEmailOnlyOption = 'Email only';
 export const publishAtScheduleOption = 'Schedule for later';
+export const chooseDateButton = 'Choose date';
 export const settingsDeleteCancelButton = 'Cancel';
 export const settingsDeleteConfirmButton = 'Delete';
 export const postHistoryLatestText = 'Latest';
