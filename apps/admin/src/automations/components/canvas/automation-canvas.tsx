@@ -299,7 +299,7 @@ const buildGraph = ({
               email: {
                 subject: action.data.email_subject,
                 lexical: action.data.email_lexical,
-                suppressWarning: newEmailWithoutWarningsId === action.id && !errorMessage,
+                suppressWarning: newEmailWithoutWarningsId === action.id,
                 onInteract: () => onInteract(action.id),
                 onUpdateSubject: (subject: string) => onUpdateSubject(action.id, subject),
                 onEditContent: () => onEditEmailBody(action.id),

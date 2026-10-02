@@ -50,7 +50,8 @@ export const EditableEmailCard: React.FC<
     footer?: React.ReactNode;
   }>
 > = ({ email, selected, isNew, errorMessage, menuItems, footer, children }) => {
-  const warning = email.suppressWarning ? undefined : getEmailWarning(email, errorMessage);
+  const warning =
+    email.suppressWarning && !errorMessage ? undefined : getEmailWarning(email, errorMessage);
   const text = useMemo(() => emailTextExcerpt(email.lexical), [email.lexical]);
   return (
     <AutomationCard
