@@ -290,9 +290,9 @@ jobs:
             --withTarget test:acceptance \
             --projects 'tag:playwright' \
             --json)
-          # Split Admin across two runners; every other app keeps a single shard.
+          # Split Admin across three runners; every other app keeps a single shard.
           PLAYWRIGHT_MATRIX=$(jq -c '[.[] | . as $app |
-            (if $app == "@tryghost/admin" then 2 else 1 end) as $total |
+            (if $app == "@tryghost/admin" then 3 else 1 end) as $total |
             range(1; $total + 1) | {app: $app, shardIndex: ., shardTotal: $total}
           ]' <<< "$PLAYWRIGHT_PROJECTS")
           echo "affected_playwright_matrix=$PLAYWRIGHT_MATRIX" >> "$GITHUB_OUTPUT"
@@ -1030,6 +1030,8 @@ jobs:
 
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
+        with:
+          browsers: ${{ matrix.app == '@tryghost/admin' && 'chromium' || 'chromium firefox webkit' }}
 
       # Cache the msttcorefonts .ttf files so only a cache miss hits the
       # SourceForge download that regularly hangs the koenig-lexical job. Save
