@@ -1,13 +1,15 @@
 // Compile-only contract tests, included by test:types but not executed by Vitest.
 import { expectTypeOf } from 'vitest';
 import { z } from 'zod';
-import { defineMethod, Frame, pipeline } from '../../src/index.ts';
-import type {
-  Controller,
-  ControllerMethod,
-  InferMethodFrame,
-  SchemaControllerMethod,
-  ValidatedFrame,
+import {
+  defineMethod,
+  Frame,
+  pipeline,
+  type Controller,
+  type ControllerMethod,
+  type InferMethodFrame,
+  type SchemaControllerMethod,
+  type ValidatedFrame,
 } from '../../src/index.ts';
 
 export function optionsAndBody() {

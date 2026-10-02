@@ -1,6 +1,5 @@
 import type { z } from 'zod';
-import type Frame from './frame.ts';
-import type { Dictionary } from './frame.ts';
+import type { default as Frame, Dictionary } from './frame.ts';
 import type { ControllerMethod } from './pipeline.ts';
 
 /** At least one request channel must have a schema. */

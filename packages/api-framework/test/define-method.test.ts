@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { z } from 'zod';
-import { defineMethod } from '../src/index.ts';
-import type { ValidatedFrame } from '../src/index.ts';
+import { defineMethod, type ValidatedFrame } from '../src/index.ts';
 
 describe('defineMethod', function () {
   it('preserves schema instances and callback identities without parsing', function () {
