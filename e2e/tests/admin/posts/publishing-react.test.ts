@@ -12,6 +12,7 @@ import { expect, test, withIsolatedPage } from '@/helpers/playwright';
  */
 
 const POSTS_API = '/ghost/api/admin/posts/';
+const PAGES_API = '/ghost/api/admin/pages/';
 
 async function readPost(page: Page, postId: string) {
   const response = await page.request.get(`${POSTS_API}${postId}/?formats=lexical&include=email`);
@@ -23,13 +24,40 @@ async function readPost(page: Page, postId: string) {
   return post;
 }
 
-function waitForPostSave(page: Page, postId: string) {
+function waitForPostSave(page: Page, postId: string, api = POSTS_API) {
   return page.waitForResponse(
     (response) =>
       response.request().method() === 'PUT' &&
-      response.url().includes(`${POSTS_API}${postId}/`) &&
+      response.url().includes(`${api}${postId}/`) &&
       response.status() === 200,
   );
+}
+
+async function readPage(page: Page, pageId: string) {
+  const response = await page.request.get(`${PAGES_API}${pageId}/`);
+  expect(response.status()).toBe(200);
+  const {
+    pages: [found],
+  } = await response.json();
+
+  return found;
+}
+
+/** A draft page, opened in the React editor. */
+async function openDraftPage(page: Page, title: string) {
+  const response = await page.request.post(PAGES_API, {
+    data: { pages: [{ title, status: 'draft' }] },
+  });
+  expect(response.status()).toBe(201);
+  const {
+    pages: [draft],
+  } = await response.json();
+
+  const editor = new PostEditorPage(page, { implementation: 'react' });
+  await page.goto(`/ghost/#/editor/page/${draft.id}`);
+  await editor.titleInput.waitFor({ state: 'visible' });
+
+  return { editor, draft: draft as { id: string; slug: string } };
 }
 
 async function getNewsletters(request: APIRequestContext): Promise<{ id: string }[]> {
@@ -154,6 +182,39 @@ test.describe('Ghost Admin - Publishing (React)', () => {
         timeout: 20000,
       })
       .toBe(404);
+  });
+
+  test('page - publishing puts the page on the site', async ({ page }) => {
+    const title = `react-page-publish-${Date.now()}`;
+    const { editor, draft } = await openDraftPage(page, title);
+
+    await editor.publishFlow.open();
+    await expect(editor.publishFlow.optionsStep).toBeVisible();
+    await Promise.all([waitForPostSave(page, draft.id, PAGES_API), editor.publishFlow.confirm()]);
+    await expect(page).toHaveURL('/ghost/#/pages');
+
+    const published = await readPage(page, draft.id);
+    expect(published.status).toBe('published');
+
+    const frontendPage = await page.context().newPage();
+    const publicPage = new PostPage(frontendPage);
+    await publicPage.gotoPost(draft.slug);
+    await expect(publicPage.articleTitle).toHaveText(title);
+  });
+
+  test('page - scheduling keeps the page off the site until its time', async ({ page }) => {
+    const { editor, draft } = await openDraftPage(page, `react-page-schedule-${Date.now()}`);
+
+    await editor.publishFlow.open();
+    await expect(editor.publishFlow.optionsStep).toBeVisible();
+    await editor.publishFlow.schedule({});
+    await Promise.all([waitForPostSave(page, draft.id, PAGES_API), editor.publishFlow.confirm()]);
+    await expect(page).toHaveURL('/ghost/#/pages');
+
+    const scheduled = await readPage(page, draft.id);
+    expect(scheduled.status).toBe('scheduled');
+    expect(Date.parse(scheduled.published_at)).toBeGreaterThan(Date.now());
+    expect((await page.request.get(`/${draft.slug}/`)).status()).toBe(404);
   });
 
   test('draft - previewing saves the pending edit before it renders', async ({ page }) => {
@@ -297,6 +358,74 @@ test.describe('Ghost Admin - Publishing (React)', () => {
 
       const detail = await emailClient.getMessageDetailed(delivered[0]);
       expect(detail.HTML).toContain(body);
+    });
+
+    test('draft - email only delivers the email and keeps the post off the site', async ({
+      emailClient,
+      page,
+    }) => {
+      // A member, a publish flow and the send do not fit the default budget
+      test.setTimeout(90000);
+
+      const title = `react-email-only-${Date.now()}`;
+      const body = 'This is my email-only post body.';
+      const memberEmail = 'react-email-only@example.com';
+
+      await addSubscribedMember(page, memberEmail);
+
+      const { editor, postId } = await startDraft(page, { title, body });
+
+      await editor.publishFlow.open();
+      await expect(editor.publishFlow.optionsStep).toBeVisible();
+      await editor.publishFlow.selectPublishType('send');
+      await editor.publishFlow.confirm();
+      await expect(page).toHaveURL(`/ghost/#/posts/analytics/${postId}`);
+
+      const post = await readPost(page, postId);
+      expect(post.status).toBe('sent');
+      expect(post.email_only).toBe(true);
+      expect(post.email).not.toBeNull();
+      expect((await page.request.get(`/${post.slug}/`)).status()).toBe(404);
+
+      const delivered = await emailClient.search(
+        { to: memberEmail, subject: title },
+        { timeoutMs: 30_000 },
+      );
+      expect(delivered.length).toBeGreaterThanOrEqual(1);
+
+      const detail = await emailClient.getMessageDetailed(delivered[0]);
+      expect(detail.HTML).toContain(body);
+    });
+
+    test('draft - scheduled email only holds the send and keeps the post off the site', async ({
+      page,
+    }) => {
+      // A member, a draft and a scheduled flow do not fit the default budget
+      test.setTimeout(90000);
+
+      const title = `react-scheduled-email-only-${Date.now()}`;
+
+      await addSubscribedMember(page, 'react-scheduled-email-only@example.com');
+
+      const { editor, postId } = await startDraft(page, {
+        title,
+        body: 'This is my scheduled email-only post body.',
+      });
+
+      await editor.publishFlow.open();
+      await expect(editor.publishFlow.optionsStep).toBeVisible();
+      await editor.publishFlow.selectPublishType('send');
+      await editor.publishFlow.schedule({});
+      await Promise.all([waitForPostSave(page, postId), editor.publishFlow.confirm()]);
+      // A scheduled send has nothing to report yet, so the flow returns to the list
+      await expect(page).toHaveURL('/ghost/#/posts');
+
+      const post = await readPost(page, postId);
+      expect(post.status).toBe('scheduled');
+      expect(post.email_only).toBe(true);
+      expect(Date.parse(post.published_at)).toBeGreaterThan(Date.now());
+      expect(post.email).toBeNull();
+      expect((await page.request.get(`/${post.slug}/`)).status()).toBe(404);
     });
   });
 });
