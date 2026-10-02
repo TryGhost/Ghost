@@ -342,6 +342,16 @@ Once the post is on screen, a refetch that fails leaves the editor, the session
 and the unsaved content where they are, and the next save reports a deleted
 post, an expired session or a collision itself.
 
+The read that opens the post also decides whether the writer may edit it, and
+whether a post stored only as mobiledoc must be converted first. An Author or
+Contributor who is not among its authors, or a Contributor on a post that is no
+longer a draft, is returned to the list. A post reopened from a stale cached copy
+shows that copy while its refetch runs, and the refetch decides. Once that read
+has settled, later reads decide neither: a refetch that takes away the writer's
+access, or that brings a version stored only as mobiledoc, leaves the editor and
+the unsaved content where they are, and the next save shows the server's refusal
+or the collision.
+
 What a halted queue looks like is the session's caller's decision, not the
 engine's: `reauth-pending` and `conflict` are states, not UI. The writer gets a
 way back in and the content stays untouched.
