@@ -35,6 +35,7 @@ const GA_FEATURES = [
   'globalSearchReact',
   'postsListReact',
   'membersActivityReact',
+  'selfServeArchives',
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -66,7 +67,6 @@ const PRIVATE_FEATURES = [
   'stripeCheckoutCollection',
   'membersImportRedesign',
   'paywallImprovements',
-  'selfServeArchives',
   'machinePayments',
   'editorReact',
   'authReact',
