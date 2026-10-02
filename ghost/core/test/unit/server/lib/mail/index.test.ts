@@ -1,5 +1,5 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
 const mail = require('../../../../../core/server/lib/mail');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
