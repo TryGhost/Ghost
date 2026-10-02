@@ -33,8 +33,7 @@ and provider adapters as private implementation details.
 
 - Keep implementation used only by one service inside that service.
 - Put shared server libraries, reusable constructors, and provider clients in
-  `server/lib/`, grouped by a specific capability rather than a miscellaneous
-  `services/lib/` directory.
+  `server/lib/`, grouped by a specific capability.
 - Put HTTP routing and middleware in the appropriate part of `server/web/`.
 - Keep API-specific support with its API owner rather than making it a service.
 
