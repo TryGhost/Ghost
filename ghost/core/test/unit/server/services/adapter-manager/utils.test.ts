@@ -1,31 +1,21 @@
 import assert from 'node:assert/strict';
-import { Provider } from 'nconf';
 import {
   resolveAdapterOptions,
   normalizeAdapterConfig,
   getConfiguredFeatures,
 } from '../../../../../core/server/services/adapter-manager/utils';
-import { bindAll as bindUrlHelpers } from '@tryghost/config-url-helpers';
-import { attachValidatedConfig } from '../../../../../core/shared/config/validated';
-import { bindAll as bindHelpers } from '../../../../../core/shared/config/helpers';
+import { createConfig } from '../../../../../core/shared/config/validated';
 import type { ConfigInstance } from '../../../../../core/shared/config/loader';
 
 describe('Adapter Manager: utils', function () {
   describe('normalizeAdapterConfig', function () {
-    // mini nconf loader to mock the config for testing
+    // minimal stand-in for the loaded config
     function loadNconf(): ConfigInstance {
-      const nconf = new Provider();
-      nconf.use('memory');
-      nconf.set('paths:contentPath', '/some/path');
-
-      bindUrlHelpers(nconf);
-      bindHelpers(nconf);
-      // the loader seeds these and then attaches the validated, frozen view
-      nconf.set('url', 'http://localhost:2368');
-      nconf.set('env', 'testing');
-      attachValidatedConfig(nconf);
-
-      return nconf;
+      return createConfig({
+        url: 'http://localhost:2368',
+        env: 'testing',
+        paths: { contentPath: '/some/path' },
+      });
     }
 
     it('uses top-level storage config path if adapter storage not specified', () => {

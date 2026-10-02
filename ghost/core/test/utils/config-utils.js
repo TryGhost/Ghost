@@ -34,23 +34,15 @@ configUtils.set = function () {
 };
 
 /**
- * important: do not delete cloneDeep for value
- * nconf keeps this as a reference and then it can happen that the defaultConfig get's overridden by new values
+ * Drop every override a test applied.
+ *
+ * reset() rebuilds from the config the loader produced, so it is enough on its
+ * own. This used to reset and then re-apply all ~117 top-level keys one at a
+ * time, which nconf needed - its reset() empties the stores - but which now just
+ * re-adds every default as an explicit override, at a full rebuild each.
  */
 configUtils.restore = async function () {
-  /**
-   * we have to reset the whole config object
-   * config keys, which get set via a test and do not exist in the config files, won't get reseted
-   */
-  await new Promise((resolve) => {
-    config.reset(() => {
-      resolve();
-    });
-  });
-
-  _.each(configUtils.defaultConfig, function (value, key) {
-    config.set(key, _.cloneDeep(value));
-  });
+  config.reset();
 };
 
 configUtils.getServerUrl = function ({ protocol = 'http' } = {}) {
