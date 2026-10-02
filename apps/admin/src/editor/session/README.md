@@ -190,8 +190,8 @@ A read is adopted only at the collision token the session holds. Core leaves the
 token alone unless a column of the posts row changes, so such a read can still
 carry another writer's tags, authors or tiers, or fields Core stores beside the
 post: the meta and social fields and the feature image's alt text and caption.
-The session takes the read as its saved copy, and the settings rules below
-decide which settings fields the document adopts from it. A read at any other
+The session takes the read as its saved copy, and the rules below decide which
+settings fields, alt text and caption the document adopts. A read at any other
 token is another writer's version, or the session's own save read before its
 acknowledgement landed; its content is not in the document, so the session keeps
 its token and its saved copy, marks nothing dirty and starts no save. The next
@@ -203,10 +203,11 @@ it. A refused read is offered again
 whenever the engine moves on, so a read of a save that was in flight is adopted
 once that save's acknowledgement has landed and the session holds its token.
 
-Opening the post again before the read that follows its last save has landed
-starts from the cached copy that predates that save. That read then carries a
-newer token than the session opened with and is refused, so the next save
-collides with the writer's own earlier save and shows the conflict banner.
+Each acknowledged save also writes the record the server answered with into the
+screen's query, whole and in the shape a read has, so opening the post again
+before the read that follows the save has landed starts from the saved copy and
+its token rather than from the copy that predates the save. A later version a
+read put there before the answer arrived is kept.
 
 A save writes a title and slug the writer never typed — the request's own
 default title, the slug derived from the title — and the server may normalize
@@ -235,7 +236,10 @@ at the held token carries another value meanwhile: the next save persists the
 undo. Ownership is decided by which fields the writer moved and when, never by
 comparing the live document against a pre-save snapshot, so adopting one refetch
 inside a save window does not stop a later one from being adopted too, and
-re-emitting a value the field already holds does not claim it.
+re-emitting a value the field already holds does not claim it. The feature
+image's alt text and caption are adopted by the same rules, and the feature
+image field shows what was adopted; a caption the writer is in takes it only
+once they leave it, so it never changes under their cursor.
 
 An acknowledgement also retains fields edited after submission that the request
 did not carry. A matching refetch may temporarily make such a field look saved,
@@ -360,8 +364,9 @@ banner's retry brings the dialog back.
 
 The session publishes one cached view — the engine state, pending-save
 blocking information,
-dirtiness, title, slug, settings and publish time — and republishes it only
-when one of those values changes. Pending content is read on demand after
+dirtiness, title, slug, settings, publish time, and the feature image's alt
+text and caption — and republishes it only when one of those values changes.
+Pending content is read on demand after
 tracker changes, including save errors that make a clean document dirty. The nested settings and publish-time
 references are kept stable across engine events, so body edits need no new React
 snapshot while the rendered values stay the same. That makes the view suitable

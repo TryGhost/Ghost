@@ -47,10 +47,12 @@ const FEATURE_IMAGE: FeatureImageBinding = {
   featureImage: null,
   featureImageAlt: null,
   featureImageCaption: null,
+  featureImageCaptionKey: 0,
   onFeatureImageChange: NOOP,
   onFeatureImageClear: NOOP,
   onFeatureImageAltChange: NOOP,
   onFeatureImageCaptionChange: NOOP,
+  onFeatureImageCaptionFocus: NOOP,
   onFeatureImageCaptionBlur: NOOP,
 };
 

@@ -110,6 +110,9 @@ export interface EditorSessionHandle {
   /** Puts a revision's content back into the editor and saves it; true once persisted. */
   restoreRevision: (restored: RestoredRevision) => Promise<boolean>;
   patchFeatureImage: EditorSession['patchFeatureImage'];
+  /** The feature image's alt text and caption the session holds, another writer's once adopted. */
+  featureImageAlt: string | null;
+  featureImageCaption: string | null;
   /** The live settings fields, re-read on every sidebar edit. */
   settings: EditorSettingsFields;
   /** Stages a settings field, then asks the engine to save it. */
@@ -166,6 +169,35 @@ function bootedDebounceMs(value: unknown): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined;
 }
 
+/** The screen's read of the post: its URL, and the cache entry the loader and the session share. */
+function editorRead(postType: PostType, id: string) {
+  const path = postType === 'page' ? `/pages/${id}/` : `/posts/${id}/`;
+  const url = apiUrl(path, buildPostEditorReadParams());
+  return { url, queryKey: [postType === 'page' ? pagesDataType : postsDataType, url] as const };
+}
+
+/** The post a read of the screen's query holds. */
+function recordIn(
+  postType: PostType,
+  data: EditorReadResponse | undefined,
+): EditorRecord | undefined {
+  return postType === 'page' ? data?.pages?.[0] : data?.posts?.[0];
+}
+
+/** Whether `cached` is a later version of the same post as `record`. */
+function isLaterVersion(
+  cached: EditorRecord | undefined,
+  record: EditorRecord,
+): cached is EditorRecord {
+  return (
+    !!cached &&
+    cached.id === record.id &&
+    isCollisionToken(cached.updated_at) &&
+    isCollisionToken(record.updated_at) &&
+    Date.parse(cached.updated_at) > Date.parse(record.updated_at)
+  );
+}
+
 export function useEditorSession({
   postType,
   record,
@@ -211,6 +243,19 @@ export function useEditorSession({
       saveFailureMessage: `Couldn’t save this ${postType}.`,
       autosaveDebounceMs: () => autosaveDebounceMs.current,
       onIdAcquired: setPersistedId,
+      // The loader opens the post again from this entry, possibly before the read
+      // that follows the save has landed; a later version a read put there stays.
+      onSaveAcknowledged: (saved) => {
+        queryClient.setQueryData<EditorReadResponse>(
+          editorRead(postType, saved.id).queryKey,
+          (cached) => {
+            if (isLaterVersion(recordIn(postType, cached), saved)) {
+              return undefined;
+            }
+            return postType === 'page' ? { pages: [saved] } : { posts: [saved] };
+          },
+        );
+      },
       onError: reportEditorError,
       onSaveFailed: (failure) => reportSaveFailure(failure, postType),
       onLeaveConfirmed: (leave) => reportLeaveConfirmation(leave, postType),
@@ -290,7 +335,16 @@ export function useEditorSession({
   }, [session]);
 
   const view = useSyncExternalStore(session.subscribe, session.getView);
-  const { state, pendingSave, title: engineTitle, slug, settings, publishTime } = view;
+  const {
+    state,
+    pendingSave,
+    title: engineTitle,
+    slug,
+    settings,
+    publishTime,
+    featureImageAlt,
+    featureImageCaption,
+  } = view;
 
   // The view keeps its identity until one of the values it publishes
   // changes, so it stands in for all of them as a dependency.
@@ -356,9 +410,7 @@ export function useEditorSession({
       return 'failed';
     }
 
-    const path = postType === 'page' ? `/pages/${persistedId}/` : `/posts/${persistedId}/`;
-    const url = apiUrl(path, buildPostEditorReadParams());
-    const queryKey = [postType === 'page' ? pagesDataType : postsDataType, url] as const;
+    const { url, queryKey } = editorRead(postType, persistedId);
     let data: EditorReadResponse;
     try {
       data = await fetchApi<EditorReadResponse>(url, EDITOR_REQUEST_OPTIONS);
@@ -366,7 +418,7 @@ export function useEditorSession({
       return error instanceof APIError && error.response?.status === 404 ? 'gone' : 'failed';
     }
 
-    let fresh = postType === 'page' ? data.pages?.[0] : data.posts?.[0];
+    let fresh = recordIn(postType, data);
     if (!fresh) {
       return 'gone';
     }
@@ -374,15 +426,8 @@ export function useEditorSession({
     // A normal detail refetch may have completed while this isolated reload was
     // in flight. Never replace a version we already know is newer.
     const cachedData = queryClient.getQueryData<EditorReadResponse>(queryKey);
-    const cached = postType === 'page' ? cachedData?.pages?.[0] : cachedData?.posts?.[0];
-    if (
-      cachedData &&
-      cached &&
-      cached.id === fresh.id &&
-      isCollisionToken(cached.updated_at) &&
-      isCollisionToken(fresh.updated_at) &&
-      Date.parse(cached.updated_at) > Date.parse(fresh.updated_at)
-    ) {
+    const cached = recordIn(postType, cachedData);
+    if (cachedData && isLaterVersion(cached, fresh)) {
       data = cachedData;
       fresh = cached;
     }
@@ -515,6 +560,8 @@ export function useEditorSession({
       reload,
       restoreRevision,
       patchFeatureImage: session.patchFeatureImage,
+      featureImageAlt,
+      featureImageCaption,
       settings,
       editSettings,
       stageSettings,
@@ -545,6 +592,8 @@ export function useEditorSession({
       editPublishedAt,
       editSettings,
       engineTitle,
+      featureImageAlt,
+      featureImageCaption,
       isDirtyNow,
       isNew,
       loadedRecord,
