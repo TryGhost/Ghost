@@ -11,7 +11,7 @@ export interface FeatureImagePatch {
 /** The session calls the feature image needs; the rest of the handle is irrelevant to it. */
 export interface FeatureImagePort {
   patchFeatureImage: (patch: FeatureImagePatch) => void;
-  commitSettings: () => void;
+  commitField: () => void;
 }
 
 export interface FeatureImageBinding {
@@ -106,7 +106,7 @@ export function useFeatureImageBinding(
   const onFeatureImageChange = useCallback((url: string) => {
     setFeatureImage(url);
     session.current.patchFeatureImage({ feature_image: url });
-    session.current.commitSettings();
+    session.current.commitField();
   }, []);
 
   const onFeatureImageClear = useCallback(() => {
@@ -118,13 +118,13 @@ export function useFeatureImageBinding(
       feature_image_alt: null,
       feature_image_caption: null,
     });
-    session.current.commitSettings();
+    session.current.commitField();
   }, []);
 
   const onFeatureImageAltChange = useCallback((alt: string) => {
     setFeatureImageAlt(alt);
     session.current.patchFeatureImage({ feature_image_alt: alt });
-    session.current.commitSettings();
+    session.current.commitField();
   }, []);
 
   const onFeatureImageCaptionChange = useCallback((html: string) => {
@@ -136,7 +136,7 @@ export function useFeatureImageBinding(
     session.current.patchFeatureImage({ feature_image_caption: cleaned });
   }, []);
 
-  const onFeatureImageCaptionBlur = useCallback(() => session.current.commitSettings(), []);
+  const onFeatureImageCaptionBlur = useCallback(() => session.current.commitField(), []);
 
   return {
     featureImage,

@@ -25,7 +25,7 @@ beforeEach(() => {
 });
 
 function port() {
-  return { patchFeatureImage: vi.fn(), commitSettings: vi.fn() };
+  return { patchFeatureImage: vi.fn(), commitField: vi.fn() };
 }
 
 function record(overrides: Partial<EditorRecord> = {}): EditorRecord {
@@ -114,7 +114,7 @@ describe('useFeatureImageBinding', () => {
     expect(session.patchFeatureImage).toHaveBeenCalledWith({
       feature_image: 'https://example.com/a.png',
     });
-    expect(session.commitSettings).toHaveBeenCalledTimes(1);
+    expect(session.commitField).toHaveBeenCalledTimes(1);
     expect(result.current.featureImage).toBe('https://example.com/a.png');
   });
 
@@ -138,7 +138,7 @@ describe('useFeatureImageBinding', () => {
       feature_image_alt: null,
       feature_image_caption: null,
     });
-    expect(session.commitSettings).toHaveBeenCalledTimes(1);
+    expect(session.commitField).toHaveBeenCalledTimes(1);
     expect(result.current.featureImageCaption).toBeNull();
   });
 
@@ -151,7 +151,7 @@ describe('useFeatureImageBinding', () => {
     expect(session.patchFeatureImage).toHaveBeenCalledWith({
       feature_image_alt: 'A field of grass',
     });
-    expect(session.commitSettings).toHaveBeenCalledTimes(1);
+    expect(session.commitField).toHaveBeenCalledTimes(1);
   });
 
   it('holds the caption until it loses focus', () => {
@@ -161,11 +161,11 @@ describe('useFeatureImageBinding', () => {
     act(() => result.current.onFeatureImageCaptionChange('<p>A caption</p>'));
 
     expect(session.patchFeatureImage).toHaveBeenCalledWith({ feature_image_caption: 'A caption' });
-    expect(session.commitSettings).not.toHaveBeenCalled();
+    expect(session.commitField).not.toHaveBeenCalled();
 
     act(() => result.current.onFeatureImageCaptionBlur());
 
-    expect(session.commitSettings).toHaveBeenCalledTimes(1);
+    expect(session.commitField).toHaveBeenCalledTimes(1);
   });
 
   it('ignores a caption the editor only re-serialized', () => {
@@ -230,7 +230,7 @@ describe('useFeatureImageBinding through the session', () => {
     const { session } = harness;
     const { result } = renderHook(() =>
       useFeatureImageBinding(
-        { patchFeatureImage: session.patchFeatureImage, commitSettings: session.commitField },
+        { patchFeatureImage: session.patchFeatureImage, commitField: session.commitField },
         loaded,
       ),
     );

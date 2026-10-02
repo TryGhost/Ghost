@@ -25,6 +25,7 @@ import { editorScreen } from '@/editor/editor.screen';
 import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
+const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const CURRENT_USER_ID = '1';
 const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
@@ -200,7 +201,7 @@ describe('Post settings X card', () => {
     expect(saveApi.requests).toHaveLength(2);
   });
 
-  it('stages a published post’s X title until Update', async () => {
+  it('saves a published post’s X title on its own', async () => {
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openXCard();
@@ -208,16 +209,11 @@ describe('Post settings X card', () => {
     await editorScreen.settingsXTitle().fill('A better title for X');
     await editorScreen.settingsXDescription().click();
 
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
-    await expect.poll(unsavedChangesGuarded).toBe(true);
-    expect(saveApi.requests).toHaveLength(0);
-
-    await userEvent.keyboard('{Meta>}s{/Meta}');
-
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
       twitter_title: 'A better title for X',
-      status: 'published',
     });
   });
 
@@ -296,7 +292,7 @@ describe('Post settings X card', () => {
     expect(pane.isConnected).toBe(true);
   });
 
-  it('stages a published post’s X image until Update', async () => {
+  it('saves a published post’s X image on its own', async () => {
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
     const uploadApi = fakeImageUpload();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
@@ -308,17 +304,13 @@ describe('Post settings X card', () => {
     );
 
     await expect.poll(() => uploadApi.requests.length, POLL).toBe(1);
-    await expect.element(editorScreen.removeSettingsXImage()).toBeVisible();
-    await expect.poll(unsavedChangesGuarded).toBe(true);
-    expect(saveApi.requests).toHaveLength(0);
-
-    await userEvent.keyboard('{Meta>}s{/Meta}');
-
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
       twitter_image: UPLOADED,
-      status: 'published',
     });
+    await expect.element(editorScreen.removeSettingsXImage()).toBeVisible();
   });
 
   it('reports an upload the server refuses and leaves the field as it was', async () => {

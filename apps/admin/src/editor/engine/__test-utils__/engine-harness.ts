@@ -36,6 +36,7 @@ export const BASE: SnapshotFields = {
   title: 'Hello',
   slug: 'hello',
   isDirty: true,
+  settingsDirty: false,
   changedSinceLastRevision: true,
   version: 1,
 };
@@ -51,6 +52,8 @@ export function dispatchAny(engine: SaveEngine, kind: DispatchIntent) {
       return engine.dispatch('schedule', { publishedAt: FUTURE });
     case 'publish':
       return engine.dispatch('publish');
+    case 'settings':
+      return engine.dispatch('settings');
     default:
       return engine.dispatch(kind);
   }
@@ -124,6 +127,7 @@ export function setup(
       publishedAt: prepared.target.publishedAt,
       slug: prepared.slug,
       isDirty: editedInFlight,
+      settingsDirty: editedInFlight && snapshot.settingsDirty,
     };
   });
 

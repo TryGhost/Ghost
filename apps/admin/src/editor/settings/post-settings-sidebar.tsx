@@ -63,9 +63,9 @@ const ExcerptSection = memo(function ExcerptSection({ session }: { session: Edit
         data-testid={settingsExcerptInput}
         id={inputId}
         rows={3}
-        value={session.bind.excerpt}
+        value={session.settings.custom_excerpt ?? ''}
         onBlur={session.commitSettings}
-        onChange={(event) => session.bind.onExcerptChange(event.target.value)}
+        onChange={(event) => session.stageSettings({ custom_excerpt: event.target.value || null })}
       />
       {error ? <FieldError id={errorId}>{error}</FieldError> : null}
     </SettingsSection>

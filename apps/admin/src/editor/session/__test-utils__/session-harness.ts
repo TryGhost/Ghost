@@ -10,6 +10,7 @@ import {
   type EditorSessionOptions,
 } from '@/editor/session/editor-session';
 import type { EditorRecord } from '@/editor/session/projection';
+import type { EditorWritableData } from '@/editor/session/write-payload';
 
 export const LOADED_AT = '2026-01-01T00:00:00.000Z';
 
@@ -55,7 +56,7 @@ export function updateCollision(): JSONError {
  * The post serializer standing in for the transport: a payload is not a record,
  * so this resolves it into the fields a saved record carries.
  */
-export function serializedFields(payload: EditorCreatePayload): Partial<EditorRecord> {
+export function serializedFields(payload: EditorWritableData): Partial<EditorRecord> {
   return serializePostPayload(payload);
 }
 
@@ -77,7 +78,7 @@ export interface HarnessHooks {
   /** Replaces the generator, so a test can hold a slug request open. */
   generateSlug?: (text: string) => Promise<string>;
   /** Resolves a payload into the fields the acknowledgement carries back. */
-  applied?: (payload: EditorCreatePayload, acknowledged: EditorRecord) => Partial<EditorRecord>;
+  applied?: (payload: EditorWritableData, acknowledged: EditorRecord) => Partial<EditorRecord>;
 }
 
 export interface HarnessOptions extends Partial<EditorSessionOptions> {
@@ -134,9 +135,9 @@ export function sessionHarness(options: HarnessOptions = {}, hooks: HarnessHooks
       const next = {
         ...state.acknowledged,
         ...(hooks.applied?.(payload, state.acknowledged) ?? {
-          title: payload.title,
-          slug: payload.slug,
-          lexical: payload.lexical,
+          title: payload.title ?? state.acknowledged.title,
+          slug: payload.slug ?? state.acknowledged.slug,
+          lexical: 'lexical' in payload ? payload.lexical : state.acknowledged.lexical,
           custom_excerpt: ('custom_excerpt' in payload
             ? payload.custom_excerpt
             : (state.acknowledged.custom_excerpt ?? null)) as string | null,

@@ -19,6 +19,7 @@ import {
 import { editorScreen } from '@/editor/editor.screen';
 
 const POST_ID = 'abc123';
+const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 // 2025-12-01 10:00 UTC is 2025-12-01 21:00 in Sydney: a date the offset moves.
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
@@ -183,40 +184,32 @@ describe('Post settings publish date', () => {
 
     await expect.element(editorScreen.settingsPublishTime()).toHaveValue('21:00');
 
-    // Tabbing through the field leaves the stored timestamp alone.
+    // Tabbing through the field, or retyping the minute it shows, leaves the stored timestamp alone.
     await editorScreen.settingsPublishTime().click();
     await leaveTimeField();
-    await expect.element(editorScreen.updateButton()).toBeDisabled();
-
-    // A move away and back lands on that minute again, seconds intact.
-    await setTime('21:05');
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
     await setTime('21:00');
-
     await expect.element(editorScreen.updateButton()).toBeDisabled();
     expect(unsavedChangesGuarded()).toBe(false);
-    expect(saveApi.requests).toHaveLength(0);
+
+    // So the first write the field makes is the next minute the writer picks.
+    await setTime('21:05');
+
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedPost(saveApi).published_at).toBe('2025-12-01T10:05:00.000Z');
   });
 
-  it('stages a published post’s backdate until Update', async () => {
+  it('saves a published post’s backdate on its own', async () => {
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
     await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
     await openPublishDate();
 
-    await expect.element(editorScreen.updateButton()).toBeDisabled();
-
     await setTime('08:15');
-
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
-    await expect.poll(unsavedChangesGuarded).toBe(true);
-    expect(saveApi.requests).toHaveLength(0);
-
-    await userEvent.keyboard('{Meta>}s{/Meta}');
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
       published_at: moment.tz('2025-12-01 08:15', SYDNEY).toISOString(),
-      status: 'published',
     });
     await expect.element(editorScreen.updateButton()).toBeDisabled();
   });
@@ -283,15 +276,11 @@ describe('Post settings publish date', () => {
 
     await setTime('07:45');
 
-    // A sent post stages like a published one, so nothing is sent until Update.
-    await expect.poll(unsavedChangesGuarded).toBe(true);
-    expect(saveApi.requests).toHaveLength(0);
-    await userEvent.keyboard('{Meta>}s{/Meta}');
-
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
       published_at: moment.tz('2025-12-01 07:45', SYDNEY).toISOString(),
-      status: 'sent',
     });
   });
 
