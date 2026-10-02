@@ -204,6 +204,35 @@ describe('createEditorSession', () => {
       });
     });
 
+    it('adopts the alt text and caption another writer left, which its answer carries', async () => {
+      const { session, state } = savedAs('published');
+      // Core stores both beside the post, so their edit left the token as it was.
+      state.acknowledged = {
+        ...state.acknowledged,
+        feature_image_alt: 'Their alt',
+        feature_image_caption: 'Their caption',
+      };
+
+      session.patchFields({ tags: [NEWS] });
+      session.commitSettings();
+      await settle();
+
+      expect(state.updates[0].payload).not.toHaveProperty('feature_image_caption');
+      expect(session.getFields()).toMatchObject({
+        feature_image_alt: 'Their alt',
+        feature_image_caption: 'Their caption',
+      });
+
+      session.patchTitle('A staged title');
+      await session.dispatchExplicit();
+
+      expect(state.updates[1].payload).toMatchObject({
+        title: 'A staged title',
+        feature_image_alt: 'Their alt',
+        feature_image_caption: 'Their caption',
+      });
+    });
+
     it('saves a draft’s settings change with the rest of the document', async () => {
       const { session, state } = savedAs('draft');
       session.patchTitle('A new title');

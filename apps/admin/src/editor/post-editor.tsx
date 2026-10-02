@@ -307,12 +307,14 @@ export function PostEditor({
             <FeatureImage
               alt={featureImage.featureImageAlt}
               caption={featureImage.featureImageCaption}
+              captionKey={featureImage.featureImageCaptionKey}
               cardConfig={cardConfig}
               darkMode={darkMode}
               image={featureImage.featureImage}
               onAltChange={featureImage.onFeatureImageAltChange}
               onCaptionBlur={featureImage.onFeatureImageCaptionBlur}
               onCaptionChange={featureImage.onFeatureImageCaptionChange}
+              onCaptionFocus={featureImage.onFeatureImageCaptionFocus}
               onImageChange={featureImage.onFeatureImageChange}
               onImageClear={featureImage.onFeatureImageClear}
               onTkCountChange={setFeatureImageTkCount}

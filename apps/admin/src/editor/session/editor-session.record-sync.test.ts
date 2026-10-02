@@ -153,6 +153,64 @@ describe('createEditorSession', () => {
     });
   });
 
+  describe('a read at the held version with another writer’s alt text and caption', () => {
+    const mine = () =>
+      record({
+        feature_image: 'https://example.com/content/images/hills.png',
+        feature_image_alt: 'My alt',
+        feature_image_caption: 'My caption',
+      });
+    // Core stores both beside the post, so their edit left the token as it was.
+    const theirs = () => ({
+      ...mine(),
+      feature_image_alt: 'Their alt',
+      feature_image_caption: 'Their caption',
+    });
+
+    it('adopts both while the writer has not touched them, and sends them on', async () => {
+      const { session, state } = sessionHarness({ record: mine(), baseline: mine().lexical });
+
+      expect(session.recordRefetched(theirs())).toBe(true);
+
+      expect(session.getFields()).toMatchObject({
+        feature_image_alt: 'Their alt',
+        feature_image_caption: 'Their caption',
+      });
+      expect(session.isDirty()).toBe(false);
+
+      session.patchLexical(body('My words'));
+      await session.dispatchExplicit();
+
+      expect(state.updates[0].payload).toMatchObject({
+        feature_image_alt: 'Their alt',
+        feature_image_caption: 'Their caption',
+      });
+    });
+
+    it.each([
+      { edited: 'feature_image_alt', untouched: 'feature_image_caption' },
+      { edited: 'feature_image_caption', untouched: 'feature_image_alt' },
+    ] as const)(
+      'keeps the $edited the writer edited, and adopts the $untouched',
+      async ({ edited, untouched }) => {
+        const { session, state } = sessionHarness({ record: mine(), baseline: mine().lexical });
+        session.patchFeatureImage({ [edited]: 'Mine, edited' });
+
+        session.recordRefetched(theirs());
+
+        expect(session.getFields()[edited]).toBe('Mine, edited');
+        expect(session.getFields()[untouched]).toBe(theirs()[untouched]);
+
+        await session.dispatchExplicit();
+
+        expect(state.updates[0].payload).toMatchObject({
+          [edited]: 'Mine, edited',
+          [untouched]: theirs()[untouched],
+        });
+      },
+    );
+  });
+
   it.each([
     ['has no collision token', null],
     ['has a malformed collision token', 'not-a-date'],

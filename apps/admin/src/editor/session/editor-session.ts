@@ -149,6 +149,9 @@ export interface EditorSessionView {
   readonly slug: string;
   readonly settings: EditorSettingsFields;
   readonly publishTime: { status: PostStatus; publishedAt: string | null };
+  /** The feature image's alt text and caption, another writer's once adopted. */
+  readonly featureImageAlt: string | null;
+  readonly featureImageCaption: string | null;
 }
 
 export interface EditorSession {
@@ -218,6 +221,16 @@ const BODY_WORK_REASONS: ReadonlySet<ChangeReasonCode> = new Set([
   'BASELINE_FAILED',
   'LEXICAL_PARSE_FAILED',
 ]);
+
+// Core stores the alt text and caption beside the post, so a read at the held
+// token can carry another writer's edit to them, as it can to the settings.
+const ADOPTED_KEYS = [
+  ...SETTINGS_FIELD_KEYS,
+  'feature_image_alt',
+  'feature_image_caption',
+] as const;
+
+type AdoptedKey = (typeof ADOPTED_KEYS)[number];
 
 /** What a local copy carries besides the body. */
 const COPIED_FIELD_KEYS = [
@@ -316,9 +329,9 @@ export function createEditorSession({
   let disposed = false;
   // A proposal is unsaved work before it becomes a sanitized document field.
   const pendingSlugEdits = new Set<symbol>();
-  // The version each settings field was last edited at by the writer. Adopting
+  // The version each adoptable field was last edited at by the writer. Adopting
   // is not an edit, so a snapshot of the live values could not answer this.
-  const writerEdits = new Map<SettingsFieldKey, number>();
+  const writerEdits = new Map<AdoptedKey, number>();
   // The version the in-flight request was built at, or null when none is.
   let inFlightSince: number | null = null;
   // The excerpt under the title is canvas content: a settings save leaves it for Update.
@@ -391,7 +404,9 @@ export function createEditorSession({
       view.title === live.title &&
       view.slug === currentSlug &&
       view.settings === settings &&
-      view.publishTime === publishTime
+      view.publishTime === publishTime &&
+      view.featureImageAlt === live.feature_image_alt &&
+      view.featureImageCaption === live.feature_image_caption
     ) {
       return;
     }
@@ -403,6 +418,8 @@ export function createEditorSession({
       slug: currentSlug,
       settings,
       publishTime,
+      featureImageAlt: live.feature_image_alt,
+      featureImageCaption: live.feature_image_caption,
     };
     for (const listener of changeListeners) {
       try {
@@ -417,7 +434,7 @@ export function createEditorSession({
     const before = live;
     live = { ...live, ...patch };
     version += 1;
-    for (const key of SETTINGS_FIELD_KEYS) {
+    for (const key of ADOPTED_KEYS) {
       // Re-emitting a value the field already holds is not an edit, and a
       // relation re-emitted as a fresh array holds the same value.
       if (patch[key] !== undefined && !sameFieldValue(key, before[key], patch[key])) {
@@ -457,22 +474,22 @@ export function createEditorSession({
 
   // The one rule both adoption paths ask, so a refetch and an acknowledgement
   // cannot disagree about who owns a field.
-  function isAdoptable(key: SettingsFieldKey): boolean {
+  function isAdoptable(key: AdoptedKey): boolean {
     if (tracker.isFieldDirty(key)) {
       return false;
     }
     return inFlightSince === null || (writerEdits.get(key) ?? 0) <= inFlightSince;
   }
 
-  // The server's copy of a settings field the writer has not moved past wins,
+  // The server's copy of an adoptable field the writer has not moved past wins,
   // the same rule the authored fields use: without it a value the server
   // normalized or someone else changed reads as a local edit for good.
-  function adoptSettings(
+  function adoptFields(
     next: EditablePostProjection,
-    adoptable: (key: SettingsFieldKey) => boolean,
+    adoptable: (key: AdoptedKey) => boolean,
   ): void {
     const patch: Record<string, unknown> = {};
-    for (const key of SETTINGS_FIELD_KEYS) {
+    for (const key of ADOPTED_KEYS) {
       if (adoptable(key) && live[key] !== next[key]) {
         patch[key] = next[key];
       }
@@ -775,7 +792,7 @@ export function createEditorSession({
     // those edits through the rebase, whose fallback base is the latest saved
     // copy. Submitted fields already have a stable base in the request.
     const unsubmittedEdits: EditablePostPatch = Object.fromEntries(
-      SETTINGS_FIELD_KEYS.filter(
+      ADOPTED_KEYS.filter(
         (key) =>
           prepared.projection[key] === undefined &&
           (writerEdits.get(key) ?? 0) > prepared.builtAtVersion,
@@ -795,7 +812,7 @@ export function createEditorSession({
     // The tracker now holds the retained edits as well as the rebase, so its
     // compare can decide adoption after the request's window closes.
     inFlightSince = null;
-    adoptSettings(acknowledged, isAdoptable);
+    adoptFields(acknowledged, isAdoptable);
     machine.saveAcknowledged({ ...answered, ...submitted }, answered);
 
     const created = identity.id === null;
@@ -1052,10 +1069,10 @@ export function createEditorSession({
         return false;
       }
       // Decide against the old saved copy before the refetch replaces it.
-      const adoptable = new Set(SETTINGS_FIELD_KEYS.filter(isAdoptable));
+      const adoptable = new Set(ADOPTED_KEYS.filter(isAdoptable));
       const projection = projectionOf(next);
       tracker.setSaved(next.id, projection);
-      adoptSettings(projection, (key) => adoptable.has(key));
+      adoptFields(projection, (key) => adoptable.has(key));
       status = next.status ?? status;
       publishedAt = next.published_at ?? null;
       releaseSavedPublishTime();
