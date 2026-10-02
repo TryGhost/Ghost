@@ -251,12 +251,15 @@ const buildGraph = ({
   contentBounds: CanvasContentBounds;
 } => {
   const ordered = getInitialActionOrder(automation);
-  const baseNodeProps = {
+  // React Flow hides and re-measures any node passed without `measured`; while hidden, the
+  // node's inputs lose focus and keystrokes.
+  const nodeProps = (id: string) => ({
     draggable: false,
     selectable: false,
     connectable: false,
     focusable: false,
-  };
+    measured: nodeSizes[id],
+  });
   const disabledReason = disabled ? DISABLED_REASON : undefined;
 
   const lastActionId = ordered[ordered.length - 1]?.id;
@@ -290,7 +293,7 @@ const buildGraph = ({
         selected: selectedStepId === TRIGGER_CANVAS_ID,
         onSelect: () => onSelectStep(TRIGGER_CANVAS_ID),
       },
-      ...baseNodeProps,
+      ...nodeProps(TRIGGER_CANVAS_ID),
     },
   ];
   cursorY +=
@@ -353,7 +356,7 @@ const buildGraph = ({
         showStatsFooter,
         onSelect: () => onSelectStep(action.id),
       },
-      ...baseNodeProps,
+      ...nodeProps(action.id),
     });
     let estimatedHeight = showStatsFooter ? EMAIL_NODE_WITH_STATS_HEIGHT : REGULAR_NODE_HEIGHT;
     if (editableEmail) {
@@ -379,7 +382,7 @@ const buildGraph = ({
       anchor: tailAnchor,
       fixedExit: automationRunAnalyticsEnabled,
     },
-    ...baseNodeProps,
+    ...nodeProps(TAIL_CANVAS_ID),
   });
   // Content bounds in flow coordinates, derived from node positions so the pan bound keeps
   // working if the graph ever grows wider (e.g. branching).
