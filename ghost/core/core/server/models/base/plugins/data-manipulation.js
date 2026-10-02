@@ -3,9 +3,6 @@ const { DateTime } = require('luxon');
 
 const schema = require('../../../data/schema');
 
-// What SQLite returns for a dateTime column, and what fixDatesWhenSave writes
-const DB_DATETIME = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/;
-
 /**
  * @param {number} ms - epoch milliseconds
  * @returns {number} ms rounded down to the whole second
@@ -40,10 +37,9 @@ function formatForDatabase(ms) {
 }
 
 /**
- * Handles what the database drivers hand back (Dates from MySQL, numbers and
- * `YYYY-MM-DD HH:mm:ss` UTC strings from SQLite) without building a moment,
- * since this runs for every date column of every row. Anything else goes
- * through moment exactly as before.
+ * Handles the Dates MySQL hands back (and numbers) without building a moment,
+ * since this runs for every date column of every row. Everything else,
+ * including SQLite's UTC strings, goes through moment exactly as before.
  *
  * @param {Date|number|string|import('luxon').DateTime|import('moment').Moment} value
  * @returns {number} epoch milliseconds, or NaN when the value is not a valid date
@@ -60,19 +56,6 @@ function toEpochMilliseconds(value) {
   // moment would read a Luxon DateTime as today's date at midnight
   if (DateTime.isDateTime(value)) {
     return value.toMillis();
-  }
-
-  const match = typeof value === 'string' && DB_DATETIME.exec(value);
-
-  if (match) {
-    const [, year, month, day, hours, minutes, seconds] = match.map(Number);
-    const ms = Date.UTC(year, month - 1, day, hours, minutes, seconds);
-
-    // Date.UTC rolls over out-of-range parts (2025-02-30, 10:60:00) and maps
-    // years below 100 onto 19xx, so only trust it when the result round-trips
-    if (formatForDatabase(ms) === value) {
-      return ms;
-    }
   }
 
   return moment(value).valueOf();
