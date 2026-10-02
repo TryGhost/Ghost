@@ -991,18 +991,20 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       {/* The redesigned editor exposes settings in its cards and performance in this panel. */}
       <Box className={isHistoryOpen ? 'hidden' : 'contents'}>
         {automationRunAnalyticsEnabled ? (
-          <EmailPerformanceSidebar
-            automationId={automation.id}
-            email={
-              automationAnalyticsEnabled
-                ? automation.actions.find(
-                    (action): action is AutomationSendEmailAction =>
-                      action.id === selectedStepId && action.type === 'send_email',
-                  )
-                : undefined
-            }
-            onClose={clearDetail}
-          />
+          !isHistoryOpen && (
+            <EmailPerformanceSidebar
+              automationId={automation.id}
+              email={
+                automationAnalyticsEnabled
+                  ? automation.actions.find(
+                      (action): action is AutomationSendEmailAction =>
+                        action.id === selectedStepId && action.type === 'send_email',
+                    )
+                  : undefined
+              }
+              onClose={clearDetail}
+            />
+          )
         ) : (
           <StepSidebar
             automation={automation}

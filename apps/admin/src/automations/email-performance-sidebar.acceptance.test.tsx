@@ -7,7 +7,15 @@ import type {
   AutomationEmailStats,
   AutomationSendEmailAction,
 } from '@tryghost/admin-x-framework/api/automations';
-import { detail, setup, editingCanvas } from './run-history.test-utils';
+import {
+  detail,
+  setup,
+  editingCanvas,
+  history,
+  respond,
+  select,
+  close,
+} from './run-history.test-utils';
 
 const stats: AutomationEmailStats = {
   email_sent_count: 100,
@@ -83,6 +91,21 @@ const show = (name = 'First') =>
 const linksPath = (name = 'First') => `/automations/first/actions/${name}/links/`;
 
 describe('Email performance sidebar', () => {
+  it('unmounts email performance while viewing run history', async () => {
+    prepare([email('First')]);
+    fakeAdminEndpoint('GET', linksPath(), { automation_action_links: [] });
+    respond(history('a'));
+    await boot();
+    await show();
+    const sidebar = panel().element();
+    await page.getByRole('button', { name: 'Show performance', exact: true }).click();
+    await select();
+    await expect.element(sidebar).not.toBeInTheDocument();
+    await close();
+    await show();
+    await expect.element(panel()).toBeVisible();
+  });
+
   it.each(['email', 'automation'])(
     'dismisses the menu before the %s performance sidebar on Escape',
     async (sidebar) => {
