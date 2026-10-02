@@ -369,8 +369,10 @@ over the editor (`reauth-dialog.tsx`); the content stays on screen behind it and
 nothing navigates. The writer's email is already filled in and only the password
 is asked for; the credentials go to the session endpoint and nowhere else. A site
 that requires a sign-in code turns the dialog into a second step that asks for
-the emailed code. A wrong password or code is named inside the dialog and nothing
-else changes. Once the session is back the held save goes out on its own; a
+the emailed code. That step's Resend emails a fresh code and a toast confirms it;
+Resend then reads Sent and stays disabled for fifteen seconds. A wrong password or
+code, or a resend that fails, is named inside the dialog and nothing else
+changes. Once the session is back the held save goes out on its own; a
 status change it was carrying, such as a publish, is re-confirmed rather than
 sent unasked. Clicking outside the dialog does nothing; Escape or Cancel abandons
 it, which moves the queue to the save-error banner with the content kept, and the

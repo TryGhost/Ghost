@@ -1,4 +1,5 @@
 import { type FormEvent, type RefObject, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -13,6 +14,9 @@ import {
   FieldGroup,
   FieldLabel,
   Input,
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
 } from '@tryghost/shade/components';
 import {
   isTwoFactorRequiredError,
@@ -21,6 +25,7 @@ import {
 } from '@tryghost/admin-x-framework/api/session';
 import { JSONError, UnauthorizedError } from '@tryghost/admin-x-framework/errors';
 import { editorReauthDialog } from '@tryghost/test-data/selectors/editor';
+import { ResendCodeButton } from '@/auth/api';
 import { EDITOR_CONFIRM_DIALOG_LAYER } from '@/editor/layering';
 
 export interface ReauthDialogProps {
@@ -39,6 +44,7 @@ const CODE_REQUIRED = 'Verification code is required';
 const CODE_FORMAT = 'Verification code must be 6 numbers';
 const CODE_INCORRECT = 'Your verification code is incorrect.';
 const VERIFY_FAILED = 'There was a problem verifying the code. Please try again.';
+const CODE_SENT = 'A new verification code has been sent to your email.';
 
 function apiMessage(error: unknown): string | undefined {
   return error instanceof JSONError ? error.data?.errors?.[0]?.message : undefined;
@@ -166,22 +172,27 @@ function ReauthForm({ email, passwordRef, onSucceeded }: ReauthFormProps) {
         <FieldGroup className="py-6">
           <Field data-invalid={error ? true : undefined}>
             <FieldLabel htmlFor="reauth-token">Verification code</FieldLabel>
-            <Input
-              ref={tokenRef}
-              aria-invalid={error ? true : undefined}
-              autoComplete="one-time-code"
-              id="reauth-token"
-              inputMode="numeric"
-              name="token"
-              pattern="[0-9]*"
-              placeholder="• • • • • •"
-              value={token}
-              data-1p-ignore
-              onChange={(event) => {
-                setError(null);
-                setToken(event.target.value);
-              }}
-            />
+            <InputGroup>
+              <InputGroupInput
+                ref={tokenRef}
+                aria-invalid={error ? true : undefined}
+                autoComplete="one-time-code"
+                id="reauth-token"
+                inputMode="numeric"
+                name="token"
+                pattern="[0-9]*"
+                placeholder="• • • • • •"
+                value={token}
+                data-1p-ignore
+                onChange={(event) => {
+                  setError(null);
+                  setToken(event.target.value);
+                }}
+              />
+              <InputGroupAddon align="inline-end">
+                <ResendCodeButton onError={setError} onSent={() => toast.success(CODE_SENT)} />
+              </InputGroupAddon>
+            </InputGroup>
             {error && <FieldError>{error}</FieldError>}
           </Field>
         </FieldGroup>
