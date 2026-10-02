@@ -57,7 +57,11 @@ import { PostSettingsSidebar } from './settings/post-settings-sidebar';
 import { useFeatureImageBinding } from './session/feature-image-binding';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { useEditorLeaveGuard } from './session/use-leave-guard';
-import { EditorSessionKeyProvider, useEditorScreenSessionKey } from './session/session-key';
+import {
+  EditorSessionCreatedProvider,
+  EditorSessionKeyProvider,
+  useEditorScreenSessionKey,
+} from './session/session-key';
 import { useEditorSession } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
@@ -609,7 +613,7 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
 
 export default function EditorScreen() {
   const editorPath = useParams()['*'] ?? '';
-  const sessionKey = useEditorScreenSessionKey();
+  const { key: sessionKey, markCreated } = useEditorScreenSessionKey();
   const [typeSegment, id, ...rest] = editorPath.split('/').filter(Boolean);
 
   if (!typeSegment) {
@@ -622,7 +626,9 @@ export default function EditorScreen() {
 
   return (
     <EditorSessionKeyProvider value={sessionKey}>
-      <EditorLoader key={sessionKey} id={id} postType={typeSegment} />
+      <EditorSessionCreatedProvider value={markCreated}>
+        <EditorLoader key={sessionKey} id={id} postType={typeSegment} />
+      </EditorSessionCreatedProvider>
     </EditorSessionKeyProvider>
   );
 }
