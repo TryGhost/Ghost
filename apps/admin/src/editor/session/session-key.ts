@@ -54,7 +54,7 @@ export function useEditorScreenSessionKey(): EditorScreenSession {
   const location = useLocation();
   const path = withoutTrailingSlash(location.pathname);
   const [session, setSession] = useState<ScreenSession>(() => ({
-    screen: Math.random().toString(36).slice(2),
+    screen: screenId(),
     count: 0,
     path,
     location,
@@ -78,6 +78,12 @@ export function useEditorScreenSessionKey(): EditorScreenSession {
     : { ...session, path, location, count: session.count + 1, created: false };
   setSession(next);
   return { key: `${next.screen}:${next.count}`, markCreated };
+}
+
+function screenId(): string {
+  return Array.from(crypto.getRandomValues(new Uint32Array(2)), (part) => part.toString(36)).join(
+    '',
+  );
 }
 
 function isNewPostPath(path: string): boolean {
