@@ -9,6 +9,7 @@ import {
   fakePages,
   post,
   renderAdminApp,
+  settleTransitions,
   submittedPost,
   unsavedChangesGuarded,
   withoutAutosave,
@@ -46,6 +47,8 @@ function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
 async function openSidebar() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  // Visible from its first frame; a click while it still slides in can be lost.
+  await settleTransitions();
 }
 
 /**
