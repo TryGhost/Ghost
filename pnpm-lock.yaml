@@ -732,8 +732,8 @@ overrides:
   '@tryghost/nql': 0.13.4
   '@tryghost/nql-lang': 0.7.0
   jackspeak: 4.2.3
-  moment: 2.30.1
-  moment-timezone: 0.5.45
+  moment: 2.31.0
+  moment-timezone: 0.6.4
   nwsapi: 2.2.24
   broccoli-persistent-filter: ^2.3.1
   ember-basic-dropdown: 6.0.2
@@ -1092,11 +1092,11 @@ importers:
         specifier: 'catalog:'
         version: 2.5.3
       moment:
-        specifier: 2.30.1
-        version: 2.30.1
+        specifier: 2.31.0
+        version: 2.31.0
       moment-timezone:
-        specifier: 0.5.45
-        version: 0.5.45
+        specifier: 0.6.4
+        version: 0.6.4
       papaparse:
         specifier: 5.5.4
         version: 5.5.4
@@ -1490,8 +1490,8 @@ importers:
         specifier: 'catalog:'
         version: 30.0.1(@noble/hashes@1.8.0)
       moment:
-        specifier: 2.30.1
-        version: 2.30.1
+        specifier: 2.31.0
+        version: 2.31.0
       postcss:
         specifier: 'catalog:'
         version: 8.5.26
@@ -1768,7 +1768,7 @@ importers:
         version: 4.2.0(@babel/core@7.29.7(supports-color@10.2.2))(ember-source@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(supports-color@10.2.2)
       ember-moment:
         specifier: 10.0.1
-        version: 10.0.1(moment-timezone@0.5.45)(moment@2.30.1)(supports-color@10.2.2)
+        version: 10.0.1(moment-timezone@0.6.4)(moment@2.31.0)(supports-color@10.2.2)
       ember-one-way-select:
         specifier: 4.0.1
         version: 4.0.1(supports-color@10.2.2)
@@ -1845,8 +1845,8 @@ importers:
         specifier: 0.1.48
         version: 0.1.48
       moment-timezone:
-        specifier: 0.5.45
-        version: 0.5.45
+        specifier: 0.6.4
+        version: 0.6.4
       normalize.css:
         specifier: 3.0.3
         version: 3.0.3
@@ -2080,8 +2080,8 @@ importers:
         specifier: 'catalog:'
         version: 1.23.0(react@18.3.1)
       moment-timezone:
-        specifier: 0.5.45
-        version: 0.5.45
+        specifier: 0.6.4
+        version: 0.6.4
       react:
         specifier: 'catalog:'
         version: 18.3.1
@@ -2895,11 +2895,11 @@ importers:
         specifier: 'catalog:'
         version: 2.5.3
       moment:
-        specifier: 2.30.1
-        version: 2.30.1
+        specifier: 2.31.0
+        version: 2.31.0
       moment-timezone:
-        specifier: 0.5.45
-        version: 0.5.45
+        specifier: 0.6.4
+        version: 0.6.4
       mppx:
         specifier: 'catalog:'
         version: 0.6.20(express@4.22.3(supports-color@10.2.2))(hono@4.13.8)(viem@2.55.11)
@@ -4218,8 +4218,8 @@ importers:
   packages/adapters/storage-base:
     dependencies:
       moment:
-        specifier: 2.30.1
-        version: 2.30.1
+        specifier: 2.31.0
+        version: 2.31.0
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
@@ -13901,8 +13901,8 @@ packages:
   ember-moment@10.0.1:
     resolution: {integrity: sha512-Es5PaFBRF6djyb0zwmcCMqWjLhyKrCWs5Ug6iaZoKxDgEc8incVCTv3ED2Z4oCcNDY2gKTqXY5VTsP1J9hUPcg==}
     peerDependencies:
-      moment: 2.30.1
-      moment-timezone: 0.5.45
+      moment: 2.31.0
+      moment-timezone: 0.6.4
     peerDependenciesMeta:
       moment:
         optional: true
@@ -17840,11 +17840,11 @@ packages:
     engines: {node: '>= 0.8.x'}
     hasBin: true
 
-  moment-timezone@0.5.45:
-    resolution: {integrity: sha512-HIWmqA86KcmCAhnMAN0wuDOARV/525R2+lOLotuGFzn4HO+FH+/645z2wx0Dt3iDv6/p61SIvKnDstISainhLQ==}
+  moment-timezone@0.6.4:
+    resolution: {integrity: sha512-JHUK8Mgheach4uMQmIV/pIfrv0ubPiDCPPqc7Mi604je1UblP6Gbm+FfV+Oh88KP03rZqGCZG3t0wmpfdlDv+w==}
 
-  moment@2.30.1:
-    resolution: {integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==}
+  moment@2.31.0:
+    resolution: {integrity: sha512-0acOTfMiWOheYS4eoWb80yYMb/JLvVv9SHbs2PehaDzfUG0Bw855SKyk0IKTnPGa5+U2bmi3W68l1+sGLX/pvw==}
 
   moo@0.5.3:
     resolution: {integrity: sha512-m2fmM2dDm7GZQsY7KK2cme8agi+AAljILjQnof7p1ZMDe6dQ4bdnSMx0cPppudoeNv5hEFQirN6u+O4fDE0IWA==}
@@ -28543,7 +28543,7 @@ snapshots:
     dependencies:
       '@tryghost/errors': 3.4.1
       lodash: 4.18.1
-      moment-timezone: 0.5.45
+      moment-timezone: 0.6.4
 
   '@tryghost/bookshelf-custom-query@2.3.16': {}
 
@@ -28869,8 +28869,8 @@ snapshots:
       cheerio: 1.2.0
       lodash: 4.18.1
       lru-cache: 11.5.2
-      moment: 2.30.1
-      moment-timezone: 0.5.45
+      moment: 2.31.0
+      moment-timezone: 0.6.4
       remark: 11.0.2
       remark-footnotes: 1.0.0
       unist-util-visit: 2.0.3
@@ -28880,7 +28880,7 @@ snapshots:
       '@tryghost/errors': 3.4.1
       '@tryghost/tpl': 2.3.16
       lodash: 4.18.1
-      moment-timezone: 0.5.45
+      moment-timezone: 0.6.4
       validator: 13.15.35
 
   '@tryghost/version@2.3.16':
@@ -32259,7 +32259,7 @@ snapshots:
   bunyan@1.8.15:
     optionalDependencies:
       dtrace-provider: 0.8.8
-      moment: 2.30.1
+      moment: 2.31.0
       mv: 2.1.1
       safe-json-stringify: 1.2.0
 
@@ -32495,7 +32495,7 @@ snapshots:
   chart.js@2.9.4:
     dependencies:
       chartjs-color: 2.4.1
-      moment: 2.30.1
+      moment: 2.31.0
 
   chartjs-color-string@0.6.0:
     dependencies:
@@ -34984,12 +34984,12 @@ snapshots:
       - '@babel/core'
       - supports-color
 
-  ember-moment@10.0.1(moment-timezone@0.5.45)(moment@2.30.1)(supports-color@10.2.2):
+  ember-moment@10.0.1(moment-timezone@0.6.4)(moment@2.31.0)(supports-color@10.2.2):
     dependencies:
       '@embroider/addon-shim': 1.10.3(supports-color@10.2.2)
     optionalDependencies:
-      moment: 2.30.1
-      moment-timezone: 0.5.45
+      moment: 2.31.0
+      moment-timezone: 0.6.4
     transitivePeerDependencies:
       - supports-color
 
@@ -40576,11 +40576,11 @@ snapshots:
       supports-color: 10.2.2
       to-iso-string: 0.0.2
 
-  moment-timezone@0.5.45:
+  moment-timezone@0.6.4:
     dependencies:
-      moment: 2.30.1
+      moment: 2.31.0
 
-  moment@2.30.1: {}
+  moment@2.31.0: {}
 
   moo@0.5.3: {}
 
