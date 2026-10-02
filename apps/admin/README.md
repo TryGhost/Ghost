@@ -55,6 +55,11 @@ endpoint, including saved email subjects and send/delivery evidence. Active runs
 stop at their recorded pending step; future workflow steps are not shown yet.
 Completed runs do not get an invented end timestamp.
 
+Email snippets show up to 400 characters of ordinary text from the saved revision,
+rendered as plain text. Rich cards (including HTML and Markdown) are skipped;
+emails without extractable text show their subject alone. This does not mount or
+import the editor.
+
 History mapping tests live in `src/automations/utils/`; the `run-history*`
 acceptance tests cover selection, drafts, retries, responsive layouts, and cards.
 

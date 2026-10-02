@@ -106,7 +106,6 @@ const RunHistoryContent: React.FC<RunHistoryProps> = ({
           {isLoading && (
             <Stack align="center" aria-label="Loading run history" gap="sm" role="status">
               <LoadingIndicator size="lg" />
-              <Text tone="secondary">Loading run history</Text>
             </Stack>
           )}
           {unavailable && (
