@@ -11,12 +11,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@tryghost/shade/components';
-import { Grid, Stack } from '@tryghost/shade/primitives';
+import { Grid, Stack, Inline, Text } from '@tryghost/shade/primitives';
+import { AutomationCard, AutomationCardHeader } from './automation-card';
 import { Handle, Position } from '@xyflow/react';
 import type { Node, NodeProps } from '@xyflow/react';
 import type { AutomationEmailStats } from '@tryghost/admin-x-framework/api/automations';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { formatRate } from './format-stats';
+import { EditableWaitCard, type EditableWaitData } from './editable-wait-card';
 import { EditableEmailCard, type EditableEmailData } from './editable-email-card';
 import { OffValue } from './off-value';
 
@@ -31,6 +33,7 @@ export type CanvasAnchor = { sourceId: string; targetId: string };
 
 export type StepNodeDisplayData = {
   email?: EditableEmailData;
+  wait?: EditableWaitData;
   errorMessage?: string;
   icon: React.ElementType;
   label: string;
@@ -57,6 +60,8 @@ type NodeContextMenuSeparator = {
 export type NodeContextMenuEntry = NodeContextMenuItem | NodeContextMenuSeparator;
 
 type StepNodeData = StepNodeDisplayData & {
+  fixedTrigger?: boolean;
+  onInteract?: () => void;
   contextMenuItems: NodeContextMenuEntry[];
   isNew: boolean;
   selected: boolean;
@@ -64,6 +69,7 @@ type StepNodeData = StepNodeDisplayData & {
 };
 
 type TailNodeData = {
+  fixedExit?: boolean;
   disabled: boolean;
   disabledReason?: string;
   onPick: (type: StepPickerType, anchor: CanvasAnchor) => void;
@@ -259,32 +265,63 @@ const EmailStepStatsFooter: React.FC<{
   );
 };
 
-const TriggerNode = React.memo<NodeProps<StepFlowNode>>(({ data }) => (
-  <NodeShell data={data}>
-    <StepNodeContent data={data} />
-    <HiddenHandle position={Position.Bottom} type="source" />
-  </NodeShell>
-));
+const TriggerNode = React.memo<NodeProps<StepFlowNode>>(({ data }) =>
+  data.fixedTrigger ? (
+    <AutomationCard
+      aria-label="Member signs up"
+      className="w-[400px]"
+      onPointerDownCapture={data.onInteract}
+    >
+      <AutomationCardHeader
+        icon={<LucideIcon.UserPlus className="size-4" />}
+        iconClassName="p-2.5 text-foreground"
+        title="Member signs up"
+      />
+      <HiddenHandle position={Position.Bottom} type="source" />
+    </AutomationCard>
+  ) : (
+    <NodeShell data={data}>
+      <StepNodeContent data={data} />
+      <HiddenHandle position={Position.Bottom} type="source" />
+    </NodeShell>
+  ),
+);
 TriggerNode.displayName = 'TriggerNode';
 
-const StepNode = React.memo<NodeProps<StepFlowNode>>(({ data }) =>
-  data.email ? (
-    <EditableEmailCard
-      email={data.email}
-      errorMessage={data.errorMessage}
-      footer={
-        data.showStatsFooter && data.stats ? (
-          <EmailStepStatsFooter stats={data.stats} variant="inline" />
-        ) : undefined
-      }
-      isNew={data.isNew}
-      menuItems={data.contextMenuItems}
-      selected={data.selected}
-    >
-      <HiddenHandle position={Position.Top} type="target" />
-      <HiddenHandle position={Position.Bottom} type="source" />
-    </EditableEmailCard>
-  ) : (
+const StepNode = React.memo<NodeProps<StepFlowNode>>(({ data }) => {
+  if (data.email) {
+    return (
+      <EditableEmailCard
+        email={data.email}
+        errorMessage={data.errorMessage}
+        footer={
+          data.showStatsFooter && data.stats ? (
+            <EmailStepStatsFooter stats={data.stats} variant="inline" />
+          ) : undefined
+        }
+        isNew={data.isNew}
+        menuItems={data.contextMenuItems}
+        selected={data.selected}
+      >
+        <HiddenHandle position={Position.Top} type="target" />
+        <HiddenHandle position={Position.Bottom} type="source" />
+      </EditableEmailCard>
+    );
+  }
+  if (data.wait) {
+    return (
+      <EditableWaitCard
+        errorMessage={data.errorMessage}
+        isNew={data.isNew}
+        menuItems={data.contextMenuItems}
+        wait={data.wait}
+      >
+        <HiddenHandle position={Position.Top} type="target" />
+        <HiddenHandle position={Position.Bottom} type="source" />
+      </EditableWaitCard>
+    );
+  }
+  return (
     <NodeShell
       data={data}
       footer={
@@ -295,12 +332,28 @@ const StepNode = React.memo<NodeProps<StepFlowNode>>(({ data }) =>
       <StepNodeContent data={data} />
       <HiddenHandle position={Position.Bottom} type="source" />
     </NodeShell>
-  ),
-);
+  );
+});
 StepNode.displayName = 'StepNode';
 
 const TailNode: React.FC<NodeProps<TailFlowNode>> = ({ data }) => {
   const [open, setOpen] = useState(false);
+
+  if (data.fixedExit) {
+    return (
+      <Inline className="w-[400px]" justify="center">
+        <HiddenHandle position={Position.Top} type="target" />
+        <AutomationCard aria-label="Exit automation" className="w-auto p-4 text-muted-foreground">
+          <Inline gap="md">
+            <LucideIcon.LogOut aria-hidden="true" className="size-4 shrink-0" strokeWidth={2} />
+            <Text size="md" tone="secondary" weight="medium">
+              Exit automation
+            </Text>
+          </Inline>
+        </AutomationCard>
+      </Inline>
+    );
+  }
 
   const handlePick = (type: StepPickerType) => {
     setOpen(false);
