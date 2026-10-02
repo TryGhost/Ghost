@@ -15,12 +15,10 @@ import {
 import { postsListScreen } from './posts-list.screen';
 import type { StaffRoleName } from '@tryghost/test-data';
 
-const FLAG_ON = { labs: { postsListReact: true } };
-
 function asRole(name: StaffRoleName) {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name })];
-  return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+  return { boot: { browseMe: { response: me } } };
 }
 
 /**
@@ -37,7 +35,7 @@ describe('Posts list filters', () => {
 
   it('hydrates a chip from the URL', async () => {
     fakePosts([post({ title: 'A draft', status: 'draft' })]);
-    await renderAdminApp('/posts?type=draft', FLAG_ON);
+    await renderAdminApp('/posts?type=draft');
 
     await expect.element(postsListScreen.filterBar()).toBeVisible();
     await expect.element(postsListScreen.filterBar()).toHaveTextContent('Draft posts');
@@ -51,7 +49,7 @@ describe('Posts list filters', () => {
     fakeAdminEndpoint('GET', /^\/tags\/\?.*slug/, {
       tags: [tag({ name: 'Engineering', slug: 'engineering' })],
     });
-    await renderAdminApp('/posts?tag=engineering', FLAG_ON);
+    await renderAdminApp('/posts?tag=engineering');
 
     // The URL carries a slug; the chip has to read as the tag's name.
     await expect.element(postsListScreen.filterBar()).toHaveTextContent('Engineering');
@@ -65,7 +63,7 @@ describe('Posts list filters', () => {
     fakeAdminEndpoint('GET', /^\/users\/\?.*slug/, {
       users: [staffUser({ name: 'Ada Lovelace', slug: 'ada' })],
     });
-    await renderAdminApp('/posts?author=ada', FLAG_ON);
+    await renderAdminApp('/posts?author=ada');
 
     await expect.element(postsListScreen.filterBar()).toHaveTextContent('Ada Lovelace');
   });
@@ -77,7 +75,7 @@ describe('Posts list filters', () => {
   it('shows an unknown-value chip rather than an empty one', async () => {
     fakePosts([]);
     fakeAdminEndpoint('GET', /^\/tags\/\?.*slug/, { tags: [] });
-    await renderAdminApp('/posts?tag=deleted-tag', FLAG_ON);
+    await renderAdminApp('/posts?tag=deleted-tag');
 
     await expect.element(postsListScreen.filterBar()).toHaveTextContent('Unknown tag');
     await expect.element(postsListScreen.filterBar()).not.toHaveTextContent('Select');
@@ -86,7 +84,7 @@ describe('Posts list filters', () => {
 
   it('shows an unknown-value chip for an unrecognised type', async () => {
     fakePosts([]);
-    await renderAdminApp('/posts?type=bogus', FLAG_ON);
+    await renderAdminApp('/posts?type=bogus');
 
     await expect.element(postsListScreen.filterBar()).toHaveTextContent('Unknown type');
     await expect.poll(currentRoute).toBe('/posts?type=bogus');
@@ -98,7 +96,7 @@ describe('Posts list filters', () => {
   // type" chips while only one of them was in the URL or a saved view.
   it('does not offer a field that already has a chip', async () => {
     fakePosts([]);
-    await renderAdminApp('/posts?type=draft', FLAG_ON);
+    await renderAdminApp('/posts?type=draft');
 
     await postsListScreen.addFilterButton().click();
 
@@ -109,21 +107,21 @@ describe('Posts list filters', () => {
   describe('the sort control', () => {
     it('shows the default when no order is set', async () => {
       fakePosts([post({ title: 'One', status: 'published' })]);
-      await renderAdminApp('/posts', FLAG_ON);
+      await renderAdminApp('/posts');
 
       await expect.element(postsListScreen.sortButton()).toHaveTextContent('Newest first');
     });
 
     it('names the order from the URL', async () => {
       fakePosts([post({ title: 'One', status: 'published' })]);
-      await renderAdminApp('/posts?order=updated_at+desc', FLAG_ON);
+      await renderAdminApp('/posts?order=updated_at+desc');
 
       await expect.element(postsListScreen.sortButton()).toHaveTextContent('Recently updated');
     });
 
     it('writes the chosen order to the URL', async () => {
       fakePosts([post({ title: 'One', status: 'published' })]);
-      await renderAdminApp('/posts', FLAG_ON);
+      await renderAdminApp('/posts');
 
       await postsListScreen.sortButton().click();
       await postsListScreen.sortOption('Oldest first').click();
@@ -134,7 +132,7 @@ describe('Posts list filters', () => {
     // "Newest first" is the absence of the param, not a value.
     it('drops the param when returning to the default', async () => {
       fakePosts([post({ title: 'One', status: 'published' })]);
-      await renderAdminApp('/posts?order=published_at+asc', FLAG_ON);
+      await renderAdminApp('/posts?order=published_at+asc');
 
       await postsListScreen.sortButton().click();
       await postsListScreen.sortOption('Newest first').click();
@@ -144,7 +142,7 @@ describe('Posts list filters', () => {
 
     it('leaves the filters alone when the sort changes', async () => {
       fakePosts([post({ title: 'One', status: 'draft' })]);
-      await renderAdminApp('/posts?type=draft', FLAG_ON);
+      await renderAdminApp('/posts?type=draft');
 
       await postsListScreen.sortButton().click();
       await postsListScreen.sortOption('Oldest first').click();

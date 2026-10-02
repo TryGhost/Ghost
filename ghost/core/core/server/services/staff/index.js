@@ -13,7 +13,7 @@ class StaffServiceWrapper {
     const logging = require('@tryghost/logging');
     const models = require('../../models');
     const memberAttribution = require('../member-attribution');
-    const { GhostMailer } = require('../mail');
+    const { GhostMailer } = require('../../lib/mail');
     const mailer = new GhostMailer();
     const settingsCache = require('../../../shared/settings-cache');
     const urlUtils = require('../../../shared/url-utils').default;

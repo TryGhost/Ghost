@@ -37,8 +37,11 @@ A blank title is held in the projection as the default title while the input
 stays empty, so a post persisted under that title does not read as permanently
 diverged from what the writer sees. The title input never shows it; substituting
 it on the way to the server is the save engine's own duty. The persisted
-identity — the id and the collision token — is replaced from every
-acknowledgement, so the next request carries the token the server just issued.
+identity — the id and the collision token — is moved by every acknowledgement
+and every reload and never by a read, so the next request carries the token of
+the version the session's content was built on. A settings save is no
+exception: it is acknowledged only while the server still holds the canvas the
+session last saved, as [What a save sends](#what-a-save-sends) describes.
 
 The snapshot the engine reads is that projection reduced to what the queue
 reasons about: the id with its collision token, both `null` until the create is
@@ -58,29 +61,36 @@ a field patch would be dropped before the request is built.
 
 Every edit updates the live projection. The save engine derives pending content
 from that projection when the session reads its view. Staging alone does not
-start a request. A field commit — including title blur, image changes, and
-settings — dispatches `field` unconditionally;
-body edits dispatch `autosave`. The engine owns when these requests may run.
+start a request. A canvas commit — the title's blur, the excerpt under the title,
+and the feature image with its alt text and caption — dispatches `field`; a
+settings-panel commit — a settings field, a manual slug or the publish time —
+dispatches `settings`; body edits dispatch `autosave`. The engine owns when
+these requests may run.
 
-| Status                           | Background save request                                         | Persisted by             |
-| -------------------------------- | --------------------------------------------------------------- | ------------------------ |
-| `draft`                          | Runs immediately for a field commit, or after the body debounce | The eligible save        |
-| `published`, `scheduled`, `sent` | Retains pending content until Update                            | Explicit Update or Cmd-S |
+| Status                           | Title, body and canvas                              | Settings panel                                 |
+| -------------------------------- | --------------------------------------------------- | ---------------------------------------------- |
+| `draft`                          | Saved by a field commit, or after the body debounce | Saved at once, with the whole document         |
+| `published`, `scheduled`, `sent` | Retained until an explicit save: Update or Cmd-S    | Saved at once, with the changed settings alone |
+
+Tier picks outside a draft are the one settings edit staged without a commit,
+as in Ember: every save of a published post writes a revision, so the picks go
+out once, with the next settings save or Update, and count as unsaved work
+until then.
 
 Pending content is separate from the runnable queue. It includes edits awaiting
-a field commit, the autosave debounce, Update, validation, or recovery, and can
+a commit, the autosave debounce, Update, validation, or recovery, and can
 coexist with an older request in flight. A blocked document never leaves a
 command in the runnable queue, so navigating away does not wait indefinitely.
 The live document remains the source of truth: Update enables, the post stays
 dirty, and leaving requires a save or confirmation.
 
 All saves use the same preparation validator. An incomplete tier pairing on a
-post that exists, an over-long meta/social field, an emptied author list, or a
-newly staged future publish time holds a background save with a validation
-blocker. Body autosave, title and image commits follow the same rule, including
-an already armed timer or queued request. The editor explains why changes are
-waiting even when the settings panel is closed. A saved future publish time is
-not itself invalid.
+post that exists, an over-long title, excerpt, code injection or meta/social
+field, an emptied author list, or a newly staged future publish time holds a
+background save with a validation blocker. Body autosave, title and image
+commits follow the same rule, including an already armed timer or queued
+request. The editor explains why changes are waiting even when the settings
+panel is closed. A saved future publish time is not itself invalid.
 
 A post the server has not created yet is not held to the tier rule. Its saves
 go ahead with the incomplete pair left out of the write and of the submitted
@@ -93,12 +103,19 @@ Its content stays pending; its publish/schedule/email target is not retained for
 automatic retry. Correcting the document and committing requests a new save that
 combines its current values. Unchanged invalid versions suppress background
 retries; an explicit retry still revalidates. Unrelated edits retain the warning
-until a preparation succeeds or a save attempt finds the document clean. Body edits on a blocked new post debounce too,
+until a preparation succeeds or a save attempt finds the document clean; a
+warning a settings save raised also goes once a settings attempt finds the
+settings back to their saved values, however much canvas is staged. Body edits on a blocked new post debounce too,
 and preparation occupies the save slot without displaying “Saving…”.
 
 Failures never discard pending content. Server validation, network errors and
 authentication expiry retain their recovery policies. A collision remains
-recoverable after a retry fails for a different reason.
+recoverable after a retry fails for a different reason. The save error's retry
+repeats a failed settings save on a post that is not a draft as a settings save,
+so it does not take the retained canvas with it, and sends it even when the
+server refused those very values; any other failed save is retried explicitly.
+A settings attempt that finds the refused settings back to their saved values
+ends the refusal instead: the error goes, and the post is no longer dirty for it.
 Only accepting a server reload discards outstanding local work. Successful
 acknowledgement clears pending content only when the reconciled live document
 is clean; edits made after submission remain pending.
@@ -123,10 +140,29 @@ without tiers. The publish flow's email extras — the newsletter, the recipient
 segment and the email-only flag — ride on the command that carried them rather
 than on the projection.
 
-The whole payload is validated before the request: the settings rules above in
-their own order, then the publish time, then the author list. A failure there is
-typed exactly as one the server would have reported, so the save fails with that
-kind and sends nothing.
+A settings save on a post that is not a draft sends the id and the collision
+token, the settings fields that differ from the saved copy and a staged publish
+time, and beside them the canvas as it was last saved: the title, the slug (the
+writer's own once a manual edit has moved it), the body, the feature image, and
+the excerpt while it is edited under the title. Core checks the collision token
+when a write changes the post's own row or its tags, authors or tiers, but not
+when it changes only the fields Core stores beside the post: the meta, Facebook
+and X fields, the email subject and the feature image's alt text and caption.
+The saved canvas makes a settings save collide when another writer has changed
+the canvas since, rather than be acknowledged with their token and their canvas;
+when nobody has, it changes nothing. The canvas the writer has staged and the status stay out of
+the request, so the canvas waits for Update and the server keeps the status it
+holds. The excerpt is canvas while it is edited under the title and a settings
+field while the sidebar owns it; whichever route last staged it decides.
+
+The whole payload is validated before the request: the title, then the settings
+rules above in their own order, then the publish time, then the author list. A
+settings save skips the rules of what it leaves for Update, the title and a
+canvas excerpt, so an unfinished canvas edit does not hold it. A
+failure there is typed exactly as one the server would have reported, so the
+save fails with that kind and sends nothing. Each length is counted as the
+server counts it: the title trimmed, with an emoji and its presentation selector
+as one character, and every other field by code point.
 
 A failure the transport reports is mapped onto the same kinds, so the engine's
 state machine reads them the same way: an `UPDATE_COLLISION` code becomes
@@ -138,6 +174,10 @@ failure, a payload the server refuses as too large and a 422 become
 saves the way a validation failure does or it retries on every edit; a 404
 becomes `not-found`; and anything else becomes `unknown`.
 
+A `validation` failure the server reports carries the server's reason as its
+message. The server sends that reason as the error's context beside a generic
+summary, and the summary is used only when there is no context.
+
 ## Adopting the server's answer
 
 Query responses go to the tracker's saved document and save responses to its
@@ -145,6 +185,29 @@ acknowledgement transition, never the reverse. The session passes the projection
 the request submitted and the full record the server acknowledged, so the
 tracker's three-way rebase has a stable base for every field the request
 carried.
+
+A read is adopted only at the collision token the session holds. Core leaves the
+token alone unless a column of the posts row changes, so such a read can still
+carry another writer's tags, authors or tiers, or fields Core stores beside the
+post: the meta and social fields and the feature image's alt text and caption.
+The session takes the read as its saved copy, and the rules below decide which
+settings fields, alt text and caption the document adopts. A read at any other
+token is another writer's version, or the session's own save read before its
+acknowledgement landed; its content is not in the document, so the session keeps
+its token and its saved copy, marks nothing dirty and starts no save. The next
+save carries the token the writer's content was built on, together with a
+canvas — the writer's own, or the saved copy for a settings save — so where the
+newer version's canvas differs the server refuses it with a collision instead
+of letting it overwrite that version; reloading the document is the way onto
+it. A refused read is offered again
+whenever the engine moves on, so a read of a save that was in flight is adopted
+once that save's acknowledgement has landed and the session holds its token.
+
+Each acknowledged save also writes the record the server answered with into the
+screen's query, whole and in the shape a read has, so opening the post again
+before the read that follows the save has landed starts from the saved copy and
+its token rather than from the copy that predates the save. A later version a
+read put there before the answer arrived is kept.
 
 A save writes a title and slug the writer never typed — the request's own
 default title, the slug derived from the title — and the server may normalize
@@ -158,20 +221,25 @@ saved state for the rest of the session. Adopting is not an edit, so it must not
 request was built against. Normalized title and slug acknowledgements are
 synchronized back into the slug machine through its ownership-preserving
 transition, so later saves do not resend a superseded value or freeze derived
-slug behavior.
+slug behavior. Only what the request carried is adopted: a settings save sends
+no title, so the title its acknowledgement holds answers nothing and a title
+staged on the canvas stays staged.
 
 Settings fields follow the same rule. A field a section does not own is carried
 in the projection but never sent. Successful saves and reverted edits release
-ownership, so a later refetch can adopt someone else's change and an unrelated
-save cannot overwrite it. An outstanding edit keeps the writer's value through a
-refetch or a rejected save, and an acknowledgement adopts the server's
+ownership, so a later read or acknowledgement adopts the server's value and an
+unrelated save cannot overwrite it. An outstanding edit keeps the writer's value
+through a refetch or a rejected save, and an acknowledgement adopts the server's
 normalized value only where the writer has not edited past the submitted value.
-Undoing a field while its save is in flight also stays staged, even if that
-save's refetch arrives before its acknowledgement: the next save persists the
+Undoing a field while its save is in flight also stays staged, even if a read
+at the held token carries another value meanwhile: the next save persists the
 undo. Ownership is decided by which fields the writer moved and when, never by
 comparing the live document against a pre-save snapshot, so adopting one refetch
 inside a save window does not stop a later one from being adopted too, and
-re-emitting a value the field already holds does not claim it.
+re-emitting a value the field already holds does not claim it. The feature
+image's alt text and caption are adopted by the same rules, and the feature
+image field shows what was adopted; a caption the writer is in takes it only
+once they leave it, so it never changes under their cursor.
 
 An acknowledgement also retains fields edited after submission that the request
 did not carry. A matching refetch may temporarily make such a field look saved,
@@ -194,9 +262,9 @@ work until then, and a reload or disposal releases an obsolete wait.
 Only a draft's title commit drives generation, so a published URL does not move
 under the writer. A slug is regenerated whenever the post has none, for any
 status, including after the default title has been substituted for a blank one.
-The session does not persist a proposal itself: an applied proposal is patched
-into the live document and then dispatches the same engine intent as any other field,
-so a draft saves it and every other status stages it until Update.
+The session does not persist a proposal itself: an applied manual proposal is
+patched into the live document and then dispatches a settings save, as any
+settings-panel field does, so it is saved at once whatever the status.
 
 ## Restoring a revision
 
@@ -296,8 +364,9 @@ banner's retry brings the dialog back.
 
 The session publishes one cached view — the engine state, pending-save
 blocking information,
-dirtiness, title, slug, settings and publish time — and republishes it only
-when one of those values changes. Pending content is read on demand after
+dirtiness, title, slug, settings, publish time, and the feature image's alt
+text and caption — and republishes it only when one of those values changes.
+Pending content is read on demand after
 tracker changes, including save errors that make a clean document dirty. The nested settings and publish-time
 references are kept stable across engine events, so body edits need no new React
 snapshot while the rendered values stay the same. That makes the view suitable
@@ -309,7 +378,13 @@ While the post holds unsaved work, every way out of the editor is put to the
 save engine: a link, the browser's Back and Forward buttons, and any other
 change to the URL's hash. The engine finishes or saves what is outstanding and
 answers either that leaving loses nothing, and the navigation goes ahead, or
-that the writer has to confirm it. Until then the URL stays on the editor. A
+that the writer has to confirm it. Until then the URL stays on the editor. The
+writer is asked to confirm instead when the engine fails to answer or has not
+answered within twenty seconds, which is longer than the transport keeps
+retrying a save, so a stalled save cannot pin the URL. The deadline does not run
+out while the writer is signing in again: signing in lets the leave go ahead,
+and cancelling asks. Once the deadline has run out, the next way out asks at
+once until the engine moves on. A
 Back or Forward is undone as it happens and replayed once the writer may leave,
 so they land on the entry it reached. Undoing it puts the editor back directly
 above that entry: a held Back drops the forward history, and a Forward or a hash
@@ -326,8 +401,9 @@ request that ran and failed is reported once, with the command it ran, the
 error, whether the post already had a server id, the post's persisted status,
 the id, and how long the request took. Queued work a failure dropped is not
 reported on its own. An expired session is reported only when re-authentication
-is abandoned, not when it is retried. A leave the writer has to
-confirm is reported with the reason codes the tracker holds the post dirty for.
+is abandoned, not when it is retried. A leave the engine answers with a
+confirmation is reported with the reason codes the tracker holds the post dirty
+for; one the editor asks about because the engine missed its deadline is not.
 A draft disposed with a title but a slug still derived from the default title is
 reported as an error. A throwing subscriber or slug listener is reported as an
 error, and so is a slug edit the generator rejected. A local copy that storage

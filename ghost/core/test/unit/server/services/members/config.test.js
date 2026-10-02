@@ -40,9 +40,6 @@ function createSettingsMock({ setDirect, setConnect }) {
   getStub.withArgs('stripe_connect_display_name').returns('Test');
   getStub.withArgs('stripe_connect_account_id').returns('ac_XXXXXXXXXXXXX');
 
-  getStub.withArgs('members_private_key').returns('PRIVATE');
-  getStub.withArgs('members_public_key').returns('PUBLIC');
-
   return {
     get: getStub,
   };
@@ -70,12 +67,8 @@ describe('Members - config', function () {
     sinon.restore();
   });
 
-  it('can get correct tokenConfig', function () {
-    const { issuer, publicKey, privateKey } = membersConfig.getTokenConfig();
-
-    assert.equal(issuer, 'http://domain.tld/subdir/members/api');
-    assert.equal(publicKey, 'PUBLIC');
-    assert.equal(privateKey, 'PRIVATE');
+  it('can get correct token issuer', function () {
+    assert.equal(membersConfig.getTokenIssuer(), 'http://domain.tld/subdir/members/api');
   });
 
   it('can get correct signinUrl', function () {

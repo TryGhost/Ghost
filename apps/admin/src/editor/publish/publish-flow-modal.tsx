@@ -1,5 +1,6 @@
 import { Button } from '@tryghost/shade/components';
-import { Inline, Stack } from '@tryghost/shade/primitives';
+import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { PageHeader } from '@tryghost/shade/patterns';
 import { formatNumber } from '@tryghost/shade/utils';
 import { useState } from 'react';
 import {
@@ -22,6 +23,9 @@ import type { PublishLimitPorts, PublishSiteInput, PublishUserInput } from './pu
 
 export interface PublishFlowModalProps {
   post: PublishFlowPost;
+  animate?: boolean;
+  /** Disable when onCompleted navigates, keeping the pending step visible until it unmounts. */
+  showCompletion?: boolean;
   site: PublishSiteInput;
   user: PublishUserInput;
   limits?: PublishLimitPorts;
@@ -49,6 +53,8 @@ export function PublishFlowModal({ post, ...props }: PublishFlowModalProps) {
 /** A post change is a new journey; no gate, failure, or completion state carries across it. */
 function KeyedPublishFlowModal({
   post,
+  animate = true,
+  showCompletion,
   site,
   user,
   limits,
@@ -101,10 +107,12 @@ function KeyedPublishFlowModal({
 
   return (
     <PublishFlowDialog
+      animate={animate}
       dispatch={dispatch}
       limits={limits}
       now={now}
       post={post}
+      showCompletion={showCompletion}
       site={site}
       siteTitle={siteTitle}
       timezone={timezone}
@@ -122,6 +130,8 @@ type PublishFlowDialogProps = Omit<PublishFlowModalProps, 'tkCount' | 'paywallIm
 
 function PublishFlowDialog({
   post,
+  animate = true,
+  showCompletion,
   site,
   user,
   limits,
@@ -142,6 +152,7 @@ function PublishFlowDialog({
     limits,
     now,
     dispatch,
+    showCompletion,
     onBeforePublish,
     onCompleted,
   });
@@ -153,79 +164,92 @@ function PublishFlowDialog({
 
   return (
     <FullscreenDialog
+      animate={animate}
       data-testid={publishFlowModal}
       modal={false}
       title="Publish"
       open
       onOpenChange={(open) => !open && close()}
     >
-      <Stack className="mx-auto w-full max-w-2xl px-6 pb-16" gap="xl">
-        <Inline className="py-4" justify="end">
-          {step === 'complete' ? null : (
-            <>
-              <Button variant="outline" onClick={close}>
-                Close
-              </Button>
-              {flow.emailErrorMessage || !onPreview ? null : (
-                <Button data-testid={publishFlowPreview} variant="outline" onClick={onPreview}>
-                  Preview
+      <Box className="relative min-h-full">
+        <Inline className="absolute inset-x-0 top-0 p-4" justify="between">
+          <Text aria-hidden="true" as="h2" className="text-lg tracking-tight" weight="semibold">
+            Publish
+          </Text>
+          <PageHeader.ActionGroup>
+            {step === 'complete' ? null : (
+              <>
+                <Button variant="ghost" onClick={close}>
+                  Close
                 </Button>
-              )}
-            </>
-          )}
+                {flow.emailErrorMessage || !onPreview ? null : (
+                  <Button
+                    className="w-20 shrink-0"
+                    data-testid={publishFlowPreview}
+                    variant="outline"
+                    onClick={onPreview}
+                  >
+                    Preview
+                  </Button>
+                )}
+              </>
+            )}
+          </PageHeader.ActionGroup>
         </Inline>
 
-        {step === 'email-error' && flow.emailErrorMessage ? (
-          <CompleteWithEmailErrorStep
-            emailErrorMessage={flow.emailErrorMessage}
-            mailgunConfigured={site.mailgunConfigured}
-            post={post}
-            retryFailure={flow.retryFailure}
-            status={flow.retryStatus}
-            willOnlyEmail={state.willOnlyEmail}
-            onRetry={() => void flow.retryEmail()}
-          />
-        ) : step === 'complete' ? (
-          <CompleteStep
-            captured={flow.captured}
-            completedAt={flow.completedAt}
-            note={flow.emailNote}
-            post={post}
-            postCount={flow.postCount}
-            siteTitle={siteTitle}
-            state={state}
-            timezone={timezone}
-            onRevertToDraft={onRevertToDraft}
-          />
-        ) : step === 'confirm' ? (
-          <ConfirmStep
-            captured={flow.captured}
-            failure={flow.failure}
-            post={post}
-            state={state}
-            status={flow.confirmStatus}
-            timezone={timezone}
-            onBack={flow.toOptions}
-            onConfirm={() => void flow.confirmPublish()}
-          />
-        ) : (
-          <OptionsStep
-            emailDisabledInSettings={site.editorDefaultEmailRecipients === 'disabled'}
-            limitsChecked={flow.limitsChecked}
-            limitsFailure={flow.limitsFailure}
-            post={post}
-            state={state}
-            timezone={timezone}
-            onContinue={flow.toConfirm}
-            onRetryLimits={flow.retryLimits}
-            onSetNewsletter={flow.setNewsletter}
-            onSetPublishType={flow.setPublishType}
-            onSetRecipientFilter={flow.setRecipientFilter}
-            onSetScheduledAt={flow.setScheduledAt}
-            onToggleScheduled={flow.setIsScheduled}
-          />
-        )}
-      </Stack>
+        <Stack className="mx-auto w-full max-w-156 px-6 pt-[max(9.6rem,18vh)] pb-16" gap="xl">
+          {step === 'email-error' && flow.emailErrorMessage ? (
+            <CompleteWithEmailErrorStep
+              emailErrorMessage={flow.emailErrorMessage}
+              mailgunConfigured={site.mailgunConfigured}
+              post={post}
+              retryFailure={flow.retryFailure}
+              status={flow.retryStatus}
+              willOnlyEmail={state.willOnlyEmail}
+              onRetry={() => void flow.retryEmail()}
+            />
+          ) : step === 'complete' ? (
+            <CompleteStep
+              captured={flow.captured}
+              completedAt={flow.completedAt}
+              note={flow.emailNote}
+              post={post}
+              postCount={flow.postCount}
+              siteTitle={siteTitle}
+              state={state}
+              timezone={timezone}
+              onRevertToDraft={onRevertToDraft}
+            />
+          ) : step === 'confirm' ? (
+            <ConfirmStep
+              captured={flow.captured}
+              failure={flow.failure}
+              post={post}
+              state={state}
+              status={flow.confirmStatus}
+              timezone={timezone}
+              onBack={flow.toOptions}
+              onConfirm={() => void flow.confirmPublish()}
+            />
+          ) : (
+            <OptionsStep
+              emailDisabledInSettings={site.editorDefaultEmailRecipients === 'disabled'}
+              limitsChecked={flow.limitsChecked}
+              limitsFailure={flow.limitsFailure}
+              post={post}
+              state={state}
+              timezone={timezone}
+              onContinue={flow.toConfirm}
+              onRetryLimits={flow.retryLimits}
+              onSetNewsletter={flow.setNewsletter}
+              onSetPublishType={flow.setPublishType}
+              onSetRecipientFilter={flow.setRecipientFilter}
+              onSetScheduledAt={flow.setScheduledAt}
+              onToggleScheduled={flow.setIsScheduled}
+            />
+          )}
+        </Stack>
+      </Box>
     </FullscreenDialog>
   );
 }

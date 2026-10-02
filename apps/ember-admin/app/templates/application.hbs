@@ -1,7 +1,7 @@
 <GhApp>
     <GhSkipLink @anchor=".gh-main">Skip to main content</GhSkipLink>
 
-    <RenderInWormhole @elementId="ember-alerts-wormhole">
+    <RenderInWormhole @elementId="admin-alerts">
         {{#if (and this.session.user.isAdmin this.showUpdateBanner)}}
         <aside class="gh-update-banner">
             {{#if this.session.user.isOwnerOnly}}
@@ -36,12 +36,6 @@
         </main>
 
     </div>
-
-    {{#if this.showScriptExtension}}
-        {{{this.showScriptExtension.container}}}
-        {{!-- template-lint-disable no-forbidden-elements --}}
-        <script src="{{this.showScriptExtension.src}}"></script>
-    {{/if}}
 
     <RenderInWormhole @elementId="ember-notifications-wormhole">
         <GhNotifications />

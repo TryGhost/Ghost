@@ -360,6 +360,68 @@ describe('Members API - member attribution', function () {
     mockManager.restore();
   });
 
+  it('Records where a member came from in the transaction that creates them', async function () {
+    const id = fixtureManager.get('posts', 0).id;
+
+    // Read back before the transaction commits: a record saved by anything that runs
+    // after the commit isn't there yet.
+    const { member, recorded } = await models.Base.transaction(async (transacting) => {
+      const created = await membersService.api.members.create(
+        {
+          email: 'member-attributed-in-transaction@test.com',
+          attribution: memberAttributionService.attributionBuilder.build({
+            id,
+            url: '/out-of-date/',
+            type: 'post',
+          }),
+        },
+        { transacting },
+      );
+      return {
+        member: created,
+        recorded: await models.MemberCreatedEvent.findOne(
+          { member_id: created.id },
+          { transacting },
+        ),
+      };
+    });
+    // The activity feed test below expects only the members it names.
+    await agent.delete(`/members/${member.id}/`).expectStatus(204);
+
+    assert.equal(recorded?.get('attribution_id'), id);
+  });
+
+  it('Shortens attribution too long to store rather than failing the signup', async function () {
+    const campaign = 'x'.repeat(250);
+
+    // Strict, as MySQL is by default, so a value too long for its column is refused
+    // rather than silently cut by the database.
+    const { member, recorded } = await models.Base.transaction(async (transacting) => {
+      await transacting.raw("SET SESSION sql_mode = 'STRICT_TRANS_TABLES'");
+      try {
+        const created = await membersService.api.members.create(
+          {
+            email: 'member-with-long-utm@test.com',
+            attribution: { id: null, url: '/', type: 'url', utmCampaign: campaign },
+          },
+          { transacting },
+        );
+        return {
+          member: created,
+          recorded: await models.MemberCreatedEvent.findOne(
+            { member_id: created.id },
+            { transacting },
+          ),
+        };
+      } finally {
+        await transacting.raw('SET SESSION sql_mode = DEFAULT');
+      }
+    });
+    await agent.delete(`/members/${member.id}/`).expectStatus(204);
+
+    assert.equal(recorded?.get('utm_campaign'), campaign.slice(0, 191));
+  });
+
   it('Can read member attributed to a post', async function () {
     const id = fixtureManager.get('posts', 0).id;
     const post = await models.Post.where('id', id).fetch({ require: true });

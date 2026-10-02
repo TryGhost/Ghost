@@ -140,6 +140,9 @@ module.exports = class StripeService {
       get metafieldBindings() {
         return metafields.bindings;
       },
+      get memberBREADService() {
+        return membersService.api.memberBREADService;
+      },
     });
 
     const chargeRefundedEventService = new ChargeRefundedEventService({

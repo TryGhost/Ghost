@@ -120,7 +120,11 @@ export function EmailRecipientsOptions({
       tiers.length > 1
         ? [...tiers]
             .sort((a, b) => Number(b.active) - Number(a.active))
-            .map((tier) => ({ segment: `tier:${tier.slug}`, name: tier.name }))
+            .map((tier) => ({
+              segment: `tier:${tier.slug}`,
+              name: tier.name,
+              group: tier.active ? 'Active tiers' : 'Archived tiers',
+            }))
         : [];
 
     return [
@@ -128,6 +132,7 @@ export function EmailRecipientsOptions({
       ...labels.map((label) => ({
         segment: `label:${label.slug}`,
         name: label.name,
+        group: 'Labels',
       })),
     ];
   }, [labelsData, labelsError, labelsSettled, tiersData, tiersError, tiersSettled]);

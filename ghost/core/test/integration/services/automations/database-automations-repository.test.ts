@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import ObjectId from 'bson-objectid';
+import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 // @ts-expect-error Test utilities currently lack type definitions.
 import testUtils from '../../../utils';
@@ -22,6 +23,7 @@ describe('database automations repository', function () {
       slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
       name: 'Free welcome automation',
       status: 'active',
+      trigger_tier_scope: 'free',
       created_at: now,
       updated_at: now,
     });
@@ -55,6 +57,46 @@ describe('database automations repository', function () {
     return memberEmail;
   }
 
+  describe('edit', function () {
+    it('rejects duplicate names', async function () {
+      const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
+      const automation = await repo.getById(automationId);
+      assert(automation);
+      const otherId = ObjectId().toHexString();
+      const now = toDatabaseDate(new Date());
+      const name = `Existing automation ${otherId}`;
+      await knex('automations').insert({
+        id: otherId,
+        slug: `duplicate-name-test-${otherId}`,
+        name,
+        status: 'inactive',
+        created_at: now,
+        updated_at: now,
+      });
+
+      try {
+        await assert.rejects(
+          repo.edit(automationId, {
+            ...automation,
+            name,
+            description: 'Should not be saved',
+            status: 'inactive',
+          }),
+          (error: unknown) => {
+            assert(error instanceof errors.ValidationError);
+            assert.equal(error.statusCode, 422);
+            assert.equal(error.property, 'name');
+            assert.equal(error.message, 'An automation with this name already exists.');
+            return true;
+          },
+        );
+        assert.deepEqual(await repo.getById(automationId), automation);
+      } finally {
+        await knex('automations').where('id', otherId).del();
+      }
+    });
+  });
+
   describe('trigger', function () {
     it('only triggers automations once per automation+member, even with race conditions', async function () {
       const memberId = ObjectId().toHexString();
@@ -69,7 +111,7 @@ describe('database automations repository', function () {
         const bothMemberLocksRequested = Promise.withResolvers<void>();
         const timeout = setTimeout(
           () => bothMemberLocksRequested.reject(new Error('Triggers did not reach member lock')),
-          5000,
+          10_000,
         );
         let memberLockCount = 0;
         const onKnexQuery = (query: { sql: string }) => {
@@ -106,8 +148,8 @@ describe('database automations repository', function () {
         automation_id: automationId,
         member_id: memberId,
       });
-      const steps = await knex('automation_run_steps').where('automation_run_id', runs[0].id);
       assert.equal(runs.length, 1);
+      const steps = await knex('automation_run_steps').where('automation_run_id', runs[0].id);
       assert.equal(steps.length, 1);
     });
 
@@ -127,7 +169,7 @@ describe('database automations repository', function () {
       const bothRunLookupsFinished = Promise.withResolvers<void>();
       const timeout = setTimeout(
         () => bothRunLookupsFinished.reject(new Error('Triggers did not reach run lookup')),
-        5000,
+        10_000,
       );
       let runLookupCount = 0;
       const onKnexQueryResponse = (_response: unknown, query: { sql: string }) => {

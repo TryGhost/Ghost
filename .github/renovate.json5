@@ -371,7 +371,6 @@
         '@tryghost/domain-events',
         '@tryghost/errors',
         '@tryghost/http-cache-utils',
-        '@tryghost/job-manager',
         '@tryghost/logging',
         '@tryghost/metrics',
         '@tryghost/mw-error-handler',

@@ -4,8 +4,15 @@ const adapterManager = require('../../../../../core/server/services/adapter-mana
 const activeTheme = require('../../../../../core/frontend/services/theme-engine/active');
 const handleImageSizes = require('../../../../../core/frontend/web/middleware/handle-image-sizes.js');
 const { imageSize } = require('../../../../../core/server/lib/image');
+const Module = require('node:module');
+const sharp = require('sharp');
 const errors = require('@tryghost/errors');
-const imageTransform = require('@tryghost/image-transform');
+
+// A small image, so a resize without enlargement keeps its size
+const createImage = (format) =>
+  sharp({ create: { width: 10, height: 10, channels: 3, background: 'red' } })
+    .toFormat(format)
+    .toBuffer();
 
 const fakeResBase = {
   setHeader() {},
@@ -75,11 +82,11 @@ describe('handleImageSizes middleware', function () {
   describe('file handling', function () {
     let dummyStorage;
     let dummyTheme;
-    let resizeFromBufferStub;
+    let saveRawSpy;
     let buffer;
 
-    beforeEach(function () {
-      buffer = Buffer.from([0]);
+    beforeEach(async function () {
+      buffer = await createImage('png');
       dummyStorage = {
         async exists() {
           return true;
@@ -122,10 +129,10 @@ describe('handleImageSizes middleware', function () {
       // so stubbing adapterManager alone doesn't reach it
       sinon.stub(imageSize, 'imageStore').value(dummyStorage);
       sinon.stub(activeTheme, 'get').returns(dummyTheme);
-      resizeFromBufferStub = sinon
-        .stub(imageTransform, 'resizeFromBuffer')
-        .resolves(Buffer.from([]));
+      saveRawSpy = sinon.spy(dummyStorage, 'saveRaw');
     });
+
+    const savedImage = () => sharp(saveRawSpy.firstCall.args[0]).metadata();
 
     it('redirects for invalid format extension', function () {
       const { promise, resolve, reject } = Promise.withResolvers();
@@ -301,7 +308,11 @@ describe('handleImageSizes middleware', function () {
 
     it('redirects if sharp is not installed', function () {
       const { promise, resolve, reject } = Promise.withResolvers();
-      sinon.stub(imageTransform, 'canTransformFiles').returns(false);
+      sinon
+        .stub(Module.prototype, 'require')
+        .callThrough()
+        .withArgs('sharp')
+        .throws(new errors.InternalServerError({ message: "Cannot find module 'sharp'" }));
 
       const fakeReq = {
         url: '/size/w1000/blank.png',
@@ -328,22 +339,16 @@ describe('handleImageSizes middleware', function () {
       return promise;
     });
 
-    it('redirects if timeout is exceeded', function () {
+    it('redirects if image processing fails', function () {
       const { promise, resolve, reject } = Promise.withResolvers();
-      sinon.stub(imageTransform, 'canTransformFiles').returns(true);
 
       dummyStorage.exists = async function () {
         return false;
       };
 
       dummyStorage.read = async function () {
-        return buffer;
+        return Buffer.from('not an image');
       };
-
-      const error = new Error('Resize timeout');
-      error.code = 'IMAGE_PROCESSING';
-
-      resizeFromBufferStub.throws(error);
 
       const fakeReq = {
         url: '/size/w1000/blank.png',
@@ -599,6 +604,11 @@ describe('handleImageSizes middleware', function () {
       dummyStorage.exists = async function () {
         return false;
       };
+      dummyStorage.read = async function () {
+        return Buffer.from(
+          '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10"/></svg>',
+        );
+      };
 
       const fakeReq = {
         url: '/size/w1000/format/png/blank.svg',
@@ -617,18 +627,13 @@ describe('handleImageSizes middleware', function () {
         if (err) {
           return reject(err);
         }
-        try {
-          sinon.assert.calledOnceWithExactly(resizeFromBufferStub, buffer, {
-            withoutEnlargement: false,
-            width: 1000,
-            format: 'png',
-            timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS,
-          });
-          sinon.assert.calledOnceWithExactly(typeStub, 'png');
-        } catch (e) {
-          return reject(e);
-        }
-        resolve();
+        savedImage()
+          .then((metadata) => {
+            assert.equal(metadata.format, 'png');
+            assert.equal(metadata.width, 1000);
+            sinon.assert.calledOnceWithExactly(typeStub, 'png');
+          })
+          .then(resolve, reject);
       });
       return promise;
     });
@@ -654,23 +659,22 @@ describe('handleImageSizes middleware', function () {
         type: function () {},
       };
       const typeStub = sinon.spy(fakeRes, 'type');
+      const timeoutSpy = sinon.spy(sharp.prototype, 'timeout');
 
       handleImageSizes(fakeReq, fakeRes, function next(err) {
         if (err) {
           return reject(err);
         }
-        try {
-          sinon.assert.calledOnceWithExactly(resizeFromBufferStub, buffer, {
-            withoutEnlargement: true,
-            width: 1000,
-            format: 'webp',
-            timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS,
-          });
-          sinon.assert.calledOnceWithExactly(typeStub, 'webp');
-        } catch (e) {
-          return reject(e);
-        }
-        resolve();
+        savedImage()
+          .then((metadata) => {
+            assert.equal(metadata.format, 'webp');
+            assert.equal(metadata.width, 10);
+            sinon.assert.calledOnceWithExactly(typeStub, 'webp');
+            sinon.assert.calledOnceWithExactly(timeoutSpy, {
+              seconds: handleImageSizes.RESIZE_TIMEOUT_SECONDS,
+            });
+          })
+          .then(resolve, reject);
       });
       return promise;
     });
@@ -701,18 +705,13 @@ describe('handleImageSizes middleware', function () {
         if (err) {
           return reject(err);
         }
-        try {
-          sinon.assert.calledOnceWithExactly(resizeFromBufferStub, buffer, {
-            withoutEnlargement: true,
-            width: 1000,
-            format: 'avif',
-            timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS,
-          });
-          sinon.assert.calledOnceWithExactly(typeStub, 'image/avif');
-        } catch (e) {
-          return reject(e);
-        }
-        resolve();
+        savedImage()
+          .then((metadata) => {
+            assert.equal(metadata.format, 'heif');
+            assert.equal(metadata.width, 10);
+            sinon.assert.calledOnceWithExactly(typeStub, 'image/avif');
+          })
+          .then(resolve, reject);
       });
       return promise;
     });
@@ -722,8 +721,8 @@ describe('handleImageSizes middleware', function () {
       dummyStorage.exists = async function () {
         return false;
       };
-      dummyStorage.read = async function () {
-        return buffer;
+      dummyStorage.read = function () {
+        return createImage('gif');
       };
 
       const fakeReq = {
@@ -743,18 +742,13 @@ describe('handleImageSizes middleware', function () {
         if (err) {
           return reject(err);
         }
-        try {
-          sinon.assert.calledOnceWithExactly(resizeFromBufferStub, buffer, {
-            withoutEnlargement: true,
-            width: 1000,
-            format: 'webp',
-            timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS,
-          });
-          sinon.assert.calledOnceWithExactly(typeStub, 'webp');
-        } catch (e) {
-          return reject(e);
-        }
-        resolve();
+        savedImage()
+          .then((metadata) => {
+            assert.equal(metadata.format, 'webp');
+            assert.equal(metadata.width, 10);
+            sinon.assert.calledOnceWithExactly(typeStub, 'webp');
+          })
+          .then(resolve, reject);
       });
       return promise;
     });
@@ -764,8 +758,8 @@ describe('handleImageSizes middleware', function () {
       dummyStorage.exists = async function () {
         return false;
       };
-      dummyStorage.read = async function () {
-        return buffer;
+      dummyStorage.read = function () {
+        return createImage('webp');
       };
 
       const fakeReq = {
@@ -785,18 +779,13 @@ describe('handleImageSizes middleware', function () {
         if (err) {
           return reject(err);
         }
-        try {
-          sinon.assert.calledOnceWithExactly(resizeFromBufferStub, buffer, {
-            withoutEnlargement: true,
-            width: 1000,
-            format: 'gif',
-            timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS,
-          });
-          sinon.assert.calledOnceWithExactly(typeStub, 'gif');
-        } catch (e) {
-          return reject(e);
-        }
-        resolve();
+        savedImage()
+          .then((metadata) => {
+            assert.equal(metadata.format, 'gif');
+            assert.equal(metadata.width, 10);
+            sinon.assert.calledOnceWithExactly(typeStub, 'gif');
+          })
+          .then(resolve, reject);
       });
       return promise;
     });

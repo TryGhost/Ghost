@@ -200,6 +200,17 @@ describe('Pipeline', function () {
         });
       });
 
+      it('rejects when the permissions handler is missing', async function () {
+        const apiConfig = { docName: '', method: '' };
+        const apiImpl = { permissions: true };
+        const frame = new shared.Frame();
+
+        await assert.rejects(
+          shared.pipeline.STAGES.permissions({}, apiConfig, apiImpl, frame),
+          errors.IncorrectUsageError,
+        );
+      });
+
       it('with permission config', function () {
         const apiConfig = {
           docName: 'posts',

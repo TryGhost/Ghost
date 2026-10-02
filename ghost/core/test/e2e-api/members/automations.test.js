@@ -6,8 +6,8 @@ const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
 const adapterManager = require('../../../core/server/services/adapter-manager').default;
-const MailgunClient = require('../../../core/server/services/lib/mailgun-client');
-const mailService = require('../../../core/server/services/mail');
+const MailgunClient = require('../../../core/server/lib/mailgun/mailgun-client');
+const mailService = require('../../../core/server/lib/mail');
 const membersService = require('../../../core/server/services/members');
 const { getSignedAdminToken } = require('../../../core/server/adapters/scheduling/utils');
 const {

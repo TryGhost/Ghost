@@ -1,4 +1,6 @@
 import { useCallback, useState } from 'react';
+import { useEmberOwnedRouteMatcher } from '@/routes';
+import { useNavigate } from '@tryghost/admin-x-framework';
 import { Button } from '@tryghost/shade/components';
 import { useShade } from '@tryghost/shade/app';
 import { PageHeader } from '@tryghost/shade/patterns';
@@ -23,12 +25,27 @@ import { usePublishLimits } from './publish/use-publish-limits';
 import { useEditorSettings } from './use-editor-settings';
 import type { EditorSessionHandle } from './session/use-editor-session';
 import type { SaveCompletion } from './engine/save-engine';
-import { usePreviewShortcut, usePublishShortcut } from './use-editor-shortcuts';
+import { usePreviewShortcut, usePublishShortcut, useSaveShortcut } from './use-editor-shortcuts';
+import { useSaveButtonPhase, useSaveFeedback, type SaveButtonPhase } from './use-save-feedback';
 
 export type OpenFlow = 'none' | 'publish' | 'update';
 
 /** The preview's props short of Publish, which only the publish controls can supply. */
 type HeaderPreviewProps = Omit<PostPreviewModalProps, 'onPublish' | 'publishDisabled'>;
+
+const UPDATE_LABELS: Record<SaveButtonPhase, string> = {
+  idle: 'Update',
+  running: 'Updating...',
+  success: 'Updated',
+  failure: 'Retry',
+};
+
+const SAVE_LABELS: Record<SaveButtonPhase, string> = {
+  idle: 'Save',
+  running: 'Saving',
+  success: 'Saved',
+  failure: 'Retry',
+};
 
 /** Turns a save the caller depends on into a rejection the flow renders in place. */
 async function requireSaved(pending: Promise<SaveCompletion>): Promise<void> {
@@ -80,6 +97,10 @@ export function EditorHeaderActions({
   const { persistedId } = session;
   const record = session.loadedRecord;
   const [previewOpen, setPreviewOpen] = useState(false);
+  const feedback = useSaveFeedback({ session, displayName: postType, siteUrl });
+  const contributorSave = useSaveButtonPhase(feedback.save);
+
+  useSaveShortcut(() => void feedback.save());
 
   const openPreview = useCallback(() => setPreviewOpen(true), []);
 
@@ -88,7 +109,12 @@ export function EditorHeaderActions({
   const isDraft = post.status === 'draft';
 
   usePreviewShortcut(
-    useCallback(() => setPreviewOpen((open) => !open), []),
+    useCallback(() => {
+      setPreviewOpen(!previewOpen);
+      if (previewOpen) {
+        onOpenFlow('none');
+      }
+    }, [onOpenFlow, previewOpen]),
     isDraft && persistedId !== null,
   );
 
@@ -146,14 +172,15 @@ export function EditorHeaderActions({
           <Button
             disabled={isSaving}
             size={isAdmin7 ? 'default' : 'sm'}
-            onClick={session.dispatchExplicit}
+            onClick={() => void contributorSave.run()}
           >
-            Save
+            {SAVE_LABELS[contributorSave.phase]}
           </Button>
           {isDraft ? <PostPreviewModal {...preview} /> : null}
         </>
       ) : (
         <PublishActions
+          feedback={feedback}
           isDraft={isDraft}
           isSaving={isSaving}
           offersEmailRetry={offersEmailRetry}
@@ -172,6 +199,7 @@ export function EditorHeaderActions({
 
 interface PublishActionsProps {
   session: EditorSessionHandle;
+  feedback: ReturnType<typeof useSaveFeedback>;
   post: PublishFlowPost;
   tkCount: number;
   isDraft: boolean;
@@ -189,6 +217,7 @@ interface PublishActionsProps {
  */
 function PublishActions({
   session,
+  feedback,
   post,
   tkCount,
   isDraft,
@@ -199,6 +228,8 @@ function PublishActions({
   onOpenFlow,
   onPreview,
 }: PublishActionsProps) {
+  const navigate = useNavigate();
+  const isEmberOwned = useEmberOwnedRouteMatcher();
   const { isAdmin7 } = useShade();
   const inputs = usePublishInputs();
   const limits = usePublishLimits();
@@ -210,6 +241,7 @@ function PublishActions({
   });
   // A refetch of any input must not unmount an open flow, so readiness latches once.
   const [everReady, setEverReady] = useState(false);
+  const [openedFromPreview, setOpenedFromPreview] = useState(false);
 
   if (inputs.isReady && !everReady) {
     setEverReady(true);
@@ -222,14 +254,32 @@ function PublishActions({
     }
     await requireSaved(session.saveExplicit());
   }, [session]);
+  const { save, showReverted } = feedback;
+  const update = useSaveButtonPhase(save);
   const revertToDraft = useCallback(() => {
     onOpenFlow('none');
     void session.dispatchPublish({ kind: 'revert' });
   }, [onOpenFlow, session]);
-  const closeFlow = useCallback(() => onOpenFlow('none'), [onOpenFlow]);
-  const openPublishFlow = useCallback(() => onOpenFlow('publish'), [onOpenFlow]);
+  const closeFlow = useCallback(() => {
+    setOpenedFromPreview(false);
+    onOpenFlow('none');
+  }, [onOpenFlow]);
+  const openPublishFlow = useCallback(() => {
+    setOpenedFromPreview(false);
+    onOpenFlow('publish');
+  }, [onOpenFlow]);
   const { onOpenChange: setPreviewOpen } = preview;
+  const changePreviewOpen = useCallback(
+    (open: boolean) => {
+      setPreviewOpen(open);
+      if (!open) {
+        closeFlow();
+      }
+    },
+    [closeFlow, setPreviewOpen],
+  );
   const publishFromPreview = useCallback(() => {
+    setOpenedFromPreview(true);
     setPreviewOpen(false);
     onOpenFlow('publish');
   }, [onOpenFlow, setPreviewOpen]);
@@ -266,16 +316,20 @@ function PublishActions({
       {isDraft ? (
         <>
           {inputsError}
-          <Button
+          <PageHeader.Action
+            className="bg-background/80 font-semibold text-state-success backdrop-blur-sm hover:text-state-success disabled:text-text-secondary/60 disabled:opacity-100"
             disabled={!inputs.isReady}
-            size={isAdmin7 ? 'default' : 'sm'}
+            fallbackSize="sm"
+            label="Publish"
             onClick={openPublishFlow}
           >
             Publish
-          </Button>
+          </PageHeader.Action>
           <PostPreviewModal
             {...preview}
+            animate={openFlow !== 'publish'}
             publishDisabled={!inputs.isReady}
+            onOpenChange={changePreviewOpen}
             onPublish={publishFromPreview}
           />
         </>
@@ -294,22 +348,26 @@ function PublishActions({
               {post.status === 'scheduled' ? 'Unschedule' : 'Unpublish'}
             </PageHeader.Action>
           )}
-          <Button
+          <PageHeader.Action
+            className="bg-background/80 font-semibold text-state-success backdrop-blur-sm hover:text-state-success disabled:text-text-secondary/60 disabled:opacity-100"
             disabled={!session.isDirty() || isSaving}
-            size={isAdmin7 ? 'default' : 'sm'}
-            onClick={session.dispatchExplicit}
+            fallbackSize="sm"
+            label={UPDATE_LABELS[update.phase]}
+            onClick={() => void update.run()}
           >
-            Update
-          </Button>
+            {UPDATE_LABELS[update.phase]}
+          </PageHeader.Action>
         </>
       )}
 
       {openFlow === 'publish' && everReady ? (
         <PublishFlowModal
+          animate={!openedFromPreview}
           dispatch={session.dispatchPublish}
           limits={limits}
           paywallImprovements={paywallImprovements}
           post={post}
+          showCompletion={false}
           site={inputs.site}
           siteTitle={siteTitle}
           timezone={inputs.timezone}
@@ -317,6 +375,15 @@ function PublishActions({
           user={inputs.user}
           onBeforePublish={saveBeforePublish}
           onClose={closeFlow}
+          onCompleted={({ postId, isScheduled, hasEmail }) => {
+            const destination =
+              post.displayName === 'page'
+                ? '/pages'
+                : !isScheduled && (hasEmail || post.email || post.emailOnly)
+                  ? `/posts/analytics/${postId}`
+                  : '/posts';
+            navigate(destination, { crossApp: isEmberOwned(destination) });
+          }}
           onPreview={onPreview}
           onRevertToDraft={revertToDraft}
         />
@@ -330,6 +397,7 @@ function PublishActions({
           timezone={inputs.timezone}
           user={inputs.user}
           onClose={closeFlow}
+          onReverted={showReverted}
         />
       ) : null}
     </>

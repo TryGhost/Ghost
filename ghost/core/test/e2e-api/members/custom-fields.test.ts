@@ -227,6 +227,77 @@ describe('Member Custom Fields Members API', function () {
     assert.equal(stored.metafields.custom[fieldKey], '12');
   });
 
+  describe('webhooks', function () {
+    const url = 'https://test-webhook-receiver.com/member-edited/';
+    // The mock receiver is untyped; this is the shape these tests use.
+    interface MemberValues {
+      metafields: { custom: Record<string, unknown> };
+    }
+    interface WebhookReceiver {
+      mock: (url: string) => Promise<void>;
+      receivedRequest: () => Promise<void>;
+      body: {
+        body: { member: { current: MemberValues & { name: string }; previous: MemberValues } };
+      };
+    }
+
+    let receiver: WebhookReceiver;
+    let integrationId: string;
+    let webhookId: string;
+
+    beforeEach(async function () {
+      receiver = mockManager.mockWebhookRequests();
+      await receiver.mock(url);
+
+      const { body: integrations } = await adminAgent
+        .post('integrations/')
+        .body({ integrations: [{ name: 'Member edited receiver' }] })
+        .expectStatus(201);
+      integrationId = integrations.integrations[0].id;
+
+      const { body: webhooks } = await adminAgent
+        .post('webhooks/')
+        .body({
+          webhooks: [{ event: 'member.edited', target_url: url, integration_id: integrationId }],
+        })
+        .expectStatus(201);
+      webhookId = webhooks.webhooks[0].id;
+    });
+
+    // Remove the subscription so later tests' edits aren't delivered.
+    afterEach(async function () {
+      await adminAgent.delete(`webhooks/${webhookId}/`).expectStatus(204);
+      await adminAgent.delete(`integrations/${integrationId}/`).expectStatus(204);
+    });
+
+    function delivered() {
+      return receiver.body.body.member;
+    }
+
+    it('tells a subscriber when a member changes only their own values', async function () {
+      await membersAgent
+        .put('/api/member/')
+        .body({ metafields: { custom: { [fieldKey]: '12' } } })
+        .expectStatus(200);
+      await receiver.receivedRequest();
+
+      assert.deepEqual(delivered().current.metafields.custom, { [fieldKey]: '12' });
+      assert.deepEqual(delivered().previous.metafields.custom, { [fieldKey]: '9' });
+    });
+
+    it('tells a subscriber the new value when a member changes their name with it', async function () {
+      await membersAgent
+        .put('/api/member/')
+        .body({ name: 'Renamed again', metafields: { custom: { [fieldKey]: '12' } } })
+        .expectStatus(200);
+      await receiver.receivedRequest();
+
+      assert.equal(delivered().current.name, 'Renamed again');
+      assert.deepEqual(delivered().current.metafields.custom, { [fieldKey]: '12' });
+      assert.deepEqual(delivered().previous.metafields.custom, { [fieldKey]: '9' });
+    });
+  });
+
   it('refuses a field nobody has defined, and changes nothing', async function () {
     const before = await readMemberAsStaff();
     assert.notEqual(before.name, 'Not renamed', 'the name is not already what this sets it to');

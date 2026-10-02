@@ -5,6 +5,7 @@ import {
   fakeAdminEndpoint,
   fakeNewsletters,
   fakePosts,
+  fakePostsListScreen,
   fakeSnippets,
   post,
   renderAdminApp,
@@ -16,8 +17,8 @@ import { editorScreen } from '@/editor/editor.screen';
  * and always has.
  *
  * Ember arranges that by setting `ui.isFullScreen` when the editor route
- * *activates*. With `postsListReact` on, the posts route aborts its transition,
- * so the editor route never deactivates — and a second visit is a model change
+ * *activates*. The Ember posts route aborts its transition to hand off to
+ * React, so the editor route never deactivates — and a second visit is a model change
  * on an already-active route, where `activate()` does not run again. The
  * sidebar came back from the second post onwards.
  *
@@ -64,6 +65,8 @@ describe('Editor chrome', () => {
   // ...and still shows it everywhere else, or this would be a worse bug than
   // the one it fixes.
   it('leaves the sidebar alone on the posts list', async () => {
+    fakePostsListScreen();
+    fakePosts([]);
     await renderAdminApp('/posts');
 
     await expect.element(sidebar()).toBeVisible();

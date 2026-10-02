@@ -10,6 +10,7 @@ import { formatNumber } from '@tryghost/shade/utils';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { useId, useState } from 'react';
+import { LabelPicker } from '@/members/api';
 import {
   publishRecipientFree,
   publishRecipientPaid,
@@ -21,6 +22,7 @@ export interface SegmentOption {
   /** The NQL segment, e.g. `tier:gold` or `label:vip`. */
   segment: string;
   name: string;
+  group: string;
 }
 
 export interface RecipientSelectProps {
@@ -40,7 +42,7 @@ function SegmentCount({ filter }: { filter: string | null }) {
   }
 
   return (
-    <Text as="span" size="sm" tone="secondary">
+    <Text as="span" leading="none" size="sm" tone="secondary">
       ({formatNumber(count)})
     </Text>
   );
@@ -164,16 +166,29 @@ export function RecipientSelect({
           <Text size="sm" weight="medium">
             Selection
           </Text>
-          {segmentOptions.map((option) => (
-            <Inline key={option.segment} gap="sm">
-              <Checkbox
-                checked={segments.specific.includes(option.segment)}
-                id={`${id}-${option.segment}`}
-                onCheckedChange={() => toggleSegment(option.segment)}
-              />
-              <Label htmlFor={`${id}-${option.segment}`}>{option.name}</Label>
-            </Inline>
-          ))}
+          <LabelPicker
+            labels={segmentOptions.map((option) => ({
+              id: option.segment,
+              slug: option.segment,
+              name: option.name,
+              group: option.group,
+            }))}
+            optionSource={{
+              options: segmentOptions.map((option) => ({
+                value: option.segment,
+                label: option.name,
+              })),
+              isInitialLoad: false,
+              isSearching: false,
+              isLoadingMore: false,
+              hasMore: false,
+              loadMore: () => {},
+              shouldClientFilter: true,
+            }}
+            placeholder="Search labels and tiers..."
+            selectedSlugs={segments.specific}
+            onToggle={toggleSegment}
+          />
         </Stack>
       ) : null}
     </Stack>

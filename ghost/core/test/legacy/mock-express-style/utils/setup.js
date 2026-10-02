@@ -29,14 +29,6 @@ module.exports = {
     cacheStub.withArgs('timezone').returns('Etc/UTC');
     cacheStub.withArgs('site_uuid').returns('931ade9e-a4f1-4217-8625-34bd34250c16');
     cacheStub.withArgs('permalinks').returns('/:slug/');
-    cacheStub
-      .withArgs('ghost_private_key')
-      .returns(
-        '-----BEGIN RSA PRIVATE KEY-----\nMB8CAQACAgPBAgMBAAECAgMFAgEfAgEfAgEXAgEXAgEA\n-----END RSA PRIVATE KEY-----\n',
-      );
-    cacheStub
-      .withArgs('ghost_public_key')
-      .returns('-----BEGIN RSA PUBLIC KEY-----\nMAkCAgPBAgMBAAE=\n-----END RSA PUBLIC KEY-----\n');
 
     sandbox.stub(imageLib.imageSize, 'getImageSizeFromUrl').resolves();
   },

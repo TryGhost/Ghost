@@ -14,6 +14,8 @@ const SERIALIZED_KEYS = {
   },
 };
 
+const { visibleMetafields } = require('../members/utils');
+
 const loadRequiredUrlRelations = async (model, urlService) => {
   const required = urlService.getRequiredRelations();
   const missing = required.filter((relation) => !model.relations[relation]);
@@ -23,7 +25,7 @@ const loadRequiredUrlRelations = async (model, urlService) => {
 };
 
 module.exports =
-  ({ urlService }) =>
+  ({ urlService, readMemberMetafields }) =>
   async (event, model) => {
     const _ = require('lodash');
     const api = require('../../api').endpoints;
@@ -70,6 +72,15 @@ module.exports =
         frame,
       );
       current = frame.response[docName][0];
+
+      // Metafields aren't on the member model, so they're read and shown the same way the
+      // Admin API reads and shows them.
+      if (docName === 'members') {
+        const metafields = visibleMetafields(await readMemberMetafields(model.id));
+        if (metafields) {
+          current.metafields = metafields;
+        }
+      }
     }
 
     if (changed.length && Object.keys(model._previousAttributes).length) {
@@ -95,6 +106,10 @@ module.exports =
         frame.response[docName][0],
         changed.map((key) => SERIALIZED_KEYS[docName]?.[key] ?? key),
       );
+    }
+
+    if (model._previousMetafields) {
+      previous.metafields = model._previousMetafields;
     }
 
     const payload = {

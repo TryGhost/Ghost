@@ -8,6 +8,7 @@ const { Blob } = require('node:buffer');
 const config = require('../../../core/shared/config');
 const urlUtils = require('../../../core/shared/url-utils').default;
 const imageTransform = require('@tryghost/image-transform');
+const sharp = require('sharp');
 const sinon = require('sinon');
 const { mockSystemTime } = require('../../utils/clock-utils');
 const { anyErrorId } = matchers;
@@ -662,7 +663,7 @@ describe('Images API', function () {
   });
 
   it('Does not return HTTP 500 when image processing fails', async function () {
-    sinon.stub(imageTransform, 'resizeFromPath').rejects(new Error('Image processing failed'));
+    sinon.stub(sharp.prototype, 'toBuffer').rejects(new Error('Image processing failed'));
 
     const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
     const fileContents = await fs.readFile(originalFilePath);

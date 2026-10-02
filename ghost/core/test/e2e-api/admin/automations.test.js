@@ -7,7 +7,7 @@ const configUtils = require('../../utils/config-utils');
 const domainEvents = require('@tryghost/domain-events');
 const ObjectId = require('bson-objectid').default;
 const models = require('../../../core/server/models');
-const mailService = require('../../../core/server/services/mail');
+const mailService = require('../../../core/server/lib/mail');
 const { getSignedAdminToken } = require('../../../core/server/adapters/scheduling/utils');
 const {
   MEMBER_WELCOME_EMAIL_SLUGS,
@@ -458,6 +458,17 @@ describe('Automations API', function () {
         });
       });
 
+      it('uses database stats when Tinybird configuration is missing', async function () {
+        configUtils.set('tinybird:stats', null);
+        const [automation] = await models.Base.knex('automations').select('id');
+        await createAutomationRun(automation.id, new Date('2026-01-01T00:00:00.000Z'));
+        const { body } = await agent.get('automations').expectStatus(200);
+        assert.equal(
+          body.automations.find((item) => item.id === automation.id).stats.total_run_count,
+          1,
+        );
+      });
+
       it('uses database stats when the flag is disabled', async function () {
         mockManager.mockLabsDisabled('automationsTinybirdSync');
         const [automation] = await models.Base.knex('automations').select('id');
@@ -534,6 +545,7 @@ describe('Automations API', function () {
       );
 
       it.each([
+        { reason: 'missing', status: 404, response: 'missing pipe' },
         { reason: 'unavailable', status: 500, response: 'nope' },
         { reason: 'malformed', status: 200, response: { data: [{ automation_id: 42 }] } },
       ])('uses database stats when Tinybird is $reason', async function ({ status, response }) {

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import createKnex, { type Knex } from 'knex';
 import { afterEach, beforeEach, describe, it, vi } from 'vitest';
 import { createTinybirdSyncService } from '../../../../../core/server/services/tinybird-sync/tinybird-sync-service';
+import TinybirdSyncJob from '../../../../../core/server/services/tinybird-sync/jobs/tinybird-sync-job';
 import { toDatabaseDate } from '../../../../../core/server/lib/db-types/date';
 
 describe('createTinybirdSyncService', () => {
@@ -19,7 +20,6 @@ describe('createTinybirdSyncService', () => {
       labs: { isSet: vi.fn(() => true) },
       knex: {} as Knex,
       logging: { info: vi.fn(), error: vi.fn() },
-      sleep: vi.fn(async () => {}),
       random: () => 0.5,
       now: () => new Date('2026-03-01T12:00:00.000Z'),
       fetch: globalThis.fetch,
@@ -77,23 +77,86 @@ describe('createTinybirdSyncService', () => {
     await Promise.all(databases.map((database) => database.destroy()));
   });
 
-  it('starts once with randomized initial delay and logs loop failures', async () => {
-    const failure = new Error('timer failed');
-    const sleep = vi.fn().mockRejectedValue(failure);
-    const { dependencies, service } = createService({ sleep });
+  it('schedules a five-minute recurring job at a random offset', async () => {
+    const jobsService = { scheduleRecurring: vi.fn(async () => {}) };
+    const { dependencies, service } = createService();
 
-    service.start();
-    service.start();
-    await vi.waitFor(() => assert.equal(dependencies.logging.error.mock.calls.length, 1));
+    await service.scheduleJob(jobsService);
 
-    assert.deepEqual(sleep.mock.calls, [[150000]]);
-    assert.equal(dependencies.logging.error.mock.calls[0][0], failure);
+    assert.equal(jobsService.scheduleRecurring.mock.calls.length, 1);
+    const [job, schedule] = jobsService.scheduleRecurring.mock.calls[0] as unknown as [
+      TinybirdSyncJob,
+      { cron: string },
+    ];
+    assert.ok(job instanceof TinybirdSyncJob);
+    assert.deepEqual(schedule, { cron: '30 2/5 * * * *' });
+    assert.deepEqual(dependencies.logging.info.mock.calls, [
+      [
+        { system: { event: 'tinybird.sync.started' } },
+        '[Tinybird sync] Started: sync enabled by labs flag (but may change)',
+      ],
+      ['[Background Job] tinybird-sync scheduled at 30 2/5 * * * *'],
+    ]);
+  });
+
+  it('rejects a second schedule', async () => {
+    const jobsService = { scheduleRecurring: vi.fn(async () => {}) };
+    const { service } = createService();
+
+    await service.scheduleJob(jobsService);
+    await assert.rejects(() => service.scheduleJob(jobsService), {
+      message: 'Tinybird sync is already scheduled.',
+    });
+
+    assert.equal(jobsService.scheduleRecurring.mock.calls.length, 1);
+  });
+
+  it('allows scheduling to be retried after it fails', async () => {
+    const failure = new Error('backend not started');
+    const jobsService = {
+      scheduleRecurring: vi.fn().mockRejectedValueOnce(failure).mockResolvedValueOnce(undefined),
+    };
+    const { service } = createService();
+
+    await assert.rejects(() => service.scheduleJob(jobsService), failure);
+    await service.scheduleJob(jobsService);
+
+    assert.equal(jobsService.scheduleRecurring.mock.calls.length, 2);
+  });
+
+  it('logs that sync is disabled by labs flag when scheduling', async () => {
+    const jobsService = { scheduleRecurring: vi.fn(async () => {}) };
+    const { dependencies, service } = createService({ labs: { isSet: vi.fn(() => false) } });
+
+    await service.scheduleJob(jobsService);
+
+    assert.deepEqual(dependencies.logging.info.mock.calls[0], [
+      { system: { event: 'tinybird.sync.started' } },
+      '[Tinybird sync] Started: sync disabled by labs flag (but may change)',
+    ]);
+    assert.equal(jobsService.scheduleRecurring.mock.calls.length, 1);
+  });
+
+  it('does not schedule without complete analytics config', async () => {
+    const jobsService = { scheduleRecurring: vi.fn(async () => {}) };
+    const fetch = vi.fn();
+    const { dependencies, service } = createService({
+      config: { get: () => undefined },
+      fetch,
+    });
+
+    await service.scheduleJob(jobsService);
+    await service.sync();
+
+    assert.equal(jobsService.scheduleRecurring.mock.calls.length, 0);
+    assert.equal(fetch.mock.calls.length, 0);
+    assert.deepEqual(dependencies.logging.info.mock.calls, [
+      ['[Tinybird sync] Not started: Traffic Analytics service is not configured'],
+    ]);
   });
 
   it('uses a five-minute request timeout', async () => {
     const timeout = vi.spyOn(AbortSignal, 'timeout');
-    const failure = new Error('stop loop');
-    const sleep = vi.fn().mockResolvedValueOnce(undefined).mockRejectedValueOnce(failure);
     const database = await createEmptyDatabase();
     await database('automation_runs').insert({
       id: 'run-id',
@@ -102,70 +165,58 @@ describe('createTinybirdSyncService', () => {
       updated_at: '2026-03-01 11:50:00',
     });
     const fetch = vi.fn().mockResolvedValue({ ok: true });
-    const { service } = createService({ knex: database, sleep, fetch, random: () => 0 });
+    const { service } = createService({ knex: database, fetch });
 
-    service.start();
-    await vi.waitFor(() =>
-      assert.ok(timeout.mock.calls.some(([duration]) => duration === 5 * 60 * 1000)),
-    );
+    await service.sync();
+
+    assert.ok(timeout.mock.calls.some(([duration]) => duration === 5 * 60 * 1000));
   });
 
   it('logs completed runs even when no rows are sent', async () => {
-    const failure = new Error('stop loop');
-    const sleep = vi.fn().mockResolvedValueOnce(undefined).mockRejectedValueOnce(failure);
     const database = await createEmptyDatabase();
-    const { dependencies, service } = createService({ knex: database, sleep, random: () => 0 });
+    const { dependencies, service } = createService({ knex: database });
 
-    service.start();
-    await vi.waitFor(() => assert.equal(dependencies.logging.error.mock.calls.length, 1));
+    await service.sync();
 
     assert.deepEqual(
       dependencies.logging.info.mock.calls.map((call) => call[0].system),
       [
-        { event: 'tinybird.sync.started' },
         { event: 'tinybird.sync.completed', table: 'automation_runs', sent: 0 },
         { event: 'tinybird.sync.completed', table: 'automation_run_steps', sent: 0 },
       ],
     );
   });
 
-  it('skips sync when labs flag is disabled', async () => {
-    const failure = new Error('stop loop');
-    const sleep = vi.fn().mockResolvedValueOnce(undefined).mockRejectedValueOnce(failure);
+  it('logs a table that fails to sync without failing the run', async () => {
     const database = await createEmptyDatabase();
+    await database.schema.dropTable('automation_run_steps');
+    const { dependencies, service } = createService({ knex: database });
+
+    await service.sync();
+
+    assert.equal(dependencies.logging.error.mock.calls.length, 1);
+    assert.equal(
+      dependencies.logging.error.mock.calls[0][1],
+      '[Tinybird sync] Failed to sync table',
+    );
+  });
+
+  it('skips sync when labs flag is disabled', async () => {
+    const database = await createEmptyDatabase();
+    const fetch = vi.fn();
     const { dependencies, service } = createService({
       knex: database,
-      sleep,
-      random: () => 0,
+      fetch,
       labs: { isSet: vi.fn(() => false) },
     });
 
-    service.start();
-    await vi.waitFor(() => assert.equal(dependencies.logging.error.mock.calls.length, 1));
+    await service.sync();
 
-    assert.deepEqual(dependencies.logging.info.mock.calls, [
-      [
-        { system: { event: 'tinybird.sync.started' } },
-        '[Tinybird sync] Started: sync disabled by labs flag (but may change)',
-      ],
-    ]);
-  });
-
-  it('logs that sync is enabled by labs flag', () => {
-    const sleep = vi.fn().mockRejectedValue(new Error('stop loop'));
-    const { dependencies, service } = createService({ sleep });
-
-    service.start();
-
-    assert.deepEqual(dependencies.logging.info.mock.calls[0], [
-      { system: { event: 'tinybird.sync.started' } },
-      '[Tinybird sync] Started: sync enabled by labs flag (but may change)',
-    ]);
+    assert.equal(fetch.mock.calls.length, 0);
+    assert.equal(dependencies.logging.info.mock.calls.length, 0);
   });
 
   it('limits Traffic Analytics requests to 1000 messages', async () => {
-    const failure = new Error('stop loop');
-    const sleep = vi.fn().mockResolvedValueOnce(undefined).mockRejectedValueOnce(failure);
     const database = await createEmptyDatabase();
     const updatedAt = toDatabaseDate(new Date('2026-03-01T11:50:00.000Z'));
     await database.batchInsert(
@@ -183,19 +234,10 @@ describe('createTinybirdSyncService', () => {
       requests.push(String(init?.body).split('\n').length);
       return new Response(null, { status: 202 });
     };
-    const { service } = createService({ knex: database, sleep, random: () => 0, fetch });
+    const { service } = createService({ knex: database, fetch });
 
-    service.start();
-    await vi.waitFor(() => assert.deepEqual(requests, [1000, 1]));
-  });
+    await service.sync();
 
-  it('does not start without complete analytics config', () => {
-    const { dependencies, service } = createService({
-      config: { get: () => undefined },
-    });
-
-    service.start();
-    assert.equal(dependencies.sleep.mock.calls.length, 0);
-    assert.equal(dependencies.logging.info.mock.calls.length, 1);
+    assert.deepEqual(requests, [1000, 1]);
   });
 });

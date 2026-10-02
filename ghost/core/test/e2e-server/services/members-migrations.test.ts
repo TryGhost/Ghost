@@ -5,7 +5,6 @@ const logging = require('@tryghost/logging');
 const { agentProvider } = require('../../utils/e2e-framework');
 const db = require('../../../core/server/data/db');
 const models = require('../../../core/server/models');
-const jobsService = require('../../../core/server/services/jobs');
 const membersService = require('../../../core/server/services/members');
 const stripeService = require('../../../core/server/services/stripe');
 
@@ -57,15 +56,11 @@ describe('Members migrations on boot', function () {
       await models.Job.edit({ status: 'failed' }, { id: jobId });
       const execute = sinon.stub(stripeService.migrations, 'execute').resolves();
       const add = sinon.spy(models.Job, 'add');
-      const addOneOffJob = sinon.spy(jobsService, 'addOneOffJob');
-      const awaitOneOffCompletion = sinon.spy(jobsService, 'awaitOneOffCompletion');
 
       await membersService.init();
 
       sinon.assert.calledOnce(execute);
       sinon.assert.notCalled(add);
-      sinon.assert.notCalled(addOneOffJob);
-      sinon.assert.notCalled(awaitOneOffCompletion);
 
       const after = await models.Job.findOne({ name: JOB_NAME });
       assert.equal(after.id, jobId);

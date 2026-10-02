@@ -104,7 +104,7 @@ test.describe('Ghost Admin - React auth screens', () => {
 
 // The same round trip with either implementation of the auth screens: a
 // cold load of a deep link while signed out, sign in, and back to the link
-// (an Ember-owned screen, with its query string).
+// with its query string.
 for (const { screens, authReact } of [
   { screens: 'Ember', authReact: false },
   { screens: 'React', authReact: true },
@@ -123,7 +123,8 @@ for (const { screens, authReact } of [
       await expect(loginPage.signInButton).toBeVisible();
       await loginPage.signIn(ghostAccountOwner.email, ghostAccountOwner.password);
 
-      await new PostsPage(page).waitForList();
+      // No drafts exist, so the screen shows its empty state rather than the list.
+      await expect(new PostsPage(page).pageTitle).toBeVisible();
       await expect(page).toHaveURL(/#\/posts\/?\?type=draft$/);
     });
   });

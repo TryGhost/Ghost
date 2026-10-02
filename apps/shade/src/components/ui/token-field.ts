@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 export const tokenFieldClasses = {
   field: cn(
     inputSurface('within'),
-    'relative flex min-h-(--control-height) w-full cursor-text flex-wrap items-center gap-1 p-1 text-control',
+    'relative flex min-h-(--control-height) w-full cursor-text flex-wrap items-center gap-1 p-0.75 text-control',
   ),
   input:
     'min-w-20 flex-1 bg-transparent px-2 text-control outline-hidden placeholder:text-muted-foreground',

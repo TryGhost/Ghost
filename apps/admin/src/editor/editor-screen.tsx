@@ -14,7 +14,7 @@ import { usePresence } from '@/shared/presence/use-presence';
 import { PresenceAvatars } from '@/shared/presence/presence-avatars';
 import { getPostListReturnUrl } from '@/posts/api';
 import { NotFound } from '@/shared/not-found';
-import { Navigate, useNavigate, useParams } from '@tryghost/admin-x-framework';
+import { Navigate, useLocation, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
 import { DirtyConfirmDialog, PageHeader } from '@tryghost/shade/patterns';
 import { Box, Grid, Inline, Stack, Text } from '@tryghost/shade/primitives';
@@ -44,12 +44,14 @@ import {
   withLiveSettings,
 } from './card-config';
 import { EditorHeaderActions, type OpenFlow } from './editor-header-actions';
+import { readEditorReturn } from './editor-return';
 import { EditorStatus } from './editor-status';
 import { PostEditor } from './post-editor';
 import type { EditorStatusRecord } from './post-status';
 import { buildPublishFlowPost } from './publish/flow-post';
 import { initialEmailError } from './publish/use-publish-flow';
 import { SessionBanners } from './session/session-banners';
+import { settingsFieldErrorFor, titleError } from './session/settings-fields';
 import { ReauthDialog } from './session/reauth-dialog';
 import { PostSettingsSidebar } from './settings/post-settings-sidebar';
 import { useFeatureImageBinding } from './session/feature-image-binding';
@@ -58,7 +60,6 @@ import { useEditorLeaveGuard } from './session/use-leave-guard';
 import { useEditorSession, useEditorSessionKey } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
-import { useSaveShortcut } from './use-editor-shortcuts';
 import type { EditorRecord } from './session/projection';
 
 function EditorLoading() {
@@ -80,11 +81,19 @@ function EditorLoadError({ message, onRetry }: { message: string; onRetry: () =>
   );
 }
 
-function EditorHeader({ postType, children }: { postType: PostType; children?: ReactNode }) {
+function EditorHeader({
+  postType,
+  analyticsReturn,
+  children,
+}: {
+  postType: PostType;
+  analyticsReturn?: string;
+  children?: ReactNode;
+}) {
   const listLabel = postType === 'page' ? 'Pages' : 'Posts';
-  const reactOwnsList = useFeatureFlag('postsListReact');
   const resource = postType === 'page' ? 'pages' : 'posts';
-  const listUrl = reactOwnsList ? getPostListReturnUrl(resource) : `/${resource}`;
+  const listUrl = getPostListReturnUrl(resource);
+  const backLabel = analyticsReturn ? 'Analytics' : listLabel;
 
   return (
     <Grid
@@ -96,13 +105,20 @@ function EditorHeader({ postType, children }: { postType: PostType; children?: R
         className="bg-background/80 backdrop-blur-sm"
         fallbackSize="sm"
         fallbackVariant="ghost"
-        label={listLabel}
+        label={backLabel}
         asChild
       >
-        <AdminLink state={getListReturnNavigationState(listUrl)} to={listUrl}>
-          <LucideIcon.ArrowLeft />
-          {listLabel}
-        </AdminLink>
+        {analyticsReturn ? (
+          <AdminLink to={analyticsReturn}>
+            <LucideIcon.ArrowLeft />
+            {backLabel}
+          </AdminLink>
+        ) : (
+          <AdminLink state={getListReturnNavigationState(listUrl)} to={listUrl}>
+            <LucideIcon.ArrowLeft />
+            {backLabel}
+          </AdminLink>
+        )}
       </PageHeader.Action>
       {children}
     </Grid>
@@ -186,6 +202,13 @@ function EditorContent({
   // Core refuses an email retry to Authors and Contributors.
   const offersEmailRetry =
     !!currentUser && !isAuthorOrContributor(currentUser) && !!initialEmailError(publishPost);
+  const location = useLocation();
+  const analyticsReturn = record ? readEditorReturn(location.state) : undefined;
+  const statusRecord = statusRecordOf(session.loadedRecord ?? record, createdId);
+  const didEmailFail =
+    postType === 'post' &&
+    (statusRecord?.status === 'published' || statusRecord?.status === 'sent') &&
+    statusRecord.emailStatus === 'failed';
   // Closed on every editor entry, as the menu it replaces was.
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsPresent, setSettingsPresent] = useState(false);
@@ -258,8 +281,6 @@ function EditorContent({
     [cardConfig, liveShowTitleAndFeatureImage, liveVisibility],
   );
 
-  useSaveShortcut(session.dispatchExplicit);
-
   const settingsToggle = (
     <PageHeader.Action
       ref={settingsToggleRef}
@@ -298,14 +319,16 @@ function EditorContent({
     >
       <Stack className="min-h-0 min-w-0 flex-1" gap="none">
         <Box ref={headerRef} className="pointer-events-none relative z-20 shrink-0">
-          <EditorHeader postType={postType}>
-            <EditorStatus
-              isDirty={session.isDirty()}
-              record={statusRecordOf(session.loadedRecord ?? record, createdId)}
-              state={session.state}
-              onOpenPublishFlow={offersEmailRetry ? openPublishFlow : undefined}
-            />
-            <PageHeader.ActionGroup className="ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] max-sm:col-start-2 max-sm:row-start-1">
+          <EditorHeader analyticsReturn={analyticsReturn} postType={postType}>
+            {!analyticsReturn || didEmailFail || session.state.kind === 'error' ? (
+              <EditorStatus
+                isDirty={session.isDirty()}
+                record={statusRecord}
+                state={session.state}
+                onOpenPublishFlow={offersEmailRetry ? openPublishFlow : undefined}
+              />
+            ) : null}
+            <PageHeader.ActionGroup className="ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] max-sm:col-start-2 max-sm:row-start-1 sm:col-start-3">
               <PresenceAvatars {...presence} limit={2} />
               <EditorHeaderActions
                 currentUser={currentUser}
@@ -332,7 +355,7 @@ function EditorContent({
             pendingSave={session.pendingSave}
             state={session.state}
             onReload={session.reload}
-            onRetrySave={session.dispatchExplicit}
+            onRetrySave={session.retrySave}
           />
           <ReauthDialog
             email={currentUser?.email ?? ''}
@@ -349,10 +372,12 @@ function EditorContent({
               {...session.bind}
               autofocusTitle={!record}
               cardConfig={currentCardConfig}
+              excerptError={settingsFieldErrorFor('custom_excerpt', session.settings)}
               featureImage={featureImage}
               postType={postType}
               showExcerpt={showExcerpt}
-              onExcerptBlur={session.commitSettings}
+              titleError={titleError(session.bind.title)}
+              onExcerptBlur={session.commitField}
               onTkCountChange={setTkCount}
             />
           </div>

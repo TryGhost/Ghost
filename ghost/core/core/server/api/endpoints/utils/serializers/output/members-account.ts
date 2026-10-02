@@ -1,8 +1,6 @@
-const { formattedMemberResponse } = require('../../../../../services/members/utils');
+import type { Frame } from '@tryghost/api-framework';
 
-interface Frame {
-  response?: unknown;
-}
+const { formattedMemberResponse } = require('../../../../../services/members/utils');
 
 /**
  * A member's own record, as this API has always written one down.

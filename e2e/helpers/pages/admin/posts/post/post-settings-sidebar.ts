@@ -2,6 +2,7 @@ import { Locator, Page } from '@playwright/test';
 import {
   addFacebookImageLabel,
   addXImageLabel,
+  chooseDateButton,
   codeInjectionFootLabel,
   codeInjectionHeadLabel,
   facebookImageUnsplashButton,
@@ -262,8 +263,8 @@ class UrlSection extends InlineSection {
 }
 
 class PublishDateSection extends InlineSection {
-  /** Read-only: the date is chosen from a calendar popover. */
   readonly dateInput: Locator;
+  readonly calendarButton: Locator;
   readonly timeInput: Locator;
   readonly error: Locator;
   readonly note: Locator;
@@ -271,6 +272,9 @@ class PublishDateSection extends InlineSection {
   constructor(page: Page, sidebar: PostSettingsSidebar) {
     super(page, sidebar, 'publish-date');
     this.dateInput = page.getByTestId(settingsPublishDate);
+    this.calendarButton = page
+      .getByTestId(postSettingsSidebar)
+      .getByRole('button', { name: chooseDateButton, exact: true });
     this.timeInput = page.getByTestId(settingsPublishTime);
     this.error = page.getByTestId(settingsPublishDateError);
     this.note = page.getByTestId(settingsPublishDateNote);
@@ -281,17 +285,17 @@ class PublishDateSection extends InlineSection {
   }
 
   /**
-   * Chooses `YYYY-MM-DD` in the calendar popover behind the read-only date
-   * field, paging month by month from wherever the calendar opens.
+   * Chooses `YYYY-MM-DD` in the calendar popover the date field's button opens,
+   * paging month by month from wherever the calendar opens.
    */
   async setDate(day: string): Promise<void> {
     const [year, month, date] = day.split('-').map(Number);
     const monthName = CALENDAR_MONTHS[month - 1];
 
-    await this.dateInput.click();
-    const openInput = this.dateInput.and(this.page.locator('[aria-expanded="true"]'));
-    await openInput.waitFor({ state: 'visible' });
-    const calendarId = await openInput.getAttribute('aria-controls');
+    await this.calendarButton.click();
+    const openButton = this.calendarButton.and(this.page.locator('[aria-expanded="true"]'));
+    await openButton.waitFor({ state: 'visible' });
+    const calendarId = await openButton.getAttribute('aria-controls');
     const calendar = this.page.locator(`[id="${calendarId}"]`);
 
     const targetGrid = calendar.getByRole('grid', { name: `${monthName} ${year}`, exact: true });

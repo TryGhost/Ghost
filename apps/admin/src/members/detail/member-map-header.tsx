@@ -1,7 +1,5 @@
-import React, { lazy, Suspense } from 'react';
-
-// Keep map geometry out of the normal member-page bundle while Labs is off.
-const MemberLocationMap = lazy(() => import('./member-location-map'));
+import React from 'react';
+import MemberLocationMap from './member-location-map';
 
 // A map failure should never prevent reading or editing the member.
 class MapErrorBoundary extends React.Component<
@@ -32,9 +30,7 @@ export default function MemberMapHeader({
   }
   return (
     <MapErrorBoundary fallback={children}>
-      <Suspense fallback={children}>
-        <MemberLocationMap geolocation={geolocation}>{children}</MemberLocationMap>
-      </Suspense>
+      <MemberLocationMap geolocation={geolocation}>{children}</MemberLocationMap>
     </MapErrorBoundary>
   );
 }

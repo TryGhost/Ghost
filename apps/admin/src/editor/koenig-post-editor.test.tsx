@@ -34,6 +34,11 @@ vi.mock('@tryghost/admin-x-framework/api/images', () => ({
   useUploadImage: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 
+// Keeps the Pintura config and settings queries out of this unit, which has no QueryClient.
+vi.mock('@/hooks/use-pintura-editor', () => ({
+  usePinturaEditor: () => ({ isEnabled: false, isOpen: false, openEditor: () => {} }),
+}));
+
 const CARD_CONFIG = { siteUrl: 'https://example.com' } as unknown as PostCardConfig;
 
 const NOOP = () => {};
@@ -42,10 +47,12 @@ const FEATURE_IMAGE: FeatureImageBinding = {
   featureImage: null,
   featureImageAlt: null,
   featureImageCaption: null,
+  featureImageCaptionKey: 0,
   onFeatureImageChange: NOOP,
   onFeatureImageClear: NOOP,
   onFeatureImageAltChange: NOOP,
   onFeatureImageCaptionChange: NOOP,
+  onFeatureImageCaptionFocus: NOOP,
   onFeatureImageCaptionBlur: NOOP,
 };
 
