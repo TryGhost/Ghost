@@ -345,8 +345,9 @@ close and reopen cannot resurrect the version it first read.
 
 The screen's query also refetches on its own, after every save that lands and
 on reconnect once it is stale. Only a read that never produced the post
-replaces the screen, with the load error or a missing post, so reopening a post
-whose stale copy is still cached shows that copy even when its refetch fails.
+replaces the screen: with sign in when the session has expired, and otherwise
+with the load error or a missing post. Reopening a post whose stale copy is
+still cached therefore shows that copy even when its refetch fails.
 Once the post is on screen, a refetch that fails leaves the editor, the session
 and the unsaved content where they are, and the next save reports a deleted
 post, an expired session or a collision itself.
