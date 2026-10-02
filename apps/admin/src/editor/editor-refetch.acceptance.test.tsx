@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, onTestFinished } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
@@ -83,11 +83,14 @@ function fakeSharedPost(overrides: Partial<Post> = {}) {
     stored: () => stored,
     /** Another writer's save, stored under a token this tab has never been sent. */
     theySave: (changes: Partial<Post>) => store(changes),
-    /** Holds every read until the returned release is called. */
+    /** Holds every read until the returned release is called, or the test finishes. */
     holdReads: () => {
       const gate = deferred<void>();
       readsHeld = gate.promise;
-      return () => gate.resolve();
+      const release = () => gate.resolve();
+      // A spec that fails before releasing must not leave its reads in flight for the next.
+      onTestFinished(release);
+      return release;
     },
   };
 }

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { SessionExpiredError } from '@tryghost/admin-x-framework/errors';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 import {
@@ -99,6 +99,26 @@ describe('createEditorSession', () => {
     expect(handed).toHaveLength(2);
     expect(handed[0]).toBe(answered[0]);
     expect(handed[1]).toBe(answered[1]);
+  });
+
+  it('reports a caller that throws on an acknowledged save, and the create still lands', async () => {
+    const failure = new Error('Could not cache the answer');
+    const onError = vi.fn();
+    const { session, state } = sessionHarness({
+      onError,
+      onSaveAcknowledged: () => {
+        throw failure;
+      },
+    });
+
+    session.patchLexical(body('First words'));
+    expect(await session.dispatchExplicit()).toMatchObject({ kind: 'saved' });
+    session.patchLexical(body('More words'));
+    await session.dispatchExplicit();
+
+    expect(onError).toHaveBeenCalledWith(failure);
+    expect(state.acquiredIds).toEqual(['created-id']);
+    expect(state.updates[0].payload).toMatchObject({ id: 'created-id' });
   });
 
   it('authors the create with the current user and leaves updates alone', async () => {

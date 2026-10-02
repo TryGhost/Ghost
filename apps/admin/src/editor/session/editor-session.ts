@@ -808,11 +808,16 @@ export function createEditorSession({
     releaseSavedPublishTime();
     latestRevision = latestRevisionOf(result.post);
     live = { ...live, updated_at: result.updatedAt };
-    onSaveAcknowledged?.(result.post);
 
     if (created) {
       withLocalRevisions((writer) => writer.created());
       onIdAcquired(result.id);
+    }
+    // The save has landed whatever the caller does with its answer.
+    try {
+      onSaveAcknowledged?.(result.post);
+    } catch (error) {
+      onError(error);
     }
     // A waiting copy is stale once nothing is unsaved or the post left draft; a new
     // post's unsaved work is written again under the id it now has.

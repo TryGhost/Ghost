@@ -206,7 +206,8 @@ once that save's acknowledgement has landed and the session holds its token.
 Each acknowledged save also writes the record the server answered with into the
 screen's query, whole and in the shape a read has, so opening the post again
 before the read that follows the save has landed starts from the saved copy and
-its token rather than from the copy that predates the save.
+its token rather than from the copy that predates the save. A later version a
+read put there before the answer arrived is kept.
 
 A save writes a title and slug the writer never typed — the request's own
 default title, the slug derived from the title — and the server may normalize
