@@ -213,7 +213,13 @@ describe('Performance sidebar request lifecycle', () => {
     async (flag) => {
       const request = prepare();
       await renderAdminApp('/automations/first', { labs: { ...flags.labs, [flag]: false } });
-      await expect.element(page.getByRole('button', { name: 'Wait: 1 day' })).toBeVisible();
+      await expect
+        .element(
+          page.getByRole(flag === 'automationRunAnalytics' ? 'button' : 'article', {
+            name: 'Wait: 1 day',
+          }),
+        )
+        .toBeVisible();
       expect(request.requests).toHaveLength(0);
       await expect
         .element(page.getByRole('button', { name: 'Show performance' }))

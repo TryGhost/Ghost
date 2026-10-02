@@ -180,9 +180,12 @@ failure, a payload the server refuses as too large and a 422 become
 saves the way a validation failure does or it retries on every edit; a 404
 becomes `not-found`; and anything else becomes `unknown`.
 
-A `validation` failure the server reports carries the server's reason as its
-message. The server sends that reason as the error's context beside a generic
-summary, and the summary is used only when there is no context.
+A `validation` or `host-limit` failure the server reports carries the server's
+reason as its message. The server sends that reason as the error's context
+beside a generic summary, and the summary is used only when there is no context.
+The save-error banner shows a host limit's reason with its "please upgrade"
+phrase linked to the host's upgrade screen, `/pro` unless the host configures
+another, and keeps the content and the banner's retry.
 
 ## Adopting the server's answer
 
@@ -342,8 +345,9 @@ close and reopen cannot resurrect the version it first read.
 
 The screen's query also refetches on its own, after every save that lands and
 on reconnect once it is stale. Only a read that never produced the post
-replaces the screen, with the load error or a missing post, so reopening a post
-whose stale copy is still cached shows that copy even when its refetch fails.
+replaces the screen: with sign in when the session has expired, and otherwise
+with the load error or a missing post. Reopening a post whose stale copy is
+still cached therefore shows that copy even when its refetch fails.
 Once the post is on screen, a refetch that fails leaves the editor, the session
 and the unsaved content where they are, and the next save reports a deleted
 post, an expired session or a collision itself.

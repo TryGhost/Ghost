@@ -179,7 +179,7 @@ Confirming runs `onBeforePublish` (the editor's pre-save cleanup), dispatches th
 
 | Completion              | Result                                                             |
 | ----------------------- | ------------------------------------------------------------------ |
-| `saved`                 | The email confirmation runs when the publish emails immediately    |
+| `saved`                 | Confirms the email of an immediate send, unless `improveSendingUI` |
 | `needs-retry`           | Back to confirm, told the session is back; the user confirms again |
 | `failed` (`conflict`)   | The collision message, in place                                    |
 | `failed` (`host-limit`) | The host's message, with the upgrade phrase rendered as a link     |
@@ -199,6 +199,8 @@ A reload that throws — a transport failure, or the 401 the redirect opt-out be
 The email's id is only knowable from a reload, so the poller's reload records it for the retry. For the same reason the flow polls rather than short-circuiting on a known email: the acknowledged save result carries no email, and the pre-save one would resolve the confirmation to "not needed" immediately. Closing the flow cancels the poll and marks every pending pre-save, save, confirmation and retry continuation as abandoned, so none can complete the post journey after the caller closes it.
 
 The poller reads the post around the query cache, so the cached post reads never see what it found. Once a confirmation settles with any outcome but `cancelled`, after a publish or a retry, the flow invalidates the post reads so whatever is drawn from them catches up with the send. A reload that throws leaves them alone, since a refetch would most likely fail the same way.
+
+With the `improveSendingUI` flag on, a publish that emails immediately is complete as soon as its save is acknowledged. The flow does not poll, so that publish never moves to the email-error step and the flow invalidates no post reads after it; the caller is told the post has an email, so it can route to post analytics, which reports the send's progress and any failure. Retrying a failed send from the email-error step still waits on the confirmation with the flag on.
 
 ## Requests
 

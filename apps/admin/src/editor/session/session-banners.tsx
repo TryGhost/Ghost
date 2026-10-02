@@ -20,16 +20,16 @@ import {
 } from '@tryghost/test-data/selectors/editor';
 import type { PendingSave, SaveError, SaveEngineState } from '@/editor/engine/save-engine';
 import { EDITOR_CONFIRM_DIALOG_LAYER } from '@/editor/layering';
+import { LimitMessage } from '@/editor/publish/components/limit-message';
+import { splitUpgradeMessage } from '@/editor/publish/publish-options';
 import { reportShownAlert } from '@/editor/report-error';
+import { POST_DELETED } from './error-mapping';
 import type { ReloadOutcome } from './use-editor-session';
 
 const SESSION_EXPIRED = 'Your session expired. Retry to sign in again and save.';
 const CONFLICT =
   'Someone else is editing this post. Reloading replaces what you have with their version, so copy your content first if you need it.';
-const GONE =
-  'This post has been deleted. Copy your content and paste it into a new post to keep it.';
-// A halt carries no error of its own; the banner reports it as the not-found it is.
-const NOT_FOUND: SaveError = { kind: 'not-found', message: GONE };
+const GONE = POST_DELETED.message;
 
 export interface SessionBannersProps {
   state: SaveEngineState;
@@ -79,7 +79,7 @@ function ConflictBanner({
   const [reloading, setReloading] = useState(false);
   const [reloadFoundDeleted, setReloadFoundDeleted] = useState(false);
   const gone = deleted || reloadFoundDeleted;
-  useShownAlert(gone ? GONE : CONFLICT, gone ? NOT_FOUND : error);
+  useShownAlert(gone ? GONE : CONFLICT, gone ? POST_DELETED : error);
 
   const reload = async () => {
     setConfirming(false);
@@ -181,7 +181,7 @@ export function SessionBanners({
     state.kind === 'conflict'
       ? state.error
       : state.kind === 'halted'
-        ? NOT_FOUND
+        ? POST_DELETED
         : pendingSave?.blockedBy?.kind === 'conflict'
           ? pendingSave.blockedBy
           : null;
@@ -208,7 +208,13 @@ export function SessionBanners({
         variant="destructive"
       >
         <Inline align="center" gap="sm">
-          <Text>{saveErrorMessage(state.error)}</Text>
+          <Text>
+            {state.error.kind === 'host-limit' ? (
+              <LimitMessage parts={splitUpgradeMessage(state.error.message)} />
+            ) : (
+              saveErrorMessage(state.error)
+            )}
+          </Text>
           <Button size="sm" variant="outline" onClick={onRetrySave}>
             Retry
           </Button>

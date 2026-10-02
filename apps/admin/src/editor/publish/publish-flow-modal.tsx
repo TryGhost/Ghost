@@ -37,6 +37,8 @@ export interface PublishFlowModalProps {
   tkCount?: number;
   /** The `paywallImprovements` lab; the public-preview gate is off without it. */
   paywallImprovements?: boolean;
+  /** The `improveSendingUI` lab; a publish that emails then completes without confirming the send. */
+  improveSendingUI?: boolean;
   /** The caller supplies the save engine's dispatch. */
   dispatch: PublishDispatcher;
   onBeforePublish?: () => Promise<void>;
@@ -63,6 +65,7 @@ function KeyedPublishFlowModal({
   siteTitle,
   tkCount = 0,
   paywallImprovements = false,
+  improveSendingUI,
   dispatch,
   onBeforePublish,
   onClose,
@@ -109,6 +112,7 @@ function KeyedPublishFlowModal({
     <PublishFlowDialog
       animate={animate}
       dispatch={dispatch}
+      improveSendingUI={improveSendingUI}
       limits={limits}
       now={now}
       post={post}
@@ -138,6 +142,7 @@ function PublishFlowDialog({
   now,
   timezone,
   siteTitle,
+  improveSendingUI,
   dispatch,
   onBeforePublish,
   onClose,
@@ -153,6 +158,7 @@ function PublishFlowDialog({
     now,
     dispatch,
     showCompletion,
+    improveSendingUI,
     onBeforePublish,
     onCompleted,
   });

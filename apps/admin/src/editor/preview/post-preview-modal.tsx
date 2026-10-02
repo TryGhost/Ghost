@@ -285,6 +285,11 @@ export function PostPreviewModal({
   // list, because that is the newsletter its email would be rendered for.
   const selectedNewsletterSlug = pickedNewsletterSlug ?? newsletterSlug ?? newsletters[0]?.slug;
 
+  const retryPreparation = () => {
+    preparePromise.current = null;
+    setPrepareState('preparing');
+  };
+
   const retryNewsletterLookup = () => {
     if (activeNewslettersError) {
       void refetchActiveNewsletters();
@@ -481,26 +486,14 @@ export function PostPreviewModal({
                 {emailAvailable && subjectEditor && (
                   <Stack className="text-left" gap="xs">
                     <span className="text-sm text-muted-foreground">Email subject</span>
+                    {/* The failure is the preview's own save, and retrying it carries the subject. */}
                     <EmailSubject
-                      editor={{
-                        ...subjectEditor,
-                        onSave: async () => {
-                          await subjectEditor.onSave();
-                          preparePromise.current = null;
-                          setPrepareState('preparing');
-                        },
-                      }}
+                      editor={{ ...subjectEditor, onCommit: retryPreparation }}
+                      ownsSaveError={false}
                     />
                   </Stack>
                 )}
-                <Button
-                  className="self-center"
-                  variant="outline"
-                  onClick={() => {
-                    preparePromise.current = null;
-                    setPrepareState('preparing');
-                  }}
-                >
+                <Button className="self-center" variant="outline" onClick={retryPreparation}>
                   Retry
                 </Button>
               </Stack>

@@ -11,7 +11,21 @@ import {
   ValidationError,
   getErrorMessage,
 } from '@tryghost/admin-x-framework/errors';
-import type { SaveError } from '@/editor/engine/save-engine';
+import type { SaveEngineState, SaveError } from '@/editor/engine/save-engine';
+
+/** A halt carries no error of its own: it stops on a post deleted elsewhere. */
+export const POST_DELETED: SaveError = {
+  kind: 'not-found',
+  message: 'This post has been deleted. Copy your content and paste it into a new post to keep it.',
+};
+
+/** The failed save an engine state reports, if it reports one. */
+export function stateSaveError(state: SaveEngineState): SaveError | null {
+  if (state.kind === 'error' || state.kind === 'conflict') {
+    return state.error;
+  }
+  return state.kind === 'halted' ? POST_DELETED : null;
+}
 
 // @tryghost/bookshelf-collision rejects a stale updated_at with this code.
 const COLLISION_CODE = 'UPDATE_COLLISION';
@@ -67,7 +81,7 @@ export function toSaveError(error: unknown, fallback: string): SaveError {
 
   // Core's reason for a refusal is in the body's `context`; its `message` is a generic summary.
   const message =
-    kind === 'validation'
+    kind === 'validation' || kind === 'host-limit'
       ? getErrorMessage(error, messageOf(error, fallback))
       : messageOf(error, fallback);
   return { kind, message, cause: error };

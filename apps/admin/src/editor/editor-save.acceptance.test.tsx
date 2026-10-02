@@ -111,6 +111,7 @@ function bodyElement(): Element | null {
 const POST_NOT_FOUND = { errors: [{ type: 'NotFoundError', message: 'Post not found.' }] };
 // A limit the editor does not hold the writer to before saving.
 const CAPTION_REFUSED = 'Validation failed for feature_image_caption.';
+const PLAN_LIMIT_REACHED = 'Your plan supports up to 500 members, please upgrade to add more.';
 // Ghost answers a request whose session has gone with this 403.
 const SESSION_GONE = { errors: [{ type: 'NoPermissionError', message: 'Authorization failed' }] };
 
@@ -595,6 +596,35 @@ describe('Post editor saving', () => {
     await expect
       .element(editorScreen.saveErrorBanner())
       .not.toHaveTextContent('Validation error, cannot edit post.');
+    expect(refusedSave.requests).toHaveLength(1);
+  });
+
+  it('shows the reason a host limit gave for refusing a save, with a way to upgrade', async () => {
+    fakeSavablePost();
+    const refusedSave = fakeAdminEndpoint(
+      'PUT',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      {
+        errors: [
+          {
+            type: 'HostLimitError',
+            message: 'Host Limit error, cannot edit post.',
+            context: PLAN_LIMIT_REACHED,
+          },
+        ],
+      },
+      { status: 403 },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+
+    await appendToBody(' and more');
+
+    await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(PLAN_LIMIT_REACHED);
+    await expect
+      .element(editorScreen.saveErrorBanner().getByRole('link', { name: 'please upgrade' }))
+      .toHaveAttribute('href', '#/pro');
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
     expect(refusedSave.requests).toHaveLength(1);
   });
 
