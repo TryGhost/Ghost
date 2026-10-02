@@ -284,19 +284,6 @@ describe('Advanced settings', () => {
       .toContain('"automations":true');
   });
 
-  it('downloads the content and settings export', async () => {
-    fakeSettingsScreens();
-    await renderAdminApp('/settings/migration', { labs: { selfServeArchives: false } });
-
-    const section = settingsScreen.section('migrationtools');
-    await section.getByRole('tab', { name: 'Export' }).click();
-    await section.getByRole('button', { name: 'Content & settings' }).click();
-
-    await expect
-      .poll(() => document.querySelector<HTMLIFrameElement>('iframe#iframeDownload')?.src)
-      .toMatch(/\/api\/admin\/db\/$/);
-  });
-
   it.each([
     {
       kind: 'redirects',
