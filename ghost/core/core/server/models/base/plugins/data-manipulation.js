@@ -10,6 +10,11 @@ function truncateToSeconds(ms) {
   return Math.floor(ms / 1000) * 1000;
 }
 
+// `YYYY-MM-DD`, the start of every SQL datetime string
+const SQL_DATE_PREFIX = /^\d{4}-\d{2}-\d{2}/;
+// An ISO 8601 date always leads with its (optionally signed) year
+const ISO_DATE_PREFIX = /^[+-]?\d{4}/;
+
 /**
  * @param {number} n
  * @param {number} width
@@ -57,16 +62,26 @@ function toEpochMilliseconds(value) {
     return value.valueOf();
   }
 
-  const str = String(value);
-  const sqlDate = DateTime.fromSQL(str, { zone: 'utc' });
+  // moment allowed leading whitespace before an ISO date, but sent anything
+  // with trailing whitespace to its `new Date()` fallback
+  const str = String(value).trimStart();
+  const luxonParsable = !/\s$/.test(str);
 
-  if (sqlDate.isValid) {
+  // Luxon's parsers also accept time-only strings, which they place on
+  // today's date: fromSQL reads `2025` as 20:25 and `2025-02` as 20:25 at a
+  // -02 offset. moment read those as January 1 and February 1, and rejected
+  // time-only strings, so each parser only sees strings that lead with a date.
+  const sqlDate =
+    luxonParsable && SQL_DATE_PREFIX.test(str) ? DateTime.fromSQL(str, { zone: 'utc' }) : null;
+
+  if (sqlDate?.isValid) {
     return sqlDate.toMillis();
   }
 
-  const isoDate = DateTime.fromISO(str, { zone: 'utc' });
+  const isoDate =
+    luxonParsable && ISO_DATE_PREFIX.test(str) ? DateTime.fromISO(str, { zone: 'utc' }) : null;
 
-  if (isoDate.isValid) {
+  if (isoDate?.isValid) {
     return isoDate.toMillis();
   }
 
@@ -74,7 +89,9 @@ function toEpochMilliseconds(value) {
   // through moment's `new Date()` fallback, so keep accepting them the same
   // way. A recognised SQL/ISO date that's out of range (`2025-02-30`) stays
   // invalid, as it was with moment, rather than letting Date roll it over.
-  if (sqlDate.invalidReason === 'unparsable' && isoDate.invalidReason === 'unparsable') {
+  const unparsable = (date) => !date || date.invalidReason === 'unparsable';
+
+  if (unparsable(sqlDate) && unparsable(isoDate)) {
     return Date.parse(str);
   }
 
