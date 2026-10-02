@@ -52,7 +52,7 @@ class LinkReplacer {
             inHref = true;
           }
 
-          if (inHref && token.type === 8) {
+          if (inHref && (token.type === 7 || token.type === 8)) {
             const path = entities.decode(token.value.substring(1, token.value.length - 1));
             let url;
             try {
@@ -62,7 +62,7 @@ class LinkReplacer {
             }
             if (url) {
               url = await replaceLink(url, path);
-              const str = url.toString();
+              const str = token.type === 7 ? url.toString().replace(/'/g, '&#39;') : url.toString();
               replacements.push({ url: str, start: token.start + 1, end: token.end - 1 });
             }
 
