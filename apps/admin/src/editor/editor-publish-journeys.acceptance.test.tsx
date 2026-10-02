@@ -6,6 +6,7 @@ import {
   currentUserResponse,
   fakeAdminEndpoint,
   fakeAdminStats,
+  fakeEmailPreview,
   fakeLabels,
   fakeNewsletters,
   fakePages,
@@ -53,11 +54,15 @@ function emailSite(settings: Record<string, unknown> = {}) {
   };
 }
 
-/** The reads the header's publish inputs and preview make, plus the screens a publish leaves for. */
+/**
+ * The reads the header's publish inputs, preview and email size check make,
+ * plus the screens a publish leaves for.
+ */
 function publishChrome(newsletters: Newsletter[]) {
   fakeSnippets([]);
   fakePosts([]);
   fakePages([]);
+  fakeEmailPreview();
   fakePostsListScreen();
   fakeAdminStats.postReferrers(POST_ID, []);
   fakeAdminStats.postGrowth(POST_ID);
@@ -177,7 +182,8 @@ describe('Editor publish journeys', () => {
     fakeSavableDraft({
       newsletter: { id: MONTHLY.id, slug: MONTHLY.slug, name: MONTHLY.name, status: 'active' },
     });
-    const emailPreviewApi = fakeAdminEndpoint('GET', /^\/email_previews\/posts\//, {
+    // Only the preview's renders carry a query; the email size check reads the bare path.
+    const emailPreviewApi = fakeAdminEndpoint('GET', /^\/email_previews\/posts\/[^/]+\/\?/, {
       email_previews: [
         { subject: 'Hello from React', html: '<p>Email body</p>', plaintext: 'Email body' },
       ],
