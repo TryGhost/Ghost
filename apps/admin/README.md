@@ -58,7 +58,8 @@ a failure shows the history error state and Retry reloads both. Upcoming cards
 estimate dates from the pending step’s recorded eligibility (or now if overdue),
 adding each downstream wait. These estimates are calculated when history loads;
 they are not scheduled send times. Deleted members have no projected dates.
-A removed pending action or inactive automation explains why no further path is shown.
+Removed pending actions have no downstream path and lead to the end marker.
+Inactive automations show recorded history without projected steps.
 Completed runs do not get an invented end timestamp.
 
 Email snippets show up to 400 characters of ordinary text from the saved revision,
@@ -108,7 +109,7 @@ collapse; clearing or closing search restores the browsing filters. Entered
 sorting remains available. Input is debounced for 300 ms.
 
 Search pages can report `scanning` even with no matching rows. The list continues
-these requests, pauses after eight pages for explicit continuation, and reports
+these requests sequentially, shows a skeleton row while scanning, and reports
 no matches only after exhaustion. A failed later page retains loaded rows and
 retries that page. Search-scoped charts and date/status controls are a separate
 enhancement. Opening search replaces the Performance heading with the input.

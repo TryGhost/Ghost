@@ -145,7 +145,7 @@ describe('Automation run status filtering', () => {
     await expect.element(runsRegion()).toHaveTextContent('Keyboard member');
     await userEvent.keyboard('{Enter}');
     await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'false');
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
   });
 
   it('allows zero-count cards to show no matches and clear the filter', async () => {
@@ -167,10 +167,10 @@ describe('Automation run status filtering', () => {
     await open();
     await expect.element(statusCard('Completed')).toHaveTextContent('0');
     await statusCard('Completed').click();
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No matching entries');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
     await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'true');
     await statusCard('Completed').click();
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
   });
 
   it('refetches a failed filter on reselection and supports explicit retry while idle', async () => {
@@ -190,9 +190,9 @@ describe('Automation run status filtering', () => {
     await statusCard('Completed').click();
     await expect
       .element(runsRegion().getByRole('alert'))
-      .toHaveTextContent('Could not load automation runs');
+      .toHaveTextContent('Could not load entries');
     await statusCard('Completed').click();
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
     await statusCard('Completed').click();
     await expect.element(runsRegion().getByRole('alert')).toBeVisible();
     expect(request.requests).toHaveLength(2);

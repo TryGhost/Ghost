@@ -9,6 +9,7 @@ import { HistoryBackground } from './history-background';
 
 type RunHistoryProps = {
   automationId: string;
+  automationSlug: string | null | undefined;
   runId: string;
   memberName?: string;
   isPerformanceOpen: boolean;
@@ -27,18 +28,13 @@ export const RunHistory: React.FC<RunHistoryProps> = (props) => (
         role="region"
       >
         <Text role="alert">Could not load run history</Text>
-        <Inline gap="sm">
-          <Button
-            ref={(button) => button?.focus({ preventScroll: true })}
-            variant="outline"
-            onClick={() => error.resetError()}
-          >
-            Retry
-          </Button>
-          <Button variant="outline" onClick={props.onClose}>
-            Back to editing
-          </Button>
-        </Inline>
+        <Button
+          ref={(button) => button?.focus({ preventScroll: true })}
+          variant="outline"
+          onClick={() => error.resetError()}
+        >
+          Retry
+        </Button>
       </Stack>
     )}
   >
@@ -48,13 +44,16 @@ export const RunHistory: React.FC<RunHistoryProps> = (props) => (
 
 const RunHistoryContent: React.FC<RunHistoryProps> = ({
   automationId,
+  automationSlug,
   runId,
   memberName,
   isPerformanceOpen,
   onClose,
 }) => {
-  const { history, summary, isLoading, isError, unavailable, retry, plan } =
-    useAutomationRunHistory(automationId, runId);
+  const { history, summary, isLoading, isError, notFound, retry, plan } = useAutomationRunHistory(
+    automationId,
+    runId,
+  );
   const closeButton = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     closeButton.current?.focus({ preventScroll: true });
@@ -106,9 +105,9 @@ const RunHistoryContent: React.FC<RunHistoryProps> = ({
               <LoadingIndicator size="lg" />
             </Stack>
           )}
-          {unavailable && (
+          {notFound && (
             <Text role="status" tone="secondary">
-              This run is no longer available
+              Run not found
             </Text>
           )}
           {isError && (
@@ -127,15 +126,10 @@ const RunHistoryContent: React.FC<RunHistoryProps> = ({
               <Text className="sr-only" role="status" tone="secondary">
                 {`${formatNumber(history.steps.length)} recorded ${history.steps.length === 1 ? 'step' : 'steps'}`}
               </Text>
-              {!history.member && (
-                <Text role="status" size="sm" tone="secondary">
-                  Member details unavailable
-                </Text>
-              )}
             </Stack>
           )}
         </Stack>
-        {history && <HistoryFlow history={history} plan={plan} />}
+        {history && <HistoryFlow automationSlug={automationSlug} history={history} plan={plan} />}
       </Stack>
     </Box>
   );

@@ -983,6 +983,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           <RunHistory
             key={selectedRunId}
             automationId={automation.id}
+            automationSlug={automation.slug}
             isPerformanceOpen={isPerformanceOpen}
             memberName={selectedMember?.runId === selectedRunId ? selectedMember.name : undefined}
             runId={selectedRunId}
