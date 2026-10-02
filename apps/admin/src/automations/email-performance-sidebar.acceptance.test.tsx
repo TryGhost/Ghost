@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
-import { settingsResponse } from '@tryghost/test-data';
+import { buildLexicalParagraph, settingsResponse } from '@tryghost/test-data';
 import type {
   AutomationDetail,
   AutomationEmailStats,
@@ -30,9 +30,7 @@ const email = (id: string, metrics: AutomationEmailStats = stats): AutomationSen
   stats: metrics,
   data: {
     email_subject: id,
-    email_lexical: JSON.stringify({
-      root: { children: [{ type: 'paragraph', children: [{ type: 'text', text: 'Welcome' }] }] },
-    }),
+    email_lexical: buildLexicalParagraph('Welcome'),
     email_design_setting_id: 'design',
   },
 });
@@ -400,4 +398,66 @@ describe('Email performance sidebar', () => {
     await expect.element(legacy.getByTestId('email-performance-sent-ring')).toBeVisible();
     await expect.element(panel()).not.toBeInTheDocument();
   });
+
+  it.each(['subject', 'email body'])(
+    'keeps the workflow visible after editing the %s and saving with the redesign flag off',
+    async (field) => {
+      prepare([email('First')]);
+      fakeAdminEndpoint('GET', linksPath(), { automation_action_links: [] });
+      fakeAdminEndpoint('GET', '/automated_emails/', { automated_emails: [] });
+      fakeAdminEndpoint('GET', '/newsletters/?filter=status%3Aactive&limit=1', { newsletters: [] });
+      fakeAdminEndpoint('GET', '/offers/', { offers: [] });
+      fakeAdminEndpoint(
+        'GET',
+        '/posts/?filter=status%3Apublished&fields=id%2Curl%2Ctitle%2Cvisibility%2Cpublished_at&order=published_at+desc&limit=5',
+        { posts: [] },
+      );
+      const save = fakeAdminEndpoint('PUT', '/automations/first/', ({ body }) => ({
+        automations: [
+          {
+            ...detail('first'),
+            ...(body as { automations: Partial<AutomationDetail>[] }).automations[0],
+          },
+        ],
+      }));
+      await boot(true, false);
+      await page.getByRole('button', { name: 'Send email: First' }).click();
+      const sidebar = page.getByRole('complementary', { name: 'Step details' });
+      if (field === 'subject') {
+        await sidebar.getByPlaceholder('Subject line').fill('Updated subject');
+      } else {
+        await sidebar.getByRole('button', { name: 'Edit email', exact: true }).click();
+        const dialog = page.getByRole('dialog', { name: 'Edit email', exact: true });
+        await dialog.getByRole('textbox').fill('Updated message');
+        await dialog.getByRole('button', { name: 'Save', exact: true }).click();
+        await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+      }
+      let workflowDisappeared = false;
+      const canvas = editingCanvas().element();
+      const observer = new MutationObserver(() => {
+        workflowDisappeared ||= [...canvas.querySelectorAll('.react-flow__node')].some(
+          (node) => getComputedStyle(node).visibility === 'hidden',
+        );
+      });
+      observer.observe(canvas, { attributes: true, subtree: true, attributeFilter: ['style'] });
+      try {
+        await page.getByRole('button', { name: 'Save', exact: true }).click();
+        await expect.poll(() => save.requests.length).toBe(1);
+        await expect
+          .element(page.getByRole('button', { name: 'Save', exact: true }))
+          .toBeDisabled();
+        await expect.element(sidebar).toBeVisible();
+        await expect
+          .element(
+            page.getByRole('button', {
+              name: `Send email: ${field === 'subject' ? 'Updated subject' : 'First'}`,
+            }),
+          )
+          .toBeVisible();
+        expect(workflowDisappeared).toBe(false);
+      } finally {
+        observer.disconnect();
+      }
+    },
+  );
 });

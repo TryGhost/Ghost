@@ -252,6 +252,7 @@ const buildGraph = ({
   contentBounds: CanvasContentBounds;
 } => {
   const ordered = getInitialActionOrder(automation);
+  const layoutSizes = automationRunAnalyticsEnabled ? nodeSizes : {};
   // React Flow hides and re-measures any node passed without `measured`; while hidden, the
   // node's inputs lose focus and keystrokes.
   const nodeProps = (id: string) => ({
@@ -298,7 +299,7 @@ const buildGraph = ({
     },
   ];
   cursorY +=
-    (nodeSizes[TRIGGER_CANVAS_ID]?.height ??
+    (layoutSizes[TRIGGER_CANVAS_ID]?.height ??
       (automationRunAnalyticsEnabled ? FIXED_TRIGGER_NODE_HEIGHT : REGULAR_NODE_HEIGHT)) +
     NODE_VISUAL_GAP_Y;
 
@@ -370,7 +371,7 @@ const buildGraph = ({
     if (editableWait) {
       estimatedHeight = EDITABLE_WAIT_NODE_HEIGHT;
     }
-    cursorY += (nodeSizes[action.id]?.height ?? estimatedHeight) + NODE_VISUAL_GAP_Y;
+    cursorY += (layoutSizes[action.id]?.height ?? estimatedHeight) + NODE_VISUAL_GAP_Y;
   });
 
   nodes.push({
@@ -395,11 +396,11 @@ const buildGraph = ({
   const contentBounds: CanvasContentBounds = {
     left: Math.min(...xs),
     right: Math.max(
-      ...nodes.map((node) => node.position.x + (nodeSizes[node.id]?.width ?? nodeWidth)),
+      ...nodes.map((node) => node.position.x + (layoutSizes[node.id]?.width ?? nodeWidth)),
     ),
     bottom:
       cursorY +
-      (nodeSizes[TAIL_CANVAS_ID]?.height ??
+      (layoutSizes[TAIL_CANVAS_ID]?.height ??
         (automationRunAnalyticsEnabled ? EXIT_NODE_HEIGHT : TAIL_NODE_HEIGHT)),
   };
 
@@ -445,13 +446,7 @@ const buildGraph = ({
     style: { stroke: DEFAULT_EDGE_STROKE },
   });
 
-  return {
-    // React Flow hides nodes without measurements. Preserve them when rebuilding
-    // the graph after edits or saves so unchanged cards do not disappear.
-    nodes: nodes.map((node) => ({ ...node, measured: nodeSizes[node.id] })),
-    edges,
-    contentBounds,
-  };
+  return { nodes, edges, contentBounds };
 };
 
 const getInitialViewport = (canvasWidth: number): { x: number; y: number; zoom: number } => ({
@@ -739,7 +734,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       automation,
       automationAnalyticsEnabled,
       automationRunAnalyticsEnabled,
-      nodeSizes: automationRunAnalyticsEnabled ? nodeSizes : {},
+      nodeSizes,
       newEmailWithoutWarningsId,
       onInteract: showWarningsForOtherSteps,
       onWaitValidityChange,
@@ -970,7 +965,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
               }
             }}
             onNodeDoubleClick={handleNodeDoubleClick}
-            onNodesChange={automationRunAnalyticsEnabled ? handleNodesChange : undefined}
+            onNodesChange={handleNodesChange}
             onPaneClick={automationRunAnalyticsEnabled ? undefined : clearDetail}
           >
             <Background {...canvasBackground} variant={BackgroundVariant.Dots} />
