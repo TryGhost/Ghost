@@ -27,7 +27,7 @@ describe('Relation parent attributes', function () {
 
       post.tags();
 
-      assert.equal(Object.prototype.hasOwnProperty.call(post, 'format'), false);
+      assert.equal(Object.hasOwn(post, 'format'), false);
       assert.equal(post.format, models.Post.prototype.format);
     });
 
