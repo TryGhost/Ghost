@@ -16,6 +16,7 @@ module.exports = {
   tags: require('./tags'),
   offers: require('./offers'),
   newsletters: require('./newsletters'),
+  // TypeScript's default export is on `.default` when loaded through require().
   upgrades: require('./upgrades').default,
   users: require('./users'),
   mentions: require('./mentions'),

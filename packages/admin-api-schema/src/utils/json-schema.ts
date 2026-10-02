@@ -11,50 +11,42 @@ export interface IdentifiedSchema extends SchemaObject {
   $id: string;
 }
 
-function createValidator(rejectUnknownFields: boolean): Ajv {
-  const ajv = new Ajv({
-    allErrors: true,
-    useDefaults: true,
-    removeAdditional: !rejectUnknownFields,
-  });
+const ajv = new Ajv({
+  allErrors: true,
+  useDefaults: true,
+  removeAdditional: true,
+});
 
-  addFormats(ajv);
+addFormats(ajv);
 
-  ajv.addFormat('json-string', {
-    type: 'string',
-    validate: (data: string) => {
-      try {
-        JSON.parse(data);
-        return true;
-      } catch {
-        return false;
-      }
-    },
-  });
+ajv.addFormat('json-string', {
+  type: 'string',
+  validate: (data: string) => {
+    try {
+      JSON.parse(data);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+});
 
-  addIsLowercaseKeyword(ajv);
+addIsLowercaseKeyword(ajv);
 
-  return ajv;
-}
-
-const ajv = createValidator(false);
-const strictAjv = createValidator(true);
-
-const getValidation = (validator: Ajv, schema: IdentifiedSchema, definition: IdentifiedSchema) => {
-  if (!validator.getSchema(definition.$id)) {
-    validator.addSchema(definition);
+const getValidation = (schema: IdentifiedSchema, definition: IdentifiedSchema) => {
+  if (!ajv.getSchema(definition.$id)) {
+    ajv.addSchema(definition);
   }
 
-  return validator.getSchema(schema.$id) ?? validator.compile(schema);
+  return ajv.getSchema(schema.$id) ?? ajv.compile(schema);
 };
 
 export async function validate(
   schema: IdentifiedSchema,
   definition: IdentifiedSchema,
   data: unknown,
-  rejectUnknownFields = false,
 ): Promise<void> {
-  const validation = getValidation(rejectUnknownFields ? strictAjv : ajv, schema, definition);
+  const validation = getValidation(schema, definition);
 
   validation(data);
 

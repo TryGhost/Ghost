@@ -52,31 +52,36 @@ It allows 600 attempts per minute, shared across status polling, job polling
 and request creation. This limits authentication work while allowing
 several staff polling tabs behind one IP at the minimum one-second interval.
 Clients should respect `poll_after_ms` and stop polling inactive jobs. Hosts can
-tune the shared budget with `spam.upgrade_api_block`.
+tune the shared budget with `spam.upgrade_api_block`. Each request writes to
+the shared `brute` table before authentication. At the default limit, one IP
+permits about ten such writes per second; rejected attempts also use database
+work. This is the cost of a shared budget across Ghost instances.
 
-The separate shared database-backed limiter allows three POST attempts per staff user
-before a one-minute block, across IPs and Ghost instances. Replays with the same
-key count too: this limiter runs before host acceptance is known. On HTTP 429,
+The separate database-backed limiter allows three POST attempts per staff
+user before a one-minute block, across IPs and Ghost instances. Replays
+with the same key count too: this limiter runs before host acceptance is known. On HTTP 429,
 wait for the `Retry-After` interval and reuse the original key. A lost response
-does not justify a new intent key. Denied lower-role users cannot consume an owner's request budget. Hosts must independently enforce
-concurrency and atomically deduplicate requests. Ghost deliberately does not
-preflight status before creation, so replay can work while a host is busy or
-restarting or after its target list changes.
+does not justify a new intent key. Denied lower-role users cannot consume an
+owner's request budget. Hosts must independently enforce concurrency and
+atomically deduplicate requests. Ghost deliberately does not preflight status
+before creation, so replay can work while a host is busy, restarting, or
+after its target list changes.
 
 Upgrade limiters use stable store names across instances. Other legacy
 ExpressBrute limiters still use construction-order namespaces; applying stable
 names to them is a separate middleware concern.
 
-The controller validates request inputs through `@tryghost/admin-api-schema`,
-rejecting unknown fields and requiring lowercase UUID v4 intent keys. The service
-accepts those typed inputs and validates results from the external adapter.
+The registered upgrade input validator uses `@tryghost/admin-api-schema`
+for request shape, rejects unknown fields before the shared validator strips
+them, and requires lowercase UUID v4 intent keys. The service accepts those
+typed inputs and validates results from the external adapter.
 
 Status distinguishes unsupported hosts from busy, blocked and temporarily
 unavailable services. Lookup deliberately returns HTTP 200 with explicit
-`unknown` and `expired`
-records, including for IDs with no record. These are host lookup outcomes that
-clients can display or poll, rather than route-level 404 errors;
-temporary I/O or invalid adapter results return `UPGRADE_UNAVAILABLE` instead.
+`unknown` and `expired` records, including for IDs with no record.
+These are host lookup outcomes that clients can display or poll, rather than
+route-level 404 errors; temporary I/O or invalid adapter results return
+`UPGRADE_UNAVAILABLE` instead.
 Unexpected adapter failures are logged with their original errors locally and
 returned with a fixed public message.
 

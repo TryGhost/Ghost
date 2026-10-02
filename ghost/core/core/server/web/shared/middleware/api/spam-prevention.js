@@ -249,7 +249,7 @@ const emailPreviewBlock = () => {
   return emailPreviewBlockInstance;
 };
 
-const createUpgradeBlock = (name, settings, options = {}) => {
+const createUpgradeBlock = (name, settings, context, options = {}) => {
   const ExpressBrute = require('express-brute');
   const BruteKnex = require('@tryghost/brute-knex');
   const db = require('../../../../data/db');
@@ -276,10 +276,7 @@ const createUpgradeBlock = (name, settings, options = {}) => {
           return next(
             new errors.TooManyRequestsError({
               message: messages.upgradeBlock,
-              context:
-                name === 'upgrade_api'
-                  ? 'The shared IP budget for update API requests has been exhausted.'
-                  : 'The staff user budget for update POST attempts has been exhausted.',
+              context,
               help: 'Wait for Retry-After before retrying. Reuse the original request key for the same intent.',
             }),
           );
@@ -300,7 +297,12 @@ const createUpgradeBlock = (name, settings, options = {}) => {
 
 const upgradeBlock = () => {
   upgradeBlockInstance =
-    upgradeBlockInstance || createUpgradeBlock('upgrade_requests', spamUpgradeBlock);
+    upgradeBlockInstance ||
+    createUpgradeBlock(
+      'upgrade_requests',
+      spamUpgradeBlock,
+      'The staff user budget for update POST attempts has been exhausted.',
+    );
 
   return upgradeBlockInstance;
 };
@@ -308,10 +310,15 @@ const upgradeBlock = () => {
 const upgradeApiBlock = () => {
   upgradeApiBlockInstance =
     upgradeApiBlockInstance ||
-    createUpgradeBlock('upgrade_api', spamUpgradeApiBlock, {
-      // Continuous polling must not extend the counting window indefinitely.
-      refreshTimeoutOnRequest: false,
-    });
+    createUpgradeBlock(
+      'upgrade_api',
+      spamUpgradeApiBlock,
+      'The shared IP budget for update API requests has been exhausted.',
+      {
+        // Continuous polling must not extend the counting window indefinitely.
+        refreshTimeoutOnRequest: false,
+      },
+    );
 
   return upgradeApiBlockInstance;
 };

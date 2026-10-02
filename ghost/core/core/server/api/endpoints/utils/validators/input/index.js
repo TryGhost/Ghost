@@ -64,6 +64,10 @@ module.exports = {
     return require('./labels');
   },
 
+  get upgrades() {
+    return require('./upgrades');
+  },
+
   get users() {
     return require('./users');
   },

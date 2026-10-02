@@ -61,10 +61,6 @@ async function validate() {
 validate();
 ```
 
-By default, validation removes undeclared fields. Pass `rejectUnknownFields: true`
-to reject them instead, as the upgrade request endpoint does for unsupported
-execution controls. This leaves the default behavior of existing endpoints intact.
-
 When used from Ghost core in validation layer:
 
 ```js

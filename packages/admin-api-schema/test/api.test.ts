@@ -98,34 +98,6 @@ describe('Exposes a correct API', function () {
       assert.equal(data.posts[0]!.author, undefined);
     });
 
-    it('Rejects unknown upgrade controls without altering the default trimming policy', async function () {
-      const input = {
-        target_version: 'nightly-2026-10-01',
-        idempotency_key: 'f76543a0-c052-45e8-b020-03c86a809b93',
-      };
-      await apiSchema.validate({
-        data: { upgrades: [input] },
-        schema: 'upgrades-add',
-        rejectUnknownFields: true,
-      });
-
-      for (const data of [
-        { upgrades: [{ ...input, skip_backup: true }] },
-        { upgrades: [input], command: 'update' },
-      ]) {
-        const original = structuredClone(data);
-        await assert.rejects(
-          () => apiSchema.validate({ data, schema: 'upgrades-add', rejectUnknownFields: true }),
-          (error) => hasErrorType(error, 'ValidationError'),
-        );
-        assert.deepEqual(data, original);
-      }
-
-      const data = { upgrades: [{ ...input, skip_backup: true }] };
-      await apiSchema.validate({ data, schema: 'upgrades-add' });
-      assert.equal(Object.hasOwn(data.upgrades[0]!, 'skip_backup'), false);
-    });
-
     it('Incorrect use throws an error', async function () {
       const data = {
         posts: [

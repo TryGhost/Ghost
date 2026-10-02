@@ -8,8 +8,6 @@ export interface ValidateOptions {
   data: unknown;
   schema?: string;
   definition?: string;
-  /** Reject undeclared fields instead of silently removing them. */
-  rejectUnknownFields?: boolean;
 }
 
 function isSchemaName(name: string): name is SchemaName {
@@ -32,7 +30,6 @@ export function validate({
   data,
   schema,
   definition = schema?.split('-')[0],
-  rejectUnknownFields = false,
 }: ValidateOptions): Promise<void> {
   const schemaJSON = get(schema);
 
@@ -52,7 +49,7 @@ export function validate({
     });
   }
 
-  return validateJSONSchema(schemaJSON, definitionJSON, data, rejectUnknownFields);
+  return validateJSONSchema(schemaJSON, definitionJSON, data);
 }
 
 export default { get, list, validate };
