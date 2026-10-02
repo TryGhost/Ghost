@@ -1,3 +1,8 @@
+import {
+  normalizeMemberSearch,
+  searchCursorScope,
+  browseMemberSearch,
+} from './automation-member-search';
 import { decodeRunCursor, encodeRunCursor, type RunCursorScope } from './automation-run-cursor';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
@@ -201,11 +206,13 @@ export async function readPerformanceStats(automationId: string, options: unknow
 
 export async function browseRuns(automationId: string, options: Record<string, unknown> = {}) {
   const { status, order, cursor } = options;
-  const { window: entryWindow, timezone } = parseEntryStatsOptions(options);
+  const query = normalizeMemberSearch(options.search);
+  // Initial member search spans all time and statuses; browse filters stay independent.
+  const { window: entryWindow, timezone } = parseEntryStatsOptions(query ? {} : options);
   const parsedStatus = z
     .enum(['in_progress', 'completed', 'exited_early'])
     .optional()
-    .safeParse(status);
+    .safeParse(query ? undefined : status);
   if (!parsedStatus.success) {
     throw new errors.ValidationError({
       message: tpl(messages.invalidRunStatus),
@@ -225,10 +232,19 @@ export async function browseRuns(automationId: string, options: Record<string, u
     status: parsedStatus.data ?? null,
     direction: parsedOrder.data === 'created_at asc' ? 'asc' : 'desc',
   };
+  const searchScope = query
+    ? searchCursorScope(
+        requestedScope,
+        config.get('tinybird:stats:id') || settingsCache.get('site_uuid'),
+        query,
+      )
+    : undefined;
   const continuation =
     cursor === undefined
       ? undefined
-      : decodeRunCursor(cursor, requestedScope, { preserveEndDate: options.date_to === undefined });
+      : decodeRunCursor(cursor, searchScope ?? requestedScope, {
+          preserveEndDate: !query && options.date_to === undefined,
+        });
   const scope = continuation?.scope ?? requestedScope;
   const exists = await repository.exists(automationId);
   if (!exists) {
@@ -237,6 +253,10 @@ export async function browseRuns(automationId: string, options: Record<string, u
   const client = getTinybirdClient();
   if (!client) {
     throw new errors.InternalServerError({ message: tpl(messages.tinybirdRunsFailed) });
+  }
+
+  if (searchScope) {
+    return browseMemberSearch(repository, client, searchScope, query, continuation?.position);
   }
 
   // One extra row tells us whether a next page exists without a separate count.
