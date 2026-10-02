@@ -5,6 +5,7 @@ const { UpgradeAdapterError } = require('@tryghost/adapter-base-upgrade');
 const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
 const manager = require('../../../core/server/services/adapter-manager').default;
 const db = require('../../../core/server/data/db');
+
 const id = 'f76543a0-c052-45e8-b020-03c86a809b93';
 const input = { targetVersion: '6.65.0', idempotencyKey: id };
 const job = {
@@ -14,6 +15,7 @@ const job = {
   createdAt: '2026-09-29T12:00:00.000Z',
   updatedAt: '2026-09-29T12:00:00.000Z',
 };
+
 const status = {
   supported: true,
   availability: 'ready',
@@ -23,20 +25,25 @@ const status = {
   activeJobId: null,
   pollAfterMs: 2000,
 };
+
 describe('Upgrades API', function () {
   let agent;
+
   beforeAll(async function () {
     agent = await agentProvider.getAdminAPIAgent();
     await fixtureManager.init('users', 'integrations', 'api_keys');
     await agent.loginAsOwner();
   });
+
   beforeEach(async function () {
     await db.knex('brute').delete();
   });
+
   afterEach(function () {
     sinon.restore();
     manager.clearCache();
   });
+
   it('returns the normal default wrapper', async function () {
     const response = await agent.get('upgrades/').expectStatus(200);
     assert.deepEqual(response.body, {
@@ -47,6 +54,7 @@ describe('Upgrades API', function () {
       .body({ upgrades: [input] })
       .expectStatus(403);
   });
+
   it('accepts an intent key, returns 202, and reads explicit job states', async function () {
     const createRequest = sinon.stub().resolves(job);
     const getJob = sinon.stub().resolves({ id, state: 'unknown' });
@@ -54,6 +62,7 @@ describe('Upgrades API', function () {
       .stub(manager, 'getAdapter')
       .withArgs('upgrade')
       .returns({ getStatus: async () => status, createRequest, getJob });
+
     const response = await agent
       .post('upgrades/')
       .body({ upgrades: [input] })
@@ -63,12 +72,14 @@ describe('Upgrades API', function () {
     });
     assert.equal(createRequest.firstCall.args[0].targetVersion, input.targetVersion);
     assert.match(createRequest.firstCall.args[0].idempotencyKey, /^[a-f0-9]{64}$/);
+
     for (const state of ['unknown', 'expired', 'done', 'rolled-back', 'recovery-required']) {
       getJob.resolves({ id, state, error: '/private/secret' });
       const result = await agent.get(`upgrades/${id}/`).expectStatus(200);
       assert.deepEqual(result.body, { upgrades: [{ id, state }] });
     }
   });
+
   it('accepts host-approved prerelease and nightly identifiers without altering them', async function () {
     const getStatus = sinon.stub();
     const createRequest = sinon.stub();
@@ -96,6 +107,7 @@ describe('Upgrades API', function () {
       assert.equal(createRequest.lastCall.args[0].targetVersion, targetVersion);
     }
   });
+
   it('validates requests and IDs before calling the service and rejects host rejections', async function () {
     const createRequest = sinon.stub().rejects(new UpgradeAdapterError({ code: 'busy' }));
     sinon.stub(manager, 'getAdapter').withArgs('upgrade').returns({ createRequest });
@@ -113,10 +125,12 @@ describe('Upgrades API', function () {
         (key) => ({ upgrades: [{ ...input, [key]: 'x' }] }),
       ),
     ];
+
     for (const body of invalidBodies) {
       await db.knex('brute').delete();
       await agent.post('upgrades/').body(body).expectStatus(422);
     }
+
     sinon.assert.notCalled(createRequest);
     await db.knex('brute').delete();
     await agent
@@ -129,6 +143,7 @@ describe('Upgrades API', function () {
       .body({ upgrades: [{ ...input, targetVersion: '6.66.0' }] })
       .expectStatus(422);
   });
+
   it('returns descriptive compatibility diagnostics in rejected checks and job results', async function () {
     const diagnostics = [
       {
@@ -163,6 +178,7 @@ describe('Upgrades API', function () {
     const result = await agent.get(`upgrades/${id}/`).expectStatus(200);
     assert.deepEqual(result.body.upgrades[0].diagnostics, diagnostics);
   });
+
   it('throttles repeated POSTs', async function () {
     for (let index = 0; index < 3; index++) {
       await agent
@@ -175,6 +191,7 @@ describe('Upgrades API', function () {
       .body({ upgrades: [input] })
       .expectStatus(429);
   });
+
   it('permits administrators', async function () {
     sinon
       .stub(manager, 'getAdapter')
@@ -193,6 +210,7 @@ describe('Upgrades API', function () {
       .expectStatus(202);
     await agent.loginAsOwner();
   });
+
   for (const role of ['Editor', 'Author', 'Contributor', 'SuperEditor']) {
     it(`denies ${role} all endpoints`, async function () {
       if (role === 'SuperEditor') {
@@ -215,6 +233,7 @@ describe('Upgrades API', function () {
       }
     });
   }
+
   it('rejects integration tokens for all endpoints', async function () {
     await agent.useZapierAdminAPIKey();
     await agent.get('upgrades/').expectStatus(403);
@@ -225,12 +244,14 @@ describe('Upgrades API', function () {
       .expectStatus(403);
     await agent.loginAsOwner();
   });
+
   it('accepts an owner staff token', async function () {
     await agent.useStaffTokenForOwner();
     await agent.get('upgrades/').expectStatus(200);
     await agent.get(`upgrades/${id}/`).expectStatus(200);
     await agent.loginAsOwner();
   });
+
   it('requires authentication', async function () {
     const anonymous = await agentProvider.getAdminAPIAgent();
     await anonymous.get('upgrades/').expectStatus(403);

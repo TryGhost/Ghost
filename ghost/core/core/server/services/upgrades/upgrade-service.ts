@@ -14,6 +14,7 @@ import {
 /** Request inputs have already been validated by the caller's API boundary. */
 export interface UpgradeRequestInput {
   targetVersion: string;
+
   /** Client-generated UUID v4; the service scopes it to the authenticated staff user. */
   idempotencyKey: string;
 }
@@ -73,8 +74,10 @@ export class UpgradeService {
     if (error instanceof UpgradeAdapterError) {
       const parsed = upgradeErrorCodeSchema.safeParse(error.code);
       const diagnostics = upgradeDiagnosticsSchema.optional().safeParse(error.diagnostics);
+
       if (parsed.success && diagnostics.success) {
         const rejection = rejections[parsed.data];
+
         throw new rejection.Error({
           message: rejection.message,
           code: rejection.code,
@@ -82,6 +85,7 @@ export class UpgradeService {
         });
       }
     }
+
     // Log the original error locally; never serialize its message/stack or output.
     this.logError(
       new errors.InternalServerError({
@@ -93,6 +97,7 @@ export class UpgradeService {
             : new errors.IncorrectUsageError({ message: 'Adapter threw a non-Error value.' }),
       }),
     );
+
     throw new errors.MaintenanceError({
       message: 'The update service is temporarily unavailable.',
       code: 'UPGRADE_UNAVAILABLE',
@@ -111,6 +116,7 @@ export class UpgradeService {
     const idempotencyKey = createHash('sha256')
       .update(JSON.stringify([userId, input.idempotencyKey]))
       .digest('hex');
+
     try {
       const job = acceptedUpgradeJobSchema.parse(
         await this.getAdapter().createRequest({
@@ -118,11 +124,13 @@ export class UpgradeService {
           idempotencyKey,
         }),
       );
+
       if (job.targetVersion !== input.targetVersion) {
         throw new errors.IncorrectUsageError({
           message: 'Accepted job target does not match the requested target.',
         });
       }
+
       return job;
     } catch (error) {
       return this.adapterFailure(error, 'createRequest');
@@ -132,9 +140,11 @@ export class UpgradeService {
   async getJob(id: string) {
     try {
       const job = upgradeJobResultSchema.parse(await this.getAdapter().getJob(id));
+
       if (job.id !== id) {
         throw new errors.IncorrectUsageError({ message: 'Lookup returned a different job ID.' });
       }
+
       return job;
     } catch (error) {
       return this.adapterFailure(error, 'getJob');

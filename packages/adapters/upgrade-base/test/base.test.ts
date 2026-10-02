@@ -7,10 +7,12 @@ import {
   type UpgradeJobResult,
   type UpgradeStatus,
 } from '../src/index.ts';
+
 class HostAdapter extends UpgradeAdapter {
   async getStatus(): Promise<UpgradeStatus> {
     return { supported: false, reason: 'not-configured' };
   }
+
   async createRequest(): Promise<AcceptedUpgradeJob> {
     return {
       id: 'f76543a0-c052-45e8-b020-03c86a809b93',
@@ -20,10 +22,12 @@ class HostAdapter extends UpgradeAdapter {
       updatedAt: '2026-09-29T12:00:00.000Z',
     };
   }
+
   async getJob(id: string): Promise<UpgradeJobResult> {
     return { id, state: 'unknown' };
   }
 }
+
 describe('UpgradeAdapter', () => {
   it('supports optional configuration and an immutable method contract', async () => {
     const adapter = new HostAdapter({});

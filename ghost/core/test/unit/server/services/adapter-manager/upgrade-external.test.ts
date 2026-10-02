@@ -6,17 +6,21 @@ import { execFileSync } from 'node:child_process';
 import { AdapterManager } from '../../../../../core/server/services/adapter-manager/adapter-manager';
 const configUtils = require('../../../../utils/config-utils');
 const { UpgradeAdapter } = require('@tryghost/adapter-base-upgrade');
+
 // The Docker implementation remains in its own repository. CI/operators opt in
 // by supplying that checkout's adapter directory; no copied fixture can drift.
 const externalPath = process.env.GHOST_UPGRADE_ADAPTER_PATH;
+
 (externalPath ? describe : describe.skip)(
   'external upgrade adapter with a real file exchange',
   () => {
     let root: string;
+
     afterEach(async () => {
       await configUtils.restore();
       fs.rmSync(root, { recursive: true, force: true });
     });
+
     it('loads built CommonJS imports, normalizes options, and boots without the supervisor', async () => {
       root = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-upgrade-'));
       const adapterPath = path.join(root, 'content/adapters/upgrade/FileDropUpgradeAdapter');
@@ -24,6 +28,7 @@ const externalPath = process.env.GHOST_UPGRADE_ADAPTER_PATH;
       const base = path.dirname(path.dirname(require.resolve('@tryghost/adapter-base-upgrade')));
       fs.mkdirSync(path.join(root, 'node_modules/@tryghost'), { recursive: true });
       fs.symlinkSync(base, path.join(root, 'node_modules/@tryghost/adapter-base-upgrade'));
+
       // Plain Node without tsx or --conditions=source proves the production export,
       // starting resolution from the same content/adapters layout as the image.
       execFileSync(
@@ -34,6 +39,7 @@ const externalPath = process.env.GHOST_UPGRADE_ADAPTER_PATH;
         ],
         { env: { ...process.env, NODE_OPTIONS: '' } },
       );
+
       const requestsPath = path.join(root, 'exchange/requests');
       const publicPath = path.join(root, 'exchange/public');
       configUtils.set('adapters:upgrade', {
@@ -46,6 +52,7 @@ const externalPath = process.env.GHOST_UPGRADE_ADAPTER_PATH;
         loadAdapterFromPath: require,
         pathsToAdapters: [path.join(root, 'content/adapters')],
       });
+
       manager.init();
       const adapter = manager.getAdapter('upgrade');
       assert.ok(adapter instanceof UpgradeAdapter);
@@ -54,6 +61,7 @@ const externalPath = process.env.GHOST_UPGRADE_ADAPTER_PATH;
         availability: 'unavailable',
         backupRequired: true,
       });
+
       fs.mkdirSync(requestsPath, { recursive: true });
       fs.mkdirSync(path.join(publicPath, 'jobs'), { recursive: true });
       fs.writeFileSync(
@@ -69,6 +77,7 @@ const externalPath = process.env.GHOST_UPGRADE_ADAPTER_PATH;
           pollAfterMs: 2000,
         }),
       );
+
       const input = { targetVersion: '6.65.0', idempotencyKey: 'a'.repeat(64) };
       const jobs = await Promise.all(Array.from({ length: 5 }, () => adapter.createRequest(input)));
       const job = jobs[0];
@@ -84,16 +93,19 @@ const externalPath = process.env.GHOST_UPGRADE_ADAPTER_PATH;
         ).sort(),
         ['createdAt', 'id', 'protocol', 'targetVersion'],
       );
+
       const done = { ...job, state: 'done', updatedAt: new Date().toISOString() };
       fs.writeFileSync(
         path.join(publicPath, 'jobs', `${job.id}.json`),
         JSON.stringify({ protocol: 1, ...done }),
       );
       assert.deepEqual(await adapter.getJob(job.id), done);
+
       fs.unlinkSync(path.join(requestsPath, `${job.id}.json`));
       fs.unlinkSync(path.join(publicPath, 'status.json'));
       manager.clearCache();
       assert.deepEqual(await manager.getAdapter('upgrade').createRequest(input), done);
+
       // A committed intent without a queued file is recovered after a crash.
       const interruptedId = 'd76543a0-c052-45e8-b020-03c86a809b93';
       const interrupted = {
@@ -110,6 +122,7 @@ const externalPath = process.env.GHOST_UPGRADE_ADAPTER_PATH;
         (await adapter.createRequest({ ...input, idempotencyKey: 'b'.repeat(64) })).id,
         interruptedId,
       );
+
       // Expired keys remain tombstones; removing public records cannot enqueue them again.
       fs.writeFileSync(
         path.join(requestsPath, '.idempotency', `${'c'.repeat(64)}.json`),

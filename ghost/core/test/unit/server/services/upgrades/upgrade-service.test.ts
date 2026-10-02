@@ -14,6 +14,7 @@ const job = {
   createdAt: '2026-09-29T12:00:00.000Z',
   updatedAt: '2026-09-29T12:00:00.000Z',
 };
+
 const diagnostic = {
   source: 'gscan',
   code: 'GS001',
@@ -22,10 +23,12 @@ const diagnostic = {
   details: 'Replace the helper before updating to Ghost 7.',
   locations: [{ file: 'post.hbs', line: 12 }],
 };
+
 // Simulate data from an external CommonJS adapter at the runtime boundary.
 function respondWith(stub: sinon.SinonStub, value: unknown) {
   stub.resolves(value);
 }
+
 function setup() {
   const adapter = new NoopUpgradeAdapter();
   const logError = sinon.spy();
@@ -35,6 +38,7 @@ function setup() {
 
 describe('Upgrade service', () => {
   afterEach(() => sinon.restore());
+
   it('uses the default without a host connection', async () => {
     const { adapter, service } = setup();
     assert.deepEqual(await service.getStatus(), { supported: false, reason: 'not-configured' });
@@ -44,6 +48,7 @@ describe('Upgrade service', () => {
       code: 'unsupported',
     });
   });
+
   it('scopes the key to staff identity and forwards only the validated request', async () => {
     const { adapter, service } = setup();
     const create = sinon.stub(adapter, 'createRequest');
@@ -62,6 +67,7 @@ describe('Upgrade service', () => {
       create.secondCall.args[0].idempotencyKey,
     );
   });
+
   it('delegates replay before policy/availability checks, even if the approved target disappeared', async () => {
     const { adapter, service } = setup();
     const status = sinon.stub(adapter, 'getStatus').rejects(new Error('Host is restarting'));
@@ -70,6 +76,7 @@ describe('Upgrade service', () => {
     assert.equal((await service.createRequest(input, 'owner')).state, 'done');
     sinon.assert.notCalled(status);
   });
+
   it('maps expected host rejections without exposing exception messages', async () => {
     const { adapter, service, logError } = setup();
     const create = sinon.stub(adapter, 'createRequest');
@@ -92,6 +99,7 @@ describe('Upgrade service', () => {
     }
     sinon.assert.notCalled(logError);
   });
+
   it('returns structured gscan errors and warnings on jobs and rejected checks', async () => {
     const { adapter, service } = setup();
     const diagnostics = [
@@ -128,6 +136,7 @@ describe('Upgrade service', () => {
       return true;
     });
   });
+
   it('logs malformed status and returns a retryable failure rather than unsupported', async () => {
     const { adapter, service, logError } = setup();
     respondWith(sinon.stub(adapter, 'getStatus'), { supported: true, availability: 'ready' });
@@ -137,6 +146,7 @@ describe('Upgrade service', () => {
     });
     sinon.assert.calledOnce(logError);
   });
+
   it('keeps transport details out of status and distinguishes busy from unsupported', async () => {
     const { adapter, service } = setup();
     respondWith(sinon.stub(adapter, 'getStatus'), {
@@ -156,6 +166,7 @@ describe('Upgrade service', () => {
       pollAfterMs: 5000,
     });
   });
+
   it('logs malformed accepted jobs and strips unexpected exception data', async () => {
     const { adapter, service, logError } = setup();
     const create = sinon.stub(adapter, 'createRequest');
@@ -173,6 +184,7 @@ describe('Upgrade service', () => {
     });
     assert.equal(logError.callCount, 4);
   });
+
   it('preserves unknown and expired records and rejects mismatched IDs and unsafe diagnostics', async () => {
     const { adapter, service } = setup();
     const get = sinon.stub(adapter, 'getJob');

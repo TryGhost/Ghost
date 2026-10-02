@@ -4,6 +4,7 @@ import { upgradeDiagnosticsSchema } from './diagnostics.ts';
 // Release identifiers are opaque to Ghost; hosts own version and channel policy.
 export const upgradeVersionSchema = z.string().min(1).max(128);
 export const upgradeJobIdSchema = z.uuid({ version: 'v4' }).lowercase();
+
 // Ghost scopes the client's UUID to the authenticated staff user before handing
 // it to the adapter. This key identifies intent; it is never a client-chosen job ID.
 const upgradeIdempotencyKeySchema = z.hash('sha256').lowercase();
@@ -25,6 +26,7 @@ const upgradeStateSchema = z.enum([
 ]);
 
 const upgradeTargetSchema = z.object({ version: upgradeVersionSchema });
+
 const supportedStatus = z.object({
   supported: z.literal(true),
   backupRequired: z.literal(true),
@@ -34,6 +36,7 @@ const supportedStatus = z.object({
   pollAfterMs: z.int().min(1000).max(60000).optional(),
   diagnostics: upgradeDiagnosticsSchema.optional(),
 });
+
 export const upgradeStatusSchema = z.union([
   z.object({ supported: z.literal(false), reason: z.enum(['not-configured', 'not-supported']) }),
   supportedStatus.extend({ availability: z.literal('ready') }),
@@ -48,6 +51,7 @@ export const createUpgradeRequestSchema = z
     idempotencyKey: upgradeIdempotencyKeySchema,
   })
   .strict();
+
 export const upgradeJobSchema = z.object({
   id: upgradeJobIdSchema,
   state: upgradeStateSchema,
@@ -56,16 +60,19 @@ export const upgradeJobSchema = z.object({
   updatedAt: timestamp.optional(),
   diagnostics: upgradeDiagnosticsSchema.optional(),
 });
+
 // Acceptance requires complete metadata; lookup can report a job still being claimed.
 export const acceptedUpgradeJobSchema = upgradeJobSchema.required({
   targetVersion: true,
   createdAt: true,
   updatedAt: true,
 });
+
 export const upgradeJobResultSchema = z.union([
   upgradeJobSchema,
   z.object({ id: upgradeJobIdSchema, state: z.enum(['unknown', 'expired']) }),
 ]);
+
 export const upgradeErrorCodeSchema = z.enum([
   'unsupported',
   'unavailable',

@@ -18,6 +18,7 @@ const status = {
   activeJobId: null,
   pollAfterMs: 5000,
 };
+
 const diagnostic = {
   source: 'gscan',
   code: 'GS001',
@@ -38,6 +39,7 @@ describe('upgrade domain schemas', () => {
       }).supported,
     ).toBe(true);
   });
+
   it('preserves host release identifiers across status, requests and accepted jobs', () => {
     for (const version of [
       '7.0.0-rc.1',
@@ -65,6 +67,7 @@ describe('upgrade domain schemas', () => {
       ).toBe(false);
     }
   });
+
   it('requires canonical lowercase UUID v4 IDs without normalizing invalid inputs', () => {
     expect(upgradeJobIdSchema.parse(id)).toBe(id);
     for (const value of [
@@ -76,6 +79,7 @@ describe('upgrade domain schemas', () => {
       expect(upgradeJobIdSchema.safeParse(value).success).toBe(false);
     }
   });
+
   it('distinguishes capability from busy, unavailable and blocked hosts', () => {
     for (const availability of ['busy', 'unavailable', 'blocked']) {
       expect(
@@ -90,6 +94,7 @@ describe('upgrade domain schemas', () => {
       upgradeStatusSchema.safeParse({ supported: false, reason: '/private/password' }).success,
     ).toBe(false);
   });
+
   it('rejects incomplete ready hosts, unsafe checkpoints and invalid poll intervals', () => {
     for (const value of [
       { supported: true, availability: 'ready', backupRequired: true },
@@ -102,6 +107,7 @@ describe('upgrade domain schemas', () => {
       expect(upgradeStatusSchema.safeParse(value).success).toBe(false);
     }
   });
+
   it('requires a target and timestamps in accepted jobs while allowing partial lookup records', () => {
     const job = {
       id,
@@ -125,6 +131,7 @@ describe('upgrade domain schemas', () => {
     }
     expect(upgradeJobResultSchema.safeParse({ id, state: 'invalid' }).success).toBe(false);
   });
+
   it('accepts descriptive errors and warnings while stripping raw exception fields', () => {
     for (const severity of ['error', 'warning']) {
       expect(
@@ -147,6 +154,7 @@ describe('upgrade domain schemas', () => {
       expect(upgradeDiagnosticSchema.safeParse(value).success).toBe(false);
     }
   });
+
   it('requires a scoped intent key and rejects additional execution controls', () => {
     const request = { targetVersion: '7.0.0', idempotencyKey: 'a'.repeat(64) };
     expect(createUpgradeRequestSchema.parse(request)).toEqual(request);

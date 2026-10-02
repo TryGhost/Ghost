@@ -5,6 +5,7 @@ const code = z
   .min(1)
   .max(128)
   .regex(/^[A-Za-z0-9_.:-]+$/);
+
 const relativeFile = z
   .string()
   .min(1)
@@ -17,6 +18,7 @@ const relativeFile = z
       !value.split('/').some((part) => part === '..' || part === '.'),
     'Diagnostic files must be relative paths without traversal.',
   );
+
 /** Deliberately public, plain-text diagnostics, rather than serialized exceptions. */
 export const upgradeDiagnosticSchema = z.object({
   source: code,
@@ -36,6 +38,7 @@ export const upgradeDiagnosticSchema = z.object({
     .max(100)
     .optional(),
 });
+
 export const upgradeDiagnosticsSchema = z.array(upgradeDiagnosticSchema).max(200);
 
 export type UpgradeDiagnostic = z.infer<typeof upgradeDiagnosticSchema>;

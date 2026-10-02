@@ -7,11 +7,13 @@ import type { UpgradeAdapter as Adapter } from '@tryghost/adapter-base-upgrade';
 const { UpgradeAdapter } = require('@tryghost/adapter-base-upgrade');
 const manager = require('../../../../../core/server/services/adapter-manager').default;
 const configUtils = require('../../../../utils/config-utils');
+
 describe('upgrade adapter wiring', () => {
   afterEach(async () => {
     await configUtils.restore();
     manager.clearCache();
   });
+
   it('loads the default without a supervisor at boot', async () => {
     manager.init();
     const adapter: Adapter = manager.getAdapter('upgrade');
