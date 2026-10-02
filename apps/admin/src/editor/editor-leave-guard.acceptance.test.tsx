@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, onTestFinished } from 'vitest';
+import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
@@ -16,6 +16,7 @@ import {
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
+import { LEAVE_DECISION_DEADLINE_MS } from '@/editor/session/leave-guard';
 import { postsListScreen } from '@/posts/list/posts-list.screen';
 import { deferred } from '@/utils/deferred';
 
@@ -155,6 +156,44 @@ function fakeDeferredSave() {
   return {
     saveApi,
     resolveSave: () => saveResponse.resolve({ posts: [current] }),
+  };
+}
+
+/** A draft whose saves find the session gone until `restoreSaves` answers them again. */
+function fakeExpiredSaves() {
+  fakeEditorChrome();
+  const loaded = post({
+    id: POST_ID,
+    title: 'Hello from React',
+    slug: 'hello-from-react',
+    status: 'draft',
+    lexical: buildLexicalParagraph('Hello from React'),
+    updated_at: LOADED_AT,
+    published_at: null,
+    tags: [],
+  });
+  const postRoute = new RegExp(`^/posts/${POST_ID}/\\?`);
+  fakeAdminEndpoint('GET', /^\/slugs\/post\//, ({ url }) => ({
+    slugs: [{ slug: decodeURIComponent(url.split('/slugs/post/')[1].split('/')[0]) }],
+  }));
+  fakeAdminEndpoint('GET', postRoute, () => ({ posts: [loaded] }));
+  const expiredApi = fakeAdminEndpoint(
+    'PUT',
+    postRoute,
+    { errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }] },
+    { status: 401 },
+  );
+
+  return {
+    expiredApi,
+    // Declared after the expired fake, so they take over from it.
+    restoreSaves: () => {
+      fakeAdminEndpoint('POST', '/session/', () => 'Created', { status: 201 });
+      return fakeAdminEndpoint('PUT', postRoute, ({ body }) => {
+        const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
+        return { posts: [{ ...loaded, ...submitted, updated_at: '2026-01-01T00:00:01.000Z' }] };
+      });
+    },
   };
 }
 
@@ -366,6 +405,52 @@ describe('Post editor leave guard', () => {
     await editorScreen.stayInEditor().click();
     await expect(editorScreen.leaveDialog()).toHaveCount(0);
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+  });
+
+  it('asks before leaving when the save on the way out never answers', async () => {
+    const { saveApi, resolveSave } = fakeDeferredSave();
+    await openDirtyEditor(withoutAutosave(FLAG_ON));
+    // Only the deadline's clock is faked; requests, rendering and polling stay on real time.
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'], shouldClearNativeTimers: true });
+    try {
+      await editorScreen.backLink('post').click();
+      await expect.poll(() => saveApi.requests.length).toBe(1);
+
+      vi.advanceTimersByTime(LEAVE_DECISION_DEADLINE_MS);
+
+      await expect.element(editorScreen.leaveDialog()).toBeVisible();
+      vi.useRealTimers();
+      expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+      await editorScreen.leaveEditor().click();
+      await expect.poll(currentRoute).toBe('/posts');
+      await expect(editorScreen.root()).toHaveCount(0);
+    } finally {
+      vi.useRealTimers();
+      resolveSave();
+    }
+  });
+
+  it('lets a sign-in that outlasts the deadline carry the writer out without asking', async () => {
+    const { expiredApi, restoreSaves } = fakeExpiredSaves();
+    await openDirtyEditor(withoutAutosave(FLAG_ON));
+    const dialogInsertions = watchLeaveDialog();
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'], shouldClearNativeTimers: true });
+    try {
+      await editorScreen.backLink('post').click();
+      await expect.element(editorScreen.reauthDialog()).toBeVisible();
+      expect(expiredApi.requests.length).toBe(1);
+
+      vi.advanceTimersByTime(LEAVE_DECISION_DEADLINE_MS * 2);
+    } finally {
+      vi.useRealTimers();
+    }
+    const restoredApi = restoreSaves();
+    await editorScreen.reauthPassword().fill('hunter22');
+    await editorScreen.reauthSignIn().click();
+
+    await expect.poll(currentRoute).toBe('/posts');
+    expect(restoredApi.requests.length).toBe(1);
+    expect(dialogInsertions()).toBe(0);
   });
 
   it('guards a native hash anchor out of the editor', async () => {
