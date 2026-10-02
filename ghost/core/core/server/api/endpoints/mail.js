@@ -1,5 +1,5 @@
 const tpl = require('@tryghost/tpl');
-const mailService = require('../../services/mail');
+const mailService = require('../../lib/mail');
 const api = require('./');
 let mailer;
 const _private = {};

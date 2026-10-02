@@ -7,7 +7,7 @@ const configUtils = require('../../utils/config-utils');
 const domainEvents = require('@tryghost/domain-events');
 const ObjectId = require('bson-objectid').default;
 const models = require('../../../core/server/models');
-const mailService = require('../../../core/server/services/mail');
+const mailService = require('../../../core/server/lib/mail');
 const { getSignedAdminToken } = require('../../../core/server/adapters/scheduling/utils');
 const {
   MEMBER_WELCOME_EMAIL_SLUGS,

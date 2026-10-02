@@ -1,6 +1,6 @@
 const NewslettersService = require('./newsletters-service.js');
 const SingleUseTokenProvider = require('../members/single-use-token-provider');
-const mail = require('../mail');
+const mail = require('../../lib/mail');
 const models = require('../../models');
 const urlUtils = require('../../../shared/url-utils').default;
 const { limitService } = require('../limits');
