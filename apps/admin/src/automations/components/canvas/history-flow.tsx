@@ -1,15 +1,26 @@
 import React, { useMemo } from 'react';
-import type { AutomationRunHistory } from '@tryghost/admin-x-framework/api/automation-run-history';
-import { Box, Stack } from '@tryghost/shade/primitives';
+import type {
+  AutomationRunHistory,
+  AutomationRunPlan,
+} from '@tryghost/admin-x-framework/api/automation-run-history';
+import { Box, Stack, Text } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
 import { mapRunHistory } from '@/automations/utils/run-history';
+import { mapUpcomingRunSteps } from '@/automations/utils/upcoming-run-steps';
 import { HistoryCard } from './history-card';
 import { HistoryEmailContent } from './history-email-content';
 
 export const HistoryFlow: React.FC<{
   history: AutomationRunHistory;
-}> = ({ history }) => {
-  const cards = useMemo(() => mapRunHistory(history), [history]);
+  plan?: AutomationRunPlan;
+}> = ({ history, plan }) => {
+  const { cards, message } = useMemo(() => {
+    const upcoming = plan && mapUpcomingRunSteps(history, plan);
+    return {
+      cards: [...mapRunHistory(history), ...(upcoming?.cards ?? [])],
+      message: upcoming?.message,
+    };
+  }, [history, plan]);
   return (
     <Stack
       aria-label="Run steps"
@@ -30,10 +41,17 @@ export const HistoryFlow: React.FC<{
             />
           )}
           <HistoryCard card={card}>
-            {card.email && <HistoryEmailContent email={card.email} />}
+            {card.email && (
+              <HistoryEmailContent email={card.email} planned={card.state === 'planned'} />
+            )}
           </HistoryCard>
         </Stack>
       ))}
+      {message && (
+        <Text className="mt-4 text-center" role="status" size="sm" tone="secondary">
+          {message}
+        </Text>
+      )}
     </Stack>
   );
 };

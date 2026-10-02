@@ -53,10 +53,8 @@ const RunHistoryContent: React.FC<RunHistoryProps> = ({
   isPerformanceOpen,
   onClose,
 }) => {
-  const { history, summary, isLoading, isError, unavailable, retry } = useAutomationRunHistory(
-    automationId,
-    runId,
-  );
+  const { history, summary, isLoading, isError, unavailable, retry, plan } =
+    useAutomationRunHistory(automationId, runId);
   const closeButton = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     closeButton.current?.focus({ preventScroll: true });
@@ -137,7 +135,7 @@ const RunHistoryContent: React.FC<RunHistoryProps> = ({
             </Stack>
           )}
         </Stack>
-        {history && <HistoryFlow history={history} />}
+        {history && <HistoryFlow history={history} plan={plan} />}
       </Stack>
     </Box>
   );

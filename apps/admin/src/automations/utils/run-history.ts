@@ -4,7 +4,7 @@ import { emailTextExcerpt } from './history-email-preview';
 
 export type HistoryEmail = { subject: string | null; text: string };
 
-export type HistoryCardState = 'occurred' | 'pending' | 'exited' | 'failed';
+export type HistoryCardState = 'occurred' | 'pending' | 'exited' | 'failed' | 'planned';
 export type HistoryTimestamp = {
   label: string;
   value: string;
@@ -33,7 +33,7 @@ const stepStates = {
   'member unsubscribed': { state: 'exited', label: 'Member unavailable or unsubscribed' },
 } as const satisfies Record<Step['status'], { state: HistoryCardState; label: string }>;
 
-function stepContent(step: Step, state: HistoryCardState) {
+function stepContent(step: Step, state: (typeof stepStates)[Step['status']]['state']) {
   const action = step.action;
   switch (action.type) {
     case 'wait': {
@@ -41,7 +41,11 @@ function stepContent(step: Step, state: HistoryCardState) {
       if (!duration) {
         throw new Error('Invalid recorded wait duration');
       }
-      const verbs = { occurred: 'Waited', pending: 'Waiting', exited: 'Wait', failed: 'Wait' };
+      const verbs = {
+        occurred: 'Waited',
+        pending: 'Waiting',
+        exited: 'Wait',
+      };
       return { kind: 'wait' as const, title: `${verbs[state]} ${duration}` };
     }
     case 'send_email':
