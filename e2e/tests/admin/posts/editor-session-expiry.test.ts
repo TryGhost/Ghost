@@ -57,7 +57,7 @@ for (const editorReact of [false, true]) {
       // on screen and asks for the password instead
       await expect(editor.reauthenticateModal.modal).toBeVisible({ timeout: 15000 });
       expect(page.url()).toContain(`/editor/post/${postId}`);
-      await expect(editor.lexicalEditor).toContainText('Written after the session expired.');
+      await expect(editor.bodyBehindDialog).toContainText('Written after the session expired.');
 
       // Re-authenticating closes the modal and restores the session
       await editor.reauthenticateModal.signIn(ghostAccountOwner.password);

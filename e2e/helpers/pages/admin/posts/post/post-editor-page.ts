@@ -291,6 +291,8 @@ export class PostEditorPage extends AdminPage {
   readonly settingsToggleButton: Locator;
   readonly publishFlow: PublishFlow;
   readonly lexicalEditor: Locator;
+  /** The body's container: readable while an open dialog hides the page from role queries. */
+  readonly bodyBehindDialog: Locator;
   readonly secondaryEditor: Locator;
   readonly publishSaveButton: Locator;
   readonly updateFlowButton: Locator;
@@ -341,6 +343,7 @@ export class PostEditorPage extends AdminPage {
     this.lexicalEditor = react
       ? page.getByTestId(editorBody).getByRole('textbox').first()
       : page.locator('[data-kg="editor"]').first();
+    this.bodyBehindDialog = react ? page.getByTestId(editorBody) : this.lexicalEditor;
     this.secondaryEditor = react
       ? page.getByTestId(editorSecondaryInstance)
       : page.locator('[data-secondary-instance="true"]');

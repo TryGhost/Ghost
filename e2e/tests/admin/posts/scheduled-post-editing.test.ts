@@ -55,11 +55,7 @@ for (const editorReact of [false, true]) {
       const postId = await editor.getPostId();
 
       await editor.publishFlow.open();
-      // React picks its day from a calendar, so it keeps the default schedule
-      // ten minutes out
-      await editor.publishFlow.schedule(
-        editorReact ? {} : { date: scheduleDate, time: scheduleTime },
-      );
+      await editor.publishFlow.schedule({ date: scheduleDate, time: scheduleTime });
       await Promise.all([waitForPostSave(page, postId), editor.publishFlow.confirm()]);
 
       // Completing the publish flow navigates to the posts list with a success
@@ -73,15 +69,13 @@ for (const editorReact of [false, true]) {
       // A schedule set through the picker round-trips without validation
       // errors: the editor zeroes milliseconds before saving (the API only
       // stores whole seconds), so re-saves send back an identical published_at
-      // and cannot trip date-changed validation. Seconds are not zeroed - they
-      // are inherited from the moment scheduling was toggled - so pin the
-      // picked minute and the zeroed milliseconds only. React keeps the
-      // default schedule, so its branch checks the zeroed milliseconds alone
+      // and cannot trip date-changed validation. Ember does not zero seconds -
+      // they are inherited from the moment scheduling was toggled - so pin the
+      // picked minute and the zeroed milliseconds only
       const scheduled = await getPost(page, postId);
       expect(scheduled.status).toBe('scheduled');
-      expect(Date.parse(scheduled.published_at)).toBeGreaterThan(Date.now());
       expect(scheduled.published_at).toMatch(
-        editorReact ? /\.000Z$/ : new RegExp(`^${scheduleDate}T${scheduleTime}:\\d{2}\\.000Z$`),
+        new RegExp(`^${scheduleDate}T${scheduleTime}:\\d{2}\\.000Z$`),
       );
 
       await editor.appendToBody(' Edited while scheduled.');
@@ -110,8 +104,13 @@ for (const editorReact of [false, true]) {
         published_at: publishAt,
       });
 
+      // Opened from the list: Ember hides the status in an editor opened from
+      // Analytics, where the labs reload leaves the page
+      const postsPage = new PostsPage(page);
+      await postsPage.goto();
+      await postsPage.getPostByTitle(post.title).click();
+
       const editor = new PostEditorPage(page, { implementation });
-      await editor.gotoPost(post.id);
       await expect(editor.postStatus.first()).toContainText('Scheduled');
 
       // Enter the window in which a *changed* publish time would be rejected
