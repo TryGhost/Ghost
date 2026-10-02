@@ -6,6 +6,7 @@ import {
   type AutomationRunStatusFilter,
 } from '@tryghost/admin-x-framework/api/automations';
 import { performanceQueryOptions } from './performance-query-options';
+import { useSearchContinuation } from './use-search-continuation';
 import type { RunSortDirection } from '@/automations/types';
 
 export const useAutomationRuns = (
@@ -14,18 +15,22 @@ export const useAutomationRuns = (
   direction: RunSortDirection,
   queryScope: string,
   dateRange: PerformanceDateRange,
+  search = '',
+  enabled = true,
+  updating = false,
 ) => {
   const query = useBrowseAutomationRuns(automationId, queryScope, {
     ...performanceQueryOptions,
+    enabled: !updating,
     // Date changes remount RunList; list controls retain rows while fetching.
     placeholderData: keepPreviousData,
     searchParams: {
-      ...dateRange.searchParams,
-      ...(status ? { status } : {}),
+      ...(search ? { search } : { ...dateRange.searchParams, ...(status ? { status } : {}) }),
       ...(direction === 'asc' ? { order: 'created_at asc' } : {}),
     },
   });
-  const runs = query.data;
+  const runs = query.data?.runs;
+  const scanning = !query.isPlaceholderData && !!query.data?.scanning;
   // A failed later page keeps the loaded rows and retries only itself.
   const nextPageFailed = !query.isFetching && query.isFetchNextPageError;
   const failed = !query.isFetching && query.isError && !query.isFetchNextPageError;
@@ -34,14 +39,33 @@ export const useAutomationRuns = (
   const loadMore = useCallback(() => {
     void fetchNextPage({ cancelRefetch: false });
   }, [fetchNextPage]);
+  const { paused, continueSearch } = useSearchContinuation({
+    requestId: queryScope,
+    pages: query.data?.pages ?? 0,
+    scanning,
+    enabled: enabled && !updating,
+    fetching: query.isFetching,
+    failed: query.isError,
+    loadMore,
+  });
   return {
     runs,
-    isLoading: query.isFetching && !query.isFetchingNextPage,
-    isError: failed,
+    scanning,
+    paused,
+    continueSearch,
+    isLoading: updating || (query.isFetching && !query.isFetchingNextPage),
+    isError: !updating && failed,
     retry: () => {
       void query.refetch();
     },
-    canLoadMore: !!runs && !query.isPlaceholderData && query.hasNextPage && !nextPageFailed,
+    canLoadMore:
+      enabled &&
+      !updating &&
+      !scanning &&
+      !!runs &&
+      !query.isPlaceholderData &&
+      query.hasNextPage &&
+      !nextPageFailed,
     isLoadingMore: query.isFetchingNextPage,
     isNextPageError: nextPageFailed,
     loadMore,
