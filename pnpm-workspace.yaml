@@ -160,7 +160,7 @@ catalog:
   lucide-react: 1.23.0
   microdiff: 1.5.0
   mingo: 2.5.3
-  moment: 2.30.1
+  moment: 2.31.0
   moment-timezone: 0.5.45
   msw: 2.14.6
   nock: 14.0.17
@@ -382,6 +382,8 @@ minimumReleaseAgeExclude:
   - '@img/sharp-libvips-linuxmusl-x64@1.3.4'
   # Renovate security update: markdown-it@14.3.1
   - markdown-it@14.3.1
+  # Renovate security update: moment@2.31.0
+  - moment@2.31.0
 
 # configuration for pnpm's changeset functionality
 versioning:
