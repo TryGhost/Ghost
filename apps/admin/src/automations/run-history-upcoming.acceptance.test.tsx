@@ -64,11 +64,11 @@ describe('Upcoming steps in active run history', () => {
     await expect.element(canvas()).not.toHaveTextContent('Unsaved future subject');
     const cards = canvas().getByRole('article');
     expect(cards.elements().map((card) => card.getAttribute('aria-label'))).toEqual([
-      'Entered automation',
+      'Signed up',
       'Waiting 3 days',
       'Wait 2 days',
       'Send email',
-      'End of automation',
+      'Completed',
     ]);
     await expect.element(cards.nth(2)).toHaveTextContent('Not reached');
     for (const card of [cards.nth(2), cards.nth(3)]) {
@@ -131,7 +131,7 @@ describe('Upcoming steps in active run history', () => {
     await expect.element(canvas()).toHaveTextContent('Updated member');
   });
 
-  it('explains a removed pending action instead of showing unrelated future steps', async () => {
+  it('ends after a removed pending action without showing unrelated future steps', async () => {
     setup();
     const data = activeHistory();
     data.steps[0].action.id = 'removed';
@@ -140,10 +140,13 @@ describe('Upcoming steps in active run history', () => {
     await renderAdminApp('/automations/first', flags);
     await open();
     await select();
-    await expect
-      .element(canvas())
-      .toHaveTextContent('The queued step is no longer in the saved workflow.');
-    await expect(canvas().getByRole('article')).toHaveCount(2);
+    await expect.element(canvas()).toHaveTextContent('Completed');
+    expect(
+      canvas()
+        .getByRole('article')
+        .elements()
+        .map((card) => card.getAttribute('aria-label')),
+    ).toEqual(['Signed up', 'Waiting 3 days', 'Completed']);
   });
 
   it('retries an upcoming email mapping error without losing the editor draft', async () => {
@@ -163,12 +166,14 @@ describe('Upcoming steps in active run history', () => {
       .element(canvas().getByRole('alert'))
       .toHaveTextContent('Could not load run history');
     expect(originalInput.isConnected).toBe(true);
+    await expect(canvas().getByRole('button')).toHaveCount(1);
+    await expect.element(canvas().getByRole('button', { name: 'Retry' })).toBeVisible();
 
     const planRequest = fakeAdminEndpoint('GET', '/automations/first/', {
       automations: [savedPlan()],
     });
     await canvas().getByRole('button', { name: 'Retry' }).click();
-    await expect.element(canvas()).toHaveTextContent('End of automation');
+    await expect.element(canvas()).toHaveTextContent('Completed');
     expect(historyRequest.requests).toHaveLength(2);
     expect(planRequest.requests).toHaveLength(1);
     await close();

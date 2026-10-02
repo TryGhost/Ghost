@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
-import { renderAdminApp } from '@test-utils/acceptance';
+import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import {
   flags,
+  detail,
   history,
   setup,
   respond,
@@ -32,7 +33,7 @@ describe('Recorded trigger, wait, and outcome cards', () => {
     await expect.element(card('Waited 3 days')).toBeVisible();
     const flow = canvas().getByRole('list', { name: 'Run steps' });
     await expect(flow.getByRole('listitem')).toHaveCount(3);
-    expect(card('Entered automation').element().querySelector('time')?.dateTime).toBe(entered);
+    expect(card('Signed up').element().querySelector('time')?.dateTime).toBe(entered);
     expect(card('Waited 3 days').element().querySelector('time')?.dateTime).toBe(finished);
     expect(card('Completed').element().querySelector('time')).toBeNull();
     await expect(flow.getByRole('button')).toHaveCount(0);
@@ -63,8 +64,8 @@ describe('Recorded trigger, wait, and outcome cards', () => {
       await open();
       await expect(editingCanvas()).toHaveCount(0);
       await select();
-      await expect.element(card('Entered automation')).toBeVisible();
-      for (const name of ['Entered automation', 'Waited 3 days']) {
+      await expect.element(card('Signed up')).toBeVisible();
+      for (const name of ['Signed up', 'Waited 3 days']) {
         const element = card(name).element();
         const heading = element.querySelector('h3')!.getBoundingClientRect();
         const time = element.querySelector('time')!.getBoundingClientRect();
@@ -101,7 +102,7 @@ describe('Recorded trigger, wait, and outcome cards', () => {
     expect(estimate.title).toBe(
       `ends: ${new Date(data.steps[0].ready_at).toLocaleDateString(undefined, { dateStyle: 'full' })}`,
     );
-    await expect(card('End of automation')).toHaveCount(0);
+    await expect(card('Completed')).toHaveCount(0);
     await expect.element(canvas()).not.toHaveTextContent('Waited 3 days');
     await expect(canvas().getByRole('listitem')).toHaveCount(2);
   });
@@ -132,7 +133,26 @@ describe('Recorded trigger, wait, and outcome cards', () => {
         .getByRole('article')
         .elements()
         .map((item) => item.getAttribute('aria-label')),
-    ).toEqual(['Entered automation', 'Wait 3 days', label]);
+    ).toEqual(['Signed up', 'Wait 3 days', label]);
+  });
+
+  it.each([
+    ['member-welcome-email-free', 'Upgraded to paid'],
+    ['member-welcome-email-paid', 'Downgraded to free'],
+  ])('shows the direction of the status change for %s', async (slug, label) => {
+    setup();
+    fakeAdminEndpoint('GET', '/automations/first/', {
+      automations: [{ ...detail('first'), slug }],
+    });
+    const data = history('a');
+    data.status = 'exited_early';
+    data.steps[0].status = 'member changed status';
+    respond(data);
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await select();
+    await expect.element(card(label)).toBeVisible();
+    await expect.element(canvas()).not.toHaveTextContent('Member changed subscription status');
   });
 
   it('keeps long recorded history scrollable with a persistent close control', async () => {

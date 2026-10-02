@@ -90,8 +90,8 @@ describe('Automation member search', () => {
     await open();
     await page.getByRole('button', { name: 'Search members', exact: true }).click();
     await input().fill('anna');
-    await expect.element(list().getByText('Could not load more runs')).toBeVisible();
-    await expect.element(list().getByText('No matching entries')).not.toBeInTheDocument();
+    await expect.element(list().getByText('Could not load entries')).toBeVisible();
+    await expect.element(list().getByText('No members match')).not.toBeInTheDocument();
     await list().getByRole('button', { name: 'Retry' }).click();
     await expect.element(list().getByText('Anna', { exact: true })).toBeVisible();
     expect(
@@ -99,24 +99,39 @@ describe('Automation member search', () => {
     ).toHaveLength(2);
   });
 
-  it('pauses long scans and continues explicitly before reporting exhaustion', async () => {
+  it('continues long scans with a skeleton until exhaustion', async () => {
     prepareStatuses();
     let pages = 0;
-    fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?/, ({ url }) => {
+    let finish!: () => void;
+    const pending = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?/, async ({ url }) => {
       if (!new URL(url).searchParams.has('search')) {
         return result(null, []);
       }
       pages += 1;
-      return result(pages <= 8 ? `page-${pages}` : null, []);
+      if (pages <= 8) {
+        return result(`page-${pages}`, []);
+      }
+      await pending;
+      return result(null, []);
     });
     await open();
     await page.getByRole('button', { name: 'Search members', exact: true }).click();
     await input().fill('missing');
-    await expect.element(list().getByRole('button', { name: 'Continue search' })).toBeVisible();
-    expect(pages).toBe(8);
-    await expect.element(list().getByText('No matching entries')).not.toBeInTheDocument();
-    await list().getByRole('button', { name: 'Continue search' }).click();
-    await expect.element(list().getByText('No matching entries')).toBeVisible();
+    try {
+      await expect.poll(() => pages).toBe(9);
+      await expect.element(list()).toHaveAttribute('aria-busy', 'true');
+      await expect.element(list().element().querySelector('.animate-pulse')).toBeVisible();
+      await expect.element(list().getByText('No members match')).not.toBeInTheDocument();
+      await expect
+        .element(list().getByRole('button', { name: 'Continue search' }))
+        .not.toBeInTheDocument();
+    } finally {
+      finish();
+    }
+    await expect.element(list().getByText('No members match')).toBeVisible();
     expect(pages).toBe(9);
     await input().fill('pending');
     await page.getByRole('button', { name: 'Close member search' }).click();

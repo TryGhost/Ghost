@@ -89,7 +89,7 @@ describe('Automation run list', () => {
       await expect
         .element(runsRegion().getByRole('status'))
         .toHaveTextContent('Loading automation runs');
-      await expect.element(runsRegion()).not.toHaveTextContent('No entries yet');
+      await expect.element(runsRegion()).not.toHaveTextContent('No members match');
       await expect.element(runsRegion().getByRole('status')).toHaveClass('sr-only');
       expect(
         runsRegion().element().querySelectorAll('tbody tr[aria-hidden="true"][data-index]'),
@@ -101,7 +101,7 @@ describe('Automation run list', () => {
       finish();
     }
     await open();
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
     expect(
       runsRegion().element().querySelectorAll('tbody tr[aria-hidden="true"][data-index]'),
     ).toHaveLength(0);
@@ -148,7 +148,7 @@ describe('Automation run list', () => {
       await open();
       await expect
         .element(runsRegion().getByRole('alert'))
-        .toHaveTextContent('Could not load automation runs');
+        .toHaveTextContent('Could not load entries');
       await expect.element(entries()).toHaveTextContent('1,432');
       await expect.element(statusCard('Completed')).toHaveTextContent('1,260');
       await close();
@@ -171,23 +171,23 @@ describe('Automation run list', () => {
     });
     const { queryClient } = await renderAdminApp('/automations/first', flags);
     await open();
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
 
     const refresh = fakeAdminEndpoint('GET', endpoint, {}, { status: 500 });
     // The app's authentication bridge can invalidate a previously successful query.
     await queryClient.invalidateQueries();
     await expect
       .element(runsRegion().getByRole('alert'))
-      .toHaveTextContent('Could not load automation runs');
+      .toHaveTextContent('Could not load entries');
     expect(refresh.requests).toHaveLength(1);
-    await expect.element(runsRegion()).not.toHaveTextContent('No entries yet');
+    await expect.element(runsRegion()).not.toHaveTextContent('No members match');
 
     fakeAdminEndpoint('GET', endpoint, {
       meta: { pagination: { limit: 50, next_cursor: null } },
       automation_runs: [],
     });
     await runsRegion().getByRole('button', { name: 'Retry' }).click();
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
     await expect.element(runsRegion().getByRole('alert')).not.toBeInTheDocument();
   });
 
@@ -198,8 +198,8 @@ describe('Automation run list', () => {
     await open();
     await expect
       .element(runsRegion().getByRole('alert'))
-      .toHaveTextContent('Could not load automation runs');
-    await expect.element(runsRegion()).not.toHaveTextContent('No entries yet');
+      .toHaveTextContent('Could not load entries');
+    await expect.element(runsRegion()).not.toHaveTextContent('No members match');
   });
 
   it('fits long member names and emails inside a narrow sidebar', async () => {

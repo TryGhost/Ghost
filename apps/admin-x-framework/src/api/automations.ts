@@ -218,7 +218,7 @@ export type AutomationRun = z.infer<typeof AutomationRunSchema>;
 export type AutomationRunStatusFilter = AutomationRun['status'];
 export type AutomationRunsResponseType = z.infer<typeof AutomationRunsResponseSchema>;
 
-type AutomationRunsResult = { runs: AutomationRun[]; scanning: boolean; pages: number };
+type AutomationRunsResult = { runs: AutomationRun[]; scanning: boolean };
 
 export const useBrowseAutomationRuns = (
   id: string,
@@ -248,7 +248,6 @@ export const useBrowseAutomationRuns = (
       return {
         runs,
         scanning: pages.at(-1)?.meta.pagination.state === 'scanning',
-        pages: pages.length,
       };
     },
     defaultNextPageParams: (page, params) => {

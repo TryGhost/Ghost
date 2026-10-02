@@ -48,7 +48,7 @@ describe('Automation run pagination', () => {
       Math.ceil(51 * rowHeight + headerHeight + 2),
     );
     scrollRunsToEnd();
-    await expect.element(region().getByRole('alert')).toHaveTextContent('Could not load more runs');
+    await expect.element(region().getByRole('alert')).toHaveTextContent('Could not load entries');
     expect(requests.requests).toHaveLength(2);
     expect(new URL(requests.requests[1].url).searchParams.get('cursor')).toBe('next');
     const retry = fakeAdminEndpoint('GET', endpoint, pageOfRuns(50, 3));
