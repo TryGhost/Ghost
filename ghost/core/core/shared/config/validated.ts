@@ -1,13 +1,8 @@
 import type { ReadonlyDeep } from 'type-fest';
 import { z } from 'zod';
-import type Nconf from 'nconf';
-import {
-  configSchema,
-  schemafiedPaths,
-  type ConfigAt,
-  type ConfigPath,
-  type ValidatedConfig,
-} from './schema';
+import { bindAll as bindUrlHelpers, type BoundHelpers } from '@tryghost/config-url-helpers';
+import { bindAll as bindHelpers, type ConfigHelpers } from './helpers';
+import { configSchema, type ConfigAt, type ConfigPath, type ValidatedConfig } from './schema';
 
 /**
  * Recursively freeze a plain-data tree in place. Only safe on a structure
@@ -54,15 +49,14 @@ function isStrict(env: string): boolean {
 }
 
 /**
- * Validate the loaded config and return a deep-frozen, typed view of it.
+ * Validate a config tree and deep-freeze it.
  *
- * The clone matters: zod hands unvalidated subtrees straight through by
- * reference, so freezing the parse output without cloning first would freeze
- * nconf's own stores and break every test that writes config.
+ * Freezes in place, so the caller must hand over a tree nothing else holds -
+ * zod passes keys the schema does not name straight through by reference, so a
+ * shared tree would be frozen out from under its other owner.
  */
-export function validateConfig(nconf: Nconf.Provider): ValidatedConfig {
-  const raw = structuredClone(nconf.get()) as Record<string, unknown>;
-  const result = configSchema.safeParse(raw);
+export function validateConfig(tree: Record<string, unknown>): ValidatedConfig {
+  const result = configSchema.safeParse(tree);
 
   if (result.success) {
     return deepFreeze(result.data);
@@ -70,7 +64,7 @@ export function validateConfig(nconf: Nconf.Provider): ValidatedConfig {
 
   const report = z.prettifyError(result.error);
 
-  if (isStrict(String(raw.env))) {
+  if (isStrict(String(tree.env))) {
     // new Error is allowed here, as we do not want config to depend on @tryghost/error
     // eslint-disable-next-line ghost/ghost-custom/no-native-error
     throw new Error(`Ghost config failed validation:\n${report}`);
@@ -78,30 +72,40 @@ export function validateConfig(nconf: Nconf.Provider): ValidatedConfig {
 
   // eslint-disable-next-line no-console
   console.error(
-    `Ghost config failed validation (not enforced in the ${raw.env} environment):\n${report}`,
+    `Ghost config failed validation (not enforced in the ${tree.env} environment):\n${report}`,
   );
 
-  return deepFreeze(raw) as ValidatedConfig;
+  return deepFreeze(tree) as ValidatedConfig;
 }
 
 /**
  * `config.get()`, typed by the schema.
  *
  * A key path the schema covers resolves to that key's validated type, deeply
- * readonly to match the runtime freeze. Everything else keeps nconf's `any`, so
- * no existing call site changes. A typo in an otherwise-known path misses the
- * first overload and lands on `any` rather than being silently mistyped, which
- * is the same outcome as today.
+ * readonly to match the runtime freeze. Everything else keeps the `any` it has
+ * always had, so no existing call site changes. A typo in an otherwise-known
+ * path misses the first overload and lands on `any` rather than being silently
+ * mistyped, which is the same outcome as today.
  */
-export interface TypedGet {
+interface TypedGet {
   <P extends ConfigPath>(key: P): ReadonlyDeep<ConfigAt<P>>;
   (key?: string): any;
 }
 
-export interface WithValidatedConfig {
-  /** Validated, deep-frozen config. Prefer `get()`; this is for whole-tree reads. */
-  readonly validated: ReadonlyDeep<ValidatedConfig>;
+export interface GhostConfig extends BoundHelpers, ConfigHelpers {
   get: TypedGet;
+  /** The whole validated tree. `get()` is the usual way in. */
+  readonly validated: ReadonlyDeep<ValidatedConfig>;
+  /**
+   * Override a key path and rebuild.
+   *
+   * For tests only - nothing in `core/` writes config, and boot does not either.
+   * Each call rebuilds the whole tree from the loaded sources plus every
+   * override recorded so far, so config is never briefly half-written.
+   */
+  set(key: string, value: unknown): void;
+  /** Drop every override and rebuild. For tests only. */
+  reset(): void;
 }
 
 const MISS = Symbol('config.miss');
@@ -122,58 +126,120 @@ function lookup(root: unknown, key: string): unknown {
 }
 
 /**
- * Validate the config and route the schema's own key paths through the frozen
- * result.
+ * Write a key path into a tree, copying each level on the way down if it is
+ * frozen.
  *
- * Only paths the schema covers are rerouted. Everything else goes to nconf
- * untouched, so each key that gains a schema also gains - deliberately, in that
- * same change - a frozen value and a real type at every call site reading it.
- *
- * The frozen view is swappable so tests can keep writing config through nconf.
+ * An override's value is often something a test read back out of config, which
+ * is frozen, so a later override targeting a path inside it would otherwise be
+ * writing into a frozen object.
  */
-export function attachValidatedConfig<T extends Nconf.Provider>(
-  nconf: T,
-): asserts nconf is T & WithValidatedConfig {
-  const paths = schemafiedPaths();
-  const nconfGet = nconf.get.bind(nconf);
-  const nconfSet = nconf.set.bind(nconf);
-  const nconfReset = nconf.reset.bind(nconf);
+function writePath(tree: Record<string, unknown>, key: string, value: unknown): void {
+  const segments = key.split(':');
+  const leaf = segments.pop() as string;
+  let node = tree;
 
-  let current: ValidatedConfig | undefined = validateConfig(nconf);
+  for (const segment of segments) {
+    const child = node[segment];
 
-  // Writing through nconf drops the validated view instead of rebuilding it:
-  // a test restoring config writes one key at a time, and re-validating
-  // part-way through that would reject a config that is only briefly incomplete.
-  const invalidate = <Fn extends (...args: never[]) => unknown>(fn: Fn): Fn =>
-    function invalidating(this: unknown, ...args: Parameters<Fn>) {
-      current = undefined;
-      return fn(...args);
-    } as Fn;
+    if (child === null || typeof child !== 'object') {
+      node[segment] = {};
+    } else if (Object.isFrozen(child)) {
+      node[segment] = Array.isArray(child) ? [...child] : { ...child };
+    }
 
-  const validated = (): ValidatedConfig => {
-    current ??= validateConfig(nconf);
-    return current;
-  };
+    node = node[segment] as Record<string, unknown>;
+  }
 
-  Object.defineProperties(nconf, {
-    validated: { get: validated, enumerable: true, configurable: true },
-    get: {
-      value: function get(key?: string) {
-        if (key !== undefined && paths.has(key)) {
-          const found = lookup(validated(), key);
+  node[leaf] = value;
+}
 
-          if (found !== MISS) {
-            return found;
-          }
+/**
+ * Build Ghost's config from a merged source tree.
+ *
+ * nconf layers the sources (see ./loader.ts) and is then done with: the frozen,
+ * validated tree this returns is the only representation anything reads. One
+ * representation is what makes the whole config immutable rather than only the
+ * part a schema names, and what will let the schema transform values later
+ * without a raw read disagreeing with a transformed one.
+ */
+export function createConfig(sources: Record<string, unknown>): GhostConfig {
+  const base = structuredClone(sources);
+  const overrides = new Map<string, unknown>();
+
+  function build(): ValidatedConfig {
+    const tree = structuredClone(base);
+
+    for (const [key, value] of overrides) {
+      writePath(tree, key, value);
+    }
+
+    return validateConfig(tree);
+  }
+
+  let current = build();
+
+  function rebuild(): void {
+    current = build();
+  }
+
+  const config = {
+    get(key?: string): unknown {
+      if (key === undefined) {
+        return current;
+      }
+
+      const found = lookup(current, key);
+
+      return found === MISS ? undefined : found;
+    },
+
+    set(key: string, value: unknown): void {
+      // Cloned first, before anything is recorded: cloning can throw - on a
+      // value it cannot handle - and doing it here means that throw cannot
+      // leave `overrides` half-updated.
+      //
+      // The clone itself is needed because rebuild() makes whatever ends up in
+      // the tree read-only, and this value is the caller's own object.
+      const cloned = structuredClone(value);
+      const previous = new Map(overrides);
+
+      // deleted first so the key moves to the end: overrides replay in
+      // insertion order, and Map.set on an existing key keeps its old position,
+      // which would let an earlier write beat this one. Setting `paths` after
+      // `paths:contentPath` has to win, as it does in nconf.
+      overrides.delete(key);
+      overrides.set(key, cloned);
+
+      try {
+        rebuild();
+      } catch (err) {
+        // a rejected override must not stay recorded, or every later set()
+        // reapplies it and throws again
+        overrides.clear();
+
+        for (const [existingKey, existingValue] of previous) {
+          overrides.set(existingKey, existingValue);
         }
 
-        return nconfGet(key as string);
-      },
-      enumerable: false,
-      configurable: true,
-      writable: true,
+        rebuild();
+        throw err;
+      }
     },
-    set: { value: invalidate(nconfSet), enumerable: false, configurable: true, writable: true },
-    reset: { value: invalidate(nconfReset), enumerable: false, configurable: true, writable: true },
+
+    reset(): void {
+      overrides.clear();
+      rebuild();
+    },
+  };
+
+  Object.defineProperty(config, 'validated', {
+    get: () => current,
+    enumerable: true,
+    configurable: true,
   });
+
+  bindUrlHelpers(config);
+  bindHelpers(config as typeof config & BoundHelpers);
+
+  return config as unknown as GhostConfig;
 }

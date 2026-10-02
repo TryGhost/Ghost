@@ -74,39 +74,3 @@ export type ConfigAt<
   : P extends keyof Known<T>
     ? Known<T>[P]
     : unknown;
-
-type ZodLike = z.ZodType & { def: Record<string, unknown> };
-
-/**
- * The key paths `configSchema` covers, as strings.
- *
- * Derived from the same shape as `ConfigPath`, so the set `config.get()` serves
- * from the frozen object and the set it types can't drift apart.
- */
-export function schemafiedPaths(schema: z.ZodType = configSchema): Set<string> {
-  const paths = new Set<string>();
-
-  const walk = (node: z.ZodType, prefix: string[]): void => {
-    const def = (node as ZodLike).def;
-
-    if (def.type === 'optional' || def.type === 'nullable' || def.type === 'default') {
-      walk(def.innerType as z.ZodType, prefix);
-      return;
-    }
-
-    if (prefix.length) {
-      paths.add(prefix.join(':'));
-    }
-
-    if (def.type === 'object') {
-      const shape = def.shape as z.ZodRawShape;
-      for (const key of Object.keys(shape)) {
-        walk(shape[key] as z.ZodType, [...prefix, key]);
-      }
-    }
-  };
-
-  walk(schema, []);
-
-  return paths;
-}

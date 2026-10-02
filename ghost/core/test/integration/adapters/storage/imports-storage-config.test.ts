@@ -1,15 +1,13 @@
 import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
-import { Provider } from 'nconf';
-import { bindAll as bindUrlHelpers } from '@tryghost/config-url-helpers';
+import _ from 'lodash';
 
 import defaults from '../../../../core/shared/config/defaults.json';
 import {
   normalizeAdapterConfig,
   resolveAdapterOptions,
 } from '../../../../core/server/services/adapter-manager/utils';
-import { bindAll as bindHelpers } from '../../../../core/shared/config/helpers';
-import { attachValidatedConfig } from '../../../../core/shared/config/validated';
+import { createConfig } from '../../../../core/shared/config/validated';
 
 // The shape Ghost(Pro) configures: image, media and file features on a shared
 // S3Storage block, and nothing for imports.
@@ -27,17 +25,11 @@ const LOCAL_IMPORTS = {
 
 // Site config layered over the shipped defaults, as the config loader layers its files.
 function resolveFor(feature: string, siteConfig: object) {
-  const nconf = new Provider();
-  nconf.add('site', { type: 'literal', store: siteConfig });
-  // A copy, because nconf's merge writes into the lower store's objects.
-  nconf.add('defaults', { type: 'literal', store: structuredClone(defaults) });
-  // the loader sets this after its files are layered on
-  nconf.add('env', { type: 'literal', store: { env: 'testing' } });
-  bindUrlHelpers(nconf);
-  bindHelpers(nconf);
-  attachValidatedConfig(nconf);
+  const config = createConfig(
+    _.merge({}, structuredClone(defaults), { env: 'testing' }, siteConfig),
+  );
 
-  return resolveAdapterOptions(feature, normalizeAdapterConfig(nconf));
+  return resolveAdapterOptions(feature, normalizeAdapterConfig(config));
 }
 
 // End-to-end suites boot with the shipped storage config only, so the site configs
