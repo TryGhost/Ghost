@@ -815,7 +815,7 @@ jobs:
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     services:
       mysql:
-        image: mysql:8.0
+        image: mysql:8.0@sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b
         env:
           MYSQL_DATABASE: ghost_testing
           MYSQL_ROOT_PASSWORD: root
@@ -831,7 +831,7 @@ jobs:
           --health-timeout=5s
           --health-retries=60
       redis:
-        image: redis:7.4@sha256:71da9275c5f3fcb97d0fa0c8c5b36cc995327265420f17a04bfd544f458059f7
+        image: redis:7.4@sha256:c6eabf748fc7a61dbb5a705c78bcf3d6377b1127a97d0ce965c11c44ba46896f
         ports:
           - 6379:6379
         options: >-
@@ -942,7 +942,7 @@ jobs:
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     services:
       mysql:
-        image: mysql:8.0
+        image: mysql:8.0@sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b
         env:
           MYSQL_DATABASE: ghost_testing
           MYSQL_ROOT_PASSWORD: root
