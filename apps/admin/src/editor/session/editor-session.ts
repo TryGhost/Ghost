@@ -149,6 +149,9 @@ export interface EditorSessionView {
   readonly slug: string;
   readonly settings: EditorSettingsFields;
   readonly publishTime: { status: PostStatus; publishedAt: string | null };
+  /** The feature image's alt text and caption, another writer's once adopted. */
+  readonly featureImageAlt: string | null;
+  readonly featureImageCaption: string | null;
 }
 
 export interface EditorSession {
@@ -401,7 +404,9 @@ export function createEditorSession({
       view.title === live.title &&
       view.slug === currentSlug &&
       view.settings === settings &&
-      view.publishTime === publishTime
+      view.publishTime === publishTime &&
+      view.featureImageAlt === live.feature_image_alt &&
+      view.featureImageCaption === live.feature_image_caption
     ) {
       return;
     }
@@ -413,6 +418,8 @@ export function createEditorSession({
       slug: currentSlug,
       settings,
       publishTime,
+      featureImageAlt: live.feature_image_alt,
+      featureImageCaption: live.feature_image_caption,
     };
     for (const listener of changeListeners) {
       try {

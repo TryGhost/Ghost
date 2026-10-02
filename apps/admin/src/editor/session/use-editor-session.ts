@@ -110,6 +110,9 @@ export interface EditorSessionHandle {
   /** Puts a revision's content back into the editor and saves it; true once persisted. */
   restoreRevision: (restored: RestoredRevision) => Promise<boolean>;
   patchFeatureImage: EditorSession['patchFeatureImage'];
+  /** The feature image's alt text and caption the session holds, another writer's once adopted. */
+  featureImageAlt: string | null;
+  featureImageCaption: string | null;
   /** The live settings fields, re-read on every sidebar edit. */
   settings: EditorSettingsFields;
   /** Stages a settings field, then asks the engine to save it. */
@@ -332,7 +335,16 @@ export function useEditorSession({
   }, [session]);
 
   const view = useSyncExternalStore(session.subscribe, session.getView);
-  const { state, pendingSave, title: engineTitle, slug, settings, publishTime } = view;
+  const {
+    state,
+    pendingSave,
+    title: engineTitle,
+    slug,
+    settings,
+    publishTime,
+    featureImageAlt,
+    featureImageCaption,
+  } = view;
 
   // The view keeps its identity until one of the values it publishes
   // changes, so it stands in for all of them as a dependency.
@@ -548,6 +560,8 @@ export function useEditorSession({
       reload,
       restoreRevision,
       patchFeatureImage: session.patchFeatureImage,
+      featureImageAlt,
+      featureImageCaption,
       settings,
       editSettings,
       stageSettings,
@@ -578,6 +592,8 @@ export function useEditorSession({
       editPublishedAt,
       editSettings,
       engineTitle,
+      featureImageAlt,
+      featureImageCaption,
       isDirtyNow,
       isNew,
       loadedRecord,

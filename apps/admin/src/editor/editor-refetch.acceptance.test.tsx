@@ -243,29 +243,49 @@ describe('Post editor refetch', () => {
     await expect(editorScreen.conflictBanner()).toHaveCount(0);
     expect(shared.stored().lexical).toContain('Hello from React and more');
   });
+});
 
-  it('keeps the alt text and caption another writer gave the image when a read at its version brings them', async () => {
-    const shared = fakeSharedPost({
-      feature_image: 'https://example.com/content/images/hills.png',
-      feature_image_alt: 'My alt',
-      feature_image_caption: 'My caption',
-    });
-    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
-    const releaseReads = shared.holdReads();
+/** A read at the version this tab holds brings another writer's alt text and caption. */
+async function theirAltAndCaptionLanded(
+  overrides: Partial<Post> = {},
+  whileReadIsHeld: () => Promise<void> = async () => {},
+) {
+  const shared = fakeSharedPost({
+    feature_image: 'https://example.com/content/images/hills.png',
+    feature_image_alt: 'My alt',
+    feature_image_caption: 'My caption',
+    ...overrides,
+  });
+  const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+  await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
+  const releaseReads = shared.holdReads();
 
-    await editorScreen.titleInput().fill('My title');
-    await saveShortcut();
-    await expect.poll(() => shared.saveApi.requests.length).toBe(1);
-    await expect.poll(() => shared.readApi.requests.length).toBe(2);
-    shared.theySaveBeside({
-      feature_image_alt: 'Their alt',
-      feature_image_caption: 'Their caption',
-    });
-    releaseReads();
-    await editorReadLanded(queryClient, shared.stored());
+  await editorScreen.titleInput().fill('My title');
+  await (shared.stored().status === 'draft' ? saveShortcut() : editorScreen.updateButton().click());
+  await expect.poll(() => shared.saveApi.requests.length).toBe(1);
+  await expect.poll(() => shared.readApi.requests.length).toBe(2);
+  shared.theySaveBeside({
+    feature_image_alt: 'Their alt',
+    feature_image_caption: 'Their caption',
+  });
+  await whileReadIsHeld();
+  releaseReads();
+  await editorReadLanded(queryClient, shared.stored());
+  return shared;
+}
 
+/**
+ * Core stores the feature image's alt text and caption beside the post, so another
+ * writer's edit to them reaches this tab in a read at its own version.
+ */
+describe('Post editor refetch of another writer’s alt text and caption', () => {
+  it('shows them, stays saved and sends them on with the next save', async () => {
+    const shared = await theirAltAndCaptionLanded();
+
+    await expect.element(editorScreen.featureImageCaption()).toHaveTextContent('Their caption');
     await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+    await editorScreen.featureImageAltToggle().click();
+    await expect.element(editorScreen.featureImageAltInput()).toHaveValue('Their alt');
     await appendToBody(' and mine');
     await saveShortcut();
 
@@ -278,5 +298,60 @@ describe('Post editor refetch', () => {
       feature_image_alt: 'Their alt',
       feature_image_caption: 'Their caption',
     });
+  });
+
+  it.each([
+    { typed: '{End} more', caption: 'Their caption more' },
+    { typed: '{End}x{Backspace}', caption: 'Their caption' },
+  ])('builds the caption typed as $typed on theirs', async ({ typed, caption }) => {
+    const shared = await theirAltAndCaptionLanded();
+    await expect.element(editorScreen.featureImageCaption()).toHaveTextContent('Their caption');
+
+    await editorScreen.featureImageCaption().click();
+    await userEvent.keyboard(typed);
+    await editorScreen.titleInput().click();
+    await appendToBody(' and mine');
+    await saveShortcut();
+
+    await expect.poll(() => String(submittedPost(shared.saveApi).lexical)).toContain('and mine');
+    const sent = submittedPost(shared.saveApi);
+    expect(String(sent.feature_image_caption)).toContain(caption);
+    expect(String(sent.feature_image_caption)).not.toContain('My caption');
+    expect(sent.feature_image_alt).toBe('Their alt');
+  });
+
+  it('shows their caption once the writer leaves the caption they were in', async () => {
+    const shared = await theirAltAndCaptionLanded({}, () =>
+      editorScreen.featureImageCaption().click(),
+    );
+
+    await expect.element(editorScreen.featureImageCaption()).toHaveTextContent('My caption');
+    await editorScreen.titleInput().click();
+
+    await expect.element(editorScreen.featureImageCaption()).toHaveTextContent('Their caption');
+    await appendToBody(' and mine');
+    await saveShortcut();
+
+    await expect.poll(() => String(submittedPost(shared.saveApi).lexical)).toContain('and mine');
+    expect(submittedPost(shared.saveApi)).toMatchObject({
+      feature_image_alt: 'Their alt',
+      feature_image_caption: 'Their caption',
+    });
+  });
+
+  it('stays saved on a published post when a keystroke in their alt text is undone', async () => {
+    const shared = await theirAltAndCaptionLanded({
+      status: 'published',
+      published_at: '2025-12-01T00:00:00.000Z',
+    });
+
+    await editorScreen.featureImageAltToggle().click();
+    await expect.element(editorScreen.featureImageAltInput()).toHaveValue('Their alt');
+    await userEvent.keyboard('{End}x{Backspace}');
+
+    await expect.element(editorScreen.featureImageAltInput()).toHaveValue('Their alt');
+    await expect.element(editorScreen.updateButton()).toBeDisabled();
+    expect(shared.saveApi.requests).toHaveLength(1);
+    expect(shared.stored()).toMatchObject({ feature_image_alt: 'Their alt' });
   });
 });
