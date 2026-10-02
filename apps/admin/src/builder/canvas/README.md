@@ -52,10 +52,27 @@ are still replaced, captures reconstruct layout in inert documents, and neither
 animations, sticky/fixed behavior, nor below-fold lazy loading are established
 by a successful capture. The harness reports warnings and elapsed capture time.
 
-This is one overview experiment. Expanded-height comparison, Source/adversarial
-fixture evidence, source selection and direct editing, full capture fidelity,
-native WebMCP, and performance measurements remain feasibility work. The harness
-is not a shipped theme editor or evidence that Stage A has passed.
+The expanded comparison uses four additional opaque-origin iframes, one per
+device. Switching among captured compositions, expanded compositions, and device
+viewports retains all eight documents; opening a frame always reveals its original
+fixed device. Expanded geometry is limited to eight observations, 1,500ms of
+measurement time, and a 16,000px viewport height. A failed measurement leaves the
+fixed device available; nonconverging and capped results report their observed
+extent and limits. The diagnostic rows and header tooltips distinguish the
+expanded surface's actual CSS viewport from its configured device dimensions.
+These are initial observations, not ongoing layout monitoring or proof that late
+imagery, fonts, animations, or lazy content have settled. Geometry convergence
+does not establish device fidelity. Actual browser cases demonstrate continuing
+`vh`/`svh`/`dvh` growth, a height-media-query visual difference despite convergence,
+and a 100,000px document truncated by the composition-height budget while its
+device remains unchanged.
+
+These are overview experiments. Source comparisons, sticky/fixed and lazy-content
+fidelity, source selection and direct editing, full capture fidelity, native
+WebMCP, controlled refresh, and performance measurements remain feasibility work.
+Measure all eight retained surfaces and capture work when profiling this
+comparison. The harness is not a shipped theme editor or evidence that Stage A
+has passed; no final overview technique has been chosen.
 
 ## Validation
 
@@ -63,13 +80,16 @@ From `apps/admin`:
 
 ```sh
 pnpm exec vitest run src/builder/canvas --maxWorkers=1
+pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/canvas/measure-expanded-composition.acceptance.test.tsx --maxWorkers=1
 pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/canvas/canvas-board.component.test.tsx src/builder/workspaces/theme/preview/preview-canvas-input.acceptance.test.tsx src/builder/workspaces/theme/preview/preview-layout.acceptance.test.tsx src/builder/workspaces/theme/preview/screenshot.acceptance.test.tsx --maxWorkers=1
 pnpm typecheck
 ```
 
 The unit cases cover camera bounds, pointer anchoring, selection/open/return,
 drag thresholds, document DOM preservation, contiguous capture coverage, budgets,
-and stale/cancelled capture rejection. Browser cases cover label collisions,
+and stale/cancelled capture rejection, expanded measurement bounds and stale/
+cancelled results, and a bridge that never answers. Browser cases cover independent
+composition/device layout and fidelity differences, label collisions,
 keyboard focus and native scrolling, the opt-in sandbox input boundary, and
 below-fold capture pixels with viewport-height media queries and unchanged device
 scroll. Full

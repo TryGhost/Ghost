@@ -5,17 +5,29 @@ import { formatNumber } from '@tryghost/shade/utils';
 
 import { CanvasBoard } from '@/builder/canvas/canvas-board';
 import { captureOverview } from '@/builder/canvas/capture-overview';
+import {
+  measureExpandedComposition,
+  waitForCompositionLayout,
+} from '@/builder/canvas/measure-expanded-composition';
 import { IframePreviewDocumentSurface } from '@/builder/workspaces/theme/preview/preview-document';
 import { instance, loadAssets } from './fixture';
 
 import type { CanvasFrame, CanvasFrameInput } from '@/builder/canvas/canvas-board';
 import type { PreviewDocument } from '@/builder/workspaces/theme/preview/preview-document';
 import type { CapturedOverview } from '@/builder/canvas/capture-overview';
+import type { ExpandedComposition } from '@/builder/canvas/measure-expanded-composition';
 
 type CaptureState =
   | { status: 'pending' }
   | { status: 'current'; capture: CapturedOverview; duration: number }
   | { status: 'failed'; message: string };
+
+type ExpandedState =
+  | { status: 'pending' }
+  | { status: 'current'; composition: ExpandedComposition; surfaceId: string; duration: number }
+  | { status: 'failed'; message: string };
+
+type OverviewMode = 'captured' | 'expanded' | 'device';
 
 const revision = 'casper-5.7.0-recorded-content';
 const frames: CanvasFrame[] = [
@@ -57,22 +69,113 @@ const frames: CanvasFrame[] = [
   },
 ];
 
+function ExpandedPreview({
+  frame,
+  document,
+  visible,
+  onInput,
+  onResult,
+}: {
+  frame: CanvasFrame;
+  document: PreviewDocument;
+  visible: boolean;
+  onInput: (input: CanvasFrameInput) => void;
+  onResult: (state: ExpandedState) => void;
+}) {
+  const iframe = useRef<HTMLIFrameElement>(null);
+  const [surfaceId] = useState(() => crypto.randomUUID());
+  const inputHandler = useRef(onInput);
+  inputHandler.current = onInput;
+  const resultHandler = useRef(onResult);
+  resultHandler.current = onResult;
+  const [result, setResult] = useState<ExpandedComposition | null>(null);
+  const [failed, setFailed] = useState(false);
+  const width = frame.viewport?.width ?? frame.width;
+  const height = frame.viewport?.height ?? frame.height;
+  useEffect(() => {
+    const controller = new AbortController();
+    const element = iframe.current!;
+    element.style.height = `${height}px`;
+    setResult(null);
+    setFailed(false);
+    resultHandler.current({ status: 'pending' });
+    const surface = new IframePreviewDocumentSurface(element, { canvasNavigation: true });
+    surface.onCanvasInput((input) => inputHandler.current(input));
+    const started = performance.now();
+    void surface
+      .setInteractionMode('select', controller.signal)
+      .then(() => surface.replaceDocument(document, null, controller.signal))
+      .then(() =>
+        measureExpandedComposition(
+          surface,
+          (next, signal) => {
+            element.style.height = `${next}px`;
+            return waitForCompositionLayout(signal);
+          },
+          frame.id,
+          document.revision,
+          controller.signal,
+        ),
+      )
+      .then((composition) => {
+        if (!controller.signal.aborted) {
+          setResult(composition);
+          resultHandler.current({
+            status: 'current',
+            composition,
+            surfaceId,
+            duration: performance.now() - started,
+          });
+        }
+      })
+      .catch((error: unknown) => {
+        if (!controller.signal.aborted) {
+          setFailed(true);
+          resultHandler.current({
+            status: 'failed',
+            message: error instanceof Error ? error.message : String(error),
+          });
+        }
+      });
+    return () => {
+      controller.abort();
+      surface.destroy();
+    };
+  }, [document, frame.id, width, height, surfaceId]);
+  return (
+    <iframe
+      ref={iframe}
+      className={`absolute top-0 left-0 border-0 ${visible && result ? '' : 'invisible'}`}
+      data-expanded-document={result?.documentId}
+      data-expanded-revision={result?.revision}
+      data-expanded-status={result?.status ?? (failed ? 'failed' : 'pending')}
+      data-expanded-surface={surfaceId}
+      style={{ width, height }}
+      title={`${frame.label} expanded comparison`}
+    />
+  );
+}
+
 function Preview({
   frame,
   document,
   onInput,
   opened,
-  captured,
+  mode,
+  expanded,
   captureTick,
   onCapture,
+  onExpanded,
 }: {
   frame: CanvasFrame;
   document: PreviewDocument;
   onInput: (input: CanvasFrameInput) => void;
   opened: boolean;
-  captured: boolean;
+  mode: OverviewMode;
+  expanded: ExpandedState | undefined;
   captureTick: number;
   onCapture: (state: CaptureState) => void;
+  onExpanded: (state: ExpandedState) => void;
 }) {
   const iframe = useRef<HTMLIFrameElement>(null);
   const inputHandler = useRef(onInput);
@@ -145,17 +248,29 @@ function Preview({
       });
     return () => controller.abort();
   }, [ready, document, frame.id, captureTick]);
-  const showCapture = captured && !opened && overview !== null;
+  const showCapture = mode === 'captured' && !opened && overview !== null;
+  const showExpanded =
+    mode === 'expanded' &&
+    !opened &&
+    expanded?.status === 'current' &&
+    expanded.composition.revision === document.revision;
   return (
     <>
       <iframe
         ref={iframe}
-        className={`absolute top-0 left-0 border-0 ${showCapture ? 'invisible' : ''}`}
+        className={`absolute top-0 left-0 border-0 ${showCapture || showExpanded ? 'invisible' : ''}`}
         style={{
           width: frame.viewport?.width ?? frame.width,
           height: frame.viewport?.height ?? frame.height,
         }}
         title={`${frame.label} preview`}
+      />
+      <ExpandedPreview
+        document={document}
+        frame={frame}
+        visible={showExpanded}
+        onInput={onInput}
+        onResult={onExpanded}
       />
       {showCapture && (
         <Box
@@ -202,7 +317,8 @@ export function CanvasHarness() {
   const [documents, setDocuments] = useState<Record<string, PreviewDocument>>({});
   const [error, setError] = useState<string | null>(null);
   const [captures, setCaptures] = useState<Record<string, CaptureState>>({});
-  const [captured, setCaptured] = useState(true);
+  const [expanded, setExpanded] = useState<Record<string, ExpandedState>>({});
+  const [mode, setMode] = useState<OverviewMode>('captured');
   const [captureTick, setCaptureTick] = useState(0);
   const initialFitReady = frames.every(
     (frame) => captures[frame.id]?.status === 'current' || captures[frame.id]?.status === 'failed',
@@ -213,11 +329,27 @@ export function CanvasHarness() {
       state?.status === 'current' && state.capture.revision === documents[frame.id]?.revision
         ? state.capture
         : null;
+    const expandedState = expanded[frame.id];
+    const composition =
+      expandedState?.status === 'current' &&
+      expandedState.composition.revision === documents[frame.id]?.revision
+        ? expandedState.composition
+        : null;
+    const showCapture = mode === 'captured' && capture;
+    const showExpanded = mode === 'expanded' && composition;
     return {
       ...frame,
       viewport: { width: frame.width, height: frame.height },
-      height: captured && capture ? capture.documentHeight : frame.height,
-      overviewLabel: captured && capture ? 'Captured composition' : 'Live device',
+      height: showCapture
+        ? capture.documentHeight
+        : showExpanded
+          ? composition.viewport.height
+          : frame.height,
+      overviewLabel: showCapture
+        ? 'Captured composition'
+        : showExpanded
+          ? `Expanded composition · actual CSS ${formatNumber(composition.viewport.width)} × ${formatNumber(composition.viewport.height)} · ${composition.status}`
+          : 'Live device',
     };
   });
   useEffect(() => {
@@ -271,12 +403,34 @@ export function CanvasHarness() {
           Fixed device previews · Recorded Home/Post content · {revision}
         </Text>
         <Text size="sm" tone="secondary">
-          Snapshot experiment · Open a frame for its live device · Captures omit external imagery
-          and do not prove animation, sticky behavior, or loaded lazy content. Expanded-height
-          comparison, inline editing, and native site tools remain pending.
+          Compare captures and separate expanded compositions · Open a frame for its retained fixed
+          device · Expanded height changes viewport-dependent layout. Captures omit external
+          imagery. Neither experiment establishes animation, sticky behavior, or loaded lazy
+          content. Source comparisons, inline editing, and native site tools remain pending.
         </Text>
-        <Button size="sm" variant="outline" onClick={() => setCaptured((value) => !value)}>
-          {captured ? 'Show device viewports' : 'Show captured compositions'}
+        <Button
+          aria-pressed={mode === 'captured'}
+          size="sm"
+          variant="outline"
+          onClick={() => setMode('captured')}
+        >
+          Captured compositions
+        </Button>
+        <Button
+          aria-pressed={mode === 'expanded'}
+          size="sm"
+          variant="outline"
+          onClick={() => setMode('expanded')}
+        >
+          Expanded compositions
+        </Button>
+        <Button
+          aria-pressed={mode === 'device'}
+          size="sm"
+          variant="outline"
+          onClick={() => setMode('device')}
+        >
+          Device viewports
         </Button>
         <Button
           disabled={!initialFitReady}
@@ -288,15 +442,26 @@ export function CanvasHarness() {
         </Button>
         {frames.map((frame) => {
           const state = captures[frame.id];
+          const expandedState = expanded[frame.id];
           return (
-            <Text key={frame.id} size="xs" tone="secondary">
-              {frame.label}:{' '}
-              {state?.status === 'current'
-                ? `${formatNumber(state.capture.coveredHeight)} / ${formatNumber(state.capture.documentHeight)}px captured in ${formatNumber(Math.round(state.duration))}ms${state.capture.warnings.length ? ` · ${state.capture.warnings.join(' ')}` : ''}`
-                : state?.status === 'failed'
-                  ? state.message
-                  : 'Capture pending'}
-            </Text>
+            <Stack key={frame.id} gap="none">
+              <Text size="xs" tone="secondary">
+                {frame.label}:{' '}
+                {state?.status === 'current'
+                  ? `${formatNumber(state.capture.coveredHeight)} / ${formatNumber(state.capture.documentHeight)}px captured in ${formatNumber(Math.round(state.duration))}ms${state.capture.warnings.length ? ` · ${state.capture.warnings.join(' ')}` : ''}`
+                  : state?.status === 'failed'
+                    ? state.message
+                    : 'Capture pending'}
+              </Text>
+              <Text size="xs" tone="secondary">
+                {frame.label} expanded:{' '}
+                {expandedState?.status === 'current'
+                  ? `CSS ${formatNumber(expandedState.composition.viewport.width)} × ${formatNumber(expandedState.composition.viewport.height)} · observed document ${formatNumber(expandedState.composition.document.height)}px · ${expandedState.composition.status} · ${formatNumber(expandedState.composition.measurements.length)} observations · measurement ${formatNumber(Math.round(expandedState.composition.duration))}ms · load + measurement ${formatNumber(Math.round(expandedState.duration))}ms · ${expandedState.composition.warnings.join(' ')}`
+                  : expandedState?.status === 'failed'
+                    ? `${expandedState.message} Fixed device fallback remains available.`
+                    : 'Measurement pending; fixed device fallback remains available.'}
+              </Text>
+            </Stack>
           );
         })}
         {error && (
@@ -312,12 +477,16 @@ export function CanvasHarness() {
           renderFrame={(frame, onInput, { opened }) =>
             documents[frame.id] ? (
               <Preview
-                captured={captured}
                 captureTick={captureTick}
                 document={documents[frame.id]}
+                expanded={expanded[frame.id]}
                 frame={frame}
+                mode={mode}
                 opened={opened}
                 onCapture={(state) => setCaptures((current) => ({ ...current, [frame.id]: state }))}
+                onExpanded={(state) =>
+                  setExpanded((current) => ({ ...current, [frame.id]: state }))
+                }
                 onInput={onInput}
               />
             ) : (
