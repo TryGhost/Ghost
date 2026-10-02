@@ -13,7 +13,12 @@ const messages = {
   newsletterNotFound: 'Newsletter not found.',
   senderEmailNotAllowed: 'You cannot set the sender email address to {email}',
   replyToNotAllowed: 'You cannot set the reply-to email address to {email}',
+  invalidVerificationToken: 'This verification link is not valid for a newsletter.',
 };
+
+// Properties a verification token is allowed to update, in case the token was
+// issued for a different flow (e.g. the support address) or by an older version
+const VERIFIABLE_PROPERTIES = ['sender_email', 'sender_reply_to'];
 
 class NewslettersService {
   /**
@@ -269,6 +274,12 @@ class NewslettersService {
   async verifyPropertyUpdate(token) {
     const data = await this.magicLinkService.getDataFromToken(token);
     const { id, property, value } = data;
+
+    if (!id || !VERIFIABLE_PROPERTIES.includes(property)) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.invalidVerificationToken),
+      });
+    }
 
     const attrs = {};
     attrs[property] = value;

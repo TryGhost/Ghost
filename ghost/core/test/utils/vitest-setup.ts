@@ -22,6 +22,9 @@ process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_
 // snapshots — no per-worker session overrides needed.
 require('../../core/server/overrides');
 
+// Tests swap url config at runtime, so url-utils must read it live.
+require('../../core/shared/url-utils').default.unfreeze();
+
 // @tryghost/express-test's snapshot bridge is pulled in lazily — requiring it
 // is ~170ms per worker and only the hooks below ever read it. The mock-manager
 // just below uses the same shape.
