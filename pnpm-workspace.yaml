@@ -203,7 +203,7 @@ catalog:
   vite-plugin-svgr: 4.5.0
   vitest: 4.1.11
   vitest-browser-react: 2.2.0
-  zod: 4.4.3
+  zod: 4.6.5
   form-data: 4.0.6
   '@dnd-kit/core': 6.3.1
   '@dnd-kit/sortable': 7.0.2

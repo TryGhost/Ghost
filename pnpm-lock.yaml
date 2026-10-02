@@ -699,8 +699,8 @@ catalogs:
       specifier: 2.2.0
       version: 2.2.0
     zod:
-      specifier: 4.4.3
-      version: 4.4.3
+      specifier: 4.6.5
+      version: 4.6.5
   react17:
     '@testing-library/react':
       specifier: 12.1.5
@@ -887,7 +887,7 @@ importers:
         version: 10.1.1(react@18.3.1)
       zod:
         specifier: 'catalog:'
-        version: 4.4.3
+        version: 4.6.5
     devDependencies:
       '@internal/cfg-eslint-react':
         specifier: workspace:*
@@ -1104,7 +1104,7 @@ importers:
         version: 13.15.35
       zod:
         specifier: 'catalog:'
-        version: 4.4.3
+        version: 4.6.5
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
@@ -1271,7 +1271,7 @@ importers:
         version: 2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       zod:
         specifier: 'catalog:'
-        version: 4.4.3
+        version: 4.6.5
     devDependencies:
       '@internal/cfg-eslint-react':
         specifier: workspace:*
@@ -2083,7 +2083,7 @@ importers:
         version: 3.6.0
       zod:
         specifier: 'catalog:'
-        version: 4.4.3
+        version: 4.6.5
     devDependencies:
       '@internal/cfg-eslint-react':
         specifier: workspace:*
@@ -2439,7 +2439,7 @@ importers:
         version: 8.71.0(@typescript/typescript6@6.0.2)(eslint@9.39.4(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
       zod:
         specifier: 'catalog:'
-        version: 4.4.3
+        version: 4.6.5
 
   ghost/core:
     dependencies:
@@ -2952,7 +2952,7 @@ importers:
         version: 1.1.0
       zod:
         specifier: 'catalog:'
-        version: 4.4.3
+        version: 4.6.5
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'
@@ -4283,7 +4283,7 @@ importers:
         version: 4.18.1
       zod:
         specifier: 'catalog:'
-        version: 4.4.3
+        version: 4.6.5
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
@@ -4366,7 +4366,7 @@ importers:
         version: 23.16.8
       zod:
         specifier: 'catalog:'
-        version: 4.4.3
+        version: 4.6.5
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
@@ -4533,7 +4533,7 @@ importers:
     dependencies:
       zod:
         specifier: 'catalog:'
-        version: 4.4.3
+        version: 4.6.5
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
@@ -22723,8 +22723,8 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
-  zod@4.4.3:
-    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
+  zod@4.6.5:
+    resolution: {integrity: sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q==}
 
   zustand@4.5.7:
     resolution: {integrity: sha512-CHOUy7mu3lbD6o6LJLfllpjkzhHXSBlX8B9+qPddUsIfeF5S/UZ5q0kmCsnRqT1UHFQZchNFDDzMbQsuesHWlw==}
@@ -25921,7 +25921,7 @@ snapshots:
 
   '@modelcontextprotocol/server@2.0.0-alpha.4':
     dependencies:
-      zod: 4.4.3
+      zod: 4.6.5
 
   '@mswjs/interceptors@0.41.9':
     dependencies:
@@ -29184,6 +29184,7 @@ snapshots:
   '@types/node@26.0.0':
     dependencies:
       undici-types: 8.3.0
+    optional: true
 
   '@types/node@9.6.61': {}
 
@@ -29269,7 +29270,7 @@ snapshots:
 
   '@types/set-cookie-parser@2.4.10':
     dependencies:
-      '@types/node': 26.0.0
+      '@types/node': 22.20.1
 
   '@types/sinon@22.0.0':
     dependencies:
@@ -37686,7 +37687,7 @@ snapshots:
       '@toon-format/toon': 2.3.1
       tokenx: 1.6.0
       yaml: 2.9.0
-      zod: 4.4.3
+      zod: 4.6.5
 
   indent-string@4.0.0: {}
 
@@ -39140,7 +39141,7 @@ snapshots:
       tinyglobby: 0.2.17
       unbash: 4.0.10
       yaml: 2.9.0
-      zod: 4.4.3
+      zod: 4.6.5
 
   kolorist@1.8.0: {}
 
@@ -40560,7 +40561,7 @@ snapshots:
       incur: 0.4.26
       ox: 0.14.20
       viem: 2.55.11
-      zod: 4.4.3
+      zod: 4.6.5
     optionalDependencies:
       express: 4.22.3(supports-color@10.2.2)
       hono: 4.13.8
@@ -45368,7 +45369,8 @@ snapshots:
 
   undici-types@8.10.0: {}
 
-  undici-types@8.3.0: {}
+  undici-types@8.3.0:
+    optional: true
 
   undici@6.28.1: {}
 
@@ -46655,7 +46657,7 @@ snapshots:
 
   zod@3.25.76: {}
 
-  zod@4.4.3: {}
+  zod@4.6.5: {}
 
   zustand@4.5.7(@types/react@18.3.31)(react@18.3.1):
     dependencies:
