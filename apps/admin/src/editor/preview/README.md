@@ -30,6 +30,8 @@ chrome. Desktop Email previews are centered at a maximum width of 720px on a
 muted canvas, with the sidebar's corner radius and the mobile frame's shadow.
 Mobile previews retain their phone frame on the same muted canvas in either format.
 
+Escape closes the modal. Keys pressed inside a preview frame never reach the admin document, so the Web frame's window is listened to on every page it loads; that works only when the site shares the admin's origin. The sandboxed Email frame cannot be observed, so an Escape pressed inside it is not heard.
+
 ## Audience
 
 One audience drives both formats, held as a segment plus an optional tier slug and translated by `preview-url.ts`:
@@ -74,4 +76,4 @@ marking the subject invalid, which only its own length or failed save does.
 
 ## Not here yet
 
-Known gaps, listed so they are not mistaken for decisions: an Escape pressed inside the site preview frame does not close the modal, an already-sent post is re-rendered by the preview endpoint rather than showing its stored email, and the sender address does not apply the managed-email override.
+Known gaps, listed so they are not mistaken for decisions: an already-sent post is re-rendered by the preview endpoint rather than showing its stored email, and the sender address does not apply the managed-email override.

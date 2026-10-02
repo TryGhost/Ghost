@@ -2,53 +2,61 @@ import { PostEditorPage } from '@/admin-pages';
 import { PostFactory, createPostFactory } from '@/data-factory';
 import { expect, test } from '@/helpers/playwright';
 
-test.describe('Post Preview Modal', () => {
-  let postFactory: PostFactory;
+for (const editorReact of [false, true]) {
+  test.describe(`Post Preview Modal (${editorReact ? 'React' : 'Ember'} editor)`, () => {
+    test.use({ labs: { editorReact } });
 
-  test.beforeEach(async ({ page }) => {
-    postFactory = createPostFactory(page.request);
-  });
+    let postFactory: PostFactory;
+    let postEditorPage: PostEditorPage;
 
-  test('preview modal opens and can be closed via close button, ESC from header, and ESC from iframe', async ({
-    page,
-  }) => {
-    const post = await postFactory.create({
-      title: 'Test Post for Preview Modal',
-      status: 'draft',
+    test.beforeEach(async ({ page }) => {
+      postFactory = createPostFactory(page.request);
+      postEditorPage = new PostEditorPage(page, {
+        implementation: editorReact ? 'react' : 'ember',
+      });
     });
 
-    // create a published post that will be in read more section of preview modal
-    await postFactory.create({
-      title: 'clickpost',
-      status: 'published',
+    test('preview modal closes via close button and ESC from header', async () => {
+      const post = await postFactory.create({
+        title: 'Test Post for Preview Modal',
+        status: 'draft',
+      });
+      await postEditorPage.gotoPost(post.id);
+
+      await postEditorPage.previewButton.click();
+      await expect(postEditorPage.previewModal.modal).toBeVisible();
+
+      await postEditorPage.previewModal.close();
+      await expect(postEditorPage.previewModal.modal).toBeHidden();
+
+      await postEditorPage.previewButton.click();
+      await expect(postEditorPage.previewModal.modal).toBeVisible();
+
+      await postEditorPage.previewModal.header.click();
+      await postEditorPage.pressKey('Escape');
+      await expect(postEditorPage.previewModal.modal).toBeHidden();
     });
 
-    const postEditorPage = new PostEditorPage(page);
-    await postEditorPage.gotoPost(post.id);
+    test('preview modal closes via ESC when the iframe has focus', async () => {
+      const post = await postFactory.create({
+        title: 'Test Post for Preview Modal',
+        status: 'draft',
+      });
+      // A published post for the preview's read-more section to link to
+      await postFactory.create({
+        title: 'clickpost',
+        status: 'published',
+      });
+      await postEditorPage.gotoPost(post.id);
 
-    // Close via close button
-    await postEditorPage.previewButton.click();
-    await expect(postEditorPage.previewModal.modal).toBeVisible();
+      await postEditorPage.previewButton.click();
+      await expect(postEditorPage.previewModal.modal).toBeVisible();
 
-    await postEditorPage.previewModal.close();
-    await expect(postEditorPage.previewModal.modal).toBeHidden();
+      await postEditorPage.previewModalDesktopFrame.clickPostLinkByTitle('clickpost');
+      await postEditorPage.previewModalDesktopFrame.focus();
 
-    // Close via ESC key from modal header
-    await postEditorPage.previewButton.click();
-    await expect(postEditorPage.previewModal.modal).toBeVisible();
-
-    await postEditorPage.previewModal.header.click();
-    await postEditorPage.pressKey('Escape');
-    await expect(postEditorPage.previewModal.modal).toBeHidden();
-
-    // Close via ESC key when iframe has focus
-    await postEditorPage.previewButton.click();
-    await expect(postEditorPage.previewModal.modal).toBeVisible();
-
-    await postEditorPage.previewModalDesktopFrame.clickPostLinkByTitle('clickpost');
-    await postEditorPage.previewModalDesktopFrame.focus();
-
-    await postEditorPage.pressKey('Escape');
-    await expect(postEditorPage.previewModal.modal).toBeHidden();
+      await postEditorPage.pressKey('Escape');
+      await expect(postEditorPage.previewModal.modal).toBeHidden();
+    });
   });
-});
+}
