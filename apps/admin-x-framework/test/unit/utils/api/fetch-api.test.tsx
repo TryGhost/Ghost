@@ -68,6 +68,12 @@ describe('useFetchApi', () => {
           'Access-Control-Allow-Credentials': 'true',
         };
 
+        if (url.includes('no-content')) {
+          res.writeHead(204, corsHeaders);
+          res.end();
+          return;
+        }
+
         if (url.includes('yaml')) {
           res.writeHead(200, { 'Content-Type': 'application/yaml', ...corsHeaders });
           res.end('routes:\n');
@@ -178,6 +184,19 @@ describe('useFetchApi', () => {
         retry: false,
       }),
     ).rejects.toBeInstanceOf(TimeoutError);
+  });
+
+  it('resolves a 204 response when upload progress is enabled', async () => {
+    const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+    await expect(
+      result.current(`${baseUrl}/ghost/api/admin/no-content/`, {
+        method: 'POST',
+        body: 'test',
+        retry: false,
+        onUploadProgress: vi.fn(),
+      }),
+    ).resolves.toBeUndefined();
   });
 
   it('emits upload progress when onUploadProgress is provided', async () => {
