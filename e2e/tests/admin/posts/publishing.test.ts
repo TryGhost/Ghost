@@ -30,16 +30,19 @@ function getFutureSchedule() {
   };
 }
 
-async function expectPostStatus(
-  editor: PostEditorPage,
+/** Closing the publish flow lands on the list, so the status is read off the post's row. */
+async function expectListStatus(
+  postsPage: PostsPage,
+  title: string,
   status: string | RegExp,
   detail?: string | RegExp,
 ) {
-  await expect(editor.postStatus.first()).toContainText(status);
+  const row = postsPage.getPostByTitle(title);
+  await expect(row).toContainText(status);
 
   if (detail) {
-    await editor.postStatus.first().hover();
-    await expect(editor.postStatus.first()).toContainText(detail);
+    await postsPage.hoverPost(title);
+    await expect(row).toContainText(detail);
   }
 }
 
@@ -183,13 +186,14 @@ test.describe('Ghost Admin - Publishing', () => {
     await editor.publishFlow.confirm();
     await editor.publishFlow.close();
 
-    await expectPostStatus(editor, 'Scheduled', /to be published\s+at .*2050/i);
+    await expectListStatus(postsPage, title, 'Scheduled', /to be published\s+at .*2050/i);
 
     const frontendPage = await page.context().newPage();
     await expectFrontendStatus(frontendPage, slug, 404);
 
     await postsPage.getPostByTitle(title).click();
     await editor.revertToDraft();
+    await expect(editor.toast('Post reverted to a draft.')).toBeVisible();
     await expect(editor.postStatus.first()).toContainText('Draft - Saved');
     await expectFrontendStatus(frontendPage, slug, 404);
   });
@@ -211,7 +215,7 @@ test.describe('Ghost Admin - Publishing', () => {
     await Promise.all([waitForScheduledSaveResponse(page, 'posts'), editor.publishFlow.confirm()]);
     await editor.publishFlow.close();
 
-    await expectPostStatus(editor, 'Scheduled', /to be published\s+at .*2050/i);
+    await expectListStatus(postsPage, title, 'Scheduled', /to be published\s+at .*2050/i);
 
     const frontendPage = await page.context().newPage();
     await expectFrontendStatus(frontendPage, slug, 404);
@@ -243,8 +247,8 @@ test.describe('Ghost Admin - Publishing', () => {
     await Promise.all([waitForScheduledSaveResponse(page, 'posts'), editor.publishFlow.confirm()]);
     await editor.publishFlow.close();
 
-    await expectPostStatus(editor, 'Scheduled', /published and sent/i);
-    await expectPostStatus(editor, 'Scheduled', /2050/i);
+    await expectListStatus(postsPage, title, 'Scheduled', /published and sent/i);
+    await expectListStatus(postsPage, title, 'Scheduled', /2050/i);
 
     const frontendPage = await page.context().newPage();
     await expectFrontendStatus(frontendPage, slug, 404);
@@ -276,8 +280,8 @@ test.describe('Ghost Admin - Publishing', () => {
     await Promise.all([waitForScheduledSaveResponse(page, 'posts'), editor.publishFlow.confirm()]);
     await editor.publishFlow.close();
 
-    await expectPostStatus(editor, 'Scheduled', /to be sent/i);
-    await expectPostStatus(editor, 'Scheduled', /2050/i);
+    await expectListStatus(postsPage, title, 'Scheduled', /to be sent/i);
+    await expectListStatus(postsPage, title, 'Scheduled', /2050/i);
 
     const frontendPage = await page.context().newPage();
     await expectFrontendStatus(frontendPage, slug, 404);
@@ -288,6 +292,7 @@ test.describe('Ghost Admin - Publishing', () => {
     const body = 'This is my scheduled page body.';
     const slug = generateSlug(title);
     const editor = new PageEditorPage(page);
+    const pagesList = new PostsPage(page);
 
     await editor.gotoNew();
     await editor.createDraft({ title, body });
@@ -297,7 +302,7 @@ test.describe('Ghost Admin - Publishing', () => {
     await Promise.all([waitForScheduledSaveResponse(page, 'pages'), editor.publishFlow.confirm()]);
     await editor.publishFlow.close();
 
-    await expectPostStatus(editor, 'Scheduled', /to be published\s+at .*2050/i);
+    await expectListStatus(pagesList, title, 'Scheduled', /to be published\s+at .*2050/i);
 
     const frontendPage = await page.context().newPage();
     await expectFrontendStatus(frontendPage, slug, 404);
@@ -307,6 +312,7 @@ test.describe('Ghost Admin - Publishing', () => {
     const title = `publish-page-only-${Date.now()}`;
     const body = 'This is my published page body.';
     const editor = new PageEditorPage(page);
+    const pagesList = new PostsPage(page);
 
     await editor.gotoNew();
     await editor.createDraft({ title, body });
@@ -315,7 +321,7 @@ test.describe('Ghost Admin - Publishing', () => {
     await editor.publishFlow.confirm();
     await editor.publishFlow.close();
 
-    await expect(editor.postStatus.first()).toContainText('Published');
+    await expectListStatus(pagesList, title, 'Published');
     await expectFrontendStatus(page, generateSlug(title), 200);
 
     const frontendPage = await page.context().newPage();

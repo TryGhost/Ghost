@@ -153,6 +153,64 @@ describe('Members filtering by custom fields', function () {
       assert.deepEqual(matched, [uk.email]);
     });
 
+    it('filters a subfield by any of a list of values (is any of)', async function () {
+      await createField({ name: 'Shipping address', type: 'address' });
+      const uk = await createMember({
+        shipping_address: { line1: '1 King St', city: 'London', postal_code: 'EC1', country: 'GB' },
+      });
+      const de = await createMember({
+        shipping_address: {
+          line1: '1 Strasse',
+          city: 'Berlin',
+          postal_code: '10115',
+          country: 'DE',
+        },
+      });
+      await createMember({
+        shipping_address: {
+          line1: '5 Main St',
+          city: 'Boston',
+          postal_code: '02101',
+          country: 'US',
+        },
+      });
+      await createMember();
+
+      const matched = await browse(
+        "(metafields.key:'custom.shipping_address.country'+metafields.value:['DE','GB'])",
+      );
+      assert.deepEqual(matched.sort(), [uk.email, de.email].sort());
+    });
+
+    it('excludes a subfield holding any of a list of values (is none of)', async function () {
+      await createField({ name: 'Shipping address', type: 'address' });
+      await createMember({
+        shipping_address: { line1: '1 King St', city: 'London', postal_code: 'EC1', country: 'GB' },
+      });
+      await createMember({
+        shipping_address: {
+          line1: '1 Strasse',
+          city: 'Berlin',
+          postal_code: '10115',
+          country: 'DE',
+        },
+      });
+      const us = await createMember({
+        shipping_address: {
+          line1: '5 Main St',
+          city: 'Boston',
+          postal_code: '02101',
+          country: 'US',
+        },
+      });
+      await createMember();
+
+      const matched = await browse(
+        "(metafields.key:'custom.shipping_address.country'+metafields.value:-['DE','GB'])",
+      );
+      assert.deepEqual(matched, [us.email]);
+    });
+
     it('finds members with no address set', async function () {
       await createField({ name: 'Shipping address', type: 'address' });
       await createMember({

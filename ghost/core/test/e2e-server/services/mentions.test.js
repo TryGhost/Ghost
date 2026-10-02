@@ -9,14 +9,14 @@ const urlService = require('../../../core/server/services/url');
 const events = require('../../../core/server/lib/common/events');
 
 let agent;
-let mentionUrl = new URL('https://www.otherghostsite.com/');
-let mentionUrl2 = new URL('https://www.otherghostsite2.com/');
-let mentionHtml = `Check out this really cool <a href="${mentionUrl.href}">other site</a>.`;
-let mentionHtml2 = `Check out this really cool <a href="${mentionUrl2.href}">other site</a>.`;
-let endpointUrl = new URL('https://www.endpoint.com/');
-let endpointUrl2 = new URL('https://www.endpoint2.com/');
-let targetHtml = `<head><link rel="webmention" href="${endpointUrl.href}"</head><body>Some content</body>`;
-let targetHtml2 = `<head><link rel="webmention" href="${endpointUrl2.href}"</head><body>Some content</body>`;
+const mentionUrl = new URL('https://www.otherghostsite.com/');
+const mentionUrl2 = new URL('https://www.otherghostsite2.com/');
+const mentionHtml = `Check out this really cool <a href="${mentionUrl.href}">other site</a>.`;
+const mentionHtml2 = `Check out this really cool <a href="${mentionUrl2.href}">other site</a>.`;
+const endpointUrl = new URL('https://www.endpoint.com/');
+const endpointUrl2 = new URL('https://www.endpoint2.com/');
+const targetHtml = `<head><link rel="webmention" href="${endpointUrl.href}"</head><body>Some content</body>`;
+const targetHtml2 = `<head><link rel="webmention" href="${endpointUrl2.href}"</head><body>Some content</body>`;
 let mentionMock;
 let endpointMock;
 const DomainEvents = require('@tryghost/domain-events');
@@ -204,7 +204,7 @@ describe('Mentions Service', function () {
 
     describe(`does send when we expect it to send`, function () {
       it('Newly published post (post.published)', async function () {
-        let publishedPost = { status: 'published', ...mentionsPost };
+        const publishedPost = { status: 'published', ...mentionsPost };
         await agent
           .post('posts/')
           .body({ posts: [publishedPost] })
@@ -380,7 +380,7 @@ describe('Mentions Service', function () {
       });
 
       it('Newly published page (page.published)', async function () {
-        let publishedPage = { status: 'published', ...mentionsPost };
+        const publishedPage = { status: 'published', ...mentionsPost };
         await agent
           .post('pages/')
           .body({ pages: [publishedPage] })

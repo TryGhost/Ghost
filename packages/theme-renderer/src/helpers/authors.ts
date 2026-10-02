@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, prefer-const */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Copied from ghost/core/core/frontend/helpers/authors.js @ 407e032dc7 — transforms: imports→seam
 // # Authors Helper
 // Usage: `{{authors}}`, `{{authors separator=' - '}}`

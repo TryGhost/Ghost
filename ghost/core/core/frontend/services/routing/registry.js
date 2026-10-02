@@ -71,7 +71,7 @@ class Registry {
    * @returns {ParentRouter|undefined}
    */
   getRouterByName(name) {
-    for (let routerKey in this.routers) {
+    for (const routerKey in this.routers) {
       if (this.routers[routerKey].name === name) {
         return this.routers[routerKey];
       }

@@ -1,9 +1,6 @@
+import type { Frame } from '@tryghost/api-framework';
 import { toMetafieldsResponse } from '../../../../../services/members-metafields/serializers';
 import type { Metafield } from '../../../../../services/members-metafields';
-
-interface Frame {
-  response?: unknown;
-}
 
 const serializeOne = (field: Metafield, _apiConfig: unknown, frame: Frame): void => {
   frame.response = toMetafieldsResponse.parse([field]);

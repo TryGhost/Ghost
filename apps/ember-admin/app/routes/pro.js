@@ -34,7 +34,7 @@ export default class ProRoute extends AuthenticatedRoute {
         let isBillingTransition = false;
 
         if (transition) {
-            let destinationUrl = (typeof transition.to === 'string')
+            const destinationUrl = (typeof transition.to === 'string')
                 ? transition.to
                 : (transition.intent
                     ? transition.intent.url
@@ -46,11 +46,5 @@ export default class ProRoute extends AuthenticatedRoute {
         }
 
         this.billing.toggleProWindow(isBillingTransition);
-    }
-
-    buildRouteInfoMetadata() {
-        return {
-            titleToken: 'Ghost(Pro)'
-        };
     }
 }

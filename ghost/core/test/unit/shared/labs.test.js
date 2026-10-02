@@ -32,6 +32,16 @@ describe('Labs Service', function () {
     await configUtils.restore();
   });
 
+  it.each([{}, { admin7Pill: false }])(
+    'enables pill controls for older Admin builds regardless of stored Labs settings: %j',
+    function (storedLabs) {
+      sinon.stub(settingsCache, 'get').withArgs('labs').returns(storedLabs);
+
+      assert.equal(labs.isSet('admin7Pill'), true);
+      assert.equal(labs.WRITABLE_KEYS_ALLOWLIST.includes('admin7Pill'), false);
+    },
+  );
+
   it('can getAll, even if empty with enabled members', function () {
     assert.deepEqual(
       labs.getAll(),

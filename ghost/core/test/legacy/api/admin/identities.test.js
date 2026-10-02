@@ -17,7 +17,7 @@ const verifyJWKS = (endpoint, token) => {
 
     async function getKey(header, callback) {
       const key = await client.getSigningKey(header.kid);
-      let signingKey = key.publicKey || key.rsaPublicKey;
+      const signingKey = key.publicKey || key.rsaPublicKey;
       callback(null, signingKey);
     }
 

@@ -1163,13 +1163,16 @@ describe('CheckoutSessionEventService', function () {
     // owns it, so what gates the write is whether the target record predates the
     // checkout, and whether the session was started by a signed-in member.
     describe('collected fields writeback', function () {
+      const PLAN = { writes: [{ value: 'Large' }], origin: { source: 'checkout' } };
       let labsService;
       let metafieldBindings;
+      let memberBREADService;
 
       beforeEach(function () {
         labsService = { isSet: sinon.stub().returns(true) };
-        metafieldBindings = { writeCollected: sinon.stub().resolves() };
-        service = createService({ labsService, metafieldBindings });
+        metafieldBindings = { planCollected: sinon.stub().resolves({ plans: [PLAN] }) };
+        memberBREADService = { updateWithMetafields: sinon.stub().resolves() };
+        service = createService({ labsService, metafieldBindings, memberBREADService });
         session.metadata.ghostTierId = 'tier_123';
         api.getCustomer.resolves(customer);
         sinon.stub(logging, 'warn');
@@ -1180,28 +1183,33 @@ describe('CheckoutSessionEventService', function () {
         sinon.restore();
       });
 
-      it('writes onto the member this event created, even unverified', async function () {
+      it('saves onto the member this event created, even unverified', async function () {
         memberRepository.get.resolves(null);
         session.metadata.ghostSignupContext = 'needs_magic_link_email';
 
         await service.handleSubscriptionEvent(session);
 
-        sinon.assert.calledOnce(metafieldBindings.writeCollected);
-        sinon.assert.calledWith(
-          metafieldBindings.writeCollected,
-          'created_member',
+        sinon.assert.calledOnceWithExactly(
+          metafieldBindings.planCollected,
           'tier_123',
           sinon.match.array,
         );
+        sinon.assert.calledOnceWithExactly(
+          memberBREADService.updateWithMetafields,
+          {},
+          { id: 'created_member' },
+          [PLAN],
+        );
       });
 
-      it('does not write onto a member that existed before an unverified checkout', async function () {
+      it('does not save onto a member that existed before an unverified checkout', async function () {
         memberRepository.get.resolves(member);
         session.metadata.ghostSignupContext = 'needs_magic_link_email';
 
         await service.handleSubscriptionEvent(session);
 
-        sinon.assert.notCalled(metafieldBindings.writeCollected);
+        sinon.assert.notCalled(metafieldBindings.planCollected);
+        sinon.assert.notCalled(memberBREADService.updateWithMetafields);
       });
 
       it('treats a session carrying no signup context as unverified', async function () {
@@ -1210,40 +1218,63 @@ describe('CheckoutSessionEventService', function () {
 
         await service.handleSubscriptionEvent(session);
 
-        sinon.assert.notCalled(metafieldBindings.writeCollected);
+        sinon.assert.notCalled(memberBREADService.updateWithMetafields);
       });
 
-      it('writes onto an existing member when the checkout was started signed in', async function () {
+      it('saves onto an existing member when the checkout was started signed in', async function () {
         memberRepository.get.resolves(member);
         session.metadata.ghostSignupContext = 'already_authenticated';
 
         await service.handleSubscriptionEvent(session);
 
-        sinon.assert.calledOnce(metafieldBindings.writeCollected);
-        sinon.assert.calledWith(
-          metafieldBindings.writeCollected,
-          'member_123',
-          'tier_123',
-          sinon.match.array,
+        sinon.assert.calledOnceWithExactly(
+          memberBREADService.updateWithMetafields,
+          {},
+          { id: 'member_123' },
+          [PLAN],
         );
       });
 
-      it('does not write when the session names no tier', async function () {
+      it('does not save when the session names no tier', async function () {
         memberRepository.get.resolves(null);
         delete session.metadata.ghostTierId;
 
         await service.handleSubscriptionEvent(session);
 
-        sinon.assert.notCalled(metafieldBindings.writeCollected);
+        sinon.assert.notCalled(metafieldBindings.planCollected);
+        sinon.assert.notCalled(memberBREADService.updateWithMetafields);
       });
 
-      it('does not fail the webhook when the write is rejected', async function () {
+      it('does not touch the member when nothing was planned', async function () {
         memberRepository.get.resolves(null);
-        metafieldBindings.writeCollected.rejects(new Error('storage broke'));
+        metafieldBindings.planCollected.resolves({ plans: [] });
 
         await service.handleSubscriptionEvent(session);
 
-        sinon.assert.calledOnce(metafieldBindings.writeCollected);
+        sinon.assert.notCalled(memberBREADService.updateWithMetafields);
+      });
+
+      it('saves the values it could plan and logs the one it could not', async function () {
+        memberRepository.get.resolves(null);
+        metafieldBindings.planCollected.resolves({
+          plans: [PLAN],
+          failure: new Error('refused'),
+        });
+
+        await service.handleSubscriptionEvent(session);
+
+        sinon.assert.calledOnce(memberBREADService.updateWithMetafields);
+        sinon.assert.calledOnce(logging.error);
+      });
+
+      it('does not fail the webhook when the save is rejected', async function () {
+        memberRepository.get.resolves(null);
+        memberBREADService.updateWithMetafields.rejects(new Error('storage broke'));
+
+        await service.handleSubscriptionEvent(session);
+
+        sinon.assert.calledOnce(memberBREADService.updateWithMetafields);
+        sinon.assert.calledOnce(logging.error);
       });
     });
   });

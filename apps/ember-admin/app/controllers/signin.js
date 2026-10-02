@@ -57,7 +57,7 @@ export default class SigninController extends Controller.extend(ValidationEngine
             return SUCCESS;
         } catch (error) {
             if (isTwoFactorTokenRequiredError(error)) {
-                let errorCode = error.payload?.errors[0]?.code;
+                const errorCode = error.payload?.errors[0]?.code;
                 // login was successful, but 2FA verification is required
                 this.session.set('errorCode', errorCode);
                 this.router.transitionTo('signin-verify');
@@ -72,7 +72,7 @@ export default class SigninController extends Controller.extend(ValidationEngine
             this.signin.errors.clear();
 
             if (error && error.payload && error.payload.errors) {
-                let [mainError] = error.payload.errors;
+                const [mainError] = error.payload.errors;
 
                 mainError.message = htmlSafe(mainError.message || '');
                 mainError.context = htmlSafe(mainError.context || '');
@@ -129,9 +129,9 @@ export default class SigninController extends Controller.extend(ValidationEngine
 
     @task
     *forgotPasswordTask() {
-        let email = this.signin.identification;
-        let forgottenUrl = this.ghostPaths.url.api('authentication', 'password_reset');
-        let notifications = this.notifications;
+        const email = this.signin.identification;
+        const forgottenUrl = this.ghostPaths.url.api('authentication', 'password_reset');
+        const notifications = this.notifications;
 
         this.flowErrors = '';
         this.flowNotification = '';
@@ -156,7 +156,7 @@ export default class SigninController extends Controller.extend(ValidationEngine
             }
 
             if (error && error.payload && error.payload.errors && isEmberArray(error.payload.errors)) {
-                let [{message}] = error.payload.errors;
+                const [{message}] = error.payload.errors;
 
                 this.flowErrors = message;
 

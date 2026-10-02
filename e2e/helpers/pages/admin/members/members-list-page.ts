@@ -108,11 +108,14 @@ export class MembersListPage extends AdminPage {
   async addCustomFieldFilter({
     field,
     value,
+    values,
     subfield,
     operator,
   }: {
     field: string;
     value?: string;
+    // For a part picked from a list (a country): the names to pick, any of.
+    values?: string[];
     subfield?: string;
     operator?: string;
   }): Promise<void> {
@@ -134,6 +137,15 @@ export class MembersListPage extends AdminPage {
 
     if (value !== undefined) {
       await this.page.getByTestId('custom-field-filter-value').fill(value);
+    }
+
+    if (values) {
+      await this.page.getByTestId('custom-field-filter-value').click();
+      for (const name of values) {
+        await this.page.getByPlaceholder('Search countries...').fill(name);
+        await this.page.getByRole('option', { name, exact: true }).click();
+      }
+      await this.page.keyboard.press('Escape');
     }
 
     // Close the add-filter popover so the list re-queries.

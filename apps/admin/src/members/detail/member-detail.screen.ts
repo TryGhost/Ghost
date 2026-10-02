@@ -15,7 +15,8 @@ export const memberDetailScreen = {
 
   customFieldsSection: () => page.getByTestId(memberCustomFieldsField),
   /** A read-only value as the record renders it (addresses as one line). */
-  fieldValue: (text: string) => page.getByText(text),
+  /** Exact: a row that kept a cleared part would still contain the shorter text. */
+  fieldValue: (text: string) => page.getByText(text, { exact: true }),
   /** The dash an empty custom-field row shows. */
   emptyValueDash: () => page.getByText('–').first(),
   editFieldButton: (fieldName: string) =>

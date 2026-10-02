@@ -166,16 +166,16 @@ export default Component.extend({
     },
 
     _validate() {
-        let files = this.files;
-        let validate = this.validate || this._defaultValidator.bind(this);
-        let ok = [];
-        let errors = [];
+        const files = this.files;
+        const validate = this.validate || this._defaultValidator.bind(this);
+        const ok = [];
+        const errors = [];
 
         // NOTE: for...of loop results in a transpilation that errors in Edge,
         // once we drop IE11 support we should be able to use native for...of
         for (let i = 0; i < files.length; i += 1) {
-            let file = files[i];
-            let result = validate(file);
+            const file = files[i];
+            const result = validate(file);
             if (result === true) {
                 ok.push(file);
             } else {
@@ -196,7 +196,7 @@ export default Component.extend({
     // expose the mime-type, we'll rely on the API for final validation
     _defaultValidator(file) {
         let extensions = this.extensions;
-        let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
+        const [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
 
         // if extensions is falsy exit early and accept all files
         if (!extensions) {
@@ -208,7 +208,7 @@ export default Component.extend({
         }
 
         if (!extension || extensions.indexOf(extension.toLowerCase()) === -1) {
-            let validExtensions = `.${extensions.join(', .').toUpperCase()}`;
+            const validExtensions = `.${extensions.join(', .').toUpperCase()}`;
             return `The file type you uploaded is not supported. Please use ${validExtensions}`;
         }
 
@@ -216,7 +216,7 @@ export default Component.extend({
     },
 
     _uploadFiles: task(function* (files) {
-        let uploads = [];
+        const uploads = [];
 
         this._reset();
         this.onStart(files);
@@ -224,8 +224,8 @@ export default Component.extend({
         // NOTE: for...of loop results in a transpilation that errors in Edge,
         // once we drop IE11 support we should be able to use native for...of
         for (let i = 0; i < files.length; i += 1) {
-            let file = files[i];
-            let tracker = UploadTracker.create({file});
+            const file = files[i];
+            const tracker = UploadTracker.create({file});
 
             this._uploadTrackers.pushObject(tracker);
             uploads.push(this._uploadFile.perform(tracker, file, i));
@@ -243,21 +243,21 @@ export default Component.extend({
 
     // eslint-disable-next-line ghost/ember/order-in-components
     _uploadFile: task(function* (tracker, file, index) {
-        let ajax = this.ajax;
-        let formData = this._getFormData(file);
-        let url = `${ghostPaths().apiRoot}${this.uploadUrl}`;
+        const ajax = this.ajax;
+        const formData = this._getFormData(file);
+        const url = `${ghostPaths().apiRoot}${this.uploadUrl}`;
         let metadata = null;
 
         try {
             metadata = yield Promise.resolve(this.onUploadStart(file));
 
-            let response = yield ajax[this.requestMethod](url, {
+            const response = yield ajax[this.requestMethod](url, {
                 data: formData,
                 processData: false,
                 contentType: false,
                 dataType: 'text',
                 xhr: () => {
-                    let xhr = new window.XMLHttpRequest();
+                    const xhr = new window.XMLHttpRequest();
 
                     xhr.upload.addEventListener('progress', (event) => {
                         run(() => {
@@ -287,13 +287,13 @@ export default Component.extend({
             }
 
             if (uploadResponse) {
-                let resource = get(uploadResponse, this.resourceName);
+                const resource = get(uploadResponse, this.resourceName);
                 if (resource && isArray(resource) && resource[0]) {
                     responseUrl = get(resource[0], 'url');
                 }
             }
 
-            let result = {
+            const result = {
                 url: responseUrl,
                 fileName: file.name
             };
@@ -305,14 +305,14 @@ export default Component.extend({
         } catch (error) {
             // grab custom error message if present
             let message = error.payload && error.payload.errors && error.payload.errors[0].message || '';
-            let context = error.payload && error.payload.errors && error.payload.errors[0].context || '';
+            const context = error.payload && error.payload.errors && error.payload.errors[0].context || '';
 
             // fall back to EmberData/ember-ajax default message for error type
             if (!message) {
                 message = error.message;
             }
 
-            let result = {
+            const result = {
                 message,
                 context,
                 fileName: file.name
@@ -326,7 +326,7 @@ export default Component.extend({
 
     // NOTE: this is necessary because the API doesn't accept direct file uploads
     _getFormData(file) {
-        let formData = new FormData();
+        const formData = new FormData();
         formData.append(this.paramName, file, file.name);
 
         Object.keys(this.paramsHash || {}).forEach((key) => {
@@ -344,9 +344,9 @@ export default Component.extend({
             return;
         }
 
-        let trackers = this._uploadTrackers;
-        let totalSize = trackers.reduce((total, tracker) => total + tracker.get('total'), 0);
-        let uploadedSize = trackers.reduce((total, tracker) => total + tracker.get('loaded'), 0);
+        const trackers = this._uploadTrackers;
+        const totalSize = trackers.reduce((total, tracker) => total + tracker.get('total'), 0);
+        const uploadedSize = trackers.reduce((total, tracker) => total + tracker.get('loaded'), 0);
 
         this.set('totalSize', totalSize);
         this.set('uploadedSize', uploadedSize);
@@ -355,7 +355,7 @@ export default Component.extend({
             return;
         }
 
-        let uploadPercentage = Math.round((uploadedSize / totalSize) * 100);
+        const uploadPercentage = Math.round((uploadedSize / totalSize) * 100);
         this.set('uploadPercentage', uploadPercentage);
     },
 

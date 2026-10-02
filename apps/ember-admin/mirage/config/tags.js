@@ -4,7 +4,7 @@ import {isBlank} from '@ember/utils';
 
 export default function mockTags(server) {
     server.post('/tags/', function ({tags}) {
-        let attrs = this.normalizedRequestAttrs();
+        const attrs = this.normalizedRequestAttrs();
 
         if (isBlank(attrs.slug) && !isBlank(attrs.name)) {
             attrs.slug = dasherize(attrs.name);

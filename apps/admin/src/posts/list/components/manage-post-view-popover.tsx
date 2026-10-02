@@ -1,6 +1,9 @@
+import { useShade } from '@tryghost/shade/app';
+import { PageHeader } from '@tryghost/shade/patterns';
 import { Button, Input, Popover, PopoverContent, PopoverTrigger } from '@tryghost/shade/components';
+import { FilterBar } from '@tryghost/shade/patterns';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { cn } from '@tryghost/shade/utils';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { POST_VIEW_COLORS, type PostViewColor, pickPostViewColor } from '@/posts/list/post-views';
 import { getColorHex } from '@/layout/app-sidebar/shared-views';
 import { useDeletePostView, useSavePostView } from '@/posts/list/hooks/use-post-views';
@@ -15,6 +18,7 @@ interface ManagePostViewPopoverProps {
   params: PostListParams;
   /** The saved view matching the current params, if the user is on one. */
   activeView?: SharedView;
+  inHeader?: boolean;
 }
 
 function isPostViewColor(value: string | undefined): value is PostViewColor {
@@ -63,6 +67,7 @@ function PopoverBody({
   );
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const savePostView = useSavePostView();
   const deletePostView = useDeletePostView();
   const navigate = useNavigate();
@@ -70,7 +75,7 @@ function PopoverBody({
   const isEditing = Boolean(activeView);
 
   const handleSave = async () => {
-    if (busy) {
+    if (busy || confirmingDelete) {
       return;
     }
 
@@ -138,16 +143,55 @@ function PopoverBody({
           {error}
         </Text>
       )}
-      <Inline gap="sm" justify={isEditing ? 'between' : 'end'}>
-        {isEditing && (
-          <Button disabled={busy} variant="destructive" onClick={() => void handleDelete()}>
-            Delete
-          </Button>
-        )}
-        <Button disabled={busy} onClick={() => void handleSave()}>
-          {isEditing ? 'Save' : 'Save view'}
-        </Button>
-      </Inline>
+      {confirmingDelete ? (
+        <Inline gap="sm" justify="between">
+          <Text size="sm" tone="secondary">
+            Delete view?
+          </Text>
+          <Inline gap="sm">
+            <Button
+              disabled={busy}
+              size="sm"
+              variant="outline"
+              onClick={() => setConfirmingDelete(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={busy}
+              size="sm"
+              variant="destructive"
+              onClick={() => void handleDelete()}
+            >
+              {busy ? 'Deleting...' : 'Delete'}
+            </Button>
+          </Inline>
+        </Inline>
+      ) : (
+        <Inline gap="sm" justify={isEditing ? 'between' : 'end'}>
+          {isEditing && (
+            <Button
+              className="text-destructive hover:bg-destructive/5 hover:text-destructive"
+              disabled={busy}
+              size="sm"
+              variant="ghost"
+              onClick={() => setConfirmingDelete(true)}
+            >
+              Delete
+            </Button>
+          )}
+          <Inline gap="sm">
+            {isEditing && (
+              <Button disabled={busy} size="sm" variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
+            )}
+            <Button disabled={busy} size="sm" onClick={() => void handleSave()}>
+              {isEditing ? 'Save' : 'Save view'}
+            </Button>
+          </Inline>
+        </Inline>
+      )}
     </Stack>
   );
 }
@@ -166,31 +210,42 @@ export function ManagePostViewPopover({
   resource,
   params,
   activeView,
+  inHeader = false,
 }: ManagePostViewPopoverProps) {
   const [open, setOpen] = useState(false);
+  const { isAdmin7 } = useShade();
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        {/* Labelled in words. No `aria-label`: it would override the
-                    visible text as the accessible name, leaving the two out of
-                    step. */}
-        <Button data-testid="manage-post-view" variant="outline">
-          {activeView ? 'Edit view' : 'Save view'}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-72">
-        {/* Keyed so reopening starts from the current view's name. */}
-        <PopoverBody
-          key={activeView?.name ?? 'new'}
-          activeView={activeView}
-          params={params}
-          resource={resource}
-          onClose={() => {
-            setOpen(false);
-          }}
-        />
-      </PopoverContent>
-    </Popover>
+    <>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          {inHeader ? (
+            <PageHeader.Action
+              data-testid="manage-post-view"
+              label={activeView ? 'Edit view' : 'Save view'}
+            >
+              {isAdmin7 && <LucideIcon.Bookmark className="size-4" />}
+              {activeView ? 'Edit view' : 'Save view'}
+            </PageHeader.Action>
+          ) : (
+            <FilterBar.Action data-testid="manage-post-view" variant="outline">
+              {activeView ? 'Edit view' : 'Save view'}
+            </FilterBar.Action>
+          )}
+        </PopoverTrigger>
+        <PopoverContent align="end" className="w-72">
+          {/* Keyed so reopening starts from the current view's name. */}
+          <PopoverBody
+            key={activeView?.name ?? 'new'}
+            activeView={activeView}
+            params={params}
+            resource={resource}
+            onClose={() => {
+              setOpen(false);
+            }}
+          />
+        </PopoverContent>
+      </Popover>
+    </>
   );
 }

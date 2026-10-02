@@ -21,12 +21,15 @@ export interface FeatureImageProps {
   alt: string | null;
   /** Paragraph-wrapped caption HTML. */
   caption: string | null;
+  /** Moves when the caption editor has to load the caption again. */
+  captionKey: number;
   cardConfig: PostCardConfig;
   darkMode: boolean;
   onImageChange: (url: string) => void;
   onImageClear: () => void;
   onAltChange: (alt: string) => void;
   onCaptionChange: (html: string) => void;
+  onCaptionFocus: () => void;
   onCaptionBlur: () => void;
   onTkCountChange: (count: number) => void;
 }
@@ -39,12 +42,14 @@ export function FeatureImage({
   image,
   alt,
   caption,
+  captionKey,
   cardConfig,
   darkMode,
   onImageChange,
   onImageClear,
   onAltChange,
   onCaptionChange,
+  onCaptionFocus,
   onCaptionBlur,
   onTkCountChange,
 }: FeatureImageProps) {
@@ -70,7 +75,10 @@ export function FeatureImage({
     captionApi.current?.focusEditor({ position: 'bottom' });
   }, []);
 
-  const onCaptionFocus = useCallback(() => setCaptionFocused(true), []);
+  const onCaptionFocused = useCallback(() => {
+    setCaptionFocused(true);
+    onCaptionFocus();
+  }, [onCaptionFocus]);
 
   const onCaptionBlurred = useCallback(() => {
     setCaptionFocused(false);
@@ -103,7 +111,7 @@ export function FeatureImage({
   return (
     <ImageField
       alt={alt}
-      className="mb-4"
+      className={image ? 'mb-8' : 'mb-4'}
       src={image}
       subject={IMAGE_SUBJECT}
       testId={editorFeatureImage}
@@ -117,7 +125,7 @@ export function FeatureImage({
         {isEditingAlt ? (
           <input
             aria-label="Alt text for feature image"
-            className="flex-1 border-0 bg-transparent p-0 text-sm text-text-secondary outline-none placeholder:text-muted-foreground"
+            className="flex-1 border-0 bg-transparent p-0 font-sans text-base leading-6 text-text-secondary outline-none placeholder:text-muted-foreground"
             maxLength={ALT_MAX_LENGTH}
             name="alt"
             placeholder="Add alt text to the feature image"
@@ -127,8 +135,9 @@ export function FeatureImage({
             onChange={(event) => onAltChange(event.target.value)}
           />
         ) : (
-          <div className="flex-1 text-sm" data-testid={editorFeatureImageCaption}>
+          <div className="flex-1" data-testid={editorFeatureImageCaption}>
             <FeatureImageCaption
+              key={captionKey}
               darkMode={darkMode}
               html={caption}
               placeholder={captionFocused ? '' : 'Add a caption to the feature image'}
@@ -136,7 +145,7 @@ export function FeatureImage({
               searchLinks={cardConfig.searchLinks}
               onBlur={onCaptionBlurred}
               onChangeHtml={onCaptionChange}
-              onFocus={onCaptionFocus}
+              onFocus={onCaptionFocused}
               onTkCountChange={relayTkCount}
             />
           </div>
@@ -156,8 +165,8 @@ export function FeatureImage({
           className={cn(
             'rounded-md border px-1.5 py-0.5 text-2xs font-medium tracking-wide',
             isEditingAlt
-              ? 'border-state-success bg-state-success text-state-success-foreground'
-              : 'border-border-default bg-transparent text-text-tertiary',
+              ? 'border-primary bg-primary text-primary-foreground'
+              : 'border-border-default bg-transparent text-text-secondary',
           )}
           type="button"
           onClick={() => setIsEditingAlt(!isEditingAlt)}

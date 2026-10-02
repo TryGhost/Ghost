@@ -6,6 +6,8 @@ import {
   codeInjectionHeadLabel,
   codeInjectionPageFootLabel,
   codeInjectionPageHeadLabel,
+  settingsCodeInjectionBackButton,
+  settingsCodeInjectionRow,
 } from '@tryghost/test-data/selectors/editor';
 
 import {
@@ -19,11 +21,11 @@ import {
   renderAdminApp,
   staffRole,
   submittedPost,
-  unsavedChangesGuarded,
   withoutAutosave,
   type StaffRoleName,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
+import { CODE_INJECTION_HEAD_TOO_LONG, CODE_INJECTION_MAX } from '@/editor/session/settings-fields';
 
 const POST_ID = 'abc123';
 const CURRENT_USER_ID = '1';
@@ -31,11 +33,8 @@ const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 const PAGE_ROUTE = new RegExp(`^/pages/${POST_ID}/\\?`);
-// The panel's own width, and the width the wide pane widens it to.
+// The space reserved for the floating panel, including its outer padding.
 const PANEL_WIDTH = 350;
-const WIDE_PANEL_WIDTH = 500;
-const BACK_LABEL = 'Close code injection panel';
-const ROW_LABEL = 'Code injection';
 
 const POLL = { timeout: 10_000 };
 
@@ -88,7 +87,7 @@ function fakeSavablePage() {
 }
 
 function sidebarWidthPx(): number {
-  return editorScreen.settingsSidebar().element().getBoundingClientRect().width;
+  return editorScreen.settingsSidebar().element().parentElement!.getBoundingClientRect().width;
 }
 
 function headEditor() {
@@ -102,7 +101,7 @@ function footEditor() {
 async function openCodeInjection() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
-  await editorScreen.settingsSubviewRow(ROW_LABEL).click();
+  await editorScreen.settingsSubviewRow(settingsCodeInjectionRow).click();
   await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
   await expect.element(headEditor()).toBeVisible();
   await expect.element(footEditor()).toBeVisible();
@@ -134,16 +133,16 @@ describe('Post settings code injection', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openCodeInjection();
 
-    // The pane replaces the list it was opened from, in a widened panel.
+    // The pane replaces the list it was opened from, without resizing the panel.
     await expect(editorScreen.settingsExcerpt()).toHaveCount(0);
-    expect(sidebarWidthPx()).toBe(WIDE_PANEL_WIDTH);
+    await expect.poll(sidebarWidthPx).toBe(PANEL_WIDTH);
 
-    await editorScreen.settingsSubviewBack(BACK_LABEL).click();
+    await editorScreen.settingsSubviewBack(settingsCodeInjectionBackButton).click();
 
     await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
     await expect.element(editorScreen.settingsExcerpt()).toBeVisible();
-    await expect.element(editorScreen.settingsSubviewRow(ROW_LABEL)).toBeVisible();
-    // The panel goes back to the width the section list is shown at.
+    await expect.element(editorScreen.settingsSubviewRow(settingsCodeInjectionRow)).toBeVisible();
+    // Returning to the section list keeps the same width.
     await expect.poll(sidebarWidthPx).toBe(PANEL_WIDTH);
   });
 
@@ -153,11 +152,13 @@ describe('Post settings code injection', () => {
     await openCodeInjection();
 
     // Opening a pane leaves the writer on its back button.
-    await expect.element(editorScreen.settingsSubviewBack(BACK_LABEL)).toHaveFocus();
+    await expect
+      .element(editorScreen.settingsSubviewBack(settingsCodeInjectionBackButton))
+      .toHaveFocus();
     await userEvent.keyboard('{Escape}');
 
     await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
-    await expect.element(editorScreen.settingsSubviewRow(ROW_LABEL)).toBeVisible();
+    await expect.element(editorScreen.settingsSubviewRow(settingsCodeInjectionRow)).toBeVisible();
   });
 
   it('keeps the pane open on Escape inside an editor', async () => {
@@ -196,7 +197,7 @@ describe('Post settings code injection', () => {
     await renderAdminApp(`/editor/page/${POST_ID}`, FLAG_ON);
     await editorScreen.settingsToggle().click();
     await expect.element(editorScreen.settingsSidebar()).toBeVisible();
-    await editorScreen.settingsSubviewRow(ROW_LABEL).click();
+    await editorScreen.settingsSubviewRow(settingsCodeInjectionRow).click();
 
     await expect
       .element(editorScreen.settingsCodeInjection(codeInjectionPageHeadLabel))
@@ -246,7 +247,7 @@ describe('Post settings code injection', () => {
       .toBe('<script>foot();</script>');
   });
 
-  it('stages a published post’s header code until Update', async () => {
+  it('saves a published post’s header code on its own', async () => {
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openCodeInjection();
@@ -254,16 +255,11 @@ describe('Post settings code injection', () => {
     await typeInto(headEditor(), '<script>staged();</script>');
     await footEditor().click();
 
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
-    await expect.poll(unsavedChangesGuarded).toBe(true);
-    expect(saveApi.requests).toHaveLength(0);
-
-    await userEvent.keyboard('{Meta>}s{/Meta}');
-
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
       codeinjection_head: '<script>staged();</script>',
-      status: 'published',
     });
   });
 
@@ -274,15 +270,45 @@ describe('Post settings code injection', () => {
 
     await typeInto(headEditor(), '<script>onClose();</script>');
     await expect.element(headEditor()).toHaveFocus();
-    await editorScreen.settingsSubviewBack(BACK_LABEL).click();
+    await editorScreen.settingsSubviewBack(settingsCodeInjectionBackButton).click();
 
     await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
     await expect(saveApi).toHaveSavedFields({
       codeinjection_head: '<script>onClose();</script>',
     });
 
-    await editorScreen.settingsSubviewRow(ROW_LABEL).click();
+    await editorScreen.settingsSubviewRow(settingsCodeInjectionRow).click();
     await expect.element(headEditor()).toHaveTextContent('<script>onClose();</script>');
+  });
+
+  it('refuses to save header code longer than the field holds', async () => {
+    // Lines keep CodeMirror's viewport light; the last one pads to the limit exactly.
+    const lines = '<!-- a line of saved code -->\n'.repeat(2000);
+    const saveApi = fakeSavablePost({
+      codeinjection_head: lines + 'a'.repeat(CODE_INJECTION_MAX - lines.length),
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openCodeInjection();
+
+    // The label focuses the editor; a click on its content would aim far below the pane.
+    await editorScreen.settingsSubviewPane().getByText(codeInjectionHeadLabel).click();
+    await userEvent.keyboard('{ControlOrMeta>}{End}{/ControlOrMeta}b');
+    await footEditor().click();
+
+    await expect.element(headEditor()).toHaveAttribute('aria-invalid', 'true');
+    await expect.element(headEditor()).toHaveAccessibleDescription(CODE_INJECTION_HEAD_TOO_LONG);
+    await expect
+      .element(editorScreen.pendingSaveNotice())
+      .toHaveTextContent(CODE_INJECTION_HEAD_TOO_LONG);
+    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
+
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+
+    await expect
+      .element(editorScreen.saveErrorBanner())
+      .toHaveTextContent(CODE_INJECTION_HEAD_TOO_LONG);
+    expect(saveApi.requests).toHaveLength(0);
   });
 
   it.each(['codeinjection_head', 'codeinjection_foot'] as const)(

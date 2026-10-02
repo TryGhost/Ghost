@@ -460,10 +460,10 @@ describe('Front-end members behavior', function () {
       const memberHmac = crypto.createHmac('sha256', 'test').update(memberUUID).digest('hex');
 
       // Can fetch newsletter subscriptions
-      let getRes = await request
+      const getRes = await request
         .get(`/members/api/member/newsletters?uuid=${memberUUID}&key=${memberHmac}`)
         .expect(200);
-      let getJsonResponse = getRes.body;
+      const getJsonResponse = getRes.body;
       assert.equal(getJsonResponse.newsletters.length, 1);
 
       await request

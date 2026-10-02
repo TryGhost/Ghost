@@ -1,10 +1,10 @@
 // Shared core for @tryghost/i18n, used by both the Node entry (src/index.ts)
 // and the browser registry entries (src/registry/*.ts).
 //
-// Must stay import-only: the browser build pulls this file into a UMD bundle, so
-// any `require(...)` here leaks into that bundle and throws at load. Node-only
-// concerns live in ./require-loader.ts and ./theme-resources.ts, which the
-// browser graph never imports.
+// Must stay free of Node built-ins: the browser build pulls this file into a UMD
+// bundle, so anything touching `fs` here breaks that bundle at load. Node-only
+// concerns live in ./file-loader.ts and ./theme-resources.ts, which the browser
+// graph never imports.
 import i18next from 'i18next';
 
 import localeData from './locale-data.json' with { type: 'json' };
@@ -24,6 +24,13 @@ export const LOCALE_DATA: LocaleDataEntry[] = localeData;
 
 // Export just the locale codes for backward compatibility
 export const SUPPORTED_LOCALES: string[] = LOCALE_DATA.map((locale) => locale.code);
+
+// i18next types `services.languageUtils` as `any`. Only the resolution hierarchy
+// is needed here: for a requested language it returns every code i18next will
+// consult, in order (e.g. 'de-CH' -> ['de-CH', 'de', 'en'], 'no' -> ['no', 'nb', 'en']).
+interface LanguageUtils {
+  toResolveHierarchy(code: string): string[];
+}
 
 // Merge quirk preserved verbatim from the original implementation:
 // Note: due some random thing in TypeScript, 'requiring' a JSON file with a space in a key name, only adds it to the default export
@@ -73,9 +80,37 @@ export function createI18n({
     if (ns === 'theme' || ns === 'portal') {
       interpolation.escapeValue = false;
     }
+    // Load a locale's strings the first time i18next is about to resolve against
+    // it, rather than loading all of SUPPORTED_LOCALES up front. `languageChanging`
+    // fires before i18next resolves the language — on init and on every
+    // changeLanguage() — so the bundles are in place by the time it needs them,
+    // and an instance only ever reads the locale it is actually using (plus
+    // whatever that locale falls back to).
+    const loadLanguage = (language: string) => {
+      const languageUtils = i18nextInstance.services.languageUtils as LanguageUtils;
+
+      for (const code of languageUtils.toResolveHierarchy(language)) {
+        // Anything outside SUPPORTED_LOCALES has no files to load; i18next's own
+        // fallback chain takes it to English, exactly as before.
+        if (!SUPPORTED_LOCALES.includes(code) || i18nextInstance.hasResourceBundle(code, ns)) {
+          continue;
+        }
+
+        // Iterated rather than indexed by `code`: the generator decides what it
+        // returns, and a locale it has nothing for is simply left out of the store
+        // for i18next's fallback chain to handle.
+        for (const [locale, byNamespace] of Object.entries(generateResources([code], ns))) {
+          i18nextInstance.addResourceBundle(locale, ns, byNamespace[ns]);
+        }
+      }
+    };
+
     let resources: Resources;
     if (ns !== 'theme') {
-      resources = generateResources(SUPPORTED_LOCALES, ns);
+      // Starts empty and is filled by loadLanguage. It still has to be an object:
+      // i18next only initialises synchronously when `resources` is set.
+      resources = {};
+      i18nextInstance.on('languageChanging', loadLanguage);
     } else {
       resources = generateThemeResources(lng, options);
     }

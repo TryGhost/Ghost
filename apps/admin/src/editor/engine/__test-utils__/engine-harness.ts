@@ -7,6 +7,7 @@ import {
   type SaveEngine,
   type SaveEngineState,
   type SaveError,
+  type SaveFailure,
   type SaveOutcome,
   type SaveRequest,
   type SaveResult,
@@ -35,6 +36,7 @@ export const BASE: SnapshotFields = {
   title: 'Hello',
   slug: 'hello',
   isDirty: true,
+  settingsDirty: false,
   changedSinceLastRevision: true,
   version: 1,
 };
@@ -50,6 +52,8 @@ export function dispatchAny(engine: SaveEngine, kind: DispatchIntent) {
       return engine.dispatch('schedule', { publishedAt: FUTURE });
     case 'publish':
       return engine.dispatch('publish');
+    case 'settings':
+      return engine.dispatch('settings');
     default:
       return engine.dispatch(kind);
   }
@@ -57,7 +61,10 @@ export function dispatchAny(engine: SaveEngine, kind: DispatchIntent) {
 
 export function setup(
   overrides: Partial<SnapshotFields> = {},
-  ports: { autosaveDebounceMs?: () => number | undefined } = {},
+  ports: {
+    autosaveDebounceMs?: () => number | undefined;
+    onSaveFailed?: (failure: SaveFailure) => void;
+  } = {},
 ) {
   let snapshot = { ...BASE, ...overrides } as SaveSnapshot;
   const requests: SaveRequest[] = [];
@@ -120,6 +127,7 @@ export function setup(
       publishedAt: prepared.target.publishedAt,
       slug: prepared.slug,
       isDirty: editedInFlight,
+      settingsDirty: editedInFlight && snapshot.settingsDirty,
     };
   });
 

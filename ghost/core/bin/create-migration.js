@@ -22,6 +22,10 @@ module.exports = /**/;
 
 const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
+/**
+ * @param {unknown} slug
+ * @returns {slug is string}
+ */
 function isValidSlug(slug) {
   return typeof slug === 'string' && SLUG_PATTERN.test(slug);
 }
@@ -29,6 +33,9 @@ function isValidSlug(slug) {
 /**
  * Resolves the most recent stable tag (e.g. v6.34.0) from git.
  * Excludes prerelease tags so the answer reflects what's actually shipped.
+ *
+ * @param {string} cwd
+ * @returns {string}
  */
 function readLastPublishedVersion(cwd) {
   const tag = execSync(
@@ -38,6 +45,10 @@ function readLastPublishedVersion(cwd) {
   return tag.replace(/^v/, '');
 }
 
+/**
+ * @param {string} version
+ * @returns {string}
+ */
 function minorOf(version) {
   return `${semver.major(version)}.${semver.minor(version)}`;
 }
@@ -54,6 +65,10 @@ function minorOf(version) {
  *   package 6.34.1-rc.0 → folder 6.35   (needs promote)
  *   package 6.35.0-rc.0 → folder 6.35   (already promoted)
  *   package 6.34.0      → folder 6.35   (needs promote, e.g. fresh checkout)
+ *
+ * @param {string} packageVersion
+ * @param {string} lastPublishedVersion
+ * @returns {string}
  */
 function getTargetMigrationFolder(packageVersion, lastPublishedVersion) {
   const packageMinor = minorOf(packageVersion);

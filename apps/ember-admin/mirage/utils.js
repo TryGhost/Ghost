@@ -3,9 +3,9 @@ import {isArray} from '@ember/array';
 
 export function paginatedResponse(modelName) {
     return function (schema, request) {
-        let page = +request.queryParams.page || 1;
+        const page = +request.queryParams.page || 1;
         let limit = request.queryParams.limit;
-        let collection = schema[modelName].all();
+        const collection = schema[modelName].all();
 
         if (limit !== 'all') {
             limit = +request.queryParams.limit || 15;
@@ -26,8 +26,8 @@ export function paginateModelCollection(modelName, collection, page, limit) {
     } else {
         limit = +limit;
 
-        let start = (page - 1) * limit;
-        let end = start + limit;
+        const start = (page - 1) * limit;
+        const end = start + limit;
 
         pages = Math.ceil(collection.models.length / limit);
         models = collection.models.slice(start, end);
@@ -107,10 +107,10 @@ function normalizeStringParams(arr) {
 
 // TODO: use GQL to parse filter string?
 export function extractFilterParam(param, filter = '') {
-    let filterRegex = new RegExp(`${param}:(.*?)(?:\\+|$)`);
+    const filterRegex = new RegExp(`${param}:(.*?)(?:\\+|$)`);
     let match;
 
-    let [, result] = filter.match(filterRegex) || [];
+    const [, result] = filter.match(filterRegex) || [];
 
     if (!result) {
         return;

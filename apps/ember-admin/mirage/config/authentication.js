@@ -25,8 +25,8 @@ export default function mockAuthentication(server) {
     });
 
     server.post('/authentication/password_reset', function (schema, request) {
-        let {password_reset} = JSON.parse(request.requestBody);
-        let email = password_reset[0].email;
+        const {password_reset} = JSON.parse(request.requestBody);
+        const email = password_reset[0].email;
 
         if (email === 'unknown@example.com') {
             return new Response(404, {}, {
@@ -47,9 +47,9 @@ export default function mockAuthentication(server) {
     });
 
     server.get('/authentication/invitation/', function (schema, request) {
-        let {email} = request.queryParams;
-        let invite = schema.invites.findBy({email});
-        let valid = !!invite;
+        const {email} = request.queryParams;
+        const invite = schema.invites.findBy({email});
+        const valid = !!invite;
 
         return {
             invitation: [{
@@ -61,7 +61,7 @@ export default function mockAuthentication(server) {
     /* Setup ---------------------------------------------------------------- */
 
     server.post('/authentication/setup', function (schema, request) {
-        let [attrs] = JSON.parse(request.requestBody).setup;
+        const [attrs] = JSON.parse(request.requestBody).setup;
         let role = schema.roles.findBy({name: 'Owner'});
 
         // create owner role unless already exists

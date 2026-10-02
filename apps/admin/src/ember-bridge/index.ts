@@ -3,21 +3,25 @@ export { EmberProvider } from './ember-provider';
 export { useEmberContext } from './ember-context';
 export { EmberFallback } from './ember-fallback';
 export { ForceUpgradeGuard } from './force-upgrade-guard';
+export { useEmberNotificationsHost } from './ember-notifications-host';
 export {
   useEmberAuthSync,
+  useEmberListReturnSync,
   useEmberDataSync,
   useEmberFeatureFlag,
   readEmberFeatureFlag,
   useSidebarVisibility,
   useSubscriptionStatus,
-  useEmberRouting,
   useForceUpgrade,
-  subscribeOpenGiftLinkModal,
   respondToArtifactBuilder,
   subscribeOpenArtifactBuilder,
   isEmberThemeManaged,
   preloadEmberAdminThemeStylesheet,
   applyEmberAdminThemePreference,
+  navigateEmberBillingSubRoute,
+  syncEmberPostListQueryParams,
+  syncEmberFullScreen,
+  syncEmberRoutePattern,
   emberMutationHandlers,
 } from './ember-bridge';
 export type {
@@ -26,7 +30,6 @@ export type {
   ArtifactBuilderResult,
   OpenArtifactBuilderEvent,
   EmberDataChangeEvent,
-  EmberRouting,
-  OpenGiftLinkModalEvent,
   StateBridge,
 } from './ember-bridge';
+export type { EmberNotificationsHost } from './ember-notifications-host';

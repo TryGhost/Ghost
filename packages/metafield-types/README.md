@@ -1,6 +1,34 @@
 # @tryghost/metafield-types
 
-Shared catalog of member metafield types: storage routing and value validation, consumed by Ghost core and admin
+The types of member custom field Ghost supports: which types exist, which parts a
+type is made of, the type of value each part holds, and how a value of each type is
+validated. Ghost, its Admin and Portal use it, and so can an integration that offers
+inputs for a site's custom fields, such as the Ghost Zapier integration.
+
+```bash
+npm install @tryghost/metafield-types
+```
+
+## Entry points
+
+- `@tryghost/metafield-types/structure`: the type ids, each type's parts and the
+  type of value each part holds. It depends on nothing.
+- `@tryghost/metafield-types/countries`: the two-letter country codes a country
+  part accepts. It depends on nothing.
+- `@tryghost/metafield-types/identity`: how a field is named in filters and
+  payloads (`custom.<key>`). It depends on nothing.
+- `@tryghost/metafield-types`: the structure above, plus the rules that validate
+  a value of each type. These are built on [zod](https://zod.dev), and only this
+  entry point loads it, so an integration that only draws inputs can use the three
+  entry points above without zod ever being loaded.
+
+## Compatibility
+
+An integration using this package talks to sites on many Ghost versions, so a type
+never changes once it has shipped: it keeps its parts and the type of value each
+holds. New structure arrives as a new type. An integration should skip a type it
+doesn't recognise, which is what happens when a site is on a newer Ghost than the
+package the integration was built with.
 
 ## Develop
 

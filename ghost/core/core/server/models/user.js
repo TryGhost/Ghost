@@ -2,13 +2,12 @@ const validator = require('@tryghost/validator');
 const ObjectId = require('bson-objectid').default;
 const ghostBookshelf = require('./base');
 const baseUtils = require('./base/utils');
-const limitService = require('../services/limits');
+const { limitService } = require('../services/limits');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
 const { validatePassword } = require('../lib/validate-password');
 const { generatePassword } = require('../lib/generate-password');
-const permissions = require('../services/permissions');
 const urlUtils = require('../../shared/url-utils').default;
 const { setIsRoles } = require('./role-utils');
 const activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'];
@@ -55,10 +54,8 @@ const messages = {
 const inactiveStates = ['inactive', 'locked'];
 
 const allStates = activeStates.concat(inactiveStates);
-let User;
-let Users;
 
-User = ghostBookshelf.Model.extend(
+const User = ghostBookshelf.Model.extend(
   {
     tableName: 'users',
 
@@ -506,7 +503,7 @@ User = ghostBookshelf.Model.extend(
     findOne: function findOne(dataToClone, unfilteredOptions) {
       const options = this.filterOptions(unfilteredOptions, 'findOne');
       let query;
-      let status;
+
       let data = JSON.parse(JSON.stringify(dataToClone));
       const lookupRole = data.role;
 
@@ -520,7 +517,7 @@ User = ghostBookshelf.Model.extend(
       delete data.role;
       data = Object.assign({}, { status: 'all' }, data || {});
 
-      status = data.status;
+      const status = data.status;
       delete data.status;
 
       data = this.filterData(data);
@@ -988,11 +985,11 @@ User = ghostBookshelf.Model.extend(
 
       // CASE: i want to edit roles
       if (action === 'edit' && unsafeAttrs.roles && unsafeAttrs.roles[0]) {
-        let role = unsafeAttrs.roles[0];
-        let roleId = role.id || role;
-        let editedUserId = userModel.id;
+        const role = unsafeAttrs.roles[0];
+        const roleId = role.id || role;
+        const editedUserId = userModel.id;
         // @NOTE: role id of logged in user
-        let contextRoleId = loadedPermissions.user.roles[0].id;
+        const contextRoleId = loadedPermissions.user.roles[0].id;
 
         if (roleId !== contextRoleId && editedUserId === context.user) {
           return Promise.reject(
@@ -1043,6 +1040,12 @@ User = ghostBookshelf.Model.extend(
             // promote an Author to Editor, which the role hierarchy disallows.
             // The only case that skips the check is a self-edit that leaves your
             // own role untouched, e.g. a profile update that echoes back `roles`.
+
+            // Required here, not at the top: the permissions service requires the
+            // models index, which requires this file. Loaded top-down from the index
+            // that resolves, but loaded from this file first it leaves `User`
+            // undefined while author.js extends it.
+            const permissions = require('../services/permissions');
 
             return permissions
               .canThis(context)
@@ -1298,7 +1301,7 @@ User = ghostBookshelf.Model.extend(
   },
 );
 
-Users = ghostBookshelf.Collection.extend({
+const Users = ghostBookshelf.Collection.extend({
   model: User,
 });
 

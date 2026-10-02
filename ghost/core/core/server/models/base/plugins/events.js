@@ -8,7 +8,7 @@ const schema = require('../../../data/schema');
 const events = require('../../../lib/common/events');
 
 // Run tests or development with NUMERIC_IDS=1 to enable numeric object IDs
-let forceNumericObjectIds = process.env.NODE_ENV !== 'production' && !!process.env.NUMERIC_IDS;
+const forceNumericObjectIds = process.env.NODE_ENV !== 'production' && !!process.env.NUMERIC_IDS;
 let numberGenerator = 0;
 
 module.exports = function (Bookshelf) {
@@ -103,11 +103,11 @@ module.exports = function (Bookshelf) {
 
       /**
        * Do not call `toJSON`. This can remove properties e.g. password.
-       * @returns {*}
+       * @returns {Promise<void>}
        */
-      onValidate: function onValidate(model, columns, options) {
+      onValidate: async function onValidate(model, columns, options) {
         this.setEmptyValuesToNull();
-        return schema.validate(this.tableName, this, options);
+        schema.validate(this.tableName, this, options);
       },
 
       onFetched() {},
@@ -145,13 +145,13 @@ module.exports = function (Bookshelf) {
        * Exceptions: internal context or importing
        */
       onCreating: function onCreating(model, attr, options) {
-        if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'created_at')) {
+        if (Object.hasOwn(schema.tables[this.tableName], 'created_at')) {
           if (!model.get('created_at')) {
             model.set('created_at', new Date());
           }
         }
 
-        if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'updated_at')) {
+        if (Object.hasOwn(schema.tables[this.tableName], 'updated_at')) {
           if (!model.get('updated_at')) {
             model.set('updated_at', new Date());
           }
@@ -204,7 +204,7 @@ module.exports = function (Bookshelf) {
         }
 
         if (options && options.context && !options.context.internal && !options.importing) {
-          if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'created_at')) {
+          if (Object.hasOwn(schema.tables[this.tableName], 'created_at')) {
             if (model.hasDateChanged('created_at', { beforeWrite: true })) {
               model.set('created_at', this.previous('created_at'));
             }
@@ -212,10 +212,7 @@ module.exports = function (Bookshelf) {
         }
 
         // CASE: do not allow setting only the `updated_at` field, exception: importing
-        if (
-          Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'updated_at') &&
-          !options.importing
-        ) {
+        if (Object.hasOwn(schema.tables[this.tableName], 'updated_at') && !options.importing) {
           if (options.migrating) {
             model.set('updated_at', model.previous('updated_at'));
           } else if (Object.keys(model.changed).length === 1 && model.changed.updated_at) {

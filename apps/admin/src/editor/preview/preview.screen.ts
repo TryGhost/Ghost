@@ -1,6 +1,8 @@
 import { page } from 'vitest/browser';
 import {
   closePreviewButton,
+  preparingPreviewLabel,
+  sharePreviewButton,
   copyPreviewLinkButton,
   editorPublishButton,
   desktopPreviewToggle,
@@ -12,6 +14,7 @@ import {
   postPreviewEmail,
   postPreviewEmailFrame,
   postPreviewEmailFrom,
+  postPreviewEmailSizeWarning,
   postPreviewEmailSubject,
   postPreviewModal,
   postPreviewNewsletterMissing,
@@ -38,8 +41,10 @@ export const previewScreen = {
   tierSelect: () => page.getByRole('combobox', { name: previewTierSelectLabel }),
   newsletterSelect: () => page.getByRole('combobox', { name: previewNewsletterSelectLabel }),
   option: (name: string) => page.getByRole('option', { name }),
-  copyLinkButton: () => page.getByRole('button', { name: copyPreviewLinkButton }),
-  openInNewTabLink: () => page.getByRole('link', { name: openPreviewInNewTabLink }),
+  preparingStatus: () => page.getByRole('status', { name: preparingPreviewLabel }),
+  shareButton: () => page.getByRole('button', { name: sharePreviewButton, exact: true }),
+  copyLinkButton: () => page.getByRole('menuitem', { name: copyPreviewLinkButton }),
+  openInNewTabLink: () => page.getByRole('menuitem', { name: openPreviewInNewTabLink }),
   closeButton: () =>
     page.getByTestId(postPreviewModal).getByRole('button', { name: closePreviewButton }),
   publishButton: () =>
@@ -49,6 +54,7 @@ export const previewScreen = {
   emailFrame: () => page.getByTestId(postPreviewEmailFrame),
   emailChrome: () => page.getByTestId(postPreviewEmail),
   emailFrom: () => page.getByTestId(postPreviewEmailFrom),
+  emailSizeWarning: () => page.getByTestId(postPreviewEmailSizeWarning),
   unavailable: () => page.getByTestId(postPreviewUnavailable),
   newsletterMissing: () => page.getByTestId(postPreviewNewsletterMissing),
   saveFailed: () => page.getByTestId(postPreviewSaveFailed),

@@ -239,6 +239,7 @@ export const Surface: Story = {
         { name: 'panel', cssVar: '--surface-panel' },
         { name: 'elevated', cssVar: '--surface-elevated' },
         { name: 'elevated-2', cssVar: '--surface-elevated-2' },
+        { name: 'filter-bar', cssVar: '--filter-bar-background' },
         { name: 'control-readonly', cssVar: '--control-readonly-surface' },
       ]}
       title="Surface"
@@ -261,6 +262,7 @@ export const InteractiveSurfaces: Story = {
       swatches={[
         { name: 'interactive-hover', cssVar: '--interactive-hover' },
         { name: 'button-hover', cssVar: '--button-hover' },
+        { name: 'filter-bar-item-hover', cssVar: '--filter-bar-item-hover' },
         { name: 'tab-hover', cssVar: '--tab-hover' },
         { name: 'tab-active', cssVar: '--tab-active' },
         { name: 'table-row-hover', cssVar: '--table-row-hover' },
@@ -276,6 +278,7 @@ export const InteractiveSurfaces: Story = {
           '',
           '- **interactive-hover** — generic hover surface for dropdown items, menu items, list rows, filter options, etc. The catch-all.',
           '- **button-hover** — outline / dropdown button hover. Currently the same value as interactive-hover; kept as a separate token so the button surface can diverge later.',
+          '- **filter-bar-item-hover** — filter chips and the add-filter button. In dark mode it matches the sidebar navigation hover.',
           '- **tab-hover / tab-active** — `Tabs` (button, button-sm, pill, kpis variants), `PageMenu` items, and sidebar menu items.',
           '- **table-row-hover** — Shade `Table` row hover (also reused for list-row patterns that visually behave like table rows: top posts list, comments list, members sticky cell). This one is opaque — it tracks --color-sidebar-bg in dark — so it works where the row sits over scrolling content.',
           '',

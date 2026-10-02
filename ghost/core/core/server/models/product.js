@@ -105,7 +105,10 @@ const Product = ghostBookshelf.Model.extend(
      * has no access to the nested relations, which should be updated.
      */
     permittedAttributes: function permittedAttributes() {
-      let filteredKeys = ghostBookshelf.Model.prototype.permittedAttributes.apply(this, arguments);
+      const filteredKeys = ghostBookshelf.Model.prototype.permittedAttributes.apply(
+        this,
+        arguments,
+      );
 
       this.relationships.forEach((key) => {
         filteredKeys.push(key);

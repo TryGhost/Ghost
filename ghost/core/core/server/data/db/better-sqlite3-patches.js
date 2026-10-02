@@ -63,7 +63,7 @@ function getPrimarySqliteCode(code) {
     return undefined;
   }
 
-  if (Object.prototype.hasOwnProperty.call(SQLITE_PRIMARY_RESULT_CODES, code)) {
+  if (Object.hasOwn(SQLITE_PRIMARY_RESULT_CODES, code)) {
     return code;
   }
 

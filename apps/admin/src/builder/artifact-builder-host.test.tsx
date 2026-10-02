@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { ArtifactBuilderPayload, OpenArtifactBuilderEvent } from '@/ember-bridge';
-import type { ArtifactBuilderExperienceProps } from './artifact-builder-host';
+import { ArtifactBuilderHost, type ArtifactBuilderExperienceProps } from './artifact-builder-host';
 
 let featureEnabled: boolean | null | undefined = true;
 let openHandler: ((event: OpenArtifactBuilderEvent) => void) | undefined;
@@ -59,8 +59,7 @@ describe('ArtifactBuilderHost', () => {
     respond.mockClear();
   });
 
-  it('correlates Save with the originating bridge request', async () => {
-    const { ArtifactBuilderHost } = await import('./artifact-builder-host');
+  it('correlates Save with the originating bridge request', () => {
     render(<ArtifactBuilderHost Experience={FakeExperience} />);
 
     act(() => openHandler?.(request));
@@ -76,8 +75,7 @@ describe('ArtifactBuilderHost', () => {
     expect(screen.queryByText('Artifact overlay')).not.toBeInTheDocument();
   });
 
-  it('returns Cancel without changing the card', async () => {
-    const { ArtifactBuilderHost } = await import('./artifact-builder-host');
+  it('returns Cancel without changing the card', () => {
     render(<ArtifactBuilderHost Experience={FakeExperience} />);
 
     act(() => openHandler?.(request));
@@ -86,9 +84,8 @@ describe('ArtifactBuilderHost', () => {
     expect(respond).toHaveBeenCalledWith({ requestId: 'request-1', status: 'cancelled' });
   });
 
-  it('returns an unavailable error when the shared experiment is off', async () => {
+  it('returns an unavailable error when the shared experiment is off', () => {
     featureEnabled = false;
-    const { ArtifactBuilderHost } = await import('./artifact-builder-host');
     render(<ArtifactBuilderHost Experience={FakeExperience} />);
 
     act(() => openHandler?.(request));
@@ -102,8 +99,7 @@ describe('ArtifactBuilderHost', () => {
     featureEnabled = true;
   });
 
-  it('does not reject a replay of the active correlated request', async () => {
-    const { ArtifactBuilderHost } = await import('./artifact-builder-host');
+  it('does not reject a replay of the active correlated request', () => {
     render(<ArtifactBuilderHost Experience={FakeExperience} />);
 
     act(() => openHandler?.(request));
@@ -113,8 +109,7 @@ describe('ArtifactBuilderHost', () => {
     expect(screen.getByText('Artifact overlay')).toBeInTheDocument();
   });
 
-  it('moves focus into the modal surface and restores it after closing', async () => {
-    const { ArtifactBuilderHost } = await import('./artifact-builder-host');
+  it('moves focus into the modal surface and restores it after closing', () => {
     const trigger = document.createElement('button');
     document.body.append(trigger);
     trigger.focus();
@@ -130,12 +125,11 @@ describe('ArtifactBuilderHost', () => {
     trigger.remove();
   });
 
-  it('settles the bridge request when the Builder experience cannot load', async () => {
+  it('settles the bridge request when the Builder experience cannot load', () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
     const BrokenExperience = () => {
       throw new Error('chunk failed');
     };
-    const { ArtifactBuilderHost } = await import('./artifact-builder-host');
     render(<ArtifactBuilderHost Experience={BrokenExperience} />);
 
     act(() => openHandler?.(request));
@@ -149,8 +143,7 @@ describe('ArtifactBuilderHost', () => {
     consoleError.mockRestore();
   });
 
-  it('cancels the correlated request when its originating editor route changes', async () => {
-    const { ArtifactBuilderHost } = await import('./artifact-builder-host');
+  it('cancels the correlated request when its originating editor route changes', () => {
     const view = render(<ArtifactBuilderHost Experience={FakeExperience} />);
     act(() => openHandler?.(request));
 

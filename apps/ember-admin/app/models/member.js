@@ -38,23 +38,23 @@ export default Model.extend(ValidationEngine, {
     // when returned from the server with ids.
     // https://github.com/emberjs/data/issues/1829
     updateLabels() {
-        let labels = this.labels;
-        let oldLabels = labels.filterBy('id', null);
+        const labels = this.labels;
+        const oldLabels = labels.filterBy('id', null);
 
         labels.removeObjects(oldLabels);
         oldLabels.invoke('deleteRecord');
     },
 
     fetchSigninUrl: task(function* () {
-        let url = this.get('ghostPaths.url').api('members', this.id, 'signin_urls');
+        const url = this.get('ghostPaths.url').api('members', this.id, 'signin_urls');
 
-        let response = yield this.ajax.request(url);
+        const response = yield this.ajax.request(url);
 
         return response.member_signin_urls[0];
     }).drop(),
 
     logoutAllDevices: task(function* () {
-        let url = this.get('ghostPaths.url').api('members', this.id, 'signout');
+        const url = this.get('ghostPaths.url').api('members', this.id, 'signout');
         yield this.ajax.post(url);
     }).drop()
 });

@@ -18,6 +18,7 @@ describe('Tinybird Client', function () {
 
     mockRequest = {
       get: sinon.stub(),
+      post: sinon.stub(),
     };
 
     mockSettingsCache = {
@@ -63,6 +64,7 @@ describe('Tinybird Client', function () {
       assert(url.includes('site_uuid=931ade9e-a4f1-4217-8625-34bd34250c16'));
       assert(url.includes('date_from=2023-01-01'));
       assert(url.includes('date_to=2023-01-31'));
+      assert.equal(new URL(url).searchParams.get('ghost_client'), 'server');
       // assert(url.includes('timezone=UTC'));
       // assert(url.includes('member_status=all'));
 
@@ -95,11 +97,13 @@ describe('Tinybird Client', function () {
         dateTo: '2023-01-31',
         timezone: 'America/New_York',
         memberStatus: 'paid',
+        ghost_client: 'admin',
       });
 
       assert(url.includes('site_uuid=931ade9e-a4f1-4217-8625-34bd34250c16'));
       assert(url.includes('timezone=America%2FNew_York'));
       assert(url.includes('member_status=paid'));
+      assert.deepEqual(new URL(url).searchParams.getAll('ghost_client'), ['server']);
     });
 
     it('uses local endpoint and token when local is enabled', function () {
@@ -119,6 +123,29 @@ describe('Tinybird Client', function () {
       assert(url.startsWith('http://localhost:8000/v0/pipes/test_pipe.json?'));
       assert.equal(options.headers.Authorization, 'Bearer mock-jwt-token');
     });
+  });
+
+  it('posts search parameters in the body with a request timeout', async function () {
+    mockRequest.post.resolves({ body: JSON.stringify({ data: [{ id: 'run' }] }) });
+    const result = await tinybirdClient.fetch(
+      'api_automation_run_search',
+      {
+        version: '',
+        automationId: 'automation',
+        runIds: 'one,two',
+        timezone: 'UTC',
+      },
+      { method: 'POST', timeoutMs: 3000 },
+    );
+    assert.deepEqual(result, [{ id: 'run' }]);
+    const [url, options] = mockRequest.post.firstCall.args;
+    assert.equal(url, 'https://api.tinybird.co/v0/pipes/api_automation_run_search.json');
+    assert.equal(options.form.run_ids, 'one,two');
+    assert.equal(options.form.automation_id, 'automation');
+    assert.equal(options.form.site_uuid, '931ade9e-a4f1-4217-8625-34bd34250c16');
+    assert.equal(options.headers.Authorization, 'Bearer mock-jwt-token');
+    assert.ok(options.signal instanceof AbortSignal);
+    assert.equal(mockRequest.get.callCount, 0);
   });
 
   describe('parseResponse', function () {
@@ -226,6 +253,7 @@ describe('Tinybird Client', function () {
       const [url, options] = mockRequest.get.firstCall.args;
       assert(url.startsWith('https://api.tinybird.co/v0/pipes/test_pipe.json?'));
       assert.equal(options.headers.Authorization, 'Bearer mock-jwt-token');
+      assert.equal(new URL(url).searchParams.get('ghost_client'), 'server');
     });
 
     it('returns null when request fails', async function () {

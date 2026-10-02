@@ -4,33 +4,60 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { inputSurfaceClasses } from '@/components/ui/input-surface';
+import { useShade } from '@/providers/shade-provider';
 
-function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
+const inputGroupVariants = cva(
+  cn(
+    // Shared surface chrome (border, bg, radius, transition, invalid state).
+    inputSurfaceClasses.base,
+    inputSurfaceClasses.invalidWithin,
+
+    // Wrapper layout + group context (input-group specific).
+    'group/input-group relative flex w-full items-center outline-hidden data-[disabled=true]:bg-control-disabled-surface [&>[data-slot=input-group-control]]:bg-transparent',
+    'h-(--control-height) has-[>textarea]:h-auto',
+
+    // Variants based on alignment.
+    'has-[>[data-align=inline-start]]:[&>input]:pl-2',
+    'has-[>[data-align=inline-end]]:[&>input]:pr-2',
+    'has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>[data-align=block-start]]:[&>input]:pb-3',
+    'has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-end]]:[&>input]:pt-3',
+
+    // Focus state — scoped to the input-group control specifically so that
+    // focusing an InputGroupButton inside the group does NOT trigger the surface
+    // focus ring. This is why we don't use inputSurface('within') here.
+    'has-[[data-slot=input-group-control]:focus-visible]:border-focus-ring has-[[data-slot=input-group-control]:focus-visible]:ring-2 has-[[data-slot=input-group-control]:focus-visible]:ring-focus-ring/25 has-[[data-slot=input-group-control]:focus-visible]:outline-hidden',
+  ),
+  {
+    variants: {
+      variant: {
+        default: '',
+        ghost: 'border-transparent bg-transparent shadow-none hover:bg-button-hover',
+        secondary:
+          'border-transparent bg-tab-active text-secondary-foreground shadow-none hover:bg-secondary has-[[data-slot=input-group-control]:focus-visible]:bg-control-surface has-[[data-slot=input-group-control]:focus-visible]:hover:bg-control-surface has-[[data-slot=input-group-control]:not(:placeholder-shown)]:border-control-border has-[[data-slot=input-group-control]:not(:placeholder-shown)]:bg-control-surface has-[[data-slot=input-group-control]:not(:placeholder-shown)]:hover:bg-control-surface',
+      },
+      shape: {
+        rounded: 'rounded-control',
+        pill: 'rounded-full has-[>[data-align=block-end]]:rounded-control has-[>[data-align=block-start]]:rounded-control has-[>textarea]:rounded-control',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      shape: 'rounded',
+    },
+  },
+);
+
+export interface InputGroupProps
+  extends React.ComponentProps<'div'>, VariantProps<typeof inputGroupVariants> {}
+
+function InputGroup({ className, variant, shape, ...props }: InputGroupProps) {
+  const resolvedShape = shape ?? 'rounded';
   return (
     <div
-      className={cn(
-        // Shared surface chrome (border, bg, radius, transition, invalid state).
-        inputSurfaceClasses.base,
-        inputSurfaceClasses.invalidWithin,
-
-        // Wrapper layout + group context (input-group specific).
-        'group/input-group relative flex w-full items-center outline-hidden data-[disabled=true]:bg-control-disabled-surface [&>[data-slot=input-group-control]]:bg-transparent',
-        'h-(--control-height) has-[>textarea]:h-auto',
-
-        // Variants based on alignment.
-        'has-[>[data-align=inline-start]]:[&>input]:pl-2',
-        'has-[>[data-align=inline-end]]:[&>input]:pr-2',
-        'has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>[data-align=block-start]]:[&>input]:pb-3',
-        'has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-end]]:[&>input]:pt-3',
-
-        // Focus state — scoped to the input-group control specifically so that
-        // focusing an InputGroupButton inside the group does NOT trigger the surface
-        // focus ring. This is why we don't use inputSurface('within') here.
-        'has-[[data-slot=input-group-control]:focus-visible]:border-focus-ring has-[[data-slot=input-group-control]:focus-visible]:ring-2 has-[[data-slot=input-group-control]:focus-visible]:ring-focus-ring/25 has-[[data-slot=input-group-control]:focus-visible]:outline-hidden',
-
-        className,
-      )}
+      className={cn(inputGroupVariants({ variant, shape: resolvedShape }), className)}
+      data-control-shape={resolvedShape}
       data-slot="input-group"
+      data-variant={variant ?? 'default'}
       role="group"
       {...props}
     />
@@ -61,9 +88,19 @@ function InputGroupAddon({
   align = 'inline-start',
   ...props
 }: React.ComponentProps<'div'> & VariantProps<typeof inputGroupAddonVariants>) {
+  const { isAdmin7 } = useShade();
   return (
     <div
-      className={cn(inputGroupAddonVariants({ align }), className)}
+      className={cn(
+        inputGroupAddonVariants({ align }),
+        isAdmin7 &&
+          align === 'inline-end' &&
+          'has-[>button[data-size$=xs]]:mr-0 has-[>button[data-size$=xs]]:pr-[calc((var(--control-height)-24px)/2-1px)]',
+        isAdmin7 &&
+          align === 'inline-start' &&
+          'has-[>button[data-size$=xs]]:ml-0 has-[>button[data-size$=xs]]:pl-[calc((var(--control-height)-24px)/2-1px)]',
+        className,
+      )}
       data-align={align}
       data-slot="input-group-addon"
       role="group"
@@ -81,12 +118,13 @@ function InputGroupAddon({
   );
 }
 
-const inputGroupButtonVariants = cva('flex items-center gap-2 text-control shadow-none', {
+const inputGroupButtonVariants = cva('flex items-center gap-2 shadow-none', {
   variants: {
     size: {
-      xs: "h-6 gap-1 rounded-[calc(var(--input-group-radius)-5px)] px-2 has-[>svg]:px-2 [&>svg:not([class*='size-'])]:size-3.5",
-      sm: 'h-8 gap-1.5 rounded-md px-2.5 has-[>svg]:px-2.5',
-      'icon-xs': 'size-6 rounded-[calc(var(--input-group-radius)-5px)] p-0 has-[>svg]:p-0',
+      xs: "h-6 gap-1 px-2 has-[>svg]:px-2 data-[control-shape=rounded]:rounded-[calc(var(--input-group-radius)-5px)] [&>svg:not([class*='size-'])]:size-3.5",
+      sm: 'h-8 gap-1.5 px-2.5 has-[>svg]:px-2.5 data-[control-shape=rounded]:rounded-control',
+      'icon-xs':
+        'size-6 p-0 has-[>svg]:p-0 data-[control-shape=rounded]:rounded-[calc(var(--input-group-radius)-5px)]',
       'icon-sm': 'size-8 p-0 has-[>svg]:p-0',
     },
   },
@@ -98,16 +136,26 @@ const inputGroupButtonVariants = cva('flex items-center gap-2 text-control shado
 const InputGroupButton = React.forwardRef<
   HTMLButtonElement,
   Omit<React.ComponentProps<typeof Button>, 'size'> & VariantProps<typeof inputGroupButtonVariants>
->(({ className, type = 'button', variant = 'ghost', size = 'xs', ...props }, ref) => (
-  <Button
-    ref={ref}
-    className={cn(inputGroupButtonVariants({ size }), className)}
-    data-size={size}
-    type={type}
-    variant={variant}
-    {...props}
-  />
-));
+>(({ className, type = 'button', variant = 'ghost', size = 'xs', ...props }, ref) => {
+  const { isAdmin7 } = useShade();
+  return (
+    <Button
+      ref={ref}
+      className={cn(
+        inputGroupButtonVariants({ size }),
+        isAdmin7 ? 'text-(length:--text-control)' : 'text-control',
+        isAdmin7 &&
+          (size === 'xs' || size === 'icon-xs') &&
+          'data-[control-shape=rounded]:rounded-[calc(var(--radius-control)-(var(--control-height)-24px)/2)]',
+        className,
+      )}
+      data-size={size}
+      type={type}
+      variant={variant}
+      {...props}
+    />
+  );
+});
 InputGroupButton.displayName = 'InputGroupButton';
 
 function InputGroupText({ className, ...props }: React.ComponentProps<'span'>) {
@@ -159,4 +207,5 @@ export {
   InputGroupText,
   InputGroupInput,
   InputGroupTextarea,
+  inputGroupVariants,
 };

@@ -3,8 +3,18 @@ import { cleanup } from 'vitest-browser-react';
 
 import './matchers';
 import { defaultBootResolver, defaultBootRoutes } from './boot';
-import { resetFakeApi, settleRequests, startFakeApi, verifyNoUnhandledRequests } from './worker';
+import {
+  resetFakeApi,
+  settleRequests,
+  startFakeApi,
+  trackIssuedRequests,
+  verifyNoUnhandledRequests,
+} from './worker';
 import { resetDeclaredResources } from './resources';
+import { guardFrameNavigations, resetFakeFrameOrigins } from './frames';
+
+// At import, before the spec module (and the app) loads.
+trackIssuedRequests();
 
 beforeAll(async () => {
   // Playwright waits for an element to stop moving before it acts on it, so every
@@ -21,6 +31,7 @@ beforeAll(async () => {
   document.head.appendChild(style);
 
   await startFakeApi({ resolver: defaultBootResolver, routes: defaultBootRoutes() });
+  await guardFrameNavigations();
 });
 
 afterEach(async () => {
@@ -36,7 +47,17 @@ afterEach(async () => {
     resetFakeApi();
     resetDeclaredResources();
     sessionStorage.clear();
+    // The editor keeps local copies of drafts here, and the restore screen lists them all.
+    for (const key of Object.keys(localStorage)) {
+      if (key.startsWith('post-revision-')) {
+        localStorage.removeItem(key);
+      }
+    }
     window.location.hash = '';
-    verifyNoUnhandledRequests();
+    try {
+      await resetFakeFrameOrigins();
+    } finally {
+      verifyNoUnhandledRequests();
+    }
   }
 });

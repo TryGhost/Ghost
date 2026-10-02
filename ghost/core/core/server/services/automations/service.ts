@@ -6,7 +6,7 @@ import type DomainEvents from '@tryghost/domain-events';
 import { oneAtATime } from '../../../shared/one-at-a-time';
 import { poll } from './poll';
 import * as automationsApi from './automations-api';
-import { getSchedulerIdempotencyKey } from './get-scheduler-idempotency-key';
+import { getSchedulerIdempotencyKey } from '../../adapters/scheduling/get-scheduler-idempotency-key';
 import { buildSignedJob } from '../../adapters/scheduling/build-signed-job';
 import { setImmediate as flushEventLoop } from 'node:timers/promises';
 import { SoonestTimer } from '../../lib/soonest-timer';
@@ -80,13 +80,18 @@ export class AutomationsService {
       try {
         const schedulerPollTime = getSchedulerPollTime(date, siteIdentifier);
         const key = await internalKeys.get('ghost-scheduler');
-        schedulerAdapter.schedule(
+        await schedulerAdapter.schedule(
           buildSignedJob({
             apiUrl,
             path: ['automations', 'poll'],
             time: schedulerPollTime.getTime(),
             key,
-            getIdempotencyKey: (url) => getSchedulerIdempotencyKey(date, url),
+            getIdempotencyKey: (url) =>
+              getSchedulerIdempotencyKey({
+                namespace: 'automations',
+                date: schedulerPollTime,
+                url,
+              }),
           }),
         );
       } catch (err) {

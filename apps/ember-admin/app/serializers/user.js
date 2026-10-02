@@ -11,8 +11,8 @@ export default class UserSerializer extends ApplicationSerializer.extend(Embedde
     };
 
     extractSingle(store, primaryType, payload) {
-        let root = this.keyForAttribute(primaryType.modelName);
-        let pluralizedRoot = pluralize(primaryType.modelName);
+        const root = this.keyForAttribute(primaryType.modelName);
+        const pluralizedRoot = pluralize(primaryType.modelName);
 
         payload[root] = payload[pluralizedRoot][0];
         delete payload[pluralizedRoot];

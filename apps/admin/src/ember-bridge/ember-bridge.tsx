@@ -1,8 +1,9 @@
-import { useCallback, useContext, useEffect, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
-import { EmberContext } from './ember-context';
 import { clearBuilderSessionCredentials } from '@/builder/models/session-credential-store';
+import { getListReturnNavigationState } from '@/shared/virtual-list/list-return-state';
+import type { EmberNotificationsHost } from './ember-notifications-host';
 
 export interface EmberBridge {
   state: StateBridge;
@@ -13,10 +14,9 @@ export type StateBridgeEventMap = {
   emberAuthChange: EmberAuthChangeEvent;
   subscriptionChange: SubscriptionState;
   sidebarVisibilityChange: SidebarVisibilityChangeEvent;
-  routeChange: RouteChangeEvent;
-  openGiftLinkModal: OpenGiftLinkModalEvent;
   openArtifactBuilder: OpenArtifactBuilderEvent;
   featureFlagsChange: undefined;
+  restoreListState: { path: string };
 };
 
 export type AdminThemeMode = 'light' | 'dark' | 'system';
@@ -31,6 +31,11 @@ export interface StateBridge {
   applyAdminThemePreference?: (mode: AdminThemeMode) => Promise<void> | void;
   completeArtifactBuilder?: (result: ArtifactBuilderResult) => boolean;
   getPendingArtifactBuilderRequests?: () => OpenArtifactBuilderEvent[];
+  navigateToBillingSubRoute?: (subRoute: string) => void;
+  setPostListQueryParams?: (resource: 'posts' | 'pages', params: Record<string, string>) => void;
+  setReactFullScreen?: (isFullScreen: boolean) => void;
+  setReactRoutePattern?: (routePattern: string | null) => void;
+  connectNotificationsHost?: (host: EmberNotificationsHost) => () => void;
   on<K extends keyof StateBridgeEventMap>(
     event: K,
     callback: (event: StateBridgeEventMap[K]) => void,
@@ -40,11 +45,6 @@ export interface StateBridge {
     callback: (event: StateBridgeEventMap[K]) => void,
   ): void;
   sidebarVisible: boolean;
-  getRouteUrl: (routeName: string, queryParams?: Record<string, string | null> | null) => string;
-  isRouteActive: (
-    routeNames: string | string[],
-    queryParams?: Record<string, string | null> | null,
-  ) => boolean;
 }
 
 declare global {
@@ -76,16 +76,6 @@ export interface SidebarVisibilityChangeEvent {
   isVisible: boolean;
 }
 
-export interface RouteChangeEvent {
-  routeName: string;
-  queryParams: Record<string, unknown>;
-}
-
-export interface OpenGiftLinkModalEvent {
-  id: string;
-  resource: 'posts' | 'pages';
-}
-
 export interface ArtifactBuilderPayload {
   id: string;
   artifactVersion: number;
@@ -115,8 +105,6 @@ export type ArtifactBuilderResult =
       status: 'error';
       message: string;
     };
-
-export type EmberRouting = Pick<StateBridge, 'getRouteUrl' | 'isRouteActive'>;
 
 /**
  * Maps Ember Data model names to React ResponseType strings.
@@ -267,6 +255,32 @@ export function useEmberAuthSync() {
   }, [queryClient]);
 }
 
+/** Ember writes the destination hash before asking React to restore list state. */
+export function useEmberListReturnSync() {
+  useEffect(
+    () =>
+      onEmberStateBridgeEvent('restoreListState', ({ path }) => {
+        const returnState = getListReturnNavigationState(path);
+        if (!returnState) {
+          return;
+        }
+        const state = window.history.state as Record<string, unknown> | null;
+        const userState = state?.usr;
+        window.history.replaceState(
+          {
+            ...state,
+            usr: {
+              ...(userState && typeof userState === 'object' ? userState : {}),
+              ...returnState,
+            },
+          },
+          '',
+        );
+      }),
+    [],
+  );
+}
+
 export function useSubscriptionStatus() {
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionState | null>(null);
 
@@ -304,20 +318,6 @@ export function useEmberFeatureFlag(flag: string): boolean | null | undefined {
 }
 
 /**
- * Subscribes to Ember's request to open the (React-owned) gift-link modal.
- *
- * Ember surfaces — the posts/pages list context menu — fire `openGiftLinkModal`
- * over the bridge instead of rendering their own modal. The consumer owns the
- * modal's open/close state and just reacts to each request. Returns an
- * unsubscribe function.
- */
-export function subscribeOpenGiftLinkModal(
-  handler: (event: OpenGiftLinkModalEvent) => void,
-): () => void {
-  return onEmberStateBridgeEvent('openGiftLinkModal', handler);
-}
-
-/**
  * Whether Ember owns the DOM theme. In the embedded admin, Ember manages the
  * `dark` class and the dark stylesheet, and installs its own
  * prefers-color-scheme listener, so React must not apply the theme itself.
@@ -351,6 +351,64 @@ export function applyEmberAdminThemePreference(mode: AdminThemeMode): boolean {
   }
   void stateBridge.applyAdminThemePreference(mode);
   return true;
+}
+
+/**
+ * Hands a billing app sub-route straight to Ember's billing app, for when the
+ * billing route is already showing. Returns false when no bridge is present.
+ */
+export function navigateEmberBillingSubRoute(subRoute: string): boolean {
+  const stateBridge = window.EmberBridge?.state;
+  if (!stateBridge?.navigateToBillingSubRoute) {
+    return false;
+  }
+  stateBridge.navigateToBillingSubRoute(subRoute);
+  return true;
+}
+
+/** Keep the Ember editor's breadcrumb in sync with the React list. */
+export function syncEmberPostListQueryParams(
+  resource: 'posts' | 'pages',
+  params: Record<string, string>,
+): () => void {
+  return waitForStateBridge((stateBridge) => {
+    stateBridge.setPostListQueryParams?.(resource, params);
+  });
+}
+
+/** Tells Ember whether React's current route hides the admin sidebar. */
+export function syncEmberFullScreen(isFullScreen: boolean): () => void {
+  return waitForStateBridge((stateBridge) => {
+    stateBridge.setReactFullScreen?.(isFullScreen);
+  });
+}
+
+/** Tells Ember the pattern of the React route showing, or null while Ember shows its own. */
+export function syncEmberRoutePattern(routePattern: string | null): () => void {
+  return waitForStateBridge((stateBridge) => {
+    stateBridge.setReactRoutePattern?.(routePattern);
+  });
+}
+
+/**
+ * Hands Ember's notifications to a React host once the bridge is ready.
+ * Returns a disconnect that also cancels a connection still waiting.
+ */
+export function connectEmberNotificationsHost(host: EmberNotificationsHost): () => void {
+  let disconnect: (() => void) | undefined;
+  let isConnected = true;
+
+  const stopPolling = waitForStateBridge((stateBridge) => {
+    if (isConnected) {
+      disconnect = stateBridge.connectNotificationsHost?.(host);
+    }
+  });
+
+  return () => {
+    isConnected = false;
+    stopPolling();
+    disconnect?.();
+  };
 }
 
 /**
@@ -413,72 +471,23 @@ export function useSidebarVisibility(): boolean {
   );
 }
 
-// Default no-op routing for when the bridge isn't available yet
-const defaultRouting: EmberRouting = {
-  getRouteUrl: (routeName) => routeName,
-  isRouteActive: () => false,
-};
-
-/**
- * Hook to access Ember routing state.
- * Returns routing methods that re-render when Ember's route changes.
- *
- * @example
- * ```tsx
- * const routing = useEmberRouting();
- * const postsUrl = routing.getRouteUrl('posts');
- * const customUrl = routing.getRouteUrl('posts', {type: 'draft'});
- * const isActive = routing.isRouteActive('posts', {type: 'draft'});
- * ```
- */
-export function useEmberRouting(): EmberRouting {
-  const emberContext = useContext(EmberContext);
-  const [bridge, setBridge] = useState<StateBridge | null>(() => window.EmberBridge?.state ?? null);
-  const [, forceUpdate] = useState(0);
-
-  useEffect(() => {
-    // Wait for bridge to be available
-    if (!bridge) {
-      return waitForStateBridge(setBridge);
-    }
-
-    // Subscribe to route changes to force re-renders
-    const handleRouteChange = () => {
-      forceUpdate((n) => n + 1);
-    };
-
-    bridge.on('routeChange', handleRouteChange);
-    return () => bridge.off('routeChange', handleRouteChange);
-  }, [bridge]);
-
-  // Return default no-op routing until bridge is available
-  if (!bridge) {
-    return defaultRouting;
-  }
-
-  return {
-    getRouteUrl: bridge.getRouteUrl,
-    // React-owned navigations use pushState, which Ember does not observe.
-    // Only trust Ember's route state while the current route is actually
-    // rendering an Ember fallback. Outside EmberProvider (mainly unit tests
-    // and standalone consumers), preserve the bridge's original behaviour.
-    isRouteActive: (...args) =>
-      (emberContext?.isFallbackPresent ?? true) && bridge.isRouteActive(...args),
-  };
-}
-
 /**
  * Hook to get the forceUpgrade state.
  *
  * Returns true when the site is in force upgrade mode (requires billing action).
+ * Returns undefined while the initial config request is loading.
  *
  * Force upgrade state is determined by:
  * 1. Config hostSettings.forceUpgrade (set by server, requires restart to change)
  * 2. Subscription status (if subscription becomes 'active', forceUpgrade is cleared)
  */
-export function useForceUpgrade(): boolean {
-  const { data: config } = useBrowseConfig();
+export function useForceUpgrade(): boolean | undefined {
+  const { data: config, isLoading } = useBrowseConfig();
   const subscriptionStatus = useSubscriptionStatus();
+
+  if (isLoading) {
+    return undefined;
+  }
 
   const configForceUpgrade = config?.config?.hostSettings?.forceUpgrade;
 

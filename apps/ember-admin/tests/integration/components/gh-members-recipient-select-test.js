@@ -69,7 +69,7 @@ describe('Integration: Component: gh-members-recipient-select', function () {
         await timeout(100);
 
         // Should have Specific checkbox
-        let specificCheckbox = this.element.querySelector('[data-test-checkbox="specific-members"]');
+        const specificCheckbox = this.element.querySelector('[data-test-checkbox="specific-members"]');
         expect(specificCheckbox).to.exist;
 
         // Click specific
@@ -83,8 +83,8 @@ describe('Integration: Component: gh-members-recipient-select', function () {
         await clickTrigger('[data-test-select="specific-members"]');
         await timeout(100);
 
-        let options = findAll('.ember-power-select-option');
-        let optionTexts = options.map(o => o.textContent.trim());
+        const options = findAll('.ember-power-select-option');
+        const optionTexts = options.map(o => o.textContent.trim());
 
         expect(optionTexts).to.include('VIP');
     });
@@ -190,7 +190,7 @@ describe('Integration: Component: gh-members-recipient-select', function () {
 
         // The label should appear as a selected token, proving it was registered
         // with labelsManager via addLabel so selectedOptions resolves it
-        let tokens = findAll('.ember-power-select-multiple-option');
+        const tokens = findAll('.ember-power-select-multiple-option');
         expect(tokens.some(t => t.textContent.includes('Outlier Label'))).to.be.true;
     });
 });

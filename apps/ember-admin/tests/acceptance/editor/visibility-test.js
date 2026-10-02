@@ -24,7 +24,7 @@ const PAYWALL_LEXICAL = JSON.stringify({
 });
 
 describe('Acceptance: Editor / Visibility', function () {
-    let hooks = setupApplicationTest();
+    const hooks = setupApplicationTest();
     setupMirage(hooks);
 
     let author;
@@ -32,7 +32,7 @@ describe('Acceptance: Editor / Visibility', function () {
     beforeEach(async function () {
         this.server.loadFixtures();
 
-        let role = this.server.create('role', {name: 'Administrator'});
+        const role = this.server.create('role', {name: 'Administrator'});
         author = this.server.create('user', {roles: [role]});
 
         enableMembers(this.server);
@@ -46,7 +46,7 @@ describe('Acceptance: Editor / Visibility', function () {
         await visit(`/editor/post/${post.id}`);
         await click('[data-test-psm-trigger]');
 
-        let visibilitySelect = find('[data-test-select="post-visibility"]');
+        const visibilitySelect = find('[data-test-select="post-visibility"]');
         expect(visibilitySelect.value, 'initial visibility').to.equal('public');
 
         await fillIn('[data-test-select="post-visibility"]', 'members');
@@ -69,7 +69,7 @@ describe('Acceptance: Editor / Visibility', function () {
 
     it('shows tier selector when visibility is set to tiers', async function () {
         enableStripe(this.server);
-        let post = this.server.create('post', {authors: [author], status: 'draft'});
+        const post = this.server.create('post', {authors: [author], status: 'draft'});
 
         await visit(`/editor/post/${post.id}`);
         await click('[data-test-psm-trigger]');
@@ -82,18 +82,18 @@ describe('Acceptance: Editor / Visibility', function () {
     });
 
     it('saves visibility change to API', async function () {
-        let post = this.server.create('post', {authors: [author], status: 'draft'});
+        const post = this.server.create('post', {authors: [author], status: 'draft'});
 
         await visit(`/editor/post/${post.id}`);
         await click('[data-test-psm-trigger]');
         await fillIn('[data-test-select="post-visibility"]', 'paid');
 
         // Verify the PUT request was made with the correct visibility
-        let putRequests = this.server.pretender.handledRequests.filter(
+        const putRequests = this.server.pretender.handledRequests.filter(
             req => req.method === 'PUT' && req.url.includes('/posts/')
         );
-        let lastPut = putRequests[putRequests.length - 1];
-        let requestBody = JSON.parse(lastPut.requestBody);
+        const lastPut = putRequests[putRequests.length - 1];
+        const requestBody = JSON.parse(lastPut.requestBody);
         expect(requestBody.posts[0].visibility, 'visibility in PUT request').to.equal('paid');
     });
 

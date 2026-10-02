@@ -1,19 +1,21 @@
 import { useMemo, useRef, useState } from 'react';
-import { Inline, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { useFocusContext } from '@tryghost/shade/app';
 import { settingsPostHistoryButton } from '@tryghost/test-data/selectors/editor';
 import type { PostCardConfig, PostType } from '@/editor/card-config';
+import type { SaveEngineState } from '@/editor/engine/save-engine';
 import { useSiteTimezone } from '@/editor/use-editor-settings';
-import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
+import type { EditorSettingsPort } from './editor-settings-port';
 import { canViewPostHistory, revisionEntries, type RevisionEntry } from './post-history';
 import { PostHistoryModal } from './post-history-modal';
-import { SettingsSection } from './settings-section';
+import { SettingsNavigationRow } from './settings-navigation-row';
 
 export interface PostHistorySectionProps {
-  session: EditorSessionHandle;
+  session: EditorSettingsPort;
   postType: PostType;
   cardConfig: PostCardConfig;
+  /** The save engine's state, which says whether a restore can be written at all. */
+  state: SaveEngineState;
   /** The excerpt has its own home under the title, and is restored with the version. */
   showExcerpt: boolean;
 }
@@ -28,6 +30,7 @@ export function PostHistorySection({
   postType,
   cardConfig,
   showExcerpt,
+  state,
 }: PostHistorySectionProps) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -56,22 +59,15 @@ export function PostHistorySection({
     });
 
   return (
-    <SettingsSection>
-      <button
+    <>
+      <SettingsNavigationRow
         ref={triggerRef}
-        className="-mx-2 rounded-md px-2 py-1 text-left hover:bg-surface-elevated-2"
         data-testid={settingsPostHistoryButton}
-        type="button"
+        icon={<LucideIcon.History />}
         onClick={() => setOpen(true)}
       >
-        <Inline gap="sm" justify="between">
-          <Inline gap="sm">
-            <LucideIcon.History className="size-4 text-text-secondary" />
-            <Text size="sm">{postType === 'page' ? 'Page' : 'Post'} history</Text>
-          </Inline>
-          <LucideIcon.ChevronRight className="size-4 text-text-secondary" />
-        </Inline>
-      </button>
+        {postType === 'page' ? 'Page' : 'Post'} history
+      </SettingsNavigationRow>
       {open ? (
         <PostHistoryModal
           cardConfig={cardConfig}
@@ -82,9 +78,9 @@ export function PostHistorySection({
           open={open}
           postType={postType}
           restoreError={
-            (session.state.kind === 'error' && session.state.error.kind === 'session-invalid') ||
-            session.state.kind === 'reauth-pending'
-              ? 'Your session expired. Sign in again in a new tab, then try restoring again.'
+            (state.kind === 'error' && state.error.kind === 'session-invalid') ||
+            state.kind === 'reauth-pending'
+              ? 'Your session expired. Restore again to sign in and continue.'
               : undefined
           }
           revisions={revisions}
@@ -98,6 +94,6 @@ export function PostHistorySection({
           onRestore={restore}
         />
       ) : null}
-    </SettingsSection>
+    </>
   );
 }

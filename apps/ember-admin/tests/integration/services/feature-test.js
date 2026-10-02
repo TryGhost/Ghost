@@ -30,8 +30,8 @@ function stubSettings(server, labs, validSave = true) {
     });
 
     server.put(`${ghostPaths().apiRoot}/settings/`, function (request) {
-        let statusCode = (validSave) ? 200 : 400;
-        let response = (validSave) ? request.requestBody : JSON.stringify({
+        const statusCode = (validSave) ? 200 : 400;
+        const response = (validSave) ? request.requestBody : JSON.stringify({
             errors: [{
                 message: 'Test Error'
             }]
@@ -42,7 +42,7 @@ function stubSettings(server, labs, validSave = true) {
 }
 
 function stubUser(server, accessibility, validSave = true) {
-    let users = [{
+    const users = [{
         id: '1',
         // Add extra properties for the validations
         name: 'Test User',
@@ -60,8 +60,8 @@ function stubUser(server, accessibility, validSave = true) {
     });
 
     server.put(`${ghostPaths().apiRoot}/users/1/`, function (request) {
-        let statusCode = (validSave) ? 200 : 400;
-        let response = (validSave) ? request.requestBody : JSON.stringify({
+        const statusCode = (validSave) ? 200 : 400;
+        const response = (validSave) ? request.requestBody : JSON.stringify({
             errors: [{
                 message: 'Test Error'
             }]
@@ -114,10 +114,10 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let session = this.owner.lookup('service:session');
+        const session = this.owner.lookup('service:session');
         await session.populateUser();
 
-        let service = this.owner.lookup('service:feature');
+        const service = this.owner.lookup('service:feature');
         await service.fetch();
         expect(service.get('labs.testFlag')).to.be.false;
         expect(service.get('testFlag')).to.be.false;
@@ -134,10 +134,10 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let session = this.owner.lookup('service:session');
+        const session = this.owner.lookup('service:session');
         await session.populateUser();
 
-        let service = this.owner.lookup('service:feature');
+        const service = this.owner.lookup('service:feature');
 
         await service.fetch();
         expect(service.get('testFlag')).to.be.true;
@@ -148,10 +148,10 @@ describe('Integration: Service: feature', function () {
         stubSettings(server, {designBuilder: true});
         stubUser(server, {});
 
-        let session = this.owner.lookup('service:session');
+        const session = this.owner.lookup('service:session');
         await session.populateUser();
 
-        let service = this.owner.lookup('service:feature');
+        const service = this.owner.lookup('service:feature');
 
         await service.fetch();
         expect(service.get('designBuilder')).to.be.true;
@@ -163,10 +163,10 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let session = this.owner.lookup('service:session');
+        const session = this.owner.lookup('service:session');
         await session.populateUser();
 
-        let service = this.owner.lookup('service:feature');
+        const service = this.owner.lookup('service:feature');
         service.config.testFlag = false;
 
         await service.fetch();
@@ -180,10 +180,10 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let session = this.owner.lookup('service:session');
+        const session = this.owner.lookup('service:session');
         await session.populateUser();
 
-        let service = this.owner.lookup('service:feature');
+        const service = this.owner.lookup('service:feature');
         service.config.testFlag = true;
 
         await service.fetch();
@@ -197,10 +197,10 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let session = this.owner.lookup('service:session');
+        const session = this.owner.lookup('service:session');
         await session.populateUser();
 
-        let service = this.owner.lookup('service:feature');
+        const service = this.owner.lookup('service:feature');
         service.config.testFlag = {key: 'value'};
 
         await service.fetch();
@@ -214,10 +214,10 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let session = this.owner.lookup('service:session');
+        const session = this.owner.lookup('service:session');
         await session.populateUser();
 
-        let service = this.owner.lookup('service:feature');
+        const service = this.owner.lookup('service:feature');
         service.config.testFlag = true;
 
         await service.fetch();
@@ -231,10 +231,10 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let session = this.owner.lookup('service:session');
+        const session = this.owner.lookup('service:session');
         await session.populateUser();
 
-        let service = this.owner.lookup('service:feature');
+        const service = this.owner.lookup('service:feature');
 
         await service.fetch();
         expect(service.get('accessibility.testUserFlag')).to.be.false;
@@ -247,10 +247,10 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let session = this.owner.lookup('service:session');
+        const session = this.owner.lookup('service:session');
         await session.populateUser();
 
-        let service = this.owner.lookup('service:feature');
+        const service = this.owner.lookup('service:feature');
 
         await service.fetch();
         expect(service.get('accessibility.testUserFlag')).to.be.true;
@@ -261,10 +261,10 @@ describe('Integration: Service: feature', function () {
         stubSettings(server, {});
         stubUser(server, {nightShift: 'system'});
 
-        let session = this.owner.lookup('service:session');
+        const session = this.owner.lookup('service:session');
         await session.populateUser();
 
-        let service = this.owner.lookup('service:feature');
+        const service = this.owner.lookup('service:feature');
         sinon.stub(service.lazyLoader, 'loadStyle').resolves();
         stubMatchMedia({
             matches: true,
@@ -283,10 +283,10 @@ describe('Integration: Service: feature', function () {
         stubSettings(server, {});
         stubUser(server, {nightShift: 'system'});
 
-        let session = this.owner.lookup('service:session');
+        const session = this.owner.lookup('service:session');
         await session.populateUser();
 
-        let service = this.owner.lookup('service:feature');
+        const service = this.owner.lookup('service:feature');
         let changeHandler;
         sinon.stub(service.lazyLoader, 'loadStyle').resolves();
         stubMatchMedia({
@@ -310,10 +310,10 @@ describe('Integration: Service: feature', function () {
         stubSettings(server, {});
         stubUser(server, {});
 
-        let session = this.owner.lookup('service:session');
+        const session = this.owner.lookup('service:session');
         await session.populateUser();
 
-        let service = this.owner.lookup('service:feature');
+        const service = this.owner.lookup('service:feature');
         sinon.stub(service.lazyLoader, 'loadStyle').resolves();
         stubMatchMedia({
             matches: true,
@@ -332,10 +332,10 @@ describe('Integration: Service: feature', function () {
         stubSettings(server, {});
         stubUser(server, {nightShift: true});
 
-        let session = this.owner.lookup('service:session');
+        const session = this.owner.lookup('service:session');
         await session.populateUser();
 
-        let service = this.owner.lookup('service:feature');
+        const service = this.owner.lookup('service:feature');
         sinon.stub(service.lazyLoader, 'loadStyle').resolves();
 
         await service.fetch();
@@ -351,10 +351,10 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let session = this.owner.lookup('service:session');
+        const session = this.owner.lookup('service:session');
         await session.populateUser();
 
-        let service = this.owner.lookup('service:feature');
+        const service = this.owner.lookup('service:feature');
         service.config.testFlag = {key: 'value'};
 
         await service.fetch();
@@ -376,10 +376,10 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let session = this.owner.lookup('service:session');
+        const session = this.owner.lookup('service:session');
         await session.populateUser();
 
-        let service = this.owner.lookup('service:feature');
+        const service = this.owner.lookup('service:feature');
 
         await service.fetch();
         expect(service.get('testUserFlag')).to.be.false;
@@ -399,10 +399,10 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let session = this.owner.lookup('service:session');
+        const session = this.owner.lookup('service:session');
         await session.populateUser();
 
-        let service = this.owner.lookup('service:feature');
+        const service = this.owner.lookup('service:feature');
         service.config.testFlag = false;
 
         await service.fetch();
@@ -432,10 +432,10 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let session = this.owner.lookup('service:session');
+        const session = this.owner.lookup('service:session');
         await session.populateUser();
 
-        let service = this.owner.lookup('service:feature');
+        const service = this.owner.lookup('service:feature');
 
         await service.fetch();
         expect(service.get('testUserFlag')).to.be.false;
@@ -464,10 +464,10 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let sessionService = this.owner.lookup('service:session');
+        const sessionService = this.owner.lookup('service:session');
         await sessionService.populateUser();
 
-        let featureService = this.owner.lookup('service:feature');
+        const featureService = this.owner.lookup('service:feature');
         featureService.config.testFlag = false;
 
         await featureService.fetch();

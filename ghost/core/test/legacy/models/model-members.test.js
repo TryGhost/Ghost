@@ -736,7 +736,7 @@ describe('Member Model', function run() {
 
     it('Should allow filtering on offers redeemed', async function () {
       const context = testUtils.context.admin;
-      let email = 'test@offers.com';
+      const email = 'test@offers.com';
       const member = await Member.add(
         {
           email: email,

@@ -1,7 +1,8 @@
 import { CodeEditor } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 import type { PostType } from '@/editor/card-config';
-import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
+import { settingsFieldErrorFor } from '@/editor/session/settings-fields';
+import type { EditorSettingsPort } from './editor-settings-port';
 import { SettingsSubview } from './settings-subview';
 
 // A binding that returns true prevents the event's default, which the pane
@@ -38,7 +39,7 @@ function EditorLabel({ text, helper }: { text: string; helper: string }) {
 }
 
 export interface CodeInjectionSectionProps {
-  session: EditorSessionHandle;
+  session: EditorSettingsPort;
   postType: PostType;
 }
 
@@ -48,6 +49,8 @@ export interface CodeInjectionSectionProps {
  */
 export function CodeInjectionSection({ session, postType }: CodeInjectionSectionProps) {
   const name = postType === 'page' ? 'Page' : 'Post';
+  const headError = settingsFieldErrorFor('codeinjection_head', session.settings);
+  const footError = settingsFieldErrorFor('codeinjection_foot', session.settings);
 
   return (
     <SettingsSubview
@@ -56,11 +59,13 @@ export function CodeInjectionSection({ session, postType }: CodeInjectionSection
       id="code-injection"
       label="Code injection"
       title="Code injection"
-      wide
     >
       <CodeEditor
+        clearBg={false}
+        error={!!headError}
         extensions={EDITOR_EXTENSIONS}
         height={EDITOR_HEIGHT}
+        hint={headError}
         title={<EditorLabel helper="{{ghost_head}}" text={`${name} header`} />}
         value={session.settings.codeinjection_head ?? ''}
         onBlur={session.commitSettings}
@@ -68,8 +73,11 @@ export function CodeInjectionSection({ session, postType }: CodeInjectionSection
         onChange={(value) => session.stageSettings({ codeinjection_head: value || null })}
       />
       <CodeEditor
+        clearBg={false}
+        error={!!footError}
         extensions={EDITOR_EXTENSIONS}
         height={EDITOR_HEIGHT}
+        hint={footError}
         title={<EditorLabel helper="{{ghost_foot}}" text={`${name} footer`} />}
         value={session.settings.codeinjection_foot ?? ''}
         onBlur={session.commitSettings}

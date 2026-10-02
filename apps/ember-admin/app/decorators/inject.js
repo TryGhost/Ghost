@@ -2,7 +2,7 @@ import {computed, defineProperty} from '@ember/object';
 import {getOwner} from '@ember/application';
 
 function isElementDescriptor(args) {
-    let [maybeTarget, maybeKey, maybeDesc] = args;
+    const [maybeTarget, maybeKey, maybeDesc] = args;
 
     return (
         // Ensure we have the right number of args

@@ -23,7 +23,7 @@ describe('I18n Class behavior', function () {
     it('will fallback to en file correctly without changing locale', function () {
       const i18n = new I18n({ locale: 'fr' });
 
-      let fileSpy = sinon.spy(i18n, '_readTranslationsFile');
+      const fileSpy = sinon.spy(i18n, '_readTranslationsFile');
 
       assert.equal(i18n.locale(), 'fr');
       i18n.init();

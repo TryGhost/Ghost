@@ -1,6 +1,7 @@
+import { PageHeader } from '@tryghost/shade/patterns';
 import GiftLinkModal from '@/posts/analytics/modals/gift-link-modal';
 import PostShareModal from '@/shared/analytics/post-share-modal';
-import EmailSendingStatusBanner from '@/posts/analytics/email-sending-status/email-sending-status-banner';
+import PostAnalyticsEmailSendingStatus from '@/posts/analytics/email-sending-status/post-analytics-email-sending-status';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertDialog,
@@ -17,7 +18,6 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -29,22 +29,19 @@ import {
   PageMenuItem,
 } from '@tryghost/shade/components';
 import { H1 } from '@tryghost/shade/primitives';
-import {
-  LucideIcon,
-  formatDisplayDate,
-  formatDisplayTime,
-  formatNumber,
-} from '@tryghost/shade/utils';
+import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import { useIsEmberOwnedRoute } from '@/routes';
+import { editorReturnState } from '@/editor/api';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { giftAccessLabel } from '@/posts/analytics/utils/gift-link';
+import { getPostPublicationSummary } from '@/posts/analytics/utils/post-publication-summary';
 import {
-  isEmailOnly,
   isPublishedOnly,
   trackEvent,
   useActiveVisitors,
+  useLocation,
   useNavigate,
 } from '@tryghost/admin-x-framework';
 import {
@@ -52,9 +49,11 @@ import {
   useWebAnalyticsEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
 import { useCanManageGiftLink } from '@/posts/analytics/hooks/use-can-manage-gift-link';
-import { useDeletePost } from '@tryghost/admin-x-framework/api/posts';
-import { useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { postsDataType, useDeletePost } from '@tryghost/admin-x-framework/api/posts';
+import { useFeatureFlag, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
+import { useShade } from '@tryghost/shade/app';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface PostAnalyticsHeaderProps {
   currentTab?: string;
@@ -62,27 +61,33 @@ interface PostAnalyticsHeaderProps {
 }
 
 const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, children }) => {
+  const { isAdmin7 } = useShade();
   const navigate = useNavigate();
+  const location = useLocation();
   const webAnalyticsEnabled = useWebAnalyticsEnabled();
   const membersTrackSources = useMembersTrackSources();
+  const queryClient = useQueryClient();
   const { mutateAsync: deletePost } = useDeletePost();
   const handleError = useHandleError();
+  const improveSendingUI = useFeatureFlag('improveSendingUI');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isGiftLinkOpen, setIsGiftLinkOpen] = useState(false);
   const { settings, site, statsConfig } = useAnalyticsData();
   const { post, isPostLoading, postId } = usePostAnalytics();
-  const { hasNewsletterAnalytics, status: emailSendingStatus } = useEmailSendingStatusContext();
+  const { hasNewsletterAnalytics, isEmailSent } = useEmailSendingStatusContext();
   const canManageGiftLink = useCanManageGiftLink(post);
   const editorPath = `/editor/post/${postId}`;
   // Whether the editor needs a hash navigation depends on the `editorReact` flag.
   const editorIsEmberOwned = useIsEmberOwnedRoute(editorPath);
 
-  const siteTimezone = getSiteTimezone(settings);
-  const isPublishedPost = post?.status === 'published';
-  const hasFailedEmail = emailSendingStatus?.sending.status === 'failed';
-  const showPublishedOnSite = isPublishedPost && (!hasNewsletterAnalytics || hasFailedEmail);
-  const showPublishedAndSent = isPublishedPost && hasNewsletterAnalytics && !hasFailedEmail;
+  const publicationSummary =
+    post &&
+    getPostPublicationSummary(post, {
+      isEmailSent,
+      improveSendingUI,
+      timezone: getSiteTimezone(settings),
+    });
 
   // Track once per open — canManageGiftLink can flip while the modal is open
   // (current-user query resolving), which must not re-fire the event.
@@ -150,6 +155,8 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
     }
     try {
       await deletePost({ id: postId });
+      // `refetchType: 'none'`: this screen's own read of the post is still mounted.
+      void queryClient.invalidateQueries({ queryKey: [postsDataType], refetchType: 'none' });
       setShowDeleteDialog(false);
       // Navigate back to posts list
       navigate('/posts/', { crossApp: true });
@@ -157,6 +164,76 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
       handleError(e);
     }
   };
+
+  const shareAction = !post?.email_only && (
+    <PostShareModal
+      author={post?.authors?.[0]?.name || ''}
+      canShareAsGift={canManageGiftLink}
+      description=""
+      faviconURL={site?.icon || ''}
+      featureImageURL={post?.feature_image ?? undefined}
+      giftAccessLabel={giftAccessLabel(post?.visibility)}
+      open={isShareOpen}
+      postExcerpt={post?.excerpt || ''}
+      postTitle={post?.title}
+      postURL={post?.url}
+      siteTitle={site?.title || ''}
+      onClose={() => setIsShareOpen(false)}
+      onOpenChange={setIsShareOpen}
+      onShareAsGift={() => {
+        setIsShareOpen(false);
+        setIsGiftLinkOpen(true);
+      }}
+    >
+      <PageHeader.Action label="Share" primary onClick={() => setIsShareOpen(true)}>
+        <LucideIcon.Share /> Share
+      </PageHeader.Action>
+    </PostShareModal>
+  );
+
+  const moreActions = (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <PageHeader.Action label="More post actions" iconOnly>
+            <LucideIcon.Ellipsis />
+          </PageHeader.Action>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuGroup>
+            <DropdownMenuItem asChild>
+              <a href={post?.url} rel="noopener noreferrer" target="_blank">
+                <LucideIcon.ExternalLink />
+                View in browser
+              </a>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                navigate(
+                  editorPath,
+                  editorIsEmberOwned ? { crossApp: true } : { state: editorReturnState(location) },
+                );
+              }}
+            >
+              <LucideIcon.Pen />
+              Edit post
+              {/* <DropdownMenuShortcut>⌘E</DropdownMenuShortcut> */}
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onClick={handleDeletePost}
+            >
+              <LucideIcon.Trash />
+              Delete post
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
+  );
 
   return (
     <>
@@ -205,69 +282,23 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                 {/* <Button variant='outline'><LucideIcon.RefreshCw /></Button> */}
                 {/* <Button variant='outline'><LucideIcon.Share /></Button> */}
                 {!isPostLoading && (
-                  <>
-                    {!post?.email_only && (
-                      <PostShareModal
-                        author={post?.authors?.[0]?.name || ''}
-                        canShareAsGift={canManageGiftLink}
-                        description=""
-                        faviconURL={site?.icon || ''}
-                        featureImageURL={post?.feature_image ?? undefined}
-                        giftAccessLabel={giftAccessLabel(post?.visibility)}
-                        open={isShareOpen}
-                        postExcerpt={post?.excerpt || ''}
-                        postTitle={post?.title}
-                        postURL={post?.url}
-                        siteTitle={site?.title || ''}
-                        onClose={() => setIsShareOpen(false)}
-                        onOpenChange={setIsShareOpen}
-                        onShareAsGift={() => {
-                          setIsShareOpen(false);
-                          setIsGiftLinkOpen(true);
-                        }}
-                      >
-                        <Button variant="outline" onClick={() => setIsShareOpen(true)}>
-                          <LucideIcon.Share /> Share
-                        </Button>
-                      </PostShareModal>
+                  <PageHeader.ActionGroup>
+                    {isAdmin7 ? (
+                      <>
+                        {moreActions}
+                        {shareAction && (
+                          <PageHeader.ActionGroup.Primary>
+                            {shareAction}
+                          </PageHeader.ActionGroup.Primary>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        {shareAction}
+                        {moreActions}
+                      </>
                     )}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline">
-                          <LucideIcon.Ellipsis />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuGroup>
-                          <DropdownMenuItem asChild>
-                            <a href={post?.url} rel="noopener noreferrer" target="_blank">
-                              <LucideIcon.ExternalLink />
-                              View in browser
-                            </a>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              navigate(editorPath, { crossApp: editorIsEmberOwned });
-                            }}
-                          >
-                            <LucideIcon.Pen />
-                            Edit post
-                            {/* <DropdownMenuShortcut>⌘E</DropdownMenuShortcut> */}
-                          </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuGroup>
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
-                            onClick={handleDeletePost}
-                          >
-                            <LucideIcon.Trash />
-                            Delete post
-                          </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </>
+                  </PageHeader.ActionGroup>
                 )}
               </div>
             </div>
@@ -288,20 +319,15 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                   >
                     {post?.title}
                   </H1>
-                  {post?.published_at && (
+                  {publicationSummary && (
                     <div className="mt-0.5 flex items-center justify-start leading-[1.65em] text-muted-foreground">
-                      {isEmailOnly(post) &&
-                        `Sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
-                      {showPublishedOnSite &&
-                        `Published on your site on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
-                      {showPublishedAndSent &&
-                        `Published and sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
+                      {publicationSummary}
                     </div>
                   )}
+                  <PostAnalyticsEmailSendingStatus key={postId} />
                 </div>
               </div>
             )}
-            <EmailSendingStatusBanner />
           </div>
         </div>
       </header>

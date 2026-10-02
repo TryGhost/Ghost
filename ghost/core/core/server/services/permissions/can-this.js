@@ -132,7 +132,6 @@ class CanThisResult {
     const self = this;
     let userPermissionLoad;
     let apiKeyPermissionLoad;
-    let permissionsLoad;
 
     // Get context.user, context.api_key and context.app
     context = parseContext(context);
@@ -158,7 +157,7 @@ class CanThisResult {
     }
 
     // Wait for both user and api key permissions to load
-    permissionsLoad = Promise.all([userPermissionLoad, apiKeyPermissionLoad]).then(
+    const permissionsLoad = Promise.all([userPermissionLoad, apiKeyPermissionLoad]).then(
       function (result) {
         return {
           user: result[0],

@@ -17,8 +17,16 @@ class PreviewFrame {
   }
 
   protected async waitForEscapeScriptToBeReady(): Promise<void> {
-    // Only Ember injects the Escape handler into the preview document.
+    // React listens for Escape once the preview document has loaded.
     if (this.implementation === 'react') {
+      await this.page.waitForFunction(
+        (selector) => {
+          const iframe = document.querySelector(selector) as HTMLIFrameElement | null;
+          return iframe?.contentDocument?.readyState === 'complete';
+        },
+        `iframe[data-testid="${postPreviewBrowserFrame}"]`,
+        { timeout: 5000 },
+      );
       return;
     }
 

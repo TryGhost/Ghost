@@ -15,7 +15,7 @@ import {
 } from '@tryghost/test-data/selectors/editor';
 import type { PostType } from '@/editor/card-config';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
-import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
+import type { EditorSettingsPort } from './editor-settings-port';
 import { SectionLoadError } from './section-load-error';
 import { SettingsSection } from './settings-section';
 import {
@@ -28,7 +28,7 @@ import {
 } from './template-options';
 
 export interface TemplateSectionProps {
-  session: EditorSessionHandle;
+  session: EditorSettingsPort;
   postType: PostType;
 }
 

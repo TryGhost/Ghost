@@ -43,7 +43,7 @@ export default class LimitsService extends Service {
     }
 
     loadLimits() {
-        let limits = this.config.hostSettings?.limits;
+        const limits = this.config.hostSettings?.limits;
 
         if (!limits) {
             return;

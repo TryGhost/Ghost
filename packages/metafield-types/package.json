@@ -1,8 +1,7 @@
 {
   "name": "@tryghost/metafield-types",
-  "version": "0.0.0",
-  "private": true,
-  "description": "Shared catalog of member metafield types: storage routing and value validation, consumed by Ghost core and admin",
+  "version": "0.1.0",
+  "description": "Ghost member custom field types: which types exist, what each is made of, and how a value of each is validated",
   "license": "MIT",
   "author": "Ghost Foundation",
   "repository": {
@@ -22,11 +21,6 @@
       "types": "./build/index.d.ts",
       "default": "./build/index.js"
     },
-    "./csv": {
-      "source": "./src/csv.ts",
-      "types": "./build/csv.d.ts",
-      "default": "./build/csv.js"
-    },
     "./structure": {
       "source": "./src/structure.ts",
       "types": "./build/structure.d.ts",
@@ -36,6 +30,11 @@
       "source": "./src/identity.ts",
       "types": "./build/identity.d.ts",
       "default": "./build/identity.js"
+    },
+    "./countries": {
+      "source": "./src/countries.ts",
+      "types": "./build/countries.d.ts",
+      "default": "./build/countries.js"
     }
   },
   "scripts": {
@@ -60,9 +59,6 @@
     "eslint": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
-  },
-  "ghostPackage": {
-    "goldenPath": "compliant"
   },
   "nx": {
     "targets": {

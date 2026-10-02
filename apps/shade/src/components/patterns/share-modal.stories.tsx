@@ -107,7 +107,7 @@ const publicationPreview = {
 
 function PostPreview() {
   return (
-    <ShareModal.Preview className="rounded-md" href={postPreview.url}>
+    <ShareModal.Preview className="rounded-xl" href={postPreview.url}>
       <div
         className="aspect-video bg-cover bg-center"
         style={{ backgroundImage: `url(${postPreview.imageURL})` }}
@@ -163,7 +163,7 @@ const postSource = `const [isOpen, setIsOpen] = useState(false);
             </div>
         </ShareModal.Preview>
         <ShareModal.Footer>
-            <ShareModal.SocialLinks links={socialLinks} />
+            <ShareModal.SocialLinks links={socialLinks} variant="ghost" />
             <ShareModal.CopyButton className="ml-0! grow cursor-pointer" copyURL={postUrl} />
         </ShareModal.Footer>
     </ShareModal.Content>
@@ -226,7 +226,7 @@ export const Post: Story = {
             </ShareModal.Header>
             <PostPreview />
             <ShareModal.Footer>
-              <ShareModal.SocialLinks links={postSocialLinks} />
+              <ShareModal.SocialLinks links={postSocialLinks} variant="ghost" />
               <ShareModal.CopyButton className="ml-0! grow cursor-pointer" copyURL={postUrl} />
             </ShareModal.Footer>
           </ShareModal.Content>

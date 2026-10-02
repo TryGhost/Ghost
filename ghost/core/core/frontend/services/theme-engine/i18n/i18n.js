@@ -9,6 +9,7 @@ const isEqual = require('lodash/isEqual');
 const isNil = require('lodash/isNil');
 const merge = require('lodash/merge');
 const get = require('lodash/get');
+const { memoize } = require('../../../../shared/memoize');
 
 class I18n {
   /**
@@ -23,6 +24,12 @@ class I18n {
     this._stringMode = options.stringMode || 'dot';
 
     this._strings = null;
+    // Fulltext keys can contain arbitrary content, so the memo is bounded.
+    this._compileMessage = memoize(
+      (locale, string) => new MessageFormat(string, locale),
+      (locale, string) => JSON.stringify([locale, string]),
+      { max: 5000 },
+    );
   }
 
   /**
@@ -62,10 +69,9 @@ class I18n {
    * @returns {string}
    */
   t(translationPath, bindings) {
-    let string;
     let msg;
 
-    string = this._findString(translationPath);
+    const string = this._findString(translationPath);
 
     // If the path returns an array (as in the case with anything that has multiple paragraphs such as emails), then
     // loop through them and return an array of translated/formatted strings. Otherwise, just return the normal
@@ -87,6 +93,7 @@ class I18n {
    *  - Load proper language file into memory
    */
   init() {
+    this._compileMessage.reset();
     this._strings = this._loadStrings();
   }
 
@@ -153,7 +160,7 @@ class I18n {
    */
   _findString(msgPath, opts) {
     const options = merge({ log: true }, opts || {});
-    let candidateString;
+
     let matchingString;
 
     // no path? no string
@@ -167,7 +174,7 @@ class I18n {
       this._handleUninitialisedError(msgPath);
     }
 
-    candidateString = this._getCandidateString(msgPath);
+    const candidateString = this._getCandidateString(msgPath);
 
     matchingString = candidateString || {};
 
@@ -219,20 +226,16 @@ class I18n {
    * @param {Object} bindings
    */
   _formatMessage(string, bindings) {
-    let currentLocale = this.locale();
-    let msg = new MessageFormat(string, currentLocale);
+    const currentLocale = this.locale();
 
     try {
-      msg = msg.format(bindings);
+      return this._compileMessage(currentLocale, string).format(bindings);
     } catch (err) {
       this._handleFormatError(err);
 
       // fallback
-      msg = new MessageFormat(this._fallbackError(), currentLocale);
-      msg = msg.format();
+      return new MessageFormat(this._fallbackError(), currentLocale).format();
     }
-
-    return msg;
   }
 
   _handleUninitialisedError(key) {

@@ -1,0 +1,85 @@
+import { useMemo } from 'react';
+import type {
+  EditorSessionBinding,
+  EditorSessionHandle,
+} from '@/editor/session/use-editor-session';
+
+/** What the settings panel may reach on the editing session, and nothing else. */
+export type EditorSettingsPort = Pick<
+  EditorSessionHandle,
+  | 'commitSettings'
+  | 'createdId'
+  | 'dispose'
+  | 'editPublishedAt'
+  | 'editSettings'
+  | 'editSlug'
+  | 'loadedRecord'
+  | 'publishTime'
+  | 'restoreRevision'
+  | 'settings'
+  | 'slug'
+  | 'stageSettings'
+> & {
+  bind: Pick<EditorSessionBinding, 'title'>;
+};
+
+/** A post the server has not created yet: nothing loaded and no id acquired. */
+export function isNewPost(
+  session: Pick<EditorSettingsPort, 'createdId' | 'loadedRecord'>,
+): boolean {
+  return !session.loadedRecord && session.createdId === null;
+}
+
+/** The port's identity tracks the members it carries, not the render that produced it. */
+export function useEditorSettingsPort(session: EditorSessionHandle): EditorSettingsPort {
+  const { title } = session.bind;
+  const {
+    commitSettings,
+    createdId,
+    dispose,
+    editPublishedAt,
+    editSettings,
+    editSlug,
+    loadedRecord,
+    publishTime,
+    restoreRevision,
+    settings,
+    slug,
+    stageSettings,
+  } = session;
+
+  const bind = useMemo(() => ({ title }), [title]);
+
+  return useMemo(
+    () => ({
+      bind,
+      commitSettings,
+      createdId,
+      dispose,
+      editPublishedAt,
+      editSettings,
+      editSlug,
+      loadedRecord,
+      publishTime,
+      restoreRevision,
+      settings,
+      slug,
+      stageSettings,
+    }),
+    [
+      bind,
+      commitSettings,
+      createdId,
+      dispose,
+      editPublishedAt,
+      editSettings,
+      editSlug,
+      loadedRecord,
+      publishTime,
+      restoreRevision,
+      settings,
+      slug,
+      stageSettings,
+    ],
+  );
+}

@@ -1,6 +1,6 @@
 import { serialize } from '../csv';
 import renderImportEmail, { headingFor, type ImportEmailSummary } from './email-template';
-import { isMetafieldColumn } from '@tryghost/metafield-types/csv';
+import { isMetafieldColumn } from '@tryghost/metafield-csv';
 import type { MemberImportRow, ImportErrorRow, ImportLabel, Label } from './row';
 
 // The finished import as the email reads it: how many imported and which rows

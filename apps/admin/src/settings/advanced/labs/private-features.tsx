@@ -116,21 +116,16 @@ const features: Feature[] = [
     flag: 'paywallImprovements',
   },
   {
-    title: 'React posts & pages lists',
-    description:
-      'Renders the posts (/posts) and pages (/pages) list screens from the React app instead of the Ember screens. Gates the migration behind a runtime toggle so we can compare both implementations.',
-    flag: 'postsListReact',
-  },
-  {
     title: 'React editor',
     description:
       'Serves the editor (/editor) from the React app instead of the Ember editor. Gates the migration behind a runtime toggle; the React side is an early placeholder.',
     flag: 'editorReact',
   },
   {
-    title: 'React member activity',
-    description: 'Preview the new member activity screen.',
-    flag: 'membersActivityReact',
+    title: 'React sign-in screens',
+    description:
+      'Serves sign in, 2FA verification, password reset, staff invite signup, setup and sign out from the React app instead of the Ember screens. Takes effect on the next page load.',
+    flag: 'authReact',
   },
   {
     title: 'Self-serve archives',
@@ -143,6 +138,12 @@ const features: Feature[] = [
     description:
       'Let AI agents pay for access to paid-members markdown (.md) URLs via Stripe Machine Payments Protocol',
     flag: 'machinePayments',
+  },
+  {
+    title: 'Dunning warnings',
+    description:
+      'Show payment-failure warnings in Admin, driven by the hosting provider via hostSettings.billing.dunning',
+    flag: 'dunningWarnings',
   },
 ];
 

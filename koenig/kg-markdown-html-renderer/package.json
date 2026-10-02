@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-markdown-html-renderer",
-  "version": "7.2.4",
+  "version": "7.2.5",
   "description": "Markdown to HTML rendering for Ghost's markdown card",
   "license": "MIT",
   "author": "Ghost Foundation",
@@ -37,9 +37,9 @@
   },
   "dependencies": {
     "@tryghost/kg-utils": "workspace:~",
-    "markdown-it": "14.3.0",
+    "markdown-it": "14.3.1",
     "markdown-it-footnote": "4.0.0",
-    "markdown-it-image-lazy-loading": "2.0.1",
+    "markdown-it-image-lazy-loading": "2.1.0",
     "markdown-it-lazy-headers": "0.1.3",
     "markdown-it-mark": "4.0.0",
     "markdown-it-sub": "2.0.0",

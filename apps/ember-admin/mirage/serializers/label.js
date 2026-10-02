@@ -3,7 +3,7 @@ import BaseSerializer from './application';
 export default BaseSerializer.extend({
     // make the label.count.members value dynamic
     serialize(labelModelOrCollection, request) {
-        let updateMemberCount = (label) => {
+        const updateMemberCount = (label) => {
             label.update('count', {members: label.memberIds.length});
         };
 

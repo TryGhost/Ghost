@@ -134,6 +134,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
   const { fetchAutocompleteLinks, searchLinks } = useWelcomeEmailLinkSuggestions();
   const fetchEmbed = useKoenigFetchEmbed();
   const klipyConfig = config.klipy?.apiKey ? config.klipy : null;
+  const embedPreviewUrl = config.security?.embedPreviewUrl || undefined;
   const { darkMode } = useFocusContext();
   const editorResource = useMemo(() => loadKoenig(), []);
   const [transistorEnabled] = getSettingValues<boolean>(settings, ['transistor']);
@@ -143,6 +144,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
       unsplash: unsplashConfig,
       pinturaConfig,
       klipy: klipyConfig,
+      embedPreviewUrl,
       fetchEmbed,
       fetchAutocompleteLinks,
       searchLinks,
@@ -155,6 +157,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
       unsplashConfig,
       pinturaConfig,
       klipyConfig,
+      embedPreviewUrl,
       fetchEmbed,
       fetchAutocompleteLinks,
       searchLinks,

@@ -60,7 +60,7 @@ describe('Integration: Adapter: user', function () {
 
     it('handles "include" parameter when querying single user via slug', function (done) {
         server.get(`${ghostPaths().apiRoot}/users/slug/user-1/`, (request) => {
-            let params = request.queryParams;
+            const params = request.queryParams;
             expect(params.include, 'include query').to.equal('roles,count.posts');
 
             return [200, {'Content-Type': 'application/json'}, JSON.stringify({users: [

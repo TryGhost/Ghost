@@ -8,6 +8,9 @@ const SchedulingDefault =
   require('../../../../../core/server/adapters/scheduling/scheduling-default').default;
 const urlUtils = require('../../../../../core/shared/url-utils').default;
 const { getSignedAdminToken } = require('../../../../../core/server/adapters/scheduling/utils');
+const {
+  getSchedulerIdempotencyKey,
+} = require('../../../../../core/server/adapters/scheduling/get-scheduler-idempotency-key');
 const PostScheduling =
   require('../../../../../core/server/services/post-scheduling/post-scheduling').default;
 const nock = require('nock');
@@ -124,6 +127,90 @@ describe('PostScheduling', function () {
       assert.equal(job.url, callbackUrl);
       assert.equal(job.extra.httpMethod, 'PUT');
       assert.equal(job.extra.oldTime, null);
+      assert.equal(
+        job.extra.idempotencyKey,
+        getSchedulerIdempotencyKey({
+          namespace: 'post-scheduling',
+          date: new Date(job.time),
+          url: new URL(callbackUrl),
+        }),
+      );
+    });
+  });
+
+  describe('idempotency key', function () {
+    // Drives jobs through the boot rebuild rather than the event handlers so
+    // no listeners pile up on the shared events emitter between tests.
+    let scheduledPosts = [];
+
+    beforeEach(function () {
+      sinon.stub(Post, 'findAll').callsFake(({ filter }) => {
+        return Promise.resolve(filter.includes('type:post') ? scheduledPosts : []);
+      });
+    });
+
+    function scheduledPost(overrides = {}) {
+      return Post.forge(
+        testUtils.DataGenerator.forKnex.createPost({
+          id: 4242,
+          lexical: testUtils.DataGenerator.markdownToLexical('something'),
+          ...overrides,
+        }),
+      );
+    }
+
+    async function rebuildAndGetJob({ post, keys = internalKeys }) {
+      scheduledPosts = [post];
+      adapter.schedule.resetHistory();
+      const service = new PostScheduling({
+        apiUrl: 'http://scheduler.local:1111/',
+        internalKeys: keys,
+        adapter,
+      });
+      await service.rescheduleAll();
+      sinon.assert.calledOnce(adapter.schedule);
+      return adapter.schedule.args[0][0];
+    }
+
+    it('is the same when the same post is registered again for the same time', async function () {
+      // Outcome: a persistent queue fed by a boot rebuild sees the second
+      // registration as the job it already holds, not as a duplicate.
+      const post = scheduledPost();
+
+      const first = await rebuildAndGetJob({ post });
+      const second = await rebuildAndGetJob({ post });
+
+      assert(first.extra.idempotencyKey.startsWith('ghost-post-scheduling-'));
+      assert.equal(first.extra.idempotencyKey, second.extra.idempotencyKey);
+    });
+
+    it('changes when the publish time changes', async function () {
+      // Outcome: a reschedule registers a distinct job rather than deduping
+      // against the job queued for the old time.
+      const publishedAt = moment().add(1, 'day').toDate();
+
+      const first = await rebuildAndGetJob({ post: scheduledPost({ published_at: publishedAt }) });
+      const second = await rebuildAndGetJob({
+        post: scheduledPost({ published_at: moment(publishedAt).add(1, 'hour').toDate() }),
+      });
+
+      assert.notEqual(first.extra.idempotencyKey, second.extra.idempotencyKey);
+    });
+
+    it('changes when the signing key changes', async function () {
+      // Outcome: after a key rotation the re-signed callback is a distinct
+      // job, so the unschedule of the old URL cannot take the new job with it.
+      const post = scheduledPost();
+
+      const first = await rebuildAndGetJob({ post });
+      const second = await rebuildAndGetJob({
+        post,
+        keys: new Map([
+          ['ghost-scheduler', Promise.resolve({ id: 'rotatedKeyId', secret: 'bbbb' })],
+        ]),
+      });
+
+      assert.notEqual(first.extra.idempotencyKey, second.extra.idempotencyKey);
     });
   });
 

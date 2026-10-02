@@ -27,7 +27,15 @@ const messages = {
 };
 
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
-const GA_FEATURES = ['automationAnalytics', 'tagDetailsReact'];
+// Admin no longer reads admin7Pill, postsListReact or membersActivityReact; they stay enabled
+// for older Admin builds during independent deployments.
+const GA_FEATURES = [
+  'automationAnalytics',
+  'admin7Pill',
+  'globalSearchReact',
+  'postsListReact',
+  'membersActivityReact',
+];
 
 // These features are considered publicly available and can be enabled/disabled by users
 const PUBLIC_BETA_FEATURES = [
@@ -60,10 +68,10 @@ const PRIVATE_FEATURES = [
   'paywallImprovements',
   'selfServeArchives',
   'machinePayments',
-  'postsListReact',
-  'membersActivityReact',
   'editorReact',
   'designBuilder',
+  'authReact',
+  'dunningWarnings',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
@@ -120,7 +128,6 @@ module.exports.isSet = function isSet(flag) {
  */
 module.exports.enabledHelper = function enabledHelper(options, callback) {
   const errDetails = {};
-  let errString;
 
   if (module.exports.isSet(options.flagKey) === true) {
     // helper is active, use the callback
@@ -146,7 +153,7 @@ module.exports.enabledHelper = function enabledHelper(options, callback) {
   );
 
   const { SafeString } = require('express-hbs');
-  errString = new SafeString(
+  const errString = new SafeString(
     `<script>console.error("${_.values(errDetails).join(' ')}");</script>`,
   );
 

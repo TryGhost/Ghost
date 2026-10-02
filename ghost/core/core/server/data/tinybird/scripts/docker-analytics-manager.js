@@ -361,7 +361,7 @@ class DockerAnalyticsManager {
 
     const userSessionData = this.userSessions.get(userKey);
 
-    for (let session of userSessionData) {
+    for (const session of userSessionData) {
       const timeDiff = (timestamp.getTime() - session.startTime.getTime()) / (1000 * 60 * 60);
       if (timeDiff <= 3 && timeDiff >= 0) {
         return session.sessionId;
@@ -571,7 +571,7 @@ class DockerAnalyticsManager {
 
     // Generate base timestamp for this session
     const firstContent = this.selectContent();
-    let baseTimestamp = this.generateTimestamp(firstContent.published_at);
+    const baseTimestamp = this.generateTimestamp(firstContent.published_at);
 
     // Generate consistent session attributes
     const memberStatus = this.weightedChoice(this.memberStatusWeights);

@@ -77,7 +77,7 @@ class Bridge {
   }
 
   async activateTheme(loadedTheme, checkedTheme) {
-    let settings = {
+    const settings = {
       locale: settingsCache.get('locale'),
     };
     // no need to check the score, activation should be used in combination with validate.check

@@ -59,6 +59,9 @@ const TINYBIRD_PIPES = [
   'api_top_devices',
   'api_gift_link_visits',
   'api_automation_browse_stats',
+  'api_automation_performance_stats',
+  'api_automation_runs',
+  'api_automation_run_search',
   // v2 pipes (materialized view optimization)
   'api_kpis_v2',
   'api_active_visitors_v2',
@@ -173,7 +176,7 @@ class TinybirdService {
    */
   _isJWTExpired(token, bufferSeconds = 300) {
     try {
-      const decoded = jwt.verify(token, this.tinybirdConfig.adminToken);
+      const decoded = jwt.verify(token, this.tinybirdConfig.adminToken, { algorithms: ['HS256'] });
       if (typeof decoded !== 'object' || !decoded.exp) {
         return true;
       }

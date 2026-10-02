@@ -19,6 +19,7 @@ import {
 import { editorScreen } from '@/editor/editor.screen';
 
 const POST_ID = 'abc123';
+const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 // 2025-12-01 10:00 UTC is 2025-12-01 21:00 in Sydney: a date the offset moves.
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
@@ -91,9 +92,27 @@ async function openPublishDate() {
   await expect.element(editorScreen.settingsPublishDate()).toBeVisible();
 }
 
+async function leaveTimeField() {
+  // Native time controls tab through their hour/minute (and locale-specific period)
+  // segments before leaving the input. A save commits when the whole field blurs.
+  for (
+    let segment = 0;
+    segment < 4 && document.activeElement === editorScreen.settingsPublishTime().element();
+    segment++
+  ) {
+    await userEvent.tab();
+  }
+  expect(document.activeElement).not.toBe(editorScreen.settingsPublishTime().element());
+}
+
 async function setTime(value: string) {
   await editorScreen.settingsPublishTime().fill(value);
   // The field commits on blur, as the publish flow's does.
+  await leaveTimeField();
+}
+
+async function typeDate(value: string) {
+  await editorScreen.settingsPublishDate().fill(value);
   await userEvent.tab();
 }
 
@@ -170,40 +189,32 @@ describe('Post settings publish date', () => {
 
     await expect.element(editorScreen.settingsPublishTime()).toHaveValue('21:00');
 
-    // Tabbing through the field leaves the stored timestamp alone.
+    // Tabbing through the field, or retyping the minute it shows, leaves the stored timestamp alone.
     await editorScreen.settingsPublishTime().click();
-    await userEvent.tab();
-    await expect.element(editorScreen.updateButton()).toBeDisabled();
-
-    // A move away and back lands on that minute again, seconds intact.
-    await setTime('21:05');
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
+    await leaveTimeField();
     await setTime('21:00');
-
     await expect.element(editorScreen.updateButton()).toBeDisabled();
     expect(unsavedChangesGuarded()).toBe(false);
-    expect(saveApi.requests).toHaveLength(0);
+
+    // So the first write the field makes is the next minute the writer picks.
+    await setTime('21:05');
+
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedPost(saveApi).published_at).toBe('2025-12-01T10:05:00.000Z');
   });
 
-  it('stages a published post’s backdate until Update', async () => {
+  it('saves a published post’s backdate on its own', async () => {
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
     await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
     await openPublishDate();
 
-    await expect.element(editorScreen.updateButton()).toBeDisabled();
-
     await setTime('08:15');
-
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
-    await expect.poll(unsavedChangesGuarded).toBe(true);
-    expect(saveApi.requests).toHaveLength(0);
-
-    await userEvent.keyboard('{Meta>}s{/Meta}');
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
       published_at: moment.tz('2025-12-01 08:15', SYDNEY).toISOString(),
-      status: 'published',
     });
     await expect.element(editorScreen.updateButton()).toBeDisabled();
   });
@@ -244,6 +255,159 @@ describe('Post settings publish date', () => {
       .toHaveTextContent('Please choose a past date and time.');
   });
 
+  it('saves a typed date, however far back, once the field is left', async () => {
+    const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
+    await openPublishDate();
+
+    // A click opens the calendar by the caret; clicking back into the field leaves it as it was.
+    await editorScreen.settingsPublishDate().click();
+    await expect.element(page.getByRole('grid', { name: 'December 2025' })).toBeVisible();
+    await page.getByRole('button', { name: 'Go to the Previous Month' }).click();
+    await editorScreen.settingsPublishDate().click();
+    await expect.element(page.getByRole('grid', { name: 'November 2025' })).toBeVisible();
+
+    // Typing closes it and leaves the field focused; nothing is saved until the field is left.
+    await userEvent.keyboard(`${'{Backspace}'.repeat(10)}${'{Delete}'.repeat(10)}`);
+    await expect(page.getByRole('grid')).toHaveCount(0);
+    await userEvent.keyboard('2015-03-14');
+    expect(saveApi.requests).toHaveLength(0);
+    await userEvent.tab();
+
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedPost(saveApi).published_at).toBe(
+      moment.tz('2015-03-14 21:00', SYDNEY).toISOString(),
+    );
+
+    // The calendar reopens on the typed month.
+    await editorScreen.settingsPublishDate().click();
+    await expect.element(page.getByRole('grid', { name: 'March 2015' })).toBeVisible();
+  });
+
+  it('opens the calendar from its button and picks a day from the keyboard', async () => {
+    const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
+    await openPublishDate();
+
+    const calendarButton = editorScreen.settingsPublishDateCalendarButton();
+    const selectedDay = () => page.getByRole('gridcell', { selected: true }).getByRole('button');
+    // The popup is the button's: the field announces none.
+    await expect.element(editorScreen.settingsPublishDate()).not.toHaveAttribute('aria-expanded');
+
+    await editorScreen.settingsSlug().click();
+    await userEvent.tab();
+    await expect.element(calendarButton).toHaveFocus();
+
+    // Escape closes it without a change and hands focus back.
+    await userEvent.keyboard('{Enter}');
+    await expect.element(selectedDay()).toHaveFocus();
+    await userEvent.keyboard('{Escape}');
+    await expect(page.getByRole('grid')).toHaveCount(0);
+    await expect.element(calendarButton).toHaveFocus();
+
+    await userEvent.keyboard('{Enter}');
+    await expect.element(selectedDay()).toHaveFocus();
+    await userEvent.keyboard('{ArrowRight}{ArrowRight}{Enter}');
+
+    await expect(page.getByRole('grid')).toHaveCount(0);
+    await expect.element(calendarButton).toHaveFocus();
+    await expect.element(editorScreen.settingsPublishDate()).toHaveValue('2025-12-03');
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedPost(saveApi).published_at).toBe(
+      moment.tz('2025-12-03 21:00', SYDNEY).toISOString(),
+    );
+  });
+
+  it('moves a held time that the typed day skips for daylight saving to the hour after', async () => {
+    // 02:30 in Sydney, which the clocks jump past on 5 October 2025.
+    const saveApi = fakeSavablePost({
+      status: 'published',
+      published_at: moment.tz('2025-10-03 02:30', SYDNEY).toISOString(),
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
+    await openPublishDate();
+
+    await typeDate('2025-10-05');
+
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedPost(saveApi).published_at).toBe(
+      moment.tz('2025-10-05 03:30', SYDNEY).toISOString(),
+    );
+    await expect.element(editorScreen.settingsPublishTime()).toHaveValue('03:30');
+  });
+
+  it.each([
+    ['2025-11-31', 'Invalid date'],
+    ['01/12/2025', 'Invalid date format, must be YYYY-MM-DD'],
+  ])('refuses %s as a typed date until it is corrected or discarded', async (typed, message) => {
+    const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
+    await openPublishDate();
+
+    await typeDate(typed);
+
+    await expect.element(editorScreen.settingsPublishDate()).toHaveValue(typed);
+    await expect
+      .element(editorScreen.settingsPublishDate())
+      .toHaveAttribute('aria-invalid', 'true');
+    await expect.element(editorScreen.settingsPublishDate()).toHaveAccessibleDescription(message);
+    await expect.element(editorScreen.updateButton()).toBeDisabled();
+
+    // Escape in the field puts the held date back.
+    await userEvent.tab({ shift: true });
+    await userEvent.keyboard('{Escape}');
+
+    await expect.element(editorScreen.settingsPublishDate()).toHaveValue('2025-12-01');
+    await expect
+      .element(editorScreen.settingsPublishDate())
+      .not.toHaveAttribute('aria-invalid', 'true');
+    await expect.element(editorScreen.settingsPublishDate()).not.toHaveAccessibleDescription();
+    expect(unsavedChangesGuarded()).toBe(false);
+    expect(saveApi.requests).toHaveLength(0);
+  });
+
+  it('keeps Cmd-S from saving past a refused date', async () => {
+    const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
+    await openPublishDate();
+
+    // A published post's title waits for an explicit save, which Cmd-S would send.
+    await editorScreen.titleInput().fill('Changed title');
+    await editorScreen.settingsPublishDate().fill('2025-11-31');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+
+    await expect
+      .element(editorScreen.settingsPublishDate())
+      .toHaveAccessibleDescription('Invalid date');
+    expect(saveApi.requests).toHaveLength(0);
+
+    // The corrected date saves on Enter, alone: the title still waits for Update.
+    await editorScreen.settingsPublishDate().fill('2025-11-30');
+    await userEvent.keyboard('{Enter}');
+
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedPost(saveApi).published_at).toBe(
+      moment.tz('2025-11-30 21:00', SYDNEY).toISOString(),
+    );
+    expect(submittedPost(saveApi).title).not.toBe('Changed title');
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
+  });
+
+  it('holds a typed date still to come to the past-date rule', async () => {
+    const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
+    await openPublishDate();
+
+    // The calendar stops at today, so only typing reaches a later day.
+    await typeDate(moment.tz(SYDNEY).add(1, 'year').format('YYYY-MM-DD'));
+
+    await expect
+      .element(editorScreen.settingsPublishDateError())
+      .toHaveTextContent('Please choose a past date and time.');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+    expect(saveApi.requests).toHaveLength(0);
+  });
+
   it('sends a scheduled post to the publish menu to be re-timed', async () => {
     const scheduledAt = moment().add(2, 'days').toISOString();
     fakeSavablePost({ status: 'scheduled', published_at: scheduledAt });
@@ -270,15 +434,11 @@ describe('Post settings publish date', () => {
 
     await setTime('07:45');
 
-    // A sent post stages like a published one, so nothing is sent until Update.
-    await expect.poll(unsavedChangesGuarded).toBe(true);
-    expect(saveApi.requests).toHaveLength(0);
-    await userEvent.keyboard('{Meta>}s{/Meta}');
-
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
       published_at: moment.tz('2025-12-01 07:45', SYDNEY).toISOString(),
-      status: 'sent',
     });
   });
 

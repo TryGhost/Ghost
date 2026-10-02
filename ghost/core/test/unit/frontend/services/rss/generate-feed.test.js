@@ -300,6 +300,11 @@ describe('RSS: Generate Feed', function () {
       return match ? match[1] : '';
     }
 
+    // The first render lazy-loads the card renderer, too slow for a loaded CI test budget
+    beforeAll(async function () {
+      await renderCard('bookmark', { url: 'https://www.ghost.org/', metadata: {} });
+    });
+
     beforeEach(function () {
       configUtils.set({ url: 'http://my-ghost-blog.com' });
     });

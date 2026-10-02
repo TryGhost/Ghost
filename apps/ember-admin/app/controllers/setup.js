@@ -88,16 +88,16 @@ export default class SetupController extends Controller.extend(ValidationEngine)
         authenticate;
 
     _passwordSetup() {
-        let setupProperties = ['blogTitle', 'name', 'email', 'password'];
-        let data = this.getProperties(setupProperties);
-        let method = this.blogCreated ? 'put' : 'post';
+        const setupProperties = ['blogTitle', 'name', 'email', 'password'];
+        const data = this.getProperties(setupProperties);
+        const method = this.blogCreated ? 'put' : 'post';
 
         this.set('flowErrors', '');
 
         this.hasValidated.addObjects(setupProperties);
 
         return this.validate().then(() => {
-            let authUrl = this.get('ghostPaths.url').api('authentication', 'setup');
+            const authUrl = this.get('ghostPaths.url').api('authentication', 'setup');
 
             return this.ajax[method](authUrl, {
                 data: {
@@ -135,7 +135,7 @@ export default class SetupController extends Controller.extend(ValidationEngine)
 
     _handleSaveError(resp) {
         if (isInvalidError(resp)) {
-            let [error] = resp.payload.errors;
+            const [error] = resp.payload.errors;
             this.set('flowErrors', [error.message, error.context].join(' '));
         } else {
             this.notifications.showAPIError(resp, {key: 'setup.blog-details'});
@@ -144,7 +144,7 @@ export default class SetupController extends Controller.extend(ValidationEngine)
 
     _handleAuthenticationError(error) {
         if (error && error.payload && error.payload.errors) {
-            let [apiError] = error.payload.errors;
+            const [apiError] = error.payload.errors;
             this.set('flowErrors', [apiError.message, apiError.context].join(' '));
         } else {
             // ignore React onboarding handoff

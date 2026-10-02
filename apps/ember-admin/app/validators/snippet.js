@@ -6,7 +6,7 @@ export default BaseValidator.create({
     properties: ['name', 'mobiledoc'],
 
     name(model) {
-        let {name} = model;
+        const {name} = model;
 
         if (!validator.isLength(name || '', {max: 191})) {
             model.errors.add('name', 'Name cannot be longer than 191 characters');

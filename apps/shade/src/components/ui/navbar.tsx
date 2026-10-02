@@ -1,3 +1,5 @@
+import { HeaderTooltipProvider } from '@/providers/header-tooltip-provider';
+import { useShade } from '@/providers/shade-provider';
 import { cn } from '@/lib/utils';
 import React from 'react';
 
@@ -8,15 +10,22 @@ interface NavbarActionsProps {
 
 const NavbarActions = React.forwardRef<HTMLDivElement, NavbarActionsProps>(
   ({ children, className, ...props }, ref) => {
+    const { isAdmin7 } = useShade();
     return (
-      <div
-        ref={ref}
-        className={cn('mt-3 flex items-center gap-2 [grid-area:actions] lg:mt-0', className)}
-        data-navbar="navbar-actions"
-        {...props}
-      >
-        {children}
-      </div>
+      <HeaderTooltipProvider>
+        <div
+          ref={ref}
+          className={cn(
+            'mt-3 flex items-center [grid-area:actions] lg:mt-0',
+            isAdmin7 ? 'gap-1' : 'gap-2',
+            className,
+          )}
+          data-navbar="navbar-actions"
+          {...props}
+        >
+          {children}
+        </div>
+      </HeaderTooltipProvider>
     );
   },
 );

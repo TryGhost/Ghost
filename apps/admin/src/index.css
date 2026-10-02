@@ -7,23 +7,41 @@
 @import '@tryghost/shade/styles.css';
 @import './assets/fonts/inter-admin/fonts.css';
 
-@keyframes email-sending-arrow-rise {
+/* One progress value keeps the settings panel and its vacated header slot in sync. */
+@property --editor-settings-progress {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
+/* Shimmer for an active send's status line. The gradient is 300% wide so
+   each sweep has a pause before the next. */
+@keyframes email-sending-shimmer {
   from {
-    transform: translateY(115%);
+    background-position: 100% 0;
   }
 
   to {
-    transform: translateY(-115%);
+    background-position: 0% 0;
   }
 }
 
-@keyframes email-sending-fill-rise {
-  from {
-    transform: translateY(100%);
-  }
+@utility email-sending-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--chart-purple) 40%,
+    color-mix(in oklab, var(--chart-purple) 50%, transparent) 50%,
+    var(--chart-purple) 60%
+  );
+  background-size: 300% 100%;
+  background-clip: text;
+  color: transparent;
+  animation: email-sending-shimmer 1.75s linear infinite;
 
-  to {
-    transform: translateY(0%);
+  @media (prefers-reduced-motion: reduce) {
+    background-image: none;
+    color: var(--chart-purple);
+    animation: none;
   }
 }
 
@@ -37,7 +55,7 @@
     #ember-basic-dropdown-wormhole,
     #ember-modal-wormhole,
     #ember-liquid-wormhole,
-    #ember-alerts-wormhole,
+    #admin-alerts,
     #ember-notifications-wormhole
   ) {
   --font-sans:
@@ -62,7 +80,7 @@
         #ember-basic-dropdown-wormhole,
         #ember-modal-wormhole,
         #ember-liquid-wormhole,
-        #ember-alerts-wormhole,
+        #admin-alerts,
         #ember-notifications-wormhole
       )
   )
@@ -80,7 +98,7 @@
         #ember-basic-dropdown-wormhole,
         #ember-modal-wormhole,
         #ember-liquid-wormhole,
-        #ember-alerts-wormhole,
+        #admin-alerts,
         #ember-notifications-wormhole
       )
   )
@@ -100,7 +118,7 @@
         #ember-basic-dropdown-wormhole,
         #ember-modal-wormhole,
         #ember-liquid-wormhole,
-        #ember-alerts-wormhole,
+        #admin-alerts,
         #ember-notifications-wormhole
       )
   )
@@ -112,8 +130,6 @@
    must be generated in this Tailwind lane; the font files themselves load with
    settings/custom-fonts.css in the settings chunk. */
 @theme {
-  --animate-email-sending-arrow-rise: email-sending-arrow-rise 1200ms linear infinite;
-  --animate-email-sending-fill-rise: email-sending-fill-rise 1200ms linear infinite;
   --font-cardo: Cardo;
   --font-manrope: Manrope;
   --font-merriweather: Merriweather;
@@ -254,7 +270,7 @@ body.react-admin {
 }
 
 /* Alerts show at the top and push content down */
-body.react-admin #ember-alerts-wormhole {
+body.react-admin #admin-alerts {
   grid-row: 1;
   grid-column: 1;
   z-index: 0; /* Hide alerts when settings app modal is open */

@@ -1,6 +1,7 @@
 import { page } from 'vitest/browser';
 import {
   listPage,
+  managePostView,
   postFeaturedMarker,
   postListItemAction,
   postListItemLink,
@@ -79,6 +80,8 @@ export const postsListScreen = {
   /** A button inside a non-destructive modal (Add a tag, Change access). */
   dialogButton: (label: string) =>
     page.getByRole('dialog').getByRole('button', { name: label, exact: true }),
+  accessSelect: () => page.getByRole('combobox', { name: 'Access' }),
+  accessOption: (name: string) => page.getByRole('option', { name, exact: true }),
   /** A row in the tag picker's listbox. */
   tagOption: (name: string | RegExp) => page.getByRole('dialog').getByRole('option', { name }),
   tagSearchInput: () => page.getByRole('dialog').getByLabelText('Search tags'),
@@ -109,6 +112,7 @@ export const postsListScreen = {
   giftLinkModal: () => page.getByRole('dialog', { name: /gift/i }),
   /** The trailing button at a row's end — Analytics, View, or Editor. */
   rowAction: () => page.getByTestId(postListItemAction),
+  actionTooltip: (label: string) => page.getByRole('tooltip', { name: label, exact: true }),
   featuredMarkers: () => page.getByTestId(postFeaturedMarker),
   emptyCold: () => page.getByTestId(postsEmptyCold),
   emptyFiltered: () => page.getByTestId(postsEmptyFiltered),
@@ -118,6 +122,47 @@ export const postsListScreen = {
   /** A field in the add-filter popover, which renders into a portal. */
   filterFieldOption: (label: string) => page.getByRole('option', { name: label, exact: true }),
   sortButton: () => page.getByTestId(postsSort),
-  /** Radio items, so the active sort is announced and visibly checked. */
-  sortOption: (label: string) => page.getByRole('menuitemradio', { name: label, exact: true }),
+  /** Select options, so the active sort is announced and visibly checked. */
+  sortOption: (label: string) => page.getByRole('option', { name: label, exact: true }),
+  /** Reads "Save view", or "Edit view" while a saved view is active. */
+  manageViewButton: () => page.getByTestId(managePostView),
+  /** The save/edit-view popover, which Radix portals out of the list. */
+  viewPopover: () => page.getByRole('dialog'),
+  viewNameInput: () => postsListScreen.viewPopover().getByLabelText('View name'),
+  viewColorOption: (color: string) =>
+    postsListScreen.viewPopover().getByRole('radio', { name: color, exact: true }),
+  viewPopoverButton: (label: string) =>
+    postsListScreen.viewPopover().getByRole('button', { name: label, exact: true }),
+  viewError: () => postsListScreen.viewPopover().getByRole('alert'),
+
+  /** Add a filter chip through the Filter button: pick the field, then its value. */
+  async addFilter(field: string, value: string): Promise<void> {
+    await postsListScreen.addFilterButton().click();
+    await postsListScreen.filterFieldOption(field).click();
+    await page.getByRole('option', { name: value, exact: true }).click();
+  },
+
+  /**
+   * Save the current filters as a view — or, on a saved view, save its edits —
+   * under `name`, in `color` when given.
+   */
+  async saveView(name: string, color?: string): Promise<void> {
+    await postsListScreen.manageViewButton().click();
+    await postsListScreen.viewNameInput().fill(name);
+    if (color) {
+      await postsListScreen.viewColorOption(color).click();
+    }
+    // "Save view" for a new view, "Save" for an edit.
+    await postsListScreen
+      .viewPopover()
+      .getByRole('button', { name: /^Save( view)?$/ })
+      .click();
+  },
+
+  /** Delete the saved view the list is on, through its edit popover. */
+  async deleteView(): Promise<void> {
+    await postsListScreen.manageViewButton().click();
+    await postsListScreen.viewPopoverButton('Delete').click();
+    await postsListScreen.viewPopoverButton('Delete').click();
+  },
 };

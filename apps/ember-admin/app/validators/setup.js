@@ -5,7 +5,7 @@ export default NewUserValidator.create({
     properties: ['name', 'email', 'password', 'blogTitle'],
 
     blogTitle(model) {
-        let blogTitle = model.blogTitle;
+        const blogTitle = model.blogTitle;
 
         if (!validator.isLength(blogTitle || '', {min: 1})) {
             model.errors.add('blogTitle', 'Please enter a site title.');

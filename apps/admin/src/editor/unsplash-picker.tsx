@@ -22,6 +22,7 @@ export interface UnsplashPickerProps {
   /** Names the button, e.g. `Select feature image from Unsplash`. */
   label: string;
   disabled?: boolean;
+  variant?: 'overlay' | 'inline';
   /** Places the button over the dropzone it sits on. */
   className?: string;
   onSelect: (image: UnsplashSelection) => void;
@@ -35,6 +36,7 @@ export function UnsplashPicker({
   enabled,
   label,
   disabled,
+  variant = 'overlay',
   className,
   onSelect,
 }: UnsplashPickerProps) {
@@ -78,15 +80,22 @@ export function UnsplashPicker({
         <Button
           ref={triggerRef}
           aria-label={label}
-          className="group/unsplash hover:bg-button-hover"
+          className={cn(
+            'group/unsplash hover:bg-button-hover',
+            variant === 'inline' && 'p-0 hover:bg-accent',
+          )}
           disabled={disabled}
+          shape="pill"
           size="icon"
           type="button"
           variant="ghost"
           onClick={() => setIsOpen(true)}
         >
           <BrandIcon
-            className="size-4 text-muted-foreground transition-colors group-hover/unsplash:text-foreground"
+            className={cn(
+              'text-muted-foreground transition-colors group-hover/unsplash:text-foreground',
+              variant === 'inline' ? 'size-3.5' : 'size-4',
+            )}
             name="unsplash"
           />
         </Button>

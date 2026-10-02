@@ -23,6 +23,7 @@ describe('hasUnsavedWork', () => {
   });
 
   it('guards a clean post while a write is still outstanding', () => {
+    expect(hasUnsavedWork({ kind: 'preparing', intent: 'publish' }, false)).toBe(true);
     expect(hasUnsavedWork({ kind: 'saving', intent: 'autosave' }, false)).toBe(true);
     expect(
       hasUnsavedWork({ kind: 'pending-coalesced', intent: 'autosave', pending: 'explicit' }, false),
@@ -56,6 +57,17 @@ describe('isCreatedIdUrlSwap', () => {
     ).toBe(true);
     expect(
       isCreatedIdUrlSwap({ pathname: '/editor/page' }, swapTo('/editor/page/abc'), 'page', SESSION),
+    ).toBe(true);
+  });
+
+  it('recognizes the swap from a new-post URL with a trailing slash', () => {
+    expect(
+      isCreatedIdUrlSwap(
+        { pathname: '/editor/post/' },
+        swapTo('/editor/post/abc'),
+        'post',
+        SESSION,
+      ),
     ).toBe(true);
   });
 

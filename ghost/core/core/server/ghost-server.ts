@@ -21,7 +21,6 @@ type ServerConfig = {
   host: string;
   port: number;
   shutdownTimeout: number;
-  testmode: boolean;
 };
 
 type StoppableHttpServer = http.Server & stoppable.WithStop;
@@ -98,7 +97,7 @@ export class GhostServer {
     debug('Starting...');
     this.rootApp = rootApp;
 
-    const { host, port, testmode, shutdownTimeout } = this.serverConfig;
+    const { host, port, shutdownTimeout } = this.serverConfig;
 
     return new Promise((resolve, reject) => {
       const httpServer = rootApp.listen(port, host);
@@ -131,11 +130,6 @@ export class GhostServer {
       httpServer.on('listening', () => {
         debug('...Started');
         this._logStartMessages();
-
-        // Debug logs output in testmode only
-        if (testmode) {
-          this._startTestMode();
-        }
 
         debug('Notifying server ready (success)');
         return notify.notifyServerStarted().finally(() => {
@@ -317,28 +311,6 @@ export class GhostServer {
         message: `Shutdown: ${failed.length} cleanup task(s) failed: ${failed.join(', ')}`,
       });
     }
-  }
-
-  /**
-   * Internal Method for TestMode.
-   */
-  _startTestMode() {
-    // Output how many connections are open every 5 seconds
-    const connectionInterval = setInterval(
-      () =>
-        this.httpServer?.getConnections((_err, connections) =>
-          logging.warn(`${connections} connections currently open`),
-        ),
-      5000,
-    );
-
-    // Output a notice when the server closes
-    const { httpServer } = this;
-    assert(httpServer, 'httpServer must be set before starting test mode');
-    httpServer.on('close', function () {
-      clearInterval(connectionInterval);
-      logging.warn('Server has fully closed');
-    });
   }
 
   /**

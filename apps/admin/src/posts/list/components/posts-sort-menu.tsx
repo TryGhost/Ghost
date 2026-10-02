@@ -1,11 +1,5 @@
-import {
-  Button,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from '@tryghost/shade/components';
+import { PageHeader } from '@tryghost/shade/patterns';
+import { Select, SelectContent, SelectItem, SelectValue } from '@tryghost/shade/components';
 import { DEFAULT_ORDER_LABEL, ORDER_OPTIONS, getOrderLabel } from '@/posts/list/post-filter-fields';
 import { LucideIcon } from '@tryghost/shade/utils';
 
@@ -25,39 +19,28 @@ interface PostsSortMenuProps {
  */
 export function PostsSortMenu({ order, onOrderChange }: PostsSortMenuProps) {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        {/*
-                    The label names the control *and* its value: a bare
-                    aria-label of "Sort" would override the button text, so
-                    assistive tech would never hear which sort is active.
-                */}
-        <Button
-          aria-label={`Sort: ${getOrderLabel(order)}`}
-          data-testid="posts-sort"
-          variant="outline"
-        >
-          <LucideIcon.ArrowUpDown className="size-4" />
-          {getOrderLabel(order)}
-          <LucideIcon.ChevronDown className="size-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {/* Radio items so the active sort is announced, and visible. */}
-        <DropdownMenuRadioGroup
-          value={order ?? ''}
-          onValueChange={(value) => {
-            onOrderChange(value || null);
-          }}
-        >
-          <DropdownMenuRadioItem value="">{DEFAULT_ORDER_LABEL}</DropdownMenuRadioItem>
-          {ORDER_OPTIONS.map((option) => (
-            <DropdownMenuRadioItem key={option.value} value={option.value}>
-              {option.label}
-            </DropdownMenuRadioItem>
-          ))}
-        </DropdownMenuRadioGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Select
+      value={order || 'newest'}
+      onValueChange={(value) => onOrderChange(value === 'newest' ? null : value)}
+    >
+      {/* Include the active order in the accessible name as well as the visible value. */}
+      <PageHeader.SelectTrigger
+        aria-label={`Sort: ${getOrderLabel(order)}`}
+        data-testid="posts-sort"
+        label="Sort"
+        tooltip
+      >
+        <LucideIcon.ArrowUpDown className="size-4" />
+        <SelectValue>{getOrderLabel(order)}</SelectValue>
+      </PageHeader.SelectTrigger>
+      <SelectContent align="end">
+        <SelectItem value="newest">{DEFAULT_ORDER_LABEL}</SelectItem>
+        {ORDER_OPTIONS.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }

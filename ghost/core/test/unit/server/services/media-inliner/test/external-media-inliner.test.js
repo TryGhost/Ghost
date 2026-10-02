@@ -6,7 +6,7 @@ const nock = require('nock');
 const path = require('path');
 const loggingLib = require('@tryghost/logging');
 const configUtils = require('../../../../../utils/config-utils');
-const urlUtils = require('../../../../../../core/shared/url-utils').default;
+const urlUtilsHelper = require('../../../../../utils/url-utils');
 const ExternalMediaInliner = require('../../../../../../core/server/services/media-inliner/external-media-inliner');
 
 describe('ExternalMediaInliner', function () {
@@ -1161,6 +1161,80 @@ describe('ExternalMediaInliner', function () {
     });
   });
 
+  describe('storeMediaLocally', function () {
+    const imageFixture = (fixture) =>
+      fs.readFileSync(path.join(__dirname, '../../../../../utils/fixtures/images', fixture));
+
+    const createStorage = () => ({
+      storagePath: '/content/images',
+      getTargetDir: () => '/content/images',
+      getUniqueFileName: () => '/content/images/image.svg',
+      saveRaw: sinon.stub().resolves('/content/images/image.svg'),
+    });
+
+    it('passes the file contents when picking the storage', async function () {
+      const storage = createStorage();
+      const getMediaStorage = sinon.stub().resolves(storage);
+      const inliner = new ExternalMediaInliner({ getMediaStorage });
+
+      await inliner.storeMediaLocally({
+        fileBuffer: GIF1x1,
+        filename: 'image.gif',
+        extension: '.gif',
+      });
+
+      sinon.assert.calledOnceWithExactly(getMediaStorage, '.gif', GIF1x1);
+      sinon.assert.calledOnceWithExactly(storage.saveRaw, GIF1x1, 'image.svg');
+    });
+
+    it('sanitizes SVGs before storing them', async function () {
+      const storage = createStorage();
+      const getMediaStorage = sinon.stub().resolves(storage);
+      const inliner = new ExternalMediaInliner({ getMediaStorage });
+
+      await inliner.storeMediaLocally({
+        fileBuffer: imageFixture('svg-with-unsafe-script.svg'),
+        filename: 'image.svg',
+        extension: '.svg',
+      });
+
+      const storedSvg = storage.saveRaw.firstCall.args[0].toString();
+      assert.match(storedSvg, /<svg/);
+      assert.doesNotMatch(storedSvg, /<script/);
+      assert.equal(getMediaStorage.firstCall.args[1], storage.saveRaw.firstCall.args[0]);
+    });
+
+    it('does not store SVGs that cannot be sanitized', async function () {
+      const getMediaStorage = sinon.stub();
+      const inliner = new ExternalMediaInliner({ getMediaStorage });
+
+      const result = await inliner.storeMediaLocally({
+        fileBuffer: imageFixture('svg-malformed.svg'),
+        filename: 'image.svg',
+        extension: '.svg',
+      });
+
+      assert.equal(result, null);
+      sinon.assert.notCalled(getMediaStorage);
+      sinon.assert.calledOnce(logging.warn);
+    });
+
+    it('does not store files when picking the storage fails', async function () {
+      const getMediaStorage = sinon.stub().rejects(new Error('Detection failed'));
+      const inliner = new ExternalMediaInliner({ getMediaStorage });
+
+      const result = await inliner.storeMediaLocally({
+        fileBuffer: GIF1x1,
+        filename: 'image.gif',
+        extension: '.gif',
+      });
+
+      assert.equal(result, null);
+      sinon.assert.calledOnce(logging.warn);
+      sinon.assert.calledOnce(logging.error);
+    });
+  });
+
   describe('Find matches', function () {
     it('Finds with full domain', function () {
       const html =
@@ -1250,27 +1324,95 @@ describe('ExternalMediaInliner', function () {
       assert.equal(matches.length, 1);
       assert.equal(matches[0], 'https://example.com/image/one.png');
     });
+
+    it('Finds with wildcard domain patterns', function () {
+      const html =
+        '<img src="https://cdn.example.com/one.png" /><img src="http://example.com/two.png" /><img src="https://other.com/three.png" />';
+      const matches = ExternalMediaInliner.findMatches(
+        html,
+        'https?://([a-zA-Z0-9-.]+)?example.com',
+      );
+
+      assert.deepEqual(matches, ['https://cdn.example.com/one.png', 'http://example.com/two.png']);
+    });
+
+    it('Times out domain patterns with catastrophic backtracking', function () {
+      const html = `${'a'.repeat(40)}c`;
+
+      assert.throws(() => ExternalMediaInliner.findMatches(html, '(a+)+b', { timeout: 50 }), {
+        code: 'MEDIA_INLINER_PATTERN_TIMEOUT',
+        errorDetails: { domain: '(a+)+b' },
+      });
+    });
+  });
+
+  describe('Domain pattern timeouts', function () {
+    it('keeps other domain replacements and skips a timed out pattern for later posts', async function () {
+      const findMatches = ExternalMediaInliner.findMatches;
+      const findMatchesStub = sinon
+        .stub(ExternalMediaInliner, 'findMatches')
+        .callsFake((content, domain) => findMatches(content, domain, { timeout: 50 }));
+      const lexical = `{"src":"https://example.com/media.jpg"} ${'a'.repeat(40)}c`;
+      postModelStub.findAll.resolves(
+        ['first-post-id', 'second-post-id'].map((id) => ({
+          id,
+          get: (field) => (field === 'lexical' ? lexical : null),
+        })),
+      );
+
+      const inliner = new ExternalMediaInliner({
+        PostModel: postModelStub,
+        PostMetaModel: postMetaModelStub,
+        TagModel: tagModelStub,
+        UserModel: userModelStub,
+      });
+      sinon.stub(inliner, 'importUrl').resolves({
+        status: 'stored',
+        storedUrl: '__GHOST_URL__/content/images/media.jpg',
+      });
+
+      await inliner.inline(['https://example.com', '(a+)+b']);
+
+      assert.deepEqual(
+        findMatchesStub.args.map(([, domain]) => domain),
+        ['https://example.com', '(a+)+b', 'https://example.com'],
+      );
+      sinon.assert.calledOnce(logging.error);
+      assert.equal(logging.error.args[0][0].code, 'MEDIA_INLINER_PATTERN_TIMEOUT');
+
+      const expectedLexical = lexical.replace(
+        'https://example.com/media.jpg',
+        '__GHOST_URL__/content/images/media.jpg',
+      );
+      sinon.assert.calledTwice(postModelStub.edit);
+      assert.deepEqual(postModelStub.edit.args[0][0], { lexical: expectedLexical });
+      assert.equal(postModelStub.edit.args[0][1].id, 'first-post-id');
+      assert.deepEqual(postModelStub.edit.args[1][0], { lexical: expectedLexical });
+      assert.equal(postModelStub.edit.args[1][1].id, 'second-post-id');
+    });
   });
 
   describe('CDN storage adapter', function () {
     const CDN_BASE_URL = 'https://storage.ghost.is/c/6f/a3/site';
-    let originalAssetBaseUrls;
 
     beforeEach(function () {
       configUtils.set('urls:image', CDN_BASE_URL);
       configUtils.set('urls:media', CDN_BASE_URL);
       configUtils.set('urls:files', CDN_BASE_URL);
 
-      originalAssetBaseUrls = { ...urlUtils._assetBaseUrls };
-      urlUtils._assetBaseUrls = {
-        image: CDN_BASE_URL,
-        media: CDN_BASE_URL,
-        files: CDN_BASE_URL,
-      };
+      urlUtilsHelper.stubUrlUtilsWithCdn(
+        {
+          assetBaseUrls: {
+            image: CDN_BASE_URL,
+            media: CDN_BASE_URL,
+            files: CDN_BASE_URL,
+          },
+        },
+        sinon,
+      );
     });
 
     afterEach(async function () {
-      urlUtils._assetBaseUrls = originalAssetBaseUrls;
       await configUtils.restore();
     });
 

@@ -10,7 +10,7 @@ export default class MemberSerializer extends ApplicationSerializer.extend(Embed
     };
 
     serialize(/*snapshot, options*/) {
-        let json = super.serialize(...arguments);
+        const json = super.serialize(...arguments);
 
         // Properties that exist on the model but we don't want sent in the payload
         delete json.stripe;

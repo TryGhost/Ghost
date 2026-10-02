@@ -56,12 +56,15 @@ function keyClause(identity: string): string {
   return `${KEY_ATTRIBUTE}:${escapeNqlString(identity)}`;
 }
 
-function readValues(values: unknown[]): { subfield: string; value: unknown } {
-  const [subfield, value] = values;
+// A predicate's values are the part first, then what it holds: one text, or the
+// codes an "is any of" lists. An empty string is no value: a presence pill carries
+// one as its value slot, and switching it to "is any of" must not send `['']`.
+function readValues(values: unknown[]): { subfield: string; rest: unknown[] } {
+  const [subfield, ...rest] = values;
 
   return {
     subfield: typeof subfield === 'string' ? subfield : '',
-    value,
+    rest: rest.filter((value) => value !== ''),
   };
 }
 
@@ -84,7 +87,7 @@ export function customFieldAddressing(bound?: MetafieldIdentity): PresenceAddres
 
     address(predicate, ctx) {
       const field = fieldFromContext(bound, ctx.params);
-      const { subfield, value } = readValues(predicate.values);
+      const { subfield, rest } = readValues(predicate.values);
 
       if (!field) {
         return null;
@@ -93,7 +96,7 @@ export function customFieldAddressing(bound?: MetafieldIdentity): PresenceAddres
       return {
         valueKey: VALUE_ATTRIBUTE,
         companions: [keyClause(identityOf(field, subfield))],
-        values: [value],
+        values: rest,
       };
     },
 

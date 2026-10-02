@@ -5,8 +5,8 @@ export default BaseValidator.create({
     properties: ['name'],
 
     name(model) {
-        let name = model.name;
-        let hasValidated = model.hasValidated;
+        const name = model.name;
+        const hasValidated = model.hasValidated;
 
         if (isBlank(name)) {
             model.errors.add('name', 'Please enter a benefit');

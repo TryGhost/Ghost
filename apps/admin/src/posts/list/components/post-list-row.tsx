@@ -1,4 +1,4 @@
-import { Button } from '@tryghost/shade/components';
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
@@ -14,6 +14,7 @@ import {
 import { hasPostAnalyticsPage, type PostMetricsSettings } from '@/posts/list/post-metrics';
 import { PostMetricsCells } from '@/posts/list/components/post-metrics-cells';
 import { PostListRowEmailStatus } from '@/posts/list/components/post-list-row-email-status';
+import { EmailSendingStatusLine } from '@/posts/email-sending-status/email-sending-status-line';
 import {
   hasInProgressEmail,
   SETTLED_POST_LIST_ROW_EMAIL_STATUS,
@@ -23,6 +24,7 @@ import { forwardRef, memo, useState } from 'react';
 import type { ComponentPropsWithoutRef, MouseEvent as ReactMouseEvent } from 'react';
 import type { PostListItem } from '@/posts/list/hooks/use-posts-list';
 import type { PostResource } from '@/posts/list/post-resource';
+import { useShade } from '@tryghost/shade/app';
 
 interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick'> {
   post: PostListItem;
@@ -116,7 +118,11 @@ function FeatureImage({ post }: { post: PostListItem }) {
 
   // `p-0` because the placeholder's own padding is sized for a larger box;
   // here the icon just centres in the thumbnail.
-  return <FeatureImagePlaceholder className={cn(FEATURE_IMAGE_GEOMETRY, 'p-0')} />;
+  return (
+    <FeatureImagePlaceholder
+      className={cn(FEATURE_IMAGE_GEOMETRY, 'p-0 group-hover:brightness-95')}
+    />
+  );
 }
 
 const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps>(
@@ -147,6 +153,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
     },
     ref,
   ) {
+    const { isAdmin7 } = useShade();
     const [isHovered, setIsHovered] = useState(false);
 
     const metaParts = getPostMetaParts(post, { timezone });
@@ -180,7 +187,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
     const action = goesToAnalytics
       ? {
           href: `#/posts/analytics/${post.id}`,
-          label: 'Go to Analytics',
+          label: 'Post analytics',
           external: false,
           Icon: LucideIcon.ChartNoAxesColumn,
         }
@@ -188,7 +195,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
         ? // "View post" on both resources, as Ember hardcodes it. Only ever
           // reached by a contributor, who has no page access anyway.
           { href: post.url, label: 'View post', external: true, Icon: LucideIcon.ArrowUpRight }
-        : { href, label: 'Go to Editor', external: false, Icon: LucideIcon.Pen };
+        : { href, label: 'Edit', external: false, Icon: LucideIcon.Pen };
 
     const row = (
       <li
@@ -231,7 +238,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                 so the row's own box has to stay flush. */}
         <Inline align="center" className="pr-4" gap="md">
           <a
-            className="flex min-w-0 flex-1 items-start gap-4 py-4 pl-4 no-underline"
+            className="flex min-w-0 flex-1 items-start gap-4 py-4 pl-4 no-underline focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden focus-visible:ring-inset"
             data-testid="post-list-item-link"
             href={href}
             rel={linksOffsite ? 'noopener noreferrer' : undefined}
@@ -247,7 +254,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                     data-testid="post-featured"
                   />
                 )}
-                <Text as="h3" className="truncate" weight="semibold">
+                <Text as="h3" className="truncate tracking-normal" weight="semibold">
                   {post.title}
                 </Text>
               </Inline>
@@ -266,14 +273,21 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
               )}
 
               {emailSendingState.status === 'sending' ? (
-                <Text className="text-muted-foreground tabular-nums" size="sm">
-                  {emailSendingState.copy.title}
-                  {emailSendingState.copy.detail && (
-                    <span>{` · ${emailSendingState.copy.detail}`}</span>
-                  )}
-                </Text>
+                <EmailSendingStatusLine
+                  announce={false}
+                  className="text-sm"
+                  line={emailSendingState.line}
+                />
               ) : (
-                <Text className={statusTone(displayedPost, displayedIsFailed)} size="sm">
+                <Text
+                  className={statusTone(displayedPost, displayedIsFailed)}
+                  size="sm"
+                  weight={
+                    displayedIsFailed || post.status === 'draft' || post.status === 'scheduled'
+                      ? 'medium'
+                      : 'regular'
+                  }
+                >
                   {displayedStatusLabel}
                   {/* Mounted only while hovered, as Ember does. A CSS
                                   opacity fade would keep it in the DOM, so a screen
@@ -296,38 +310,43 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
             settings={metricsSettings}
             visitorCounts={visitorCounts}
           />
-          {/* Always visible, as in Ember: `.gh-post-list-cta` is a
-                    bordered white button and `.is-hovered` only changes its
-                    border colour. Revealing it on hover would make it
-                    undiscoverable, and an invisible target on touch. */}
-          <Button
-            // `bg-control-surface` rather than a bare white: it is
-            // white in light mode and transparent in dark, so the
-            // button sits on the row instead of punching a pale hole
-            // through it. Without it the outline variant is see-through
-            // and picks up the blue of a selected row.
-            // `ms-2` on top of the row's 12px gap, so the button sits
-            // 20px off the metrics. It is a different kind of thing
-            // from them — an action rather than a figure — and reads as
-            // part of the run of metrics when spaced the same.
-            // Margin rather than a wider row gap, which would push the
-            // title away from the metrics too.
-            className="my-4 ms-2 shrink-0 bg-control-surface px-4"
-            variant="outline"
-            asChild
-          >
-            <a
-              aria-label={action.label}
-              data-testid="post-list-item-action"
-              href={action.href}
-              rel={action.external ? 'noopener noreferrer' : undefined}
-              target={action.external ? '_blank' : undefined}
-              title={action.label}
-              data-ignore-select
-            >
-              <action.Icon />
-            </a>
-          </Button>
+          {/* Always visible so the action stays discoverable and remains
+                    available on touch devices. */}
+          <Tooltip delayDuration={1000}>
+            <TooltipTrigger asChild>
+              <Button
+                // The 32px margin on top of the row's gap separates
+                // the action from the analytics figures beside it. It is an
+                // action rather than another figure, so it needs to read as
+                // separate from the run of metrics.
+                // Margin rather than a wider row gap, which would push the
+                // title away from the metrics too.
+                className={cn(
+                  'my-4 shrink-0',
+                  isAdmin7 ? 'ms-8' : 'ms-2',
+                  isAdmin7
+                    ? 'text-muted-foreground hover:bg-background hover:text-foreground'
+                    : 'bg-control-surface px-4',
+                  isAdmin7 && isHovered && 'bg-background',
+                )}
+                size={isAdmin7 ? 'icon' : undefined}
+                variant={isAdmin7 ? (isHovered ? 'outline' : 'ghost') : 'outline'}
+                asChild
+              >
+                <a
+                  aria-label={action.label}
+                  data-testid="post-list-item-action"
+                  href={action.href}
+                  rel={action.external ? 'noopener noreferrer' : undefined}
+                  target={action.external ? '_blank' : undefined}
+                  data-ignore-select
+                >
+                  <action.Icon />
+                </a>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent variant="white">{action.label}</TooltipContent>
+          </Tooltip>
         </Inline>
       </li>
     );

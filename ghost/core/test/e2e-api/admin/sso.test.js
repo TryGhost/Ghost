@@ -7,11 +7,16 @@ const {
 const { restore } = require('../../utils/e2e-framework-mock-manager');
 const { stringMatching } = matchers;
 const sinon = require('sinon');
+const assert = require('node:assert/strict');
+const models = require('../../../core/server/models');
 const adapterManager = require('../../../core/server/services/adapter-manager').default;
 const { SSOBase } = require('@tryghost/adapter-base-sso');
 
 describe('SSO API', function () {
   let agent;
+  let observedOwner;
+  let ownerId;
+  let enabled = true;
 
   beforeAll(async function () {
     // Mock SSO adapter that always returns the owner. The stub stays registered
@@ -23,9 +28,7 @@ describe('SSO API', function () {
     // below) would hit an unmigrated database.
     class MockSSOAdapter extends SSOBase {
       async getRequestCredentials() {
-        return {
-          id: 'mock-credentials',
-        };
+        return enabled ? { id: 'mock-credentials' } : null;
       }
 
       async getIdentityFromCredentials() {
@@ -35,7 +38,8 @@ describe('SSO API', function () {
       }
 
       async getUserForIdentity() {
-        return this.getOwnerUser();
+        observedOwner = await this.getOwnerUser();
+        return observedOwner?.status === 'active' ? observedOwner : null;
       }
     }
 
@@ -77,6 +81,39 @@ describe('SSO API', function () {
 
       // Verify we can access authenticated endpoints after SSO login
       await agent.get('api/admin/users/me').expectStatus(200);
+      assert.equal(observedOwner.status, 'active');
+    });
+  });
+  describe('owner status and first-run setup', function () {
+    beforeEach(async function () {
+      const owner = await models.User.findOne({ role: 'Owner', status: 'all' });
+      ownerId = owner.id;
+      agent.resetAuthentication();
+      enabled = true;
+    });
+
+    afterEach(async function () {
+      enabled = true;
+      await models.User.edit({ status: 'active' }, { id: ownerId, context: { internal: true } });
+      agent.resetAuthentication();
+    });
+
+    it('does not grant a session to an inactive first-run owner', async function () {
+      const owner = await models.User.findOne({ role: 'Owner', status: 'all' });
+      await models.User.edit({ status: 'inactive' }, { id: owner.id, context: { internal: true } });
+      const response = await agent.post('/').expectEmptyBody();
+      assert.equal(response.headers['set-cookie'], undefined);
+      assert.equal(observedOwner.status, 'inactive');
+      const setup = await agent.get('api/admin/authentication/setup').expectStatus(200);
+      assert.equal(setup.body.setup[0].status, false);
+      await agent.get('api/admin/users/me').expectStatus(403);
+    });
+
+    it('preserves normal authentication when a preview does not activate SSO', async function () {
+      enabled = false;
+      const response = await agent.post('/').expectEmptyBody();
+      assert.equal(response.headers['set-cookie'], undefined);
+      await agent.get('api/admin/users/me').expectStatus(403);
     });
   });
 });

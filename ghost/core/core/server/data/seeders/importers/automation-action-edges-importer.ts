@@ -1,4 +1,5 @@
 import type { Knex } from 'knex';
+import { DefaultMap } from '../../../../shared/default-map';
 import { TableImporter } from './table-importer';
 
 type AutomationAction = {
@@ -28,11 +29,9 @@ export class AutomationActionEdgesImporter extends TableImporter<AutomationActio
       .orderBy('created_at')
       .orderBy('id');
 
-    const actionsByAutomation = new Map<string, AutomationAction[]>();
+    const actionsByAutomation = new DefaultMap<string, AutomationAction[]>(() => []);
     for (const action of actions) {
-      const automationActions = actionsByAutomation.get(action.automation_id) ?? [];
-      automationActions.push(action);
-      actionsByAutomation.set(action.automation_id, automationActions);
+      actionsByAutomation.get(action.automation_id).push(action);
     }
 
     const edges: AutomationActionEdge[] = [];

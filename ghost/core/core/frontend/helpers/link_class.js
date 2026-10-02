@@ -32,8 +32,8 @@ module.exports = function link_class(options) {
     options.hash.for = '';
   }
 
-  let href = options.hash.for.string || options.hash.for;
-  let classes = buildLinkClasses(config.get('url'), href, options);
+  const href = options.hash.for.string || options.hash.for;
+  const classes = buildLinkClasses(config.get('url'), href, options);
 
   return new SafeString(classes.join(' '));
 };

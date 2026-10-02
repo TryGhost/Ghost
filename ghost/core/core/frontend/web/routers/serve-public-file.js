@@ -36,7 +36,7 @@ function createPublicFileMiddleware(location, file, mime, maxAge, options = {}) 
   // These files are built on the fly, and must be saved in the content folder
   const builtFilePath = config.getContentPath('public');
 
-  let locationPath = location === 'static' ? staticFilePath : builtFilePath;
+  const locationPath = location === 'static' ? staticFilePath : builtFilePath;
 
   const filePath = file.match(/^public/)
     ? path.join(locationPath, file.replace(/^public/, ''))

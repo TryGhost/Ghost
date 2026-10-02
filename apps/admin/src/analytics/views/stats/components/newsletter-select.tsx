@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
+import { PageHeader } from '@tryghost/shade/patterns';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { type Newsletter } from '@tryghost/admin-x-framework/api/newsletters';
 import {
@@ -7,7 +8,6 @@ import {
   SelectGroup,
   SelectItem,
   SelectLabel,
-  SelectTrigger,
   SelectValue,
 } from '@tryghost/shade/components';
 import { useAnalytics } from '@/analytics/providers/analytics-context';
@@ -52,10 +52,10 @@ const NewsletterSelect: React.FC<NewsletterSelectProps> = ({ newsletters }) => {
         setSelectedNewsletterId(value);
       }}
     >
-      <SelectTrigger className="w-auto">
+      <PageHeader.SelectTrigger label="Newsletter">
         <LucideIcon.Mails className="mr-2" size={16} strokeWidth={1.5} />
         <SelectValue placeholder="Select a newsletter" />
-      </SelectTrigger>
+      </PageHeader.SelectTrigger>
       <SelectContent align="end">
         <SelectGroup>
           <SelectLabel>Newsletters</SelectLabel>

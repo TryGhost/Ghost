@@ -38,7 +38,7 @@ function entryLookup(postUrl, routerOptions, locals, { giftToken } = {}) {
     isEditURL = true;
   }
 
-  let options = {
+  const options = {
     include: 'authors,tags,tiers',
   };
 

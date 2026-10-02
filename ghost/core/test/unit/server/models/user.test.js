@@ -1,4 +1,6 @@
 const assert = require('node:assert/strict');
+const { execFileSync } = require('node:child_process');
+const path = require('node:path');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const models = require('../../../../core/server/models');
@@ -11,6 +13,19 @@ const testUtils = require('../../../utils');
 describe('Unit: models/user', function () {
   afterEach(function () {
     sinon.restore();
+  });
+
+  it('loads before the models index', function () {
+    assert.doesNotThrow(() => {
+      execFileSync(
+        process.execPath,
+        ['--import', 'tsx', '-e', "require('./core/server/models/user')"],
+        {
+          cwd: path.join(__dirname, '../../../..'),
+          stdio: 'pipe',
+        },
+      );
+    });
   });
 
   describe('lock method', function () {
@@ -102,7 +117,7 @@ describe('Unit: models/user', function () {
       });
 
       it('email cannot be blank', function () {
-        let data = { name: 'name' };
+        const data = { name: 'name' };
         sinon.stub(models.User, 'findOne').resolves(null);
 
         return models.User.add(data)

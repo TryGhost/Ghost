@@ -3,6 +3,7 @@ import logging from '@tryghost/logging';
 import type { SchedulerAdapter, SchedulerJob } from '@tryghost/adapter-base-scheduling';
 import type { InternalApiKey, InternalKeys } from '../internal-keys';
 import { buildSignedJob } from '../../adapters/scheduling/build-signed-job';
+import { getSchedulerIdempotencyKey } from '../../adapters/scheduling/get-scheduler-idempotency-key';
 
 // CJS-only modules — typed loosely below. models is the Bookshelf registry
 // without TS declarations; the rest are JS modules without types.
@@ -152,15 +153,22 @@ export default class PostScheduling {
     const publishedAt =
       event === 'unscheduled' ? model.previous('published_at') : model.get('published_at');
     const previousPublishedAt = model.previous('published_at');
+    const time = moment(publishedAt).valueOf();
 
     return buildSignedJob({
       apiUrl: this.#apiUrl,
       path: ['schedules', resource, `${model.get('id')}/`],
-      time: moment(publishedAt).valueOf(),
+      time,
       key,
       extra: {
         oldTime: previousPublishedAt ? moment(previousPublishedAt).valueOf() : null,
       },
+      // The key identifies one job: the URL already carries the resource
+      // and a token signed for this fire time under the current signing key,
+      // so re-registering the same job (e.g. a boot rebuild) yields the same
+      // key, while a reschedule or key rotation yields a new one.
+      getIdempotencyKey: (url) =>
+        getSchedulerIdempotencyKey({ namespace: 'post-scheduling', date: new Date(time), url }),
     });
   }
 }

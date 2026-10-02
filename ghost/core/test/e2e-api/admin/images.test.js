@@ -8,6 +8,7 @@ const { Blob } = require('node:buffer');
 const config = require('../../../core/shared/config');
 const urlUtils = require('../../../core/shared/url-utils').default;
 const imageTransform = require('@tryghost/image-transform');
+const sharp = require('sharp');
 const sinon = require('sinon');
 const { mockSystemTime } = require('../../utils/clock-utils');
 const { anyErrorId } = matchers;
@@ -246,6 +247,48 @@ describe('Images API', function () {
       contentType: 'image/svg+xml',
       skipOriginal: true,
     });
+  });
+
+  it('Sanitizes SVGs uploaded with an SVG content type and a non-SVG extension', async function () {
+    const originalFilePath = p.join(
+      __dirname,
+      '/../../utils/fixtures/images/svg-with-unsafe-script.svg',
+    );
+    const fileContents = await fs.readFile(originalFilePath);
+    const { body } = await uploadImageRequest({
+      fileContents,
+      filename: 'svg-content.png',
+      contentType: 'image/svg+xml',
+    }).expectStatus(201);
+
+    const relativePath = body.images[0].url.replace(urlUtils.urlFor('home', true), '/');
+    const filePath = config.getContentPath('images') + relativePath.replace('/content/images/', '');
+    const originalImagePath = imageTransform.generateOriginalImageName(filePath);
+    images.push(filePath, originalImagePath);
+
+    for (const savedPath of [filePath, originalImagePath]) {
+      const saved = await fs.readFile(savedPath, 'utf8');
+      assert.ok(!saved.includes('<script'), `${savedPath} should not contain a <script> tag`);
+    }
+  });
+
+  it('Errors when uploading a non-SVG with an SVG content type', async function () {
+    const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
+    const fileContents = await fs.readFile(originalFilePath);
+    await uploadImageRequest({
+      fileContents,
+      filename: 'ghost-logo.png',
+      contentType: 'image/svg+xml',
+    })
+      .expectStatus(415)
+      .matchBodySnapshot({
+        errors: [
+          {
+            id: anyErrorId,
+            message: 'Please select a valid SVG image',
+          },
+        ],
+      });
   });
 
   it('Errors when uploading an invalid SVG', async function () {
@@ -620,7 +663,7 @@ describe('Images API', function () {
   });
 
   it('Does not return HTTP 500 when image processing fails', async function () {
-    sinon.stub(imageTransform, 'resizeFromPath').rejects(new Error('Image processing failed'));
+    sinon.stub(sharp.prototype, 'toBuffer').rejects(new Error('Image processing failed'));
 
     const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
     const fileContents = await fs.readFile(originalFilePath);

@@ -6,14 +6,19 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
 const sentry = require('../../../shared/sentry');
-const MagicLink = require('../lib/magic-link/magic-link');
+const MagicLink = require('../../lib/magic-link/magic-link');
 
 const messages = {
   nameAlreadyExists: 'A newsletter with the same name already exists',
   newsletterNotFound: 'Newsletter not found.',
   senderEmailNotAllowed: 'You cannot set the sender email address to {email}',
   replyToNotAllowed: 'You cannot set the reply-to email address to {email}',
+  invalidVerificationToken: 'This verification link is not valid for a newsletter.',
 };
+
+// Properties a verification token is allowed to update, in case the token was
+// issued for a different flow (e.g. the support address) or by an older version
+const VERIFIABLE_PROPERTIES = ['sender_email', 'sender_reply_to'];
 
 class NewslettersService {
   /**
@@ -270,6 +275,12 @@ class NewslettersService {
     const data = await this.magicLinkService.getDataFromToken(token);
     const { id, property, value } = data;
 
+    if (!id || !VERIFIABLE_PROPERTIES.includes(property)) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.invalidVerificationToken),
+      });
+    }
+
     const attrs = {};
     attrs[property] = value;
 
@@ -391,7 +402,7 @@ class NewslettersService {
         if (process.env.NODE_ENV !== 'production') {
           logging.warn(message.text);
         }
-        let msg = Object.assign(
+        const msg = Object.assign(
           {
             from: fromEmail,
             subject: 'Verify email address',

@@ -2,12 +2,10 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const DomainEvents = require('@tryghost/domain-events');
+const logging = require('@tryghost/logging');
 const labs = require('../../../../../../../core/shared/labs');
 const MemberRepository = require('../../../../../../../core/server/services/members/members-api/repositories/member-repository');
-const {
-  SubscriptionCreatedEvent,
-  OfferRedemptionEvent,
-} = require('../../../../../../../core/shared/events');
+const { SubscriptionCreatedEvent } = require('../../../../../../../core/shared/events');
 
 describe('MemberRepository', function () {
   let Automation;
@@ -46,6 +44,8 @@ describe('MemberRepository', function () {
       MemberProductEvent,
       MemberStatusEvent,
       MemberSubscribeEventModel: MemberSubscribeEvent,
+      MemberCreatedEvent: { add: sinon.stub().resolves() },
+      SubscriptionCreatedEvent: { add: sinon.stub().resolves() },
       OfferRedemption: mockOfferRedemption,
       StripeCustomer,
       StripeCustomerSubscription,
@@ -54,6 +54,7 @@ describe('MemberRepository', function () {
       offersAPI,
       automationsApi,
       productRepository,
+      metafieldValues: { getValuesForMember: async () => undefined },
       stripeAPIService,
       tokenService,
       ...overrides,
@@ -531,10 +532,48 @@ describe('MemberRepository', function () {
     });
   });
 
+  describe('subscription methods with a missing member', function () {
+    let repo;
+
+    beforeEach(function () {
+      Member.findOne = sinon.stub().resolves(null);
+      repo = buildRepo({ stripeAPIService: { configured: true } });
+    });
+
+    const subscription = { id: 'sub_123', subscription_id: 'sub_123', customer: 'cus_123' };
+
+    it('linkSubscription throws NotFoundError', async function () {
+      await assert.rejects(
+        repo.linkSubscription({ id: 'missing', subscription }, { transacting: {} }),
+        errors.NotFoundError,
+      );
+    });
+
+    it('getSubscription throws NotFoundError', async function () {
+      await assert.rejects(
+        repo.getSubscription({ email: 'missing@example.com', subscription }),
+        errors.NotFoundError,
+      );
+    });
+
+    it('cancelSubscription throws NotFoundError', async function () {
+      await assert.rejects(
+        repo.cancelSubscription({ id: 'missing', subscription }),
+        errors.NotFoundError,
+      );
+    });
+
+    it('updateSubscription throws NotFoundError', async function () {
+      await assert.rejects(
+        repo.updateSubscription({ email: 'missing@example.com', subscription }),
+        errors.NotFoundError,
+      );
+    });
+  });
+
   describe('linkSubscription', function () {
     let subscriptionData;
     let subscriptionCreatedNotifySpy;
-    let offerRedemptionNotifySpy;
 
     afterEach(function () {
       sinon.restore();
@@ -543,7 +582,6 @@ describe('MemberRepository', function () {
     beforeEach(async function () {
       sinon.stub(MemberRepository.prototype, '_updateCurrentSubscription').resolves();
       subscriptionCreatedNotifySpy = sinon.spy();
-      offerRedemptionNotifySpy = sinon.spy();
 
       subscriptionData = {
         id: 'sub_123',
@@ -641,6 +679,127 @@ describe('MemberRepository', function () {
       };
     });
 
+    describe('incomplete subscriptions', function () {
+      let repo;
+      let storedSubscription;
+      let dispatch;
+
+      const toModel = (attributes) => ({
+        id: attributes.id,
+        get: (key) => attributes[key],
+      });
+
+      beforeEach(function () {
+        storedSubscription = null;
+        StripeCustomerSubscription.add.callsFake(async (attributes) => {
+          storedSubscription = { ...attributes, id: 'local_subscription_id' };
+          return toModel(storedSubscription);
+        });
+        StripeCustomerSubscription.edit.callsFake(async (attributes) => {
+          storedSubscription = { ...storedSubscription, ...attributes };
+          return toModel(storedSubscription);
+        });
+        MemberPaidSubscriptionEvent.findOne = sinon.stub().callsFake(async () => {
+          const created = MemberPaidSubscriptionEvent.add
+            .getCalls()
+            .find((call) => call.args[0].type === 'created');
+          return created ? toModel(created.args[0]) : null;
+        });
+        repo = buildRepo();
+        sinon
+          .stub(repo, 'getSubscriptionByStripeID')
+          .callsFake(async () => (storedSubscription ? toModel(storedSubscription) : null));
+        dispatch = sinon.stub(repo, 'dispatchEvent');
+        subscriptionData.metadata = {
+          attribution_id: 'post_id',
+          attribution_type: 'post',
+          attribution_url: '/original-post/',
+          referrer_source: 'Google',
+          utm_campaign: 'summer',
+        };
+      });
+
+      async function link(status) {
+        subscriptionData.status = status;
+        await repo.linkSubscription(
+          { id: 'member_id', subscription: subscriptionData },
+          { transacting: { executionPromise: Promise.resolve() } },
+        );
+      }
+
+      function createdEvents() {
+        return dispatch
+          .getCalls()
+          .map((call) => call.args[0])
+          .filter((event) => event instanceof SubscriptionCreatedEvent);
+      }
+
+      for (const status of ['incomplete', 'incomplete_expired']) {
+        it(`stores ${status} without paid activity or conversion events`, async function () {
+          await link(status);
+
+          assert.equal(storedSubscription.status, status);
+          assert.equal(storedSubscription.mrr, 0);
+          assert.equal(Member.edit.lastCall.args[0].status, 'free');
+          sinon.assert.notCalled(MemberPaidSubscriptionEvent.add);
+          assert.equal(createdEvents().length, 0);
+        });
+      }
+
+      it('never counts an incomplete subscription that expires, including repeat deliveries', async function () {
+        await link('incomplete');
+        await link('incomplete');
+        await link('incomplete_expired');
+        await link('incomplete_expired');
+
+        assert.equal(storedSubscription.status, 'incomplete_expired');
+        sinon.assert.notCalled(MemberPaidSubscriptionEvent.add);
+        assert.equal(createdEvents().length, 0);
+      });
+
+      for (const status of ['active', 'trialing', 'past_due', 'unpaid']) {
+        it(`records a single attributed conversion when incomplete becomes ${status}`, async function () {
+          await link('incomplete');
+          await link(status);
+          await link(status);
+
+          sinon.assert.calledOnce(MemberPaidSubscriptionEvent.add);
+          const activity = MemberPaidSubscriptionEvent.add.firstCall.args[0];
+          assert.equal(activity.type, 'created');
+          assert.equal(activity.from_plan, null);
+          assert.equal(activity.mrr_delta, status === 'trialing' ? 0 : 500);
+          assert.equal(createdEvents().length, 1);
+          assert.equal(createdEvents()[0].data.subscriptionId, 'local_subscription_id');
+          assert.deepEqual(createdEvents()[0].data.attribution, {
+            id: 'post_id',
+            url: '/original-post/',
+            type: 'post',
+            referrerSource: 'Google',
+            referrerMedium: null,
+            referrerUrl: null,
+            utmSource: null,
+            utmMedium: null,
+            utmCampaign: 'summer',
+            utmTerm: null,
+            utmContent: null,
+          });
+          assert.equal(Member.edit.lastCall.args[0].status, 'paid');
+        });
+      }
+
+      it('does not recreate a conversion already recorded before incomplete events were deferred', async function () {
+        await link('incomplete');
+        MemberPaidSubscriptionEvent.add.resetHistory();
+        MemberPaidSubscriptionEvent.findOne.resolves(toModel({ type: 'created' }));
+
+        await link('active');
+
+        sinon.assert.calledOnce(MemberPaidSubscriptionEvent.add);
+        assert.equal(MemberPaidSubscriptionEvent.add.firstCall.args[0].type, 'active');
+        assert.equal(createdEvents().length, 0);
+      });
+    });
+
     it('dispatches paid subscription event', async function () {
       const repo = buildRepo({
         stripeAPIService,
@@ -655,7 +814,6 @@ describe('MemberRepository', function () {
       sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
 
       DomainEvents.subscribe(SubscriptionCreatedEvent, subscriptionCreatedNotifySpy);
-      DomainEvents.subscribe(OfferRedemptionEvent, offerRedemptionNotifySpy);
 
       await repo.linkSubscription(
         {
@@ -670,10 +828,10 @@ describe('MemberRepository', function () {
       );
 
       sinon.assert.calledOnce(subscriptionCreatedNotifySpy);
-      sinon.assert.notCalled(offerRedemptionNotifySpy);
+      sinon.assert.notCalled(mockOfferRedemption.add);
     });
 
-    it('dispatches the offer redemption event for a new member starting a subscription', async function () {
+    it('records the offer redemption for a new member starting a subscription', async function () {
       // When a new member starts a paid subscription, the subscription is created with the offer ID
       const repo = buildRepo({
         stripeAPIService,
@@ -690,7 +848,6 @@ describe('MemberRepository', function () {
       sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
 
       DomainEvents.subscribe(SubscriptionCreatedEvent, subscriptionCreatedNotifySpy);
-      DomainEvents.subscribe(OfferRedemptionEvent, offerRedemptionNotifySpy);
 
       await repo.linkSubscription(
         {
@@ -717,19 +874,11 @@ describe('MemberRepository', function () {
         }),
       );
 
-      sinon.assert.called(offerRedemptionNotifySpy);
-      sinon.assert.calledWith(
-        offerRedemptionNotifySpy,
-        sinon.match((event) => {
-          if (event.data.offerId === 'offer_123') {
-            return true;
-          }
-          return false;
-        }),
-      );
+      sinon.assert.called(mockOfferRedemption.add);
+      sinon.assert.calledWith(mockOfferRedemption.add, sinon.match({ offer_id: 'offer_123' }));
     });
 
-    it('dispatches the offer redemption event for an existing member upgrading to a paid subscription', async function () {
+    it('records the offer redemption for an existing member upgrading to a paid subscription', async function () {
       // When an existing free member upgrades to a paid subscription, the subscription is first created _without_ the offer id
       // Then it is updated with the offer id after the checkout.completed webhook is received
       const repo = buildRepo({
@@ -748,7 +897,6 @@ describe('MemberRepository', function () {
       });
 
       DomainEvents.subscribe(SubscriptionCreatedEvent, subscriptionCreatedNotifySpy);
-      DomainEvents.subscribe(OfferRedemptionEvent, offerRedemptionNotifySpy);
 
       await repo.linkSubscription(
         {
@@ -766,16 +914,8 @@ describe('MemberRepository', function () {
 
       sinon.assert.notCalled(subscriptionCreatedNotifySpy);
 
-      sinon.assert.called(offerRedemptionNotifySpy);
-      sinon.assert.calledWith(
-        offerRedemptionNotifySpy,
-        sinon.match((event) => {
-          if (event.data.offerId === 'offer_123') {
-            return true;
-          }
-          return false;
-        }),
-      );
+      sinon.assert.called(mockOfferRedemption.add);
+      sinon.assert.calledWith(mockOfferRedemption.add, sinon.match({ offer_id: 'offer_123' }));
     });
 
     it('creates an offer from a Stripe coupon', async function () {
@@ -1437,8 +1577,6 @@ describe('MemberRepository', function () {
         }),
       });
 
-      DomainEvents.subscribe(OfferRedemptionEvent, offerRedemptionNotifySpy);
-
       await repo.linkSubscription(
         {
           subscription: subscriptionData, // no discount, so offer_id resolves to null
@@ -1564,7 +1702,7 @@ describe('MemberRepository', function () {
       assert.equal(editedData.offer_id, null);
     });
 
-    it('dispatches OfferRedemptionEvent when offer_id changes from one offer to another', async function () {
+    it('records an offer redemption when offer_id changes from one offer to another', async function () {
       // A retention offer replaces an expired signup offer (old → new)
       // The event timestamp should use the Stripe discount start time, not the subscription created_at
       const discountStartUnix = Math.floor(Date.now() / 1000) - 60; // 1 minute ago
@@ -1609,8 +1747,6 @@ describe('MemberRepository', function () {
         }),
       });
 
-      DomainEvents.subscribe(OfferRedemptionEvent, offerRedemptionNotifySpy);
-
       await repo.linkSubscription(
         {
           id: 'member_id_123',
@@ -1625,21 +1761,19 @@ describe('MemberRepository', function () {
         },
       );
 
-      sinon.assert.called(offerRedemptionNotifySpy);
+      sinon.assert.called(mockOfferRedemption.add);
       sinon.assert.calledWith(
-        offerRedemptionNotifySpy,
-        sinon.match((event) => {
-          return event.data.offerId === 'new_retention_offer_456';
-        }),
+        mockOfferRedemption.add,
+        sinon.match({ offer_id: 'new_retention_offer_456' }),
       );
 
       // Timestamp should be the discount start, not the subscription created_at
-      const event = offerRedemptionNotifySpy.firstCall.args[0];
+      const redemption = mockOfferRedemption.add.firstCall.args[0];
 
-      assert.equal(event.timestamp.getTime(), discountStartUnix * 1000);
+      assert.equal(redemption.created_at.getTime(), discountStartUnix * 1000);
     });
 
-    it('dispatches OfferRedemptionEvent with created_at timestamp when no Stripe discount is present', async function () {
+    it('records an offer redemption with created_at timestamp when no Stripe discount is present', async function () {
       // Trial offers don't have Stripe discounts — timestamp falls back to created_at
       const subCreatedAt = new Date('2025-06-15T00:00:00Z');
 
@@ -1678,8 +1812,6 @@ describe('MemberRepository', function () {
         }),
       });
 
-      DomainEvents.subscribe(OfferRedemptionEvent, offerRedemptionNotifySpy);
-
       await repo.linkSubscription(
         {
           id: 'member_id_123',
@@ -1694,12 +1826,12 @@ describe('MemberRepository', function () {
         },
       );
 
-      sinon.assert.called(offerRedemptionNotifySpy);
+      sinon.assert.called(mockOfferRedemption.add);
 
-      const event = offerRedemptionNotifySpy.firstCall.args[0];
+      const redemption = mockOfferRedemption.add.firstCall.args[0];
 
-      assert.equal(event.data.offerId, 'trial_offer_789');
-      assert.equal(event.timestamp.getTime(), subCreatedAt.getTime());
+      assert.equal(redemption.offer_id, 'trial_offer_789');
+      assert.equal(redemption.created_at.getTime(), subCreatedAt.getTime());
     });
 
     it('overwrites offer_id when new offer arrives via Stripe even with an active trial', async function () {
@@ -1750,8 +1882,6 @@ describe('MemberRepository', function () {
         }),
       });
 
-      DomainEvents.subscribe(OfferRedemptionEvent, offerRedemptionNotifySpy);
-
       await repo.linkSubscription(
         {
           subscription: subscriptionWithDiscount,
@@ -1771,17 +1901,12 @@ describe('MemberRepository', function () {
       assert.ok('offer_id' in editedData, 'offer_id should be present in the update data');
       assert.equal(editedData.offer_id, 'offer_new'); // from offersAPI.ensureOfferForStripeCoupon stub
 
-      // Should dispatch redemption event for the new offer
-      sinon.assert.called(offerRedemptionNotifySpy);
-      sinon.assert.calledWith(
-        offerRedemptionNotifySpy,
-        sinon.match((event) => {
-          return event.data.offerId === 'offer_new';
-        }),
-      );
+      // Should record a redemption for the new offer
+      sinon.assert.called(mockOfferRedemption.add);
+      sinon.assert.calledWith(mockOfferRedemption.add, sinon.match({ offer_id: 'offer_new' }));
     });
 
-    it('does not dispatch OfferRedemptionEvent when offer_id stays the same', async function () {
+    it('does not record an offer redemption when offer_id stays the same', async function () {
       // Same offer synced again via webhook — no new event
       const subscriptionWithDiscount = {
         ...subscriptionData,
@@ -1824,8 +1949,6 @@ describe('MemberRepository', function () {
         }),
       });
 
-      DomainEvents.subscribe(OfferRedemptionEvent, offerRedemptionNotifySpy);
-
       await repo.linkSubscription(
         {
           subscription: subscriptionWithDiscount,
@@ -1838,7 +1961,7 @@ describe('MemberRepository', function () {
         },
       );
 
-      sinon.assert.notCalled(offerRedemptionNotifySpy);
+      sinon.assert.notCalled(mockOfferRedemption.add);
     });
   });
 
@@ -2634,6 +2757,75 @@ describe('MemberRepository', function () {
     });
   });
 
+  describe('update - Stripe customer email', function () {
+    let updateCustomerEmail;
+
+    beforeEach(function () {
+      updateCustomerEmail = sinon.stub().resolves();
+      stripeAPIService = { configured: true, updateCustomerEmail };
+      MemberEmailChangeEvent = { add: sinon.stub().resolves() };
+      MemberStatusEvent = { add: sinon.stub().resolves() };
+      Member = {
+        findOne: sinon.stub().resolves({
+          get: sinon.stub().withArgs('email').returns('old@example.com'),
+          related: sinon.stub().returns({ models: [] }),
+          load: sinon.stub().resolves(),
+        }),
+        edit: sinon.stub().resolves({
+          id: 'member_1',
+          attributes: { email: 'new@example.com', status: 'free' },
+          _previousAttributes: { email: 'old@example.com', status: 'free' },
+          _changed: { email: 'old@example.com' },
+          get: sinon.stub().withArgs('email').returns('new@example.com'),
+          related: sinon
+            .stub()
+            .withArgs('stripeCustomers')
+            .returns({
+              fetch: sinon.stub().resolves(),
+              models: [{ get: sinon.stub().withArgs('customer_id').returns('cus_1') }],
+            }),
+        }),
+      };
+    });
+
+    /** A transaction whose outcome the test decides. */
+    function pendingTransaction() {
+      let commit;
+      let rollBack;
+      const executionPromise = new Promise((resolve, reject) => {
+        commit = resolve;
+        rollBack = reject;
+      });
+      return { transacting: { executionPromise }, commit, rollBack };
+    }
+
+    it('sends the new address once the edit commits', async function () {
+      const { transacting, commit } = pendingTransaction();
+
+      await buildRepo().update({ email: 'new@example.com' }, { id: 'member_1', transacting });
+      sinon.assert.notCalled(updateCustomerEmail);
+
+      commit();
+      await transacting.executionPromise;
+      await new Promise(setImmediate);
+
+      sinon.assert.calledOnceWithExactly(updateCustomerEmail, 'cus_1', 'new@example.com');
+    });
+
+    it('sends nothing when the edit rolls back, and logs that it did not', async function () {
+      const loggingError = sinon.stub(logging, 'error');
+      const { transacting, rollBack } = pendingTransaction();
+
+      await buildRepo().update({ email: 'new@example.com' }, { id: 'member_1', transacting });
+      rollBack(new Error('rolled back'));
+      await transacting.executionPromise.catch(() => {});
+      await new Promise(setImmediate);
+
+      sinon.assert.notCalled(updateCustomerEmail);
+      sinon.assert.calledOnce(loggingError);
+    });
+  });
+
   describe('update - member status', function () {
     let memberEdit;
     let existingProducts;
@@ -2855,6 +3047,7 @@ describe('MemberRepository', function () {
           }),
         }),
         destroy: sinon.stub().resolves(),
+        transaction: (fn) => fn('a-transaction'),
       };
 
       const repo = buildRepo();

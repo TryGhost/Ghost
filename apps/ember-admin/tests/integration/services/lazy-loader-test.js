@@ -17,7 +17,7 @@ describe('Integration: Service: lazy-loader', function () {
     });
 
     it('loads a script correctly and only once', async function () {
-        let subject = this.owner.lookup('service:lazy-loader');
+        const subject = this.owner.lookup('service:lazy-loader');
 
         subject.setProperties({
             scriptPromises: {},
@@ -44,7 +44,7 @@ describe('Integration: Service: lazy-loader', function () {
     });
 
     it('loads styles correctly', function () {
-        let subject = this.owner.lookup('service:lazy-loader');
+        const subject = this.owner.lookup('service:lazy-loader');
 
         subject.setProperties({
             testing: false
@@ -63,7 +63,7 @@ describe('Integration: Service: lazy-loader', function () {
         // broccoli-asset-rev rewrites string literals in compiled JS at build
         // time, prepending the CDN origin. When the lazy-loader receives an
         // already-absolute URL it must use it as-is.
-        let subject = this.owner.lookup('service:lazy-loader');
+        const subject = this.owner.lookup('service:lazy-loader');
 
         subject.setProperties({
             scriptPromises: {},

@@ -25,8 +25,8 @@ const Tag = EmberObject.extend(ValidationEngine, {
 
 describe('Unit: Validator: tag-settings', function () {
     it('validates all fields by default', function () {
-        let tag = Tag.create({});
-        let properties = tag.get('validators.tag.properties');
+        const tag = Tag.create({});
+        const properties = tag.get('validators.tag.properties');
 
         // TODO: This is checking implementation details rather than expected
         // behaviour. Replace once we have consistent behaviour (see below)
@@ -52,7 +52,7 @@ describe('Unit: Validator: tag-settings', function () {
 
     it('passes with valid name', function () {
         // longest valid name
-        let tag = Tag.create({name: (new Array(192).join('x'))});
+        const tag = Tag.create({name: (new Array(192).join('x'))});
         let passed = false;
 
         expect(tag.get('name').length, 'name length').to.equal(191);
@@ -68,9 +68,8 @@ describe('Unit: Validator: tag-settings', function () {
     });
 
     it('validates name presence', function () {
-        let tag = Tag.create();
+        const tag = Tag.create();
         let passed = false;
-        let nameErrors;
 
         // TODO: validator is currently a singleton meaning state leaks
         // between all objects that use it. Each object should either
@@ -86,7 +85,7 @@ describe('Unit: Validator: tag-settings', function () {
             });
         });
 
-        nameErrors = tag.get('errors').errorsFor('name').get(0);
+        const nameErrors = tag.get('errors').errorsFor('name').get(0);
         expect(nameErrors.attribute, 'errors.name.attribute').to.equal('name');
         expect(nameErrors.message, 'errors.name.message').to.equal('You must specify a name for the tag.');
 
@@ -95,9 +94,8 @@ describe('Unit: Validator: tag-settings', function () {
     });
 
     it('validates names starting with a comma', function () {
-        let tag = Tag.create({name: ',test'});
+        const tag = Tag.create({name: ',test'});
         let passed = false;
-        let nameErrors;
 
         run(() => {
             tag.validate({property: 'name'}).then(() => {
@@ -105,7 +103,7 @@ describe('Unit: Validator: tag-settings', function () {
             });
         });
 
-        nameErrors = tag.get('errors').errorsFor('name').get(0);
+        const nameErrors = tag.get('errors').errorsFor('name').get(0);
         expect(nameErrors.attribute, 'errors.name.attribute').to.equal('name');
         expect(nameErrors.message, 'errors.name.message').to.equal('Tag names can\'t start with commas.');
 
@@ -115,9 +113,8 @@ describe('Unit: Validator: tag-settings', function () {
 
     it('validates name length', function () {
         // shortest invalid name
-        let tag = Tag.create({name: (new Array(193).join('x'))});
+        const tag = Tag.create({name: (new Array(193).join('x'))});
         let passed = false;
-        let nameErrors;
 
         expect(tag.get('name').length, 'name length').to.equal(192);
 
@@ -127,7 +124,7 @@ describe('Unit: Validator: tag-settings', function () {
             });
         });
 
-        nameErrors = tag.get('errors').errorsFor('name')[0];
+        const nameErrors = tag.get('errors').errorsFor('name')[0];
         expect(nameErrors.attribute, 'errors.name.attribute').to.equal('name');
         expect(nameErrors.message, 'errors.name.message').to.equal('Tag names cannot be longer than 191 characters.');
 
@@ -137,7 +134,7 @@ describe('Unit: Validator: tag-settings', function () {
 
     it('passes with valid slug', function () {
         // longest valid slug
-        let tag = Tag.create({slug: (new Array(192).join('x'))});
+        const tag = Tag.create({slug: (new Array(192).join('x'))});
         let passed = false;
 
         expect(tag.get('slug').length, 'slug length').to.equal(191);
@@ -154,9 +151,8 @@ describe('Unit: Validator: tag-settings', function () {
 
     it('validates slug length', function () {
         // shortest invalid slug
-        let tag = Tag.create({slug: (new Array(193).join('x'))});
+        const tag = Tag.create({slug: (new Array(193).join('x'))});
         let passed = false;
-        let slugErrors;
 
         expect(tag.get('slug').length, 'slug length').to.equal(192);
 
@@ -166,7 +162,7 @@ describe('Unit: Validator: tag-settings', function () {
             });
         });
 
-        slugErrors = tag.get('errors').errorsFor('slug')[0];
+        const slugErrors = tag.get('errors').errorsFor('slug')[0];
         expect(slugErrors.attribute, 'errors.slug.attribute').to.equal('slug');
         expect(slugErrors.message, 'errors.slug.message').to.equal('URL cannot be longer than 191 characters.');
 
@@ -176,7 +172,7 @@ describe('Unit: Validator: tag-settings', function () {
 
     it('passes with a valid description', function () {
         // longest valid description
-        let tag = Tag.create({description: (new Array(501).join('x'))});
+        const tag = Tag.create({description: (new Array(501).join('x'))});
         let passed = false;
 
         expect(tag.get('description').length, 'description length').to.equal(500);
@@ -193,9 +189,8 @@ describe('Unit: Validator: tag-settings', function () {
 
     it('validates description length', function () {
         // shortest invalid description
-        let tag = Tag.create({description: (new Array(502).join('x'))});
+        const tag = Tag.create({description: (new Array(502).join('x'))});
         let passed = false;
-        let errors;
 
         expect(tag.get('description').length, 'description length').to.equal(501);
 
@@ -205,7 +200,7 @@ describe('Unit: Validator: tag-settings', function () {
             });
         });
 
-        errors = tag.get('errors').errorsFor('description')[0];
+        const errors = tag.get('errors').errorsFor('description')[0];
         expect(errors.attribute, 'errors.description.attribute').to.equal('description');
         expect(errors.message, 'errors.description.message').to.equal('Description cannot be longer than 500 characters.');
 
@@ -223,7 +218,7 @@ describe('Unit: Validator: tag-settings', function () {
     // model/validator respectively - this should be standardised
     it('passes with a valid metaTitle', function () {
         // longest valid metaTitle
-        let tag = Tag.create({metaTitle: (new Array(301).join('x'))});
+        const tag = Tag.create({metaTitle: (new Array(301).join('x'))});
         let passed = false;
 
         expect(tag.get('metaTitle').length, 'metaTitle length').to.equal(300);
@@ -240,9 +235,8 @@ describe('Unit: Validator: tag-settings', function () {
 
     it('validates metaTitle length', function () {
         // shortest invalid metaTitle
-        let tag = Tag.create({metaTitle: (new Array(302).join('x'))});
+        const tag = Tag.create({metaTitle: (new Array(302).join('x'))});
         let passed = false;
-        let errors;
 
         expect(tag.get('metaTitle').length, 'metaTitle length').to.equal(301);
 
@@ -252,7 +246,7 @@ describe('Unit: Validator: tag-settings', function () {
             });
         });
 
-        errors = tag.get('errors').errorsFor('metaTitle')[0];
+        const errors = tag.get('errors').errorsFor('metaTitle')[0];
         expect(errors.attribute, 'errors.metaTitle.attribute').to.equal('metaTitle');
         expect(errors.message, 'errors.metaTitle.message').to.equal('Meta Title cannot be longer than 300 characters.');
 
@@ -264,7 +258,7 @@ describe('Unit: Validator: tag-settings', function () {
     // the model/validator respectively - this should be standardised
     it('passes with a valid metaDescription', function () {
         // longest valid description
-        let tag = Tag.create({metaDescription: (new Array(501).join('x'))});
+        const tag = Tag.create({metaDescription: (new Array(501).join('x'))});
         let passed = false;
 
         expect(tag.get('metaDescription').length, 'metaDescription length').to.equal(500);
@@ -281,9 +275,8 @@ describe('Unit: Validator: tag-settings', function () {
 
     it('validates metaDescription length', function () {
         // shortest invalid metaDescription
-        let tag = Tag.create({metaDescription: (new Array(502).join('x'))});
+        const tag = Tag.create({metaDescription: (new Array(502).join('x'))});
         let passed = false;
-        let errors;
 
         expect(tag.get('metaDescription').length, 'metaDescription length').to.equal(501);
 
@@ -293,7 +286,7 @@ describe('Unit: Validator: tag-settings', function () {
             });
         });
 
-        errors = tag.get('errors').errorsFor('metaDescription')[0];
+        const errors = tag.get('errors').errorsFor('metaDescription')[0];
         expect(errors.attribute, 'errors.metaDescription.attribute').to.equal('metaDescription');
         expect(errors.message, 'errors.metaDescription.message').to.equal('Meta Description cannot be longer than 500 characters.');
 

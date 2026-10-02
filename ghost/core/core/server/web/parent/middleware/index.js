@@ -3,6 +3,6 @@ module.exports = {
   filterQueryParameters: require('./filter-query-parameters').filterQueryParameters,
   ghostLocals: require('./ghost-locals').ghostLocals,
   logRequest: require('./log-request'),
-  queueRequest: require('./queue-request'),
+  queueRequest: require('./queue-request').queueRequest,
   requestId: require('./request-id').requestId,
 };

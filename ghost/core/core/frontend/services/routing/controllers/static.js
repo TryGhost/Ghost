@@ -44,7 +44,7 @@ module.exports = function staticController(req, res, next) {
 
   return Promise.all(promises)
     .then(function handleResult(result) {
-      let response = {};
+      const response = {};
 
       if (res.routerOptions.data) {
         response.data = {};

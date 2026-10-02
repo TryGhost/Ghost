@@ -4,7 +4,7 @@ import {isBlank} from '@ember/utils';
 import {pluralize} from 'ember-inflector';
 
 export function ghPluralize(number, word, {withoutCount} = {}) {
-    let output = [];
+    const output = [];
 
     if (!isBlank(number) && withoutCount !== true) {
         output.push(formatNumber(number));

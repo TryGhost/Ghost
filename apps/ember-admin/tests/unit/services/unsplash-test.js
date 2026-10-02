@@ -39,7 +39,7 @@ describe('Unit: Service: unsplash', function () {
                 }, JSON.stringify({results: [{id: 'cat-photo', width: 100, height: 100}]})];
             });
 
-            let service = this.owner.lookup('service:unsplash');
+            const service = this.owner.lookup('service:unsplash');
             await settled();
 
             // response for "cat" arrives after the term has changed to "dog"
@@ -61,7 +61,7 @@ describe('Unit: Service: unsplash', function () {
                 }, JSON.stringify({results: [{id: 'cat-photo', width: 100, height: 100}]})];
             });
 
-            let service = this.owner.lookup('service:unsplash');
+            const service = this.owner.lookup('service:unsplash');
             await settled();
 
             service.set('searchTerm', 'cat');
@@ -83,7 +83,7 @@ describe('Unit: Service: unsplash', function () {
                 return [403, {'x-ratelimit-remaining': '0'}, 'Rate Limit Exceeded'];
             });
 
-            let service = this.owner.lookup('service:unsplash');
+            const service = this.owner.lookup('service:unsplash');
 
             run(() => {
                 service.loadNextPage();
@@ -100,7 +100,7 @@ describe('Unit: Service: unsplash', function () {
                 })];
             });
 
-            let service = this.owner.lookup('service:unsplash');
+            const service = this.owner.lookup('service:unsplash');
 
             run(() => {
                 service.loadNextPage();
@@ -115,7 +115,7 @@ describe('Unit: Service: unsplash', function () {
                 return [500, {'Content-Type': 'text/xml'}, 'Unsplash text error'];
             });
 
-            let service = this.owner.lookup('service:unsplash');
+            const service = this.owner.lookup('service:unsplash');
 
             run(() => {
                 service.loadNextPage();

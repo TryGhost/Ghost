@@ -39,10 +39,10 @@ describe('Integration: Service: ajax', function () {
     });
 
     it('correctly parses single message response text', function (done) {
-        let errorResponse = {message: 'Test Error'};
+        const errorResponse = {message: 'Test Error'};
         stubAjaxEndpoint(server, errorResponse, 500);
 
-        let ajax = this.owner.lookup('service:ajax');
+        const ajax = this.owner.lookup('service:ajax');
 
         ajax.request('/test/').then(() => {
             expect(false).to.be.true();
@@ -54,10 +54,10 @@ describe('Integration: Service: ajax', function () {
     });
 
     it('correctly parses single error response text', function (done) {
-        let errorResponse = {error: 'Test Error'};
+        const errorResponse = {error: 'Test Error'};
         stubAjaxEndpoint(server, errorResponse, 500);
 
-        let ajax = this.owner.lookup('service:ajax');
+        const ajax = this.owner.lookup('service:ajax');
 
         ajax.request('/test/').then(() => {
             expect(false).to.be.true();
@@ -69,10 +69,10 @@ describe('Integration: Service: ajax', function () {
     });
 
     it('correctly parses multiple error messages', function (done) {
-        let errorResponse = {errors: ['First Error', 'Second Error']};
+        const errorResponse = {errors: ['First Error', 'Second Error']};
         stubAjaxEndpoint(server, errorResponse, 500);
 
-        let ajax = this.owner.lookup('service:ajax');
+        const ajax = this.owner.lookup('service:ajax');
 
         ajax.request('/test/').then(() => {
             expect(false).to.be.true();
@@ -87,7 +87,7 @@ describe('Integration: Service: ajax', function () {
     it('returns default error object for non built-in error', function (done) {
         stubAjaxEndpoint(server, {}, 500);
 
-        let ajax = this.owner.lookup('service:ajax');
+        const ajax = this.owner.lookup('service:ajax');
 
         ajax.request('/test/').then(() => {
             expect(false).to.be.true;
@@ -100,7 +100,7 @@ describe('Integration: Service: ajax', function () {
     it('handles error checking for built-in errors', function (done) {
         stubAjaxEndpoint(server, '', 401);
 
-        let ajax = this.owner.lookup('service:ajax');
+        const ajax = this.owner.lookup('service:ajax');
 
         ajax.request('/test/').then(() => {
             expect(false).to.be.true;
@@ -124,7 +124,7 @@ describe('Integration: Service: ajax', function () {
             ];
         });
 
-        let ajax = this.owner.lookup('service:ajax');
+        const ajax = this.owner.lookup('service:ajax');
 
         ajax.request('/test/').then(() => {
             expect(false).to.be.true;
@@ -137,7 +137,7 @@ describe('Integration: Service: ajax', function () {
     it('handles error checking for RequestEntityTooLargeError on 413 errors', function (done) {
         stubAjaxEndpoint(server, {}, 413);
 
-        let ajax = this.owner.lookup('service:ajax');
+        const ajax = this.owner.lookup('service:ajax');
 
         ajax.request('/test/').then(() => {
             expect(false).to.be.true;
@@ -150,7 +150,7 @@ describe('Integration: Service: ajax', function () {
     it('handles error checking for UnsupportedMediaTypeError on 415 errors', function (done) {
         stubAjaxEndpoint(server, {}, 415);
 
-        let ajax = this.owner.lookup('service:ajax');
+        const ajax = this.owner.lookup('service:ajax');
 
         ajax.request('/test/').then(() => {
             expect(false).to.be.true;
@@ -163,7 +163,7 @@ describe('Integration: Service: ajax', function () {
     it('handles error checking for MaintenanceError on 503 errors', function (done) {
         stubAjaxEndpoint(server, {}, 503);
 
-        let ajax = this.owner.lookup('service:ajax');
+        const ajax = this.owner.lookup('service:ajax');
 
         ajax.request('/test/').then(() => {
             expect(false).to.be.true;
@@ -180,7 +180,7 @@ describe('Integration: Service: ajax', function () {
             }]
         }, 403);
 
-        let ajax = this.owner.lookup('service:ajax');
+        const ajax = this.owner.lookup('service:ajax');
 
         ajax.request('/test/').then(() => {
             expect(false).to.be.true;
@@ -198,7 +198,7 @@ describe('Integration: Service: ajax', function () {
             }]
         }, 403);
 
-        let ajax = this.owner.lookup('service:ajax');
+        const ajax = this.owner.lookup('service:ajax');
 
         ajax.request('/test/').then(() => {
             expect(false).to.be.true;
@@ -216,7 +216,7 @@ describe('Integration: Service: ajax', function () {
             }]
         }, 403);
 
-        let ajax = this.owner.lookup('service:ajax');
+        const ajax = this.owner.lookup('service:ajax');
 
         ajax.request('/test/').then(() => {
             expect(false).to.be.true;
@@ -233,7 +233,7 @@ describe('Integration: Service: ajax', function () {
             }]
         }, 403);
 
-        let ajax = this.owner.lookup('service:ajax');
+        const ajax = this.owner.lookup('service:ajax');
 
         ajax.request('/test/').then(() => {
             expect(false).to.be.true;

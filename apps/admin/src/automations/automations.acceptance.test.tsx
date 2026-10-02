@@ -19,6 +19,7 @@ describe('Automations list', () => {
     fakeAutomations([
       automation({
         name: 'Free member welcome flow',
+        description: 'Greet new free members.',
         slug: 'member-welcome-email-free',
         status: 'active',
         stats: {
@@ -45,7 +46,7 @@ describe('Automations list', () => {
     await expect.element(automationsScreen.columnHeader('Total entries')).toBeVisible();
     await expect.element(automationsScreen.columnHeader('In progress')).toBeVisible();
     const row = automationsScreen.rows();
-    await expect.element(row).toHaveTextContent('Welcome new free members after they sign up.');
+    await expect.element(row).toHaveTextContent('Greet new free members.');
     await expect.element(row).toHaveTextContent('1,432');
     await expect.element(row).toHaveTextContent('118');
     await expect.element(row).toHaveTextContent('Live');

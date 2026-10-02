@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const debug = require('@tryghost/debug')('i18n');
 const url = require('../../api/endpoints/utils/serializers/output/utils/url');
 const events = require('../../lib/common/events');
@@ -14,10 +15,11 @@ class EmailServiceWrapper {
     return jsonModel.url;
   }
 
-  init({ ghostServer } = {}) {
+  init({ ghostServer, jobsService } = {}) {
     if (this.service) {
       return;
     }
+    assert(jobsService, 'Email service requires the jobs service');
 
     const EmailService = require('./email-service');
     const EmailController = require('./email-controller');
@@ -32,23 +34,22 @@ class EmailServiceWrapper {
     const { Post, Newsletter, Email, EmailBatch, EmailRecipient, Member } = require('../../models');
     const urlService = require('../url');
     const getRequiredUrlRelations = () => urlService.getRequiredRelations();
-    const MailgunClient = require('../lib/mailgun-client');
+    const MailgunClient = require('../../lib/mailgun/mailgun-client');
     const configService = require('../../../shared/config');
     const settingsCache = require('../../../shared/settings-cache');
     const settingsHelpers = require('../settings-helpers');
-    const jobsService = require('../jobs');
     const membersService = require('../members');
     const db = require('../../data/db');
     const sentry = require('../../../shared/sentry');
     const membersRepository = membersService.api.members;
-    const limitService = require('../limits');
+    const { limitService } = require('../limits');
     const labs = require('../../../shared/labs');
     const emailAddressService = require('../email-address');
     const i18nLib = require('@tryghost/i18n').default;
     const lexicalLib = require('../../lib/lexical');
     const urlUtils = require('../../../shared/url-utils').default;
     const memberAttribution = require('../member-attribution');
-    const linkReplacer = require('../lib/link-replacer');
+    const linkReplacer = require('../../lib/link-replacer');
     const linkTracking = require('../link-tracking');
     const audienceFeedback = require('../audience-feedback');
     const storageUtils = require('../../adapters/storage/utils');

@@ -11,9 +11,9 @@ import {titleSelector} from '../helpers/editor';
 // The `editorReact` flag hands /editor/* to the React app. Ember's side of
 // that handshake is the lexical-editor route's beforeModel: it aborts so the
 // Ember editor stays unrendered, and drives window.location.hash so
-// navigations Ember itself starts (post list title links, Cmd-K search, the
-// post-success modal) still land somewhere — an aborted transition never
-// reaches updateURL, and the two apps share the hash.
+// navigations Ember itself starts (such as Cmd-K search) still land
+// somewhere — an aborted transition never reaches updateURL, and the two
+// apps share the hash.
 
 // `visit()` rejects with TransitionAborted whenever the route aborts, which is
 // the whole point of the flag being on. Swallow only that rejection so the
@@ -30,15 +30,15 @@ async function visitExpectingAbort(url) {
 }
 
 describe('Acceptance: editor React flag', function () {
-    let hooks = setupApplicationTest();
+    const hooks = setupApplicationTest();
     setupMirage(hooks);
 
     beforeEach(async function () {
         this.server.loadFixtures('configs');
         this.server.loadFixtures('settings');
 
-        let role = this.server.create('role', {name: 'Administrator'});
-        let user = this.server.create('user', {roles: [role]});
+        const role = this.server.create('role', {name: 'Administrator'});
+        const user = this.server.create('user', {roles: [role]});
         this.server.create('post', {authors: [user]});
 
         return await authenticateSession();
@@ -73,10 +73,9 @@ describe('Acceptance: editor React flag', function () {
             expect(find(titleSelector), 'Ember editor title input').to.not.exist;
         });
 
-        // The regression this guards: post list title links, Cmd-K search
-        // results, and the post-success modal's revert-to-draft all
-        // transition by route name. Without supplying a URL they are silent
-        // no-ops and the user is stranded on the previous screen.
+        // The regression this guards: Ember surfaces such as Cmd-K search
+        // results transition by route name. Without supplying a URL they are
+        // silent no-ops and the user is stranded on the previous screen.
         it('navigates React when Ember initiates an edit transition', async function () {
             const route = this.owner.lookup('route:lexical-editor');
             const navigate = sinon.stub(route, '_navigateToReactRoute');

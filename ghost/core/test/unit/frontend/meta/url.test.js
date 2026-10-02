@@ -166,7 +166,7 @@ describe('getUrl', function () {
       urlUtilsUrlForStub
         .withArgs({ relativeUrl: '/p/' + post.uuid + '/' }, null, undefined)
         .returns('relative');
-      let url = getUrl(post);
+      const url = getUrl(post);
 
       sinon.assert.calledOnce(urlServiceGetUrlForResourceStub);
       sinon.assert.calledOnce(
@@ -184,7 +184,7 @@ describe('getUrl', function () {
       urlUtilsUrlForStub
         .withArgs({ relativeUrl: '/p/' + post.uuid + '/' }, null, true)
         .returns('absolute');
-      let url = getUrl(post, true);
+      const url = getUrl(post, true);
 
       sinon.assert.calledOnce(urlServiceGetUrlForResourceStub);
       sinon.assert.calledOnce(

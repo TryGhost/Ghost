@@ -9,12 +9,13 @@ import {
   type PartType,
   type PartsOf,
 } from '@tryghost/metafield-types';
-import { csvColumnsForField } from '@tryghost/metafield-types/csv';
+import { csvColumnsForField } from '@tryghost/metafield-csv';
 import { Meta, createMutation, createQuery } from '../utils/api/hooks';
+import { countryName } from '../utils/countries';
 
 // Re-exported so the import mapping can recognize a custom_fields.* column (same reason
 // as the re-exports below).
-export { isMetafieldColumn } from '@tryghost/metafield-types/csv';
+export { isMetafieldColumn } from '@tryghost/metafield-csv';
 export type { FieldIdentity, FieldIdentityString } from '@tryghost/metafield-types/identity';
 
 // Re-exported so admin apps can type address values and validate against the
@@ -325,10 +326,18 @@ export const formatMemberCustomFieldValue = (type: FieldType, value: unknown): s
     return '';
   }
 
+  // A country is stored as its code and read as its name: "US" is for machines to
+  // compare, "United States" is what a person expects on a record.
+  const partTypes: Record<string, PartType | undefined> = partTypesOf(type) ?? {};
+  const readPart = (part: string): unknown => {
+    const raw = value[part];
+    return partTypes[part] === 'country_code' && typeof raw === 'string' ? countryName(raw) : raw;
+  };
+
   return (partRuns[type] ?? [])
     .map((run) =>
       run
-        .map((part) => value[part])
+        .map(readPart)
         .filter((part): part is string => typeof part === 'string' && part !== '')
         .join(' '),
     )

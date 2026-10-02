@@ -16,7 +16,7 @@ class MembersSubscribeEventsImporter extends TableImporter {
     }
 
     let offset = 0;
-    let limit = 100000;
+    const limit = 100000;
     this.newsletters = await this.transaction
       .select('id')
       .from('newsletters')
@@ -35,7 +35,7 @@ class MembersSubscribeEventsImporter extends TableImporter {
 
       await this.importForEach(
         members,
-        quantity ? quantity / members.length : this.newsletters.length,
+        quantity !== undefined ? quantity / members.length : this.newsletters.length,
       );
       offset += limit;
     }
@@ -54,7 +54,7 @@ class MembersSubscribeEventsImporter extends TableImporter {
       return null;
     }
 
-    let subscribed = luck(80);
+    const subscribed = luck(80);
 
     if (!subscribed) {
       return null;

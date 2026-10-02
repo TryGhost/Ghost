@@ -26,10 +26,11 @@ import {
   type NewsletterRadialChartData,
 } from '@/posts/analytics/newsletter/components/newsletter-radial-chart';
 import { type Post } from '@tryghost/admin-x-framework/api/posts';
-import { cleanTrackedUrl, processAndGroupTopLinks } from '@/posts/analytics/utils/link-helpers';
+import { cleanTrackedUrl } from '@/posts/analytics/utils/link-helpers';
 import { useNavigate, useParams } from '@tryghost/admin-x-framework';
-import { useTopLinks } from '@tryghost/admin-x-framework/api/links';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
+import { useShade } from '@tryghost/shade/app';
+import { usePostTopLinks } from '@/posts/analytics/hooks/use-post-top-links';
 
 interface NewsletterOverviewProps {
   post: Post;
@@ -42,6 +43,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
   isNewsletterStatsLoading,
   isWebShown,
 }) => {
+  const { isAdmin7 } = useShade();
   const { postId } = useParams();
   const navigate = useNavigate();
   const { isNewsletterDataHidden } = useEmailSendingStatusContext();
@@ -62,15 +64,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
   }, [post]);
 
   // Get top links for this post
-  const { data: linksResponse } = useTopLinks({
-    searchParams: {
-      filter: `post_id:'${postId}'`,
-    },
-  });
-
-  const topLinks = useMemo(() => {
-    return processAndGroupTopLinks(linksResponse);
-  }, [linksResponse]);
+  const { topLinks } = usePostTopLinks();
 
   // "Clicked" Chart
   const commonChartData: NewsletterRadialChartData[] = [
@@ -115,12 +109,12 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
           <Button
             className="absolute right-6 translate-x-10 opacity-0 transition-all duration-300 group-hover/datalist:translate-x-0 group-hover/datalist:opacity-100 focus-visible:translate-x-0 focus-visible:opacity-100"
             size="sm"
-            variant="outline"
+            variant="subtle"
             onClick={() => {
               navigate(`/posts/analytics/${postId}/newsletter`);
             }}
           >
-            View more
+            {isAdmin7 ? 'View more →' : 'View more'}
           </Button>
         )}
       </div>
@@ -189,7 +183,8 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
                   <DataList className="">
                     <DataListBody>
                       {topLinks.slice(0, fullWidth ? 10 : 5).map((link) => {
-                        const percentage = stats.clicked > 0 ? link.count / stats.clicked : 0;
+                        const percentage =
+                          stats.clicked > 0 ? Math.min(link.count / stats.clicked, 1) : 0;
                         return (
                           <DataListRow key={link.link.link_id}>
                             <DataListBar

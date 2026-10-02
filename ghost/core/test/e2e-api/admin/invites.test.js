@@ -4,7 +4,7 @@ const supertest = require('supertest');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
-const mailService = require('../../../core/server/services/mail');
+const mailService = require('../../../core/server/lib/mail');
 const localUtils = require('./utils');
 
 describe('Invites API', function () {

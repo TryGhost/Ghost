@@ -92,6 +92,34 @@ Keep the decision at the boundary that owns the behavior. Hiding a button does
 not protect a server endpoint, and rejecting an endpoint does not give Admin a
 usable disabled state.
 
+## Admin 7 milestones
+
+Admin 7 milestones use ordinary private Labs flags with stable, descriptive
+`admin7`-prefixed keys and labels that identify their milestone and purpose.
+Follow the same registration and lifecycle as any other private flag.
+
+Read the current milestone's flag with `useFeatureFlag` at the boundary that
+owns the change, keeping any availability checks beside it. For shared design
+changes, pass the result to ShadeApp's `isAdmin7` prop. Components read
+`useShade().isAdmin7`; reuse this switch as milestones progress instead of
+adding a Shade prop for each milestone.
+
+Keep shared appearance in Shade and page-specific structure in the page. Build
+the enabled design as the intended default so retiring a flag means removing
+compatibility branches, without changing ordinary component calls. Document
+milestone-specific scope and exclusions alongside the affected design.
+
+Test the flag boundary and preserve existing behavioral coverage. Styling-only
+changes need visual review, not tests that assert appearance. Keep permanent
+permission and backend capability checks independent of the temporary flag.
+
+The pill-controls milestone is generally available on React Admin routes. Admin
+no longer reads `admin7Pill`; route ownership alone determines Shade's
+`isAdmin7` value. Ember-owned routes retain the legacy appearance, and standalone
+ActivityPub uses Shade's current default. Core temporarily retains `admin7Pill`
+in `GA_FEATURES` so older Admin builds receive an enabled value during independent
+deployments. Remove that GA entry once those older builds are no longer supported.
+
 ## How values are resolved
 
 For normal Labs flags, later sources in this list override earlier ones:
@@ -123,9 +151,9 @@ or parse failure keeps the last known good overrides.
 ## Admin session overrides
 
 To preview a flagged Admin feature, add `labs` to the query string inside the
-Admin hash route, for example `/ghost/#/posts?labs=postsListReact`. Use
-comma-separated names (`?labs=postsListReact,editorReact`) or repeated parameters
-(`?labs=postsListReact&labs=editorReact`) to enable multiple flags.
+Admin hash route, for example `/ghost/#/editor/post?labs=editorReact`. Use
+comma-separated names (`?labs=editorReact,globalSearchReact`) or repeated
+parameters (`?labs=editorReact&labs=globalSearchReact`) to enable multiple flags.
 
 Admin stores the list in `sessionStorage` under `ghost-admin:labs-overrides`.
 It persists across navigation and reloads in the same tab for that browser
@@ -169,7 +197,7 @@ The different test systems do not use the same Labs defaults:
 | Ghost Core unit tests                                                               | No flags are forced on; stub the value needed by the test                                      |
 | Ghost Core `integration` and `legacy` tests using `testUtils.setup()`               | Every registered private and public beta flag is forced on                                     |
 | Ghost Core `e2e`, `e2e-api`, and `e2e-isolated` tests using `fixtureManager.init()` | Every registered private and public beta flag is forced on                                     |
-| React Admin unit and acceptance tests using the shared test-data fixtures           | Keys in `labsDefaults` default off; pass a `labs` override for the case under test             |
+| React Admin unit and acceptance tests using the shared test-data fixtures           | `labsDefaults` flags off, `GA_FEATURES` on; pass a `labs` override for the case under test     |
 | Ember Admin tests using Mirage                                                      | Labs defaults to an empty object; use `enableLabsFlag` or `disableLabsFlag`                    |
 | Top-level Playwright tests in `e2e/`                                                | Labs uses the new site's values; only flags passed through `test.use({labs: ...})` are changed |
 

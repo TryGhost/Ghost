@@ -92,6 +92,47 @@ export const MEMBER_ACCESS = {
 } as const satisfies Record<MemberAccess, MemberAccess>;
 
 /**
+ * Where a change to a member's values was made, as a member's activity feed names it.
+ * Shared so a place added on the server is one Admin has to be told how to describe.
+ */
+export const METAFIELD_CHANGE_SOURCES = [
+  'admin',
+  'admin_api',
+  'portal',
+  'import',
+  'checkout',
+] as const;
+export type MetafieldChangeSource = (typeof METAFIELD_CHANGE_SOURCES)[number];
+
+/** Whether a source is one this build knows how to name; a newer server can send others. */
+export const isMetafieldChangeSource = (source: string): source is MetafieldChangeSource =>
+  (METAFIELD_CHANGE_SOURCES as readonly string[]).includes(source);
+
+/** A field as an activity feed entry names it: its name is copied so the entry outlives a rename. */
+export const MetafieldChangeEventFieldSchema = z.object({
+  namespace: z.string(),
+  key: z.string(),
+  name: z.string(),
+});
+export type MetafieldChangeEventField = z.infer<typeof MetafieldChangeEventFieldSchema>;
+
+/**
+ * An entry on a member's activity feed saying which fields a write changed, as the members
+ * events endpoint returns it. The server builds it and Admin reads it, so both are held to
+ * this one shape. `created_at` is a date on the server and its serialised string in a
+ * client. `source` stays open to places a newer server adds.
+ */
+export interface MetafieldChangeEntry<TDate = string> {
+  id: string;
+  member_id: string;
+  written_by_type: string;
+  written_by_id: string | null;
+  source: MetafieldChangeSource | (string & {});
+  metafields: MetafieldChangeEventField[];
+  created_at: TDate;
+}
+
+/**
  * Bytes, not characters, because MySQL TEXT holds 65,535 of them: a character bound would
  * accept a multibyte value the column cannot hold, and 65,535 emoji is four times over.
  */

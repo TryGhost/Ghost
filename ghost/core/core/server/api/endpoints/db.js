@@ -66,7 +66,7 @@ const controller = {
     // eslint-disable-next-line ghost/ghost-custom/max-api-complexity
     async query(frame) {
       if (frame.options.filename) {
-        let backup = await dbBackup.readBackup(frame.options.filename);
+        const backup = await dbBackup.readBackup(frame.options.filename);
 
         if (!backup) {
           throw new errors.NotFoundError();
@@ -106,7 +106,7 @@ const controller = {
         email = (await models.User.getOwnerUser()).get('email');
       }
 
-      return importer.importFromFile(frame.file, {
+      return importer.getInstance().importFromFile(frame.file, {
         user: {
           email: email,
         },

@@ -12,6 +12,8 @@ type Automation = {
   status: 'active' | 'inactive';
   name: string;
   slug: string;
+  description: string;
+  trigger_tier_scope: 'free' | 'all_paid';
   created_at: string;
   updated_at: string;
 };
@@ -20,12 +22,16 @@ const defaultAutomations = [
   {
     name: 'Free member welcome flow',
     slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
+    description: 'Welcome new free members after they sign up.',
+    trigger_tier_scope: 'free',
   },
   {
     name: 'Paid member welcome flow',
     slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
+    description: 'Welcome new paid members after they start their subscription.',
+    trigger_tier_scope: 'all_paid',
   },
-];
+] as const;
 
 export class AutomationsImporter extends TableImporter<Automation> {
   static table = 'automations';
@@ -53,7 +59,9 @@ export class AutomationsImporter extends TableImporter<Automation> {
       id,
       status: faker.helpers.arrayElement(['active', 'inactive']),
       name,
+      description: defaultAutomation?.description ?? '',
       slug,
+      trigger_tier_scope: defaultAutomation?.trigger_tier_scope ?? 'all_paid',
       created_at: toDatabaseDate(createdAt),
       updated_at: toDatabaseDate(createdAt),
     };

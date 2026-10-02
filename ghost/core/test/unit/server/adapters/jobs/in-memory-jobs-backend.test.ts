@@ -5,6 +5,7 @@ import InMemoryJobsBackend from '../../../../../core/server/adapters/jobs/InMemo
 
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
+const later = require('@breejs/later');
 
 runJobsBackendContractTests(() => new InMemoryJobsBackend(), { describe, it });
 
@@ -381,13 +382,19 @@ describe('InMemoryJobsBackend', function () {
       );
     });
 
+    it('reads cron schedules in the server local time', function () {
+      assert.equal(later.date.isUTC, false);
+    });
+
     it('schedules a day-of-week cron on the correct day (0 = Sunday)', async function () {
       clock = sinon.useFakeTimers({ now: Date.UTC(2026, 7, 17) });
       const fireDays: number[] = [];
       const backend = new InMemoryJobsBackend();
       backend.start({
         processor: async () => {
-          fireDays.push(new Date().getUTCDay());
+          // The backend reads schedules in local time, so that is the calendar
+          // the weekday is asserted in.
+          fireDays.push(new Date().getDay());
         },
       });
 

@@ -2,7 +2,7 @@ import PostSerializer from './post';
 
 export default class Page extends PostSerializer {
     serialize() {
-        let json = super.serialize(...arguments);
+        const json = super.serialize(...arguments);
 
         // Properties that exist on the model but we don't want sent in the payload
         delete json.email_subject;

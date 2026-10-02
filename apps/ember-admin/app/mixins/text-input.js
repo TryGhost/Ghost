@@ -70,8 +70,8 @@ export default Mixin.create({
 
     keyUp(event) {
         if (event.keyCode) {
-            let methodName = this._getMethodFromKeyCode(event.keyCode);
-            let method = this.get(`keyEvents.${methodName}`);
+            const methodName = this._getMethodFromKeyCode(event.keyCode);
+            const method = this.get(`keyEvents.${methodName}`);
             if (method) {
                 method(event.target.value);
             }
@@ -87,7 +87,7 @@ export default Mixin.create({
     },
 
     _getMethodFromKeyCode(keyCode) {
-        let methodName = keyCodes[keyCode.toString()];
+        const methodName = keyCodes[keyCode.toString()];
         return methodName;
     }
 });

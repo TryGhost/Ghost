@@ -1,8 +1,8 @@
 const tpl = require('@tryghost/tpl');
-const mailService = require('../../services/mail');
+const mailService = require('../../lib/mail');
 const api = require('./');
 let mailer;
-let _private = {};
+const _private = {};
 
 const messages = {
   unableToSendEmail: 'Ghost is currently unable to send email.',

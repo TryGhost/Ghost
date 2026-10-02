@@ -68,7 +68,7 @@ test.describe('Ghost Admin - Custom field filter columns', () => {
     const memberName = `Shipped To ${stamp}`;
     // State and postal code pair up, and the unfilled line 2 drops out rather than
     // leaving a gap, which is what makes this one line rather than a join of parts.
-    const expectedLine = '1 Main St, Berlin, BE 10115, DE';
+    const expectedLine = '1 Main St, Berlin, BE 10115, Germany';
     const memberFactory = createMemberFactory(page.request);
 
     const member = await memberFactory.create({
@@ -89,7 +89,7 @@ test.describe('Ghost Admin - Custom field filter columns', () => {
       City: 'Berlin',
       State: 'BE',
       'Postal code': '10115',
-      Country: 'DE',
+      Country: 'Germany',
     });
 
     // The detail screen's rendering, read from the row's accessible name.

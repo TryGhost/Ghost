@@ -819,8 +819,10 @@ const FeedItem: React.FC<FeedItemProps> = ({
 
   const UserMenuTrigger = (
     <Button
-      className={`relative z-10 size-[34px] rounded-md ${layout === 'inbox' || layout === 'modal' ? 'text-gray-900 hover:text-gray-900 dark:text-gray-600 dark:hover:text-gray-600' : 'text-gray-500 hover:text-gray-500'} dark:hover:bg-gray-950 [&_svg]:size-5`}
+      className={`relative z-10 size-[34px] ${layout !== 'feed' ? 'rounded-md' : ''} ${layout === 'inbox' || layout === 'modal' ? 'text-gray-900 hover:text-gray-900 dark:text-gray-600 dark:hover:text-gray-600' : 'text-gray-500 hover:text-gray-500'} dark:hover:bg-gray-950 [&_svg]:size-5`}
       data-testid="menu-button"
+      shape={layout === 'feed' ? 'pill' : 'rounded'}
+      size={layout === 'feed' ? 'icon' : undefined}
       variant="ghost"
     >
       <LucideIcon.Ellipsis />

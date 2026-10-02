@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { page, userEvent } from 'vitest/browser';
+import { type Locator, page, userEvent } from 'vitest/browser';
 
 import {
   configResponse,
@@ -7,6 +7,7 @@ import {
   fakeMemberCustomFields,
   fakeSettingsScreens,
   renderAdminApp,
+  settleRequests,
 } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
@@ -34,6 +35,25 @@ const archivedField: MemberCustomField = {
 };
 
 const flagOn = { labs: { membersCustomFields: true } };
+
+/**
+ * Drags a field by its handle onto `target`, travelling there as a hand does: dnd-kit
+ * works out the row under the pointer as it moves, so a drag that jumps straight there
+ * in one move can be released before the list has registered where it is.
+ *
+ * Settings loads every section at once, and the list can be on screen while sections
+ * above it are still loading. One that lands mid-drag grows and carries the list down
+ * the page, out from under the pointer, so the drop misses and nothing is reordered.
+ * The drag starts once every section has its data.
+ */
+async function dragField(name: string, target: Locator) {
+  await settleRequests();
+  await userEvent.dragAndDrop(
+    settingsScreen.customFields().getByLabelText(`Reorder ${name}`),
+    target,
+    { steps: 10 },
+  );
+}
 
 type CustomField = typeof companyField;
 
@@ -118,7 +138,7 @@ describe('Custom fields', () => {
     await expect(row).toHaveCount(1);
     await expect.element(row).toHaveTextContent('Company');
     await expect.element(row).toHaveTextContent('Short text');
-    await expect.element(row).toHaveTextContent('Only staff');
+    await expect.element(row).not.toHaveTextContent('Visible to members');
   });
 
   it('validates and creates a short-text field without sending a key', async () => {
@@ -206,26 +226,119 @@ describe('Custom fields', () => {
 
     await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
     const modal = settingsScreen.customFieldModal();
-    await modal.getByLabelText('Who it’s for').click();
-    await page.getByRole('option', { name: 'Members can edit' }).click();
+    await modal.getByLabelText('Visible to members').click();
 
-    await expect.element(modal.getByText(/becomes visible to them/)).toBeVisible();
+    await expect
+      .element(modal.getByText(/Anything already recorded will become visible/))
+      .toBeVisible();
   });
 
-  it('does not warn about disclosure when the member could already see the field', async () => {
+  it('says how many members will see a field opened to them, and where', async () => {
     fakeSettingsScreens();
-    fakeCustomFields([{ ...companyField, access: { member: 'read' as const } }]);
-    fakeAdminEndpoint('PUT', '/members/metafields/custom/company/', {
-      members_metafields: [{ ...companyField, access: { member: 'write' as const } }],
+    fakeCustomFields();
+    // The count is the sidebar's member-count probe, served by the boot table.
+    await renderAdminApp('/settings', {
+      ...flagOn,
+      boot: {
+        browseMembersCount: {
+          response: { members: [], meta: { pagination: { total: 838, limit: 1, page: 1 } } },
+        },
+      },
+    });
+
+    await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
+    const modal = settingsScreen.customFieldModal();
+    await expect.element(modal.getByText(/Only staff can see this field/)).toBeVisible();
+
+    await modal.getByLabelText('Visible to members').click();
+
+    await expect
+      .element(
+        modal.getByText(
+          /Your 838 members can see and update this field in their Portal account settings/,
+        ),
+      )
+      .toBeVisible();
+  });
+
+  it('marks a field open to members in the list, but not once archived', async () => {
+    fakeSettingsScreens();
+    fakeCustomFields([
+      { ...companyField, access: { member: 'write' as const } },
+      { ...archivedField, access: { member: 'write' as const } },
+    ]);
+    await renderAdminApp('/settings', flagOn);
+
+    const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
+    await expect.element(rows).toHaveTextContent('Visible to members');
+
+    await settingsScreen.customFields().getByRole('tab', { name: 'Archived' }).click();
+    await expect.element(rows).not.toHaveTextContent('Visible to members');
+  });
+
+  it('closes a field to members with the same switch', async () => {
+    fakeSettingsScreens();
+    fakeCustomFields([{ ...companyField, access: { member: 'write' as const } }]);
+    const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/company/', {
+      members_metafields: [companyField],
     });
     await renderAdminApp('/settings', flagOn);
 
     await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
     const modal = settingsScreen.customFieldModal();
-    await modal.getByLabelText('Who it’s for').click();
-    await page.getByRole('option', { name: 'Members can edit' }).click();
+    await expect.element(modal.getByTestId('custom-field-access')).toBeChecked();
+    await modal.getByLabelText('Visible to members').click();
+    await modal.getByRole('button', { name: 'Save' }).click();
 
-    await expect(modal.getByText(/becomes visible to them/)).toHaveCount(0);
+    await expect(modal).toHaveCount(0);
+    expect(editApi.lastRequest?.body).toEqual({
+      members_metafields: [{ access: { member: 'none' } }],
+    });
+  });
+
+  it('shows a view-only field as open, and keeps it view-only through a switch round-trip', async () => {
+    fakeSettingsScreens();
+    fakeCustomFields([{ ...companyField, access: { member: 'read' as const } }]);
+    const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/company/', {
+      members_metafields: [{ ...companyField, access: { member: 'read' as const } }],
+    });
+    await renderAdminApp('/settings', flagOn);
+
+    await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
+    const modal = settingsScreen.customFieldModal();
+    await expect.element(modal.getByTestId('custom-field-access')).toBeChecked();
+    await expect.element(modal.getByText(/can see this field .* but not change it/)).toBeVisible();
+    // The member could already see it, so nothing new is disclosed.
+    await expect(modal.getByText(/Anything already recorded will become visible/)).toHaveCount(0);
+
+    // Off and on again lands where it started, not on a wider level.
+    await modal.getByLabelText('Visible to members').click();
+    await modal.getByLabelText('Visible to members').click();
+    await expect.element(modal.getByText(/can see this field .* but not change it/)).toBeVisible();
+    await modal.getByRole('button', { name: 'Save' }).click();
+
+    await expect(modal).toHaveCount(0);
+    // Nothing about access is sent, so the level the API holds stays as it was.
+    expect(editApi.lastRequest?.body).toEqual({ members_metafields: [{}] });
+  });
+
+  it('leaves a view-only field at that level when only the name changes', async () => {
+    fakeSettingsScreens();
+    fakeCustomFields([{ ...companyField, access: { member: 'read' as const } }]);
+    const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/company/', {
+      members_metafields: [
+        { ...companyField, name: 'Employer', access: { member: 'read' as const } },
+      ],
+    });
+    await renderAdminApp('/settings', flagOn);
+
+    await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
+    const modal = settingsScreen.customFieldModal();
+    await modal.getByLabelText('Name').fill('Employer');
+    await modal.getByRole('button', { name: 'Save' }).click();
+
+    await expect(modal).toHaveCount(0);
+    expect(editApi.lastRequest?.body).toEqual({ members_metafields: [{ name: 'Employer' }] });
   });
 
   // Access does nothing while a field is archived — members never see one — so the
@@ -240,7 +353,8 @@ describe('Custom fields', () => {
     await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
     const modal = settingsScreen.customFieldModal();
     await expect.element(modal.getByTestId('custom-field-access')).toBeDisabled();
-    await expect.element(modal.getByText(/Reactivate it to choose who it/)).toBeVisible();
+    await expect.element(modal.getByTestId('custom-field-access')).not.toBeChecked();
+    await expect.element(modal.getByText(/Reactivate it to choose whether/)).toBeVisible();
   });
 
   // Reactivating is the only way an archived field's values reach a member, so it is
@@ -292,8 +406,7 @@ describe('Custom fields', () => {
 
     await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
     const modal = settingsScreen.customFieldModal();
-    await modal.getByLabelText('Who it’s for').click();
-    await page.getByRole('option', { name: 'Members can edit' }).click();
+    await modal.getByLabelText('Visible to members').click();
     await modal.getByRole('button', { name: 'Save' }).click();
 
     await expect(modal).toHaveCount(0);
@@ -418,9 +531,7 @@ describe('Custom fields', () => {
     // listens for. Note this cannot be driven from the keyboard: the sortable list
     // does not wire dnd-kit's sortable coordinate getter, so arrow keys move a
     // lifted item by a flat 25px and it never reaches the next row.
-    const handle = settingsScreen.customFields().getByLabelText('Reorder Nickname');
-    await expect.element(handle).toBeVisible();
-    await userEvent.dragAndDrop(handle, rows.first());
+    await dragField('Nickname', rows.first());
 
     // The whole list goes up, in the order the drag left it, keys only — order is a
     // property of the list, so a field never carries a rank. Nickname was dropped on
@@ -465,10 +576,7 @@ describe('Custom fields', () => {
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(2);
 
-    await userEvent.dragAndDrop(
-      settingsScreen.customFields().getByLabelText('Reorder Nickname'),
-      rows.first(),
-    );
+    await dragField('Nickname', rows.first());
 
     await expect.element(rows.first()).toHaveTextContent('Nickname');
 
@@ -513,10 +621,7 @@ describe('Custom fields', () => {
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(2);
 
-    await userEvent.dragAndDrop(
-      settingsScreen.customFields().getByLabelText('Reorder Nickname'),
-      rows.first(),
-    );
+    await dragField('Nickname', rows.first());
 
     // The server's own words reach the publisher, not a generic failure: they name
     // the field and say what to do about it. And the list goes back to the order the
@@ -542,10 +647,7 @@ describe('Custom fields', () => {
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(2);
 
-    await userEvent.dragAndDrop(
-      settingsScreen.customFields().getByLabelText('Reorder Shirt size'),
-      rows.first(),
-    );
+    await dragField('Shirt size', rows.first());
 
     // The archived field is named even though it was never on screen: an order states
     // the whole list, and the API refuses one that leaves a field out.
@@ -574,10 +676,7 @@ describe('Custom fields', () => {
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(5);
 
-    await userEvent.dragAndDrop(
-      settingsScreen.customFields().getByLabelText('Reorder Field 2'),
-      rows.first(),
-    );
+    await dragField('Field 2', rows.first());
 
     // The two fields the publisher cannot see are still named, and still last.
     await expect

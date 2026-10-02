@@ -138,7 +138,7 @@ export default class ModalPostPreviewEmailComponent extends Component {
 
     async _fetchEmailData() {
         let {html, subject, newsletter} = this;
-        let {post} = this.args;
+        const {post} = this.args;
         const {memberStatus, memberTier} = this.args;
 
         if (html && subject && memberStatus === this._lastMemberStatus && memberTier === this._lastMemberTier && newsletter.slug === this._lastNewsletterSlug) {
@@ -159,23 +159,23 @@ export default class ModalPostPreviewEmailComponent extends Component {
             subject = post.email.subject;
         // model is a post, fetch email preview
         } else {
-            let url = new URL(this.ghostPaths.url.api('/email_previews/posts', post.id), window.location.href);
+            const url = new URL(this.ghostPaths.url.api('/email_previews/posts', post.id), window.location.href);
             for (const [param, value] of Object.entries(this._audienceParams)) {
                 url.searchParams.set(param, value);
             }
             url.searchParams.set('newsletter', this.newsletter.slug);
 
-            let response = await this.ajax.request(url.href);
-            let [emailPreview] = response.email_previews;
+            const response = await this.ajax.request(url.href);
+            const [emailPreview] = response.email_previews;
             html = emailPreview.html;
             subject = emailPreview.subject;
         }
 
         // inject extra CSS so the preview behaves consistently inside the iframe
-        let domParser = new DOMParser();
-        let htmlDoc = domParser.parseFromString(html, 'text/html');
-        let stylesheet = htmlDoc.querySelector('style');
-        let originalCss = stylesheet.innerHTML;
+        const domParser = new DOMParser();
+        const htmlDoc = domParser.parseFromString(html, 'text/html');
+        const stylesheet = htmlDoc.querySelector('style');
+        const originalCss = stylesheet.innerHTML;
         stylesheet.innerHTML = `${originalCss}\n\n${INJECTED_CSS}`;
 
         const doctype = new XMLSerializer().serializeToString(htmlDoc.doctype);

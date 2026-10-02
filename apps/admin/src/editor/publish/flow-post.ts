@@ -32,6 +32,8 @@ export interface PublishFlowPost {
   emailCreatedAt?: string | null;
   /** The unsaved body when the editor has one; read only by the public-preview predicate. */
   lexical?: string | null;
+  /** The version of the server's copy, absent until there is one. */
+  updatedAt?: string | null;
 }
 
 export function isPage(post: PublishFlowPost): boolean {
@@ -82,5 +84,6 @@ export function buildPublishFlowPost({
     email,
     emailCreatedAt: email?.created_at ?? null,
     lexical: lexical ?? record?.lexical ?? null,
+    updatedAt: record?.updated_at ?? null,
   };
 }

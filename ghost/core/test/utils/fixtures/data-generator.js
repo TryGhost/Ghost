@@ -2845,18 +2845,14 @@ DataGenerator.forKnex = (function () {
 
 // @TODO: this logic only exists because we are now using our models :/
 DataGenerator.forModel = (function () {
-    let posts;
-    let tags;
-    let users;
-    let roles;
 
-    posts = _.map(DataGenerator.Content.posts, function (post) {
+    const posts = _.map(DataGenerator.Content.posts, function (post) {
         return _.pick(post, 'title', 'lexical');
     });
 
-    tags = DataGenerator.Content.tags;
+    const tags = DataGenerator.Content.tags;
 
-    users = _.map(DataGenerator.Content.users, function (user) {
+    const users = _.map(DataGenerator.Content.users, function (user) {
         user = _.pick(user, 'name', 'email');
 
         return _.defaults({
@@ -2864,7 +2860,7 @@ DataGenerator.forModel = (function () {
         }, user);
     });
 
-    roles = _.map(DataGenerator.Content.roles, function (role) {
+    const roles = _.map(DataGenerator.Content.roles, function (role) {
         return _.extend({}, role, {id: ObjectId().toHexString()});
     });
 

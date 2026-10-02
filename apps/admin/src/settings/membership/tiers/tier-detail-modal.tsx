@@ -24,6 +24,7 @@ import {
   Input,
   InputGroup,
   InputGroupAddon,
+  InputGroupButton,
   InputGroupInput,
   InputGroupText,
   MultiSelectCombobox,
@@ -50,6 +51,7 @@ import {
 import { getSettingValues, useEditSettings } from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
+import { useShade } from '@tryghost/shade/app';
 
 export type TierFormState = Partial<Omit<Tier, 'trial_days'>> & {
   trial_days: string;
@@ -59,6 +61,7 @@ const TierDetailModalContent: React.FC<{
   tier?: Tier;
   checkout: ReturnType<typeof useTierCheckoutCollection>;
 }> = ({ tier, checkout }) => {
+  const { isAdmin7 } = useShade();
   const isFreeTier = tier?.type === 'free';
   // Both flags are already gated on a paid tier (saved or being created) inside the hook.
   const checkoutVisible = checkout.enabled;
@@ -224,6 +227,30 @@ const TierDetailModalContent: React.FC<{
     });
   };
 
+  const renderBenefitControl = (
+    inputProps: React.ComponentPropsWithRef<typeof Input>,
+    buttonProps: React.ComponentProps<typeof Button>,
+    wrapInput: (input: React.ReactNode) => React.ReactNode = (input) => input,
+  ) => {
+    if (isAdmin7) {
+      return wrapInput(
+        <InputGroup>
+          <InputGroupInput {...inputProps} />
+          <InputGroupAddon align="inline-end">
+            <InputGroupButton {...buttonProps} shape="rounded" size="icon-xs" />
+          </InputGroupAddon>
+        </InputGroup>,
+      );
+    }
+
+    return (
+      <>
+        {wrapInput(<Input {...inputProps} />)}
+        <Button {...buttonProps} />
+      </>
+    );
+  };
+
   const toggleFreeTrial = (checked: boolean) => {
     if (checked) {
       setHasFreeTrial(true);
@@ -291,12 +318,7 @@ const TierDetailModalContent: React.FC<{
   if (tier) {
     if (tier.active && tier.type !== 'free') {
       leftButton = (
-        <Button
-          className="text-destructive hover:text-destructive"
-          type="button"
-          variant="ghost"
-          onClick={confirmTierStatusChange}
-        >
+        <Button type="button" variant="destructive-ghost" onClick={confirmTierStatusChange}>
           Archive tier
         </Button>
       );
@@ -576,58 +598,68 @@ const TierDetailModalContent: React.FC<{
                     >
                       <LucideIcon.Check className="size-4" />
                     </Inline>
-                    <Input
-                      aria-label="Benefit"
-                      className="grow"
-                      maxLength={191}
-                      value={item}
-                      onChange={(e) => benefits.updateItem(id, e.target.value)}
-                    />
-                    <Button
-                      aria-label="Delete benefit"
-                      className="absolute top-1/2 right-1 z-10 size-5! -translate-y-1/2 p-0! opacity-0 group-hover:opacity-100"
-                      size="icon"
-                      type="button"
-                      variant="secondary"
-                      onClick={() => benefits.removeItem(id)}
-                    >
-                      <LucideIcon.Trash2 />
-                    </Button>
+                    {renderBenefitControl(
+                      {
+                        'aria-label': 'Benefit',
+                        className: 'grow',
+                        maxLength: 191,
+                        value: item,
+                        onChange: (e) => benefits.updateItem(id, e.target.value),
+                      },
+                      {
+                        'aria-label': 'Delete benefit',
+                        className: isAdmin7
+                          ? 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'
+                          : 'absolute top-1/2 right-1 z-10 size-5! -translate-y-1/2 p-0! opacity-0 group-hover:opacity-100',
+                        size: 'icon',
+                        type: 'button',
+                        variant: 'secondary',
+                        onClick: () => benefits.removeItem(id),
+                        children: <LucideIcon.Trash2 />,
+                      },
+                    )}
                   </Inline>
                 )}
                 onMove={benefits.moveItem}
               />
               <Inline align="center" className="relative mt-1" gap="md">
                 <LucideIcon.Check className="size-4" />
-                <Field className="w-100">
-                  <FieldLabel className="sr-only" htmlFor="new-tier-benefit">
-                    New benefit
-                  </FieldLabel>
-                  <Input
-                    ref={newBenefitInputRef}
-                    className="grow"
-                    id="new-tier-benefit"
-                    maxLength={191}
-                    placeholder="Expert analysis"
-                    value={benefits.newItem}
-                    onChange={(e) => benefits.setNewItem(e.target.value)}
-                    onKeyDown={(e) => {
+                {renderBenefitControl(
+                  {
+                    ref: newBenefitInputRef,
+                    className: 'grow',
+                    id: 'new-tier-benefit',
+                    maxLength: 191,
+                    placeholder: 'Expert analysis',
+                    value: benefits.newItem,
+                    onChange: (e) => benefits.setNewItem(e.target.value),
+                    onKeyDown: (e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
                         addBenefit();
                       }
-                    }}
-                  />
-                </Field>
-                <Button
-                  aria-label="Add benefit"
-                  className="absolute top-1/2 right-1 z-10 size-[22px]! -translate-y-1/2 p-0!"
-                  size="icon"
-                  type="button"
-                  onClick={addBenefit}
-                >
-                  <LucideIcon.Plus />
-                </Button>
+                    },
+                  },
+                  {
+                    'aria-label': 'Add benefit',
+                    variant: 'default',
+                    className: isAdmin7
+                      ? undefined
+                      : 'absolute top-1/2 right-1 z-10 size-[22px]! -translate-y-1/2 p-0!',
+                    size: 'icon',
+                    type: 'button',
+                    onClick: addBenefit,
+                    children: <LucideIcon.Plus />,
+                  },
+                  (input) => (
+                    <Field className="w-100">
+                      <FieldLabel className="sr-only" htmlFor="new-tier-benefit">
+                        New benefit
+                      </FieldLabel>
+                      {input}
+                    </Field>
+                  ),
+                )}
               </Inline>
             </FieldGroup>
           </FieldSet>

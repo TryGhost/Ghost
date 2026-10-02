@@ -22,7 +22,7 @@ Start with:
 - Run `pnpm bootstrap` before other commands in a fresh checkout or worktree.
 - Use `pnpm check` as the default full validation command. Browser E2E and Ember
   Admin tests run separately; follow the testing guide.
-- Read the nearest `AGENTS.md`, `CLAUDE.md`, and README before changing a package
+- Read the nearest `AGENTS.md` and README before changing a package
   or subsystem. More specific guidance overrides this file.
 - When committing, load and follow `.agents/skills/commit/SKILL.md`.
 
@@ -53,7 +53,9 @@ migration, private feature flag, Shade component, or internal package.
   differ from Admin.
 - **Ghost Core:** use the [server map](docs/codebase/monorepo-structure.md#ghost-core)
   and read the [services guide](ghost/core/core/server/services/README.md) before
-  adding a service. New standalone services use TypeScript; keep CommonJS only
+  adding or relocating a service root; apply its placement rules rather than
+  inferring ownership from existing directory names. New standalone services
+  use TypeScript; keep CommonJS only
   at existing `require()` boundaries. Boot owns service initialization; do not
   initialize on the first request.
 - **ESLint:** use the shared factories and dependency rules in the

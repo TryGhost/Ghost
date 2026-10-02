@@ -5,10 +5,8 @@ import type {
   RouterOptions,
 } from '../../../../../../core/frontend/services/routing/controllers/entry';
 
-const { assertExists } = require('../../../../../utils/assertions');
 const testUtils = require('../../../../../utils');
 const configUtils = require('../../../../../utils/config-utils');
-const { deferred } = require('../../../../../utils/deferred');
 const urlUtils = require('../../../../../../core/shared/url-utils').default;
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
 const renderer = require('../../../../../../core/frontend/services/rendering');
@@ -103,20 +101,20 @@ describe('Unit - services/routing/controllers/entry', function () {
   });
 
   it('resource not found', function () {
-    const { promise, done } = deferred();
+    const { promise, resolve } = Promise.withResolvers<void>();
     req.path = '/does-not-exist/';
 
     entryLookUpStub.withArgs(req.path, res.routerOptions).resolves(null);
 
     controllers.entry(req, res, function (err?: Error) {
       assert.equal(err, undefined);
-      done();
+      resolve();
     });
     return promise;
   });
 
   it('resource found', function () {
-    const { promise, done } = deferred();
+    const { promise, resolve, reject } = Promise.withResolvers<void>();
     req.path = post.url;
     req.originalUrl = req.path;
 
@@ -128,15 +126,15 @@ describe('Unit - services/routing/controllers/entry', function () {
 
     controllers
       .entry(req, res, function () {
-        done();
+        resolve();
       })
-      .catch(done);
+      .catch(reject);
     return promise;
   });
 
   describe('[edge cases] resource found', function () {
     it('isUnknownOption: true', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve } = Promise.withResolvers<void>();
       req.path = post.url;
 
       entryLookUpStub.withArgs(req.path, res.routerOptions).resolves({
@@ -146,13 +144,13 @@ describe('Unit - services/routing/controllers/entry', function () {
 
       controllers.entry(req, res, function (err?: Error) {
         assert.equal(err, undefined);
-        done();
+        resolve();
       });
       return promise;
     });
 
     it('isEditURL: true', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve, reject } = Promise.withResolvers<void>();
       req.path = post.url;
 
       entryLookUpStub.withArgs(req.path, res.routerOptions).resolves({
@@ -167,17 +165,17 @@ describe('Unit - services/routing/controllers/entry', function () {
       ) {
         assert.equal(statusCode, 302);
         assert.equal(editorUrl, EDITOR_URL + post.id);
-        done();
+        resolve();
       });
 
       controllers.entry(req, res, (err?: Error) => {
-        done(err);
+        reject(err ?? new Error('Should not have called next'));
       });
       return promise;
     });
 
     it('isEditURL: true with admin redirects disabled', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve, reject } = Promise.withResolvers<void>();
       configUtils.set('admin:redirects', false);
 
       req.path = post.url;
@@ -189,20 +187,20 @@ describe('Unit - services/routing/controllers/entry', function () {
 
       urlUtilsRedirectToAdminStub.callsFake(async function () {
         await configUtils.restore();
-        done(new Error('redirectToAdmin was called'));
+        reject(new Error('redirectToAdmin was called'));
       });
 
       controllers.entry(req, res, async (err?: Error) => {
         await configUtils.restore();
         sinon.assert.notCalled(urlUtilsRedirectToAdminStub);
         assert.equal(err, undefined);
-        done(err);
+        resolve();
       });
       return promise;
     });
 
     it('requested url !== resource url', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve, reject } = Promise.withResolvers<void>();
       post.url = '/2017/08' + post.url;
       req.path = '/2017/07' + post.url;
       req.originalUrl = req.path;
@@ -215,18 +213,17 @@ describe('Unit - services/routing/controllers/entry', function () {
 
       urlUtilsRedirect301Stub.callsFake(function (_res: unknown, postUrl: string) {
         assert.equal(postUrl, post.url);
-        done();
+        resolve();
       });
 
       controllers.entry(req, res, function (err?: Error) {
-        assertExists(err);
-        done(err);
+        reject(err ?? new Error('Should not have called next'));
       });
       return promise;
     });
 
     it('requested url !== resource url: with query params', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve, reject } = Promise.withResolvers<void>();
       post.url = '/2017/08' + post.url;
       req.path = '/2017/07' + post.url;
       req.originalUrl = req.path + '?query=true';
@@ -239,11 +236,11 @@ describe('Unit - services/routing/controllers/entry', function () {
 
       urlUtilsRedirect301Stub.callsFake(function (_res: unknown, postUrl: string) {
         assert.equal(postUrl, post.url + '?query=true');
-        done();
+        resolve();
       });
 
       controllers.entry(req, res, function (err?: Error) {
-        done(err);
+        reject(err ?? new Error('Should not have called next'));
       });
       return promise;
     });

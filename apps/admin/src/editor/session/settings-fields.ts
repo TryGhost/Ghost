@@ -1,3 +1,4 @@
+import isLength from 'validator/es/lib/isLength.js';
 import type { EditablePostProjection } from '@/editor/engine/change-tracker';
 import { pick } from '@/editor/engine/pick';
 import type { PostStatus } from '@/editor/engine/save-engine';
@@ -5,7 +6,7 @@ import { tagIdentities } from '@/shared/tags/tag-selection';
 import type { EditorCreatePayload } from './write-payload';
 
 /**
- * The projection keys the settings sidebar may write. Slug, status and publish
+ * The projection keys settings and the email subject editor may write. Slug, status and publish
  * time are absent on purpose: the slug machine and the save engine's command
  * target own them, and a field patch would be dropped before the request.
  */
@@ -13,6 +14,7 @@ export const SETTINGS_FIELD_KEYS = [
   'tags',
   'authors',
   'custom_excerpt',
+  'email_subject',
   'featured',
   'visibility',
   'tiers',
@@ -77,13 +79,23 @@ export function identityFor(
   return fields[key];
 }
 
-/** The column widths the schema gives these fields. */
+/** The longest values the server accepts for these fields. */
+export const TITLE_MAX = 255;
+export const EXCERPT_MAX = 300;
+export const CODE_INJECTION_MAX = 65535;
+export const EMAIL_SUBJECT_MAX = 300;
+export const EMAIL_SUBJECT_TOO_LONG = `Email subject cannot be longer than ${EMAIL_SUBJECT_MAX} characters.`;
 export const META_TITLE_MAX = 300;
 export const META_DESCRIPTION_MAX = 500;
 export const OG_TITLE_MAX = 300;
 export const OG_DESCRIPTION_MAX = 500;
 export const X_TITLE_MAX = 300;
 export const X_DESCRIPTION_MAX = 500;
+
+export const TITLE_TOO_LONG = `Title cannot be longer than ${TITLE_MAX} characters.`;
+export const EXCERPT_TOO_LONG = `Excerpt cannot be longer than ${EXCERPT_MAX} characters.`;
+export const CODE_INJECTION_HEAD_TOO_LONG = `Header code cannot be longer than ${CODE_INJECTION_MAX} characters.`;
+export const CODE_INJECTION_FOOT_TOO_LONG = `Footer code cannot be longer than ${CODE_INJECTION_MAX} characters.`;
 
 /** The field names read as the pane's own labels read. */
 export const META_TITLE_TOO_LONG = `Meta title cannot be longer than ${META_TITLE_MAX} characters.`;
@@ -93,7 +105,12 @@ export const OG_DESCRIPTION_TOO_LONG = `Facebook description cannot be longer th
 export const X_TITLE_TOO_LONG = `X title cannot be longer than ${X_TITLE_MAX} characters.`;
 export const X_DESCRIPTION_TOO_LONG = `X description cannot be longer than ${X_DESCRIPTION_MAX} characters.`;
 
-/** `visibility: 'tiers'` with no tiers: the write contract drops the visibility. */
+/** Counted as Core's model validator counts: trimmed, and an emoji with its presentation selector once. */
+export function titleError(title: string): string | null {
+  return isLength(title.trim(), { max: TITLE_MAX }) ? null : TITLE_TOO_LONG;
+}
+
+/** `visibility: 'tiers'` with no tiers: the write contract drops the pair. */
 export function tiersIncomplete(
   fields: Pick<EditorSettingsFields, 'visibility' | 'tiers'>,
 ): boolean {
@@ -116,17 +133,22 @@ export function publishedAtInFuture(
   return !Number.isNaN(time) && time >= now;
 }
 
-/** Counted as symbols, so a multibyte character counts once. */
+/** Counted as the API's schema counts: by code point, so a multibyte character counts once. */
 export function overLength(value: string | null, max: number): boolean {
   return Array.from(value ?? '').length > max;
 }
 
 /** The settings keys the validator reads, and all a prepared save carries for it. */
 export const VALIDATED_SETTINGS_FIELD_KEYS = [
+  'email_subject',
   'visibility',
   'tiers',
+  'custom_excerpt',
+  'codeinjection_head',
+  'codeinjection_foot',
   'meta_title',
   'meta_description',
+  'canonical_url',
   'og_title',
   'og_description',
   'twitter_title',
@@ -145,9 +167,13 @@ export function validatedFieldsOf(fields: ValidatedSettingsFields): ValidatedSet
 
 /** The width each text field is held to, and what it says when it is past it. */
 const LENGTH_RULES: Record<
-  Exclude<ValidatedSettingsFieldKey, 'visibility' | 'tiers'>,
+  Exclude<ValidatedSettingsFieldKey, 'visibility' | 'tiers' | 'canonical_url'>,
   { max: number; message: string }
 > = {
+  email_subject: { max: EMAIL_SUBJECT_MAX, message: EMAIL_SUBJECT_TOO_LONG },
+  custom_excerpt: { max: EXCERPT_MAX, message: EXCERPT_TOO_LONG },
+  codeinjection_head: { max: CODE_INJECTION_MAX, message: CODE_INJECTION_HEAD_TOO_LONG },
+  codeinjection_foot: { max: CODE_INJECTION_MAX, message: CODE_INJECTION_FOOT_TOO_LONG },
   meta_title: { max: META_TITLE_MAX, message: META_TITLE_TOO_LONG },
   meta_description: { max: META_DESCRIPTION_MAX, message: META_DESCRIPTION_TOO_LONG },
   og_title: { max: OG_TITLE_MAX, message: OG_TITLE_TOO_LONG },
@@ -168,13 +194,45 @@ export function settingsFieldErrorFor(
   if (key === 'tiers') {
     return tiersIncomplete(fields) ? TIERS_REQUIRED : null;
   }
+  if (key === 'canonical_url') {
+    const url = fields.canonical_url;
+    if (!url) {
+      return null;
+    }
+    if (/\s/.test(url)) {
+      return 'Please enter a valid URL';
+    }
+    // Root-relative paths are supported; absolute URLs must have a valid host.
+    if (!url.startsWith('/')) {
+      try {
+        if (!new URL(url).hostname) {
+          return 'Please enter a valid URL';
+        }
+      } catch {
+        return 'Please enter a valid URL';
+      }
+    }
+    return overLength(url, 2000) ? 'Canonical URL is too long, max 2000 chars' : null;
+  }
   const { max, message } = LENGTH_RULES[key];
   return overLength(fields[key], max) ? message : null;
 }
 
-/** The first rule the settings fields break, in the post validator's order. */
-export function settingsFieldError(fields: ValidatedSettingsFields): string | null {
+/**
+ * The first rule the settings fields break, in the post validator's order. A
+ * post the server has not created yet is not held to the tier rule
+ * (validators/post.js `isNew`); its write leaves the pair out instead.
+ */
+export function settingsFieldError(
+  fields: ValidatedSettingsFields,
+  isNew: boolean,
+  /** Fields the save leaves for a later one, whose rules wait for it. */
+  skip: ReadonlyArray<ValidatedSettingsFieldKey> = [],
+): string | null {
   for (const key of VALIDATED_SETTINGS_FIELD_KEYS) {
+    if ((isNew && key === 'tiers') || skip.includes(key)) {
+      continue;
+    }
     const error = settingsFieldErrorFor(key, fields);
     if (error) {
       return error;

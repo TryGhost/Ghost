@@ -12,6 +12,7 @@ import { publishNewsletterSelect } from '@tryghost/test-data/selectors/editor';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useBrowseLabelsInfinite } from '@tryghost/admin-x-framework/api/labels';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
+import { PAID_TIERS_SEARCH_PARAMS } from '@/editor/browse-params';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { useEditorSettings } from '@/editor/use-editor-settings';
 import { useEffect, useId, useMemo } from 'react';
@@ -46,7 +47,7 @@ export function EmailRecipientsOptions({
   const tiersQuery = useBrowseTiers({
     defaultErrorHandler: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
-    searchParams: { filter: 'type:paid', limit: 'all' },
+    searchParams: PAID_TIERS_SEARCH_PARAMS,
   });
   const labelsQuery = useBrowseLabelsInfinite({
     defaultErrorHandler: false,
@@ -119,7 +120,11 @@ export function EmailRecipientsOptions({
       tiers.length > 1
         ? [...tiers]
             .sort((a, b) => Number(b.active) - Number(a.active))
-            .map((tier) => ({ segment: `tier:${tier.slug}`, name: tier.name }))
+            .map((tier) => ({
+              segment: `tier:${tier.slug}`,
+              name: tier.name,
+              group: tier.active ? 'Active tiers' : 'Archived tiers',
+            }))
         : [];
 
     return [
@@ -127,6 +132,7 @@ export function EmailRecipientsOptions({
       ...labels.map((label) => ({
         segment: `label:${label.slug}`,
         name: label.name,
+        group: 'Labels',
       })),
     ];
   }, [labelsData, labelsError, labelsSettled, tiersData, tiersError, tiersSettled]);

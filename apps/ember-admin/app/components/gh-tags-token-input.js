@@ -48,7 +48,7 @@ export default class GhTagsTokenInput extends Component {
 
     @action
     updateTags(newTags) {
-        let currentTags = this.args.selected || [];
+        const currentTags = this.args.selected || [];
 
         // destroy new+unsaved tags that are no longer selected
         currentTags.forEach(function (tag) {
@@ -65,8 +65,8 @@ export default class GhTagsTokenInput extends Component {
 
     @action
     createTag(tagNameAttr) {
-        let currentTags = this.args.selected || [];
-        let currentTagNames = currentTags.map(tag => tag.get('name').toLowerCase());
+        const currentTags = this.args.selected || [];
+        const currentTagNames = currentTags.map(tag => tag.get('name').toLowerCase());
         let tagToAdd;
 
         tagNameAttr = tagNameAttr.trim();
@@ -102,7 +102,7 @@ export default class GhTagsTokenInput extends Component {
     // methods
 
     _findTagByName(name) {
-        let withMatchingName = function (tag) {
+        const withMatchingName = function (tag) {
             if (tag.__isSuggestion__) {
                 return false;
             }

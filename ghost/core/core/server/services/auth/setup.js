@@ -5,7 +5,7 @@ const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const moment = require('moment');
 const models = require('../../models');
-const mail = require('../mail');
+const mail = require('../../lib/mail');
 
 const messages = {
   setupAlreadyCompleted: 'Setup has already been completed.',
@@ -87,13 +87,11 @@ async function doSettings(data, settingsAPI) {
   const blogTitle = data.userData.blogTitle;
   const description = data.userData.description ? data.userData.description.trim() : null;
 
-  let userSettings;
-
   if (!blogTitle || typeof blogTitle !== 'string') {
     return user;
   }
 
-  userSettings = [
+  const userSettings = [
     { key: 'title', value: blogTitle.trim() },
     { key: 'description', value: description || tpl(messages.sampleBlogDescription) },
   ];

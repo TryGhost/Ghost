@@ -20,20 +20,12 @@ import {
   ANY_STATUS,
   definitions,
   inFieldOrder,
+  knexify,
+  nql,
   type DefinitionQuery,
 } from './queries';
 import { KEY_CHARACTERS, mintableKey } from './key';
 import { type RecordMetafieldAction, type RequestContext } from './actions';
-
-// The same NQL -> knex bridge Bookshelf's filter plugin uses, applied directly to
-// our raw-knex query: nql parses the `filter` string to a Mongo query, mongo-knex
-// turns that into parametrised WHERE clauses. Neither needs a Bookshelf model.
-const nql = require('@tryghost/nql') as (filter: string) => { toJSON(): object };
-const knexify = require('@tryghost/mongo-knex') as <T extends Knex.QueryBuilder>(
-  qb: T,
-  mongoQuery: object,
-  config: { tableName: string },
-) => T;
 
 const TABLE = 'members_metafields';
 
@@ -136,13 +128,6 @@ export class MetafieldDefinitionsService {
     // every create means a change takes effect on the next one, with no
     // restart. Where the number comes from is the caller's business.
     this.getMaxDefinitions = getMaxDefinitions;
-  }
-
-  async hasAnyReadable(audience: Audience): Promise<boolean> {
-    const [field] = await this.list(
-      definitions(this.knex, { audience, status: ACTIVE_ONLY, limit: 1 }),
-    );
-    return Boolean(field);
   }
 
   /**
