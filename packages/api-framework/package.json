@@ -38,7 +38,8 @@
     "@tryghost/promise": "catalog:",
     "@tryghost/tpl": "catalog:",
     "@tryghost/validator": "catalog:",
-    "lodash": "catalog:"
+    "lodash": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
