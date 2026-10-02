@@ -11,7 +11,7 @@ import {
 
 import logging from '@tryghost/logging';
 // @ts-expect-error Module has no type declarations.
-import mailService from '../../../core/server/services/mail';
+import mailService from '../../../core/server/lib/mail';
 // @ts-expect-error Module has no type declarations.
 import SingleUseTokenProvider from '../../../core/server/services/members/single-use-token-provider';
 // @ts-expect-error Module has no type declarations.

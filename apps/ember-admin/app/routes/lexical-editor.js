@@ -144,9 +144,6 @@ export default AuthenticatedRoute.extend({
 
     buildRouteInfoMetadata() {
         return {
-            titleToken: () => {
-                return this.get('controller.post.title') || 'Editor';
-            },
             bodyClasses: ['gh-body-fullscreen'],
             mainClasses: ['gh-main-white']
         };

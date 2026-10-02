@@ -344,7 +344,7 @@ function EditorContent({
             pendingSave={session.pendingSave}
             state={session.state}
             onReload={session.reload}
-            onRetrySave={session.dispatchExplicit}
+            onRetrySave={session.retrySave}
           />
           <ReauthDialog
             email={currentUser?.email ?? ''}
@@ -366,7 +366,7 @@ function EditorContent({
               postType={postType}
               showExcerpt={showExcerpt}
               titleError={titleError(session.bind.title)}
-              onExcerptBlur={session.commitSettings}
+              onExcerptBlur={session.commitField}
               onTkCountChange={setTkCount}
             />
           </div>

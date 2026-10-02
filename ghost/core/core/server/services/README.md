@@ -40,10 +40,7 @@ and provider adapters as private implementation details.
 
 For example:
 
-- `email-service` exposes an application-owned wrapper initialized during boot;
-  `mail` exports `GhostMailer` for callers to construct and a template helper.
-  The latter is mail support, not a service root, even though sending mail has
-  side effects. Its remaining placement here is legacy, not a pattern to copy.
+- `email-service` exposes an application-owned wrapper initialized during boot.
 - `email-address` constructs and exposes the application's email-address
   implementation through `init()` and `service`. It qualifies without owning a
   background worker.

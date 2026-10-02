@@ -21,7 +21,6 @@ import {
   renderAdminApp,
   staffRole,
   submittedPost,
-  unsavedChangesGuarded,
   withoutAutosave,
   type StaffRoleName,
 } from '@test-utils/acceptance';
@@ -248,7 +247,7 @@ describe('Post settings code injection', () => {
       .toBe('<script>foot();</script>');
   });
 
-  it('stages a published post’s header code until Update', async () => {
+  it('saves a published post’s header code on its own', async () => {
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openCodeInjection();
@@ -256,16 +255,11 @@ describe('Post settings code injection', () => {
     await typeInto(headEditor(), '<script>staged();</script>');
     await footEditor().click();
 
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
-    await expect.poll(unsavedChangesGuarded).toBe(true);
-    expect(saveApi.requests).toHaveLength(0);
-
-    await userEvent.keyboard('{Meta>}s{/Meta}');
-
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
       codeinjection_head: '<script>staged();</script>',
-      status: 'published',
     });
   });
 

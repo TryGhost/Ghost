@@ -3,8 +3,8 @@ import type {
   AutomationTriggerTierScope,
   AutomationsRepository,
 } from './automations-repository';
-import { getMailgunMessageId } from '../lib/mailgun-message-id';
-import { getMailgunError } from '../lib/mailgun-error';
+import { getMailgunMessageId } from '../../lib/mailgun/mailgun-message-id';
+import { getMailgunError } from '../../lib/mailgun/mailgun-error';
 import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
 import { MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES } from '../member-welcome-emails/constants';

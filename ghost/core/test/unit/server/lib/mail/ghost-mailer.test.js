@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const nock = require('nock');
-const mail = require('../../../../../core/server/services/mail');
+const mail = require('../../../../../core/server/lib/mail');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const configUtils = require('../../../../utils/config-utils');
 const urlUtils = require('../../../../../core/shared/url-utils').default;

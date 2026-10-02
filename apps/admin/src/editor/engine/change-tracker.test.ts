@@ -549,6 +549,24 @@ describe('createChangeTracker', () => {
     });
   });
 
+  describe('savedValue', () => {
+    it('reads the saved copy rather than the live edit, and nothing once disposed', () => {
+      const tracker = loadedTracker(post({ title: 'Saved title', updated_at: T0 }));
+      tracker.setLive(POST_ID, { title: 'Live title' });
+
+      expect(tracker.savedValue('title')).toBe('Saved title');
+
+      tracker.saveAcknowledged(POST_ID, {}, post({ title: 'Acknowledged title', updated_at: T1 }));
+
+      expect(tracker.savedValue('title')).toBe('Acknowledged title');
+      expect(tracker.savedValue('lexical')).toBe(serialize(SAVED_DOC));
+
+      tracker.dispose();
+
+      expect(tracker.savedValue('title')).toBeUndefined();
+    });
+  });
+
   describe('mutable aliasing', () => {
     it('clones the saved state at ingress', () => {
       const saved = post({ tags: [{ name: 'News' }], feature_image_caption: 'Caption' });

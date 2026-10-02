@@ -41,6 +41,8 @@ export function PublishAtOptions({
           className="w-full sm:w-70 sm:translate-y-2 sm:justify-self-end"
           dateLabel="Publish date"
           dateTestId={publishScheduleDate}
+          // A row of its own, so the fields stay level with their radio.
+          errorClassName="sm:col-start-2 sm:w-70 sm:translate-y-2 sm:justify-self-end"
           minDate={state.minScheduledAt}
           timeLabel="Publish time"
           timeTestId={publishScheduleTime}

@@ -944,8 +944,6 @@ export default class LexicalEditorController extends Controller {
             yield this.generateSlugTask.perform();
             yield this.autosaveTask.perform();
         }
-
-        this.ui.updateDocumentTitle();
     }
 
     /*

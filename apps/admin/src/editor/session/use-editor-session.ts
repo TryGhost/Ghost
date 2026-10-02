@@ -116,11 +116,10 @@ export interface EditorSessionHandle {
   editSettings: (patch: EditorSettingsPatch) => void;
   /** Stages a settings field the writer is still typing into, committing nothing. */
   stageSettings: (patch: EditorSettingsPatch) => void;
-  /**
-   * Requests a field save from the engine on the blur that ends
-   * an edit. The excerpt and the feature image go through it wherever they render.
-   */
+  /** Requests a settings save on the gesture that ends a settings-panel edit. */
   commitSettings: () => void;
+  /** Requests a field save on the gesture that ends a canvas edit: the excerpt under the title or the feature image. */
+  commitField: () => void;
   /** The title the engine holds, which is the default title while the input is blank. */
   title: string;
   /** The slug the machine holds, which the URL section's input reads. */
@@ -135,7 +134,8 @@ export interface EditorSessionHandle {
   getSaveSnapshot: EditorSession['getSaveSnapshot'];
   /** The body the writer is looking at, which a save has not necessarily seen yet. */
   getLiveLexical: EditorSession['getLiveLexical'];
-  dispatchExplicit: () => void;
+  /** Retries the save the error banner reports. */
+  retrySave: () => void;
   /** An explicit save whose completion the caller acts on, such as before a publish or preview. */
   saveExplicit: () => Promise<SaveCompletion>;
   /** Runs the publish flow's commands through the engine, the only writer. */
@@ -307,17 +307,18 @@ export function useEditorSession({
       if (before === after) {
         return;
       }
-      session.commitField();
+      session.commitSettings();
     },
     [session],
   );
 
-  const commitSettings = useCallback(() => session.commitField(), [session]);
+  const commitSettings = useCallback(() => session.commitSettings(), [session]);
+  const commitField = useCallback(() => session.commitField(), [session]);
 
   const editSettings = useCallback(
     (patch: EditorSettingsPatch) => {
       stageSettings(patch);
-      session.commitField();
+      session.commitSettings();
     },
     [session, stageSettings],
   );
@@ -437,12 +438,7 @@ export function useEditorSession({
     [session],
   );
 
-  const onExcerptChange = useCallback(
-    (next: string) => {
-      stageSettings({ custom_excerpt: next || null });
-    },
-    [stageSettings],
-  );
+  const onExcerptChange = useCallback((next: string) => session.patchExcerpt(next), [session]);
 
   const onTitleBlur = useCallback(() => {
     session.commitTitle(title);
@@ -474,7 +470,7 @@ export function useEditorSession({
     [session],
   );
 
-  const dispatchExplicit = useCallback(() => void session.dispatchExplicit(), [session]);
+  const retrySave = useCallback(() => void session.retrySave(), [session]);
 
   const excerpt = settings.custom_excerpt ?? '';
   const bind = useMemo<EditorSessionBinding>(
@@ -523,6 +519,7 @@ export function useEditorSession({
       editSettings,
       stageSettings,
       commitSettings,
+      commitField,
       title: engineTitle,
       slug,
       editSlug: session.editSlug,
@@ -530,7 +527,7 @@ export function useEditorSession({
       editPublishedAt,
       getSaveSnapshot: session.getSaveSnapshot,
       getLiveLexical: session.getLiveLexical,
-      dispatchExplicit,
+      retrySave,
       saveExplicit: session.dispatchExplicit,
       dispatchPublish,
       reauthSucceeded: session.reauthSucceeded,
@@ -540,10 +537,10 @@ export function useEditorSession({
     }),
     [
       bind,
+      commitField,
       commitSettings,
       contentKey,
       contentText,
-      dispatchExplicit,
       dispatchPublish,
       editPublishedAt,
       editSettings,
@@ -555,6 +552,7 @@ export function useEditorSession({
       publishTime,
       reload,
       restoreRevision,
+      retrySave,
       session,
       settings,
       slug,

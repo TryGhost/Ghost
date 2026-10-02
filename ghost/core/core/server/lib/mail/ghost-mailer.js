@@ -8,7 +8,7 @@ const tpl = require('@tryghost/tpl');
 const settingsCache = require('../../../shared/settings-cache');
 const urlUtils = require('../../../shared/url-utils').default;
 const metrics = require('@tryghost/metrics');
-const emailAddress = require('../email-address');
+const emailAddress = require('../../services/email-address');
 const messages = {
   title: 'Ghost at {domain}',
   checkEmailConfigInstructions: 'Please see {url} for instructions on configuring email.',
@@ -17,7 +17,7 @@ const messages = {
   reason: ' Reason: {reason}.',
   messageSent: 'Message sent. Double check inbox and spam folder!',
 };
-const emailAddressParser = require('../email-address/email-address-parser');
+const emailAddressParser = require('../../services/email-address/email-address-parser');
 const DEFAULT_TAGS = ['ghost-email', 'transactional-email'];
 const MAX_MAILGUN_TAGS = 10;
 

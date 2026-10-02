@@ -198,7 +198,7 @@ describe('Post settings authors', () => {
     await expect(saveApi).toHaveSavedFields({ authors: [{ id: OWNER_ID }] });
   });
 
-  it('stages a published post’s author order until Update', async () => {
+  it('saves a published post’s author order on its own', async () => {
     const saveApi = fakeSavablePost({
       status: 'published',
       published_at: PUBLISHED_AT,
@@ -206,21 +206,18 @@ describe('Post settings authors', () => {
     });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openAuthors();
-    await expect.element(editorScreen.updateButton()).toBeDisabled();
 
     await dragByPointer(
       editorScreen.removeAuthor('Nadia Ahmed'),
       editorScreen.removeAuthor('Owner User'),
     );
 
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
-    await expect.poll(unsavedChangesGuarded).toBe(true);
-    expect(saveApi.requests).toHaveLength(0);
-
-    await userEvent.keyboard('{Meta>}s{/Meta}');
-
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-    expect(submittedPost(saveApi).authors).toEqual([{ id: NADIA.id }, { id: OWNER_ID }]);
+    expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
+      authors: [{ id: NADIA.id }, { id: OWNER_ID }],
+    });
     await expect.poll(editorScreen.settingsAuthorNames).toEqual(['Nadia Ahmed', 'Owner User']);
   });
 
@@ -240,8 +237,6 @@ describe('Post settings authors', () => {
     await expect
       .element(editorScreen.removeAuthor('Nadia Ahmed'))
       .toHaveAttribute('aria-label', 'Remove Nadia Ahmed');
-
-    await userEvent.keyboard('{Meta>}s{/Meta}');
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPost(saveApi).authors).toEqual([{ id: NADIA.id }]);
@@ -393,24 +388,20 @@ describe('Post settings authors', () => {
     });
   });
 
-  it('stages a published post’s authors until Update', async () => {
+  it('saves a published post’s authors on their own', async () => {
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openAuthors();
-
-    await expect.element(editorScreen.updateButton()).toBeDisabled();
-
     await openAuthorList();
+
     await editorScreen.settingsAuthorOption('Nadia Ahmed').click();
 
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
-    await expect.poll(unsavedChangesGuarded).toBe(true);
-    expect(saveApi.requests).toHaveLength(0);
-
-    await userEvent.keyboard('{Meta>}s{/Meta}');
-
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-    expect(submittedPost(saveApi).authors).toEqual([{ id: OWNER_ID }, { id: NADIA.id }]);
+    expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
+      authors: [{ id: OWNER_ID }, { id: NADIA.id }],
+    });
     await expect.element(editorScreen.updateButton()).toBeDisabled();
   });
 
