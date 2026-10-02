@@ -45,7 +45,8 @@ let spamCheckoutSessionEmail = spam.checkout_session_email || {};
 let spamContentApiKey = spam.content_api_key || {};
 const spamWebmentionsBlock = spam.webmentions_block || {};
 const spamEmailPreviewBlock = spam.email_preview_block || {};
-const spamUpgradeBlock = spam.upgrade_block || {};
+let spamUpgradeBlock = spam.upgrade_block || {};
+let spamUpgradeApiBlock = spam.upgrade_api_block || {};
 let spamOtcVerificationEnumeration = spam.otc_verification_enumeration || {};
 let spamOtcVerification = spam.otc_verification || {};
 
@@ -66,6 +67,7 @@ let userVerificationInstance;
 let contentApiKeyInstance;
 let emailPreviewBlockInstance;
 let upgradeBlockInstance;
+let upgradeApiBlockInstance;
 let otcVerificationEnumerationInstance;
 let otcVerificationInstance;
 
@@ -247,7 +249,7 @@ const emailPreviewBlock = () => {
   return emailPreviewBlockInstance;
 };
 
-const upgradeBlock = () => {
+const createUpgradeBlock = (name, settings, options = {}) => {
   const ExpressBrute = require('express-brute');
   const BruteKnex = require('@tryghost/brute-knex');
   const db = require('../../../../data/db');
@@ -260,27 +262,48 @@ const upgradeBlock = () => {
       knex: db.knex,
     });
 
-  upgradeBlockInstance =
-    upgradeBlockInstance ||
-    new ExpressBrute(
-      store,
-      extend(
-        {
-          attachResetToRequest: false,
-          failCallback(req, res, next) {
-            return next(
-              new errors.TooManyRequestsError({
-                message: messages.upgradeBlock,
-              }),
-            );
-          },
-          handleStoreError: handleStoreError,
+  const limiter = new ExpressBrute(
+    store,
+    extend(
+      {
+        attachResetToRequest: false,
+        failCallback(req, res, next) {
+          return next(
+            new errors.TooManyRequestsError({
+              message: messages.upgradeBlock,
+            }),
+          );
         },
-        pick(spamUpgradeBlock, spamConfigKeys),
-      ),
-    );
+        handleStoreError: handleStoreError,
+      },
+      pick(settings, spamConfigKeys),
+      options,
+    ),
+  );
+
+  // ExpressBrute otherwise namespaces keys by construction order, which can
+  // differ across Ghost instances and reset the shared database-backed budget.
+  limiter.name = name;
+
+  return limiter;
+};
+
+const upgradeBlock = () => {
+  upgradeBlockInstance =
+    upgradeBlockInstance || createUpgradeBlock('upgrade_requests', spamUpgradeBlock);
 
   return upgradeBlockInstance;
+};
+
+const upgradeApiBlock = () => {
+  upgradeApiBlockInstance =
+    upgradeApiBlockInstance ||
+    createUpgradeBlock('upgrade_api', spamUpgradeApiBlock, {
+      // Continuous polling must not extend the counting window indefinitely.
+      refreshTimeoutOnRequest: false,
+    });
+
+  return upgradeApiBlockInstance;
 };
 
 const membersAuth = () => {
@@ -753,6 +776,7 @@ const contentApiKey = () => {
 
 module.exports = {
   upgradeBlock,
+  upgradeApiBlock,
   globalBlock: globalBlock,
   globalReset: globalReset,
   userLogin: userLogin,
@@ -771,6 +795,7 @@ module.exports = {
   emailPreviewBlock: emailPreviewBlock,
   reset: () => {
     upgradeBlockInstance = undefined;
+    upgradeApiBlockInstance = undefined;
     store = undefined;
     memoryStore = undefined;
     privateBlogInstance = undefined;
@@ -789,6 +814,8 @@ module.exports = {
     otcVerificationInstance = undefined;
 
     spam = config.get('spam') || {};
+    spamUpgradeBlock = spam.upgrade_block || {};
+    spamUpgradeApiBlock = spam.upgrade_api_block || {};
     spamPrivateBlock = spam.private_block || {};
     spamGlobalBlock = spam.global_block || {};
     spamGlobalReset = spam.global_reset || {};

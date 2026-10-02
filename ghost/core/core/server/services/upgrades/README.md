@@ -35,7 +35,12 @@ preserves them exactly. Target approval, release resolution, channel policy and
 major-update compatibility checks belong to the host. All other body keys are
 rejected.
 
-The shared database-backed limiter allows three POST attempts per staff user
+A database-backed IP limiter runs before authentication on all three endpoints.
+It allows 180 attempts per minute, shared across status polling, job polling
+and request creation. This limits authentication work while allowing
+normal polling. Hosts can tune it with `spam.upgrade_api_block`.
+
+The separate shared database-backed limiter allows three POST attempts per staff user
 before a one-minute block, across IPs and Ghost instances. Denied lower-role
 users cannot consume an owner's request budget. Hosts must independently enforce
 concurrency and atomically deduplicate requests. Ghost deliberately does not

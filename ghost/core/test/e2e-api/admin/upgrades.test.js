@@ -1,10 +1,12 @@
 const assert = require('node:assert/strict');
 const { randomUUID } = require('node:crypto');
 const sinon = require('sinon');
+const jwt = require('jsonwebtoken');
 const { UpgradeAdapterError } = require('@tryghost/adapter-base-upgrade');
 const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
 const manager = require('../../../core/server/services/adapter-manager').default;
 const db = require('../../../core/server/data/db');
+const spamPrevention = require('../../../core/server/web/shared/middleware/api/spam-prevention');
 
 const id = 'f76543a0-c052-45e8-b020-03c86a809b93';
 const input = { targetVersion: '6.65.0', idempotencyKey: id };
@@ -179,6 +181,57 @@ describe('Upgrades API', function () {
     assert.deepEqual(result.body.upgrades[0].diagnostics, diagnostics);
   });
 
+  it('shares an IP budget across all upgrade routes and rejects excess requests before authentication', async function () {
+    const limiter = spamPrevention.upgradeApiBlock();
+    sinon.stub(limiter, 'options').value({ ...limiter.options, freeRetries: 2 });
+    const startTime = Date.now();
+    const now = sinon.stub(limiter, 'now').returns(startTime);
+
+    for (const [method, path] of [
+      ['get', 'upgrades/'],
+      ['post', 'upgrades/'],
+      ['get', `upgrades/${id}/`],
+    ]) {
+      await agent[method](path)
+        .header('Authorization', 'Ghost not-a-token')
+        .header('X-Forwarded-For', '203.0.113.1')
+        .expectStatus(400);
+    }
+
+    const decode = sinon.spy(jwt, 'decode');
+
+    for (const [method, path] of [
+      ['get', 'upgrades/'],
+      ['post', 'upgrades/'],
+      ['get', `upgrades/${id}/`],
+    ]) {
+      await agent[method](path)
+        .header('Authorization', 'Ghost not-a-token')
+        .header('X-Forwarded-For', '203.0.113.1')
+        .expectStatus(429);
+    }
+
+    sinon.assert.notCalled(decode);
+
+    await agent
+      .get('upgrades/')
+      .header('Authorization', 'Ghost not-a-token')
+      .header('X-Forwarded-For', '203.0.113.2')
+      .expectStatus(400);
+
+    sinon.assert.calledOnce(decode);
+
+    // Normal polling can resume in the next window without a full idle minute.
+    now.returns(startTime + 60001);
+    await agent
+      .get('upgrades/')
+      .header('Authorization', 'Ghost not-a-token')
+      .header('X-Forwarded-For', '203.0.113.1')
+      .expectStatus(400);
+
+    sinon.assert.calledTwice(decode);
+  });
+
   it('throttles repeated POSTs', async function () {
     for (let index = 0; index < 3; index++) {
       await agent
@@ -190,6 +243,25 @@ describe('Upgrades API', function () {
       .post('upgrades/')
       .body({ upgrades: [input] })
       .expectStatus(429);
+  });
+
+  it('continues polling after the staff POST budget is exhausted', async function () {
+    for (let index = 0; index < 3; index++) {
+      await agent
+        .post('upgrades/')
+        .body({ upgrades: [input] })
+        .expectStatus(403);
+    }
+
+    await agent
+      .post('upgrades/')
+      .body({ upgrades: [input] })
+      .expectStatus(429);
+
+    for (let index = 0; index < 5; index++) {
+      await agent.get('upgrades/').expectStatus(200);
+      await agent.get(`upgrades/${id}/`).expectStatus(200);
+    }
   });
 
   it('permits administrators', async function () {

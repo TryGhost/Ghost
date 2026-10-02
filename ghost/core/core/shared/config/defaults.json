@@ -180,6 +180,12 @@
       "lifetime": 1000,
       "freeRetries": 100
     },
+    "upgrade_api_block": {
+      "freeRetries": 179,
+      "minWait": 60000,
+      "maxWait": 60000,
+      "lifetime": 60
+    },
     "upgrade_block": {
       "freeRetries": 2,
       "minWait": 60000,
