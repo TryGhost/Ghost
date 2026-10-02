@@ -16,7 +16,6 @@ export type HistoryCardData = {
   state: HistoryCardState;
   statusLabel: string;
   timestamp?: HistoryTimestamp;
-  details: string[];
   email?: HistoryEmail;
   executionTimestamp?: HistoryTimestamp;
 };
@@ -118,14 +117,13 @@ const mapStep = (
         : state,
     timestamp,
     executionTimestamp,
-    details: [],
     email: content.email,
     statusLabel,
   };
 };
 
 const mapEnd = (history: AutomationRunHistory): HistoryCardData[] => {
-  const base = { id: `end:${history.id}`, details: [] };
+  const base = { id: `end:${history.id}` };
   switch (history.status) {
     case 'completed':
       return [
@@ -170,7 +168,6 @@ export const mapRunHistory = (history: AutomationRunHistory): HistoryCardData[] 
     state: 'occurred',
     statusLabel: 'Entered',
     timestamp: { label: 'Entered', value: history.created_at },
-    details: [],
   },
   // API order describes recorded history, not edges in the current editing graph.
   ...history.steps.map((step, index) =>

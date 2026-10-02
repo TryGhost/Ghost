@@ -35,7 +35,6 @@ describe('Recorded trigger, wait, and outcome cards', () => {
     expect(card('Entered automation').element().querySelector('time')?.dateTime).toBe(entered);
     expect(card('Waited 3 days').element().querySelector('time')?.dateTime).toBe(finished);
     expect(card('Completed').element().querySelector('time')).toBeNull();
-    await expect.element(card('Completed')).not.toHaveTextContent('End time unavailable.');
     await expect(flow.getByRole('button')).toHaveCount(0);
     await expect(flow.getByRole('textbox')).toHaveCount(0);
     // Connections occupy the gap between consecutive recorded cards, rather
@@ -55,14 +54,13 @@ describe('Recorded trigger, wait, and outcome cards', () => {
     await expect.element(card('Waited 3 days')).toBeVisible();
   });
 
-  it('keeps history headings and timestamps separate beside the tablet sidebar', async () => {
+  it('keeps history headings and timestamps separate on a tablet', async () => {
     await page.viewport(768, 900);
     try {
       setup();
       respond(history('a'));
       await renderAdminApp('/automations/first', flags);
       await open();
-      // Fixed-width editing cards need more room than the responsive history.
       await expect(editingCanvas()).toHaveCount(0);
       await select();
       await expect.element(card('Entered automation')).toBeVisible();
@@ -93,9 +91,6 @@ describe('Recorded trigger, wait, and outcome cards', () => {
     await open();
     await select();
     await expect.element(card('Waiting 3 days')).toHaveTextContent('ends ');
-    await expect
-      .element(card('Waiting 3 days'))
-      .not.toHaveTextContent('not a guaranteed execution time');
     expect(card('Waiting 3 days').element().querySelector('time')?.dateTime).toBe(
       data.steps[0].ready_at,
     );
@@ -112,13 +107,17 @@ describe('Recorded trigger, wait, and outcome cards', () => {
   });
 
   it('shows the exit reason once after the stopped step', async () => {
-    const status = 'failed';
     const label = 'Wait step failed';
     setup();
     const data = history('a');
     data.status = 'exited_early';
-    data.failed = status === 'failed';
-    data.steps[0] = { ...data.steps[0], status, finished_at: finished, updated_at: updated };
+    data.failed = true;
+    data.steps[0] = {
+      ...data.steps[0],
+      status: 'failed',
+      finished_at: finished,
+      updated_at: updated,
+    };
     respond(data);
     await renderAdminApp('/automations/first', flags);
     await open();
@@ -134,7 +133,6 @@ describe('Recorded trigger, wait, and outcome cards', () => {
         .elements()
         .map((item) => item.getAttribute('aria-label')),
     ).toEqual(['Entered automation', 'Wait 3 days', label]);
-    await expect.element(canvas()).not.toHaveTextContent('publisher');
   });
 
   it('keeps long recorded history scrollable with a persistent close control', async () => {

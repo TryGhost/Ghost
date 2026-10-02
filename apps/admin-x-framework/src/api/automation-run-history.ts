@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { AutomationRunSchema } from './automations';
-import { createQueryWithId } from '../utils/api/hooks';
+import { createQuery } from '../utils/api/hooks';
 
 const HistoryActionSchema = z.discriminatedUnion('type', [
   z.object({
@@ -17,7 +17,6 @@ const HistoryActionSchema = z.discriminatedUnion('type', [
 
 export const AutomationRunHistorySchema = z.object({
   ...AutomationRunSchema.shape,
-  status: z.enum(['in_progress', 'completed', 'exited_early']),
   automation_id: z.string().min(1),
   steps: z
     .array(
@@ -59,15 +58,15 @@ export const useReadAutomationRunHistory = (
   runId: string,
   selectionId: string,
   options: Parameters<
-    ReturnType<typeof createQueryWithId<z.infer<typeof AutomationRunHistoryResponseSchema>>>
-  >[1] = {},
+    ReturnType<typeof createQuery<z.infer<typeof AutomationRunHistoryResponseSchema>>>
+  >[0] = {},
 ) => {
   // Start a fresh request on each selection, even when revisiting a run
   // whose previous request is still pending.
-  const useQuery = createQueryWithId<z.infer<typeof AutomationRunHistoryResponseSchema>>({
+  const useQuery = createQuery<z.infer<typeof AutomationRunHistoryResponseSchema>>({
     dataType: `AutomationRunHistoryResponseType:${selectionId}`,
-    path: (id) => `/automations/${id}/`,
+    path: `/automations/${encodeURIComponent(automationId)}/runs/${encodeURIComponent(runId)}/`,
     parseResponse: (data) => AutomationRunHistoryResponseSchema.parse(data),
   });
-  return useQuery(`${encodeURIComponent(automationId)}/runs/${encodeURIComponent(runId)}`, options);
+  return useQuery(options);
 };

@@ -1,8 +1,18 @@
 import { useId, useMemo, useState } from 'react';
 import { APIError } from '@tryghost/admin-x-framework/errors';
 import { useReadAutomationRunHistory } from '@tryghost/admin-x-framework/api/automation-run-history';
-import { historyQueryOptions } from './history-query-options';
 import { mapAutomationRun } from '@/automations/utils/automation-runs';
+
+// Fetch on selection or retry; list controls do not refresh the selected history.
+const historyQueryOptions = {
+  defaultErrorHandler: false,
+  staleTime: Infinity,
+  gcTime: 0,
+  refetchOnMount: 'always',
+  refetchOnWindowFocus: false,
+  refetchOnReconnect: false,
+  retry: false,
+} as const;
 
 export const useAutomationRunHistory = (automationId: string, runId: string) => {
   const selectionId = useId();
@@ -13,18 +23,15 @@ export const useAutomationRunHistory = (automationId: string, runId: string) => 
     `${selectionId}:${generation}`,
     historyQueryOptions,
   );
-  const response = query.data?.automation_run_history[0];
-  const wrongRun = !!response && (response.automation_id !== automationId || response.id !== runId);
-  const failed = !query.isFetching && (query.isError || wrongRun);
-  const history = query.isFetchedAfterMount && !failed && !wrongRun ? response : undefined;
+  const history = query.isSuccess ? query.data?.automation_run_history[0] : undefined;
   const summary = useMemo(() => history && mapAutomationRun(history), [history]);
   const unavailable =
-    failed && query.error instanceof APIError && query.error.response?.status === 404;
+    query.isError && query.error instanceof APIError && query.error.response?.status === 404;
   return {
     history,
     summary,
-    isLoading: !history && !failed,
-    isError: failed && !unavailable,
+    isLoading: query.isPending,
+    isError: query.isError && !unavailable,
     unavailable,
     retry: () => setGeneration((value) => value + 1),
   };

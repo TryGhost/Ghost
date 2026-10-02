@@ -106,11 +106,6 @@ export const HistoryCard: React.FC<React.PropsWithChildren<{ card: HistoryCardDa
         </Text>
       )}
       {children}
-      {card.details.map((detail) => (
-        <Text key={detail} size="sm" tone="secondary">
-          {detail}
-        </Text>
-      ))}
     </AutomationCard>
   );
 };

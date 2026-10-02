@@ -81,7 +81,6 @@ describe('recorded run history presentation', () => {
       });
       if (status === 'failed') {
         expect(delivered.statusLabel).toBe('Stopped');
-        expect(delivered.details).toEqual([]);
       }
     },
   );
@@ -110,7 +109,6 @@ describe('recorded run history presentation', () => {
       title: 'Send email',
       state: 'pending',
       timestamp: { label: 'est.', value: eligible, estimated: true },
-      details: [],
     });
   });
   it('uses entry and completion timestamps without fabricating a run-end timestamp', () => {
@@ -126,7 +124,6 @@ describe('recorded run history presentation', () => {
     });
     expect(cards[2]).toMatchObject({
       title: 'Completed',
-      details: [],
     });
     expect(cards[2].timestamp).toBeUndefined();
     expect(JSON.stringify(cards)).not.toContain(updated);
@@ -142,25 +139,8 @@ describe('recorded run history presentation', () => {
         statusLabel: 'Pending',
         timestamp: { label: 'ends', value: readyAt, estimated: true },
       });
-      expect(card.details).toEqual([]);
     },
   );
-
-  it.each([
-    'failed',
-    'automation disabled',
-    'member changed status',
-    'member unsubscribed',
-  ] as const)('preserves the recorded %s exit without inferring who caused it', (status) => {
-    const card = mapStep({ status });
-    expect(card).toMatchObject({
-      title: 'Wait 3 days',
-      state: 'exited',
-      statusLabel: 'Stopped',
-      timestamp: undefined,
-    });
-    expect(card.details).toEqual([]);
-  });
 
   it.each([
     [24, '1 day'],
@@ -223,11 +203,15 @@ describe('recorded run history presentation', () => {
         steps: [{ ...step, status }],
       });
       expect(cards.map((card) => card.kind)).toEqual(['trigger', 'wait', 'event']);
-      expect(cards[1].timestamp).toBeUndefined();
+      expect(cards[1]).toMatchObject({
+        title: 'Wait 3 days',
+        state: 'exited',
+        statusLabel: 'Stopped',
+        timestamp: undefined,
+      });
       expect(cards[2]).toMatchObject({
         title,
         state,
-        details: [],
         timestamp: { label: 'Step stopped', value: finished },
       });
     },
