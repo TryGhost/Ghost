@@ -1,3 +1,4 @@
+/* global key */
 import * as Sentry from '@sentry/ember';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import sentryTestkit from 'sentry-testkit/browser';
@@ -45,14 +46,20 @@ describe('Unit: Route: application', function () {
 
     describe('app-wide shortcuts', function () {
         const modifiers = {metaKey: ctrlOrCmd === 'command', ctrlKey: ctrlOrCmd === 'ctrl'};
+        let previousKeyScope;
 
         beforeEach(function () {
+            // keymaster's scope is global, and a token input removed while focused
+            // never blurs back to the 'default' scope the settings shortcut needs
+            previousKeyScope = key.getScope();
+            key.setScope('default');
             sinon.stub(route, 'send');
             route.registerShortcuts();
         });
 
         afterEach(function () {
             route.removeShortcuts();
+            key.setScope(previousKeyScope);
         });
 
         it('handles save and settings while an Ember route shows', async function () {
