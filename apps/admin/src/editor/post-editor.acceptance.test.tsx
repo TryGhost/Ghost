@@ -9,22 +9,28 @@ import {
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
+  fakeEditorPost as fakeSavablePost,
+  fakeEmailPreview,
   fakeNewsletters,
   fakePages,
   fakePosts,
   fakeSnippets,
   post,
   renderAdminApp,
+  settingsResponse,
   staffRole,
   withoutAutosave,
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
+import { EMAIL_SIZE_REFETCH_DEBOUNCE_MS } from '@/editor/use-email-size';
 import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
 const FLAG_ON = { labs: { editorReact: true } };
 const CURRENT_USER_ID = '1';
+
+const OVER_EMAIL_LIMIT = 150 * 1024;
 
 const MOBILEDOC =
   '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"Legacy"]]]]}';
@@ -35,6 +41,7 @@ function fakeEditorChrome() {
   fakeSnippets([]);
   // The header's publish inputs read the newsletter list.
   fakeNewsletters([]);
+  fakeEmailPreview();
   return fakePosts([]);
 }
 
@@ -428,5 +435,118 @@ describe('Post editor', () => {
 
     await expect.poll(currentRoute).toBe('/editor/post');
     await expect.element(editorScreen.titleInput()).toHaveAttribute('placeholder', 'Post title');
+  });
+});
+
+describe('Post editor email size warning', () => {
+  /** Waits past the email size check's debounce, so a check the editor should not make has gone out. */
+  async function editorSettled() {
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await new Promise((resolve) => {
+      setTimeout(resolve, EMAIL_SIZE_REFETCH_DEBOUNCE_MS + 100);
+    });
+  }
+
+  it('flags a post whose email would be clipped, with its size on click', async () => {
+    fakeEditorPost();
+    const previewApi = fakeEmailPreview(OVER_EMAIL_LIMIT);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.emailSizeWarning()).toBeVisible();
+    expect(new URL(previewApi.lastRequest?.url ?? '').search).toBe('');
+
+    await expect
+      .element(editorScreen.emailSizeWarning())
+      .toHaveAccessibleName('Looks like this is a long post: 150kB');
+    await editorScreen.emailSizeWarning().click();
+    await expect.element(editorScreen.emailSizeDetails()).toBeVisible();
+    await expect
+      .element(editorScreen.emailSizeDetails())
+      .toHaveTextContent('Looks like this is a long post');
+    await expect
+      .element(editorScreen.emailSizeDetails())
+      .toHaveTextContent(
+        'Emails may get clipped in the inbox behind a "View entire message" link when they\'re over 100kB.',
+      );
+    await expect.element(editorScreen.emailSizeDetails()).toHaveTextContent("You've used: 150kB");
+  });
+
+  it('leaves a post whose email fits unflagged', async () => {
+    fakeEditorPost();
+    const previewApi = fakeEmailPreview(99 * 1024);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.poll(() => previewApi.requests.length).toBe(1);
+    await editorSettled();
+    await expect(editorScreen.emailSizeWarning()).toHaveCount(0);
+  });
+
+  it.each<[string, Partial<ReturnType<typeof post>>]>([
+    ['a published post', { status: 'published', published_at: '2026-01-01T00:00:00.000Z' }],
+    [
+      'a post that has been emailed',
+      { email: { id: 'email-1', status: 'submitted', email_count: 20, opened_count: 0 } },
+    ],
+    ['an email-only post', { status: 'scheduled', email_only: true }],
+  ])('does not check %s', async (_case, overrides) => {
+    fakeEditorPost(overrides);
+    const previewApi = fakeEmailPreview(OVER_EMAIL_LIMIT);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await editorSettled();
+    await expect(editorScreen.emailSizeWarning()).toHaveCount(0);
+    expect(previewApi.requests).toHaveLength(0);
+  });
+
+  it('does not check a page', async () => {
+    fakeEditorChrome();
+    fakeAdminEndpoint('GET', new RegExp(`^/pages/${POST_ID}/\\?`), {
+      pages: [post({ id: POST_ID, lexical: buildLexicalParagraph('Hello from React') })],
+    });
+    const previewApi = fakeEmailPreview(OVER_EMAIL_LIMIT);
+    await renderAdminApp(`/editor/page/${POST_ID}`, FLAG_ON);
+
+    await editorSettled();
+    await expect(editorScreen.emailSizeWarning()).toHaveCount(0);
+    expect(previewApi.requests).toHaveLength(0);
+  });
+
+  it('does not check a post when newsletters are disabled', async () => {
+    fakeEditorPost();
+    const previewApi = fakeEmailPreview(OVER_EMAIL_LIMIT);
+    await renderAdminApp(`/editor/post/${POST_ID}`, {
+      ...FLAG_ON,
+      boot: {
+        browseSettings: {
+          response: settingsResponse({
+            settings: { editor_default_email_recipients: 'disabled' },
+          }),
+        },
+      },
+    });
+
+    await editorSettled();
+    await expect(editorScreen.emailSizeWarning()).toHaveCount(0);
+    expect(previewApi.requests).toHaveLength(0);
+  });
+
+  it('checks the email again once a new version is saved', async () => {
+    fakeEditorChrome();
+    const saveApi = fakeSavablePost({
+      lexical: buildLexicalParagraph('Hello from React'),
+    });
+    const firstCheck = fakeEmailPreview();
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
+
+    await expect.poll(() => firstCheck.requests.length).toBe(1);
+    const secondCheck = fakeEmailPreview(OVER_EMAIL_LIMIT);
+    await editorScreen.body().click();
+    await userEvent.keyboard('{End} and more');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    await expect.element(editorScreen.emailSizeWarning()).toBeVisible();
+    expect(secondCheck.requests).toHaveLength(1);
+    expect(firstCheck.requests).toHaveLength(1);
   });
 });

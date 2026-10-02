@@ -53,6 +53,8 @@ The newsletters offered are the site's active ones, read from the same full brow
 
 Switching newsletters re-renders the preview against that newsletter, and the test send goes to exactly one address — the current user's, unless it is edited — for the audience currently selected.
 
+When the caller passes the saved post, a banner above the rendered email gives its size once the email is estimated at 100kB or more. The estimate is the editor's, described in [the editor README](../README.md#email-size), so it does not follow the newsletter or audience picked here.
+
 The sender and subject controls share a label column and a local 28px height;
 the subject input keeps its visible outline. The desktop subject field stages edits
 in the session and saves on blur or Enter.
@@ -66,4 +68,4 @@ preparation before displaying the preview or enabling sharing and test sends.
 
 ## Not here yet
 
-Known gaps, listed so they are not mistaken for decisions: there is no over-100kB "may get clipped" warning, an Escape pressed inside the site preview frame does not close the modal, an already-sent post is re-rendered by the preview endpoint rather than showing its stored email, and the sender address does not apply the managed-email override.
+Known gaps, listed so they are not mistaken for decisions: an Escape pressed inside the site preview frame does not close the modal, an already-sent post is re-rendered by the preview endpoint rather than showing its stored email, and the sender address does not apply the managed-email override.

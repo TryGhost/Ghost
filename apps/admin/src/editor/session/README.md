@@ -17,6 +17,12 @@ carried from one new post to the next. Once a create acquires an id the URL is
 replaced from new to edit as a state-driven effect, with the screen keyed on the
 session so the switch does not remount the editor.
 
+The screen keeps a session while navigation stays on its post, counting the id
+a create acquired and ignoring a trailing slash, whichever history entry the
+navigation reaches, including one the router did not create. Any other post, a
+new one included, gets a new session, so two posts opened by URL each get their
+own.
+
 Requests are made without the transport's session-expiry redirect, so an expired
 session is surfaced in place rather than navigating away from unsaved content.
 
@@ -190,8 +196,8 @@ A read is adopted only at the collision token the session holds. Core leaves the
 token alone unless a column of the posts row changes, so such a read can still
 carry another writer's tags, authors or tiers, or fields Core stores beside the
 post: the meta and social fields and the feature image's alt text and caption.
-The session takes the read as its saved copy, and the settings rules below
-decide which settings fields the document adopts from it. A read at any other
+The session takes the read as its saved copy, and the rules below decide which
+settings fields, alt text and caption the document adopts. A read at any other
 token is another writer's version, or the session's own save read before its
 acknowledgement landed; its content is not in the document, so the session keeps
 its token and its saved copy, marks nothing dirty and starts no save. The next
@@ -203,10 +209,11 @@ it. A refused read is offered again
 whenever the engine moves on, so a read of a save that was in flight is adopted
 once that save's acknowledgement has landed and the session holds its token.
 
-Opening the post again before the read that follows its last save has landed
-starts from the cached copy that predates that save. That read then carries a
-newer token than the session opened with and is refused, so the next save
-collides with the writer's own earlier save and shows the conflict banner.
+Each acknowledged save also writes the record the server answered with into the
+screen's query, whole and in the shape a read has, so opening the post again
+before the read that follows the save has landed starts from the saved copy and
+its token rather than from the copy that predates the save. A later version a
+read put there before the answer arrived is kept.
 
 A save writes a title and slug the writer never typed — the request's own
 default title, the slug derived from the title — and the server may normalize
@@ -235,7 +242,10 @@ at the held token carries another value meanwhile: the next save persists the
 undo. Ownership is decided by which fields the writer moved and when, never by
 comparing the live document against a pre-save snapshot, so adopting one refetch
 inside a save window does not stop a later one from being adopted too, and
-re-emitting a value the field already holds does not claim it.
+re-emitting a value the field already holds does not claim it. The feature
+image's alt text and caption are adopted by the same rules, and the feature
+image field shows what was adopted; a caption the writer is in takes it only
+once they leave it, so it never changes under their cursor.
 
 An acknowledgement also retains fields edited after submission that the request
 did not carry. A matching refetch may temporarily make such a field look saved,
@@ -338,6 +348,16 @@ Once the post is on screen, a refetch that fails leaves the editor, the session
 and the unsaved content where they are, and the next save reports a deleted
 post, an expired session or a collision itself.
 
+The read that opens the post also decides whether the writer may edit it, and
+whether a post stored only as mobiledoc must be converted first. An Author or
+Contributor who is not among its authors, or a Contributor on a post that is no
+longer a draft, is returned to the list. A post reopened from a stale cached copy
+shows that copy while its refetch runs, and the refetch decides. Once that read
+has settled, later reads decide neither: a refetch that takes away the writer's
+access, or that brings a version stored only as mobiledoc, leaves the editor and
+the unsaved content where they are, and the next save shows the server's refusal
+or the collision.
+
 What a halted queue looks like is the session's caller's decision, not the
 engine's: `reauth-pending` and `conflict` are states, not UI. The writer gets a
 way back in and the content stays untouched.
@@ -349,8 +369,10 @@ over the editor (`reauth-dialog.tsx`); the content stays on screen behind it and
 nothing navigates. The writer's email is already filled in and only the password
 is asked for; the credentials go to the session endpoint and nowhere else. A site
 that requires a sign-in code turns the dialog into a second step that asks for
-the emailed code. A wrong password or code is named inside the dialog and nothing
-else changes. Once the session is back the held save goes out on its own; a
+the emailed code. That step's Resend emails a fresh code and a toast confirms it;
+Resend then reads Sent and stays disabled for fifteen seconds. A wrong password or
+code, or a resend that fails, is named inside the dialog and nothing else
+changes. Once the session is back the held save goes out on its own; a
 status change it was carrying, such as a publish, is re-confirmed rather than
 sent unasked. Clicking outside the dialog does nothing; Escape or Cancel abandons
 it, which moves the queue to the save-error banner with the content kept, and the
@@ -360,8 +382,9 @@ banner's retry brings the dialog back.
 
 The session publishes one cached view — the engine state, pending-save
 blocking information,
-dirtiness, title, slug, settings and publish time — and republishes it only
-when one of those values changes. Pending content is read on demand after
+dirtiness, title, slug, settings, publish time, and the feature image's alt
+text and caption — and republishes it only when one of those values changes.
+Pending content is read on demand after
 tracker changes, including save errors that make a clean document dirty. The nested settings and publish-time
 references are kept stable across engine events, so body edits need no new React
 snapshot while the rendered values stay the same. That makes the view suitable
@@ -373,7 +396,13 @@ While the post holds unsaved work, every way out of the editor is put to the
 save engine: a link, the browser's Back and Forward buttons, and any other
 change to the URL's hash. The engine finishes or saves what is outstanding and
 answers either that leaving loses nothing, and the navigation goes ahead, or
-that the writer has to confirm it. Until then the URL stays on the editor. A
+that the writer has to confirm it. Until then the URL stays on the editor. The
+writer is asked to confirm instead when the engine fails to answer or has not
+answered within twenty seconds, which is longer than the transport keeps
+retrying a save, so a stalled save cannot pin the URL. The deadline does not run
+out while the writer is signing in again: signing in lets the leave go ahead,
+and cancelling asks. Once the deadline has run out, the next way out asks at
+once until the engine moves on. A
 Back or Forward is undone as it happens and replayed once the writer may leave,
 so they land on the entry it reached. Undoing it puts the editor back directly
 above that entry: a held Back drops the forward history, and a Forward or a hash
@@ -383,6 +412,18 @@ trailing slash is the same screen, not an exit. A clean editor leaves at once, a
 tab close or reload gets the browser's own prompt, and the URL replace after a
 create is not an exit.
 
+Only the first way out is held. Until the writer may leave or chooses to stay, a
+click on another link does nothing and another Back, Forward or hash change is
+undone, so leaving still goes where they first asked. The router's own links are
+the exception when the held exit is one of them: the router keeps only the
+latest, so leaving goes to the last one clicked. When a Back or Forward is held
+and another change lands anywhere but the entry it reached, that entry is no
+longer directly below the editor once the change is undone, so leaving puts its
+URL in place of the editor's entry instead. The undone entries stay in the
+history, so Back after leaving can step through them. A change to the URL that
+keeps the editor's screen, such as dropping a trailing slash, stays in the
+address bar and leaves the held exit in place.
+
 ## What the session reports
 
 Failures never reach the writer as thrown errors; the session reports them. Every
@@ -390,8 +431,9 @@ request that ran and failed is reported once, with the command it ran, the
 error, whether the post already had a server id, the post's persisted status,
 the id, and how long the request took. Queued work a failure dropped is not
 reported on its own. An expired session is reported only when re-authentication
-is abandoned, not when it is retried. A leave the writer has to
-confirm is reported with the reason codes the tracker holds the post dirty for.
+is abandoned, not when it is retried. A leave the engine answers with a
+confirmation is reported with the reason codes the tracker holds the post dirty
+for; one the editor asks about because the engine missed its deadline is not.
 A draft disposed with a title but a slug still derived from the default title is
 reported as an error. A throwing subscriber or slug listener is reported as an
 error, and so is a slug edit the generator rejected. A local copy that storage

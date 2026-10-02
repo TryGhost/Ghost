@@ -7,6 +7,7 @@ import {
 } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { useEmailSize } from '@/editor/use-email-size';
 import { useState } from 'react';
 import {
   publishAlreadySent,
@@ -76,6 +77,28 @@ function RecipientsRowTitle({ state }: { state: PublishOptionsState }) {
   );
 }
 
+function EmailSizeNote({ post }: { post: PublishFlowPost }) {
+  const emailSize = useEmailSize(post);
+
+  if (!emailSize?.overLimit) {
+    return null;
+  }
+
+  return (
+    <Banner className="mb-4" data-testid={publishEmailSizeWarning} variant="warning">
+      <Stack gap="xs">
+        <Text weight="semibold">
+          This email is <span className="text-state-warning">{emailSize.sizeKb}kB</span>
+        </Text>
+        <Text size="sm" tone="secondary">
+          Email newsletters may get clipped in the inbox behind a “View entire message” link when
+          they’re over 100kB.
+        </Text>
+      </Stack>
+    </Banner>
+  );
+}
+
 export function OptionsStep({
   post,
   state,
@@ -131,13 +154,7 @@ export function OptionsStep({
       <Stack gap="none">
         <PublishSetting
           disabled={state.emailUnavailable || publishBlocked}
-          footer={
-            state.willEmail ? (
-              // The size estimate lands with the email-size-warning port; the
-              // slot keeps its place in the layout until then.
-              <div data-testid={publishEmailSizeWarning} hidden />
-            ) : null
-          }
+          footer={state.willEmail ? <EmailSizeNote post={post} /> : null}
           icon={<LucideIcon.Send className="size-4" />}
           open={openSection === 'publishType'}
           testId={publishSettingPublishType}

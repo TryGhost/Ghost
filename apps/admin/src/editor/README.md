@@ -21,6 +21,7 @@ mounts both screens lazily through it and everything else here is internal.
 | `use-save-feedback.tsx`, `save-toast.ts`         | The toast and button progress that report an explicit save, and the pure copy they show                              |
 | `card-config.ts`, `use-post-card-config.ts`      | What Koenig's cards are told about the site and the post they are being edited in                                    |
 | `local-revisions.ts`                             | Browser-local copies of drafts holding unsaved work: how they are stored, trimmed and read back                      |
+| `email-size.ts`, `use-email-size.ts`             | The estimate of how large a post's newsletter would be, and when the editor makes it                                 |
 | `restore/`                                       | The `/restore` screen: lists this browser's local copies and creates a new draft from any of them                    |
 
 Two small modules are shared across all of the above. `request-options.ts`
@@ -148,6 +149,29 @@ always store that: some hold it encoded twice, and some only have mobiledoc.
 second when the list is read, without writing anything back, so a snippet the
 editor cannot convert to any content is left out of the menu.
 
+## Email size
+
+Inboxes clip an email of 100kB or more behind a "View entire message" link, so
+the editor estimates the size of the newsletter a post would be sent as and
+warns once it reaches that size: as an icon beside the word count that gives
+the size when clicked or tapped, in the publish flow's options while it will send an email, and
+above the email preview.
+
+The estimate starts from the email preview endpoint, read without a newsletter
+or audience, and measures its HTML in bytes. Every link between the post content
+markers that starts with `http://`, `https://` or `/` is then counted at the
+length the send rewrites it to for click tracking, the site URL plus 50
+characters; replacement tokens and `#` are left alone. `estimateEmailSize()` is
+that calculation.
+
+Only a saved post that could still go out as a newsletter is checked: not a page,
+not a published post, not one with an email record or marked email-only, and
+not when the site has newsletters turned off in its default recipients. There is
+no role gate. The version the editor opens with is estimated at once, and each
+later saved version about 500ms after it loads; every version is estimated once,
+in a cache entry of its own that the three places share. A failed estimate shows no
+warning.
+
 ## Adding a settings section
 
 1. Add the section's id to `SETTINGS_SECTION_ORDER` in `settings/sections.ts`,
@@ -180,8 +204,11 @@ they follow the conventions in
 [the acceptance tier README](../../test-utils/acceptance/README.md). What is
 specific to the editor lives in `apps/admin/test-utils/acceptance/editor.ts`:
 
-- `fakeEditorChrome()` serves the supporting reads the header and the card
-  configuration make, so a spec never mentions them.
+- `fakeEditorChrome()` serves the supporting reads the header, the card
+  configuration and the email size check make, so a spec never mentions them.
+- `fakeEmailPreview(bytes)` serves every post's email at a given size; a later
+  call replaces the earlier one, which is how a spec changes the size between
+  saves.
 - `fakeEditorPost(overrides, normalize)` serves one post: later reads return what
   earlier saves sent, each save advances the collision token, and the capture it
   returns is what a spec asserts writes against. `normalize` stands in for a
@@ -189,9 +216,10 @@ specific to the editor lives in `apps/admin/test-utils/acceptance/editor.ts`:
 - `submittedPost(capture, index)` reads the fields of a captured save, the most
   recent one by default.
 - `editorReadLanded(queryClient, version)` resolves once a read of `version` at
-  its `updated_at` is in the query cache and the editor has handled it, which is
-  the only sign of a read the editor refuses. `renderAdminApp` resolves with the
-  `queryClient`.
+  its `updated_at` has landed in the query cache and the editor has handled it,
+  which is the only sign of a read the editor refuses. The copy a save writes
+  into the cache does not count while the read after that save is in flight.
+  `renderAdminApp` resolves with the `queryClient`.
 - `fakeUnsplashPhotos()` serves one photo in the shape the picker lays out and
   inserts, and `UNSPLASH_PICKED` is the rendition the picker asks for.
 

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { SessionExpiredError } from '@tryghost/admin-x-framework/errors';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 import {
@@ -8,6 +8,7 @@ import {
   sessionHarness,
   type HarnessHooks,
 } from '@/editor/session/__test-utils__/session-harness';
+import type { EditorRecord } from './projection';
 import { TITLE_MAX, TITLE_TOO_LONG } from './settings-fields';
 
 describe('createEditorSession', () => {
@@ -71,6 +72,53 @@ describe('createEditorSession', () => {
 
     expect(state.updates[0].payload).toMatchObject({ id: 'created-id' });
     expect(state.acquiredIds).toEqual(['created-id']);
+  });
+
+  it('hands its caller the record each acknowledged save was answered with', async () => {
+    const answered: EditorRecord[] = [];
+    const handed: EditorRecord[] = [];
+    const { session } = sessionHarness(
+      { onSaveAcknowledged: (saved) => handed.push(saved) },
+      {
+        acknowledge: (saved) => {
+          answered.push(saved);
+          return saved;
+        },
+        failSave: (saveCount) => saveCount === 3,
+      },
+    );
+
+    session.patchLexical(body('First words'));
+    await session.dispatchExplicit();
+    session.patchLexical(body('More words'));
+    await session.dispatchExplicit();
+    session.patchLexical(body('Refused words'));
+    await session.dispatchExplicit();
+
+    expect(answered).toHaveLength(2);
+    expect(handed).toHaveLength(2);
+    expect(handed[0]).toBe(answered[0]);
+    expect(handed[1]).toBe(answered[1]);
+  });
+
+  it('reports a caller that throws on an acknowledged save, and the create still lands', async () => {
+    const failure = new Error('Could not cache the answer');
+    const onError = vi.fn();
+    const { session, state } = sessionHarness({
+      onError,
+      onSaveAcknowledged: () => {
+        throw failure;
+      },
+    });
+
+    session.patchLexical(body('First words'));
+    expect(await session.dispatchExplicit()).toMatchObject({ kind: 'saved' });
+    session.patchLexical(body('More words'));
+    await session.dispatchExplicit();
+
+    expect(onError).toHaveBeenCalledWith(failure);
+    expect(state.acquiredIds).toEqual(['created-id']);
+    expect(state.updates[0].payload).toMatchObject({ id: 'created-id' });
   });
 
   it('authors the create with the current user and leaves updates alone', async () => {

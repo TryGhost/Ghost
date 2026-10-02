@@ -38,6 +38,8 @@ import {
   editorStatus,
   editorTitleInput,
   editorWordCount,
+  editorEmailSizeDetails,
+  editorEmailSizeWarning,
   facebookImageUnsplashButton,
   featureImageAltLabel,
   featureImageTkIndicator,
@@ -132,6 +134,9 @@ export const editorScreen = {
   /** An item in Koenig's `/` card menu, by its label. */
   cardMenuItem: (label: string) => page.getByRole('menuitem', { name: label }),
   wordCount: () => page.getByTestId(editorWordCount),
+  /** The footer's clipping flag, and the details hovering it reveals. */
+  emailSizeWarning: () => page.getByTestId(editorEmailSizeWarning),
+  emailSizeDetails: () => page.getByTestId(editorEmailSizeDetails),
   helpLink: () => page.getByRole('link', { name: editorHelpLink }),
   /** The document's own scroll surface, independent of the editor shell. */
   scrollPane: (): HTMLElement => {
@@ -153,6 +158,13 @@ export const editorScreen = {
   reauthSignIn: () => page.getByTestId(editorReauthDialog).getByRole('button', { name: 'Sign in' }),
   reauthCode: () => page.getByTestId(editorReauthDialog).getByLabelText('Verification code'),
   reauthVerify: () => page.getByTestId(editorReauthDialog).getByRole('button', { name: 'Verify' }),
+  /** The code step's Resend by the label it reads, which is Sent while it holds. */
+  reauthResend: (label: 'Resend' | 'Sent' = 'Resend') =>
+    page.getByTestId(editorReauthDialog).getByRole('button', { name: label, exact: true }),
+  codeSentToast: () =>
+    page
+      .getByRole('listitem')
+      .filter({ hasText: 'A new verification code has been sent to your email.' }),
   reauthError: () => page.getByTestId(editorReauthDialog).getByRole('alert'),
   cancelReauth: () => page.getByTestId(editorReauthDialog).getByRole('button', { name: 'Cancel' }),
   conflictBanner: () => page.getByTestId(editorConflictBanner),

@@ -7,6 +7,7 @@ export {
   fakeEditorChrome,
   fakeEditorPost,
   fakePintura,
+  fakeEmailPreview,
   fakeUnsplashPhotos,
   submittedPost,
   withFastAutosave,
