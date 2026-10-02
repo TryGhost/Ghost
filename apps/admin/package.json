@@ -178,6 +178,7 @@
             "projects": [
               "@tryghost/admin-x-framework",
               "@tryghost/checkout",
+              "@tryghost/kg-converters",
               "@tryghost/metafield-types",
               "@tryghost/shade"
             ],

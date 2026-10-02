@@ -53,7 +53,11 @@ function RevisionBody({
   }, []);
 
   return (
-    <div className="koenig-react-editor koenig-lexical" data-testid={postHistoryPreviewBody}>
+    <div
+      // Koenig cards select on their own mousedown, which neither lock above stops.
+      className="koenig-react-editor koenig-lexical [&_[data-kg-card]]:pointer-events-none"
+      data-testid={postHistoryPreviewBody}
+    >
       <KoenigComposer
         cardConfig={cardConfig}
         darkMode={darkMode}

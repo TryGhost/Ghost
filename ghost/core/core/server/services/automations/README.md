@@ -123,7 +123,7 @@ history. When continuing with a cursor and no `date_to`, the first page's end da
 is retained even across local midnight. An explicit `date_to` must still match
 the cursor's end date.
 Entry-date filters select runs before classification, keeping the list and summary
-counts on the same cohort. There is no member search in this slice. An empty history or no matches
+counts on the same cohort. An empty history or no matches
 returns `automation_runs: []`. It requires automation read permission, returns 404
 for unknown automations, and uses the same Tinybird availability checks as summaries.
 
@@ -152,6 +152,42 @@ Empty-state messages appear only in the list: "No entries yet" for all time,
 status filter. Empty histories and periods keep the zero chart visible; status
 filters do not change it. A failed list request shows its own retry action without
 replacing a successful chart or status counts.
+
+## Member search
+
+The run list accepts `search`, matching a literal
+substring of a current member name or email. Outer whitespace is trimmed; a blank
+value uses ordinary browsing. `%`, `_`, and the escape character are literal,
+not wildcards. Matching follows MySQL's member-column collation. There is no
+minimum length; input is limited to 4,096 UTF-8 bytes before trimming.
+
+Deleted members and missing Core runs do not match. Repeated entries remain
+separate runs. Historical email addresses are never searched or substituted.
+Member details stay in MySQL; only run IDs are sent to Tinybird in POST bodies.
+
+Member search spans all time, regardless of the selected entry-date range.
+It preserves ordering on `runs/` and searches all statuses; date/status options apply only
+to ordinary browsing. Search does not change performance statistics.
+Its pagination metadata adds `state`:
+
+- `more`: another matching run was found after this page.
+- `scanning`: the request reached its work budget; continue even if this page is empty.
+- `exhausted`: the search finished and `next_cursor` is null.
+
+Search uses the ordinary list cursor format with additional fields binding the normalized
+query, site, automation, and direction. Start a new search when those
+change. Reads are live, so later membership/status changes can affect subsequent
+pages; cursors do not create a snapshot.
+
+MySQL probes for up to 2,001 matching run IDs. Up to 2,000 matches use a complete
+ID set; larger searches scan Tinybird candidates in batches of at most 5,000,
+then match them in MySQL. Each request returns at most 50 runs, scans at most
+four batches, and checks a 1.5-second soft budget between batches. Database and
+Tinybird queries also have execution/request timeouts. Failures remain errors,
+not empty results or partial success. A conclusively empty MySQL match set
+returns immediately without querying the search pipes. Invalid candidate histories
+only fail the list request after their current member matches the search; they
+follow the same cursor ordering as other candidates.
 
 ## Availability
 
