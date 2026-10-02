@@ -6,6 +6,7 @@ import {
   getConfiguredFeatures,
 } from '../../../../../core/server/services/adapter-manager/utils';
 import { bindAll as bindUrlHelpers } from '@tryghost/config-url-helpers';
+import { attachValidatedConfig } from '../../../../../core/shared/config/validated';
 import { bindAll as bindHelpers } from '../../../../../core/shared/config/helpers';
 import type { ConfigInstance } from '../../../../../core/shared/config/loader';
 
@@ -19,6 +20,10 @@ describe('Adapter Manager: utils', function () {
 
       bindUrlHelpers(nconf);
       bindHelpers(nconf);
+      // the loader seeds these and then attaches the validated, frozen view
+      nconf.set('url', 'http://localhost:2368');
+      nconf.set('env', 'testing');
+      attachValidatedConfig(nconf);
 
       return nconf;
     }
