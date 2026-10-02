@@ -209,7 +209,10 @@ export type AutomationsRepository = {
   getRunMembers(
     automationId: string,
     runIds: string[],
+    search?: string,
   ): Promise<Map<string, AutomationRunMember | null>>;
+  // Null requests candidate scanning; an empty array means no matches.
+  probeMemberSearch(automationId: string, query: string): Promise<string[] | null>;
   getAutomationActionLinks(
     automationId: string,
     actionId: string,

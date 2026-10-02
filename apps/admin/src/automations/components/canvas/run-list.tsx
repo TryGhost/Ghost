@@ -108,14 +108,47 @@ const RunRow = forwardRef<HTMLTableRowElement, { run: AutomationRun; 'data-index
 
 export const RunList: React.FC<{
   automationId: string;
+  search?: string;
+  enabled?: boolean;
+  updating?: boolean;
   queryScope: string;
   dateRange: PerformanceDateRange;
   status: AutomationRunStatusFilter | null;
   direction: RunSortDirection;
   onDirectionChange: (direction: RunSortDirection) => void;
-}> = ({ automationId, queryScope, status, dateRange, direction, onDirectionChange }) => {
-  const { runs, isLoading, isError, retry, canLoadMore, isLoadingMore, isNextPageError, loadMore } =
-    useAutomationRuns(automationId, status, direction, queryScope, dateRange);
+}> = ({
+  automationId,
+  queryScope,
+  status,
+  dateRange,
+  direction,
+  onDirectionChange,
+  search = '',
+  enabled = true,
+  updating = false,
+}) => {
+  const {
+    runs,
+    isLoading,
+    isError,
+    retry,
+    canLoadMore,
+    isLoadingMore,
+    isNextPageError,
+    loadMore,
+    scanning,
+    paused,
+    continueSearch,
+  } = useAutomationRuns(
+    automationId,
+    status,
+    direction,
+    queryScope,
+    dateRange,
+    search,
+    enabled,
+    updating,
+  );
   const [showLoading, setShowLoading] = useState(false);
   useEffect(() => {
     if (!isLoading) {
@@ -127,7 +160,7 @@ export const RunList: React.FC<{
   }, [isLoading]);
   const loadingVisible = isLoading && showLoading;
   let emptyMessage = 'No entries yet';
-  if (status) {
+  if (search || status) {
     emptyMessage = 'No matching entries';
   } else if (dateRange.value !== 'all') {
     emptyMessage = 'No entries in this period';
@@ -228,10 +261,22 @@ export const RunList: React.FC<{
             Loading more entries
           </Text>
         )}
-        {!isLoading && !isError && runs?.length === 0 && (
+        {!isLoading && !isError && !scanning && !isNextPageError && runs?.length === 0 && (
           <Text className="px-4 py-6 text-center" role="status" size="sm" tone="secondary">
             {emptyMessage}
           </Text>
+        )}
+        {scanning && !isError && !isNextPageError && !updating && (
+          <Stack className="px-4 py-3" gap="sm">
+            <Text role="status" size="sm" tone="secondary">
+              {paused ? 'Search paused. Continue to find more entries' : 'Searching more entries…'}
+            </Text>
+            {paused && (
+              <Button className="self-start" size="sm" variant="outline" onClick={continueSearch}>
+                Continue search
+              </Button>
+            )}
+          </Stack>
         )}
         {isError && (
           <Stack className="px-4 py-6" gap="sm" role="alert">

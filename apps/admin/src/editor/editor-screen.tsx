@@ -58,7 +58,6 @@ import { useEditorLeaveGuard } from './session/use-leave-guard';
 import { useEditorSession, useEditorSessionKey } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
-import { useSaveShortcut } from './use-editor-shortcuts';
 import type { EditorRecord } from './session/projection';
 
 function EditorLoading() {
@@ -271,8 +270,6 @@ function EditorContent({
       }),
     [cardConfig, liveShowTitleAndFeatureImage, liveVisibility],
   );
-
-  useSaveShortcut(session.dispatchExplicit);
 
   const settingsToggle = (
     <PageHeader.Action
