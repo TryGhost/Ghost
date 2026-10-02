@@ -58,13 +58,27 @@ function toEpochMilliseconds(value) {
   }
 
   const str = String(value);
-  let date = DateTime.fromSQL(str, { zone: 'utc' });
+  const sqlDate = DateTime.fromSQL(str, { zone: 'utc' });
 
-  if (!date.isValid) {
-    date = DateTime.fromISO(str, { zone: 'utc' });
+  if (sqlDate.isValid) {
+    return sqlDate.toMillis();
   }
 
-  return date.isValid ? date.toMillis() : NaN;
+  const isoDate = DateTime.fromISO(str, { zone: 'utc' });
+
+  if (isoDate.isValid) {
+    return isoDate.toMillis();
+  }
+
+  // Other formats (e.g. `2018/04/12 20:50:35` or RFC 2822 from imports) went
+  // through moment's `new Date()` fallback, so keep accepting them the same
+  // way. A recognised SQL/ISO date that's out of range (`2025-02-30`) stays
+  // invalid, as it was with moment, rather than letting Date roll it over.
+  if (sqlDate.invalidReason === 'unparsable' && isoDate.invalidReason === 'unparsable') {
+    return Date.parse(str);
+  }
+
+  return NaN;
 }
 
 /**

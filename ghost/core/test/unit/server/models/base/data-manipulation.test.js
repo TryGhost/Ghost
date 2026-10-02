@@ -115,6 +115,15 @@ describe('Data Manipulation', function () {
       assert.equal(fixedAttrs.created_at.getTime(), 1740046561000);
     });
 
+    it('falls back to Date parsing for other formats, as moment did', function () {
+      const fixedAttrs = PostModel.prototype.fixDatesWhenFetch({
+        created_at: 'Thu, 20 Feb 2025 10:16:01 GMT',
+        updated_at: '2025/02/20 10:16:01',
+      });
+      assert.equal(fixedAttrs.created_at.getTime(), 1740046561000);
+      assert.equal(fixedAttrs.updated_at.getTime(), new Date('2025/02/20 10:16:01').getTime());
+    });
+
     it('fixes impossible string dates', function () {
       const fixedAttrs = PostModel.prototype.fixDatesWhenFetch({
         created_at: '2025-02-30 10:00:00',
@@ -194,6 +203,10 @@ describe('Data Manipulation', function () {
 
     it('rounds dates before 1970 down to the whole second', function () {
       assert.equal(save(new Date(-1500)), '1969-12-31 23:59:58');
+    });
+
+    it('falls back to Date parsing for other formats, as moment did', function () {
+      assert.equal(save('Thu, 20 Feb 2025 10:16:01 GMT'), '2025-02-20 10:16:01');
     });
 
     it("keeps moment's output for invalid dates", function () {
