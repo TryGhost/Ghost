@@ -1,6 +1,42 @@
 const moment = require('moment');
+const { DateTime } = require('luxon');
 
 const schema = require('../../../data/schema');
+
+/**
+ * @param {number} ms - epoch milliseconds
+ * @returns {number} ms rounded down to the whole second
+ */
+function truncateToSeconds(ms) {
+  return Math.floor(ms / 1000) * 1000;
+}
+
+/**
+ * Stored dates are UTC, so strings are parsed in UTC regardless of the
+ * process timezone - `new Date(string)` would read `2018-04-12 20:50:35` as
+ * local time.
+ *
+ * @param {Date|number|string} value - a date as returned by the database driver
+ * @returns {number} epoch milliseconds, or NaN when the value is not a valid date
+ */
+function toEpochMilliseconds(value) {
+  if (value instanceof Date) {
+    return value.getTime();
+  }
+
+  if (typeof value === 'number') {
+    return value;
+  }
+
+  const str = String(value);
+  let date = DateTime.fromSQL(str, { zone: 'utc' });
+
+  if (!date.isValid) {
+    date = DateTime.fromISO(str, { zone: 'utc' });
+  }
+
+  return date.isValid ? date.toMillis() : NaN;
+}
 
 /**
  * @param {import('bookshelf')} Bookshelf
@@ -44,9 +80,13 @@ module.exports = function (Bookshelf) {
      * all supported databases (sqlite, mysql) return different values
      *
      * sqlite:
-     *   - knex returns a UTC String (2018-04-12 20:50:35)
+     *   - knex returns a UTC String (2018-04-12 20:50:35), or epoch
+     *     milliseconds for rows written with a raw Date binding
      * mysql:
      *   - knex wraps the UTC value into a local JS Date
+     *
+     * Runs for every date column of every fetched row, so it avoids building
+     * a date-library object for the Date and number values mysql hands back.
      *
      * @param {object} attrs - attributes to convert
      * @returns {object} attrs - converted attributes
@@ -56,15 +96,11 @@ module.exports = function (Bookshelf) {
 
       for (const key in attrs) {
         if (attrs[key] && tableDef?.[key]?.type === 'dateTime') {
-          const dateMoment = moment(attrs[key]);
+          const ms = toEpochMilliseconds(attrs[key]);
 
           // CASE: You are somehow able to store e.g. 0000-00-00 00:00:00
           // Protect the code base and return the current date time.
-          if (dateMoment.isValid()) {
-            attrs[key] = dateMoment.startOf('seconds').toDate();
-          } else {
-            attrs[key] = moment().startOf('seconds').toDate();
-          }
+          attrs[key] = new Date(truncateToSeconds(Number.isNaN(ms) ? Date.now() : ms));
         }
       }
 

@@ -59,6 +59,69 @@ describe('Data Manipulation', function () {
       assert.equal(fixedAttrs.created_at.getTime(), 1740046561000);
     });
 
+    it('sets milliseconds to 0 on date objects', function () {
+      const fixedAttrs = PostModel.prototype.fixDatesWhenFetch({
+        created_at: new Date('2025-02-20T10:16:01.999Z'),
+      });
+      assert.equal(fixedAttrs.created_at.getTime(), 1740046561000);
+    });
+
+    it('rounds dates before 1970 down to the whole second', function () {
+      const fixedAttrs = PostModel.prototype.fixDatesWhenFetch({
+        created_at: new Date(-1500),
+      });
+      assert.equal(fixedAttrs.created_at.getTime(), -2000);
+    });
+
+    it('processes epoch milliseconds', function () {
+      const fixedAttrs = PostModel.prototype.fixDatesWhenFetch({
+        created_at: 1740046561123,
+      });
+      assert.ok(fixedAttrs.created_at instanceof Date, 'created_at should be a date');
+      assert.equal(fixedAttrs.created_at.getTime(), 1740046561000);
+    });
+
+    it('parses sqlite date strings as UTC regardless of the process timezone', function () {
+      const originalTZ = process.env.TZ;
+      process.env.TZ = 'America/New_York';
+
+      try {
+        const fixedAttrs = PostModel.prototype.fixDatesWhenFetch({
+          created_at: '2025-02-20 10:16:01',
+          updated_at: '2025-02-20 10:16:01.123',
+        });
+        assert.equal(fixedAttrs.created_at.getTime(), 1740046561000);
+        assert.equal(fixedAttrs.updated_at.getTime(), 1740046561000);
+      } finally {
+        if (originalTZ === undefined) {
+          delete process.env.TZ;
+        } else {
+          process.env.TZ = originalTZ;
+        }
+      }
+    });
+
+    it('processes date-only strings as UTC midnight', function () {
+      const fixedAttrs = PostModel.prototype.fixDatesWhenFetch({
+        created_at: '2025-02-20',
+      });
+      assert.equal(fixedAttrs.created_at.getTime(), Date.UTC(2025, 1, 20));
+    });
+
+    it('processes ISO strings with an offset', function () {
+      const fixedAttrs = PostModel.prototype.fixDatesWhenFetch({
+        created_at: '2025-02-20T12:16:01+02:00',
+      });
+      assert.equal(fixedAttrs.created_at.getTime(), 1740046561000);
+    });
+
+    it('fixes impossible string dates', function () {
+      const fixedAttrs = PostModel.prototype.fixDatesWhenFetch({
+        created_at: '2025-02-30 10:00:00',
+      });
+      assert.equal(fixedAttrs.created_at.getTime(), now.getTime());
+    });
+
     it('does not touch attributes that are not known dates', function () {
       const attrs = {
         launched_into_space_at: '2025-02-20T10:16:01.123Z',
