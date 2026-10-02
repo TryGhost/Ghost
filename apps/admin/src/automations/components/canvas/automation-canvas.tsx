@@ -785,6 +785,13 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     setSelectedStep(null);
   }, []);
 
+  const handleCloseEmailPerformance = useCallback(() => {
+    editingCanvasRef.current
+      ?.querySelector<HTMLButtonElement>('[aria-label="Hide email analytics"]')
+      ?.focus({ preventScroll: true });
+    clearDetail();
+  }, [clearDetail]);
+
   useEffect(() => {
     if (
       !automationRunAnalyticsEnabled ||
@@ -799,7 +806,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
         if (isPerformanceOpen) {
           setIsPerformanceOpen(false);
         } else {
-          clearDetail();
+          handleCloseEmailPerformance();
         }
       }
     };
@@ -808,7 +815,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [
     automationRunAnalyticsEnabled,
-    clearDetail,
+    handleCloseEmailPerformance,
     deleteConfirmationAction,
     emailModalAction,
     isPerformanceOpen,
@@ -997,7 +1004,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
                     )
                   : undefined
               }
-              onClose={clearDetail}
+              onClose={handleCloseEmailPerformance}
             />
           )
         ) : (

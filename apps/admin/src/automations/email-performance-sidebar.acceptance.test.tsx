@@ -89,6 +89,23 @@ const show = (name = 'First') =>
 const linksPath = (name = 'First') => `/automations/first/actions/${name}/links/`;
 
 describe('Email performance sidebar', () => {
+  it('returns focus to the stats button after closing with the keyboard', async () => {
+    prepare([email('First')]);
+    fakeAdminEndpoint('GET', linksPath(), { automation_action_links: [] });
+    await boot();
+    for (const key of ['{Enter}', '{Escape}']) {
+      await show();
+      const closeButton = panel().getByRole('button', { name: 'Close email performance' });
+      closeButton.element().focus();
+      await expect.element(closeButton).toHaveFocus();
+      await userEvent.keyboard(key);
+      await expect.element(panel()).not.toBeInTheDocument();
+      await expect
+        .element(card().getByRole('button', { name: 'View email analytics' }))
+        .toHaveFocus();
+    }
+  });
+
   it('unmounts email performance while viewing run history', async () => {
     prepare([email('First')]);
     fakeAdminEndpoint('GET', linksPath(), { automation_action_links: [] });
