@@ -12,7 +12,12 @@ import {
   useEmberListReturnSync,
   useEmberNotificationsHost,
 } from './ember-bridge';
-import { AdminAlerts, createAlertsStore, useServerNotifications } from './alerts';
+import {
+  AdminAlerts,
+  createAlertsStore,
+  useServerNotifications,
+  useUpgradeStatusAlerts,
+} from './alerts';
 import { DocsBotWidgetHost } from './docsbot-widget-host';
 import { ClientExtensionScript } from './client-extension-script';
 import { usePreloadEditor } from './use-preload-editor';
@@ -42,6 +47,7 @@ function App() {
   useSyncEmberRoutePattern();
   useEmberNotificationsHost(alerts);
   useServerNotifications(alerts);
+  useUpgradeStatusAlerts(alerts);
   useAuthNotice(Boolean(currentUser));
   usePreloadEditor(Boolean(currentUser));
 
