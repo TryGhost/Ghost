@@ -62,14 +62,19 @@ post whose status line offers the retry. After a retry, or a publish that
 emails, a published post's status line reads "Published and sending to N
 members" while the email is on its way and "Published and sent to N members"
 once the flow's email confirmation finds it submitted; an email-only send reads
-"Sent to N members" throughout.
+"Sent to N members" throughout. With the `improveSendingUI` flag on, a publish
+does not wait for that confirmation, so the status line shows the send as the
+save left it.
 
 After successful completion, the editor follows the publish flow's celebration
 handoff to the destination screen. Pages return to `/pages`; scheduled posts
 and posts without email return to `/posts`. Immediately published posts with
 email, including email-only sends and posts that were emailed previously, open
 `/posts/analytics/:id`. Failed saves and failed sends keep the flow open so the
-writer can retry.
+writer can retry. With the flag on, a publish that emails opens analytics as
+soon as it saves, and a send that fails after that is reported there rather
+than in the flow; retrying a failed send from the status line still waits for
+the email.
 
 ## Leaving the editor
 

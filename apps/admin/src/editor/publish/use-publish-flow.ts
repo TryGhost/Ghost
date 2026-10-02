@@ -42,6 +42,8 @@ export interface PublishFlowOptions {
   now?: () => Date;
   dispatch: PublishDispatcher;
   showCompletion?: boolean;
+  /** The `improveSendingUI` lab: a publish that emails completes without confirming the send. */
+  improveSendingUI?: boolean;
   onBeforePublish?: () => Promise<void>;
   onCompleted?: (info: { postId: string; isScheduled: boolean; hasEmail: boolean }) => void;
 }
@@ -108,6 +110,7 @@ export function usePublishFlow({
   now,
   dispatch,
   showCompletion = true,
+  improveSendingUI = false,
   onBeforePublish,
   onCompleted,
 }: PublishFlowOptions): PublishFlow {
@@ -467,7 +470,7 @@ export function usePublishFlow({
 
     // Stays 'running' across the email poll: the publish is not finished until
     // the email is submitted, and the button must not invite a second dispatch.
-    if (willEmailImmediately) {
+    if (willEmailImmediately && !improveSendingUI) {
       let outcome: EmailConfirmationOutcome;
 
       try {
@@ -496,6 +499,7 @@ export function usePublishFlow({
     complete,
     confirmation,
     dispatch,
+    improveSendingUI,
     machine,
     onBeforePublish,
     post.id,
