@@ -18,28 +18,24 @@ export type ValidatedRequest<Schemas extends MethodSchemas> = {
 };
 
 /** The callback frame once the declared request schemas have been parsed. */
-export type ValidatedFrame<Schemas extends MethodSchemas> = Frame & {
+export type ValidatedFrame<Schemas extends MethodSchemas> = Frame<{
+  data: Dictionary;
+  options: Dictionary;
+}> & {
   readonly validated: ValidatedRequest<Schemas>;
 };
 
-type MethodCallback<Schemas extends MethodSchemas> = (frame: ValidatedFrame<Schemas>) => unknown;
-
-type PermissionConfiguration = Extract<ControllerMethod['permissions'], Dictionary>;
+type SchemaMethodBase<Schemas extends MethodSchemas> = ControllerMethod<ValidatedFrame<Schemas>>;
 
 /** Definition contract for a method with schema-derived callback types. */
 export type SchemaControllerMethod<Schemas extends MethodSchemas> = Omit<
-  ControllerMethod,
-  'generateCacheKeyData' | 'permissions' | 'query' | 'validation'
-> & {
-  schema: Schemas;
-  generateCacheKeyData?: MethodCallback<Schemas>;
-  permissions:
-    | boolean
-    | (Omit<PermissionConfiguration, 'before'> & { before?: MethodCallback<Schemas> })
-    | MethodCallback<Schemas>;
-  query: MethodCallback<Schemas>;
-  validation?: MethodCallback<Schemas>;
-};
+  SchemaMethodBase<Schemas>,
+  'permissions' | 'query' | 'validation'
+> &
+  Required<Pick<SchemaMethodBase<Schemas>, 'permissions' | 'query'>> & {
+    schema: Schemas;
+    validation?: Exclude<SchemaMethodBase<Schemas>['validation'], Dictionary>;
+  };
 
 /** Extracts the schema-derived frame type for a separately declared callback. */
 export type InferMethodFrame<Method extends { schema: MethodSchemas }> = ValidatedFrame<

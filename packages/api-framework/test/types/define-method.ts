@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { defineMethod, Frame, pipeline } from '../../src/index.ts';
 import type {
   Controller,
+  ControllerMethod,
   InferMethodFrame,
   SchemaControllerMethod,
   ValidatedFrame,
@@ -40,6 +41,7 @@ export function optionsAndBody() {
     async query(frame) {
       expectTypeOf(frame).toExtend<Frame>();
       expectTypeOf(frame.data).toEqualTypeOf<Record<string, unknown>>();
+      expectTypeOf(frame.data.id).toEqualTypeOf<unknown>();
       expectTypeOf(frame.options.id).toEqualTypeOf<unknown>();
       expectTypeOf(frame.validated.body.widgets).toEqualTypeOf<
         Array<{ title: string; enabled: boolean }>
@@ -47,6 +49,8 @@ export function optionsAndBody() {
 
       // @ts-expect-error Only declared schema properties are available.
       void frame.validated.options.missing;
+      // @ts-expect-error The legacy id convenience type does not validate schema-method input.
+      frame.options.id.toUpperCase();
       // @ts-expect-error Callback values use the transformed output type.
       const page: string = frame.validated.options.page;
       void page;
@@ -68,8 +72,14 @@ export function optionsAndBody() {
   }
   expectTypeOf(helper).returns.toEqualTypeOf<string>();
 
+  const controller = {
+    docName: 'widgets',
+    edit: method,
+  } satisfies Controller<{ edit: InferMethodFrame<typeof method> }>;
+  expectTypeOf(controller.edit.query).parameter(0).toEqualTypeOf<InferMethodFrame<typeof method>>();
+
   // @ts-expect-error The legacy pipeline does not populate validated request channels.
-  pipeline({ docName: 'widgets', edit: method }, {});
+  pipeline(controller, {});
   // @ts-expect-error Schema callbacks require more than an unvalidated legacy frame.
   helper(new Frame());
 }
@@ -124,6 +134,35 @@ export function optionalSchema(
 ) {
   expectTypeOf(frame.validated.options).toEqualTypeOf<{ id: string } | undefined>();
   expectTypeOf(frame.validated.body).toEqualTypeOf<{ title: string }>();
+}
+
+export function sharedCallbackTypes() {
+  type Schemas = { options: z.ZodObject<{ id: z.ZodString }> };
+  type SharedMethod = ControllerMethod<ValidatedFrame<Schemas>>;
+  type SchemaMethod = SchemaControllerMethod<Schemas>;
+
+  expectTypeOf<SchemaMethod['query']>().toEqualTypeOf<NonNullable<SharedMethod['query']>>();
+  expectTypeOf<SchemaMethod['permissions']>().toEqualTypeOf<
+    NonNullable<SharedMethod['permissions']>
+  >();
+  expectTypeOf<SchemaMethod['generateCacheKeyData']>().toEqualTypeOf<
+    SharedMethod['generateCacheKeyData']
+  >();
+  expectTypeOf<SchemaMethod['validation']>().toEqualTypeOf<
+    Exclude<SharedMethod['validation'], Record<string, unknown>>
+  >();
+}
+
+export function transformedId() {
+  defineMethod({
+    schema: { options: z.object({ id: z.string().transform(Number) }) },
+    permissions: true,
+    query(frame) {
+      expectTypeOf(frame.validated.options.id).toEqualTypeOf<number>();
+      expectTypeOf(frame.options.id).toEqualTypeOf<unknown>();
+      return frame.validated.options.id;
+    },
+  });
 }
 
 export function unionSchema() {
@@ -196,4 +235,20 @@ export function legacyControllers() {
   } satisfies Controller;
 
   expectTypeOf(pipeline(controller, {}).read).returns.toEqualTypeOf<Promise<unknown>>();
+
+  type ReadFrame = Frame<{ data: { id: string }; options: { include?: string } }>;
+  const typedController = {
+    read: {
+      data: ['id'],
+      permissions: true,
+      query(frame: ReadFrame) {
+        expectTypeOf(frame.data.id).toEqualTypeOf<string>();
+        expectTypeOf(frame.options.include).toEqualTypeOf<string | undefined>();
+        return frame.data.id;
+      },
+    },
+  } satisfies Controller<{ read: ReadFrame }>;
+  expectTypeOf(typedController.read.query).parameter(0).toEqualTypeOf<ReadFrame>();
+  expectTypeOf<Frame['data']['id']>().toEqualTypeOf<string | undefined>();
+  expectTypeOf<Frame['options']['id']>().toEqualTypeOf<string | undefined>();
 }
