@@ -58,6 +58,25 @@ const clearSubject = async (enabled: boolean) => {
 };
 
 describe('Automation action validation feedback', () => {
+  it('dismisses a card warning when clicking another canvas card', async () => {
+    serve();
+    await boot(true);
+    await clearSubject(true);
+    await page.getByRole('button', { name: 'Why this step needs attention' }).click();
+    const warning = page.getByText('Add a subject line before this email can be sent.', {
+      exact: true,
+    });
+    await expect.element(warning).toBeVisible();
+    await warning.click();
+    await expect.element(warning).toBeVisible();
+    await page.getByRole('heading', { name: 'Member signs up', exact: true }).click();
+    await expect.element(warning).not.toBeInTheDocument();
+    await page.getByRole('button', { name: 'Why this step needs attention' }).click();
+    await page.getByRole('textbox', { name: 'Subject line' }).click();
+    await expect.element(warning).not.toBeInTheDocument();
+    await expect.element(page.getByRole('textbox', { name: 'Subject line' })).toHaveFocus();
+  });
+
   for (const enabled of [false, true]) {
     for (const status of ['inactive', 'active'] as const) {
       it(
