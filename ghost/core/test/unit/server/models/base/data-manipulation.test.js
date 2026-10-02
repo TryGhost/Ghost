@@ -135,6 +135,79 @@ describe('Data Manipulation', function () {
     });
   });
 
+  describe('fixDatesWhenSave', function () {
+    const save = (value) => PostModel.prototype.fixDatesWhenSave({ created_at: value }).created_at;
+
+    it('formats date objects as UTC database strings, dropping milliseconds', function () {
+      assert.equal(save(new Date('2025-02-20T10:16:01.999Z')), '2025-02-20 10:16:01');
+    });
+
+    it('formats regardless of the process timezone', function () {
+      const originalTZ = process.env.TZ;
+      process.env.TZ = 'America/New_York';
+
+      try {
+        assert.equal(save(new Date('2025-02-20T01:16:01Z')), '2025-02-20 01:16:01');
+        assert.equal(save('2025-02-20 01:16:01'), '2025-02-20 01:16:01');
+      } finally {
+        if (originalTZ === undefined) {
+          delete process.env.TZ;
+        } else {
+          process.env.TZ = originalTZ;
+        }
+      }
+    });
+
+    it('formats epoch milliseconds', function () {
+      assert.equal(save(1740046561123), '2025-02-20 10:16:01');
+    });
+
+    it('formats ISO strings, including offsets', function () {
+      assert.equal(save('2025-02-20T10:16:01.000Z'), '2025-02-20 10:16:01');
+      assert.equal(save('2025-02-20T12:16:01+02:00'), '2025-02-20 10:16:01');
+      assert.equal(save('2025-02-20T10:16:01.000+00:00'), '2025-02-20 10:16:01');
+    });
+
+    it('formats date-only strings as UTC midnight', function () {
+      assert.equal(save('2025-02-20'), '2025-02-20 00:00:00');
+    });
+
+    it('formats moment and luxon objects', function () {
+      const moment = require('moment');
+      const { DateTime } = require('luxon');
+
+      assert.equal(save(moment.utc('2025-02-20T10:16:01Z')), '2025-02-20 10:16:01');
+      assert.equal(save(DateTime.fromISO('2025-02-20T10:16:01Z')), '2025-02-20 10:16:01');
+    });
+
+    it('pads years outside 1000-9999 the way moment did', function () {
+      const date = (year) => {
+        const d = new Date(Date.UTC(2000, 5, 15, 1, 2, 3));
+        d.setUTCFullYear(year);
+        return d;
+      };
+
+      assert.equal(save(date(999)), '0999-06-15 01:02:03');
+      assert.equal(save(date(12000)), '12000-06-15 01:02:03');
+      assert.equal(save(date(-50)), '-0050-06-15 01:02:03');
+    });
+
+    it('rounds dates before 1970 down to the whole second', function () {
+      assert.equal(save(new Date(-1500)), '1969-12-31 23:59:58');
+    });
+
+    it("keeps moment's output for invalid dates", function () {
+      assert.equal(save(new Date('x')), 'Invalid date');
+      assert.equal(save('0000-00-00 00:00:00'), 'Invalid date');
+      assert.equal(save('2025-02-30 10:00:00'), 'Invalid date');
+    });
+
+    it('does not touch attributes that are not known dates', function () {
+      const attrs = PostModel.prototype.fixDatesWhenSave({ launched_into_space_at: new Date(0) });
+      assert.ok(attrs.launched_into_space_at instanceof Date);
+    });
+  });
+
   describe('fixBools', function () {
     it('coerces non-nullable boolean fields to real booleans', function () {
       const fixedAttrs = PostModel.prototype.fixBools({
