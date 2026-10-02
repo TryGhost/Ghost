@@ -67,13 +67,8 @@ describe('Relation parent attributes', function () {
   // Relation setup reads key columns from the unformatted attributes, which is
   // only correct while no model's format() renames or changes them.
   describe('format() leaves relation key columns alone', function () {
-    const isKeyColumn = (column, table) => {
-      if (column === 'id' || column.endsWith('_id')) {
-        return true;
-      }
-      // morph keys pair a *_type column with a *_id column
-      return column.endsWith('_type') && `${column.slice(0, -'_type'.length)}_id` in table;
-    };
+    const RELATION_CALL =
+      /this\.(belongsTo|belongsToMany|hasMany|hasOne|morphTo|morphMany|morphOne)\(/;
 
     const registered = Object.entries(models).filter(
       ([, Model]) =>
@@ -82,23 +77,77 @@ describe('Relation parent attributes', function () {
         schema.tables[Model.prototype.tableName],
     );
 
+    // The parent-side columns each of the model's relations reads, taken from
+    // the relations themselves rather than guessed from column names.
+    const relationKeyColumns = (Model) => {
+      const table = schema.tables[Model.prototype.tableName];
+      const columns = new Set(['id']);
+      const relationNames = new Set();
+
+      for (
+        let proto = Model.prototype;
+        proto && proto !== Object.prototype;
+        proto = Object.getPrototypeOf(proto)
+      ) {
+        for (const name of Object.getOwnPropertyNames(proto)) {
+          const descriptor = Object.getOwnPropertyDescriptor(proto, name);
+          if (
+            typeof descriptor.value === 'function' &&
+            RELATION_CALL.test(descriptor.value.toString())
+          ) {
+            relationNames.add(name);
+          }
+        }
+      }
+
+      for (const name of relationNames) {
+        const model = Model.forge();
+        // lets morphTo relations set up without resolving a target
+        model._isEager = true;
+
+        let relation;
+        try {
+          relation = model[name]();
+        } catch {
+          continue;
+        }
+
+        const data = relation?.relatedData;
+        if (!data) {
+          continue;
+        }
+
+        for (const key of [
+          data.parentIdAttribute,
+          data.foreignKey,
+          data.otherKey,
+          ...(data.columnNames || []),
+        ]) {
+          if (key && key in table) {
+            columns.add(key);
+          }
+        }
+      }
+
+      return [...columns];
+    };
+
     it('covers the registered models', function () {
       assert.ok(registered.length > 50, `expected the model registry, found ${registered.length}`);
     });
 
+    it('finds keys that are not named *_id', function () {
+      assert.ok(relationKeyColumns(models.Post).includes('published_by'));
+      assert.ok(relationKeyColumns(models.Action).includes('actor_type'));
+    });
+
     for (const [name, Model] of registered) {
       it(name, function () {
-        const table = schema.tables[Model.prototype.tableName];
-        const keys = {};
+        const keys = Object.fromEntries(
+          relationKeyColumns(Model).map((column) => [column, `${column}-value`]),
+        );
 
-        for (const column of Object.keys(table)) {
-          if (isKeyColumn(column, table)) {
-            keys[column] = `${column}-value`;
-          }
-        }
-
-        const model = Model.forge();
-        const formatted = model.format({ ...keys });
+        const formatted = Model.forge().format({ ...keys });
 
         for (const [column, value] of Object.entries(keys)) {
           assert.equal(formatted[column], value, `${name}.format() changed key column ${column}`);
