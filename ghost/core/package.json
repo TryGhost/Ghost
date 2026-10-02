@@ -288,8 +288,6 @@
     "globals": "17.7.0",
     "html-validate": "11.5.5",
     "inquirer": "8.2.7",
-    "jwk-to-pem": "2.0.7",
-    "jwks-rsa": "3.2.2",
     "lodash-es": "4.18.1",
     "nock": "catalog:",
     "nodemon": "3.1.14",
