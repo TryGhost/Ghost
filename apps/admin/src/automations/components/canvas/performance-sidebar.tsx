@@ -26,6 +26,10 @@ const PerformanceContent: React.FC<{
   updating: boolean;
   enabled: boolean;
   runQueryScope: string;
+  selectedRunId: string | null;
+  onSelectRun: (id: string, memberName: string) => void;
+  isRunSelectionDisabled: boolean;
+
   direction: RunSortDirection;
   onDirectionChange: (direction: RunSortDirection) => void;
   selectedStatus: AutomationRunStatusFilter | null;
@@ -40,6 +44,9 @@ const PerformanceContent: React.FC<{
   onClearDate,
   queryScope,
   runQueryScope,
+  selectedRunId,
+  onSelectRun,
+  isRunSelectionDisabled,
   selectedStatus,
   onStatusChange,
   direction,
@@ -118,23 +125,39 @@ const PerformanceContent: React.FC<{
         dateRange={dateRange}
         direction={direction}
         enabled={enabled}
+        isSelectionDisabled={isRunSelectionDisabled}
         queryScope={runQueryScope}
         search={search}
+        selectedRunId={selectedRunId}
         status={searchActive ? null : selectedStatus}
         updating={updating}
         onDirectionChange={onDirectionChange}
+        onSelectRun={onSelectRun}
       />
     </>
   );
 };
 
-export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automationId }) => {
+export const PerformanceSidebar: React.FC<{
+  automationId: string;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  selectedRunId: string | null;
+  onSelectRun: (id: string, memberName: string) => void;
+  isRunSelectionDisabled: boolean;
+}> = ({
+  automationId,
+  isOpen,
+  onOpenChange,
+  selectedRunId,
+  onSelectRun,
+  isRunSelectionDisabled,
+}) => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [input, setInput] = useState('');
   const [search, setSearch] = useState('');
   const searchActive = !!input || !!search;
   const updating = input !== search;
-  const [isOpen, setIsOpen] = useState(false);
   const [hasOpened, setHasOpened] = useState(false);
   const [status, setStatus] = useState<AutomationRunStatusFilter | null>(null);
   const [direction, setDirection] = useState<RunSortDirection>('desc');
@@ -151,13 +174,13 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
         aria-controls={panelId}
         aria-expanded={isOpen}
         aria-label={isOpen ? 'Hide performance' : 'Show performance'}
-        className="absolute top-4 left-4 z-10"
+        className="absolute top-4 left-4 z-20"
         size="icon"
         type="button"
         variant="ghost"
         onClick={() => {
           setHasOpened(true);
-          setIsOpen((open) => !open);
+          onOpenChange(!isOpen);
         }}
       >
         <LucideIcon.PanelLeft strokeWidth={2} />
@@ -172,13 +195,14 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
         aria-labelledby={headingId}
         className={cn(
           'shrink-0 overflow-hidden bg-surface-elevated transition-[width] duration-150 ease-out motion-reduce:transition-none',
-          isOpen ? 'w-[min(480px,calc(100cqw-6rem))]' : 'w-0',
+          '@max-[960px]/automation:absolute @max-[960px]/automation:inset-y-0 @max-[960px]/automation:left-0 @max-[960px]/automation:z-10',
+          isOpen ? 'w-[480px] @max-[960px]/automation:w-full' : 'w-0',
         )}
         id={panelId}
       >
         {/* Keep content at its full width while the sidebar animates open or closed. */}
         <Stack
-          className="h-full w-[min(480px,calc(100cqw-6rem))] overflow-y-auto border-r border-border-default px-6 py-4"
+          className="h-full w-[480px] overflow-y-auto border-r border-border-default px-6 py-4 @max-[960px]/automation:w-[100cqw]"
           gap="none"
           style={{ overflowAnchor: 'none' }}
         >
@@ -221,10 +245,12 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
                 dateRange={dateRange}
                 direction={direction}
                 enabled={isOpen}
+                isRunSelectionDisabled={isRunSelectionDisabled}
                 queryScope={panelId}
                 runQueryScope={runQueryScope}
                 search={search}
                 searchActive={searchActive}
+                selectedRunId={selectedRunId}
                 selectedStatus={status}
                 updating={updating}
                 onClearDate={() => setDateRange(createPerformanceDateRange('all'))}
@@ -232,6 +258,7 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
                   setDirection(next);
                   setQueryRevision((revision) => revision + 1);
                 }}
+                onSelectRun={onSelectRun}
                 onStatusChange={(selected) => {
                   setStatus(status === selected ? null : selected);
                   setQueryRevision((revision) => revision + 1);

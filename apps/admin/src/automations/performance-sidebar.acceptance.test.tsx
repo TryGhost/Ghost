@@ -287,7 +287,7 @@ describe('Performance sidebar layout', () => {
       await open();
       await expect.element(statusCard('Completed')).toHaveTextContent('1,260');
       const panel = document.querySelector('aside')!;
-      const expectedWidth = Math.min(480, panel.parentElement!.getBoundingClientRect().width - 60);
+      const expectedWidth = panel.parentElement!.getBoundingClientRect().width;
       await expect.poll(() => panel.getBoundingClientRect().width).toBeCloseTo(expectedWidth, 0);
       expect(panel.scrollWidth).toBe(panel.clientWidth);
       for (const name of ['In progress', 'Completed', 'Exited early']) {
