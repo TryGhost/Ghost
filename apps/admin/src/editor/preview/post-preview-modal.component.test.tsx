@@ -7,6 +7,7 @@ import {
   configResponse,
   currentUserResponse,
   fakeAdminEndpoint,
+  fakeFrameOrigin,
   fakeNewsletters,
   fakeTiers,
   newsletter,
@@ -294,6 +295,36 @@ describe('Post preview modal', () => {
         return onOpenChange.mock.calls;
       })
       .toContainEqual([false]);
+  });
+
+  it('leaves the Web preview cleanly after its frame has followed a link to another site', async () => {
+    fakePreviewWorld();
+    fakeEmailPreview();
+    await fakeFrameOrigin('http://elsewhere.test', '<p>Another site</p>');
+    const onOpenChange = vi.fn();
+    await renderPreviewModal({
+      onOpenChange,
+      previewUrl: `${window.location.origin}/p/post-uuid/`,
+    });
+
+    const frame = previewScreen.browserFrame().element() as HTMLIFrameElement;
+    await expect
+      .poll(() => {
+        frame.contentDocument?.body?.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+        );
+        return onOpenChange.mock.calls;
+      })
+      .toContainEqual([false]);
+    const leftSite = new Promise((resolve) => {
+      frame.addEventListener('load', resolve, { once: true });
+    });
+    frame.contentWindow?.location.assign('http://elsewhere.test/');
+    await leftSite;
+
+    await previewScreen.emailTab().click();
+
+    await expect.element(previewScreen.emailFrame()).toBeVisible();
   });
 
   it('previews as a public visitor', async () => {

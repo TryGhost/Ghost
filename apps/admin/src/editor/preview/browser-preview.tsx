@@ -6,7 +6,7 @@ import {
   postPreviewBrowserFrame,
   postPreviewUnavailable,
 } from '@tryghost/test-data/selectors/editor';
-import { useEffect, useRef, type SyntheticEvent } from 'react';
+import { useRef, type SyntheticEvent } from 'react';
 
 import { browserPreviewUrl, type PreviewAudience, type PreviewDevice } from './preview-url';
 
@@ -23,28 +23,19 @@ interface BrowserPreviewProps {
 function useFrameEscape(onEscape: () => void) {
   const onEscapeRef = useRef(onEscape);
   onEscapeRef.current = onEscape;
-  const detachRef = useRef<(() => void) | null>(null);
 
-  useEffect(() => () => detachRef.current?.(), []);
-
+  // A listener goes with the page it was added to. Removing it would reach into
+  // whatever page the frame holds by then, which may be another site's.
   return (event: SyntheticEvent<HTMLIFrameElement>) => {
-    detachRef.current?.();
-    detachRef.current = null;
-
-    const frameWindow = event.currentTarget.contentWindow;
-    const onKeyDown = (keyEvent: KeyboardEvent) => {
-      if (keyEvent.key === 'Escape') {
-        onEscapeRef.current();
-      }
-    };
-
     try {
-      frameWindow?.addEventListener('keydown', onKeyDown);
+      event.currentTarget.contentWindow?.addEventListener('keydown', (keyEvent) => {
+        if (keyEvent.key === 'Escape') {
+          onEscapeRef.current();
+        }
+      });
     } catch {
       // A cross-origin site frame cannot be observed.
-      return;
     }
-    detachRef.current = () => frameWindow?.removeEventListener('keydown', onKeyDown);
   };
 }
 
