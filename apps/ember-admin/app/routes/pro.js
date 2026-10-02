@@ -47,10 +47,4 @@ export default class ProRoute extends AuthenticatedRoute {
 
         this.billing.toggleProWindow(isBillingTransition);
     }
-
-    buildRouteInfoMetadata() {
-        return {
-            titleToken: 'Ghost(Pro)'
-        };
-    }
 }

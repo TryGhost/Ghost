@@ -20,7 +20,7 @@ export type EditorSettingsPort = Pick<
   | 'slug'
   | 'stageSettings'
 > & {
-  bind: Pick<EditorSessionBinding, 'title' | 'excerpt' | 'onExcerptChange'>;
+  bind: Pick<EditorSessionBinding, 'title'>;
 };
 
 /** A post the server has not created yet: nothing loaded and no id acquired. */
@@ -32,7 +32,7 @@ export function isNewPost(
 
 /** The port's identity tracks the members it carries, not the render that produced it. */
 export function useEditorSettingsPort(session: EditorSessionHandle): EditorSettingsPort {
-  const { title, excerpt, onExcerptChange } = session.bind;
+  const { title } = session.bind;
   const {
     commitSettings,
     createdId,
@@ -48,10 +48,7 @@ export function useEditorSettingsPort(session: EditorSessionHandle): EditorSetti
     stageSettings,
   } = session;
 
-  const bind = useMemo(
-    () => ({ title, excerpt, onExcerptChange }),
-    [title, excerpt, onExcerptChange],
-  );
+  const bind = useMemo(() => ({ title }), [title]);
 
   return useMemo(
     () => ({

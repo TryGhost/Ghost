@@ -25,12 +25,27 @@ import { usePublishLimits } from './publish/use-publish-limits';
 import { useEditorSettings } from './use-editor-settings';
 import type { EditorSessionHandle } from './session/use-editor-session';
 import type { SaveCompletion } from './engine/save-engine';
-import { usePreviewShortcut, usePublishShortcut } from './use-editor-shortcuts';
+import { usePreviewShortcut, usePublishShortcut, useSaveShortcut } from './use-editor-shortcuts';
+import { useSaveButtonPhase, useSaveFeedback, type SaveButtonPhase } from './use-save-feedback';
 
 export type OpenFlow = 'none' | 'publish' | 'update';
 
 /** The preview's props short of Publish, which only the publish controls can supply. */
 type HeaderPreviewProps = Omit<PostPreviewModalProps, 'onPublish' | 'publishDisabled'>;
+
+const UPDATE_LABELS: Record<SaveButtonPhase, string> = {
+  idle: 'Update',
+  running: 'Updating...',
+  success: 'Updated',
+  failure: 'Retry',
+};
+
+const SAVE_LABELS: Record<SaveButtonPhase, string> = {
+  idle: 'Save',
+  running: 'Saving',
+  success: 'Saved',
+  failure: 'Retry',
+};
 
 /** Turns a save the caller depends on into a rejection the flow renders in place. */
 async function requireSaved(pending: Promise<SaveCompletion>): Promise<void> {
@@ -82,6 +97,10 @@ export function EditorHeaderActions({
   const { persistedId } = session;
   const record = session.loadedRecord;
   const [previewOpen, setPreviewOpen] = useState(false);
+  const feedback = useSaveFeedback({ session, displayName: postType, siteUrl });
+  const contributorSave = useSaveButtonPhase(feedback.save);
+
+  useSaveShortcut(() => void feedback.save());
 
   const openPreview = useCallback(() => setPreviewOpen(true), []);
 
@@ -153,14 +172,15 @@ export function EditorHeaderActions({
           <Button
             disabled={isSaving}
             size={isAdmin7 ? 'default' : 'sm'}
-            onClick={session.dispatchExplicit}
+            onClick={() => void contributorSave.run()}
           >
-            Save
+            {SAVE_LABELS[contributorSave.phase]}
           </Button>
           {isDraft ? <PostPreviewModal {...preview} /> : null}
         </>
       ) : (
         <PublishActions
+          feedback={feedback}
           isDraft={isDraft}
           isSaving={isSaving}
           offersEmailRetry={offersEmailRetry}
@@ -179,6 +199,7 @@ export function EditorHeaderActions({
 
 interface PublishActionsProps {
   session: EditorSessionHandle;
+  feedback: ReturnType<typeof useSaveFeedback>;
   post: PublishFlowPost;
   tkCount: number;
   isDraft: boolean;
@@ -196,6 +217,7 @@ interface PublishActionsProps {
  */
 function PublishActions({
   session,
+  feedback,
   post,
   tkCount,
   isDraft,
@@ -232,6 +254,8 @@ function PublishActions({
     }
     await requireSaved(session.saveExplicit());
   }, [session]);
+  const { save, showReverted } = feedback;
+  const update = useSaveButtonPhase(save);
   const revertToDraft = useCallback(() => {
     onOpenFlow('none');
     void session.dispatchPublish({ kind: 'revert' });
@@ -292,13 +316,15 @@ function PublishActions({
       {isDraft ? (
         <>
           {inputsError}
-          <Button
+          <PageHeader.Action
+            className="bg-background/80 font-semibold text-state-success backdrop-blur-sm hover:text-state-success disabled:text-text-secondary/60 disabled:opacity-100"
             disabled={!inputs.isReady}
-            size={isAdmin7 ? 'default' : 'sm'}
+            fallbackSize="sm"
+            label="Publish"
             onClick={openPublishFlow}
           >
             Publish
-          </Button>
+          </PageHeader.Action>
           <PostPreviewModal
             {...preview}
             animate={openFlow !== 'publish'}
@@ -322,13 +348,15 @@ function PublishActions({
               {post.status === 'scheduled' ? 'Unschedule' : 'Unpublish'}
             </PageHeader.Action>
           )}
-          <Button
+          <PageHeader.Action
+            className="bg-background/80 font-semibold text-state-success backdrop-blur-sm hover:text-state-success disabled:text-text-secondary/60 disabled:opacity-100"
             disabled={!session.isDirty() || isSaving}
-            size={isAdmin7 ? 'default' : 'sm'}
-            onClick={session.dispatchExplicit}
+            fallbackSize="sm"
+            label={UPDATE_LABELS[update.phase]}
+            onClick={() => void update.run()}
           >
-            Update
-          </Button>
+            {UPDATE_LABELS[update.phase]}
+          </PageHeader.Action>
         </>
       )}
 
@@ -369,6 +397,7 @@ function PublishActions({
           timezone={inputs.timezone}
           user={inputs.user}
           onClose={closeFlow}
+          onReverted={showReverted}
         />
       ) : null}
     </>

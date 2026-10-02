@@ -34,6 +34,7 @@ type Request = {
   authorization: string | null;
   contentType: string | null;
   siteUuid: string | null;
+  userAgent: string | null;
   lines: EventLine[];
 };
 
@@ -90,6 +91,7 @@ describe('syncTableToTinybird', () => {
       authorization: headers.get('authorization'),
       contentType: headers.get('content-type'),
       siteUuid: headers.get('x-site-uuid'),
+      userAgent: headers.get('user-agent'),
       lines: String(init?.body)
         .split('\n')
         .map((line) => JSON.parse(line) as EventLine),
@@ -158,6 +160,7 @@ describe('syncTableToTinybird', () => {
     assert.equal(requests[0].authorization, `Bearer ${TRAFFIC_ANALYTICS_AUTH}`);
     assert.equal(requests[0].contentType, 'application/x-ndjson');
     assert.equal(requests[0].siteUuid, SITE_UUID);
+    assert.equal(requests[0].userAgent, 'Ghost(https://github.com/TryGhost/Ghost)');
     assert.deepEqual(requests[0].lines, [
       {
         type: 'automation_runs',

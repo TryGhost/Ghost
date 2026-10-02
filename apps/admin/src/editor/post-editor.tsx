@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { Button, buttonVariants } from '@tryghost/shade/components';
+import { Button, FieldError, buttonVariants } from '@tryghost/shade/components';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { useFocusContext } from '@tryghost/shade/app';
 import { focusKoenigEditorOnBottomClick } from '@tryghost/admin-x-framework';
@@ -24,6 +24,10 @@ export interface PostEditorProps {
   postType: PostType;
   title: string;
   excerpt: string;
+  /** The rule the title breaks, shown under it. */
+  titleError?: string | null;
+  /** The rule the excerpt breaks, shown under it. */
+  excerptError?: string | null;
   featureImage: FeatureImageBinding;
   /** Initial body; the editor owns its own state after mount. */
   initialLexical: string | null;
@@ -95,6 +99,8 @@ export function PostEditor({
   postType,
   title,
   excerpt,
+  titleError = null,
+  excerptError = null,
   featureImage,
   initialLexical,
   cardConfig,
@@ -116,6 +122,8 @@ export function PostEditor({
   const writingAreaRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const excerptRef = useRef<HTMLTextAreaElement>(null);
+  const titleErrorId = useId();
+  const excerptErrorId = useId();
   const editorApiRef = useRef<KoenigInstance | null>(null);
   const skipFocusEditorRef = useRef(false);
   const [wordCount, setWordCount] = useState(0);
@@ -312,6 +320,8 @@ export function PostEditor({
             {titleHasTk && <TkIndicator testId={tkIndicator} onClick={focusTitle} />}
             <textarea
               ref={titleRef}
+              aria-describedby={titleError ? titleErrorId : undefined}
+              aria-invalid={!!titleError}
               aria-label={`${capitalize(postType)} title`}
               autoFocus={autofocusTitle}
               className={cn(
@@ -327,11 +337,18 @@ export function PostEditor({
               onKeyDown={onTitleKeyDown}
               onPaste={cleanPastedTitle}
             />
+            {titleError ? (
+              <FieldError className="-mt-2 mb-4" id={titleErrorId}>
+                {titleError}
+              </FieldError>
+            ) : null}
             {showExcerpt && (
               <div className="relative">
                 {excerptHasTk && <TkIndicator testId={tkIndicatorExcerpt} onClick={focusExcerpt} />}
                 <textarea
                   ref={excerptRef}
+                  aria-describedby={excerptError ? excerptErrorId : undefined}
+                  aria-invalid={!!excerptError}
                   aria-label="Excerpt"
                   className={cn(
                     fieldClassName,
@@ -345,7 +362,17 @@ export function PostEditor({
                   onChange={(event) => onExcerptChange(event.target.value)}
                   onKeyDown={onExcerptKeyDown}
                 />
-                <hr className="mt-4 mb-6 border-border" />
+                <hr
+                  className={cn(
+                    'mt-4',
+                    excerptError ? 'mb-2 border-destructive' : 'mb-6 border-border',
+                  )}
+                />
+                {excerptError ? (
+                  <FieldError className="mb-6" id={excerptErrorId}>
+                    {excerptError}
+                  </FieldError>
+                ) : null}
               </div>
             )}
           </div>
@@ -388,7 +415,10 @@ export function PostEditor({
           </Text>
         )}
         <Button
-          className="bg-background/80 text-text-secondary backdrop-blur-sm hover:text-foreground"
+          className={cn(
+            'bg-background/80 text-text-secondary backdrop-blur-sm hover:text-foreground',
+            isAdmin7 && '[&_svg]:stroke-2!',
+          )}
           shape="pill"
           size={isAdmin7 ? 'icon' : 'icon-sm'}
           variant="ghost"

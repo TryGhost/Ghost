@@ -4,8 +4,12 @@ import MemberMapHeader from './member-map-header';
 
 const { loadMap } = vi.hoisted(() => ({ loadMap: vi.fn() }));
 vi.mock('./member-location-map', () => {
-  loadMap();
-  throw new Error('Map chunk download failed');
+  return {
+    default: () => {
+      loadMap();
+      throw new Error('Map rendering failed');
+    },
+  };
 });
 
 afterEach(() => {
@@ -14,7 +18,7 @@ afterEach(() => {
 });
 
 describe('member map loading', () => {
-  it('does not load map code while disabled', () => {
+  it('does not render the map while disabled', () => {
     render(
       <MemberMapHeader enabled={false}>
         <h1>Member</h1>
@@ -24,7 +28,7 @@ describe('member map loading', () => {
     expect(loadMap).not.toHaveBeenCalled();
   });
 
-  it('keeps the member header and actions usable when the map import fails', async () => {
+  it('keeps the member header and actions usable when map rendering fails', async () => {
     const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
     const save = vi.fn();
     render(
@@ -36,7 +40,7 @@ describe('member map loading', () => {
       </MemberMapHeader>,
     );
     await waitFor(() => expect(errors).toHaveBeenCalled());
-    expect(loadMap).toHaveBeenCalledOnce();
+    expect(loadMap).toHaveBeenCalled();
     expect(screen.getByRole('heading', { name: 'Member' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     expect(save).toHaveBeenCalledOnce();

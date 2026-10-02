@@ -11,6 +11,7 @@ import {
   fakeAdminEndpoint,
   fakeEditorChrome,
   fakeEditorPost,
+  fakePintura,
   fakeTiers,
   fakeUnsplashPhotos,
   post,
@@ -18,6 +19,7 @@ import {
   staffRole,
   submittedPost,
   unsavedChangesGuarded,
+  withPintura,
   withoutAutosave,
   withoutUnsplash,
   type StaffRoleName,
@@ -26,6 +28,7 @@ import { editorScreen } from '@/editor/editor.screen';
 import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
+const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const CURRENT_USER_ID = '1';
 const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
@@ -198,7 +201,7 @@ describe('Post settings Facebook card', () => {
     expect(saveApi.requests).toHaveLength(2);
   });
 
-  it('stages a published post’s Facebook title until Update', async () => {
+  it('saves a published post’s Facebook title on its own', async () => {
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openFacebookCard();
@@ -206,16 +209,11 @@ describe('Post settings Facebook card', () => {
     await editorScreen.settingsFacebookTitle().fill('A better title for Facebook');
     await editorScreen.settingsFacebookDescription().click();
 
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
-    await expect.poll(unsavedChangesGuarded).toBe(true);
-    expect(saveApi.requests).toHaveLength(0);
-
-    await userEvent.keyboard('{Meta>}s{/Meta}');
-
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
       og_title: 'A better title for Facebook',
-      status: 'published',
     });
   });
 
@@ -374,5 +372,22 @@ describe('Post settings Facebook card', () => {
     await expect(editorScreen.unsplashModal()).toHaveCount(0);
     await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
     await expect.element(editorScreen.settingsFacebookTitle()).toBeVisible();
+  });
+
+  it('saves the Facebook image edited in Pintura in place of the original', async () => {
+    const pintura = fakePintura();
+    const saveApi = fakeSavablePost({ og_image: FEATURE });
+    const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', {
+      images: [{ url: UPLOADED, ref: null }],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, { ...FLAG_ON, ...withPintura() });
+    await openFacebookCard();
+
+    await editorScreen.editSettingsFacebookImage().click();
+    expect(pintura.opened[0]).toContain(FEATURE);
+    pintura.save(new File(['edited'], 'coast.png', { type: 'image/png' }));
+
+    await expect.poll(() => uploadApi.requests.length, POLL).toBe(1);
+    await expect(saveApi).toHaveSavedFields({ og_image: UPLOADED });
   });
 });

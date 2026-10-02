@@ -74,8 +74,8 @@ const createDatabase = async (): Promise<Knex> => {
     table.text('id').primary();
     table.text('created_at').notNullable();
     table.text('updated_at').notNullable();
-    table.text('slug').notNullable().unique();
-    table.text('name').notNullable();
+    table.text('slug').unique();
+    table.text('name').notNullable().unique();
     table.text('description').notNullable();
     table.text('status').notNullable();
     table.text('trigger_tier_scope');
@@ -539,7 +539,7 @@ describe('automations repository', function () {
     slug,
     triggerTierScope,
   }: {
-    slug: string;
+    slug: null | string;
     triggerTierScope: null | AutomationTriggerTierScope;
   }) => {
     const automationId = ObjectId().toHexString();
@@ -551,8 +551,8 @@ describe('automations repository', function () {
       created_at: now,
       updated_at: now,
       slug,
-      name: slug,
-      description: slug,
+      name: slug ?? 'Automation with no slug',
+      description: slug ?? 'Automation with no slug',
       status: 'active',
       trigger_tier_scope: triggerTierScope,
     });
@@ -1324,6 +1324,32 @@ describe('automations repository', function () {
       assert.equal(step.locked_at, null);
     });
 
+    it('can create and trigger an automation with no slug', async function () {
+      const automationId = await insertAutomation({
+        slug: null,
+        triggerTierScope: 'free',
+      });
+
+      await repo.trigger({
+        memberEmail: 'no-slug@example.com',
+        memberId: 'member_123',
+        memberStatus: 'free',
+      });
+
+      const runs = await getRunsByMemberEmail('no-slug@example.com');
+      const run = runs.find((candidate) => candidate.automation_id === automationId);
+      assert(run, 'Expected a run for the automation with no slug');
+      assert.equal(run.automation_slug, null);
+      assert.equal(run.member_id, 'member_123');
+
+      const step = await getStepByRunId(run.id);
+      assert(step, 'Expected the first action to be queued');
+      assert.equal(step.automation_run_id, run.id);
+      assert.equal(step.action_type, 'wait');
+      assert.equal(step.wait_hours, 24);
+      assert.equal(step.status, 'pending');
+    });
+
     it('can trigger multiple automations for a free signup', async function () {
       await insertAutomation({
         slug: 'member-welcome-email-free-second',
@@ -1583,6 +1609,52 @@ describe('automations repository', function () {
         return true;
       });
     };
+
+    it('allows keeping the current automation name', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const edited = await repo.edit(automation.id, {
+        ...automation,
+        description: 'Updated description',
+      });
+      assert(edited);
+      assert.equal(edited.name, automation.name);
+      assert.equal(edited.description, 'Updated description');
+    });
+
+    it('persists optional metadata and preserves omitted fields', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const graph = {
+        status: automation.status,
+        actions: automation.actions,
+        edges: automation.edges,
+      };
+
+      const renamed = await repo.edit(automation.id, {
+        ...graph,
+        name: 'Renamed flow',
+        description: 'Updated description',
+      });
+      assert(renamed);
+      assert.equal(renamed.name, 'Renamed flow');
+      assert.equal(renamed.description, 'Updated description');
+      assert.equal(renamed.slug, automation.slug);
+      assert.deepEqual(await repo.getById(automation.id), renamed);
+
+      const unchanged = await repo.edit(automation.id, graph);
+      assert(unchanged);
+      assert.equal(unchanged.name, 'Renamed flow');
+      assert.equal(unchanged.description, 'Updated description');
+
+      const cleared = await repo.edit(automation.id, { ...graph, description: '' });
+      assert(cleared);
+      assert.equal(cleared.name, 'Renamed flow');
+      assert.equal(cleared.description, '');
+
+      const nameOnly = await repo.edit(automation.id, { ...graph, name: 'Another name' });
+      assert(nameOnly);
+      assert.equal(nameOnly.name, 'Another name');
+      assert.equal(nameOnly.description, '');
+    });
 
     it('cancels pending unlocked steps when disabling an automation', async function () {
       const automation = await getAutomationBySlug('member-welcome-email-free');

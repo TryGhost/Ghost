@@ -10,6 +10,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   Avatar,
+  Badge,
+  type BadgeProps,
   Button,
 } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
@@ -34,10 +36,10 @@ const TAG_LABELS: Record<RevisionTag, string> = {
   unpublished: 'Unpublished',
 };
 
-const TAG_CLASSES: Record<RevisionTag, string> = {
-  latest: 'bg-surface-elevated-2 text-text-secondary',
-  published: 'bg-state-success text-foreground',
-  unpublished: 'bg-state-warning text-foreground',
+const TAG_VARIANTS: Record<RevisionTag, BadgeProps['variant']> = {
+  latest: 'secondary',
+  published: 'success',
+  unpublished: 'warning',
 };
 
 function RevisionRow({
@@ -56,34 +58,41 @@ function RevisionRow({
   onRestore: () => void;
 }) {
   return (
-    <li className={cn('rounded-md px-3 py-2', selected && 'bg-surface-elevated-2')}>
+    <li
+      className={cn(
+        'relative rounded-md px-3 py-2',
+        selected ? 'bg-tab-active' : 'hover:bg-interactive-hover',
+      )}
+    >
       <button aria-current={selected} className="w-full text-left" type="button" onClick={onSelect}>
-        <Inline gap="sm">
-          <Text size="sm" weight="medium">
+        <Inline gap="sm" wrap>
+          <Text className="whitespace-nowrap" size="sm" weight="medium">
             {revisionDate(revision.createdAt, timezone)}
           </Text>
           {revision.tags.map((tag) => (
-            <span
-              key={tag}
-              className={cn('rounded-sm px-1.5 py-0.5 text-2xs font-medium', TAG_CLASSES[tag])}
-            >
+            <Badge key={tag} variant={TAG_VARIANTS[tag]}>
               {TAG_LABELS[tag]}
-            </span>
+            </Badge>
           ))}
         </Inline>
-        <Inline className="mt-1" gap="sm">
+        <Inline className={cn('mt-1 min-h-7', selected && restorable && 'pr-20')} gap="sm">
           <Avatar
-            className="size-6"
+            className="size-6 shrink-0"
             {...memberAvatarProps({ name: revision.authorName })}
             src={revision.authorImage}
           />
-          <Text size="sm" tone="secondary">
+          <Text className="truncate" size="sm" tone="secondary">
             {revision.authorName}
           </Text>
         </Inline>
       </button>
       {selected && restorable ? (
-        <Button className="mt-2 w-full" size="sm" variant="outline" onClick={onRestore}>
+        <Button
+          className="absolute right-3 bottom-2 bg-surface-elevated-2"
+          size="sm"
+          variant="outline"
+          onClick={onRestore}
+        >
           Restore
         </Button>
       ) : null}
@@ -159,6 +168,11 @@ export function PostHistoryModal({
     <>
       <FullscreenDialog
         data-testid={postHistoryModal}
+        headerActions={
+          <Button disabled={restoring} onClick={() => onOpenChange(false)}>
+            Close
+          </Button>
+        }
         layout="header"
         open={open}
         title={`${postType === 'page' ? 'Page' : 'Post'} history`}
@@ -191,7 +205,7 @@ export function PostHistoryModal({
                 {restoreError}
               </Text>
             ) : null}
-            <ul data-testid={postHistoryRevisionList}>
+            <ul className="grid gap-px" data-testid={postHistoryRevisionList}>
               {revisions.map((revision, index) => (
                 <RevisionRow
                   key={revision.id}

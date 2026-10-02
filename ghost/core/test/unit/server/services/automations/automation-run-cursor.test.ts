@@ -55,6 +55,7 @@ describe('automation run cursors', function () {
   for (const [label, cursor] of [
     ['a non-string', 42],
     ['not base64 JSON', 'not-a-cursor'],
+    ['an oversized cursor', 'x'.repeat(2049)],
     ['a JSON primitive', encode(null)],
     ['missing fields', encode({ automation_id: 'automation-1' })],
     ['an unexpected field', encode({ ...scope, ...position, extra: true })],

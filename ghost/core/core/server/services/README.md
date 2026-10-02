@@ -33,17 +33,13 @@ and provider adapters as private implementation details.
 
 - Keep implementation used only by one service inside that service.
 - Put shared server libraries, reusable constructors, and provider clients in
-  `server/lib/`, grouped by a specific capability rather than a miscellaneous
-  `services/lib/` directory.
+  `server/lib/`, grouped by a specific capability.
 - Put HTTP routing and middleware in the appropriate part of `server/web/`.
 - Keep API-specific support with its API owner rather than making it a service.
 
 For example:
 
-- `email-service` exposes an application-owned wrapper initialized during boot;
-  `mail` exports `GhostMailer` for callers to construct and a template helper.
-  The latter is mail support, not a service root, even though sending mail has
-  side effects. Its remaining placement here is legacy, not a pattern to copy.
+- `email-service` exposes an application-owned wrapper initialized during boot.
 - `email-address` constructs and exposes the application's email-address
   implementation through `init()` and `service`. It qualifies without owning a
   background worker.

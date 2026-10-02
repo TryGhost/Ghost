@@ -166,24 +166,7 @@ async function initCore({ ghostServer, config }) {
   debug('End: Member Metafields Service');
 
   if (ghostServer) {
-    // Job Service allows parts of Ghost to run in the background
-    debug('Begin: Job Service');
-    const jobService = require('./server/services/jobs');
-
-    ghostServer.registerCleanupTask(async () => {
-      await jobService.shutdown();
-    }, 'Job Service');
-    debug('End: Job Service');
-
-    // Mentions Job Service allows mentions to be processed in the background
-    debug('Begin: Mentions Job Service');
-    const mentionsJobService = require('./server/services/mentions-jobs');
-
-    ghostServer.registerCleanupTask(async () => {
-      await mentionsJobService.shutdown();
-    }, 'Mentions Job Service');
-    debug('End: Mentions Job Service');
-
+    // Jobs Service allows parts of Ghost to run in the background
     debug('Begin: Jobs Service');
     const jobsService = require('./server/services/jobs-service');
 
@@ -463,6 +446,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     require('./server/services/jobs-service/register-job-handlers').default;
   const memberJobs = require('./server/services/members/jobs');
   const membersService = require('./server/services/members');
+  const tinybirdSync = require('./server/services/tinybird-sync');
   memberJobs.init();
   const siteImporter = require('./server/data/importer').init({ jobsService });
   assert(giftService.service, 'Gift service should be initialized');
@@ -483,6 +467,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     membersService,
     emailService: emailService.service,
     siteImporter,
+    tinybirdSync,
   });
   await jobsService.start();
   debug('End: Register job handlers');
@@ -612,8 +597,14 @@ async function initBackgroundServices({ config }) {
 
   const activitypub = require('./server/services/activitypub');
   await activitypub.init();
-  const tinybirdSync = require('./server/services/tinybird-sync');
-  tinybirdSync.start();
+
+  try {
+    const tinybirdSync = require('./server/services/tinybird-sync');
+    await tinybirdSync.scheduleJob(jobsService);
+  } catch (err) {
+    const logging = require('@tryghost/logging');
+    logging.error(err);
+  }
 
   try {
     const updateCheck = require('./server/services/update-check');

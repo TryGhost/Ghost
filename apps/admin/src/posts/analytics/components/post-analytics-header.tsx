@@ -32,6 +32,7 @@ import { H1 } from '@tryghost/shade/primitives';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import { useIsEmberOwnedRoute } from '@/routes';
+import { editorReturnState } from '@/editor/api';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { giftAccessLabel } from '@/posts/analytics/utils/gift-link';
@@ -40,6 +41,7 @@ import {
   isPublishedOnly,
   trackEvent,
   useActiveVisitors,
+  useLocation,
   useNavigate,
 } from '@tryghost/admin-x-framework';
 import {
@@ -61,6 +63,7 @@ interface PostAnalyticsHeaderProps {
 const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, children }) => {
   const { isAdmin7 } = useShade();
   const navigate = useNavigate();
+  const location = useLocation();
   const webAnalyticsEnabled = useWebAnalyticsEnabled();
   const membersTrackSources = useMembersTrackSources();
   const queryClient = useQueryClient();
@@ -206,7 +209,10 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                navigate(editorPath, { crossApp: editorIsEmberOwned });
+                navigate(
+                  editorPath,
+                  editorIsEmberOwned ? { crossApp: true } : { state: editorReturnState(location) },
+                );
               }}
             >
               <LucideIcon.Pen />

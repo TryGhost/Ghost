@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AutomationRun } from '@tryghost/admin-x-framework/api/automations';
-import { mapAutomationRuns } from './automation-runs';
+import { mapAutomationRun } from './automation-runs';
 
 const run: AutomationRun = {
   id: 'one',
@@ -14,11 +14,11 @@ describe('automation run list mapping', () => {
   afterEach(() => vi.useRealTimers());
 
   it('preserves run identity and order while mapping name and email fallbacks', () => {
-    const rows = mapAutomationRuns([
+    const rows = [
       run,
       { ...run, id: 'two', member: { ...run.member!, name: ' ' } },
       { ...run, id: 'three', member: null },
-    ]);
+    ].map(mapAutomationRun);
     expect(
       rows.map(({ id, memberName, memberEmail }) => ({ id, memberName, memberEmail })),
     ).toEqual([
@@ -31,7 +31,7 @@ describe('automation run list mapping', () => {
   it('keeps the entry timestamp and formats a relative label and full description', () => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date('2026-09-15T12:08:00Z'));
-    const [row] = mapAutomationRuns([run]);
+    const row = mapAutomationRun(run);
     expect(row.enteredAt).toBe(run.created_at);
     expect(row.enteredLabel).toBe('8 min ago');
     expect(row.enteredDescription).toContain('2026');
@@ -43,6 +43,6 @@ describe('automation run list mapping', () => {
     { status: 'exited_early', failed: false, label: 'Exited early' },
     { status: 'exited_early', failed: true, label: 'Exited early — Failed' },
   ] as const)('labels $status with failed=$failed', ({ status, failed, label }) => {
-    expect(mapAutomationRuns([{ ...run, status, failed }])[0].statusLabel).toBe(label);
+    expect(mapAutomationRun({ ...run, status, failed }).statusLabel).toBe(label);
   });
 });

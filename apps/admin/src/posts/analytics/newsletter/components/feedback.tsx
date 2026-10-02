@@ -33,6 +33,7 @@ import { useState } from 'react';
 import PendingSendEmpty from '@/posts/analytics/email-sending-status/pending-send-empty';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
 import { useShade } from '@tryghost/shade/app';
+import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
 
 interface FeedbackProps {
   feedbackStats: {
@@ -52,7 +53,12 @@ const Feedback: React.FC<FeedbackProps> = ({ feedbackStats }) => {
 
   // Get detailed feedback data for the active tab (all data, not limited)
   const score = activeFeedbackTab === 'positive' ? 1 : 0;
-  const { feedback, isLoading: isFeedbackLoading } = usePostFeedback(postId || '', score);
+  const { post } = usePostAnalytics();
+  const { feedback, isLoading: isFeedbackLoading } = usePostFeedback(
+    postId || '',
+    score,
+    post?.email,
+  );
 
   // Pagination for feedback
   const {

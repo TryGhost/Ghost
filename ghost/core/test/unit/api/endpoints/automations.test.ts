@@ -68,6 +68,23 @@ describe('Automations controller', function () {
   });
 
   describe('add', function () {
+    let labsIsSetStub: sinon.SinonStub;
+
+    beforeEach(function () {
+      labsIsSetStub = sinon.stub(labs, 'isSet').returns(true);
+    });
+
+    for (const flag of ['automations', 'automationsPerTier']) {
+      it(`returns 404 when ${flag} labs flag is disabled`, async function () {
+        labsIsSetStub.withArgs(flag).returns(false);
+
+        await assert.rejects(automationsController.add.query(), {
+          errorType: 'NotFoundError',
+          statusCode: 404,
+        });
+      });
+    }
+
     for (const count of [0, 19]) {
       it(`returns NOT_IMPLEMENTED with ${count} automations`, async function () {
         vi.mocked(automationsApi.getNumberOfAutomations).mockResolvedValue(count);

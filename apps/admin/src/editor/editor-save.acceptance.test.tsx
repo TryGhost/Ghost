@@ -1,3 +1,4 @@
+import { toast } from 'sonner';
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
@@ -24,6 +25,12 @@ import {
 import { editorBody } from '@tryghost/test-data/selectors/editor';
 import { editorScreen } from '@/editor/editor.screen';
 import { OLD_SCHEMA_CORPUS } from '@/editor/engine/__fixtures__';
+import {
+  EXCERPT_MAX,
+  EXCERPT_TOO_LONG,
+  TITLE_MAX,
+  TITLE_TOO_LONG,
+} from '@/editor/session/settings-fields';
 import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
@@ -102,6 +109,8 @@ function bodyElement(): Element | null {
 }
 
 const POST_NOT_FOUND = { errors: [{ type: 'NotFoundError', message: 'Post not found.' }] };
+// A limit the editor does not hold the writer to before saving.
+const CAPTION_REFUSED = 'Validation failed for feature_image_caption.';
 // Ghost answers a request whose session has gone with this 403.
 const SESSION_GONE = { errors: [{ type: 'NoPermissionError', message: 'Authorization failed' }] };
 
@@ -296,6 +305,27 @@ describe('Post editor saving', () => {
       updated_at: LOADED_AT,
     });
     expect(String(submittedPost(saveApi).lexical)).toContain('Hello from React and more');
+    await expect.element(editorScreen.saveToast('Post saved')).toBeVisible();
+  });
+
+  it('replaces the last save toast with the next one on a second Cmd-S', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
+
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await appendToBody(' and more');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+    await expect.element(editorScreen.saveToast('Post saved')).toBeVisible();
+
+    await appendToBody(' and again');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+    await expect.poll(() => saveApi.requests.length).toBe(2);
+
+    // Outlasts the dismissed toast's exit animation.
+    await new Promise((resolve) => {
+      setTimeout(resolve, 500);
+    });
+    await expect(editorScreen.saveToast('Post saved')).toHaveCount(1);
   });
 
   it('lands a renamed draft clean, with the slug the server generated', async () => {
@@ -327,6 +357,10 @@ describe('Post editor saving', () => {
 
     await expect.element(editorScreen.status()).toHaveTextContent('Saving');
     await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+    // Toasts render in order, so one raised after the save would follow its toast onto the screen.
+    toast('Later toast');
+    await expect.element(editorScreen.saveToast('Later toast')).toBeVisible();
+    await expect(editorScreen.saveToast('Post saved')).toHaveCount(0);
   });
 
   it('saves its own version when a refetch finds the post published elsewhere, and collides', async () => {
@@ -467,6 +501,101 @@ describe('Post editor saving', () => {
       .toHaveTextContent('Hello from React and more and then some');
     await expect(editorScreen.notFound()).toHaveCount(0);
     expect(bodyElement()).toBe(mountedBody);
+  });
+
+  it('holds a title past the limit where it is typed, and refuses it on Cmd-S', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+
+    await editorScreen.titleInput().fill('a'.repeat(TITLE_MAX + 1));
+    await editorScreen.body().click();
+
+    await expect.element(editorScreen.titleInput()).toHaveAttribute('aria-invalid', 'true');
+    await expect.element(editorScreen.titleInput()).toHaveAccessibleDescription(TITLE_TOO_LONG);
+    await expect.element(editorScreen.pendingSaveNotice()).toHaveTextContent(TITLE_TOO_LONG);
+    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+
+    await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(TITLE_TOO_LONG);
+    expect(saveApi.requests).toHaveLength(0);
+
+    await editorScreen.titleInput().fill('A title the server keeps');
+    await editorScreen.body().click();
+
+    await expect(saveApi).toHaveSavedFields({ title: 'A title the server keeps' });
+    await expect.element(editorScreen.titleInput()).toHaveAttribute('aria-invalid', 'false');
+  });
+
+  it.each([
+    {
+      home: 'under the title',
+      options: withFastAutosave({ labs: { editorReact: true, editorExcerpt: true } }),
+      open: async () => {},
+      excerpt: () => editorScreen.excerptInput(),
+    },
+    {
+      home: 'in the settings panel',
+      options: FLAG_ON,
+      open: () => editorScreen.settingsToggle().click(),
+      excerpt: () => editorScreen.settingsExcerpt(),
+    },
+  ])(
+    'holds an excerpt past the limit $home, and refuses it on Cmd-S',
+    async ({ options, open, excerpt }) => {
+      const saveApi = fakeSavablePost({ custom_excerpt: null });
+      await renderAdminApp(`/editor/post/${POST_ID}`, options);
+      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+      await open();
+
+      await excerpt().fill('a'.repeat(EXCERPT_MAX + 1));
+      await editorScreen.body().click();
+
+      await expect.element(excerpt()).toHaveAttribute('aria-invalid', 'true');
+      await expect.element(excerpt()).toHaveAccessibleDescription(EXCERPT_TOO_LONG);
+      await expect.element(editorScreen.pendingSaveNotice()).toHaveTextContent(EXCERPT_TOO_LONG);
+      await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+
+      await userEvent.keyboard('{Meta>}s{/Meta}');
+
+      await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(EXCERPT_TOO_LONG);
+      expect(saveApi.requests).toHaveLength(0);
+
+      await excerpt().fill('An excerpt the server keeps');
+      await editorScreen.body().click();
+
+      await expect(saveApi).toHaveSavedFields({ custom_excerpt: 'An excerpt the server keeps' });
+    },
+  );
+
+  it('shows the reason the server gave for refusing a save', async () => {
+    fakeSavablePost();
+    const refusedSave = fakeAdminEndpoint(
+      'PUT',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      {
+        errors: [
+          {
+            type: 'ValidationError',
+            message: 'Validation error, cannot edit post.',
+            context: CAPTION_REFUSED,
+            property: 'feature_image_caption',
+          },
+        ],
+      },
+      { status: 422 },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+
+    await appendToBody(' and more');
+
+    await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(CAPTION_REFUSED);
+    await expect
+      .element(editorScreen.saveErrorBanner())
+      .not.toHaveTextContent('Validation error, cannot edit post.');
+    expect(refusedSave.requests).toHaveLength(1);
   });
 
   it('leaves tags alone when it saves', async () => {

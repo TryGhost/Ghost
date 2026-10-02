@@ -6,6 +6,7 @@ import {
   fakeAdminEndpoint,
   fakeEditorChrome,
   fakeEditorPost,
+  fakePages,
   post,
   renderAdminApp,
   submittedPost,
@@ -16,8 +17,12 @@ import { editorScreen } from '@/editor/editor.screen';
 import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
+const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
+const SCHEDULED_AT = '2099-12-01T10:00:00.000Z';
+const POST_UUID = 'post-uuid';
+const PAGE_ID = 'pg123';
 
 const POLL = { timeout: 10_000 };
 
@@ -69,6 +74,57 @@ describe('Post settings URL', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openSidebar();
     await expect(page.getByRole('link', { name: 'View post' })).toHaveCount(0);
+  });
+
+  it('links to a sent post’s saved URL and previews its email URL', async () => {
+    fakeSavablePost({
+      status: 'sent',
+      published_at: PUBLISHED_AT,
+      uuid: POST_UUID,
+      url: 'https://example.com/sent-post/',
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    await expect
+      .element(page.getByRole('link', { name: 'View post' }))
+      .toHaveAttribute('href', 'https://example.com/sent-post/');
+    await expect
+      .element(editorScreen.settingsUrlPreview())
+      .toHaveTextContent(`test.com/email/${POST_UUID}/`);
+  });
+
+  it('links a scheduled post to its preview', async () => {
+    fakeSavablePost({ status: 'scheduled', published_at: SCHEDULED_AT, uuid: POST_UUID });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    await expect
+      .element(page.getByRole('link', { name: 'Preview' }))
+      .toHaveAttribute('href', `http://test.com/p/${POST_UUID}/`);
+    await expect(page.getByRole('link', { name: 'View post' })).toHaveCount(0);
+    await expect
+      .element(editorScreen.settingsUrlPreview())
+      .toHaveTextContent('test.com/hello-from-react/');
+  });
+
+  it('links a scheduled page to its preview', async () => {
+    fakeEditorChrome();
+    fakePages([]);
+    const savedPage = post({
+      id: PAGE_ID,
+      title: 'About',
+      slug: 'about',
+      status: 'scheduled',
+      published_at: SCHEDULED_AT,
+      updated_at: PUBLISHED_AT,
+      uuid: POST_UUID,
+    });
+    fakeAdminEndpoint('GET', new RegExp(`^/pages/${PAGE_ID}/\\?`), { pages: [savedPage] });
+    await renderAdminApp(`/editor/page/${PAGE_ID}`, FLAG_ON);
+    await openSidebar();
+    await expect.element(page.getByLabelText('Page URL')).toBeVisible();
+    await expect
+      .element(page.getByRole('link', { name: 'Preview' }))
+      .toHaveAttribute('href', `http://test.com/p/${POST_UUID}/`);
   });
 
   it('saves the focused URL edit with Cmd-S while generation is pending', async () => {
@@ -153,27 +209,20 @@ describe('Post settings URL', () => {
     await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
   });
 
-  it('stages a published post’s slug until Update', async () => {
+  it('saves a published post’s slug on its own', async () => {
     fakeSlugs();
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openSidebar();
 
-    await expect.element(editorScreen.updateButton()).toBeDisabled();
-
     await editorScreen.settingsSlug().fill('published-slug');
     await userEvent.keyboard('{Enter}');
 
-    // The unsaved signal for a published post is the Update button, not a save.
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
-    expect(saveApi.requests).toHaveLength(0);
-
-    await userEvent.keyboard('{Meta>}s{/Meta}');
-
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
       slug: 'published-slug',
-      status: 'published',
     });
     await expect.element(editorScreen.updateButton()).toBeDisabled();
   });

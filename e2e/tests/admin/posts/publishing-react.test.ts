@@ -89,8 +89,7 @@ test.describe('Ghost Admin - Publishing (React)', () => {
 
     await editor.publishFlow.open();
     await expect(editor.publishFlow.optionsStep).toBeVisible();
-    // No date: the React picker takes its day from a calendar popover, and the
-    // default schedule is ten minutes out
+    // No date or time: the default schedule is ten minutes out
     await editor.publishFlow.schedule({});
     await Promise.all([waitForPostSave(page, postId), editor.publishFlow.confirm()]);
     await expect(page).toHaveURL('/ghost/#/posts');

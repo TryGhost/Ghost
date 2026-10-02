@@ -170,12 +170,25 @@ describe('Floating editor shell', () => {
     expect(document.activeElement).toBe(editorScreen.settingsToggle().element());
 
     const pane = editorScreen.scrollPane();
+    const settingsPane = editorScreen.settingsScrollPane();
+    const heading = editorScreen
+      .settingsSidebar()
+      .getByRole('heading', { name: 'Post settings', exact: true })
+      .element();
+    const headingBefore = heading.getBoundingClientRect();
+    const fieldsBefore = editorScreen.settingsSlug().element().getBoundingClientRect();
+    expect(settingsPane.contains(heading)).toBe(false);
     pane.scrollTo({ top: 700 });
     await expect.poll(() => pane.scrollTop).toBe(700);
-    expect(sidebar.scrollTop).toBe(0);
+    expect(settingsPane.scrollTop).toBe(0);
 
-    sidebar.scrollTo({ top: sidebar.scrollHeight });
-    await expect.poll(() => sidebar.scrollTop).toBeGreaterThan(0);
+    settingsPane.scrollTo({ top: settingsPane.scrollHeight });
+    await expect.poll(() => settingsPane.scrollTop).toBeGreaterThan(0);
+    expect(heading.getBoundingClientRect()).toEqual(headingBefore);
+    expect(editorScreen.settingsSlug().element().getBoundingClientRect().top).toBeLessThan(
+      fieldsBefore.top,
+    );
+    expect(sidebar.scrollTop).toBe(0);
     expect(pane.scrollTop).toBe(700);
     expect(editorScreen.helpLink().element().getBoundingClientRect().right).toBe(footerAfter.right);
     expect(document.documentElement.scrollHeight).toBeLessThanOrEqual(window.innerHeight);

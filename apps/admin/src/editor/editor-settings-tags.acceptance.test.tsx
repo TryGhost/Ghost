@@ -5,6 +5,7 @@ import { settingsTagsCreateText } from '@tryghost/test-data/selectors/editor';
 
 import {
   currentUserResponse,
+  dragByPointer,
   fakeAdminEndpoint,
   fakeEditorChrome,
   fakeTags,
@@ -13,7 +14,6 @@ import {
   staffRole,
   submittedPost,
   tag,
-  unsavedChangesGuarded,
   withoutAutosave,
   type EndpointCapture,
   type StaffRoleName,
@@ -154,7 +154,7 @@ describe('Post settings tags', () => {
     await expect.element(editorScreen.settingsTagsField()).toHaveTextContent('Breaking News');
   });
 
-  it('reads a tag swapped for a same-named one as a change', async () => {
+  it('writes a tag swapped for a same-named one by its own id', async () => {
     const { saveApi } = fakeTaggablePost({
       status: 'published',
       published_at: PUBLISHED_AT,
@@ -168,13 +168,8 @@ describe('Post settings tags', () => {
     await openTagList();
     await editorScreen.settingsTagOption(/news-2/).click();
 
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
-    await expect.poll(unsavedChangesGuarded).toBe(true);
-
-    await userEvent.keyboard('{Meta>}s{/Meta}');
-
-    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-    expect(submittedTags(saveApi)).toEqual([{ id: 'tag4' }]);
+    await expect.poll(() => submittedTags(saveApi), POLL).toEqual([{ id: 'tag4' }]);
+    await expect.element(editorScreen.updateButton()).toBeDisabled();
   });
 
   it('creates a tag from a typed name through the post’s own save', async () => {
@@ -329,26 +324,87 @@ describe('Post settings tags', () => {
     await expect(saveApi).toHaveSavedFields({ tags: [{ id: 'tag2' }] });
   });
 
-  it('stages a published post’s tags until Update', async () => {
+  it('drags a tag before another and saves the new order', async () => {
+    const { saveApi } = fakeTaggablePost({ tags: [NEWS, SPORT] });
+    fakeTags([NEWS, SPORT]);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+
+    await dragByPointer(
+      editorScreen.removeSettingsTag('Sport'),
+      editorScreen.removeSettingsTag('News'),
+    );
+
+    await expect(saveApi).toHaveSavedFields({ tags: [{ id: 'tag2' }, { id: 'tag1' }] });
+    // The click that ends the drag does not remove the chip it lands on.
+    await expect(editorScreen.settingsTagsTokens()).toHaveCount(2);
+    expect(saveApi.requests).toHaveLength(1);
+  });
+
+  it('leaves the tags alone when a drag ends where it began', async () => {
+    const { saveApi } = fakeTaggablePost({ tags: [NEWS, SPORT] });
+    fakeTags([NEWS, SPORT]);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+
+    // Past the press threshold, but still nearest its own place.
+    await dragByPointer(editorScreen.removeSettingsTag('News'), { x: 0, y: 6 });
+
+    await expect(editorScreen.settingsTagsTokens()).toHaveCount(2);
+    expect(saveApi.requests).toHaveLength(0);
+  });
+
+  it('removes a tag on a press that barely moves', async () => {
+    const { saveApi } = fakeTaggablePost({ tags: [NEWS, SPORT] });
+    fakeTags([NEWS, SPORT]);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+
+    await dragByPointer(editorScreen.removeSettingsTag('News'), { x: 2, y: 1 });
+
+    await expect(saveApi).toHaveSavedFields({ tags: [{ id: 'tag2' }] });
+  });
+
+  it('saves a published post’s tag order on its own', async () => {
+    const { saveApi } = fakeTaggablePost({
+      status: 'published',
+      published_at: PUBLISHED_AT,
+      tags: [NEWS, SPORT],
+    });
+    fakeTags([NEWS, SPORT]);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+
+    await dragByPointer(
+      editorScreen.removeSettingsTag('Sport'),
+      editorScreen.removeSettingsTag('News'),
+    );
+
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
+      tags: [{ id: 'tag2' }, { id: 'tag1' }],
+    });
+    await expect.element(editorScreen.updateButton()).toBeDisabled();
+  });
+
+  it('saves a published post’s tags on their own', async () => {
     const { saveApi } = fakeTaggablePost({ status: 'published', published_at: PUBLISHED_AT });
     fakeTags([NEWS]);
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openSidebar();
     await openTagList();
 
-    await expect.element(editorScreen.updateButton()).toBeDisabled();
-
     await editorScreen.settingsTagOption('News').click();
 
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
-    await expect.poll(unsavedChangesGuarded).toBe(true);
-    expect(saveApi.requests).toHaveLength(0);
-
-    await userEvent.keyboard('{Meta>}s{/Meta}');
-
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-    expect(submittedTags(saveApi)).toEqual([{ id: 'tag1' }]);
-    expect(submittedPost(saveApi)).toMatchObject({ status: 'published' });
+    expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
+      tags: [{ id: 'tag1' }],
+    });
+    await expect.element(editorScreen.updateButton()).toBeDisabled();
   });
 
   it('adopts a tag added elsewhere while the writer has not touched tags', async () => {

@@ -53,16 +53,6 @@ export default class ApplicationController extends Controller {
         return null;
     }
 
-    get showScriptExtension() {
-        const {session} = this;
-
-        if (!session.isAuthenticated || !session.user) {
-            return false;
-        }
-
-        return this.config.clientExtensions?.script;
-    }
-
     @action
     async openUpdateTab() {
         if (!this.showUpdateBanner) {

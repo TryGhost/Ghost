@@ -486,7 +486,7 @@ test.describe('Ghost Admin - Post editor settings (React)', () => {
     expect(escaped).toEqual([]);
   });
 
-  test('published post - Access, meta and X card changes land on Update, gate the site, and Delete removes the post', async ({
+  test('published post - Access, meta and X card changes save as they are made, gate the site, and Delete removes the post', async ({
     browser,
     baseURL,
     page,
@@ -528,18 +528,19 @@ test.describe('Ghost Admin - Post editor settings (React)', () => {
     await settings.xCard.removeImageButton.click();
     await expect(settings.xCard.removeImageButton).toBeHidden();
     await settings.closeSection('x-card');
-    // A published post stages every settings edit until Update, so this click
-    // is the only save
-    await Promise.all([waitForPostSave(page, created.id), editor.header.updateButton.click()]);
 
+    // A published post saves each settings edit as it is made, leaving nothing for Update.
+    await expect
+      .poll(() => readPost(page, created.id), { timeout: 15000 })
+      .toMatchObject({
+        visibility: 'members',
+        meta_title: metaTitle,
+        twitter_title: xTitle,
+        twitter_image: null,
+      });
     const updated = await readPost(page, created.id);
-    expect(updated).toMatchObject({
-      visibility: 'members',
-      meta_title: metaTitle,
-      twitter_title: xTitle,
-      twitter_image: null,
-    });
     expect(updated.og_image).toMatch(storedAs(facebookImageName));
+    await expect(editor.header.updateButton).toBeDisabled();
 
     await withIsolatedPage(browser, { baseURL }, async ({ page: visitorPage }) => {
       const sitePost = new PostPage(visitorPage);

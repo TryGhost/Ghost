@@ -29,6 +29,11 @@ export interface RenderAdminAppOptions {
    * autosave out of the way or run it fast; defaults to the editor's 3s.
    */
   autosaveDebounceMs?: number;
+  /**
+   * Router location state for the first entry, as a navigation from another
+   * screen would leave it.
+   */
+  locationState?: unknown;
 }
 
 /**
@@ -48,7 +53,7 @@ export function currentRoute(): string {
  */
 export async function renderAdminApp(
   route: string = '/',
-  { labs, boot, autosaveDebounceMs }: RenderAdminAppOptions = {},
+  { labs, boot, autosaveDebounceMs, locationState }: RenderAdminAppOptions = {},
 ): Promise<Awaited<ReturnType<typeof render>> & { queryClient: QueryClient }> {
   let overrides: BootOverrides = labs ? composeLabsBootOverrides(labs, boot) : { ...boot };
   if (autosaveDebounceMs !== undefined) {
@@ -90,6 +95,11 @@ export async function renderAdminApp(
   // The framework RouterProvider is hash-based; set the initial route
   // before the router is created.
   window.location.hash = `#${route}`;
+  // A same-route hash assignment keeps the previous test's entry and its state.
+  window.history.replaceState(
+    locationState === undefined ? null : { usr: locationState, key: 'initial', idx: 0 },
+    '',
+  );
 
   const framework = createFrameworkProps({
     externalNavigate: (link) => {

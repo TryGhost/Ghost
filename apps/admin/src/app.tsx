@@ -14,7 +14,9 @@ import {
 } from './ember-bridge';
 import { AdminAlerts, createAlertsStore, useServerNotifications } from './alerts';
 import { DocsBotWidgetHost } from './docsbot-widget-host';
+import { ClientExtensionScript } from './client-extension-script';
 import { useAccentColorProperties } from './hooks/use-accent-color-properties';
+import { useDocumentTitle } from './hooks/use-document-title';
 import { SignedOutApp, useAuthNotice, useAuthScreensOwner } from './auth/api';
 
 function App() {
@@ -29,6 +31,7 @@ function App() {
   // (e.g. force-upgrade) ahead of screen-level data fetches.
   useBrowseSettings();
   useAccentColorProperties();
+  useDocumentTitle();
   useEmberAuthSync();
   useEmberDataSync();
   useEmberListReturnSync();
@@ -46,6 +49,7 @@ function App() {
           <Outlet />
           <EmberRoot />
           <DocsBotWidgetHost />
+          <ClientExtensionScript />
         </AdminLayout>
       ) : isSignedOut && authScreensOwner === 'react' ? (
         <>

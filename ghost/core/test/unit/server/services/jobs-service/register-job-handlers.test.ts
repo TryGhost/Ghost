@@ -25,6 +25,7 @@ describe('register-job-handlers', function () {
   let membersService: { handleImportJob: sinon.SinonStub };
   let siteImporter: { executeImport: sinon.SinonStub };
   let emailService: { handleSendEmailJob: sinon.SinonStub };
+  let tinybirdSync: { sync: sinon.SinonStub };
 
   // Handlers are looked up by their job type rather than registration order,
   // so adding a handler does not silently shift which one a test exercises.
@@ -53,6 +54,7 @@ describe('register-job-handlers', function () {
     membersService = { handleImportJob: sinon.stub().resolves() };
     siteImporter = { executeImport: sinon.stub().resolves() };
     emailService = { handleSendEmailJob: sinon.stub().resolves() };
+    tinybirdSync = { sync: sinon.stub().resolves() };
 
     registerJobHandlers({
       gifts: { startFetch: sinon.stub().resolves() },
@@ -67,6 +69,7 @@ describe('register-job-handlers', function () {
       membersService,
       emailService,
       siteImporter,
+      tinybirdSync,
     });
   });
 
@@ -288,5 +291,17 @@ describe('register-job-handlers', function () {
       () => handlerFor('send-email')(new SendEmailJob({ emailId: 'email-id' })),
       error,
     );
+  });
+
+  it('runs tinybird-sync with the injected Tinybird sync service', async function () {
+    await handlerFor('tinybird-sync')({});
+
+    sinon.assert.calledOnceWithExactly(tinybirdSync.sync);
+  });
+
+  it('registers tinybird-sync on its own queue, one pass at a time', function () {
+    const registration = registrationFor('tinybird-sync');
+
+    assert.deepEqual(registration.args[2], { queue: 'tinybird-sync', concurrency: 1 });
   });
 });
