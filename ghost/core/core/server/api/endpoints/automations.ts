@@ -1,3 +1,4 @@
+import type { Controller, Frame } from '@tryghost/api-framework';
 import errors from '@tryghost/errors';
 import * as automationsApi from '../../services/automations/automations-api';
 // @ts-expect-error This module lacks type definitions.
@@ -5,20 +6,11 @@ import labs from '../../../shared/labs';
 
 const MAX_AUTOMATIONS = 20;
 
-type ReadFrame = {
-  data: {
-    id: string;
-  };
-};
-
-type EditFrame = {
-  options: {
-    id: string;
-  };
-  data?: {
-    automations?: unknown[];
-  };
-};
+type ReadFrame = Frame<{ data: { id: string } }>;
+type EditFrame = Frame<{
+  options: { id: string };
+  data: { automations?: unknown[] };
+}>;
 
 const assertCanAddAutomations = (): void => {
   if (!labs.isSet('automations') || !labs.isSet('automationsPerTier')) {
@@ -111,4 +103,10 @@ export const controller = {
       automationsApi.requestPoll();
     },
   },
-};
+} satisfies Controller<{
+  browse: Frame;
+  read: ReadFrame;
+  add: Frame;
+  edit: EditFrame;
+  poll: Frame;
+}>;
