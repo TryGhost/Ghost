@@ -40,6 +40,7 @@ export function mapUpcomingRunSteps(
       state: 'planned' as const,
       statusLabel: 'Not reached',
     };
+    const startsAt = expected;
     switch (next.type) {
       case 'wait': {
         const duration = waitDuration(next.data.wait_hours);
@@ -71,6 +72,9 @@ export function mapUpcomingRunSteps(
         label: 'est.',
         value: new Date(expected).toISOString(),
         estimated: true,
+        ...(next.type === 'wait' && startsAt !== undefined
+          ? { rangeStart: new Date(startsAt).toISOString() }
+          : {}),
       };
     }
     current = next.id;

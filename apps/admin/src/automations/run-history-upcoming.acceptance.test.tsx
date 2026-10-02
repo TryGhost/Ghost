@@ -71,18 +71,24 @@ describe('Upcoming steps in active run history', () => {
       'Completed',
     ]);
     await expect.element(cards.nth(2)).toHaveTextContent('Not reached');
-    for (const card of [cards.nth(2), cards.nth(3)]) {
-      const time = card.element().querySelector('time')!;
-      expect(time.textContent).toBe(
-        `est. ${new Date(time.dateTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`,
+    const waitTimes = cards.nth(2).element().querySelectorAll('time');
+    expect(waitTimes).toHaveLength(2);
+    const [start, end] = [...waitTimes].map((time) => new Date(time.dateTime));
+    const shortDate = { month: 'short', day: 'numeric' } as const;
+    const fullDate = { dateStyle: 'full' } as const;
+    await expect
+      .element(cards.nth(2))
+      .toHaveTextContent(
+        `est. ${start.toLocaleDateString(undefined, shortDate)}–${end.toLocaleDateString(undefined, shortDate)}`,
       );
-      expect(time.title).toBe(
-        `Estimated date: ${new Date(time.dateTime).toLocaleDateString(undefined, { dateStyle: 'full' })}`,
-      );
-    }
-    expect(cards.nth(3).element().querySelector('time')?.dateTime).toBe(
-      cards.nth(2).element().querySelector('time')?.dateTime,
+    expect(end.getTime() - start.getTime()).toBe(48 * 60 * 60 * 1000);
+    expect(waitTimes[0].parentElement?.title).toBe(
+      `Estimated dates: ${start.toLocaleDateString(undefined, fullDate)}–${end.toLocaleDateString(undefined, fullDate)}`,
     );
+    const emailTime = cards.nth(3).element().querySelector('time')!;
+    expect(emailTime.textContent).toBe(`est. ${end.toLocaleDateString(undefined, shortDate)}`);
+    expect(emailTime.title).toBe(`Estimated date: ${end.toLocaleDateString(undefined, fullDate)}`);
+    expect(emailTime.dateTime).toBe(waitTimes[1].dateTime);
     expect(cards.nth(4).element().querySelector('time')).toBeNull();
     expect(request.requests).toHaveLength(2);
     await close();

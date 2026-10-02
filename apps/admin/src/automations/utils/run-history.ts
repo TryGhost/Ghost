@@ -10,6 +10,7 @@ export type HistoryTimestamp = {
   label: string;
   value: string;
   estimated?: boolean;
+  rangeStart?: string;
   related?: { label: string; value: string };
 };
 export type HistoryCardData = {

@@ -82,13 +82,21 @@ describe('upcoming downstream steps', () => {
       '2026-09-15T12:30:00.000Z',
       undefined,
     ]);
+    expect(cards.map((card) => card.timestamp?.rangeStart)).toEqual([
+      eligible,
+      '2026-09-15T12:00:00.000Z',
+      undefined,
+      undefined,
+    ]);
     expect(cards[0].timestamp).toMatchObject({ label: 'est.', estimated: true });
   });
 
   it('estimates an overdue pending step from now without changing its recorded eligibility', () => {
     const cards = mapUpcomingRunSteps(active, plan, Date.parse('2026-09-20T15:00:00.000Z'));
     expect(cards[0].timestamp?.value).toBe('2026-09-22T15:00:00.000Z');
-    expect(cards[1].timestamp).toEqual(cards[0].timestamp);
+    expect(cards[0].timestamp?.rangeStart).toBe('2026-09-20T15:00:00.000Z');
+    expect(cards[1].timestamp?.value).toBe(cards[0].timestamp?.value);
+    expect(cards[1].timestamp?.rangeStart).toBeUndefined();
     expect(mapRunHistory(active).at(-1)?.timestamp?.value).toBe(eligible);
   });
 
