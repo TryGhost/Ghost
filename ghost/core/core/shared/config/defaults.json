@@ -42,7 +42,6 @@
     "assetSrc": "core/frontend/src"
   },
   "adapters": {
-    "upgrade": { "active": "NoopUpgradeAdapter" },
     "sso": {
       "active": "DefaultSSOAdapter"
     },
@@ -61,6 +60,9 @@
       "active": "FileStore",
       "FileStore": {},
       "S3RouteSettingsStore": {}
+    },
+    "upgrade": {
+      "active": "NoopUpgradeAdapter"
     },
     "jobs": {
       "active": "InMemoryJobsBackend",
@@ -181,7 +183,7 @@
       "freeRetries": 100
     },
     "upgrade_api_block": {
-      "freeRetries": 179,
+      "freeRetries": 599,
       "minWait": 60000,
       "maxWait": 60000,
       "lifetime": 60

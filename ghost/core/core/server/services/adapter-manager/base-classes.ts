@@ -5,7 +5,7 @@ import { CacheBase } from '@tryghost/adapter-base-cache';
 import { RedirectsStoreBase } from '@tryghost/adapter-base-redirects';
 import { RouteSettingsStoreBase } from '@tryghost/adapter-base-route-settings';
 import { JobsBackendBase } from '@tryghost/adapter-base-jobs';
-import { UpgradeAdapter } from '@tryghost/adapter-base-upgrade';
+import { UpgradeBase } from '@tryghost/adapter-base-upgrade';
 
 import type { BaseClassMap } from './adapter-manager';
 
@@ -21,7 +21,7 @@ export const baseClasses = {
   redirects: RedirectsStoreBase,
   'route-settings': RouteSettingsStoreBase,
   jobs: JobsBackendBase,
-  upgrade: UpgradeAdapter,
+  upgrade: UpgradeBase,
 } satisfies BaseClassMap;
 
 /**

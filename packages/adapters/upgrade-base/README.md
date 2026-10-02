@@ -7,7 +7,7 @@ heartbeats and file protocol versions belong inside the host's adapter.
 
 ## Implementation
 
-Extend the named `UpgradeAdapter` export and implement these async methods:
+Extend the named `UpgradeBase` export and implement these async methods:
 
 | Method                                           | Result                                            |
 | ------------------------------------------------ | ------------------------------------------------- |
@@ -34,6 +34,9 @@ A label such as `nightly` is usable only if the host approves and resolves it.
 Major-update compatibility checks and channel policy belong to the host; these
 types do not implement them. An individual adapter may support only stable
 same-major updates.
+
+The adapter contract uses camelCase keys. Ghost maps request and response keys
+to snake_case at the [Admin API boundary](../../../ghost/core/core/server/services/upgrades/README.md).
 
 ## Durable acceptance
 
@@ -96,7 +99,7 @@ without exposing raw exception messages.
 The standard ESM build supports CommonJS on Ghost's supported Node versions:
 
 ```js
-const {UpgradeAdapter, UpgradeAdapterError} = require('@tryghost/adapter-base-upgrade');
+const {UpgradeBase, UpgradeAdapterError} = require('@tryghost/adapter-base-upgrade');
 ```
 
 Production uses `build/` rather than the development `source` condition. Ghost

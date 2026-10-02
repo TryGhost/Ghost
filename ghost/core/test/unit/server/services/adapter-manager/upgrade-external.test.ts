@@ -5,7 +5,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { AdapterManager } from '../../../../../core/server/services/adapter-manager/adapter-manager';
 const configUtils = require('../../../../utils/config-utils');
-const { UpgradeAdapter } = require('@tryghost/adapter-base-upgrade');
+const { UpgradeBase } = require('@tryghost/adapter-base-upgrade');
 
 // The Docker implementation remains in its own repository. CI/operators opt in
 // by supplying that checkout's adapter directory; no copied fixture can drift.
@@ -35,7 +35,7 @@ const externalPath = process.env.GHOST_UPGRADE_ADAPTER_PATH;
         process.execPath,
         [
           '-e',
-          `const {createRequire}=require('node:module'); const r=createRequire(${JSON.stringify(path.join(adapterPath, 'index.js'))}); const {UpgradeAdapter}=r('@tryghost/adapter-base-upgrade'); const Adapter=r('./index.js'); require('node:assert/strict').ok(new Adapter() instanceof UpgradeAdapter); require('node:assert/strict').match(r.resolve('@tryghost/adapter-base-upgrade'), /build/);`,
+          `const {createRequire}=require('node:module'); const r=createRequire(${JSON.stringify(path.join(adapterPath, 'index.js'))}); const {UpgradeBase}=r('@tryghost/adapter-base-upgrade'); const Adapter=r('./index.js'); require('node:assert/strict').ok(new Adapter() instanceof UpgradeBase); require('node:assert/strict').match(r.resolve('@tryghost/adapter-base-upgrade'), /build/);`,
         ],
         { env: { ...process.env, NODE_OPTIONS: '' } },
       );
@@ -47,7 +47,7 @@ const externalPath = process.env.GHOST_UPGRADE_ADAPTER_PATH;
         FileDropUpgradeAdapter: { requestsPath, publicPath },
       });
       const manager = new AdapterManager({
-        baseClasses: { upgrade: UpgradeAdapter },
+        baseClasses: { upgrade: UpgradeBase },
         config: configUtils.config,
         loadAdapterFromPath: require,
         pathsToAdapters: [path.join(root, 'content/adapters')],
@@ -55,7 +55,7 @@ const externalPath = process.env.GHOST_UPGRADE_ADAPTER_PATH;
 
       manager.init();
       const adapter = manager.getAdapter('upgrade');
-      assert.ok(adapter instanceof UpgradeAdapter);
+      assert.ok(adapter instanceof UpgradeBase);
       assert.deepEqual(await adapter.getStatus(), {
         supported: true,
         availability: 'unavailable',

@@ -6,7 +6,7 @@ import type {
 } from './schemas.ts';
 
 /** Host-managed upgrades. Construction must not perform I/O or require a host connection. */
-export abstract class UpgradeAdapter {
+export abstract class UpgradeBase {
   declare readonly requiredFns: readonly ['getStatus', 'createRequest', 'getJob'];
 
   constructor(_config: object = {}) {

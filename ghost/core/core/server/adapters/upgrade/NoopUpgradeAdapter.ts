@@ -1,5 +1,5 @@
 import {
-  UpgradeAdapter,
+  UpgradeBase,
   UpgradeAdapterError,
   type UpgradeStatus,
   type UpgradeJobResult,
@@ -7,7 +7,7 @@ import {
   type CreateUpgradeRequest,
 } from '@tryghost/adapter-base-upgrade';
 
-export default class NoopUpgradeAdapter extends UpgradeAdapter {
+export default class NoopUpgradeAdapter extends UpgradeBase {
   async getStatus(): Promise<UpgradeStatus> {
     return { supported: false, reason: 'not-configured' };
   }

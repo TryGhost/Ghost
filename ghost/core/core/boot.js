@@ -99,6 +99,7 @@ async function initCore({ ghostServer, config }) {
   debug('Begin: adapters');
   const adapterManager = require('./server/services/adapter-manager').default;
   adapterManager.init();
+  require('./server/services/upgrades').init();
   debug('End: adapters');
 
   // Limit image processing to the configured image formats before anything

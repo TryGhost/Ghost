@@ -3,8 +3,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { AdapterManager } from '../../../../../core/server/services/adapter-manager/adapter-manager';
-import type { UpgradeAdapter as Adapter } from '@tryghost/adapter-base-upgrade';
-const { UpgradeAdapter } = require('@tryghost/adapter-base-upgrade');
+import type { UpgradeBase as Adapter } from '@tryghost/adapter-base-upgrade';
+const { UpgradeBase } = require('@tryghost/adapter-base-upgrade');
 const manager = require('../../../../../core/server/services/adapter-manager').default;
 const configUtils = require('../../../../utils/config-utils');
 
@@ -17,7 +17,7 @@ describe('upgrade adapter wiring', () => {
   it('loads the default without a supervisor at boot', async () => {
     manager.init();
     const adapter: Adapter = manager.getAdapter('upgrade');
-    assert.ok(adapter instanceof UpgradeAdapter);
+    assert.ok(adapter instanceof UpgradeBase);
     assert.equal(adapter.constructor.name, 'NoopUpgradeAdapter');
     assert.deepEqual(await adapter.getStatus(), {
       supported: false,
@@ -34,8 +34,8 @@ it('loads a CommonJS host adapter and passes normalized options without supervis
     fs.writeFileSync(
       path.join(adapterPath, 'index.js'),
       `
-      const {UpgradeAdapter} = require(${JSON.stringify(require.resolve('@tryghost/adapter-base-upgrade'))});
-      module.exports = class HostUpgradeAdapter extends UpgradeAdapter {
+      const {UpgradeBase} = require(${JSON.stringify(require.resolve('@tryghost/adapter-base-upgrade'))});
+      module.exports = class HostUpgradeAdapter extends UpgradeBase {
         constructor(options) { super(options); this.options = options; }
         async getStatus() { return {supported: true, availability: 'unavailable', backupRequired: true}; }
         async createRequest() { throw new Error('No supervisor'); }
@@ -51,14 +51,14 @@ it('loads a CommonJS host adapter and passes normalized options without supervis
       },
     });
     const hostManager = new AdapterManager({
-      baseClasses: { upgrade: UpgradeAdapter },
+      baseClasses: { upgrade: UpgradeBase },
       config: configUtils.config,
       loadAdapterFromPath: require,
       pathsToAdapters: [path.join(root, 'adapters')],
     });
     hostManager.init();
     const adapter = hostManager.getAdapter('upgrade');
-    assert.ok(adapter instanceof UpgradeAdapter);
+    assert.ok(adapter instanceof UpgradeBase);
     assert.deepEqual(await adapter.getStatus(), {
       supported: true,
       availability: 'unavailable',

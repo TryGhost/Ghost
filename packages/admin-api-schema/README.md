@@ -20,7 +20,8 @@ jsonSchema.list()
   'pages-edit',       'posts-add',      'posts-edit',
   'products-add',     'products-edit',  'tiers-add',
   'tiers-edit',       'snippets-add',   'snippets-edit',
-  'tags-add',         'tags-edit',      'webhooks-add',
+  'tags-add',         'tags-edit',      'upgrades-add',
+  'webhooks-add',
   'webhooks-edit'
 ]
 */
@@ -59,6 +60,10 @@ async function validate() {
 
 validate();
 ```
+
+By default, validation removes undeclared fields. Pass `rejectUnknownFields: true`
+to reject them instead, as the upgrade request endpoint does for unsupported
+execution controls. This leaves the default behavior of existing endpoints intact.
 
 When used from Ghost core in validation layer:
 

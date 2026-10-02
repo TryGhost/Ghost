@@ -1,14 +1,14 @@
 import { execFileSync } from 'node:child_process';
 import { describe, it, expect } from 'vitest';
 import {
-  UpgradeAdapter,
+  UpgradeBase,
   UpgradeAdapterError,
   type AcceptedUpgradeJob,
   type UpgradeJobResult,
   type UpgradeStatus,
 } from '../src/index.ts';
 
-class HostAdapter extends UpgradeAdapter {
+class HostAdapter extends UpgradeBase {
   async getStatus(): Promise<UpgradeStatus> {
     return { supported: false, reason: 'not-configured' };
   }
@@ -28,7 +28,7 @@ class HostAdapter extends UpgradeAdapter {
   }
 }
 
-describe('UpgradeAdapter', () => {
+describe('UpgradeBase', () => {
   it('supports optional configuration and an immutable method contract', async () => {
     const adapter = new HostAdapter({});
     expect(adapter.requiredFns).toEqual(['getStatus', 'createRequest', 'getJob']);
@@ -46,9 +46,9 @@ it('loads the compiled ESM package through the production CommonJS entry point',
     const assert = require('node:assert/strict');
     const {createRequire} = require('node:module');
     const load = createRequire(process.cwd() + '/package.json');
-    const {UpgradeAdapter} = load('@tryghost/adapter-base-upgrade');
+    const {UpgradeBase} = load('@tryghost/adapter-base-upgrade');
     assert.match(load.resolve('@tryghost/adapter-base-upgrade'), /build[/\\\\]index.js$/);
-    class ExternalAdapter extends UpgradeAdapter {}
+    class ExternalAdapter extends UpgradeBase {}
     assert.deepEqual(new ExternalAdapter().requiredFns, ['getStatus', 'createRequest', 'getJob']);
   `;
   execFileSync(process.execPath, ['-e', script], { env: { ...process.env, NODE_OPTIONS: '' } });

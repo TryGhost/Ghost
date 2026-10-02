@@ -267,10 +267,20 @@ const createUpgradeBlock = (name, settings, options = {}) => {
     extend(
       {
         attachResetToRequest: false,
-        failCallback(req, res, next) {
+        failCallback(req, res, next, nextValidRequestDate) {
+          res.set(
+            'Retry-After',
+            String(Math.max(1, Math.ceil((nextValidRequestDate.getTime() - Date.now()) / 1000))),
+          );
+
           return next(
             new errors.TooManyRequestsError({
               message: messages.upgradeBlock,
+              context:
+                name === 'upgrade_api'
+                  ? 'The shared IP budget for update API requests has been exhausted.'
+                  : 'The staff user budget for update POST attempts has been exhausted.',
+              help: 'Wait for Retry-After before retrying. Reuse the original request key for the same intent.',
             }),
           );
         },

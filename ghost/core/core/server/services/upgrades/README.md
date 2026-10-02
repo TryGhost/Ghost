@@ -11,10 +11,16 @@ Hosts configure `adapters.upgrade.active` and options under the selected adapter
 name, using the normal adapter manager. These are server configuration, rather
 than publication settings, so configuration import/export does not include them.
 Ghost does not select images, run host commands, or own checkpoints and recovery.
+The permanent capability gate is host configuration: execution requires an
+explicitly configured adapter. The default reports unsupported. A temporary Labs
+flag would duplicate that gate and is not required for this host-only API. Boot
+constructs the service through `init()` after initializing the adapter manager.
 
 ## Admin API
 
 Only Owner and Administrator staff can use these authenticated endpoints.
+The normal database permissions grant upgrade browse/read/add to Administrator;
+Owner inherits access through the standard permission policy.
 Integration credentials cannot use them.
 
 | Request                              | Result                            |
@@ -23,7 +29,13 @@ Integration credentials cannot use them.
 | `POST /ghost/api/admin/upgrades/`    | HTTP 202 with `{upgrades: [job]}` |
 | `GET /ghost/api/admin/upgrades/:id/` | `{upgrades: [job]}`               |
 
-POST accepts exactly `{upgrades: [{targetVersion: "7.0.0", idempotencyKey:
+The HTTP contract uses snake_case keys. The adapter retains camelCase keys,
+with explicit mappings in the controller and output serializer. Status uses
+`current_version`, `backup_required`, `active_job_id` and `poll_after_ms`; jobs
+use `target_version`, `created_at` and `updated_at`. Diagnostic fields already
+follow the API convention and retain their names.
+
+POST accepts exactly `{upgrades: [{target_version: "7.0.0", idempotency_key:
 "f76543a0-c052-45e8-b020-03c86a809b93"}]}`. Generate a UUID v4 key for each
 intent and reuse it for retries after a lost response. Do not generate another
 key until the original request's outcome is known. Ghost scopes this key to the
@@ -36,27 +48,39 @@ major-update compatibility checks belong to the host. All other body keys are
 rejected.
 
 A database-backed IP limiter runs before authentication on all three endpoints.
-It allows 180 attempts per minute, shared across status polling, job polling
+It allows 600 attempts per minute, shared across status polling, job polling
 and request creation. This limits authentication work while allowing
-normal polling. Hosts can tune it with `spam.upgrade_api_block`.
+several staff polling tabs behind one IP at the minimum one-second interval.
+Clients should respect `poll_after_ms` and stop polling inactive jobs. Hosts can
+tune the shared budget with `spam.upgrade_api_block`.
 
 The separate shared database-backed limiter allows three POST attempts per staff user
-before a one-minute block, across IPs and Ghost instances. Denied lower-role
-users cannot consume an owner's request budget. Hosts must independently enforce
+before a one-minute block, across IPs and Ghost instances. Replays with the same
+key count too: this limiter runs before host acceptance is known. On HTTP 429,
+wait for the `Retry-After` interval and reuse the original key. A lost response
+does not justify a new intent key. Denied lower-role users cannot consume an owner's request budget. Hosts must independently enforce
 concurrency and atomically deduplicate requests. Ghost deliberately does not
 preflight status before creation, so replay can work while a host is busy or
 restarting or after its target list changes.
 
-The controller parses request inputs once during API validation. The service
+Upgrade limiters use stable store names across instances. Other legacy
+ExpressBrute limiters still use construction-order namespaces; applying stable
+names to them is a separate middleware concern.
+
+The controller validates request inputs through `@tryghost/admin-api-schema`,
+rejecting unknown fields and requiring lowercase UUID v4 intent keys. The service
 accepts those typed inputs and validates results from the external adapter.
 
 Status distinguishes unsupported hosts from busy, blocked and temporarily
-unavailable services. Lookup returns explicit `unknown` and `expired` records;
+unavailable services. Lookup deliberately returns HTTP 200 with explicit
+`unknown` and `expired`
+records, including for IDs with no record. These are host lookup outcomes that
+clients can display or poll, rather than route-level 404 errors;
 temporary I/O or invalid adapter results return `UPGRADE_UNAVAILABLE` instead.
 Unexpected adapter failures are logged with their original errors locally and
 returned with a fixed public message.
 
-Expected host rejections map to `UPGRADE_UNSUPPORTED` (403),
+Expected host rejections map to `UPGRADE_UNSUPPORTED` (409, `DisabledFeatureError`),
 `UPGRADE_UNAVAILABLE` (503), `UPGRADE_BUSY` (409),
 `UPGRADE_TARGET_UNAPPROVED` (422), `UPGRADE_IDEMPOTENCY_CONFLICT` (409),
 `UPGRADE_REQUEST_EXPIRED` (409) or `UPGRADE_CHECKS_FAILED` (422).

@@ -9,7 +9,7 @@ const db = require('../../../core/server/data/db');
 const spamPrevention = require('../../../core/server/web/shared/middleware/api/spam-prevention');
 
 const id = 'f76543a0-c052-45e8-b020-03c86a809b93';
-const input = { targetVersion: '6.65.0', idempotencyKey: id };
+const input = { target_version: '6.65.0', idempotency_key: id };
 const job = {
   id,
   targetVersion: '6.65.0',
@@ -26,6 +26,24 @@ const status = {
   backupRequired: true,
   activeJobId: null,
   pollAfterMs: 2000,
+};
+
+const apiJob = {
+  id,
+  target_version: '6.65.0',
+  state: 'queued',
+  created_at: '2026-09-29T12:00:00.000Z',
+  updated_at: '2026-09-29T12:00:00.000Z',
+};
+
+const apiStatus = {
+  supported: true,
+  availability: 'ready',
+  current_version: '6.64.0',
+  targets: [{ version: '6.65.0' }],
+  backup_required: true,
+  active_job_id: null,
+  poll_after_ms: 2000,
 };
 
 describe('Upgrades API', function () {
@@ -54,7 +72,7 @@ describe('Upgrades API', function () {
     await agent
       .post('upgrades/')
       .body({ upgrades: [input] })
-      .expectStatus(403);
+      .expectStatus(409);
   });
 
   it('accepts an intent key, returns 202, and reads explicit job states', async function () {
@@ -70,9 +88,9 @@ describe('Upgrades API', function () {
       .body({ upgrades: [input] })
       .expectStatus(202);
     assert.deepEqual(response.body, {
-      upgrades: [job],
+      upgrades: [apiJob],
     });
-    assert.equal(createRequest.firstCall.args[0].targetVersion, input.targetVersion);
+    assert.equal(createRequest.firstCall.args[0].targetVersion, input.target_version);
     assert.match(createRequest.firstCall.args[0].idempotencyKey, /^[a-f0-9]{64}$/);
 
     for (const state of ['unknown', 'expired', 'done', 'rolled-back', 'recovery-required']) {
@@ -98,14 +116,18 @@ describe('Upgrades API', function () {
       };
       getStatus.resolves(discovery);
       const found = await agent.get('upgrades/').expectStatus(200);
-      assert.deepEqual(found.body, { upgrades: [discovery] });
+      assert.deepEqual(found.body, {
+        upgrades: [
+          { ...apiStatus, current_version: discovery.currentVersion, targets: discovery.targets },
+        ],
+      });
       const accepted = { ...job, targetVersion };
       createRequest.resolves(accepted);
       const response = await agent
         .post('upgrades/')
-        .body({ upgrades: [{ targetVersion, idempotencyKey: randomUUID() }] })
+        .body({ upgrades: [{ target_version: targetVersion, idempotency_key: randomUUID() }] })
         .expectStatus(202);
-      assert.deepEqual(response.body, { upgrades: [accepted] });
+      assert.deepEqual(response.body, { upgrades: [{ ...apiJob, target_version: targetVersion }] });
       assert.equal(createRequest.lastCall.args[0].targetVersion, targetVersion);
     }
   });
@@ -115,13 +137,16 @@ describe('Upgrades API', function () {
     sinon.stub(manager, 'getAdapter').withArgs('upgrade').returns({ createRequest });
     await agent.get('upgrades/not-a-uuid/').expectStatus(422);
     const invalidBodies = [
-      { upgrades: [{ targetVersion: '6.65.0' }] },
-      { upgrades: [{ ...input, idempotencyKey: 'not-a-uuid' }] },
+      { upgrades: [{ target_version: '6.65.0' }] },
+      { upgrades: [{ ...input, idempotency_key: 'not-a-uuid' }] },
       { upgrades: [input], command: 'x' },
+      { upgrades: [{ targetVersion: '6.65.0', idempotencyKey: id }] },
+      { upgrades: [{ ...input, idempotency_key: id.toUpperCase() }] },
+      { upgrades: [{ ...input, idempotency_key: id.replace('-45e8-', '-15e8-') }] },
       { upgrades: [] },
       { upgrades: [input, input] },
       ...['', 'x'.repeat(129), 123, null].map((targetVersion) => ({
-        upgrades: [{ ...input, targetVersion }],
+        upgrades: [{ ...input, target_version: targetVersion }],
       })),
       ...['image', 'id', 'command', 'path', 'skipBackup', 'allowMajorUpgrade', 'userId'].map(
         (key) => ({ upgrades: [{ ...input, [key]: 'x' }] }),
@@ -142,7 +167,7 @@ describe('Upgrades API', function () {
     createRequest.rejects(new UpgradeAdapterError({ code: 'target-unapproved' }));
     await agent
       .post('upgrades/')
-      .body({ upgrades: [{ ...input, targetVersion: '6.66.0' }] })
+      .body({ upgrades: [{ ...input, target_version: '6.66.0' }] })
       .expectStatus(422);
   });
 
@@ -237,12 +262,14 @@ describe('Upgrades API', function () {
       await agent
         .post('upgrades/')
         .body({ upgrades: [input] })
-        .expectStatus(403);
+        .expectStatus(409);
     }
-    await agent
+    const rejected = await agent
       .post('upgrades/')
       .body({ upgrades: [input] })
       .expectStatus(429);
+    assert.ok(Number(rejected.headers['retry-after']) >= 1);
+    assert.match(rejected.body.errors[0].help, /original request key/);
   });
 
   it('continues polling after the staff POST budget is exhausted', async function () {
@@ -250,7 +277,7 @@ describe('Upgrades API', function () {
       await agent
         .post('upgrades/')
         .body({ upgrades: [input] })
-        .expectStatus(403);
+        .expectStatus(409);
     }
 
     await agent
@@ -301,7 +328,7 @@ describe('Upgrades API', function () {
         await agent
           .post('upgrades/')
           .body({ upgrades: [input] })
-          .expectStatus(403);
+          .expectStatus(409);
       }
     });
   }

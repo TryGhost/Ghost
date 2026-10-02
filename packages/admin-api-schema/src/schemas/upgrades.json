@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "upgrades",
+  "title": "upgrades",
+  "description": "Base upgrade request definitions",
+  "definitions": {
+    "upgrade": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "target_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "idempotency_key": {
+          "type": "string",
+          "format": "uuid",
+          "isLowercase": true
+        }
+      },
+      "required": ["target_version", "idempotency_key"]
+    }
+  }
+}

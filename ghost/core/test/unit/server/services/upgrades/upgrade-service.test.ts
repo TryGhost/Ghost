@@ -81,6 +81,7 @@ describe('Upgrade service', () => {
     const { adapter, service, logError } = setup();
     const create = sinon.stub(adapter, 'createRequest');
     for (const [code, apiCode, errorType] of [
+      ['unsupported', 'UPGRADE_UNSUPPORTED', 'DisabledFeatureError'],
       ['busy', 'UPGRADE_BUSY', 'ConflictError'],
       ['target-unapproved', 'UPGRADE_TARGET_UNAPPROVED', 'ValidationError'],
       ['idempotency-conflict', 'UPGRADE_IDEMPOTENCY_CONFLICT', 'ConflictError'],
@@ -94,6 +95,8 @@ describe('Upgrade service', () => {
         assert.equal((err as { code: string }).code, apiCode);
         assert.equal((err as { errorType: string }).errorType, errorType);
         assert.ok(!(err as Error).message.includes('/private'));
+        assert.ok((err as { context: string }).context);
+        assert.ok((err as { help: string }).help);
         return true;
       });
     }
