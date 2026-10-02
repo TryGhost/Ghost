@@ -1,13 +1,21 @@
 # Config schema
 
-Ghost's config is loaded by nconf (see [`loader.ts`](loader.ts)) and then
-validated against the zod schema in [`schema.ts`](schema.ts).
+nconf layers Ghost's config sources (see [`loader.ts`](loader.ts)) and is then
+done: the tree is validated against the zod schema in [`schema.ts`](schema.ts),
+deep-frozen, and that frozen tree is the only representation anything reads.
+Nothing reads nconf again after load.
 
-`config.get()` is typed from that schema. A key path the schema covers returns
-its validated, deep-frozen value with a real type; everything else reads straight
-from nconf and keeps the `any` it has always had. Call sites do not change — a
-key gains validation, freezing and a type at every existing `config.get('that:key')`
-in the same moment its schema lands.
+So the whole config is immutable, not only the part a schema names — the schema
+is loose, so a key it does not list is still validated-and-frozen. What a schema
+adds for its key is a real type: `config.get()` is typed from the schema, so a
+key path it covers returns that key's type, and everything else keeps the `any`
+it has always had. Call sites do not change — a key gains a type at every
+existing `config.get('that:key')` in the same moment its schema lands.
+
+`config.set()` and `config.reset()` exist for tests only. Each rebuilds the whole
+tree from the loaded sources plus every override recorded so far, so config is
+never briefly half-written — which matters, because validation is atomic and
+nconf's own reset-then-reapply rebuild was not.
 
 ## Adding a key
 
@@ -21,12 +29,12 @@ in the same moment its schema lands.
    It round-trips `defaults.json` against every shipped env config and fails if
    the schema changed a value rather than only checking it.
 
-Two things change for a key once it is in the schema, so expect to find them:
-
-- **Its value is frozen.** Anything that mutated a `config.get()` result in place
-  will now fail silently in CommonJS or throw under strict mode.
-- **Its type is enforced.** A caller that treated a string as a number, or
-  assumed a key is always present, stops compiling.
+Adding a key to the schema enforces its type: a caller that treated a string as
+a number, or assumed a key is always present, stops compiling. That is the point
+— the compiler is what keeps config honest, since a runtime guard cannot. Ghost's
+`.js` files are sloppy-mode CommonJS, where writing to a frozen object is dropped
+rather than thrown, and `node --use_strict` cannot be set through `NODE_OPTIONS`,
+so it cannot be relied on for a self-hosted product.
 
 ## Rules
 
@@ -61,3 +69,11 @@ config key and `config.get('PATH')` resolves today. Closing the schema — which
 would turn a typo in a self-hoster's `config.production.json` into an error
 instead of a silently ignored key — needs that whitelisted first, in its own
 change.
+
+## Don't mutate what `get()` returns
+
+It is frozen, and it is shared: every reader of a key gets the same object. Build
+a derived object instead. Two places got this wrong before config was frozen, and
+both were writing through into config for every later reader —
+[`data/db/connection.ts`](../../server/data/db/connection.ts) assembling knex's
+config, and `AdapterCacheRedis` folding `ttl` into `clusterConfig`.
