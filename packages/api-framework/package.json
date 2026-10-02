@@ -24,6 +24,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "pretest:unit": "pnpm build",
     "test:unit": "NODE_ENV=testing vitest run --coverage",
     "test:types": "tsc --noEmit -p test/tsconfig.json",
     "test": "pnpm run '/^test:/'",

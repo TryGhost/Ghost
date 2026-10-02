@@ -86,16 +86,147 @@ describe('Generators', function () {
     });
   });
 
+  describe('ordering', function () {
+    const addPostAt = (gen, slug, updatedAt) =>
+      gen.addUrl(
+        `http://my-ghost-blog.com/${slug}/`,
+        testUtils.DataGenerator.forKnex.createPost({ slug, updated_at: updatedAt }),
+      );
+    const locs = (xml) => [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
+
+    it('re-sorts a resource added after a render', function () {
+      generator = new PostGenerator({ maxPerPage: 2 });
+      addPostAt(generator, 'oldest', '2023-06-01T00:00:00.000Z');
+      addPostAt(generator, 'older', '2024-01-01T00:00:00.000Z');
+      addPostAt(generator, 'middle', '2024-03-01T00:00:00.000Z');
+      generator.getXml(1);
+
+      addPostAt(generator, 'newest', '2024-06-01T00:00:00.000Z');
+
+      assert.deepEqual(locs(generator.getXml(1)), [
+        'http://my-ghost-blog.com/newest/',
+        'http://my-ghost-blog.com/middle/',
+      ]);
+      assert.deepEqual(locs(generator.getXml(2)), [
+        'http://my-ghost-blog.com/older/',
+        'http://my-ghost-blog.com/oldest/',
+      ]);
+    });
+
+    it('sorts once and reuses the order for later pages', function () {
+      generator = new PostGenerator({ maxPerPage: 2 });
+      addPostAt(generator, 'a', '2024-01-01T00:00:00.000Z');
+      addPostAt(generator, 'b', '2024-02-01T00:00:00.000Z');
+      addPostAt(generator, 'c', '2024-03-01T00:00:00.000Z');
+      addPostAt(generator, 'd', '2024-04-01T00:00:00.000Z');
+      addPostAt(generator, 'e', '2024-05-01T00:00:00.000Z');
+
+      generator.getXml(1);
+      const sortedIndexes = generator.sortedIndexes;
+      generator.getXml(2);
+
+      assert.ok(sortedIndexes);
+      assert.equal(generator.sortedIndexes, sortedIndexes);
+    });
+  });
+
+  describe('releasing records', function () {
+    const addPostAt = (gen, slug, updatedAt) =>
+      gen.addUrl(
+        `http://my-ghost-blog.com/${slug}/`,
+        testUtils.DataGenerator.forKnex.createPost({ slug, updated_at: updatedAt }),
+      );
+
+    beforeEach(function () {
+      generator = new PostGenerator({ maxPerPage: 2 });
+      addPostAt(generator, 'a', '2024-01-01T00:00:00.000Z');
+      addPostAt(generator, 'b', '2024-02-01T00:00:00.000Z');
+      addPostAt(generator, 'c', '2024-03-01T00:00:00.000Z');
+    });
+
+    it('keeps the records until every page is rendered', function () {
+      generator.getXml(1);
+      assert.equal(generator.released, false);
+
+      generator.getXml(2);
+      assert.equal(generator.released, true);
+      assert.equal(generator.records, null);
+      assert.equal(generator.sortedIndexes, null);
+    });
+
+    it('serves the same pages and index inputs after release', function () {
+      const pages = [generator.getXml(1), generator.getXml(2)];
+
+      assert.deepEqual([generator.getXml(1), generator.getXml(2)], pages);
+      assert.equal(generator.size, 3);
+      assert.equal(generator.pageCount, 2);
+      assert.equal(new Date(generator.lastModified).toISOString(), '2024-03-01T00:00:00.000Z');
+
+      const index = new IndexGenerator({ types: { posts: generator } });
+      assert.match(index.getXml(), /sitemap-posts-2\.xml/);
+    });
+
+    it('returns null for pages out of range without caching them', function () {
+      assert.equal(generator.getXml(0), null);
+      assert.equal(generator.getXml(3), null);
+      assert.equal(generator.getXml(99999), null);
+      assert.equal(generator.siteMapContent.size, 0);
+
+      generator.getXml(1);
+      generator.getXml(2);
+      assert.equal(generator.getXml(3), null);
+    });
+
+    it('serves one cache entry per page, whatever a caller passes', function () {
+      assert.equal(generator.getXml('1'), generator.getXml(1));
+      assert.deepEqual([...generator.siteMapContent.keys()], [1]);
+
+      // A fractional page would render a window straddling two pages, and
+      // would count towards the release below.
+      assert.equal(generator.getXml(1.5), null);
+      assert.deepEqual([...generator.siteMapContent.keys()], [1]);
+      assert.equal(generator.released, false);
+
+      assert.ok(generator.getXml(2));
+      assert.equal(generator.released, true);
+    });
+
+    it('refuses new urls once released, until reset', function () {
+      generator.getXml(1);
+      generator.getXml(2);
+
+      assert.throws(() => addPostAt(generator, 'd', '2024-04-01T00:00:00.000Z'), {
+        errorType: 'IncorrectUsageError',
+        message: /posts sitemap generator/,
+      });
+
+      generator.reset();
+      addPostAt(generator, 'd', '2024-04-01T00:00:00.000Z');
+      assert.match(generator.getXml(1), /<loc>http:\/\/my-ghost-blog.com\/d\/<\/loc>/);
+    });
+
+    it('refuses new urls once sealed, whatever has been rendered', function () {
+      generator.seal();
+
+      assert.throws(() => addPostAt(generator, 'd', '2024-04-01T00:00:00.000Z'), {
+        errorType: 'IncorrectUsageError',
+      });
+
+      generator.reset();
+      addPostAt(generator, 'd', '2024-04-01T00:00:00.000Z');
+      assert.equal(generator.size, 1);
+    });
+  });
+
   describe('IndexGenerator', function () {
     beforeEach(function () {
       generator = new IndexGenerator({
         types: {
-          posts: new PostGenerator(),
-          pages: new PageGenerator(),
-          tags: new TagGenerator(),
-          authors: new UserGenerator(),
+          posts: new PostGenerator({ maxPerPage: 5 }),
+          pages: new PageGenerator({ maxPerPage: 5 }),
+          tags: new TagGenerator({ maxPerPage: 5 }),
+          authors: new UserGenerator({ maxPerPage: 5 }),
         },
-        maxPerPage: 5,
       });
     });
 
@@ -282,7 +413,7 @@ describe('Generators', function () {
           updated_at: '2024-01-01T00:00:00.000Z',
         });
 
-        const record = userGenerator.nodeLookup.get('identifier1');
+        const [record] = userGenerator.records;
         assert.equal(record.imageLoc, null);
         assert.equal(record.loc, 'https://myblog.com/author/jo/');
       });

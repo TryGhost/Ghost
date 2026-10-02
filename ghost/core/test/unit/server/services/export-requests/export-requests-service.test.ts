@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import { ExportRequestsService } from '../../../../../core/server/services/export-requests/export-requests-service';
 
 describe('ExportRequestsService', function () {
-  const webhookUrl = 'https://archive-generator.example.com/api/generate/';
+  const webhookUrl = 'https://export-generator.example.com/api/generate/';
   const webhookSecret = 'not-a-live-secret';
 
   const allComponents = {
@@ -51,7 +51,7 @@ describe('ExportRequestsService', function () {
     );
 
     await assert.rejects(
-      service.requestArchive({
+      service.requestExport({
         components: allComponents,
       }),
       (error: any) => {
@@ -80,7 +80,7 @@ describe('ExportRequestsService', function () {
     );
 
     await assert.rejects(
-      service.requestArchive({
+      service.requestExport({
         components: allComponents,
       }),
       (error: any) => {
@@ -91,7 +91,7 @@ describe('ExportRequestsService', function () {
 
     assert.equal(
       errorMessage,
-      'Export archive request is misconfigured: hostSettings:export:webhookSecret is missing while hostSettings:export:webhookUrl is set.',
+      'Export request is misconfigured: hostSettings:export:webhookSecret is missing while hostSettings:export:webhookUrl is set.',
     );
   });
 
@@ -114,7 +114,7 @@ describe('ExportRequestsService', function () {
     );
 
     await assert.rejects(
-      service.requestArchive({
+      service.requestExport({
         components: allComponents,
       }),
       (error: any) => {
@@ -125,7 +125,7 @@ describe('ExportRequestsService', function () {
 
     assert.equal(
       errorMessage,
-      'Export archive request is misconfigured: hostSettings:siteId is missing while hostSettings:export:webhookUrl is set.',
+      'Export request is misconfigured: hostSettings:siteId is missing while hostSettings:export:webhookUrl is set.',
     );
   });
 
@@ -145,7 +145,7 @@ describe('ExportRequestsService', function () {
       },
     );
 
-    await service.requestArchive({
+    await service.requestExport({
       components: allComponents,
     });
 
@@ -171,7 +171,7 @@ describe('ExportRequestsService', function () {
       },
     });
 
-    await service.requestArchive({
+    await service.requestExport({
       components: allComponents,
     });
 
@@ -179,7 +179,7 @@ describe('ExportRequestsService', function () {
     assert.equal(requestOptions.method, 'POST');
     assert.equal(
       infoMessage,
-      'Requesting export archive generation from "https://archive-generator.example.com"',
+      'Requesting export generation from "https://export-generator.example.com"',
     );
 
     const parsedBody = JSON.parse(requestOptions.body);
@@ -210,7 +210,7 @@ describe('ExportRequestsService', function () {
 
     assert.equal(requestOptions.headers['X-Ghost-Signature'], expectedSignature);
 
-    // The request must never retry: each delivery can schedule an archive.
+    // The request must never retry: each delivery can schedule an export.
     assert.deepEqual(requestOptions.retry, { limit: 0 });
   });
 
@@ -239,7 +239,7 @@ describe('ExportRequestsService', function () {
         },
       );
 
-      await service.requestArchive({
+      await service.requestExport({
         components: allComponents,
       });
 
@@ -270,7 +270,7 @@ describe('ExportRequestsService', function () {
     });
 
     await assert.rejects(
-      service.requestArchive({
+      service.requestExport({
         components: allComponents,
       }),
       (error: any) => {
@@ -282,7 +282,7 @@ describe('ExportRequestsService', function () {
 
     assert.equal(
       errorMessage,
-      'Failed to request export archive generation from "https://archive-generator.example.com": Response code 500 (Internal Server Error)',
+      'Failed to request export generation from "https://export-generator.example.com": Response code 500 (Internal Server Error)',
     );
   });
 });

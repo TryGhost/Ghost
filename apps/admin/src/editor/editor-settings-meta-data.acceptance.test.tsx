@@ -23,6 +23,7 @@ import { editorScreen } from '@/editor/editor.screen';
 import { previewScreen } from '@/editor/preview/preview.screen';
 
 const POST_ID = 'abc123';
+const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const CURRENT_USER_ID = '1';
 const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
@@ -250,7 +251,7 @@ describe('Post settings meta data', () => {
     });
   });
 
-  it('stages a published post’s meta title until Update', async () => {
+  it('saves a published post’s meta title on its own', async () => {
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openMetaData();
@@ -258,16 +259,11 @@ describe('Post settings meta data', () => {
     await editorScreen.settingsMetaTitle().fill('A better title for search');
     await editorScreen.settingsMetaDescription().click();
 
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
-    await expect.poll(unsavedChangesGuarded).toBe(true);
-    expect(saveApi.requests).toHaveLength(0);
-
-    await userEvent.keyboard('{Meta>}s{/Meta}');
-
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
       meta_title: 'A better title for search',
-      status: 'published',
     });
   });
 

@@ -261,24 +261,78 @@ describe('Post settings access', () => {
     expect(submittedPost(saveApi).tiers).toEqual([{ id: GOLD.id }, { id: SILVER.id }]);
   });
 
-  it('stages a published post’s visibility until Update', async () => {
+  it('saves a published post’s visibility on its own', async () => {
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openAccess();
 
-    await expect.element(editorScreen.updateButton()).toBeDisabled();
-
     await chooseVisibility('Paid-members only');
 
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
-    await expect.poll(unsavedChangesGuarded).toBe(true);
-    expect(saveApi.requests).toHaveLength(0);
-
-    await userEvent.keyboard('{Meta>}s{/Meta}');
-
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-    expect(submittedPost(saveApi)).toMatchObject({ visibility: 'paid', status: 'published' });
+    expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
+      visibility: 'paid',
+    });
     await expect.element(editorScreen.updateButton()).toBeDisabled();
+  });
+
+  it('holds a published post’s tier picks, then sends the final set once with the next setting', async () => {
+    const saveApi = fakeSavablePost({
+      status: 'published',
+      published_at: PUBLISHED_AT,
+      visibility: 'tiers',
+      tiers: [{ id: GOLD.id }],
+      featured: false,
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openAccess();
+
+    await editorScreen.settingsTier('Silver').click();
+    await editorScreen.settingsTier('Bronze').click();
+    await editorScreen.settingsTier('Gold').click();
+
+    await expect
+      .element(editorScreen.settingsTier('Gold'))
+      .toHaveAttribute('data-state', 'unchecked');
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
+    expect(unsavedChangesGuarded()).toBe(true);
+
+    await editorScreen.settingsFeatured().click();
+
+    await expect(saveApi).toHaveSavedFields({ featured: true });
+    expect(saveApi.requests).toHaveLength(1);
+    expect(submittedPost(saveApi)).toMatchObject({
+      visibility: 'tiers',
+      tiers: [{ id: SILVER.id }, { id: BRONZE.id }],
+    });
+    await expect.element(editorScreen.updateButton()).toBeDisabled();
+  });
+
+  it('sends a published post’s held tier picks once with Update', async () => {
+    const saveApi = fakeSavablePost({
+      status: 'published',
+      published_at: PUBLISHED_AT,
+      visibility: 'tiers',
+      tiers: [{ id: GOLD.id }],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openAccess();
+
+    await editorScreen.settingsTier('Silver').click();
+    await editorScreen.settingsTier('Bronze').click();
+    await editorScreen.settingsTier('Gold').click();
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
+
+    await editorScreen.updateButton().click();
+
+    await expect(saveApi).toHaveSavedFields({ status: 'published' });
+    expect(saveApi.requests).toHaveLength(1);
+    expect(submittedPost(saveApi)).toMatchObject({
+      visibility: 'tiers',
+      tiers: [{ id: SILVER.id }, { id: BRONZE.id }],
+    });
+    await expect.poll(unsavedChangesGuarded).toBe(false);
   });
 
   it('shows the site default for a post that carries no visibility yet', async () => {

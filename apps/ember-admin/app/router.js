@@ -22,7 +22,6 @@ Router.map(function () {
     });
 
     this.route('posts');
-    this.route('restore-posts', {path: '/restore'});
 
     this.route('pages');
 
@@ -30,8 +29,6 @@ Router.map(function () {
         this.route('new', {path: ':type'});
         this.route('edit', {path: ':type/:post_id'});
     });
-
-    this.route('members-activity');
 
     this.route('react-fallback', {path: '/*path'});
 });

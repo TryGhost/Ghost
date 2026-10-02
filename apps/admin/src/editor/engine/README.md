@@ -4,7 +4,7 @@
 
 ## Save engine
 
-`save-engine.ts` is a single-flight queue over typed save intents with one coalescing pending slot, a prepare stage, typed outcomes, and a leave decision. It combines restartable and timed autosaves, field saves, explicit saves, leave saves, and status transitions without ever letting two requests overlap.
+`save-engine.ts` is a single-flight queue over typed save intents with one coalescing pending slot, a prepare stage, typed outcomes, and a leave decision. It combines restartable and timed autosaves, field saves, settings saves, explicit saves, leave saves, and status transitions without ever letting two requests overlap.
 
 ### Intents
 
@@ -12,12 +12,15 @@
 | --------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | `autosave`                        | body change; an unblocked new post fires immediately                              | 3s restartable (first create immediate) | no              | never; drafts only, pinned to `draft`                                                                                          |
 | `timed`                           | armed by an autosave dispatch, fires after 60s of continuous editing              | 60s cycle                               | no              | never; drafts only                                                                                                             |
-| `field`                           | a title, feature-image or settings commit                                         | none                                    | no              | never; drafts only. On a published/scheduled/sent post the attempt is dropped with reason `not-draft`; content remains pending |
+| `field`                           | a canvas commit: the title, the excerpt under it, the feature image               | none                                    | no              | never; drafts only. On a published/scheduled/sent post the attempt is dropped with reason `not-draft`; content remains pending |
+| `settings`                        | a settings-panel commit                                                           | none                                    | no              | never; preserves the current status                                                                                            |
 | `explicit`                        | Cmd-S / Save / Update                                                             | none                                    | yes             | never; preserves the current status (a past-scheduled post saves as `scheduled`, the server owns that transition)              |
 | `leave`                           | navigating away from a dirty draft with unrevisioned changes or an armed autosave | none                                    | yes             | never; preserves the current status                                                                                            |
 | `publish` / `schedule` / `revert` | the publish flow                                                                  | none                                    | no              | the only status-changing commands; each carries an explicit target                                                             |
 
 The autosave debounce is 3 seconds unless the caller passes `autosaveDebounceMs`, which the engine calls at each restart of the debounce and uses in place of the default.
+
+A `settings` save on a draft is a field save in all but name. On a published, scheduled or sent post it runs at once and keeps the status, and it is dropped as `clean` unless the snapshot's `settingsDirty` says it has something to carry, however dirty the rest of the post is. `isSettingsOnly(command, snapshot)` tells the caller which of the two a request is, so it can leave the writer's canvas out of the request. Draft-only work coalesced into such a save is not carried by it and settles `dropped` with reason `not-draft`. A local validation hold such an attempt raised is released by the next settings attempt that finds `settingsDirty` false, and the same attempt ends an `error` a settings save met: the engine returns to `idle`, since nothing it refused is left to send. `dispatch('settings', {retry: true})` is the writer asking again: like an explicit save, it is not held back by the suppression of a version the server refused.
 
 ### Commands
 
@@ -65,7 +68,7 @@ remain unsafe while another error is being resolved.
 
 ### Queue semantics
 
-One save in flight, one pending slot. A command arriving while idle runs immediately (after its debounce); one arriving during a save lands in the pending slot and coalesces: priority `publish`/`schedule`/`revert` > `explicit` > `leave` > `field` > `timed` > `autosave`, the winner's kind executes, every waiter keeps its own command, `requiresRevision` ORs across the slot, and the payload is rebuilt from the current post at execution, so coalescing never loses newer content. A later status command supersedes only the earlier status command; its riders stay with the winner. A new autosave restarts the debounce; an explicit cancels it and carries its waiters.
+One save in flight, one pending slot. A command arriving while idle runs immediately (after its debounce); one arriving during a save lands in the pending slot and coalesces: priority `publish`/`schedule`/`revert` > `explicit` > `leave` > `settings` > `field` > `timed` > `autosave`, the winner's kind executes, every waiter keeps its own command, `requiresRevision` ORs across the slot, and the payload is rebuilt from the current post at execution, so coalescing never loses newer content. A later status command supersedes only the earlier status command; its riders stay with the winner. A new autosave restarts the debounce; an explicit cancels it and carries its waiters.
 
 Every dispatch settles with a typed `SaveCompletion`:
 
@@ -97,8 +100,8 @@ Reconcile-before-drain is a hard ordering contract because the server enforces o
 | `not-found` with an id          | `halted` (deleted elsewhere); every queued command dropped `halted`, content kept for copy-out                                                                            | none                                                                                                       |
 | `not-found` without an id       | `crashed` (corrupt new-post state)                                                                                                                                        | none                                                                                                       |
 | `conflict` (`UPDATE_COLLISION`) | `conflict`; timers and the pending slot dropped `conflict`, background saves refused while the snapshot still carries the rejected `updated_at`, content intact and dirty | an explicit save, or `contentReloaded(updatedAt, adopt?)` with a candidate different from the rejected one |
-| server `validation`             | `error`; background saves suppressed until the snapshot version moves                                                                                                     | next edit, or an explicit save                                                                             |
-| `host-limit`                    | `error`; suppression as for validation, but only for a status-preserving save (a publish limit never halts autosave)                                                      | next edit, or an explicit save                                                                             |
+| server `validation`             | `error`; background saves suppressed until the snapshot version moves                                                                                                     | next edit, an explicit save, or a settings retry                                                           |
+| `host-limit`                    | `error`; suppression as for validation, but only for a status-preserving save (a publish limit never halts autosave)                                                      | next edit, an explicit save, or a settings retry                                                           |
 | `transport` / `unknown`         | `error`, no suppression                                                                                                                                                   | next save                                                                                                  |
 
 `error` and `conflict` persist until an attempt starts; timers arming or a
@@ -150,6 +153,7 @@ Three documents: **saved** (last persisted state, from load/refetch/acknowledged
 | `revisionRestored(postId, projection)`                    | After a restore has been saved: adopts body, title, custom excerpt, feature image + alt + caption into saved and live atomically; baseline goes pending until the hidden instance re-reports                                                                                                                                                                                                                                |
 | `markSaveError()` / `clearSaveError()`                    | A failed save keeps the post dirty until an acknowledged save                                                                                                                                                                                                                                                                                                                                                               |
 | `isFieldDirty(key)`                                       | Whether one editable field's live value differs from the saved one, by that field's own compare rule (tags by ordered names, relations by identity, body semantically); `updated_at` is never dirty. A question about current state rather than an event, so it carries no `postId` — the id-first rule guards inputs that can arrive for another post                                                                      |
+| `savedValue(key)`                                         | The latest saved value of one editable field, as last loaded, read or acknowledged, and `undefined` once disposed. Like `isFieldDirty`, a question about current state, so it carries no `postId`                                                                                                                                                                                                                           |
 | `verdict()`                                               | `{dirty, reasons}`; each reason carries only its stable `code`                                                                                                                                                                                                                                                                                                                                                              |
 | `hasChangedSinceRevision(latest)`                         | Compares against a revision projection (body, title, custom excerpt, feature image), body compared semantically                                                                                                                                                                                                                                                                                                             |
 | `dispose()`                                               | Inert thereafter                                                                                                                                                                                                                                                                                                                                                                                                            |
@@ -322,14 +326,14 @@ Ordering and staleness
 
 ## Invariants
 
-- A background command (`autosave`/`timed`/`field`) can never change status, publish, or send email.
+- A background command (`autosave`/`timed`/`field`/`settings`) can never change status, publish, or send email.
 - No two saves are in flight; payloads are built at execution; coalescing never loses the newest content.
 - Session expiry during a save loses nothing: re-auth completes, the save lands, content is present.
 - Save-on-leave fires at most once per attempt and only for dirty drafts.
 - Loading any post, including old-schema fixtures, is a clean verdict until the user edits.
 - A failed save leaves the post dirty and recoverable; no error path discards the payload.
 - Explicit and leave saves set `save_revision`; background saves do not; publish does not force one (coalescing ORs).
-- A published/scheduled/sent post's persisted state changes only via explicit Update, publish-flow commands, delete, or restore.
+- A published/scheduled/sent post's persisted state changes only via explicit Update, settings saves, publish-flow commands, delete, or restore.
 - Slug generation never overwrites a custom slug and never applies a stale proposal.
 - Scheduled saves serialize with zeroed milliseconds and preserve the publish time unless the user changed it.
 - Clearing a non-empty body is dirty.

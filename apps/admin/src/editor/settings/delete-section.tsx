@@ -98,9 +98,9 @@ export function DeleteSection({ session, postType }: DeleteSectionProps) {
       <AlertDialog open={isOpen} onOpenChange={changeOpen}>
         <AlertDialogTrigger asChild>
           <Button
-            className="w-full border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+            className="w-full bg-destructive/10 hover:bg-destructive/20"
             data-testid={settingsDeleteButton}
-            variant="outline"
+            variant="destructive-ghost"
           >
             <LucideIcon.Trash />
             Delete {noun}

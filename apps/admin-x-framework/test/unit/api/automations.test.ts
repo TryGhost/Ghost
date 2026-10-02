@@ -1,10 +1,14 @@
 import ObjectId from 'bson-objectid';
-import { waitFor } from '@testing-library/react';
+import { act, waitFor } from '@testing-library/react';
 import { currentUserQueryKey } from '../../../src/api/current-user';
 import { createTestQueryClient, renderHookWithProviders } from '../../../src/test/test-utils';
 import { withMockFetch } from '../../utils/mock-fetch';
 import {
   AutomationAction,
+  AutomationRunsResponseSchema,
+  type AutomationRun,
+  type AutomationRunStatusFilter,
+  useBrowseAutomationRuns,
   AutomationDetail,
   AutomationSendEmailAction,
   InsertActionAnchor,
@@ -23,6 +27,7 @@ const baseDetail = (
   id: 'a1',
   slug: 'welcome',
   name: 'Welcome',
+  description: 'Welcome new members.',
   status: 'active',
   created_at: '2026-05-05T00:00:00.000Z',
   updated_at: '2026-05-05T00:00:00.000Z',
@@ -77,6 +82,153 @@ describe('automations api queries', () => {
         expect(mock.calls[0][0]).toBe(
           'http://localhost:3000/ghost/api/admin/automations/automation-id/actions/action-id/links/',
         );
+      },
+    );
+  });
+  it('isolates a late response when returning to the same status in a new query scope', async () => {
+    const queryClient = createTestQueryClient();
+    queryClient.setQueryDefaults(currentUserQueryKey, { staleTime: Infinity });
+    queryClient.setQueryData(currentUserQueryKey, {
+      users: [{ id: 'user-id', name: 'Test User', email: 'test@example.com', roles: [] }],
+    });
+    const response = (id: string, status: AutomationRunStatusFilter) =>
+      Response.json({
+        meta: { pagination: { limit: 50, next_cursor: null } },
+        automation_runs: [
+          { id, status, created_at: '2026-09-14T12:00:00.000Z', failed: false, member: null },
+        ],
+      });
+    let finish!: (response: Response) => void;
+    const pending = new Promise<Response>((resolve) => {
+      finish = resolve;
+    });
+    let completedRequests = 0;
+    const fetch = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const status = new URL(String(input)).searchParams.get('status');
+      if (status === 'completed') {
+        completedRequests += 1;
+        return completedRequests === 1 ? pending : response('fresh', 'completed');
+      }
+      return response('exited', 'exited_early');
+    });
+    try {
+      const { result, rerender } = renderHookWithProviders(
+        ({ scope, status }: { scope: string; status: AutomationRunStatusFilter }) =>
+          useBrowseAutomationRuns('automation-id', scope, {
+            searchParams: { status },
+            staleTime: Infinity,
+          }),
+        { queryClient, initialProps: { scope: 'visit:0', status: 'completed' } },
+      );
+      await waitFor(() => expect(completedRequests).toBe(1));
+      rerender({ scope: 'visit:1', status: 'exited_early' });
+      await waitFor(() => expect(result.current.data?.runs[0].id).toBe('exited'));
+      rerender({ scope: 'visit:2', status: 'completed' });
+      await waitFor(() => expect(result.current.data?.runs[0].id).toBe('fresh'));
+      finish(response('late', 'completed'));
+      // Wait for every request to settle using the public client API before checking the result.
+      await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+      expect(completedRequests).toBe(2);
+      expect(result.current.data?.runs[0].id).toBe('fresh');
+    } finally {
+      finish(response('late', 'completed'));
+      fetch.mockRestore();
+      queryClient.clear();
+    }
+  });
+});
+
+describe('automation run pagination queries', () => {
+  const row = (id: string, name = id): AutomationRun => ({
+    id,
+    created_at: '2026-09-14T12:00:00.000Z',
+    status: 'completed',
+    failed: false,
+    member: { id, name, email: `${id}@example.test` },
+  });
+  const renderRuns = () => {
+    const queryClient = createTestQueryClient();
+    queryClient.setQueryDefaults(currentUserQueryKey, { staleTime: Infinity });
+    queryClient.setQueryData(currentUserQueryKey, {
+      users: [{ id: 'user', name: 'User', email: 'user@example.test', roles: [] }],
+    });
+    return renderHookWithProviders(
+      () =>
+        useBrowseAutomationRuns('automation-id', 'visit', {
+          searchParams: {
+            status: 'completed',
+            order: 'created_at asc',
+            date_from: '2026-09-01',
+            date_to: '2026-09-14',
+            timezone: 'America/New_York',
+          },
+        }),
+      { queryClient },
+    );
+  };
+
+  it('preserves filters and order across pages and keeps the first occurrence of repeated runs', async () => {
+    const requests: URL[] = [];
+    const fetch = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = new URL(String(input));
+      requests.push(url);
+      if (url.searchParams.has('cursor')) {
+        return Response.json({
+          automation_runs: [row('a', 'Changed on later page'), row('b')],
+          meta: { pagination: { limit: 50, next_cursor: null } },
+        });
+      }
+      return Response.json({
+        automation_runs: [row('a', 'First observed name')],
+        meta: { pagination: { limit: 50, next_cursor: 'next-page' } },
+      });
+    });
+    try {
+      const { result } = renderRuns();
+      await waitFor(() => expect(result.current.hasNextPage).toBe(true));
+      await act(async () => {
+        await result.current.fetchNextPage();
+      });
+      await waitFor(() =>
+        expect(result.current.data?.runs).toEqual([row('a', 'First observed name'), row('b')]),
+      );
+      expect(requests).toHaveLength(2);
+      expect(requests[0].pathname).toBe('/ghost/api/admin/automations/automation-id/runs/');
+      expect(Object.fromEntries(requests[0].searchParams)).toEqual({
+        status: 'completed',
+        order: 'created_at asc',
+        date_from: '2026-09-01',
+        date_to: '2026-09-14',
+        timezone: 'America/New_York',
+      });
+      expect(requests[1].pathname).toBe(requests[0].pathname);
+      expect(Object.fromEntries(requests[1].searchParams)).toEqual({
+        ...Object.fromEntries(requests[0].searchParams),
+        cursor: 'next-page',
+      });
+      expect(result.current.hasNextPage).toBe(false);
+    } finally {
+      fetch.mockRestore();
+    }
+  });
+
+  it('stops fetching after the final page', async () => {
+    await withMockFetch(
+      {
+        json: {
+          automation_runs: [row('a')],
+          meta: { pagination: { limit: 50, next_cursor: null } },
+        },
+      },
+      async (mock) => {
+        const { result } = renderRuns();
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+        expect(result.current.hasNextPage).toBe(false);
+        await act(async () => {
+          await result.current.fetchNextPage();
+        });
+        expect(mock.calls).toHaveLength(1);
+        expect(result.current.data?.runs).toEqual([row('a')]);
       },
     );
   });
@@ -519,5 +671,44 @@ describe('automations api helpers', () => {
         }),
       ).toThrow(/is not a send_email action/);
     });
+  });
+});
+
+describe('automation run response validation', () => {
+  const meta = { pagination: { limit: 50, next_cursor: null } };
+  const run: AutomationRun = {
+    id: 'one',
+    created_at: '2026-09-15T12:00:00.000Z',
+    status: 'completed',
+    failed: false,
+    member: { id: 'member', name: ' Alex ', email: 'alex@example.com' },
+  };
+
+  it('accepts empty history and separate runs for the same member', () => {
+    expect(
+      AutomationRunsResponseSchema.parse({ meta, automation_runs: [] }).automation_runs,
+    ).toEqual([]);
+    expect(
+      AutomationRunsResponseSchema.safeParse({
+        meta,
+        automation_runs: [run, { ...run, id: 'two' }],
+      }).success,
+    ).toBe(true);
+  });
+
+  it.each([
+    { name: 'missing envelope', body: {} },
+    { name: 'missing failure flag', body: { automation_runs: [{ ...run, failed: undefined }] } },
+    { name: 'invalid failure flag', body: { automation_runs: [{ ...run, failed: 'true' }] } },
+    { name: 'unknown status', body: { automation_runs: [{ ...run, status: 'future' }] } },
+    { name: 'invalid timestamp', body: { automation_runs: [{ ...run, created_at: 'invalid' }] } },
+    { name: 'missing member', body: { automation_runs: [{ ...run, member: undefined }] } },
+    { name: 'duplicate run', body: { automation_runs: [run, run] } },
+    {
+      name: 'more than fifty runs',
+      body: { automation_runs: Array.from({ length: 51 }, (_, i) => ({ ...run, id: String(i) })) },
+    },
+  ])('rejects $name', ({ body }) => {
+    expect(AutomationRunsResponseSchema.safeParse({ meta, ...body }).success).toBe(false);
   });
 });

@@ -2,8 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
-// @ts-expect-error This module lacks type definitions.
-import imageTransform from '@tryghost/image-transform';
+import * as imageTransform from '@tryghost/image-transform';
 import {
   getAllowedImageLoaders,
   restrictImageDecoders,
@@ -55,16 +54,20 @@ describe('lib/image: image-decoders', function () {
 
   describe('restrictImageDecoders', function () {
     afterEach(function () {
-      // The block is process-wide, so undo it for the rest of the unit tests
-      sharp.unblock({ operation: ['VipsForeignLoad'] });
+      // The block is process-wide, so lift it for the rest of the unit tests
+      imageTransform.setAllowedDecoders(null);
     });
 
-    it('does nothing when sharp is not installed', function () {
-      assert.equal(restrictImageDecoders(['.jpg'], { requireSharp: () => undefined }), undefined);
+    it('returns the allowed loaders', function () {
+      assert.deepEqual(restrictImageDecoders(['.jpg']), [
+        'VipsForeignLoadJpeg',
+        'VipsForeignLoadPng',
+        'VipsForeignLoadSvg',
+      ]);
     });
 
-    // Goes through @tryghost/image-transform rather than sharp directly, so
-    // this fails if image-transform ever resolves a copy of sharp the block
+    // Goes through @tryghost/image-transform, and then Ghost's own copy of
+    // sharp, so this fails if either resolves a copy of sharp the block
     // doesn't cover
     it('stops image processing from decoding formats that are not allowed', async function () {
       const avif = readFixture('ghosticon.avif');
@@ -75,6 +78,7 @@ describe('lib/image: image-decoders', function () {
       restrictImageDecoders(config.get('uploads').images.extensions);
 
       await assert.rejects(resize, { code: 'IMAGE_PROCESSING' });
+      await assert.rejects(sharp(avif).png().toBuffer());
     });
 
     it('keeps decoding the allowed formats', async function () {

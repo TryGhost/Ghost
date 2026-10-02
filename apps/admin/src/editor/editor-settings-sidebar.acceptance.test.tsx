@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { page, userEvent } from 'vitest/browser';
+import { page } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
@@ -11,7 +11,6 @@ import {
   renderAdminApp,
   staffRole,
   submittedPost,
-  unsavedChangesGuarded,
   withoutAutosave,
   type StaffRoleName,
 } from '@test-utils/acceptance';
@@ -159,38 +158,32 @@ describe('Post settings sidebar', () => {
     await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
   });
 
-  it('stages a published post’s Featured toggle until Update', async () => {
+  it('saves a published post’s Featured toggle on its own', async () => {
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openSidebar();
 
-    await expect.element(editorScreen.updateButton()).toBeDisabled();
-
     await editorScreen.settingsFeatured().click();
 
-    // The unsaved signal for a published post is the Update button, not the chip.
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
-    await expect.poll(unsavedChangesGuarded).toBe(true);
-    expect(saveApi.requests).toHaveLength(0);
-
-    await userEvent.keyboard('{Meta>}s{/Meta}');
-
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-    expect(submittedPost(saveApi)).toMatchObject({ featured: true, status: 'published' });
+    expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
+      featured: true,
+    });
     await expect.element(editorScreen.updateButton()).toBeDisabled();
   });
 
-  it('keeps a staged field through a collision and drops it on reload', async () => {
+  it('keeps a settings change through a collision and drops it on reload', async () => {
     const saveApi = fakeCollidingPost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openSidebar();
 
     await editorScreen.settingsFeatured().click();
-    await editorScreen.updateButton().click();
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     await expect.element(editorScreen.conflictBanner()).toBeVisible();
-    // The rejected save keeps what the writer staged.
+    // The rejected save keeps what the writer chose.
     await expect.element(editorScreen.settingsFeatured()).toHaveAttribute('data-state', 'checked');
 
     await editorScreen.reloadAfterConflict().click();

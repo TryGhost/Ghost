@@ -1,4 +1,6 @@
 import { useCallback, useState } from 'react';
+import { useEmberOwnedRouteMatcher } from '@/routes';
+import { useNavigate } from '@tryghost/admin-x-framework';
 import { Button } from '@tryghost/shade/components';
 import { useShade } from '@tryghost/shade/app';
 import { PageHeader } from '@tryghost/shade/patterns';
@@ -16,19 +18,34 @@ import { PostPreviewModal, type PostPreviewModalProps } from './preview/post-pre
 import { postPreviewUrl } from './preview/preview-url';
 import { PublishFlowModal } from './publish/publish-flow-modal';
 import { UpdateFlowModal } from './publish/update-flow-modal';
-import { buildPublishFlowPost, type PublishFlowPost } from './publish/flow-post';
+import type { PublishFlowPost } from './publish/flow-post';
 import { describeCompletionFailure } from './publish/completion-message';
 import { usePublishInputs } from './publish/use-publish-inputs';
 import { usePublishLimits } from './publish/use-publish-limits';
 import { useEditorSettings } from './use-editor-settings';
 import type { EditorSessionHandle } from './session/use-editor-session';
 import type { SaveCompletion } from './engine/save-engine';
-import { usePreviewShortcut, usePublishShortcut } from './use-editor-shortcuts';
+import { usePreviewShortcut, usePublishShortcut, useSaveShortcut } from './use-editor-shortcuts';
+import { useSaveButtonPhase, useSaveFeedback, type SaveButtonPhase } from './use-save-feedback';
 
-type OpenFlow = 'none' | 'publish' | 'update';
+export type OpenFlow = 'none' | 'publish' | 'update';
 
 /** The preview's props short of Publish, which only the publish controls can supply. */
 type HeaderPreviewProps = Omit<PostPreviewModalProps, 'onPublish' | 'publishDisabled'>;
+
+const UPDATE_LABELS: Record<SaveButtonPhase, string> = {
+  idle: 'Update',
+  running: 'Updating...',
+  success: 'Updated',
+  failure: 'Retry',
+};
+
+const SAVE_LABELS: Record<SaveButtonPhase, string> = {
+  idle: 'Save',
+  running: 'Saving',
+  success: 'Saved',
+  failure: 'Retry',
+};
 
 /** Turns a save the caller depends on into a rejection the flow renders in place. */
 async function requireSaved(pending: Promise<SaveCompletion>): Promise<void> {
@@ -47,11 +64,18 @@ async function requireSaved(pending: Promise<SaveCompletion>): Promise<void> {
 
 export interface EditorHeaderActionsProps {
   session: EditorSessionHandle;
+  /** Built by the screen, which derives the status line's retry from it too. */
+  post: PublishFlowPost;
   postType: PostType;
   currentUser?: User;
   siteUrl: string;
   /** Unresolved TK markers in the title, excerpt, body and feature image. */
   tkCount: number;
+  /** Held by the screen, because the status line opens the publish flow too. */
+  openFlow: OpenFlow;
+  onOpenFlow: (flow: OpenFlow) => void;
+  /** Whether the status line offers a failed send's retry, which needs the publish inputs. */
+  offersEmailRetry: boolean;
 }
 
 /**
@@ -60,36 +84,37 @@ export interface EditorHeaderActionsProps {
  */
 export function EditorHeaderActions({
   session,
+  post,
   postType,
   currentUser,
   siteUrl,
   tkCount,
+  openFlow,
+  onOpenFlow,
+  offersEmailRetry,
 }: EditorHeaderActionsProps) {
   const { isAdmin7 } = useShade();
-  const { persistedId, publishTime, title } = session;
+  const { persistedId } = session;
   const record = session.loadedRecord;
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
+  const feedback = useSaveFeedback({ session, displayName: postType, siteUrl });
+  const contributorSave = useSaveButtonPhase(feedback.save);
+
+  useSaveShortcut(() => void feedback.save());
 
   const openPreview = useCallback(() => setPreviewOpen(true), []);
 
-  const post = buildPublishFlowPost({
-    snapshot: {
-      id: persistedId,
-      status: publishTime.status,
-      publishedAt: publishTime.publishedAt,
-      title,
-    },
-    record,
-    displayName: postType,
-    lexical: session.getLiveLexical(),
-  });
   // Core 301-redirects a published or sent post away from /p/:uuid/ and drops the
   // audience query, so Ember offers a preview only while the post is a draft.
   const isDraft = post.status === 'draft';
 
   usePreviewShortcut(
-    useCallback(() => setPreviewOpen((open) => !open), []),
+    useCallback(() => {
+      setPreviewOpen(!previewOpen);
+      if (previewOpen) {
+        onOpenFlow('none');
+      }
+    }, [onOpenFlow, previewOpen]),
     isDraft && persistedId !== null,
   );
 
@@ -122,6 +147,7 @@ export function EditorHeaderActions({
       onSave: saveBeforePreview,
     },
     isPost: postType === 'post',
+    post,
     newsletterSlug: post.newsletter ?? undefined,
     open: previewOpen,
     postId: persistedId,
@@ -147,22 +173,24 @@ export function EditorHeaderActions({
           <Button
             disabled={isSaving}
             size={isAdmin7 ? 'default' : 'sm'}
-            onClick={session.dispatchExplicit}
+            onClick={() => void contributorSave.run()}
           >
-            Save
+            {SAVE_LABELS[contributorSave.phase]}
           </Button>
           {isDraft ? <PostPreviewModal {...preview} /> : null}
         </>
       ) : (
         <PublishActions
+          feedback={feedback}
           isDraft={isDraft}
           isSaving={isSaving}
+          offersEmailRetry={offersEmailRetry}
           openFlow={openFlow}
           post={post}
           preview={preview}
           session={session}
           tkCount={tkCount}
-          onOpenFlow={setOpenFlow}
+          onOpenFlow={onOpenFlow}
           onPreview={openPreview}
         />
       )}
@@ -172,10 +200,12 @@ export function EditorHeaderActions({
 
 interface PublishActionsProps {
   session: EditorSessionHandle;
+  feedback: ReturnType<typeof useSaveFeedback>;
   post: PublishFlowPost;
   tkCount: number;
   isDraft: boolean;
   isSaving: boolean;
+  offersEmailRetry: boolean;
   openFlow: OpenFlow;
   preview: HeaderPreviewProps;
   onOpenFlow: (flow: OpenFlow) => void;
@@ -188,15 +218,19 @@ interface PublishActionsProps {
  */
 function PublishActions({
   session,
+  feedback,
   post,
   tkCount,
   isDraft,
   isSaving,
+  offersEmailRetry,
   openFlow,
   preview,
   onOpenFlow,
   onPreview,
 }: PublishActionsProps) {
+  const navigate = useNavigate();
+  const isEmberOwned = useEmberOwnedRouteMatcher();
   const { isAdmin7 } = useShade();
   const inputs = usePublishInputs();
   const limits = usePublishLimits();
@@ -208,6 +242,7 @@ function PublishActions({
   });
   // A refetch of any input must not unmount an open flow, so readiness latches once.
   const [everReady, setEverReady] = useState(false);
+  const [openedFromPreview, setOpenedFromPreview] = useState(false);
 
   if (inputs.isReady && !everReady) {
     setEverReady(true);
@@ -220,14 +255,32 @@ function PublishActions({
     }
     await requireSaved(session.saveExplicit());
   }, [session]);
+  const { save, showReverted } = feedback;
+  const update = useSaveButtonPhase(save);
   const revertToDraft = useCallback(() => {
     onOpenFlow('none');
     void session.dispatchPublish({ kind: 'revert' });
   }, [onOpenFlow, session]);
-  const closeFlow = useCallback(() => onOpenFlow('none'), [onOpenFlow]);
-  const openPublishFlow = useCallback(() => onOpenFlow('publish'), [onOpenFlow]);
+  const closeFlow = useCallback(() => {
+    setOpenedFromPreview(false);
+    onOpenFlow('none');
+  }, [onOpenFlow]);
+  const openPublishFlow = useCallback(() => {
+    setOpenedFromPreview(false);
+    onOpenFlow('publish');
+  }, [onOpenFlow]);
   const { onOpenChange: setPreviewOpen } = preview;
+  const changePreviewOpen = useCallback(
+    (open: boolean) => {
+      setPreviewOpen(open);
+      if (!open) {
+        closeFlow();
+      }
+    },
+    [closeFlow, setPreviewOpen],
+  );
   const publishFromPreview = useCallback(() => {
+    setOpenedFromPreview(true);
     setPreviewOpen(false);
     onOpenFlow('publish');
   }, [onOpenFlow, setPreviewOpen]);
@@ -236,45 +289,54 @@ function PublishActions({
   // button is the only way into the flow from there.
   usePublishShortcut(openPublishFlow, isDraft && inputs.isReady && !preview.open);
 
+  // A draft's Publish and the status line's retry stay disabled until these inputs load.
+  const inputsError =
+    (isDraft || offersEmailRetry) && inputs.error ? (
+      <>
+        <Text
+          className="bg-background/80 text-destructive backdrop-blur-sm"
+          data-testid={editorPublishInputsError}
+          role="alert"
+          size="sm"
+        >
+          {inputs.error.message}
+        </Text>
+        <Button
+          className="bg-background/80 backdrop-blur-sm"
+          size={isAdmin7 ? 'default' : 'sm'}
+          variant="ghost"
+          onClick={inputs.retry}
+        >
+          Retry
+        </Button>
+      </>
+    ) : null;
+
   return (
     <>
       {isDraft ? (
         <>
-          {inputs.error ? (
-            <>
-              <Text
-                className="bg-background/80 text-destructive backdrop-blur-sm"
-                data-testid={editorPublishInputsError}
-                role="alert"
-                size="sm"
-              >
-                {inputs.error.message}
-              </Text>
-              <Button
-                className="bg-background/80 backdrop-blur-sm"
-                size={isAdmin7 ? 'default' : 'sm'}
-                variant="ghost"
-                onClick={inputs.retry}
-              >
-                Retry
-              </Button>
-            </>
-          ) : null}
-          <Button
+          {inputsError}
+          <PageHeader.Action
+            className="bg-background/80 font-semibold text-state-success backdrop-blur-sm hover:text-state-success disabled:text-text-secondary/60 disabled:opacity-100"
             disabled={!inputs.isReady}
-            size={isAdmin7 ? 'default' : 'sm'}
+            fallbackSize="sm"
+            label="Publish"
             onClick={openPublishFlow}
           >
             Publish
-          </Button>
+          </PageHeader.Action>
           <PostPreviewModal
             {...preview}
+            animate={openFlow !== 'publish'}
             publishDisabled={!inputs.isReady}
+            onOpenChange={changePreviewOpen}
             onPublish={publishFromPreview}
           />
         </>
       ) : (
         <>
+          {inputsError}
           {/* Ember routes a sent post to the update flow from its status line, not the header. */}
           {post.status === 'sent' ? null : (
             <PageHeader.Action
@@ -287,22 +349,26 @@ function PublishActions({
               {post.status === 'scheduled' ? 'Unschedule' : 'Unpublish'}
             </PageHeader.Action>
           )}
-          <Button
+          <PageHeader.Action
+            className="bg-background/80 font-semibold text-state-success backdrop-blur-sm hover:text-state-success disabled:text-text-secondary/60 disabled:opacity-100"
             disabled={!session.isDirty() || isSaving}
-            size={isAdmin7 ? 'default' : 'sm'}
-            onClick={session.dispatchExplicit}
+            fallbackSize="sm"
+            label={UPDATE_LABELS[update.phase]}
+            onClick={() => void update.run()}
           >
-            Update
-          </Button>
+            {UPDATE_LABELS[update.phase]}
+          </PageHeader.Action>
         </>
       )}
 
       {openFlow === 'publish' && everReady ? (
         <PublishFlowModal
+          animate={!openedFromPreview}
           dispatch={session.dispatchPublish}
           limits={limits}
           paywallImprovements={paywallImprovements}
           post={post}
+          showCompletion={false}
           site={inputs.site}
           siteTitle={siteTitle}
           timezone={inputs.timezone}
@@ -310,6 +376,15 @@ function PublishActions({
           user={inputs.user}
           onBeforePublish={saveBeforePublish}
           onClose={closeFlow}
+          onCompleted={({ postId, isScheduled, hasEmail }) => {
+            const destination =
+              post.displayName === 'page'
+                ? '/pages'
+                : !isScheduled && (hasEmail || post.email || post.emailOnly)
+                  ? `/posts/analytics/${postId}`
+                  : '/posts';
+            navigate(destination, { crossApp: isEmberOwned(destination) });
+          }}
           onPreview={onPreview}
           onRevertToDraft={revertToDraft}
         />
@@ -323,6 +398,7 @@ function PublishActions({
           timezone={inputs.timezone}
           user={inputs.user}
           onClose={closeFlow}
+          onReverted={showReverted}
         />
       ) : null}
     </>

@@ -12,13 +12,11 @@ import {
 import { postsListScreen } from './posts-list.screen';
 import type { StaffRoleName } from '@tryghost/test-data';
 
-const FLAG_ON = { labs: { postsListReact: true } };
-
 function asRole(name: StaffRoleName, slug: string) {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name })];
   me.users[0].slug = slug;
-  return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+  return { boot: { browseMe: { response: me } } };
 }
 
 /**
@@ -54,7 +52,7 @@ describe('Posts list data', () => {
 
   it('runs one query per status bucket', async () => {
     const postsApi = fakePosts((query) => byBucket(query.filter));
-    await renderAdminApp('/posts', FLAG_ON);
+    await renderAdminApp('/posts');
 
     await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
@@ -66,7 +64,7 @@ describe('Posts list data', () => {
 
   it('renders buckets in order: scheduled, then drafts, then published', async () => {
     fakePosts((query) => byBucket(query.filter));
-    await renderAdminApp('/posts', FLAG_ON);
+    await renderAdminApp('/posts');
 
     await expect.element(postsListScreen.listItems().nth(2)).toBeVisible();
     await expect(postsListScreen.listItems()).toHaveCount(3);
@@ -78,7 +76,7 @@ describe('Posts list data', () => {
 
   it('sorts drafts by recently updated and the rest by publish date', async () => {
     const postsApi = fakePosts((query) => byBucket(query.filter));
-    await renderAdminApp('/posts', FLAG_ON);
+    await renderAdminApp('/posts');
 
     await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
@@ -93,7 +91,7 @@ describe('Posts list data', () => {
 
   it('runs a single query when the type filter picks one status', async () => {
     const postsApi = fakePosts((query) => byBucket(query.filter));
-    await renderAdminApp('/posts?type=draft', FLAG_ON);
+    await renderAdminApp('/posts?type=draft');
 
     await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
@@ -102,7 +100,7 @@ describe('Posts list data', () => {
 
   it('carries the other filter params into every bucket', async () => {
     const postsApi = fakePosts((query) => byBucket(query.filter));
-    await renderAdminApp('/posts?tag=news&visibility=public', FLAG_ON);
+    await renderAdminApp('/posts?tag=news&visibility=public');
 
     await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
@@ -115,7 +113,7 @@ describe('Posts list data', () => {
   // `featured` is not a status — it means every status, and featured.
   it('treats type=featured as every bucket plus featured:true', async () => {
     const postsApi = fakePosts((query) => byBucket(query.filter));
-    await renderAdminApp('/posts?type=featured', FLAG_ON);
+    await renderAdminApp('/posts?type=featured');
 
     await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
@@ -127,7 +125,7 @@ describe('Posts list data', () => {
 
   it('lets an explicit sort override every bucket', async () => {
     const postsApi = fakePosts((query) => byBucket(query.filter));
-    await renderAdminApp('/posts?order=published_at%20asc', FLAG_ON);
+    await renderAdminApp('/posts?order=published_at%20asc');
 
     await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
@@ -140,7 +138,7 @@ describe('Posts list data', () => {
   // view and desync from the Ember screen, which reads the same params.
   it('leaves the URL exactly as it was given', async () => {
     fakePosts((query) => byBucket(query.filter));
-    await renderAdminApp('/posts?type=draft&tag=news&order=updated_at+desc', FLAG_ON);
+    await renderAdminApp('/posts?type=draft&tag=news&order=updated_at+desc');
 
     await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
@@ -193,7 +191,7 @@ describe('Posts list data', () => {
   it('queries the pages endpoint for the pages screen', async () => {
     const pagesApi = fakePages((query) => byBucket(query.filter));
     const postsApi = fakePosts([]);
-    await renderAdminApp('/pages', FLAG_ON);
+    await renderAdminApp('/pages');
 
     await expect.element(postsListScreen.listItems().first()).toBeVisible();
 

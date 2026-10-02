@@ -1,4 +1,3 @@
-import { setTimeout as setTimeoutPromise } from 'node:timers/promises';
 import ObjectId from 'bson-objectid';
 import logging from '@tryghost/logging';
 import config from '../../../shared/config';
@@ -15,13 +14,11 @@ const service = createTinybirdSyncService({
   labs,
   knex,
   logging,
-  sleep: async (ms) => {
-    await setTimeoutPromise(ms, undefined, { ref: false });
-  },
   random: Math.random,
   now: () => new Date(),
   fetch: globalThis.fetch,
   createId: () => ObjectId().toHexString(),
 });
 
-export const start = service.start;
+export const scheduleJob = service.scheduleJob;
+export const sync = service.sync;

@@ -69,3 +69,31 @@ How we write GitHub Actions workflows safely. Follow these when adding or editin
 5. Third-party actions pinned to SHAs.
 6. Secrets scoped to the jobs that use them, and never passed to a local action on a `pull_request` run.
 7. No job both checks out PR code and holds a secret.
+
+## PR preview boundary
+
+The preview dispatch workflow reads GitHub metadata only; it never checks out PR
+code. Ghost-Moya resolves the image digest, confirms it was built from the PR head,
+and builds the preview adapter image and runs
+smoke tests on a separate runner with no deployment secrets or OIDC. Publishing
+imports image data without running it, and deployment pins the registry digest.
+Inherited base-image ONBUILD instructions and adapter validation are PR code too.
+
+## PR preview labels
+
+Either `preview` or `preview:<profile>` enables a preview. A profile label selects
+its seed dataset and takes precedence when both forms are present; `preview` alone
+uses the default. Only one profile label is allowed at a time.
+
+Removing the last preview label or closing the PR tears down the preview. Changing
+the selected profile reseeds its database, discarding any changes made on the site.
+
+Each push to a labelled PR refreshes its preview once CI has published the new
+image: the Pro CD dispatch tells Ghost-Moya whether the PR has a preview. A refresh
+keeps the database. A failed build leaves the last good deployment running, and a
+reopened PR redeploys from its reopen CI run. Fork PRs cannot have previews because
+their images are not published to GHCR.
+
+Ghost-Moya re-reads the PR's state, labels and head before changing anything, so a
+delayed or superseded request deploys the current head or nothing at all. GitHub
+deployments record the commit that was actually deployed.

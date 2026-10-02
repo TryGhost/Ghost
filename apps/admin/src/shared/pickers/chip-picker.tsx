@@ -1,7 +1,21 @@
-import { Badge, tokenFieldClasses } from '@tryghost/shade/components';
+import {
+  closestCenter,
+  DndContext,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type Announcements,
+  type DragEndEvent,
+  type DraggableSyntheticListeners,
+  type UniqueIdentifier,
+} from '@dnd-kit/core';
+import { arrayMove, rectSortingStrategy, SortableContext, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { Badge, type BadgeProps, tokenFieldClasses } from '@tryghost/shade/components';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import type { KeyboardEvent, ReactNode, RefObject } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import type { CSSProperties, KeyboardEvent, ReactNode, RefObject } from 'react';
 
 /** Trailing and leading space is never part of what is picked. */
 const trimTerm = (search: string) => search.trim();
@@ -31,9 +45,12 @@ export interface ChipPickerProps<TOption, TChip> {
   /** Whether a row is a chip the field already carries. Keys are the default test. */
   isChosen?: (option: TOption, chip: TChip) => boolean;
   renderOption?: (option: TOption, state: { chosen: boolean }) => ReactNode;
-  chipVariant?: (chip: TChip) => 'default' | 'secondary';
+  chipVariant?: (chip: TChip) => BadgeProps['variant'];
+  chipClassName?: (chip: TChip) => string | undefined;
   onAdd: (option: TOption) => void;
   onRemove: (key: string) => void;
+  /** Lets the chips be dragged into a new order, handed back whole. */
+  onReorder?: (next: TChip[]) => void;
   /** Leaves the chosen rows out of the list rather than listing them ticked. */
   hideSelected?: boolean;
   /** Narrows the rows by the typed term, for a list the server has not narrowed. */
@@ -82,8 +99,10 @@ export function ChipPicker<TOption, TChip>({
   isChosen,
   renderOption,
   chipVariant,
+  chipClassName,
   onAdd,
   onRemove,
+  onReorder,
   hideSelected = false,
   matches,
   normalizeTerm = trimTerm,
@@ -303,27 +322,39 @@ export function ChipPicker<TOption, TChip>({
         }}
       >
         {/* The whole chip removes, so it is the button rather than carrying one. */}
-        {selected.map((chip) => (
-          <Badge
-            key={getKey(chip)}
-            className={tokenFieldClasses.chip}
-            variant={chipVariant?.(chip) ?? 'default'}
-            asChild
+        {onReorder ? (
+          <ReorderableChips
+            keys={selected.map(getKey)}
+            labelFor={(key) => {
+              const chip = selected.find((candidate) => getKey(candidate) === key);
+              return chip ? getLabel(chip) : key;
+            }}
+            onMove={(from, to) => onReorder(arrayMove([...selected], from, to))}
           >
-            <button
-              aria-label={`Remove ${getLabel(chip)}`}
-              data-testid={testIds?.chip}
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                onRemove(getKey(chip));
-              }}
-            >
-              <span className="truncate">{getLabel(chip)}</span>
-              <LucideIcon.X className="size-3" />
-            </button>
-          </Badge>
-        ))}
+            {selected.map((chip) => (
+              <SortableChip
+                key={getKey(chip)}
+                className={chipClassName?.(chip)}
+                id={getKey(chip)}
+                label={getLabel(chip)}
+                testId={testIds?.chip}
+                variant={chipVariant?.(chip) ?? 'default'}
+                onRemove={() => onRemove(getKey(chip))}
+              />
+            ))}
+          </ReorderableChips>
+        ) : (
+          selected.map((chip) => (
+            <Chip
+              key={getKey(chip)}
+              className={chipClassName?.(chip)}
+              label={getLabel(chip)}
+              testId={testIds?.chip}
+              variant={chipVariant?.(chip) ?? 'default'}
+              onRemove={() => onRemove(getKey(chip))}
+            />
+          ))
+        )}
         <input
           ref={input}
           aria-activedescendant={
@@ -401,5 +432,134 @@ export function ChipPicker<TOption, TChip>({
         </div>
       )}
     </div>
+  );
+}
+
+interface ChipProps {
+  label: string;
+  variant: BadgeProps['variant'];
+  testId?: string;
+  onRemove: () => void;
+  setRef?: (element: HTMLElement | null) => void;
+  listeners?: DraggableSyntheticListeners;
+  className?: string;
+  style?: CSSProperties;
+}
+
+function Chip({
+  label,
+  variant,
+  testId,
+  onRemove,
+  setRef,
+  listeners,
+  className,
+  style,
+}: ChipProps) {
+  return (
+    <Badge className={cn(tokenFieldClasses.chip, className)} variant={variant} asChild>
+      <button
+        ref={setRef}
+        aria-label={`Remove ${label}`}
+        data-testid={testId}
+        style={style}
+        type="button"
+        {...listeners}
+        onClick={(event) => {
+          event.stopPropagation();
+          onRemove();
+        }}
+      >
+        <span className="truncate">{label}</span>
+        <LucideIcon.X className="size-3" />
+      </button>
+    </Badge>
+  );
+}
+
+function SortableChip({ id, ...props }: ChipProps & { id: string }) {
+  // The sortable attributes are left off: they would rename the button and
+  // describe a keyboard drag that Enter and Space, which remove, never start.
+  const { listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+
+  return (
+    <Chip
+      {...props}
+      className={cn('touch-manipulation', isDragging && 'z-10', props.className)}
+      listeners={listeners}
+      setRef={setNodeRef}
+      style={{ transform: CSS.Translate.toString(transform), transition }}
+    />
+  );
+}
+
+interface ReorderableChipsProps {
+  keys: string[];
+  labelFor: (key: string) => string;
+  onMove: (from: number, to: number) => void;
+  children: ReactNode;
+}
+
+// No keyboard drag exists, so there is nothing to instruct.
+const SCREEN_READER_INSTRUCTIONS = { draggable: '' };
+
+/**
+ * Chips that wrap across lines and drag into a new order. The mouse and touch
+ * sensors swallow the click that ends a drag, so a drop never removes the chip.
+ */
+function ReorderableChips({ keys, labelFor, onMove, children }: ReorderableChipsProps) {
+  const sensors = useSensors(
+    // The distance leaves a click without movement to remove the chip.
+    useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
+    // The hold leaves a swipe that starts on a chip to scroll the page.
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+  );
+
+  // Read when dnd-kit announces, so the announcements keep one identity.
+  const current = useRef({ keys, labelFor });
+  current.current = { keys, labelFor };
+
+  const announcements = useMemo<Announcements>(() => {
+    const name = (id: UniqueIdentifier) => current.current.labelFor(String(id));
+    const position = (id: UniqueIdentifier) =>
+      `position ${current.current.keys.indexOf(String(id)) + 1} of ${current.current.keys.length}`;
+
+    return {
+      onDragStart: ({ active }) => `Picked up ${name(active.id)}.`,
+      onDragOver: ({ active, over }) =>
+        over && over.id !== active.id
+          ? `${name(active.id)} moved to ${position(over.id)}.`
+          : undefined,
+      onDragEnd: ({ active, over }) =>
+        over && over.id !== active.id
+          ? `${name(active.id)} was dropped at ${position(over.id)}.`
+          : `${name(active.id)} was dropped.`,
+      onDragCancel: ({ active }) => `Moving ${name(active.id)} was cancelled.`,
+    };
+  }, []);
+
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) {
+      return;
+    }
+    const from = keys.indexOf(String(active.id));
+    const to = keys.indexOf(String(over.id));
+
+    if (from !== -1 && to !== -1) {
+      onMove(from, to);
+    }
+  };
+
+  return (
+    <DndContext
+      accessibility={{ announcements, screenReaderInstructions: SCREEN_READER_INSTRUCTIONS }}
+      collisionDetection={closestCenter}
+      sensors={sensors}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext items={keys} strategy={rectSortingStrategy}>
+        {children}
+      </SortableContext>
+    </DndContext>
   );
 }

@@ -1,14 +1,22 @@
+import type { InfiniteData } from '@tanstack/react-query';
 import ObjectId from 'bson-objectid';
-import { Meta, createMutation, createQuery, createQueryWithId } from '../utils/api/hooks';
+import { z } from 'zod';
+import {
+  Meta,
+  createInfiniteQuery,
+  createMutation,
+  createQuery,
+  createQueryWithId,
+} from '../utils/api/hooks';
 import type { ReadonlyDeep } from 'type-fest';
 
 export type AutomationStatus = 'active' | 'inactive';
-export const MAX_AUTOMATION_ACTIONS = 20;
+export const MAX_AUTOMATION_ACTIONS = 50;
 
 export type Automation = {
   id: string;
   name: string;
-  description?: string;
+  description: string;
   /** @deprecated `slug` will be removed in the future. */
   slug?: null | string;
   status: AutomationStatus;
@@ -111,6 +119,145 @@ export const useReadAutomation = createQueryWithId<AutomationDetailResponseType>
   dataType,
   path: (id) => `/automations/${id}/`,
 });
+
+export const AutomationPerformanceStatsSchema = z.object({
+  automation_id: z.string(),
+  total_run_count: z.number().int().nonnegative(),
+  in_progress_run_count: z.number().int().nonnegative(),
+  completed_run_count: z.number().int().nonnegative(),
+  exited_early_run_count: z.number().int().nonnegative(),
+  entries: z
+    .array(
+      z.object({
+        date: z.union([z.iso.date(), z.iso.datetime()]),
+        count: z.number().int().nonnegative(),
+      }),
+    )
+    .min(1),
+  entry_window: z.object({
+    date_from: z.iso.date(),
+    date_to: z.iso.date(),
+    bucket: z.enum(['day', 'hour']),
+    timezone: z.string().min(1),
+  }),
+});
+
+const AutomationPerformanceStatsResponseSchema = z.object({
+  automation_performance_stats: z.array(AutomationPerformanceStatsSchema).length(1),
+});
+
+export type AutomationPerformanceStats = z.infer<typeof AutomationPerformanceStatsSchema>;
+
+export const useReadAutomationPerformanceStats = (
+  id: string,
+  options?: Parameters<
+    ReturnType<typeof createQuery<z.infer<typeof AutomationPerformanceStatsResponseSchema>>>
+  >[0],
+  queryScope = '',
+) => {
+  const useQuery = createQuery<z.infer<typeof AutomationPerformanceStatsResponseSchema>>({
+    dataType: `AutomationPerformanceStatsResponseType:${queryScope}`,
+    path: `/automations/${id}/performance-stats/`,
+    parseResponse: (data) =>
+      AutomationPerformanceStatsResponseSchema.refine(
+        (response) => response.automation_performance_stats[0].automation_id === id,
+        { message: 'Performance statistics do not match the requested automation.' },
+      )
+        .refine(
+          (response) => {
+            const window = response.automation_performance_stats[0].entry_window;
+            const params = options?.searchParams;
+            const exclusiveEnd = params?.date_to
+              ? new Date(Date.parse(params.date_to) + 86400000).toISOString().slice(0, 10)
+              : undefined;
+            return (
+              (!params?.timezone || window.timezone === params.timezone) &&
+              (!params?.date_from || window.date_from === params.date_from) &&
+              (!exclusiveEnd || window.date_to === exclusiveEnd)
+            );
+          },
+          { message: 'Performance statistics do not match the requested date range.' },
+        )
+        .parse(data),
+  });
+  return useQuery(options);
+};
+
+export const AutomationRunSchema = z.object({
+  id: z.string().min(1),
+  created_at: z.iso.datetime(),
+  status: z.enum(['in_progress', 'completed', 'exited_early']),
+  failed: z.boolean(),
+  member: z
+    .object({
+      id: z.string().min(1),
+      name: z.string().nullable(),
+      email: z.string(),
+    })
+    .nullable(),
+});
+
+export const AutomationRunsResponseSchema = z.object({
+  automation_runs: z
+    .array(AutomationRunSchema)
+    .max(50)
+    .refine(
+      (runs) => new Set(runs.map((run) => run.id)).size === runs.length,
+      'Run IDs must be unique',
+    ),
+  meta: z.object({
+    pagination: z.object({
+      state: z.enum(['scanning', 'more', 'exhausted']).optional(),
+      limit: z.number().int().positive(),
+      next_cursor: z.string().min(1).nullable(),
+    }),
+  }),
+});
+
+export type AutomationRun = z.infer<typeof AutomationRunSchema>;
+export type AutomationRunStatusFilter = AutomationRun['status'];
+export type AutomationRunsResponseType = z.infer<typeof AutomationRunsResponseSchema>;
+
+type AutomationRunsResult = { runs: AutomationRun[]; scanning: boolean; pages: number };
+
+export const useBrowseAutomationRuns = (
+  id: string,
+  queryScope: string,
+  options: Parameters<
+    ReturnType<typeof createInfiniteQuery<AutomationRunsResult, AutomationRunsResponseType>>
+  >[0],
+) => {
+  // A new list interaction fetches fresh data even if an earlier request is still pending.
+  const useQuery = createInfiniteQuery<AutomationRunsResult, AutomationRunsResponseType>({
+    dataType: `AutomationRunsResponseType:${queryScope}`,
+    path: `/automations/${id}/runs/`,
+    parseResponse: (data) => AutomationRunsResponseSchema.parse(data),
+    returnData: (originalData) => {
+      const { pages } = originalData as InfiniteData<AutomationRunsResponseType>;
+      // Pages are live reads, not a snapshot; show a run once if a later page repeats it.
+      const seen = new Set<string>();
+      const runs = pages
+        .flatMap((page) => page.automation_runs)
+        .filter((run) => {
+          if (seen.has(run.id)) {
+            return false;
+          }
+          seen.add(run.id);
+          return true;
+        });
+      return {
+        runs,
+        scanning: pages.at(-1)?.meta.pagination.state === 'scanning',
+        pages: pages.length,
+      };
+    },
+    defaultNextPageParams: (page, params) => {
+      const cursor = page.meta.pagination.next_cursor;
+      return cursor ? { ...params, cursor } : undefined;
+    },
+  });
+  return useQuery(options);
+};
 
 const useBrowseAutomationActionLinksQuery = createQueryWithId<AutomationActionLinksResponseType>({
   dataType: 'AutomationActionLinksResponseType',

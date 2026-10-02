@@ -1,5 +1,6 @@
 import { page } from 'vitest/browser';
 import {
+  chooseDateButton,
   publicPreviewWarningDialog,
   publishAlreadySent,
   publishBackToSettings,
@@ -7,6 +8,7 @@ import {
   publishCompleteNote,
   publishConfirmError,
   publishContinue,
+  publishEmailSizeWarning,
   publishEmailErrorStep,
   publishFlowComplete,
   publishFlowConfirm,
@@ -18,6 +20,7 @@ import {
   publishRetryEmail,
   publishRevertToDraft,
   publishScheduleDate,
+  publishScheduleTime,
   publishSettingEmailRecipients,
   publishSettingPublishAt,
   publishSettingPublishType,
@@ -47,6 +50,11 @@ export const publishScreen = {
   /** The collapsed row's toggle button. */
   setting: (name: keyof typeof SETTINGS) => page.getByTestId(SETTINGS[name]).getByRole('button'),
   scheduleDate: () => page.getByTestId(publishScheduleDate),
+  scheduleCalendarButton: () =>
+    page
+      .getByTestId(publishSettingPublishAt)
+      .getByRole('button', { name: chooseDateButton, exact: true }),
+  scheduleTime: () => page.getByTestId(publishScheduleTime),
   continueButton: () => page.getByTestId(publishContinue),
   previewButton: () => page.getByTestId(publishFlowPreview),
   recipientFree: () => page.getByTestId(publishRecipientFree),
@@ -54,6 +62,7 @@ export const publishScreen = {
   backToSettings: () => page.getByTestId(publishBackToSettings),
   confirmError: () => page.getByTestId(publishConfirmError),
   limitsError: () => page.getByTestId(publishLimitsError),
+  emailSizeWarning: () => page.getByTestId(publishEmailSizeWarning),
   alreadySent: () => page.getByTestId(publishAlreadySent),
   retryEmailButton: () => page.getByTestId(publishRetryEmail),
   revertToDraft: () => page.getByTestId(publishRevertToDraft),

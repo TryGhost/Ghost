@@ -24,7 +24,9 @@
     "@codemirror/search": "catalog:",
     "@codemirror/state": "catalog:",
     "@codemirror/theme-one-dark": "catalog:",
+    "@dnd-kit/core": "catalog:",
     "@dnd-kit/sortable": "catalog:",
+    "@dnd-kit/utilities": "catalog:",
     "@radix-ui/react-focus-guards": "catalog:",
     "@radix-ui/react-focus-scope": "catalog:",
     "@sentry/react": "catalog:",
@@ -38,6 +40,7 @@
     "@tryghost/custom-fonts": "catalog:",
     "@tryghost/i18n": "workspace:*",
     "@tryghost/kg-clean-basic-html": "workspace:*",
+    "@tryghost/kg-converters": "workspace:*",
     "@tryghost/kg-unsplash-selector": "workspace:*",
     "@tryghost/koenig-lexical": "workspace:*",
     "@tryghost/metafield-types": "workspace:*",
@@ -175,6 +178,7 @@
             "projects": [
               "@tryghost/admin-x-framework",
               "@tryghost/checkout",
+              "@tryghost/kg-converters",
               "@tryghost/metafield-types",
               "@tryghost/shade"
             ],

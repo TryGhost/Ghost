@@ -1,10 +1,9 @@
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { METAFIELDS_FIELD_PREFIX } from '@/members/member-fields';
 import { keyBelow } from '@/shared/filters';
 import ManageViewPopover from './manage-view-popover';
 import React, { useCallback, useMemo } from 'react';
 import { type Filter, FilterBar, Filters } from '@tryghost/shade/patterns';
-import { LucideIcon, cn } from '@tryghost/shade/utils';
+import { cn } from '@tryghost/shade/utils';
 import {
   buildOfferOptions,
   fromOfferFilterDisplayValues,
@@ -193,26 +192,18 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
 
   const hasFilters = filters.length > 0;
   const { isAdmin7 } = useShade();
-  const useConsolidatedFilterUI = useFeatureFlag('postsListReact');
-  const useOriginalFilterUI = !isAdmin7 && !useConsolidatedFilterUI;
 
   const clearAndSaveButtons = hasFilters ? (
-    <FilterBar.Actions
-      className={cn(useOriginalFilterUI && 'gap-4')}
-      data-testid="members-filter-actions"
-      gap={!useOriginalFilterUI ? 'sm' : undefined}
-    >
+    <FilterBar.Actions data-testid="members-filter-actions" gap="sm">
       <FilterBar.Action
         className={cn(
           'hidden items-center lg:inline-flex',
           !isAdmin7 && 'text-muted-foreground hover:text-foreground',
-          useOriginalFilterUI && 'gap-1 !px-0 text-sm font-normal hover:bg-transparent',
         )}
         type="button"
-        variant={!isAdmin7 && useConsolidatedFilterUI ? 'outline' : 'ghost'}
+        variant={isAdmin7 ? 'ghost' : 'outline'}
         onClick={() => onFiltersChange([])}
       >
-        {useOriginalFilterUI && <LucideIcon.X className="size-4" />}
         Clear
       </FilterBar.Action>
       {nql && (
@@ -228,13 +219,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
 
   const filterControls = (
     <Filters
-      addButton={
-        <Filters.Trigger
-          collapseLabel={iconOnly}
-          fallbackClassName="bg-background"
-          fallbackStyle={useConsolidatedFilterUI ? 'list' : 'funnel'}
-        />
-      }
+      addButton={<Filters.Trigger collapseLabel={iconOnly} fallbackClassName="bg-background" />}
       allowMultiple={true}
       className={cn('[&>button]:order-last', hasFilters ? 'sm:!pr-40' : 'w-auto')}
       clearButton={clearAndSaveButtons}

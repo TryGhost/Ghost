@@ -126,13 +126,15 @@ const Newsletter: React.FC = () => {
     }
   }, [navigate, postId, isPostLoading, isStatusLoading, showNewsletterSection]);
 
+  // Link polling pauses while a link is being edited so the list doesn't
+  // re-sort under the edit field.
   const {
     stats,
     averageStats,
     topLinks,
     isLoading: isNewsletterStatsLoading,
     refetchTopLinks,
-  } = usePostNewsletterStats(postId);
+  } = usePostNewsletterStats({ pauseLinkPolling: editingLinkId !== null });
   const { mutate: editLinks } = useBulkEditLinks();
 
   // Calculate feedback stats from the post data
@@ -530,7 +532,8 @@ const Newsletter: React.FC = () => {
                     <DataList className="">
                       <DataListBody>
                         {paginatedTopLinks?.map((link) => {
-                          const percentage = stats.clicked > 0 ? link.count / stats.clicked : 0;
+                          const percentage =
+                            stats.clicked > 0 ? Math.min(link.count / stats.clicked, 1) : 0;
                           const linkId = link.link.link_id;
                           const title = link.link.title;
                           const url = link.link.to;

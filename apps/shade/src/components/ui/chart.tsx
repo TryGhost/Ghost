@@ -324,6 +324,7 @@ interface AlignedAxisTickProps {
     value: string | number;
   };
   index: number;
+  textAnchor?: 'start' | 'middle' | 'end';
   formatter?: (value: string | number) => string;
 }
 
@@ -332,9 +333,9 @@ const AlignedAxisTick: React.FC<AlignedAxisTickProps> = ({
   y,
   payload,
   index,
+  textAnchor = index === 0 ? 'start' : 'end',
   formatter = (v) => String(v),
 }) => {
-  const textAnchor = index === 0 ? 'start' : 'end';
   return (
     <g transform={`translate(${x},${y})`}>
       <text dy={16} fill="var(--muted-foreground)" textAnchor={textAnchor} x={0} y={-12}>

@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 // DI requirements
 const { Newsletter } = require('../../../../../core/server/models/newsletter');
 const { Member } = require('../../../../../core/server/models/member');
-const mail = require('../../../../../core/server/services/mail');
+const mail = require('../../../../../core/server/lib/mail');
 
 // Mocked utilities
 const urlUtils = require('../../../../utils/url-utils');

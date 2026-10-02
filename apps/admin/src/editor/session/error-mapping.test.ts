@@ -74,6 +74,28 @@ describe('toSaveError', () => {
     expect(toSaveError({}, 'Could not save').message).toBe('Could not save');
   });
 
+  it('carries the reason Core gave for a validation refusal', () => {
+    const refusal = new ValidationError(
+      response(422),
+      errorBody({
+        type: 'ValidationError',
+        message: 'Validation error, cannot edit post.',
+        context: 'Value in [posts.title] exceeds maximum length of 255 characters. posts.title',
+      }),
+    );
+
+    expect(toSaveError(refusal, 'fallback')).toMatchObject({
+      kind: 'validation',
+      message: 'Value in [posts.title] exceeds maximum length of 255 characters. posts.title',
+    });
+  });
+
+  it('keeps its own message for a refused payload that carries no reason', () => {
+    const tooLarge = new RequestEntityTooLargeError(response(413), '');
+
+    expect(toSaveError(tooLarge, 'fallback').message).toBe(tooLarge.message);
+  });
+
   it('carries the cause for reporting', () => {
     const error = new ServerUnreachableError();
     expect(toSaveError(error, 'fallback').cause).toBe(error);

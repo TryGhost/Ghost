@@ -18,8 +18,6 @@ import { tagDetailScreen } from '@/tags/detail/tag-detail.screen';
 
 import { globalSearchScreen } from './global-search.screen';
 
-const flagOn: RenderAdminAppOptions = { labs: { globalSearchReact: true } };
-
 const handoff = () =>
   JSON.parse(document.body.dataset.externalNavigate ?? 'null') as { route: string } | null;
 
@@ -51,7 +49,7 @@ function withBilling(): RenderAdminAppOptions {
       },
     },
   };
-  return { ...flagOn, boot: { browseConfig: { response: config } } };
+  return { boot: { browseConfig: { response: config } } };
 }
 
 /** The Ember half of the state bridge: the billing handoff, and saves Ember reports. */
@@ -68,8 +66,6 @@ function installEmberBridge() {
       dataChangeHandlers.delete(callback);
     },
     sidebarVisible: true,
-    getRouteUrl: (routeName: string) => routeName,
-    isRouteActive: () => false,
     navigateToBillingSubRoute,
   };
   window.EmberBridge = { state } as unknown as typeof window.EmberBridge;
@@ -121,7 +117,7 @@ describe('Cmd-K search', () => {
   });
 
   it('opens from the sidebar button and lists grouped results', async () => {
-    await renderAdminApp('/tags', flagOn);
+    await renderAdminApp('/tags');
     await globalSearchScreen.openButton().click();
     await expect.element(globalSearchScreen.input()).toHaveFocus();
     await expect.poll(controlledListbox).not.toBeNull();
@@ -137,26 +133,18 @@ describe('Cmd-K search', () => {
     await expect.element(globalSearchScreen.shortcutHint()).not.toBeInTheDocument();
   });
 
-  it('opens from the shortcut after Ember has already handled the key', async () => {
-    // Ember's keymaster binding runs first and prevents the default
-    const emberShortcut = (event: KeyboardEvent) => event.preventDefault();
-    document.addEventListener('keydown', emberShortcut);
+  it('opens from the shortcut', async () => {
+    await renderAdminApp('/tags');
+    await expect.element(globalSearchScreen.openButton()).toBeVisible();
 
-    try {
-      await renderAdminApp('/tags', flagOn);
-      await expect.element(globalSearchScreen.openButton()).toBeVisible();
+    await globalSearchScreen.pressShortcut();
 
-      await globalSearchScreen.pressShortcut();
-
-      await expect.element(globalSearchScreen.input()).toHaveFocus();
-      await closeWithEscape();
-    } finally {
-      document.removeEventListener('keydown', emberShortcut);
-    }
+    await expect.element(globalSearchScreen.input()).toHaveFocus();
+    await closeWithEscape();
   });
 
   it('closes on a click below the dialog, which sits on the overlay', async () => {
-    await renderAdminApp('/tags', flagOn);
+    await renderAdminApp('/tags');
     await globalSearchScreen.openButton().click();
     await expect.element(globalSearchScreen.input()).toHaveFocus();
 
@@ -167,7 +155,7 @@ describe('Cmd-K search', () => {
 
   it('leaves the index alone while closed, then reloads what changed on the next search', async () => {
     const ember = installEmberBridge();
-    await renderAdminApp('/tags', flagOn);
+    await renderAdminApp('/tags');
     await openAndSearch('first');
     await expect.element(globalSearchScreen.option(/First post/)).toBeVisible();
     await closeWithEscape();
@@ -185,7 +173,7 @@ describe('Cmd-K search', () => {
   });
 
   it('starts empty each time it opens', async () => {
-    await renderAdminApp('/tags', flagOn);
+    await renderAdminApp('/tags');
     await openAndSearch('first');
     await expect.element(globalSearchScreen.option(/First tag/)).toBeVisible();
     await closeWithEscape();
@@ -196,7 +184,7 @@ describe('Cmd-K search', () => {
   });
 
   it('says when nothing matches', async () => {
-    await renderAdminApp('/tags', flagOn);
+    await renderAdminApp('/tags');
 
     await openAndSearch('nothing like this');
 
@@ -207,7 +195,7 @@ describe('Cmd-K search', () => {
     fakeAdminEndpoint('GET', /^\/tags\/slug\/first-tag\//, {
       tags: [tag({ name: 'First tag', slug: 'first-tag' })],
     });
-    await renderAdminApp('/tags', flagOn);
+    await renderAdminApp('/tags');
     await openAndSearch('first tag');
 
     await globalSearchScreen.option(/First tag/).click();
@@ -217,7 +205,7 @@ describe('Cmd-K search', () => {
   });
 
   it('hands a post to the Ember editor', async () => {
-    await renderAdminApp('/tags', flagOn);
+    await renderAdminApp('/tags');
     await openAndSearch('first post');
     await expect.element(globalSearchScreen.option(/First post/)).toBeVisible();
 
@@ -229,7 +217,7 @@ describe('Cmd-K search', () => {
   it('opens a post in the React editor when React serves it', async () => {
     // the editor owns its request graph
     allowUnhandledRequests();
-    await renderAdminApp('/tags', { labs: { globalSearchReact: true, editorReact: true } });
+    await renderAdminApp('/tags', { labs: { editorReact: true } });
     await openAndSearch('first post');
 
     await globalSearchScreen.option(/First post/).click();
@@ -262,7 +250,7 @@ describe('Cmd-K search', () => {
     const firstTag = tag({ name: 'First tag', slug: 'first-tag' });
     fakeTags([firstTag]);
     fakeAdminEndpoint('GET', /^\/tags\/slug\/first-tag\//, { tags: [firstTag] });
-    await renderAdminApp('/tags/first-tag', flagOn);
+    await renderAdminApp('/tags/first-tag');
     await openWithShortcut();
     await closeWithEscape();
 
@@ -275,7 +263,7 @@ describe('Cmd-K search', () => {
   });
 
   it('closes and ignores the shortcut once the sidebar is hidden', async () => {
-    await renderAdminApp('/tags', flagOn);
+    await renderAdminApp('/tags');
     await openWithShortcut();
 
     window.location.hash = '#/editor/post/p1';
@@ -283,21 +271,5 @@ describe('Cmd-K search', () => {
     await expect.element(sidebarScreen.shellNav()).not.toBeInTheDocument();
     await expect.element(globalSearchScreen.dialog()).not.toBeInTheDocument();
     expect(globalSearchScreen.dispatchShortcut()).toBe(false);
-  });
-
-  it('leaves search to Ember without the flag', async () => {
-    const emberKeypresses: KeyboardEvent[] = [];
-    const recordKeypress = (event: KeyboardEvent) => emberKeypresses.push(event);
-    document.addEventListener('keydown', recordKeypress);
-
-    try {
-      await renderAdminApp('/tags');
-      await globalSearchScreen.openButton().click();
-
-      expect(emberKeypresses.map((event) => event.keyCode)).toEqual([75]);
-      expect(globalSearchScreen.dispatchShortcut()).toBe(false);
-    } finally {
-      document.removeEventListener('keydown', recordKeypress);
-    }
   });
 });

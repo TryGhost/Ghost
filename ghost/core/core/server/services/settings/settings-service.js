@@ -12,7 +12,7 @@ const SettingsCache = require('../../../shared/settings-cache');
 const SettingsBREADService = require('./settings-bread-service');
 const { generatePrivateSiteAccessCode } = require('./private-site-access-code');
 const { obfuscatedSetting, isSecretSetting, hideValueIfSecret } = require('./settings-utils');
-const mail = require('../mail');
+const mail = require('../../lib/mail');
 const SingleUseTokenProvider = require('../members/single-use-token-provider');
 const urlUtils = require('../../../shared/url-utils').default;
 

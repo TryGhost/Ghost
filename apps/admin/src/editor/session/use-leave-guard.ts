@@ -2,8 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { PostType } from '@/editor/card-config';
-import { hasUnsavedWork, isCreatedIdUrlSwap } from './leave-guard';
-import { useEditorSessionKey, type EditorSessionHandle } from './use-editor-session';
+import type { SaveEngineState } from '@/editor/engine/save-engine';
+import {
+  hasUnsavedWork,
+  isCreatedIdUrlSwap,
+  LEAVE_DECISION_DEADLINE_MS,
+  leaveDecisionWithin,
+} from './leave-guard';
+import { useEditorSessionKey } from './session-key';
+import type { EditorSessionHandle } from './use-editor-session';
 
 export interface EditorLeaveGuard {
   /** Wiring for Shade's `DirtyConfirmDialog`. */
@@ -15,16 +22,13 @@ export interface EditorLeaveGuard {
 }
 
 /**
- * Stops a navigation from losing what the writer typed. In-router navigations
- * and native `<a href="#/…">` anchors into Ember-owned routes are put to the
- * save engine, which finishes or saves whatever is outstanding and answers
- * `proceed` (leaving loses nothing) or `confirm` (ask first); a tab close or
- * reload gets the browser's own prompt. The session's own URL replace after a
- * create is not an exit and passes silently.
- *
- * Browser Back is not covered: the shared guard lets a POP through unless the
- * entry it returns to was created by the router, and admin reaches the editor
- * through a native hash anchor.
+ * Stops a navigation from losing what the writer typed. In-router navigations,
+ * native `<a href="#/…">` anchors and history pops (Back, Forward, a hash change
+ * made outside the router) are put to the save engine, which finishes or saves
+ * whatever is outstanding and answers `proceed` (leaving loses nothing) or
+ * `confirm` (ask first); a held pop keeps the editor's URL until then. A tab
+ * close or reload gets the browser's own prompt. The session's own URL replace
+ * after a create is not an exit and passes silently.
  */
 export function useEditorLeaveGuard(
   session: EditorSessionHandle,
@@ -42,10 +46,15 @@ export function useEditorLeaveGuard(
     confirmUnloadWhen: hasWork,
     interceptNavigation: ({ currentLocation, nextLocation }) =>
       isCreatedIdUrlSwap(currentLocation, nextLocation, postType, sessionKey),
+    guardHistoryPops: true,
   });
 
   const guardRef = useRef(guard);
   guardRef.current = guard;
+  const stateRef = useRef(session.state);
+  stateRef.current = session.state;
+  // The engine state a leave last ran out of time in: another leave in that state asks at once.
+  const lateStateRef = useRef<SaveEngineState | null>(null);
   // Stays set while an accepted exit is transitioning. React Router does not
   // consult blockers again in its `proceeding` state, so the deferred ID swap
   // must not race and replace that navigation either.
@@ -58,6 +67,16 @@ export function useEditorLeaveGuard(
       isMountedRef.current = false;
     };
   }, []);
+
+  // An accepted exit that lands without unmounting the editor is over. Runs before the ID
+  // swap below, which waits for it.
+  useEffect(() => {
+    if (!isLeavingRef.current) {
+      return;
+    }
+    isLeavingRef.current = false;
+    setIsConfirmingLeave(false);
+  }, [location]);
 
   const isUrlSwapBlocked = guard.interceptedNavigation.isBlocked;
 
@@ -110,8 +129,15 @@ export function useEditorLeaveGuard(
       return;
     }
     isDecidingRef.current = true;
-    void leaveRequested().then((decision) => {
-      if (!isMountedRef.current) {
+    void leaveDecisionWithin(leaveRequested(), {
+      ms: stateRef.current === lateStateRef.current ? 0 : LEAVE_DECISION_DEADLINE_MS,
+      isSigningIn: () => stateRef.current.kind === 'reauth-pending',
+      onLate: () => {
+        lateStateRef.current = stateRef.current;
+      },
+    }).then((decision) => {
+      // An exit the router dropped meanwhile has nothing left for a dialog to settle.
+      if (!isMountedRef.current || !guardRef.current.isBlocked) {
         return;
       }
       if (decision === 'confirm') {

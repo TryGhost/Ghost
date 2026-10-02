@@ -7,7 +7,7 @@
 // contract onto vitest's globals.
 //
 // Execution model: one Ghost server == one process (Ghost's db/knex,
-// @tryghost/domain-events, the jobs manager, nconf, settings cache, and the url
+// @tryghost/domain-events, the jobs service, nconf, settings cache, and the url
 // service are all module-level singletons that are reset in place between boots,
 // never duplicated). The DB suites therefore run in a single non-isolated worker
 // — `isolate: false` so the module registry (and the booted server) is shared
@@ -34,9 +34,7 @@ process.env.NODE_ENV = 'testing-mysql';
 process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_SECRET';
 
 // Generate unique session values for database and port BEFORE loading Ghost, so
-// nconf picks them up naturally via nconf.env(). Worker threads spawned by bree
-// inherit these env vars and get the same values when they load a fresh nconf
-// instance.
+// nconf picks them up naturally via nconf.env().
 //
 // Each worker gets its own random database under the run prefix established by
 // globalSetup. The prefix lets global teardown discover and remove every schema
@@ -185,23 +183,19 @@ beforeEach((context: { task: { name: string; suite?: unknown; file?: { filepath?
 
 afterEach(async () => {
   const domainEvents = require('@tryghost/domain-events');
-  const mentionsJobsService = require('../../core/server/services/mentions-jobs');
-  const jobsService = require('../../core/server/services/jobs');
 
   const timeout = setTimeout(() => {
     // eslint-disable-next-line no-console
     console.error(
       chalk.yellow(
-        '\n[SLOW TEST] It takes longer than 2s to wait for all jobs ' +
-          'and events to settle in the afterEach hook\n',
+        '\n[SLOW TEST] It takes longer than 2s to wait for all events ' +
+          'to settle in the afterEach hook\n',
       ),
     );
   }, 2000);
 
   await domainEvents.allSettled();
-  await mentionsJobsService.allSettled();
-  await jobsService.allSettled();
-  // Last time for events emitted during jobs
+  // Once more for events emitted while the first round settled
   await domainEvents.allSettled();
 
   clearTimeout(timeout);

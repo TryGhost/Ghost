@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
 
 import {
   fakeAdminEndpoint,
@@ -10,13 +9,13 @@ import {
   renderAdminApp,
   submittedPost,
   theme,
-  unsavedChangesGuarded,
   withoutAutosave,
   type ThemeTemplate,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 
 const POST_ID = 'abc123';
+const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 
@@ -165,26 +164,19 @@ describe('Post settings template', () => {
     await expect.element(editorScreen.settingsTemplate()).toBeDisabled();
   });
 
-  it('stages a published post’s template until Update', async () => {
+  it('saves a published post’s template on its own', async () => {
     fakeSiteThemes([SHARED_TEMPLATE, LONGREAD_TEMPLATE]);
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openTemplate();
 
-    await expect.element(editorScreen.updateButton()).toBeDisabled();
-
     await chooseTemplate('Full Feature');
-
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
-    await expect.poll(unsavedChangesGuarded).toBe(true);
-    expect(saveApi.requests).toHaveLength(0);
-
-    await userEvent.keyboard('{Meta>}s{/Meta}');
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
       custom_template: 'custom-full-feature',
-      status: 'published',
     });
     await expect.element(editorScreen.updateButton()).toBeDisabled();
   });

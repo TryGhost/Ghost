@@ -19,6 +19,7 @@ import {
 } from '@test-utils/acceptance';
 import { installBootOverrides } from '@test-utils/acceptance/boot';
 import { postPreviewNewslettersError } from '@tryghost/test-data/selectors/editor';
+import type { PublishFlowPost } from '@/editor/publish/flow-post';
 import { PostPreviewModal } from '@/editor/preview/post-preview-modal';
 import { previewScreen } from '@/editor/preview/preview.screen';
 
@@ -40,6 +41,7 @@ async function previewViewport(width: number, height: number) {
 
 interface RenderOptions {
   isPost?: boolean;
+  post?: PublishFlowPost;
   newsletterSlug?: string;
   previewUrl?: string;
   onBeforeOpen?: () => Promise<void>;
@@ -49,6 +51,7 @@ interface RenderOptions {
 
 async function renderPreviewModal({
   isPost = true,
+  post,
   newsletterSlug,
   previewUrl = PREVIEW_URL,
   onBeforeOpen,
@@ -59,6 +62,7 @@ async function renderPreviewModal({
     <PostPreviewModal
       isPost={isPost}
       newsletterSlug={newsletterSlug}
+      post={post}
       postId={POST_ID}
       previewUrl={previewUrl}
       open
@@ -544,6 +548,39 @@ describe('Post preview modal', () => {
     const srcdoc = () => frame.query()?.getAttribute('srcdoc');
     await expect.poll(srcdoc).toContain('Hello from the email');
     await expect.poll(srcdoc).toContain('scrollbar-width: thin');
+  });
+
+  it('warns that an email over 100kB may be clipped', async () => {
+    fakePreviewWorld();
+    fakeAdminEndpoint('GET', new RegExp(`^/email_previews/posts/${POST_ID}/`), {
+      email_previews: [
+        {
+          html: `<html><body>${'a'.repeat(150 * 1024)}</body></html>`,
+          plaintext: '',
+          subject: 'Hello subject',
+        },
+      ],
+    });
+    await renderPreviewModal({
+      post: {
+        id: POST_ID,
+        displayName: 'post',
+        status: 'draft',
+        title: 'Hello from React',
+        updatedAt: '2026-09-02T09:00:00.000Z',
+      },
+    });
+
+    await previewScreen.emailTab().click();
+
+    await expect
+      .element(previewScreen.emailSizeWarning())
+      .toHaveTextContent('This newsletter is 150kB');
+    await expect
+      .element(previewScreen.emailSizeWarning())
+      .toHaveTextContent(
+        'Emails may get clipped in the inbox behind a “View entire message” link when they’re over 100kB.',
+      );
   });
 
   it('previews the email for another newsletter', async () => {

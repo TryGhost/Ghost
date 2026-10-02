@@ -1,3 +1,5 @@
+import type { Frame } from '@tryghost/api-framework';
+
 /**
  * Cache-key data helpers shared by the public posts/pages endpoints. Every
  * dimension that changes what a read returns (requested options, the
@@ -5,8 +7,8 @@
  * a cached variant leaks across requests that should see different content.
  */
 
-interface CacheKeyFrame {
-  options?: {
+type CacheKeyFrame = Frame<{
+  options: {
     [key: string]: unknown;
     context?: {
       member?: {
@@ -16,7 +18,7 @@ interface CacheKeyFrame {
       };
     };
   };
-}
+}>;
 
 export function generateOptionsData(
   frame: CacheKeyFrame,

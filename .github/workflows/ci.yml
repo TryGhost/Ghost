@@ -302,7 +302,16 @@ jobs:
           # itself per-app — instead we emit the matrix here and it skips when
           # the result is `[]`. The publish job's own is_main / event gates keep
           # tags and PRs from publishing regardless of what this lists.
-          PUBLISH_PUBLIC_APPS_MATRIX=$(node scripts/build-public-apps-matrix.js "$AFFECTED_PROJECTS")
+          # Publishing always uses real affected-ness, even when a CI file change
+          # widened the test lanes above to every project.
+          PUBLISH_PROJECTS="$AFFECTED_PROJECTS"
+          if [[ -z "$AFFECTED_ARG" ]]; then
+            PUBLISH_PROJECTS='[]'
+            if [[ "${{ env.IS_TAG }}" != 'true' ]]; then
+              PUBLISH_PROJECTS=$(pnpm nx show projects --affected --json)
+            fi
+          fi
+          PUBLISH_PUBLIC_APPS_MATRIX=$(node scripts/build-public-apps-matrix.js "$PUBLISH_PROJECTS")
           echo "publish_public_apps_matrix=$PUBLISH_PUBLIC_APPS_MATRIX" >> "$GITHUB_OUTPUT"
 
     outputs:
@@ -585,6 +594,12 @@ jobs:
       - name: Run hyperfine on boot
         working-directory: ghost/core
         run: hyperfine --show-output --warmup 3 'GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node index.js' --export-json boot-perf.json
+
+      # Native modules like sharp cost memory in every process, so they should
+      # load on first use. The list lives in scripts/lib/boot-modules.js
+      - name: Check boot skips lazy-loaded modules
+        working-directory: ghost/core
+        run: GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node --import ../../scripts/assert-boot-skips-modules.js index.js
 
       - name: Report result
         uses: ./.github/actions/report-boot-benchmark
@@ -1111,6 +1126,15 @@ jobs:
           if-no-files-found: ignore
           retention-days: 30
 
+      - name: Upload Admin acceptance results
+        if: always() && matrix.app == '@tryghost/admin'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: admin-acceptance-results-${{ matrix.shardIndex }}
+          path: apps/admin/test-results/acceptance.json
+          if-no-files-found: ignore
+          retention-days: 30
+
       - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
@@ -1608,6 +1632,7 @@ jobs:
           tar -xzf "${RUNNER_TEMP}/admin-artifact/admin-build.tar.gz" -C ghost/core/core/built
 
       - name: Build & push full image
+        id: build-full
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
         env:
           BUILDKIT_PROGRESS: plain
@@ -1974,6 +1999,7 @@ jobs:
 
     outputs:
       use-artifact: ${{ steps.strategy.outputs.use-artifact }}
+      image-digest: ${{ steps.build-full.outputs.digest }}
       image-core-tags: ${{ steps.meta-core.outputs.tags }}
       image-e2e-name: ${{ steps.strategy.outputs.image-e2e-name }}
       image-e2e-tags: ${{ steps.meta-e2e.outputs.tags }}
@@ -2449,7 +2475,39 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           trust-lockfile: 'true'
 
+      # nx marks an app affected for dependency changes that may not reach its
+      # bundle (dev tooling, dedupes), so compare against what's live first.
+      # Built with the live version so portal's baked-in version can't differ.
+      - name: Check for bundle changes
+        id: bundle
+        working-directory: ${{ matrix.package_path }}
+        env:
+          PACKAGE_NAME: ${{ matrix.package_name }}
+        run: |
+          LATEST=$(node "$GITHUB_WORKSPACE/scripts/compute-next-app-version.cjs" --latest .)
+          if [ -z "$LATEST" ]; then
+            echo "No release in this major.minor line yet"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          npm pkg set version="$LATEST"
+          pnpm nx build "$PACKAGE_NAME"
+
+          PUBLISHED_DIR="$RUNNER_TEMP/published"
+          mkdir -p "$PUBLISHED_DIR"
+          npm pack "${PACKAGE_NAME}@${LATEST}" --pack-destination "$PUBLISHED_DIR"
+          tar -xzf "$PUBLISHED_DIR"/*.tgz -C "$PUBLISHED_DIR"
+
+          if diff -rq "$PUBLISHED_DIR/package/umd" umd; then
+            echo "Bundle matches ${PACKAGE_NAME}@${LATEST}, skipping publish"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Determine release version
+        if: steps.bundle.outputs.changed == 'true'
         id: release
         working-directory: ${{ matrix.package_path }}
         run: |
@@ -2470,20 +2528,24 @@ jobs:
           echo "current_major=$(echo "$NEXT_VERSION" | awk -F. '{print $1}')" >> $GITHUB_OUTPUT
 
       - name: Build the package
+        if: steps.bundle.outputs.changed == 'true'
         run: pnpm nx build ${{ matrix.package_name }}
 
       - name: Configure .npmrc
+        if: steps.bundle.outputs.changed == 'true'
         run: |
           echo "@tryghost:registry=https://registry.npmjs.org/" >> ~/.npmrc
 
       # --provenance is explicit rather than relying on pnpm's auto-detection,
       # which degrades to a warning if it can't confirm visibility.
       - name: Publish to npm
+        if: steps.bundle.outputs.changed == 'true'
         working-directory: ${{ matrix.package_path }}
         run: |
           pnpm publish --access public --provenance --no-git-checks
 
       - name: Replace version placeholders in cdn-paths
+        if: steps.bundle.outputs.changed == 'true'
         id: cdn_paths
         run: |
           cdn_paths="${{ matrix.cdn_paths }}"
@@ -2492,9 +2554,11 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Print cdn_paths
+        if: steps.bundle.outputs.changed == 'true'
         run: echo "${{ steps.cdn_paths.outputs.cdn_paths }}"
 
       - name: Purge jsDelivr cache
+        if: steps.bundle.outputs.changed == 'true'
         uses: gacts/purge-jsdelivr-cache@8d92aea944f1a3e8ad70505379e1a8ac72d56b73 # v1
         with:
           url: ${{ steps.cdn_paths.outputs.cdn_paths }}
@@ -2513,9 +2577,15 @@ jobs:
       && needs.job_build_admin.result == 'success'
       && needs.job_docker.result == 'success'
       && needs.job_docker.outputs.use-artifact != 'true'
+    permissions:
+      pull-requests: read
     steps:
       - name: Determine dispatch parameters
         id: params
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPOSITORY: ${{ github.repository }}
         run: |
           if [ "${{ needs.job_setup.outputs.is_main }}" = "true" ]; then
             echo "pr_number=" >> $GITHUB_OUTPUT
@@ -2525,6 +2595,12 @@ jobs:
             echo "deploy=" >> $GITHUB_OUTPUT
           elif [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+
+            # Read live: labels can change during the build. Ghost-Moya refreshes
+            # the preview only when this is set, and re-checks before deploying.
+            PREVIEW=$(gh api "repos/${REPOSITORY}/pulls/${PR_NUMBER}" \
+              --jq '.state == "open" and any(.labels[].name; . == "preview" or startswith("preview:"))')
+            echo "preview=${PREVIEW}" >> "$GITHUB_OUTPUT"
 
             # DISABLED: deploy-to-staging label detection is disabled.
             # The label workflow has fundamental problems — admin deploys are global
@@ -2544,14 +2620,17 @@ jobs:
           token: ${{ secrets.CANARY_DOCKER_BUILD }}
           repository: TryGhost/Ghost-Moya
           event-type: ghost-artifacts-ready
+          # PR ref is the head SHA to match the `sha-<short>` image tag, not the merge commit
           client-payload: >-
             {
-              "ref": "${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || github.sha }}",
+              "ref": "${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || github.event.pull_request.head.sha || github.sha }}",
               "source_repo": "${{ github.repository }}",
               "pr_number": "${{ steps.params.outputs.pr_number }}",
               "deploy": "${{ steps.params.outputs.deploy }}",
               "admin_artifact_id": "${{ needs.job_build_admin.outputs.admin-artifact-id }}",
-              "admin_artifact_run_id": "${{ github.run_id }}"
+              "admin_artifact_run_id": "${{ github.run_id }}",
+              "image_digest": "${{ needs.job_docker.outputs.image-digest }}",
+              "preview": "${{ steps.params.outputs.preview }}"
             }
 
   # --------------------------------------------------------------------------- #

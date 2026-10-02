@@ -3,7 +3,7 @@ const settingsCache = require('../../../shared/settings-cache');
 const settingsHelpers = require('../../services/settings-helpers');
 const MembersApi = require('./members-api/members-api');
 const logging = require('@tryghost/logging');
-const mail = require('../mail');
+const mail = require('../../lib/mail');
 const models = require('../../models');
 const signinEmail = require('./emails/signin');
 const signupEmail = require('./emails/signup');
@@ -23,6 +23,7 @@ const commentsService = require('../comments');
 const emailAddressService = require('../email-address');
 const giftService = require('../gifts');
 const metafieldsService = require('../members-metafields');
+const signingKeys = require('../signing-keys');
 const { t } = require('../i18n');
 const sentry = require('../../../shared/sentry');
 
@@ -58,7 +59,10 @@ function trimLeadingWhitespace(strings, ...values) {
 function createApiInstance(config) {
   const membersApiInstance = MembersApi({
     urlService,
-    tokenConfig: config.getTokenConfig(),
+    tokenConfig: {
+      issuer: config.getTokenIssuer(),
+      signingKeys: signingKeys.getInstance().forPurpose('members'),
+    },
     auth: {
       getSigninURL: config.getSigninURL.bind(config),
       allowSelfSignup: config.getAllowSelfSignup.bind(config),
@@ -274,7 +278,6 @@ function createApiInstance(config) {
     // two together in boot order. Metafields is initialised in initCore, the
     // members API is built in initServices, so this is always the live instance.
     metafieldValues: metafieldsService.values,
-    metafieldDefinitions: metafieldsService.definitions,
   });
 
   return membersApiInstance;
