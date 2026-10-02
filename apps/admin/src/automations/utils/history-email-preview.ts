@@ -1,4 +1,13 @@
-type TextNode = { type: string; text?: string; children?: TextNode[] };
+import { z } from 'zod';
+
+const documentSchema = z.object({
+  root: z.object({ children: z.array(z.unknown()) }),
+});
+const nodeSchema = z.object({
+  type: z.string(),
+  text: z.unknown().optional(),
+  children: z.array(z.unknown()).optional(),
+});
 
 const EXCERPT_LENGTH = 400;
 const blocks = new Set([
@@ -16,15 +25,14 @@ export function emailTextExcerpt(lexical: string | null): string {
   if (!lexical?.trim()) {
     return '';
   }
-  const document = JSON.parse(lexical) as { root?: { children?: TextNode[] } };
-  if (!Array.isArray(document?.root?.children)) {
-    throw new Error('Invalid email document');
-  }
+  const parsed: unknown = JSON.parse(lexical);
+  const document = documentSchema.parse(parsed);
   let text = '';
-  const read = (node: TextNode) => {
+  const read = (value: unknown) => {
     if (text.length > EXCERPT_LENGTH) {
       return;
     }
+    const node = nodeSchema.parse(value);
     switch (node.type) {
       case 'text':
       case 'extended-text':
@@ -38,7 +46,7 @@ export function emailTextExcerpt(lexical: string | null): string {
         return;
     }
     // Rich cards keep their contents in properties rather than text children.
-    if (Array.isArray(node.children)) {
+    if (node.children) {
       for (const child of node.children) {
         read(child);
         if (text.length > EXCERPT_LENGTH) {

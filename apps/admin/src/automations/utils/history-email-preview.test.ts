@@ -6,6 +6,14 @@ const text = (value: string) => ({ type: 'extended-text', text: value });
 const paragraph = (...children: object[]) => ({ type: 'paragraph', children });
 
 describe('email text excerpts', () => {
+  it.each([
+    ['malformed JSON', '{'],
+    ['missing root children', JSON.stringify({ root: {} })],
+    ['invalid child node', doc({ type: 'paragraph', children: [null] })],
+  ])('rejects %s instead of returning an empty excerpt', (_description, lexical) => {
+    expect(() => emailTextExcerpt(lexical)).toThrow();
+  });
+
   it('reads paragraphs, headings, lists and link text in document order', () => {
     expect(
       emailTextExcerpt(
