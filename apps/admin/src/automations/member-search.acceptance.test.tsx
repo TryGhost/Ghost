@@ -123,7 +123,9 @@ describe('Automation member search', () => {
     try {
       await expect.poll(() => pages).toBe(9);
       await expect.element(list()).toHaveAttribute('aria-busy', 'true');
-      await expect.element(list().element().querySelector('.animate-pulse')).toBeVisible();
+      await expect
+        .element(list().element().querySelector<HTMLElement>('.animate-pulse'))
+        .toBeVisible();
       await expect.element(list().getByText('No members match')).not.toBeInTheDocument();
       await expect
         .element(list().getByRole('button', { name: 'Continue search' }))
