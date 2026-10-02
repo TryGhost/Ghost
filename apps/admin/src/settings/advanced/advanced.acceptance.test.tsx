@@ -286,7 +286,7 @@ describe('Advanced settings', () => {
 
   it('downloads the content and settings export', async () => {
     fakeSettingsScreens();
-    await renderAdminApp('/settings/migration');
+    await renderAdminApp('/settings/migration', { labs: { selfServeArchives: false } });
 
     const section = settingsScreen.section('migrationtools');
     await section.getByRole('tab', { name: 'Export' }).click();
