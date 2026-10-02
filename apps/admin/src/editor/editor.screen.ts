@@ -340,6 +340,11 @@ export const editorScreen = {
   postHistoryPreviewFeatureImage: () => page.getByTestId(postHistoryPreviewFeatureImage),
   /** The read-only Koenig rendering of the selected version. */
   postHistoryPreviewBody: () => page.getByTestId(postHistoryPreviewBody),
+  /** A card Koenig has selected in the preview, if any. */
+  postHistoryPreviewSelectedCard: () =>
+    document.querySelector(
+      `[data-testid="${postHistoryPreviewBody}"] [data-kg-card-selected="true"]`,
+    ),
   restoreConfirm: () => page.getByTestId(postHistoryRestoreConfirm),
   confirmRestore: () =>
     page

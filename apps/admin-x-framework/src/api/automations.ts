@@ -207,6 +207,7 @@ export const AutomationRunsResponseSchema = z.object({
     ),
   meta: z.object({
     pagination: z.object({
+      state: z.enum(['scanning', 'more', 'exhausted']).optional(),
       limit: z.number().int().positive(),
       next_cursor: z.string().min(1).nullable(),
     }),
@@ -217,15 +218,17 @@ export type AutomationRun = z.infer<typeof AutomationRunSchema>;
 export type AutomationRunStatusFilter = AutomationRun['status'];
 export type AutomationRunsResponseType = z.infer<typeof AutomationRunsResponseSchema>;
 
+type AutomationRunsResult = { runs: AutomationRun[]; scanning: boolean; pages: number };
+
 export const useBrowseAutomationRuns = (
   id: string,
   queryScope: string,
   options: Parameters<
-    ReturnType<typeof createInfiniteQuery<AutomationRun[], AutomationRunsResponseType>>
+    ReturnType<typeof createInfiniteQuery<AutomationRunsResult, AutomationRunsResponseType>>
   >[0],
 ) => {
   // A new list interaction fetches fresh data even if an earlier request is still pending.
-  const useQuery = createInfiniteQuery<AutomationRun[], AutomationRunsResponseType>({
+  const useQuery = createInfiniteQuery<AutomationRunsResult, AutomationRunsResponseType>({
     dataType: `AutomationRunsResponseType:${queryScope}`,
     path: `/automations/${id}/runs/`,
     parseResponse: (data) => AutomationRunsResponseSchema.parse(data),
@@ -233,7 +236,7 @@ export const useBrowseAutomationRuns = (
       const { pages } = originalData as InfiniteData<AutomationRunsResponseType>;
       // Pages are live reads, not a snapshot; show a run once if a later page repeats it.
       const seen = new Set<string>();
-      return pages
+      const runs = pages
         .flatMap((page) => page.automation_runs)
         .filter((run) => {
           if (seen.has(run.id)) {
@@ -242,6 +245,11 @@ export const useBrowseAutomationRuns = (
           seen.add(run.id);
           return true;
         });
+      return {
+        runs,
+        scanning: pages.at(-1)?.meta.pagination.state === 'scanning',
+        pages: pages.length,
+      };
     },
     defaultNextPageParams: (page, params) => {
       const cursor = page.meta.pagination.next_cursor;
