@@ -142,6 +142,8 @@ describe('Editor publish journeys', () => {
     await publishScreen.recipientOption('Gold').click();
     await publishScreen.recipientSearch().click();
     await publishScreen.recipientOption('VIP').click();
+    // The list stays open after a pick, over the Continue button at Admin's 10px rem.
+    await publishScreen.options().getByRole('heading', { name: 'Ready, set, publish.' }).click();
     await publishScreen.continueButton().click();
     await publishScreen.confirmButton().click();
 
