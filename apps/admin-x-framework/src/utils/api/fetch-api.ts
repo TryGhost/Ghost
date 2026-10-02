@@ -12,6 +12,7 @@ import {
 import { isAuthPath } from '../auth-paths';
 import { getGhostPaths } from '../helpers';
 import handleResponse, { ResponseType } from './handle-response';
+import { reportUpgradeStatus } from './upgrade-status';
 
 export interface RequestOptions {
   method?: string;
@@ -286,6 +287,10 @@ export const useFetchApi = () => {
 
             if (!(error instanceof APIError)) {
               newError = new ServerUnreachableError({ cause: error });
+            }
+
+            if (GHOST_API_REQUEST.test(endpoint.toString())) {
+              reportUpgradeStatus(newError);
             }
 
             throw newError;

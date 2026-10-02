@@ -21,7 +21,9 @@ The screen keeps a session while navigation stays on its post, counting the id
 a create acquired and ignoring a trailing slash, whichever history entry the
 navigation reaches, including one the router did not create. Any other post, a
 new one included, gets a new session, so two posts opened by URL each get their
-own.
+own. The editor tells the screen once its session has created its post, so the
+new-post URL reached afterwards opens a new post even when the router renders
+the create's URL replace and that navigation together.
 
 Requests are made without the transport's session-expiry redirect, so an expired
 session is surfaced in place rather than navigating away from unsaved content.
