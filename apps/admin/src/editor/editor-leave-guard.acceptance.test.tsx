@@ -146,7 +146,7 @@ function fakeDeferredSave() {
   }));
   fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), () => ({ posts: [current] }));
 
-  const saveResponse = deferred<{ posts: SavedPost[] }>();
+  const saveResponse = deferred<{ posts: SavedPost[] } | Response>();
   const saveApi = fakeAdminEndpoint('PUT', new RegExp(`^/posts/${POST_ID}/\\?`), ({ body }) => {
     const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
     current = { ...current, ...submitted, updated_at: '2026-01-01T00:00:01.000Z' };
@@ -156,6 +156,13 @@ function fakeDeferredSave() {
   return {
     saveApi,
     resolveSave: () => saveResponse.resolve({ posts: [current] }),
+    failSave: () =>
+      saveResponse.resolve(
+        Response.json(
+          { errors: [{ type: 'InternalServerError', message: 'Something went wrong.' }] },
+          { status: 500 },
+        ),
+      ),
   };
 }
 
@@ -453,6 +460,22 @@ describe('Post editor leave guard', () => {
     expect(dialogInsertions()).toBe(0);
   });
 
+  it('leaves for the first destination when a link is clicked during the save on the way out', async () => {
+    const { saveApi, failSave } = fakeDeferredSave();
+    await openDirtyEditor(withoutAutosave(FLAG_ON));
+    const anchor = nativeHashAnchor();
+
+    await editorScreen.backLink('post').click();
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    anchor.click();
+    failSave();
+
+    await expect.element(editorScreen.leaveDialog()).toBeVisible();
+    await editorScreen.leaveEditor().click();
+    await expect.poll(currentRoute).toBe('/posts');
+    await expect(editorScreen.root()).toHaveCount(0);
+  });
+
   it('guards a native hash anchor out of the editor', async () => {
     const saveApi = fakeEditablePost({
       status: 'published',
@@ -700,6 +723,61 @@ describe('Post editor leave guard on history pops', () => {
 
     await expect.element(editorScreen.leaveDialog()).toBeVisible();
     expect(saveApi.requests.length).toBe(0);
+  });
+
+  it('keeps where Back leaves for when the hash is written during the save on the way out', async () => {
+    const { saveApi, failSave } = fakeDeferredSave();
+    await openByHashChange(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await appendToBody(' and more');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+
+    window.history.back();
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    window.location.hash = '/pro';
+    await expect.poll(currentRoute).toBe(`/editor/post/${POST_ID}`);
+    failSave();
+
+    await expect.element(editorScreen.leaveDialog()).toBeVisible();
+    await editorScreen.leaveEditor().click();
+    await expect.poll(currentRoute).toBe('/posts');
+    await expect(editorScreen.root()).toHaveCount(0);
+  });
+
+  it('keeps where Back leaves for when the editor URL is pushed again during the save on the way out', async () => {
+    const { saveApi, failSave } = fakeDeferredSave();
+    await openByHashChange(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await appendToBody(' and more');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+
+    window.history.back();
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    window.location.hash = `/editor/post/${POST_ID}/`;
+    failSave();
+
+    await expect.element(editorScreen.leaveDialog()).toBeVisible();
+    await editorScreen.leaveEditor().click();
+    await expect.poll(currentRoute).toBe('/posts');
+    await expect(editorScreen.root()).toHaveCount(0);
+  });
+
+  it('keeps a held exit when the URL drops its trailing slash during the save on the way out', async () => {
+    const { saveApi, failSave } = fakeDeferredSave();
+    await renderAdminApp(`/editor/post/${POST_ID}/`, withoutAutosave(FLAG_ON));
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await appendToBody(' and more');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+
+    await editorScreen.backLink('post').click();
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    window.location.replace(`#/editor/post/${POST_ID}`);
+    failSave();
+
+    await expect.element(editorScreen.leaveDialog()).toBeVisible();
+    await editorScreen.leaveEditor().click();
+    await expect.poll(currentRoute).toBe('/posts');
+    await expect(editorScreen.root()).toHaveCount(0);
   });
 
   it('stays put when the URL only drops its trailing slash', async () => {

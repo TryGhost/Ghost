@@ -394,6 +394,18 @@ trailing slash is the same screen, not an exit. A clean editor leaves at once, a
 tab close or reload gets the browser's own prompt, and the URL replace after a
 create is not an exit.
 
+Only the first way out is held. Until the writer may leave or chooses to stay, a
+click on another link does nothing and another Back, Forward or hash change is
+undone, so leaving still goes where they first asked. The router's own links are
+the exception when the held exit is one of them: the router keeps only the
+latest, so leaving goes to the last one clicked. When a Back or Forward is held
+and another change lands anywhere but the entry it reached, that entry is no
+longer directly below the editor once the change is undone, so leaving puts its
+URL in place of the editor's entry instead. The undone entries stay in the
+history, so Back after leaving can step through them. A change to the URL that
+keeps the editor's screen, such as dropping a trailing slash, stays in the
+address bar and leaves the held exit in place.
+
 ## What the session reports
 
 Failures never reach the writer as thrown errors; the session reports them. Every
