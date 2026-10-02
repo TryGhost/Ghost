@@ -30,6 +30,7 @@ const messages = {
   },
   webmentionsBlock: 'Too many mention attempts',
   emailPreviewBlock: 'Only 10 test emails can be sent per hour',
+  upgradeBlock: 'Too many update requests. Try again in a minute.',
 };
 let spamPrivateBlock = spam.private_block || {};
 let spamGlobalBlock = spam.global_block || {};
@@ -44,6 +45,7 @@ let spamCheckoutSessionEmail = spam.checkout_session_email || {};
 let spamContentApiKey = spam.content_api_key || {};
 const spamWebmentionsBlock = spam.webmentions_block || {};
 const spamEmailPreviewBlock = spam.email_preview_block || {};
+const spamUpgradeBlock = spam.upgrade_block || {};
 let spamOtcVerificationEnumeration = spam.otc_verification_enumeration || {};
 let spamOtcVerification = spam.otc_verification || {};
 
@@ -63,6 +65,7 @@ let sendVerificationCodeInstance;
 let userVerificationInstance;
 let contentApiKeyInstance;
 let emailPreviewBlockInstance;
+let upgradeBlockInstance;
 let otcVerificationEnumerationInstance;
 let otcVerificationInstance;
 
@@ -242,6 +245,42 @@ const emailPreviewBlock = () => {
     );
 
   return emailPreviewBlockInstance;
+};
+
+const upgradeBlock = () => {
+  const ExpressBrute = require('express-brute');
+  const BruteKnex = require('@tryghost/brute-knex');
+  const db = require('../../../../data/db');
+
+  store =
+    store ||
+    new BruteKnex({
+      tablename: 'brute',
+      createTable: false,
+      knex: db.knex,
+    });
+
+  upgradeBlockInstance =
+    upgradeBlockInstance ||
+    new ExpressBrute(
+      store,
+      extend(
+        {
+          attachResetToRequest: false,
+          failCallback(req, res, next) {
+            return next(
+              new errors.TooManyRequestsError({
+                message: messages.upgradeBlock,
+              }),
+            );
+          },
+          handleStoreError: handleStoreError,
+        },
+        pick(spamUpgradeBlock, spamConfigKeys),
+      ),
+    );
+
+  return upgradeBlockInstance;
 };
 
 const membersAuth = () => {
@@ -713,6 +752,7 @@ const contentApiKey = () => {
 };
 
 module.exports = {
+  upgradeBlock,
   globalBlock: globalBlock,
   globalReset: globalReset,
   userLogin: userLogin,
@@ -730,6 +770,7 @@ module.exports = {
   webmentionsBlock: webmentionsBlock,
   emailPreviewBlock: emailPreviewBlock,
   reset: () => {
+    upgradeBlockInstance = undefined;
     store = undefined;
     memoryStore = undefined;
     privateBlogInstance = undefined;

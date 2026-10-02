@@ -17,6 +17,16 @@ module.exports = function apiRoutes() {
 
   router.use(apiMw.cors);
 
+  // ## Host-managed upgrades
+  router.get('/upgrades/', mw.authAdminApi, http(api.upgrades.browse));
+  router.post(
+    '/upgrades/',
+    mw.authAdminApi,
+    shared.middleware.brute.upgradeLimiter,
+    http(api.upgrades.add),
+  );
+  router.get('/upgrades/:id/', mw.authAdminApi, http(api.upgrades.read));
+
   // ## Public
   router.get('/site', mw.publicAdminApi, http(api.site.read));
 

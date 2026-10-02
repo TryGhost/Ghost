@@ -42,6 +42,7 @@
     "assetSrc": "core/frontend/src"
   },
   "adapters": {
+    "upgrade": { "active": "NoopUpgradeAdapter" },
     "sso": {
       "active": "DefaultSSOAdapter"
     },
@@ -178,6 +179,12 @@
       "maxWait": 100,
       "lifetime": 1000,
       "freeRetries": 100
+    },
+    "upgrade_block": {
+      "freeRetries": 2,
+      "minWait": 60000,
+      "maxWait": 60000,
+      "lifetime": 60
     },
     "email_preview_block": {
       "minWait": 360000,
