@@ -1,6 +1,8 @@
 import type { InfiniteData } from '@tanstack/react-query';
 import ObjectId from 'bson-objectid';
+import { useMemo } from 'react';
 import { z } from 'zod';
+import { apiUrl } from '../utils/api/fetch-api';
 import {
   Meta,
   createInfiniteQuery,
@@ -231,15 +233,27 @@ export const useBrowseAutomationRuns = (
     ReturnType<typeof createInfiniteQuery<AutomationRunsResult, AutomationRunsResponseType>>
   >[0],
 ) => {
+  const path = `/automations/${id}/runs/`;
+  const url = apiUrl(path, options?.searchParams);
+  const seenCursors = useMemo(() => new Set<string>(), [queryScope, url]);
   // A new list interaction fetches fresh data even if an earlier request is still pending.
   const useQuery = createInfiniteQuery<AutomationRunsResult, AutomationRunsResponseType>({
     dataType: `AutomationRunsResponseType:${queryScope}`,
-    path: `/automations/${id}/runs/`,
+    path,
     parseResponse: (data, params) => {
       const response = AutomationRunsResponseSchema.parse(data);
+      // Refetch starts a new traversal; retrying a failed later page keeps its history.
+      if (!params.cursor) {
+        seenCursors.clear();
+      } else {
+        seenCursors.add(params.cursor);
+      }
       const cursor = response.meta.pagination.next_cursor;
-      if (cursor && cursor === params.cursor) {
-        throw new Error('Automation run pagination did not advance');
+      if (cursor) {
+        if (seenCursors.has(cursor)) {
+          throw new Error('Automation run pagination repeated a cursor');
+        }
+        seenCursors.add(cursor);
       }
       return response;
     },

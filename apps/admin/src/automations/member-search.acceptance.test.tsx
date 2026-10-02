@@ -144,6 +144,48 @@ describe('Automation member search', () => {
     await expect.element(input()).toHaveValue('');
   });
 
+  it('rejects a cursor cycle, retries the failed page, and resets for a new search', async () => {
+    prepareStatuses();
+    let repaired = false;
+    const cursors: Array<string | null> = [];
+    fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?/, ({ url }) => {
+      const params = new URL(url).searchParams;
+      if (!params.has('search')) {
+        return result(null, []);
+      }
+      const cursor = params.get('cursor');
+      cursors.push(cursor);
+      // Bound the broken implementation in the test; the assertion catches the extra request.
+      if (!repaired && cursors.length > 3) {
+        return new Response(null, { status: 500 });
+      }
+      if (!cursor) {
+        return result('first', []);
+      }
+      if (cursor === 'first') {
+        return result('second', []);
+      }
+      return repaired ? result(null, []) : result('first', []);
+    });
+    await open();
+    await page.getByRole('button', { name: 'Search members', exact: true }).click();
+    await input().fill('anna');
+    await expect.element(list().getByText('Could not load entries')).toBeVisible();
+    expect(cursors).toEqual([null, 'first', 'second']);
+
+    repaired = true;
+    await list().getByRole('button', { name: 'Retry' }).click();
+    await expect.element(list().getByText('No members match')).toBeVisible();
+    expect(cursors).toEqual([null, 'first', 'second', 'second']);
+
+    await input().fill('bob');
+    await expect
+      .poll(() => cursors)
+      .toEqual([null, 'first', 'second', 'second', null, 'first', 'second']);
+    await expect.element(list().getByText('No members match')).toBeVisible();
+    await expect.element(list().getByText('Could not load entries')).not.toBeInTheDocument();
+  });
+
   it.each([
     { name: 'missing first-page cursor', firstPage: true, cursor: null },
     { name: 'missing continuation cursor', firstPage: false, cursor: null },
