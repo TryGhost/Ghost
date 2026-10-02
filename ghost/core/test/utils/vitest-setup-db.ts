@@ -98,6 +98,9 @@ const sessionPort = parseInt(process.env.server__port, 10);
 // vars set above.
 require('../../core/server/overrides');
 
+// Tests swap url config at runtime, so url-utils must read it live.
+require('../../core/shared/url-utils').default.unfreeze();
+
 const snapshotExports = require('@tryghost/express-test').snapshot;
 const { snapshotManager, mochaHooks } = snapshotExports;
 
