@@ -437,7 +437,13 @@ const buildGraph = ({
     style: { stroke: DEFAULT_EDGE_STROKE },
   });
 
-  return { nodes, edges, contentBounds };
+  // Controlled nodes must carry their measured dimensions through graph
+  // updates. Otherwise React Flow hides them for remeasurement, blurring
+  // focused inputs and removing the handles that keep edge menus mounted.
+  const measuredNodes = nodes.map((node) =>
+    nodeSizes[node.id] ? { ...node, measured: nodeSizes[node.id] } : node,
+  );
+  return { nodes: measuredNodes, edges, contentBounds };
 };
 
 const getInitialViewport = (canvasWidth: number): { x: number; y: number; zoom: number } => ({
