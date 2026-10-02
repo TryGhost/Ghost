@@ -23,6 +23,7 @@ import { ClientExtensionScript } from './client-extension-script';
 import { usePreloadEditor } from './use-preload-editor';
 import { useAccentColorProperties } from './hooks/use-accent-color-properties';
 import { useDocumentTitle } from './hooks/use-document-title';
+import { usePrivateSiteLogin } from './hooks/use-private-site-login';
 import { SignedOutApp, useAuthNotice, useAuthScreensOwner } from './auth/api';
 
 function App() {
@@ -38,6 +39,7 @@ function App() {
   useBrowseSettings();
   useAccentColorProperties();
   useDocumentTitle();
+  usePrivateSiteLogin();
   useEmberAuthSync();
   useEmberDataSync();
   useEmberListReturnSync();
