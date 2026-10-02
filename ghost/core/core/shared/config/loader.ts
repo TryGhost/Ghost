@@ -4,6 +4,7 @@ import { bindAll as bindUrlHelpers, type BoundHelpers } from '@tryghost/config-u
 import * as localUtils from './utils';
 import { loadSecretsFromEnv, isSecretFileRef } from './secrets';
 import { bindAll as bindHelpers, type ConfigHelpers } from './helpers';
+import { attachValidatedConfig, type WithValidatedConfig } from './validated';
 
 const _debug = require('@tryghost/debug')._base;
 const debug = _debug('ghost:config');
@@ -13,7 +14,13 @@ interface LoadNconfOptions {
   customConfigPath?: string;
 }
 
-export type ConfigInstance = Nconf.Provider & BoundHelpers & ConfigHelpers;
+/**
+ * `get` is replaced with a schema-typed version, so omit nconf's own signature.
+ */
+export type ConfigInstance = Omit<Nconf.Provider, 'get'> &
+  BoundHelpers &
+  ConfigHelpers &
+  WithValidatedConfig;
 
 function loadNconf(options?: LoadNconfOptions): ConfigInstance {
   debug('config start');
@@ -83,6 +90,12 @@ function loadNconf(options?: LoadNconfOptions): ConfigInstance {
 
   // Manually set values
   nconf.set('env', env);
+
+  // ## Schema
+
+  // Validate the loaded config, and serve the key paths the schema covers from
+  // the deep-frozen result rather than from nconf's live stores. See ./schema.ts.
+  attachValidatedConfig(nconf);
 
   // Wrap this in a check, because else nconf.get() is executed unnecessarily
   // To output this, use DEBUG=ghost:*,ghost-config
