@@ -1,16 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
-import {
-  flags,
-  prepareStatuses,
-  run,
-  runsScroller,
-  scrollRunsToEnd,
-  setupEmbeddedRootFontSize,
-} from './run-list.test-utils';
+import { flags, prepareStatuses, run, runsScroller, scrollRunsToEnd } from './run-list.test-utils';
 
-setupEmbeddedRootFontSize();
 const endpoint = /\/automations\/first\/runs\/\?/;
 const region = () => page.getByRole('region', { name: 'Automation runs', exact: true });
 const pageOfRuns = (start: number, length: number, next: string | null = null) => ({

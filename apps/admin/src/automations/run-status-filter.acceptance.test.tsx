@@ -1,15 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
-import {
-  flags,
-  response,
-  prepareStatuses,
-  run,
-  setupEmbeddedRootFontSize,
-} from './run-list.test-utils';
-
-setupEmbeddedRootFontSize();
+import { flags, response, prepareStatuses, run } from './run-list.test-utils';
 
 const entries = () => page.getByRole('region', { name: 'Total entries' });
 const statuses = () => page.getByRole('region', { name: 'Automation status counts' });

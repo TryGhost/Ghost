@@ -30,11 +30,7 @@ const CURRENT_USER_EMAIL = String(currentUserResponse().users[0].email);
 
 async function previewViewport(width: number, height: number) {
   const initialViewport = { width: window.innerWidth, height: window.innerHeight };
-  const initialFontSize = document.documentElement.style.fontSize;
-  // Embedded Admin uses a 10px rem base; match it when checking pixel breakpoints.
-  document.documentElement.style.fontSize = '10px';
   onTestFinished(async () => {
-    document.documentElement.style.fontSize = initialFontSize;
     await page.viewport(initialViewport.width, initialViewport.height);
   });
   await page.viewport(width, height);
