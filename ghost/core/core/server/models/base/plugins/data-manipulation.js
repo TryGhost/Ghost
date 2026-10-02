@@ -1,6 +1,10 @@
+const moment = require('moment');
 const { DateTime } = require('luxon');
 
 const schema = require('../../../data/schema');
+
+// What SQLite returns for a dateTime column, and what fixDatesWhenSave writes
+const DB_DATETIME = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/;
 
 /**
  * @param {number} ms - epoch milliseconds
@@ -9,11 +13,6 @@ const schema = require('../../../data/schema');
 function truncateToSeconds(ms) {
   return Math.floor(ms / 1000) * 1000;
 }
-
-// `YYYY-MM-DD`, the start of every SQL datetime string
-const SQL_DATE_PREFIX = /^\d{4}-\d{2}-\d{2}/;
-// An ISO 8601 date always leads with its (optionally signed) year
-const ISO_DATE_PREFIX = /^[+-]?\d{4}/;
 
 /**
  * @param {number} n
@@ -41,11 +40,12 @@ function formatForDatabase(ms) {
 }
 
 /**
- * Stored dates are UTC, so strings are parsed in UTC regardless of the
- * process timezone - `new Date(string)` would read `2018-04-12 20:50:35` as
- * local time.
+ * Handles what the database drivers hand back (Dates from MySQL, numbers and
+ * `YYYY-MM-DD HH:mm:ss` UTC strings from SQLite) without building a moment,
+ * since this runs for every date column of every row. Anything else goes
+ * through moment exactly as before.
  *
- * @param {Date|number|string|import('luxon').DateTime|{_isAMomentObject: true, valueOf(): number}} value
+ * @param {Date|number|string|import('luxon').DateTime|import('moment').Moment} value
  * @returns {number} epoch milliseconds, or NaN when the value is not a valid date
  */
 function toEpochMilliseconds(value) {
@@ -57,45 +57,25 @@ function toEpochMilliseconds(value) {
     return value;
   }
 
-  // moment objects still come in from callers that build dates with moment
-  if (value?._isAMomentObject || DateTime.isDateTime(value)) {
-    return value.valueOf();
+  // moment would read a Luxon DateTime as today's date at midnight
+  if (DateTime.isDateTime(value)) {
+    return value.toMillis();
   }
 
-  // moment allowed leading whitespace before an ISO date, but sent anything
-  // with trailing whitespace to its `new Date()` fallback
-  const str = String(value).trimStart();
-  const luxonParsable = !/\s$/.test(str);
+  const match = typeof value === 'string' && DB_DATETIME.exec(value);
 
-  // Luxon's parsers also accept time-only strings, which they place on
-  // today's date: fromSQL reads `2025` as 20:25 and `2025-02` as 20:25 at a
-  // -02 offset. moment read those as January 1 and February 1, and rejected
-  // time-only strings, so each parser only sees strings that lead with a date.
-  const sqlDate =
-    luxonParsable && SQL_DATE_PREFIX.test(str) ? DateTime.fromSQL(str, { zone: 'utc' }) : null;
+  if (match) {
+    const [, year, month, day, hours, minutes, seconds] = match.map(Number);
+    const ms = Date.UTC(year, month - 1, day, hours, minutes, seconds);
 
-  if (sqlDate?.isValid) {
-    return sqlDate.toMillis();
+    // Date.UTC rolls over out-of-range parts (2025-02-30, 10:60:00) and maps
+    // years below 100 onto 19xx, so only trust it when the result round-trips
+    if (formatForDatabase(ms) === value) {
+      return ms;
+    }
   }
 
-  const isoDate =
-    luxonParsable && ISO_DATE_PREFIX.test(str) ? DateTime.fromISO(str, { zone: 'utc' }) : null;
-
-  if (isoDate?.isValid) {
-    return isoDate.toMillis();
-  }
-
-  // Other formats (e.g. `2018/04/12 20:50:35` or RFC 2822 from imports) went
-  // through moment's `new Date()` fallback, so keep accepting them the same
-  // way. A recognised SQL/ISO date that's out of range (`2025-02-30`) stays
-  // invalid, as it was with moment, rather than letting Date roll it over.
-  const unparsable = (date) => !date || date.invalidReason === 'unparsable';
-
-  if (unparsable(sqlDate) && unparsable(isoDate)) {
-    return Date.parse(str);
-  }
-
-  return NaN;
+  return moment(value).valueOf();
 }
 
 /**
