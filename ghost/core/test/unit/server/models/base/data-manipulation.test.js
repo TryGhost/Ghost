@@ -115,6 +115,20 @@ describe('Data Manipulation', function () {
       assert.equal(fixedAttrs.created_at.getTime(), 1740046561000);
     });
 
+    it('reads reduced ISO dates as the start of the year or month, not a time today', function () {
+      const fixedAttrs = PostModel.prototype.fixDatesWhenFetch({
+        created_at: '2025',
+        updated_at: '2025-02',
+      });
+      assert.equal(fixedAttrs.created_at.getTime(), Date.UTC(2025, 0, 1));
+      assert.equal(fixedAttrs.updated_at.getTime(), Date.UTC(2025, 1, 1));
+    });
+
+    it('fixes time-only strings', function () {
+      const fixedAttrs = PostModel.prototype.fixDatesWhenFetch({ created_at: '20:25' });
+      assert.equal(fixedAttrs.created_at.getTime(), now.getTime());
+    });
+
     it('falls back to Date parsing for other formats, as moment did', function () {
       const fixedAttrs = PostModel.prototype.fixDatesWhenFetch({
         created_at: 'Thu, 20 Feb 2025 10:16:01 GMT',
@@ -203,6 +217,16 @@ describe('Data Manipulation', function () {
 
     it('rounds dates before 1970 down to the whole second', function () {
       assert.equal(save(new Date(-1500)), '1969-12-31 23:59:58');
+    });
+
+    it('ignores leading whitespace before a date, as moment did', function () {
+      assert.equal(save(' 2025-02-20 10:16:01'), '2025-02-20 10:16:01');
+      assert.equal(save('\t2025-02-20T10:16:01Z'), '2025-02-20 10:16:01');
+    });
+
+    it('formats reduced ISO dates as the start of the year or month', function () {
+      assert.equal(save('2025'), '2025-01-01 00:00:00');
+      assert.equal(save('2025-02'), '2025-02-01 00:00:00');
     });
 
     it('falls back to Date parsing for other formats, as moment did', function () {
