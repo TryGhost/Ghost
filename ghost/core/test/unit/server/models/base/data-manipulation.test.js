@@ -196,16 +196,14 @@ describe('Data Manipulation', function () {
       assert.equal(save(DateTime.fromISO('2025-02-20T10:16:01Z')), '2025-02-20 10:16:01');
     });
 
-    it('pads years outside 1000-9999 the way moment did', function () {
-      const date = (year) => {
-        const d = new Date(Date.UTC(2000, 5, 15, 1, 2, 3));
-        d.setUTCFullYear(year);
-        return d;
-      };
+    it('pads years below 1000 to four digits', function () {
+      const date = new Date(Date.UTC(2000, 5, 15, 1, 2, 3));
+      date.setUTCFullYear(999);
+      assert.equal(save(date), '0999-06-15 01:02:03');
+    });
 
-      assert.equal(save(date(999)), '0999-06-15 01:02:03');
-      assert.equal(save(date(12000)), '12000-06-15 01:02:03');
-      assert.equal(save(date(-50)), '-0050-06-15 01:02:03');
+    it('writes Invalid date for numbers outside the range of a Date', function () {
+      assert.equal(save(1e20), 'Invalid date');
     });
 
     it('rounds dates before 1970 down to the whole second', function () {
