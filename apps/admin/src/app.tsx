@@ -15,6 +15,7 @@ import {
 import { AdminAlerts, createAlertsStore, useServerNotifications } from './alerts';
 import { DocsBotWidgetHost } from './docsbot-widget-host';
 import { ClientExtensionScript } from './client-extension-script';
+import { usePreloadEditor } from './use-preload-editor';
 import { useAccentColorProperties } from './hooks/use-accent-color-properties';
 import { useDocumentTitle } from './hooks/use-document-title';
 import { SignedOutApp, useAuthNotice, useAuthScreensOwner } from './auth/api';
@@ -40,6 +41,7 @@ function App() {
   useEmberNotificationsHost(alerts);
   useServerNotifications(alerts);
   useAuthNotice(Boolean(currentUser));
+  usePreloadEditor(Boolean(currentUser));
 
   return (
     <EmberProvider>
