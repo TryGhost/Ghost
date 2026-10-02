@@ -4,7 +4,6 @@ import {
   useReadAutomationRunHistory,
   useReadAutomationRunPlan,
 } from '@tryghost/admin-x-framework/api/automation-run-history';
-import { mapUpcomingRunSteps } from '@/automations/utils/upcoming-run-steps';
 import { mapAutomationRun } from '@/automations/utils/automation-runs';
 
 // Fetch on selection or retry; list controls do not refresh the selected history.
@@ -30,19 +29,8 @@ export const useAutomationRunHistory = (automationId: string, runId: string) => 
     enabled: needsPlan,
   });
   const plan = planQuery.isSuccess ? planQuery.data?.automations[0] : undefined;
-  const upcoming = useMemo(() => {
-    if (!needsPlan || !currentHistory || !plan) {
-      return undefined;
-    }
-    try {
-      return mapUpcomingRunSteps(currentHistory, plan);
-    } catch {
-      return null;
-    }
-  }, [needsPlan, currentHistory, plan]);
-  const planFailed = planQuery.isError || upcoming === null;
   const waitingForPlan = needsPlan && planQuery.isPending;
-  const history = !waitingForPlan && !planFailed ? currentHistory : undefined;
+  const history = !waitingForPlan && !planQuery.isError ? currentHistory : undefined;
   const summary = useMemo(() => history && mapAutomationRun(history), [history]);
   const unavailable =
     query.isError && query.error instanceof APIError && query.error.response?.status === 404;
@@ -50,9 +38,9 @@ export const useAutomationRunHistory = (automationId: string, runId: string) => 
     history,
     summary,
     isLoading: query.isPending || waitingForPlan,
-    isError: (query.isError && !unavailable) || (needsPlan && planFailed),
+    isError: (query.isError && !unavailable) || (needsPlan && planQuery.isError),
     unavailable,
     retry: () => setGeneration((value) => value + 1),
-    upcoming: upcoming ?? undefined,
+    plan,
   };
 };

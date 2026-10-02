@@ -24,7 +24,10 @@ describe('Upcoming steps in active run history', () => {
     data.steps[0].action = { id: 'draft-wait', type: 'wait', data: { wait_hours: 72 } };
     return data;
   };
-  const savedPlan = (): AutomationDetail => ({
+  const savedPlan = ({
+    subject = 'Saved future subject',
+    lexical = '',
+  } = {}): AutomationDetail => ({
     ...detail('first'),
     status: 'active',
     actions: [
@@ -34,8 +37,8 @@ describe('Upcoming steps in active run history', () => {
         id: 'future-email',
         type: 'send_email',
         data: {
-          email_subject: 'Saved future subject',
-          email_lexical: '',
+          email_subject: subject,
+          email_lexical: lexical,
           email_design_setting_id: 'design',
         },
       },
@@ -72,7 +75,6 @@ describe('Upcoming steps in active run history', () => {
     for (const card of [cards.nth(2), cards.nth(3)]) {
       expect(card.element().querySelector('time')).toBeNull();
     }
-    await expect.element(canvas()).not.toHaveTextContent('Upcoming steps follow');
     expect(request.requests).toHaveLength(2);
     await close();
     await expect
@@ -99,15 +101,9 @@ describe('Upcoming steps in active run history', () => {
     const pending = new Promise<void>((resolve) => {
       finish = resolve;
     });
-    const changed = savedPlan();
-    changed.actions[2] = {
-      ...changed.actions[2],
-      type: 'send_email',
-      data: { email_subject: 'Updated path', email_lexical: '', email_design_setting_id: 'design' },
-    };
     fakeAdminEndpoint('GET', '/automations/first/', async () => {
       await pending;
-      return { automations: [changed] };
+      return { automations: [savedPlan({ subject: 'Updated path' })] };
     });
     respond({
       ...activeHistory(),
@@ -141,6 +137,37 @@ describe('Upcoming steps in active run history', () => {
     await expect(canvas().getByRole('article')).toHaveCount(2);
   });
 
+  it('retries an upcoming email mapping error without losing the editor draft', async () => {
+    setup();
+    fakeAdminEndpoint('GET', '/automations/first/', { automations: [savedPlan()] });
+    const historyRequest = respond(activeHistory());
+    await renderAdminApp('/automations/first', flags);
+    await page.getByRole('button', { name: 'Send email: Saved future subject' }).click();
+    const subject = page.getByPlaceholder('Subject line');
+    await subject.fill('Unsaved future subject');
+    const originalInput = subject.element();
+    fakeAdminEndpoint('GET', '/automations/first/', {
+      automations: [savedPlan({ lexical: '{' })],
+    });
+    await open();
+    await select();
+    await expect
+      .element(canvas().getByRole('alert'))
+      .toHaveTextContent('Could not load run history');
+    expect(originalInput.isConnected).toBe(true);
+
+    const planRequest = fakeAdminEndpoint('GET', '/automations/first/', {
+      automations: [savedPlan()],
+    });
+    await canvas().getByRole('button', { name: 'Retry' }).click();
+    await expect.element(canvas()).toHaveTextContent('End of automation');
+    expect(historyRequest.requests).toHaveLength(2);
+    expect(planRequest.requests).toHaveLength(1);
+    await close();
+    expect(subject.element()).toBe(originalInput);
+    await expect.element(subject).toHaveValue('Unsaved future subject');
+  });
+
   it('ignores a late plan from an earlier selection, including A to B to A', async () => {
     setup();
     respond(activeHistory());
@@ -151,14 +178,9 @@ describe('Upcoming steps in active run history', () => {
     const pending = new Promise<void>((resolve) => {
       finish = resolve;
     });
-    const oldPlan = savedPlan();
-    const email = oldPlan.actions.find((action) => action.type === 'send_email')!;
-    if (email.type === 'send_email') {
-      email.data.email_subject = 'Stale future subject';
-    }
     const oldRequest = fakeAdminEndpoint('GET', '/automations/first/', async () => {
       await pending;
-      return { automations: [oldPlan] };
+      return { automations: [savedPlan({ subject: 'Stale future subject' })] };
     });
     try {
       await select();

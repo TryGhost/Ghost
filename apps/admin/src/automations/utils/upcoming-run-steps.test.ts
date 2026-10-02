@@ -3,45 +3,36 @@ import type {
   AutomationRunHistory,
   AutomationRunPlan,
 } from '@tryghost/admin-x-framework/api/automation-run-history';
-import { mapRunHistory } from './run-history';
 import { mapUpcomingRunSteps } from './upcoming-run-steps';
 
 const entered = '2026-09-10T12:00:00.000Z';
 const eligible = '2026-09-13T12:00:00.000Z';
-const finished = '2026-09-13T12:00:04.000Z';
-const updated = '2026-09-15T12:00:00.000Z';
 const step: AutomationRunHistory['steps'][number] = {
   id: 'step',
   email_sent_at: null,
   email_delivered_at: null,
   automation_action_revision_id: 'revision',
-  status: 'finished',
+  status: 'pending',
   created_at: entered,
   ready_at: eligible,
-  started_at: eligible,
-  finished_at: finished,
-  updated_at: updated,
+  started_at: null,
+  finished_at: null,
+  updated_at: entered,
   action: { id: 'old-wait', type: 'wait', data: { wait_hours: 72 } },
 };
-const history: AutomationRunHistory = {
+const active: AutomationRunHistory = {
   id: 'run',
   automation_id: 'automation',
   created_at: entered,
   member: { id: 'member', name: 'Alex', email: 'alex@example.com' },
-  status: 'completed',
+  status: 'in_progress',
   failed: false,
-
   steps: [step],
 };
 
 describe('upcoming downstream steps', () => {
-  const active: AutomationRunHistory = {
-    ...history,
-    status: 'in_progress',
-    steps: [{ ...step, status: 'pending', finished_at: null }],
-  };
   const plan: AutomationRunPlan = {
-    id: history.automation_id,
+    id: active.automation_id,
     status: 'active',
     actions: [
       {
@@ -73,7 +64,6 @@ describe('upcoming downstream steps', () => {
     });
     expect(upcoming.cards[1].email?.subject).toBe('Current saved email');
     expect(upcoming.cards.every((card) => !card.timestamp)).toBe(true);
-    expect(mapRunHistory(active).at(-1)?.timestamp?.value).toBe(eligible);
   });
 
   it('shows only the end marker when the pending step is the final saved action', () => {
@@ -98,7 +88,24 @@ describe('upcoming downstream steps', () => {
     });
   });
 
-  it.each(['completed', 'exited_early'] as const)('does not append plans to %s runs', (status) => {
-    expect(mapUpcomingRunSteps({ ...active, status }, plan)).toEqual({ cards: [], message: '' });
+  it.each([
+    { status: 'completed', stepStatus: 'finished' },
+    { status: 'exited_early', stepStatus: 'failed' },
+  ] as const)('does not append plans to $status runs', ({ status, stepStatus }) => {
+    const ended: AutomationRunHistory = {
+      ...active,
+      status,
+      failed: stepStatus === 'failed',
+      steps: [
+        {
+          ...step,
+          status: stepStatus,
+          started_at: eligible,
+          finished_at: eligible,
+          updated_at: eligible,
+        },
+      ],
+    };
+    expect(mapUpcomingRunSteps(ended, plan)).toEqual({ cards: [], message: '' });
   });
 });
