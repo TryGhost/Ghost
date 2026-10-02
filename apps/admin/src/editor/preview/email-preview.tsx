@@ -228,7 +228,7 @@ export function EmailPreview({
             Subject
           </span>
           {subjectEditor && device === 'desktop' ? (
-            <EmailSubject editor={subjectEditor} />
+            <EmailSubject editor={subjectEditor} ownsSaveError />
           ) : (
             <p className="min-w-0 truncate text-sm" data-testid={postPreviewEmailSubject}>
               {subjectEditor

@@ -12,7 +12,8 @@ import {
   ValidationError,
   type ErrorResponse,
 } from '@tryghost/admin-x-framework/errors';
-import { toSaveError } from './error-mapping';
+import type { SaveError } from '@/editor/engine/save-engine';
+import { POST_DELETED, stateSaveError, toSaveError } from './error-mapping';
 
 function errorBody(overrides: Partial<ErrorResponse['errors'][number]> = {}): ErrorResponse {
   return {
@@ -99,5 +100,18 @@ describe('toSaveError', () => {
   it('carries the cause for reporting', () => {
     const error = new ServerUnreachableError();
     expect(toSaveError(error, 'fallback').cause).toBe(error);
+  });
+});
+
+describe('stateSaveError', () => {
+  it('reports a failed save, a collision and a deleted post, and nothing otherwise', () => {
+    const failure: SaveError = { kind: 'transport', message: 'offline' };
+    const collision: SaveError = { kind: 'conflict', message: 'Saving failed!' };
+
+    expect(stateSaveError({ kind: 'error', intent: 'field', error: failure })).toBe(failure);
+    expect(stateSaveError({ kind: 'conflict', intent: 'field', error: collision })).toBe(collision);
+    expect(stateSaveError({ kind: 'halted' })).toBe(POST_DELETED);
+    expect(stateSaveError({ kind: 'saving', intent: 'field' })).toBeNull();
+    expect(stateSaveError({ kind: 'idle' })).toBeNull();
   });
 });

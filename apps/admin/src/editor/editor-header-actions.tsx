@@ -23,6 +23,7 @@ import { describeCompletionFailure } from './publish/completion-message';
 import { usePublishInputs } from './publish/use-publish-inputs';
 import { usePublishLimits } from './publish/use-publish-limits';
 import { useEditorSettings } from './use-editor-settings';
+import { stateSaveError } from './session/error-mapping';
 import type { EditorSessionHandle } from './session/use-editor-session';
 import type { SaveCompletion } from './engine/save-engine';
 import { usePreviewShortcut, usePublishShortcut, useSaveShortcut } from './use-editor-shortcuts';
@@ -143,8 +144,9 @@ export function EditorHeaderActions({
       fallback: session.title,
       hasUnsavedChanges: session.isDirty(),
       isSaving,
+      saveError: stateSaveError(session.state),
       onChange: (value) => session.stageSettings({ email_subject: value }),
-      onSave: saveBeforePreview,
+      onCommit: session.commitSettings,
     },
     isPost: postType === 'post',
     post,
