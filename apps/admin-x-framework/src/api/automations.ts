@@ -206,11 +206,15 @@ export const AutomationRunsResponseSchema = z.object({
       'Run IDs must be unique',
     ),
   meta: z.object({
-    pagination: z.object({
-      state: z.enum(['scanning', 'more', 'exhausted']).optional(),
-      limit: z.number().int().positive(),
-      next_cursor: z.string().min(1).nullable(),
-    }),
+    pagination: z
+      .object({
+        state: z.enum(['scanning', 'more', 'exhausted']).optional(),
+        limit: z.number().int().positive(),
+        next_cursor: z.string().min(1).nullable(),
+      })
+      .refine((pagination) => pagination.state !== 'scanning' || pagination.next_cursor !== null, {
+        message: 'Scanning requires a continuation cursor',
+      }),
   }),
 });
 
@@ -231,7 +235,14 @@ export const useBrowseAutomationRuns = (
   const useQuery = createInfiniteQuery<AutomationRunsResult, AutomationRunsResponseType>({
     dataType: `AutomationRunsResponseType:${queryScope}`,
     path: `/automations/${id}/runs/`,
-    parseResponse: (data) => AutomationRunsResponseSchema.parse(data),
+    parseResponse: (data, params) => {
+      const response = AutomationRunsResponseSchema.parse(data);
+      const cursor = response.meta.pagination.next_cursor;
+      if (cursor && cursor === params.cursor) {
+        throw new Error('Automation run pagination did not advance');
+      }
+      return response;
+    },
     returnData: (originalData) => {
       const { pages } = originalData as InfiniteData<AutomationRunsResponseType>;
       // Pages are live reads, not a snapshot; show a run once if a later page repeats it.

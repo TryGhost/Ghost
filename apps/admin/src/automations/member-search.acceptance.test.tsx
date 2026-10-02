@@ -99,20 +99,21 @@ describe('Automation member search', () => {
     ).toHaveLength(2);
   });
 
-  it('continues long scans with a skeleton until exhaustion', async () => {
+  it('continues an empty scan page and shows a skeleton until exhaustion', async () => {
     prepareStatuses();
-    let pages = 0;
+    const cursors: Array<string | null> = [];
     let finish!: () => void;
     const pending = new Promise<void>((resolve) => {
       finish = resolve;
     });
     fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?/, async ({ url }) => {
-      if (!new URL(url).searchParams.has('search')) {
+      const params = new URL(url).searchParams;
+      if (!params.has('search')) {
         return result(null, []);
       }
-      pages += 1;
-      if (pages <= 8) {
-        return result(`page-${pages}`, []);
+      cursors.push(params.get('cursor'));
+      if (!params.has('cursor')) {
+        return result('next', []);
       }
       await pending;
       return result(null, []);
@@ -121,20 +122,18 @@ describe('Automation member search', () => {
     await page.getByRole('button', { name: 'Search members', exact: true }).click();
     await input().fill('missing');
     try {
-      await expect.poll(() => pages).toBe(9);
+      await expect.poll(() => cursors).toEqual([null, 'next']);
       await expect.element(list()).toHaveAttribute('aria-busy', 'true');
       await expect
         .element(list().element().querySelector<HTMLElement>('.animate-pulse'))
         .toBeVisible();
       await expect.element(list().getByText('No members match')).not.toBeInTheDocument();
-      await expect
-        .element(list().getByRole('button', { name: 'Continue search' }))
-        .not.toBeInTheDocument();
     } finally {
       finish();
     }
     await expect.element(list().getByText('No members match')).toBeVisible();
-    expect(pages).toBe(9);
+    await expect.element(list()).toHaveAttribute('aria-busy', 'false');
+    expect(cursors).toEqual([null, 'next']);
     await input().fill('pending');
     await page.getByRole('button', { name: 'Close member search' }).click();
     await expect.element(page.getByRole('button', { name: 'Filter performance' })).toBeVisible();
@@ -143,5 +142,59 @@ describe('Automation member search', () => {
       .toHaveFocus();
     await page.getByRole('button', { name: 'Search members', exact: true }).click();
     await expect.element(input()).toHaveValue('');
+  });
+
+  it.each([
+    { name: 'missing first-page cursor', firstPage: true, cursor: null },
+    { name: 'missing continuation cursor', firstPage: false, cursor: null },
+    { name: 'repeated continuation cursor', firstPage: false, cursor: 'next' },
+  ])('stops a scan with a $name and allows retry', async ({ firstPage, cursor }) => {
+    prepareStatuses();
+    let repaired = false;
+    const requests = fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?/, ({ url }) => {
+      const params = new URL(url).searchParams;
+      if (!params.has('search')) {
+        return result(null, []);
+      }
+      if (!firstPage && !params.has('cursor')) {
+        return result('next', [
+          run({ id: 'anna', member: { id: 'anna', name: 'Anna', email: 'anna@example.test' } }),
+        ]);
+      }
+      if (!repaired) {
+        return {
+          automation_runs: [],
+          meta: { pagination: { limit: 50, next_cursor: cursor, state: 'scanning' } },
+        };
+      }
+      return result(null, [
+        run({
+          id: 'annette',
+          member: { id: 'annette', name: 'Annette', email: 'annette@example.test' },
+        }),
+      ]);
+    });
+    await open();
+    await page.getByRole('button', { name: 'Search members', exact: true }).click();
+    await input().fill('ann');
+    await expect.element(list().getByText('Could not load entries')).toBeVisible();
+    await expect.element(list()).toHaveAttribute('aria-busy', 'false');
+    await expect.element(list().getByText('No members match')).not.toBeInTheDocument();
+    if (!firstPage) {
+      await expect.element(list().getByText('Anna', { exact: true })).toBeVisible();
+    }
+    const searchRequests = () =>
+      requests.requests.filter((r) => new URL(r.url).searchParams.has('search'));
+    expect(searchRequests()).toHaveLength(firstPage ? 1 : 2);
+
+    repaired = true;
+    await list().getByRole('button', { name: 'Retry' }).click();
+    await expect.element(list().getByText('Annette', { exact: true })).toBeVisible();
+    await expect.element(list().getByText('Could not load entries')).not.toBeInTheDocument();
+    expect(searchRequests()).toHaveLength(firstPage ? 2 : 3);
+    if (!firstPage) {
+      expect(new URL(searchRequests().at(-1)!.url).searchParams.get('cursor')).toBe('next');
+      await expect.element(list().getByText('Anna', { exact: true })).toBeVisible();
+    }
   });
 });
