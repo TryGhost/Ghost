@@ -4,6 +4,7 @@ import { z } from 'zod';
 import {
   defineMethod,
   Frame,
+  http,
   pipeline,
   type Controller,
   type ControllerMethod,
@@ -80,8 +81,11 @@ export function optionsAndBody() {
   } satisfies Controller<{ edit: InferMethodFrame<typeof method> }>;
   expectTypeOf(controller.edit.query).parameter(0).toEqualTypeOf<InferMethodFrame<typeof method>>();
 
-  // @ts-expect-error The legacy pipeline does not populate validated request channels.
-  pipeline(controller, {});
+  const api = pipeline(controller, {});
+  expectTypeOf(api.edit).returns.toEqualTypeOf<Promise<unknown>>();
+  expectTypeOf(api.edit.schema).toEqualTypeOf<typeof method.schema>();
+  expectTypeOf(api.edit.query).parameter(0).toEqualTypeOf<InferMethodFrame<typeof method>>();
+  expectTypeOf(http(api.edit)).toBeFunction();
   // @ts-expect-error Schema callbacks require more than an unvalidated legacy frame.
   helper(new Frame());
 }
@@ -220,6 +224,44 @@ export function invalidDefinitions() {
     },
   });
   expectTypeOf(method.schema.options).toEqualTypeOf<z.ZodString>();
+
+  const unvalidated = {
+    read: {
+      permissions: false,
+      query(frame: ValidatedFrame<{ options: z.ZodString }>) {
+        return frame.validated.options;
+      },
+    },
+  };
+  // @ts-expect-error Validated callbacks cannot run without a declared schema.
+  pipeline(unvalidated, {});
+}
+
+export function mixedController() {
+  const read = defineMethod({
+    schema: { options: z.object({ id: z.string() }) },
+    permissions: false,
+    query(frame) {
+      return frame.validated.options.id;
+    },
+  });
+  const controller = pipeline(
+    {
+      docName: 'widgets',
+      read,
+      browse: {
+        permissions: false,
+        query(frame: Frame) {
+          return frame.options.id;
+        },
+      },
+    },
+    {},
+  );
+  expectTypeOf(controller.read).returns.toEqualTypeOf<Promise<unknown>>();
+  expectTypeOf(controller.browse).returns.toEqualTypeOf<Promise<unknown>>();
+  // @ts-expect-error Pipeline results only expose declared methods.
+  void controller.missing;
 }
 
 export function legacyControllers() {

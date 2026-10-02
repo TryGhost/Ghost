@@ -29,7 +29,7 @@ type SchemaMethodBase<Schemas extends MethodSchemas> = ControllerMethod<Validate
 /** Definition contract for a method with schema-derived callback types. */
 export type SchemaControllerMethod<Schemas extends MethodSchemas> = Omit<
   SchemaMethodBase<Schemas>,
-  'permissions' | 'query' | 'validation'
+  'schema' | 'permissions' | 'query' | 'validation'
 > &
   Required<Pick<SchemaMethodBase<Schemas>, 'permissions' | 'query'>> & {
     schema: Schemas;
@@ -44,8 +44,7 @@ export type InferMethodFrame<Method extends { schema: MethodSchemas }> = Validat
 /**
  * Defines a method without cloning schemas or wrapping callbacks.
  *
- * This is a definition API only. The legacy pipeline cannot execute these
- * callbacks until runtime parsing provides the validated request channels.
+ * The pipeline parses the declared schemas before invoking these callbacks.
  */
 export function defineMethod<const Schemas extends MethodSchemas>(
   method: SchemaControllerMethod<Schemas> & {

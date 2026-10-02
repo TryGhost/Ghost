@@ -48,7 +48,10 @@ export type HttpHandler = (
  * @param {import('@tryghost/api-framework').Controller} apiImpl - Pipeline wrapper, which executes the target ctrl function.
  * @return {HttpHandler}
  */
-const http = (apiImpl: ControllerMethod & ((frame: Frame) => unknown)): HttpHandler => {
+const http = (
+  apiImpl: Pick<ControllerMethod, 'options' | 'data' | 'headers' | 'statusCode' | 'response'> &
+    ((frame: Frame) => unknown),
+): HttpHandler => {
   /**
    * @param req - Express request object.
    * @param res - Express response object.
