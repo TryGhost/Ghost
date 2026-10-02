@@ -54,12 +54,7 @@ describe('Upcoming steps in active run history', () => {
     const request = fakeAdminEndpoint('GET', '/automations/first/', { automations: [savedPlan()] });
     respond(activeHistory());
     await renderAdminApp('/automations/first', flags);
-    await page
-      .getByRole('article', { name: 'Send email: Saved future subject' })
-      .getByRole('button', { name: 'Email actions' })
-      .click();
-    await page.getByRole('menuitem', { name: 'Edit settings' }).click();
-    await page.getByPlaceholder('Subject line').fill('Unsaved future subject');
+    await page.getByRole('textbox', { name: 'Subject line' }).fill('Unsaved future subject');
     await open();
     expect(request.requests).toHaveLength(1);
     await select();
@@ -92,7 +87,7 @@ describe('Upcoming steps in active run history', () => {
     expect(request.requests).toHaveLength(2);
     await close();
     await expect
-      .element(page.getByPlaceholder('Subject line'))
+      .element(page.getByRole('textbox', { name: 'Subject line' }))
       .toHaveValue('Unsaved future subject');
   });
 
@@ -156,12 +151,7 @@ describe('Upcoming steps in active run history', () => {
     fakeAdminEndpoint('GET', '/automations/first/', { automations: [savedPlan()] });
     const historyRequest = respond(activeHistory());
     await renderAdminApp('/automations/first', flags);
-    await page
-      .getByRole('article', { name: 'Send email: Saved future subject' })
-      .getByRole('button', { name: 'Email actions' })
-      .click();
-    await page.getByRole('menuitem', { name: 'Edit settings' }).click();
-    const subject = page.getByPlaceholder('Subject line');
+    const subject = page.getByRole('textbox', { name: 'Subject line' });
     await subject.fill('Unsaved future subject');
     const originalInput = subject.element();
     fakeAdminEndpoint('GET', '/automations/first/', {
