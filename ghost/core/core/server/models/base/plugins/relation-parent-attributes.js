@@ -34,7 +34,7 @@ module.exports = function () {
   const originalInit = Relation.prototype.init;
 
   function init(parent) {
-    const hasOwnFormat = Object.prototype.hasOwnProperty.call(parent, 'format');
+    const hasOwnFormat = Object.hasOwn(parent, 'format');
     const ownFormat = parent.format;
 
     parent.format = identityFormat;
