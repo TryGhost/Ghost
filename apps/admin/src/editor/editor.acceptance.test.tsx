@@ -213,7 +213,7 @@ describe('Editor list breadcrumb', () => {
     { postType: 'post', returnWith: 'back' },
     { postType: 'page', returnWith: 'back' },
   ] as const)(
-    'returns a $postType to its filtered list with the same sort order using $returnWith',
+    'returns a $postType to its filtered list with the same sort order using $returnWith and reopens it',
     async ({ postType, returnWith }) => {
       const resource = postType === 'post' ? 'posts' : 'pages';
       const entry = post({ id: 'abc123', title: 'Engineering update', status: 'draft' });
@@ -244,6 +244,11 @@ describe('Editor list breadcrumb', () => {
           (request) => request.filter?.includes('tag:engineering') && request.order === 'title asc',
         ),
       ).toBe(true);
+
+      // Reopening the same row after returning still mounts the editor.
+      await expect(editorScreen.root()).toHaveCount(0);
+      await postsListScreen.listItems().first().click();
+      await expect.element(editorScreen.root()).toBeVisible();
     },
   );
 });
