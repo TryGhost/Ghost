@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, beforeEach } from 'vitest';
 
 import {
   browseResponse,
@@ -6,6 +6,7 @@ import {
   commentThread,
   currentRoute,
   fakeAdminEndpoint,
+  fakeAdminStats,
   fakeComments,
   renderAdminApp,
   reply,
@@ -17,6 +18,10 @@ import { commentsScreen } from './comments.screen';
 function fakeCommentRead(entity: Comment): void {
   fakeAdminEndpoint('GET', new RegExp(`^/comments/${entity.id}/\\?`), { comments: [entity] });
 }
+
+beforeEach(() => {
+  fakeAdminStats.commentsOverview();
+});
 
 describe('Comments deep linking', () => {
   it('filters to the linked comment and shows all comments on demand', async () => {

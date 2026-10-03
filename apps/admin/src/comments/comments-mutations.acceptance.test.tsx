@@ -1,13 +1,18 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, beforeEach } from 'vitest';
 
 import {
   comment,
   fakeAdminEndpoint,
+  fakeAdminStats,
   fakeComments,
   member,
   renderAdminApp,
 } from '@test-utils/acceptance';
 import { commentsScreen } from './comments.screen';
+
+beforeEach(() => {
+  fakeAdminStats.commentsOverview();
+});
 
 function fakeMemberCommenting({ canComment = true }: { canComment?: boolean } = {}) {
   const author = { ...member({ name: 'Test Member' }), can_comment: canComment };
