@@ -10,7 +10,7 @@ import {
   waitForCompositionLayout,
 } from '@/builder/canvas/measure-expanded-composition';
 import { IframePreviewDocumentSurface } from '@/builder/workspaces/theme/preview/preview-document';
-import { instance, loadAssets } from './fixture';
+import { getThemeFixture, instance, loadAssets } from './fixture';
 import { CanvasProbe, registerCanvasProbe } from './webmcp-probe';
 
 import type { CanvasFrame, CanvasFrameInput, CanvasView } from '@/builder/canvas/canvas-board';
@@ -18,6 +18,7 @@ import type { PreviewDocument } from '@/builder/workspaces/theme/preview/preview
 import type { CapturedOverview } from '@/builder/canvas/capture-overview';
 import type { ExpandedComposition } from '@/builder/canvas/measure-expanded-composition';
 import type { ProbeRegistrationStatus } from './webmcp-probe';
+import type { ThemeFixtureId } from './fixture';
 
 type CaptureState =
   | { status: 'pending' }
@@ -31,7 +32,6 @@ type ExpandedState =
 
 type OverviewMode = 'captured' | 'expanded' | 'device';
 
-const revision = 'casper-5.7.0-recorded-content';
 const frames: CanvasFrame[] = [
   {
     id: 'home-desktop',
@@ -321,7 +321,10 @@ function Preview({
   );
 }
 
-export function CanvasHarness() {
+export function CanvasHarness({ fixtureId = 'casper' }: { fixtureId?: ThemeFixtureId }) {
+  // A fixture is selected once per harness mount; comparison links start a new page.
+  const [fixture] = useState(() => getThemeFixture(fixtureId));
+  const revision = fixture.revision;
   const [documents, setDocuments] = useState<Record<string, PreviewDocument>>({});
   const [error, setError] = useState<string | null>(null);
   const [captures, setCaptures] = useState<Record<string, CaptureState>>({});
@@ -394,7 +397,7 @@ export function CanvasHarness() {
         setError(event.data.error);
       } else if (event.data.html) {
         const html = event.data.html;
-        void loadAssets()
+        void loadAssets(fixture.id)
           .then((assets) => {
             if (!disposed) {
               setDocuments(
@@ -423,16 +426,29 @@ export function CanvasHarness() {
       }
     };
     worker.onerror = (event) => setError(event.message);
-    worker.postMessage({});
+    worker.postMessage({ fixtureId: fixture.id });
     return () => {
       disposed = true;
       worker.terminate();
     };
-  }, []);
+  }, [fixture, revision]);
   return (
     <Stack className="h-full overflow-hidden" gap="none">
       <Box className="border-b border-border-default bg-background" padding="md">
-        <Text weight="semibold">Canvas feasibility harness · Casper</Text>
+        <Text weight="semibold">
+          Canvas feasibility harness · {fixture.label} {fixture.version}
+        </Text>
+        <Text size="xs" tone="secondary">
+          Compare complete fixtures in separate page loads:{' '}
+          <a className="underline" href="?theme=casper">
+            Casper
+          </a>
+          {' · '}
+          <a className="underline" href="?theme=source">
+            Source
+          </a>
+          .
+        </Text>
         <Text size="sm" tone="secondary">
           Fixed device previews · Recorded Home/Post content · {revision}
         </Text>
@@ -449,7 +465,7 @@ export function CanvasHarness() {
           Compare captures and separate expanded compositions · Open a frame for its retained fixed
           device · Expanded height changes viewport-dependent layout. Captures omit external
           imagery. Neither experiment establishes animation, sticky behavior, or loaded lazy
-          content. Source comparisons, inline editing, and native site tools remain pending.
+          content. Broader visual fidelity, inline editing, and native site tools remain pending.
         </Text>
         <Button
           aria-pressed={mode === 'captured'}

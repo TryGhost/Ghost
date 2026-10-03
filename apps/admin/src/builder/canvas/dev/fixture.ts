@@ -1,37 +1,58 @@
-// Recorded API responses plus the complete, version-matched Casper fixture already in Core.
+// Recorded API responses plus the complete, version-matched Core theme fixtures.
 import instance from '../../../../../../packages/theme-renderer/test/browser/fixtures/instance.json';
 import responses from '../../../../../../packages/theme-renderer/test/browser/fixtures/content-api.json';
 
-const prefix = '../../../../../../ghost/core/test/utils/fixtures/themes/casper/';
+export type ThemeFixtureId = 'casper' | 'source';
+const root = '../../../../../../ghost/core/test/utils/fixtures/themes/';
 const files = import.meta.glob<string>(
-  '../../../../../../ghost/core/test/utils/fixtures/themes/casper/**/*.{hbs,json}',
+  '../../../../../../ghost/core/test/utils/fixtures/themes/{casper,source}/**/*.{hbs,json}',
   { eager: true, query: '?raw', import: 'default' },
 );
-const theme = Object.fromEntries(
-  Object.entries(files).map(([path, content]) => [path.slice(prefix.length), content]),
-);
+function themeFixture(id: ThemeFixtureId, label: string) {
+  const prefix = `${root}${id}/`;
+  const theme = Object.fromEntries(
+    Object.entries(files)
+      .filter(([path]) => path.startsWith(prefix))
+      .map(([path, content]) => [path.slice(prefix.length), content]),
+  );
+  const version = (JSON.parse(theme['package.json']) as { version: string }).version;
+  return { id, label, version, revision: `${id}-${version}-recorded-content`, theme };
+}
+const fixtures = {
+  casper: themeFixture('casper', 'Casper'),
+  source: themeFixture('source', 'Source'),
+};
+export function getThemeFixture(id: ThemeFixtureId) {
+  if (id !== 'casper' && id !== 'source') {
+    throw new Error('Unknown canvas theme fixture.');
+  }
+  return fixtures[id];
+}
 const textAssets = import.meta.glob<string>(
-  '../../../../../../ghost/core/test/utils/fixtures/themes/casper/assets/**/*.{css,js,svg}',
+  '../../../../../../ghost/core/test/utils/fixtures/themes/{casper,source}/assets/**/*.{css,js,svg}',
   { eager: true, query: '?raw', import: 'default' },
 );
-const imageAssets = import.meta.glob<string>(
-  '../../../../../../ghost/core/test/utils/fixtures/themes/casper/assets/images/*.{png,gif}',
+const binaryAssets = import.meta.glob<string>(
+  '../../../../../../ghost/core/test/utils/fixtures/themes/{casper,source}/assets/**/*.{png,gif,woff2}',
   { eager: true, query: '?url', import: 'default' },
 );
 
-export async function loadAssets() {
+export async function loadAssets(id: ThemeFixtureId = 'casper') {
+  getThemeFixture(id);
+  const prefix = `${root}${id}/`;
   const assets: Record<string, { content: string | null; binary: Uint8Array | null }> =
     Object.fromEntries(
-      Object.entries(textAssets).map(([path, content]) => [
-        path.slice(prefix.length),
-        { content, binary: null },
-      ]),
+      Object.entries(textAssets)
+        .filter(([path]) => path.startsWith(prefix))
+        .map(([path, content]) => [path.slice(prefix.length), { content, binary: null }]),
     );
-  for (const [path, url] of Object.entries(imageAssets)) {
+  for (const [path, url] of Object.entries(binaryAssets).filter(([assetPath]) =>
+    assetPath.startsWith(prefix),
+  )) {
     // eslint-disable-next-line no-restricted-syntax -- These are local Vite fixture assets, not Admin API requests.
     const response = await fetch(url);
     if (!response.ok) {
-      throw new Error(`Could not load the Casper fixture asset ${path}`);
+      throw new Error(`Could not load the ${id} fixture asset ${path}`);
     }
     assets[path.slice(prefix.length)] = {
       content: null,
@@ -41,4 +62,4 @@ export async function loadAssets() {
   return assets;
 }
 
-export { instance, responses, theme };
+export { instance, responses };

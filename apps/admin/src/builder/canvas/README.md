@@ -26,11 +26,26 @@ Run the normal development environment with `pnpm dev`, then open
 `http://localhost:5174/__admin-dev__/canvas.html`.
 
 The harness renders Home and Post in one real worker using recorded Content API
-responses and the complete Core Casper 5.7.0 fixture. It embeds the matching
-theme assets into four opaque-origin preview surfaces: desktop at 1440 × 900 CSS
-pixels and mobile at 390 × 844 CSS pixels. jQuery and publication imagery still
-use the fixture's external URLs; theme assets never come from the active site's
-theme. The harness uses Admin's CSS lane and a standalone Shade provider.
+responses and the complete Core Casper 5.7.0 or Source 1.0.2 fixture. Casper is
+the default; `?theme=source` chooses Source. The comparison links start separate
+page loads, not shared-draft theme switches. These are repository fixture versions,
+not claims about the latest theme releases. The worker serializes fixture jobs
+because the renderer's helper state is shared.
+
+Each fixture embeds its matching CSS, JavaScript, theme imagery and (for Source)
+fonts into four opaque-origin previews: desktop at 1440 × 900 CSS pixels and
+mobile at 390 × 844 CSS pixels. jQuery, publication imagery and Ghost card resources
+still use external URLs; theme assets never come from the active site's theme.
+The harness uses Admin's CSS lane and a standalone Shade provider.
+
+The recorded dataset contains 25 first-page posts out of 34 and one representative
+Post. Exact Casper responses retain their recorded bytes. Source's bounded
+first-page feed requests slice that dataset and recompute pagination for the
+requested limit; its default Home displays twelve cards. The existing related-post
+recording also supplies Source's `authors` include. Unknown filters, second pages,
+larger limits, foreign site/key and extra query parameters fail instead of calling
+the live site or inventing content. The member-only representative's paywall remains
+part of the recorded evidence; this is not a full publication dataset.
 
 `canvas.html` is served only by development Vite and is not a production build
 entry. Its Ember boot assets are omitted so the regular Admin app cannot mount
@@ -88,7 +103,7 @@ does not establish device fidelity. Actual browser cases demonstrate continuing
 and a 100,000px document truncated by the composition-height budget while its
 device remains unchanged.
 
-These are overview experiments. Source comparisons, sticky/fixed and lazy-content
+These are overview experiments. Broader Source/Casper visual fidelity, sticky/fixed and lazy-content
 fidelity, source selection and direct editing, full capture fidelity, native
 WebMCP, controlled refresh, and performance measurements remain feasibility work.
 Measure all eight retained surfaces and capture work when profiling this
@@ -102,6 +117,7 @@ From `apps/admin`:
 ```sh
 pnpm exec vitest run src/builder/canvas --maxWorkers=1
 pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/canvas/dev/webmcp-probe.acceptance.test.tsx --maxWorkers=1
+pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/canvas/dev/fixture.acceptance.test.tsx --maxWorkers=1
 pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/canvas/measure-expanded-composition.acceptance.test.tsx --maxWorkers=1
 pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/canvas/canvas-board.component.test.tsx src/builder/workspaces/theme/preview/preview-canvas-input.acceptance.test.tsx src/builder/workspaces/theme/preview/preview-layout.acceptance.test.tsx src/builder/workspaces/theme/preview/screenshot.acceptance.test.tsx --maxWorkers=1
 pnpm typecheck
