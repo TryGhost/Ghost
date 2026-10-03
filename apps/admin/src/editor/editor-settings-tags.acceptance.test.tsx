@@ -11,6 +11,7 @@ import {
   fakeTags,
   post,
   renderAdminApp,
+  settleTransitions,
   staffRole,
   submittedPost,
   tag,
@@ -109,6 +110,8 @@ function asRole(name: StaffRoleName) {
 async function openSidebar() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  // Visible from its first frame; a click while it still slides in can be lost.
+  await settleTransitions();
 }
 
 async function openTagList() {

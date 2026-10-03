@@ -1,16 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
-import {
-  flags,
-  prepareStatuses,
-  run,
-  runsScroller,
-  scrollRunsToEnd,
-  setupEmbeddedRootFontSize,
-} from './run-list.test-utils';
+import { flags, prepareStatuses, run, runsScroller, scrollRunsToEnd } from './run-list.test-utils';
 
-setupEmbeddedRootFontSize();
 const endpoint = /\/automations\/first\/runs\/\?/;
 const region = () => page.getByRole('region', { name: 'Automation runs', exact: true });
 const pageOfRuns = (start: number, length: number, next: string | null = null) => ({
@@ -56,7 +48,7 @@ describe('Automation run pagination', () => {
       Math.ceil(51 * rowHeight + headerHeight + 2),
     );
     scrollRunsToEnd();
-    await expect.element(region().getByRole('alert')).toHaveTextContent('Could not load more runs');
+    await expect.element(region().getByRole('alert')).toHaveTextContent('Could not load entries');
     expect(requests.requests).toHaveLength(2);
     expect(new URL(requests.requests[1].url).searchParams.get('cursor')).toBe('next');
     const retry = fakeAdminEndpoint('GET', endpoint, pageOfRuns(50, 3));

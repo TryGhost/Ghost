@@ -32,7 +32,7 @@ jobs:
       VITE_KLIPY_API_KEY: ${{ secrets.KLIPY_API_KEY }}
     steps:
       - name: Checkout repo
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - uses: ./.github/actions/setup-node-pnpm
         with:
@@ -46,7 +46,7 @@ jobs:
         run: echo 'koenig.ghost.org' > koenig/koenig-lexical/dist/CNAME
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4
+        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./koenig/koenig-lexical/dist

@@ -36,6 +36,8 @@ const EXTERNAL_URL_BLOCKLIST: Array<{ pattern: string; isMatch: (url: string) =>
   },
   // Tinybird pipes (analytics); declare per test with fakeTinybirdPipe (tinybird.ts)
   { pattern: `${TINYBIRD_ORIGIN}/*`, isMatch: (url) => url.startsWith(`${TINYBIRD_ORIGIN}/`) },
+  // Private-site login on any site origin (src/hooks/use-private-site-login.ts)
+  { pattern: '*/private/', isMatch: (url) => new URL(url).pathname.endsWith('/private/') },
 ];
 
 // Per-test preview URLs are arbitrary site origins, so they cannot live in

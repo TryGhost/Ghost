@@ -21,7 +21,9 @@ The screen keeps a session while navigation stays on its post, counting the id
 a create acquired and ignoring a trailing slash, whichever history entry the
 navigation reaches, including one the router did not create. Any other post, a
 new one included, gets a new session, so two posts opened by URL each get their
-own.
+own. The editor tells the screen once its session has created its post, so the
+new-post URL reached afterwards opens a new post even when the router renders
+the create's URL replace and that navigation together.
 
 Requests are made without the transport's session-expiry redirect, so an expired
 session is surfaced in place rather than navigating away from unsaved content.
@@ -92,11 +94,12 @@ dirty, and leaving requires a save or confirmation.
 
 All saves use the same preparation validator. An incomplete tier pairing on a
 post that exists, an over-long title, excerpt, code injection or meta/social
-field, an emptied author list, or a newly staged future publish time holds a
-background save with a validation blocker. Body autosave, title and image
-commits follow the same rule, including an already armed timer or queued
-request. The editor explains why changes are waiting even when the settings
-panel is closed. A saved future publish time is not itself invalid.
+field, an invalid canonical URL, an emptied author list, or a newly staged
+future publish time holds a background save with a validation blocker. Body
+autosave, title and image commits follow the same rule, including an already
+armed timer or queued request. The editor explains why changes are waiting even
+when the settings panel is closed. A saved future publish time is not itself
+invalid.
 
 A post the server has not created yet is not held to the tier rule. Its saves
 go ahead with the incomplete pair left out of the write and of the submitted
@@ -171,8 +174,14 @@ server counts it: the title trimmed, with an emoji and its presentation selector
 as one character, and every other field by code point.
 
 A failure the transport reports is mapped onto the same kinds, so the engine's
-state machine reads them the same way: an `UPDATE_COLLISION` code becomes
-`conflict`; a session-expired, unauthorized or 401 failure becomes
+state machine reads them the same way. An `UPDATE_COLLISION` code becomes
+`conflict`.
+
+The server refuses a save that still sends `scheduled` for a post it has since
+published with a validation error. That also becomes `conflict`, since only the
+server's newer copy lets the writer save again.
+
+Of the other failures, a session-expired, unauthorized or 401 failure becomes
 `session-invalid`; a host-limit failure becomes `host-limit`; an unreachable
 server, a maintenance response and a timeout become `transport`; a validation
 failure, a payload the server refuses as too large and a 422 become

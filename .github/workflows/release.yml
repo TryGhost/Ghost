@@ -46,7 +46,7 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # Deploy key (via ssh-agent) is used for git push — it bypasses
           # branch protection and triggers downstream workflows (unlike GITHUB_TOKEN)

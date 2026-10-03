@@ -65,7 +65,7 @@ jobs:
       pull-requests: read
     steps:
       - name: Checkout current commit
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ env.HEAD_COMMIT }}
           fetch-depth: 0
@@ -84,7 +84,7 @@ jobs:
       # entries (~7s, and ~670MB of registry metadata pulled into the cache
       # dir) and the post-step saves the new verdict.
       - name: Restore pnpm lockfile verification cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/pnpm/lockfile-verified.jsonl
           key: pnpm-lockfile-verified-${{ hashFiles('pnpm-lock.yaml', 'pnpm-workspace.yaml') }}
@@ -115,7 +115,7 @@ jobs:
 
       - name: Determine changed packages
         if: env.IS_TAG != 'true'
-        uses: AurorNZ/paths-filter@c9dd42e99db87803313ff6f4b1150cc9f6c836af # v5.0.0
+        uses: AurorNZ/paths-filter@ead37777b84ca4c3301a92f453c4040b85287e76 # v5.1.0
         id: changed
         with:
           base: ${{ env.NX_BASE }}
@@ -355,7 +355,7 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Checkout PR head commit
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
@@ -400,7 +400,7 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Checkout PR head commit
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
@@ -426,7 +426,7 @@ jobs:
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
     name: Lint
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1000
       - uses: ./.github/actions/setup-node-pnpm
@@ -434,7 +434,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           trust-lockfile: 'true'
 
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ghost/**/.eslintcache
           key: eslint-cache
@@ -451,7 +451,7 @@ jobs:
       - name: Check formatting
         run: pnpm format:check
 
-      - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
+      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -464,9 +464,9 @@ jobs:
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_docs == 'true'
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -482,7 +482,7 @@ jobs:
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_package_standards == 'true'
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - uses: ./.github/actions/setup-node-pnpm
         with:
@@ -505,7 +505,7 @@ jobs:
       needs.job_setup.outputs.is_tag == 'true'
       || needs.job_setup.outputs.changed_i18n_apps == 'true'
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -528,7 +528,7 @@ jobs:
       CI: true
       COVERAGE: ${{ needs.job_setup.outputs.coverage_enabled }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -543,13 +543,13 @@ jobs:
         if: needs.job_setup.outputs.coverage_enabled == 'true'
         run: pnpm ember coverage-merge
         working-directory: apps/ember-admin
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: needs.job_setup.outputs.coverage_enabled == 'true'
         with:
           name: admin-coverage
           path: apps/*/coverage/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
+      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -568,7 +568,7 @@ jobs:
     if: (needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_development == 'true') || needs.job_setup.outputs.has_perf_tests_label == 'true'
     name: Performance tests
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # Boot activates the default theme, which is a submodule
           submodules: true
@@ -631,7 +631,7 @@ jobs:
       packages: read
     steps:
       # Only for .github/actions/load-docker-image; nothing is built from source here.
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
@@ -716,7 +716,7 @@ jobs:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
     name: Unit tests (Node ${{ matrix.node }})
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1000
       - uses: ./.github/actions/setup-node-pnpm
@@ -773,7 +773,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
+      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -786,7 +786,7 @@ jobs:
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.typecheck_projects_str != ''
     name: Typecheck
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1000
       - uses: ./.github/actions/setup-node-pnpm
@@ -800,7 +800,7 @@ jobs:
           FORCE_COLOR: 0
           NX_SKIP_LOG_GROUPING: true
 
-      - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
+      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -815,7 +815,7 @@ jobs:
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     services:
       mysql:
-        image: mysql:8.0
+        image: mysql:8.0@sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b
         env:
           MYSQL_DATABASE: ghost_testing
           MYSQL_ROOT_PASSWORD: root
@@ -831,7 +831,7 @@ jobs:
           --health-timeout=5s
           --health-retries=60
       redis:
-        image: redis:7.4@sha256:71da9275c5f3fcb97d0fa0c8c5b36cc995327265420f17a04bfd544f458059f7
+        image: redis:7.4@sha256:c6eabf748fc7a61dbb5a705c78bcf3d6377b1127a97d0ce965c11c44ba46896f
         ports:
           - 6379:6379
         options: >-
@@ -849,7 +849,7 @@ jobs:
       COVERAGE_ENABLED: ${{ needs.job_setup.outputs.coverage_enabled == 'true' && matrix.node == needs.job_setup.outputs.node_version }}
     name: Acceptance tests (Node ${{ matrix.node }}, mysql8)
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ matrix.node }}
@@ -921,7 +921,7 @@ jobs:
             exit 1
           fi
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: env.COVERAGE_ENABLED == 'true'
         with:
           name: e2e-coverage
@@ -929,7 +929,7 @@ jobs:
             ghost/*/coverage-e2e/cobertura-coverage.xml
             ghost/*/coverage-integration/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
+      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -942,7 +942,7 @@ jobs:
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     services:
       mysql:
-        image: mysql:8.0
+        image: mysql:8.0@sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b
         env:
           MYSQL_DATABASE: ghost_testing
           MYSQL_ROOT_PASSWORD: root
@@ -960,7 +960,7 @@ jobs:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
     name: Legacy tests (Node ${{ matrix.node }}, mysql8)
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: true
       - uses: ./.github/actions/setup-node-pnpm
@@ -996,7 +996,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
+      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1017,7 +1017,7 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -1040,7 +1040,7 @@ jobs:
       - name: Restore MS core fonts cache
         if: matrix.app == '@tryghost/koenig-lexical'
         id: mscorefonts-cache
-        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/msttcorefonts
           key: msttcorefonts-ttf-v1
@@ -1078,7 +1078,7 @@ jobs:
           sudo fc-cache -f
       - name: Save MS core fonts cache
         if: matrix.app == '@tryghost/koenig-lexical' && steps.mscorefonts-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/msttcorefonts
           key: msttcorefonts-ttf-v1
@@ -1110,7 +1110,7 @@ jobs:
 
       - name: Upload test results
         if: always() && steps.app_name.outputs.has_report == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ steps.app_name.outputs.name }}-playwright-report-${{ matrix.shardIndex }}
           path: ${{ steps.app_name.outputs.root }}/playwright-report
@@ -1121,23 +1121,32 @@ jobs:
       # playwright-report; upload them so failures are debuggable from CI.
       - name: Upload failure screenshots
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ steps.app_name.outputs.name }}-failure-screenshots-${{ matrix.shardIndex }}
           path: ${{ steps.app_name.outputs.root }}/**/__screenshots__/**
           if-no-files-found: ignore
           retention-days: 30
 
+      - name: Summarize Admin acceptance results
+        if: always() && matrix.app == '@tryghost/admin'
+        # Reporting must not change the test step's result if the report is incomplete.
+        continue-on-error: true
+        run: |
+          node scripts/summarize-admin-acceptance.js \
+            --report=apps/admin/test-results/acceptance.json \
+            --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload Admin acceptance results
         if: always() && matrix.app == '@tryghost/admin'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: admin-acceptance-results-${{ matrix.shardIndex }}
           path: apps/admin/test-results/acceptance.json
           if-no-files-found: ignore
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
+      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1167,7 +1176,7 @@ jobs:
           - scenario: latest-release
             node: ${{ needs.job_setup.outputs.node_version }}
     steps:
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         env:
           FORCE_COLOR: 0
         with:
@@ -1180,7 +1189,7 @@ jobs:
       # Ghost-CLI still requires the package/ prefix; switch this to
       # ghost-release-tarball once it accepts a prefix-free archive too.
       - name: Download npm tarball
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: ghost-npm-tarball
 
@@ -1191,7 +1200,7 @@ jobs:
 
       - name: Save Ghost CLI Debug Logs
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ghost-cli-debug-logs-${{ matrix.scenario }}-${{ matrix.node }}
           path: /home/runner/.ghost/logs/
@@ -1229,7 +1238,7 @@ jobs:
         run: |
           [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
 
-      - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
+      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1242,7 +1251,7 @@ jobs:
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
     name: Stripe fixture checks
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -1254,7 +1263,7 @@ jobs:
       - name: Check Stripe fixtures
         run: pnpm nx run @tryghost/e2e:test:fixtures
 
-      - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
+      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1269,7 +1278,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
@@ -1315,7 +1324,7 @@ jobs:
         run: tar --exclude='*.map' -czf admin-build.tar.gz -C ghost/core/core/built admin embed-renderer
 
       - name: Upload admin build artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: admin-build
           path: admin-build.tar.gz
@@ -1324,14 +1333,14 @@ jobs:
 
       - name: Upload admin artifact for CD
         id: upload-admin
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: admin-build-cd
           path: apps/admin/dist
           retention-days: 7
           if-no-files-found: error
 
-      - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
+      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1350,7 +1359,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           # Themes (content/themes/casper|source) are submodules packed into the
@@ -1386,7 +1395,7 @@ jobs:
           pnpm --filter ghost run build:assets
 
       - name: Download admin build
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: admin-build
 
@@ -1406,7 +1415,7 @@ jobs:
       # the release asset; the -npm one carries the package/ prefix npm and
       # today's Ghost-CLI need, and goes away with the npm publish in 7.0.
       - name: Upload release tarball
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ghost-release-tarball
           path: |
@@ -1416,14 +1425,14 @@ jobs:
           if-no-files-found: error
 
       - name: Upload npm tarball
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ghost-npm-tarball
           path: ghost/core/ghost-*-npm.tgz
           retention-days: 7
           if-no-files-found: error
 
-      - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
+      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1446,7 +1455,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           # The deploy stage packs content/themes/casper|source (submodules).
@@ -1507,11 +1516,11 @@ jobs:
         uses: ./.github/actions/setup-docker-registry-mirrors
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
       - name: Log in to GitHub Container Registry
         if: steps.strategy.outputs.should-push == 'true'
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -1519,7 +1528,7 @@ jobs:
 
       - name: Docker meta (core)
         id: meta-core
-        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         env:
           # Tag PR builds `sha-<short>` with the PR head, not the synthetic merge commit
           DOCKER_METADATA_PR_HEAD_SHA: 'true'
@@ -1540,7 +1549,7 @@ jobs:
 
       - name: Docker meta (full)
         id: meta-full
-        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         env:
           DOCKER_METADATA_PR_HEAD_SHA: 'true'
         with:
@@ -1559,7 +1568,7 @@ jobs:
             org.opencontainers.image.vendor=TryGhost
 
       - name: Build & push core image
-        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         env:
           BUILDKIT_PROGRESS: plain
         with:
@@ -1599,7 +1608,7 @@ jobs:
 
       - name: Upload core image artifact
         if: steps.strategy.outputs.use-artifact == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: docker-image-core
           path: ${{ runner.temp }}/docker-image-core.tar.gz
@@ -1617,7 +1626,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download admin build
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: admin-build
           # Outside the build context: a stray admin-build.tar.gz in the repo root
@@ -1635,7 +1644,7 @@ jobs:
 
       - name: Build & push full image
         id: build-full
-        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         env:
           BUILDKIT_PROGRESS: plain
         with:
@@ -1671,7 +1680,7 @@ jobs:
 
       - name: Upload image artifact
         if: steps.strategy.outputs.use-artifact == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: docker-image-production
           path: docker-image-production.tar.gz
@@ -1764,7 +1773,7 @@ jobs:
       # and let stray build:production files under apps/*/umd leak into the image.
       - name: Download public app artifacts (e2e)
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: e2e-public-apps
           path: ${{ runner.temp }}/e2e-context
@@ -1785,7 +1794,7 @@ jobs:
       - name: Set up Docker Buildx (e2e host driver)
         if: steps.strategy.outputs.use-artifact == 'true'
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
         id: buildx-e2e-host
         with:
           driver: docker
@@ -1793,7 +1802,7 @@ jobs:
       - name: Docker meta (e2e)
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
         id: meta-e2e
-        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         env:
           DOCKER_METADATA_PR_HEAD_SHA: 'true'
         with:
@@ -1810,7 +1819,7 @@ jobs:
 
       - name: Build & push E2E image
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         env:
           BUILDKIT_PROGRESS: plain
         with:
@@ -1848,7 +1857,7 @@ jobs:
       - name: Upload E2E image artifact
         if: steps.strategy.outputs.use-artifact == 'true'
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: docker-image-e2e
           path: docker-image-e2e.tar.gz
@@ -1943,7 +1952,7 @@ jobs:
       - name: Build dependency size report
         if: steps.strategy.outputs.should-push == 'true'
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
           file: Dockerfile.production
@@ -1956,7 +1965,7 @@ jobs:
       - name: Upload dependency size report
         if: steps.strategy.outputs.should-push == 'true'
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: image-report
           path: ${{ runner.temp }}/image-report/image-report.json
@@ -1967,7 +1976,7 @@ jobs:
       - name: Set up Node.js
         if: steps.strategy.outputs.should-push == 'true'
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -2021,7 +2030,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - uses: ./.github/actions/setup-node-pnpm
         with:
@@ -2043,7 +2052,7 @@ jobs:
           ls -lh e2e-public-apps.tar.gz
 
       - name: Upload public app artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: e2e-public-apps
           path: e2e-public-apps.tar.gz
@@ -2138,7 +2147,7 @@ jobs:
             shardTotal: 2
     steps:
       - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Docker Registry Mirrors
         uses: ./.github/actions/setup-docker-registry-mirrors
@@ -2146,7 +2155,7 @@ jobs:
       - name: Log in to GitHub Container Registry
         # Needed to read the internal tinybird-local-slim package.
         if: matrix.analytics == 'true' && env.GHOST_E2E_TINYBIRD_SLIM == 'true' && needs.job_setup.outputs.changed_tinybird_slim != 'true'
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         continue-on-error: true
         with:
           registry: ghcr.io
@@ -2247,7 +2256,7 @@ jobs:
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: blob-report-${{ matrix.projectName }}-${{ matrix.shardIndex }}
           path: e2e/blob-report
@@ -2255,13 +2264,13 @@ jobs:
 
       - name: Upload test results artifacts
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: test-results-${{ matrix.projectName }}-${{ matrix.shardIndex }}
           path: e2e/test-results
           retention-days: 7
 
-      - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
+      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -2281,7 +2290,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - uses: ./.github/actions/setup-node-pnpm
         with:
@@ -2289,7 +2298,7 @@ jobs:
           trust-lockfile: 'true'
 
       - name: Download blob reports from GitHub Actions Artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         continue-on-error: true
         with:
           path: e2e/all-blob-reports
@@ -2307,7 +2316,7 @@ jobs:
 
       - name: Download test results from GitHub Actions Artifacts
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           path: e2e/all-test-results
           pattern: test-results-*
@@ -2320,7 +2329,7 @@ jobs:
 
       - name: Upload HTML report
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: playwright-report
           path: e2e/playwright-report
@@ -2328,7 +2337,7 @@ jobs:
 
       - name: Upload merged test results
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: test-results
           path: e2e/all-test-results
@@ -2358,11 +2367,11 @@ jobs:
     if: always() && needs.job_setup.outputs.coverage_enabled == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Restore Admin coverage
         if: contains(needs.job_admin-tests.result, 'success')
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: admin-coverage
 
@@ -2373,7 +2382,7 @@ jobs:
 
       - name: Upload Admin test coverage
         if: contains(needs.job_admin-tests.result, 'success')
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           flags: admin-tests
           files: apps/ember-admin/coverage/cobertura-coverage.xml
@@ -2381,7 +2390,7 @@ jobs:
 
       - name: Restore E2E coverage
         if: contains(needs.job_acceptance-tests.result, 'success')
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: e2e-coverage
 
@@ -2392,7 +2401,7 @@ jobs:
 
       - name: Upload E2E test coverage
         if: contains(needs.job_acceptance-tests.result, 'success')
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           flags: e2e-tests
           files: ghost/core/coverage-e2e/cobertura-coverage.xml,ghost/core/coverage-integration/cobertura-coverage.xml
@@ -2470,7 +2479,7 @@ jobs:
         include: ${{ fromJSON(needs.job_setup.outputs.publish_public_apps_matrix) }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - uses: ./.github/actions/setup-node-pnpm
         with:
@@ -2561,7 +2570,7 @@ jobs:
 
       - name: Purge jsDelivr cache
         if: steps.bundle.outputs.changed == 'true'
-        uses: gacts/purge-jsdelivr-cache@8d92aea944f1a3e8ad70505379e1a8ac72d56b73 # v1
+        uses: gacts/purge-jsdelivr-cache@8d92aea944f1a3e8ad70505379e1a8ac72d56b73 # v1.1.2
         with:
           url: ${{ steps.cdn_paths.outputs.cdn_paths }}
 
@@ -2617,7 +2626,7 @@ jobs:
 
       - name: Dispatch to Ghost-Moya cd.yml
         if: steps.params.outputs.skip != 'true'
-        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4
+        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
         with:
           token: ${{ secrets.CANARY_DOCKER_BUILD }}
           repository: TryGhost/Ghost-Moya
@@ -2650,12 +2659,12 @@ jobs:
       id-token: write
     steps:
       - name: Download npm tarball
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: ghost-npm-tarball
 
       - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           package-manager-cache: false
@@ -2693,7 +2702,7 @@ jobs:
       && github.repository == 'TryGhost/Ghost'
     steps:
       - name: Dispatch to TryGhost/docker-library-ghost
-        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4
+        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
         with:
           token: ${{ secrets.CANARY_DOCKER_BUILD }}
           repository: TryGhost/docker-library-ghost
@@ -2712,7 +2721,7 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.CANARY_DOCKER_BUILD }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
@@ -2743,7 +2752,7 @@ jobs:
       # npm client. Same build tree as the npm package, just without the
       # package/ wrapper dir.
       - name: Download release tarball
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: ghost-release-tarball
           path: release-assets

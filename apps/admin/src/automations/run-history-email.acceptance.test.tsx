@@ -61,12 +61,7 @@ describe('Historical email snippets', () => {
     };
     respond(data);
     await renderAdminApp('/automations/first', flags);
-    await page
-      .getByRole('article', { name: 'Send email: Current subject' })
-      .getByRole('button', { name: 'Email actions' })
-      .click();
-    await page.getByRole('menuitem', { name: 'Edit settings' }).click();
-    await page.getByPlaceholder('Subject line').fill('Unsaved subject');
+    await page.getByRole('textbox', { name: 'Subject line' }).fill('Unsaved subject');
     await open();
     await select();
     await expect
@@ -78,6 +73,8 @@ describe('Historical email snippets', () => {
       .toHaveTextContent('Welcome back. Here is <b>literal text</b> from the original email.');
     expect(preview.element().querySelector('b')).toBeNull();
     await close();
-    await expect.element(page.getByPlaceholder('Subject line')).toHaveValue('Unsaved subject');
+    await expect
+      .element(page.getByRole('textbox', { name: 'Subject line' }))
+      .toHaveValue('Unsaved subject');
   });
 });

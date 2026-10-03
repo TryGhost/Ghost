@@ -1,5 +1,6 @@
 import { afterEach, beforeAll } from 'vitest';
 import { cleanup } from 'vitest-browser-react';
+import { toast } from 'sonner';
 
 import './matchers';
 import { defaultBootResolver, defaultBootRoutes } from './boot';
@@ -44,20 +45,36 @@ afterEach(async () => {
   try {
     await settleRequests();
   } finally {
-    resetFakeApi();
-    resetDeclaredResources();
-    sessionStorage.clear();
-    // The editor keeps local copies of drafts here, and the restore screen lists them all.
-    for (const key of Object.keys(localStorage)) {
-      if (key.startsWith('post-revision-')) {
-        localStorage.removeItem(key);
-      }
-    }
-    window.location.hash = '';
     try {
-      await resetFakeFrameOrigins();
+      const activeToasts = toast.getToasts();
+      for (const activeToast of activeToasts) {
+        // A save can emit a toast while requests drain after unmount. Dismiss
+        // each id to mark it dismissed in Sonner's module-level store too.
+        toast.dismiss(activeToast.id);
+      }
+      if (activeToasts.length > 0) {
+        // Drain Sonner's queued publications before the next test mounts a
+        // subscriber or reuses an id.
+        await new Promise<void>((resolve) => {
+          requestAnimationFrame(() => resolve());
+        });
+      }
     } finally {
-      verifyNoUnhandledRequests();
+      resetFakeApi();
+      resetDeclaredResources();
+      sessionStorage.clear();
+      // The editor keeps local copies of drafts here, and the restore screen lists them all.
+      for (const key of Object.keys(localStorage)) {
+        if (key.startsWith('post-revision-')) {
+          localStorage.removeItem(key);
+        }
+      }
+      window.location.hash = '';
+      try {
+        await resetFakeFrameOrigins();
+      } finally {
+        verifyNoUnhandledRequests();
+      }
     }
   }
 });

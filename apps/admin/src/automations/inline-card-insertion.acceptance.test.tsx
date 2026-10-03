@@ -1,9 +1,13 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import { detail, flags, setup, editingCanvas } from './run-history.test-utils';
 
 describe('Inline card insertion', () => {
+  // Keep the add-step picker visible below the email card and its stats.
+  beforeEach(() => page.viewport(1280, 1600));
+  afterEach(() => page.viewport(1280, 800));
+
   for (const type of ['Email', 'Wait'] as const) {
     for (const position of ['append', 'insert'] as const) {
       it(`${position}s ${type} without opening or retaining the settings sidebar`, async () => {
@@ -12,6 +16,13 @@ describe('Inline card insertion', () => {
         automation.actions.push({
           id: 'existing-email',
           type: 'send_email',
+          stats: {
+            email_sent_count: 0,
+            email_opened_count: 0,
+            email_clicked_count: 0,
+            opened_rate: null,
+            clicked_rate: null,
+          },
           data: { email_subject: 'Existing', email_lexical: '', email_design_setting_id: 'design' },
         });
         automation.edges.push({
@@ -22,12 +33,13 @@ describe('Inline card insertion', () => {
         const save = fakeAdminEndpoint('PUT', '/automations/first/', {
           automations: [detail('first')],
         });
-        await renderAdminApp('/automations/first', flags);
-        // Starting with another step open also checks that stale settings close.
-        await page.getByRole('button', { name: 'Email actions' }).click();
-        await page.getByRole('menuitem', { name: 'Edit settings' }).click();
+        await renderAdminApp('/automations/first', {
+          labs: { ...flags.labs, automationAnalytics: true },
+        });
+        // Starting with performance open checks that insertion dismisses it.
+        await page.getByRole('button', { name: 'View email analytics' }).click();
         await expect
-          .element(page.getByRole('complementary', { name: 'Step details' }))
+          .element(page.getByRole('complementary', { name: 'Email performance' }))
           .toBeVisible();
         await page
           .getByRole('button', {
@@ -42,6 +54,9 @@ describe('Inline card insertion', () => {
           .click();
         await expect
           .element(page.getByRole('complementary', { name: 'Step details' }))
+          .not.toBeInTheDocument();
+        await expect
+          .element(page.getByRole('complementary', { name: 'Email performance' }))
           .not.toBeInTheDocument();
         const cards = editingCanvas().getByRole('article', {
           name: type === 'Email' ? /^Send email/ : /^Wait:/,

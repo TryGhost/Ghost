@@ -4,9 +4,12 @@ Full-app tests: the **real admin app** (the same provider stack as `src/main.tsx
 
 CI uploads `admin-acceptance-results-<shard>` artifacts containing Vitest's JSON
 report at `apps/admin/test-results/acceptance.json`, for both passing and failing
-runs. Use the suite start/end times and assertion durations to compare shard
-work, identify slow journeys, and investigate timeouts. Console output stays
-minimal; failure screenshots remain separate artifacts.
+runs. Each shard's GitHub Actions summary shows test counts, elapsed suite time,
+failed tests, and the slowest files and tests. Use the JSON report's suite
+start/end times and assertion durations to compare shard work, identify slow
+journeys, and investigate timeouts. A failure alone does not prove flakiness;
+compare repeated runs of the same commit. Console output stays minimal;
+failure screenshots remain separate artifacts.
 
 ## Anatomy of a spec
 

@@ -56,6 +56,29 @@ describe('Inline wait editing', () => {
     ]);
   });
 
+  it('keeps focus while successive edits update the canvas', async () => {
+    serve();
+    await renderAdminApp('/automations/first', flags);
+    const first = waits().nth(0).getByRole('textbox', { name: 'Wait for' });
+    await first.click();
+    const input = first.element();
+    let lostFocus = false;
+    const trackBlur = () => {
+      lostFocus = true;
+    };
+    input.addEventListener('blur', trackBlur);
+    try {
+      for (const days of [2, 3, 4, 5, 6]) {
+        await first.fill(String(days));
+        await expect.element(waits().nth(0)).toHaveAccessibleName(`Wait: ${days} days`);
+        await expect.element(first).toHaveFocus();
+        expect(lostFocus).toBe(false);
+      }
+    } finally {
+      input.removeEventListener('blur', trackBlur);
+    }
+  });
+
   it('preserves invalid input and blocks saving or publishing stale valid values', async () => {
     const save = serve();
     await renderAdminApp('/automations/first', flags);

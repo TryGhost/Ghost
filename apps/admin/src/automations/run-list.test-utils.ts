@@ -1,4 +1,3 @@
-import { afterAll, beforeAll } from 'vitest';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint } from '@test-utils/acceptance';
 import type {
@@ -6,19 +5,6 @@ import type {
   AutomationPerformanceStats,
   AutomationRun,
 } from '@tryghost/admin-x-framework/api/automations';
-
-// Production inherits this root sizing from Ember's patterns/global.css.
-// This full-app test host does not load Ember's stylesheet.
-export function setupEmbeddedRootFontSize() {
-  let originalRootFontSize: string;
-  beforeAll(() => {
-    originalRootFontSize = document.documentElement.style.fontSize;
-    document.documentElement.style.fontSize = '62.5%';
-  });
-  afterAll(() => {
-    document.documentElement.style.fontSize = originalRootFontSize;
-  });
-}
 
 export const flags = {
   labs: { automations: true, automationRunAnalytics: true, automationsTinybirdSync: true },
