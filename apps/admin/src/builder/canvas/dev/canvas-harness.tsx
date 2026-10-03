@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { PageHeader } from '@tryghost/shade/patterns';
-import { Button, DropdownMenuItem } from '@tryghost/shade/components';
+import {
+  Button,
+  DropdownMenuItem,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 
 import { CanvasBoard } from '@/builder/canvas/canvas-board';
@@ -10,7 +16,7 @@ import { observeExpandedComposition } from '@/builder/canvas/observe-expanded-co
 import { IframePreviewDocumentSurface } from '@/builder/workspaces/theme/preview/preview-document';
 import { getThemeFixture, instance, loadAssets } from './fixture';
 import { CanvasProbe, registerCanvasProbe } from './webmcp-probe';
-import { FixtureClient } from './fixture-client';
+import { FixtureClient, FixtureRejectedError } from './fixture-client';
 
 import type { CanvasFrame, CanvasFrameInput, CanvasView } from '@/builder/canvas/canvas-board';
 import type {
@@ -26,7 +32,13 @@ import type { ThemeFixtureId } from './fixture';
 
 type ExpandedState =
   | { status: 'pending' }
-  | { status: 'current'; composition: ExpandedComposition; surfaceId: string; duration: number }
+  | {
+      status: 'current';
+      composition: ExpandedComposition;
+      renderKey: string;
+      surfaceId: string;
+      duration: number;
+    }
   | { status: 'failed'; message: string };
 
 type OverviewMode = 'expanded' | 'device';
@@ -83,6 +95,7 @@ function LivePreview({
   onSelection,
   onEdit,
   onAdmission,
+  onDelivery,
 }: {
   frame: CanvasFrame;
   document: PreviewDocument;
@@ -92,6 +105,7 @@ function LivePreview({
   onInput: (input: CanvasFrameInput) => void;
   onExpanded: (state: ExpandedState) => void;
   probe: CanvasProbe;
+  onDelivery: (id: string, document: PreviewDocument, status: 'ready' | 'failed') => void;
   onAdmission: (interactionTime: number) => boolean;
   onSurface: (id: string, surface: IframePreviewDocumentSurface | null) => void;
   onSelection: (
@@ -115,6 +129,7 @@ function LivePreview({
   const [layoutStatus, setLayoutStatus] = useState('pending');
   const layoutPaused = useRef(false);
   const layoutReady = useRef(false);
+  const layoutFailed = useRef(false);
   const layoutObservation = useRef<ReturnType<typeof observeExpandedComposition> | null>(null);
   const handlers = useRef({
     onInput,
@@ -123,6 +138,7 @@ function LivePreview({
     onSelection,
     onEdit,
     onAdmission,
+    onDelivery,
     visible,
     draftOwner,
   });
@@ -133,6 +149,7 @@ function LivePreview({
     onSelection,
     onEdit,
     onAdmission,
+    onDelivery,
     visible,
     draftOwner,
   };
@@ -186,6 +203,7 @@ function LivePreview({
     setLayoutStatus('pending');
     layoutPaused.current = false;
     layoutReady.current = false;
+    layoutFailed.current = false;
     setStatus('Loading preview…');
     iframe.current!.style.height = `${height}px`;
     const connection = kind === 'device' ? probe.attach(frame.id, surface, document) : null;
@@ -228,17 +246,21 @@ function LivePreview({
               handlers.current.onExpanded({
                 status: 'current',
                 composition: result,
+                renderKey: document.renderKey ?? document.revision,
                 surfaceId,
                 duration: result.duration,
               });
             },
             onError: (failure) => {
               const message = failure instanceof Error ? failure.message : String(failure);
+              layoutFailed.current = true;
+              setReady(null);
               setComposition(null);
               iframe.current!.style.height = `${height}px`;
               setLayoutStatus('failed');
               setStatus(message);
               handlers.current.onExpanded({ status: 'failed', message });
+              handlers.current.onDelivery(`${frame.id}:${kind}`, document, 'failed');
             },
           });
           layoutObservation.current = observation;
@@ -252,15 +274,17 @@ function LivePreview({
             ? 'edit'
             : 'select';
         await surface.setInteractionMode(mode, controller.signal);
-        if (!controller.signal.aborted) {
+        if (!controller.signal.aborted && !layoutFailed.current) {
           lastMode.current = { document, mode };
           setReady(document);
           setStatus('Ready');
+          handlers.current.onDelivery(`${frame.id}:${kind}`, document, 'ready');
         }
       })
       .catch((failure: unknown) => {
         if (!controller.signal.aborted) {
           connection?.fail();
+          handlers.current.onDelivery(`${frame.id}:${kind}`, document, 'failed');
           const message = failure instanceof Error ? failure.message : String(failure);
           setStatus(message);
           if (kind === 'expanded') {
@@ -344,14 +368,46 @@ export function CanvasHarness({
   fixtureId = 'casper',
   onDeviceSurface,
   onCompositionSurface,
+  onProbe,
 }: {
   fixtureId?: ThemeFixtureId;
   onDeviceSurface?: (id: string, surface: IframePreviewDocumentSurface | null) => void;
   onCompositionSurface?: (id: string, surface: IframePreviewDocumentSurface | null) => void;
+  onProbe?: (probe: CanvasProbe | null) => void;
 }) {
   // A fixture is selected once per harness mount.
   const [fixture] = useState(() => getThemeFixture(fixtureId));
   const [revision, setRevision] = useState(fixture.revision);
+  const [renderState, setRenderState] = useState({
+    dataGeneration: 0,
+    dataSnapshot: 'recorded' as FixtureRender['dataSnapshot'],
+    renderKey: `${fixture.revision}:data-0`,
+  });
+  const acceptedRender = useRef<FixtureRender | null>(null);
+  const delivery = useRef<{
+    renderKey: string;
+    acceptedAt: number;
+    acceptedAfterMs: number;
+    ready: Set<string>;
+    failed: Set<string>;
+    allComplete: boolean;
+  } | null>(null);
+  const [deliveryDiagnostics, setDeliveryDiagnostics] = useState<{
+    renderKey: string;
+    acceptedAfterMs: number;
+    readySurfaces: string[];
+    failedSurfaces: string[];
+    allCompleteMs: number | null;
+    devicesReadyMs: number | null;
+    compositionsReadyMs: number | null;
+    allReadyMs: number | null;
+  } | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const pendingRefresh = useRef(false);
+  const refreshUncertain = useRef(false);
+  const [refreshUnavailable, setRefreshUnavailable] = useState(false);
+  const probeObserver = useRef(onProbe);
+  probeObserver.current = onProbe;
   const [documents, setDocuments] = useState<Record<string, PreviewDocument>>({});
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Record<string, ExpandedState>>({});
@@ -365,17 +421,23 @@ export function CanvasHarness({
   const iframeInteractionTime = useRef<number | null>(null);
   const [commitPending, setCommitPending] = useState(false);
   const pendingCommit = useRef(false);
+  const [sourceOpen, setSourceOpen] = useState(false);
+  const sourceRestoreFocus = useRef(true);
   const [selection, setSelection] = useState<{
     frameId: string;
     context: BuilderSelectionContext;
   } | null>(null);
+  useEffect(() => {
+    sourceRestoreFocus.current = false;
+    setSourceOpen(false);
+  }, [selection]);
   const surfaces = useRef(
     new Map<string, { surface: IframePreviewDocumentSurface; reveal: () => void }>(),
   );
   const sourceFiles = useRef({ ...fixture.theme });
   const session = useRef<{
     client: FixtureClient;
-    deliver: (result: FixtureRender) => void;
+    deliver: (result: FixtureRender, acceptedAfterMs?: number) => void;
   } | null>(null);
   const view = useRef<CanvasView>({
     camera: { x: 0, y: 0, scale: 1 },
@@ -385,6 +447,7 @@ export function CanvasHarness({
     const current = new CanvasProbe(frames, instance.siteUrl);
     current.setView(view.current, 'expanded');
     setProbe(current);
+    probeObserver.current?.(current);
     const registration = registerCanvasProbe(window.document, current);
     let disposed = false;
     void registration.ready.then((status) => {
@@ -395,6 +458,7 @@ export function CanvasHarness({
     return () => {
       disposed = true;
       registration.dispose();
+      probeObserver.current?.(null);
     };
   }, []);
   useEffect(() => {
@@ -407,7 +471,7 @@ export function CanvasHarness({
     const displayedMode = mode === 'device' || fallbacks.has(frame.id) ? 'device' : 'expanded';
     const state = expanded[frame.id];
     const composition =
-      state?.status === 'current' && state.composition.revision === documents[frame.id]?.revision
+      state?.status === 'current' && state.renderKey === documents[frame.id]?.renderKey
         ? state.composition
         : null;
     return {
@@ -426,14 +490,38 @@ export function CanvasHarness({
         if (disposed) {
           return;
         }
-        const deliver = (rendered: FixtureRender) => {
-          if (disposed) {
+        const deliver = (rendered: FixtureRender, acceptedAfterMs = 0) => {
+          if (disposed || rendered.unchanged) {
             return;
           }
           if (rendered.editedFile) {
             sourceFiles.current[rendered.editedFile.path] = rendered.editedFile.content;
           }
           setRevision(rendered.revision);
+          acceptedRender.current = rendered;
+          delivery.current = {
+            renderKey: rendered.renderKey,
+            acceptedAt: performance.now(),
+            acceptedAfterMs,
+            ready: new Set(),
+            failed: new Set(),
+            allComplete: false,
+          };
+          setRenderState({
+            dataGeneration: rendered.dataGeneration,
+            dataSnapshot: rendered.dataSnapshot,
+            renderKey: rendered.renderKey,
+          });
+          setDeliveryDiagnostics({
+            renderKey: rendered.renderKey,
+            acceptedAfterMs,
+            readySurfaces: [],
+            failedSurfaces: [],
+            allCompleteMs: null,
+            devicesReadyMs: null,
+            compositionsReadyMs: null,
+            allReadyMs: null,
+          });
           setSelection(null);
           setDocuments(
             Object.fromEntries(
@@ -445,6 +533,8 @@ export function CanvasHarness({
                     html: rendered.html[group],
                     url: new URL(instance.routes[group], instance.siteUrl).href,
                     revision: rendered.revision,
+                    renderKey: rendered.renderKey,
+                    dataGeneration: rendered.dataGeneration,
                     inlineTextTargets: rendered.inlineTextTargets,
                     editMarkerAttribute: rendered.editMarkerAttribute,
                     assets,
@@ -479,6 +569,9 @@ export function CanvasHarness({
   useEffect(() => {
     const diagnostics = {
       fixture: { id: fixture.id, version: fixture.version, revision },
+      renderState,
+      delivery: deliveryDiagnostics,
+      refresh: { pending: refreshing, uncertain: refreshUnavailable },
       siteTools,
       displayedSurfaces: frames.map((frame) => ({
         frameId: frame.id,
@@ -491,6 +584,7 @@ export function CanvasHarness({
               frameId: frame.id,
               status: state.status,
               revision: state.composition.revision,
+              renderKey: state.renderKey,
               surfaceId: state.surfaceId,
               documentId: state.composition.documentId,
               viewport: state.composition.viewport,
@@ -510,7 +604,102 @@ export function CanvasHarness({
     // Diagnostics belong in the developer console and site tools, outside the canvas UI.
     // eslint-disable-next-line no-console
     console.debug('[Ghost canvas]', diagnostics);
-  }, [fixture, revision, siteTools, expanded, probe, mode, fallbacks]);
+  }, [
+    fixture,
+    revision,
+    renderState,
+    deliveryDiagnostics,
+    refreshing,
+    refreshUnavailable,
+    siteTools,
+    expanded,
+    probe,
+    mode,
+    fallbacks,
+  ]);
+  const surfaceDelivered = (id: string, document: PreviewDocument, status: 'ready' | 'failed') => {
+    const current = delivery.current;
+    if (
+      !current ||
+      current.renderKey !== document.renderKey ||
+      (status === 'ready' ? current.ready : current.failed).has(id)
+    ) {
+      return;
+    }
+    (status === 'ready' ? current.failed : current.ready).delete(id);
+    (status === 'ready' ? current.ready : current.failed).add(id);
+    const elapsed = Math.round(performance.now() - current.acceptedAt);
+    const devicesReady = frames.every((frame) => current.ready.has(`${frame.id}:device`));
+    const compositionsReady = frames.every((frame) => current.ready.has(`${frame.id}:expanded`));
+    current.allComplete = frames.every((frame) =>
+      ['device', 'expanded'].every(
+        (kind) =>
+          current.ready.has(`${frame.id}:${kind}`) || current.failed.has(`${frame.id}:${kind}`),
+      ),
+    );
+    setDeliveryDiagnostics((previous) => ({
+      renderKey: current.renderKey,
+      acceptedAfterMs: current.acceptedAfterMs,
+      readySurfaces: [...current.ready],
+      failedSurfaces: [...current.failed],
+      allCompleteMs: current.allComplete ? elapsed : null,
+      devicesReadyMs: devicesReady
+        ? ((previous?.renderKey === current.renderKey ? previous.devicesReadyMs : null) ?? elapsed)
+        : null,
+      compositionsReadyMs: compositionsReady
+        ? ((previous?.renderKey === current.renderKey ? previous.compositionsReadyMs : null) ??
+          elapsed)
+        : null,
+      allReadyMs: devicesReady && compositionsReady ? elapsed : null,
+    }));
+  };
+  const refreshContent = async () => {
+    const current = session.current;
+    const accepted = acceptedRender.current;
+    if (
+      !current ||
+      !accepted ||
+      pendingRefresh.current ||
+      refreshUncertain.current ||
+      pendingCommit.current ||
+      owner.current ||
+      !delivery.current?.allComplete
+    ) {
+      return;
+    }
+    pendingRefresh.current = true;
+    setRefreshing(true);
+    setSelection(null);
+    setError(null);
+    const restoreReads = probe?.invalidateForRefresh();
+    const started = performance.now();
+    try {
+      const result = await current.client.refresh({
+        snapshot: accepted.dataSnapshot === 'recorded' ? 'long-title' : 'recorded',
+        expectedRevision: accepted.revision,
+        expectedDataGeneration: accepted.dataGeneration,
+      });
+      current.deliver(result, Math.round(performance.now() - started));
+    } catch (failure) {
+      if (session.current === current) {
+        if (failure instanceof FixtureRejectedError) {
+          restoreReads?.();
+        } else {
+          // Lost transport does not prove that the worker adopted nothing.
+          refreshUncertain.current = true;
+          setRefreshUnavailable(true);
+        }
+        setError(
+          `${failure instanceof Error ? failure.message : String(failure)}${failure instanceof FixtureRejectedError ? '' : ' Reload the local fixture to recover.'}`,
+        );
+      }
+    } finally {
+      if (session.current === current) {
+        pendingRefresh.current = false;
+        setRefreshing(false);
+      }
+    }
+  };
   const editText = async (
     frameId: string,
     edit: PreviewInlineEditRequest,
@@ -521,6 +710,18 @@ export function CanvasHarness({
       throw new DOMException('Aborted', 'AbortError');
     }
     const current = session.current;
+    if (
+      pendingRefresh.current ||
+      refreshUncertain.current ||
+      !delivery.current?.allComplete ||
+      acceptedRender.current?.renderKey !== document.renderKey
+    ) {
+      return {
+        ok: false,
+        message:
+          'Wait for the current render to finish before committing text. Reload the local fixture if refresh was interrupted.',
+      };
+    }
     if (!current || pendingCommit.current || owner.current !== frameId || edit.kind !== 'text') {
       return {
         ok: false,
@@ -531,7 +732,11 @@ export function CanvasHarness({
     pendingCommit.current = true;
     setCommitPending(true);
     try {
-      const result = await current.client.render({ ...edit, expectedRevision: document.revision });
+      const result = await current.client.render({
+        ...edit,
+        expectedRevision: document.revision,
+        expectedDataGeneration: document.dataGeneration ?? 0,
+      });
       // Once submitted, publish the worker's actual accepted outcome even if
       // the original iframe was restored while the render was running.
       current.deliver(result);
@@ -551,7 +756,112 @@ export function CanvasHarness({
             <PageHeader.Title className="text-base">Canvas · {fixture.label}</PageHeader.Title>
           </PageHeader.Left>
           <PageHeader.Actions>
+            <Popover
+              open={sourceOpen && !!selection}
+              onOpenChange={(open) => {
+                if (open) {
+                  sourceRestoreFocus.current = true;
+                }
+                setSourceOpen(open);
+              }}
+            >
+              <PopoverTrigger asChild>
+                <PageHeader.Action
+                  data-source-selection={selection ? true : undefined}
+                  disabled={!selection}
+                  label="View template source"
+                  iconOnly
+                >
+                  <LucideIcon.Code />
+                  {selection && (
+                    <span className="sr-only">
+                      {frames.find((frame) => frame.id === selection.frameId)?.label}:{' '}
+                      {selection.context.label} · {selection.context.id}
+                    </span>
+                  )}
+                </PageHeader.Action>
+              </PopoverTrigger>
+              <PopoverContent
+                align="end"
+                aria-label="Template source"
+                className="w-80"
+                style={{ maxWidth: 'calc(100vw - 3.2rem)' }}
+                onCloseAutoFocus={(event) => {
+                  if (
+                    !sourceRestoreFocus.current ||
+                    document.activeElement instanceof HTMLIFrameElement
+                  ) {
+                    event.preventDefault();
+                  }
+                }}
+                onInteractOutside={(event) => {
+                  const target = event.detail.originalEvent.target;
+                  if (!(target instanceof Element && target.closest('[data-source-selection]'))) {
+                    sourceRestoreFocus.current = false;
+                  }
+                }}
+              >
+                {selection && (
+                  <Stack gap="xs" data-source-context>
+                    <Text size="sm">
+                      {frames.find((frame) => frame.id === selection.frameId)?.label}:{' '}
+                      {selection.context.label}
+                    </Text>
+                    <Text size="xs">{selection.context.id}</Text>
+                    <pre className="max-h-40 overflow-auto text-xs">
+                      {(() => {
+                        const source = (
+                          selection.context.data as
+                            | { source?: { path: string; line: number } }
+                            | undefined
+                        )?.source;
+                        return source
+                          ? sourceFiles.current[source.path]
+                              ?.split('\n')
+                              .slice(Math.max(0, source.line - 2), source.line + 2)
+                              .join('\n')
+                          : 'Source correspondence unavailable.';
+                      })()}
+                    </pre>
+                  </Stack>
+                )}
+              </PopoverContent>
+            </Popover>
             <PageHeader.ActionGroup>
+              <PageHeader.ActionGroup.MobileMenu>
+                <PageHeader.ActionGroup.MobileMenuTrigger>
+                  <PageHeader.Action label="Canvas views" iconOnly>
+                    <LucideIcon.Ellipsis />
+                  </PageHeader.Action>
+                </PageHeader.ActionGroup.MobileMenuTrigger>
+                <PageHeader.ActionGroup.MobileMenuContent>
+                  <DropdownMenuItem disabled={!!draftOwner} onSelect={() => setMode('expanded')}>
+                    <LucideIcon.Layers />
+                    Full page
+                  </DropdownMenuItem>
+                  <DropdownMenuItem disabled={!!draftOwner} onSelect={() => setMode('device')}>
+                    <LucideIcon.Monitor />
+                    Device
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    disabled={
+                      !!draftOwner ||
+                      commitPending ||
+                      refreshing ||
+                      refreshUnavailable ||
+                      !delivery.current?.allComplete
+                    }
+                    onSelect={() => {
+                      void refreshContent();
+                    }}
+                  >
+                    <LucideIcon.RefreshCw />
+                    {renderState.dataSnapshot === 'recorded'
+                      ? 'Refresh recorded content'
+                      : 'Restore recorded content'}
+                  </DropdownMenuItem>
+                </PageHeader.ActionGroup.MobileMenuContent>
+              </PageHeader.ActionGroup.MobileMenu>
               <PageHeader.Action
                 aria-pressed={mode === 'expanded'}
                 disabled={!!draftOwner}
@@ -570,34 +880,41 @@ export function CanvasHarness({
                 <LucideIcon.Monitor />
                 Device
               </PageHeader.Action>
-              <PageHeader.ActionGroup.MobileMenu>
-                <PageHeader.ActionGroup.MobileMenuTrigger>
-                  <PageHeader.Action label="Canvas views" iconOnly>
-                    <LucideIcon.Ellipsis />
-                  </PageHeader.Action>
-                </PageHeader.ActionGroup.MobileMenuTrigger>
-                <PageHeader.ActionGroup.MobileMenuContent>
-                  <DropdownMenuItem disabled={!!draftOwner} onSelect={() => setMode('expanded')}>
-                    <LucideIcon.Layers />
-                    Full page
-                  </DropdownMenuItem>
-                  <DropdownMenuItem disabled={!!draftOwner} onSelect={() => setMode('device')}>
-                    <LucideIcon.Monitor />
-                    Device
-                  </DropdownMenuItem>
-                </PageHeader.ActionGroup.MobileMenuContent>
-              </PageHeader.ActionGroup.MobileMenu>
+              <PageHeader.Action
+                disabled={
+                  !!draftOwner ||
+                  commitPending ||
+                  refreshing ||
+                  refreshUnavailable ||
+                  !delivery.current?.allComplete
+                }
+                label={
+                  renderState.dataSnapshot === 'recorded'
+                    ? 'Refresh recorded content'
+                    : 'Restore recorded content'
+                }
+                onClick={() => {
+                  void refreshContent();
+                }}
+              >
+                <LucideIcon.RefreshCw />
+                {refreshing
+                  ? 'Refreshing…'
+                  : renderState.dataSnapshot === 'recorded'
+                    ? 'Refresh content'
+                    : 'Restore content'}
+              </PageHeader.Action>
             </PageHeader.ActionGroup>
           </PageHeader.Actions>
         </PageHeader>
         {unavailableOverviews.length > 0 && (
-          <Text role="status" size="xs">
+          <Text className="sr-only" role="status" size="xs">
             Full page unavailable for {unavailableOverviews.map((frame) => frame.label).join(', ')}.
             Use that frame’s fixed viewport control to continue.
           </Text>
         )}
         {boundedExpanded && (
-          <Text role="status" size="xs">
+          <Text className="sr-only" role="status" size="xs">
             A full page reached a layout limit. Use its fixed viewport control to inspect the rest.
           </Text>
         )}
@@ -640,32 +957,6 @@ export function CanvasHarness({
             </Button>
           </Inline>
         )}
-        {selection && (
-          <Stack gap="xs">
-            <Text size="sm">
-              {frames.find((frame) => frame.id === selection.frameId)?.label}:{' '}
-              {selection.context.label}
-            </Text>
-            <details data-source-selection>
-              <summary>View template source · {selection.context.id}</summary>
-              <pre className="max-h-40 overflow-auto text-xs">
-                {(() => {
-                  const source = (
-                    selection.context.data as
-                      | { source?: { path: string; line: number } }
-                      | undefined
-                  )?.source;
-                  return source
-                    ? sourceFiles.current[source.path]
-                        ?.split('\n')
-                        .slice(Math.max(0, source.line - 2), source.line + 2)
-                        .join('\n')
-                    : 'Source correspondence unavailable.';
-                })()}
-              </pre>
-            </details>
-          </Stack>
-        )}
         {error && (
           <Text className="text-destructive" role="alert">
             {error}
@@ -693,6 +984,10 @@ export function CanvasHarness({
                     }
                     onAdmission={(interactionTime) => {
                       if (
+                        pendingRefresh.current ||
+                        refreshUncertain.current ||
+                        !delivery.current?.allComplete ||
+                        !delivery.current?.ready.has(`${frame.id}:${kind}`) ||
                         interactionTime < latestInteractionIntent.current ||
                         (owner.current && owner.current !== frame.id)
                       ) {
@@ -703,6 +998,7 @@ export function CanvasHarness({
                       setDraftOwner(frame.id);
                       return true;
                     }}
+                    onDelivery={surfaceDelivered}
                     onEdit={(edit, document, signal) => editText(frame.id, edit, document, signal)}
                     onExpanded={(state) =>
                       setExpanded((current) => ({ ...current, [frame.id]: state }))
@@ -733,6 +1029,9 @@ export function CanvasHarness({
                     }}
                     onSelection={(id, context, interactionTime) => {
                       if (
+                        pendingRefresh.current ||
+                        refreshUncertain.current ||
+                        !delivery.current?.ready.has(`${frame.id}:${kind}`) ||
                         interactionTime === undefined ||
                         interactionTime < latestInteractionIntent.current
                       ) {
@@ -763,6 +1062,13 @@ export function CanvasHarness({
           }
           renderFrameActions={(frame) => {
             const device = mode === 'device' || fallbacks.has(frame.id);
+            const state = expanded[frame.id];
+            const warning =
+              state?.status === 'failed'
+                ? 'Full page unavailable. Use fixed viewport.'
+                : state?.status === 'current' && state.composition.status !== 'settled'
+                  ? 'Full page reached a layout limit. Use fixed viewport.'
+                  : null;
             return (
               <Button
                 aria-label={
@@ -773,7 +1079,7 @@ export function CanvasHarness({
                 className="size-8 bg-background"
                 disabled={!!draftOwner || mode === 'device'}
                 size="sm"
-                title={device ? 'Use full page' : 'Use fixed viewport'}
+                title={device ? 'Use full page' : (warning ?? 'Use fixed viewport')}
                 variant="outline"
                 onClick={() => {
                   latestInteractionIntent.current = performance.timeOrigin + performance.now();
@@ -795,7 +1101,13 @@ export function CanvasHarness({
                   });
                 }}
               >
-                {device ? <LucideIcon.Layers /> : <LucideIcon.Monitor />}
+                {device ? (
+                  <LucideIcon.Layers />
+                ) : warning ? (
+                  <LucideIcon.TriangleAlert />
+                ) : (
+                  <LucideIcon.Monitor />
+                )}
               </Button>
             );
           }}

@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 
 import { instance, responses } from './fixture';
-import { recordedContentResponse } from './recorded-content';
+import { recordedContentResponse, REFRESHED_POST_TITLE } from './recorded-content';
 import type { RecordedPosts } from './recorded-content';
 
 it('preserves exact Casper recordings and adapts only recorded first-page Source feed limits', async () => {
@@ -65,4 +65,32 @@ it('rejects unrecorded pages, oversized feeds, foreign sites, keys and query par
   base.hostname = 'localhost';
   base.searchParams.append('limit', '12');
   expect(() => recordedContentResponse(base.href)).toThrow('No recorded');
+});
+
+it('refreshes the same recorded Post consistently across its page and bounded Home feeds', async () => {
+  const feedUrl = Object.keys(responses).find((url) => url.includes('limit=25'))!;
+  const postUrl = Object.keys(responses).find((url) => url.includes('/slug/test/'))!;
+  const baseline = (await recordedContentResponse(postUrl).json()) as RecordedPosts;
+  const updatedPost = (await recordedContentResponse(
+    postUrl,
+    'long-title',
+  ).json()) as RecordedPosts;
+  const updatedFeed = (await recordedContentResponse(
+    feedUrl,
+    'long-title',
+  ).json()) as RecordedPosts;
+  expect(updatedPost.posts[0]).toEqual({ ...baseline.posts[0], title: REFRESHED_POST_TITLE });
+  expect(updatedFeed.posts[0].title).toBe(REFRESHED_POST_TITLE);
+  const sourceUrl = new URL(feedUrl);
+  sourceUrl.searchParams.set('include', 'authors');
+  sourceUrl.searchParams.set('limit', '12');
+  const source = (await recordedContentResponse(
+    sourceUrl.href,
+    'long-title',
+  ).json()) as RecordedPosts;
+  expect(source.posts[0].title).toBe(REFRESHED_POST_TITLE);
+  expect(source.posts).toHaveLength(12);
+  expect(((await recordedContentResponse(postUrl).json()) as RecordedPosts).posts).toEqual(
+    baseline.posts,
+  );
 });

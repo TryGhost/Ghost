@@ -51,6 +51,7 @@ function target(probe: CanvasProbe) {
     frameHandle: frame.frameHandle,
     representationHandle: frame.device?.representationHandle,
     expectedRevision: document.revision,
+    expectedRenderKey: frame.device?.renderKey,
   };
 }
 
@@ -63,6 +64,62 @@ async function fixture() {
 }
 
 describe('addressed read-only canvas probe', () => {
+  it('invalidates same-source data reads immediately and retires handles even when refresh fails', async () => {
+    const { probe, preview } = await fixture();
+    const before = target(probe);
+    const restore = probe.invalidateForRefresh();
+    expect(await tool(probe, 'inspect_frame').execute(before)).toMatchObject({
+      code: 'stale_render',
+    });
+    expect(preview.inspectPage).not.toHaveBeenCalled();
+    restore();
+    expect(target(probe).representationHandle).not.toBe(before.representationHandle);
+    expect(await tool(probe, 'inspect_frame').execute(before)).toMatchObject({
+      code: 'target_unavailable',
+    });
+    expect(await tool(probe, 'inspect_frame').execute(target(probe))).toMatchObject({
+      status: 'ok',
+    });
+  });
+
+  it('checks the data render key independently of unchanged source revision', async () => {
+    const { probe, preview } = await fixture();
+    const current = target(probe);
+    expect(
+      await tool(probe, 'inspect_frame').execute({
+        ...current,
+        expectedRenderKey: 'obsolete-data',
+      }),
+    ).toMatchObject({ code: 'render_conflict' });
+    expect(preview.inspectPage).not.toHaveBeenCalled();
+  });
+
+  it('does not turn a failed surface into a current surface after rejected refresh', async () => {
+    const { probe, connection } = await fixture();
+    connection.fail();
+    const restore = probe.invalidateForRefresh();
+    restore();
+    expect(probe.state().frames[0].device?.status).toBe('failed');
+  });
+
+  it('does not let older refresh recovery recertify a newer observed refresh', async () => {
+    const { probe } = await fixture();
+    const older = probe.invalidateForRefresh();
+    probe.invalidateForRefresh();
+    older();
+    expect(probe.state().frames[0].device?.status).toBe('stale');
+  });
+
+  it('rejects a read in flight when a data refresh is observed', async () => {
+    const { probe, preview } = await fixture();
+    vi.mocked(preview.inspectPage).mockImplementation(() => new Promise(() => {}));
+    const reading = tool(probe, 'inspect_frame').execute(target(probe));
+    await vi.waitFor(() => expect(preview.inspectPage).toHaveBeenCalled());
+    probe.invalidateForRefresh();
+    expect(await reading).toMatchObject({ code: 'target_unavailable' });
+    probe.dispose();
+  });
+
   it.each([
     { generation: 1, active: true, changed: false },
     { generation: 2, active: false, changed: true },

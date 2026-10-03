@@ -40,9 +40,10 @@ type Entry = {
   document: PreviewDocument;
   representationHandle: string;
   lifetime: AbortController;
-  status: 'pending' | 'current' | 'failed';
+  status: 'pending' | 'current' | 'failed' | 'stale';
   documentId?: string;
   documentInstanceId?: string;
+  refreshEpoch?: number;
 };
 type Frame = { descriptor: FrameDescriptor; frameHandle: string; entry?: Entry };
 const targetProperties = {
@@ -50,6 +51,7 @@ const targetProperties = {
   frameHandle: { type: 'string', maxLength: 256 },
   representationHandle: { type: 'string', maxLength: 256 },
   expectedRevision: { type: 'string', maxLength: 256 },
+  expectedRenderKey: { type: 'string', maxLength: 256 },
 };
 const targetKeys = Object.keys(targetProperties);
 
@@ -93,6 +95,7 @@ export class CanvasProbe {
   private readonly lifetime = new AbortController();
   private readonly frames = new Map<string, Frame>();
   private captureBusy = false;
+  private refreshEpoch = 0;
   private view: CanvasView = {
     camera: { x: 0, y: 0, scale: 1 },
     selectedFrameId: null,
@@ -128,7 +131,7 @@ export class CanvasProbe {
 
   state() {
     return {
-      protocolVersion: 'canvas-fixture-probe-2',
+      protocolVersion: 'canvas-fixture-probe-3',
       workspaceId: this.workspaceId,
       siteUrl: this.siteUrl,
       fixture: true,
@@ -152,6 +155,8 @@ export class CanvasProbe {
               representationHandle: frame.entry.representationHandle,
               status: frame.entry.status,
               revision: frame.entry.document.revision,
+              renderKey: frame.entry.document.renderKey ?? frame.entry.document.revision,
+              dataGeneration: frame.entry.document.dataGeneration ?? 0,
               documentId: frame.entry.documentId ?? null,
               documentInstanceId: frame.entry.documentInstanceId ?? null,
               viewport: { width: frame.descriptor.width, height: frame.descriptor.height },
@@ -213,6 +218,33 @@ export class CanvasProbe {
     for (const frame of this.frames.values()) {
       frame.entry?.lifetime.abort();
     }
+  }
+
+  /** Observed data refresh revokes reads before replacement starts. Known rejection
+   * may restore the unchanged displayed render, under fresh inspection handles. */
+  invalidateForRefresh() {
+    this.refreshEpoch += 1;
+    const epoch = this.refreshEpoch;
+    const entries: Array<{ frame: Frame; entry: Entry; status: Entry['status'] }> = [];
+    for (const frame of this.frames.values()) {
+      const entry = frame.entry;
+      if (entry) {
+        entries.push({ frame, entry, status: entry.status });
+        entry.refreshEpoch = epoch;
+        entry.status = 'stale';
+        entry.lifetime.abort();
+      }
+    }
+    return () => {
+      this.assertActive(this.lifetime.signal);
+      for (const { frame, entry, status } of entries) {
+        if (frame.entry === entry && entry.refreshEpoch === epoch && entry.status === 'stale') {
+          entry.lifetime = new AbortController();
+          entry.representationHandle = crypto.randomUUID();
+          entry.status = status;
+        }
+      }
+    };
   }
 
   tools(registrationSignal?: AbortSignal): ProbeTool[] {
@@ -306,7 +338,7 @@ export class CanvasProbe {
       ),
       definition(
         'inspect_frame',
-        'Read the explicitly addressed current fixed-device page and source-aware outline. Requires discovered workspace/frame/representation handles and revision; never uses current focus or navigates. Refuses local drafts, modified DOM and inline notices rather than certifying them as the rendered revision.',
+        'Read the explicitly addressed current fixed-device page and source-aware outline. Requires discovered workspace/frame/representation handles, source revision and render key; never uses current focus or navigates. Data refresh invalidates old reads even at unchanged source revision. Refuses local drafts, modified DOM and inline notices rather than certifying them as the rendered revision.',
         targetProperties,
         targetKeys,
         (args, signal) => this.inspect(args, signal),
@@ -361,6 +393,7 @@ export class CanvasProbe {
     const frameHandle = stringArgument(args, 'frameHandle');
     const representationHandle = stringArgument(args, 'representationHandle');
     const revision = stringArgument(args, 'expectedRevision');
+    const renderKey = stringArgument(args, 'expectedRenderKey');
     if (workspaceId !== this.workspaceId) {
       throw new ReadError('workspace_mismatch', 'Rediscover the current workspace before reading.');
     }
@@ -375,9 +408,19 @@ export class CanvasProbe {
         'The expected revision is not displayed by this device.',
       );
     }
+    if ((entry.document.renderKey ?? entry.document.revision) !== renderKey) {
+      throw new ReadError(
+        'render_conflict',
+        'The renderer/data inputs changed. Rediscover the current render.',
+      );
+    }
     if (entry.status !== 'current') {
       throw new ReadError(
-        entry.status === 'pending' ? 'pending' : 'surface_failed',
+        entry.status === 'pending'
+          ? 'pending'
+          : entry.status === 'stale'
+            ? 'stale_render'
+            : 'surface_failed',
         'The addressed device is not ready.',
       );
     }
@@ -413,6 +456,8 @@ export class CanvasProbe {
       representationHandle: entry.representationHandle,
       representation: 'device',
       revision: entry.document.revision,
+      renderKey: entry.document.renderKey ?? entry.document.revision,
+      dataGeneration: entry.document.dataGeneration ?? 0,
       documentId: layout.documentId,
       documentInstanceId: layout.documentInstanceId,
       provenance: { kind: 'rendered-document', localEditGeneration: layout.localEdits.generation },

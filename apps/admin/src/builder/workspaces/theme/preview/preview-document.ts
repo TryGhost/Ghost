@@ -15,6 +15,9 @@ export type PreviewDocument = {
   html: string;
   url: string;
   revision: string;
+  /** Optional coordinator lineage; content revision alone cannot identify a data refresh. */
+  renderKey?: string;
+  dataGeneration?: number;
   /** Source-proven literal marker → expected tag, owned by this rendered revision. */
   inlineTextTargets?: Record<string, string>;
   /** Parent-owned generated marker attribute; legacy previews use data-edit. */

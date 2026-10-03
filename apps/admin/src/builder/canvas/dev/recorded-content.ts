@@ -18,12 +18,35 @@ export type RecordedPosts = {
     };
   };
 };
+export type FixtureDataSnapshot = 'recorded' | 'long-title';
+export const REFRESHED_POST_TITLE =
+  'A newly updated article about building a publication, finding an audience and making room for ambitious creative work';
+const refreshedPostId = (JSON.parse(recordings[firstPageUrl].body) as RecordedPosts).posts[0].id;
 
 /** Finite recorded first-page dataset, not a live API or arbitrary query simulator. */
-export function recordedContentResponse(input: string): Response {
+export function recordedContentResponse(
+  input: string,
+  snapshot: FixtureDataSnapshot = 'recorded',
+): Response {
+  if (snapshot !== 'recorded' && snapshot !== 'long-title') {
+    throw new Error('Unknown recorded content snapshot.');
+  }
+  const recorded = (body: string, status: number) => {
+    if (snapshot === 'recorded') {
+      return response(body, status);
+    }
+    const data = JSON.parse(body) as Partial<RecordedPosts>;
+    if (Array.isArray(data.posts)) {
+      data.posts = data.posts.map((post) =>
+        post.id === refreshedPostId ? { ...post, title: REFRESHED_POST_TITLE } : post,
+      );
+      return response(JSON.stringify(data), status);
+    }
+    return response(body, status);
+  };
   const exact = recordings[input];
   if (exact) {
-    return response(exact.body, exact.status);
+    return recorded(exact.body, exact.status);
   }
   const url = new URL(input);
   const firstPage = new URL(firstPageUrl);
@@ -45,7 +68,7 @@ export function recordedContentResponse(input: string): Response {
   }
   // Source asks for authors on the same related-post query recorded by Casper.
   if (params.get('filter') === 'id:-null' && params.get('limit') === '4') {
-    return response(recordings[relatedUrl].body, recordings[relatedUrl].status);
+    return recorded(recordings[relatedUrl].body, recordings[relatedUrl].status);
   }
   const limit = Number(params.get('limit'));
   if (params.has('filter') || !Number.isSafeInteger(limit) || limit < 1 || limit > 25) {
@@ -57,7 +80,7 @@ export function recordedContentResponse(input: string): Response {
   pagination.limit = limit;
   pagination.pages = Math.ceil(pagination.total / limit);
   pagination.next = pagination.pages > 1 ? 2 : null;
-  return response(JSON.stringify(body), recordings[firstPageUrl].status);
+  return recorded(JSON.stringify(body), recordings[firstPageUrl].status);
 }
 
 function response(body: string, status: number) {

@@ -43,6 +43,7 @@ const createEditablePreview = async () => {
         frameHandle: frame.frameHandle,
         representationHandle: frame.device!.representationHandle,
         expectedRevision: frame.device!.revision,
+        expectedRenderKey: frame.device!.renderKey,
       };
     },
     dispose: () => {
@@ -262,6 +263,7 @@ it.each(['inspect', 'capture'] as const)(
           frameHandle: state.frames[0].frameHandle,
           representationHandle: device.representationHandle,
           expectedRevision: device.revision,
+          expectedRenderKey: device.renderKey,
         };
       };
       const tools = probe.tools();
@@ -360,6 +362,7 @@ it('inspects and captures a nonfocused opaque device at its real resolution with
       frameHandle: mobile.frameHandle,
       representationHandle: mobile.device!.representationHandle,
       expectedRevision: 'fixture-1',
+      expectedRenderKey: mobile.device!.renderKey,
     };
     probe.setView(
       {

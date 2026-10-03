@@ -107,7 +107,9 @@ it(
         for (const selection of ['iframe', 'header', 'empty']) {
           admission = undefined;
           await page.getByRole('button', { name: 'Fit all', exact: true }).click();
-          await frame('Home · Mobile').getByRole('link', { name: 'Ghost', exact: true }).dblClick();
+          const literal = frame('Home · Mobile').getByRole('link', { name: 'Ghost', exact: true });
+          await literal.hover();
+          await literal.dblClick();
           await expect.poll(() => Boolean(admission)).toBe(true);
           expect((await home.measureLayout(signal)).localEdits.active).toBe(true);
           if (selection === 'iframe') {
@@ -126,6 +128,19 @@ it(
             .toBe(false);
           postMessage(admission);
           expect((await home.measureLayout(signal)).localEdits.active).toBe(false);
+          // The runtime's private-port read can beat its parent cancellation
+          // receipt. Also prove the obsolete approval cannot retain ownership
+          // before fitting the next target against the recovered board geometry.
+          await expect
+            .poll(
+              () =>
+                document.querySelector('button[aria-label="Cancel text draft"]') ??
+                [...document.querySelectorAll('button')].find(
+                  (button) => button.textContent === 'Cancel text draft',
+                ) ??
+                null,
+            )
+            .toBeNull();
           if (selection === 'iframe') {
             expect(
               document.querySelector('[data-source-selection]')?.parentElement?.textContent,
@@ -263,9 +278,11 @@ it(
       const editor = frame('Home · Mobile').getByRole('textbox', { name: /^Edit Ghost/ });
       await editor.fill('Retained source draft');
       await expect.poll(() => selectHeld).toBe(true);
-      expect(document.querySelector('[data-source-selection] pre')?.textContent).toContain(
+      await page.getByRole('button', { name: 'View template source', exact: true }).click();
+      expect(document.querySelector('[data-source-context] pre')?.textContent).toContain(
         'https://ghost.org/',
       );
+      await page.getByRole('button', { name: 'View template source', exact: true }).click();
       const bringToView = async (id: string) => {
         const box = (
           await devices

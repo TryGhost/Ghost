@@ -47,6 +47,10 @@ Canvas selection/admission messages carry the originating trusted input's
 cross-document performance time. A newer selection fences older requests before
 ownership reservation and ignores delayed selection receipts; fresh keyboard
 activation remains eligible. An obsolete approval cannot strand ownership.
+Selection enables a compact template-source control in the header. Source context
+opens only on request, keeping board geometry and native hit targets stable
+between the clicks of a double-click. The source popover closes when selection
+changes or an accepted refresh replaces the document.
 
 Each iframe load has its own navigation check. Consecutive loads cannot reuse the
 accepted bridge receipt to conceal unbridged navigation. Replacement, restoration
@@ -97,7 +101,8 @@ Composition height uses the authenticated layout bridge, limited to eight
 observations, 1,500ms and 16,000 CSS pixels. Actual composition viewport dimensions
 can differ from configured device dimensions: viewport-height CSS, fixed/sticky
 behavior and lazy loading require separate device checks. Height caps, instability
-and failures have compact actionable notices. Opt-in authenticated-port notifications observe later image/font loads,
+and failures flag the affected frame's fixed-viewport control without resizing the
+canvas. Screen-reader status describes the fallback. Opt-in authenticated-port notifications observe later image/font loads,
 DOM/style changes and document/body resizing, including arbitrary theme attributes
 that control CSS selectors. Ordered samples fence obsolete notifications; identical
 attribute writes, identical DOM replacements and the runtime's own mode/tab-stop
@@ -131,6 +136,26 @@ One manual draft can be retained across the board, with Resume/Cancel. Shared
 controller ownership, source-replacement preservation and conflict recovery remain
 future slices.
 
+Refresh content switches one recorded Post title to a controlled longer title in
+both Home and Post. Restore content returns to the original recording. The worker
+renders both required pages from one snapshot before adopting the refresh. Source
+revision stays unchanged, while a monotonic data generation and render key advance
+even when returning to the original recording. Source edits retain the current
+data snapshot and require its generation. A request for the already current
+snapshot returns cached output without replacing documents.
+
+Refresh replaces all eight documents while retaining the actual iframe elements,
+surface objects, board selection and camera. It clears source/occurrence selection
+and invalidates addressed reads immediately, before the worker returns. Text
+admission requires its current surface's readiness and completion of all eight
+deliveries. Another refresh also waits until all eight deliveries either
+acknowledge readiness or report failure; healthy
+surfaces remain editable when another delivery fails. A retained text draft disables refresh rather than discarding
+it; replacement recovery is still required in the shared controller. A known
+worker rejection preserves the displayed documents and restores reads under fresh
+handles. Transport loss leaves reads stale and requires reloading the local
+fixture because adoption is uncertain.
+
 The recorded dataset has 25 first-page posts out of 34 and one member-only Post;
 its paywall remains part of the evidence. Casper retains recorded responses.
 Source's bounded first-page requests slice the dataset and recompute pagination;
@@ -144,8 +169,14 @@ imagery, jQuery and Ghost card resources retain their existing URLs.
 Diagnostics occupy no canvas UI panel. Bounded composition summaries, fixture
 revision and site-tool status are returned in `CanvasProbe.state().diagnostics`
 and emitted as structured `[Ghost canvas]` console debug records. Visible UI retains
-only actionable failures, source selection and draft recovery. The read-only source
-context clears after an accepted replacement.
+only actionable failures and draft recovery. The read-only source context opens
+from the header control on request; selection does not resize the board. Escape
+returns focus to that control; dismissal by another selection preserves the new
+target's focus. The context closes after selection changes or an accepted replacement.
+Refresh diagnostics separately record worker acceptance latency and readiness of
+the four fixed devices, four live compositions and all eight documents. Failed
+deliveries remain separate from readiness and permit a subsequent refresh retry. These are
+delivery observations rather than screenshot timings or performance benchmarks.
 
 The top-level harness feature-detects `document.modelContext.registerTool` and
 registers `ghost_canvas_probe_get_editor_state`, `ghost_canvas_probe_inspect_frame`
@@ -153,8 +184,10 @@ and `ghost_canvas_probe_capture_frame`. Registrations belong to the harness,
 not individual previews. Camera and presentation changes do not register again;
 unsupported APIs leave manual editing available.
 
-Protocol `canvas-fixture-probe-2` addresses explicit immutable fixed-device
-workspace/frame/representation handles and expected revision. It never uses
+Protocol `canvas-fixture-probe-3` addresses explicit immutable fixed-device
+workspace/frame/representation handles, expected source revision and expected
+render key. Same-source data refresh retires old evidence; the source revision
+alone cannot certify a current data snapshot. It never uses
 current selection to retarget a read. Current document/runtime instance and
 local-edit generations are checked before/after reads. Local drafts, modified DOM
 and transient edit notices refuse certified reads without changing user view or
