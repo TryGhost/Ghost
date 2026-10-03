@@ -32,6 +32,7 @@ const frameFakes = new WeakMap<
   Array<{ matcher: (url: URL) => boolean; handler: FrameRouteHandler }>
 >();
 const guardedPages = new WeakSet<BrowserPage>();
+const imageRequests = new WeakMap<BrowserPage, string[]>();
 
 const isExternal = (url: URL) => url.hostname !== 'localhost' && url.hostname !== '127.0.0.1';
 
@@ -64,8 +65,32 @@ const fakeFrameOrigin: BrowserCommand<[origin: string, html: string]> = async (
 const resetFakeFrameOrigins: BrowserCommand<[]> = async ({ page }) => {
   const fakes = frameFakes.get(page) ?? [];
   frameFakes.delete(page);
+  imageRequests.delete(page);
   await Promise.all(fakes.map(({ matcher, handler }) => page.unroute(matcher, handler)));
 };
+
+// Opaque preview resources bypass MSW, just like iframe navigations.
+const fakeFrameImage: BrowserCommand<[url: string, png: string, cors: boolean]> = async (
+  { page },
+  url,
+  png,
+  cors,
+) => {
+  const address = new URL(url).href;
+  const matcher = (request: URL) => request.href === address;
+  const handler: FrameRouteHandler = (route) => {
+    imageRequests.set(page, [...(imageRequests.get(page) ?? []), route.request().url()]);
+    return route.fulfill({
+      contentType: 'image/png',
+      body: Buffer.from(png, 'base64'),
+      headers: cors ? { 'access-control-allow-origin': '*' } : {},
+    });
+  };
+  await page.route(matcher, handler);
+  frameFakes.set(page, [...(frameFakes.get(page) ?? []), { matcher, handler }]);
+};
+const getFrameImageRequests: BrowserCommand<[]> = ({ page }) =>
+  Promise.resolve(imageRequests.get(page) ?? []);
 
 export default defineConfig({
   plugins: [tailwindcss() as PluginOption, react()],
@@ -115,7 +140,13 @@ export default defineConfig({
       enabled: true,
       headless: true,
       provider: playwright(),
-      commands: { fakeFrameOrigin, guardFrameNavigations, resetFakeFrameOrigins },
+      commands: {
+        fakeFrameOrigin,
+        fakeFrameImage,
+        getFrameImageRequests,
+        guardFrameNavigations,
+        resetFakeFrameOrigins,
+      },
       instances: [{ browser: 'chromium' }],
       // Failure screenshots land in __screenshots__/ (gitignored).
       screenshotFailures: true,

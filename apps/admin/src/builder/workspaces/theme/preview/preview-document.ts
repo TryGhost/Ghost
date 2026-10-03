@@ -796,6 +796,7 @@ export function createPreviewDocument(
   nativeForms = false,
   artifactDocument = false,
   canvasNavigation = false,
+  captureLoadedImages = false,
 ): string {
   const parsed = new DOMParser().parseFromString(document.html, 'text/html');
   parsed.querySelectorAll('meta[http-equiv]').forEach((meta) => {
@@ -835,6 +836,7 @@ export function createPreviewDocument(
   script.dataset.builderNativeForms = nativeForms ? 'true' : 'false';
   script.dataset.builderArtifactDocument = artifactDocument ? 'true' : 'false';
   script.dataset.builderCanvasNavigation = canvasNavigation ? 'true' : 'false';
+  script.dataset.builderCaptureLoadedImages = captureLoadedImages ? 'true' : 'false';
   script.textContent = `;(${previewRuntimeBootstrap.toString()})();`.replace(
     /<\/script/gi,
     '<\\/script',
@@ -852,6 +854,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
   private readonly nativeForms: boolean;
   private readonly artifactDocument: boolean;
   private readonly canvasNavigation: boolean;
+  private readonly captureLoadedImages: boolean;
   private readonly canvasInputListeners = new Set<(input: PreviewCanvasInput) => void>();
   private readonly navigateListeners = new Set<(url: string) => void>();
   private readonly selectionListeners = new Set<
@@ -898,6 +901,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
       nativeForms = false,
       artifactDocument = false,
       canvasNavigation = false,
+      captureLoadedImages = false,
     }: {
       openWindow?: (url: string) => void;
       timeoutMs?: number;
@@ -906,6 +910,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
       nativeForms?: boolean;
       artifactDocument?: boolean;
       canvasNavigation?: boolean;
+      captureLoadedImages?: boolean;
     } = {},
   ) {
     this.iframe = iframe;
@@ -915,6 +920,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     this.nativeForms = nativeForms;
     this.artifactDocument = artifactDocument;
     this.canvasNavigation = canvasNavigation;
+    this.captureLoadedImages = captureLoadedImages;
     iframe.setAttribute('sandbox', sandbox);
     iframe.addEventListener('load', this.handleLoad);
     window.addEventListener('message', this.handleMessage);
@@ -976,6 +982,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
           this.nativeForms,
           this.artifactDocument,
           this.canvasNavigation,
+          this.captureLoadedImages,
         );
       } catch (error) {
         this.rejectPending(error instanceof Error ? error : new Error(String(error)), false);

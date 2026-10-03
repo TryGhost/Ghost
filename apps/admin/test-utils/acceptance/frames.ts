@@ -5,6 +5,8 @@ declare module 'vitest/browser' {
     fakeFrameOrigin: (origin: string, html: string) => Promise<void>;
     guardFrameNavigations: () => Promise<void>;
     resetFakeFrameOrigins: () => Promise<void>;
+    fakeFrameImage: (url: string, png: string, cors: boolean) => Promise<void>;
+    getFrameImageRequests: () => Promise<string[]>;
   }
 }
 
@@ -24,4 +26,12 @@ export function guardFrameNavigations(): Promise<void> {
 
 export function resetFakeFrameOrigins(): Promise<void> {
   return commands.resetFakeFrameOrigins();
+}
+
+/** Real image bytes, optionally readable under ordinary browser CORS. No network fallback. */
+export function fakeFrameImage(url: string, png: string, cors: boolean): Promise<void> {
+  return commands.fakeFrameImage(url, png, cors);
+}
+export function getFrameImageRequests(): Promise<string[]> {
+  return commands.getFrameImageRequests();
 }

@@ -101,7 +101,10 @@ function ExpandedPreview({
     setResult(null);
     setFailed(false);
     resultHandler.current({ status: 'pending' });
-    const surface = new IframePreviewDocumentSurface(element, { canvasNavigation: true });
+    const surface = new IframePreviewDocumentSurface(element, {
+      canvasNavigation: true,
+      captureLoadedImages: true,
+    });
     surface.onCanvasInput((input) => inputHandler.current(input));
     const started = performance.now();
     void surface
@@ -197,7 +200,10 @@ function Preview({
     setReady(null);
     setOverview(null);
     captureHandler.current({ status: 'pending' });
-    const surface = new IframePreviewDocumentSurface(iframe.current!, { canvasNavigation: true });
+    const surface = new IframePreviewDocumentSurface(iframe.current!, {
+      canvasNavigation: true,
+      captureLoadedImages: true,
+    });
     const connection = probe.attach(frame.id, surface, document);
     surface.onCanvasInput((input) => inputHandler.current(input));
     // Canvas visitor links must select instead of navigating; no Browse mode.
@@ -463,7 +469,7 @@ export function CanvasHarness({ fixtureId = 'casper' }: { fixtureId?: ThemeFixtu
         </Text>
         <Text size="sm" tone="secondary">
           Compare captures and separate expanded compositions · Open a frame for its retained fixed
-          device · Expanded height changes viewport-dependent layout. Captures omit external
+          device · Expanded height changes viewport-dependent layout. Captures omit unreadable
           imagery. Neither experiment establishes animation, sticky behavior, or loaded lazy
           content. Broader visual fidelity, inline editing, and native site tools remain pending.
         </Text>

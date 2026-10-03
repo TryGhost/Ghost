@@ -62,10 +62,44 @@ capture identity, and rejects changes in document, viewport, scroll, or extent.
 The provisional per-frame aggregate budget is eight 2,048px-high images, 32 million
 pixels, and 12 MiB of encoded image characters; existing per-image limits remain.
 Coverage is geometric, independently of fidelity warnings. Uncaptured content
-keeps its full document bounds and an explicit omission message. External images
+keeps its full document bounds and an explicit omission message. Unreadable external images
 are still replaced, captures reconstruct layout in inert documents, and neither
 animations, sticky/fixed behavior, nor below-fold lazy loading are established
 by a successful capture. The harness reports warnings and elapsed capture time.
+
+The harness opts into `captureLoadedImages` on its preview surfaces. At snapshot
+time it freezes already loaded, browser-readable `img` pixels into bounded PNG
+bitmaps without fetching or changing the live image. This includes draft/data
+images, decoded blobs even after URL revocation, and remote images whose original
+load already permitted pixel reads through CORS. It freezes the chosen picture
+source and reports that animation is represented at one instant. The clone is
+built in a document without a window so copying the DOM cannot refetch images.
+Raster dimensions retain the image's aspect ratio and enough resolution for its
+untransformed displayed CSS size, including density-corrected responsive sources.
+An inert SVG wrapper retains the original intrinsic dimensions when the bitmap
+needs more raster pixels; empty SVG omissions preserve those dimensions too.
+CSS sizing inputs stay unchanged, including flex allocation, borders, padding,
+and transforms. Transform rendering itself remains part of broader fidelity work.
+Completed failures with unknown dimensions keep the browser's missing-image/alt
+layout, including distinct missing, empty, and failed responsive-source behavior.
+Pending lazy images retain blank intrinsic dimensions. No original source is retried.
+Other previews leave this option disabled.
+
+The provisional per-snapshot limits are 16 attempts, 4,096px per image dimension,
+four million pixels per image and sixteen million attempted pixels in total,
+1 MiB of encoded image characters per image and 2 MiB in total, including any SVG
+wrapper and additionally bounded
+by remaining space in the existing 4 MiB snapshot-document limit. Over-budget or
+unloaded images receive explicit omission warnings. Below-fold lazy imagery stays
+unloaded; snapshotting does not scroll or prefetch to manufacture coverage.
+Warnings describe the snapshot's image state, not proof of every requested region.
+
+Existing draft asset resolution preserves real `img` and CSS-background pixels.
+Remote images loaded without readable pixels, external CSS backgrounds and SVG
+images still use the existing omission path. There is no image proxy, credentialed
+fetch, CORS bypass, or sandbox relaxation. Real browser pixel tests prove the
+supported classes and unchanged viewports; they do not establish fidelity for
+the stock themes' inaccessible publication covers or all animated/lazy content.
 
 The development harness also feature-detects top-document
 `document.modelContext.registerTool` and registers three read-only Stage A probes:
@@ -118,6 +152,7 @@ From `apps/admin`:
 pnpm exec vitest run src/builder/canvas --maxWorkers=1
 pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/canvas/dev/webmcp-probe.acceptance.test.tsx --maxWorkers=1
 pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/canvas/dev/fixture.acceptance.test.tsx --maxWorkers=1
+pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/workspaces/theme/preview/preview-images.acceptance.test.tsx --maxWorkers=1
 pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/canvas/measure-expanded-composition.acceptance.test.tsx --maxWorkers=1
 pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/canvas/canvas-board.component.test.tsx src/builder/workspaces/theme/preview/preview-canvas-input.acceptance.test.tsx src/builder/workspaces/theme/preview/preview-layout.acceptance.test.tsx src/builder/workspaces/theme/preview/screenshot.acceptance.test.tsx --maxWorkers=1
 pnpm typecheck

@@ -7,6 +7,12 @@ export function previewRuntimeBootstrap(): void {
     attribute: 1_024,
     style: 512,
     screenshotDocument: 4 * 1024 * 1024,
+    screenshotImages: 16,
+    screenshotImageDimension: 4_096,
+    screenshotImagePixels: 4 * 1024 * 1024,
+    screenshotTotalImagePixels: 16 * 1024 * 1024,
+    screenshotImageCharacters: 1024 * 1024,
+    screenshotTotalImageCharacters: 2 * 1024 * 1024,
   };
   const runtimeScript = document.currentScript as HTMLScriptElement | null;
   const channel = runtimeScript?.dataset.builderChannel;
@@ -17,6 +23,7 @@ export function previewRuntimeBootstrap(): void {
   const nativeForms = runtimeScript?.dataset.builderNativeForms === 'true';
   const artifactDocument = runtimeScript?.dataset.builderArtifactDocument === 'true';
   const canvasNavigation = runtimeScript?.dataset.builderCanvasNavigation === 'true';
+  const captureLoadedImages = runtimeScript?.dataset.builderCaptureLoadedImages === 'true';
   const artifactMarkers = new WeakMap<Element, string>();
   const artifactElementFingerprints = new WeakMap<Element, string>();
   const artifactElementIdentities = new WeakMap<
@@ -350,13 +357,162 @@ export function previewRuntimeBootstrap(): void {
     };
   };
   const screenshotSnapshot = () => {
-    const clone = document.documentElement.cloneNode(true) as HTMLElement;
+    // Cloning into the active document can immediately refetch img sources,
+    // even before insertion. Keep bitmap snapshots in a document with no window.
+    const clone = (
+      captureLoadedImages
+        ? document.implementation.createHTMLDocument('').importNode(document.documentElement, true)
+        : document.documentElement.cloneNode(true)
+    ) as HTMLElement;
     const originals = [
       document.documentElement,
       ...Array.from(document.documentElement.querySelectorAll('*')),
     ];
     const copies = [clone, ...Array.from(clone.querySelectorAll('*'))];
     let unavailableCanvases = 0;
+    let frozenImages = 0;
+    let omittedImages = 0;
+    let limitedImages = 0;
+    let attemptedImages = 0;
+    let imagePixels = 0;
+    let imageCharacters = 0;
+    const imageBudget = Math.max(
+      0,
+      Math.min(
+        limits.screenshotTotalImageCharacters,
+        limits.screenshotDocument - clone.outerHTML.length - 1024,
+      ),
+    );
+    const freezeSource = (image: HTMLImageElement) => {
+      image.removeAttribute('srcset');
+      // A picture source otherwise overrides the rasterized img src on reconstruction.
+      if (image.parentElement?.tagName === 'PICTURE') {
+        image.parentElement
+          .querySelectorAll('source')
+          .forEach((source) => source.removeAttribute('srcset'));
+      }
+    };
+    const intrinsicImage = (original: HTMLImageElement, pixels = '', width = 0, height = 0) => {
+      // Preserve intrinsic CSS dimensions without changing flex/grid sizing inputs.
+      // A density-corrected PNG may need more raster pixels than naturalWidth.
+      const image = pixels
+        ? `<image width="${width}" height="${height}" preserveAspectRatio="none" href="${pixels}"/>`
+        : '';
+      return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${original.naturalWidth}" height="${original.naturalHeight}" viewBox="0 0 ${width || original.naturalWidth || 1} ${height || original.naturalHeight || 1}" preserveAspectRatio="none">${image}</svg>`,
+      )}`;
+    };
+    const omitImage = (original: HTMLImageElement, copy: HTMLImageElement) => {
+      freezeSource(copy);
+      if (!original.complete || (original.naturalWidth && original.naturalHeight)) {
+        copy.src = intrinsicImage(original);
+      } else {
+        // Keep missing/empty own src distinct from failed srcset/picture sources.
+        // html2canvas normalizes a selected srcset into src, adding a broken icon.
+        // An empty source keeps a selected failure's native zero-height/alt box.
+        if (original.getAttribute('src')?.trim()) {
+          copy.src = 'data:image/png;base64,AA==';
+        } else if (original.currentSrc) {
+          copy.setAttribute('src', '');
+        } else if (original.getAttribute('srcset')?.trim()) {
+          copy.removeAttribute('src');
+        }
+      }
+      copy.style.backgroundColor = '#f3f4f6';
+      omittedImages += 1;
+    };
+    const freezeImage = (original: HTMLImageElement, copy: HTMLImageElement) => {
+      if (!original.complete || !original.naturalWidth || !original.naturalHeight) {
+        omitImage(original, copy);
+        return;
+      }
+      const style = getComputedStyle(original);
+      const contentSize = (dimension: 'width' | 'height') => {
+        const edges = dimension === 'width' ? ['Left', 'Right'] : ['Top', 'Bottom'];
+        const paddingAndBorder =
+          style.boxSizing === 'border-box'
+            ? edges.reduce(
+                (total, edge) =>
+                  total +
+                  (parseFloat(style.getPropertyValue(`padding-${edge.toLowerCase()}`)) || 0) +
+                  (parseFloat(style.getPropertyValue(`border-${edge.toLowerCase()}-width`)) || 0),
+                0,
+              )
+            : 0;
+        return Math.max(0, (parseFloat(style[dimension]) || 0) - paddingAndBorder);
+      };
+      // naturalWidth is density-corrected for srcset. Draw the decoded source
+      // directly at sufficient CSS-pixel resolution, retaining its aspect ratio.
+      const scale = Math.max(
+        1,
+        contentSize('width') / original.naturalWidth,
+        contentSize('height') / original.naturalHeight,
+      );
+      const width = Math.ceil(original.naturalWidth * scale);
+      const height = Math.ceil(original.naturalHeight * scale);
+      const pixels = width * height;
+      if (
+        attemptedImages >= limits.screenshotImages ||
+        width > limits.screenshotImageDimension ||
+        height > limits.screenshotImageDimension ||
+        pixels > limits.screenshotImagePixels ||
+        imagePixels + pixels > limits.screenshotTotalImagePixels
+      ) {
+        limitedImages += 1;
+        omitImage(original, copy);
+        return;
+      }
+      attemptedImages += 1;
+      imagePixels += pixels;
+      const bitmap = document.createElement('canvas');
+      bitmap.width = width;
+      bitmap.height = height;
+      try {
+        const context = bitmap.getContext('2d');
+        if (!context) {
+          throw new Error('Image bitmap unavailable.');
+        }
+        // Read only already decoded pixels. Browser origin checks still apply.
+        context.drawImage(original, 0, 0, width, height);
+        const png = bitmap.toDataURL('image/png');
+        if (
+          png.length > limits.screenshotImageCharacters ||
+          imageCharacters + png.length > imageBudget
+        ) {
+          limitedImages += 1;
+          omitImage(original, copy);
+          return;
+        }
+        if (!/^data:image\/png;base64,iVBORw0KGgo[A-Za-z0-9+/]*={0,2}$/.test(png)) {
+          throw new Error('The image encoder returned an invalid PNG bitmap.');
+        }
+        const dataUrl =
+          width === original.naturalWidth && height === original.naturalHeight
+            ? png
+            : intrinsicImage(original, png, width, height);
+        if (
+          dataUrl.length > limits.screenshotImageCharacters ||
+          imageCharacters + dataUrl.length > imageBudget
+        ) {
+          limitedImages += 1;
+          omitImage(original, copy);
+          return;
+        }
+        imageCharacters += dataUrl.length;
+        freezeSource(copy);
+        copy.src = dataUrl;
+        frozenImages += 1;
+      } catch {
+        // Preserve HTTP sources for the existing external-image placeholder/warning.
+        // Blob/data images must not silently disappear in the parent-origin reconstruction.
+        if (!/^https?:/i.test(original.currentSrc || original.src)) {
+          omitImage(original, copy);
+        }
+      } finally {
+        bitmap.width = 0;
+        bitmap.height = 0;
+      }
+    };
     originals.forEach((original, index) => {
       const copy = copies[index];
       if (!copy) {
@@ -386,6 +542,12 @@ export function previewRuntimeBootstrap(): void {
           placeholder.style.cssText = `width:${bounds.width}px;height:${bounds.height}px;display:flex;align-items:center;justify-content:center;background:#f3f4f6;color:#4b5563;font:14px sans-serif`;
           copy.replaceWith(placeholder);
         }
+      } else if (
+        captureLoadedImages &&
+        original instanceof HTMLImageElement &&
+        copy instanceof HTMLImageElement
+      ) {
+        freezeImage(original, copy);
       } else if (original instanceof HTMLInputElement && copy instanceof HTMLInputElement) {
         if (original.type !== 'file') {
           copy.value = original.value;
@@ -416,11 +578,28 @@ export function previewRuntimeBootstrap(): void {
         scrollX: window.scrollX,
         scrollY: window.scrollY,
       },
-      warnings: unavailableCanvases
-        ? [
-            `${unavailableCanvases} canvas${unavailableCanvases === 1 ? ' was' : 'es were'} replaced in the screenshot because its pixels could not be read.`,
-          ]
-        : [],
+      warnings: [
+        ...(unavailableCanvases
+          ? [
+              `${unavailableCanvases} canvas${unavailableCanvases === 1 ? ' was' : 'es were'} replaced in the screenshot because its pixels could not be read.`,
+            ]
+          : []),
+        ...(frozenImages
+          ? [
+              `${frozenImages} loaded image${frozenImages === 1 ? ' was' : 's were'} frozen as a readable bitmap; animation is captured at one instant.`,
+            ]
+          : []),
+        ...(omittedImages
+          ? [
+              `${omittedImages} image${omittedImages === 1 ? ' was' : 's were'} omitted because loaded pixels were unavailable or exceeded the bitmap budget.`,
+            ]
+          : []),
+        ...(limitedImages
+          ? [
+              `${limitedImages} image${limitedImages === 1 ? '' : 's'} exceeded the snapshot bitmap limits.`,
+            ]
+          : []),
+      ],
     };
   };
   const artifactMarker = (element: Element) => {
