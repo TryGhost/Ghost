@@ -11,7 +11,7 @@ import type { ScreenshotRequest } from '@/builder/workspaces/theme/preview/scree
 
 export type CanvasProbeSurface = Pick<
   IframePreviewDocumentSurface,
-  'measureLayout' | 'inspectPage' | 'screenshot'
+  'measureLayout' | 'inspectPage' | 'screenshot' | 'inspectElement'
 >;
 type FrameDescriptor = { id: string; label: string; group: string; width: number; height: number };
 export type ReadResult =
@@ -36,7 +36,9 @@ class ReadError extends Error {
     this.code = code;
   }
 }
+type Representation = 'device' | 'expanded';
 type Entry = {
+  representation: Representation;
   surface: CanvasProbeSurface;
   document: PreviewDocument;
   representationHandle: string;
@@ -46,7 +48,11 @@ type Entry = {
   documentInstanceId?: string;
   refreshEpoch?: number;
 };
-type Frame = { descriptor: FrameDescriptor; frameHandle: string; entry?: Entry };
+type Frame = {
+  descriptor: FrameDescriptor;
+  frameHandle: string;
+  entries: Partial<Record<Representation, Entry>>;
+};
 const targetProperties = {
   workspaceId: { type: 'string', maxLength: 256 },
   frameHandle: { type: 'string', maxLength: 256 },
@@ -125,6 +131,7 @@ export class CanvasProbe {
       this.frames.set(descriptor.id, {
         descriptor: { ...descriptor },
         frameHandle: crypto.randomUUID(),
+        entries: {},
       });
     }
   }
@@ -142,13 +149,64 @@ export class CanvasProbe {
     this.editor = editor;
   }
 
+  target(frameId: string, representation: Representation) {
+    const frame = this.frames.get(frameId);
+    const entry = frame?.entries[representation];
+    return frame && entry
+      ? {
+          workspaceId: this.workspaceId,
+          frameHandle: frame.frameHandle,
+          representationHandle: entry.representationHandle,
+          expectedRevision: entry.document.revision,
+          expectedRenderKey: entry.document.renderKey ?? entry.document.revision,
+          documentId: entry.documentId,
+          documentInstanceId: entry.documentInstanceId,
+        }
+      : null;
+  }
+
   state() {
+    const editor = this.editor?.state() ?? null;
+    const selected = editor?.selection as
+      | {
+          frameId: string;
+          representation: Representation;
+          revision: string;
+          renderKey: string;
+          documentId: string;
+          documentInstanceId: string;
+        }
+      | null
+      | undefined;
+    if (editor && selected) {
+      const target = this.target(selected.frameId, selected.representation);
+      editor.selection = {
+        ...selected,
+        target:
+          target &&
+          target.expectedRevision === selected.revision &&
+          target.expectedRenderKey === selected.renderKey &&
+          target.documentId === selected.documentId &&
+          target.documentInstanceId === selected.documentInstanceId
+            ? target
+            : null,
+      };
+    }
+    const description = (entry: Entry) => ({
+      representationHandle: entry.representationHandle,
+      status: entry.status,
+      revision: entry.document.revision,
+      renderKey: entry.document.renderKey ?? entry.document.revision,
+      dataGeneration: entry.document.dataGeneration ?? 0,
+      documentId: entry.documentId ?? null,
+      documentInstanceId: entry.documentInstanceId ?? null,
+    });
     return {
       protocolVersion: this.fixture ? 'canvas-fixture-probe-3' : 'canvas-editor-probe-1',
       workspaceId: this.workspaceId,
       siteUrl: this.siteUrl,
       fixture: this.fixture,
-      editor: this.editor?.state() ?? null,
+      editor,
       diagnostics: structuredClone(this.diagnostics),
       capabilities: {
         readOnly: !this.editor,
@@ -156,7 +214,9 @@ export class CanvasProbe {
         themeReads: !!this.editor,
         history: this.editor?.historyAvailable ?? false,
         publication: false,
-        representations: ['device'],
+        representations: ['device', 'expanded'],
+        elementInspection: true,
+        captureRepresentations: ['device'],
         captureFormat: 'png-data-url-experiment',
         nativeImageConsumption: 'unverified',
         revisionProvenance: 'rendered-document-only',
@@ -166,37 +226,38 @@ export class CanvasProbe {
       frames: [...this.frames.values()].map((frame) => ({
         ...frame.descriptor,
         frameHandle: frame.frameHandle,
-        device: frame.entry
+        device: frame.entries.device
           ? {
-              representationHandle: frame.entry.representationHandle,
-              status: frame.entry.status,
-              revision: frame.entry.document.revision,
-              renderKey: frame.entry.document.renderKey ?? frame.entry.document.revision,
-              dataGeneration: frame.entry.document.dataGeneration ?? 0,
-              documentId: frame.entry.documentId ?? null,
-              documentInstanceId: frame.entry.documentInstanceId ?? null,
+              ...description(frame.entries.device),
               viewport: { width: frame.descriptor.width, height: frame.descriptor.height },
             }
           : null,
+        expanded: frame.entries.expanded ? description(frame.entries.expanded) : null,
       })),
     };
   }
 
-  attach(frameId: string, surface: CanvasProbeSurface, document: PreviewDocument) {
+  attach(
+    frameId: string,
+    surface: CanvasProbeSurface,
+    document: PreviewDocument,
+    representation: Representation = 'device',
+  ) {
     this.assertActive(this.lifetime.signal);
     const frame = this.frames.get(frameId);
     if (!frame) {
       throw new Error('Unknown fixture frame.');
     }
-    frame.entry?.lifetime.abort();
+    frame.entries[representation]?.lifetime.abort();
     const entry: Entry = {
+      representation,
       surface,
       document,
       representationHandle: crypto.randomUUID(),
       lifetime: new AbortController(),
       status: 'pending',
     };
-    frame.entry = entry;
+    frame.entries[representation] = entry;
     return {
       ready: async () => {
         const signal = AbortSignal.any([this.lifetime.signal, entry.lifetime.signal]);
@@ -204,7 +265,7 @@ export class CanvasProbe {
         this.assertEntry(frame, entry, signal);
         if (
           layout.viewport.width !== frame.descriptor.width ||
-          layout.viewport.height !== frame.descriptor.height
+          (entry.representation === 'device' && layout.viewport.height !== frame.descriptor.height)
         ) {
           throw new ReadError(
             'stale_document',
@@ -216,14 +277,14 @@ export class CanvasProbe {
         entry.status = 'current';
       },
       fail: () => {
-        if (frame.entry === entry) {
+        if (frame.entries[entry.representation] === entry) {
           entry.status = 'failed';
         }
       },
       dispose: () => {
         entry.lifetime.abort();
-        if (frame.entry === entry) {
-          frame.entry = undefined;
+        if (frame.entries[entry.representation] === entry) {
+          delete frame.entries[entry.representation];
         }
       },
     };
@@ -233,7 +294,9 @@ export class CanvasProbe {
     this.lifetime.abort();
     this.editor?.dispose();
     for (const frame of this.frames.values()) {
-      frame.entry?.lifetime.abort();
+      for (const entry of Object.values(frame.entries)) {
+        entry.lifetime.abort();
+      }
     }
   }
 
@@ -244,8 +307,7 @@ export class CanvasProbe {
     const epoch = this.refreshEpoch;
     const entries: Array<{ frame: Frame; entry: Entry; status: Entry['status'] }> = [];
     for (const frame of this.frames.values()) {
-      const entry = frame.entry;
-      if (entry) {
+      for (const entry of Object.values(frame.entries)) {
         entries.push({ frame, entry, status: entry.status });
         entry.refreshEpoch = epoch;
         entry.status = 'stale';
@@ -255,7 +317,11 @@ export class CanvasProbe {
     return () => {
       this.assertActive(this.lifetime.signal);
       for (const { frame, entry, status } of entries) {
-        if (frame.entry === entry && entry.refreshEpoch === epoch && entry.status === 'stale') {
+        if (
+          frame.entries[entry.representation] === entry &&
+          entry.refreshEpoch === epoch &&
+          entry.status === 'stale'
+        ) {
           entry.lifetime = new AbortController();
           entry.representationHandle = crypto.randomUUID();
           entry.status = status;
@@ -319,7 +385,7 @@ export class CanvasProbe {
                   this.failure(
                     new ReadError(
                       'target_unavailable',
-                      'The addressed device surface has been replaced.',
+                      'The addressed live surface has been replaced.',
                     ),
                   ),
                 );
@@ -348,17 +414,29 @@ export class CanvasProbe {
     return [
       definition(
         'get_editor_state',
-        'Read the theme canvas workspace, source revision, selected context, board view and fixed-device targets. Device readiness describes the backing render; each inspection/capture checks local edits. Discover actual capabilities here before theme reads/writes. Does not move the canvas or change selection.',
+        'Read the theme canvas workspace, source revision, selected context with its originating representation target, board view and live targets. Device readiness describes the backing render; each inspection/capture checks local edits. Discover actual capabilities here before theme reads/writes. Does not move the canvas or change selection.',
         {},
         [],
         () => Promise.resolve(this.state()),
       ),
       definition(
         'inspect_frame',
-        'Read the explicitly addressed current fixed-device page and source-aware outline. Requires discovered workspace/frame/representation handles, source revision and render key; never uses current focus or navigates. Data refresh invalidates old reads even at unchanged source revision. Refuses local drafts, modified DOM and inline notices rather than certifying them as the rendered revision.',
+        'Read the explicitly addressed current live page and source-aware outline. Requires discovered workspace/frame/representation handles, source revision and render key; never uses current focus or navigates. Data refresh invalidates old reads even at unchanged source revision. Refuses local drafts, modified DOM and inline notices rather than certifying them as the rendered revision.',
         targetProperties,
         targetKeys,
         (args, signal) => this.inspect(args, signal),
+      ),
+      definition(
+        'inspect_element',
+        'Inspect an explicitly addressed live occurrence in its originating representation/document. Copy the selected context target from state and its occurrence; never transfer occurrences between full-page/device documents or responsive counterparts. Does not change selection, focus, scroll or camera. Rejects stale document identities and local edits.',
+        {
+          ...targetProperties,
+          documentId: { type: 'string', maxLength: 256 },
+          documentInstanceId: { type: 'string', maxLength: 256 },
+          occurrence: { type: 'string', maxLength: 256 },
+        },
+        [...targetKeys, 'documentId', 'documentInstanceId', 'occurrence'],
+        (args, signal) => this.inspectElement(args, signal),
       ),
       definition(
         'capture_frame',
@@ -400,8 +478,8 @@ export class CanvasProbe {
 
   private assertEntry(frame: Frame, entry: Entry, signal: AbortSignal) {
     this.assertActive(this.lifetime.signal);
-    if (frame.entry !== entry || entry.lifetime.signal.aborted) {
-      throw new ReadError('target_unavailable', 'The addressed device surface has been replaced.');
+    if (frame.entries[entry.representation] !== entry || entry.lifetime.signal.aborted) {
+      throw new ReadError('target_unavailable', 'The addressed live surface has been replaced.');
     }
     this.assertActive(signal);
   }
@@ -416,14 +494,18 @@ export class CanvasProbe {
       throw new ReadError('workspace_mismatch', 'Rediscover the current workspace before reading.');
     }
     const frame = [...this.frames.values()].find((item) => item.frameHandle === frameHandle);
-    const entry = frame?.entry;
+    const entry =
+      frame &&
+      Object.values(frame.entries).find(
+        (item) => item.representationHandle === representationHandle,
+      );
     if (!frame || !entry || entry.representationHandle !== representationHandle) {
-      throw new ReadError('target_unavailable', 'Rediscover the current device representation.');
+      throw new ReadError('target_unavailable', 'Rediscover the current live representation.');
     }
     if (entry.document.revision !== revision) {
       throw new ReadError(
         'revision_conflict',
-        'The expected revision is not displayed by this device.',
+        'The expected revision is not displayed by this representation.',
       );
     }
     if ((entry.document.renderKey ?? entry.document.revision) !== renderKey) {
@@ -439,7 +521,7 @@ export class CanvasProbe {
           : entry.status === 'stale'
             ? 'stale_render'
             : 'surface_failed',
-        'The addressed device is not ready.',
+        'The addressed live representation is not ready.',
       );
     }
     return { frame, entry };
@@ -453,9 +535,9 @@ export class CanvasProbe {
       layout.documentId !== entry.documentId ||
       layout.documentInstanceId !== entry.documentInstanceId ||
       layout.viewport.width !== frame.descriptor.width ||
-      layout.viewport.height !== frame.descriptor.height
+      (entry.representation === 'device' && layout.viewport.height !== frame.descriptor.height)
     ) {
-      throw new ReadError('stale_document', 'The addressed device document or viewport changed.');
+      throw new ReadError('stale_document', 'The addressed live document or viewport changed.');
     }
     if (layout.localEdits.active || layout.localEdits.changed) {
       throw new ReadError(
@@ -472,7 +554,7 @@ export class CanvasProbe {
       frameId: frame.descriptor.id,
       frameHandle: frame.frameHandle,
       representationHandle: entry.representationHandle,
-      representation: 'device',
+      representation: entry.representation,
       revision: entry.document.revision,
       renderKey: entry.document.renderKey ?? entry.document.revision,
       dataGeneration: entry.document.dataGeneration ?? 0,
@@ -502,8 +584,32 @@ export class CanvasProbe {
     return { ...this.evidence(frame, entry, after), page };
   }
 
+  private async inspectElement(args: Record<string, unknown>, signal: AbortSignal) {
+    const { frame, entry } = this.resolve(args);
+    const documentId = stringArgument(args, 'documentId');
+    const documentInstanceId = stringArgument(args, 'documentInstanceId');
+    const occurrence = stringArgument(args, 'occurrence');
+    const currentSignal = AbortSignal.any([signal, entry.lifetime.signal]);
+    const before = await this.layout(frame, entry, currentSignal);
+    if (before.documentId !== documentId || before.documentInstanceId !== documentInstanceId) {
+      throw new ReadError('stale_document', 'Use the occurrence in its originating live document.');
+    }
+    const element = await entry.surface.inspectElement({ occurrence }, currentSignal);
+    const after = await this.layout(frame, entry, currentSignal);
+    if (!sameLayout(before, after)) {
+      throw new ReadError('stale_document', 'The addressed layout changed during inspection.');
+    }
+    return { ...this.evidence(frame, entry, after), element };
+  }
+
   private async capture(args: Record<string, unknown>, signal: AbortSignal) {
     const { frame, entry } = this.resolve(args);
+    if (entry.representation !== 'device') {
+      throw new ReadError(
+        'invalid_arguments',
+        'Address a fixed-device representation for responsive captures.',
+      );
+    }
     let request: ScreenshotRequest;
     if (args.kind === 'viewport' && !['x', 'y', 'width', 'height'].some((key) => key in args)) {
       request = { kind: 'viewport' };

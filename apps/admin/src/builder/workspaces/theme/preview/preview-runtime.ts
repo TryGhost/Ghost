@@ -1996,7 +1996,11 @@ export function previewRuntimeBootstrap(): void {
         event.preventDefault();
         event.stopImmediatePropagation();
         clearInlineHover();
-        if (canvasNavigation && !activeInlineEdit && event.detail < 2) {
+        if (
+          canvasNavigation &&
+          event.detail < 2 &&
+          (!activeInlineEdit || !activeInlineEdit.element.contains(target))
+        ) {
           const selected = context(editable);
           if (selected) {
             send({ type: 'select', selection: selected });

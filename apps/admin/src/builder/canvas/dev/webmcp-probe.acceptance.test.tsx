@@ -144,7 +144,13 @@ it.each(['inspect', 'capture'] as const)(
       await expect
         .poll(async () => (await surface.inspectElement({ selector: 'h1' }, signal)).text)
         .toBe('Accepted heading');
-      const tool = probe.tools()[operation === 'inspect' ? 1 : 2];
+      const tool = probe
+        .tools()
+        .find(
+          (item) =>
+            item.name ===
+            `ghost_canvas_probe_${operation === 'inspect' ? 'inspect' : 'capture'}_frame`,
+        )!;
       expect(
         await tool.execute({
           ...target(),
@@ -196,10 +202,17 @@ it.each(['inspect', 'capture'] as const)(
         });
       }
       expect(
-        await probe.tools()[operation === 'inspect' ? 1 : 2].execute({
-          ...target(),
-          ...(operation === 'capture' ? { kind: 'viewport' } : {}),
-        }),
+        await probe
+          .tools()
+          .find(
+            (item) =>
+              item.name ===
+              `ghost_canvas_probe_${operation === 'inspect' ? 'inspect' : 'capture'}_frame`,
+          )!
+          .execute({
+            ...target(),
+            ...(operation === 'capture' ? { kind: 'viewport' } : {}),
+          }),
       ).toMatchObject({ status: 'error', code: 'stale_document' });
       expect((await surface.measureLayout(signal)).viewport).toEqual(before.viewport);
       expect((await surface.inspectElement({ selector: 'h1' }, signal)).text).toBe(
@@ -267,15 +280,17 @@ it.each(['inspect', 'capture'] as const)(
         };
       };
       const tools = probe.tools();
-      expect(await tools[1].execute(target())).toMatchObject({
+      const inspect = tools.find((item) => item.name === 'ghost_canvas_probe_inspect_frame')!;
+      const captureTool = tools.find((item) => item.name === 'ghost_canvas_probe_capture_frame')!;
+      expect(await inspect.execute(target())).toMatchObject({
         status: 'ok',
         data: { page: { text: 'Accepted heading' } },
       });
       await frame.getByRole('heading', { name: 'Accepted heading' }).dblClick();
       await frame.getByRole('textbox').fill('Only in my manual draft');
       for (const [tool, args] of (operation === 'inspect'
-        ? [[tools[1], target()]]
-        : [[tools[2], { ...target(), kind: 'viewport' }]]) as readonly (readonly [
+        ? [[inspect, target()]]
+        : [[captureTool, { ...target(), kind: 'viewport' }]]) as readonly (readonly [
         ProbeTool,
         Record<string, unknown>,
       ])[]) {
@@ -290,7 +305,7 @@ it.each(['inspect', 'capture'] as const)(
       expect(edit).not.toHaveBeenCalled();
       await frame.getByRole('textbox').click();
       await userEvent.keyboard('{Escape}');
-      expect(await tools[1].execute(target())).toMatchObject({
+      expect(await inspect.execute(target())).toMatchObject({
         status: 'ok',
         data: { page: { text: 'Accepted heading' } },
       });
@@ -300,7 +315,7 @@ it.each(['inspect', 'capture'] as const)(
       await expect.poll(() => edit.mock.calls.length).toBe(1);
       await expect.poll(() => readText('h1')).toBe('Accepted by the callback');
       // A successful callback alone cannot relabel modified DOM as the old render.
-      expect(await tools[1].execute(target())).toMatchObject({
+      expect(await inspect.execute(target())).toMatchObject({
         status: 'error',
         code: 'local_edits_present',
       });
@@ -313,11 +328,11 @@ it.each(['inspect', 'capture'] as const)(
       await surface.replaceDocument(refreshed, null, signal);
       connection = probe.attach(descriptor.id, surface, refreshed);
       await connection.ready();
-      expect(await tools[1].execute(target())).toMatchObject({
+      expect(await inspect.execute(target())).toMatchObject({
         status: 'ok',
         data: { revision: 'draft-evidence-2', page: { text: 'Accepted by the callback' } },
       });
-      expect(await tools[2].execute({ ...target(), kind: 'viewport' })).toMatchObject({
+      expect(await captureTool.execute({ ...target(), kind: 'viewport' })).toMatchObject({
         status: 'ok',
         data: { revision: 'draft-evidence-2' },
       });
@@ -356,6 +371,8 @@ it('inspects and captures a nonfocused opaque device at its real resolution with
       await probe.attach(descriptor.id, surface, preview).ready();
     }
     const tools = probe.tools();
+    const inspect = tools.find((item) => item.name === 'ghost_canvas_probe_inspect_frame')!;
+    const captureTool = tools.find((item) => item.name === 'ghost_canvas_probe_capture_frame')!;
     const mobile = probe.state().frames[0];
     const args = {
       workspaceId: probe.workspaceId,
@@ -373,7 +390,7 @@ it('inspects and captures a nonfocused opaque device at its real resolution with
     );
     const view = probe.state().view;
     const before = await surfaces[0].measureLayout(signal);
-    const inspection = await tools[1].execute(args);
+    const inspection = await inspect.execute(args);
     expect(inspection).toMatchObject({
       status: 'ok',
       data: {
@@ -382,7 +399,7 @@ it('inspects and captures a nonfocused opaque device at its real resolution with
         page: { title: '', text: 'Home' },
       },
     });
-    const capture = await tools[2].execute({ ...args, kind: 'viewport' });
+    const capture = await captureTool.execute({ ...args, kind: 'viewport' });
     expect(capture.status).toBe('ok');
     if (capture.status !== 'ok') {
       throw new Error(capture.message);
@@ -448,7 +465,7 @@ it('registers only in the top-level owning document and aborts all owned registr
     expect(await child.ready).toBe('unsupported');
     expect(childRegister).not.toHaveBeenCalled();
     expect(await parent.ready).toBe('registered');
-    expect(definitions).toHaveLength(3);
+    expect(definitions).toHaveLength(4);
     parent.dispose();
     expect(signals.every((signal) => signal.aborted)).toBe(true);
     expect(await definitions[0].execute({})).toMatchObject({ code: 'workspace_unavailable' });

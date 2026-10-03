@@ -224,7 +224,7 @@ function LivePreview({
     layoutFailed.current = false;
     setStatus('Loading preview…');
     iframe.current!.style.height = `${height}px`;
-    const connection = kind === 'device' ? probe.attach(frame.id, surface, document) : null;
+    const connection = probe.attach(frame.id, surface, document, kind);
     const removeEdit = surface.onInlineEdit((edit, signal) =>
       handlers.current.onEdit(edit, document, signal),
     );
@@ -271,6 +271,7 @@ function LivePreview({
             },
             onError: (failure) => {
               const message = failure instanceof Error ? failure.message : String(failure);
+              connection.fail();
               layoutFailed.current = true;
               setReady(null);
               setComposition(null);
@@ -283,9 +284,8 @@ function LivePreview({
           });
           layoutObservation.current = observation;
           await observation.ready;
-        } else {
-          await connection!.ready();
         }
+        await connection.ready();
         const mode =
           handlers.current.visible &&
           (!handlers.current.draftOwner || handlers.current.draftOwner === frame.id)
@@ -472,8 +472,13 @@ export function ThemeCanvas({
   const [retainedDraft, setRetainedDraft] = useState<CanvasTextDraft | null>(null);
   const [recoveryOpen, setRecoveryOpen] = useState(false);
   const undeliveredAccepted = useRef<CanvasEditorRender | null>(null);
+  const admittedTextTarget = useRef<Pick<
+    CanvasTextDraft,
+    'frameId' | 'kind' | 'baseRevision'
+  > | null>(null);
   const retainDraft = (draft: CanvasTextDraft | null) => {
     textDraft.current = draft;
+    admittedTextTarget.current = draft;
     setRetainedDraft(draft);
     owner.current = draft?.frameId ?? null;
     setDraftOwner(draft?.frameId ?? null);
@@ -482,6 +487,9 @@ export function ThemeCanvas({
     }
   };
   const pendingCommit = useRef(false);
+  // Candidate rendering leaves the accepted documents interactive. Only the
+  // capture/replacement boundary closes admission and selection.
+  const replacingDocuments = useRef(false);
   useEffect(() => {
     activityObserver.current?.({
       manualDraft: !!draftOwner || settingsDirty,
@@ -498,6 +506,11 @@ export function ThemeCanvas({
   const [selection, setSelection] = useState<{
     frameId: string;
     context: BuilderSelectionContext;
+    representation: OverviewMode;
+    revision: string;
+    renderKey: string;
+    documentId: string;
+    documentInstanceId: string;
   } | null>(null);
   useEffect(() => {
     sourceRestoreFocus.current = false;
@@ -516,17 +529,7 @@ export function ThemeCanvas({
     selectedFrameId: null,
   });
   const editorObservation = useRef<Record<string, unknown>>({});
-  editorObservation.current = {
-    selection: selection
-      ? {
-          ...selection,
-          revision: acceptedRender.current?.revision,
-          renderKey: acceptedRender.current?.renderKey,
-          representation:
-            mode === 'device' || fallbacks.has(selection.frameId) ? 'device' : 'expanded',
-        }
-      : null,
-  };
+  editorObservation.current = { selection };
   const patchAction = useRef<
     ((patch: CanvasPatch, signal?: AbortSignal) => Promise<CanvasEditorRender>) | null
   >(null);
@@ -929,20 +932,41 @@ export function ThemeCanvas({
       const restoreReads = probe?.invalidateForRefresh();
       try {
         const result = await apply(current.client);
-        const draft = textDraft.current;
-        if (!result.unchanged && draft && !draft.detached) {
+        replacingDocuments.current = !result.unchanged;
+        const target = textDraft.current ?? admittedTextTarget.current;
+        if (!result.unchanged && target && !textDraft.current?.detached) {
           try {
-            const surface = surfaces.current.get(`${draft.frameId}:${draft.kind}`)?.surface;
+            const surface = surfaces.current.get(`${target.frameId}:${target.kind}`)?.surface;
             if (!surface) {
               throw new Error('The text preview is unavailable.');
             }
-            const captured = await surface.freezeInlineTextDraft(new AbortController().signal);
-            retainDraft(captured ? { ...draft, ...captured } : null);
+            // A request admitted while the candidate rendered may still be
+            // pending. Retire admission before capturing any editor it created.
+            const preservationSignal = new AbortController().signal;
+            await surface.cancelPendingInlineTextEdit(preservationSignal);
+            const captured = await surface.freezeInlineTextDraft(preservationSignal);
+            const draft = textDraft.current;
+            const marker = captured && parseEditMarker(captured.marker);
+            retainDraft(
+              captured
+                ? {
+                    ...(draft ?? {
+                      ...target,
+                      sourceFile: marker ? sourceFiles.current[marker.file] : '',
+                      detached: false,
+                      conflict: false,
+                    }),
+                    ...captured,
+                  }
+                : null,
+            );
           } catch {
             // Source is already accepted. Keep the old live document/text until
             // the person copies or cancels it; never claim the write was rejected.
             undeliveredAccepted.current = result;
-            retainDraft({ ...draft, captureFailed: true });
+            if (textDraft.current) {
+              retainDraft({ ...textDraft.current, captureFailed: true });
+            }
             setError(
               'The theme changed. Copy your text directly from the retained preview, then cancel the draft to show the accepted theme.',
             );
@@ -969,6 +993,7 @@ export function ThemeCanvas({
         throw failure;
       } finally {
         if (session.current === current) {
+          replacingDocuments.current = false;
           pendingCommit.current = false;
           setCommitPending(false);
         }
@@ -1503,7 +1528,7 @@ export function ThemeCanvas({
                       if (
                         busy.current ||
                         pendingRefresh.current ||
-                        pendingCommit.current ||
+                        replacingDocuments.current ||
                         refreshUncertain.current ||
                         !!undeliveredAccepted.current ||
                         textDraft.current?.detached ||
@@ -1515,6 +1540,11 @@ export function ThemeCanvas({
                         return false;
                       }
                       latestInteractionIntent.current = interactionTime;
+                      admittedTextTarget.current = {
+                        frameId: frame.id,
+                        kind,
+                        baseRevision: documents[frame.id].revision,
+                      };
                       owner.current = frame.id;
                       setDraftOwner(frame.id);
                       return true;
@@ -1571,7 +1601,7 @@ export function ThemeCanvas({
                       if (
                         busy.current ||
                         pendingRefresh.current ||
-                        pendingCommit.current ||
+                        replacingDocuments.current ||
                         refreshUncertain.current ||
                         !delivery.current?.ready.has(`${frame.id}:${kind}`) ||
                         interactionTime === undefined ||
@@ -1584,7 +1614,21 @@ export function ThemeCanvas({
                         select();
                         iframeInteractionTime.current = null;
                       }
-                      setSelection(context ? { frameId: id, context } : null);
+                      const target = probe.target(id, kind);
+                      setSelection(
+                        context && target?.documentId && target.documentInstanceId
+                          ? {
+                              frameId: id,
+                              context,
+                              representation: kind,
+                              revision: documents[frame.id].revision,
+                              renderKey:
+                                documents[frame.id].renderKey ?? documents[frame.id].revision,
+                              documentId: target.documentId,
+                              documentInstanceId: target.documentInstanceId,
+                            }
+                          : null,
+                      );
                     }}
                     onSurface={(id, surface) => {
                       if (surface) {
@@ -1656,6 +1700,7 @@ export function ThemeCanvas({
             );
           }}
           onSelectionIntent={() => {
+            setSelection(null);
             latestInteractionIntent.current =
               iframeInteractionTime.current ?? performance.timeOrigin + performance.now();
             if (owner.current) {

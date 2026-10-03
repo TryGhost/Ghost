@@ -272,8 +272,9 @@ delivery observations rather than screenshot timings or performance benchmarks.
 
 The top-level editor feature-detects `document.modelContext.registerTool` and the
 older native `navigator.modelContext` location. It registers
-`ghost_canvas_probe_get_editor_state`, `ghost_canvas_probe_inspect_frame` and
-`ghost_canvas_probe_capture_frame`, plus `ghost_canvas_read_theme` and
+`ghost_canvas_probe_get_editor_state`, `ghost_canvas_probe_inspect_frame`,
+`ghost_canvas_probe_inspect_element` and `ghost_canvas_probe_capture_frame`, plus
+`ghost_canvas_read_theme` and
 `ghost_canvas_apply_theme_patch` and `ghost_canvas_history` on the real editor.
 Registrations belong to the
 owning same-origin page, once per editor, never individual sandboxed previews.
@@ -290,7 +291,14 @@ revision/render key and pending delivery; state reports busy until delivery
 completes. Invalid Home/Post output, stale source and work
 cancelled before adoption preserve the accepted draft. Manual text stays retained
 through accepted agent changes, with explicit resume or conflict recovery. Pending
-admission and other source operations still fence concurrent writes. Cancellation after
+admission and other source operations still fence concurrent writes. During an
+agent candidate render, the displayed accepted documents remain selectable and can
+start/continue a literal draft. The short capture/replacement boundary closes
+admission and retires pending requests before capturing any editor they created.
+Actual text commits serialize with source changes; rejected candidates preserve the
+current selection/draft and accepted delivery retires obsolete element context.
+A single canvas click on another source element selects it while retaining the active
+text editor. Cancellation after
 adoption does not misreport the actual outcome. Route exit retires callbacks.
 There is no evaluation/shell tool, independent agent draft or publication bypass.
 
@@ -302,9 +310,17 @@ after built-in-theme publication retains the custom copy's identity; it changes 
 editor draft and requires publication before customers see it.
 
 Protocols `canvas-fixture-probe-3` (fixtures) and `canvas-editor-probe-1` (the real
-workspace) address explicit immutable fixed-device
-workspace/frame/representation handles, expected source revision and expected
-render key. Same-source data refresh retires old evidence; the source revision
+workspace) address explicit immutable live workspace/frame/representation handles,
+expected source revision and expected render key. Each frame has separate expanded
+and fixed-device entries. State identifies an element selection's originating
+representation/render/document and exposes its explicit `target` address.
+`ghost_canvas_probe_inspect_element` takes that address plus the selected occurrence;
+it inspects the clicked use through the existing surface without changing selection,
+scroll, focus or camera. A prepared read stays addressed when the person selects
+another frame. Occurrences cannot transfer between representations or counterparts.
+Ordinary board selection clears obsolete element/source context while retaining text.
+Page inspection can read either representation; responsive captures require a fixed
+device target. Same-source data refresh retires old evidence; the source revision
 alone cannot certify a current data snapshot. It never uses
 current selection to retarget a read. Current document/runtime instance and
 local-edit generations are checked before/after reads. Local drafts, modified DOM

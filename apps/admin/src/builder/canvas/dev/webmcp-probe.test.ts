@@ -22,6 +22,7 @@ const layout = {
 function surface(): CanvasProbeSurface {
   return {
     measureLayout: vi.fn().mockResolvedValue(layout),
+    inspectElement: vi.fn(),
     inspectPage: vi.fn().mockResolvedValue({
       url: document.url,
       title: 'Home',
@@ -64,6 +65,72 @@ async function fixture() {
 }
 
 describe('addressed read-only canvas probe', () => {
+  it('addresses expanded occurrences independently while keeping responsive captures on fixed devices', async () => {
+    const { probe, preview } = await fixture();
+    const composition = surface();
+    const expandedLayout = {
+      ...layout,
+      documentInstanceId: 'expanded-instance',
+      viewport: { ...layout.viewport, height: 3000 },
+    };
+    vi.mocked(composition.measureLayout).mockResolvedValue(expandedLayout);
+    vi.mocked(composition.inspectElement).mockResolvedValue({
+      text: 'Second repeated card',
+    } as Awaited<ReturnType<CanvasProbeSurface['inspectElement']>>);
+    await probe.attach(descriptor.id, composition, document, 'expanded').ready();
+    const deviceTarget = target(probe);
+    const expandedTarget = probe.target(descriptor.id, 'expanded')!;
+    const inspection = { ...expandedTarget, occurrence: 'occurrence:expanded:2' };
+    expect(expandedTarget.representationHandle).not.toBe(deviceTarget.representationHandle);
+    expect(await tool(probe, 'inspect_element').execute(inspection)).toMatchObject({
+      status: 'ok',
+      data: {
+        representation: 'expanded',
+        viewport: { height: 3000 },
+        element: { text: 'Second repeated card' },
+      },
+    });
+    expect(composition.inspectElement).toHaveBeenCalledWith(
+      { occurrence: 'occurrence:expanded:2' },
+      expect.any(AbortSignal),
+    );
+    expect(preview.inspectElement).not.toHaveBeenCalled();
+    expect(
+      await tool(probe, 'inspect_element').execute({
+        ...inspection,
+        documentInstanceId: 'obsolete',
+      }),
+    ).toMatchObject({ code: 'stale_document' });
+    const captureTarget = {
+      workspaceId: expandedTarget.workspaceId,
+      frameHandle: expandedTarget.frameHandle,
+      representationHandle: expandedTarget.representationHandle,
+      expectedRevision: expandedTarget.expectedRevision,
+      expectedRenderKey: expandedTarget.expectedRenderKey,
+    };
+    expect(
+      await tool(probe, 'capture_frame').execute({ ...captureTarget, kind: 'viewport' }),
+    ).toMatchObject({ code: 'invalid_arguments' });
+    expect(composition.screenshot).not.toHaveBeenCalled();
+    const restore = probe.invalidateForRefresh();
+    expect(await tool(probe, 'inspect_element').execute(inspection)).toMatchObject({
+      code: 'stale_render',
+    });
+    restore();
+    expect(await tool(probe, 'inspect_element').execute(inspection)).toMatchObject({
+      code: 'target_unavailable',
+    });
+    expect(
+      await tool(probe, 'inspect_element').execute({
+        ...probe.target(descriptor.id, 'expanded'),
+        occurrence: inspection.occurrence,
+      }),
+    ).toMatchObject({ status: 'ok' });
+    expect(
+      await tool(probe, 'capture_frame').execute({ ...target(probe), kind: 'viewport' }),
+    ).toMatchObject({ status: 'ok' });
+    probe.dispose();
+  });
   it('identifies the real editor workspace without claiming fixture or mutation support', () => {
     const probe = new CanvasProbe([descriptor], 'https://example.com/', {
       workspaceId: 'theme-canvas:active-workspace',
@@ -340,7 +407,7 @@ describe('top-level WebMCP registration', () => {
     const registration = registerCanvasProbe(window.document, probe);
     try {
       expect(await registration.ready).toBe('registered');
-      expect(registerTool).toHaveBeenCalledTimes(3);
+      expect(registerTool).toHaveBeenCalledTimes(4);
     } finally {
       registration.dispose();
       Reflect.deleteProperty(navigator, 'modelContext');
@@ -370,7 +437,7 @@ describe('top-level WebMCP registration', () => {
     registration.dispose();
   });
 
-  it('owns three registrations once, aborts their lifetime, and rejects an obsolete callback', async () => {
+  it('owns four registrations once, aborts their lifetime, and rejects an obsolete callback', async () => {
     const { probe } = await fixture();
     const registered: ProbeTool[] = [];
     const signals: AbortSignal[] = [];
@@ -386,7 +453,7 @@ describe('top-level WebMCP registration', () => {
     try {
       const registration = registerCanvasProbe(window.document, probe);
       expect(await registration.ready).toBe('registered');
-      expect(registerTool).toHaveBeenCalledTimes(3);
+      expect(registerTool).toHaveBeenCalledTimes(4);
       probe.setView(
         {
           camera: { x: 10, y: 20, scale: 0.2 },
@@ -394,7 +461,7 @@ describe('top-level WebMCP registration', () => {
         },
         'expanded',
       );
-      expect(registerTool).toHaveBeenCalledTimes(3);
+      expect(registerTool).toHaveBeenCalledTimes(4);
       registration.dispose();
       expect(signals.every((signal) => signal.aborted)).toBe(true);
       expect(await registered[0].execute({})).toMatchObject({ code: 'workspace_unavailable' });

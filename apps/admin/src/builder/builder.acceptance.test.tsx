@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
 import { act } from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { commands, page, userEvent } from 'vitest/browser';
 
 import {
@@ -15,6 +15,7 @@ import {
   siteResponse,
 } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
+import { CanvasThemePreview } from '@/builder/canvas/canvas-theme-preview';
 import defaultRoutes from '../../../../ghost/core/core/server/services/route-settings/default-routes.yaml?raw';
 import type { CanvasProbe, ReadResult } from '@/builder/canvas/canvas-probe';
 import type { CustomThemeSetting } from '@tryghost/admin-x-framework/api/custom-theme-settings';
@@ -92,6 +93,233 @@ async function fakeBuilderWorld({
 }
 
 describe('Design Builder route', () => {
+  it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1')(
+    'inspects the selected live composition through native WebMCP and clears obsolete board context',
+    { timeout: 60_000 },
+    async () => {
+      await commands.canvasPointerViewport(true);
+      await fakeBuilderWorld({ post: true });
+      const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
+      const state = async () =>
+        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {})).data as {
+          workspaceId: string;
+          view: { selectedFrameId: string | null };
+          editor: {
+            busy: boolean;
+            selection: null | {
+              frameId: string;
+              representation: string;
+              context: { data: { occurrence: string } };
+              target: Record<string, string>;
+            };
+          };
+          frames: Array<{
+            id: string;
+            frameHandle: string;
+            device: { representationHandle: string; revision: string; renderKey: string };
+          }>;
+        };
+      try {
+        await expect.poll(async () => !(await state()).editor.busy, { timeout: 30_000 }).toBe(true);
+        await page.getByRole('button', { name: 'Home · Mobile', exact: true }).dblClick();
+        const frame = page.frameLocator(
+          page.getByTitle('Home · Mobile composition', { exact: true }),
+        );
+        await frame.getByRole('link', { name: 'Canvas footer', exact: true }).click();
+        const selected = (await state()).editor.selection!;
+        expect(selected).toMatchObject({
+          frameId: 'home-mobile',
+          representation: 'expanded',
+        });
+        expect(selected.target.documentId).toEqual(expect.any(String));
+        expect(selected.target.documentInstanceId).toEqual(expect.any(String));
+        const camera = page.getByTestId('canvas-world').element().getAttribute('style');
+        const inspect = await commands.canvasNativeTool('ghost_canvas_probe_inspect_element', {
+          ...selected.target,
+          occurrence: selected.context.data.occurrence,
+        });
+        expect(inspect).toMatchObject({
+          status: 'ok',
+          data: { representation: 'expanded', element: { text: 'Canvas footer' } },
+        });
+        expect(page.getByTestId('canvas-world').element().getAttribute('style')).toBe(camera);
+        expect((await state()).editor.selection).toEqual(selected);
+        const current = await state();
+        const device = current.frames.find((item) => item.id === 'home-mobile')!;
+        expect(
+          await commands.canvasNativeTool('ghost_canvas_probe_inspect_element', {
+            ...selected.target,
+            representationHandle: device.device.representationHandle,
+            occurrence: selected.context.data.occurrence,
+          }),
+        ).toMatchObject({ status: 'error' });
+        await page.getByRole('button', { name: 'Fit all', exact: true }).click();
+        await page.getByRole('button', { name: 'Home · Desktop', exact: true }).click();
+        expect(await state()).toMatchObject({
+          view: { selectedFrameId: 'home-desktop' },
+          editor: { selection: null },
+        });
+        await expect
+          .element(page.getByRole('button', { name: 'View template source', exact: true }))
+          .toBeDisabled();
+        // Explicit reads retain their addressed target even after the person selects another frame.
+        expect(
+          await commands.canvasNativeTool('ghost_canvas_probe_inspect_element', {
+            ...selected.target,
+            occurrence: selected.context.data.occurrence,
+          }),
+        ).toMatchObject({ status: 'ok', data: { element: { text: 'Canvas footer' } } });
+        await frame.getByRole('link', { name: 'Canvas footer', exact: true }).click();
+        await expect
+          .poll(async () => (await state()).editor.selection?.frameId)
+          .toBe('home-mobile');
+        await page
+          .getByRole('region', { name: 'Theme canvas', exact: true })
+          .click({ position: { x: 8, y: 8 } });
+        expect(await state()).toMatchObject({
+          view: { selectedFrameId: null },
+          editor: { selection: null },
+        });
+      } finally {
+        await screen.unmount();
+        await commands.canvasPointerViewport(false);
+      }
+    },
+  );
+  it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1').each([true, false])(
+    'keeps selecting and starts a manual text draft while a native agent candidate renders (accepted: %s)',
+    { timeout: 60_000 },
+    async (accepted) => {
+      await commands.canvasPointerViewport(true);
+      await fakeBuilderWorld({ post: true });
+      const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
+      const state = async () =>
+        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {})).data as {
+          workspaceId: string;
+          editor: {
+            sourceRevision: string;
+            busy: boolean;
+            selection: {
+              frameId: string;
+              context: unknown;
+              documentId: string;
+              documentInstanceId: string;
+            } | null;
+            manualDraft: { text: string } | null;
+          };
+        };
+      const ready = () =>
+        expect
+          .poll(
+            async () =>
+              !(await state()).editor.busy &&
+              document.querySelectorAll('iframe[data-preview-status="Ready"]').length === 8,
+            { timeout: 30_000 },
+          )
+          .toBe(true);
+      let release!: () => void;
+      const held = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      let entered = false;
+      let patching: Promise<Record<string, unknown>> | undefined;
+      // Preserve the method for the gate, then call it on the actual preview instance below.
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      const original = CanvasThemePreview.prototype.renderCandidate;
+      try {
+        await ready();
+        await page.getByRole('button', { name: 'Home · Mobile', exact: true }).dblClick();
+        const frame = page.frameLocator(
+          page.getByTitle('Home · Mobile composition', { exact: true }),
+        );
+        const initial = await state();
+        const iframes = [
+          ...document.querySelectorAll('iframe[title$="composition"],iframe[title$="preview"]'),
+        ];
+        const camera = page.getByTestId('canvas-world').element().getAttribute('style');
+        vi.spyOn(CanvasThemePreview.prototype, 'renderCandidate').mockImplementationOnce(
+          async function (this: CanvasThemePreview, draft, signal) {
+            entered = true;
+            await held;
+            return original.call(this, draft, signal);
+          },
+        );
+        patching = commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
+          workspaceId: initial.workspaceId,
+          expectedRevision: initial.editor.sourceRevision,
+          expectedDataGeneration: 0,
+          files: [
+            {
+              operation: 'write',
+              path: accepted ? 'index.hbs' : 'post.hbs',
+              content: accepted
+                ? '<html><body><h1>Agent design</h1>{{> footer}}</body></html>'
+                : '{{> missing_canvas_partial}}',
+            },
+          ],
+        });
+        await expect.poll(() => entered).toBe(true);
+        await frame.getByRole('link', { name: 'Canvas footer', exact: true }).click();
+        await expect
+          .poll(async () => (await state()).editor.selection?.frameId)
+          .toBe('home-mobile');
+        await frame.getByRole('link', { name: 'Canvas footer', exact: true }).dblClick();
+        await frame
+          .getByRole('textbox', { name: /^Edit / })
+          .fill('Manual text during agent rendering');
+        await expect
+          .poll(async () => (await state()).editor.manualDraft?.text)
+          .toBe('Manual text during agent rendering');
+        await page.getByRole('button', { name: 'Home · Mobile', exact: true }).click();
+        expect((await state()).editor.selection).toBeNull();
+        expect((await state()).editor.manualDraft?.text).toBe('Manual text during agent rendering');
+        await frame.getByRole('heading', { name: 'Rendered site', exact: true }).click();
+        await expect
+          .poll(async () => (await state()).editor.selection?.frameId)
+          .toBe('home-mobile');
+        const selected = (await state()).editor.selection;
+        release();
+        expect(await patching).toMatchObject({ status: accepted ? 'ok' : 'error' });
+        await ready();
+        expect([
+          ...document.querySelectorAll('iframe[title$="composition"],iframe[title$="preview"]'),
+        ]).toEqual(iframes);
+        expect(page.getByTestId('canvas-world').element().getAttribute('style')).toBe(camera);
+        if (accepted) {
+          expect((await state()).editor.selection).toBeNull();
+          await expect
+            .element(page.getByRole('button', { name: 'Resume text draft', exact: true }))
+            .toBeEnabled();
+          await page.getByRole('button', { name: 'Resume text draft', exact: true }).click();
+        } else {
+          expect((await state()).editor.sourceRevision).toBe(initial.editor.sourceRevision);
+          expect((await state()).editor.selection).toMatchObject({
+            frameId: selected!.frameId,
+            context: selected!.context,
+            documentId: selected!.documentId,
+            documentInstanceId: selected!.documentInstanceId,
+          });
+        }
+        await frame.getByRole('textbox', { name: /^Edit / }).click();
+        await userEvent.keyboard('{Enter}');
+        await ready();
+        await frame
+          .getByRole('link', { name: 'Manual text during agent rendering', exact: true })
+          .hover();
+        expect(
+          iframes.every((iframe) =>
+            (iframe as HTMLIFrameElement).srcdoc.includes('Manual text during agent rendering'),
+          ),
+        ).toBe(true);
+      } finally {
+        release();
+        await patching?.catch(() => {});
+        vi.restoreAllMocks();
+        await screen.unmount();
+        await commands.canvasPointerViewport(false);
+      }
+    },
+  );
   it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1').each([
     { width: 1280, theme: 'light' },
     { width: 1280, theme: 'dark' },
