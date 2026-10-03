@@ -1,12 +1,5 @@
+import type { JsonObject, JsonValue } from 'type-fest';
 import { createQuery } from '../utils/api/hooks';
-
-export type JSONValue = string | number | boolean | null | Date | JSONObject | JSONArray;
-export interface JSONObject {
-  [key: string]: JSONValue;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface JSONArray extends Array<string | number | boolean | Date | JSONObject | JSONValue> {}
 
 export type Config = {
   version: string;
@@ -25,7 +18,7 @@ export type Config = {
   labs: Record<string, boolean>;
   stripeDirect: boolean;
   mail: string;
-  stats?: JSONObject & {
+  stats?: JsonObject & {
     endpoint?: string;
     id?: string;
   };
@@ -165,7 +158,7 @@ export type Config = {
     };
   };
   // Config is relatively fluid, so we only type used properties above and still support arbitrary property access when needed
-  [key: string]: JSONValue | undefined;
+  [key: string]: JsonValue | undefined;
 };
 
 export interface ConfigResponseType {
