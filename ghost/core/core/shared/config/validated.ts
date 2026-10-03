@@ -1,7 +1,9 @@
 import type { ReadonlyDeep } from 'type-fest';
+import _ from 'lodash';
 import { z } from 'zod';
 import { bindAll as bindUrlHelpers, type BoundHelpers } from '@tryghost/config-url-helpers';
 import { bindAll as bindHelpers, type ConfigHelpers } from './helpers';
+import { guardReadOnly, shouldGuard } from './guard';
 import { configSchema, type ConfigAt, type ConfigPath, type ValidatedConfig } from './schema';
 
 /**
@@ -49,17 +51,28 @@ function isStrict(env: string): boolean {
 }
 
 /**
- * Validate a config tree and deep-freeze it.
+ * Make a validated tree read-only: frozen in production, proxied in the
+ * environments this repo runs itself so a write throws rather than being
+ * dropped. See ./guard.ts.
+ */
+function readOnly(tree: Record<string, unknown>): ValidatedConfig {
+  return (
+    shouldGuard(String(tree.env)) ? guardReadOnly(tree) : deepFreeze(tree)
+  ) as ValidatedConfig;
+}
+
+/**
+ * Validate a config tree and make it read-only.
  *
- * Freezes in place, so the caller must hand over a tree nothing else holds -
- * zod passes keys the schema does not name straight through by reference, so a
- * shared tree would be frozen out from under its other owner.
+ * Takes ownership of the tree: it is frozen in place, and zod passes keys the
+ * schema does not name straight through by reference, so a shared tree would be
+ * frozen out from under its other owner.
  */
 export function validateConfig(tree: Record<string, unknown>): ValidatedConfig {
   const result = configSchema.safeParse(tree);
 
   if (result.success) {
-    return deepFreeze(result.data);
+    return readOnly(result.data as Record<string, unknown>);
   }
 
   const report = z.prettifyError(result.error);
@@ -75,7 +88,7 @@ export function validateConfig(tree: Record<string, unknown>): ValidatedConfig {
     `Ghost config failed validation (not enforced in the ${tree.env} environment):\n${report}`,
   );
 
-  return deepFreeze(tree) as ValidatedConfig;
+  return readOnly(tree);
 }
 
 /**
@@ -195,12 +208,14 @@ export function createConfig(sources: Record<string, unknown>): GhostConfig {
 
     set(key: string, value: unknown): void {
       // Cloned first, before anything is recorded: cloning can throw - on a
-      // value it cannot handle - and doing it here means that throw cannot
-      // leave `overrides` half-updated.
+      // value with a throwing getter, say - and doing it here means that throw
+      // cannot leave `overrides` half-updated. cloneDeep rather than
+      // structuredClone, because under the guard this value may be a proxy and
+      // structuredClone rejects those.
       //
       // The clone itself is needed because rebuild() makes whatever ends up in
       // the tree read-only, and this value is the caller's own object.
-      const cloned = structuredClone(value);
+      const cloned = _.cloneDeep(value);
       const previous = new Map(overrides);
 
       // deleted first so the key moves to the end: overrides replay in
