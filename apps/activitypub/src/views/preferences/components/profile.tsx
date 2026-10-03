@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 
 import APAvatar from '@src/components/global/ap-avatar';
 import DotsPattern from './dots-pattern';
@@ -250,41 +250,58 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [bannerDataUrl, setBannerDataUrl] = useState<string | null>(null);
   const [avatarDataUrl, setAvatarDataUrl] = useState<string | null>(null);
+  const [imageConversionFailed, setImageConversionFailed] = useState(false);
+  const [imagesReady, setImagesReady] = useState(false);
+  // Bumped whenever banner/avatar source URLs change so an in-flight copy can
+  // abort if the screenshot card's image sources were invalidated mid-wait.
+  const imageSourceGenerationRef = useRef(0);
   const shareText = `${account?.name} is now available across the social web, on ${account?.handle}`;
+  const bannerSourceUrl = account?.bannerImageUrl || coverImage || null;
+  const avatarSourceUrl = account?.avatarUrl || publicationIcon || null;
 
-  const convertImagesToDataUrls = useCallback(async () => {
-    if (account?.bannerImageUrl || coverImage) {
-      const bannerUrl = account?.bannerImageUrl || coverImage;
-      if (bannerUrl) {
-        const dataUrl = await imageUrlToDataUrl(bannerUrl);
-        setBannerDataUrl(dataUrl);
-      }
-    }
-
-    if (account?.avatarUrl || publicationIcon) {
-      const avatarUrl = account?.avatarUrl || publicationIcon;
-      if (avatarUrl) {
-        const dataUrl = await imageUrlToDataUrl(avatarUrl);
-        setAvatarDataUrl(dataUrl);
-      }
-    }
-  }, [account?.bannerImageUrl, account?.avatarUrl, coverImage, publicationIcon]);
-
+  // Convert the current banner/avatar URLs to data URLs. Cancel and ignore
+  // results from older conversions when the URLs change mid-flight so a stale
+  // failure cannot overwrite a newer success (or vice versa).
   useEffect(() => {
-    let isMounted = true;
+    let cancelled = false;
+    imageSourceGenerationRef.current += 1;
+
+    setImagesReady(false);
+    setImageConversionFailed(false);
+    setBannerDataUrl(null);
+    setAvatarDataUrl(null);
 
     const convert = async () => {
-      await convertImagesToDataUrls();
+      let failed = false;
+      let nextBanner: string | null = null;
+      let nextAvatar: string | null = null;
+
+      if (bannerSourceUrl) {
+        nextBanner = await imageUrlToDataUrl(bannerSourceUrl);
+        failed = failed || nextBanner === null;
+      }
+
+      if (avatarSourceUrl) {
+        nextAvatar = await imageUrlToDataUrl(avatarSourceUrl);
+        failed = failed || nextAvatar === null;
+      }
+
+      if (cancelled) {
+        return;
+      }
+
+      setBannerDataUrl(nextBanner);
+      setAvatarDataUrl(nextAvatar);
+      setImageConversionFailed(failed);
+      setImagesReady(true);
     };
 
-    if (isMounted) {
-      convert();
-    }
+    void convert();
 
     return () => {
-      isMounted = false;
+      cancelled = true;
     };
-  }, [convertImagesToDataUrls]);
+  }, [bannerSourceUrl, avatarSourceUrl]);
 
   const getGradient = () => {
     switch (backgroundColor) {
@@ -313,10 +330,16 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
   };
 
   const handleCopy = async () => {
-    if (!profileCardRef.current || isProcessing) {
+    if (!profileCardRef.current || isProcessing || !imagesReady) {
       return;
     }
 
+    if (imageConversionFailed) {
+      toast.error('Failed to prepare image for sharing.');
+      return;
+    }
+
+    const generationAtStart = imageSourceGenerationRef.current;
     setIsProcessing(true);
 
     // Wait for the next frame to ensure the loading indicator is painted
@@ -325,6 +348,13 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
         requestAnimationFrame(resolve);
       });
     });
+
+    // Account/site image URLs may have changed during the paint wait; abort so
+    // we never screenshot a card that fell back to unresolved remote URLs.
+    if (generationAtStart !== imageSourceGenerationRef.current) {
+      setIsProcessing(false);
+      return;
+    }
 
     try {
       if (
@@ -543,15 +573,21 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
               </a>
             </div>
             <Button
+              aria-label="Copy image"
               className={`min-w-[160px] dark:bg-black dark:text-white dark:hover:bg-black/90 ${backgroundColor === 'dark' && 'bg-white text-black hover:bg-gray-50 dark:bg-white dark:text-black dark:hover:bg-gray-50/90'}`}
+              disabled={!imagesReady || isProcessing}
               onClick={handleCopy}
             >
-              {isProcessing ? (
+              {isProcessing || !imagesReady ? (
                 <LoadingIndicator className="!border-current/10 before:!bg-current" size="sm" />
               ) : (
                 <LucideIcon.Copy />
               )}
-              {!isProcessing && 'Copy image'}
+              {isProcessing || !imagesReady ? (
+                <span className="sr-only">Copy image</span>
+              ) : (
+                'Copy image'
+              )}
             </Button>
           </div>
           {(account?.bannerImageUrl || coverImage) && (

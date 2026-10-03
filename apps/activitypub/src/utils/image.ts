@@ -6,8 +6,13 @@ export const COVER_MAX_DIMENSIONS = { width: 4000, height: 3000 };
 
 /**
  * Converts an image URL to a data URL to avoid CORS issues
+ *
+ * Returns `null` when the image cannot be read, for example when the host does
+ * not send an `Access-Control-Allow-Origin` header. Callers must handle that
+ * failure: falling back to the raw URL silently drops the image when the DOM
+ * is rendered to a canvas.
  */
-export const imageUrlToDataUrl = async (url: string): Promise<string> => {
+export const imageUrlToDataUrl = async (url: string): Promise<string | null> => {
   try {
     const response = await fetch(url, {
       mode: 'cors',
@@ -23,8 +28,7 @@ export const imageUrlToDataUrl = async (url: string): Promise<string> => {
       reader.readAsDataURL(blob);
     });
   } catch {
-    // Return original URL as fallback if conversion fails
-    return url;
+    return null;
   }
 };
 
