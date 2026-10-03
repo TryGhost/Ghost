@@ -23,6 +23,7 @@ export function previewRuntimeBootstrap(): void {
   const nativeForms = runtimeScript?.dataset.builderNativeForms === 'true';
   const artifactDocument = runtimeScript?.dataset.builderArtifactDocument === 'true';
   const canvasNavigation = runtimeScript?.dataset.builderCanvasNavigation === 'true';
+  let canvasCommitted = !canvasNavigation;
   const captureLoadedImages = runtimeScript?.dataset.builderCaptureLoadedImages === 'true';
   const artifactMarkers = new WeakMap<Element, string>();
   const artifactElementFingerprints = new WeakMap<Element, string>();
@@ -803,6 +804,28 @@ export function previewRuntimeBootstrap(): void {
     pending: boolean;
   };
   let activeInlineEdit: ActiveInlineEdit | null = null;
+  const reportInlineEdit = () => {
+    if (!canvasNavigation) {
+      return;
+    }
+    const bounds = activeInlineEdit?.editor.getBoundingClientRect();
+    const x = bounds ? Math.max(0, Math.min(window.innerWidth, bounds.left)) : 0;
+    const y = bounds ? Math.max(0, Math.min(window.innerHeight, bounds.top)) : 0;
+    send({
+      type: 'canvas-input',
+      input: {
+        kind: 'inline-edit',
+        box: bounds
+          ? {
+              x,
+              y,
+              width: Math.max(0, Math.min(window.innerWidth, bounds.right) - x),
+              height: Math.max(0, Math.min(window.innerHeight, bounds.bottom) - y),
+            }
+          : null,
+      },
+    });
+  };
   if (canvasNavigation) {
     document.addEventListener(
       'wheel',
@@ -828,10 +851,19 @@ export function previewRuntimeBootstrap(): void {
     document.addEventListener(
       'keydown',
       (event) => {
-        if (event.key === 'Escape' && !activeInlineEdit) {
+        if (event.key === 'Escape') {
+          if (activeInlineEdit && !event.isTrusted) {
+            return;
+          }
           event.preventDefault();
           event.stopImmediatePropagation();
-          send({ type: 'canvas-input', input: { kind: 'escape' } });
+          if (activeInlineEdit?.pending) {
+            announceInlineEdit('This edit is being applied. Wait before cancelling.', true);
+          } else if (activeInlineEdit) {
+            cancelInlineEdit();
+          } else {
+            send({ type: 'canvas-input', input: { kind: 'escape' } });
+          }
         }
       },
       true,
@@ -876,6 +908,7 @@ export function previewRuntimeBootstrap(): void {
     }
     active.editor.replaceWith(active.original);
     activeInlineEdit = null;
+    reportInlineEdit();
   };
   const commitInlineEdit = () => {
     const active = activeInlineEdit;
@@ -886,6 +919,7 @@ export function previewRuntimeBootstrap(): void {
     if (newText === active.original.data) {
       active.editor.replaceWith(active.original);
       activeInlineEdit = null;
+      reportInlineEdit();
       return;
     }
     if (newText.length > 4_096 || /[\r\n]/.test(newText)) {
@@ -907,6 +941,10 @@ export function previewRuntimeBootstrap(): void {
     });
   };
   const beginInlineEdit = (element: Element) => {
+    if (!canvasCommitted) {
+      announceInlineEdit('Wait for this preview to finish loading before editing.', true);
+      return;
+    }
     const marker = element.getAttribute('data-edit');
     const source = parseSource(marker);
     const text = directEditableText(element);
@@ -935,6 +973,7 @@ export function previewRuntimeBootstrap(): void {
       editor,
       pending: false,
     };
+    reportInlineEdit();
     editor.addEventListener(
       'keydown',
       (event) => {
@@ -944,18 +983,25 @@ export function previewRuntimeBootstrap(): void {
         if (event.key === 'Escape') {
           event.preventDefault();
           event.stopImmediatePropagation();
-          cancelInlineEdit();
+          if (canvasNavigation && activeInlineEdit?.pending) {
+            announceInlineEdit('This edit is being applied. Wait before cancelling.', true);
+          } else {
+            cancelInlineEdit();
+          }
         } else if (event.key === 'Enter') {
           event.preventDefault();
           event.stopImmediatePropagation();
           commitInlineEdit();
-        } else if (event.key === 'Tab') {
+        } else if (event.key === 'Tab' && !canvasNavigation) {
           allowBlurCommit = true;
         }
       },
       true,
     );
     editor.addEventListener('blur', () => {
+      if (canvasNavigation) {
+        return;
+      }
       if (allowBlurCommit) {
         allowBlurCommit = false;
         commitInlineEdit();
@@ -971,6 +1017,14 @@ export function previewRuntimeBootstrap(): void {
     selection?.addRange(range);
   };
   const submitInlineImage = async (element: HTMLImageElement, file: File) => {
+    if (!canvasCommitted) {
+      announceInlineEdit('Wait for this preview to finish loading before editing.', true);
+      return;
+    }
+    if (canvasNavigation && activeInlineEdit) {
+      announceInlineEdit('Finish or cancel the current text edit first.', true);
+      return;
+    }
     if (!inlineEditing || pendingImageEdit) {
       announceInlineEdit('Finish the current image replacement first.', true);
       return;
@@ -1052,6 +1106,14 @@ export function previewRuntimeBootstrap(): void {
     }
   });
   const beginInlineImage = (element: HTMLImageElement) => {
+    if (!canvasCommitted) {
+      announceInlineEdit('Wait for this preview to finish loading before editing.', true);
+      return;
+    }
+    if (canvasNavigation && activeInlineEdit) {
+      announceInlineEdit('Finish or cancel the current text edit first.', true);
+      return;
+    }
     if (pendingImageEdit) {
       announceInlineEdit('Finish the current image replacement first.', true);
       return;
@@ -1188,13 +1250,19 @@ export function previewRuntimeBootstrap(): void {
         typeof message.message === 'string'
           ? message.message.slice(0, 500)
           : 'The inline edit could not be applied.';
-      active.editor.replaceWith(active.original);
-      activeInlineEdit = null;
+      if (canvasNavigation) {
+        active.pending = false;
+        active.editor.contentEditable = 'plaintext-only';
+      } else {
+        active.editor.replaceWith(active.original);
+        activeInlineEdit = null;
+      }
       announceInlineEdit(error, true);
       return;
     }
     active.editor.replaceWith(document.createTextNode(active.editor.textContent ?? ''));
     activeInlineEdit = null;
+    reportInlineEdit();
     announceInlineEdit('Preview text updated.');
   };
 
@@ -1272,6 +1340,7 @@ export function previewRuntimeBootstrap(): void {
       if (
         event.isTrusted &&
         activeInlineEdit &&
+        !canvasNavigation &&
         event.target instanceof Node &&
         !activeInlineEdit.element.contains(event.target)
       ) {
@@ -1330,7 +1399,11 @@ export function previewRuntimeBootstrap(): void {
         } else if (!activeInlineEdit) {
           beginInlineEdit(editable);
         } else if (!activeInlineEdit.element.contains(target)) {
-          commitInlineEdit();
+          if (canvasNavigation) {
+            announceInlineEdit('Finish or cancel the current text edit first.', true);
+          } else {
+            commitInlineEdit();
+          }
         }
         return;
       }
@@ -1423,6 +1496,10 @@ export function previewRuntimeBootstrap(): void {
       payload?: unknown;
     };
     if (message.channel !== channel || message.documentId !== documentId) {
+      return;
+    }
+    if (message.type === 'canvas-committed' && canvasNavigation) {
+      canvasCommitted = true;
       return;
     }
     if (message.type === 'inline-edit-result') {

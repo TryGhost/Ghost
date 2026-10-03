@@ -18,7 +18,22 @@ Ordinary scroll inside an opened device belongs to that page.
 The optional `canvasNavigation` setting on `IframePreviewDocumentSurface` relays
 Ctrl/Command-scroll and Escape through the existing sandbox bridge. Only the
 active, committed document can supply bounded input. Existing previews leave
-this option disabled. An active inline editor handles its own Escape.
+this option disabled. Canvas text/image editors wait for the parent to acknowledge
+committed document readiness through the authenticated command port. An active
+canvas text draft survives Tab, focus changes, camera actions, Back and reopening
+its retained document. Within that iframe, trusted Escape cancels the draft even
+after focus moves to another element; a pending explicit commit must finish first.
+Rejected canvas commits preserve the text. Existing non-canvas blur behavior stays
+unchanged. Document replacement, restoration and destruction clear activity;
+these cleanup signals do not preserve draft text across document replacement.
+
+The board retains activity per frame and keeps an opened draft at scale one or
+greater while camera controls are used. Back restores the saved overview and
+reports the retained draft outside the frame. Browser evidence uses the actual
+inline runtime and a test commit callback; it does not establish real stock-theme
+source mutation, editor-wide single-draft ownership, dynamic-source eligibility,
+draft-aware inspection provenance, or replacement/conflict persistence. Those
+remain milestone work; the fixture comparison harness still exposes no mutations.
 
 ## Development harness
 
@@ -155,6 +170,7 @@ pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/canvas/dev/fixtu
 pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/workspaces/theme/preview/preview-images.acceptance.test.tsx --maxWorkers=1
 pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/canvas/measure-expanded-composition.acceptance.test.tsx --maxWorkers=1
 pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/canvas/canvas-board.component.test.tsx src/builder/workspaces/theme/preview/preview-canvas-input.acceptance.test.tsx src/builder/workspaces/theme/preview/preview-layout.acceptance.test.tsx src/builder/workspaces/theme/preview/screenshot.acceptance.test.tsx --maxWorkers=1
+pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/canvas/canvas-inline-draft.component.test.tsx --maxWorkers=1
 pnpm typecheck
 ```
 

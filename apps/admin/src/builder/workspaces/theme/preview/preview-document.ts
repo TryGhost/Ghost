@@ -47,6 +47,7 @@ export type PreviewInlineEditResult = { ok: true } | { ok: false; message: strin
 
 export type PreviewCanvasInput =
   | { kind: 'escape' }
+  | { kind: 'inline-edit'; box: { x: number; y: number; width: number; height: number } | null }
   | { kind: 'zoom'; x: number; y: number; deltaY: number; deltaMode: number };
 
 export type PreviewLayout = {
@@ -420,6 +421,17 @@ function isPreviewMessage(value: unknown): value is PreviewMessage {
     return (
       !!input &&
       (input.kind === 'escape' ||
+        (input.kind === 'inline-edit' &&
+          (input.box === null ||
+            (typeof input.box === 'object' &&
+              input.box !== null &&
+              [input.box.x, input.box.y, input.box.width, input.box.height].every(
+                (coordinate) =>
+                  typeof coordinate === 'number' &&
+                  Number.isFinite(coordinate) &&
+                  coordinate >= 0 &&
+                  coordinate <= 10_000,
+              )))) ||
         (input.kind === 'zoom' &&
           [input.x, input.y, input.deltaY].every(
             (coordinate) =>
@@ -856,6 +868,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
   private readonly canvasNavigation: boolean;
   private readonly captureLoadedImages: boolean;
   private readonly canvasInputListeners = new Set<(input: PreviewCanvasInput) => void>();
+  private canvasInlineEditActive = false;
   private readonly navigateListeners = new Set<(url: string) => void>();
   private readonly selectionListeners = new Set<
     (selection: BuilderSelectionContext | null) => void
@@ -870,6 +883,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
   private committedSrcdoc: string | null = null;
   private pendingSrcdoc: string | null = null;
   private loadedDocumentId: string | null = null;
+  private canvasReadyDocumentId: string | null = null;
   private loadCheck: ReturnType<typeof setTimeout> | null = null;
   private pendingReady: {
     documentId: string;
@@ -934,6 +948,8 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     if (signal.aborted) {
       return Promise.reject(new DOMException('Aborted', 'AbortError'));
     }
+    this.clearCanvasInlineEdit();
+    this.canvasReadyDocumentId = null;
     this.rejectPending(new Error('Preview document was replaced before it became ready.'), false);
     this.rejectCommands(new Error('Preview document was replaced before the command completed.'));
     this.closeCommandPort();
@@ -1170,6 +1186,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
   }
 
   destroy(): void {
+    this.clearCanvasInlineEdit();
     this.iframe.removeEventListener('load', this.handleLoad);
     window.removeEventListener('message', this.handleMessage);
     this.rejectPending(new Error('Preview surface was destroyed.'), false);
@@ -1183,6 +1200,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     this.inlineEditListeners.clear();
     this.canvasInputListeners.clear();
     this.activeDocumentId = null;
+    this.canvasReadyDocumentId = null;
     this.committedDocumentId = null;
     this.committedSrcdoc = null;
     this.pendingSrcdoc = null;
@@ -1219,12 +1237,19 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
         return;
       }
       this.adoptCommandPort(message.documentId, event.ports[0]);
-      this.resolvePendingDocument();
+      if (this.pendingReady) {
+        this.resolvePendingDocument();
+      } else {
+        this.notifyCanvasCommitted();
+      }
     } else if (message.type === 'loaded') {
       this.loadedDocumentId = message.documentId;
       if (this.pendingReady?.documentId === message.documentId) {
         this.pendingReady.loaded = true;
         this.resolvePendingDocument();
+      } else if (message.documentId === this.committedDocumentId) {
+        this.canvasReadyDocumentId = message.documentId;
+        this.notifyCanvasCommitted();
       }
     } else if (
       message.type === 'native-form-submit' &&
@@ -1251,12 +1276,17 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     } else if (
       message.type === 'canvas-input' &&
       this.canvasNavigation &&
+      this.canvasReadyDocumentId === message.documentId &&
       message.documentId === this.committedDocumentId
     ) {
+      if (message.input.kind === 'inline-edit') {
+        this.canvasInlineEditActive = message.input.box !== null;
+      }
       this.canvasInputListeners.forEach((listener) => listener(message.input));
     } else if (
       message.type === 'inline-edit' &&
       message.documentId === this.committedDocumentId &&
+      (!this.canvasNavigation || this.canvasReadyDocumentId === message.documentId) &&
       this.inlineEditing
     ) {
       this.handleInlineEdit(message.documentId, message.edit);
@@ -1425,10 +1455,14 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     this.committedDocumentId = pending.documentId;
     this.committedSrcdoc = this.pendingSrcdoc;
     this.pendingSrcdoc = null;
+    this.canvasReadyDocumentId = pending.documentId;
+    this.notifyCanvasCommitted();
     pending.resolve(pending.selection);
   }
 
   private restoreCommittedDocument(): void {
+    this.clearCanvasInlineEdit();
+    this.canvasReadyDocumentId = null;
     this.loadedDocumentId = null;
     this.rejectCommands(new Error('Preview document was restored before the command completed.'));
     this.closeCommandPort();
@@ -1503,6 +1537,29 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
       this.commandPort = null;
     }
     this.commandPortDocumentId = null;
+  }
+
+  private clearCanvasInlineEdit(): void {
+    if (this.canvasInlineEditActive) {
+      this.canvasInlineEditActive = false;
+      this.canvasInputListeners.forEach((listener) => listener({ kind: 'inline-edit', box: null }));
+    }
+  }
+
+  private notifyCanvasCommitted(): void {
+    if (
+      this.canvasNavigation &&
+      this.canvasReadyDocumentId !== null &&
+      this.canvasReadyDocumentId === this.activeDocumentId &&
+      this.canvasReadyDocumentId === this.committedDocumentId &&
+      this.commandPortDocumentId === this.committedDocumentId
+    ) {
+      this.commandPort?.postMessage({
+        channel: this.channel,
+        documentId: this.committedDocumentId,
+        type: 'canvas-committed',
+      });
+    }
   }
 
   private loadCaptureFrame(

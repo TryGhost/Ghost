@@ -17,6 +17,7 @@ export type CanvasFrame = CanvasRect & {
 };
 export type CanvasFrameInput =
   | { kind: 'escape' }
+  | { kind: 'inline-edit'; box: CanvasRect | null }
   | { kind: 'zoom'; x: number; y: number; deltaY: number; deltaMode: number };
 export type CanvasView = {
   camera: CanvasCamera;
@@ -63,6 +64,12 @@ export function CanvasBoard({
   const [camera, setCamera] = useState<CanvasCamera>({ x: 0, y: 0, scale: 1 });
   const [selected, setSelected] = useState<string | null>(null);
   const [focused, setFocused] = useState<string | null>(null);
+  const focus = useRef(focused);
+  focus.current = focused;
+  const currentFrames = useRef(frames);
+  currentFrames.current = frames;
+  const drafts = useRef(new Map<string, CanvasRect>());
+  const [draftFrames, setDraftFrames] = useState<string[]>([]);
   const viewHandler = useRef(onViewChange);
   viewHandler.current = onViewChange;
   useEffect(() => {
@@ -77,7 +84,19 @@ export function CanvasBoard({
   const drag = useRef<{ origin: CanvasPoint; point: CanvasPoint; moved: boolean } | null>(null);
   const navigate = useCallback((next: SetStateAction<CanvasCamera>) => {
     initialized.current = true;
-    setCamera(next);
+    setCamera((current) => {
+      const result = typeof next === 'function' ? next(current) : next;
+      const frame = currentFrames.current.find((value) => value.id === focus.current);
+      const box = frame ? drafts.current.get(frame.id) : undefined;
+      if (frame && box && result.scale < 1) {
+        const anchor = {
+          x: result.x + (frame.x + box.x + box.width / 2) * result.scale,
+          y: result.y + (frame.y + box.y + box.height / 2) * result.scale,
+        };
+        return zoomCanvas(result, anchor, 1 / result.scale);
+      }
+      return result;
+    });
   }, []);
 
   useEffect(() => {
@@ -131,6 +150,7 @@ export function CanvasBoard({
     }
     setSelected(frame.id);
     setFocused(frame.id);
+    focus.current = frame.id;
     const width = frame.viewport?.width ?? frame.width;
     const scale = Math.min(1, Math.max(0.1, (size.width - 96) / width));
     navigate({
@@ -141,6 +161,7 @@ export function CanvasBoard({
   };
   const back = () => {
     setFocused(null);
+    focus.current = null;
     if (overview.current) {
       navigate(overview.current);
       overview.current = null;
@@ -149,6 +170,7 @@ export function CanvasBoard({
   };
   const fit = (group?: string) => {
     setFocused(null);
+    focus.current = null;
     overview.current = null;
     navigate(fitCanvas(group ? frames.filter((frame) => frame.group === group) : frames, size));
   };
@@ -213,6 +235,16 @@ export function CanvasBoard({
           Drag or scroll to pan · Ctrl/⌘ scroll to zoom · Double-click a frame to open
         </Text>
       </Inline>
+      {draftFrames.length > 0 && (
+        <Text role="status" size="sm">
+          Uncommitted text in{' '}
+          {frames
+            .filter((frame) => draftFrames.includes(frame.id))
+            .map((frame) => frame.label)
+            .join(', ')}
+          . Reopen the frame to continue.
+        </Text>
+      )}
       <Box
         ref={host}
         aria-label="Theme canvas"
@@ -300,6 +332,18 @@ export function CanvasBoard({
               {renderFrame(
                 frame,
                 (input) => {
+                  if (input.kind === 'inline-edit') {
+                    if (input.box) {
+                      drafts.current.set(frame.id, input.box);
+                    } else {
+                      drafts.current.delete(frame.id);
+                    }
+                    setDraftFrames([...drafts.current.keys()]);
+                    if (focused === frame.id && input.box) {
+                      navigate((value) => ({ ...value }));
+                    }
+                    return;
+                  }
                   if (focused !== frame.id) {
                     return;
                   }

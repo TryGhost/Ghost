@@ -33,6 +33,16 @@ const frameFakes = new WeakMap<
 >();
 const guardedPages = new WeakSet<BrowserPage>();
 const imageRequests = new WeakMap<BrowserPage, string[]>();
+const heldImages = new WeakMap<BrowserPage, Set<() => void>>();
+
+const releaseHeldImages = (page: BrowserPage) => {
+  heldImages.get(page)?.forEach((release) => release());
+  heldImages.delete(page);
+};
+const releaseFrameImages: BrowserCommand<[]> = ({ page }) => {
+  releaseHeldImages(page);
+  return Promise.resolve();
+};
 
 const isExternal = (url: URL) => url.hostname !== 'localhost' && url.hostname !== '127.0.0.1';
 
@@ -63,6 +73,7 @@ const fakeFrameOrigin: BrowserCommand<[origin: string, html: string]> = async (
 };
 
 const resetFakeFrameOrigins: BrowserCommand<[]> = async ({ page }) => {
+  releaseHeldImages(page);
   const fakes = frameFakes.get(page) ?? [];
   frameFakes.delete(page);
   imageRequests.delete(page);
@@ -70,16 +81,20 @@ const resetFakeFrameOrigins: BrowserCommand<[]> = async ({ page }) => {
 };
 
 // Opaque preview resources bypass MSW, just like iframe navigations.
-const fakeFrameImage: BrowserCommand<[url: string, png: string, cors: boolean]> = async (
-  { page },
-  url,
-  png,
-  cors,
-) => {
+const fakeFrameImage: BrowserCommand<
+  [url: string, png: string, cors: boolean, hold?: boolean]
+> = async ({ page }, url, png, cors, hold = false) => {
   const address = new URL(url).href;
   const matcher = (request: URL) => request.href === address;
-  const handler: FrameRouteHandler = (route) => {
+  const handler: FrameRouteHandler = async (route) => {
     imageRequests.set(page, [...(imageRequests.get(page) ?? []), route.request().url()]);
+    if (hold) {
+      await new Promise<void>((resolve) => {
+        const releases = heldImages.get(page) ?? new Set<() => void>();
+        releases.add(resolve);
+        heldImages.set(page, releases);
+      });
+    }
     return route.fulfill({
       contentType: 'image/png',
       body: Buffer.from(png, 'base64'),
@@ -144,6 +159,7 @@ export default defineConfig({
         fakeFrameOrigin,
         fakeFrameImage,
         getFrameImageRequests,
+        releaseFrameImages,
         guardFrameNavigations,
         resetFakeFrameOrigins,
       },
