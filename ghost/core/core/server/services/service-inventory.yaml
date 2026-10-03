@@ -1,0 +1,3592 @@
+# Temporary migration inventory. See README.md before updating.
+# Entry points are relative to this directory; evidence paths are relative to ghost/core.
+# An unverified facet is an open audit question, not an empty/no-op contract.
+version: 1
+services:
+  activitypub:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - activitypub/index.js
+    notes: >-
+      Preserve background startup and settings-driven enable/disable behavior; audit listener
+      disposal and in-flight configuration.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS exports the wrapper class itself, with static init(), instance and
+          initialised fields.
+        sources:
+          - core/server/services/activitypub/index.js
+          - core/server/services/activitypub/activity-pub-service-wrapper.js
+        tests: []
+      construction:
+        summary: >-
+          The first init with an available identity-token instance constructs
+          ActivityPubService, captures the site URL and subscribes three settings listeners. A
+          retained instance makes later init calls return immediately.
+        sources:
+          - core/server/services/activitypub/activity-pub-service-wrapper.js
+          - core/server/services/activitypub/activity-pub-service.ts
+        tests: []
+      startup:
+        summary: >-
+          Background boot awaits wrapper init after earlier recovery and scheduling work. The
+          wrapper logs and returns if identity tokens are absent, and starts
+          configureActivityPub without awaiting enable/disable completion.
+        sources:
+          - core/boot.js
+          - core/server/services/activitypub/activity-pub-service-wrapper.js
+        tests: []
+    unverified:
+      - consumers
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Characterize settings-task failures and concurrent edits; init completion does not
+        establish completed remote configuration.
+      - The wrapper registers settings listeners without a shutdown or unsubscribe path.
+  adapter-manager:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - adapter-manager/index.ts
+    notes: >-
+      Preserve boot validation, lazy adapter construction and cached instance identity; decide
+      disposal ownership for adapters.
+    contracts:
+      exports:
+        summary: >-
+          The TypeScript default export is an eager AdapterManager instance; CommonJS callers
+          read .default. Its public methods are init(), getAdapter() and clearCache().
+        sources:
+          - core/server/services/adapter-manager/index.ts
+          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/boot.js
+        tests: []
+      construction:
+        summary: >-
+          The root constructs one manager with config, require, adapter paths and registered
+          base classes. getAdapter constructs adapters lazily and caches them by requested
+          name and selected class name.
+        sources:
+          - core/server/services/adapter-manager/index.ts
+          - core/server/services/adapter-manager/adapter-manager.ts
+        tests: []
+      startup:
+        summary: >-
+          initCore calls init synchronously to load configured adapter classes and run
+          optional static validation. It skips unconfigured types, deduplicates class/config
+          pairs and aggregates failures; actual instances are constructed on getAdapter.
+        sources:
+          - core/boot.js
+          - core/server/services/adapter-manager/adapter-manager.ts
+        tests:
+          - test/unit/server/services/adapter-manager/adapter-manager.test.ts
+      configuration:
+        summary: >-
+          getAdapter resolves selection and options from config on every call, but returns the
+          cached instance for the same requested name and class. Changed options alone do not
+          reconstruct it; clearCache drops cached references.
+        sources:
+          - core/server/services/adapter-manager/adapter-manager.ts
+        tests: []
+    unverified:
+      - consumers
+      - lifetime
+      - resources
+      - failures
+    blockers:
+      - Add same-manager configuration-change and retained-consumer tests.
+      - >-
+        clearCache does not dispose adapters; audit resource ownership and callers retaining
+        old instances.
+  announcement-bar-service:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - announcement-bar-service/index.js
+    notes: >-
+      Preserve live settings reads and visibility decisions; account for the validator using
+      the implementation class directly.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS exports one AnnouncementBarSettings instance with
+          getAnnouncementSettings(). The implementation class is also imported directly for
+          its static VisibilityValues.
+        sources:
+          - core/server/services/announcement-bar-service/index.js
+          - core/server/services/announcement-bar-service/announcement-bar-settings.js
+          - core/server/api/endpoints/utils/validators/input/settings.js
+        tests: []
+      construction:
+        summary: >-
+          The root constructs the instance at module evaluation with a settings-reader
+          callback. The announcements endpoint retains that instance; the settings validator
+          reads the class without constructing another.
+        sources:
+          - core/server/services/announcement-bar-service/index.js
+          - core/server/api/endpoints/announcements.js
+          - core/server/api/endpoints/utils/validators/input/settings.js
+        tests: []
+      configuration:
+        summary: >-
+          Every getAnnouncementSettings call invokes the callback to read content, background
+          and visibility from settingsCache; these values are not captured at construction.
+        sources:
+          - core/server/services/announcement-bar-service/index.js
+          - core/server/services/announcement-bar-service/announcement-bar-settings.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - resources
+      - failures
+    blockers:
+      - >-
+        Add same-instance settings-change and root export characterization before moving
+        construction to boot.
+  audience-feedback:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - audience-feedback/index.js
+    notes: >-
+      Preserve the service, controller and repository surfaces, including feedback links and
+      the captured fallback URL.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS exports an eager wrapper with async init(); initialization publishes
+          repository, service and controller properties.
+        sources:
+          - core/server/services/audience-feedback/index.js
+        tests: []
+      construction:
+        summary: >-
+          Boot calls init, which constructs the model-backed repository,
+          AudienceFeedbackService and controller. A truthy service guards repeat calls. Email
+          rendering retains service; the members app and feedback endpoint use
+          controller/repository through the wrapper.
+        sources:
+          - core/boot.js
+          - core/server/services/audience-feedback/index.js
+          - core/server/services/email-service/email-service-wrapper.js
+          - core/server/web/members/app.js
+          - core/server/api/endpoints/feedback-members.js
+        tests: []
+      configuration:
+        summary: >-
+          Initialization captures the home URL as baseURL. Link building asks the URL service
+          for the current post URL, while fallback and email links use that captured base.
+        sources:
+          - core/server/services/audience-feedback/index.js
+          - core/server/services/audience-feedback/audience-feedback-service.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - resources
+      - failures
+    blockers:
+      - >-
+        Characterize repeated init, retained consumers and constructor failures; the service
+        guard is set before controller construction finishes.
+  auth:
+    kind: directory
+    disposition: review
+    status: auditing
+    entryPoints:
+      - auth/index.js
+      - auth/session/index.js
+      - auth/session/express-session.js
+      - auth/members/index.js
+    notes: >-
+      Review an interim auth subsystem outside services. Keep authentication policy outside
+      the HTTP layer and identify each nested instance owner.
+    contracts:
+      exports:
+        summary: >-
+          The CommonJS root exposes lazy getters for authorize, authenticate, session, setup,
+          passwordreset and resetAuthentication. These include middleware and workflow
+          functions, rather than one initialized service instance.
+        sources:
+          - core/server/services/auth/index.js
+          - core/server/services/auth/authenticate.js
+          - core/server/services/auth/authorize.js
+          - core/server/services/auth/setup.js
+          - core/server/services/auth/passwordreset.js
+          - core/server/services/auth/reset-authentication.ts
+        tests: []
+      construction:
+        summary: >-
+          Loading session eagerly constructs GhostMailer, the session service, middleware and
+          SessionStore. Express-session middleware is cached on first getSession; member-token
+          middleware is cached after the first request builds it. The backend also imports
+          session directly to create SSO middleware.
+        sources:
+          - core/server/services/auth/session/index.js
+          - core/server/services/auth/session/express-session.js
+          - core/server/services/auth/members/index.js
+          - core/server/web/parent/backend.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Complete the nested middleware, session-store, mailer and SSO adapter ownership audit
+        before relocating auth.
+      - >-
+        Characterize first-request configuration capture, concurrent first use and
+        reset-authentication ordering before changing initialization.
+  automations:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - automations/index.ts
+      - automations/automations-api.ts
+    notes: >-
+      Manage both the polling instance and the separately composed API repository; preserve
+      scheduling and signup-trigger behavior.
+    contracts:
+      exports:
+        summary: >-
+          The root exports the named automationsService instance. Callers also import
+          automations-api directly for reads, writes, signup triggers and email analytics
+          operations.
+        sources:
+          - core/server/services/automations/index.ts
+          - core/server/services/automations/automations-api.ts
+          - core/server/api/endpoints/automations.ts
+          - core/server/services/members/members-api/members-api.js
+          - core/boot.js
+        tests: []
+      construction:
+        summary: >-
+          The root eagerly constructs AutomationsService. Loading automations-api separately
+          constructs a database repository and captures fakeWaitHoursMultiplier. First init
+          creates a timer, two poll subscriptions and scheduler registration, launches the
+          first poll asynchronously, then sets its initialization guard.
+        sources:
+          - core/server/services/automations/index.ts
+          - core/server/services/automations/automations-api.ts
+          - core/server/services/automations/service.ts
+        tests: []
+      startup:
+        summary: >-
+          Boot calls and awaits automationsService.init after jobs.start and before post
+          rescheduling. The implementation is synchronous and launches the first poll
+          asynchronously, so this await does not wait for poll completion.
+        sources:
+          - core/boot.js
+          - core/server/services/automations/service.ts
+        tests:
+          - test/unit/server/services/automations/service.test.ts
+      lifetime:
+        summary: >-
+          After successful init, later calls return without replacing the timer, subscriptions
+          or captured scheduler dependencies. rescheduleAll is a no-op before init and
+          otherwise enqueues a fresh poll.
+        sources:
+          - core/server/services/automations/service.ts
+        tests:
+          - test/unit/server/services/automations/service.test.ts
+      failures:
+        summary: >-
+          Synchronous init errors escape to boot. Analytics scheduling failure during a poll
+          is caught and logged; it does not retry the already sent email or prevent step
+          completion.
+        sources:
+          - core/server/services/automations/service.ts
+          - core/server/services/automations/poll.ts
+          - core/boot.js
+        tests:
+          - test/unit/server/services/automations/poll.test.ts
+    unverified:
+      - consumers
+      - configuration
+      - resources
+    blockers:
+      - >-
+        No stop/dispose method releases the timer or poll subscriptions; audit in-flight
+        polling and scheduler ownership.
+      - >-
+        Characterize module-level repository configuration and partially completed init
+        before migrating both composition paths.
+      - >-
+        Test boot ordering with pending jobs startup and propagation of synchronous
+        automation initialization errors; the existing boot stub incorrectly models
+        initialization as asynchronous.
+  comments:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - comments/index.js
+    notes: >-
+      Preserve API/controller replacement on init and account for the nested mailer and
+      email-rendering dependencies.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS exports one wrapper with init(), api and controller; api and controller are
+          assigned during initialization.
+        sources:
+          - core/server/services/comments/index.js
+        tests: []
+      construction:
+        summary: >-
+          Each init constructs GhostMailer, CommentsService, CommentsStats and
+          CommentsController. CommentsService also constructs its email helper and renderer.
+          Boot calls init; comment endpoints and the post serializer retain the wrapper.
+        sources:
+          - core/server/services/comments/index.js
+          - core/server/services/comments/comments-service.js
+          - core/server/services/comments/comments-service-emails.js
+          - core/boot.js
+          - core/server/api/endpoints/comments.js
+          - core/server/api/endpoints/utils/serializers/output/mappers/posts.js
+        tests: []
+      lifetime:
+        summary: >-
+          The wrapper has no init guard: every call replaces api and controller. Previously
+          retained implementation references are not updated by that replacement.
+        sources:
+          - core/server/services/comments/index.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Add root initialization and retained-consumer tests; audit nested mail transport
+        lifetime and failure behavior.
+  content-import:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - content-import/index.ts
+    notes: >-
+      Preserve boot-created importer state, request validation, job dispatch, staging and
+      completion reporting.
+    contracts:
+      exports:
+        summary: >-
+          The TypeScript root exports init, importCSV, handleJob and allSettled functions. The
+          separately exported ContentCSVImportJob class is registered by the jobs composition
+          module.
+        sources:
+          - core/server/services/content-import/index.ts
+          - core/server/services/content-import/jobs/content-csv-import-job.ts
+          - core/server/services/jobs-service/register-job-handlers.ts
+        tests: []
+      construction:
+        summary: >-
+          The first init constructs ContentCSVImporter with a run store, model repository,
+          GhostMailer and staging callbacks; later init calls retain it. Media inliners are
+          created through a callback, and jobs/storage adapters are resolved when their
+          callbacks run.
+        sources:
+          - core/server/services/content-import/index.ts
+        tests: []
+      startup:
+        summary: >-
+          Boot initializes the importer before registering and starting job handlers.
+          importCSV and handleJob throw before init, while allSettled resolves without an
+          importer; the existing root test checks the pre-init job error and allSettled path.
+        sources:
+          - core/boot.js
+          - core/server/services/content-import/index.ts
+          - core/server/services/jobs-service/register-job-handlers.ts
+        tests:
+          - test/unit/server/services/content-import/index.test.ts
+    unverified:
+      - consumers
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Characterize repeated init, retained run state and same-instance configuration
+        changes.
+      - >-
+        Complete the staging, in-flight import, mailer and shutdown audit; allSettled is
+        test-facing and is not a boot cleanup hook.
+  custom-redirects:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - custom-redirects/index.js
+    notes: >-
+      Preserve the distinction between rebuilding the wrapper on init and mutating the
+      existing router during configuration reload.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS exports init() plus api and middleware getters. The middleware getter
+          exposes the current DynamicRedirectManager handleRequest function.
+        sources:
+          - core/server/services/custom-redirects/index.js
+        tests: []
+      construction:
+        summary: >-
+          Each init constructs a redirect manager and RedirectsService around the selected
+          redirects adapter, then returns the service initialization promise. The same manager
+          factory supplies fresh dry-run managers for replace validation.
+        sources:
+          - core/server/services/custom-redirects/index.js
+          - core/server/services/custom-redirects/redirects-service.ts
+        tests: []
+      startup:
+        summary: >-
+          Frontend service boot awaits init before building the site app.
+          RedirectsService.init catches and logs activation errors; adapter lookup or
+          construction errors before that call still propagate.
+        sources:
+          - core/boot.js
+          - core/server/services/custom-redirects/index.js
+          - core/server/services/custom-redirects/redirects-service.ts
+          - core/frontend/web/site.js
+        tests: []
+      lifetime:
+        summary: >-
+          activate and replace mutate the manager retained by the mounted middleware. Calling
+          root init again replaces both service and manager, while an already mounted
+          handleRequest still refers to its previous manager.
+        sources:
+          - core/server/services/custom-redirects/index.js
+          - core/server/services/custom-redirects/redirects-service.ts
+          - core/frontend/web/site.js
+        tests: []
+    unverified:
+      - consumers
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Add a retained-middleware repeated-init test; do not equate reload through activate
+        with a fresh init.
+      - >-
+        Audit redirect-store ownership and parser/helper imports used by adapters and
+        endpoints.
+  custom-theme-settings.js:
+    kind: file
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - custom-theme-settings.js
+    notes: >-
+      Preserve initialization before theme activation and API replacement on repeated init;
+      later migrate the standalone wrapper into the agreed root pattern.
+    contracts:
+      exports:
+        summary: >-
+          The CommonJS file exports one wrapper with init() and an api property assigned
+          during initialization.
+        sources:
+          - core/server/services/custom-theme-settings.js
+        tests: []
+      construction:
+        summary: >-
+          Every init constructs CustomThemeSettingsService with the shared cache and model.
+          Boot initializes it before themes; theme activation/storage and the
+          custom-theme-settings endpoint use the wrapper.
+        sources:
+          - core/server/services/custom-theme-settings.js
+          - core/boot.js
+          - core/server/services/themes/activation-bridge.js
+          - core/server/services/themes/storage.js
+          - core/server/api/endpoints/custom-theme-settings.js
+        tests: []
+      lifetime:
+        summary: >-
+          The wrapper has no init guard and replaces api on every call while reusing the
+          imported model and shared cache.
+        sources:
+          - core/server/services/custom-theme-settings.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Add wrapper repeated-init and retained-consumer characterization; existing
+        cache/service tests do not prove wrapper lifecycle.
+  donations:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - donations/index.js
+    notes: >-
+      Preserve the guarded repository and the Stripe wrapper reference that resolves it after
+      early imports.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS exports one DonationServiceWrapper with init() and a repository property;
+          this root does not expose a service or controller property.
+        sources:
+          - core/server/services/donations/index.js
+          - core/server/services/donations/donation-service-wrapper.js
+        tests: []
+      construction:
+        summary: >-
+          The root eagerly creates its wrapper, whose module captures the DonationPaymentEvent
+          model. The first init constructs DonationBookshelfRepository and later calls retain
+          it. Stripe retains the wrapper and resolves repository through a webhook-dependency
+          getter.
+        sources:
+          - core/server/services/donations/index.js
+          - core/server/services/donations/donation-service-wrapper.js
+          - core/server/services/donations/donation-bookshelf-repository.ts
+          - core/server/services/stripe/service.js
+          - core/server/services/stripe/stripe-service.js
+        tests: []
+      startup:
+        summary: >-
+          Boot initializes Stripe before donations, then initializes donations in the main
+          service group. The deferred Stripe repository getter allows the earlier construction
+          to see the repository after donations init.
+        sources:
+          - core/boot.js
+          - core/server/services/stripe/stripe-service.js
+          - core/server/services/donations/donation-service-wrapper.js
+        tests: []
+    unverified:
+      - consumers
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Add a real retained Stripe consumer test across donation initialization; audit webhook
+        operation and error contracts.
+  email-address:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - email-address/index.js
+    notes: >-
+      Preserve one composed email-address implementation and live configuration/settings
+      callbacks, including disabled managed-email behavior.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS exports one wrapper with init() and service. Callers use the service
+          property; email-address-parser also supplies parse/stringify helpers to other
+          services and mail support.
+        sources:
+          - core/server/services/email-address/index.js
+          - core/server/services/email-address/email-address-service-wrapper.js
+          - core/server/services/email-address/email-address-parser.ts
+          - core/server/lib/mail/ghost-mailer.js
+        tests: []
+      construction:
+        summary: >-
+          The root eagerly creates the wrapper, and the first init creates
+          EmailAddressService. A service guard retains it. Boot initializes it before Stripe
+          and the main service group; email sending and members capture service, while
+          newsletters retains the wrapper.
+        sources:
+          - core/server/services/email-address/index.js
+          - core/server/services/email-address/email-address-service-wrapper.js
+          - core/boot.js
+          - core/server/services/email-service/email-service-wrapper.js
+          - core/server/services/members/api.js
+          - core/server/services/newsletters/index.js
+        tests: []
+      configuration:
+        summary: >-
+          The wrapper passes callbacks that read managed-email enablement/domains, fallback
+          address and settings-helper addresses at use time, rather than capturing their
+          values during init.
+        sources:
+          - core/server/services/email-address/email-address-service-wrapper.js
+          - core/server/services/email-address/email-address-service.ts
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - resources
+      - failures
+    blockers:
+      - >-
+        Add same-loaded-wrapper identity and configuration-change tests; implementation tests
+        alone do not cover the composition callbacks.
+  email-analytics:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - email-analytics/index.ts
+      - email-analytics/jobs/index.js
+    notes: >-
+      Preserve three independent pipelines and the separate scheduling entry point;
+      characterize partial initialization and job drain behavior.
+    contracts:
+      exports:
+        summary: >-
+          The TypeScript root exports init and guarded getNewsletters/getAutomations/getGifts
+          accessors. The CommonJS jobs entry exposes three recurring-schedule functions used
+          by boot, email sending, gifts and automations.
+        sources:
+          - core/server/services/email-analytics/index.ts
+          - core/server/services/email-analytics/jobs/index.js
+          - core/boot.js
+          - core/server/services/email-service/email-service-wrapper.js
+          - core/server/services/gifts/index.ts
+          - core/server/services/automations/service.ts
+        tests: []
+      construction:
+        summary: >-
+          init constructs shared queries, newsletter event storage/processing and three
+          wrapper instances from injected dependencies, guarded by newsletters. Loading
+          jobs/index.js separately constructs EmailAnalyticsJobScheduler, whose jobs-service
+          callback resolves the current instance when scheduling.
+        sources:
+          - core/server/services/email-analytics/index.ts
+          - core/server/services/email-analytics/jobs/index.js
+        tests: []
+      startup:
+        summary: >-
+          The synchronous init call precedes job-handler registration. Background scheduling
+          uses Promise.allSettled and logs individual failures while later background services
+          continue.
+        sources:
+          - core/boot.js
+          - core/server/services/email-analytics/index.ts
+        tests:
+          - test/unit/boot-email-analytics.test.ts
+      lifetime:
+        summary: >-
+          Before init, all three accessors assert. After successful init they return distinct
+          retained wrappers, and later init calls preserve them; unit tests substitute wrapper
+          constructors to check this publication contract.
+        sources:
+          - core/server/services/email-analytics/index.ts
+        tests:
+          - test/unit/server/services/email-analytics/index.test.ts
+    unverified:
+      - consumers
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Publication is sequential and guarded only by newsletters; characterize a later
+        constructor failure leaving earlier state initialized.
+      - >-
+        Finish same-instance config and real job continuation/drain characterization,
+        including the separately composed scheduler.
+  email-service:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - email-service/index.js
+      - email-service/newsletter-email-event-storage.js
+      - email-service/email-event-processor.js
+    notes: >-
+      Preserve the wrapper, newsletter job behavior and cleanup phases; include
+      event-processing constructors composed by email analytics.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS exports one wrapper with init(), getPostUrl(), renderer, service and
+          controller. Email analytics also constructs NewsletterEmailEventStorage and
+          EmailEventProcessor through deep imports.
+        sources:
+          - core/server/services/email-service/index.js
+          - core/server/services/email-service/email-service-wrapper.js
+          - core/server/services/email-analytics/index.ts
+          - core/server/services/email-service/newsletter-email-event-storage.js
+          - core/server/services/email-service/email-event-processor.js
+        tests: []
+      construction:
+        summary: >-
+          The first init requires jobsService and constructs Mailgun, rendering, sending,
+          segmentation, warming, batch, status and controller dependencies. It captures member
+          and sibling-service references, adds a locale listener and optionally registers
+          GhostServer pre-stop/cleanup tasks. A service guard skips later calls.
+        sources:
+          - core/server/services/email-service/email-service-wrapper.js
+          - core/boot.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Characterize wrapper initialization and partial-construction failures; its existing
+        wrapper tests cover getPostUrl only.
+      - >-
+        Audit locale-listener disposal and retained batch-sender state across restart, plus
+        the final status write after tracked batch work.
+  email-suppression-list:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - email-suppression-list/index.js
+    notes: >-
+      Preserve eager provider composition, suppression fallback behavior and domain-event
+      subscription behavior.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS root re-exports the eager MailgunEmailSuppressionList object from
+          service.js, including init and suppression query/removal methods.
+        sources:
+          - core/server/services/email-suppression-list/index.js
+          - core/server/services/email-suppression-list/service.js
+          - core/server/services/email-suppression-list/mailgun-email-suppression-list.js
+        tests: []
+      construction:
+        summary: >-
+          Module evaluation constructs MailgunClient and MailgunEmailSuppressionList with the
+          Suppression model. Boot calls init, which refreshes the model reference and
+          subscribes bounce/complaint handlers to domain events.
+        sources:
+          - core/server/services/email-suppression-list/service.js
+          - core/server/services/email-suppression-list/mailgun-email-suppression-list.js
+          - core/boot.js
+        tests:
+          - test/integration/services/mailgun-email-suppression-list.test.js
+      lifetime:
+        summary: >-
+          The exported object retains identity, but init has no guard and subscribes two new
+          handlers every call. The class exposes no unsubscribe or shutdown path.
+        sources:
+          - core/server/services/email-suppression-list/mailgun-email-suppression-list.js
+          - core/server/services/email-suppression-list/service.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Integration tests exercise suppression after provider events. Repeated initialization,
+        duplicate handling and the full provider/database fallback policy still need
+        characterization.
+  explore-ping:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - explore-ping/index.ts
+    notes: >-
+      Preserve the environment gate and unawaited boot ping; decide how the shared
+      initialization pattern represents this per-init instance.
+    contracts:
+      exports:
+        summary: >-
+          The TypeScript root exports createService() and async init(), without publishing a
+          retained service instance.
+        sources:
+          - core/server/services/explore-ping/index.ts
+        tests: []
+      construction:
+        summary: >-
+          createService constructs a new ExplorePingService and a posts-service instance.
+          Every eligible init invokes the factory and starts ping without awaiting it;
+          repeated init can create another instance and ping.
+        sources:
+          - core/server/services/explore-ping/index.ts
+          - core/server/services/posts/posts-service-instance.js
+        tests: []
+      startup:
+        summary: >-
+          Boot includes init in the main service group. It runs only in production/development
+          and resolves after launching ping, without waiting for payload collection or the
+          request.
+        sources:
+          - core/boot.js
+          - core/server/services/explore-ping/index.ts
+        tests: []
+      configuration:
+        summary: >-
+          Each ping reads the Explore URL and enabled setting, and each payload reads current
+          settings/config. These values are not captured by the constructor.
+        sources:
+          - core/server/services/explore-ping/explore-ping-service.ts
+        tests: []
+    unverified:
+      - consumers
+      - lifetime
+      - resources
+      - failures
+    blockers:
+      - >-
+        Add root environment-gating and nonblocking-start tests; audit in-flight ping failures
+        and shutdown ownership.
+  export-requests:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - export-requests/export-requests-service.ts
+    notes: >-
+      Move the eager deep-module singleton to the common composition pattern while preserving
+      per-request configuration and zero retries.
+    contracts:
+      exports:
+        summary: >-
+          The implementation module exports named ExportRequestsService and
+          exportRequestsService; there is no index module or init function.
+        sources:
+          - core/server/services/export-requests/export-requests-service.ts
+        tests: []
+      construction:
+        summary: >-
+          The module eagerly creates exportRequestsService with default config, logger and
+          request dependencies. The exports endpoint imports and retains it; tests can
+          construct the exported class with overrides.
+        sources:
+          - core/server/services/export-requests/export-requests-service.ts
+          - core/server/api/endpoints/exports.js
+        tests: []
+      configuration:
+        summary: >-
+          requestExport reads webhook URL, secret and site ID for every call rather than
+          capturing their values at construction.
+        sources:
+          - core/server/services/export-requests/export-requests-service.ts
+        tests: []
+      failures:
+        summary: >-
+          Missing URL raises NotFoundError; missing secret/site ID raises IncorrectUsageError.
+          The signed request disables retries, and a rejected request logs the failure and
+          raises a generic InternalServerError with status 502.
+        sources:
+          - core/server/services/export-requests/export-requests-service.ts
+          - core/server/lib/signed-webhook.ts
+        tests:
+          - test/unit/server/services/export-requests/export-requests-service.test.ts
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - resources
+    blockers:
+      - >-
+        Add same-instance configuration characterization and finish the consumer/resource
+        audit.
+  exports:
+    kind: directory
+    disposition: relocate
+    status: auditing
+    entryPoints:
+      - exports/site-exporter.ts
+      - exports/export-components.ts
+    notes: >-
+      Relocate caller-constructed export support to server/lib/site-export; preserve
+      operation-owned streams and temporary-file cleanup.
+    contracts:
+      exports:
+        summary: >-
+          The directory has no index. It exports the SiteExporter class and
+          synchronous/asynchronous component constant arrays; the exports endpoint imports
+          both, and export requests imports the asynchronous component list.
+        sources:
+          - core/server/services/exports/site-exporter.ts
+          - core/server/services/exports/export-components.ts
+          - core/server/api/endpoints/exports.js
+          - core/server/services/export-requests/export-requests-service.ts
+        tests: []
+      construction:
+        summary: >-
+          Each API download creates a new SiteExporter with per-operation callbacks, then
+          creates an archive. Theme temporary directories are acquired by the endpoint
+          callback; the archive arranges cleanup on close and handles late staging after
+          destruction.
+        sources:
+          - core/server/services/exports/site-exporter.ts
+          - core/server/api/endpoints/exports.js
+        tests:
+          - test/unit/server/services/exports/site-exporter.test.ts
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Existing tests cover component failures, stream errors, disconnect cleanup and late
+        theme staging. Complete the nested acquisition/cleanup audit before moving archive
+        ownership.
+  gift-links:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - gift-links/index.ts
+    notes: >-
+      Preserve the deferred binding and database prerequisite; characterize API and public
+      gift-access behavior.
+    contracts:
+      exports:
+        summary: >-
+          Named TypeScript init and service exports; service is undefined until init
+          constructs it.
+        sources:
+          - core/server/services/gift-links/index.ts
+        tests: []
+      construction:
+        summary: >-
+          The first synchronous init reads the connected knex instance and Action model, then
+          constructs GiftLinksService with an action-recording callback. Later init calls
+          return without replacing it.
+        sources:
+          - core/server/services/gift-links/index.ts
+          - core/server/services/gift-links/service.ts
+        tests: []
+      startup:
+        summary: >-
+          initCore initializes gift links after settings, signing keys and i18n. API endpoints
+          and gift-access resolution read the binding directly and require initialization
+          before use.
+        sources:
+          - core/boot.js
+          - core/server/api/endpoints/gift-links.ts
+          - core/server/api/endpoints/utils/gift-link-access.ts
+        tests: []
+    unverified:
+      - consumers
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Characterize binding identity across repeated boot and the API/frontend access
+        boundaries before changing composition.
+  gifts:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - gifts/index.ts
+      - gifts/jobs/index.js
+    notes: >-
+      Composite gift, delivery and controller composition with event subscriptions and
+      separate recurring-job scheduling; audit partial initialization and recovery.
+    contracts:
+      exports:
+        summary: >-
+          Named TypeScript init and recoverPendingDeliveries functions plus controller,
+          service and deliveryService bindings, initially undefined. The separate jobs module
+          exposes cleanup and reminder scheduling functions.
+        sources:
+          - core/server/services/gifts/index.ts
+          - core/server/services/gifts/jobs/index.js
+        tests: []
+      construction:
+        summary: >-
+          The first init creates repositories, checkout and mail adapters, two
+          SignedFlushSchedulers, GiftDeliveryService, GiftService and GiftController. A
+          service guard retains them on later calls. Dependencies on members and staff are
+          exposed through getters; the scheduling adapter, API URL and internal keys are
+          supplied by boot.
+        sources:
+          - core/server/services/gifts/index.ts
+          - core/boot.js
+        tests: []
+      startup:
+        summary: >-
+          The synchronous init call follows awaited Stripe initialization and precedes handler
+          registration. Pending delivery recovery runs later from background-service startup.
+        sources:
+          - core/boot.js
+          - core/server/services/gifts/index.ts
+        tests: []
+      lifetime:
+        summary: >-
+          The service binding guards reconstruction and event subscription. Separate
+          jobs-module flags suppress repeated cleanup/reminder scheduling after a successful
+          schedule; that module skips scheduling in test environments.
+        sources:
+          - core/server/services/gifts/index.ts
+          - core/server/services/gifts/jobs/index.js
+        tests: []
+    unverified:
+      - consumers
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Four domain-event subscriptions and nested mail/scheduler resources have no
+        shutdown hook in this root; cleanup and in-flight recovery ownership remain
+        unaudited.
+      - >-
+        Service bindings are assigned before event subscriptions finish; characterize
+        failure and restart behavior before changing publication order.
+      - Check recurring-job flags against backend shutdown/restart behavior.
+      - Test that pending Stripe initialization blocks gift initialization.
+  i18n.js:
+    kind: file
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - i18n.js
+    notes: >-
+      Standalone translation facade; repeated initialization currently replaces the translator
+      and adds a locale listener.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS init, changeLanguage, dir and t functions. The three translation functions
+          assert that init has supplied an instance and delegate at call time.
+        sources:
+          - core/server/services/i18n.js
+        tests: []
+      construction:
+        summary: >-
+          Each init constructs an @tryghost/i18n instance from the current locale, falling
+          back to en, and registers settings.locale.edited. There is no initialization guard.
+        sources:
+          - core/server/services/i18n.js
+        tests: []
+      startup:
+        summary: >-
+          initCore calls init after settings and signing keys are ready. Translation consumers
+          include members, Stripe, comments, gifts and session authentication.
+        sources:
+          - core/boot.js
+          - core/server/services/members/api.js
+          - core/server/services/stripe/stripe-api.js
+          - core/server/services/comments/comments-service-emails.js
+          - core/server/services/gifts/index.ts
+          - core/server/services/auth/session/index.js
+        tests: []
+      lifetime:
+        summary: >-
+          The exported delegating functions remain stable while i18nInstance is replaced.
+          Every init adds a listener whose callback accesses the current variable; this module
+          neither removes listeners nor exposes shutdown.
+        sources:
+          - core/server/services/i18n.js
+        tests: []
+    unverified:
+      - consumers
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Repeated initialization does not guarantee one locale listener; characterize the
+        current restart path before introducing listener cleanup.
+      - >-
+        Translation configuration beyond locale and the underlying library lifecycle remain
+        unaudited.
+  identity-tokens:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - identity-tokens/index.js
+    notes: >-
+      Static wrapper for staff identity-token issuance; preserve signing-key provider and
+      issuer behavior.
+    contracts:
+      exports:
+        summary: >-
+          The CommonJS root re-exports the IdentityTokenServiceWrapper class, with static
+          async init and static instance; it does not export a wrapper object or
+          token-validation API.
+        sources:
+          - core/server/services/identity-tokens/index.js
+          - core/server/services/identity-tokens/identity-token-service-wrapper.js
+          - core/server/services/identity-tokens/identity-token-service.ts
+        tests: []
+      construction:
+        summary: >-
+          The first init constructs IdentityTokenService from
+          signingKeys.getInstance().forPurpose(staff) and the absolute admin URL. Later init
+          calls keep the same static instance.
+        sources:
+          - core/server/services/identity-tokens/identity-token-service-wrapper.js
+        tests: []
+      startup:
+        summary: >-
+          Boot initializes signing keys in initCore before identity tokens in initServices.
+          The identities endpoint reads instance directly, while ActivityPub checks for it and
+          logs then returns if unavailable.
+        sources:
+          - core/boot.js
+          - core/server/api/endpoints/identities.js
+          - core/server/services/activitypub/activity-pub-service-wrapper.js
+        tests: []
+      configuration:
+        summary: >-
+          The issuer URL is captured at construction. Token issuance asks the retained
+          signing-key provider for its current key on every call and signs an RS256 token with
+          a five-minute expiry.
+        sources:
+          - core/server/services/identity-tokens/identity-token-service-wrapper.js
+          - core/server/services/identity-tokens/identity-token-service.ts
+        tests: []
+    unverified:
+      - consumers
+      - lifetime
+      - resources
+      - failures
+    blockers:
+      - >-
+        Characterize wrapper reuse, issuer changes and signing-key rotation without reloading
+        modules.
+  indexnow-ping:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - indexnow-ping/index.ts
+    notes: >-
+      Event-driven IndexNow notifications; preserve publication gating and swallowed ping
+      failures, and audit listener ownership.
+    contracts:
+      exports:
+        summary: >-
+          Default TypeScript export is one IndexNowPingServiceWrapper object exposing init
+          and, after initialization, service. CommonJS boot accesses .default.
+        sources:
+          - core/server/services/indexnow-ping/index.ts
+          - core/boot.js
+        tests: []
+      construction:
+        summary: >-
+          The first synchronous init constructs IndexNowPingService with settings/config, URL
+          services, request, logging and the model-event bus, assigns service, then subscribes
+          to post events. Later init calls return without reconstructing or resubscribing.
+        sources:
+          - core/server/services/indexnow-ping/index.ts
+          - core/server/services/indexnow-ping/indexnow-ping-service.ts
+        tests: []
+      lifetime:
+        summary: >-
+          The implementation keeps one bound event listener and subscribeEvents removes that
+          same listener before registering it for post.published and post.published.edited.
+          The wrapper does not call subscribeEvents again once service exists and exposes no
+          shutdown.
+        sources:
+          - core/server/services/indexnow-ping/index.ts
+          - core/server/services/indexnow-ping/indexnow-ping-service.ts
+        tests: []
+      configuration:
+        summary: >-
+          Each ping reads environment, privacy, site privacy and the IndexNow key from live
+          providers. Development, pages, private sites, disabled privacy setting and default
+          post slugs are skipped; import events and events without relevant SEO changes are
+          skipped before pinging.
+        sources:
+          - core/server/services/indexnow-ping/indexnow-ping-service.ts
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - resources
+      - failures
+    blockers:
+      - >-
+        Verify event-bus reset/restart behavior: wrapper re-init does not restore listeners
+        removed outside the service.
+      - >-
+        Audit in-flight requests and shutdown ownership; no unsubscribe/drain contract is
+        exposed by the root.
+  integrations:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - integrations/integrations-service.js
+    notes: >-
+      Retain business logic; move endpoint-created composition to the common boot-owned
+      pattern while preserving edit and key-rotation behavior.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS export is getIntegrationsServiceInstance, a factory returning an
+          IntegrationsService with an edit method; the class itself is not exported.
+        sources:
+          - core/server/services/integrations/integrations-service.js
+        tests: []
+      construction:
+        summary: >-
+          The integrations endpoint calls the factory at module evaluation with Integration
+          and ApiKey models and retains the resulting instance. The service has no init or
+          shutdown method.
+        sources:
+          - core/server/services/integrations/integrations-service.js
+          - core/server/api/endpoints/integrations.js
+        tests: []
+      consumers:
+        summary: >-
+          The integrations endpoint delegates edit to the retained service; browse, read, add
+          and destroy use models directly in the endpoint.
+        sources:
+          - core/server/api/endpoints/integrations.js
+        tests: []
+      failures:
+        summary: >-
+          Key edits report a missing API key as NotFoundError and wrap refresh/follow-up-read
+          failures in InternalServerError. Ordinary edits translate model
+          NotFound/EmptyResponse messages to NotFoundError and rethrow other errors.
+        sources:
+          - core/server/services/integrations/integrations-service.js
+        tests: []
+    unverified:
+      - startup
+      - lifetime
+      - configuration
+      - resources
+    blockers:
+      - >-
+        Preserve integration editing/key-rotation and error contracts when moving composition
+        to boot; source inspection alone does not establish test coverage.
+  internal-keys:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - internal-keys/index.ts
+    notes: >-
+      Eager key cache with lazy database reads; preserve promise caching and explicit
+      invalidation.
+    contracts:
+      exports:
+        summary: >-
+          Default TypeScript export is an AutoFillingMap from internal integration slugs to
+          API-key promises, with the inherited Map clear/delete surface; other exports are
+          types.
+        sources:
+          - core/server/services/internal-keys/index.ts
+          - core/server/lib/auto-filling-map.ts
+        tests: []
+      construction:
+        summary: >-
+          Import creates one empty AutoFillingMap. Its first get per slug calls
+          Integration.getApiKeyBySlug using the seeded slug-to-key-type mapping and stores the
+          returned promise; no explicit init or boot hook exists.
+        sources:
+          - core/server/services/internal-keys/index.ts
+          - core/server/lib/auto-filling-map.ts
+        tests: []
+      lifetime:
+        summary: >-
+          The map caches promises, including rejected promises, until a key is deleted or the
+          map is cleared. Reset-authentication reads the previous scheduler key, rotates keys
+          transactionally, then clears the map before session deletion and rescheduling.
+        sources:
+          - core/server/services/internal-keys/index.ts
+          - core/server/lib/auto-filling-map.ts
+          - core/server/services/auth/reset-authentication.ts
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - Characterize rejected-promise retention, rotation and same-module restart behavior.
+      - >-
+        Audit the earliest scheduling/frontend callers and database readiness before
+        introducing an initializer.
+  invitations:
+    kind: directory
+    disposition: relocate
+    status: auditing
+    entryPoints:
+      - invitations/index.js
+    notes: >-
+      Move the acceptance workflow under invites ownership while preserving transactional
+      staff creation and token checks.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS root exposes a lazy accept getter returning the accept function; it is not
+          an application instance or a constructor.
+        sources:
+          - core/server/services/invitations/index.js
+          - core/server/services/invitations/accept.js
+        tests: []
+      construction:
+        summary: >-
+          Accessing accept loads its module and model dependencies; each invocation decodes
+          the supplied token and runs invite lookup, deletion and user creation inside one
+          transaction. There is no init or singleton service construction.
+        sources:
+          - core/server/services/invitations/index.js
+          - core/server/services/invitations/accept.js
+        tests: []
+      consumers:
+        summary: The authentication endpoint calls invitations.accept for invitation acceptance.
+        sources:
+          - core/server/api/endpoints/authentication.js
+        tests: []
+    unverified:
+      - startup
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Preserve token decoding, expiry, duplicate-account and transaction failure contracts
+        during relocation.
+  invites:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - invites/index.js
+    notes: >-
+      Eager invitation instance; preserve rendering and API-mail delegation when moving
+      composition to boot.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS root exports one Invites instance with add; the separate invites.js file
+          exports its constructor.
+        sources:
+          - core/server/services/invites/index.js
+          - core/server/services/invites/invites.js
+        tests: []
+      construction:
+        summary: >-
+          Import immediately creates Invites with settingsCache, settingsHelpers, the mail
+          library and URL utilities. add receives the API facade, invite model and user per
+          call; mail is sent through the supplied api.mail.send rather than a transport
+          constructed by this root.
+        sources:
+          - core/server/services/invites/index.js
+          - core/server/services/invites/invites.js
+        tests: []
+      consumers:
+        summary: >-
+          The invites endpoint calls the retained instance for invitation creation and passes
+          the API endpoint facade and model dependencies.
+        sources:
+          - core/server/api/endpoints/invites.js
+        tests: []
+    unverified:
+      - startup
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Characterize mail failure, invite status and settings changes before replacing the
+        eager instance.
+  jobs-service:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - jobs-service/index.ts
+      - jobs-service/register-job-handlers.ts
+    notes: >-
+      Retained process instance; per-boot handler reset, registration-before-start and
+      backend-specific shutdown need to remain explicit.
+    contracts:
+      exports:
+        summary: >-
+          Named TypeScript init/getInstance/shutdown exports. getInstance throws before
+          initialization; shutdown before initialization resolves without constructing a
+          service. Boot separately imports register-job-handlers to wire domain handlers.
+        sources:
+          - core/server/services/jobs-service/index.ts
+          - core/server/services/jobs-service/register-job-handlers.ts
+          - core/boot.js
+        tests:
+          - test/unit/server/services/jobs-service/index.test.js
+      construction:
+        summary: >-
+          The first init constructs JobsService with the configured jobs adapter. Subsequent
+          init calls clear handler and queue declarations and reuse the same service and
+          backend rather than looking up a new adapter.
+        sources:
+          - core/server/services/jobs-service/index.ts
+          - core/server/services/jobs-service/jobs-service.ts
+        tests:
+          - test/unit/server/services/jobs-service/index.test.js
+      startup:
+        summary: >-
+          Boot registers handlers after asynchronous service prerequisites settle, awaits
+          jobs.start, then starts automation polling.
+        sources:
+          - core/boot.js
+          - core/server/services/jobs-service/jobs-service.ts
+        tests: []
+      lifetime:
+        summary: >-
+          The wrapper retains its jobs instance through shutdown. MentionController
+          retains the injected instance and calls dispatch; reinitialization clears
+          handlers and queues before registration.
+        sources:
+          - core/server/services/jobs-service/index.ts
+          - core/server/services/jobs-service/jobs-service.ts
+          - core/server/services/mentions/mention-controller.js
+        tests: []
+    unverified:
+      - consumers
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Audit all retained consumers and configured jobs adapters before migrating
+        resource ownership.
+      - >-
+        Add a retained-consumer dispatch test across shutdown/restart; characterize
+        recurrence, queue settlement and cancellation separately.
+      - >-
+        Test that pending jobs startup blocks automations and post rescheduling, and that
+        startup failures abort dependent work.
+  limits.ts:
+    kind: file
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - limits.ts
+    notes: >-
+      Standalone eager instance plus explicit loading before settings; preserve error handling
+      and route guards.
+    contracts:
+      exports:
+        summary: >-
+          Named TypeScript exports are the eager limitService, synchronous init and
+          requireFeature middleware factory.
+        sources:
+          - core/server/services/limits.ts
+        tests: []
+      construction:
+        summary: >-
+          Import constructs one LimitService; every init reads current host configuration and
+          calls loadLimits on that same object with the shared database dependency.
+        sources:
+          - core/server/services/limits.ts
+        tests: []
+      startup:
+        summary: >-
+          initCore awaits init before settings initialization so limits are available for
+          calculated settings. This await does not make the synchronous initializer await a
+          value returned by loadLimits.
+        sources:
+          - core/boot.js
+          - core/server/services/limits.ts
+        tests: []
+      failures:
+        summary: >-
+          Synchronous IncorrectUsageError from loadLimits warns and continues; other
+          synchronous errors escape unchanged without a warning. requireFeature passes the
+          result or rejection of errorIfWouldGoOverLimit to next.
+        sources:
+          - core/server/services/limits.ts
+        tests:
+          - test/unit/server/services/limits.test.js
+    unverified:
+      - consumers
+      - lifetime
+      - configuration
+      - resources
+    blockers:
+      - >-
+        Characterize changed host settings and middleware consumers before changing
+        initialization. The existing loadLimits propagation test can pass when errors are
+        swallowed; assert that it throws and preserves the error identity.
+  link-redirection:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - link-redirection/index.js
+    notes: >-
+      Frontend-initialized redirect wrapper; preserve cache invalidation and its ordering
+      before link tracking.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS root exports a LinkRedirectsServiceWrapper object with async init. After
+          init it exposes service and linkRedirectRepository.
+        sources:
+          - core/server/services/link-redirection/index.js
+        tests: []
+      construction:
+        summary: >-
+          The first init constructs LinkRedirectRepository with the Redirect model, URL
+          utilities and an optional cache adapter, then constructs LinkRedirectsService with
+          the site base URL. A service guard retains both objects on subsequent init calls.
+        sources:
+          - core/server/services/link-redirection/index.js
+          - core/server/services/link-redirection/link-redirect-repository.js
+        tests: []
+      startup:
+        summary: >-
+          initServicesForFrontend awaits this service before the main services phase. The
+          frontend redirect router uses service, while link-tracking requires both service and
+          linkRedirectRepository before it initializes.
+        sources:
+          - core/boot.js
+          - core/frontend/web/routers/link-redirects.js
+          - core/server/services/link-tracking/index.js
+        tests: []
+      configuration:
+        summary: >-
+          Init captures cache enablement, the selected cache adapter and the service base URL.
+          When caching is enabled, repository construction registers site.changed to reset the
+          cache; repository URL conversions still call URL utilities at operation time.
+        sources:
+          - core/server/services/link-redirection/index.js
+          - core/server/services/link-redirection/link-redirect-repository.js
+        tests: []
+    unverified:
+      - consumers
+      - lifetime
+      - resources
+      - failures
+    blockers:
+      - >-
+        The cache listener has no disposer in this root; audit cache-adapter ownership and
+        restart after event-bus reset.
+      - Backend-only startup and all redirect error boundaries remain unverified.
+  link-tracking:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - link-tracking/index.js
+    notes: >-
+      Async wrapper with shared initialization promise, redirect prerequisite and a
+      domain-event subscription.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS root exports a wrapper object with async init and a
+          LinkTrackingServiceWrapper constructor property for tests. service and
+          linkClickRepository become available only after service.init resolves.
+        sources:
+          - core/server/services/link-tracking/index.js
+        tests: []
+      construction:
+        summary: >-
+          The eager wrapper captures the automations API dependency. The first init requires
+          initialized link redirection, creates post-link/click repositories and
+          LinkClickTrackingService, awaits its init, then publishes the fields.
+        sources:
+          - core/server/services/link-tracking/index.js
+        tests:
+          - test/unit/server/services/link-tracking/index.test.ts
+      startup:
+        summary: >-
+          Missing linkRedirection.service rejects initialization with InternalServerError.
+          Boot initializes link redirection in its frontend phase before awaiting
+          link-tracking in the main services group.
+        sources:
+          - core/server/services/link-tracking/index.js
+          - core/boot.js
+        tests: []
+      lifetime:
+        summary: >-
+          Concurrent init calls await the same internal initialization; successful later calls
+          reuse service. A rejected initialization clears the cached promise so a later call
+          can retry.
+        sources:
+          - core/server/services/link-tracking/index.js
+        tests:
+          - test/unit/server/services/link-tracking/index.test.ts
+    unverified:
+      - consumers
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Service initialization subscribes to RedirectEvent without retaining a disposer; audit
+        event-bus resets, partial subscription failures and in-flight click persistence.
+  machine-payments:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - machine-payments/index.js
+    notes: >-
+      Boot-awaitable wrapper also initializes from challengeOrFulfill; preserve provider
+      gating, publication and prewarm failure behavior.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS root exports one wrapper with service, init, isEnabled, isPurchasable and
+          challengeOrFulfill, plus the MachinePaymentsServiceWrapper constructor.
+        sources:
+          - core/server/services/machine-payments/index.js
+        tests: []
+      construction:
+        summary: >-
+          First init caches an initialization promise, creates the address store, recorder,
+          event repository, content loader and pricing, validates the x402 adapter, then
+          constructs MachinePaymentsService with MPP and any enabled x402 adapter.
+        sources:
+          - core/server/services/machine-payments/index.js
+          - core/server/services/machine-payments/adapters/x402-adapter.ts
+        tests: []
+      startup:
+        summary: >-
+          Boot awaits init in the services group. The wrapper publishes service before
+          enabled-only deposit-address prewarming finishes, but isEnabled/isPurchasable remain
+          false until its initialized flag is set. challengeOrFulfill also awaits init before
+          delegating.
+        sources:
+          - core/server/services/machine-payments/index.js
+          - core/boot.js
+        tests: []
+      lifetime:
+        summary: >-
+          After success init reuses service. A rejected initialization promise is retained
+          because the wrapper has no failure reset; subsequent init and challengeOrFulfill
+          calls receive that rejection.
+        sources:
+          - core/server/services/machine-payments/index.js
+        tests: []
+    unverified:
+      - consumers
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Add wrapper-level tests for concurrent init, partial publication and failure
+        retention; implementation tests alone do not cover these boundaries.
+      - >-
+        Prewarm failures are warned after Promise.allSettled; audit all other provider,
+        lazy-runtime, configuration and shutdown behavior before migration.
+  media-inliner:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - media-inliner/index.js
+    notes: >-
+      Explicit init/getInstance module currently replaces its implementation on every init;
+      preserve job-handler binding and storage behavior.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS index re-exports an object with async init and getInstance. getInstance
+          throws IncorrectUsageError before an instance has been assigned.
+        sources:
+          - core/server/services/media-inliner/index.js
+          - core/server/services/media-inliner/service.js
+        tests: []
+      construction:
+        summary: >-
+          Every init constructs a new ExternalMediaInliner from models and the current
+          media/image/file storage adapters, then replaces the module-level instance; there is
+          no idempotency guard.
+        sources:
+          - core/server/services/media-inliner/service.js
+        tests: []
+      startup:
+        summary: >-
+          Boot awaits media initialization before registering handlers and starting jobs;
+          rejection aborts dependent startup. Handler registration receives the then-current
+          instance, while content-import resolves the root instance when its operation runs.
+        sources:
+          - core/boot.js
+          - core/server/services/jobs-service/register-job-handlers.ts
+          - core/server/services/content-import/index.ts
+          - core/server/services/media-inliner/service.js
+        tests: []
+      configuration:
+        summary: >-
+          Storage adapter objects are captured at init. The storage-selection callback reads
+          allowed upload extensions on each use and validates image content before selecting
+          image storage.
+        sources:
+          - core/server/services/media-inliner/service.js
+        tests:
+          - test/unit/server/services/media-inliner/service.test.ts
+    unverified:
+      - consumers
+      - lifetime
+      - resources
+      - failures
+    blockers:
+      - >-
+        Characterize repeated-init behavior with retained handlers and in-flight
+        downloads; no shutdown/cancellation API is exposed by the wrapper.
+      - >-
+        Test that pending initialization blocks handler registration and that rejection
+        aborts dependent startup.
+  member-attribution:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - member-attribution/index.js
+    notes: >-
+      Composition-only attribution wrapper; preserve the three exposed collaborators and their
+      different configuration timing.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS root exports a wrapper with synchronous init; initialization exposes
+          service, attributionBuilder and outboundLinkTagger.
+        sources:
+          - core/server/services/member-attribution/index.js
+        tests: []
+      construction:
+        summary: >-
+          First init constructs URL/referrer translators, AttributionBuilder,
+          OutboundLinkTagger and MemberAttributionService using shared URL services, model
+          dependencies and live settings callbacks. Subsequent calls keep the existing service
+          and collaborators.
+        sources:
+          - core/server/services/member-attribution/index.js
+        tests: []
+      configuration:
+        summary: >-
+          The referrer parser captures site and admin URLs at init. Member source tracking,
+          outbound-link tagging and the tagger site URL are read through callbacks during use.
+        sources:
+          - core/server/services/member-attribution/index.js
+          - core/server/services/member-attribution/referrer-translator.js
+          - core/server/services/member-attribution/member-attribution-service.js
+          - core/server/services/member-attribution/outbound-link-tagger.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - resources
+      - failures
+    blockers:
+      - >-
+        Characterize live-versus-captured settings on the same instance and audit
+        members/staff/email/post-serializer consumers.
+  member-welcome-emails:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - member-welcome-emails/index.js
+      - member-welcome-emails/service.js
+    notes: >-
+      Nested singleton initialized by consumers; preserve locale listener, cached sender state
+      and mail dependencies.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS root exports service, the MemberWelcomeEmailServiceWrapper singleton, and
+          constants. Production consumers also require service.js directly; the usable API
+          appears as service.api after init.
+        sources:
+          - core/server/services/member-welcome-emails/index.js
+          - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/constants.ts
+        tests: []
+      construction:
+        summary: >-
+          First wrapper init creates an i18n instance and locale listener, a
+          SingleUseTokenProvider and MemberWelcomeEmailService. The latter calls
+          email-address.init and constructs transactional mail, Mailgun, renderer and
+          magic-link collaborators. Later init calls retain api.
+        sources:
+          - core/server/services/member-welcome-emails/service.js
+        tests: []
+      startup:
+        summary: >-
+          There is no direct init call in boot. Automated-email and preview requests, Stripe
+          paid-welcome checks and automation poll paths call the wrapper init themselves
+          before using api.
+        sources:
+          - core/boot.js
+          - core/server/api/endpoints/automated-emails.js
+          - core/server/api/endpoints/automation-email-previews.js
+          - core/server/services/stripe/stripe-service.js
+          - core/server/services/automations/poll.ts
+          - core/server/services/automations/welcome-email-automation-poll.ts
+        tests: []
+    unverified:
+      - consumers
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Audit cached welcome-email/sender refresh and same-instance configuration changes
+        before changing initialization.
+      - >-
+        The root exposes no shutdown for its locale listener, mail collaborators or
+        outstanding sends.
+  members:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - members/index.js
+      - members/jobs/index.js
+      - members/single-use-token-provider.js
+    notes: >-
+      Composite facade mixes eager dependencies, retained API state and per-init
+      collaborators; audit auth, imports, SSR and event ownership separately.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS index re-exports the service facade: async init, a read-only api getter,
+          contentGating, createPaidMemberShim, config, stats, stripeConnect and middleware.
+          SSR, verification, request-integrity, import and export fields are populated during
+          init; the api getter only returns existing state and does not initialize it.
+        sources:
+          - core/server/services/members/index.js
+          - core/server/services/members/service.js
+        tests: []
+      construction:
+        summary: >-
+          Service-module evaluation constructs GhostMailer, MembersConfigProvider and
+          MembersStats. init loads the API factory, validates Stripe use, constructs
+          membersApi and VerificationTrigger once, but recreates request-integrity, SSR,
+          importer closures and exporter on each call. The API factory module also constructs
+          a mailer at evaluation. Member cleanup jobs have a separate guarded init called by
+          boot; other services directly construct the shared SingleUseTokenProvider.
+        sources:
+          - core/server/services/members/service.js
+          - core/server/services/members/api.js
+          - core/server/services/members/jobs/index.js
+          - core/server/services/members/single-use-token-provider.js
+          - core/server/services/settings/settings-service.js
+          - core/server/services/newsletters/index.js
+          - core/server/services/member-welcome-emails/service.js
+          - core/boot.js
+        tests: []
+      startup:
+        summary: >-
+          Boot has initialized signing keys and member metafields before the main service
+          phase and awaits Stripe before calling members.init. members.init publishes its
+          API/import/export collaborators before awaiting historical Stripe migrations. The
+          migration runner records finished/failed status and skips rows whose status is not
+          failed.
+        sources:
+          - core/boot.js
+          - core/server/services/members/service.js
+          - core/server/services/members/api.js
+        tests: []
+      lifetime:
+        summary: >-
+          membersApi and VerificationTrigger survive repeated init while SSR,
+          request-integrity provider and import/export bindings are replaced. The nested
+          member-jobs module separately retains cleanup task closures and successful
+          recurring-schedule flags.
+        sources:
+          - core/server/services/members/service.js
+          - core/server/services/members/jobs/index.js
+        tests: []
+    unverified:
+      - consumers
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Complete the transitive audit of API repositories, mail/token providers, events and
+        outstanding import/export work; the facade is not one uniformly reset instance.
+      - >-
+        Preserve Stripe environment checks, migration failure handling and same-instance
+        restart behavior before changing initialization.
+      - >-
+        Direct token-provider construction in settings, newsletters and welcome emails needs
+        an explicit ownership decision during migration.
+  members-events:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - members-events/index.js
+    notes: >-
+      Preserve the guarded event subscriptions and last-seen cache; establish subscriber
+      cleanup and restart behavior.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS exports one MembersEventsServiceWrapper with init and clearLastSeenAtCache;
+          initialized updater and cache remain properties on that wrapper.
+        sources:
+          - core/server/services/members-events/index.js
+        tests: []
+      construction:
+        summary: >-
+          The wrapper is allocated on import. Boot calls synchronous init, which creates
+          LastSeenAtCache and LastSeenAtUpdater once, injects a getter for members.api, and
+          subscribes the updater to DomainEvents.
+        sources:
+          - core/server/services/members-events/index.js
+          - core/server/services/members-events/last-seen-at-updater.js
+          - core/boot.js
+        tests: []
+      configuration:
+        summary: >-
+          The click-tracking subscription is selected when subscribe runs. The updater and
+          cache read the publication timezone from settings when processing or checking cached
+          activity.
+        sources:
+          - core/server/services/members-events/last-seen-at-updater.js
+          - core/server/services/members-events/last-seen-at-cache.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - resources
+      - failures
+    blockers:
+      - >-
+        No wrapper shutdown or updater unsubscribe method is exposed. Characterize listener
+        ownership and repeated boot before changing initialization.
+  members-metafields:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - members-metafields/index.ts
+    notes: >-
+      Preserve three boot-wired services and live definition limits; verify
+      partial-construction failure and repeated initialization.
+    contracts:
+      exports:
+        summary: >-
+          Named exports include init, the mutable definitions/values/bindings bindings,
+          audience and access constants, canWrite, actingContext and adminWriteOrigin. The
+          three service bindings are undefined before init.
+        sources:
+          - core/server/services/members-metafields/index.ts
+        tests: []
+      construction:
+        summary: >-
+          Boot calls synchronous init after database setup. It constructs definitions, values
+          and bindings in sequence, passing the values instance into bindings. Repeated init
+          returns only when all three bindings exist; assignment is not atomic.
+        sources:
+          - core/server/services/members-metafields/index.ts
+          - core/boot.js
+        tests: []
+      configuration:
+        summary: >-
+          Definitions and values receive getters that resolve
+          members:metafields:maxDefinitions from current config on each invocation rather than
+          capturing its numeric value at initialization.
+        sources:
+          - core/server/services/members-metafields/index.ts
+          - core/server/services/members-metafields/config.ts
+          - core/server/services/members-metafields/definitions-service.ts
+          - core/server/services/members-metafields/values-service.ts
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - resources
+      - failures
+    blockers:
+      - >-
+        Characterize the three exported identities and behavior after a construction failure;
+        constructor-level tests do not establish this wrapper contract.
+  mentions:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - mentions/index.js
+    notes: >-
+      Preserve controller and sending-service composition, retained jobs references,
+      subscriptions and initialization failure state.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS index forwards the service object: init, api, repository, controller,
+          metadata, sendingService and didInit, plus getPostData/getPostUrl test helpers. Job
+          classes are imported directly by job-handler registration.
+        sources:
+          - core/server/services/mentions/index.js
+          - core/server/services/mentions/service.js
+          - core/server/services/jobs-service/register-job-handlers.ts
+        tests: []
+      construction:
+        summary: >-
+          Import creates MentionController and WebmentionMetadata. First init sets didInit
+          before constructing repository, discovery, resource, routing, API and sending
+          services, injects the jobs instance into controller and sender, and starts sender
+          event listeners.
+        sources:
+          - core/server/services/mentions/service.js
+          - core/server/services/mentions/mention-controller.js
+          - core/server/services/mentions/mention-sending-service.js
+        tests: []
+      startup:
+        summary: >-
+          Boot awaits mentions initialization with the other asynchronous prerequisites before
+          registering and starting job handlers; rejection aborts dependent startup.
+        sources:
+          - core/boot.js
+          - core/server/services/mentions/service.js
+        tests: []
+      lifetime:
+        summary: >-
+          The wrapper skips repeated init and retains its controller and sending service.
+          The controller retains the injected jobs instance across jobs shutdown/restart.
+        sources:
+          - core/server/services/mentions/service.js
+          - core/server/services/mentions/mention-controller.js
+        tests: []
+    unverified:
+      - consumers
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Audit sending-service subscriptions and retained state. The wrapper sets didInit
+        before construction finishes and exposes no reset or shutdown; characterize
+        failure and retry behavior.
+      - >-
+        Add retained-consumer dispatch coverage across jobs restart, and test pending
+        initialization and failure propagation through boot.
+  milestones:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - milestones/index.js
+    notes: >-
+      Preserve background initAndRun, live Stripe eligibility and captured milestone
+      configuration; characterize the unawaited timer path.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS index forwards a mutable object exposing api, init, run, scheduleRun and
+          initAndRun.
+        sources:
+          - core/server/services/milestones/index.js
+          - core/server/services/milestones/service.js
+        tests:
+          - test/unit/server/services/milestones/index.test.ts
+      construction:
+        summary: >-
+          First init creates BookshelfMilestoneRepository, MilestoneQueries and
+          MilestonesService and stores api; later init calls retain it. Background boot calls
+          initAndRun without awaiting its promise.
+        sources:
+          - core/server/services/milestones/service.js
+          - core/boot.js
+        tests: []
+      configuration:
+        summary: >-
+          First init captures the milestones config and query import-age threshold. run reads
+          current Stripe keys and environment for ARR eligibility; scheduleRun applies a
+          development timeout override.
+        sources:
+          - core/server/services/milestones/service.js
+          - core/server/services/milestones/milestones-service.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - resources
+      - failures
+    blockers:
+      - >-
+        scheduleRun retains no timeout handle or cancellation hook. Its async timeout callback
+        does not reject the returned promise when run fails; characterize this existing
+        failure path separately.
+  newsletters:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - newsletters/index.js
+    notes: >-
+      Preserve eager newsletter composition and the shared email-address wrapper; audit
+      mail/token dependencies and verification contracts.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS exports one NewslettersService instance with newsletter read, browse,
+          getAll, edit, add and email-verification operations.
+        sources:
+          - core/server/services/newsletters/index.js
+          - core/server/services/newsletters/newsletters-service.js
+        tests:
+          - test/unit/server/services/newsletters/index.test.ts
+      construction:
+        summary: >-
+          Import creates SingleUseTokenProvider and NewslettersService. Its constructor
+          creates GhostMailer and MagicLink and retains the shared email-address wrapper. API
+          and members composition consume this instance; there is no newsletter init hook.
+        sources:
+          - core/server/services/newsletters/index.js
+          - core/server/services/newsletters/newsletters-service.js
+          - core/server/api/endpoints/newsletters.js
+          - core/server/services/members/api.js
+        tests: []
+      startup:
+        summary: >-
+          The eager constructor stores the email-address wrapper without accessing its
+          service. Validation and sending methods read emailAddressService.service when
+          called; boot initializes that dependency before the main service group.
+        sources:
+          - core/server/services/newsletters/newsletters-service.js
+          - core/boot.js
+        tests: []
+    unverified:
+      - consumers
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Record mailer/token-provider lifetime and failure behavior before replacing eager
+        construction. The index test checks API presence only.
+  notifications:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - notifications/index.js
+      - notifications/notification-email.ts
+    notes: >-
+      Preserve the nested notifications export; keep the separately constructed
+      notification-email helper visible during ownership review.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS index exports an object with notifications. A separate deep entry exports
+          the NotificationEmailService class used by update-check.
+        sources:
+          - core/server/services/notifications/index.js
+          - core/server/services/notifications/notification-email.ts
+          - core/server/services/update-check/index.js
+        tests: []
+      construction:
+        summary: >-
+          Index import constructs Notifications with settingsCache and SettingsModel. Each
+          permitted update-check execution separately constructs NotificationEmailService with
+          a fresh GhostMailer; that helper does not use the index singleton.
+        sources:
+          - core/server/services/notifications/index.js
+          - core/server/services/notifications/notifications.js
+          - core/server/services/notifications/notification-email.ts
+          - core/server/services/update-check/index.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Decide ownership of the deep email helper without assuming that every file under this
+        root shares the index lifetime. Audit settings-backed writes, including
+        fire-and-forget repair of invalid notification data.
+  oembed:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - oembed/index.js
+    notes: >-
+      Preserve eager provider and storage-adapter composition; separate captured provider
+      credentials from live request configuration.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS index forwards the single OEmbedService instance, including
+          fetchOembedDataFromUrl and provider registration methods used by API and
+          mention/recommendation metadata.
+        sources:
+          - core/server/services/oembed/index.js
+          - core/server/services/oembed/service.js
+          - core/server/services/oembed/oembed-service.js
+          - core/server/api/endpoints/oembed.js
+          - core/server/services/mentions/webmention-metadata.js
+        tests: []
+      construction:
+        summary: >-
+          Import obtains the storage:images adapter, constructs OEmbedService, constructs NFT
+          and Twitter providers from current config values, and registers those providers.
+          There is no init hook.
+        sources:
+          - core/server/services/oembed/service.js
+          - core/server/services/oembed/oembed-service.js
+          - core/server/services/oembed/nft-oembed-provider.js
+          - core/server/services/oembed/twitter-oembed-provider.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Audit provider/network failures, image storage and repeated configuration changes
+        before moving eager work into boot.
+  offers:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - offers/index.js
+    notes: >-
+      Preserve offers API and redirect middleware; repeated initialization currently rebuilds
+      composition and adds domain-event subscriptions.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS index forwards an object exposing async init, mutable api and a middleware
+          getter backed by the current redirect manager.
+        sources:
+          - core/server/services/offers/index.js
+          - core/server/services/offers/service.js
+        tests: []
+      construction:
+        summary: >-
+          Each init creates a DynamicRedirectManager, OfferBookshelfRepository and
+          OffersModule/OffersAPI, publishes api and then awaits module initialization. Boot
+          initializes offers during frontend-service preparation; API, members and frontend
+          middleware consume its exports.
+        sources:
+          - core/server/services/offers/service.js
+          - core/server/services/offers/offers-module.js
+          - core/boot.js
+          - core/frontend/web/site.js
+          - core/server/services/members/api.js
+          - core/server/api/endpoints/offers.js
+        tests: []
+      resources:
+        summary: >-
+          OffersModule.init subscribes to OfferCodeChangeEvent and OfferCreatedEvent before
+          loading existing offers into redirects. Neither the module nor its wrapper exposes
+          disposal of these subscriptions.
+        sources:
+          - core/server/services/offers/offers-module.js
+          - core/server/services/offers/service.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - configuration
+      - failures
+    blockers:
+      - >-
+        Repeated init has no guard and adds listeners while replacing the published API.
+        Characterize duplicate initialization and repository-load failure before defining
+        restart behavior.
+  permissions:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - permissions/index.js
+    notes: >-
+      Preserve the boot-loaded actions cache and public context helpers; verify readiness and
+      refresh across repeated boots.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS exports init, canThis and parseContext. canThis creates authorization
+          checks from the module-level actions cache and requires a nonempty actions map.
+        sources:
+          - core/server/services/permissions/index.js
+          - core/server/services/permissions/can-this.js
+        tests:
+          - test/unit/server/services/permissions/index.test.js
+      construction:
+        summary: >-
+          Import loads authorization helpers and the shared actions-map module. Each async
+          init queries all permissions and rebuilds the map; boot awaits it in the main
+          service group. This is shared module state rather than a service-class instance.
+        sources:
+          - core/server/services/permissions/index.js
+          - core/server/services/permissions/actions-map-cache.js
+          - core/boot.js
+        tests:
+          - test/unit/server/services/permissions/index.test.js
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Existing tests prove initial map loading and the pre-init error, but do not establish
+        repeated-boot refresh or every early authorization caller.
+  post-scheduling:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - post-scheduling/index.ts
+    notes: >-
+      Preserve constructor-time event registration, shared scheduler-adapter identity and
+      rescheduling; identify cleanup ownership.
+    contracts:
+      exports:
+        summary: >-
+          The TypeScript default export is one PostScheduling instance exposing rescheduleAll;
+          CommonJS boot reads .default.
+        sources:
+          - core/server/services/post-scheduling/index.ts
+          - core/server/services/post-scheduling/post-scheduling.ts
+          - core/boot.js
+        tests: []
+      construction:
+        summary: >-
+          Import captures the Admin API URL, obtains and wraps the scheduling adapter, then
+          constructs PostScheduling with internalKeys. The constructor subscribes to
+          scheduled/rescheduled/unscheduled events for posts and pages and registers itself
+          with the adapter.
+        sources:
+          - core/server/services/post-scheduling/index.ts
+          - core/server/services/post-scheduling/post-scheduling.ts
+        tests: []
+      startup:
+        summary: >-
+          Boot loads the eager instance before the main services group. After jobs.start
+          resolves and synchronous automation initialization returns, it calls rescheduleAll
+          only when schedulerAdapter.rescheduleOnBoot is truthy.
+        sources:
+          - core/boot.js
+        tests: []
+    unverified:
+      - consumers
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        The class exposes no listener disposer. Preserve shared adapter ownership and test
+        repeated boot without duplicating event registration.
+      - >-
+        Test that pending jobs startup blocks rescheduling and that adapters with
+        rescheduleOnBoot disabled skip it.
+  posts:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - posts/posts-service-instance.js
+      - posts/post-scheduling.js
+    notes: >-
+      Preserve factory-created caller instances and the separate scheduling module state;
+      prove isolation before choosing shared composition.
+    contracts:
+      exports:
+        summary: >-
+          There is no index. posts-service-instance exports a factory with PostsService
+          attached for tests. The independent post-scheduling module exports publish and
+          handleCacheInvalidation for the schedules endpoint.
+        sources:
+          - core/server/services/posts/posts-service-instance.js
+          - core/server/services/posts/post-scheduling.js
+          - core/server/api/endpoints/schedules.js
+        tests: []
+      construction:
+        summary: >-
+          Every factory call constructs PostStats, PostsExporter and PostsService;
+          PostsService also constructs PostEmailHandler. API modules retain factory results,
+          explore-ping injects one into each constructed ExplorePingService, and lexical
+          caches one on first rendering. post-scheduling separately retains an inFlight Set at
+          module scope.
+        sources:
+          - core/server/services/posts/posts-service-instance.js
+          - core/server/services/posts/posts-service.js
+          - core/server/services/posts/post-scheduling.js
+          - core/server/api/endpoints/posts.js
+          - core/server/services/explore-ping/index.ts
+          - core/server/lib/lexical.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Audit all factory consumers and mutable dependencies before replacing per-caller
+        instances. Keep the scheduling inFlight guard distinct from those instance lifetimes.
+  posts-public:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - posts-public/index.js
+    notes: >-
+      Preserve optional Content API caching and the site.changed listener; characterize config
+      changes after the first init.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS index forwards one PostsPublicServiceWrapper. After init its api is an
+          object containing cache, which is undefined when the optional cache is disabled.
+        sources:
+          - core/server/services/posts-public/index.js
+          - core/server/services/posts-public/service.js
+          - core/server/api/endpoints/posts-public.js
+        tests: []
+      construction:
+        summary: >-
+          Import constructs the wrapper. First init checks
+          hostSettings:postsPublicCache:enabled, optionally obtains the cache:postsPublic
+          adapter and attaches a site.changed reset listener, then assigns api. Later init
+          calls return even when the cache was disabled.
+        sources:
+          - core/server/services/posts-public/service.js
+          - core/boot.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        No listener disposer or reset of api is exposed. Verify same-module restart and
+        disabled-to-enabled configuration behavior before changing the guard.
+  recommendations:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - recommendations/index.js
+    notes: >-
+      Preserve optional wrapper composition, database-backed repositories and mentions
+      dependencies; account for unawaited initialization, timers and subscriptions.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS exports one RecommendationServiceWrapper with init and fields for its
+          repositories, outgoing/incoming services and controllers. Those fields remain
+          undefined when initialization is disabled before construction.
+        sources:
+          - core/server/services/recommendations/index.js
+          - core/server/services/recommendations/recommendation-service-wrapper.js
+        tests: []
+      construction:
+        summary: >-
+          Import constructs the wrapper. init checks config, then a repository guard, and
+          requires initialized mentions API/sender. It creates database-backed repositories,
+          services, controllers, a SettingsBREADService and GhostMailer; it uses
+          BookshelfClickEventRepository for both click and subscription models.
+        sources:
+          - core/server/services/recommendations/recommendation-service-wrapper.js
+          - core/server/services/recommendations/service/recommendation-service.ts
+          - core/server/services/settings/settings-service.js
+        tests: []
+      startup:
+        summary: >-
+          The wrapper invokes both inner async init methods without awaiting them and logs
+          their rejections. It adds a mention metadata mapper and subscribes to
+          MentionCreatedEvent synchronously before returning; boot does not wait for the inner
+          work.
+        sources:
+          - core/server/services/recommendations/recommendation-service-wrapper.js
+          - core/boot.js
+        tests: []
+    unverified:
+      - consumers
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Inner services create unretained startup timeouts and the wrapper exposes no listener
+        or mapper cleanup. The repository guard is set before all construction finishes;
+        failure/retry and live disable behavior need characterization.
+  remote-flags:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - remote-flags/index.ts
+    notes: >-
+      Preserve config-gated, non-blocking polling and current override behavior; establish
+      boot cleanup and in-flight request ownership.
+    contracts:
+      exports:
+        summary: >-
+          Named exports are init(config), stop and getInstance. init/getInstance return the
+          current RemoteFlagsService or null while inert.
+        sources:
+          - core/server/services/remote-flags/index.ts
+        tests:
+          - test/unit/server/services/remote-flags/index.test.js
+      construction:
+        summary: >-
+          The module starts with a null instance. Enabled config with a valid URL constructs
+          RemoteFlagsService from config and site_uuid, invokes start without awaiting it, and
+          returns the instance. Further init calls return it until stop clears it.
+        sources:
+          - core/server/services/remote-flags/index.ts
+        tests:
+          - test/unit/server/services/remote-flags/index.test.js
+      configuration:
+        summary: >-
+          URL, site UUID and valid polling interval are captured when the instance is built.
+          Disabled/missing URL returns null; invalid URL warns and stays inert. A running
+          instance is returned before reading changed config.
+        sources:
+          - core/server/services/remote-flags/index.ts
+        tests:
+          - test/unit/server/services/remote-flags/index.test.js
+      resources:
+        summary: >-
+          The implementation owns an unrefed timeout chain and coalesces concurrent refresh
+          calls. stop clears the timer and prevents rescheduling but does not cancel or await
+          an in-flight request or clear applied overrides.
+        sources:
+          - core/server/services/remote-flags/remote-flags-service.ts
+          - core/server/services/remote-flags/index.ts
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - failures
+    blockers:
+      - >-
+        No production call to stop or boot cleanup registration was found under core. Add
+        deferred-fetch tests for non-blocking boot and stop during refresh; current index
+        tests stub start to an already resolved promise.
+  route-settings:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - route-settings/index.js
+    notes: >-
+      Preserve separate storage configuration and router start, live upload reload and parser
+      consumers in route-settings adapters.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS index exposes init, service, bound loadRouteSettings and api
+          upload/download getters. Route-settings adapters also import the YAML and
+          route-settings parsers directly.
+        sources:
+          - core/server/services/route-settings/index.js
+          - core/server/adapters/route-settings/FileStore.ts
+          - core/server/adapters/route-settings/S3RouteSettingsStore.ts
+        tests: []
+      construction:
+        summary: >-
+          Import constructs one DynamicRoutingService. init configures its adapter-manager
+          store; boot later calls service.start with routerManager and urlService, including
+          backend-only boot. API upload/download delegate to that instance.
+        sources:
+          - core/server/services/route-settings/index.js
+          - core/server/services/route-settings/dynamic-routing-service.js
+          - core/boot.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Characterize repeated configuration/start and upload reload with actual boot and
+        adapter ownership; parser helpers are independently consumed before service startup.
+  settings:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - settings/index.js
+      - settings/settings-service.js
+    notes: >-
+      Preserve per-boot cache initialization and per-caller BREAD construction; keep pre-boot
+      settings utility consumers explicit.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS index forwards settings-service: init/reset, calculated fields, email
+          synchronization, site UUID validation, access-code operations, secret-setting
+          helpers and getSettingsBREADServiceInstance. Boot/API use the deep settings-service
+          path; models and a migration import settings-utils directly.
+        sources:
+          - core/server/services/settings/index.js
+          - core/server/services/settings/settings-service.js
+          - core/server/models/settings.js
+          - >-
+            core/server/data/migrations/versions/5.124/2025-06-06-23-12-11-create-site-uuid-setting.js
+        tests: []
+      construction:
+        summary: >-
+          The exported settings-service object holds module dependencies. Each BREAD factory
+          call creates a SettingsBREADService and SingleUseTokenProvider; its constructor
+          creates GhostMailer and MagicLink. Settings/notifications API modules and
+          recommendations call this factory.
+        sources:
+          - core/server/services/settings/settings-service.js
+          - core/server/services/settings/settings-bread-service.js
+          - core/server/api/endpoints/settings.js
+          - core/server/api/endpoints/notifications.js
+          - core/server/services/recommendations/recommendation-service-wrapper.js
+        tests: []
+      startup:
+        summary: >-
+          Every init obtains the settings-cache adapter, populates defaults, enforces
+          public-site limits, reads settings and overrides, initializes the shared cache and
+          validates site_uuid. Boot awaits init before signing keys and other core services.
+        sources:
+          - core/server/services/settings/settings-service.js
+          - core/boot.js
+        tests: []
+    unverified:
+      - consumers
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Add same-module refresh and listener/resource ownership tests for settings-cache.
+        Preserve the independent BREAD instances and pre-boot utility imports until their
+        contracts are characterized.
+  settings-helpers:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - settings-helpers/index.js
+    notes: >-
+      Preserve the eager settings/config facade and live reads; establish which helpers are
+      safe before settings initialization.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS exports one SettingsHelpers instance. Methods and injected properties are
+          public; the themes endpoint directly destructures its settingsCache property.
+        sources:
+          - core/server/services/settings-helpers/index.js
+          - core/server/services/settings-helpers/settings-helpers.js
+          - core/server/api/endpoints/themes.js
+        tests: []
+      construction:
+        summary: >-
+          Import constructs SettingsHelpers with references to settingsCache, urlUtils,
+          config, labs and limitService. The constructor only assigns these dependencies; no
+          init hook is exposed.
+        sources:
+          - core/server/services/settings-helpers/index.js
+          - core/server/services/settings-helpers/settings-helpers.js
+        tests: []
+      configuration:
+        summary: >-
+          Settings/config-sensitive methods read their injected dependencies when called; for
+          example getActiveStripeKeys reads stripeDirect and current key settings rather than
+          capturing values in the constructor.
+        sources:
+          - core/server/services/settings-helpers/settings-helpers.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - resources
+      - failures
+    blockers:
+      - >-
+        Audit early callers individually; a constructor with no settings read does not make
+        every method safe before settings initialization.
+  signing-keys:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - signing-keys/index.ts
+    notes: >-
+      Preserve publication only after the initial key check, retained rotation state and
+      conditional recurring-job registration.
+    contracts:
+      exports:
+        summary: >-
+          Named runtime exports are async init, getInstance and scheduleCheckJob. getInstance
+          throws IncorrectUsageError before publication. CheckSigningKeysJob is also imported
+          directly by job-handler registration.
+        sources:
+          - core/server/services/signing-keys/index.ts
+          - core/server/services/jobs-service/register-job-handlers.ts
+        tests: []
+      construction:
+        summary: >-
+          First init constructs SigningKeyService from settings, models, transaction/logging
+          dependencies and a scheduling callback, awaits check, then publishes it. Boot awaits
+          this after settings. A published instance is retained; concurrent init calls before
+          publication have no shared promise guard.
+        sources:
+          - core/server/services/signing-keys/index.ts
+          - core/server/services/signing-keys/signing-key-service.ts
+          - core/boot.js
+        tests: []
+      startup:
+        summary: >-
+          Background boot passes the jobs instance to scheduleCheckJob and logs scheduling
+          failures. Scheduling occurs for rotating keys, is skipped in test environments, and
+          is guarded by module-level scheduled state set after successful registration.
+        sources:
+          - core/server/services/signing-keys/index.ts
+          - core/boot.js
+        tests: []
+    unverified:
+      - consumers
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Characterize init failure/concurrency and jobs restart: service, jobs and scheduled
+        are module-level state with no wrapper reset or shutdown.
+  slack-notifications:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - slack-notifications/index.js
+    notes: >-
+      Boot initializes milestone notifications once; audit captured settings and listener
+      disposal before changing that lifetime.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS exports one wrapper with init; its notification implementation is private,
+          not a public api or service property.
+        sources:
+          - core/server/services/slack-notifications/index.js
+          - core/server/services/slack-notifications/service.js
+        tests: []
+      construction:
+        summary: >-
+          The wrapper is constructed at import. Its first init creates the sender and
+          notification service, then subscribes; later calls return without reconstructing
+          them.
+        sources:
+          - core/server/services/slack-notifications/service.js
+        tests: []
+      configuration:
+        summary: >-
+          The first init captures site URL, enabled state, webhook URL and the parsed
+          threshold. Repeated init does not refresh these values.
+        sources:
+          - core/server/services/slack-notifications/service.js
+        tests: []
+      resources:
+        summary: >-
+          subscribeEvents installs a MilestoneCreatedEvent listener; neither the wrapper nor
+          implementation exposes listener removal.
+        sources:
+          - core/server/services/slack-notifications/service.js
+          - core/server/services/slack-notifications/slack-notifications-service.js
+        tests:
+          - test/unit/server/services/slack-notifications/index.test.js
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - failures
+    blockers:
+      - >-
+        The existing event-delivery test does not establish changed-configuration or shutdown
+        behavior.
+  slack-ping:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - slack-ping/index.ts
+    notes: >-
+      Boot initializes a retained wrapper; preserve live Slack settings reads and the two
+      model-event listeners.
+    contracts:
+      exports:
+        summary: >-
+          The TypeScript default export is an eager wrapper with init and an optional service
+          property.
+        sources:
+          - core/server/services/slack-ping/index.ts
+        tests: []
+      construction:
+        summary: >-
+          First init constructs SlackPingService, stores it before subscribing, and returns
+          early on subsequent calls.
+        sources:
+          - core/server/services/slack-ping/index.ts
+        tests: []
+      configuration:
+        summary: Each ping reads Slack URL, username and blog title from the injected settings cache.
+        sources:
+          - core/server/services/slack-ping/slack-ping-service.ts
+        tests: []
+      resources:
+        summary: >-
+          subscribeEvents removes and re-adds stable post.published and slack.test callbacks
+          on the same instance. The wrapper has no shutdown method.
+        sources:
+          - core/server/services/slack-ping/index.ts
+          - core/server/services/slack-ping/slack-ping-service.ts
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - failures
+    blockers:
+      - Audit in-flight requests and listener removal before replacing the retained instance.
+  staff:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - staff/index.js
+    notes: >-
+      Boot creates the staff notification API once; other services also use its email helper
+      directly.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS exports an eager wrapper with init; api becomes available after
+          initialization.
+        sources:
+          - core/server/services/staff/index.js
+        tests: []
+      construction:
+        summary: >-
+          First init creates GhostMailer and StaffService, including its email helper, then
+          subscribes. An existing api prevents reconstruction and duplicate subscriptions.
+        sources:
+          - core/server/services/staff/index.js
+          - core/server/services/staff/staff-service.js
+        tests: []
+      resources:
+        summary: >-
+          StaffService subscribes to member-created, subscription-activated,
+          subscription-cancelled and milestone-created events. The wrapper exposes no
+          disposer.
+        sources:
+          - core/server/services/staff/index.js
+          - core/server/services/staff/staff-service.js
+        tests:
+          - test/unit/server/services/staff/index.test.js
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - configuration
+      - failures
+    blockers:
+      - >-
+        Audit mail transport ownership, retained attribution dependencies and outstanding
+        notification work before changing lifetime.
+  stats:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - stats/index.js
+      - stats/utils/tinybird.js
+    notes: >-
+      Boot retains a composite statistics API; automations separately constructs the exported
+      Tinybird query client.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS exports a wrapper with init, api and cache. The deep utils/tinybird module
+          exports a separate create factory used by automations.
+        sources:
+          - core/server/services/stats/index.js
+          - core/server/services/stats/service.js
+          - core/server/services/stats/utils/tinybird.js
+          - core/server/services/automations/automations-api.ts
+        tests: []
+      construction:
+        summary: >-
+          First init builds StatsService and its six collaborators, then optionally obtains
+          the stats cache adapter. StatsService.create conditionally initializes the Tinybird
+          wrapper and captures a query client.
+        sources:
+          - core/server/services/stats/service.js
+          - core/server/services/stats/stats-service.js
+        tests: []
+      configuration:
+        summary: >-
+          Statistics creation captures whether web analytics is enabled. The query client
+          reads request configuration per call but retains the supplied Tinybird token
+          service.
+        sources:
+          - core/server/services/stats/stats-service.js
+          - core/server/services/stats/utils/tinybird.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - resources
+      - failures
+    blockers:
+      - >-
+        Audit deep query-client consumers and changed configuration; api is assigned before
+        optional cache-adapter acquisition, so partial initialization needs characterization.
+  stripe:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - stripe/index.js
+    notes: >-
+      An eager composite is configured during boot; its shutdown removes only an ephemeral
+      webhook registration.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS exports one StripeService instance with an added async init method,
+          including api, webhookController, configure and shutdown.
+        sources:
+          - core/server/services/stripe/index.js
+          - core/server/services/stripe/service.js
+          - core/server/services/stripe/stripe-service.js
+        tests: []
+      construction:
+        summary: >-
+          Import constructs StripeService and its API, webhook, billing and event
+          collaborators. Deferred getters resolve members, donations, gifts and staff when
+          handlers use them.
+        sources:
+          - core/server/services/stripe/service.js
+          - core/server/services/stripe/stripe-service.js
+        tests: []
+      startup:
+        summary: Boot awaits Stripe initialization before gifts and the remaining service group.
+        sources:
+          - core/boot.js
+          - core/server/services/stripe/index.js
+        tests: []
+      resources:
+        summary: >-
+          init replaces the same settings.edited listener, which triggers debounced
+          configuration. shutdown removes an ephemeral remote webhook but does not remove that
+          listener or cancel the debounce.
+        sources:
+          - core/server/services/stripe/service.js
+          - core/server/services/stripe/stripe-service.js
+        tests: []
+      failures:
+        summary: >-
+          init logs configuration errors and still registers the settings listener; it does
+          not propagate those configuration failures to boot.
+        sources:
+          - core/server/services/stripe/service.js
+        tests: []
+    unverified:
+      - consumers
+      - lifetime
+      - configuration
+    blockers:
+      - >-
+        Audit active webhook handling, delayed reconfiguration and all nested clients
+        before broadening shutdown semantics.
+      - >-
+        Test that pending Stripe initialization blocks gifts and the remaining service
+        group.
+  tags-public:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - tags-public/index.js
+    notes: This root supplies an optional public-tags cache, including site-change invalidation.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS exports a wrapper whose async init publishes api.cache; it does not
+          construct a tag query implementation.
+        sources:
+          - core/server/services/tags-public/index.js
+          - core/server/services/tags-public/service.js
+        tests: []
+      construction:
+        summary: >-
+          First init optionally obtains the cache:tagsPublic adapter and publishes an api
+          object; subsequent calls return when api exists.
+        sources:
+          - core/server/services/tags-public/service.js
+        tests: []
+      resources:
+        summary: >-
+          When caching is enabled, init installs an anonymous site.changed listener that
+          resets the captured adapter. No disposal method is exposed.
+        sources:
+          - core/server/services/tags-public/service.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - configuration
+      - failures
+    blockers:
+      - >-
+        Characterize cache-adapter disposal and the asynchronous invalidation callback before
+        changing ownership.
+  themes:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - themes/index.js
+      - themes/activate.js
+      - themes/list.js
+    notes: >-
+      A module API coordinates active-theme state, validation cache and file operations;
+      importers also bypass the root to activate themes.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS exports init, loadInactiveThemes and api operations. Exports read the theme
+          list directly, and the data importer calls the deep activation module.
+        sources:
+          - core/server/services/themes/index.js
+          - core/server/api/endpoints/exports.js
+          - core/server/data/importer/importers/data/custom-theme-settings-importer.js
+        tests: []
+      construction:
+        summary: >-
+          The root exports functions over shared modules rather than a constructed aggregate.
+          Every init obtains the validation cache adapter and loads the active theme through
+          the activation bridge.
+        sources:
+          - core/server/services/themes/index.js
+          - core/server/services/themes/validate.js
+          - core/server/services/themes/activation-bridge.js
+        tests: []
+      startup:
+        summary: >-
+          Boot awaits active-theme initialization. Background startup invokes
+          loadInactiveThemes without awaiting it, even in the test environment.
+        sources:
+          - core/boot.js
+          - core/server/services/themes/index.js
+          - core/server/services/themes/loader.js
+        tests: []
+      failures:
+        summary: >-
+          loadAndActivate logs load, validation or activation exceptions and resolves so the
+          Admin can still run; explicit API activation has a separate throwing path.
+        sources:
+          - core/server/services/themes/activate.js
+        tests: []
+    unverified:
+      - consumers
+      - lifetime
+      - configuration
+      - resources
+    blockers:
+      - >-
+        Audit all file-operation cleanup, shared theme state and unawaited inactive-theme
+        loading; a repeated init is not proof of a fully refreshed cache.
+  tier-checkout-config:
+    kind: directory
+    disposition: review
+    status: auditing
+    entryPoints:
+      - tier-checkout-config/index.ts
+    notes: >-
+      Tiers owns the checkout service instance; API callers also use the root models and
+      serializers. Its eventual home remains under review.
+    contracts:
+      exports:
+        summary: >-
+          Named TypeScript exports provide TierCheckoutConfigService, checkout models and
+          serializers; the root has no init or singleton export.
+        sources:
+          - core/server/services/tier-checkout-config/index.ts
+        tests: []
+      construction:
+        summary: >-
+          tiers.init creates TierCheckoutConfigService with knex and member-metafield
+          bindings/definitions and publishes it as tiers.checkout.
+        sources:
+          - core/server/services/tier-checkout-config/index.ts
+          - core/server/services/tiers/service.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Keep checkout business rules outside HTTP support; audit the live database reads and
+        shared models before choosing a new owner.
+  tiers:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - tiers/index.js
+      - tiers/service.js
+    notes: >-
+      Boot publishes a cached tier repository, API and checkout service; members middleware
+      imports the wrapper directly.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS index and the deep service module expose the same wrapper. init publishes
+          repository, api and checkout.
+        sources:
+          - core/server/services/tiers/index.js
+          - core/server/services/tiers/service.js
+          - core/server/services/members/middleware.js
+        tests: []
+      construction:
+        summary: >-
+          init constructs TierRepository, awaits its database load, then constructs TiersAPI
+          and TierCheckoutConfigService. An existing api makes later calls return.
+        sources:
+          - core/server/services/tiers/service.js
+          - core/server/services/tiers/tier-repository.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        The guard is set after awaited repository loading; characterize concurrent init and
+        partial initialization before changing it. Audit cached tiers separately from live
+        checkout configuration.
+  tinybird:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - tinybird/index.js
+    notes: >-
+      A class with static initialization manages the optional token service; stats initializes
+      it conditionally, not boot directly.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS exports a class with static init, reset and instance. instance begins
+          undefined; disabled init or reset sets it to null.
+        sources:
+          - core/server/services/tinybird/index.js
+          - core/server/services/tinybird/tinybird-service-wrapper.js
+        tests: []
+      construction:
+        summary: >-
+          Every configured init constructs a new TinybirdService. StatsService.create calls
+          init only when web analytics or the configured automation analytics path is enabled.
+        sources:
+          - core/server/services/tinybird/tinybird-service-wrapper.js
+          - core/server/services/stats/stats-service.js
+        tests: []
+      configuration:
+        summary: >-
+          init rereads configuration and site UUID. TinybirdService captures capability flags
+          and site ID at construction, retains the configuration object, and caches generated
+          tokens.
+        sources:
+          - core/server/services/tinybird/tinybird-service-wrapper.js
+          - core/server/services/tinybird/tinybird-service.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - resources
+      - failures
+    blockers:
+      - >-
+        Characterize disabled/enabled/key-change transitions on the same loaded wrapper and
+        consumers retaining a previous instance.
+  tinybird-sync:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - tinybird-sync/index.ts
+    notes: >-
+      The eager composition exports sync and job scheduling functions; recurring execution
+      belongs to jobs-service, not an independent timer loop.
+    contracts:
+      exports:
+        summary: >-
+          Named TypeScript exports scheduleJob and sync are functions from one eagerly created
+          service closure.
+        sources:
+          - core/server/services/tinybird-sync/index.ts
+        tests: []
+      construction:
+        summary: >-
+          Import calls createTinybirdSyncService once with config, settings, database and
+          request dependencies. Boot supplies this capability to job-handler registration and
+          background scheduling.
+        sources:
+          - core/server/services/tinybird-sync/index.ts
+          - core/server/services/tinybird-sync/tinybird-sync-service.ts
+          - core/boot.js
+        tests: []
+      lifetime:
+        summary: >-
+          The closure sets its scheduled flag before awaiting registration. Further calls
+          reject while registration is pending or after it succeeds; rejection from
+          jobsService.scheduleRecurring clears the flag so a later call can retry.
+        sources:
+          - core/server/services/tinybird-sync/tinybird-sync-service.ts
+        tests:
+          - test/unit/server/services/tinybird-sync/index.test.ts
+      configuration:
+        summary: >-
+          scheduleJob requires ingest configuration but schedules even when the sync flag is
+          disabled. Each sync rereads the flag and ingest configuration before doing work.
+        sources:
+          - core/server/services/tinybird-sync/tinybird-sync-service.ts
+        tests:
+          - test/unit/server/services/tinybird-sync/index.test.ts
+      failures:
+        summary: >-
+          Individual table-sync failures are logged after all table operations settle.
+          Scheduling errors propagate and allow retry.
+        sources:
+          - core/server/services/tinybird-sync/tinybird-sync-service.ts
+        tests:
+          - test/unit/server/services/tinybird-sync/index.test.ts
+    unverified:
+      - consumers
+      - startup
+      - resources
+    blockers:
+      - >-
+        There is no reset of successful scheduling state on this exported closure.
+        Characterize restart with cleared jobs handlers and in-flight request draining.
+  update-check:
+    kind: directory
+    disposition: review
+    status: auditing
+    entryPoints:
+      - update-check/index.js
+    notes: >-
+      Each enabled check constructs its own checker and mail collaborators. Boot schedules
+      checks through jobs-service; final ownership remains under review.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS exports an async callable with a scheduleJobs property; there is no shared
+          checker instance or init method.
+        sources:
+          - core/server/services/update-check/index.js
+        tests: []
+      construction:
+        summary: >-
+          An invocation allowed by the environment/force gate constructs GhostMailer,
+          NotificationEmailService and UpdateCheckService, then awaits check. A gated
+          invocation returns before construction.
+        sources:
+          - core/server/services/update-check/index.js
+        tests: []
+      startup:
+        summary: >-
+          Boot background startup calls scheduleJobs; it schedules a daily recurring job and,
+          when forced, dispatches an immediate job. Job handlers call the exported checker
+          function.
+        sources:
+          - core/server/services/update-check/index.js
+          - core/boot.js
+          - core/server/services/jobs-service/register-job-handlers.ts
+        tests: []
+    unverified:
+      - consumers
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Audit per-check mail ownership and existing error policy before choosing an
+        application or jobs owner.
+  url:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - url/index.js
+    notes: >-
+      One eager LazyUrlService holds router registrations; dynamic routing initializes them
+      for frontend and backend-only boots.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS exports one LazyUrlService instance, shared by frontend, API and service
+          callers.
+        sources:
+          - core/server/services/url/index.js
+        tests: []
+      construction:
+        summary: >-
+          Import constructs LazyUrlService with a model-backed resource lookup. Its
+          constructor initializes router/filter state; it does not populate a legacy URL
+          cache.
+        sources:
+          - core/server/services/url/index.js
+          - core/server/services/url/lazy-url-service.ts
+          - core/server/services/url/lazy-find-resource.ts
+        tests: []
+      startup:
+        summary: >-
+          initDynamicRouting gives the shared URL service to RouterManager even without a
+          frontend, then awaits route-settings start.
+        sources:
+          - core/boot.js
+          - core/server/services/route-settings/dynamic-routing-service.js
+        tests: []
+    unverified:
+      - consumers
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - >-
+        Audit router reset/re-registration, lookup callers and retained references across
+        routes reload and repeated boot.
+  users.js:
+    kind: file
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - users.js
+    notes: >-
+      Two endpoint modules currently construct this business service. Preserve transaction
+      behavior and bound methods when moving composition under boot.
+    contracts:
+      exports:
+        summary: CommonJS exports the Users constructor, not an initialized instance.
+        sources:
+          - core/server/services/users.js
+        tests: []
+      construction:
+        summary: >-
+          Authentication and users endpoints each construct Users at module evaluation. The
+          constructor captures their collaborators and binds assignTagToUserPosts.
+        sources:
+          - core/server/services/users.js
+          - core/server/api/endpoints/authentication.js
+          - core/server/api/endpoints/users.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers:
+      - Audit instance-local state and transactions before sharing an instance.
+  verification:
+    kind: directory
+    disposition: review
+    status: auditing
+    entryPoints:
+      - verification/verification-webhook-service.ts
+    notes: >-
+      Members consumes this eager webhook singleton. Confirm members ownership and resource
+      obligations before relocation.
+    contracts:
+      exports:
+        summary: >-
+          Named TypeScript exports expose both VerificationWebhookService and an eager
+          verificationWebhookService singleton.
+        sources:
+          - core/server/services/verification/verification-webhook-service.ts
+        tests: []
+      construction:
+        summary: >-
+          Import constructs the singleton with config, logging and request dependencies.
+          Members binds its sendVerificationWebhook method into VerificationTrigger.
+        sources:
+          - core/server/services/verification/verification-webhook-service.ts
+          - core/server/services/members/service.js
+        tests: []
+      configuration:
+        summary: >-
+          sendVerificationWebhook reads webhook configuration on every call. Missing URL or
+          type logs a warning and returns false; a successful delivery returns true.
+        sources:
+          - core/server/services/verification/verification-webhook-service.ts
+        tests:
+          - test/unit/server/services/verification/verification-webhook-service.test.ts
+      failures:
+        summary: >-
+          Request rejection is logged with a sanitized URL and rethrown; VerificationTrigger
+          separately catches delivery failures without marking verification required.
+        sources:
+          - core/server/services/verification/verification-webhook-service.ts
+          - core/server/services/verification-trigger.js
+        tests:
+          - test/unit/server/services/verification/verification-webhook-service.test.ts
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - resources
+    blockers:
+      - >-
+        Confirm the owner of the eager singleton and characterize outstanding request/retry
+        behavior before adding lifecycle cleanup.
+  verification-trigger.js:
+    kind: file
+    disposition: relocate
+    status: auditing
+    entryPoints:
+      - verification-trigger.js
+    notes: Members-owned trigger class; thresholds, method classification and event behavior
+    contracts:
+      exports:
+        summary: CommonJS exports the VerificationTrigger constructor, not a service singleton.
+        sources:
+          - core/server/services/verification-trigger.js
+        tests: []
+      construction:
+        summary: >-
+          Members constructs VerificationTrigger behind its initialization guard. The
+          constructor subscribes to MemberCreatedEvent only when isVerified() is false at
+          construction.
+        sources:
+          - core/server/services/verification-trigger.js
+          - core/server/services/members/service.js
+        tests: []
+      resources:
+        summary: >-
+          An unverified instance registers a bound MemberCreatedEvent listener. The class has
+          no unsubscribe or shutdown operation.
+        sources:
+          - core/server/services/verification-trigger.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - configuration
+      - failures
+    blockers:
+      - Listener cleanup is a lifecycle gap; record intended semantics before adding disposal.
+  webhooks:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - webhooks/index.js
+      - webhooks/webhooks-service.js
+    notes: >-
+      Boot composes event dispatch; the API endpoint separately constructs a
+      webhook-management service through a deep factory.
+    contracts:
+      exports:
+        summary: >-
+          CommonJS root exports listen. The deep webhooks-service module exports a factory
+          used by the API endpoint.
+        sources:
+          - core/server/services/webhooks/index.js
+          - core/server/services/webhooks/webhooks-service.js
+          - core/server/api/endpoints/webhooks.js
+        tests: []
+      construction:
+        summary: >-
+          Each listen call creates serializers, payload builder and WebhookTrigger. The API
+          endpoint separately creates WebhooksService at module evaluation.
+        sources:
+          - core/server/services/webhooks/index.js
+          - core/server/services/webhooks/webhooks-service.js
+          - core/server/api/endpoints/webhooks.js
+        tests: []
+      resources:
+        summary: >-
+          Listener registration skips events already carrying a callback named
+          processWebhookTrigger, retaining the previous callback and trigger on repeated
+          listen calls. Neither root nor registrar returns a disposer.
+        sources:
+          - core/server/services/webhooks/index.js
+          - core/server/services/webhooks/listen.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - configuration
+      - failures
+    blockers:
+      - >-
+        Audit dispatch requests and retained listener dependencies alongside the separately
+        constructed management service before standardizing this root.
