@@ -6,6 +6,8 @@ import { z } from 'zod';
 import { configSchema } from '../../../../core/shared/config/schema';
 import { createConfig, deepFreeze, validateConfig } from '../../../../core/shared/config/validated';
 
+const sloppy = require('../../../utils/fixtures/sloppy-config-writer');
+
 const configDir = path.join(__dirname, '../../../../core/shared/config');
 
 function readJson(...parts: string[]): Record<string, unknown> {
@@ -78,7 +80,19 @@ describe('Validated Config', function () {
       vi.restoreAllMocks();
     });
 
-    it('returns a deep-frozen view', function () {
+    it('refuses writes, by throwing under the guard', function () {
+      // stubbed rather than inherited: the guard is on by default under test,
+      // but a developer may have GHOST_CONFIG_GUARD exported - see ./guard.test.ts
+      vi.stubEnv('GHOST_CONFIG_GUARD', 'true');
+
+      const validated = validateConfig({ ...minimal, paths: { contentPath: '/a' } });
+
+      assert.throws(() => sloppy.write(validated.paths, 'contentPath', '/b'), /read-only/);
+    });
+
+    it('deep-freezes instead where the guard is off, as production does', function () {
+      vi.stubEnv('GHOST_CONFIG_GUARD', 'false');
+
       const validated = validateConfig({ ...minimal, paths: { contentPath: '/a' } });
 
       assert.ok(Object.isFrozen(validated));
@@ -124,6 +138,10 @@ describe('Validated Config', function () {
   });
 
   describe('createConfig', function () {
+    afterEach(function () {
+      vi.unstubAllEnvs();
+    });
+
     it('reads key paths out of the frozen tree', function () {
       const config = createConfig({ ...minimal, paths: { contentPath: '/a' } });
 
@@ -132,13 +150,15 @@ describe('Validated Config', function () {
       assert.deepEqual(config.get('paths'), { contentPath: '/a' });
     });
 
-    it('freezes every key, not only the ones with a schema', function () {
+    it('makes every key read-only, not only the ones with a schema', function () {
+      vi.stubEnv('GHOST_CONFIG_GUARD', 'true');
+
       const config = createConfig({ ...minimal, paths: { contentPath: '/a' } });
 
-      // the schema is loose, so an unlisted key is validated-and-frozen too -
+      // the schema is loose, so an unlisted key is validated and protected too -
       // that is what makes the whole config immutable
-      assert.ok(Object.isFrozen(config.get('paths')));
-      assert.ok(Object.isFrozen(config.get()));
+      assert.throws(() => sloppy.write(config.get('paths'), 'contentPath', '/b'), /read-only/);
+      assert.throws(() => sloppy.write(config.get(), 'url', 'http://nope.test'), /read-only/);
     });
 
     it('returns undefined for a path that is not there', function () {
@@ -261,6 +281,22 @@ describe('Validated Config', function () {
       assert.equal(config.get('tinybird:tracker:token'), undefined);
       assert.equal(config.get('tinybird:tracker:endpoint'), '/e');
     });
+
+    // guarded and unguarded config must answer identically: the guard exists to
+    // make a write loud, not to change what config does
+    for (const guard of ['true', 'false']) {
+      it(`leaves an already-returned object alone on a nested set, guard=${guard}`, function () {
+        vi.stubEnv('GHOST_CONFIG_GUARD', guard);
+        const config = createConfig(minimal);
+
+        config.set('paths', { contentPath: '/first' });
+        const previous = config.get('paths');
+        config.set('paths:contentPath', '/second');
+
+        assert.equal(previous.contentPath, '/first');
+        assert.equal(config.get('paths:contentPath'), '/second');
+      });
+    }
 
     it('drops every override on reset', function () {
       const config = createConfig(minimal);
