@@ -19,6 +19,7 @@ import type {
 } from '@/builder/core/workspace';
 import { cloneThemeDraft, themePublishRevision, withThemeRevision } from './theme-state';
 import { listDesignSettings, updateDesignSettings } from './design-setting-tools';
+import { stageThemePatch } from './theme-patch';
 import {
   deleteThemeFile,
   editThemeImageAtMarker,
@@ -264,6 +265,14 @@ export class ThemeWorkspace implements BuilderWorkspace {
     await this.mutationTail;
     await this.preview.flush?.(signal);
     abortIfNeeded(signal);
+  }
+
+  applyThemePatch(
+    patch: unknown,
+    signal: AbortSignal,
+    options: { promote?: boolean; requirePromotedSource?: boolean } = {},
+  ) {
+    return this.enqueueMutation(signal, (draft) => stageThemePatch(draft, patch), options);
   }
 
   snapshot(): WorkspaceSnapshot {

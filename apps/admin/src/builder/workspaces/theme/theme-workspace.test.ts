@@ -35,6 +35,84 @@ async function loadInput(): Promise<ThemeLoadInput> {
 }
 
 describe('ThemeWorkspace', () => {
+  it('validates a combined patch once and promotes it independently of a Builder session', async () => {
+    const source = await loadInput();
+    const render = vi.fn((candidate: ThemeDraft) => {
+      expect(candidate.files['index.hbs'].content).toBe('<main>{{> new}}</main>');
+      expect(candidate.files['partials/new.hbs'].content).toBe('<h1>Combined</h1>');
+      expect(candidate.globalSettings.accent_color).toBe('#123456');
+      return Promise.resolve({ valid: true, revision: candidate.revision, diagnostics: [] });
+    });
+    const workspace = new ThemeWorkspace({
+      id: 'canvas:test',
+      title: 'Canvas',
+      load: (signal) => loadThemeDraft(source, signal),
+      preview: { kind: 'canvas', renderCandidate: render },
+    });
+    const signal = new AbortController().signal;
+    await workspace.load(signal);
+    const before = workspace.draft.revision;
+    const result = await workspace.applyThemePatch(
+      {
+        revision: before,
+        files: [
+          { operation: 'write', path: 'index.hbs', content: '<main>{{> new}}</main>' },
+          { operation: 'write', path: 'partials/new.hbs', content: '<h1>Combined</h1>' },
+        ],
+        settings: { 'global.accent_color': '#123456' },
+      },
+      signal,
+      { promote: true },
+    );
+    expect(result.ok).toBe(true);
+    expect(render).toHaveBeenCalledOnce();
+    expect(workspace.draft.revision).not.toBe(before);
+    expect(workspace.draft.files['partials/new.hbs'].content).toBe('<h1>Combined</h1>');
+    expect(workspace.candidateDraft).toBeNull();
+  });
+
+  it('keeps promoted and accepted candidate state after rejection of an atomic patch', async () => {
+    const source = await loadInput();
+    const render = vi.fn((candidate: ThemeDraft) =>
+      Promise.resolve({
+        valid: !candidate.files['index.hbs'].content?.includes('Invalid'),
+        revision: candidate.revision,
+        diagnostics: [],
+      }),
+    );
+    const workspace = new ThemeWorkspace({
+      id: 'canvas:test',
+      title: 'Canvas',
+      load: (signal) => loadThemeDraft(source, signal),
+      preview: { kind: 'canvas', renderCandidate: render },
+    });
+    const signal = new AbortController().signal;
+    await workspace.load(signal);
+    const promoted = workspace.draft;
+    await workspace.applyThemePatch(
+      {
+        revision: promoted.revision,
+        files: [{ operation: 'write', path: 'index.hbs', content: '<main>Accepted</main>' }],
+      },
+      signal,
+    );
+    const accepted = workspace.candidateDraft!;
+    const result = await workspace.applyThemePatch(
+      {
+        revision: accepted.revision,
+        files: [
+          { operation: 'write', path: 'index.hbs', content: '<main>Invalid</main>' },
+          { operation: 'write', path: 'partials/new.hbs', content: 'Rejected' },
+        ],
+      },
+      signal,
+    );
+    expect(result).toMatchObject({ ok: false, error: { code: 'render_invalid' } });
+    expect(workspace.draft).toEqual(promoted);
+    expect(workspace.candidateDraft).toEqual(accepted);
+    expect(workspace.candidateDraft?.files['partials/new.hbs']).toBeUndefined();
+  });
+
   it('loads an immutable draft and publishes only through its injected adapter', async () => {
     const source = await loadInput();
     const attachments = new BuilderAttachments({ uploadImage: vi.fn() });

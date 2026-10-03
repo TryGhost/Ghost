@@ -148,6 +148,19 @@ pass stops automatic resizing for that delivered document and offers its fixed
 viewport fallback. Accepted source replacement starts new bounded observation.
 Settling alone does not establish device fidelity or full lazy-content loading.
 
+The worker owns one `ThemeWorkspace` per fixture, including its complete asset set;
+iframe delivery does not own source. `CanvasThemePreview` validates Home and Post
+against one captured data generation before adoption. `applyThemePatch` stages
+bounded file writes/deletions and settings together, checking the complete final
+file set rather than validating intermediate template states. A Post-only failure
+preserves accepted source/settings. No-op patches reuse accepted render evidence.
+The harness's controlled `onApplyThemePatch` callback exercises delivery to all eight
+live documents, including changed assets, without adding controls to the canvas.
+It refuses work while a manual draft or another operation is pending, invalidates
+reads during work and preserves documents after a known rejection or no-op.
+This callback is a development/test seam; native mutation tools, retry/ownership
+recovery and draft preservation across replacement remain controller work.
+
 The harness commits eligible literal text through the real fixture worker, accepting
 source only after Home and Post both render successfully, then updating all eight
 documents. Generated markers are separate from authored/helper attributes.

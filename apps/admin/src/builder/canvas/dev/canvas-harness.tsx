@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { PageHeader } from '@tryghost/shade/patterns';
 import {
@@ -29,7 +29,7 @@ import type {
   PreviewInlineEditResult,
 } from '@/builder/workspaces/theme/preview/preview-document';
 import type { BuilderSelectionContext } from '@/builder/core/workspace';
-import type { FixtureRender } from './fixture-client';
+import type { FixturePatch, FixtureRender } from './fixture-client';
 import type { ExpandedComposition } from '@/builder/canvas/measure-expanded-composition';
 import type { ProbeRegistrationStatus } from './webmcp-probe';
 import type { ThemeFixtureId } from './fixture';
@@ -373,12 +373,14 @@ export function CanvasHarness({
   onDeviceSurface,
   onCompositionSurface,
   onProbe,
+  onApplyThemePatch,
   routingYaml = DEFAULT_CANVAS_ROUTING_SOURCE,
 }: {
   fixtureId?: ThemeFixtureId;
   onDeviceSurface?: (id: string, surface: IframePreviewDocumentSurface | null) => void;
   onCompositionSurface?: (id: string, surface: IframePreviewDocumentSurface | null) => void;
   onProbe?: (probe: CanvasProbe | null) => void;
+  onApplyThemePatch?: (apply: ((patch: FixturePatch) => Promise<FixtureRender>) | null) => void;
   routingYaml?: unknown;
 }) {
   // A fixture is selected once per harness mount.
@@ -502,9 +504,25 @@ export function CanvasHarness({
         if (disposed) {
           return;
         }
+        let currentAssets = assets;
         const deliver = (rendered: FixtureRender, acceptedAfterMs = 0) => {
           if (disposed || rendered.unchanged) {
             return;
+          }
+          if (rendered.sourceChanges) {
+            const nextAssets = { ...currentAssets };
+            for (const [path, content] of Object.entries(rendered.sourceChanges)) {
+              if (content === null) {
+                delete sourceFiles.current[path];
+                delete nextAssets[path];
+              } else {
+                sourceFiles.current[path] = content;
+                if (path.startsWith('assets/')) {
+                  nextAssets[path] = { content, binary: null };
+                }
+              }
+            }
+            currentAssets = nextAssets;
           }
           if (rendered.editedFile) {
             sourceFiles.current[rendered.editedFile.path] = rendered.editedFile.content;
@@ -549,7 +567,7 @@ export function CanvasHarness({
                     dataGeneration: rendered.dataGeneration,
                     inlineTextTargets: rendered.inlineTextTargets,
                     editMarkerAttribute: rendered.editMarkerAttribute,
-                    assets,
+                    assets: currentAssets,
                   },
                 ];
               }),
@@ -714,6 +732,61 @@ export function CanvasHarness({
       }
     }
   };
+  const applyThemePatch = useCallback(
+    async (patch: FixturePatch): Promise<FixtureRender> => {
+      const current = session.current;
+      if (
+        !current ||
+        !acceptedRender.current ||
+        pendingCommit.current ||
+        pendingRefresh.current ||
+        refreshUncertain.current ||
+        owner.current ||
+        !delivery.current?.allComplete
+      ) {
+        throw new FixtureRejectedError(
+          'Finish the current draft or delivery before applying a theme patch.',
+        );
+      }
+      pendingCommit.current = true;
+      setCommitPending(true);
+      setError(null);
+      const restoreReads = probe?.invalidateForRefresh();
+      try {
+        const result = await current.client.applyThemePatch(patch);
+        current.deliver(result);
+        if (result.unchanged) {
+          restoreReads?.();
+        }
+        return result;
+      } catch (failure) {
+        if (session.current === current) {
+          if (failure instanceof FixtureRejectedError) {
+            restoreReads?.();
+          } else {
+            refreshUncertain.current = true;
+            setRefreshUnavailable(true);
+          }
+          setError(
+            `${failure instanceof Error ? failure.message : String(failure)}${failure instanceof FixtureRejectedError ? '' : ' Reload the local fixture to recover.'}`,
+          );
+        }
+        throw failure;
+      } finally {
+        if (session.current === current) {
+          pendingCommit.current = false;
+          setCommitPending(false);
+        }
+      }
+    },
+    [probe],
+  );
+  useEffect(() => {
+    onApplyThemePatch?.(applyThemePatch);
+    return () => {
+      onApplyThemePatch?.(null);
+    };
+  }, [onApplyThemePatch, applyThemePatch]);
   const editText = async (
     frameId: string,
     edit: PreviewInlineEditRequest,
@@ -1006,6 +1079,7 @@ export function CanvasHarness({
                     onAdmission={(interactionTime) => {
                       if (
                         pendingRefresh.current ||
+                        pendingCommit.current ||
                         refreshUncertain.current ||
                         !delivery.current?.allComplete ||
                         !delivery.current?.ready.has(`${frame.id}:${kind}`) ||
@@ -1051,6 +1125,7 @@ export function CanvasHarness({
                     onSelection={(id, context, interactionTime) => {
                       if (
                         pendingRefresh.current ||
+                        pendingCommit.current ||
                         refreshUncertain.current ||
                         !delivery.current?.ready.has(`${frame.id}:${kind}`) ||
                         interactionTime === undefined ||

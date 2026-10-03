@@ -156,7 +156,6 @@ export async function updateDesignSettings(
     );
   }
   const values = input.values as Record<string, unknown>;
-  const visible = visibleThemeCustomSettings(draft.customSettings);
   for (const [identifier, value] of Object.entries(values)) {
     if (identifier.startsWith('global.')) {
       const key = identifier.slice('global.'.length) as keyof ThemeGlobalSettings;
@@ -197,13 +196,6 @@ export async function updateDesignSettings(
     if (!setting) {
       return failure(draft, 'setting_not_found', `No design setting exists at ${identifier}.`);
     }
-    if (!Object.hasOwn(visible, key)) {
-      return failure(
-        draft,
-        'setting_hidden',
-        `${identifier} is currently hidden by the theme's visibility rules.`,
-      );
-    }
     const valid = validateCustomValue(draft, setting, value);
     if (!valid.ok) {
       return valid;
@@ -224,6 +216,21 @@ export async function updateDesignSettings(
       setting.value = value as string | null;
     } else {
       setting.value = value as string;
+    }
+  }
+  // Validate all values before checking visibility in the complete settings update.
+  // A controlling setting can reveal another setting in the same atomic patch.
+  const visible = visibleThemeCustomSettings(candidate.customSettings);
+  for (const identifier of Object.keys(values)) {
+    if (
+      identifier.startsWith('theme.') &&
+      !Object.hasOwn(visible, identifier.slice('theme.'.length))
+    ) {
+      return failure(
+        draft,
+        'setting_hidden',
+        `${identifier} is hidden by the resulting theme settings.`,
+      );
     }
   }
   const revised = await withThemeRevision(candidate);

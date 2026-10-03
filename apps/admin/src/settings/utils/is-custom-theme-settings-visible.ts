@@ -1,5 +1,5 @@
 import nql from '@tryghost/nql';
-import { type CustomThemeSetting } from '@tryghost/admin-x-framework/api/custom-theme-settings';
+import type { CustomThemeSetting } from '@tryghost/admin-x-framework/api/custom-theme-settings';
 
 export function isCustomThemeSettingVisible(
   setting: CustomThemeSetting,

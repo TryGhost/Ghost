@@ -2,11 +2,13 @@ import { DEFAULT_CANVAS_ROUTING_SOURCE } from '@/builder/canvas/route-compatibil
 
 import type { ThemeFixtureId } from './fixture';
 import type { FixtureDataSnapshot } from './recorded-content';
+import type { ThemeFilePatch } from '@/builder/workspaces/theme/theme-patch';
 
 export type FixtureRender = {
   fixtureId: ThemeFixtureId;
   requestId: number;
   revision: string;
+  workspaceId?: string;
   dataGeneration: number;
   dataSnapshot: FixtureDataSnapshot;
   renderKey: string;
@@ -15,6 +17,7 @@ export type FixtureRender = {
   inlineTextTargets: Record<string, string>;
   editMarkerAttribute: string;
   editedFile?: { path: string; content: string };
+  sourceChanges?: Record<string, string | null>;
 };
 type Edit = {
   marker: string;
@@ -27,6 +30,13 @@ export type FixtureRefresh = {
   snapshot: FixtureDataSnapshot;
   expectedRevision: string;
   expectedDataGeneration: number;
+};
+
+export type FixturePatch = {
+  expectedRevision: string;
+  expectedDataGeneration: number;
+  files?: ThemeFilePatch[];
+  settings?: Record<string, unknown>;
 };
 
 /** A worker rejection adopted nothing; lost transport has an uncertain outcome. */
@@ -87,7 +97,15 @@ export class FixtureClient {
     return this.request({ refresh });
   }
 
-  private request(operation: { edit?: Edit; refresh?: FixtureRefresh }): Promise<FixtureRender> {
+  applyThemePatch(patch: FixturePatch): Promise<FixtureRender> {
+    return this.request({ patch });
+  }
+
+  private request(operation: {
+    edit?: Edit;
+    refresh?: FixtureRefresh;
+    patch?: FixturePatch;
+  }): Promise<FixtureRender> {
     if (this.disposed) {
       return Promise.reject(new DOMException('Fixture worker stopped.', 'AbortError'));
     }
