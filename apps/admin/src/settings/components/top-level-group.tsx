@@ -29,6 +29,7 @@ interface TopLevelGroupProps {
   children?: React.ReactNode;
   hideEditButton?: boolean;
   alwaysShowSaveButton?: boolean;
+  saveDisabled?: boolean;
   highlightOnModalClose?: boolean;
   enableCMDS?: boolean;
   onEditingChange?: (isEditing: boolean) => void;
@@ -51,6 +52,7 @@ const TopLevelGroup: React.FC<TopLevelGroupProps> = ({
   children,
   hideEditButton,
   alwaysShowSaveButton = true,
+  saveDisabled = false,
   highlightOnModalClose = true,
   enableCMDS = true,
   onEditingChange,
@@ -83,7 +85,9 @@ const TopLevelGroup: React.FC<TopLevelGroupProps> = ({
     const handleSaveShortcut = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key === 's') {
         event.preventDefault();
-        void onSave?.();
+        if (!saveDisabled) {
+          void onSave?.();
+        }
       }
     };
 
@@ -91,7 +95,7 @@ const TopLevelGroup: React.FC<TopLevelGroupProps> = ({
       window.addEventListener('keydown', handleSaveShortcut);
       return () => window.removeEventListener('keydown', handleSaveShortcut);
     }
-  }, [enableCMDS, onSave]);
+  }, [enableCMDS, onSave, saveDisabled]);
 
   const handleCancel = () => {
     onCancel?.();
@@ -105,7 +109,7 @@ const TopLevelGroup: React.FC<TopLevelGroupProps> = ({
       </Button>
       {(saveState === 'unsaved' || alwaysShowSaveButton) && (
         <Button
-          disabled={saveState !== 'unsaved'}
+          disabled={saveState !== 'unsaved' || saveDisabled}
           size="sm"
           type="button"
           onClick={() => void onSave?.()}
