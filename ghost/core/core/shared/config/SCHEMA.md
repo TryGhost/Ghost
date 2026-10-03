@@ -17,9 +17,58 @@ tree from the loaded sources plus every override recorded so far, so config is
 never briefly half-written — which matters, because validation is atomic and
 nconf's own reset-then-reapply rebuild was not.
 
-## Adding a key
+## Where a schema belongs
 
-1. Add it to `configSchema` in [`schema.ts`](schema.ts) with a schema that is
+Not every key belongs in [`schema.ts`](schema.ts). This file is the bottom of the
+dependency graph, and it knows nothing about any feature. A schema covering every
+key would give it inbound knowledge of `bulkEmail`, `tinybird`, `machinePayments`
+and the rest — the lowest-level module in the tree describing the highest-level
+features. Keep it small on purpose.
+
+Split by who needs the guarantee:
+
+- **Boot cannot start without it** — `url`, `env`, `paths`, `database`. Central,
+  so it fails at load. Small and stable, and genuinely config's own business.
+- **Everything else** — the feature's concern, validated by the feature when it
+  initialises.
+
+The second needs nothing from this directory. The tree is loose and frozen, so a
+feature can parse its own slice today, next to the code that reads it:
+
+```ts
+// in the feature, not here
+const schema = z.object({tag: z.string().default('bulk-email')});
+
+export function mailgunOptions() {
+  return schema.parse(config.get('bulkEmail:mailgun') ?? {});
+}
+```
+
+Parsing a frozen subtree returns a fresh, unfrozen object, so that works as
+written. It is also the better place for it:
+
+- **It can use the things the central schema forbids.** `z.object()` to reject
+  unknown keys, defaults, coercion — all fine when the blast radius is one
+  feature rather than every running site.
+- **It fails the feature, not the site.** A broken Mailgun config should not stop
+  Ghost serving pages.
+- **The people who own the code own the schema**, and review it in the same
+  change as the code that reads it.
+
+Read central keys through `config.get('url')`. Read a feature's keys through one
+accessor the feature owns, rather than `config.get` scattered across it.
+
+Two approaches were considered and rejected for the long tail. Self-registration
+(`registerConfigSection()` at import time) cannot work: config is the first thing
+loaded — `loggingrc.js` and `MigratorConfig.js` require it before any feature
+module exists — so which sections got validated would depend on import order.
+Generating this file from per-feature schemas does work, but it buys load-time
+failure for feature config, which is the wrong behaviour for most of it.
+
+## Adding a key to the central schema
+
+1. Check it belongs here at all — see above. Then add it to `configSchema` in
+   [`schema.ts`](schema.ts) with a schema that is
    **no stricter than what Ghost already accepts**. Look at `defaults.json`,
    `overrides.json`, `env/*.json`, and how the key is actually read first.
 2. Run `pnpm --dir ghost/core test:types` and fix what the new types catch.
@@ -31,10 +80,13 @@ nconf's own reset-then-reapply rebuild was not.
 
 Adding a key to the schema enforces its type: a caller that treated a string as
 a number, or assumed a key is always present, stops compiling. That is the point
-— the compiler is what keeps config honest, since a runtime guard cannot. Ghost's
-`.js` files are sloppy-mode CommonJS, where writing to a frozen object is dropped
-rather than thrown, and `node --use_strict` cannot be set through `NODE_OPTIONS`,
-so it cannot be relied on for a self-hosted product.
+— the compiler is what keeps config honest, because the freeze on its own cannot.
+Ghost's `.js` files are sloppy-mode CommonJS, where writing to a frozen object is
+dropped rather than thrown, and `node --use-strict` does not change that: it makes
+only the entry point strict, while a `require()`d CommonJS module keeps its own
+strictness. Enforcing the freeze at runtime would take `'use strict'` directives
+across the `.js` files, or a Proxy whose `set` trap throws, gated to the test
+environment.
 
 ## Rules
 
@@ -73,7 +125,17 @@ change.
 ## Don't mutate what `get()` returns
 
 It is frozen, and it is shared: every reader of a key gets the same object. Build
-a derived object instead. Two places got this wrong before config was frozen, and
-both were writing through into config for every later reader —
-[`data/db/connection.ts`](../../server/data/db/connection.ts) assembling knex's
-config, and `AdapterCacheRedis` folding `ttl` into `clusterConfig`.
+a derived object instead. Three places got this wrong, each writing through into
+config for every later reader:
+[`configure-knex.ts`](../../server/data/db/configure-knex.ts) assembling knex's
+options, `AdapterCacheRedis` folding `ttl` into `clusterConfig`, and
+[`MigratorConfig.js`](../../../MigratorConfig.js) handing the `database` subtree
+to knex-migrator, which mutates what it is given.
+
+The last one is the case to watch for: when a dependency assembles its own options
+from what you pass it, give it a copy. `_.cloneDeep` rather than
+`structuredClone` — handing a tree to code you do not control should not be able
+to throw on a value it cannot clone.
+
+Copy only the levels you write to, rather than deep-cloning defensively. A deep
+clone launders away the readonly type, so the compiler stops holding you to it.
