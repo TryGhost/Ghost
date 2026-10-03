@@ -291,28 +291,52 @@ describe('settingsFieldErrorFor', () => {
 });
 
 describe('canonical URL validation', () => {
-  it.each(['https://example.com/original/', 'http://localhost:2368/story/', '/original/', ''])(
-    'accepts %s',
+  function errorFor(canonicalUrl: string | null): string | null {
+    return settingsFieldErrorFor('canonical_url', { ...VALID, canonical_url: canonicalUrl });
+  }
+
+  it.each([null, '', '   '])('leaves a blank value alone: %j', (canonicalUrl) => {
+    expect(errorFor(canonicalUrl)).toBeNull();
+  });
+
+  it.each([
+    'https://example.com/original/',
+    'http://localhost:2368/story/',
+    '/original/',
+    '//cdn.example.com/original/',
+  ])('accepts %s', (canonicalUrl) => {
+    expect(errorFor(canonicalUrl)).toBeNull();
+  });
+
+  it.each(['https://', 'mailto:editor@example.com', 'https://example.com:invalid'])(
+    'accepts %s, since it starts with a scheme',
     (canonicalUrl) => {
-      expect(
-        settingsFieldErrorFor('canonical_url', { ...VALID, canonical_url: canonicalUrl }),
-      ).toBeNull();
+      expect(errorFor(canonicalUrl)).toBeNull();
     },
   );
-  it.each([
-    'example.com/path',
-    'https://example.com/a b',
-    'https://',
-    'https://[invalid]',
-    'https://example.com:invalid',
-  ])('refuses %s', (canonicalUrl) => {
-    expect(settingsFieldErrorFor('canonical_url', { ...VALID, canonical_url: canonicalUrl })).toBe(
-      'Please enter a valid URL',
-    );
+
+  it.each(['asdfghjk', 'example.com/path', 'www.example.com', '?ref=feed', '#top'])(
+    'refuses %s, which starts with neither / nor a scheme',
+    (canonicalUrl) => {
+      expect(errorFor(canonicalUrl)).toBe('Please enter a valid URL');
+    },
+  );
+
+  it.each(['https://example.com/a b', '/original/\n', ' /original/', '/a b'])(
+    'refuses %j, which holds whitespace',
+    (canonicalUrl) => {
+      expect(errorFor(canonicalUrl)).toBe('Please enter a valid URL');
+    },
+  );
+
+  it('holds the URL to 2,000 characters', () => {
+    const longest = `http://example.com/${'x'.repeat(1981)}`;
+
+    expect(errorFor(longest)).toBeNull();
+    expect(errorFor(`${longest}x`)).toBe('Canonical URL is too long, max 2000 chars');
   });
-  it('enforces the URL column limit', () => {
-    expect(
-      settingsFieldErrorFor('canonical_url', { ...VALID, canonical_url: '/' + 'a'.repeat(2000) }),
-    ).toBe('Canonical URL is too long, max 2000 chars');
+
+  it('calls a URL with whitespace invalid before it calls it too long', () => {
+    expect(errorFor(`/${' '.repeat(2000)}`)).toBe('Please enter a valid URL');
   });
 });

@@ -32,7 +32,6 @@ describe('Unit: Service: session', function () {
             sinon.stub(service.feature, 'fetch').resolves();
             sinon.stub(service.settings, 'fetch').resolves();
             sinon.stub(service.membersUtils, 'fetch').resolves();
-            sinon.stub(service.frontend, 'loginIfNeeded').resolves();
             sinon.stub(service.themeManagement, 'fetch').resolves();
             sinon.stub(service.koenig, 'fetch');
         });

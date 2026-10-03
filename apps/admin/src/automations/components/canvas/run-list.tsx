@@ -167,8 +167,6 @@ export const RunList: React.FC<{
     isNextPageError,
     loadMore,
     scanning,
-    paused,
-    continueSearch,
   } = useAutomationRuns(
     automationId,
     status,
@@ -189,18 +187,13 @@ export const RunList: React.FC<{
     return () => window.clearTimeout(timeout);
   }, [isLoading]);
   const loadingVisible = isLoading && showLoading;
-  let emptyMessage = 'No entries yet';
-  if (search || status) {
-    emptyMessage = 'No matching entries';
-  } else if (dateRange.value !== 'all') {
-    emptyMessage = 'No entries in this period';
-  }
 
   const SortIcon = direction === 'asc' ? LucideIcon.ArrowUp : LucideIcon.ArrowDown;
   const scrollRef = useRef<HTMLDivElement>(null);
   const items = runs ?? [];
+  const isScanning = scanning && !isError && !isNextPageError && !updating;
   // One extra row loads the next page without reserving space for unloaded history.
-  const totalItems = items.length + (canLoadMore ? 1 : 0);
+  const totalItems = items.length + (canLoadMore || isScanning ? 1 : 0);
   const { visibleItems, spaceBefore, spaceAfter } = useInfiniteVirtualScroll({
     items,
     totalItems,
@@ -217,7 +210,7 @@ export const RunList: React.FC<{
   }, [queryScope, dateRange]);
   return (
     <Stack
-      aria-busy={isLoading}
+      aria-busy={isLoading || isLoadingMore || isScanning}
       aria-label="Automation runs"
       className="min-h-[216px] flex-1"
       gap="sm"
@@ -295,32 +288,20 @@ export const RunList: React.FC<{
             Updating automation runs
           </Text>
         )}
-        {isLoadingMore && (
+        {(isLoadingMore || isScanning) && (
           <Text className="sr-only" role="status">
             Loading more entries
           </Text>
         )}
         {!isLoading && !isError && !scanning && !isNextPageError && runs?.length === 0 && (
           <Text className="px-4 py-6 text-center" role="status" size="sm" tone="secondary">
-            {emptyMessage}
+            No members match
           </Text>
-        )}
-        {scanning && !isError && !isNextPageError && !updating && (
-          <Stack className="px-4 py-3" gap="sm">
-            <Text role="status" size="sm" tone="secondary">
-              {paused ? 'Search paused. Continue to find more entries' : 'Searching more entries…'}
-            </Text>
-            {paused && (
-              <Button className="self-start" size="sm" variant="outline" onClick={continueSearch}>
-                Continue search
-              </Button>
-            )}
-          </Stack>
         )}
         {isError && (
           <Stack className="px-4 py-6" gap="sm" role="alert">
             <Text size="sm" tone="secondary">
-              Could not load automation runs
+              Could not load entries
             </Text>
             <Button className="self-start" size="sm" variant="outline" onClick={retry}>
               Retry
@@ -330,7 +311,7 @@ export const RunList: React.FC<{
         {isNextPageError && (
           <Stack className="px-4 py-6" gap="sm" role="alert">
             <Text size="sm" tone="secondary">
-              Could not load more runs
+              Could not load entries
             </Text>
             <Button className="self-start" size="sm" variant="outline" onClick={loadMore}>
               Retry

@@ -17,7 +17,6 @@ export default class SessionService extends ESASessionService {
     @service koenig;
     @service notifications;
     @service router;
-    @service frontend;
     @service settings;
     @service ui;
     @service membersUtils;
@@ -53,8 +52,6 @@ export default class SessionService extends ESASessionService {
 
         // Theme management requires features to be loaded
         this.themeManagement.fetch().catch(console.error); // eslint-disable-line no-console
-
-        await this.frontend.loginIfNeeded();
 
         // update Sentry with the full Ghost version which we only get after authentication
         if (this.config.sentry_dsn) {

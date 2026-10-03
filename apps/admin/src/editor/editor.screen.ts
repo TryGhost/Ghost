@@ -64,6 +64,7 @@ import {
   settingsAuthorsError,
   settingsAuthorsList,
   settingsAuthorsPicker,
+  settingsCanonicalUrlInput,
   settingsDeleteButton,
   settingsDeleteCancelButton,
   settingsDeleteConfirmButton,
@@ -311,6 +312,7 @@ export const editorScreen = {
   settingsSubviewBack: (label: string) => page.getByRole('button', { name: label, exact: true }),
   settingsMetaTitle: () => page.getByTestId(settingsMetaTitleInput),
   settingsMetaDescription: () => page.getByTestId(settingsMetaDescriptionInput),
+  settingsCanonicalUrl: () => page.getByTestId(settingsCanonicalUrlInput),
   settingsSerpPreview: () => page.getByTestId(settingsSerpPreview),
   /** CodeMirror exposes its content as a textbox named by the editor's label. */
   settingsCodeInjection: (label: string) =>

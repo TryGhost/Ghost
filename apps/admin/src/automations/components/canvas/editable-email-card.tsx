@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import {
   InputGroup,
+  Button,
   InputGroupAddon,
   InputGroupInput,
   InputGroupText,
@@ -23,6 +24,7 @@ export type EditableEmailData = {
   onInteract: () => void;
   onUpdateSubject: (subject: string) => void;
   onEditContent: () => void;
+  onToggleAnalytics?: () => void;
 };
 
 function getEmailWarning(email: EditableEmailData, errorMessage?: string) {
@@ -72,6 +74,18 @@ export const EditableEmailCard: React.FC<
         actions={
           <Inline gap="xs">
             <AutomationCardWarning message={warning} />
+            {email.onToggleAnalytics && (
+              <Button
+                aria-label={selected ? 'Hide email analytics' : 'View email analytics'}
+                aria-pressed={selected}
+                className={cn(selected && 'bg-muted')}
+                size="icon"
+                variant="ghost"
+                onClick={email.onToggleAnalytics}
+              >
+                <LucideIcon.ChartNoAxesColumn />
+              </Button>
+            )}
             <AutomationCardMenu label="Email actions" menuItems={menuItems} />
           </Inline>
         }

@@ -9,7 +9,7 @@ import {
   LEAVE_DECISION_DEADLINE_MS,
   leaveDecisionWithin,
 } from './leave-guard';
-import { useEditorSessionKey } from './session-key';
+import { useEditorSessionKey, useMarkEditorSessionCreated } from './session-key';
 import type { EditorSessionHandle } from './use-editor-session';
 
 export interface EditorLeaveGuard {
@@ -84,6 +84,12 @@ export function useEditorLeaveGuard(
   // Router owns one blocker target, so starting this replace while an exit is
   // blocked would overwrite the writer's original destination.
   const createdId = session.createdId;
+  const markSessionCreated = useMarkEditorSessionCreated();
+  useEffect(() => {
+    if (createdId) {
+      markSessionCreated();
+    }
+  }, [createdId, markSessionCreated]);
   const { hasBlockedNavigation } = guard;
   useEffect(() => {
     if (!createdId || hasBlockedNavigation() || isUrlSwapBlocked || isLeavingRef.current) {

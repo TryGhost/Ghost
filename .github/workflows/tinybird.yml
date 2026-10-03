@@ -30,7 +30,7 @@ jobs:
     outputs:
       tinybird: ${{ steps.changed.outputs.tinybird }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
@@ -39,7 +39,7 @@ jobs:
       - name: Determine whether Tinybird files changed
         id: changed
         if: github.event_name == 'pull_request'
-        uses: AurorNZ/paths-filter@c9dd42e99db87803313ff6f4b1150cc9f6c836af # v5.0.0
+        uses: AurorNZ/paths-filter@ead37777b84ca4c3301a92f453c4040b85287e76 # v5.1.0
         with:
           filters: |
             tinybird:
@@ -58,20 +58,20 @@ jobs:
         working-directory: ghost/core/core/server/data/tinybird
     services:
       tinybird:
-        image: tinybirdco/tinybird-local:latest@sha256:9d438ecb6f03b00b024f6a48c824ddc29c81b99829c874a0095648b765c083e6
+        image: tinybirdco/tinybird-local:latest@sha256:b2ce4910a5e92c97e0dbe77e08d3507c04837b8af88dd215715890dac54bff97
         ports:
           - 7181:7181
     outputs:
       datafiles_changed: ${{ steps.datafiles.outputs.tinybird }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
       - name: Determine whether Tinybird datafiles changed
         id: datafiles
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: AurorNZ/paths-filter@c9dd42e99db87803313ff6f4b1150cc9f6c836af # v5.0.0
+        uses: AurorNZ/paths-filter@ead37777b84ca4c3301a92f453c4040b85287e76 # v5.1.0
         with:
           filters: |
             tinybird:
@@ -133,7 +133,7 @@ jobs:
     needs: [tests]
     if: github.repository == 'TryGhost/Ghost' && github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.tests.outputs.datafiles_changed == 'true'
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Trigger and watch traffic analytics infra Tinybird workflow
         env:

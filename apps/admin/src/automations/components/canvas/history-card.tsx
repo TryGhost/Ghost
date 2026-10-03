@@ -47,6 +47,21 @@ const kindIcons = {
 
 const HistoryTime: React.FC<{ timestamp: HistoryTimestamp }> = ({ timestamp }) => {
   const date = new Date(timestamp.value);
+  if (timestamp.rangeStart) {
+    const start = new Date(timestamp.rangeStart);
+    const shortDate = { month: 'short', day: 'numeric' } as const;
+    const fullDate = { dateStyle: 'full' } as const;
+    const description = `Estimated dates: ${start.toLocaleDateString(undefined, fullDate)}–${date.toLocaleDateString(undefined, fullDate)}`;
+    return (
+      <span aria-label={description} title={description}>
+        est.{' '}
+        <time dateTime={timestamp.rangeStart}>
+          {start.toLocaleDateString(undefined, shortDate)}
+        </time>
+        –<time dateTime={timestamp.value}>{date.toLocaleDateString(undefined, shortDate)}</time>
+      </span>
+    );
+  }
   const fullDate = date.toLocaleString(undefined, {
     dateStyle: 'full',
     ...(timestamp.estimated ? {} : { timeStyle: 'long' }),

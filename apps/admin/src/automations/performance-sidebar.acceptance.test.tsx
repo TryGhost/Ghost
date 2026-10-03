@@ -1,14 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
-import {
-  flags,
-  response,
-  read as readAutomation,
-  setupEmbeddedRootFontSize,
-} from './run-list.test-utils';
-
-setupEmbeddedRootFontSize();
+import { flags, response, read as readAutomation } from './run-list.test-utils';
 
 const read = (id: string) => {
   fakeAdminEndpoint('GET', new RegExp(`/automations/${id}/runs/\\?`), {
@@ -328,7 +321,7 @@ describe('Performance sidebar layout', () => {
         expect(card.scrollWidth).toBeLessThanOrEqual(card.clientWidth);
       }
     } finally {
-      document.documentElement.style.fontSize = '62.5%';
+      document.documentElement.style.fontSize = '';
     }
   });
 

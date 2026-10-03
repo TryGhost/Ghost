@@ -523,7 +523,12 @@ export function PostPreviewModal({
             onRetryNewsletterLookup={retryNewsletterLookup}
           />
         ) : (
-          <BrowserPreview audience={audience} device={device} previewUrl={previewUrl} />
+          <BrowserPreview
+            audience={audience}
+            device={device}
+            previewUrl={previewUrl}
+            onEscape={() => onOpenChange(false)}
+          />
         )}
       </Inline>
     </FullscreenDialog>

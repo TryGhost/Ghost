@@ -249,7 +249,7 @@ describe('Automation run selection and canvas transitions', () => {
       .element(canvas().getByRole('alert'))
       .toHaveTextContent('Could not load run history');
     await page.getByRole('button', { name: 'Completed', exact: true }).click();
-    await expect.element(page.getByText('No matching entries')).toBeVisible();
+    await expect.element(page.getByText('No members match')).toBeVisible();
     const request = respond(history('a'));
     await canvas().getByRole('button', { name: 'Retry' }).click();
     await expect.element(canvas()).toHaveTextContent('Alex');
@@ -267,7 +267,7 @@ describe('Automation run selection and canvas transitions', () => {
     await renderAdminApp('/automations/first', flags);
     await open();
     await select();
-    await expect.element(canvas()).toHaveTextContent('This run is no longer available');
+    await expect.element(canvas()).toHaveTextContent('Run not found');
     await expect.element(canvas().getByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
     await close();
     await expect.element(editingCanvas()).toBeVisible();
@@ -282,7 +282,6 @@ describe('Automation run selection and canvas transitions', () => {
     await expect
       .element(canvas().getByRole('button', { name: 'Back to editing' }))
       .toHaveTextContent('Deleted member');
-    await expect.element(canvas()).toHaveTextContent('Member details unavailable');
     await expect.element(canvas()).toHaveTextContent('1 recorded step');
   });
 });

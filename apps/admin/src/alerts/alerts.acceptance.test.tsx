@@ -64,6 +64,9 @@ function stubEmberBridge() {
 async function renderWithEmber(notifications: ServerNotification[] = []) {
   const emberHost = stubEmberBridge();
   await renderWithNotifications(notifications);
+  // The host connects a render before Sonner's toaster subscribes, which drops
+  // toasts shown in between; the screen renders well after both.
+  await expect.element(tagsScreen.emptyStateHeading()).toBeVisible();
   await expect.poll(emberHost).toBeDefined();
   return emberHost()!;
 }

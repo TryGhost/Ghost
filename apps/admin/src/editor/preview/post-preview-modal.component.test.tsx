@@ -7,6 +7,7 @@ import {
   configResponse,
   currentUserResponse,
   fakeAdminEndpoint,
+  fakeFrameOrigin,
   fakeNewsletters,
   fakeTiers,
   newsletter,
@@ -29,11 +30,7 @@ const CURRENT_USER_EMAIL = String(currentUserResponse().users[0].email);
 
 async function previewViewport(width: number, height: number) {
   const initialViewport = { width: window.innerWidth, height: window.innerHeight };
-  const initialFontSize = document.documentElement.style.fontSize;
-  // Embedded Admin uses a 10px rem base; match it when checking pixel breakpoints.
-  document.documentElement.style.fontSize = '10px';
   onTestFinished(async () => {
-    document.documentElement.style.fontSize = initialFontSize;
     await page.viewport(initialViewport.width, initialViewport.height);
   });
   await page.viewport(width, height);
@@ -274,6 +271,56 @@ describe('Post preview modal', () => {
     await previewScreen.closeButton().click();
 
     expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('closes the preview on an Escape pressed inside a same-origin site frame', async () => {
+    fakePreviewWorld();
+    const onOpenChange = vi.fn();
+    await renderPreviewModal({
+      onOpenChange,
+      previewUrl: `${window.location.origin}/p/post-uuid/`,
+    });
+
+    const frame = previewScreen.browserFrame().element() as HTMLIFrameElement;
+    // The frame's listener attaches on load, which this test cannot observe directly.
+    await expect
+      .poll(() => {
+        frame.contentDocument?.body?.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+        );
+        return onOpenChange.mock.calls;
+      })
+      .toContainEqual([false]);
+  });
+
+  it('leaves the Web preview cleanly after its frame has followed a link to another site', async () => {
+    fakePreviewWorld();
+    fakeEmailPreview();
+    await fakeFrameOrigin('http://elsewhere.test', '<p>Another site</p>');
+    const onOpenChange = vi.fn();
+    await renderPreviewModal({
+      onOpenChange,
+      previewUrl: `${window.location.origin}/p/post-uuid/`,
+    });
+
+    const frame = previewScreen.browserFrame().element() as HTMLIFrameElement;
+    await expect
+      .poll(() => {
+        frame.contentDocument?.body?.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+        );
+        return onOpenChange.mock.calls;
+      })
+      .toContainEqual([false]);
+    const leftSite = new Promise((resolve) => {
+      frame.addEventListener('load', resolve, { once: true });
+    });
+    frame.contentWindow?.location.assign('http://elsewhere.test/');
+    await leftSite;
+
+    await previewScreen.emailTab().click();
+
+    await expect.element(previewScreen.emailFrame()).toBeVisible();
   });
 
   it('previews as a public visitor', async () => {

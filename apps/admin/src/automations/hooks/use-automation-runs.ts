@@ -1,12 +1,11 @@
 import { keepPreviousData } from '@tanstack/react-query';
 import type { PerformanceDateRange } from '@/automations/utils/performance-date-range';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import {
   useBrowseAutomationRuns,
   type AutomationRunStatusFilter,
 } from '@tryghost/admin-x-framework/api/automations';
 import { performanceQueryOptions } from './performance-query-options';
-import { useSearchContinuation } from './use-search-continuation';
 import type { RunSortDirection } from '@/automations/types';
 
 export const useAutomationRuns = (
@@ -39,20 +38,15 @@ export const useAutomationRuns = (
   const loadMore = useCallback(() => {
     void fetchNextPage({ cancelRefetch: false });
   }, [fetchNextPage]);
-  const { paused, continueSearch } = useSearchContinuation({
-    requestId: queryScope,
-    pages: query.data?.pages ?? 0,
-    scanning,
-    enabled: enabled && !updating,
-    fetching: query.isFetching,
-    failed: query.isError,
-    loadMore,
-  });
+  // A scan can return no matches before reaching the end. Continue sequentially.
+  useEffect(() => {
+    if (enabled && !updating && scanning && !query.isFetching && !query.isError) {
+      loadMore();
+    }
+  }, [enabled, updating, scanning, query.isFetching, query.isError, query.data, loadMore]);
   return {
     runs,
     scanning,
-    paused,
-    continueSearch,
     isLoading: updating || (query.isFetching && !query.isFetchingNextPage),
     isError: !updating && failed,
     retry: () => {
