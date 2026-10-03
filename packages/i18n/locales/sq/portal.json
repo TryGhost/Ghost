@@ -117,7 +117,7 @@
     "Enter your email address": "",
     "Enter your name": "",
     "Error": "Gabim",
-    "Expires {expiryDate}": "Mbaron",
+    "Expires {expiryDate}": "Mbaron {expiryDate}",
     "Facebook": "",
     "Failed to cancel subscription, please try again": "",
     "Failed to log in, please try again": "",
