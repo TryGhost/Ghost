@@ -29,6 +29,8 @@ import tags from './tags.json' with { type: 'json' };
 import tiersAdd from './tiers-add.json' with { type: 'json' };
 import tiersEdit from './tiers-edit.json' with { type: 'json' };
 import tiers from './tiers.json' with { type: 'json' };
+import upgradesAdd from './upgrades-add.json' with { type: 'json' };
+import upgrades from './upgrades.json' with { type: 'json' };
 import webhooksAdd from './webhooks-add.json' with { type: 'json' };
 import webhooksEdit from './webhooks-edit.json' with { type: 'json' };
 import webhooks from './webhooks.json' with { type: 'json' };
@@ -65,6 +67,8 @@ export const schemas = {
   'tiers-add': tiersAdd,
   'tiers-edit': tiersEdit,
   tiers,
+  'upgrades-add': upgradesAdd,
+  upgrades,
   'webhooks-add': webhooksAdd,
   'webhooks-edit': webhooksEdit,
   webhooks,
@@ -93,6 +97,7 @@ export const actionSchemaNames = [
   'snippets-edit',
   'tags-add',
   'tags-edit',
+  'upgrades-add',
   'webhooks-add',
   'webhooks-edit',
 ] as const satisfies readonly SchemaName[];

@@ -829,6 +829,21 @@
           "name": "Remove all gift links",
           "action_type": "removeAll",
           "object_type": "gift_link"
+        },
+        {
+          "name": "Browse upgrades",
+          "action_type": "browse",
+          "object_type": "upgrade"
+        },
+        {
+          "name": "Read upgrades",
+          "action_type": "read",
+          "object_type": "upgrade"
+        },
+        {
+          "name": "Add upgrades",
+          "action_type": "add",
+          "object_type": "upgrade"
         }
       ]
     },
@@ -993,7 +1008,8 @@
           "recommendation": "all",
           "gift_link": "all",
           "automation": ["browse", "read", "edit", "add"],
-          "identity": "read"
+          "identity": "read",
+          "upgrade": ["browse", "read", "add"]
         },
         "DB Backup Integration": {
           "db": "all",
