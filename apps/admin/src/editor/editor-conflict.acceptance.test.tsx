@@ -682,14 +682,16 @@ describe('Post editor update collision', () => {
     await editorScreen.confirmConflictReload().click();
 
     await expect.element(editorScreen.status()).toHaveTextContent('Published');
-    await expect.element(editorScreen.body()).not.toHaveTextContent('and more');
+    await expect.element(editorScreen.body()).toHaveTextContent(/^Hello from React$/);
     await expect(editorScreen.conflictBanner()).toHaveCount(0);
+    await expect.element(editorScreen.updateButton()).toBeDisabled();
 
     // An Update that still said `scheduled` would be refused again.
     const nextSave = fakeAdminEndpoint('PUT', READ_ROUTE, () => ({
       posts: [scheduled({ status: 'published', updated_at: AFTER_SAVE_AT })],
     }));
     await appendToBody(' after publishing');
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
     await editorScreen.updateButton().click();
 
     await expect.poll(() => nextSave.requests.length).toBe(1);
