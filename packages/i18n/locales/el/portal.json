@@ -296,6 +296,7 @@
     "Too many sign-up attempts, try again later": "Πάρα πολλές προσπάθειες εγγραφής, δοκιμάστε ξανά αργότερα",
     "Try free for {amount} days, then {originalPrice}.": "Δοκιμάστε δωρεάν για {amount} ημέρες, μετά {originalPrice}.",
     "Unable to initiate checkout session": "Δεν ήταν δυνατή η έναρξη συνεδρίας πληρωμής",
+    "Unable to verify your request, please try again": "",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Γίνετε συνδρομητικό μέλος για να ξεκλειδώσετε την πρόσβαση σε όλα τα ενημερωτικά δελτία.",
     "Unsubscribe from all emails": "Απεγγραφή από όλα τα emails",
     "Unsubscribed": "Μη εγγεγραμμένο",

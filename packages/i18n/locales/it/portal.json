@@ -297,6 +297,7 @@
     "Too many sign-up attempts, try again later": "Troppi tentativi di registrazione, riprova più tardi",
     "Try free for {amount} days, then {originalPrice}.": "Prova gratis per {amount} giorni, poi {originalPrice}.",
     "Unable to initiate checkout session": "Impossibile iniziare il checkout",
+    "Unable to verify your request, please try again": "",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Abbonati per sbloccare l'accesso a tutte le newsletter.",
     "Unsubscribe from all emails": "Disiscriviti da tutte le email",
     "Unsubscribed": "Disiscritto",

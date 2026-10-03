@@ -298,6 +298,7 @@
     "Too many sign-up attempts, try again later": "",
     "Try free for {amount} days, then {originalPrice}.": "An-asgaidh airson {amount}l, agus {originalPrice} an dèidh sin ",
     "Unable to initiate checkout session": "Cha ghabh seisean pàighidh a thòiseachadh",
+    "Unable to verify your request, please try again": "",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Tig nad bhall phaighte gus cothrom fhaighinn air na cuairt-litrichean gu lèir.",
     "Unsubscribe from all emails": "Na fo-sgrìobh ri puist-d tuilleadh",
     "Unsubscribed": "Chan fhaigh thu puist-d tuilleadh",

@@ -297,6 +297,7 @@
     "Too many sign-up attempts, try again later": "",
     "Try free for {amount} days, then {originalPrice}.": "Încearcă gratuit pentru {amount} zile, apoi {originalPrice}.",
     "Unable to initiate checkout session": "Nu pot iniția sesiunea de plată.",
+    "Unable to verify your request, please try again": "",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Deblochează accesul la toate buletinele informative devenind un abonat plătit.",
     "Unsubscribe from all emails": "Dezabonează-te de la toate emailurile",
     "Unsubscribed": "Dezabonat",

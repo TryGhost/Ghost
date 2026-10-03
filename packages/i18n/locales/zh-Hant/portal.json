@@ -295,6 +295,7 @@
     "Too many sign-up attempts, try again later": "註冊嘗試次數過多，請稍後重試。",
     "Try free for {amount} days, then {originalPrice}.": "免費試用 {amount} 天，然後以 {originalPrice} 開始訂閱。",
     "Unable to initiate checkout session": "無法建立結帳的連線",
+    "Unable to verify your request, please try again": "",
     "Unlock access to all newsletters by becoming a paid subscriber.": "成為付費會員以解鎖所有電子報內容。",
     "Unsubscribe from all emails": "取消所有電子報訂閱",
     "Unsubscribed": "未訂閱",
