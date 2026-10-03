@@ -200,6 +200,7 @@ export default defineConfig({
       '@earendil-works/pi-ai',
       '@tryghost/theme-renderer',
       'html2canvas-pro',
+      'js-yaml',
       'jszip',
     ],
     // Scan every app module so deps behind lazy routes are pre-bundled up

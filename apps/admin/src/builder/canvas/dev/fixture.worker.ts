@@ -7,6 +7,7 @@ import { parseEditMarker } from '@tryghost/theme-renderer/markers';
 
 import { getThemeFixture, instance } from './fixture';
 import { recordedContentResponse } from './recorded-content';
+import { inspectCanvasRouting } from '@/builder/canvas/route-compatibility';
 import type { ThemeFixtureId } from './fixture';
 import type { FixtureRender, FixtureRefresh } from './fixture-client';
 import type { FixtureDataSnapshot } from './recorded-content';
@@ -35,11 +36,20 @@ self.onmessage = (
     requestId?: number;
     edit?: Edit;
     refresh?: FixtureRefresh;
+    routingYaml?: unknown;
   }>,
 ) => {
   const fixtureId = event.data.fixtureId ?? 'casper';
   pending = pending
-    .then(() => render(fixtureId, event.data.requestId, event.data.edit, event.data.refresh))
+    .then(() =>
+      render(
+        fixtureId,
+        event.data.requestId,
+        event.data.edit,
+        event.data.refresh,
+        event.data.routingYaml,
+      ),
+    )
     .catch((error: unknown) => {
       self.postMessage({
         fixtureId,
@@ -54,7 +64,12 @@ async function render(
   requestId?: number,
   edit?: Edit,
   refresh?: FixtureRefresh,
+  routingYaml?: unknown,
 ) {
+  const routing = inspectCanvasRouting(routingYaml);
+  if (!routing.supported) {
+    throw new Error(routing.message);
+  }
   // Generated per render and separate from author/content data-edit attributes.
   const editMarkerAttribute = `data-builder-source-${crypto.randomUUID()}`;
   const fixture = getThemeFixture(fixtureId);

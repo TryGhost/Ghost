@@ -1,6 +1,7 @@
 import { expect, it } from 'vitest';
 
 import { IframePreviewDocumentSurface } from '@/builder/workspaces/theme/preview/preview-document';
+import { DEFAULT_CANVAS_ROUTING_SOURCE } from '@/builder/canvas/route-compatibility';
 import { getThemeFixture, instance, loadAssets } from './fixture';
 
 type Result = {
@@ -26,8 +27,8 @@ it('serially renders complete Source and Casper fixtures without mixing template
     worker.onerror = (event) => reject(new Error(event.message));
   });
   try {
-    worker.postMessage({ fixtureId: 'source' });
-    worker.postMessage({ fixtureId: 'casper' });
+    worker.postMessage({ fixtureId: 'source', routingYaml: DEFAULT_CANVAS_ROUTING_SOURCE });
+    worker.postMessage({ fixtureId: 'casper', routingYaml: DEFAULT_CANVAS_ROUTING_SOURCE });
     await complete;
     expect(results.map((result) => result.fixtureId)).toEqual(['source', 'casper']);
     const source = new DOMParser().parseFromString(results[0].html!.home, 'text/html');

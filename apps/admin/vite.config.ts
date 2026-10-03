@@ -56,7 +56,7 @@ export default defineConfig(({ command }) => ({
     // forwardConsole: { logLevels: ['warn', 'error'] }
   },
   optimizeDeps: {
-    include: ['@tryghost/koenig-lexical'],
+    include: ['@tryghost/koenig-lexical', 'js-yaml'],
   },
   resolve: sharedResolve,
   test: {

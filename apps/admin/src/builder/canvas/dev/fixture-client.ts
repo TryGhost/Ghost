@@ -1,3 +1,5 @@
+import { DEFAULT_CANVAS_ROUTING_SOURCE } from '@/builder/canvas/route-compatibility';
+
 import type { ThemeFixtureId } from './fixture';
 import type { FixtureDataSnapshot } from './recorded-content';
 
@@ -47,6 +49,7 @@ export class FixtureClient {
   private sequence = 0;
   private disposed = false;
   private readonly fixtureId: ThemeFixtureId;
+  private readonly routingYaml: unknown;
   private readonly pending = new Map<
     number,
     {
@@ -56,8 +59,9 @@ export class FixtureClient {
     }
   >();
 
-  constructor(fixtureId: ThemeFixtureId) {
+  constructor(fixtureId: ThemeFixtureId, routingYaml: unknown = DEFAULT_CANVAS_ROUTING_SOURCE) {
     this.fixtureId = fixtureId;
+    this.routingYaml = routingYaml;
     this.worker = new Worker(new URL('./fixture.worker.ts', import.meta.url), { type: 'module' });
     this.worker.onmessage = (event: MessageEvent<FixtureRender & { error?: string }>) => {
       const request = this.pending.get(event.data.requestId);
@@ -100,7 +104,12 @@ export class FixtureClient {
         30_000,
       );
       this.pending.set(requestId, { resolve, reject, timeout });
-      this.worker.postMessage({ fixtureId: this.fixtureId, requestId, ...operation });
+      this.worker.postMessage({
+        fixtureId: this.fixtureId,
+        requestId,
+        routingYaml: this.routingYaml,
+        ...operation,
+      });
     });
   }
 

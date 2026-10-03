@@ -1,6 +1,7 @@
 import { expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { IframePreviewDocumentSurface } from '@/builder/workspaces/theme/preview/preview-document';
+import { DEFAULT_CANVAS_ROUTING_SOURCE } from '@/builder/canvas/route-compatibility';
 import { instance, loadAssets } from './fixture';
 import type { ThemeFixtureId } from './fixture';
 import type { BuilderSelectionContext } from '@/builder/core/workspace';
@@ -26,7 +27,7 @@ function renderer(fixtureId: ThemeFixtureId) {
         worker.onmessage = (event: MessageEvent<Render>) =>
           event.data.error ? reject(new Error(event.data.error)) : resolve(event.data);
         worker.onerror = (event) => reject(new Error(event.message));
-        worker.postMessage({ fixtureId, edit });
+        worker.postMessage({ fixtureId, edit, routingYaml: DEFAULT_CANVAS_ROUTING_SOURCE });
       }),
   };
 }

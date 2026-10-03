@@ -1,4 +1,5 @@
 import JSZip from 'jszip';
+import { act } from 'react';
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 
@@ -13,9 +14,13 @@ import {
   siteResponse,
 } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
+import defaultRoutes from '../../../../ghost/core/core/server/services/route-settings/default-routes.yaml?raw';
 
 const liveHtml =
   '<html><head><link rel="stylesheet" href="/assets/built/screen.css?v=abc123"><script defer src="/ghost/assets/portal.js" data-i18n="true" data-key="0123456789abcdef"></script><script defer src="/ghost/assets/search.js" data-key="0123456789abcdef" data-styles="/ghost/assets/search.css" data-sodo-search="true"></script></head><body>Live site</body></html>';
+
+const yamlResponse = (source: string) =>
+  new Response(source, { headers: { 'Content-Type': 'application/yaml' } });
 
 async function fakeBuilderWorld(): Promise<void> {
   const theme = activeThemeResponse().themes[0];
@@ -31,6 +36,9 @@ async function fakeBuilderWorld(): Promise<void> {
     )
     .generateAsync({ type: 'arraybuffer' });
   fakeAdminEndpoint('GET', '/custom_theme_settings/', { custom_theme_settings: [] });
+  fakeAdminEndpoint('GET', '/settings/routes/yaml/', yamlResponse(defaultRoutes), {
+    contentType: 'application/yaml',
+  });
   fakeAdminEndpoint('GET', `/themes/${theme.name}/download/`, archive, {
     contentType: 'application/zip',
   });
@@ -57,6 +65,95 @@ async function fakeBuilderWorld(): Promise<void> {
 }
 
 describe('Design Builder route', () => {
+  it('verifies installed routing again on entry even while the default configuration is cached', async () => {
+    fakeSettingsScreens();
+    await fakeBuilderWorld();
+    await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
+    await expect.element(page.getByTitle('Theme preview')).toHaveAttribute('srcdoc');
+    await page.getByRole('link', { name: 'Back to Design settings' }).click();
+    await expect.element(settingsScreen.design()).toBeVisible();
+
+    let release!: (response: Response) => void;
+    const response = new Promise<Response>((resolve) => {
+      release = resolve;
+    });
+    const routing = fakeAdminEndpoint('GET', '/settings/routes/yaml/', () => response);
+    try {
+      window.location.hash = '#/builder/theme';
+      await expect.poll(() => routing.requests.length).toBe(1);
+      await expect.element(page.getByText('Loading the active theme…')).toBeVisible();
+      await expect.element(page.getByTitle('Theme preview')).not.toBeInTheDocument();
+    } finally {
+      release(yamlResponse(defaultRoutes.replace('/{slug}/', '/news/{slug}/')));
+    }
+    await expect.element(page.getByRole('alert')).toHaveTextContent('custom routing');
+    await expect.element(page.getByTitle('Theme preview')).not.toBeInTheDocument();
+  });
+
+  it('retains the admitted editor and unsent text when unrelated routing cache updates arrive', async () => {
+    await fakeBuilderWorld();
+    window.sessionStorage.setItem('ghost-builder.credential.openai', 'test-key');
+    try {
+      const { queryClient } = await renderAdminApp('/builder/theme', {
+        labs: { designBuilder: true },
+      });
+      await expect.element(page.getByTitle('Theme preview')).toHaveAttribute('srcdoc');
+      const iframe = page.getByTitle('Theme preview').element();
+      const composer = page.getByRole('textbox', { name: 'Describe a change' });
+      await composer.fill('Keep this unsent design idea');
+      await act(async () => {
+        queryClient.setQueriesData(
+          { queryKey: ['RoutesConfiguration'] },
+          defaultRoutes.replace('/{slug}/', '/news/{slug}/'),
+        );
+        await new Promise<void>((resolve) => {
+          window.setTimeout(resolve, 0);
+        });
+      });
+      await expect.element(composer).toHaveValue('Keep this unsent design idea');
+      expect(page.getByTitle('Theme preview').element()).toBe(iframe);
+      expect(iframe.isConnected).toBe(true);
+      await expect.element(page.getByRole('alert')).not.toBeInTheDocument();
+    } finally {
+      window.sessionStorage.removeItem('ghost-builder.credential.openai');
+    }
+  });
+
+  it('blocks a custom-routed site before rendering the default-route preview and keeps existing preview access', async () => {
+    await fakeBuilderWorld();
+    fakeAdminEndpoint(
+      'GET',
+      '/settings/routes/yaml/',
+      yamlResponse(defaultRoutes.replace('/{slug}/', '/news/{slug}/')),
+      { contentType: 'application/yaml' },
+    );
+    await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
+    await expect.element(page.getByRole('alert')).toHaveTextContent('custom routing');
+    await expect
+      .element(page.getByRole('link', { name: 'Open site preview', exact: true }))
+      .toHaveAttribute('href', siteResponse().site.url);
+    await expect.element(page.getByTitle('Theme preview')).not.toBeInTheDocument();
+    await expect
+      .element(page.getByRole('textbox', { name: 'Describe a change' }))
+      .not.toBeInTheDocument();
+  });
+
+  it('does not infer default routing when the backend cannot return its configuration', async () => {
+    await fakeBuilderWorld();
+    fakeAdminEndpoint(
+      'GET',
+      '/settings/routes/yaml/',
+      { errors: [{ message: 'Not found' }] },
+      { status: 404 },
+    );
+    await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
+    await expect.element(page.getByRole('alert')).toHaveTextContent('could not verify');
+    await expect
+      .element(page.getByRole('link', { name: 'Open site preview', exact: true }))
+      .toBeVisible();
+    await expect.element(page.getByTitle('Theme preview')).not.toBeInTheDocument();
+  });
+
   it('renders the standalone builder when enabled', async () => {
     await fakeBuilderWorld();
     await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
@@ -132,6 +229,9 @@ describe('Design Builder route', () => {
   });
 
   it('offers a route back to Design settings when Builder data fails to load', async () => {
+    fakeAdminEndpoint('GET', '/settings/routes/yaml/', yamlResponse(defaultRoutes), {
+      contentType: 'application/yaml',
+    });
     fakeAdminEndpoint('GET', '/themes/', { themes: activeThemeResponse().themes });
     fakeAdminEndpoint(
       'GET',

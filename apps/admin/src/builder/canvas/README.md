@@ -1,5 +1,29 @@
 # Builder canvas
 
+The renderer currently implements default Ghost routing. `inspectCanvasRouting`
+checks the installed YAML configuration, rather than inferring support from theme
+names, scraped markup or a successful response. The supported profile has an empty
+`routes` map, one `/` collection with `/{slug}/` permalinks and the default index
+fallback, and the default tag/author taxonomies. Comments, mapping order and
+equivalent index-template forms do not change compatibility. Custom routes,
+collections, filters, ordering, templates and taxonomies remain unsupported;
+this check does not implement them. Parsing accepts one YAML document, rejects
+duplicate keys and unsupported tags, and bounds input to 256 KiB.
+
+The editor reads `/settings/routes/yaml/` through the existing Admin framework
+before mounting the workspace/model/preview. Every entry requires a fresh response;
+cached configuration cannot admit the editor while that request is pending.
+The entry check then pins its result and disables its query for that mounted
+editor, so unrelated cache updates cannot dispose a session with retained work.
+Unsupported or unavailable routing
+shows an explanation and an Open site preview link instead of certifying default
+rendering. The fixture worker independently checks its pinned routing snapshot
+before rendering or adopting an edit/refresh. A blocked canvas issues no render
+work and exposes compatibility details through probe/console diagnostics.
+`canvas.html?theme=source&routing=custom` exercises the unsupported path without
+adding a debug selector to the canvas. Configuration refresh ownership and retained
+draft recovery belong to the shared coordinator stage.
+
 `CanvasBoard` positions caller-owned live frames in world coordinates and changes
 only the world container's CSS transform for pan/zoom. Frame dimensions, documents
 and preview lifetimes remain the caller's responsibility. Every frame accepts

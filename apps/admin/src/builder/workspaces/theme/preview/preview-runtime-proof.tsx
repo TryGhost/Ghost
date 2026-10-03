@@ -225,7 +225,7 @@ const PreviewRuntimeProof = () => {
         <Text data-testid="preview-proof-result">{result}</Text>
         <iframe
           ref={iframeRef}
-          className="h-96 w-full rounded-md border border-border"
+          className="h-96 w-full border-0"
           data-testid="preview-proof-frame"
           title="Theme preview proof"
         />

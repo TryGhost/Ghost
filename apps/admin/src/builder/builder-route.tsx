@@ -6,6 +6,7 @@ import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useBrowseCustomThemeSettings } from '@tryghost/admin-x-framework/api/custom-theme-settings';
 import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
+import { useBrowseRoutes } from '@tryghost/admin-x-framework/api/routes';
 import {
   isDefaultOrLegacyTheme,
   downloadThemeArchive,
@@ -35,6 +36,7 @@ import {
   ThemePublisher,
 } from '@/builder/workspaces/theme/publish/publish-theme';
 import { ThemeWorkspace } from '@/builder/workspaces/theme/theme-workspace';
+import { inspectCanvasRouting } from '@/builder/canvas/route-compatibility';
 
 import type { BuilderSessionState } from '@/builder/core/builder-session';
 import type { BuilderAttachmentSummary } from '@/builder/core/attachments';
@@ -45,6 +47,7 @@ import type { CustomThemeSetting } from '@tryghost/admin-x-framework/api/custom-
 import type { Setting } from '@tryghost/admin-x-framework/api/settings';
 import type { Theme } from '@tryghost/admin-x-framework/api/themes';
 import type { ThemePublishState } from '@/builder/workspaces/theme/publish/publish-theme';
+import type { RouteCompatibility } from '@/builder/canvas/route-compatibility';
 
 const unavailableNotice = {
   settingsNotice: {
@@ -595,12 +598,28 @@ const ThemeBuilderRoute = () => {
   const settings = useBrowseSettings();
   const customSettings = useBrowseCustomThemeSettings();
   const site = useBrowseSite();
+  const [routingProof, setRoutingProof] = useState<RouteCompatibility | null>(null);
+  const routing = useBrowseRoutes({
+    enabled: routingProof === null,
+    retry: false,
+    defaultErrorHandler: false,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
+  useEffect(() => {
+    if (routingProof === null && !routing.isFetching && (routing.isSuccess || routing.isError)) {
+      setRoutingProof(inspectCanvasRouting(routing.isError ? undefined : routing.data));
+    }
+  }, [routingProof, routing.isFetching, routing.isSuccess, routing.isError, routing.data]);
   const isLoading =
     activeTheme.isLoading ||
     themes.isLoading ||
     settings.isLoading ||
     customSettings.isLoading ||
-    site.isLoading;
+    site.isLoading ||
+    routingProof === null;
   const theme = activeTheme.data?.themes[0];
   const themeSettings = useMemo(
     () => compatibleSettings(settings.data?.settings ?? []),
@@ -647,6 +666,29 @@ const ThemeBuilderRoute = () => {
             Builder could not load the active theme. Return to Design settings and try again.
           </Text>
           <Button variant="outline" asChild>
+            <Link to="/settings/design">Back to Design settings</Link>
+          </Button>
+        </Stack>
+      </Box>
+    );
+  }
+
+  if (routingProof && !routingProof.supported) {
+    return (
+      <Box className="fixed inset-0 z-50 bg-background" padding="lg">
+        <Stack align="center" className="size-full text-center" gap="sm" justify="center">
+          <Text as="h1" size="xl" weight="semibold">
+            Design Builder
+          </Text>
+          <Text role="alert" tone="secondary">
+            {routingProof.message}
+          </Text>
+          <Button variant="outline" asChild>
+            <a href={site.data.site.url} rel="noopener noreferrer" target="_blank">
+              Open site preview
+            </a>
+          </Button>
+          <Button variant="link" asChild>
             <Link to="/settings/design">Back to Design settings</Link>
           </Button>
         </Stack>

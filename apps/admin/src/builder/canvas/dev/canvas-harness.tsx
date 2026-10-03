@@ -16,6 +16,10 @@ import { observeExpandedComposition } from '@/builder/canvas/observe-expanded-co
 import { IframePreviewDocumentSurface } from '@/builder/workspaces/theme/preview/preview-document';
 import { getThemeFixture, instance, loadAssets } from './fixture';
 import { CanvasProbe, registerCanvasProbe } from './webmcp-probe';
+import {
+  DEFAULT_CANVAS_ROUTING_SOURCE,
+  inspectCanvasRouting,
+} from '@/builder/canvas/route-compatibility';
 import { FixtureClient, FixtureRejectedError } from './fixture-client';
 
 import type { CanvasFrame, CanvasFrameInput, CanvasView } from '@/builder/canvas/canvas-board';
@@ -369,14 +373,18 @@ export function CanvasHarness({
   onDeviceSurface,
   onCompositionSurface,
   onProbe,
+  routingYaml = DEFAULT_CANVAS_ROUTING_SOURCE,
 }: {
   fixtureId?: ThemeFixtureId;
   onDeviceSurface?: (id: string, surface: IframePreviewDocumentSurface | null) => void;
   onCompositionSurface?: (id: string, surface: IframePreviewDocumentSurface | null) => void;
   onProbe?: (probe: CanvasProbe | null) => void;
+  routingYaml?: unknown;
 }) {
   // A fixture is selected once per harness mount.
   const [fixture] = useState(() => getThemeFixture(fixtureId));
+  const [routingSource] = useState(() => routingYaml);
+  const [routing] = useState(() => inspectCanvasRouting(routingYaml));
   const [revision, setRevision] = useState(fixture.revision);
   const [renderState, setRenderState] = useState({
     dataGeneration: 0,
@@ -483,7 +491,11 @@ export function CanvasHarness({
     };
   });
   useEffect(() => {
-    const client = new FixtureClient(fixture.id);
+    if (!routing.supported) {
+      setError(routing.message);
+      return;
+    }
+    const client = new FixtureClient(fixture.id, routingSource);
     let disposed = false;
     void Promise.all([client.render(), loadAssets(fixture.id)])
       .then(([result, assets]) => {
@@ -557,7 +569,7 @@ export function CanvasHarness({
       session.current = null;
       client.dispose();
     };
-  }, [fixture]);
+  }, [fixture, routing, routingSource]);
   const unavailableOverviews =
     mode === 'expanded' ? frames.filter((frame) => expanded[frame.id]?.status === 'failed') : [];
   const boundedExpanded =
@@ -569,6 +581,7 @@ export function CanvasHarness({
   useEffect(() => {
     const diagnostics = {
       fixture: { id: fixture.id, version: fixture.version, revision },
+      routing,
       renderState,
       delivery: deliveryDiagnostics,
       refresh: { pending: refreshing, uncertain: refreshUnavailable },
@@ -606,6 +619,7 @@ export function CanvasHarness({
     console.debug('[Ghost canvas]', diagnostics);
   }, [
     fixture,
+    routing,
     revision,
     renderState,
     deliveryDiagnostics,
@@ -961,6 +975,13 @@ export function CanvasHarness({
           <Text className="text-destructive" role="alert">
             {error}
           </Text>
+        )}
+        {!routing.supported && (
+          <Button variant="link" asChild>
+            <a href={instance.siteUrl} rel="noopener noreferrer" target="_blank">
+              Open site preview
+            </a>
+          </Button>
         )}
       </Box>
       <Box className="min-h-0 flex-1">

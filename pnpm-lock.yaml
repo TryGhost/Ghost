@@ -383,6 +383,9 @@ catalogs:
     '@types/express-brute':
       specifier: 1.0.6
       version: 1.0.6
+    '@types/js-yaml':
+      specifier: 4.0.9
+      version: 4.0.9
     '@types/jsdom':
       specifier: 30.0.0
       version: 30.0.0
@@ -1108,6 +1111,9 @@ importers:
       i18n-iso-countries:
         specifier: 7.14.0
         version: 7.14.0
+      js-yaml:
+        specifier: 'catalog:'
+        version: 4.3.2
       jszip:
         specifier: 'catalog:'
         version: 3.10.1
@@ -1184,6 +1190,9 @@ importers:
       '@tryghost/test-data':
         specifier: workspace:*
         version: link:../../packages/testing/test-data
+      '@types/js-yaml':
+        specifier: 'catalog:'
+        version: 4.0.9
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.1
