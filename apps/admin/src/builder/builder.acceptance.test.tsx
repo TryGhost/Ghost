@@ -5,6 +5,7 @@ import { commands, page, userEvent } from 'vitest/browser';
 
 import {
   activeThemeResponse,
+  currentUserResponse,
   currentRoute,
   fakeAdminEndpoint,
   fakeEndpoint,
@@ -16,6 +17,7 @@ import {
 import { settingsScreen } from '@/settings/settings.screen';
 import defaultRoutes from '../../../../ghost/core/core/server/services/route-settings/default-routes.yaml?raw';
 import type { CanvasProbe, ReadResult } from '@/builder/canvas/canvas-probe';
+import type { CustomThemeSetting } from '@tryghost/admin-x-framework/api/custom-theme-settings';
 
 const liveHtml =
   '<html><head><link rel="stylesheet" href="/assets/built/screen.css?v=abc123"><script defer src="/ghost/assets/portal.js" data-i18n="true" data-key="0123456789abcdef"></script><script defer src="/ghost/assets/search.js" data-key="0123456789abcdef" data-styles="/ghost/assets/search.css" data-sodo-search="true"></script></head><body>Live site</body></html>';
@@ -23,25 +25,31 @@ const liveHtml =
 const yamlResponse = (source: string) =>
   new Response(source, { headers: { 'Content-Type': 'application/yaml' } });
 
-async function fakeBuilderWorld({ post = false } = {}): Promise<void> {
+async function fakeBuilderWorld({
+  post = false,
+  customSettings = [],
+}: { post?: boolean; customSettings?: CustomThemeSetting[] } = {}): Promise<void> {
   const theme = activeThemeResponse().themes[0];
   if (!theme) {
     throw new Error('The active theme fixture is missing.');
   }
   fakeAdminEndpoint('GET', '/themes/', { themes: [theme] });
+  const design = customSettings.length
+    ? '<style>body{color:{{@site.accent_color}};background:{{@custom.card_color}};}</style><p>{{@custom.short_label}} · {{@custom.card_layout}}</p>'
+    : '';
   const archive = await new JSZip()
     .file('casper/package.json', JSON.stringify({ name: 'casper', version: '1.0.0' }))
     .file(
       'casper/index.hbs',
-      '<!doctype html><html><head><title>{{@site.title}}</title></head><body><main data-edit="casper/index.hbs:1:1"><h1>{{@site.title}}</h1>{{> footer}}</main></body></html>',
+      `<!doctype html><html><head><title>{{@site.title}}</title></head><body>${design}<main data-edit="casper/index.hbs:1:1"><h1>{{@site.title}}</h1>{{> footer}}</main></body></html>`,
     )
     .file('casper/partials/footer.hbs', '<a href="/">Canvas footer</a>')
     .file(
       'casper/post.hbs',
-      '<html><body>{{#post}}<h1>{{title}}</h1>{{/post}}{{> footer}}</body></html>',
+      `<html><body>${design}{{#post}}<h1>{{title}}</h1>{{/post}}{{> footer}}</body></html>`,
     )
     .generateAsync({ type: 'arraybuffer' });
-  fakeAdminEndpoint('GET', '/custom_theme_settings/', { custom_theme_settings: [] });
+  fakeAdminEndpoint('GET', '/custom_theme_settings/', { custom_theme_settings: customSettings });
   fakeAdminEndpoint('GET', '/settings/routes/yaml/', yamlResponse(defaultRoutes), {
     contentType: 'application/yaml',
   });
@@ -84,6 +92,210 @@ async function fakeBuilderWorld({ post = false } = {}): Promise<void> {
 }
 
 describe('Design Builder route', () => {
+  it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1').each([
+    { width: 1280, theme: 'light' },
+    { width: 1280, theme: 'dark' },
+    { width: 390, theme: 'light' },
+    { width: 390, theme: 'dark' },
+  ])(
+    'shares design settings between manual controls and native agent changes without losing staged values ($width px, $theme)',
+    { timeout: 60_000 },
+    async ({ width, theme }) => {
+      await page.viewport(width, 844);
+      await fakeBuilderWorld({
+        post: true,
+        customSettings: [
+          { id: 'show', key: 'show_author', type: 'boolean', value: false, default: false },
+          {
+            id: 'label',
+            key: 'short_label',
+            type: 'text',
+            value: 'Initial label',
+            default: 'Initial label',
+          },
+          {
+            id: 'layout',
+            key: 'card_layout',
+            type: 'select',
+            value: 'Narrow',
+            default: 'Narrow',
+            options: ['Narrow', 'Wide'],
+          },
+          { id: 'color', key: 'card_color', type: 'color', value: '#112233', default: '#112233' },
+        ],
+      });
+      const me = currentUserResponse();
+      me.users[0].accessibility = JSON.stringify({ nightShift: theme });
+      const screen = await renderAdminApp('/builder/theme', {
+        labs: { designBuilder: true },
+        boot: { browseMe: { response: me } },
+      });
+      const state = async () =>
+        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {})).data as {
+          workspaceId: string;
+          editor: { sourceRevision: string; busy: boolean; dirty: boolean };
+        };
+      const ready = () =>
+        expect
+          .poll(
+            async () =>
+              !(await state()).editor.busy &&
+              document.querySelectorAll('iframe[data-preview-status="Ready"]').length === 8,
+            { timeout: 30_000 },
+          )
+          .toBe(true);
+      const patch = async (settings: Record<string, string>) => {
+        const current = await state();
+        expect(
+          await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
+            workspaceId: current.workspaceId,
+            expectedRevision: current.editor.sourceRevision,
+            expectedDataGeneration: 0,
+            settings,
+          }),
+        ).toMatchObject({ status: 'ok', data: { accepted: true } });
+        await ready();
+      };
+      const undo = async () => {
+        if (width < 768) {
+          await page.getByRole('button', { name: 'Canvas views', exact: true }).click();
+          await page.getByRole('menuitem', { name: 'Undo theme change', exact: true }).click();
+        } else {
+          await page.getByRole('button', { name: 'Undo theme change', exact: true }).click();
+        }
+        await ready();
+      };
+      try {
+        await ready();
+        await expect
+          .poll(() => document.documentElement.classList.contains('dark'))
+          .toBe(theme === 'dark');
+        for (const name of ['Theme settings', 'Publish changes']) {
+          const box = page
+            .getByRole('button', { name, exact: true })
+            .element()
+            .getBoundingClientRect();
+          expect(box.left).toBeGreaterThanOrEqual(0);
+          expect(box.right).toBeLessThanOrEqual(window.innerWidth);
+        }
+        const iframes = [
+          ...document.querySelectorAll('iframe[title$="composition"],iframe[title$="preview"]'),
+        ] as HTMLIFrameElement[];
+        const camera = page.getByTestId('canvas-world').element().getAttribute('style');
+        await page.getByRole('button', { name: 'Theme settings', exact: true }).click();
+        await page.getByRole('textbox', { name: 'Accent color', exact: true }).fill('#445566');
+        await page.getByRole('checkbox', { name: 'Show author', exact: true }).click();
+        await page.getByRole('textbox', { name: 'Short label', exact: true }).fill('Manual label');
+        await page.getByRole('textbox', { name: 'Card color', exact: true }).fill('#abcdef');
+        await page.getByRole('combobox', { name: 'Card layout', exact: true }).click();
+        await page.getByRole('option', { name: 'Wide', exact: true }).click();
+        await page.getByRole('button', { name: 'Apply settings', exact: true }).click();
+        await ready();
+        expect(iframes).toEqual([
+          ...document.querySelectorAll('iframe[title$="composition"],iframe[title$="preview"]'),
+        ]);
+        expect(page.getByTestId('canvas-world').element().getAttribute('style')).toBe(camera);
+        expect(
+          iframes.every((iframe) =>
+            ['#445566', '#abcdef', 'Manual label', 'Wide'].every((value) =>
+              iframe.srcdoc.includes(value),
+            ),
+          ),
+        ).toBe(true);
+        const current = await state();
+        const settings = await commands.canvasNativeTool('ghost_canvas_read_theme', {
+          workspaceId: current.workspaceId,
+          expectedRevision: current.editor.sourceRevision,
+          operation: 'settings',
+        });
+        expect(settings.status).toBe('ok');
+        expect((settings.data as { settings: unknown[] }).settings).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              identifier: 'global.accent_color',
+              stagedValue: '#445566',
+            }),
+            expect.objectContaining({ identifier: 'theme.show_author', stagedValue: true }),
+            expect.objectContaining({
+              identifier: 'theme.short_label',
+              stagedValue: 'Manual label',
+            }),
+            expect.objectContaining({ identifier: 'theme.card_layout', stagedValue: 'Wide' }),
+            expect.objectContaining({ identifier: 'theme.card_color', stagedValue: '#abcdef' }),
+          ]),
+        );
+        await page
+          .getByRole('textbox', { name: 'Short label', exact: true })
+          .fill('Keep staged manual value');
+        await patch({ 'global.accent_color': '#778899', 'theme.short_label': 'Agent label' });
+        expect(
+          iframes.every((iframe) =>
+            ['#778899', 'Agent label'].every((value) => iframe.srcdoc.includes(value)),
+          ),
+        ).toBe(true);
+        await expect
+          .element(page.getByRole('textbox', { name: 'Short label', exact: true }))
+          .toHaveValue('Keep staged manual value');
+        await page.getByRole('button', { name: 'Apply settings', exact: true }).click();
+        await expect
+          .element(
+            page.getByText('The theme changed. Reload settings before applying your values.', {
+              exact: true,
+            }),
+          )
+          .toBeVisible();
+        await page.getByRole('button', { name: 'Reload settings', exact: true }).click();
+        await expect
+          .element(page.getByRole('textbox', { name: 'Short label', exact: true }))
+          .toHaveValue('Agent label');
+        await expect
+          .element(page.getByRole('textbox', { name: 'Accent color', exact: true }))
+          .toHaveValue('#778899');
+        await userEvent.keyboard('{Escape}');
+        await undo();
+        await page.getByRole('button', { name: 'Theme settings', exact: true }).click();
+        await expect
+          .element(page.getByRole('textbox', { name: 'Short label', exact: true }))
+          .toHaveValue('Manual label');
+        await userEvent.keyboard('{Escape}');
+        await undo();
+        expect((await state()).editor.dirty).toBe(false);
+        await page.getByRole('button', { name: 'Theme settings', exact: true }).click();
+        await page.getByRole('textbox', { name: 'Heading font', exact: true }).fill('Staged font');
+        expect(
+          await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {}),
+        ).toMatchObject({
+          data: { editor: { settingsDraft: { identifiers: ['global.heading_font'] } } },
+        });
+        await page.viewport(width === 390 ? 1280 : 390, 844);
+        await expect
+          .element(page.getByRole('textbox', { name: 'Heading font', exact: true }))
+          .toHaveValue('Staged font');
+        await page.viewport(width, 844);
+        await userEvent.keyboard('{Escape}');
+        await expect
+          .element(
+            page.getByRole('button', { name: 'Theme settings (unapplied changes)', exact: true }),
+          )
+          .toBeVisible();
+        await page.getByRole('link', { name: 'Back to Design settings', exact: true }).click();
+        await expect
+          .element(page.getByRole('heading', { name: 'Are you sure you want to leave this page?' }))
+          .toBeVisible();
+        await page.getByRole('button', { name: 'Stay', exact: true }).click();
+        await page
+          .getByRole('button', { name: 'Theme settings (unapplied changes)', exact: true })
+          .click();
+        await expect
+          .element(page.getByRole('textbox', { name: 'Heading font', exact: true }))
+          .toHaveValue('Staged font');
+        await page.getByRole('button', { name: 'Reload settings', exact: true }).click();
+      } finally {
+        await screen.unmount();
+        await page.viewport(1280, 800);
+      }
+    },
+  );
   it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1')(
     'keeps typed text through agent replacement and recovers a conflicting draft',
     { timeout: 60_000 },

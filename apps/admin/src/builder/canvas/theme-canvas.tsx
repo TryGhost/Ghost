@@ -19,6 +19,8 @@ import { IframePreviewDocumentSurface } from '@/builder/workspaces/theme/preview
 import { CanvasProbe, registerCanvasProbe } from './canvas-probe';
 import { CanvasRejectedError } from './canvas-driver';
 import { CanvasEditorTools } from './canvas-editor-tools';
+import { CanvasDesignSettings } from './canvas-design-settings';
+import type { CanvasSettingsDraft } from './canvas-design-settings';
 import { resolveCanvasTextDraft } from './canvas-text-draft';
 import { parseEditMarker } from '@tryghost/theme-renderer/markers';
 import type { CanvasTextDraft } from './canvas-text-draft';
@@ -459,6 +461,12 @@ export function ThemeCanvas({
   const latestInteractionIntent = useRef(0);
   const iframeInteractionTime = useRef<number | null>(null);
   const [commitPending, setCommitPending] = useState(false);
+  const settingsDraft = useRef<CanvasSettingsDraft | null>(null);
+  const [settingsDirty, setSettingsDirty] = useState(false);
+  const observeSettingsDraft = useCallback((draft: CanvasSettingsDraft | null) => {
+    settingsDraft.current = draft;
+    setSettingsDirty(!!draft);
+  }, []);
   const [history, setHistory] = useState<CanvasHistory | null>(null);
   const textDraft = useRef<CanvasTextDraft | null>(null);
   const [retainedDraft, setRetainedDraft] = useState<CanvasTextDraft | null>(null);
@@ -476,7 +484,7 @@ export function ThemeCanvas({
   const pendingCommit = useRef(false);
   useEffect(() => {
     activityObserver.current?.({
-      manualDraft: !!draftOwner,
+      manualDraft: !!draftOwner || settingsDirty,
       busy:
         commitPending ||
         refreshing ||
@@ -484,7 +492,7 @@ export function ThemeCanvas({
         !delivery.current?.allComplete,
       mutationPending: commitPending,
     });
-  }, [draftOwner, commitPending, refreshing, deliveryDiagnostics]);
+  }, [draftOwner, settingsDirty, commitPending, refreshing, deliveryDiagnostics]);
   const [sourceOpen, setSourceOpen] = useState(false);
   const sourceRestoreFocus = useRef(true);
   const [selection, setSelection] = useState<{
@@ -555,6 +563,7 @@ export function ThemeCanvas({
               !acceptedRender.current ||
               !!undeliveredAccepted.current ||
               !delivery.current?.allComplete,
+            settingsDraft: settingsDraft.current,
             manualDraft: textDraft.current
               ? {
                   frameId: textDraft.current.frameId,
@@ -1116,7 +1125,9 @@ export function ThemeCanvas({
         <PageHeader blurredBackground={false} sticky={false}>
           <PageHeader.Left>
             {headerLeading}
-            <PageHeader.Title className="text-base">Canvas · {source.label}</PageHeader.Title>
+            <PageHeader.Title className="text-base">
+              Canvas<span className="hidden sm:inline"> · {source.label}</span>
+            </PageHeader.Title>
           </PageHeader.Left>
           <PageHeader.Actions>
             <Popover
@@ -1190,6 +1201,24 @@ export function ThemeCanvas({
                 )}
               </PopoverContent>
             </Popover>
+            {source.editor && (
+              <PageHeader.ActionGroup>
+                <CanvasDesignSettings
+                  apply={applyThemePatch}
+                  busy={
+                    externalBusy ||
+                    commitPending ||
+                    refreshing ||
+                    !!undeliveredAccepted.current ||
+                    !delivery.current?.allComplete
+                  }
+                  dataGeneration={renderState.dataGeneration}
+                  readDraft={source.editor.readDraft}
+                  revision={revision}
+                  onDraftChange={observeSettingsDraft}
+                />
+              </PageHeader.ActionGroup>
+            )}
             <PageHeader.ActionGroup>
               {history && (
                 <>
@@ -1233,7 +1262,41 @@ export function ThemeCanvas({
                     <LucideIcon.Ellipsis />
                   </PageHeader.Action>
                 </PageHeader.ActionGroup.MobileMenuTrigger>
-                <PageHeader.ActionGroup.MobileMenuContent>
+                <PageHeader.ActionGroup.MobileMenuContent className="z-[60]">
+                  {history && (
+                    <>
+                      <DropdownMenuItem
+                        disabled={
+                          !history.undoId ||
+                          externalBusy ||
+                          !!draftOwner ||
+                          commitPending ||
+                          refreshing ||
+                          refreshUnavailable ||
+                          !delivery.current?.allComplete
+                        }
+                        onSelect={() => restoreCheckpoint(history.undoId)}
+                      >
+                        <LucideIcon.Undo2 />
+                        Undo theme change
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        disabled={
+                          !history.redoId ||
+                          externalBusy ||
+                          !!draftOwner ||
+                          commitPending ||
+                          refreshing ||
+                          refreshUnavailable ||
+                          !delivery.current?.allComplete
+                        }
+                        onSelect={() => restoreCheckpoint(history.redoId)}
+                      >
+                        <LucideIcon.Redo2 />
+                        Redo theme change
+                      </DropdownMenuItem>
+                    </>
+                  )}
                   <DropdownMenuItem disabled={!!draftOwner} onSelect={() => setMode('expanded')}>
                     <LucideIcon.Layers />
                     Full page

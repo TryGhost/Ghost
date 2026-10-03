@@ -65,6 +65,17 @@ explicit cancellation displays the accepted theme. Publication tools remain a
 subsequent increment. UI and tools share this workspace rather than adding an
 independent model-owned theme draft.
 
+The compact settings action opens writable global/custom design settings on request.
+Color, font/text, boolean and choice controls use the workspace's descriptors and
+visibility rules. Apply sends only changed values through the same atomic patch,
+required-page validation, live delivery and checkpoint history as native tools.
+Image settings remain read-only in this version. Staged form values survive dismissal,
+agent replacement and viewport changes; the icon marks unapplied values. A changed
+source revision requires explicit Reload before applying, preserving entered values
+until that choice. Pending settings participate in departure/publication guards and
+native `settingsDraft` metadata. They remain separate from accepted theme settings.
+The narrow header retains settings and exposes Undo/Redo in its existing view menu.
+
 `CanvasBoard` positions caller-owned live frames in world coordinates and changes
 only the world container's CSS transform for pan/zoom. Frame dimensions, documents
 and preview lifetimes remain the caller's responsibility. Every frame accepts
