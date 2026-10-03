@@ -2,11 +2,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { Provider } from 'nconf';
 import { AdapterManager } from '../../../../../core/server/services/adapter-manager/adapter-manager';
 import { buildAdapterPaths } from '../../../../../core/server/services/adapter-manager/adapter-paths';
-import { bindAll as bindUrlHelpers } from '@tryghost/config-url-helpers';
-import { bindAll as bindHelpers } from '../../../../../core/shared/config/helpers';
+import { createConfig } from '../../../../../core/shared/config/validated';
 import type { ConfigInstance } from '../../../../../core/shared/config/loader';
 import type { Adapter } from '../../../../../core/server/services/adapter-manager/types';
 
@@ -18,25 +16,21 @@ class BaseStorageAdapter implements Adapter {
   }
 }
 
-// A minimal nconf-backed config instance, seeded with a real `paths:contentPath`,
-// mirroring the shape production config provides so `getContentPath('adapters')`
-// resolves exactly as it would at runtime.
+// A minimal config instance, seeded with a real `paths:contentPath`, mirroring
+// the shape production config provides so `getContentPath('adapters')` resolves
+// exactly as it would at runtime.
 function makeConfig(contentPath: string, adapters: object = {}): ConfigInstance {
-  const nconf = new Provider();
-  nconf.use('memory');
-  nconf.set('paths:contentPath', contentPath);
-  // No internal/installed adapters path is relevant to this test, so they're
-  // left unset, matching how `installedAdaptersPath` is optional in production.
-  nconf.set(
-    'paths:internalAdaptersPath',
-    path.join(os.tmpdir(), 'ghost-adapter-test-nonexistent-internal'),
-  );
-  nconf.set('adapters', adapters);
-
-  bindUrlHelpers(nconf);
-  bindHelpers(nconf);
-
-  return nconf;
+  return createConfig({
+    url: 'http://localhost:2368',
+    env: 'testing',
+    paths: {
+      contentPath,
+      // No installed adapters path is relevant to this test, so it is left
+      // unset, matching how `installedAdaptersPath` is optional in production.
+      internalAdaptersPath: path.join(os.tmpdir(), 'ghost-adapter-test-nonexistent-internal'),
+    },
+    adapters,
+  });
 }
 
 describe('adapter-paths', function () {
