@@ -895,7 +895,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
   private pendingSrcdoc: string | null = null;
   private loadedDocumentId: string | null = null;
   private canvasReadyDocumentId: string | null = null;
-  private loadCheck: ReturnType<typeof setTimeout> | null = null;
+  private readonly loadChecks = new Set<ReturnType<typeof setTimeout>>();
   private pendingReady: {
     documentId: string;
     ready: boolean;
@@ -961,6 +961,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     if (signal.aborted) {
       return Promise.reject(new DOMException('Aborted', 'AbortError'));
     }
+    this.clearLoadChecks();
     this.clearCanvasInlineEdit();
     this.canvasReadyDocumentId = null;
     this.rejectPending(new Error('Preview document was replaced before it became ready.'), false);
@@ -1237,10 +1238,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
       clearTimeout(this.expectedNativeFormNavigationTimeout);
       this.expectedNativeFormNavigationTimeout = null;
     }
-    if (this.loadCheck) {
-      clearTimeout(this.loadCheck);
-      this.loadCheck = null;
-    }
+    this.clearLoadChecks();
     this.iframe.removeAttribute('srcdoc');
   }
 
@@ -1423,11 +1421,10 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     if (!documentId) {
       return;
     }
-    if (this.loadCheck) {
-      clearTimeout(this.loadCheck);
-    }
-    this.loadCheck = setTimeout(() => {
-      this.loadCheck = null;
+    // Each observed load consumes at most one receipt. Debouncing these checks
+    // lets a later unbridged navigation consume an earlier document's receipt.
+    const loadCheck = setTimeout(() => {
+      this.loadChecks.delete(loadCheck);
       if (this.activeDocumentId !== documentId) {
         return;
       }
@@ -1464,7 +1461,13 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
         this.restoreCommittedDocument();
       }
     }, 100);
+    this.loadChecks.add(loadCheck);
   };
+
+  private clearLoadChecks(): void {
+    this.loadChecks.forEach((check) => clearTimeout(check));
+    this.loadChecks.clear();
+  }
 
   private rejectPending(error: Error, restore: boolean): void {
     if (this.pendingReady) {
@@ -1501,6 +1504,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
   }
 
   private restoreCommittedDocument(): void {
+    this.clearLoadChecks();
     this.inlineEditController?.abort();
     this.inlineEditController = null;
     this.clearCanvasInlineEdit();

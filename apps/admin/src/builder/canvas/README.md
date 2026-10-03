@@ -27,6 +27,13 @@ Rejected canvas commits preserve the text. Existing non-canvas blur behavior sta
 unchanged. Document replacement, restoration and destruction clear activity;
 these cleanup signals do not preserve draft text across document replacement.
 
+Each iframe load has its own navigation check. Consecutive loads cannot reuse
+the accepted document's bridge receipt to hide an unbridged navigation. Restoring
+the accepted document, replacing it or destroying its surface cancels the old
+checks. Expected native form navigation keeps its existing restoration behavior
+without reporting a bypass. This guard does not preserve draft text across a
+restored document.
+
 The board retains activity per frame and keeps an opened draft at scale one or
 greater while camera controls are used. Back restores the saved overview and
 reports the retained draft outside the frame. Browser evidence uses the actual
@@ -181,7 +188,7 @@ and a 100,000px document truncated by the composition-height budget while its
 device remains unchanged.
 
 These are overview experiments. Broader Source/Casper visual fidelity, sticky/fixed and lazy-content
-fidelity, source selection and direct editing, full capture fidelity, native
+fidelity, editing beyond eligible literal text, full capture fidelity, native
 WebMCP, controlled refresh, and performance measurements remain feasibility work.
 Measure all eight retained surfaces and capture work when profiling this
 comparison. The harness is not a shipped theme editor or evidence that Stage A
@@ -199,6 +206,8 @@ pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/workspaces/theme
 pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/canvas/measure-expanded-composition.acceptance.test.tsx --maxWorkers=1
 pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/canvas/canvas-board.component.test.tsx src/builder/workspaces/theme/preview/preview-canvas-input.acceptance.test.tsx src/builder/workspaces/theme/preview/preview-layout.acceptance.test.tsx src/builder/workspaces/theme/preview/screenshot.acceptance.test.tsx --maxWorkers=1
 pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/canvas/canvas-inline-draft.component.test.tsx --maxWorkers=1
+pnpm exec vitest run src/builder/workspaces/theme/preview/preview-navigation-loads.test.ts --maxWorkers=1
+pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/workspaces/theme/preview/preview-navigation.acceptance.test.tsx --maxWorkers=1
 pnpm typecheck
 ```
 
