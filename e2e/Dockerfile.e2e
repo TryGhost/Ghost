@@ -21,11 +21,9 @@ COPY apps/portal/umd /home/ghost/core/built/admin/assets/portal
 COPY apps/comments-ui/umd /home/ghost/core/built/admin/assets/comments-ui
 COPY apps/sodo-search/umd /home/ghost/core/built/admin/assets/sodo-search
 COPY apps/signup-form/umd /home/ghost/core/built/admin/assets/signup-form
-COPY apps/announcement-bar/umd /home/ghost/core/built/admin/assets/announcement-bar
 
 ENV portal__url=/ghost/assets/portal/portal.min.js
 ENV comments__url=/ghost/assets/comments-ui/comments-ui.min.js
 ENV sodoSearch__url=/ghost/assets/sodo-search/sodo-search.min.js
 ENV sodoSearch__styles=/ghost/assets/sodo-search/main.css
 ENV signupForm__url=/ghost/assets/signup-form/signup-form.min.js
-ENV announcementBar__url=/ghost/assets/announcement-bar/announcement-bar.min.js
