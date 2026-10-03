@@ -115,7 +115,7 @@ describe('recorded run history presentation', () => {
     const cards = mapRunHistory(history);
     expect(cards.map(({ kind }) => kind)).toEqual(['trigger', 'wait', 'end']);
     expect(cards[0]).toMatchObject({
-      title: 'Entered automation',
+      title: 'Signed up',
       timestamp: { label: 'Entered', value: entered },
     });
     expect(cards[1]).toMatchObject({
@@ -191,9 +191,9 @@ describe('recorded run history presentation', () => {
 
   it.each([
     ['failed', 'Wait step failed', 'failed'],
-    ['automation disabled', 'Automation turned off', 'exited'],
+    ['automation disabled', 'Ended by publisher', 'exited'],
     ['member changed status', 'Member changed subscription status', 'exited'],
-    ['member unsubscribed', 'Member unavailable or unsubscribed', 'exited'],
+    ['member unsubscribed', 'Unsubscribed', 'exited'],
   ] as const)(
     'places the recorded %s reason and stop time in one event card',
     (status, title, state) => {

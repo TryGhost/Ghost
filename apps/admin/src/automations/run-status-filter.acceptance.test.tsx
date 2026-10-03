@@ -1,15 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
-import {
-  flags,
-  response,
-  prepareStatuses,
-  run,
-  setupEmbeddedRootFontSize,
-} from './run-list.test-utils';
-
-setupEmbeddedRootFontSize();
+import { flags, response, prepareStatuses, run } from './run-list.test-utils';
 
 const entries = () => page.getByRole('region', { name: 'Total entries' });
 const statuses = () => page.getByRole('region', { name: 'Automation status counts' });
@@ -153,7 +145,7 @@ describe('Automation run status filtering', () => {
     await expect.element(runsRegion()).toHaveTextContent('Keyboard member');
     await userEvent.keyboard('{Enter}');
     await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'false');
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
   });
 
   it('allows zero-count cards to show no matches and clear the filter', async () => {
@@ -175,10 +167,10 @@ describe('Automation run status filtering', () => {
     await open();
     await expect.element(statusCard('Completed')).toHaveTextContent('0');
     await statusCard('Completed').click();
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No matching entries');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
     await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'true');
     await statusCard('Completed').click();
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
   });
 
   it('refetches a failed filter on reselection and supports explicit retry while idle', async () => {
@@ -198,9 +190,9 @@ describe('Automation run status filtering', () => {
     await statusCard('Completed').click();
     await expect
       .element(runsRegion().getByRole('alert'))
-      .toHaveTextContent('Could not load automation runs');
+      .toHaveTextContent('Could not load entries');
     await statusCard('Completed').click();
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
     await statusCard('Completed').click();
     await expect.element(runsRegion().getByRole('alert')).toBeVisible();
     expect(request.requests).toHaveLength(2);

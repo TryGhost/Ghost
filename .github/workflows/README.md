@@ -53,7 +53,7 @@ How we write GitHub Actions workflows safely. Follow these when adding or editin
 - **Pin every third-party action to a full commit SHA**, with the version as a trailing comment:
 
   ```yaml
-  uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+  uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
   ```
 
   A tag or branch ref can be re-pointed at malicious code; a SHA cannot.

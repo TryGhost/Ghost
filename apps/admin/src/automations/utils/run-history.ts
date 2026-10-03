@@ -1,6 +1,7 @@
 import type { AutomationRunHistory } from '@tryghost/admin-x-framework/api/automation-run-history';
 import { formatNumber } from '@tryghost/shade/utils';
 import { emailTextExcerpt } from './history-email-preview';
+import { WELCOME_EMAIL_SLUGS } from './default-welcome-email-values';
 
 export type HistoryEmail = { subject: string | null; text: string };
 
@@ -9,6 +10,7 @@ export type HistoryTimestamp = {
   label: string;
   value: string;
   estimated?: boolean;
+  rangeStart?: string;
   related?: { label: string; value: string };
 };
 export type HistoryCardData = {
@@ -27,10 +29,10 @@ const stepStates = {
   pending: { state: 'pending', label: 'Pending' },
   finished: { state: 'occurred', label: 'Completed' },
   failed: { state: 'exited', label: 'Step failed' },
-  'automation disabled': { state: 'exited', label: 'Automation turned off' },
+  'automation disabled': { state: 'exited', label: 'Ended by publisher' },
   'member changed status': { state: 'exited', label: 'Member changed subscription status' },
   // The server also uses this status for a missing member.
-  'member unsubscribed': { state: 'exited', label: 'Member unavailable or unsubscribed' },
+  'member unsubscribed': { state: 'exited', label: 'Unsubscribed' },
 } as const satisfies Record<Step['status'], { state: HistoryCardState; label: string }>;
 
 function stepContent(step: Step, state: (typeof stepStates)[Step['status']]['state']) {
@@ -131,7 +133,10 @@ const mapStep = (
   };
 };
 
-const mapEnd = (history: AutomationRunHistory): HistoryCardData[] => {
+const mapEnd = (
+  history: AutomationRunHistory,
+  automationSlug: string | null | undefined,
+): HistoryCardData[] => {
   const base = { id: `end:${history.id}` };
   switch (history.status) {
     case 'completed':
@@ -144,6 +149,13 @@ const mapEnd = (history: AutomationRunHistory): HistoryCardData[] => {
         throw new Error('An exited run must end with a stopped step');
       }
       let title: string = stepStates[lastStep.status].label;
+      if (lastStep.status === 'member changed status') {
+        if (automationSlug === WELCOME_EMAIL_SLUGS.free) {
+          title = 'Upgraded to paid';
+        } else if (automationSlug === WELCOME_EMAIL_SLUGS.paid) {
+          title = 'Downgraded to free';
+        }
+      }
       if (lastStep.status === 'failed') {
         const names = { send_email: 'Email', wait: 'Wait' } satisfies Record<
           Step['action']['type'],
@@ -169,11 +181,14 @@ const mapEnd = (history: AutomationRunHistory): HistoryCardData[] => {
   }
 };
 
-export const mapRunHistory = (history: AutomationRunHistory): HistoryCardData[] => [
+export const mapRunHistory = (
+  history: AutomationRunHistory,
+  automationSlug?: string | null,
+): HistoryCardData[] => [
   {
     id: `entry:${history.id}`,
     kind: 'trigger',
-    title: 'Entered automation',
+    title: 'Signed up',
     state: 'occurred',
     statusLabel: 'Entered',
     timestamp: { label: 'Entered', value: history.created_at },
@@ -182,5 +197,5 @@ export const mapRunHistory = (history: AutomationRunHistory): HistoryCardData[] 
   ...history.steps.map((step, index) =>
     mapStep(step, history.status === 'exited_early' && index === history.steps.length - 1),
   ),
-  ...mapEnd(history),
+  ...mapEnd(history, automationSlug),
 ];

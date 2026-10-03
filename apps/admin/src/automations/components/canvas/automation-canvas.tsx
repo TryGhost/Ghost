@@ -45,6 +45,7 @@ import { canvasBackground } from './canvas-background';
 import { PerformanceSidebar } from './performance-sidebar';
 import { type StepPickerType } from './step-picker';
 import { StepSidebar } from './step-sidebar';
+import { EmailPerformanceSidebar } from './email-performance-sidebar';
 import { formatWait } from './format-wait';
 import { isEmptyEmailLexical } from '@/automations/utils';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
@@ -251,12 +252,16 @@ const buildGraph = ({
   contentBounds: CanvasContentBounds;
 } => {
   const ordered = getInitialActionOrder(automation);
-  const baseNodeProps = {
+  const layoutSizes = automationRunAnalyticsEnabled ? nodeSizes : {};
+  // React Flow hides and re-measures any node passed without `measured`; while hidden, the
+  // node's inputs lose focus and keystrokes.
+  const nodeProps = (id: string) => ({
     draggable: false,
     selectable: false,
     connectable: false,
     focusable: false,
-  };
+    measured: nodeSizes[id],
+  });
   const disabledReason = disabled ? DISABLED_REASON : undefined;
 
   const lastActionId = ordered[ordered.length - 1]?.id;
@@ -290,11 +295,11 @@ const buildGraph = ({
         selected: selectedStepId === TRIGGER_CANVAS_ID,
         onSelect: () => onSelectStep(TRIGGER_CANVAS_ID),
       },
-      ...baseNodeProps,
+      ...nodeProps(TRIGGER_CANVAS_ID),
     },
   ];
   cursorY +=
-    (nodeSizes[TRIGGER_CANVAS_ID]?.height ??
+    (layoutSizes[TRIGGER_CANVAS_ID]?.height ??
       (automationRunAnalyticsEnabled ? FIXED_TRIGGER_NODE_HEIGHT : REGULAR_NODE_HEIGHT)) +
     NODE_VISUAL_GAP_Y;
 
@@ -324,6 +329,10 @@ const buildGraph = ({
                 onInteract: () => onInteract(action.id),
                 onUpdateSubject: (subject: string) => onUpdateSubject(action.id, subject),
                 onEditContent: () => onEditEmailBody(action.id),
+                onToggleAnalytics:
+                  automationAnalyticsEnabled && action.stats
+                    ? () => onSelectStep(action.id)
+                    : undefined,
               },
             }
           : {}),
@@ -338,7 +347,7 @@ const buildGraph = ({
             }
           : {}),
         contextMenuItems: buildNodeContextMenuItems({
-          canEditSettings: !editableWait,
+          canEditSettings: !editableWait && !editableEmail,
           canDelete: true,
           canEditEmailBody: action.type === 'send_email',
           onDelete,
@@ -353,7 +362,7 @@ const buildGraph = ({
         showStatsFooter,
         onSelect: () => onSelectStep(action.id),
       },
-      ...baseNodeProps,
+      ...nodeProps(action.id),
     });
     let estimatedHeight = showStatsFooter ? EMAIL_NODE_WITH_STATS_HEIGHT : REGULAR_NODE_HEIGHT;
     if (editableEmail) {
@@ -362,7 +371,7 @@ const buildGraph = ({
     if (editableWait) {
       estimatedHeight = EDITABLE_WAIT_NODE_HEIGHT;
     }
-    cursorY += (nodeSizes[action.id]?.height ?? estimatedHeight) + NODE_VISUAL_GAP_Y;
+    cursorY += (layoutSizes[action.id]?.height ?? estimatedHeight) + NODE_VISUAL_GAP_Y;
   });
 
   nodes.push({
@@ -379,7 +388,7 @@ const buildGraph = ({
       anchor: tailAnchor,
       fixedExit: automationRunAnalyticsEnabled,
     },
-    ...baseNodeProps,
+    ...nodeProps(TAIL_CANVAS_ID),
   });
   // Content bounds in flow coordinates, derived from node positions so the pan bound keeps
   // working if the graph ever grows wider (e.g. branching).
@@ -387,11 +396,11 @@ const buildGraph = ({
   const contentBounds: CanvasContentBounds = {
     left: Math.min(...xs),
     right: Math.max(
-      ...nodes.map((node) => node.position.x + (nodeSizes[node.id]?.width ?? nodeWidth)),
+      ...nodes.map((node) => node.position.x + (layoutSizes[node.id]?.width ?? nodeWidth)),
     ),
     bottom:
       cursorY +
-      (nodeSizes[TAIL_CANVAS_ID]?.height ??
+      (layoutSizes[TAIL_CANVAS_ID]?.height ??
         (automationRunAnalyticsEnabled ? EXIT_NODE_HEIGHT : TAIL_NODE_HEIGHT)),
   };
 
@@ -437,7 +446,13 @@ const buildGraph = ({
     style: { stroke: DEFAULT_EDGE_STROKE },
   });
 
-  return { nodes, edges, contentBounds };
+  // Controlled nodes must carry their measured dimensions through graph
+  // updates. Otherwise React Flow hides them for remeasurement, blurring
+  // focused inputs and removing the handles that keep edge menus mounted.
+  const measuredNodes = nodes.map((node) =>
+    nodeSizes[node.id] ? { ...node, measured: nodeSizes[node.id] } : node,
+  );
+  return { nodes: measuredNodes, edges, contentBounds };
 };
 
 const getInitialViewport = (canvasWidth: number): { x: number; y: number; zoom: number } => ({
@@ -725,7 +740,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       automation,
       automationAnalyticsEnabled,
       automationRunAnalyticsEnabled,
-      nodeSizes: automationRunAnalyticsEnabled ? nodeSizes : {},
+      nodeSizes,
       newEmailWithoutWarningsId,
       onInteract: showWarningsForOtherSteps,
       onWaitValidityChange,
@@ -738,7 +753,12 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       onPreviewEmail: handleContextMenuPreviewEmail,
       onSelectStep: (id) => {
         showWarningsForOtherSteps(id);
-        setSelectedStep({ id });
+        setSelectedStep((current) =>
+          automationRunAnalyticsEnabled && current?.id === id ? null : { id },
+        );
+        if (automationRunAnalyticsEnabled) {
+          setIsPerformanceOpen(false);
+        }
       },
       newStepId,
       selectedStepId,
@@ -770,6 +790,43 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   const clearDetail = useCallback(() => {
     setSelectedStep(null);
   }, []);
+
+  const handleCloseEmailPerformance = useCallback(() => {
+    editingCanvasRef.current
+      ?.querySelector<HTMLButtonElement>('[aria-label="Hide email analytics"]')
+      ?.focus({ preventScroll: true });
+    clearDetail();
+  }, [clearDetail]);
+
+  useEffect(() => {
+    if (
+      !automationRunAnalyticsEnabled ||
+      emailModalAction ||
+      deleteConfirmationAction ||
+      (!isPerformanceOpen && !selectedStepId)
+    ) {
+      return;
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        if (isPerformanceOpen) {
+          setIsPerformanceOpen(false);
+        } else {
+          handleCloseEmailPerformance();
+        }
+      }
+    };
+    // Menus, popovers, and search consume Escape before it reaches window.
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [
+    automationRunAnalyticsEnabled,
+    handleCloseEmailPerformance,
+    deleteConfirmationAction,
+    emailModalAction,
+    isPerformanceOpen,
+    selectedStepId,
+  ]);
 
   const closeEmailModal = () => {
     setEmailModalMode('edit');
@@ -857,7 +914,12 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           isOpen={isPerformanceOpen}
           isRunSelectionDisabled={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
           selectedRunId={selectedRunId}
-          onOpenChange={setIsPerformanceOpen}
+          onOpenChange={(open) => {
+            setIsPerformanceOpen(open);
+            if (open) {
+              clearDetail();
+            }
+          }}
           onSelectRun={handleSelectRun}
         />
       )}
@@ -916,8 +978,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
               }
             }}
             onNodeDoubleClick={handleNodeDoubleClick}
-            onNodesChange={automationRunAnalyticsEnabled ? handleNodesChange : undefined}
-            onPaneClick={clearDetail}
+            onNodesChange={handleNodesChange}
+            onPaneClick={automationRunAnalyticsEnabled ? undefined : clearDetail}
           >
             <Background {...canvasBackground} variant={BackgroundVariant.Dots} />
             <AutomationCanvasControls />
@@ -927,6 +989,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           <RunHistory
             key={selectedRunId}
             automationId={automation.id}
+            automationSlug={automation.slug}
             isPerformanceOpen={isPerformanceOpen}
             memberName={selectedMember?.runId === selectedRunId ? selectedMember.name : undefined}
             runId={selectedRunId}
@@ -934,18 +997,35 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           />
         )}
       </Box>
-      {/* Keep local field drafts and selected email settings intact while hidden. */}
+      {/* The redesigned editor exposes settings in its cards and performance in this panel. */}
       <Box className={isHistoryOpen ? 'hidden' : 'contents'}>
-        <StepSidebar
-          automation={automation}
-          isEmailModalOpen={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
-          stepId={selectedStepId}
-          onClose={clearDetail}
-          onDelete={handleRequestDelete}
-          onEditEmail={handleEditEmail}
-          onUpdateSubject={handleUpdateSubject}
-          onUpdateWait={handleUpdateWait}
-        />
+        {automationRunAnalyticsEnabled ? (
+          !isHistoryOpen && (
+            <EmailPerformanceSidebar
+              automationId={automation.id}
+              email={
+                automationAnalyticsEnabled
+                  ? automation.actions.find(
+                      (action): action is AutomationSendEmailAction =>
+                        action.id === selectedStepId && action.type === 'send_email',
+                    )
+                  : undefined
+              }
+              onClose={handleCloseEmailPerformance}
+            />
+          )
+        ) : (
+          <StepSidebar
+            automation={automation}
+            isEmailModalOpen={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
+            stepId={selectedStepId}
+            onClose={clearDetail}
+            onDelete={handleRequestDelete}
+            onEditEmail={handleEditEmail}
+            onUpdateSubject={handleUpdateSubject}
+            onUpdateWait={handleUpdateWait}
+          />
+        )}
       </Box>
       {emailModalAction && automation && (
         <EmailContentModal
@@ -980,7 +1060,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           }
         }}
       >
-        <AlertDialogContent>
+        <AlertDialogContent onEscapeKeyDown={(event) => event.stopPropagation()}>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this email?</AlertDialogTitle>
             <AlertDialogDescription>

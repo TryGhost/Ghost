@@ -4,6 +4,7 @@ import { buildLexicalParagraph } from '@tryghost/test-data';
 import {
   activeThemeResponse,
   currentUserResponse,
+  type EndpointCapture,
   fakeAdminEndpoint,
   fakeEmailPreview,
   fakeNewsletters,
@@ -12,9 +13,9 @@ import {
   fakeSnippets,
   post,
   renderAdminApp,
+  settleTransitions,
   staffRole,
   withoutAutosave,
-  type EndpointCapture,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 
@@ -130,6 +131,8 @@ function fakeSavablePage(overrides: Partial<SavedPage> = {}) {
 async function openSettings() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  // Visible from its first frame; a click while it still slides in can be lost.
+  await settleTransitions();
 }
 
 /**

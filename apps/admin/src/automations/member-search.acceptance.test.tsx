@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
-import { flags, prepareStatuses, run, setupEmbeddedRootFontSize } from './run-list.test-utils';
+import { flags, prepareStatuses, run } from './run-list.test-utils';
 
-setupEmbeddedRootFontSize();
 const list = () => page.getByRole('region', { name: 'Automation runs', exact: true });
 const input = () => page.getByRole('textbox', { name: 'Search members' });
 const result = (cursor: string | null = null, rows = [run()]) => ({
@@ -91,8 +90,8 @@ describe('Automation member search', () => {
     await open();
     await page.getByRole('button', { name: 'Search members', exact: true }).click();
     await input().fill('anna');
-    await expect.element(list().getByText('Could not load more runs')).toBeVisible();
-    await expect.element(list().getByText('No matching entries')).not.toBeInTheDocument();
+    await expect.element(list().getByText('Could not load entries')).toBeVisible();
+    await expect.element(list().getByText('No members match')).not.toBeInTheDocument();
     await list().getByRole('button', { name: 'Retry' }).click();
     await expect.element(list().getByText('Anna', { exact: true })).toBeVisible();
     expect(
@@ -100,25 +99,41 @@ describe('Automation member search', () => {
     ).toHaveLength(2);
   });
 
-  it('pauses long scans and continues explicitly before reporting exhaustion', async () => {
+  it('continues an empty scan page and shows a skeleton until exhaustion', async () => {
     prepareStatuses();
-    let pages = 0;
-    fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?/, ({ url }) => {
-      if (!new URL(url).searchParams.has('search')) {
+    const cursors: Array<string | null> = [];
+    let finish!: () => void;
+    const pending = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?/, async ({ url }) => {
+      const params = new URL(url).searchParams;
+      if (!params.has('search')) {
         return result(null, []);
       }
-      pages += 1;
-      return result(pages <= 8 ? `page-${pages}` : null, []);
+      cursors.push(params.get('cursor'));
+      if (!params.has('cursor')) {
+        return result('next', []);
+      }
+      await pending;
+      return result(null, []);
     });
     await open();
     await page.getByRole('button', { name: 'Search members', exact: true }).click();
     await input().fill('missing');
-    await expect.element(list().getByRole('button', { name: 'Continue search' })).toBeVisible();
-    expect(pages).toBe(8);
-    await expect.element(list().getByText('No matching entries')).not.toBeInTheDocument();
-    await list().getByRole('button', { name: 'Continue search' }).click();
-    await expect.element(list().getByText('No matching entries')).toBeVisible();
-    expect(pages).toBe(9);
+    try {
+      await expect.poll(() => cursors).toEqual([null, 'next']);
+      await expect.element(list()).toHaveAttribute('aria-busy', 'true');
+      await expect
+        .element(list().element().querySelector<HTMLElement>('.animate-pulse'))
+        .toBeVisible();
+      await expect.element(list().getByText('No members match')).not.toBeInTheDocument();
+    } finally {
+      finish();
+    }
+    await expect.element(list().getByText('No members match')).toBeVisible();
+    await expect.element(list()).toHaveAttribute('aria-busy', 'false');
+    expect(cursors).toEqual([null, 'next']);
     await input().fill('pending');
     await page.getByRole('button', { name: 'Close member search' }).click();
     await expect.element(page.getByRole('button', { name: 'Filter performance' })).toBeVisible();
@@ -127,5 +142,101 @@ describe('Automation member search', () => {
       .toHaveFocus();
     await page.getByRole('button', { name: 'Search members', exact: true }).click();
     await expect.element(input()).toHaveValue('');
+  });
+
+  it('rejects a cursor cycle, retries the failed page, and resets for a new search', async () => {
+    prepareStatuses();
+    let repaired = false;
+    const cursors: Array<string | null> = [];
+    fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?/, ({ url }) => {
+      const params = new URL(url).searchParams;
+      if (!params.has('search')) {
+        return result(null, []);
+      }
+      const cursor = params.get('cursor');
+      cursors.push(cursor);
+      // Bound the broken implementation in the test; the assertion catches the extra request.
+      if (!repaired && cursors.length > 3) {
+        return new Response(null, { status: 500 });
+      }
+      if (!cursor) {
+        return result('first', []);
+      }
+      if (cursor === 'first') {
+        return result('second', []);
+      }
+      return repaired ? result(null, []) : result('first', []);
+    });
+    await open();
+    await page.getByRole('button', { name: 'Search members', exact: true }).click();
+    await input().fill('anna');
+    await expect.element(list().getByText('Could not load entries')).toBeVisible();
+    expect(cursors).toEqual([null, 'first', 'second']);
+
+    repaired = true;
+    await list().getByRole('button', { name: 'Retry' }).click();
+    await expect.element(list().getByText('No members match')).toBeVisible();
+    expect(cursors).toEqual([null, 'first', 'second', 'second']);
+
+    await input().fill('bob');
+    await expect
+      .poll(() => cursors)
+      .toEqual([null, 'first', 'second', 'second', null, 'first', 'second']);
+    await expect.element(list().getByText('No members match')).toBeVisible();
+    await expect.element(list().getByText('Could not load entries')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    { name: 'missing first-page cursor', firstPage: true, cursor: null },
+    { name: 'missing continuation cursor', firstPage: false, cursor: null },
+    { name: 'repeated continuation cursor', firstPage: false, cursor: 'next' },
+  ])('stops a scan with a $name and allows retry', async ({ firstPage, cursor }) => {
+    prepareStatuses();
+    let repaired = false;
+    const requests = fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?/, ({ url }) => {
+      const params = new URL(url).searchParams;
+      if (!params.has('search')) {
+        return result(null, []);
+      }
+      if (!firstPage && !params.has('cursor')) {
+        return result('next', [
+          run({ id: 'anna', member: { id: 'anna', name: 'Anna', email: 'anna@example.test' } }),
+        ]);
+      }
+      if (!repaired) {
+        return {
+          automation_runs: [],
+          meta: { pagination: { limit: 50, next_cursor: cursor, state: 'scanning' } },
+        };
+      }
+      return result(null, [
+        run({
+          id: 'annette',
+          member: { id: 'annette', name: 'Annette', email: 'annette@example.test' },
+        }),
+      ]);
+    });
+    await open();
+    await page.getByRole('button', { name: 'Search members', exact: true }).click();
+    await input().fill('ann');
+    await expect.element(list().getByText('Could not load entries')).toBeVisible();
+    await expect.element(list()).toHaveAttribute('aria-busy', 'false');
+    await expect.element(list().getByText('No members match')).not.toBeInTheDocument();
+    if (!firstPage) {
+      await expect.element(list().getByText('Anna', { exact: true })).toBeVisible();
+    }
+    const searchRequests = () =>
+      requests.requests.filter((r) => new URL(r.url).searchParams.has('search'));
+    expect(searchRequests()).toHaveLength(firstPage ? 1 : 2);
+
+    repaired = true;
+    await list().getByRole('button', { name: 'Retry' }).click();
+    await expect.element(list().getByText('Annette', { exact: true })).toBeVisible();
+    await expect.element(list().getByText('Could not load entries')).not.toBeInTheDocument();
+    expect(searchRequests()).toHaveLength(firstPage ? 2 : 3);
+    if (!firstPage) {
+      expect(new URL(searchRequests().at(-1)!.url).searchParams.get('cursor')).toBe('next');
+      await expect.element(list().getByText('Anna', { exact: true })).toBeVisible();
+    }
   });
 });
