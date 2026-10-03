@@ -12,6 +12,11 @@ import {
   type SlugProposal,
 } from './slug-machine';
 
+const flushMicrotasks = () =>
+  new Promise<void>((resolve) => {
+    setTimeout(resolve, 0);
+  });
+
 function createHarness(
   generateSlug = vi.fn((text: string) => Promise.resolve(slugify(text))),
   onListenerError = vi.fn(),
@@ -101,16 +106,16 @@ describe('resolveDedupedSlug', () => {
 describe('createSlugMachine', () => {
   describe('loaded', () => {
     it.each([
-      ['new blank post', { slug: '', title: '' }, 'derived', 'frozen'],
-      ['saved untitled post', { slug: 'untitled', title: DEFAULT_TITLE }, 'derived', 'frozen'],
-      ['derived slug', { slug: 'hello', title: 'Hello' }, 'derived', 'derived'],
-      ['custom slug', { slug: 'my-slug', title: 'Hello' }, 'custom', 'custom'],
-      ['deduped slug reads as custom', { slug: 'hello-2', title: 'Hello' }, 'custom', 'custom'],
-      ['duplicated post', { slug: 'foo-copy-2', title: 'Foo (Copy)' }, 'derived', 'derived'],
-    ] as const)('%s', (_label, post, mode, status) => {
+      ['new blank post', { slug: '', title: '' }, 'derived'],
+      ['saved untitled post', { slug: 'untitled', title: DEFAULT_TITLE }, 'derived'],
+      ['derived slug', { slug: 'hello', title: 'Hello' }, 'derived'],
+      ['custom slug', { slug: 'my-slug', title: 'Hello' }, 'custom'],
+      ['deduped slug reads as custom', { slug: 'hello-2', title: 'Hello' }, 'custom'],
+      ['duplicated post', { slug: 'foo-copy-2', title: 'Foo (Copy)' }, 'derived'],
+    ] as const)('%s', (_label, post, mode) => {
       const { machine, events } = createHarness();
       machine.loaded(post);
-      const expected = { ...post, lastCommittedTitle: post.title, mode, status, pending: false };
+      const expected = { ...post, mode, pending: false };
       expect(machine.getState()).toEqual(expected);
       expect(events).toEqual([{ state: expected, proposal: null }]);
     });
@@ -130,7 +135,6 @@ describe('createSlugMachine', () => {
       expect(machine.getState()).toMatchObject({
         slug: 'my-slug-2',
         mode: 'custom',
-        lastCommittedTitle: 'Renamed',
       });
     });
 
@@ -153,7 +157,6 @@ describe('createSlugMachine', () => {
       expect(machine.getState()).toMatchObject({
         slug: 'brand-new-name-2',
         title: 'Brand New Name',
-        lastCommittedTitle: 'Typed Later',
         pending: true,
       });
       later.resolve('typed-later');
@@ -183,7 +186,7 @@ describe('createSlugMachine', () => {
       expect(machine.getState()).toMatchObject({
         slug: 'hello-world',
         title: 'Hello World',
-        status: 'derived',
+        mode: 'derived',
       });
     });
 
@@ -256,7 +259,6 @@ describe('createSlugMachine', () => {
       expect(machine.getState()).toMatchObject({
         slug: 'hello',
         title: 'Hello',
-        lastCommittedTitle: 'Hello',
         pending: false,
       });
       expect(proposals.filter((proposal) => proposal.source === 'generated')).toEqual([]);
@@ -283,7 +285,6 @@ describe('createSlugMachine', () => {
       expect(machine.getState()).toMatchObject({
         slug: 'hello',
         title: 'Hello',
-        lastCommittedTitle: '',
         pending: false,
       });
     });
@@ -311,23 +312,21 @@ describe('createSlugMachine', () => {
       expect(machine.getState()).toMatchObject({
         slug: 'hello',
         title: 'Hello',
-        lastCommittedTitle: '',
-        status: 'frozen',
+        mode: 'derived',
       });
     });
 
-    it('reports derived after a failed commit on an untitled post', async () => {
+    it('keeps an untitled post derived after a failed commit', async () => {
       const { machine } = createHarness(vi.fn().mockRejectedValueOnce(new Error('boom')));
       machine.loaded({ slug: 'untitled', title: DEFAULT_TITLE });
-      expect(machine.getState().status).toBe('frozen');
 
       await expect(machine.titleCommitted('Hello')).resolves.toMatchObject({ reason: 'error' });
 
       expect(machine.getState()).toMatchObject({
-        status: 'derived',
+        mode: 'derived',
         title: DEFAULT_TITLE,
-        lastCommittedTitle: 'Hello',
         slug: 'untitled',
+        pending: false,
       });
     });
 
@@ -398,7 +397,7 @@ describe('createSlugMachine', () => {
       expect(generateSlug).not.toHaveBeenCalled();
       expect(machine.getState()).toMatchObject({
         slug: 'my-slug',
-        status: 'custom',
+        mode: 'custom',
         title: 'Hello',
       });
     });
@@ -621,7 +620,36 @@ describe('createSlugMachine', () => {
       expect(proposals.filter((proposal) => proposal.source === 'manual')).toEqual([]);
     });
 
-    it('generates from the title after an invalidated manual request settles', async () => {
+    it('generates from the title without waiting for a withdrawn manual request', async () => {
+      const pending = deferred<string>();
+      const generateSlug = vi
+        .fn()
+        .mockReturnValueOnce(pending.promise)
+        .mockResolvedValueOnce('changed');
+      const { machine, proposals } = createHarness(generateSlug);
+      machine.loaded({ slug: 'hello', title: 'Hello' });
+
+      const edit = machine.slugEdited('mine');
+      await machine.slugEdited('hello');
+      await expect(edit).resolves.toMatchObject({ source: 'unchanged', reason: 'stale' });
+
+      await expect(machine.titleCommitted('Changed')).resolves.toEqual({
+        slug: 'changed',
+        source: 'generated',
+      });
+      expect(generateSlug).toHaveBeenCalledTimes(2);
+
+      pending.resolve('mine');
+      await flushMicrotasks();
+      expect(machine.getState()).toMatchObject({
+        slug: 'changed',
+        mode: 'derived',
+        pending: false,
+      });
+      expect(proposals.filter((proposal) => proposal.source === 'manual')).toEqual([]);
+    });
+
+    it('runs a deferred title commit at once when the manual edit ahead of it is withdrawn', async () => {
       const pending = deferred<string>();
       const generateSlug = vi
         .fn()
@@ -631,22 +659,13 @@ describe('createSlugMachine', () => {
       machine.loaded({ slug: 'hello', title: 'Hello' });
 
       const edit = machine.slugEdited('mine');
-      await machine.slugEdited('hello');
       const commit = machine.titleCommitted('Changed');
+      await expect(machine.slugEdited('')).resolves.toMatchObject({ reason: 'reverted' });
 
-      pending.resolve('mine');
-      await expect(edit).resolves.toMatchObject({ source: 'unchanged', reason: 'stale' });
-      await expect(commit).resolves.toEqual({
-        slug: 'changed',
-        source: 'generated',
-      });
-      expect(machine.getState()).toMatchObject({
-        slug: 'changed',
-        mode: 'derived',
-        pending: false,
-      });
-
-      expect(machine.getState()).toMatchObject({ slug: 'changed', pending: false });
+      await expect(edit).resolves.toMatchObject({ reason: 'stale' });
+      await expect(commit).resolves.toEqual({ slug: 'changed', source: 'generated' });
+      expect(generateSlug).toHaveBeenCalledTimes(2);
+      expect(machine.getState()).toMatchObject({ slug: 'changed', mode: 'derived' });
     });
 
     it('applies the server result and switches to custom', async () => {
@@ -661,7 +680,6 @@ describe('createSlugMachine', () => {
       expect(machine.getState()).toMatchObject({
         slug: 'my-slug',
         mode: 'custom',
-        status: 'custom',
         title: 'Hello',
       });
     });
@@ -842,6 +860,90 @@ describe('createSlugMachine', () => {
     });
   });
 
+  it('reads a generator answer that is not a string as blank and stays usable', async () => {
+    const generateSlug = vi.fn().mockResolvedValueOnce(undefined).mockResolvedValueOnce('changed');
+    const { machine } = createHarness(generateSlug);
+    machine.loaded({ slug: 'hello', title: 'Hello' });
+
+    await expect(machine.titleCommitted('Changed')).resolves.toMatchObject({
+      reason: 'empty-result',
+    });
+    expect(machine.getState()).toMatchObject({ slug: 'hello', pending: false });
+    await expect(machine.titleCommitted('Changed')).resolves.toEqual({
+      slug: 'changed',
+      source: 'generated',
+    });
+  });
+
+  it('drops a late answer for a withdrawn request while a newer request is out', async () => {
+    const withdrawn = deferred<string>();
+    const current = deferred<string>();
+    const generateSlug = vi
+      .fn()
+      .mockReturnValueOnce(withdrawn.promise)
+      .mockReturnValueOnce(current.promise);
+    const { machine, proposals } = createHarness(generateSlug);
+    machine.loaded({ slug: 'hello', title: 'Hello' });
+
+    void machine.slugEdited('mine');
+    await machine.slugEdited('hello');
+    const commit = machine.titleCommitted('Changed');
+
+    withdrawn.resolve('mine');
+    await flushMicrotasks();
+    expect(machine.getState()).toMatchObject({ slug: 'hello', mode: 'derived', pending: true });
+
+    current.resolve('changed');
+    await expect(commit).resolves.toEqual({ slug: 'changed', source: 'generated' });
+    expect(proposals.filter((proposal) => proposal.source === 'manual')).toEqual([]);
+  });
+
+  it('resolves a drained submission stale when a listener loads another post', async () => {
+    const first = deferred<string>();
+    const generateSlug = vi.fn().mockReturnValueOnce(first.promise).mockResolvedValue('late');
+    const { machine } = createHarness(generateSlug);
+    machine.loaded({ slug: 'hello', title: 'Hello' });
+    machine.subscribe((_state, proposal) => {
+      if (proposal?.source === 'generated') {
+        machine.loaded({ slug: 'other', title: 'Other' });
+      }
+    });
+
+    const commit = machine.titleCommitted('Changed');
+    const queued = machine.titleCommitted('Old Post Later');
+    first.resolve('changed');
+
+    await expect(commit).resolves.toEqual({ slug: 'changed', source: 'generated' });
+    await expect(queued).resolves.toMatchObject({ source: 'unchanged', reason: 'stale' });
+    await flushMicrotasks();
+    expect(machine.getState()).toMatchObject({ slug: 'other', title: 'Other', pending: false });
+  });
+
+  it('runs the deferred submission before one a listener makes while it drains', async () => {
+    const first = deferred<string>();
+    const generateSlug = vi
+      .fn<(text: string) => Promise<string>>()
+      .mockReturnValueOnce(first.promise)
+      .mockImplementation((text) => Promise.resolve(slugify(text)));
+    const { machine } = createHarness(generateSlug);
+    machine.loaded({ slug: 'hello', title: 'Hello' });
+    let fromListener: Promise<SlugProposal> | null = null;
+    machine.subscribe((_state, proposal) => {
+      if (proposal?.source === 'generated' && proposal.slug === 'first') {
+        fromListener = machine.titleCommitted('Newest');
+      }
+    });
+
+    void machine.titleCommitted('First');
+    const queued = machine.titleCommitted('Queued');
+    first.resolve('first');
+
+    await expect(queued).resolves.toEqual({ slug: 'queued', source: 'generated' });
+    await expect(fromListener).resolves.toEqual({ slug: 'newest', source: 'generated' });
+    expect(generateSlug.mock.calls.map(([text]) => text)).toEqual(['First', 'Queued', 'Newest']);
+    expect(machine.getState()).toMatchObject({ slug: 'newest', title: 'Newest' });
+  });
+
   it('stops notifying after unsubscribe', async () => {
     const { machine } = createHarness();
     machine.loaded({ slug: '', title: '' });
@@ -854,7 +956,7 @@ describe('createSlugMachine', () => {
 
     expect(listener).toHaveBeenCalledTimes(2);
     expect(listener).toHaveBeenLastCalledWith(
-      expect.objectContaining({ slug: 'one', status: 'derived', pending: false }),
+      expect.objectContaining({ slug: 'one', mode: 'derived', pending: false }),
       { slug: 'one', source: 'generated' },
     );
   });
