@@ -19,6 +19,10 @@ module.exports = {
     return require('./pretty-urls');
   },
 
+  get siteId() {
+    return require('./site-id').siteId;
+  },
+
   get urlRedirects() {
     return require('./url-redirects');
   },
