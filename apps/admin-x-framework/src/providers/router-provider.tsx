@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useRef, useEffect } from 'react';
+import { flushSync } from 'react-dom';
 import {
   createHashRouter,
   RouteObject,
@@ -110,6 +111,11 @@ export function ScrollRestoration({ containerRef }: ScrollRestorationProps) {
   return null;
 }
 
+// Lets a navigation opt into `flushSync`, as the `react-router/dom` provider does.
+const flushRouterUpdate = (update: () => unknown): undefined => {
+  flushSync(update);
+};
+
 export function RouterProvider({ routes, prefix, errorElement, children }: RouterProviderProps) {
   // Memoize the router to avoid re-creating it on every render
   const router = useMemo(() => {
@@ -136,7 +142,7 @@ export function RouterProvider({ routes, prefix, errorElement, children }: Route
     });
   }, [routes, prefix, errorElement, children]);
 
-  return <ReactRouterProvider router={router} />;
+  return <ReactRouterProvider flushSync={flushRouterUpdate} router={router} />;
 }
 
 /**

@@ -99,10 +99,16 @@ export function useEditorLeaveGuard(
     if (location.pathname === target) {
       return;
     }
-    navigate(target, {
-      replace: true,
-      state: { editorSession: sessionKey },
-    });
+    // React cannot flushSync inside an effect.
+    queueMicrotask(() =>
+      navigate(target, {
+        replace: true,
+        state: { editorSession: sessionKey },
+        // Renders with the URL write, so a later navigation cannot batch with it onto a
+        // location equal to the rendered one, which the router reports as unchanged.
+        flushSync: true,
+      }),
+    );
   }, [
     createdId,
     guard.isBlocked,
@@ -116,7 +122,8 @@ export function useEditorLeaveGuard(
 
   useEffect(() => {
     if (isUrlSwapBlocked) {
-      guardRef.current.interceptedNavigation.proceed();
+      // The released swap uses flushSync, which React cannot do inside an effect.
+      queueMicrotask(() => guardRef.current.interceptedNavigation.proceed());
     }
   }, [isUrlSwapBlocked]);
 
