@@ -1,7 +1,7 @@
 import JSZip from 'jszip';
 import { act } from 'react';
 import { describe, expect, it } from 'vitest';
-import { page } from 'vitest/browser';
+import { commands, page, userEvent } from 'vitest/browser';
 
 import {
   activeThemeResponse,
@@ -22,7 +22,7 @@ const liveHtml =
 const yamlResponse = (source: string) =>
   new Response(source, { headers: { 'Content-Type': 'application/yaml' } });
 
-async function fakeBuilderWorld(): Promise<void> {
+async function fakeBuilderWorld({ post = false } = {}): Promise<void> {
   const theme = activeThemeResponse().themes[0];
   if (!theme) {
     throw new Error('The active theme fixture is missing.');
@@ -32,7 +32,12 @@ async function fakeBuilderWorld(): Promise<void> {
     .file('casper/package.json', JSON.stringify({ name: 'casper', version: '1.0.0' }))
     .file(
       'casper/index.hbs',
-      '<!doctype html><html><head><title>{{@site.title}}</title></head><body><main data-edit="casper/index.hbs:1:1"><h1>{{@site.title}}</h1></main></body></html>',
+      '<!doctype html><html><head><title>{{@site.title}}</title></head><body><main data-edit="casper/index.hbs:1:1"><h1>{{@site.title}}</h1>{{> footer}}</main></body></html>',
+    )
+    .file('casper/partials/footer.hbs', '<a href="/">Canvas footer</a>')
+    .file(
+      'casper/post.hbs',
+      '<html><body>{{#post}}<h1>{{title}}</h1>{{/post}}{{> footer}}</body></html>',
     )
     .generateAsync({ type: 'arraybuffer' });
   fakeAdminEndpoint('GET', '/custom_theme_settings/', { custom_theme_settings: [] });
@@ -59,17 +64,112 @@ async function fakeBuilderWorld(): Promise<void> {
     },
   });
   fakeEndpoint('GET', `${new URL('/ghost/api/content/posts/', siteUrl).href}*`, {
-    posts: [],
+    posts: post
+      ? [
+          {
+            id: 'published-post',
+            slug: 'published-post',
+            url: new URL('published-post/', siteUrl).href,
+            title: 'Published canvas example',
+            visibility: 'public',
+            html: '<p>Real post content</p>',
+            tags: [],
+            authors: [],
+          },
+        ]
+      : [],
     meta: { pagination: { page: 1, limit: 15, pages: 1, total: 0, next: null, prev: null } },
   });
 }
 
 describe('Design Builder route', () => {
+  it(
+    'edits the active theme on eight live canvas documents without embedded chat',
+    { timeout: 60_000 },
+    async () => {
+      await commands.canvasPointerViewport(true);
+      await fakeBuilderWorld({ post: true });
+      const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
+      try {
+        await expect.element(page.getByRole('region', { name: 'Theme canvas' })).toBeVisible();
+        await expect
+          .poll(() => document.querySelectorAll('iframe[data-preview-status="Ready"]').length, {
+            timeout: 30_000,
+          })
+          .toBe(8);
+        await expect
+          .element(page.getByRole('textbox', { name: 'Describe a change' }))
+          .not.toBeInTheDocument();
+        await expect
+          .element(page.getByRole('button', { name: /Connect.*(OpenAI|Anthropic)/ }))
+          .not.toBeInTheDocument();
+        const iframes = [
+          ...document.querySelectorAll('iframe[title$="composition"],iframe[title$="preview"]'),
+        ];
+        await page.getByRole('button', { name: 'Home · Mobile', exact: true }).dblClick();
+        const world = page.getByTestId('canvas-world').element();
+        const view = world.getAttribute('style');
+        const frame = page.frameLocator(
+          page.getByTitle('Home · Mobile composition', { exact: true }),
+        );
+        const footer = frame.getByRole('link', { name: 'Canvas footer', exact: true });
+        await footer.hover();
+        await footer.dblClick();
+        const editor = frame.getByRole('textbox', { name: /^Edit / });
+        await editor.fill('Updated shared canvas footer');
+        await userEvent.keyboard('{Enter}');
+        await expect
+          .poll(() => document.querySelectorAll('iframe[data-preview-status="Ready"]').length, {
+            timeout: 30_000,
+          })
+          .toBe(8);
+        await expect
+          .poll(() =>
+            [
+              ...document.querySelectorAll<HTMLIFrameElement>(
+                'iframe[title$="composition"],iframe[title$="preview"]',
+              ),
+            ].every((iframe) => iframe.srcdoc.includes('Updated shared canvas footer')),
+          )
+          .toBe(true);
+        await frame
+          .getByRole('link', { name: 'Updated shared canvas footer', exact: true })
+          .hover();
+        expect([
+          ...document.querySelectorAll('iframe[title$="composition"],iframe[title$="preview"]'),
+        ]).toEqual(iframes);
+        expect(world.getAttribute('style')).toBe(view);
+        await expect.element(page.getByRole('button', { name: 'Publish changes' })).toBeEnabled();
+      } finally {
+        await screen.unmount();
+        await commands.canvasPointerViewport(false);
+      }
+    },
+  );
+  it(
+    'shows the live Home canvas and unavailable Post frames on an empty site',
+    { timeout: 45_000 },
+    async () => {
+      await fakeBuilderWorld();
+      await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
+      await expect
+        .poll(() => document.querySelectorAll('iframe[data-preview-status="Ready"]').length, {
+          timeout: 30_000,
+        })
+        .toBe(4);
+      await expect.element(page.getByText('No published Post is available.').first()).toBeVisible();
+      await expect
+        .element(page.getByRole('textbox', { name: 'Describe a change' }))
+        .not.toBeInTheDocument();
+    },
+  );
   it('verifies installed routing again on entry even while the default configuration is cached', async () => {
     fakeSettingsScreens();
     await fakeBuilderWorld();
     await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
-    await expect.element(page.getByTitle('Theme preview')).toHaveAttribute('srcdoc');
+    await expect
+      .element(page.getByTitle('Home · Mobile composition', { exact: true }))
+      .toHaveAttribute('srcdoc');
     await page.getByRole('link', { name: 'Back to Design settings' }).click();
     await expect.element(settingsScreen.design()).toBeVisible();
 
@@ -82,42 +182,65 @@ describe('Design Builder route', () => {
       window.location.hash = '#/builder/theme';
       await expect.poll(() => routing.requests.length).toBe(1);
       await expect.element(page.getByText('Loading the active theme…')).toBeVisible();
-      await expect.element(page.getByTitle('Theme preview')).not.toBeInTheDocument();
+      await expect
+        .element(page.getByTitle('Home · Mobile composition', { exact: true }))
+        .not.toBeInTheDocument();
     } finally {
       release(yamlResponse(defaultRoutes.replace('/{slug}/', '/news/{slug}/')));
     }
     await expect.element(page.getByRole('alert')).toHaveTextContent('custom routing');
-    await expect.element(page.getByTitle('Theme preview')).not.toBeInTheDocument();
+    await expect
+      .element(page.getByTitle('Home · Mobile composition', { exact: true }))
+      .not.toBeInTheDocument();
   });
 
-  it('retains the admitted editor and unsent text when unrelated routing cache updates arrive', async () => {
-    await fakeBuilderWorld();
-    window.sessionStorage.setItem('ghost-builder.credential.openai', 'test-key');
-    try {
+  it(
+    'retains the live canvas and manual text draft when unrelated routing cache updates arrive',
+    { timeout: 45_000 },
+    async () => {
+      await commands.canvasPointerViewport(true);
+      await fakeBuilderWorld();
       const { queryClient } = await renderAdminApp('/builder/theme', {
         labs: { designBuilder: true },
       });
-      await expect.element(page.getByTitle('Theme preview')).toHaveAttribute('srcdoc');
-      const iframe = page.getByTitle('Theme preview').element();
-      const composer = page.getByRole('textbox', { name: 'Describe a change' });
-      await composer.fill('Keep this unsent design idea');
-      await act(async () => {
-        queryClient.setQueriesData(
-          { queryKey: ['RoutesConfiguration'] },
-          defaultRoutes.replace('/{slug}/', '/news/{slug}/'),
+      try {
+        await expect
+          .poll(() => document.querySelectorAll('iframe[data-preview-status="Ready"]').length, {
+            timeout: 30_000,
+          })
+          .toBe(4);
+        const iframe = page.getByTitle('Home · Mobile composition', { exact: true }).element();
+        await page.getByRole('button', { name: 'Home · Mobile', exact: true }).dblClick();
+        const frame = page.frameLocator(
+          page.getByTitle('Home · Mobile composition', { exact: true }),
         );
-        await new Promise<void>((resolve) => {
-          window.setTimeout(resolve, 0);
+        await frame.getByRole('link', { name: 'Canvas footer', exact: true }).dblClick();
+        await frame.getByRole('textbox', { name: /^Edit / }).fill('Keep this manual design draft');
+        await act(async () => {
+          queryClient.setQueriesData(
+            { queryKey: ['RoutesConfiguration'] },
+            defaultRoutes.replace('/{slug}/', '/news/{slug}/'),
+          );
+          await new Promise<void>((resolve) => {
+            window.setTimeout(resolve, 0);
+          });
         });
-      });
-      await expect.element(composer).toHaveValue('Keep this unsent design idea');
-      expect(page.getByTitle('Theme preview').element()).toBe(iframe);
-      expect(iframe.isConnected).toBe(true);
-      await expect.element(page.getByRole('alert')).not.toBeInTheDocument();
-    } finally {
-      window.sessionStorage.removeItem('ghost-builder.credential.openai');
-    }
-  });
+        expect(page.getByTitle('Home · Mobile composition', { exact: true }).element()).toBe(
+          iframe,
+        );
+        expect(iframe.isConnected).toBe(true);
+        await expect.element(page.getByRole('button', { name: 'Resume text draft' })).toBeVisible();
+        await userEvent.keyboard('{Enter}');
+        await expect
+          .poll(() =>
+            (iframe as HTMLIFrameElement).srcdoc.includes('Keep this manual design draft'),
+          )
+          .toBe(true);
+      } finally {
+        await commands.canvasPointerViewport(false);
+      }
+    },
+  );
 
   it('blocks a custom-routed site before rendering the default-route preview and keeps existing preview access', async () => {
     await fakeBuilderWorld();
@@ -132,7 +255,9 @@ describe('Design Builder route', () => {
     await expect
       .element(page.getByRole('link', { name: 'Open site preview', exact: true }))
       .toHaveAttribute('href', siteResponse().site.url);
-    await expect.element(page.getByTitle('Theme preview')).not.toBeInTheDocument();
+    await expect
+      .element(page.getByTitle('Home · Mobile composition', { exact: true }))
+      .not.toBeInTheDocument();
     await expect
       .element(page.getByRole('textbox', { name: 'Describe a change' }))
       .not.toBeInTheDocument();
@@ -151,64 +276,27 @@ describe('Design Builder route', () => {
     await expect
       .element(page.getByRole('link', { name: 'Open site preview', exact: true }))
       .toBeVisible();
-    await expect.element(page.getByTitle('Theme preview')).not.toBeInTheDocument();
-  });
-
-  it('renders the standalone builder when enabled', async () => {
-    await fakeBuilderWorld();
-    await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
-
-    await expect.poll(currentRoute).toBe('/builder/theme');
-    await expect.element(page.getByRole('heading', { name: 'Design Builder' })).toBeVisible();
     await expect
-      .element(page.getByRole('heading', { name: 'What would you like to change?' }))
-      .toBeVisible();
-    await expect.element(page.getByRole('textbox', { name: 'Describe a change' })).toBeDisabled();
-    await expect.element(page.getByTitle('Theme preview')).toHaveAttribute('srcdoc');
+      .element(page.getByTitle('Home · Mobile composition', { exact: true }))
+      .not.toBeInTheDocument();
   });
 
-  it('switches between chat and preview on a narrow screen', async () => {
+  it('keeps the canvas available without chat tabs or provider setup', async () => {
+    await commands.canvasPointerViewport(true);
     await fakeBuilderWorld();
-    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 600 });
-    window.dispatchEvent(new Event('resize'));
     await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
-
-    const chatTab = page.getByRole('tab', { name: 'Chat' });
-    const previewTab = page.getByRole('tab', { name: 'Preview' });
-    await expect.element(chatTab).toHaveAttribute('aria-selected', 'true');
-    await previewTab.click();
-    await expect.element(previewTab).toHaveAttribute('aria-selected', 'true');
-    await expect.element(page.getByTitle('Theme preview')).toBeVisible();
-    await chatTab.click();
-    await expect
-      .element(page.getByRole('heading', { name: 'What would you like to change?' }))
-      .toBeVisible();
-
-    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1200 });
-    window.dispatchEvent(new Event('resize'));
-  });
-
-  it('adds a Ghost-hosted image attachment from the real Builder composer', async () => {
-    await fakeBuilderWorld();
-    const upload = fakeAdminEndpoint('POST', '/images/upload/', {
-      images: [{ url: 'http://localhost:2368/content/images/chart.png' }],
-    });
-    window.sessionStorage.setItem('ghost-builder.credential.openai', 'test-key');
-    await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
-
-    await page
-      .getByLabelText('Add attachments')
-      .upload(new File([new Uint8Array([137, 80, 78, 71])], 'chart.png', { type: 'image/png' }));
-
-    const remove = page.getByRole('button', { name: 'Remove chart.png' });
-    await expect.element(remove).toBeVisible();
-    expect(upload.requests).toHaveLength(1);
-    expect(upload.lastRequest?.body).toMatchObject({
-      file: { filename: 'chart.png', type: 'image/png' },
-    });
-    await remove.click();
-    await expect.element(remove).not.toBeInTheDocument();
-    window.sessionStorage.removeItem('ghost-builder.credential.openai');
+    try {
+      await expect.element(page.getByRole('region', { name: 'Theme canvas' })).toBeVisible();
+      await expect.element(page.getByRole('tab', { name: 'Chat' })).not.toBeInTheDocument();
+      await expect
+        .element(page.getByRole('textbox', { name: 'Describe a change' }))
+        .not.toBeInTheDocument();
+      await expect
+        .element(page.getByRole('link', { name: 'Back to Design settings' }))
+        .toBeVisible();
+    } finally {
+      await commands.canvasPointerViewport(false);
+    }
   });
 
   it('returns to Design settings with an explanation when unavailable', async () => {

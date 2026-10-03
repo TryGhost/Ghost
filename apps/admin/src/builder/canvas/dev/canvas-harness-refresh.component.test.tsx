@@ -218,9 +218,7 @@ it.each(['source', 'casper'] as const)(
       refresh.mockRejectedValueOnce(new FixtureTransportError('Controlled transport loss'));
       const beforeLoss = target();
       await page.getByRole('button', { name: 'Refresh recorded content', exact: true }).click();
-      await expect
-        .element(page.getByRole('alert'))
-        .toHaveTextContent('Reload the local fixture to recover.');
+      await expect.element(page.getByRole('alert')).toHaveTextContent('Reload Builder to recover.');
       expect(await inspect(beforeLoss)).toMatchObject({ code: 'stale_render' });
       await expect
         .element(page.getByRole('button', { name: 'Refresh recorded content', exact: true }))

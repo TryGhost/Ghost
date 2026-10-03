@@ -64,6 +64,20 @@ async function fixture() {
 }
 
 describe('addressed read-only canvas probe', () => {
+  it('identifies the real editor workspace without claiming fixture or mutation support', () => {
+    const probe = new CanvasProbe([descriptor], 'https://example.com/', {
+      workspaceId: 'theme-canvas:active-workspace',
+      fixture: false,
+    });
+    expect(probe.state()).toMatchObject({
+      workspaceId: 'theme-canvas:active-workspace',
+      fixture: false,
+      protocolVersion: 'canvas-editor-probe-1',
+      capabilities: { readOnly: true, mutations: false, publication: false },
+    });
+    probe.dispose();
+  });
+
   it('invalidates same-source data reads immediately and retires handles even when refresh fails', async () => {
     const { probe, preview } = await fixture();
     const before = target(probe);

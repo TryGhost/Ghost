@@ -3,7 +3,10 @@ import type { ThemeDraft } from '@/builder/workspaces/theme/theme-state';
 import type { ValidationResult } from '@/builder/core/workspace';
 
 export type CanvasThemeRender = {
-  groups: Record<'home' | 'post', { url: string; status: number; html: string }>;
+  groups: {
+    home: { url: string; status: number; html: string };
+    post?: { url: string; status: number; html: string };
+  };
   inlineTextTargets: Record<string, string>;
   editMarkerAttribute: string;
 };
@@ -13,7 +16,7 @@ export type CanvasThemeRender = {
  * before the caller delivers that exact revision to any live document. */
 export class CanvasThemePreview {
   readonly kind = 'theme-canvas';
-  private readonly required: Record<'home' | 'post', string>;
+  private readonly required: { home: string; post?: string };
   private readonly render: (draft: ThemeDraft, signal: AbortSignal) => Promise<CanvasThemeRender>;
   private readonly getRenderGeneration: () => number;
   private tail = Promise.resolve();
@@ -22,7 +25,7 @@ export class CanvasThemePreview {
   private staged: { revision: string; generation: number; output: CanvasThemeRender } | null = null;
 
   constructor(options: {
-    required: Record<'home' | 'post', string>;
+    required: { home: string; post?: string };
     render: (draft: ThemeDraft, signal: AbortSignal) => Promise<CanvasThemeRender>;
     getRenderGeneration: () => number;
   }) {
@@ -63,6 +66,9 @@ export class CanvasThemePreview {
           };
         }
         const diagnostics = (['home', 'post'] as const).flatMap((group) => {
+          if (!this.required[group]) {
+            return [];
+          }
           const result = output.groups[group];
           return result?.status === 200 &&
             result.url === this.required[group] &&

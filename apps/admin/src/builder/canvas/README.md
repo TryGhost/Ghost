@@ -11,7 +11,7 @@ this check does not implement them. Parsing accepts one YAML document, rejects
 duplicate keys and unsupported tags, and bounds input to 256 KiB.
 
 The editor reads `/settings/routes/yaml/` through the existing Admin framework
-before mounting the workspace/model/preview. Every entry requires a fresh response;
+before mounting the workspace/preview. Every entry requires a fresh response;
 cached configuration cannot admit the editor while that request is pending.
 The entry check then pins its result and disables its query for that mounted
 editor, so unrelated cache updates cannot dispose a session with retained work.
@@ -22,7 +22,36 @@ before rendering or adopting an edit/refresh. A blocked canvas issues no render
 work and exposes compatibility details through probe/console diagnostics.
 `canvas.html?theme=source&routing=custom` exercises the unsupported path without
 adding a debug selector to the canvas. Configuration refresh ownership and retained
-draft recovery belong to the shared coordinator stage.
+draft recovery remain separate editor work.
+
+## Active-site editor
+
+The normal Design Builder route uses `ThemeCanvasExperience` to load the active
+theme archive, installed design settings, public renderer configuration and one
+published Post from the current site. `SiteCanvasDriver` owns one `ThemeWorkspace`
+and renderer; the canvas connects to that workspace without owning its lifetime.
+React effect reconnection, iframe delivery, camera changes and unrelated query
+cache updates do not create or dispose that shared source. The normal theme route
+has no embedded chat, provider configuration or model-runtime dependency.
+
+Home and Post each have desktop/mobile live compositions and separate fixed-device
+representations. Empty sites render Home and explicitly mark Post unavailable.
+Direct source-proven literal commits and atomic patches validate every bound page
+before source adoption. The initial Post/settings observation is pinned for this
+mounted editor; it is not a live-content synchronization service or Post picker.
+
+The route uses the existing theme publication review/transport and built-in-theme
+copy flow. Dirty source, retained manual text and an in-flight write/publication
+guard navigation; initial read-only loading does not. Successful server publication
+is reported as successful even if its subsequent preview refresh fails, with an
+actionable reload notice. Workspace disposal belongs to route exit, which also
+invalidates relevant Admin queries after server mutations.
+
+The production preview probe uses the actual `ThemeWorkspace` identity and reports
+`fixture: false`. Its currently registered tools remain read-only: native source
+mutation, replacement-safe manual drafts, editor-owned history and publication
+tools are still to implement. UI and tools must share this workspace rather than
+adding an independent model-owned theme draft.
 
 `CanvasBoard` positions caller-owned live frames in world coordinates and changes
 only the world container's CSS transform for pan/zoom. Frame dimensions, documents
@@ -215,13 +244,14 @@ the four fixed devices, four live compositions and all eight documents. Failed
 deliveries remain separate from readiness and permit a subsequent refresh retry. These are
 delivery observations rather than screenshot timings or performance benchmarks.
 
-The top-level harness feature-detects `document.modelContext.registerTool` and
+The top-level editor feature-detects `document.modelContext.registerTool` and
 registers `ghost_canvas_probe_get_editor_state`, `ghost_canvas_probe_inspect_frame`
-and `ghost_canvas_probe_capture_frame`. Registrations belong to the harness,
+and `ghost_canvas_probe_capture_frame`. Registrations belong to the editor,
 not individual previews. Camera and presentation changes do not register again;
 unsupported APIs leave manual editing available.
 
-Protocol `canvas-fixture-probe-3` addresses explicit immutable fixed-device
+Protocols `canvas-fixture-probe-3` (fixtures) and `canvas-editor-probe-1` (the real
+workspace) address explicit immutable fixed-device
 workspace/frame/representation handles, expected source revision and expected
 render key. Same-source data refresh retires old evidence; the source revision
 alone cannot certify a current data snapshot. It never uses
@@ -240,6 +270,7 @@ proxy, credentialed capture fetch, CORS bypass or sandbox relaxation.
 
 Probe captures admit one concurrent request and preserve device scroll/camera.
 PNG data URL results are experimental. Mocked API and host Chromium checks do not
-prove native Codex discovery, model-visible image delivery or actual Admin embedding.
-Those integration gates, the shared controller and complete milestone validation
-remain required; this harness alone does not establish Stage A completion.
+prove native Codex discovery or model-visible image delivery. Real-route Chromium
+acceptance tests exercise Admin embedding and shared direct edits against a fake
+API. They do not prove the external Codex edit loop; native tool writes and visual
+consumption still require implementation and actual integration evidence.

@@ -1,6 +1,7 @@
 import type { WorkspaceDiagnostic } from '@/builder/core/tool-types';
 
 export type ThemeRendererInitialization = {
+  editMarkerAttribute?: string;
   siteUrl: string;
   contentApiKey: string;
   config: Record<string, unknown>;

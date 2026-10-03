@@ -324,7 +324,7 @@ async function render(
     const result: Omit<FixtureRender, 'requestId'> = {
       fixtureId,
       workspaceId: current.workspace.id,
-      html: { home: output.groups.home.html, post: output.groups.post.html },
+      html: { home: output.groups.home.html, post: output.groups.post!.html },
       revision,
       dataGeneration,
       dataSnapshot,
