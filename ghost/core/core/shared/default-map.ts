@@ -7,7 +7,7 @@
  * map.get('key');
  * // => [123]
  */
-export class DefaultMap<K, V> {
+export class DefaultMap<K, V> implements Iterable<[K, V]> {
   #getDefaultValue: () => V;
   #map = new Map<K, V>();
 
@@ -27,7 +27,19 @@ export class DefaultMap<K, V> {
     return this;
   }
 
+  clear(): void {
+    this.#map.clear();
+  }
+
   values(): MapIterator<V> {
     return this.#map.values();
+  }
+
+  entries(): MapIterator<[K, V]> {
+    return this.#map.entries();
+  }
+
+  [Symbol.iterator](): MapIterator<[K, V]> {
+    return this.#map[Symbol.iterator]();
   }
 }

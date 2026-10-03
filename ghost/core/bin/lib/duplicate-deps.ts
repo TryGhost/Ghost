@@ -22,6 +22,7 @@
 // among them - resolves through a symlink to `packages/<name>`, outside any
 // `node_modules`, leaving an adapter's copy with nothing to be compared against.
 
+import { DefaultMap } from '../../core/shared/default-map';
 import fs from 'node:fs';
 import inspector from 'node:inspector';
 import path from 'node:path';
@@ -187,7 +188,7 @@ export function checkDuplicateDependencies({
   const realAdapterRoots = adapterRoots.map(realpathOrNull).filter((root) => root !== null);
   const realGhostRoots = ghostNodeModulesRoots.map(realpathOrNull).filter((root) => root !== null);
 
-  const adapterPackages = new Map<string, Set<string>>();
+  const adapterPackages = new DefaultMap<string, Set<string>>(() => new Set());
   const ghostPackages = new Map<string, string>();
 
   for (const cachedFile of cachedFiles) {
@@ -213,8 +214,7 @@ export function checkDuplicateDependencies({
     }
 
     // Two adapters can each bundle their own copy, so keep every location.
-    const packagePaths = adapterPackages.get(location.name) ?? new Set<string>();
-    adapterPackages.set(location.name, packagePaths.add(location.path));
+    adapterPackages.get(location.name).add(location.path);
   }
 
   // Reading versions only once both sides are known costs one manifest read per

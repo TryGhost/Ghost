@@ -1,3 +1,4 @@
+import { DefaultMap } from '../../../shared/default-map';
 import errors from '@tryghost/errors';
 
 // A value is a tree; the database stores one row per leaf, under the path addressing it.
@@ -105,14 +106,12 @@ export function valueFromLeaves(leaves: readonly Leaf[]): unknown {
 export function valuesFromLeaves(
   leaves: readonly StoredLeaf[],
 ): Map<string, Record<string, unknown>> {
-  const byMemberAndField = new Map<string, Map<string, Leaf[]>>();
+  const byMemberAndField = new DefaultMap<string, DefaultMap<string, Leaf[]>>(
+    () => new DefaultMap(() => []),
+  );
 
   for (const { member_id: memberId, key, path, value_text: valueText } of leaves) {
-    const fields = byMemberAndField.get(memberId) ?? new Map<string, Leaf[]>();
-    const forField = fields.get(key) ?? [];
-    forField.push({ path, value_text: valueText });
-    fields.set(key, forField);
-    byMemberAndField.set(memberId, fields);
+    byMemberAndField.get(memberId).get(key).push({ path, value_text: valueText });
   }
 
   const byMember = new Map<string, Record<string, unknown>>();

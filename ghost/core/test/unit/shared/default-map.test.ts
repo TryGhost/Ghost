@@ -32,6 +32,26 @@ describe('DefaultMap', function () {
     });
   });
 
+  describe('clear', function () {
+    it('removes explicit and defaulted values and creates fresh defaults afterward', function () {
+      const factory = sinon.spy(() => []);
+      const map = new DefaultMap<string, number[]>(factory);
+
+      const oldDefault = map.get('defaulted');
+      oldDefault.push(123);
+      map.set('explicit', [456]);
+      sinon.assert.calledOnce(factory);
+
+      map.clear();
+      assert.deepEqual(Array.from(map.entries()), []);
+
+      const freshDefault = map.get('defaulted');
+      assert.deepEqual(freshDefault, []);
+      assert.notEqual(freshDefault, oldDefault);
+      sinon.assert.calledTwice(factory);
+    });
+  });
+
   describe('values', function () {
     it('returns values in map insertion order', function () {
       const map = new DefaultMap<string, string>(() => 'default');
@@ -40,6 +60,52 @@ describe('DefaultMap', function () {
       map.set('second', 'explicit');
 
       assert.deepEqual(Array.from(map.values()), ['default', 'explicit']);
+    });
+  });
+
+  describe('entries', function () {
+    it('returns key-value pairs in insertion order, including defaulted values', function () {
+      const map = new DefaultMap<string, string>(() => 'default');
+
+      map.get('first');
+      map.set('second', 'explicit');
+      map.set('first', 'updated');
+
+      assert.deepEqual(Array.from(map.entries()), [
+        ['first', 'updated'],
+        ['second', 'explicit'],
+      ]);
+    });
+
+    it('returns no entries for an empty map without generating defaults', function () {
+      const factory = sinon.spy(() => 'default');
+      const map = new DefaultMap<string, string>(factory);
+
+      assert.deepEqual(Array.from(map.entries()), []);
+      sinon.assert.notCalled(factory);
+    });
+  });
+
+  describe('Symbol.iterator', function () {
+    it('returns key-value pairs in insertion order, including defaulted values', function () {
+      const map = new DefaultMap<string, string>(() => 'default');
+
+      map.get('first');
+      map.set('second', 'explicit');
+      map.set('first', 'updated');
+
+      assert.deepEqual(Array.from(map), [
+        ['first', 'updated'],
+        ['second', 'explicit'],
+      ]);
+    });
+
+    it('returns no entries for an empty map without generating defaults', function () {
+      const factory = sinon.spy(() => 'default');
+      const map = new DefaultMap<string, string>(factory);
+
+      assert.deepEqual(Array.from(map), []);
+      sinon.assert.notCalled(factory);
     });
   });
 });
