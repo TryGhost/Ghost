@@ -4,8 +4,9 @@ Slice 1 captured twelve deltas against the live dev instance
 (`http://localhost:2368`, Casper, Ghost 6.58). Slice 2 drove them down: the
 rendered home, post and tag routes are now **byte-identical** to the live HTML
 modulo the documented stubs below, enforced by
-`test/integration/parity.test.ts` — its `NORMALIZATIONS` list carries exactly
-one entry per surviving delta row, each rewriting the live HTML into the
+`test/integration/parity.test.ts`. The live harness supplies the observed member-
+attribution setting through `settingsPayload`; its `NORMALIZATIONS` list carries
+one entry per remaining uninjected delta row, each rewriting the live HTML into the
 renderer's expected output, so any _undocumented_ divergence fails the byte
 comparison. The rendered/live pairs land in `test/integration/__output__/`
 (gitignored).
@@ -20,10 +21,10 @@ comparison. The rendered/live pairs land in `test/integration/__output__/`
 
 ## Documented stubs (normalization entries in parity.test.ts)
 
-| #   | Route | Delta                                                                                                                                                       | Cause                                                                                   | Future                                                                       |
-| --- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| 2   | all   | `og:image:width`/`og:image:height` meta missing; JSON-LD `image`/`logo` objects lack `width`/`height` (two normalization entries: meta tags + JSON-LD keys) | `createImageSizeCache` stub resolves null — image probing needs storage/network streams | implement probing over fetch, or accept permanently                          |
-| 4   | all   | `member-attribution.min.js` script missing                                                                                                                  | `members_track_sources` is a non-public setting → undefined via Content API             | injectable settings override, or accept (same class as announcement_*/fonts) |
+| #   | Route | Delta                                                                                                                                                       | Cause                                                                                   | Future                                                                                                                                    |
+| --- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| 2   | all   | `og:image:width`/`og:image:height` meta missing; JSON-LD `image`/`logo` objects lack `width`/`height` (two normalization entries: meta tags + JSON-LD keys) | `createImageSizeCache` stub resolves null — image probing needs storage/network streams | implement probing over fetch, or accept permanently                                                                                       |
+| 4   | all   | `member-attribution.min.js` script missing                                                                                                                  | `members_track_sources` is a non-public setting → undefined via Content API             | Live parity supplies the flag observed in the homepage via `settingsPayload`; ordinary Content API-only renders still need this override. |
 
 ## Latent deltas (no visible diff on the dev instance today — no normalization entry, so they fail the parity test the moment they become visible)
 

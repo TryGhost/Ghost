@@ -147,13 +147,26 @@ describe('Mail: Ghostmailer', function () {
     it("return correct failure message for domain doesn't exist", async function () {
       assert.equal(mailer.transport.transporter.name, 'SMTP');
       assert.equal(mailer.transport.transporter.options.direct, true);
-      await assert.rejects(mailer.send(mailDataNoDomain), /Failed to send email/);
+      const failure = Object.assign(new Error('Domain not found'), { code: 'EDNS' });
+      sandbox
+        .stub(mailer.transport.transporter, 'send')
+        .callsFake((_message, callback) => callback(failure));
+      await assert.rejects(mailer.send(mailDataNoDomain), /Failed to send email.*Domain not found/);
     });
 
     it('return correct failure message for no mail server at this address', async function () {
       assert.equal(mailer.transport.transporter.name, 'SMTP');
       assert.equal(mailer.transport.transporter.options.direct, true);
-      await assert.rejects(mailer.send(mailDataNoServer), /Failed to send email/);
+      const failure = Object.assign(new Error('Mail server refused the connection'), {
+        code: 'ECONNECTION',
+      });
+      sandbox
+        .stub(mailer.transport.transporter, 'send')
+        .callsFake((_message, callback) => callback(failure));
+      await assert.rejects(
+        mailer.send(mailDataNoServer),
+        /Failed to send email.*Mail server refused the connection/,
+      );
     });
 
     it('return correct failure message for incomplete data', async function () {

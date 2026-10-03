@@ -2,13 +2,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createPerformanceDateRange } from './performance-date-range';
 
 const useDate = (date: string, timezone: string) => {
-  vi.useFakeTimers();
-  vi.setSystemTime(new Date(date));
   const original = Intl.DateTimeFormat().resolvedOptions();
   vi.spyOn(Intl.DateTimeFormat.prototype, 'resolvedOptions').mockReturnValue({
     ...original,
     timeZone: timezone,
   });
+  // Fake timers wrap Intl.DateTimeFormat; spy on the real prototype first.
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date(date));
 };
 afterEach(() => {
   vi.useRealTimers();

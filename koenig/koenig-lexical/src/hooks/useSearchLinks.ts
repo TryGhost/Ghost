@@ -57,11 +57,14 @@ export const useSearchLinks = (query, searchLinks, {noResultOptions} = {}) => {
     const [defaultListOptions, setDefaultListOptions] = React.useState([]);
     const [listOptions, setListOptions] = React.useState([]);
     const [isSearching, setIsSearching] = React.useState(false);
+    const searchGeneration = React.useRef(0);
 
     const search = React.useMemo(() => {
         return async function _search(term) {
+            const generation = ++searchGeneration.current;
             if (URL_QUERY_REGEX.test(term)) {
                 setListOptions(urlQueryOptions(term));
+                setIsSearching(false);
                 return;
             }
 
@@ -72,7 +75,7 @@ export const useSearchLinks = (query, searchLinks, {noResultOptions} = {}) => {
             // in that scenario because we can end up in a race condition where
             // we overwrite the results with an empty array whilst still waiting
             // for a later search to complete. Avoids flashing of "no results".
-            if (results === undefined) {
+            if (results === undefined || generation !== searchGeneration.current) {
                 return;
             }
 
@@ -110,12 +113,20 @@ export const useSearchLinks = (query, searchLinks, {noResultOptions} = {}) => {
         } else {
             debouncedSearch(query);
         }
+
+        return () => {
+            debouncedSearch.cancel();
+            searchGeneration.current += 1;
+        };
     }, [query, search, debouncedSearch]);
 
-    const displayedListOptions = query ? listOptions : defaultListOptions;
+    // URL options must follow the input in the same render: the keyboard
+    // selection listener can consume Enter before the search effect runs.
+    const isUrlQuery = URL_QUERY_REGEX.test(query);
+    const displayedListOptions = isUrlQuery ? urlQueryOptions(query) : (query ? listOptions : defaultListOptions);
 
     return {
-        isSearching,
+        isSearching: isUrlQuery ? false : isSearching,
         listOptions: displayedListOptions
     };
 };

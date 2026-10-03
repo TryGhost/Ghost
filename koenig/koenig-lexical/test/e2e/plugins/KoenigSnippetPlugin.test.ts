@@ -1,4 +1,5 @@
 import {expect, test} from '@playwright/test';
+import {fileURLToPath} from 'url';
 import {focusEditor, initialize} from '../../utils/e2e';
 
 test.describe('Snippet Plugin', async function () {
@@ -9,6 +10,11 @@ test.describe('Snippet Plugin', async function () {
     });
 
     test.beforeEach(async () => {
+        // Snippet insertion is independent of external image availability.
+        await page.route('https://images.unsplash.com/**', route => route.fulfill({
+            path: fileURLToPath(new URL('../fixtures/large-image.png', import.meta.url)),
+            contentType: 'image/png'
+        }));
         await initialize({page});
         // Set localStorage to enable snippets
         const defaultSnippets = [
@@ -35,7 +41,8 @@ test.describe('Snippet Plugin', async function () {
         // Wait for snippet to appear in slash menu before pressing Enter
         await expect(page.locator('[data-kg-cardmenu-selected="true"]').filter({hasText: 'planes'})).toBeVisible();
         await page.keyboard.press('Enter');
-        await page.waitForSelector('[data-kg-card="image"]');
-        expect(await page.$('[data-kg-card="image"]')).not.toBeNull();
+        await expect(page.locator('[data-kg-card="image"]')).toHaveCount(2);
+        await expect(page.locator('[data-kg-card="image"]').first()).toBeVisible();
+        await expect(page.locator('[data-kg-card="image"]').last()).toBeVisible();
     });
 });

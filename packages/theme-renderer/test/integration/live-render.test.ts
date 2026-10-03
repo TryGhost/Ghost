@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
- * Slice-1 capstone: render Casper's home route and one post route against the
+ * Slice-1 capstone: render the configured live theme's home route and one post route against the
  * local dev instance and compare with the live HTML.
  *
  * - Site URL/key come from GHOST_URL / GHOST_CONTENT_API_KEY, falling back to
@@ -17,7 +17,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 import { createRenderer, type ThemeRenderer } from '../../src/index.ts';
-import { GHOST_URL, loadCasperTheme, probeLive, writeOutput } from './harness.ts';
+import { GHOST_URL, loadCasperTheme, loadLiveTheme, probeLive, writeOutput } from './harness.ts';
 
 // ---- availability probe (top-level await; drives describe.skipIf) ----
 const { unavailableReason, liveHomeHtml, contentApiKey } = await probeLive();
@@ -28,7 +28,8 @@ const extract = {
   canonical: (html: string) => html.match(/<link rel="canonical" href="([^"]+)"/)?.[1],
   generator: (html: string) => html.match(/<meta name="generator" content="([^"]+)"/)?.[1],
   ogTitle: (html: string) => html.match(/<meta property="og:title" content="([^"]+)"/)?.[1],
-  postCardCount: (html: string) => (html.match(/<article class="post-card/g) ?? []).length,
+  postCardCount: (html: string) =>
+    (html.match(/<article class="(?:post-card|gh-card)/g) ?? []).length,
   count: (html: string, tag: string) => (html.match(new RegExp(`<${tag}[\\s>]`, 'g')) ?? []).length,
 };
 
@@ -71,7 +72,7 @@ function getRenderer(): Promise<ThemeRenderer> {
   rendererPromise ??= createRenderer({
     siteUrl: `${GHOST_URL}/`,
     contentApiKey,
-    theme: loadCasperTheme(),
+    theme: loadLiveTheme(),
   });
   return rendererPromise;
 }
@@ -97,7 +98,7 @@ describe.skipIf(Boolean(unavailableReason))(
       // <title> matches live
       assert.equal(extract.title(html), extract.title(liveHomeHtml));
 
-      // Casper structural markers
+      // Shared bundled-theme structural markers
       assert.match(html, /<header id="gh-head"|class="gh-head|site-header/);
       assert.equal(
         extract.postCardCount(html),
@@ -151,7 +152,7 @@ describe.skipIf(Boolean(unavailableReason))(
       assert.equal(extract.title(html), extract.title(livePostHtml));
       assert.equal(extract.canonical(html), url);
       assert.equal(extract.canonical(livePostHtml), url);
-      assert.match(html, /<article class="article/); // Casper post article wrapper
+      assert.match(html, /<article class="(?:article|gh-article)/); // Live theme post article wrapper
       assert.ok(html.includes(`gh-content`), 'post content section present');
       // the post title is rendered in the body
       const escapedTitle = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -160,8 +161,12 @@ describe.skipIf(Boolean(unavailableReason))(
       assert.match(html, /<meta property="og:type" content="article">/);
     });
 
-    it("404s an unknown route with Casper's themed error-404 template like the live instance", async function () {
-      const renderer = await getRenderer();
+    it("renders Casper's themed error-404 template and matches the live HTTP status", async function () {
+      const renderer = await createRenderer({
+        siteUrl: `${GHOST_URL}/`,
+        contentApiKey,
+        theme: loadCasperTheme(),
+      });
       const response = await renderer.render(
         new Request(`${GHOST_URL}/definitely-not-a-real-slug-xyz/`),
       );

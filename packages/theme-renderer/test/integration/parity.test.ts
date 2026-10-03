@@ -21,13 +21,17 @@ import { expectBytesEqual } from '../browser/expect-bytes-equal.ts';
 import {
   GHOST_URL,
   fetchFirstPost,
-  loadCasperTheme,
+  loadLiveTheme,
+  loadLiveSettings,
   probeLive,
   scrapeInstanceConfig,
   writeOutput,
 } from './harness.ts';
 
 const probe = await probeLive();
+const liveSettings = probe.unavailableReason
+  ? undefined
+  : await loadLiveSettings(probe.liveHomeHtml, probe.contentApiKey);
 
 // ---- instance config scraped from the live page (kills deltas 1 + 3) ----
 const scrape = scrapeInstanceConfig(probe.liveHomeHtml);
@@ -69,16 +73,6 @@ const NORMALIZATIONS: Array<{
     apply: (html) => html.replace(/,\n(\s*)"width": \d+,\n\s*"height": \d+/g, ''),
   },
   {
-    // members_track_sources is a non-public setting → undefined via the
-    // Content API → the member-attribution script is never emitted
-    delta: 'deltas.md #4 — member-attribution script (non-public setting)',
-    apply: (html) =>
-      html.replace(
-        /\n\s*<script defer src="\/public\/member-attribution\.min\.js[^"]*"><\/script>/g,
-        '',
-      ),
-  },
-  {
     // llms_enabled is a non-public setting → undefined via the Content
     // API → the renderer assumes Ghost's shipped default (true) and
     // emits the markdown alternate link; a site that toggled AI access
@@ -109,8 +103,9 @@ function getRenderer(): Promise<ThemeRenderer> {
   rendererPromise ??= createRenderer({
     siteUrl: `${GHOST_URL}/`,
     contentApiKey: probe.contentApiKey,
-    theme: loadCasperTheme(),
+    theme: loadLiveTheme(),
     config: rendererConfig,
+    settingsPayload: liveSettings,
   });
   return rendererPromise;
 }

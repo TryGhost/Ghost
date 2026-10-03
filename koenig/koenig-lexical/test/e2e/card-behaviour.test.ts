@@ -568,43 +568,43 @@ test.describe('Card behaviour', async () => {
             await focusEditor(page);
             await page.keyboard.type('---');
             await expect(await page.locator('[data-kg-card="horizontalrule"]')).toBeVisible();
-            // three lines of text - paste it because keyboard.type is slow for long text
+            // Multiple wrapped lines - paste because keyboard.type is slow for long text
             const text = 'Chislic bacon flank andouille picanha turkey porchetta chuck venison shank. Beef sirloin bresaola, meatball hamburger pork belly shankle. Frankfurter brisket t-bone alcatra porchetta tongue flank pork chop kevin picanha prosciutto meatball.';
             await pasteText(page, text);
 
             await expect(await page.getByText(text)).toBeVisible();
 
-            // place cursor at beginning of third line
-            const textLocator = await page.locator('[data-lexical-editor] > p');
-            const pRect = await textLocator.boundingBox();
-            await page.mouse.click(pRect.x + 1, pRect.y + pRect.height - 5);
-
-            await assertSelection(page, {
-                anchorOffset: 220,
-                anchorPath: [1, 0, 0],
-                focusOffset: 220,
-                focusPath: [1, 0, 0]
+            // Measure wrapped lines rather than assuming platform-specific serif metrics.
+            const textLocator = page.locator('[data-lexical-editor] > p');
+            const lines = await textLocator.evaluate((paragraph) => {
+                const textNode = paragraph.querySelector('[data-lexical-text]').firstChild;
+                const range = document.createRange();
+                const starts = [];
+                for (let offset = 0; offset < textNode.textContent.length; offset++) {
+                    range.setStart(textNode, offset);
+                    range.setEnd(textNode, offset + 1);
+                    const rect = range.getBoundingClientRect();
+                    if (rect.width > 0 && (!starts.length || rect.top !== starts.at(-1).top)) {
+                        starts.push({offset, top: rect.top, left: rect.left, height: rect.height});
+                    }
+                }
+                return starts;
             });
+            expect(lines.length).toBeGreaterThanOrEqual(3);
+            const lastLine = lines.at(-1);
+            await page.mouse.click(lastLine.left + 1, lastLine.top + lastLine.height / 2);
 
-            await page.keyboard.press('ArrowUp');
-
-            await assertSelection(page, {
-                anchorOffset: 150,
-                anchorPath: [1, 0, 0],
-                focusOffset: 150,
-                focusPath: [1, 0, 0]
-            });
-
-            await page.keyboard.press('ArrowUp');
-
-            await assertSelection(page, {
-                anchorOffset: 76,
-                anchorPath: [1, 0, 0],
-                focusOffset: 76,
-                focusPath: [1, 0, 0]
-            });
-
-            await page.keyboard.press('ArrowUp');
+            for (const [index, line] of [...lines].reverse().entries()) {
+                await assertSelection(page, {
+                    anchorOffset: line.offset,
+                    anchorPath: [1, 0, 0],
+                    focusOffset: line.offset,
+                    focusPath: [1, 0, 0]
+                });
+                if (index < lines.length - 1) {
+                    await page.keyboard.press('ArrowUp');
+                }
+            }
 
             await expect(await page.locator('[data-kg-card-selected="true"]')).toHaveCount(0);
             await assertSelection(page, {

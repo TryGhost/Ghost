@@ -3,6 +3,7 @@
 // code from apps/admin/src/settings/app/components/settings/site/theme/
 // theme-editor-utils.test.ts — same fixtures, same assertions.
 import * as assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import JSZip from 'jszip';
 import { describe, it } from 'vitest';
 import {
@@ -151,16 +152,11 @@ describe('editor/archive', function () {
     });
 
     it('rejects archives whose extracted contents exceed the browser limit', async function () {
-      const archive = await createArchiveBuffer((zip) => {
-        zip.file(
-          'assets/huge.bin',
-          new Uint8Array(THEME_EDITOR_ARCHIVE_LIMITS.maxExtractedBytes + 1),
-          {
-            binary: true,
-            compression: 'DEFLATE',
-          },
-        );
-      });
+      // Deterministic DEFLATE fixture: 32 MiB + 1 extracted bytes. Avoid spending
+      // this rejection test's time budget on JSZip's large-fixture compression.
+      const archive = Uint8Array.from(
+        readFileSync(new URL('./fixtures/extracted-size-limit.zip', import.meta.url)),
+      ).buffer;
 
       await assert.rejects(extractThemeArchive(archive), (error: unknown) => {
         assert.ok(error instanceof ThemeArchiveExtractionError);

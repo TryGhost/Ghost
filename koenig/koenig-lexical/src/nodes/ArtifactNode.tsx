@@ -13,7 +13,7 @@ export class ArtifactNode extends BaseArtifactNode {
         Icon: ArtifactCardIcon,
         insertCommand: INSERT_ARTIFACT_COMMAND,
         isHidden: ({config}) => !config?.feature?.designBuilder || !config?.openArtifact,
-        matches: ['artifact', 'embed', 'interactive'],
+        matches: ['artifact', 'interactive'],
         priority: 19,
         shortcut: '/artifact'
     };

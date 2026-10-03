@@ -46,6 +46,20 @@ instance at `localhost:2368` or `GHOST_URL`):
 node test/integration/record-browser-fixtures.ts
 ```
 
+### Live-instance parity
+
+The live integration checks compare the configured theme against a running Ghost
+instance. They default to Ghost's bundled Source theme. When the instance uses
+another theme, set `GHOST_THEME_PATH` to that theme's local directory alongside
+`GHOST_URL`. The fixture recorder still explicitly records Casper; the hermetic
+Node and worker parity suites retain their committed Casper snapshots.
+
+The live harness loads public settings and supplies the member-attribution flag
+observed in the homepage. This preserves the complete script and accent-style
+ordering in exact Home/Post/Tag comparisons instead of deleting that script.
+The themed-404 check explicitly uses bundled Casper's custom error template;
+Source's absent error template has a documented plain-text renderer fallback.
+
 ## Source markers (editor)
 
 `renderer.render(request, {markers: true})` stamps rendered elements with
@@ -94,3 +108,9 @@ live in [docs/provenance.md](docs/provenance.md).
   it), and it never touches realms that already have `process` (Node, Deno,
   Bun). Upstream fix candidate: guard the reads in nql-lang, then delete the
   shim.
+
+The archive size-limit test uses a committed DEFLATE fixture containing exactly
+32 MiB + 1 zero bytes. Its fixed entry date is January 1, 2024. Keeping fixture
+compression outside the test avoids spending the rejection deadline constructing
+the input; the test still extracts the compressed archive and asserts `too_large`.
+Regenerate the fixture if `maxExtractedBytes` changes.

@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Shared harness for the live-instance integration suites: availability probe,
- * Casper theme loader, and rendered/live output capture. The probe runs once
+ * configured live theme loader, and rendered/live output capture. The probe runs once
  * per test file (vitest isolates files); tests `describe.skipIf` on
  * `unavailableReason` so CI without a running Ghost stays green.
  */
 import { readFileSync, readdirSync, mkdirSync, writeFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import errors from '@tryghost/errors';
 import { scrapeContentApiKey } from '../../src/editor/instance-config.ts';
 
 // The instance-config scraper moved into src/editor/instance-config.ts (the
@@ -20,6 +21,9 @@ export {
 
 export const GHOST_URL = (process.env.GHOST_URL ?? 'http://localhost:2368').replace(/\/$/, '');
 const CASPER_PATH = join(import.meta.dirname, '../../../../ghost/core/content/themes/casper');
+export const LIVE_THEME_PATH =
+  process.env.GHOST_THEME_PATH ??
+  join(import.meta.dirname, '../../../../ghost/core/content/themes/source');
 const OUTPUT_DIR = join(import.meta.dirname, '__output__');
 
 export interface LiveProbe {
@@ -67,7 +71,7 @@ export async function fetchFirstPost(
   return posts?.[0] ?? null;
 }
 
-export function loadCasperTheme(): Record<string, string> {
+export function loadTheme(path: string): Record<string, string> {
   const files: Record<string, string> = {};
   const walk = (dir: string) => {
     for (const name of readdirSync(dir)) {
@@ -78,11 +82,11 @@ export function loadCasperTheme(): Record<string, string> {
       if (statSync(full).isDirectory()) {
         walk(full);
       } else if (/\.(hbs|json)$/.test(name)) {
-        files[relative(CASPER_PATH, full)] = readFileSync(full, 'utf8');
+        files[relative(path, full)] = readFileSync(full, 'utf8');
       }
     }
   };
-  walk(CASPER_PATH);
+  walk(path);
   return files;
 }
 
@@ -90,4 +94,29 @@ export function writeOutput(name: string, rendered: string, live: string): void 
   mkdirSync(OUTPUT_DIR, { recursive: true });
   writeFileSync(join(OUTPUT_DIR, `${name}.rendered.html`), rendered);
   writeFileSync(join(OUTPUT_DIR, `${name}.live.html`), live);
+}
+
+export const loadCasperTheme = () => loadTheme(CASPER_PATH);
+export const loadLiveTheme = () => loadTheme(LIVE_THEME_PATH);
+
+/** Use observed private rendering input without removing its output from parity. */
+export async function loadLiveSettings(
+  homeHtml: string,
+  contentApiKey: string,
+): Promise<Record<string, unknown>> {
+  const url = new URL(`${GHOST_URL}/ghost/api/content/settings/`);
+  url.searchParams.set('key', contentApiKey);
+  const response = await fetch(url, { signal: AbortSignal.timeout(3000) });
+  if (!response.ok) {
+    throw new errors.InternalServerError({
+      message: `Live settings request failed (${response.status})`,
+    });
+  }
+  const { settings } = (await response.json()) as { settings: Record<string, unknown> };
+  return {
+    ...settings,
+    members_track_sources: /<script[^>]+src="[^"\n]*\/public\/member-attribution\.min\.js/.test(
+      homeHtml,
+    ),
+  };
 }

@@ -107,16 +107,21 @@ test.describe('Bookmark card', async () => {
     });
 
     test.describe('Valid URL handling', async () => {
-        test('shows loading wheel', async function () {
-            await focusEditor(page);
-            await insertCard(page, {cardName: 'bookmark'});
+        test('shows loading wheel', async function ({page: loadingPage}) {
+            await initialize({page: loadingPage, uri: '/#/?content=false&searchLinks=false'});
+            await focusEditor(loadingPage);
+            await insertCard(loadingPage, {cardName: 'bookmark'});
+            await loadingPage.clock.install();
+            await loadingPage.clock.pauseAt(new Date());
 
-            const urlInput = await page.getByTestId('bookmark-url');
+            const urlInput = loadingPage.getByTestId('bookmark-url');
             await urlInput.fill('https://ghost.org/');
             await urlInput.press('Enter');
 
-            await expect(await page.getByTestId('bookmark-url-loading-container')).toBeVisible();
-            await expect(await page.getByTestId('bookmark-url-loading-spinner')).toBeVisible();
+            await expect(loadingPage.getByTestId('bookmark-url-loading-container')).toBeVisible();
+            await expect(loadingPage.getByTestId('bookmark-url-loading-spinner')).toBeVisible();
+            await loadingPage.clock.runFor(50);
+            await expect(loadingPage.getByTestId('bookmark-title')).toHaveText('Ghost: The Creator Economy Platform');
         });
 
         test('displays expected metadata', async function () {
