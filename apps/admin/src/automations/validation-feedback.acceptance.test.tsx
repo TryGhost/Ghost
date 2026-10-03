@@ -72,9 +72,12 @@ describe('Automation action validation feedback', () => {
     await page.getByRole('heading', { name: 'Member signs up', exact: true }).click();
     await expect.element(warning).not.toBeInTheDocument();
     await page.getByRole('button', { name: 'Why this step needs attention' }).click();
-    await page.getByRole('textbox', { name: 'Subject line' }).click();
+    const subject = page.getByRole('textbox', { name: 'Subject line' });
+    // The open warning covers the field's centre, so click the end it leaves visible.
+    const { width, height } = subject.element().getBoundingClientRect();
+    await subject.click({ position: { x: width - 4, y: height / 2 } });
     await expect.element(warning).not.toBeInTheDocument();
-    await expect.element(page.getByRole('textbox', { name: 'Subject line' })).toHaveFocus();
+    await expect.element(subject).toHaveFocus();
   });
 
   for (const enabled of [false, true]) {
