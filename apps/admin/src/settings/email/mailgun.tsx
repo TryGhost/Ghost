@@ -20,8 +20,7 @@ import {
   SettingGroupValueContent,
   SettingGroupValueTitle,
 } from '@tryghost/shade/patterns';
-import { getSettingValues, useEditSettings } from '@tryghost/admin-x-framework/api/settings';
-import { useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
 
 const MAILGUN_REGIONS = [
@@ -39,8 +38,6 @@ const MailGun: React.FC<{ keywords: string[] }> = ({ keywords }) => {
     updateSetting,
     handleEditingChange,
   } = useSettingGroup();
-  const { mutateAsync: editSettings } = useEditSettings();
-  const handleError = useHandleError();
 
   const [mailgunRegion, mailgunDomain, mailgunApiKey] = getSettingValues(localSettings, [
     'mailgun_base_url',
@@ -49,6 +46,15 @@ const MailGun: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   ]) as string[];
 
   const isMailgunSetup = mailgunDomain && mailgunApiKey;
+
+  // An unset region is shown as the default, so the first edit adds the default
+  // to the group's changes and it is saved with them rather than staying null
+  const updateMailgunSetting = (key: string, value: string) => {
+    if (!mailgunRegion) {
+      updateSetting('mailgun_base_url', MAILGUN_REGIONS[0].value);
+    }
+    updateSetting(key, value);
+  };
 
   const values = (
     <SettingGroupContent>
@@ -87,8 +93,8 @@ const MailGun: React.FC<{ keywords: string[] }> = ({ keywords }) => {
         <Field>
           <FieldLabel>Mailgun region</FieldLabel>
           <Select
-            value={mailgunRegion ?? ''}
-            onValueChange={(value) => updateSetting('mailgun_base_url', value)}
+            value={mailgunRegion || MAILGUN_REGIONS[0].value}
+            onValueChange={(value) => updateMailgunSetting('mailgun_base_url', value)}
           >
             <SelectTrigger aria-label="Mailgun region">
               <SelectValue />
@@ -108,7 +114,7 @@ const MailGun: React.FC<{ keywords: string[] }> = ({ keywords }) => {
             id="mailgun-domain"
             value={mailgunDomain ?? ''}
             onChange={(e) => {
-              updateSetting('mailgun_domain', e.target.value);
+              updateMailgunSetting('mailgun_domain', e.target.value);
             }}
           />
         </Field>
@@ -120,7 +126,7 @@ const MailGun: React.FC<{ keywords: string[] }> = ({ keywords }) => {
               type="password"
               value={mailgunApiKey ?? ''}
               onChange={(e) => {
-                updateSetting('mailgun_api_key', e.target.value);
+                updateMailgunSetting('mailgun_api_key', e.target.value);
               }}
             />
             <FieldDescription>{apiKeysHint}</FieldDescription>
@@ -155,21 +161,7 @@ const MailGun: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       title="Mailgun"
       onCancel={handleCancel}
       onEditingChange={handleEditingChange}
-      onSave={async () => {
-        // this is a special case where we need to set the region to the default if it's not set,
-        // since when the Mailgun Region is not changed, the value doesn't get set in the updateSetting
-        // resulting in the mailgun base url remaining null
-        // this should not fire if the user has changed the region or if the region is already set
-        if (!mailgunRegion) {
-          try {
-            await editSettings([{ key: 'mailgun_base_url', value: MAILGUN_REGIONS[0].value }]);
-          } catch (e) {
-            handleError(e);
-            return;
-          }
-        }
-        void handleSave();
-      }}
+      onSave={handleSave}
     >
       {isEditing ? inputs : values}
     </TopLevelGroup>
