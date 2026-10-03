@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { Box, Stack, Text } from '@tryghost/shade/primitives';
-import { Button } from '@tryghost/shade/components';
-import { formatNumber } from '@tryghost/shade/utils';
+import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { PageHeader } from '@tryghost/shade/patterns';
+import { Button, DropdownMenuItem } from '@tryghost/shade/components';
+import { formatNumber, LucideIcon } from '@tryghost/shade/utils';
 
 import { CanvasBoard } from '@/builder/canvas/canvas-board';
 import { captureOverview } from '@/builder/canvas/capture-overview';
@@ -333,6 +334,7 @@ function Preview({
         ref={iframe}
         className={`absolute top-0 left-0 border-0 ${showCapture || showExpanded ? 'invisible' : ''}`}
         data-fixture-revision={ready?.document.revision}
+        data-preview-status={status}
         style={{
           width: frame.viewport?.width ?? frame.width,
           height: frame.viewport?.height ?? frame.height,
@@ -376,13 +378,15 @@ function Preview({
           )}
         </Box>
       )}
-      <Text
-        aria-live="polite"
-        className="absolute bottom-0 left-0 rounded-tr bg-background px-2 py-1"
-        size="xs"
-      >
-        {status}
-      </Text>
+      {status !== 'Ready' && (
+        <Text
+          aria-live="polite"
+          className="absolute bottom-0 left-0 rounded-tr bg-background px-2 py-1"
+          size="xs"
+        >
+          {status}
+        </Text>
+      )}
     </>
   );
 }
@@ -527,6 +531,34 @@ export function CanvasHarness({
       client.dispose();
     };
   }, [fixture]);
+  const unavailableOverviews = frames.filter((frame) =>
+    mode === 'captured'
+      ? captures[frame.id]?.status === 'failed'
+      : mode === 'expanded'
+        ? expanded[frame.id]?.status === 'failed'
+        : false,
+  );
+  const boundedExpanded =
+    mode === 'expanded' &&
+    frames.some((frame) => {
+      const state = expanded[frame.id];
+      return state?.status === 'current' && state.composition.status !== 'settled';
+    });
+  const partialCaptures =
+    mode === 'captured' &&
+    frames.some((frame) => {
+      const state = captures[frame.id];
+      return state?.status === 'current' && !state.capture.complete;
+    });
+  const missingCaptureImagery =
+    mode === 'captured' &&
+    frames.some((frame) => {
+      const state = captures[frame.id];
+      return (
+        state?.status === 'current' &&
+        state.capture.warnings.some((warning) => /omitted|replaced|unreadable/.test(warning))
+      );
+    });
   const editText = async (
     frameId: string,
     edit: PreviewInlineEditRequest,
@@ -561,75 +593,159 @@ export function CanvasHarness({
   };
   return (
     <Stack className="h-full overflow-hidden" gap="none">
-      <Box className="border-b border-border-default bg-background" padding="md">
-        <Text weight="semibold">
-          Canvas feasibility harness · {fixture.label} {fixture.version}
-        </Text>
-        <Text size="xs" tone="secondary">
-          Compare complete fixtures in separate page loads:{' '}
-          <a className="underline" href="?theme=casper">
-            Casper
-          </a>
-          {' · '}
-          <a className="underline" href="?theme=source">
-            Source
-          </a>
-          .
-        </Text>
-        <Text size="sm" tone="secondary">
-          Fixed device previews · Recorded Home/Post content · {revision}
-        </Text>
-        <Text data-site-tools-status={siteTools} size="xs" tone="secondary">
-          {siteTools === 'registered'
-            ? 'Read-only site tools registered · Native discovery and image consumption unverified.'
-            : siteTools === 'unsupported'
-              ? 'Site tools unavailable in this browser · Canvas navigation remains available.'
-              : siteTools === 'failed'
-                ? 'Site tool registration failed · Canvas navigation remains available.'
-                : 'Checking site tools…'}
-        </Text>
-        <Text size="sm" tone="secondary">
-          Compare captures and separate expanded compositions · Open a frame for its retained fixed
-          device · Expanded height changes viewport-dependent layout. Captures omit unreadable
-          imagery. Neither experiment establishes animation, sticky behavior, or loaded lazy
-          content. Open a device and double-click literal template text to edit this local fixture.
-          Enter commits to Home and Post; Escape cancels. Changes reset on reload. Dynamic text
-          remains selectable.
-        </Text>
-        <Button
-          aria-pressed={mode === 'captured'}
-          size="sm"
-          variant="outline"
-          onClick={() => setMode('captured')}
-        >
-          Captured compositions
-        </Button>
-        <Button
-          aria-pressed={mode === 'expanded'}
-          size="sm"
-          variant="outline"
-          onClick={() => setMode('expanded')}
-        >
-          Expanded compositions
-        </Button>
-        <Button
-          aria-pressed={mode === 'device'}
-          size="sm"
-          variant="outline"
-          onClick={() => setMode('device')}
-        >
-          Device viewports
-        </Button>
-        <Button
-          disabled={!initialFitReady}
-          size="sm"
-          variant="ghost"
-          onClick={() => setCaptureTick((value) => value + 1)}
-        >
-          Refresh captures
-        </Button>
+      <Box className="shrink-0 border-b border-border-default bg-background px-4 py-2">
+        <PageHeader blurredBackground={false} sticky={false}>
+          <PageHeader.Left>
+            <PageHeader.Title className="text-base">Canvas · {fixture.label}</PageHeader.Title>
+          </PageHeader.Left>
+          <PageHeader.Actions>
+            <PageHeader.ActionGroup>
+              <PageHeader.Action
+                disabled={!initialFitReady}
+                label="Refresh captures"
+                iconOnly
+                onClick={() => setCaptureTick((value) => value + 1)}
+              >
+                <LucideIcon.RefreshCw />
+              </PageHeader.Action>
+              <PageHeader.Action
+                aria-pressed={mode === 'captured'}
+                label="Captured compositions"
+                onClick={() => setMode('captured')}
+              >
+                <LucideIcon.Image />
+                Full page
+              </PageHeader.Action>
+              <PageHeader.Action
+                aria-pressed={mode === 'expanded'}
+                label="Expanded compositions"
+                onClick={() => setMode('expanded')}
+              >
+                <LucideIcon.Layers />
+                Expanded
+              </PageHeader.Action>
+              <PageHeader.Action
+                aria-pressed={mode === 'device'}
+                label="Device viewports"
+                onClick={() => setMode('device')}
+              >
+                <LucideIcon.Monitor />
+                Device
+              </PageHeader.Action>
+              <PageHeader.ActionGroup.MobileMenu>
+                <PageHeader.Action
+                  disabled={!initialFitReady}
+                  label="Refresh captures"
+                  iconOnly
+                  onClick={() => setCaptureTick((value) => value + 1)}
+                >
+                  <LucideIcon.RefreshCw />
+                </PageHeader.Action>
+                <PageHeader.ActionGroup.MobileMenuTrigger>
+                  <PageHeader.Action label="Canvas views" iconOnly>
+                    <LucideIcon.Ellipsis />
+                  </PageHeader.Action>
+                </PageHeader.ActionGroup.MobileMenuTrigger>
+                <PageHeader.ActionGroup.MobileMenuContent>
+                  <DropdownMenuItem onSelect={() => setMode('captured')}>
+                    <LucideIcon.Image />
+                    Full page
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => setMode('expanded')}>
+                    <LucideIcon.Layers />
+                    Expanded
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => setMode('device')}>
+                    <LucideIcon.Monitor />
+                    Device
+                  </DropdownMenuItem>
+                </PageHeader.ActionGroup.MobileMenuContent>
+              </PageHeader.ActionGroup.MobileMenu>
+            </PageHeader.ActionGroup>
+          </PageHeader.Actions>
+        </PageHeader>
+        <details className="text-xs text-muted-foreground" data-canvas-diagnostics>
+          <summary className="w-fit cursor-pointer py-1">Diagnostics</summary>
+          <Stack className="max-h-40 overflow-auto py-2" gap="sm">
+            <Text size="xs">
+              {fixture.label} {fixture.version} · {revision} · Recorded Home/Post content
+            </Text>
+            <Text size="xs">
+              Compare fixtures:{' '}
+              <a className="underline" href="?theme=casper">
+                Casper
+              </a>{' '}
+              ·{' '}
+              <a className="underline" href="?theme=source">
+                Source
+              </a>
+              . Local edits reset on reload.
+            </Text>
+            <Text data-site-tools-status={siteTools} size="xs">
+              {siteTools === 'registered'
+                ? 'Read-only site tools registered · Native discovery and image consumption unverified.'
+                : siteTools === 'unsupported'
+                  ? 'Site tools unavailable in this browser.'
+                  : siteTools === 'failed'
+                    ? 'Site tool registration failed.'
+                    : 'Checking site tools…'}
+            </Text>
+            <Text size="xs">
+              Captures omit unreadable imagery. Expanded height changes viewport-dependent layout.
+              Neither comparison proves animation, sticky behavior, or loaded lazy content. Open a
+              device and double-click literal template text to edit. Enter commits; Escape cancels.
+              Dynamic text remains selectable.
+            </Text>
+            {frames.map((frame) => {
+              const state = captures[frame.id];
+              const expandedState = expanded[frame.id];
+              return (
+                <Stack key={frame.id} gap="none">
+                  <Text size="xs" tone="secondary">
+                    {frame.label}:{' '}
+                    {state?.status === 'current'
+                      ? `${formatNumber(state.capture.coveredHeight)} / ${formatNumber(state.capture.documentHeight)}px captured in ${formatNumber(Math.round(state.duration))}ms${state.capture.warnings.length ? ` · ${state.capture.warnings.join(' ')}` : ''}`
+                      : state?.status === 'failed'
+                        ? state.message
+                        : 'Capture pending'}
+                  </Text>
+                  <Text size="xs" tone="secondary">
+                    {frame.label} expanded:{' '}
+                    {expandedState?.status === 'current'
+                      ? `CSS ${formatNumber(expandedState.composition.viewport.width)} × ${formatNumber(expandedState.composition.viewport.height)} · observed document ${formatNumber(expandedState.composition.document.height)}px · ${expandedState.composition.status} · ${formatNumber(expandedState.composition.measurements.length)} observations · measurement ${formatNumber(Math.round(expandedState.composition.duration))}ms · load + measurement ${formatNumber(Math.round(expandedState.duration))}ms · ${expandedState.composition.warnings.join(' ')}`
+                      : expandedState?.status === 'failed'
+                        ? `${expandedState.message} Fixed device fallback remains available.`
+                        : 'Measurement pending; fixed device fallback remains available.'}
+                  </Text>
+                </Stack>
+              );
+            })}
+          </Stack>
+        </details>
+        {unavailableOverviews.length > 0 && (
+          <Text role="status" size="xs">
+            Full page unavailable for {unavailableOverviews.map((frame) => frame.label).join(', ')}.
+            Open a frame for device editing; details are in Diagnostics.
+          </Text>
+        )}
+        {boundedExpanded && (
+          <Text role="status" size="xs">
+            Expanded pages reached a layout limit. Open a frame for its fixed device preview;
+            details are in Diagnostics.
+          </Text>
+        )}
+        {partialCaptures && (
+          <Text role="status" size="xs">
+            Some content was not captured. Open its frame to inspect the full page.
+          </Text>
+        )}
+        {missingCaptureImagery && (
+          <Text role="status" size="xs">
+            Some imagery is missing from snapshots. Open a frame to view the original.
+          </Text>
+        )}
         {draftOwner && (
-          <Stack gap="xs">
+          <Inline gap="sm" wrap>
             <Text size="sm">
               {commitPending ? 'Applying text edit…' : 'A text draft is retained.'}
             </Text>
@@ -657,7 +773,7 @@ export function CanvasHarness({
             >
               Cancel text draft
             </Button>
-          </Stack>
+          </Inline>
         )}
         {selection && (
           <Stack gap="xs">
@@ -665,7 +781,7 @@ export function CanvasHarness({
               {frames.find((frame) => frame.id === selection.frameId)?.label}:{' '}
               {selection.context.label}
             </Text>
-            <details>
+            <details data-source-selection>
               <summary>View template source · {selection.context.id}</summary>
               <pre className="max-h-40 overflow-auto text-xs">
                 {(() => {
@@ -685,30 +801,6 @@ export function CanvasHarness({
             </details>
           </Stack>
         )}
-        {frames.map((frame) => {
-          const state = captures[frame.id];
-          const expandedState = expanded[frame.id];
-          return (
-            <Stack key={frame.id} gap="none">
-              <Text size="xs" tone="secondary">
-                {frame.label}:{' '}
-                {state?.status === 'current'
-                  ? `${formatNumber(state.capture.coveredHeight)} / ${formatNumber(state.capture.documentHeight)}px captured in ${formatNumber(Math.round(state.duration))}ms${state.capture.warnings.length ? ` · ${state.capture.warnings.join(' ')}` : ''}`
-                  : state?.status === 'failed'
-                    ? state.message
-                    : 'Capture pending'}
-              </Text>
-              <Text size="xs" tone="secondary">
-                {frame.label} expanded:{' '}
-                {expandedState?.status === 'current'
-                  ? `CSS ${formatNumber(expandedState.composition.viewport.width)} × ${formatNumber(expandedState.composition.viewport.height)} · observed document ${formatNumber(expandedState.composition.document.height)}px · ${expandedState.composition.status} · ${formatNumber(expandedState.composition.measurements.length)} observations · measurement ${formatNumber(Math.round(expandedState.composition.duration))}ms · load + measurement ${formatNumber(Math.round(expandedState.duration))}ms · ${expandedState.composition.warnings.join(' ')}`
-                  : expandedState?.status === 'failed'
-                    ? `${expandedState.message} Fixed device fallback remains available.`
-                    : 'Measurement pending; fixed device fallback remains available.'}
-              </Text>
-            </Stack>
-          );
-        })}
         {error && (
           <Text className="text-destructive" role="alert">
             {error}

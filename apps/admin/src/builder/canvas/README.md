@@ -221,6 +221,22 @@ Measure all eight retained surfaces and capture work when profiling this
 comparison. The harness is not a shipped theme editor or evidence that Stage A
 has passed; no final overview technique has been chosen.
 
+## Development controls
+
+The default header keeps the theme name and composition/device controls visible.
+Diagnostics are collapsed by default and scroll within a bounded panel when opened;
+fixture revisions, capture timings/coverage, resource warnings, tool status and
+comparison details remain available there. Loading/errors and retained draft
+Resume/Cancel remain visible; ready previews no longer carry a debug badge.
+At narrow widths, view choices move into the header menu. Failed/bounded/partial
+overviews and omitted imagery retain compact visible explanations.
+Selection source context stays separate from diagnostics and clears on accepted
+source replacement.
+
+Prioritize the working design loop and source/state correctness before performance
+profiling or tuning. Resource bounds and lifecycle cleanup still apply; the final
+performance gates remain in the local plan.
+
 ## Validation
 
 From `apps/admin`:

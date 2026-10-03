@@ -30,13 +30,9 @@ it(
     );
     try {
       await expect
-        .poll(
-          () =>
-            Array.from(document.querySelectorAll('[aria-live="polite"]')).filter(
-              (element) => element.textContent === 'Ready',
-            ).length,
-          { timeout: 30_000 },
-        )
+        .poll(() => document.querySelectorAll('iframe[data-preview-status="Ready"]').length, {
+          timeout: 30_000,
+        })
         .toBe(4);
       await expect
         .element(page.getByRole('button', { name: 'Refresh captures', exact: true }))
@@ -48,7 +44,9 @@ it(
       await frame('Home · Mobile').getByRole('link', { name: 'Ghost', exact: true }).dblClick();
       const editor = frame('Home · Mobile').getByRole('textbox', { name: /^Edit Ghost/ });
       await editor.fill('Retained source draft');
-      expect(document.querySelector('details pre')?.textContent).toContain('https://ghost.org/');
+      expect(document.querySelector('[data-source-selection] pre')?.textContent).toContain(
+        'https://ghost.org/',
+      );
       await page.getByRole('button', { name: 'Back to overview', exact: true }).click();
       await page.getByRole('button', { name: 'Post · Mobile', exact: true }).dblClick();
       await frame('Post · Mobile').getByRole('link', { name: 'Ghost', exact: true }).dblClick();
@@ -86,7 +84,7 @@ it(
         )
         .toBe(true);
       expect([...devices.entries()]).toEqual(originalDevices);
-      expect(document.querySelector('details')).toBeNull();
+      expect(document.querySelector('[data-source-selection]')).toBeNull();
       for (const [id, device] of devices) {
         expect(await text(id, 'a[href="https://ghost.org/"]')).toBe('Retained source draft');
         expect((await device.measureLayout(signal)).localEdits.active).toBe(false);
