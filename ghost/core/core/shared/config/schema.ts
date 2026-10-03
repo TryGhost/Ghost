@@ -27,16 +27,29 @@ export const configSchema = z.looseObject({
    * Only as strict as the `checkUrlProtocol` assertion that has always run at
    * the end of the config load - anything this rejects, boot already rejected.
    */
-  url: z.string().regex(/^https?:\/\//i, {
-    message: 'URL in config must be provided with protocol, eg. "http://my-ghost-blog.com"',
-  }),
+  url: z
+    .string()
+    .regex(/^https?:\/\//i, {
+      message: 'URL in config must be provided with protocol, eg. "http://my-ghost-blog.com"',
+    })
+    .meta({
+      description: "The site's public URL, including protocol. A path is a subdirectory install.",
+      examples: ['https://example.com', 'https://example.com/blog'],
+    }),
 
   /**
    * Set by the loader from `getNodeEnv()`, so always a non-empty string. Not an
    * enum: Ghost runs under custom NODE_ENV values (`testing-mysql`, and whatever
    * an embedder picks) and rejecting those would be a boot failure.
    */
-  env: z.string().min(1),
+  env: z
+    .string()
+    .min(1)
+    .meta({
+      description:
+        'The environment Ghost is running as, from NODE_ENV. Set by the loader, not by a config file.',
+      examples: ['production', 'development'],
+    }),
 });
 
 export type ValidatedConfig = z.infer<typeof configSchema>;
