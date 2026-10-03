@@ -62,6 +62,13 @@ export type PreviewLayout = {
   document: { width: number; height: number };
 };
 
+/** One scriptless source snapshot, reused for a serial region-capture sequence. */
+export type PreviewScreenshotSession = {
+  snapshotId: string;
+  screenshot(request: ScreenshotRequest): Promise<ScreenshotResult>;
+  dispose(): void;
+};
+
 export interface PreviewDocumentSurface {
   replaceDocument(
     document: PreviewDocument,
@@ -136,6 +143,7 @@ type PreviewCommand =
 
 type PreviewScreenshotSnapshot = {
   html: string;
+  sourceUnstyledAttribute?: string;
   viewport: {
     width: number;
     height: number;
@@ -151,6 +159,11 @@ function isPreviewScreenshotSnapshot(value: unknown): value is PreviewScreenshot
   return (
     typeof snapshot?.html === 'string' &&
     snapshot.html.length <= 4 * 1024 * 1024 &&
+    (snapshot.sourceUnstyledAttribute === undefined ||
+      (typeof snapshot.sourceUnstyledAttribute === 'string' &&
+        /^data-builder-snapshot-[a-z0-9-]{1,80}-unstyled$/.test(
+          snapshot.sourceUnstyledAttribute,
+        ))) &&
     Boolean(viewport) &&
     typeof viewport?.width === 'number' &&
     Number.isFinite(viewport.width) &&
@@ -896,6 +909,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
   private loadedDocumentId: string | null = null;
   private canvasReadyDocumentId: string | null = null;
   private readonly loadChecks = new Set<ReturnType<typeof setTimeout>>();
+  private readonly screenshotSessions = new Set<() => void>();
   private pendingReady: {
     documentId: string;
     ready: boolean;
@@ -962,6 +976,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
       return Promise.reject(new DOMException('Aborted', 'AbortError'));
     }
     this.clearLoadChecks();
+    this.clearScreenshotSessions();
     this.clearCanvasInlineEdit();
     this.canvasReadyDocumentId = null;
     this.rejectPending(new Error('Preview document was replaced before it became ready.'), false);
@@ -1102,7 +1117,25 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
   }
 
   async screenshot(request: ScreenshotRequest, signal: AbortSignal): Promise<ScreenshotResult> {
-    const snapshot = await this.command<unknown>('screenshot', undefined, signal);
+    const session = await this.prepareScreenshotSession(signal, false);
+    try {
+      return await session.screenshot(request);
+    } finally {
+      session.dispose();
+    }
+  }
+
+  createScreenshotSession(signal: AbortSignal): Promise<PreviewScreenshotSession> {
+    return this.prepareScreenshotSession(signal, true);
+  }
+
+  private async prepareScreenshotSession(
+    signal: AbortSignal,
+    stable: boolean,
+  ): Promise<PreviewScreenshotSession> {
+    const documentId = this.committedDocumentId;
+    const instanceId = this.commandPortInstanceId;
+    const snapshot = await this.command<unknown>('screenshot', { stable }, signal);
     if (!isPreviewScreenshotSnapshot(snapshot)) {
       throw new PreviewInspectionError(
         'preview_screenshot_failed',
@@ -1110,12 +1143,49 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
       );
     }
     const captureFrame = document.createElement('iframe');
+    const snapshotId = crypto.randomUUID();
     captureFrame.setAttribute('sandbox', 'allow-same-origin');
     captureFrame.setAttribute('aria-hidden', 'true');
+    captureFrame.dataset.builderCaptureSnapshot = snapshotId;
     captureFrame.style.cssText = `position:fixed;left:-10000px;top:0;width:${snapshot.viewport.width}px;height:${snapshot.viewport.height}px;visibility:hidden;pointer-events:none`;
-    document.body.appendChild(captureFrame);
+    const controller = new AbortController();
+    let closed = false;
+    let rendering = false;
+    const dispose = () => {
+      if (closed) {
+        return;
+      }
+      closed = true;
+      controller.abort();
+      signal.removeEventListener('abort', dispose);
+      this.screenshotSessions.delete(dispose);
+      captureFrame.remove();
+    };
+    const assertCurrent = () => {
+      if (closed || signal.aborted) {
+        throw new DOMException('Screenshot session closed.', 'AbortError');
+      }
+      if (
+        !documentId ||
+        !instanceId ||
+        documentId !== this.activeDocumentId ||
+        documentId !== this.committedDocumentId ||
+        instanceId !== this.commandPortInstanceId
+      ) {
+        dispose();
+        throw new PreviewInspectionError(
+          'preview_screenshot_failed',
+          'The backing preview changed while preparing its screenshot.',
+        );
+      }
+    };
+    signal.addEventListener('abort', dispose, { once: true });
+    this.screenshotSessions.add(dispose);
     try {
-      await this.loadCaptureFrame(captureFrame, snapshot.html, signal);
+      assertCurrent();
+      document.body.appendChild(captureFrame);
+      await this.loadCaptureFrame(captureFrame, snapshot.html, controller.signal);
+      assertCurrent();
       const captureDocument = captureFrame.contentDocument;
       if (!captureDocument) {
         throw new PreviewInspectionError(
@@ -1123,15 +1193,40 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
           'The screenshot document is unavailable.',
         );
       }
-      const result = await captureDocumentScreenshot(
-        captureDocument,
-        snapshot.viewport,
-        request,
-        signal,
-      );
-      return { ...result, warnings: [...snapshot.warnings, ...result.warnings] };
-    } finally {
-      captureFrame.remove();
+      if (stable && captureDocument.fonts) {
+        await this.waitForCaptureFonts(captureDocument, controller.signal);
+        assertCurrent();
+      }
+      return {
+        snapshotId,
+        dispose,
+        screenshot: async (request) => {
+          assertCurrent();
+          if (rendering) {
+            throw new PreviewInspectionError(
+              'preview_screenshot_failed',
+              'Screenshot session regions must be captured serially.',
+            );
+          }
+          rendering = true;
+          try {
+            const result = await captureDocumentScreenshot(
+              captureDocument,
+              snapshot.viewport,
+              request,
+              controller.signal,
+              stable ? snapshot.sourceUnstyledAttribute : undefined,
+            );
+            assertCurrent();
+            return { ...result, warnings: [...snapshot.warnings, ...result.warnings] };
+          } finally {
+            rendering = false;
+          }
+        },
+      };
+    } catch (error) {
+      dispose();
+      throw error;
     }
   }
 
@@ -1239,6 +1334,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
       this.expectedNativeFormNavigationTimeout = null;
     }
     this.clearLoadChecks();
+    this.clearScreenshotSessions();
     this.iframe.removeAttribute('srcdoc');
   }
 
@@ -1469,6 +1565,10 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     this.loadChecks.clear();
   }
 
+  private clearScreenshotSessions(): void {
+    [...this.screenshotSessions].forEach((dispose) => dispose());
+  }
+
   private rejectPending(error: Error, restore: boolean): void {
     if (this.pendingReady) {
       clearTimeout(this.pendingReady.timeout);
@@ -1505,6 +1605,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
 
   private restoreCommittedDocument(): void {
     this.clearLoadChecks();
+    this.clearScreenshotSessions();
     this.inlineEditController?.abort();
     this.inlineEditController = null;
     this.clearCanvasInlineEdit();
@@ -1579,6 +1680,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
   }
 
   private closeCommandPort(): void {
+    this.clearScreenshotSessions();
     if (this.commandPort) {
       this.commandPort.removeEventListener('message', this.handleCommandMessage);
       this.commandPort.close();
@@ -1645,6 +1747,44 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
       signal.addEventListener('abort', handleAbort, { once: true });
       iframe.addEventListener('load', handleLoad, { once: true });
       iframe.srcdoc = html;
+    });
+  }
+
+  private waitForCaptureFonts(document: Document, signal: AbortSignal): Promise<void> {
+    if (signal.aborted) {
+      return Promise.reject(new DOMException('Aborted', 'AbortError'));
+    }
+    return new Promise((resolve, reject) => {
+      const cleanup = () => {
+        clearTimeout(timeout);
+        signal.removeEventListener('abort', abort);
+      };
+      const abort = () => {
+        cleanup();
+        reject(new DOMException('Aborted', 'AbortError'));
+      };
+      const timeout = setTimeout(() => {
+        cleanup();
+        reject(
+          new PreviewInspectionError(
+            'preview_screenshot_failed',
+            'The screenshot fonts timed out while loading.',
+          ),
+        );
+      }, this.commandTimeoutMs);
+      signal.addEventListener('abort', abort, { once: true });
+      void document.fonts.ready.then(
+        () => {
+          cleanup();
+          resolve();
+        },
+        (error: unknown) => {
+          cleanup();
+          reject(
+            error instanceof Error ? error : new Error('The screenshot fonts failed to load.'),
+          );
+        },
+      );
     });
   }
 

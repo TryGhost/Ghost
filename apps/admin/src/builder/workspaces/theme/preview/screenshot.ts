@@ -254,6 +254,7 @@ export async function captureDocumentScreenshot(
   viewport: ScreenshotViewport,
   request: ScreenshotRequest,
   signal?: AbortSignal,
+  sourceUnstyledAttribute?: string,
 ): Promise<ScreenshotResult> {
   if (signal?.aborted) {
     throw new DOMException('Aborted', 'AbortError');
@@ -289,8 +290,20 @@ export async function captureDocumentScreenshot(
     allowTaint: false,
     imageTimeout: 2_000,
     signal,
-    onclone: (clonedDocument, element) =>
-      replaceExternalImages(clonedDocument, element, externalImages.sources),
+    onclone: (clonedDocument, element) => {
+      replaceExternalImages(clonedDocument, element, externalImages.sources);
+      if (sourceUnstyledAttribute) {
+        // html2canvas adds transition-property to every cloned element. Avoid
+        // changing author [style] selectors where the snapshot had no style.
+        clonedDocument.querySelectorAll(`[${sourceUnstyledAttribute}]`).forEach((node) => {
+          const style = (node as HTMLElement).style;
+          if (style?.length === 1 && style.getPropertyValue('transition-property') === 'none') {
+            node.removeAttribute('style');
+          }
+          node.removeAttribute(sourceUnstyledAttribute);
+        });
+      }
+    },
   });
 
   const dataUrl = canvas.toDataURL('image/png');

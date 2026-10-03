@@ -19,6 +19,7 @@ export type CapturedOverview = {
   documentInstanceId: string;
   localEditGeneration: number;
   artifactId: string;
+  snapshotId: string;
   viewport: PreviewLayout['viewport'];
   documentHeight: number;
   coveredHeight: number;
@@ -27,7 +28,10 @@ export type CapturedOverview = {
   warnings: string[];
 };
 
-type CaptureSurface = Pick<IframePreviewDocumentSurface, 'measureLayout' | 'screenshot'>;
+type CaptureSurface = Pick<
+  IframePreviewDocumentSurface,
+  'measureLayout' | 'createScreenshotSession'
+>;
 
 function assertActive(signal: AbortSignal) {
   if (signal.aborted) {
@@ -65,78 +69,88 @@ export async function captureOverview(
       'The document contains local edits and cannot certify the rendered revision. Preserve the draft and refresh an explicitly addressed clean render.',
     );
   }
-  const tiles: CapturedOverview['tiles'] = [];
-  const warnings = new Set<string>();
-  let coveredHeight = 0;
-  let characters = 0;
-  let pixels = 0;
-  while (
-    coveredHeight < layout.document.height &&
-    tiles.length < OVERVIEW_CAPTURE_LIMITS.maxTiles
-  ) {
+  const session = await surface.createScreenshotSession(signal);
+  try {
     assertActive(signal);
-    const height = Math.min(
-      OVERVIEW_CAPTURE_LIMITS.tileHeight,
-      layout.document.height - coveredHeight,
-    );
-    if (
-      characters >= OVERVIEW_CAPTURE_LIMITS.maxCharacters ||
-      pixels + layout.viewport.width * height > OVERVIEW_CAPTURE_LIMITS.maxPixels
+    const tiles: CapturedOverview['tiles'] = [];
+    const warnings = new Set<string>();
+    let coveredHeight = 0;
+    let characters = 0;
+    let pixels = 0;
+    while (
+      coveredHeight < layout.document.height &&
+      tiles.length < OVERVIEW_CAPTURE_LIMITS.maxTiles
     ) {
-      warnings.add('The composition capture reached its aggregate output budget.');
-      break;
+      assertActive(signal);
+      const height = Math.min(
+        OVERVIEW_CAPTURE_LIMITS.tileHeight,
+        layout.document.height - coveredHeight,
+      );
+      if (
+        characters >= OVERVIEW_CAPTURE_LIMITS.maxCharacters ||
+        pixels + layout.viewport.width * height > OVERVIEW_CAPTURE_LIMITS.maxPixels
+      ) {
+        warnings.add('The composition capture reached its aggregate output budget.');
+        break;
+      }
+      const tile = await session.screenshot({
+        kind: 'region',
+        x: 0,
+        y: coveredHeight,
+        width: layout.viewport.width,
+        height,
+      });
+      assertActive(signal);
+      if (!sameLayout(layout, await surface.measureLayout(signal))) {
+        throw new Error(
+          'The backing layout changed during composition capture. Retry the current document.',
+        );
+      }
+      assertActive(signal);
+      if (tile.width !== layout.viewport.width || tile.height !== height) {
+        throw new Error('The captured region dimensions changed.');
+      }
+      if (characters + tile.dataUrl.length > OVERVIEW_CAPTURE_LIMITS.maxCharacters) {
+        warnings.add('The composition capture reached its aggregate output budget.');
+        break;
+      }
+      characters += tile.dataUrl.length;
+      pixels += tile.width * tile.height;
+      tiles.push({ ...tile, y: coveredHeight });
+      tile.warnings.forEach((warning) => warnings.add(warning));
+      coveredHeight += height;
     }
-    const tile = await surface.screenshot(
-      { kind: 'region', x: 0, y: coveredHeight, width: layout.viewport.width, height },
-      signal,
-    );
-    assertActive(signal);
     if (!sameLayout(layout, await surface.measureLayout(signal))) {
       throw new Error(
         'The backing layout changed during composition capture. Retry the current document.',
       );
     }
     assertActive(signal);
-    if (tile.width !== layout.viewport.width || tile.height !== height) {
-      throw new Error('The captured region dimensions changed.');
+    if (coveredHeight < layout.document.height) {
+      warnings.add(
+        `${layout.document.height - coveredHeight} CSS pixels below the captured region were not captured.`,
+      );
     }
-    if (characters + tile.dataUrl.length > OVERVIEW_CAPTURE_LIMITS.maxCharacters) {
-      warnings.add('The composition capture reached its aggregate output budget.');
-      break;
+    if (layout.document.width > layout.viewport.width) {
+      warnings.add('Horizontal overflow outside the configured device width was not captured.');
     }
-    characters += tile.dataUrl.length;
-    pixels += tile.width * tile.height;
-    tiles.push({ ...tile, y: coveredHeight });
-    tile.warnings.forEach((warning) => warnings.add(warning));
-    coveredHeight += height;
+    return {
+      frameId,
+      revision,
+      documentId: layout.documentId,
+      documentInstanceId: layout.documentInstanceId,
+      localEditGeneration: layout.localEdits.generation,
+      artifactId: crypto.randomUUID(),
+      snapshotId: session.snapshotId,
+      viewport: layout.viewport,
+      documentHeight: layout.document.height,
+      coveredHeight,
+      complete:
+        coveredHeight === layout.document.height && layout.document.width <= layout.viewport.width,
+      tiles,
+      warnings: [...warnings],
+    };
+  } finally {
+    session.dispose();
   }
-  if (!sameLayout(layout, await surface.measureLayout(signal))) {
-    throw new Error(
-      'The backing layout changed during composition capture. Retry the current document.',
-    );
-  }
-  assertActive(signal);
-  if (coveredHeight < layout.document.height) {
-    warnings.add(
-      `${layout.document.height - coveredHeight} CSS pixels below the captured region were not captured.`,
-    );
-  }
-  if (layout.document.width > layout.viewport.width) {
-    warnings.add('Horizontal overflow outside the configured device width was not captured.');
-  }
-  return {
-    frameId,
-    revision,
-    documentId: layout.documentId,
-    documentInstanceId: layout.documentInstanceId,
-    localEditGeneration: layout.localEdits.generation,
-    artifactId: crypto.randomUUID(),
-    viewport: layout.viewport,
-    documentHeight: layout.document.height,
-    coveredHeight,
-    complete:
-      coveredHeight === layout.document.height && layout.document.width <= layout.viewport.width,
-    tiles,
-    warnings: [...warnings],
-  };
 }

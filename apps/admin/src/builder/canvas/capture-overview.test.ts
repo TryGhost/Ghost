@@ -12,19 +12,28 @@ const layout = {
 };
 
 function preview(height = layout.document.height) {
+  const screenshot = vi.fn((request: ScreenshotRequest) => {
+    if (request.kind !== 'region') {
+      throw new Error('Expected a bounded region');
+    }
+    return Promise.resolve({
+      dataUrl: 'data:image/png;base64,AAAA',
+      width: request.width,
+      height: request.height,
+      warnings: ['External imagery omitted'],
+    });
+  });
+  const dispose = vi.fn();
+  const createScreenshotSession = vi.fn().mockResolvedValue({
+    snapshotId: 'one-source-snapshot',
+    screenshot,
+    dispose,
+  });
   return {
     measureLayout: vi.fn().mockResolvedValue({ ...layout, document: { width: 390, height } }),
-    screenshot: vi.fn((request: ScreenshotRequest) => {
-      if (request.kind !== 'region') {
-        throw new Error('Expected a bounded region');
-      }
-      return Promise.resolve({
-        dataUrl: 'data:image/png;base64,AAAA',
-        width: request.width,
-        height: request.height,
-        warnings: ['External imagery omitted'],
-      });
-    }),
+    screenshot,
+    createScreenshotSession,
+    dispose,
   };
 }
 
@@ -76,6 +85,9 @@ describe('bounded composition captures', () => {
     expect(result.coveredHeight).toBe(10_000);
     expect(result.complete).toBe(true);
     expect(result.warnings).toEqual(['External imagery omitted']);
+    expect(result.snapshotId).toBe('one-source-snapshot');
+    expect(surface.createScreenshotSession).toHaveBeenCalledOnce();
+    expect(surface.dispose).toHaveBeenCalledOnce();
     let y = 0;
     for (const tile of result.tiles) {
       expect(tile.y).toBe(y);
@@ -111,6 +123,7 @@ describe('bounded composition captures', () => {
     await expect(
       captureOverview(surface, 'home-mobile', 'revision-1', new AbortController().signal),
     ).rejects.toThrow('changed');
+    expect(surface.dispose).toHaveBeenCalledOnce();
   });
 
   it('stops at the aggregate encoded-output budget and identifies the omitted region', async () => {
@@ -173,5 +186,26 @@ describe('bounded composition captures', () => {
     await expect(
       captureOverview(surface, 'home-mobile', 'revision-1', controller.signal),
     ).rejects.toMatchObject({ name: 'AbortError' });
+    expect(surface.dispose).toHaveBeenCalledOnce();
+  });
+
+  it('does not prepare a snapshot when the request is already aborted', async () => {
+    const controller = new AbortController();
+    controller.abort();
+    const surface = preview();
+    await expect(
+      captureOverview(surface, 'home-mobile', 'revision-1', controller.signal),
+    ).rejects.toMatchObject({ name: 'AbortError' });
+    expect(surface.createScreenshotSession).not.toHaveBeenCalled();
+    expect(surface.screenshot).not.toHaveBeenCalled();
+  });
+
+  it('propagates snapshot preparation failure without capturing any regions', async () => {
+    const surface = preview();
+    surface.createScreenshotSession.mockRejectedValue(new Error('Unsupported animation'));
+    await expect(
+      captureOverview(surface, 'home-mobile', 'revision-1', new AbortController().signal),
+    ).rejects.toThrow('Unsupported animation');
+    expect(surface.screenshot).not.toHaveBeenCalled();
   });
 });

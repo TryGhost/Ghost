@@ -94,8 +94,14 @@ that same live document. Back restores the overview camera. Switching to device
 viewports or refreshing captures does not replace those documents.
 
 `captureOverview` uses the authenticated layout bridge and document-coordinate
-region screenshots. A sequence retains its backing frame/revision/document and
-capture identity, and rejects changes in document, viewport, scroll, or extent.
+region screenshots. A sequence prepares one authenticated, scriptless source
+snapshot and reuses that inert document for every serial tile, instead of cloning
+the changing theme DOM again. The result records its snapshot identity as well as
+its backing frame/revision/document and capture identity, and rejects changes in
+document/runtime instance, local-edit generation, viewport, scroll, or extent.
+Session disposal, abort, replacement, restoration and destruction remove the
+snapshot and refuse later regions; overlapping region requests are rejected.
+Fonts settle within the surface's bounded timeout before stable capture begins.
 The provisional per-frame aggregate budget is eight 2,048px-high images, 32 million
 pixels, and 12 MiB of encoded image characters; existing per-image limits remain.
 Coverage is geometric, independently of fidelity warnings. Uncaptured content
@@ -104,7 +110,28 @@ are still replaced, captures reconstruct layout in inert documents, and neither
 animations, sticky/fixed behavior, nor below-fold lazy loading are established
 by a successful capture. The harness reports warnings and elapsed capture time.
 
-The harness opts into `captureLoadedImages` on its preview surfaces. At snapshot
+The stable sequence freezes supported active CSS animation properties at their
+observed computed values through an owned stylesheet. It suppresses copied CSS
+animations/transitions, including completed animations that would restart on
+reconstruction. It leaves the live animation unchanged. Animated pseudo-elements,
+video, SVG animation and known GIF/blob backgrounds (including pseudo backgrounds)
+produce an explicit unavailable-composition error; fixed device previews remain
+available. Inline-important animation declarations are also refused where the
+snapshot cannot reliably override them. Renderer-added transition styles are
+removed from originally unstyled capture nodes when they are the only declaration,
+so basic author `[style]` selectors retain their source behavior.
+
+This establishes one DOM source and the tested motion/resource classes, not a
+universal frozen-pixel certificate. Unknown animated resource formats, transforms,
+pseudo reconstruction, sticky/fixed layout, late resources and source-correspondence
+geometry still need the Stage A compatibility evidence. A theme-script mutation
+without a new render revision can leave the captured instant different from the
+live page; current source correspondence and bounded refresh remain future work.
+No captured-region source mapping is supplied by this slice.
+
+The harness opts into `captureLoadedImages` on its preview surfaces. Stable
+snapshot sessions also freeze already loaded readable images within these budgets;
+ordinary one-shot screenshots keep their existing opt-in behavior. At snapshot
 time it freezes already loaded, browser-readable `img` pixels into bounded PNG
 bitmaps without fetching or changing the live image. This includes draft/data
 images, decoded blobs even after URL revocation, and remote images whose original
@@ -200,6 +227,7 @@ From `apps/admin`:
 
 ```sh
 pnpm exec vitest run src/builder/canvas --maxWorkers=1
+pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/canvas/capture-snapshot.acceptance.test.tsx --maxWorkers=1
 pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/canvas/dev/webmcp-probe.acceptance.test.tsx --maxWorkers=1
 pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/canvas/dev/fixture.acceptance.test.tsx --maxWorkers=1
 pnpm exec vitest run -c vitest.acceptance.config.ts src/builder/workspaces/theme/preview/preview-images.acceptance.test.tsx --maxWorkers=1

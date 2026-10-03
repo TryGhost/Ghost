@@ -381,11 +381,17 @@ export function previewRuntimeBootstrap(): void {
       truncated: { text: text.truncated, source: source.truncated },
     };
   };
-  const screenshotSnapshot = () => {
+  let screenshotSequence = 0;
+  const screenshotSnapshot = (stable = false) => {
+    screenshotSequence += 1;
+    const token = `${documentId.replace(/[^a-z0-9]/gi, '').slice(0, 40)}-${screenshotSequence}`;
+    const frozenAttribute = `data-builder-snapshot-${token.toLowerCase()}`;
+    const sourceUnstyledAttribute = `${frozenAttribute}-unstyled`;
+    const frozenRules: string[] = [];
     // Cloning into the active document can immediately refetch img sources,
     // even before insertion. Keep bitmap snapshots in a document with no window.
     const clone = (
-      captureLoadedImages
+      captureLoadedImages || stable
         ? document.implementation.createHTMLDocument('').importNode(document.documentElement, true)
         : document.documentElement.cloneNode(true)
     ) as HTMLElement;
@@ -394,6 +400,22 @@ export function previewRuntimeBootstrap(): void {
       ...Array.from(document.documentElement.querySelectorAll('*')),
     ];
     const copies = [clone, ...Array.from(clone.querySelectorAll('*'))];
+    const snapshotAnimations = new Map<Element, Animation[]>();
+    if (stable) {
+      // Element.getAnimations() omits animations on its pseudo-elements.
+      for (const animation of document.getAnimations()) {
+        const effect = animation.effect;
+        if (!(effect instanceof KeyframeEffect) || !effect.target || effect.pseudoElement) {
+          throw fail(
+            'preview_snapshot_animation_unsupported',
+            'This composition contains an animation that cannot be frozen reliably. Open the fixed device preview to inspect it.',
+          );
+        }
+        const animations = snapshotAnimations.get(effect.target) ?? [];
+        animations.push(animation);
+        snapshotAnimations.set(effect.target, animations);
+      }
+    }
     let unavailableCanvases = 0;
     let frozenImages = 0;
     let omittedImages = 0;
@@ -401,6 +423,7 @@ export function previewRuntimeBootstrap(): void {
     let attemptedImages = 0;
     let imagePixels = 0;
     let imageCharacters = 0;
+    let frozenAnimations = 0;
     const imageBudget = Math.max(
       0,
       Math.min(
@@ -543,6 +566,94 @@ export function previewRuntimeBootstrap(): void {
       if (!copy) {
         return;
       }
+      if (stable) {
+        if (
+          original instanceof HTMLVideoElement ||
+          (original.namespaceURI === 'http://www.w3.org/2000/svg' &&
+            ['animate', 'animateTransform', 'animateMotion', 'set'].includes(original.localName))
+        ) {
+          throw fail(
+            'preview_snapshot_animation_unsupported',
+            'Live video or animated SVG cannot be frozen reliably in this composition. Open the fixed device preview to inspect it.',
+          );
+        }
+        const animations = snapshotAnimations.get(original) ?? [];
+        const computed = getComputedStyle(original);
+        const backgrounds = [
+          computed.backgroundImage,
+          ...['::before', '::after'].map(
+            (pseudo) => getComputedStyle(original, pseudo).backgroundImage,
+          ),
+        ];
+        if (
+          backgrounds.some((background) =>
+            /url\(["']?(?:data:image\/gif[;,]|blob:)/i.test(background),
+          )
+        ) {
+          throw fail(
+            'preview_snapshot_animation_unsupported',
+            'A background image has no reliable frozen-pixel snapshot. Open the fixed device preview to inspect it.',
+          );
+        }
+        // Freeze in an owned stylesheet: adding an inline style attribute can
+        // change author selectors such as body[style] or :has([style]).
+        const style = document.createElement('span').style;
+        const originalStyle = (original as HTMLElement).style;
+        if (
+          computed.animationName !== 'none' &&
+          ['animation', 'animation-name'].some(
+            (property) => originalStyle?.getPropertyPriority(property) === 'important',
+          )
+        ) {
+          throw fail(
+            'preview_snapshot_animation_unsupported',
+            'An inline important animation cannot be suppressed reliably in the snapshot. Open the fixed device preview to inspect it.',
+          );
+        }
+        for (const animation of animations) {
+          const effect = animation.effect;
+          if (!(effect instanceof KeyframeEffect) || effect.pseudoElement || !style) {
+            throw fail(
+              'preview_snapshot_animation_unsupported',
+              'This composition contains an animation that cannot be frozen reliably. Open the fixed device preview to inspect it.',
+            );
+          }
+          const properties = new Set(
+            effect
+              .getKeyframes()
+              .flatMap((frame) =>
+                Object.keys(frame).filter(
+                  (property) =>
+                    !['offset', 'computedOffset', 'easing', 'composite'].includes(property),
+                ),
+              ),
+          );
+          if (properties.size > 128) {
+            throw fail(
+              'preview_snapshot_animation_unsupported',
+              'The animation snapshot exceeds its property budget.',
+            );
+          }
+          properties.forEach((property) => {
+            const cssName = property
+              .replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)
+              .replace(/^(webkit|moz|ms|o)-/, '-$1-');
+            const value = computed.getPropertyValue(cssName);
+            if (!value || value.length > limits.style) {
+              throw fail(
+                'preview_snapshot_animation_unsupported',
+                'An animated style cannot be frozen within the snapshot budget.',
+              );
+            }
+            style.setProperty(cssName, value, 'important');
+          });
+          frozenAnimations += 1;
+        }
+        if (style.length) {
+          copy.setAttribute(frozenAttribute, String(index));
+          frozenRules.push(`[${frozenAttribute}="${index}"]{${style.cssText}}`);
+        }
+      }
       if (original instanceof HTMLCanvasElement) {
         try {
           const image = document.createElement('img');
@@ -568,7 +679,7 @@ export function previewRuntimeBootstrap(): void {
           copy.replaceWith(placeholder);
         }
       } else if (
-        captureLoadedImages &&
+        (captureLoadedImages || stable) &&
         original instanceof HTMLImageElement &&
         copy instanceof HTMLImageElement
       ) {
@@ -588,6 +699,22 @@ export function previewRuntimeBootstrap(): void {
         copy.toggleAttribute('selected', original.selected);
       }
     });
+    if (stable) {
+      // The first layer wins important declarations, including against author
+      // stylesheet layers. Suppress completed/delayed animations and pseudos too.
+      const stylesheet = document.createElement('style');
+      stylesheet.textContent =
+        `@layer builder_snapshot_${token.replace(/-/g, '_')} {*,*::before,*::after,*::marker{animation:none!important;transition:none!important}${frozenRules.join('')}}`.replace(
+          /</g,
+          '\\3c ',
+        );
+      (clone.querySelector('head') ?? clone).prepend(stylesheet);
+      [clone, ...Array.from(clone.querySelectorAll('*'))].forEach((copy) => {
+        if (!copy.hasAttribute('style')) {
+          copy.setAttribute(sourceUnstyledAttribute, '');
+        }
+      });
+    }
     const html = `<!doctype html>${clone.outerHTML}`;
     if (html.length > limits.screenshotDocument) {
       throw fail(
@@ -597,6 +724,7 @@ export function previewRuntimeBootstrap(): void {
     }
     return {
       html,
+      ...(stable ? { sourceUnstyledAttribute } : {}),
       viewport: {
         width: window.innerWidth,
         height: window.innerHeight,
@@ -604,6 +732,11 @@ export function previewRuntimeBootstrap(): void {
         scrollY: window.scrollY,
       },
       warnings: [
+        ...(frozenAnimations
+          ? [
+              `${frozenAnimations} CSS animation${frozenAnimations === 1 ? ' was' : 's were'} frozen at the observed style values.`,
+            ]
+          : []),
         ...(unavailableCanvases
           ? [
               `${unavailableCanvases} canvas${unavailableCanvases === 1 ? ' was' : 'es were'} replaced in the screenshot because its pixels could not be read.`,
@@ -1613,7 +1746,7 @@ export function previewRuntimeBootstrap(): void {
       } else if (message.command === 'inspect-element') {
         result = inspectElement(message.payload as { marker?: unknown; selector?: unknown });
       } else if (message.command === 'screenshot') {
-        result = screenshotSnapshot();
+        result = screenshotSnapshot((message.payload as { stable?: unknown })?.stable === true);
       } else if (message.command === 'cancel-inline-text-edit') {
         if (activeInlineEdit?.pending) {
           throw fail(
