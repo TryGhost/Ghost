@@ -99,7 +99,7 @@ export function EditorHeaderActions({
   const record = session.loadedRecord;
   const [previewOpen, setPreviewOpen] = useState(false);
   const feedback = useSaveFeedback({ session, displayName: postType, siteUrl });
-  const contributorSave = useSaveButtonPhase(feedback.save);
+  const contributorSave = useSaveButtonPhase(feedback.save, session.contentKey);
 
   useSaveShortcut(() => void feedback.save());
 
@@ -262,7 +262,7 @@ function PublishActions({
     await requireSaved(session.saveExplicit());
   }, [session]);
   const { save, showReverted } = feedback;
-  const update = useSaveButtonPhase(save);
+  const update = useSaveButtonPhase(save, session.contentKey);
   const revertToDraft = useCallback(() => {
     onOpenFlow('none');
     void session.dispatchPublish({ kind: 'revert' });
