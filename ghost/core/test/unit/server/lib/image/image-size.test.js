@@ -84,6 +84,37 @@ describe('lib/image: image size', function () {
     assertExists(imageSize.getImageSizeFromStoragePath);
   });
 
+  describe('storage URLs on subdirectory installations', function () {
+    for (const subdir of ['/news+', '/news(weekly)', '/news[archive]']) {
+      it(`resolves image storage paths beneath ${subdir}`, async function () {
+        const imageSize = createImageSize({
+          urlUtils: {
+            getSubdir: () => subdir,
+            STATIC_IMAGE_URL_PREFIX: 'content/images',
+          },
+        });
+        const readSize = sinon
+          .stub(imageSize, 'getImageSizeFromStoragePath')
+          .resolves({ width: 1, height: 1 });
+        const readOriginalSize = sinon
+          .stub(imageSize, 'getOriginalImageSizeFromStoragePath')
+          .resolves({ width: 2, height: 2 });
+        const imageUrl = `${subdir}/content/images/2026/09/photo.png`;
+
+        assert.deepEqual(await imageSize.getImageSizeFromStorageUrl(imageUrl), {
+          width: 1,
+          height: 1,
+        });
+        assert.deepEqual(await imageSize.getOriginalImageSizeFromStorageUrl(imageUrl), {
+          width: 2,
+          height: 2,
+        });
+        sinon.assert.calledOnceWithExactly(readSize, '/2026/09/photo.png');
+        sinon.assert.calledOnceWithExactly(readOriginalSize, '/2026/09/photo.png');
+      });
+    }
+  });
+
   describe('getImageSizeFromUrl', function () {
     it('[success] should return image dimensions from probe request for probe-supported extension', async function () {
       const url = 'http://img.stockfresh.com/files/f/feedough/x/11/1540353_20925115.jpg';
