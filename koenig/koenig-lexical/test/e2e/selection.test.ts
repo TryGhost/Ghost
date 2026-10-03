@@ -1,5 +1,5 @@
 import {assertHTML, assertSelection, ctrlOrCmd, dragMouse, focusEditor, html, initialize} from '../utils/e2e';
-import {test} from '@playwright/test';
+import {expect, test} from '@playwright/test';
 
 test.describe('Selection behaviour', async () => {
     let page;
@@ -14,6 +14,47 @@ test.describe('Selection behaviour', async () => {
 
     test.afterAll(async () => {
         await page.close();
+    });
+
+    test('selects a list up to the boundary before a card without errors', async () => {
+        const errors = [];
+        const onConsole = message => {
+            if (message.type() === 'error') {
+                errors.push(message.text());
+            }
+        };
+        page.on('console', onConsole);
+
+        try {
+            await focusEditor(page);
+            await page.keyboard.type('- Selected text');
+            await page.keyboard.press('Enter');
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('---');
+            await expect(page.locator('hr')).toBeVisible();
+
+            // Reproduce the DOM selection made when dragging to a list's edge.
+            await page.evaluate(() => {
+                const root = window.lexicalEditor.getRootElement();
+                const text = root.querySelector('li [data-lexical-text]').firstChild;
+                window.getSelection().setBaseAndExtent(text, 0, root, 1);
+                document.dispatchEvent(new Event('selectionchange'));
+            });
+
+            expect(errors).toEqual([]);
+            await assertSelection(page, {
+                anchorPath: [0, 0, 0, 0],
+                anchorOffset: 0,
+                focusPath: [],
+                focusOffset: 1
+            });
+            await page.keyboard.type('Replacement');
+            expect(errors).toEqual([]);
+            await expect(page.locator('hr')).toBeVisible();
+            await expect(page.locator('[data-lexical-editor]').first()).toHaveText('Replacement');
+        } finally {
+            page.off('console', onConsole);
+        }
     });
 
     test('can create range selection covering a card', async function () {

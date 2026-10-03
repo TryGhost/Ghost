@@ -778,6 +778,7 @@ patchedDependencies:
   '@elastic/elasticsearch@8.19.2': 725142a9606e50dff3ed4c17fb9256d5457c7c75ce262898b87ef0ffff14dcc2
   aria-hidden@1.2.6: 0ad169c5dde1d489b721bf506266c5aec2fe212b2ca97daa6caccee450d8dd5b
   juice@11.1.1: 9b56fcd925d7de8dd73a700a918dcb387ef39410581a11d9ac683b3eed9790d0
+  lexical@0.13.1: 93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871
 
 importers:
 
@@ -3270,16 +3271,16 @@ importers:
     dependencies:
       '@lexical/clipboard':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lexical/rich-text':
         specifier: 0.13.1
-        version: 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(@lexical/utils@0.13.1(lexical@0.13.1))(lexical@0.13.1)
+        version: 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(@lexical/selection@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(@lexical/utils@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lexical/selection':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lexical/utils':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@tryghost/color-utils':
         specifier: 'catalog:'
         version: 0.2.21
@@ -3300,7 +3301,7 @@ importers:
         version: 30.0.1(@noble/hashes@1.8.0)
       lexical:
         specifier: 0.13.1
-        version: 0.13.1
+        version: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
       lodash:
         specifier: 'catalog:'
         version: 4.18.1
@@ -3313,10 +3314,10 @@ importers:
         version: 9.39.5
       '@lexical/headless':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lexical/html':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@prettier/sync':
         specifier: 0.6.1
         version: 0.6.1(prettier@3.9.6)
@@ -3361,29 +3362,29 @@ importers:
     dependencies:
       '@lexical/list':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lexical/rich-text':
         specifier: 0.13.1
-        version: 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(@lexical/utils@0.13.1(lexical@0.13.1))(lexical@0.13.1)
+        version: 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(@lexical/selection@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(@lexical/utils@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lexical/utils':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@tryghost/kg-default-nodes':
         specifier: workspace:~
         version: link:../kg-default-nodes
       lexical:
         specifier: 0.13.1
-        version: 0.13.1
+        version: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'
         version: 9.39.5
       '@lexical/headless':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lexical/link':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
@@ -3407,22 +3408,22 @@ importers:
     dependencies:
       '@lexical/clipboard':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lexical/headless':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lexical/html':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lexical/link':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lexical/list':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lexical/rich-text':
         specifier: 0.13.1
-        version: 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(@lexical/utils@0.13.1(lexical@0.13.1))(lexical@0.13.1)
+        version: 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(@lexical/selection@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(@lexical/utils@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@tryghost/kg-default-nodes':
         specifier: workspace:~
         version: link:../kg-default-nodes
@@ -3434,7 +3435,7 @@ importers:
         version: 30.0.1(@noble/hashes@1.8.0)
       lexical:
         specifier: 0.13.1
-        version: 0.13.1
+        version: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'
@@ -3465,19 +3466,19 @@ importers:
     dependencies:
       '@lexical/clipboard':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lexical/headless':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lexical/link':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lexical/list':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lexical/rich-text':
         specifier: 0.13.1
-        version: 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(@lexical/utils@0.13.1(lexical@0.13.1))(lexical@0.13.1)
+        version: 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(@lexical/selection@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(@lexical/utils@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@tryghost/kg-default-nodes':
         specifier: workspace:~
         version: link:../kg-default-nodes
@@ -3492,7 +3493,7 @@ importers:
         version: 30.0.1(@noble/hashes@1.8.0)
       lexical:
         specifier: 0.13.1
-        version: 0.13.1
+        version: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'
@@ -3745,37 +3746,37 @@ importers:
         version: 8.1.0(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@18.3.31)(prettier@3.9.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@lexical/clipboard':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lexical/headless':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lexical/html':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lexical/link':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lexical/list':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lexical/markdown':
         specifier: 0.13.1
-        version: 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(lexical@0.13.1)
+        version: 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(@lexical/selection@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lexical/react':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(yjs@13.6.31)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(yjs@13.6.31)
       '@lexical/rich-text':
         specifier: 0.13.1
-        version: 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(@lexical/utils@0.13.1(lexical@0.13.1))(lexical@0.13.1)
+        version: 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(@lexical/selection@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(@lexical/utils@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lexical/selection':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lexical/text':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lexical/utils':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
+        version: 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
       '@lezer/highlight':
         specifier: 1.2.3
         version: 1.2.3
@@ -3913,7 +3914,7 @@ importers:
         version: 30.0.1(@noble/hashes@1.8.0)
       lexical:
         specifier: 0.13.1
-        version: 0.13.1
+        version: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
       lodash:
         specifier: 'catalog:'
         version: 4.18.1
@@ -25642,144 +25643,144 @@ snapshots:
 
   '@kikobeats/time-span@1.0.13': {}
 
-  '@lexical/clipboard@0.13.1(lexical@0.13.1)':
+  '@lexical/clipboard@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))':
     dependencies:
-      '@lexical/html': 0.13.1(lexical@0.13.1)
-      '@lexical/list': 0.13.1(lexical@0.13.1)
-      '@lexical/selection': 0.13.1(lexical@0.13.1)
-      '@lexical/utils': 0.13.1(lexical@0.13.1)
-      lexical: 0.13.1
+      '@lexical/html': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/list': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/selection': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/utils': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      lexical: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
 
-  '@lexical/code@0.13.1(lexical@0.13.1)':
+  '@lexical/code@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))':
     dependencies:
-      '@lexical/utils': 0.13.1(lexical@0.13.1)
-      lexical: 0.13.1
+      '@lexical/utils': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      lexical: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
       prismjs: 1.30.0
 
-  '@lexical/dragon@0.13.1(lexical@0.13.1)':
+  '@lexical/dragon@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))':
     dependencies:
-      lexical: 0.13.1
+      lexical: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
 
-  '@lexical/hashtag@0.13.1(lexical@0.13.1)':
+  '@lexical/hashtag@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))':
     dependencies:
-      '@lexical/utils': 0.13.1(lexical@0.13.1)
-      lexical: 0.13.1
+      '@lexical/utils': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      lexical: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
 
-  '@lexical/headless@0.13.1(lexical@0.13.1)':
+  '@lexical/headless@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))':
     dependencies:
-      lexical: 0.13.1
+      lexical: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
 
-  '@lexical/history@0.13.1(lexical@0.13.1)':
+  '@lexical/history@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))':
     dependencies:
-      '@lexical/utils': 0.13.1(lexical@0.13.1)
-      lexical: 0.13.1
+      '@lexical/utils': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      lexical: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
 
-  '@lexical/html@0.13.1(lexical@0.13.1)':
+  '@lexical/html@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))':
     dependencies:
-      '@lexical/selection': 0.13.1(lexical@0.13.1)
-      '@lexical/utils': 0.13.1(lexical@0.13.1)
-      lexical: 0.13.1
+      '@lexical/selection': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/utils': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      lexical: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
 
-  '@lexical/link@0.13.1(lexical@0.13.1)':
+  '@lexical/link@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))':
     dependencies:
-      '@lexical/utils': 0.13.1(lexical@0.13.1)
-      lexical: 0.13.1
+      '@lexical/utils': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      lexical: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
 
-  '@lexical/list@0.13.1(lexical@0.13.1)':
+  '@lexical/list@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))':
     dependencies:
-      '@lexical/utils': 0.13.1(lexical@0.13.1)
-      lexical: 0.13.1
+      '@lexical/utils': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      lexical: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
 
-  '@lexical/mark@0.13.1(lexical@0.13.1)':
+  '@lexical/mark@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))':
     dependencies:
-      '@lexical/utils': 0.13.1(lexical@0.13.1)
-      lexical: 0.13.1
+      '@lexical/utils': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      lexical: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
 
-  '@lexical/markdown@0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(lexical@0.13.1)':
+  '@lexical/markdown@0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(@lexical/selection@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))':
     dependencies:
-      '@lexical/code': 0.13.1(lexical@0.13.1)
-      '@lexical/link': 0.13.1(lexical@0.13.1)
-      '@lexical/list': 0.13.1(lexical@0.13.1)
-      '@lexical/rich-text': 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(@lexical/utils@0.13.1(lexical@0.13.1))(lexical@0.13.1)
-      '@lexical/text': 0.13.1(lexical@0.13.1)
-      '@lexical/utils': 0.13.1(lexical@0.13.1)
-      lexical: 0.13.1
+      '@lexical/code': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/link': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/list': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/rich-text': 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(@lexical/selection@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(@lexical/utils@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/text': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/utils': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      lexical: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
     transitivePeerDependencies:
       - '@lexical/clipboard'
       - '@lexical/selection'
 
-  '@lexical/offset@0.13.1(lexical@0.13.1)':
+  '@lexical/offset@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))':
     dependencies:
-      lexical: 0.13.1
+      lexical: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
 
-  '@lexical/overflow@0.13.1(lexical@0.13.1)':
+  '@lexical/overflow@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))':
     dependencies:
-      lexical: 0.13.1
+      lexical: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
 
-  '@lexical/plain-text@0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(@lexical/utils@0.13.1(lexical@0.13.1))(lexical@0.13.1)':
+  '@lexical/plain-text@0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(@lexical/selection@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(@lexical/utils@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))':
     dependencies:
-      '@lexical/clipboard': 0.13.1(lexical@0.13.1)
-      '@lexical/selection': 0.13.1(lexical@0.13.1)
-      '@lexical/utils': 0.13.1(lexical@0.13.1)
-      lexical: 0.13.1
+      '@lexical/clipboard': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/selection': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/utils': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      lexical: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
 
-  '@lexical/react@0.13.1(lexical@0.13.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(yjs@13.6.31)':
+  '@lexical/react@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(yjs@13.6.31)':
     dependencies:
-      '@lexical/clipboard': 0.13.1(lexical@0.13.1)
-      '@lexical/code': 0.13.1(lexical@0.13.1)
-      '@lexical/dragon': 0.13.1(lexical@0.13.1)
-      '@lexical/hashtag': 0.13.1(lexical@0.13.1)
-      '@lexical/history': 0.13.1(lexical@0.13.1)
-      '@lexical/link': 0.13.1(lexical@0.13.1)
-      '@lexical/list': 0.13.1(lexical@0.13.1)
-      '@lexical/mark': 0.13.1(lexical@0.13.1)
-      '@lexical/markdown': 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(lexical@0.13.1)
-      '@lexical/overflow': 0.13.1(lexical@0.13.1)
-      '@lexical/plain-text': 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(@lexical/utils@0.13.1(lexical@0.13.1))(lexical@0.13.1)
-      '@lexical/rich-text': 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(@lexical/utils@0.13.1(lexical@0.13.1))(lexical@0.13.1)
-      '@lexical/selection': 0.13.1(lexical@0.13.1)
-      '@lexical/table': 0.13.1(lexical@0.13.1)
-      '@lexical/text': 0.13.1(lexical@0.13.1)
-      '@lexical/utils': 0.13.1(lexical@0.13.1)
-      '@lexical/yjs': 0.13.1(lexical@0.13.1)(yjs@13.6.31)
-      lexical: 0.13.1
+      '@lexical/clipboard': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/code': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/dragon': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/hashtag': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/history': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/link': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/list': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/mark': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/markdown': 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(@lexical/selection@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/overflow': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/plain-text': 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(@lexical/selection@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(@lexical/utils@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/rich-text': 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(@lexical/selection@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(@lexical/utils@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/selection': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/table': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/text': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/utils': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/yjs': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))(yjs@13.6.31)
+      lexical: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       react-error-boundary: 3.1.4(react@18.3.1)
     transitivePeerDependencies:
       - yjs
 
-  '@lexical/rich-text@0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(@lexical/utils@0.13.1(lexical@0.13.1))(lexical@0.13.1)':
+  '@lexical/rich-text@0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(@lexical/selection@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(@lexical/utils@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)))(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))':
     dependencies:
-      '@lexical/clipboard': 0.13.1(lexical@0.13.1)
-      '@lexical/selection': 0.13.1(lexical@0.13.1)
-      '@lexical/utils': 0.13.1(lexical@0.13.1)
-      lexical: 0.13.1
+      '@lexical/clipboard': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/selection': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/utils': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      lexical: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
 
-  '@lexical/selection@0.13.1(lexical@0.13.1)':
+  '@lexical/selection@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))':
     dependencies:
-      lexical: 0.13.1
+      lexical: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
 
-  '@lexical/table@0.13.1(lexical@0.13.1)':
+  '@lexical/table@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))':
     dependencies:
-      '@lexical/utils': 0.13.1(lexical@0.13.1)
-      lexical: 0.13.1
+      '@lexical/utils': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      lexical: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
 
-  '@lexical/text@0.13.1(lexical@0.13.1)':
+  '@lexical/text@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))':
     dependencies:
-      lexical: 0.13.1
+      lexical: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
 
-  '@lexical/utils@0.13.1(lexical@0.13.1)':
+  '@lexical/utils@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))':
     dependencies:
-      '@lexical/list': 0.13.1(lexical@0.13.1)
-      '@lexical/selection': 0.13.1(lexical@0.13.1)
-      '@lexical/table': 0.13.1(lexical@0.13.1)
-      lexical: 0.13.1
+      '@lexical/list': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/selection': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      '@lexical/table': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      lexical: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
 
-  '@lexical/yjs@0.13.1(lexical@0.13.1)(yjs@13.6.31)':
+  '@lexical/yjs@0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))(yjs@13.6.31)':
     dependencies:
-      '@lexical/offset': 0.13.1(lexical@0.13.1)
-      lexical: 0.13.1
+      '@lexical/offset': 0.13.1(lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871))
+      lexical: 0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871)
       yjs: 13.6.31
 
   '@lezer/common@1.5.2': {}
@@ -39186,7 +39187,7 @@ snapshots:
       prelude-ls: 1.2.1
       type-check: 0.4.0
 
-  lexical@0.13.1: {}
+  lexical@0.13.1(patch_hash=93f85be4c8a2803e8e5633e820844a43fefa9734835f81858751144cce3dd871): {}
 
   lib0@0.2.117:
     dependencies:

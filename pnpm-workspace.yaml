@@ -368,3 +368,9 @@ patchedDependencies:
   # and note juice 12+ is ESM, so a major bump also needs the `require('juice')`
   # call sites updated. The malformed CSS email tests cover all three crashes.
   juice@11.1.1: patches/juice@11.1.1.patch
+  # Stop getNodesBetween at a selected ancestor (Sentry ADMIN-19Q6). Without
+  # this, selecting a list before a card walks past the range and throws #68.
+  # Also preserve that ancestor when replacing the selected text.
+  # Patch both development and production builds; remove when upgrading Lexical
+  # after verifying test/unit/listSelection.test.ts and test/e2e/selection.test.ts.
+  lexical@0.13.1: patches/lexical@0.13.1.patch
