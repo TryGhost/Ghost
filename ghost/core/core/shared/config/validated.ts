@@ -37,6 +37,11 @@ export function deepFreeze<T>(value: T): T {
  * `GHOST_CONFIG_SCHEMA_STRICT` overrides in either direction, which is how a
  * production deploy opts in once it trusts the schema.
  *
+ * @TODO: removing this flag retires checkUrlProtocol() in ./utils.ts with it,
+ * and makes every required key a hard boot failure everywhere - which is only
+ * safe once the schema is known to match what Ghost(Pro) and self-hosters
+ * actually supply.
+ *
  * `startsWith('test')` matches `isTestEnv()` in ./helpers.ts, covering `testing`
  * and `testing-mysql`.
  */

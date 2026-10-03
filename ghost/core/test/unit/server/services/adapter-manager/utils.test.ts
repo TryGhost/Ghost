@@ -5,17 +5,14 @@ import {
   getConfiguredFeatures,
 } from '../../../../../core/server/services/adapter-manager/utils';
 import { createConfig } from '../../../../../core/shared/config/validated';
+import { configSources } from '../../../../utils/config-sources';
 import type { ConfigInstance } from '../../../../../core/shared/config/loader';
 
 describe('Adapter Manager: utils', function () {
   describe('normalizeAdapterConfig', function () {
     // minimal stand-in for the loaded config
     function loadNconf(): ConfigInstance {
-      return createConfig({
-        url: 'http://localhost:2368',
-        env: 'testing',
-        paths: { contentPath: '/some/path' },
-      });
+      return createConfig(configSources({ paths: { contentPath: '/some/path' } }));
     }
 
     it('uses top-level storage config path if adapter storage not specified', () => {

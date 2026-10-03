@@ -87,22 +87,66 @@ a number, or assumed a key is always present, stops compiling.
 
 ## Rules
 
-- **Validate, don't transform — for now.** `z.object()` strips unknown keys and
-  `z.coerce.*` rewrites values; either would silently change config a running
-  site already has, and the round-trip test fails if one does. Use
-  `z.looseObject()` for nested sections and plain validators elsewhere. Secrets
-  are deliberately left unparsed by [`secrets.ts`](secrets.ts) — a password of
-  `01234` must stay a string.
+- **Validate, don't transform — for now.** `z.coerce.*` rewrites values, which
+  would silently change config a running site already has, and the round-trip
+  test fails if it does. Use plain validators. Secrets are deliberately left
+  unparsed by [`secrets.ts`](secrets.ts) — a password of `01234` must stay a
+  string.
 
-  Transforms are worth having eventually — `sanitizeDatabaseProperties` and
-  `makePathsAbsolute` in [`utils.ts`](utils.ts) are transforms already, done
-  imperatively after load. Moving them here needs `get()` to reroute by
-  top-level key rather than by exact schema path first, otherwise a read of an
-  unlisted path under a transformed key would still come back raw from nconf and
-  disagree with its parent.
+  Unknown **keys** are a separate decision, and not covered by this rule: the top
+  level is `z.looseObject()` and must stay so, while a nested section like
+  `paths` is `z.object()` and strips what it does not name. See
+  [Why the top level is loose](#why-the-top-level-is-loose-and-nested-sections-are-not)
+  before adding a section either way.
+
+  A zod `.transform()` is the wrong tool here, and that is not a style
+  preference. zod's output is all-or-nothing: one bad key anywhere and
+  `safeParse` returns no data at all. Outside `development` and `test*` a
+  violation only logs and the raw tree is used, so a transform attached to the
+  schema silently would not run in exactly the environments that do not throw.
+  For `paths` that would leave every path relative to the working directory on a
+  live site — content, migrations and Admin assets all missing — triggered by an
+  unrelated mistake elsewhere in the schema. This was measured, not reasoned
+  about: with one bad `url` and nothing else changed, `paths:contentPath` came
+  back `content/` instead of absolute.
+
+  So a transform may not be conditional on the schema being right. Today that
+  means a plain function applied **before** `safeParse` and used on both
+  branches, not in the schema object.
+
+  There is a second route, for when a transform genuinely belongs with the
+  schema. Wrapping every field in `.catch((ctx) => ctx.value)` makes a field fall
+  back to its raw input instead of failing the parse, so the parse always
+  succeeds and an object-level transform always runs — a bad `url` no longer
+  costs `paths` its transform, and a bad leaf inside `paths` costs only that
+  leaf. `ctx.error` is still available, so the handler can collect issues and
+  strict mode can throw on them. Two things to weigh first: `ctx.error.issues[]`
+  arrives with an empty `path`, so each wrapper has to name its own key or the
+  log stops saying which key was wrong; and it inverts the default from
+  fail-closed to fail-open, since the parse then always succeeds and strictness
+  becomes a check someone has to remember — which wants a single entry point
+  where that check cannot be skipped.
+
+  Either way a transform must be idempotent, because `config.set()` re-parses
+  from source on every call, and one that moved a value further each pass would
+  corrupt config on the second override.
+
+  Both existing transforms stay in [`utils.ts`](utils.ts) for now.
+  `makePathsAbsolute` is unconditional there already, which is the property that
+  matters, so moving it buys nothing until there is a second transform to share
+  the plumbing. `sanitizeDatabaseProperties` is not really a transform: it
+  deletes keys based on a sibling's value, making it a discriminated union on
+  `database:client`, and it waits for `database` to be schemafied.
 
 - **Nothing may be stricter than the loader already was.** Tightening beyond
   that is its own change, with its own release note.
+- **Adding a key reorders its parent's keys.** `z.looseObject` emits the keys the
+  schema names first, in declaration order, and the rest after; `z.object()`
+  emits only the named ones, in that same order. Either way the order comes from
+  the schema rather than the config files. Values are untouched, and the
+  round-trip test does not catch this because `deepEqual` ignores key order. Nothing in Ghost reads config key order — no `Object.keys`
+  or `JSON.stringify` of a config subtree — so this is only a trap for a test
+  that asserts an exact key list.
 - **Only the environments this repo runs itself are strict.** `development` and
   anything starting with `test` throw on a schema violation; everything else —
   `production`, and whatever NODE_ENV a self-hoster or embedder picks — logs and
@@ -110,14 +154,39 @@ a number, or assumed a key is always present, stops compiling.
   site's. `GHOST_CONFIG_SCHEMA_STRICT` overrides in either direction, which is how
   a production deploy opts in once it trusts the schema.
 
-## Why the schema is loose
+## Why the top level is loose, and nested sections are not
 
-`z.looseObject` keeps keys the schema does not list, which it must: `nconf.env()`
-runs with no whitelist, so every process environment variable is a top-level
-config key and `config.get('PATH')` resolves today. Closing the schema — which
-would turn a typo in a self-hoster's `config.production.json` into an error
-instead of a silently ignored key — needs that whitelisted first, in its own
-change.
+`z.looseObject` keeps keys the schema does not list. At the **top level** it must:
+`nconf.env()` runs with no whitelist, so every process environment variable is a
+top-level config key and `config.get('PATH')` resolves today. Closing that needs
+the environment whitelisted first, in its own change.
+
+A **nested section is closed**, with `z.object()`. `paths` is the worked example:
+
+- Every `paths:<key>` read in the monorepo names a key in the schema, and none is
+  built at runtime, so no read can depend on a key the schema omits.
+- Nothing outside `ghost/core` reads `paths` at all. An adapter is constructed as
+  `new AdapterClass(adapterConfig)` — it is handed its own config block, never
+  the paths tree — so a third-party adapter cannot be reading one either.
+- Parsing every shipped env config drops nothing: 14 keys in, 14 keys out.
+
+In exchange the type matches the runtime exactly, so
+`config.get('paths').contentPatth` is a compile error instead of `unknown`. Keeping
+the section loose and closing only the type was tried and rejected: it leaves
+`Object.keys()` able to return keys the type denies, and buys nothing where no
+reader needs an unlisted key.
+
+**The consequence to know:** `z.object()` does not reject an unknown key, it
+strips it. A key added to config but not to its schema disappears, with no error.
+Add both.
+
+That is affordable for `paths` because its readers are enumerable. For a section
+where they are not, the safe form is `z.strictObject({...}).catch((ctx) => ctx.value)`
+— an unknown key drops that section back to raw and logs it, the rest of the tree
+stays validated, and strict environments still throw. Plain `z.strictObject()` is
+not: rejection fails the whole tree, so outside `development` and `test*` one
+unexpected key would quietly disable validation of _all_ config. That depends on
+the `.catch` mechanism described under Rules.
 
 ## Don't mutate what `get()` returns
 

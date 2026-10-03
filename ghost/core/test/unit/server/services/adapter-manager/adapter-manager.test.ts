@@ -9,6 +9,7 @@ import {
 } from '../../../../../core/server/services/adapter-manager/adapter-manager';
 import { resolveAdapterEntryPoint } from '../../../../../core/server/services/adapter-manager/utils';
 import { createConfig } from '../../../../../core/shared/config/validated';
+import { configSources } from '../../../../utils/config-sources';
 import type { ConfigInstance } from '../../../../../core/shared/config/loader';
 import type { Adapter } from '../../../../../core/server/services/adapter-manager/types';
 
@@ -34,12 +35,7 @@ class DefaultMailAdapter extends BaseMailAdapter {
 // adapter class name and options getAdapter resolves. `url` and `env` are what
 // the schema requires of any config, as the loader always provides them.
 function makeConfig(adapters: object = {}): ConfigInstance {
-  return createConfig({
-    url: 'http://localhost:2368',
-    env: 'testing',
-    paths: { contentPath: '/some/path' },
-    adapters,
-  });
+  return createConfig(configSources({ paths: { contentPath: '/some/path' }, adapters }));
 }
 
 describe('AdapterManager', function () {

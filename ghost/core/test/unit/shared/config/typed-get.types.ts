@@ -30,4 +30,11 @@ const wrongType: number = config.get('url');
 // @ts-expect-error the validated view is deeply readonly, like the frozen object
 config.validated.url = 'http://nope.test';
 
-export { url, env, contentPath, database, fromDynamic, whole, wrongType };
+// paths is a looseObject, so unknown keys survive at runtime - but the type is
+// closed, so a typo on a returned object is caught rather than passing as unknown
+const pathsObject: { contentPath: string; migrationPath: string } = config.get('paths');
+
+// @ts-expect-error a key the paths schema does not name
+const pathsTypo = config.get('paths').contentPatth;
+
+export { url, env, contentPath, database, fromDynamic, whole, wrongType, pathsObject, pathsTypo };

@@ -166,22 +166,28 @@ describe('Config Loader', function () {
       // NOTE: using `Object.keys` here instead of `should.have.keys` assertion
       //       because when `have.keys` fails there's no useful diff
       //       and it doesn't make sure to check for "extra" keys
-      assert.deepEqual(Object.keys(pathConfig), [
-        'contentPath',
-        'fixtures',
-        'defaultSettings',
-        'assetSrc',
-        'appRoot',
-        'corePath',
-        'adminAssets',
-        'helperTemplates',
-        'defaultViews',
-        'defaultRouteSettings',
-        'internalAppPath',
-        'internalAdaptersPath',
-        'migrationPath',
-        'publicFilePath',
-      ]);
+      // Sorted, because membership is the point: zod emits the keys the schema
+      // names first, in declaration order, so adding one to ./schema.ts would
+      // otherwise break this on ordering alone.
+      assert.deepEqual(
+        Object.keys(pathConfig).sort(),
+        [
+          'contentPath',
+          'fixtures',
+          'defaultSettings',
+          'assetSrc',
+          'appRoot',
+          'corePath',
+          'adminAssets',
+          'helperTemplates',
+          'defaultViews',
+          'defaultRouteSettings',
+          'internalAppPath',
+          'internalAdaptersPath',
+          'migrationPath',
+          'publicFilePath',
+        ].sort(),
+      );
     });
 
     it('should have the correct values for each key', function () {
