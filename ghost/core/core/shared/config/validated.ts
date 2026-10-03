@@ -7,6 +7,9 @@ import { configSchema, type ConfigAt, type ConfigPath, type ValidatedConfig } fr
 /**
  * Recursively freeze a plain-data tree in place. Only safe on a structure
  * nothing else holds a reference to.
+ *
+ * Returns the original value and tolerates cycles. Already-frozen objects are
+ * skipped, including their children, so their descendants must already be frozen.
  */
 export function deepFreeze<T>(value: T): T {
   if (value === null || typeof value !== 'object' || Object.isFrozen(value)) {
@@ -32,7 +35,8 @@ export function deepFreeze<T>(value: T): T {
  * unrecognised warns rather than turning into a boot crash-loop.
  *
  * `GHOST_CONFIG_SCHEMA_STRICT` overrides in either direction, which is how a
- * production deploy opts in once it trusts the schema.
+ * production deploy opts in once it trusts the schema. When set, only the exact
+ * value `true` enables strict mode; every other value disables it.
  *
  * `startsWith('test')` matches `isTestEnv()` in ./helpers.ts, covering `testing`
  * and `testing-mysql`.
@@ -50,9 +54,12 @@ function isStrict(env: string): boolean {
 /**
  * Validate a config tree and deep-freeze it.
  *
- * Freezes in place, so the caller must hand over a tree nothing else holds -
- * zod passes keys the schema does not name straight through by reference, so a
- * shared tree would be frozen out from under its other owner.
+ * Returns the frozen parsed result on success. Schema violations throw an Error
+ * in strict mode (see isStrict); otherwise the original tree is returned frozen,
+ * even though it does not satisfy the schema.
+ *
+ * The caller must hand over an unshared tree: unknown keys pass through by
+ * reference and are frozen, and the fallback freezes the input tree itself.
  */
 export function validateConfig(tree: Record<string, unknown>): ValidatedConfig {
   const result = configSchema.safeParse(tree);
@@ -109,6 +116,10 @@ export interface GhostConfig extends BoundHelpers, ConfigHelpers {
 
 const MISS = Symbol('config.miss');
 
+/**
+ * Resolve a colon-separated path, returning MISS when a segment is absent or
+ * traversal reaches a non-object. A present value of undefined is not a miss.
+ */
 function lookup(root: unknown, key: string): unknown {
   let node: unknown = root;
 
@@ -124,8 +135,9 @@ function lookup(root: unknown, key: string): unknown {
 }
 
 /**
- * Write a key path into a tree, copying each level on the way down if it is
- * frozen.
+ * Write a colon-separated key path into a mutable tree, copying each level on
+ * the way down if it is frozen. Missing or non-object intermediate values are
+ * replaced with objects; the leaf is assigned by reference.
  *
  * An override's value is often something a test read back out of config, which
  * is frozen, so a later override targeting a path inside it would otherwise be
@@ -159,11 +171,16 @@ function writePath(tree: Record<string, unknown>, key: string, value: unknown): 
  * representation is what makes the whole config immutable rather than only the
  * part a schema names, and what will let the schema transform values later
  * without a raw read disagreeing with a transformed one.
+ *
+ * Clones the sources so the caller's tree is not frozen or retained by reference.
+ * Propagates structuredClone errors for unsupported values and validation errors
+ * from validateConfig; permissive validation may retain invalid values.
  */
 export function createConfig(sources: Record<string, unknown>): GhostConfig {
   const base = structuredClone(sources);
   const overrides = new Map<string, unknown>();
 
+  /** Build a frozen snapshot from the base and overrides, propagating validation errors. */
   function build(): ValidatedConfig {
     const tree = structuredClone(base);
 
@@ -176,11 +193,16 @@ export function createConfig(sources: Record<string, unknown>): GhostConfig {
 
   let current = build();
 
+  /** Replace the current snapshot only if building succeeds; propagate errors otherwise. */
   function rebuild(): void {
     current = build();
   }
 
   const config = {
+    /**
+     * Read a colon-separated path, or the whole snapshot when key is omitted.
+     * Missing paths return undefined; object values are shared frozen references.
+     */
     get(key?: string): unknown {
       if (key === undefined) {
         return current;
@@ -191,6 +213,12 @@ export function createConfig(sources: Record<string, unknown>): GhostConfig {
       return found === MISS ? undefined : found;
     },
 
+    /**
+     * Set a test-only override at a colon-separated path, cloning the value so
+     * the caller's object is not frozen. Other recorded overrides are retained.
+     * Cloning errors propagate; a failed rebuild restores the previous override
+     * and rebuilds before rethrowing. Permissive validation accepts invalid values.
+     */
     set(key: string, value: unknown): void {
       const had = overrides.has(key);
       const previous = overrides.get(key);
@@ -215,6 +243,11 @@ export function createConfig(sources: Record<string, unknown>): GhostConfig {
       }
     },
 
+    /**
+     * Clear test overrides and rebuild from the original sources. Invoke callback
+     * synchronously after success. Rebuild and callback errors propagate; cleared
+     * overrides are not restored if rebuilding fails.
+     */
     reset(callback?: () => void): void {
       overrides.clear();
       rebuild();

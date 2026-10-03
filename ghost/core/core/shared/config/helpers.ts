@@ -124,6 +124,10 @@ function isProductionOrDevelopment(this: ConfigLike): boolean {
   return ['development', 'production'].includes(this.get('env'));
 }
 
+/**
+ * Attach config helpers in place, bound to this instance so they can be called
+ * without a receiver. The URL helpers must already be bound to the instance.
+ */
 export function bindAll<T extends ConfigWithUrlHelpers>(
   nconf: T,
 ): asserts nconf is T & ConfigHelpers {

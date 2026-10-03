@@ -14,6 +14,17 @@ interface LoadNconfOptions {
 
 export type ConfigInstance = GhostConfig;
 
+/**
+ * Load and sanitize the layered config, returning a frozen snapshot with bound
+ * URL and config helpers. Later changes to the sources do not update it.
+ *
+ * @param options.baseConfigPath - Directory containing shipped defaults,
+ * overrides, and environment configs; defaults to this module's directory.
+ * @param options.customConfigPath - Directory containing site config files;
+ * defaults to the current working directory.
+ * @throws Propagates config loading and secret-file errors, URL and content-path
+ * check failures, and cloning or strict schema validation errors from createConfig.
+ */
 function loadNconf(options?: LoadNconfOptions): ConfigInstance {
   debug('config start');
   const env = localUtils.getNodeEnv();
