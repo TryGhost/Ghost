@@ -144,16 +144,43 @@ describe('Mail: Ghostmailer', function () {
       sinon.restore();
     });
 
-    it("return correct failure message for domain doesn't exist", async function () {
+    it('returns an EmailError when the SMTP hostname cannot be resolved', async function () {
       assert.equal(mailer.transport.transporter.name, 'SMTP');
       assert.equal(mailer.transport.transporter.options.direct, true);
-      await assert.rejects(mailer.send(mailDataNoDomain), /Failed to send email/);
+
+      // Inject the provider failure without depending on DNS or an SMTP server.
+      const providerError = Object.assign(new Error('getaddrinfo ENOTFOUND smtp.example.com'), {
+        code: 'EDNS',
+      });
+      const sendMailStub = sandbox.stub(mailer.transport, 'sendMail').rejects(providerError);
+
+      await assert.rejects(mailer.send(mailDataNoDomain), {
+        name: 'EmailError',
+        statusCode: 500,
+        code: 'EDNS',
+        message: 'Failed to send email. Reason: getaddrinfo ENOTFOUND smtp.example.com.',
+        help: 'Please see https://docs.ghost.org/config/#mail for instructions on configuring email.',
+      });
+      sinon.assert.calledOnceWithMatch(sendMailStub, { to: mailDataNoDomain.to });
     });
 
-    it('return correct failure message for no mail server at this address', async function () {
+    it('returns an EmailError when the SMTP connection is refused', async function () {
       assert.equal(mailer.transport.transporter.name, 'SMTP');
       assert.equal(mailer.transport.transporter.options.direct, true);
-      await assert.rejects(mailer.send(mailDataNoServer), /Failed to send email/);
+
+      const providerError = Object.assign(new Error('connect ECONNREFUSED 192.0.2.1:587'), {
+        code: 'ESOCKET',
+      });
+      const sendMailStub = sandbox.stub(mailer.transport, 'sendMail').rejects(providerError);
+
+      await assert.rejects(mailer.send(mailDataNoServer), {
+        name: 'EmailError',
+        statusCode: 500,
+        code: 'ESOCKET',
+        message: 'Failed to send email. Reason: connect ECONNREFUSED 192.0.2.1:587.',
+        help: 'Please see https://docs.ghost.org/config/#mail for instructions on configuring email.',
+      });
+      sinon.assert.calledOnceWithMatch(sendMailStub, { to: mailDataNoServer.to });
     });
 
     it('return correct failure message for incomplete data', async function () {
