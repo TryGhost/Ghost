@@ -1,7 +1,8 @@
 const assert = require('node:assert/strict');
 const { Blob } = require('node:buffer');
 const path = require('path');
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
+const { rmSync } = require('node:fs');
 const supertest = require('supertest');
 const sinon = require('sinon');
 const localUtils = require('./utils');
@@ -22,7 +23,7 @@ describe('Media API', function () {
 
   afterAll(function () {
     media.forEach(function (image) {
-      fs.removeSync(config.get('paths').appRoot + image);
+      rmSync(config.get('paths').appRoot + image, { recursive: true, force: true });
     });
   });
 

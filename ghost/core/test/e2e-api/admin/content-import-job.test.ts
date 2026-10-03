@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import os from 'node:os';
 import path from 'node:path';
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
+import { createWriteStream } from 'node:fs';
 import sinon from 'sinon';
 import { afterEach, describe, it } from 'vitest';
 
@@ -58,7 +59,7 @@ describe('Site content import delivery', function () {
       );
       const upload = path.join(directory, 'content.zip');
       const archive = new ZipArchive();
-      const output = fs.createWriteStream(upload);
+      const output = createWriteStream(upload);
       const finished = new Promise<void>((resolve, reject) => {
         output.on('close', resolve);
         output.on('error', reject);
@@ -91,7 +92,7 @@ describe('Site content import delivery', function () {
       await finished;
       try {
         await agent.post('db/').attach('importfile', upload).expectStatus(200);
-        await fs.remove(directory);
+        await fs.rm(directory, { recursive: true, force: true });
         await mockManager.assert.sentEmailEventually(
           { subject: 'Your content import has finished' },
           { timeout: 10000 },
@@ -126,7 +127,7 @@ describe('Site content import delivery', function () {
         const imagePath = images.urlToPath(post.get('feature_image'));
         assert.deepEqual(await images.read({ path: imagePath }), imageBytes);
       } finally {
-        await fs.remove(directory);
+        await fs.rm(directory, { recursive: true, force: true });
         sinon.restore();
         mockManager.restore();
         await configUtils.restore();

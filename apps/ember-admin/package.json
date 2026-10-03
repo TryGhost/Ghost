@@ -125,7 +125,6 @@
     "eslint-plugin-ghost": "3.5.0",
     "eslint-plugin-react": "7.37.5",
     "flexsearch": "0.7.43",
-    "fs-extra": "catalog:",
     "ghost": "workspace:*",
     "globals": "17.6.0",
     "liquid-fire": "0.34.0",

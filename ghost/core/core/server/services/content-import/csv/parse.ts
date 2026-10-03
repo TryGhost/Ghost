@@ -1,5 +1,5 @@
 import papaparse from 'papaparse';
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 import { stripFormulaGuard } from './formula';
 
 const errors = require('@tryghost/errors');

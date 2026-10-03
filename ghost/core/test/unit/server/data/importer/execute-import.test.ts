@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import sinon from 'sinon';
@@ -152,22 +153,22 @@ describe('Site import execution', function () {
     try {
       const first = manager.processImport(() => ({ data: {}, cleanupDirectory: dirs[0] }), options);
       await manager.processImport(() => ({ data: {}, cleanupDirectory: dirs[1] }), options);
-      assert.equal(await fs.pathExists(dirs[0]), true);
-      assert.equal(await fs.pathExists(dirs[1]), false);
+      assert.equal(existsSync(dirs[0]), true);
+      assert.equal(existsSync(dirs[1]), false);
       assert.equal(deps.mailer.send.callCount, 1);
       release();
       await first;
-      assert.equal(await fs.pathExists(dirs[0]), false);
+      assert.equal(existsSync(dirs[0]), false);
       assert.equal(deps.mailer.send.callCount, 2);
     } finally {
       release();
-      await Promise.all(dirs.map((dir) => fs.remove(dir)));
+      await Promise.all(dirs.map((dir) => fs.rm(dir, { recursive: true, force: true })));
     }
   });
 
   it('logs cleanup failures without replacing the import outcome', async function () {
     const { manager, deps } = subject();
-    sinon.stub(fs, 'remove').rejects(new Error('cleanup failed'));
+    sinon.stub(fs, 'rm').rejects(new Error('cleanup failed'));
     assert.deepEqual(
       await manager.processImport(() => ({ data: {}, cleanupDirectory: '/tmp/owned' }), options),
       {},
