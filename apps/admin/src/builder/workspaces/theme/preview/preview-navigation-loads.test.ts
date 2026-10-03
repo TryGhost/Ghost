@@ -3,13 +3,13 @@ import { IframePreviewDocumentSurface } from './preview-document';
 
 afterEach(() => vi.useRealTimers());
 
-function fixture() {
+function fixture(canvasNavigation = false) {
   const iframe = document.createElement('iframe');
-  const surface = new IframePreviewDocumentSurface(iframe, { timeoutMs: 1_000 });
+  const surface = new IframePreviewDocumentSurface(iframe, { timeoutMs: 1_000, canvasNavigation });
   const diagnostics = vi.fn();
   const ports: MessagePort[] = [];
   surface.onDiagnostic(diagnostics);
-  const acknowledge = () => {
+  const acknowledge = (fontsReady = true) => {
     const script = new DOMParser()
       .parseFromString(iframe.srcdoc, 'text/html')
       .querySelector<HTMLScriptElement>('script[data-builder-preview]')!;
@@ -30,6 +30,9 @@ function fixture() {
     send({ type: 'command-port' }, [commands.port1]);
     send({ type: 'ready', selection: null });
     send({ type: 'loaded' });
+    if (canvasNavigation && fontsReady) {
+      commands.port2.postMessage({ ...identity, type: 'canvas-fonts-ready' });
+    }
   };
   const replace = (revision: string) =>
     surface.replaceDocument(
@@ -53,6 +56,27 @@ function fixture() {
     },
   };
 }
+
+it('still guards a second canvas load while initial fonts are pending', async () => {
+  vi.useFakeTimers();
+  const current = fixture(true);
+  try {
+    const replacing = current.replace('accepted');
+    const rejected = expect(replacing).rejects.toThrow('virtual navigation bridge');
+    current.acknowledge(false);
+    current.iframe.dispatchEvent(new Event('load'));
+    await vi.advanceTimersByTimeAsync(101);
+    expect(current.diagnostics).not.toHaveBeenCalled();
+    current.iframe.dispatchEvent(new Event('load'));
+    await vi.advanceTimersByTimeAsync(101);
+    await rejected;
+    expect(current.diagnostics).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ code: 'preview_navigation_bypassed' }),
+    );
+  } finally {
+    current.destroy();
+  }
+});
 
 it.each([0, 10, 90])(
   'detects a second load %sms after a valid load without reusing its receipt',

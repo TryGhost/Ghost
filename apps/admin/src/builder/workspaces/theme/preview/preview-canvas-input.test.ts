@@ -27,11 +27,11 @@ it.each([false, true])(
     };
     const send = (data: object, source = iframe.contentWindow) =>
       window.dispatchEvent(new MessageEvent('message', { source, data: { ...identity, ...data } }));
+    const commands = new MessageChannel();
     try {
       expect(script.dataset.builderCanvasNavigation).toBe(String(enabled));
       send({ type: 'canvas-input', input: { kind: 'escape' } });
       expect(input).not.toHaveBeenCalled();
-      const commands = new MessageChannel();
       window.dispatchEvent(
         new MessageEvent('message', {
           source: iframe.contentWindow,
@@ -41,6 +41,9 @@ it.each([false, true])(
       );
       send({ type: 'ready', selection: null });
       send({ type: 'loaded' });
+      if (enabled) {
+        commands.port2.postMessage({ ...identity, type: 'canvas-fonts-ready' });
+      }
       await replacing;
       send({ type: 'canvas-input', input: { kind: 'escape' } }, window);
       send({ type: 'canvas-input', documentId: 'stale', input: { kind: 'escape' } });
@@ -61,6 +64,7 @@ it.each([false, true])(
       );
     } finally {
       surface.destroy();
+      commands.port2.close();
       iframe.remove();
     }
   },

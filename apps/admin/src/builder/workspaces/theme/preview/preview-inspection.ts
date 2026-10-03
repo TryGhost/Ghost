@@ -14,6 +14,11 @@ export type PreviewElementTarget = {
   selector?: string;
 };
 
+/** An occurrence belongs to one live runtime and cannot address a scriptless snapshot. */
+export type PreviewLiveElementTarget =
+  | PreviewElementTarget
+  | { occurrence: string; marker?: never; selector?: never };
+
 export type PreviewSourceLocation = {
   path: string;
   line: number;

@@ -52,6 +52,25 @@ Each iframe load has its own navigation check. Consecutive loads cannot reuse th
 accepted bridge receipt to conceal unbridged navigation. Replacement, restoration
 and destruction retire old checks; expected native form navigation preserves its
 existing restoration behavior. Canvas links/forms select instead of navigating.
+Restoration also preserves the canvas's current interaction mode, including mode
+changes since initial delivery. Initial canvas readiness waits for font loading
+within the existing document timeout before bounded height measurement starts.
+The authenticated load receipt remains immediate and separate from font readiness,
+so slow fonts cannot masquerade as navigation or conceal a subsequent load.
+
+Canvas selections include a `data.occurrence` handle for the exact native-hit-tested
+element. `id` and `data.marker` retain source-marker compatibility; they cannot
+distinguish repeated partials. Pass `{occurrence}` to the live surface's
+`inspectElement` to inspect that clicked use. Handles belong to one runtime, stay
+with a node when it moves within the document, and expire on detachment, document
+replacement/restoration or registry eviction. The registry retains at most 1,024
+selected nodes and never recycles handles. A stale handle fails explicitly;
+ambiguous marker-only canvas inspection also fails rather than returning the first
+card. Replacement does not restore canvas selection from a source marker. Fresh
+source/occurrence restoration belongs to controller recovery work. Existing
+single-preview and Artifact marker behavior is unchanged. Occurrence handles do
+not mutate theme DOM or address scriptless screenshots; explicit screenshot
+targets keep their separate selector/marker contract.
 
 ## Development harness
 

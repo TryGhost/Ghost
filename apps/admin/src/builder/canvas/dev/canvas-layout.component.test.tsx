@@ -5,6 +5,7 @@ import { renderInApp } from '@test-utils/acceptance/render-in-app';
 import { CanvasHarness } from './canvas-harness';
 import { FixtureClient } from './fixture-client';
 import { IframePreviewDocumentSurface } from '@/builder/workspaces/theme/preview/preview-document';
+import type { PreviewLayout } from '@/builder/workspaces/theme/preview/preview-document';
 
 it.each(['source', 'casper'] as const)(
   '%s keeps live geometry current, defers resizing a draft, and falls back one frame without replacing documents',
@@ -86,7 +87,24 @@ it.each(['source', 'casper'] as const)(
         ...document.querySelectorAll('iframe[title$="composition"],iframe[title$="preview"]'),
       ];
       const home = compositions.get('home-mobile')!;
-      const initial = await home.measureLayout(signal);
+      // Ready remains true during later observation passes. Capture the baseline
+      // after settling, rather than mistaking a temporary viewport-floor reset
+      // for this fixture's full-page height.
+      const baseline: { current: PreviewLayout | null } = { current: null };
+      await expect
+        .poll(async () => {
+          const layout = await home.measureLayout(signal);
+          if (
+            iframe.dataset.compositionStatus !== 'settled' ||
+            layout.viewport.height !== layout.document.height
+          ) {
+            return false;
+          }
+          baseline.current = layout;
+          return true;
+        })
+        .toBe(true);
+      const initial = baseline.current!;
       const renderCount = renderer.mock.calls.length;
       const identities = await Promise.all(
         [...compositions.values(), ...devices.values()].map(

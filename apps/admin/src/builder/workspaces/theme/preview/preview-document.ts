@@ -6,7 +6,7 @@ import { captureDocumentScreenshot } from './screenshot';
 
 import type {
   PreviewElementInspection,
-  PreviewElementTarget,
+  PreviewLiveElementTarget,
   PreviewPageInspection,
 } from './preview-inspection';
 import type { ScreenshotRequest, ScreenshotResult } from './screenshot';
@@ -98,7 +98,7 @@ export interface PreviewDocumentSurface {
   ): Promise<BuilderSelectionContext | null>;
   inspectPage(url: string, signal: AbortSignal): Promise<PreviewPageInspection>;
   inspectElement(
-    target: PreviewElementTarget,
+    target: PreviewLiveElementTarget,
     signal: AbortSignal,
   ): Promise<PreviewElementInspection>;
   screenshot(request: ScreenshotRequest, signal: AbortSignal): Promise<ScreenshotResult>;
@@ -373,6 +373,7 @@ function isSelection(value: unknown): value is BuilderSelectionContext {
     | {
         tagName?: unknown;
         marker?: unknown;
+        occurrence?: unknown;
         source?: { path?: unknown; line?: unknown; column?: unknown };
       }
     | undefined;
@@ -385,6 +386,8 @@ function isSelection(value: unknown): value is BuilderSelectionContext {
       data.tagName.length <= 64 &&
       typeof data.marker === 'string' &&
       data.marker === selection.id &&
+      (data.occurrence === undefined ||
+        (isBoundedString(data.occurrence, 512) && data.occurrence.length > 0)) &&
       (source === undefined ||
         (source !== null &&
           typeof source === 'object' &&
@@ -993,6 +996,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     documentId: string;
     ready: boolean;
     loaded: boolean;
+    fontsReady: boolean;
     selection: BuilderSelectionContext | null;
     resolve: (selection: BuilderSelectionContext | null) => void;
     reject: (error: Error) => void;
@@ -1098,6 +1102,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
         documentId,
         ready: false,
         loaded: false,
+        fontsReady: !this.canvasNavigation,
         selection: null,
         resolve,
         reject,
@@ -1201,7 +1206,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
   }
 
   async inspectElement(
-    target: PreviewElementTarget,
+    target: PreviewLiveElementTarget,
     signal: AbortSignal,
   ): Promise<PreviewElementInspection> {
     const inspection = await this.command<unknown>('inspect-element', target, signal);
@@ -1479,7 +1484,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
       if (this.pendingReady?.documentId === message.documentId) {
         this.pendingReady.loaded = true;
         this.resolvePendingDocument();
-      } else if (message.documentId === this.committedDocumentId) {
+      } else if (!this.canvasNavigation && message.documentId === this.committedDocumentId) {
         this.canvasReadyDocumentId = message.documentId;
         this.notifyCanvasCommitted();
       }
@@ -1506,7 +1511,9 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     } else if (
       message.type === 'select' &&
       message.documentId === this.committedDocumentId &&
-      (!this.canvasNavigation || message.interactionTime !== undefined)
+      (!this.canvasNavigation ||
+        (message.interactionTime !== undefined &&
+          this.canvasReadyDocumentId === message.documentId))
     ) {
       this.selectionListeners.forEach((listener) =>
         listener(message.selection, message.interactionTime),
@@ -1625,6 +1632,28 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
 
   private readonly handleCommandMessage = (event: MessageEvent<unknown>) => {
     const message = event.data;
+    const fonts = message as { type?: unknown; channel?: unknown; documentId?: unknown } | null;
+    if (
+      this.canvasNavigation &&
+      this.commandPortInstanceId &&
+      event.currentTarget === this.commandPort &&
+      fonts?.type === 'canvas-fonts-ready' &&
+      fonts.channel === this.channel &&
+      fonts.documentId === this.activeDocumentId &&
+      fonts.documentId === this.commandPortDocumentId
+    ) {
+      // The current runtime sends this after its load. Unlike a navigation
+      // receipt, readiness survives the guard consuming that load receipt.
+      const pending = this.pendingReady;
+      if (pending && pending.documentId === fonts.documentId) {
+        pending.fontsReady = true;
+        this.resolvePendingDocument();
+      } else if (fonts.documentId === this.committedDocumentId) {
+        this.canvasReadyDocumentId = this.committedDocumentId;
+        this.notifyCanvasCommitted();
+      }
+      return;
+    }
     // Pan ownership uses the private current-document port, never global messages.
     if (this.canvasNavigation && event.currentTarget === this.commandPort) {
       const pan = message as {
@@ -1821,6 +1850,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     if (
       !pending?.ready ||
       !pending.loaded ||
+      !pending.fontsReady ||
       !this.pendingSrcdoc ||
       this.commandPortDocumentId !== pending.documentId
     ) {
@@ -1849,6 +1879,17 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     this.closeCommandPort();
     if (this.committedSrcdoc && this.committedDocumentId) {
       this.activeDocumentId = this.committedDocumentId;
+      if (this.canvasNavigation) {
+        // Restoring the saved HTML creates a fresh runtime. Mode changes since
+        // its first delivery must survive that restoration too.
+        const restored = new DOMParser().parseFromString(this.committedSrcdoc, 'text/html');
+        const runtime = restored.querySelector<HTMLScriptElement>('script[data-builder-channel]');
+        if (runtime) {
+          runtime.dataset.builderInlineEditing = String(this.inlineEditing);
+          runtime.dataset.builderSelectionMode = String(this.selectionMode);
+          this.committedSrcdoc = `<!doctype html>${restored.documentElement.outerHTML}`;
+        }
+      }
       this.iframe.srcdoc = this.committedSrcdoc;
     } else {
       this.activeDocumentId = null;

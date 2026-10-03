@@ -3,6 +3,7 @@ import { page, userEvent } from 'vitest/browser';
 import { IframePreviewDocumentSurface } from '@/builder/workspaces/theme/preview/preview-document';
 import { instance, loadAssets } from './fixture';
 import type { ThemeFixtureId } from './fixture';
+import type { BuilderSelectionContext } from '@/builder/core/workspace';
 
 type Render = {
   html: Record<string, string>;
@@ -29,6 +30,67 @@ function renderer(fixtureId: ThemeFixtureId) {
       }),
   };
 }
+
+it.each(['source', 'casper'] as const)(
+  'inspects the selected repeated %s Home card without falling back to its first use',
+  async (fixtureId) => {
+    const client = renderer(fixtureId);
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'width:390px;height:844px;border:0';
+    document.body.appendChild(iframe);
+    const surface = new IframePreviewDocumentSurface(iframe, { canvasNavigation: true });
+    const signal = new AbortController().signal;
+    let selected: BuilderSelectionContext | null = null;
+    surface.onSelection((value) => {
+      selected = value;
+    });
+    try {
+      const rendered = await client.render();
+      await surface.replaceDocument(
+        {
+          html: rendered.html.home,
+          revision: rendered.revision,
+          inlineTextTargets: rendered.inlineTextTargets,
+          editMarkerAttribute: rendered.editMarkerAttribute,
+          url: instance.siteUrl,
+          assets: await loadAssets(fixtureId),
+        },
+        null,
+        signal,
+      );
+      await surface.setInteractionMode('select', signal);
+      const outline = (await surface.inspectPage(instance.siteUrl, signal)).outline;
+      const cards = outline.filter(
+        (item) => item.source?.path === 'partials/post-card.hbs' && item.role === 'heading',
+      );
+      expect(cards.length).toBeGreaterThan(1);
+      const frame = page.frameLocator(page.elementLocator(iframe));
+      await frame.getByRole('heading', { name: cards[0].name, exact: true }).click();
+      await expect.poll(() => selected?.label).toBe(cards[0].name);
+      const first = selected!.data as { marker: string; occurrence: string };
+      await frame.getByRole('heading', { name: cards[1].name, exact: true }).click();
+      await expect.poll(() => selected?.label).toBe(cards[1].name);
+      const second = selected!.data as { marker: string; occurrence: string };
+      expect(second.marker).toBe(first.marker);
+      expect(second.occurrence).not.toBe(first.occurrence);
+      await expect(
+        surface.inspectElement({ occurrence: second.occurrence }, signal),
+      ).resolves.toMatchObject({
+        text: cards[1].name,
+      });
+      await expect(surface.inspectElement({ marker: second.marker }, signal)).rejects.toMatchObject(
+        {
+          code: 'preview_target_ambiguous',
+        },
+      );
+      expect((await surface.measureLayout(signal)).localEdits.active).toBe(false);
+    } finally {
+      surface.destroy();
+      iframe.remove();
+      client.worker.terminate();
+    }
+  },
+);
 
 it.each(['source', 'casper'] as const)(
   'keeps %s dynamic Post output selectable without opening a literal editor',

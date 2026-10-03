@@ -68,6 +68,44 @@ export function previewRuntimeBootstrap(): void {
   if (!channel || !documentId) {
     return;
   }
+  // No authored/generated DOM attributes are changed to identify a live occurrence.
+  // A new nonce also fences restoration of the same parent document ID.
+  const occurrenceNonce = canvasNavigation
+    ? crypto.getRandomValues(new Uint32Array(4)).join('-')
+    : '';
+  const occurrenceIds = new WeakMap<Element, string>();
+  const occurrences = new Map<string, Element>();
+  let occurrenceSequence = 0;
+  const retireOccurrence = (handle: string, element: Element) => {
+    occurrences.delete(handle);
+    occurrenceIds.delete(element);
+  };
+  const pruneOccurrences = () => {
+    for (const [handle, element] of occurrences) {
+      if (!element.isConnected || element.ownerDocument !== document) {
+        retireOccurrence(handle, element);
+      }
+    }
+  };
+  const occurrenceId = (element: Element) => {
+    pruneOccurrences();
+    const existing = occurrenceIds.get(element);
+    if (existing) {
+      return existing;
+    }
+    // Bound retained nodes and retire old handles explicitly rather than recycling IDs.
+    if (occurrences.size >= 1_024) {
+      const oldest = occurrences.entries().next().value;
+      if (oldest) {
+        retireOccurrence(oldest[0], oldest[1]);
+      }
+    }
+    occurrenceSequence += 1;
+    const handle = `occurrence:${occurrenceNonce}:${occurrenceSequence}`;
+    occurrenceIds.set(element, handle);
+    occurrences.set(handle, element);
+    return handle;
+  };
   const parentPostMessage = window.parent.postMessage.bind(window.parent);
   const commandChannel = new MessageChannel();
   const commandPort = commandChannel.port1;
@@ -263,16 +301,24 @@ export function previewRuntimeBootstrap(): void {
       descendantName(element);
     return bounded(value, 256).text;
   };
-  const resolveElement = (target: { marker?: unknown; selector?: unknown }) => {
+  type LiveTarget = { marker?: unknown; selector?: unknown; occurrence?: unknown };
+  const resolveElement = (target: LiveTarget) => {
     const hasMarker = typeof target?.marker === 'string' && target.marker.length > 0;
     const hasSelector = typeof target?.selector === 'string' && target.selector.length > 0;
-    if (hasMarker === hasSelector) {
+    const hasOccurrence = typeof target?.occurrence === 'string' && target.occurrence.length > 0;
+    if (
+      [hasMarker, hasSelector, hasOccurrence].filter(Boolean).length !== 1 ||
+      [target?.marker, target?.selector, target?.occurrence].filter((value) => value !== undefined)
+        .length !== 1
+    ) {
       throw fail(
         'invalid_preview_target',
-        'Provide exactly one source marker or preview selector.',
+        'Provide exactly one source marker, preview selector or live occurrence.',
       );
     }
-    const value = (hasMarker ? target.marker : target.selector) as string;
+    const value = (
+      hasMarker ? target.marker : hasSelector ? target.selector : target.occurrence
+    ) as string;
     if (value.length > limits.target) {
       throw fail(
         'preview_target_too_large',
@@ -280,16 +326,31 @@ export function previewRuntimeBootstrap(): void {
       );
     }
     let element: Element | null = null;
-    if (hasMarker) {
+    if (hasOccurrence) {
+      pruneOccurrences();
+      element = occurrences.get(value) ?? null;
+      if (!element) {
+        throw fail('preview_occurrence_stale', 'Select the current live occurrence again.');
+      }
+    } else if (hasMarker) {
       const artifactElement = artifactElements.get(value);
       if (artifactElement && !artifactElement.isConnected) {
         artifactElements.delete(value);
       }
-      element = artifactElement?.isConnected
-        ? artifactElement
-        : (Array.from(document.querySelectorAll(`[${editMarkerAttribute}]`)).find(
-            (candidate) => candidate.getAttribute(editMarkerAttribute) === value,
-          ) ?? null);
+      if (artifactElement?.isConnected) {
+        element = artifactElement;
+      } else {
+        const matches = Array.from(document.querySelectorAll(`[${editMarkerAttribute}]`)).filter(
+          (candidate) => candidate.getAttribute(editMarkerAttribute) === value,
+        );
+        if (canvasNavigation && matches.length > 1) {
+          throw fail(
+            'preview_target_ambiguous',
+            'This source marker has multiple live occurrences. Use an exact occurrence or selector.',
+          );
+        }
+        element = matches[0] ?? null;
+      }
     } else {
       try {
         element = document.querySelector(value);
@@ -345,7 +406,7 @@ export function previewRuntimeBootstrap(): void {
       },
     };
   };
-  const inspectElement = (target: { marker?: unknown; selector?: unknown }) => {
+  const inspectElement = (target: LiveTarget) => {
     const element = resolveElement(target);
     const attributes = Object.fromEntries(
       [
@@ -960,6 +1021,7 @@ export function previewRuntimeBootstrap(): void {
       data: {
         tagName: element.tagName.toLowerCase(),
         marker,
+        ...(canvasNavigation ? { occurrence: occurrenceId(element) } : {}),
         ...(source.source ? { source: source.source } : {}),
       },
     };
@@ -2019,7 +2081,21 @@ export function previewRuntimeBootstrap(): void {
       ).slice(0, 2_000),
     }),
   );
-  window.addEventListener('load', () => send({ type: 'loaded' }), { once: true });
+  window.addEventListener(
+    'load',
+    () => {
+      // Navigation guarding needs an immediate, document-specific load receipt.
+      send({ type: 'loaded' });
+      if (canvasNavigation) {
+        // Initial font replacement changes page geometry. Start the bounded height
+        // pass after those fonts settle, within the parent's existing load timeout.
+        void document.fonts.ready.then(() =>
+          portPostMessage({ channel, documentId, type: 'canvas-fonts-ready' }),
+        );
+      }
+    },
+    { once: true },
+  );
   const handleCommand = (event: MessageEvent<unknown>) => {
     const message = event.data as {
       channel?: unknown;
@@ -2119,7 +2195,7 @@ export function previewRuntimeBootstrap(): void {
           },
         };
       } else if (message.command === 'inspect-element') {
-        result = inspectElement(message.payload as { marker?: unknown; selector?: unknown });
+        result = inspectElement(message.payload as LiveTarget);
       } else if (message.command === 'screenshot') {
         result = screenshotSnapshot((message.payload as { stable?: unknown })?.stable === true);
       } else if (message.command === 'cancel-inline-text-admission') {
@@ -2184,6 +2260,20 @@ export function previewRuntimeBootstrap(): void {
   parentPostMessage({ channel, documentId, type: 'command-port' }, '*', [commandChannel.port2]);
 
   const ready = () => {
+    if (canvasNavigation && document.body) {
+      const mutations = new MutationObserver(pruneOccurrences);
+      mutations.observe(document.documentElement, { subtree: true, childList: true });
+      window.addEventListener(
+        'pagehide',
+        () => {
+          mutations.disconnect();
+          for (const [handle, element] of occurrences) {
+            retireOccurrence(handle, element);
+          }
+        },
+        { once: true },
+      );
+    }
     if (observeLayout && document.body) {
       let timer: ReturnType<typeof setTimeout> | null = null;
       let stopped = false;
@@ -2333,12 +2423,15 @@ export function previewRuntimeBootstrap(): void {
     if (inlineEditing) {
       setInlineEditMode(true);
     }
-    const selected = selectedId
-      ? (artifactElements.get(selectedId) ??
-        Array.from(document.querySelectorAll(`[${editMarkerAttribute}]`)).find(
-          (element) => element.getAttribute(editMarkerAttribute) === selectedId,
-        ))
-      : null;
+    // Replacing a canvas document needs fresh occurrence/source proof; a repeated
+    // marker must never restore another card. Legacy and Artifact restoration stays intact.
+    const selected =
+      selectedId && !canvasNavigation
+        ? (artifactElements.get(selectedId) ??
+          Array.from(document.querySelectorAll(`[${editMarkerAttribute}]`)).find(
+            (element) => element.getAttribute(editMarkerAttribute) === selectedId,
+          ))
+        : null;
     send({ type: 'ready', selection: selected ? context(selected) : null });
   };
   runtimeScript?.remove();
