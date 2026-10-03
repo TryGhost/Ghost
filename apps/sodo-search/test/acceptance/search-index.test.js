@@ -2,6 +2,43 @@ import SearchIndex, { tokenizeCjkByCodePoint } from '../../src/search-index';
 import nock from 'nock';
 
 describe('search index', function () {
+  test.each(['posts', 'authors', 'tags'])(
+    'still searches other content when %s returns an HTTP error',
+    async (failedResource) => {
+      const adminUrl = 'http://localhost:3000';
+      const apiKey = 'test-key';
+      const searchIndex = new SearchIndex({ adminUrl, apiKey });
+      const scope = nock(`${adminUrl}/ghost/api/content`);
+      const errorLog = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      for (const resource of ['posts', 'authors', 'tags']) {
+        scope.get(`/search-index/${resource}/?key=${apiKey}`).reply(
+          resource === failedResource ? 503 : 200,
+          resource === failedResource
+            ? { errors: [{ message: 'Temporarily unavailable' }] }
+            : {
+                [resource]: [
+                  { id: resource, title: 'Example post', name: 'Example name', excerpt: '' },
+                ],
+              },
+        );
+      }
+
+      try {
+        await searchIndex.init();
+        const results = searchIndex.search('Example');
+        for (const resource of ['posts', 'authors', 'tags']) {
+          expect(results[resource]).toHaveLength(resource === failedResource ? 0 : 1);
+        }
+        expect(scope.isDone()).toBe(true);
+        expect(errorLog).toHaveBeenCalledOnce();
+      } finally {
+        errorLog.mockRestore();
+        nock.cleanAll();
+      }
+    },
+  );
+
   test('initializes search index', async () => {
     const adminUrl = 'http://localhost:3000';
     const apiKey = '69010382388f9de5869ad6e558';
