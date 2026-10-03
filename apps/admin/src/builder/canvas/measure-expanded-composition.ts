@@ -32,6 +32,7 @@ export async function measureExpandedComposition(
   frameId: string,
   revision: string,
   signal: AbortSignal,
+  configuredViewport?: { width: number; height: number },
 ): Promise<ExpandedComposition> {
   const started = performance.now();
   const controller = new AbortController();
@@ -70,8 +71,24 @@ export async function measureExpandedComposition(
 
   const work = async (): Promise<ExpandedComposition> => {
     assertActive();
+    if (configuredViewport) {
+      if (
+        !Number.isSafeInteger(configuredViewport.height) ||
+        configuredViewport.height < 1 ||
+        configuredViewport.height > EXPANDED_COMPOSITION_LIMITS.maxHeight
+      ) {
+        throw new Error('The configured composition viewport exceeds its height limit.');
+      }
+      // scrollHeight includes the current viewport floor. Resetting within the
+      // same bounded pass lets later measurements detect content shrinkage too.
+      await resize(configuredViewport.height, controller.signal);
+      assertActive();
+    }
     const initial = await surface.measureLayout(controller.signal);
     assertActive();
+    if (configuredViewport && initial.viewport.width !== configuredViewport.width) {
+      throw new Error('The configured composition width changed during measurement.');
+    }
     if (initial.localEdits.active || initial.localEdits.changed) {
       throw new Error('The composition contains local edits outside its rendered revision.');
     }
@@ -80,6 +97,7 @@ export async function measureExpandedComposition(
     }
     const measurements = [initial];
     let current = initial;
+    let resetForContent = false;
     let status: ExpandedComposition['status'] = 'round-limit';
     while (measurements.length < EXPANDED_COMPOSITION_LIMITS.maxRounds) {
       if (
@@ -89,7 +107,11 @@ export async function measureExpandedComposition(
         status = 'height-limit';
         break;
       }
-      const height = Math.min(current.document.height, EXPANDED_COMPOSITION_LIMITS.maxHeight);
+      const height: number =
+        resetForContent && configuredViewport
+          ? configuredViewport.height
+          : Math.min(current.document.height, EXPANDED_COMPOSITION_LIMITS.maxHeight);
+      resetForContent = false;
       assertActive();
       // Even an unchanged height waits for a second observation of the same geometry.
       await resize(height, controller.signal);
@@ -110,10 +132,18 @@ export async function measureExpandedComposition(
         );
       }
       measurements.push(next);
+      // A mutation while expanding can shrink content behind scrollHeight's
+      // viewport floor. Re-read at the configured height within the same budget.
+      resetForContent =
+        !!configuredViewport &&
+        next.viewport.height > configuredViewport.height &&
+        next.layoutGeneration !== current.layoutGeneration;
       if (
+        !resetForContent &&
         next.viewport.height === current.viewport.height &&
         next.document.height === current.document.height &&
         next.document.width === current.document.width &&
+        next.layoutGeneration === current.layoutGeneration &&
         next.document.height === next.viewport.height
       ) {
         status = 'settled';

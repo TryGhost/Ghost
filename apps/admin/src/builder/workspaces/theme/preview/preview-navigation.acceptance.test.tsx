@@ -1,6 +1,35 @@
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import { IframePreviewDocumentSurface } from './preview-document';
 import { fakeFrameOrigin } from '@test-utils/acceptance/frames';
+
+// Hold just this surface's load guards so both browser loads precede the
+// initial receipt check even when the test worker is busy. Polling and runtime
+// timers retain their real clocks; correctness does not depend on CPU speed.
+function holdLoadGuards(surface: IframePreviewDocumentSurface) {
+  const guards = surface as unknown as { loadChecks: Set<ReturnType<typeof setTimeout>> };
+  const original = globalThis.setTimeout;
+  const held: (() => void)[] = [];
+  const spy = vi.spyOn(globalThis, 'setTimeout').mockImplementation((handler, delay, ...args) => {
+    const timer = original(handler, delay, ...args);
+    if (delay === 100 && typeof handler === 'function') {
+      queueMicrotask(() => {
+        if (guards.loadChecks.has(timer)) {
+          clearTimeout(timer);
+          held.push(() => handler(...args));
+        }
+      });
+    }
+    return timer;
+  });
+  return {
+    release: () => {
+      spy.mockRestore();
+      expect(held.length).toBeGreaterThanOrEqual(2);
+      held.forEach((check) => check());
+    },
+    restore: () => spy.mockRestore(),
+  };
+}
 
 it.each([false, true])(
   'restores a rapid unbridged load (canvas=%s) instead of consuming the initial receipt',
@@ -9,6 +38,7 @@ it.each([false, true])(
     iframe.style.cssText = 'width:600px;height:650px;border:0';
     document.body.appendChild(iframe);
     const surface = new IframePreviewDocumentSurface(iframe, { canvasNavigation });
+    const guard = holdLoadGuards(surface);
     const diagnostics: unknown[] = [];
     const loads: number[] = [];
     iframe.addEventListener('load', () => loads.push(performance.now()));
@@ -24,11 +54,9 @@ it.each([false, true])(
         null,
         signal,
       );
-      // Remain in the same parent continuation so navigation precedes the 100ms
-      // initial-load check, rather than adding a browser locator round trip.
       iframe.contentWindow!.postMessage('test-rapid-navigation', '*');
       await expect.poll(() => loads.length).toBeGreaterThanOrEqual(2);
-      expect(loads[1] - loads[0]).toBeLessThan(100);
+      guard.release();
       await expect
         .poll(() => diagnostics)
         .toEqual([expect.objectContaining({ code: 'preview_navigation_bypassed' })]);
@@ -46,6 +74,7 @@ it.each([false, true])(
         height: 650,
       });
     } finally {
+      guard.restore();
       surface.destroy();
       iframe.remove();
     }
@@ -63,6 +92,7 @@ it('restores an expected native form result during the initial guard without a b
     sandbox: 'allow-scripts allow-forms',
   });
   const diagnostics: unknown[] = [];
+  const guard = holdLoadGuards(surface);
   const loads: number[] = [];
   iframe.addEventListener('load', () => loads.push(performance.now()));
   surface.onDiagnostic((diagnostic) => diagnostics.push(diagnostic));
@@ -78,8 +108,9 @@ it('restores an expected native form result during the initial guard without a b
       signal,
     );
     iframe.contentWindow!.postMessage('test-rapid-form', '*');
+    await expect.poll(() => loads.length).toBeGreaterThanOrEqual(2);
+    guard.release();
     await expect.poll(() => loads.length).toBeGreaterThanOrEqual(3);
-    expect(loads[1] - loads[0]).toBeLessThan(100);
     await expect
       .poll(async () => {
         try {
@@ -91,6 +122,7 @@ it('restores an expected native form result during the initial guard without a b
       .toBe('Accepted form');
     expect(diagnostics).toEqual([]);
   } finally {
+    guard.restore();
     surface.destroy();
     iframe.remove();
   }

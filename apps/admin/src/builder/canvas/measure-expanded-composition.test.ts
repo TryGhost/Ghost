@@ -37,6 +37,35 @@ function measure(value: ReturnType<typeof preview>, signal = new AbortController
 }
 
 describe('bounded expanded composition measurements', () => {
+  it('remeasures the viewport floor when content shrinks during an expanding pass', async () => {
+    let extent = 4000;
+    let generation = 0;
+    const value = preview(() => extent);
+    const read = value.surface.measureLayout.getMockImplementation()!;
+    const resize = value.resize.getMockImplementation()!;
+    value.surface.measureLayout.mockImplementation(async () => ({
+      ...(await read()),
+      layoutGeneration: generation,
+    }));
+    value.resize.mockImplementation((height) => {
+      const result = resize(height);
+      if (height === 4000 && generation === 0) {
+        extent = 1000;
+        generation = 1;
+      }
+      return result;
+    });
+    const result = await measureExpandedComposition(
+      value.surface,
+      value.resize,
+      'home-mobile',
+      'revision-1',
+      new AbortController().signal,
+      { width: 390, height: 844 },
+    );
+    expect(result.status).toBe('settled');
+    expect(result.viewport.height).toBe(1000);
+  });
   it('does not settle a restored runtime under the previous document identity', async () => {
     const value = preview(() => 4000);
     value.resize.mockImplementationOnce(() => {

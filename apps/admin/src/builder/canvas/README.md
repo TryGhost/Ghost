@@ -60,15 +60,27 @@ are displayed by default; four separate fixed-height device iframes remain mount
 for addressed inspection. No automatic screenshot drives the canvas. Switching the
 harness's Full page/Device views retains all eight documents. Switching views is
 unavailable while a manual draft is retained; Resume/Cancel remain available.
-Per-frame fallback and source-replacement recovery are still milestone work.
+Each frame has a screen-space control for switching to its own fixed viewport;
+other frames retain their presentation. A switch clears that frame's source
+selection and does not transfer a draft or inspection handle. Presentation changes
+are disabled while a draft is retained. Source-replacement recovery remains
+milestone work.
 
 Composition height uses the authenticated layout bridge, limited to eight
 observations, 1,500ms and 16,000 CSS pixels. Actual composition viewport dimensions
 can differ from configured device dimensions: viewport-height CSS, fixed/sticky
 behavior and lazy loading require separate device checks. Height caps, instability
-and failures have compact actionable notices. Measurement currently runs after
-load/accepted document delivery; ongoing late-resource layout observation remains
-work. Settling alone does not establish device fidelity or full lazy-content loading.
+and failures have compact actionable notices. Opt-in authenticated-port notifications observe later image/font loads,
+DOM/style changes and document/body resizing, including arbitrary theme attributes
+that control CSS selectors. Ordered samples fence obsolete notifications; identical
+attribute writes, identical DOM replacements and the runtime's own mode/tab-stop
+and hover-outline changes do not restart settling. Each pass resets to the configured viewport to reveal shrinkage,
+then settles within the same round/time/height limits. Changes during an expanding
+pass recheck that viewport floor. These passes retain documents and the camera;
+a retained text draft defers resizing until it is released. A failed or limited
+pass stops automatic resizing for that delivered document and offers its fixed
+viewport fallback. Accepted source replacement starts new bounded observation.
+Settling alone does not establish device fidelity or full lazy-content loading.
 
 The harness commits eligible literal text through the real fixture worker, accepting
 source only after Home and Post both render successfully, then updating all eight

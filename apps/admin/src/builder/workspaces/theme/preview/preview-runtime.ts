@@ -24,6 +24,13 @@ export function previewRuntimeBootstrap(): void {
   const artifactDocument = runtimeScript?.dataset.builderArtifactDocument === 'true';
   const canvasNavigation = runtimeScript?.dataset.builderCanvasNavigation === 'true';
   const canvasPanning = runtimeScript?.dataset.builderCanvasPanning === 'true';
+  const observeLayout = runtimeScript?.dataset.builderObserveLayout === 'true';
+  let layoutGeneration = 0;
+  let layoutSample = 0;
+  const nextLayoutSample = () => {
+    layoutSample += 1;
+    return layoutSample;
+  };
   const inlineImageEditing = runtimeScript?.dataset.builderInlineImageEditing !== 'false';
   const requestedMarkerAttribute = runtimeScript?.dataset.builderEditMarkerAttribute ?? 'data-edit';
   const editMarkerAttribute = /^data-[a-z][a-z0-9-]{0,127}$/.test(requestedMarkerAttribute)
@@ -1118,6 +1125,21 @@ export function previewRuntimeBootstrap(): void {
   let inlineModeGeneration = 0;
   let allowBlurCommit = false;
   const inlineTabStops = new Map<HTMLElement, string | null>();
+  const inlineOutlineElements = new WeakSet<Element>();
+  const inlineChromeAttributes = new WeakMap<Element, Map<string, (string | null)[]>>();
+  let layoutObservationActive = false;
+  const changeInlineChromeAttribute = (element: Element, attribute: string, change: () => void) => {
+    const previous = element.getAttribute(attribute);
+    change();
+    if (layoutObservationActive && previous !== element.getAttribute(attribute)) {
+      const attributes =
+        inlineChromeAttributes.get(element) ?? new Map<string, (string | null)[]>();
+      const values = attributes.get(attribute) ?? [];
+      values.push(previous);
+      attributes.set(attribute, values);
+      inlineChromeAttributes.set(element, attributes);
+    }
+  };
   const clearInlineHover = () => {
     if (hoveredInlineElement) {
       hoveredInlineElement.style.outline = previousHoverOutline;
@@ -1477,17 +1499,21 @@ export function previewRuntimeBootstrap(): void {
       );
       if (!naturallyFocusable && !inlineTabStops.has(element)) {
         inlineTabStops.set(element, element.getAttribute('tabindex'));
-        element.tabIndex = 0;
+        changeInlineChromeAttribute(element, 'tabindex', () => {
+          element.tabIndex = 0;
+        });
       }
     });
   };
   const clearSourceTabStops = () => {
     inlineTabStops.forEach((tabIndex, element) => {
-      if (tabIndex === null) {
-        element.removeAttribute('tabindex');
-      } else {
-        element.setAttribute('tabindex', tabIndex);
-      }
+      changeInlineChromeAttribute(element, 'tabindex', () => {
+        if (tabIndex === null) {
+          element.removeAttribute('tabindex');
+        } else {
+          element.setAttribute('tabindex', tabIndex);
+        }
+      });
     });
     inlineTabStops.clear();
   };
@@ -1496,9 +1522,13 @@ export function previewRuntimeBootstrap(): void {
     inlineEditing = enabled;
     if (enabled) {
       selectionMode = false;
-      document.documentElement.dataset.selectionMode = 'off';
+      changeInlineChromeAttribute(document.documentElement, 'data-selection-mode', () => {
+        document.documentElement.dataset.selectionMode = 'off';
+      });
     }
-    document.documentElement.dataset.inlineEditMode = enabled ? 'on' : 'off';
+    changeInlineChromeAttribute(document.documentElement, 'data-inline-edit-mode', () => {
+      document.documentElement.dataset.inlineEditMode = enabled ? 'on' : 'off';
+    });
     if (enabled) {
       addSourceTabStops();
     } else {
@@ -1518,7 +1548,9 @@ export function previewRuntimeBootstrap(): void {
   };
   const setSelectionMode = (enabled: boolean) => {
     selectionMode = enabled;
-    document.documentElement.dataset.selectionMode = enabled ? 'on' : 'off';
+    changeInlineChromeAttribute(document.documentElement, 'data-selection-mode', () => {
+      document.documentElement.dataset.selectionMode = enabled ? 'on' : 'off';
+    });
     if (enabled) {
       prepareArtifactSelectionTargets();
     }
@@ -1616,6 +1648,7 @@ export function previewRuntimeBootstrap(): void {
       }
       clearInlineHover();
       hoveredInlineElement = editable;
+      inlineOutlineElements.add(editable);
       previousHoverOutline = editable.style.outline;
       editable.style.outline = '2px solid Highlight';
     },
@@ -1898,6 +1931,7 @@ export function previewRuntimeBootstrap(): void {
         result = inspectPage();
       } else if (message.command === 'measure-layout') {
         result = {
+          ...(observeLayout ? { layoutGeneration, layoutSample: nextLayoutSample() } : {}),
           localEdits: {
             generation: localEditGeneration,
             active: Boolean(activeInlineEdit || pendingImageEdit || pendingInlineTextAdmission),
@@ -1982,6 +2016,124 @@ export function previewRuntimeBootstrap(): void {
   parentPostMessage({ channel, documentId, type: 'command-port' }, '*', [commandChannel.port2]);
 
   const ready = () => {
+    if (observeLayout && document.body) {
+      let timer: ReturnType<typeof setTimeout> | null = null;
+      let stopped = false;
+      let previous = '';
+      let sequence = 0;
+      const notify = () => {
+        timer = null;
+        if (stopped) {
+          return;
+        }
+        const viewport = { width: window.innerWidth, height: window.innerHeight };
+        const extent = {
+          width: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
+          height: Math.max(document.documentElement.scrollHeight, document.body.scrollHeight),
+        };
+        const geometry = JSON.stringify([viewport, extent, layoutGeneration]);
+        if (geometry !== previous) {
+          previous = geometry;
+          sequence += 1;
+          portPostMessage({
+            channel,
+            documentId,
+            type: 'layout-changed',
+            sequence,
+            viewport,
+            document: extent,
+            layoutGeneration,
+            layoutSample: nextLayoutSample(),
+          });
+        }
+      };
+      // A throttle rather than a restarting debounce also observes busy documents.
+      const schedule = () => {
+        if (!stopped && timer === null) {
+          timer = setTimeout(notify, 100);
+        }
+      };
+      const resize = new ResizeObserver(schedule);
+      resize.observe(document.documentElement);
+      resize.observe(document.body);
+      const contentChanged = () => {
+        layoutGeneration += 1;
+        schedule();
+      };
+      const mutations = new MutationObserver((records) => {
+        const changed = records
+          .map((record) => {
+            if (record.type === 'attributes') {
+              const element = record.target as Element;
+              const attribute = record.attributeName!;
+              const owned = inlineChromeAttributes.get(element)?.get(attribute);
+              if (owned?.length && owned[0] === record.oldValue) {
+                owned.shift();
+                return false;
+              }
+              if (attribute === 'style' && inlineOutlineElements.has(element)) {
+                const before = document.createElement('span').style;
+                const after = document.createElement('span').style;
+                before.cssText = record.oldValue ?? '';
+                after.cssText = element.getAttribute('style') ?? '';
+                before.removeProperty('outline');
+                after.removeProperty('outline');
+                if (before.cssText === after.cssText) {
+                  return false;
+                }
+              }
+              return record.oldValue !== element.getAttribute(attribute);
+            }
+            if (
+              record.type === 'childList' &&
+              record.addedNodes.length === record.removedNodes.length &&
+              record.addedNodes.length <= 32
+            ) {
+              // Responsive scripts may recreate identical markup on every resize.
+              return [...record.addedNodes].some(
+                (node, index) => !node.isEqualNode(record.removedNodes[index]),
+              );
+            }
+            return true;
+          })
+          .some(Boolean);
+        if (changed) {
+          contentChanged();
+        }
+      });
+      mutations.observe(document.documentElement, {
+        subtree: true,
+        childList: true,
+        characterData: true,
+        attributes: true,
+        attributeOldValue: true,
+      });
+      layoutObservationActive = true;
+      window.addEventListener('resize', schedule);
+      window.addEventListener('load', contentChanged, true);
+      window.addEventListener('transitionend', schedule, true);
+      window.addEventListener('animationend', schedule, true);
+      document.fonts.addEventListener('loadingdone', contentChanged);
+      window.addEventListener(
+        'pagehide',
+        () => {
+          stopped = true;
+          layoutObservationActive = false;
+          if (timer !== null) {
+            clearTimeout(timer);
+          }
+          resize.disconnect();
+          mutations.disconnect();
+          window.removeEventListener('resize', schedule);
+          window.removeEventListener('load', contentChanged, true);
+          window.removeEventListener('transitionend', schedule, true);
+          window.removeEventListener('animationend', schedule, true);
+          document.fonts.removeEventListener('loadingdone', contentChanged);
+        },
+        { once: true },
+      );
+      schedule();
+    }
     prepareArtifactSelectionTargets();
     if (artifactDocument && document.body) {
       new MutationObserver((records) => {

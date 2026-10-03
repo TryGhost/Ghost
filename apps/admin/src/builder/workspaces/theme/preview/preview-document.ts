@@ -58,8 +58,20 @@ export type PreviewCanvasInput =
 export type PreviewLayout = {
   documentId: string;
   documentInstanceId: string;
+  layoutGeneration?: number;
+  layoutSample?: number;
   localEdits: { generation: number; active: boolean; changed: boolean };
   viewport: { width: number; height: number; scrollX: number; scrollY: number };
+  document: { width: number; height: number };
+};
+
+/** A bounded geometry hint; callers measure again before acting on it. */
+export type PreviewLayoutChange = {
+  documentId: string;
+  documentInstanceId: string;
+  layoutGeneration: number;
+  layoutSample: number;
+  viewport: { width: number; height: number };
   document: { width: number; height: number };
 };
 
@@ -876,6 +888,7 @@ export function createPreviewDocument(
   captureLoadedImages = false,
   canvasPanning = false,
   inlineImageEditing = true,
+  observeLayout = false,
 ): string {
   const parsed = new DOMParser().parseFromString(document.html, 'text/html');
   parsed.querySelectorAll('meta[http-equiv]').forEach((meta) => {
@@ -916,6 +929,7 @@ export function createPreviewDocument(
   script.dataset.builderArtifactDocument = artifactDocument ? 'true' : 'false';
   script.dataset.builderCanvasNavigation = canvasNavigation ? 'true' : 'false';
   script.dataset.builderCanvasPanning = canvasNavigation && canvasPanning ? 'true' : 'false';
+  script.dataset.builderObserveLayout = observeLayout ? 'true' : 'false';
   script.dataset.builderInlineImageEditing = inlineImageEditing ? 'true' : 'false';
   script.dataset.builderEditMarkerAttribute = document.editMarkerAttribute ?? 'data-edit';
   if (canvasNavigation) {
@@ -943,6 +957,9 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
   private readonly inlineImageEditing: boolean;
   private readonly admitInlineTextEdit: (interactionTime: number) => boolean;
   private readonly captureLoadedImages: boolean;
+  private readonly observeLayout: boolean;
+  private layoutSequence = 0;
+  private readonly layoutListeners = new Set<(change: PreviewLayoutChange) => void>();
   private readonly canvasInputListeners = new Set<(input: PreviewCanvasInput) => void>();
   private canvasInlineEditActive = false;
   private readonly navigateListeners = new Set<(url: string) => void>();
@@ -998,6 +1015,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
       inlineImageEditing = true,
       admitInlineTextEdit = () => true,
       captureLoadedImages = false,
+      observeLayout = false,
     }: {
       openWindow?: (url: string) => void;
       timeoutMs?: number;
@@ -1010,6 +1028,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
       inlineImageEditing?: boolean;
       admitInlineTextEdit?: (interactionTime: number) => boolean;
       captureLoadedImages?: boolean;
+      observeLayout?: boolean;
     } = {},
   ) {
     this.iframe = iframe;
@@ -1023,6 +1042,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     this.inlineImageEditing = inlineImageEditing;
     this.admitInlineTextEdit = admitInlineTextEdit;
     this.captureLoadedImages = captureLoadedImages;
+    this.observeLayout = observeLayout;
     iframe.setAttribute('sandbox', sandbox);
     iframe.addEventListener('load', this.handleLoad);
     window.addEventListener('message', this.handleMessage);
@@ -1091,6 +1111,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
           this.captureLoadedImages,
           this.canvasPanning,
           this.inlineImageEditing,
+          this.observeLayout,
         );
       } catch (error) {
         this.rejectPending(error instanceof Error ? error : new Error(String(error)), false);
@@ -1136,6 +1157,10 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
       typeof layout?.localEdits?.changed !== 'boolean' ||
       !Number.isSafeInteger(layout?.localEdits?.generation) ||
       (layout?.localEdits?.generation ?? -1) < 0 ||
+      (layout?.layoutGeneration !== undefined &&
+        (!Number.isSafeInteger(layout.layoutGeneration) || layout.layoutGeneration < 0)) ||
+      (layout?.layoutSample !== undefined &&
+        (!Number.isSafeInteger(layout.layoutSample) || layout.layoutSample < 1)) ||
       !scroll.every(
         (number) =>
           typeof number === 'number' && Number.isFinite(number) && Math.abs(number) <= 1_000_000,
@@ -1378,6 +1403,11 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     return () => this.canvasInputListeners.delete(handler);
   }
 
+  onLayoutChange(handler: (change: PreviewLayoutChange) => void): () => void {
+    this.layoutListeners.add(handler);
+    return () => this.layoutListeners.delete(handler);
+  }
+
   destroy(): void {
     this.clearCanvasInlineEdit();
     this.iframe.removeEventListener('load', this.handleLoad);
@@ -1392,6 +1422,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     this.diagnosticListeners.clear();
     this.inlineEditListeners.clear();
     this.canvasInputListeners.clear();
+    this.layoutListeners.clear();
     this.activeDocumentId = null;
     this.canvasReadyDocumentId = null;
     this.committedDocumentId = null;
@@ -1584,6 +1615,50 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
 
   private readonly handleCommandMessage = (event: MessageEvent<unknown>) => {
     const message = event.data;
+    if (this.observeLayout && event.currentTarget === this.commandPort) {
+      const hint = message as {
+        channel?: unknown;
+        documentId?: unknown;
+        type?: unknown;
+        sequence?: number;
+        layoutGeneration?: number;
+        layoutSample?: number;
+        viewport?: PreviewLayoutChange['viewport'];
+        document?: PreviewLayoutChange['document'];
+      } | null;
+      if (
+        hint?.type === 'layout-changed' &&
+        hint.channel === this.channel &&
+        hint.documentId === this.committedDocumentId &&
+        hint.documentId === this.activeDocumentId &&
+        hint.documentId === this.commandPortDocumentId &&
+        this.commandPortInstanceId &&
+        Number.isSafeInteger(hint.sequence) &&
+        hint.sequence! > this.layoutSequence &&
+        Number.isSafeInteger(hint.layoutGeneration) &&
+        hint.layoutGeneration! >= 0 &&
+        Number.isSafeInteger(hint.layoutSample) &&
+        hint.layoutSample! > 0 &&
+        [
+          hint.viewport?.width,
+          hint.viewport?.height,
+          hint.document?.width,
+          hint.document?.height,
+        ].every((value) => Number.isSafeInteger(value) && value! > 0 && value! <= 1_000_000)
+      ) {
+        this.layoutSequence = hint.sequence!;
+        const change: PreviewLayoutChange = {
+          documentId: this.committedDocumentId!,
+          documentInstanceId: this.commandPortInstanceId,
+          layoutGeneration: hint.layoutGeneration!,
+          layoutSample: hint.layoutSample!,
+          viewport: { width: hint.viewport!.width, height: hint.viewport!.height },
+          document: { width: hint.document!.width, height: hint.document!.height },
+        };
+        this.layoutListeners.forEach((handler) => handler(change));
+        return;
+      }
+    }
     if (
       !isCommandResultMessage(message) ||
       message.channel !== this.channel ||
@@ -1768,6 +1843,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     this.commandPortDocumentId = documentId;
     this.commandPortInstanceSequence += 1;
     this.commandPortInstanceId = `${documentId}:bridge-${this.commandPortInstanceSequence}`;
+    this.layoutSequence = 0;
     port.addEventListener('message', this.handleCommandMessage);
     port.start();
   }

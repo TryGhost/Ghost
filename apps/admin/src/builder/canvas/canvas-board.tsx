@@ -25,7 +25,7 @@ export type CanvasView = {
   selectedFrameId: string | null;
 };
 
-function frameHeaders(frames: readonly CanvasFrame[], camera: CanvasCamera) {
+function frameHeaders(frames: readonly CanvasFrame[], camera: CanvasCamera, width = 154) {
   const headers: { frame: CanvasFrame; x: number; y: number }[] = [];
   for (const frame of frames) {
     let x = camera.x + frame.x * camera.scale;
@@ -33,14 +33,14 @@ function frameHeaders(frames: readonly CanvasFrame[], camera: CanvasCamera) {
     while (
       headers.some(
         (header) =>
-          x < header.x + 154 && x + 154 > header.x && y < header.y + 36 && y + 36 > header.y,
+          x < header.x + width && x + width > header.x && y < header.y + 36 && y + 36 > header.y,
       )
     ) {
       const collision = headers.find(
         (header) =>
-          x < header.x + 154 && x + 154 > header.x && y < header.y + 36 && y + 36 > header.y,
+          x < header.x + width && x + width > header.x && y < header.y + 36 && y + 36 > header.y,
       )!;
-      x = collision.x + 154;
+      x = collision.x + width;
     }
     headers.push({ frame, x, y });
   }
@@ -51,11 +51,13 @@ function frameHeaders(frames: readonly CanvasFrame[], camera: CanvasCamera) {
 export function CanvasBoard({
   frames,
   renderFrame,
+  renderFrameActions,
   initialFitReady = true,
   onSelectionIntent,
   onViewChange,
 }: {
   frames: readonly CanvasFrame[];
+  renderFrameActions?: (frame: CanvasFrame) => ReactNode;
   initialFitReady?: boolean;
   onSelectionIntent?: (frameId: string | null) => void;
   onViewChange?: (view: CanvasView) => void;
@@ -380,33 +382,49 @@ export function CanvasBoard({
             </Box>
           ))}
         </Box>
-        {frameHeaders(frames, camera).map(({ frame, x, y }) => (
-          <Button
-            key={frame.id}
-            aria-label={frame.label}
-            aria-pressed={selected === frame.id}
-            className="absolute z-20 h-8 justify-start truncate bg-background px-2 text-xs shadow-sm"
-            size="sm"
-            style={{
-              left: x,
-              top: y,
-              width: 150,
-              height: 32,
-            }}
-            tabIndex={x >= 0 && x + 150 <= size.width && y >= 0 && y + 32 <= size.height ? 0 : -1}
-            title={`${frame.label} · ${formatNumber(frame.viewport?.width ?? frame.width)} × ${formatNumber(frame.viewport?.height ?? frame.height)} CSS pixels${frame.overviewLabel ? ` · ${frame.overviewLabel} · ${formatNumber(frame.height)}px composition` : ''}`}
-            variant="outline"
-            onClick={() => selectFrame(frame.id)}
-            onDoubleClick={() => reveal(frame)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault();
-                reveal(frame);
-              }
-            }}
-          >
-            {frame.label}
-          </Button>
+        {frameHeaders(frames, camera, renderFrameActions ? 194 : 154).map(({ frame, x, y }) => (
+          <Inline key={frame.id} className="absolute z-20" gap="xs" style={{ left: x, top: y }}>
+            <Button
+              ref={(element) => {
+                if (element) {
+                  element.inert = x < 0 || x + 150 > size.width || y < 0 || y + 32 > size.height;
+                }
+              }}
+              aria-label={frame.label}
+              aria-pressed={selected === frame.id}
+              className="h-8 justify-start truncate bg-background px-2 text-xs shadow-sm"
+              size="sm"
+              style={{
+                width: 150,
+                height: 32,
+              }}
+              tabIndex={x >= 0 && x + 150 <= size.width && y >= 0 && y + 32 <= size.height ? 0 : -1}
+              title={`${frame.label} · ${formatNumber(frame.viewport?.width ?? frame.width)} × ${formatNumber(frame.viewport?.height ?? frame.height)} CSS pixels${frame.overviewLabel ? ` · ${frame.overviewLabel} · ${formatNumber(frame.height)} CSS pixels high` : ''}`}
+              variant="outline"
+              onClick={() => selectFrame(frame.id)}
+              onDoubleClick={() => reveal(frame)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  reveal(frame);
+                }
+              }}
+            >
+              {frame.label}
+            </Button>
+            {renderFrameActions && (
+              <Box
+                ref={(element) => {
+                  if (element) {
+                    element.inert =
+                      x + 154 < 0 || x + 190 > size.width || y < 0 || y + 32 > size.height;
+                  }
+                }}
+              >
+                {renderFrameActions(frame)}
+              </Box>
+            )}
+          </Inline>
         ))}
       </Box>
     </Stack>

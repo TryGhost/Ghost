@@ -127,3 +127,37 @@ it('lets every live frame receive a direct double-click without opening a mode',
   expect(document.querySelectorAll('button').length).toBeGreaterThan(0);
   expect(document.body.textContent).not.toContain('Back to overview');
 });
+
+it('keeps a visible header interactive when only its fallback action is clipped', async () => {
+  await renderInApp(
+    <section style={{ width: 500, height: 650 }}>
+      <CanvasBoard
+        frames={[frames[0]]}
+        initialFitReady={false}
+        renderFrame={() => null}
+        renderFrameActions={() => (
+          <button style={{ width: 32 }} type="button">
+            Fallback
+          </button>
+        )}
+      />
+    </section>,
+  );
+  const host = page.getByRole('region', { name: 'Theme canvas' }).element() as HTMLElement;
+  // Place the header completely inside the board while clipping its action.
+  host.dispatchEvent(new WheelEvent('wheel', { deltaX: -330, deltaY: -60, bubbles: true }));
+  const header = page.getByRole('button', { name: 'Home · Desktop', exact: true });
+  await expect
+    .poll(() => header.element().getBoundingClientRect().left - host.getBoundingClientRect().left)
+    .toBe(330);
+  expect(header.element().closest('[inert]')).toBeNull();
+  expect(
+    page.getByRole('button', { name: 'Fallback' }).element().closest('[inert]'),
+  ).not.toBeNull();
+  await header.click();
+  await expect.element(header).toHaveAttribute('aria-pressed', 'true');
+  const world = page.getByTestId('canvas-world').element() as HTMLElement;
+  const before = world.style.transform;
+  await header.dblClick();
+  expect(world.style.transform).not.toBe(before);
+});

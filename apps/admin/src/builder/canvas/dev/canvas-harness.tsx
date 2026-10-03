@@ -5,10 +5,8 @@ import { Button, DropdownMenuItem } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 
 import { CanvasBoard } from '@/builder/canvas/canvas-board';
-import {
-  measureExpandedComposition,
-  waitForCompositionLayout,
-} from '@/builder/canvas/measure-expanded-composition';
+import { waitForCompositionLayout } from '@/builder/canvas/measure-expanded-composition';
+import { observeExpandedComposition } from '@/builder/canvas/observe-expanded-composition';
 import { IframePreviewDocumentSurface } from '@/builder/workspaces/theme/preview/preview-document';
 import { getThemeFixture, instance, loadAssets } from './fixture';
 import { CanvasProbe, registerCanvasProbe } from './webmcp-probe';
@@ -114,6 +112,9 @@ function LivePreview({
   const lastMode = useRef<{ document: PreviewDocument; mode: 'edit' | 'select' } | null>(null);
   const [status, setStatus] = useState('Loading preview…');
   const [composition, setComposition] = useState<ExpandedComposition | null>(null);
+  const [layoutStatus, setLayoutStatus] = useState('pending');
+  const layoutPaused = useRef(false);
+  const layoutObservation = useRef<ReturnType<typeof observeExpandedComposition> | null>(null);
   const handlers = useRef({
     onInput,
     onExpanded,
@@ -141,11 +142,23 @@ function LivePreview({
       canvasNavigation: true,
       canvasPanning: kind === 'expanded',
       inlineImageEditing: false,
-      admitInlineTextEdit: (interactionTime) =>
-        handlers.current.visible && handlers.current.onAdmission(interactionTime),
+      observeLayout: kind === 'expanded',
+      admitInlineTextEdit: (interactionTime) => {
+        const admitted = handlers.current.visible && handlers.current.onAdmission(interactionTime);
+        if (admitted) {
+          layoutPaused.current = true;
+        }
+        return admitted;
+      },
       captureLoadedImages: true,
     });
     current.onCanvasInput((input) => {
+      if (input.kind === 'inline-edit') {
+        layoutPaused.current = !!input.box;
+        if (!input.box) {
+          layoutObservation.current?.resume();
+        }
+      }
       if (handlers.current.visible) {
         handlers.current.onInput(input);
       }
@@ -169,13 +182,14 @@ function LivePreview({
     const controller = new AbortController();
     setReady(null);
     setComposition(null);
+    setLayoutStatus('pending');
+    layoutPaused.current = false;
     setStatus('Loading preview…');
     iframe.current!.style.height = `${height}px`;
     const connection = kind === 'device' ? probe.attach(frame.id, surface, document) : null;
     const removeEdit = surface.onInlineEdit((edit, signal) =>
       handlers.current.onEdit(edit, document, signal),
     );
-    const started = performance.now();
     if (kind === 'expanded') {
       handlers.current.onExpanded({ status: 'pending' });
     }
@@ -184,25 +198,40 @@ function LivePreview({
       .then(() => surface.replaceDocument(document, null, controller.signal))
       .then(async () => {
         if (kind === 'expanded') {
-          const result = await measureExpandedComposition(
+          const observation = observeExpandedComposition({
             surface,
-            (next, signal) => {
+            resize: (next, signal) => {
               iframe.current!.style.height = `${next}px`;
               return waitForCompositionLayout(signal);
             },
-            frame.id,
-            document.revision,
-            controller.signal,
-          );
-          if (!controller.signal.aborted) {
-            setComposition(result);
-            handlers.current.onExpanded({
-              status: 'current',
-              composition: result,
-              surfaceId,
-              duration: performance.now() - started,
-            });
-          }
+            frameId: frame.id,
+            revision: document.revision,
+            viewport: { width, height },
+            signal: controller.signal,
+            isPaused: () => layoutPaused.current || handlers.current.draftOwner === frame.id,
+            onStart: () => setLayoutStatus('measuring'),
+            onResult: (result) => {
+              setComposition(result);
+              setLayoutStatus(result.status);
+              setStatus('Ready');
+              handlers.current.onExpanded({
+                status: 'current',
+                composition: result,
+                surfaceId,
+                duration: result.duration,
+              });
+            },
+            onError: (failure) => {
+              const message = failure instanceof Error ? failure.message : String(failure);
+              setComposition(null);
+              iframe.current!.style.height = `${height}px`;
+              setLayoutStatus('failed');
+              setStatus(message);
+              handlers.current.onExpanded({ status: 'failed', message });
+            },
+          });
+          layoutObservation.current = observation;
+          await observation.ready;
         } else {
           await connection!.ready();
         }
@@ -224,16 +253,22 @@ function LivePreview({
           const message = failure instanceof Error ? failure.message : String(failure);
           setStatus(message);
           if (kind === 'expanded') {
+            setLayoutStatus('failed');
             handlers.current.onExpanded({ status: 'failed', message });
           }
         }
       });
     return () => {
       controller.abort();
+      layoutObservation.current?.dispose();
+      layoutObservation.current = null;
       connection?.dispose();
       removeEdit();
     };
   }, [surface, document, frame.id, kind, width, height, surfaceId, probe]);
+  useEffect(() => {
+    layoutObservation.current?.resume();
+  }, [draftOwner]);
   useEffect(() => {
     if (!surface || ready !== document) {
       return;
@@ -260,9 +295,7 @@ function LivePreview({
         ref={iframe}
         className={`absolute top-0 left-0 border-0 ${visible ? '' : 'invisible'}`}
         data-composition-revision={kind === 'expanded' ? ready?.revision : undefined}
-        data-composition-status={
-          kind === 'expanded' ? (composition?.status ?? 'pending') : undefined
-        }
+        data-composition-status={kind === 'expanded' ? layoutStatus : undefined}
         data-composition-surface={kind === 'expanded' ? surfaceId : undefined}
         data-fixture-revision={kind === 'device' ? ready?.revision : undefined}
         data-preview-status={status}
@@ -301,6 +334,7 @@ export function CanvasHarness({
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Record<string, ExpandedState>>({});
   const [mode, setMode] = useState<OverviewMode>('expanded');
+  const [fallbacks, setFallbacks] = useState<ReadonlySet<string>>(() => new Set());
   const [probe, setProbe] = useState<CanvasProbe | null>(null);
   const [siteTools, setSiteTools] = useState<ProbeRegistrationStatus | 'pending'>('pending');
   const [draftOwner, setDraftOwner] = useState<string | null>(null);
@@ -348,6 +382,7 @@ export function CanvasHarness({
     (frame) => expanded[frame.id]?.status === 'current' || expanded[frame.id]?.status === 'failed',
   );
   const displayFrames = frames.map((frame) => {
+    const displayedMode = mode === 'device' || fallbacks.has(frame.id) ? 'device' : 'expanded';
     const state = expanded[frame.id];
     const composition =
       state?.status === 'current' && state.composition.revision === documents[frame.id]?.revision
@@ -356,8 +391,9 @@ export function CanvasHarness({
     return {
       ...frame,
       viewport: { width: frame.width, height: frame.height },
-      height: mode === 'expanded' && composition ? composition.viewport.height : frame.height,
-      overviewLabel: mode === 'expanded' ? 'Live composition' : 'Fixed viewport',
+      height:
+        displayedMode === 'expanded' && composition ? composition.viewport.height : frame.height,
+      overviewLabel: displayedMode === 'expanded' ? 'Live composition' : 'Fixed viewport fallback',
     };
   });
   useEffect(() => {
@@ -422,6 +458,10 @@ export function CanvasHarness({
     const diagnostics = {
       fixture: { id: fixture.id, version: fixture.version, revision },
       siteTools,
+      displayedSurfaces: frames.map((frame) => ({
+        frameId: frame.id,
+        kind: mode === 'device' || fallbacks.has(frame.id) ? 'device' : 'expanded',
+      })),
       compositions: frames.map((frame) => {
         const state = expanded[frame.id];
         return state?.status === 'current'
@@ -448,7 +488,7 @@ export function CanvasHarness({
     // Diagnostics belong in the developer console and site tools, outside the canvas UI.
     // eslint-disable-next-line no-console
     console.debug('[Ghost canvas]', diagnostics);
-  }, [fixture, revision, siteTools, expanded, probe]);
+  }, [fixture, revision, siteTools, expanded, probe, mode, fallbacks]);
   const editText = async (
     frameId: string,
     edit: PreviewInlineEditRequest,
@@ -531,12 +571,12 @@ export function CanvasHarness({
         {unavailableOverviews.length > 0 && (
           <Text role="status" size="xs">
             Full page unavailable for {unavailableOverviews.map((frame) => frame.label).join(', ')}.
-            Choose Device for the fixed viewport fallback.
+            Use that frame’s fixed viewport control to continue.
           </Text>
         )}
         {boundedExpanded && (
           <Text role="status" size="xs">
-            Live pages reached a layout limit. Choose Device for fixed viewports.
+            A full page reached a layout limit. Use its fixed viewport control to inspect the rest.
           </Text>
         )}
         {draftOwner && (
@@ -547,7 +587,13 @@ export function CanvasHarness({
             <Button
               size="sm"
               variant="outline"
-              onClick={() => surfaces.current.get(`${draftOwner}:${mode}`)?.reveal()}
+              onClick={() =>
+                surfaces.current
+                  .get(
+                    `${draftOwner}:${mode === 'device' || fallbacks.has(draftOwner) ? 'device' : 'expanded'}`,
+                  )
+                  ?.reveal()
+              }
             >
               Resume text draft
             </Button>
@@ -556,7 +602,9 @@ export function CanvasHarness({
               size="sm"
               variant="ghost"
               onClick={() => {
-                const current = surfaces.current.get(`${draftOwner}:${mode}`);
+                const current = surfaces.current.get(
+                  `${draftOwner}:${mode === 'device' || fallbacks.has(draftOwner) ? 'device' : 'expanded'}`,
+                );
                 if (current) {
                   void current.surface
                     .cancelInlineTextEdit(new AbortController().signal)
@@ -617,7 +665,10 @@ export function CanvasHarness({
                     frame={frame}
                     kind={kind}
                     probe={probe}
-                    visible={mode === kind}
+                    visible={
+                      (mode === 'device' || fallbacks.has(frame.id) ? 'device' : 'expanded') ===
+                      kind
+                    }
                     onAdmission={(interactionTime) => {
                       if (
                         interactionTime < latestInteractionIntent.current ||
@@ -688,12 +739,52 @@ export function CanvasHarness({
               </>
             ) : null
           }
+          renderFrameActions={(frame) => {
+            const device = mode === 'device' || fallbacks.has(frame.id);
+            return (
+              <Button
+                aria-label={
+                  device
+                    ? `Use full page for ${frame.label}`
+                    : `Use fixed viewport for ${frame.label}`
+                }
+                className="size-8 bg-background"
+                disabled={!!draftOwner || mode === 'device'}
+                size="sm"
+                title={device ? 'Use full page' : 'Use fixed viewport'}
+                variant="outline"
+                onClick={() => {
+                  latestInteractionIntent.current = performance.timeOrigin + performance.now();
+                  for (const kind of ['device', 'expanded']) {
+                    void surfaces.current
+                      .get(`${frame.id}:${kind}`)
+                      ?.surface.cancelPendingInlineTextEdit(new AbortController().signal)
+                      .catch(() => {});
+                  }
+                  setSelection((current) => (current?.frameId === frame.id ? null : current));
+                  setFallbacks((current) => {
+                    const next = new Set(current);
+                    if (next.has(frame.id)) {
+                      next.delete(frame.id);
+                    } else {
+                      next.add(frame.id);
+                    }
+                    return next;
+                  });
+                }}
+              >
+                {device ? <LucideIcon.Layers /> : <LucideIcon.Monitor />}
+              </Button>
+            );
+          }}
           onSelectionIntent={() => {
             latestInteractionIntent.current =
               iframeInteractionTime.current ?? performance.timeOrigin + performance.now();
             if (owner.current) {
               void surfaces.current
-                .get(`${owner.current}:${mode}`)
+                .get(
+                  `${owner.current}:${mode === 'device' || fallbacks.has(owner.current) ? 'device' : 'expanded'}`,
+                )
                 ?.surface.cancelPendingInlineTextEdit(new AbortController().signal)
                 .catch(() => {});
             }
