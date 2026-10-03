@@ -14,6 +14,92 @@ describe('useForm', () => {
     vi.restoreAllMocks();
   });
 
+  describe('saved state timer', () => {
+    it('does not complete a save after the user starts editing again', async () => {
+      const onSavedStateReset = vi.fn();
+      const { result } = renderHook(() =>
+        useForm({
+          initialState: { name: 'Original' },
+          onSave: vi.fn(),
+          savedDelay: 100,
+          onSavedStateReset,
+        }),
+      );
+      await act(async () => {
+        await result.current.handleSave({ force: true });
+      });
+
+      act(() => {
+        result.current.updateForm(() => ({ name: 'New edit' }));
+      });
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+
+      expect(onSavedStateReset).not.toHaveBeenCalled();
+      expect(result.current.saveState).toBe('unsaved');
+      expect(result.current.formState.name).toBe('New edit');
+    });
+
+    it('does not call the saved callback after unmount', async () => {
+      const onSavedStateReset = vi.fn();
+      const { result, unmount } = renderHook(() =>
+        useForm({
+          initialState: {},
+          onSave: vi.fn(),
+          savedDelay: 100,
+          onSavedStateReset,
+        }),
+      );
+      await act(async () => {
+        await result.current.handleSave({ force: true });
+      });
+
+      unmount();
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+
+      expect(onSavedStateReset).not.toHaveBeenCalled();
+    });
+
+    it('waits for the latest save delay when saving twice', async () => {
+      const onSavedStateReset = vi.fn();
+      const { result } = renderHook(() =>
+        useForm({
+          initialState: { name: 'Original' },
+          onSave: vi.fn(),
+          savedDelay: 100,
+          onSavedStateReset,
+        }),
+      );
+      await act(async () => {
+        await result.current.handleSave({ force: true });
+      });
+      act(() => {
+        vi.advanceTimersByTime(50);
+      });
+      act(() => {
+        result.current.updateForm(() => ({ name: 'Updated' }));
+      });
+      await act(async () => {
+        await result.current.handleSave();
+      });
+
+      act(() => {
+        vi.advanceTimersByTime(50);
+      });
+      expect(onSavedStateReset).not.toHaveBeenCalled();
+      expect(result.current.saveState).toBe('saved');
+
+      act(() => {
+        vi.advanceTimersByTime(50);
+      });
+      expect(onSavedStateReset).toHaveBeenCalledOnce();
+      expect(result.current.saveState).toBe('');
+    });
+  });
+
   describe('formState', () => {
     it('returns the initial form state', () => {
       const { result } = renderHook(() =>
