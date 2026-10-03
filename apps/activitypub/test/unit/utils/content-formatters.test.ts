@@ -74,6 +74,16 @@ describe('Content Formatters', function () {
     });
   });
 
+  describe('stripHtml', function () {
+    it.each([
+      '<h1>Heading</h1><p>Paragraph</p>',
+      '<h2>Heading</h2><p class="body">Paragraph</p>',
+      '<h3>Heading</h3><strong>Paragraph</strong>',
+    ])('preserves text after a heading without leaking markup: %s', (html) => {
+      expect(stripHtml(html)).toBe('Heading Paragraph');
+    });
+  });
+
   describe('sanitizeHtml(stripHtml(...))', function () {
     it('preserves safe links and profile navigation data attributes', function () {
       const result = sanitizeStrippedHtml(`
