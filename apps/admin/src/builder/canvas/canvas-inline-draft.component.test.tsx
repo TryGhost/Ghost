@@ -123,7 +123,12 @@ it('preserves real uncommitted text through canvas focus, zoom, pan, Back and re
   await expectText(surface, '[role="textbox"]', 'A kept manual draft');
   expect(world.style.transform).toContain('scale(1)');
   expect(edit).not.toHaveBeenCalled();
-  expect(await surface.measureLayout(signal)).toEqual(layout);
+  expect(await surface.measureLayout(signal)).toMatchObject({
+    documentId: layout.documentId,
+    documentInstanceId: layout.documentInstanceId,
+    viewport: layout.viewport,
+    document: layout.document,
+  });
   await editor.click();
   await userEvent.keyboard('{Enter}');
   await expect.poll(() => edit.mock.calls.length).toBe(1);

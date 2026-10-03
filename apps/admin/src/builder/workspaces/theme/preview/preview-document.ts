@@ -52,6 +52,8 @@ export type PreviewCanvasInput =
 
 export type PreviewLayout = {
   documentId: string;
+  documentInstanceId: string;
+  localEdits: { generation: number; active: boolean; changed: boolean };
   viewport: { width: number; height: number; scrollX: number; scrollY: number };
   document: { width: number; height: number };
 };
@@ -899,6 +901,8 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
   private readonly pendingCommands = new Map<number, PendingCommand>();
   private commandPort: MessagePort | null = null;
   private commandPortDocumentId: string | null = null;
+  private commandPortInstanceId: string | null = null;
+  private commandPortInstanceSequence = 0;
   private inlineEditing = false;
   private selectionMode = false;
   private inlineEditController: AbortController | null = null;
@@ -1022,6 +1026,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
 
   async measureLayout(signal: AbortSignal): Promise<PreviewLayout> {
     const documentId = this.committedDocumentId;
+    const documentInstanceId = this.commandPortInstanceId;
     const value = await this.command<unknown>('measure-layout', undefined, signal);
     const layout = value as Partial<PreviewLayout> | null;
     const dimensions = [
@@ -1039,6 +1044,10 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
           number > 0 &&
           number <= 1_000_000,
       ) ||
+      typeof layout?.localEdits?.active !== 'boolean' ||
+      typeof layout?.localEdits?.changed !== 'boolean' ||
+      !Number.isSafeInteger(layout?.localEdits?.generation) ||
+      (layout?.localEdits?.generation ?? -1) < 0 ||
       !scroll.every(
         (number) =>
           typeof number === 'number' && Number.isFinite(number) && Math.abs(number) <= 1_000_000,
@@ -1051,6 +1060,8 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     }
     if (
       !documentId ||
+      !documentInstanceId ||
+      documentInstanceId !== this.commandPortInstanceId ||
       documentId !== this.committedDocumentId ||
       documentId !== this.activeDocumentId
     ) {
@@ -1059,7 +1070,11 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
         'The preview document changed while measuring layout.',
       );
     }
-    return { ...(value as Omit<PreviewLayout, 'documentId'>), documentId };
+    return {
+      ...(value as Omit<PreviewLayout, 'documentId' | 'documentInstanceId'>),
+      documentId,
+      documentInstanceId,
+    };
   }
 
   async inspectElement(
@@ -1304,9 +1319,13 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
   };
 
   private handleInlineEdit(documentId: string, edit: PreviewInlineEditRequest): void {
+    const documentInstanceId = this.commandPortInstanceId;
+    if (!documentInstanceId) {
+      return;
+    }
     const listener = this.inlineEditListeners.values().next().value;
     if (!listener || this.inlineEditController) {
-      this.sendInlineEditResult(documentId, edit.editId, {
+      this.sendInlineEditResult(documentId, documentInstanceId, edit.editId, {
         ok: false,
         message: listener
           ? 'Finish the current inline edit before starting another.'
@@ -1318,11 +1337,17 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     this.inlineEditController = controller;
     void listener(edit, controller.signal)
       .then((result) => {
-        this.sendInlineEditResult(documentId, edit.editId, result);
+        if (this.inlineEditController === controller && !controller.signal.aborted) {
+          this.sendInlineEditResult(documentId, documentInstanceId, edit.editId, result);
+        }
       })
       .catch((error: unknown) => {
-        if (!(error instanceof DOMException && error.name === 'AbortError')) {
-          this.sendInlineEditResult(documentId, edit.editId, {
+        if (
+          this.inlineEditController === controller &&
+          !controller.signal.aborted &&
+          !(error instanceof DOMException && error.name === 'AbortError')
+        ) {
+          this.sendInlineEditResult(documentId, documentInstanceId, edit.editId, {
             ok: false,
             message: error instanceof Error ? error.message : String(error),
           });
@@ -1337,11 +1362,13 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
 
   private sendInlineEditResult(
     documentId: string,
+    documentInstanceId: string,
     editId: number,
     result: PreviewInlineEditResult,
   ): void {
     if (
       this.commandPort &&
+      this.commandPortInstanceId === documentInstanceId &&
       this.commandPortDocumentId === documentId &&
       this.committedDocumentId === documentId
     ) {
@@ -1461,6 +1488,8 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
   }
 
   private restoreCommittedDocument(): void {
+    this.inlineEditController?.abort();
+    this.inlineEditController = null;
     this.clearCanvasInlineEdit();
     this.canvasReadyDocumentId = null;
     this.loadedDocumentId = null;
@@ -1526,6 +1555,8 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     this.closeCommandPort();
     this.commandPort = port;
     this.commandPortDocumentId = documentId;
+    this.commandPortInstanceSequence += 1;
+    this.commandPortInstanceId = `${documentId}:bridge-${this.commandPortInstanceSequence}`;
     port.addEventListener('message', this.handleCommandMessage);
     port.start();
   }
@@ -1537,6 +1568,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
       this.commandPort = null;
     }
     this.commandPortDocumentId = null;
+    this.commandPortInstanceId = null;
   }
 
   private clearCanvasInlineEdit(): void {

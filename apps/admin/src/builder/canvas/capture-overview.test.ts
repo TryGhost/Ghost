@@ -5,6 +5,8 @@ import type { ScreenshotRequest } from '@/builder/workspaces/theme/preview/scree
 
 const layout = {
   documentId: 'device-document-1',
+  documentInstanceId: 'device-instance-1',
+  localEdits: { generation: 0, active: false, changed: false },
   viewport: { width: 390, height: 844, scrollX: 0, scrollY: 123 },
   document: { width: 390, height: 10_000 },
 };
@@ -27,6 +29,38 @@ function preview(height = layout.document.height) {
 }
 
 describe('bounded composition captures', () => {
+  it('does not certify an uncommitted local draft as the rendered revision', async () => {
+    const surface = preview();
+    surface.measureLayout.mockResolvedValue({
+      ...layout,
+      localEdits: { generation: 1, active: true, changed: false },
+    });
+    await expect(
+      captureOverview(surface, 'home-mobile', 'revision-1', new AbortController().signal),
+    ).rejects.toThrow('local');
+    expect(surface.screenshot).not.toHaveBeenCalled();
+  });
+
+  it('rejects a draft that starts and cancels during capture even if geometry is unchanged', async () => {
+    const surface = preview();
+    surface.measureLayout.mockResolvedValueOnce(layout).mockResolvedValue({
+      ...layout,
+      localEdits: { generation: 2, active: false, changed: false },
+    });
+    await expect(
+      captureOverview(surface, 'home-mobile', 'revision-1', new AbortController().signal),
+    ).rejects.toThrow('changed');
+  });
+
+  it('rejects a restored runtime instance even when the rendered revision and geometry match', async () => {
+    const surface = preview();
+    surface.measureLayout
+      .mockResolvedValueOnce(layout)
+      .mockResolvedValue({ ...layout, documentInstanceId: 'restored-instance' });
+    await expect(
+      captureOverview(surface, 'home-mobile', 'revision-1', new AbortController().signal),
+    ).rejects.toThrow('changed');
+  });
   it('covers a tall page with contiguous device-width tiles and explicit backing context', async () => {
     const surface = preview();
     const result = await captureOverview(

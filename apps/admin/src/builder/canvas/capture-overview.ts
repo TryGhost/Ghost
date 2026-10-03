@@ -16,6 +16,8 @@ export type CapturedOverview = {
   frameId: string;
   revision: string;
   documentId: string;
+  documentInstanceId: string;
+  localEditGeneration: number;
   artifactId: string;
   viewport: PreviewLayout['viewport'];
   documentHeight: number;
@@ -36,6 +38,10 @@ function assertActive(signal: AbortSignal) {
 function sameLayout(first: PreviewLayout, next: PreviewLayout) {
   return (
     first.documentId === next.documentId &&
+    first.documentInstanceId === next.documentInstanceId &&
+    first.localEdits.generation === next.localEdits.generation &&
+    first.localEdits.active === next.localEdits.active &&
+    first.localEdits.changed === next.localEdits.changed &&
     first.viewport.width === next.viewport.width &&
     first.viewport.height === next.viewport.height &&
     first.viewport.scrollX === next.viewport.scrollX &&
@@ -54,6 +60,11 @@ export async function captureOverview(
 ): Promise<CapturedOverview> {
   assertActive(signal);
   const layout = await surface.measureLayout(signal);
+  if (layout.localEdits.active || layout.localEdits.changed) {
+    throw new Error(
+      'The document contains local edits and cannot certify the rendered revision. Preserve the draft and refresh an explicitly addressed clean render.',
+    );
+  }
   const tiles: CapturedOverview['tiles'] = [];
   const warnings = new Set<string>();
   let coveredHeight = 0;
@@ -117,6 +128,8 @@ export async function captureOverview(
     frameId,
     revision,
     documentId: layout.documentId,
+    documentInstanceId: layout.documentInstanceId,
+    localEditGeneration: layout.localEdits.generation,
     artifactId: crypto.randomUUID(),
     viewport: layout.viewport,
     documentHeight: layout.document.height,

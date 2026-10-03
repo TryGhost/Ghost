@@ -42,6 +42,7 @@ type Entry = {
   lifetime: AbortController;
   status: 'pending' | 'current' | 'failed';
   documentId?: string;
+  documentInstanceId?: string;
 };
 type Frame = { descriptor: FrameDescriptor; frameHandle: string; entry?: Entry };
 const targetProperties = {
@@ -73,6 +74,10 @@ function stringArgument(args: Record<string, unknown>, key: string) {
 function sameLayout(first: PreviewLayout, next: PreviewLayout) {
   return (
     first.documentId === next.documentId &&
+    first.documentInstanceId === next.documentInstanceId &&
+    first.localEdits.generation === next.localEdits.generation &&
+    first.localEdits.active === next.localEdits.active &&
+    first.localEdits.changed === next.localEdits.changed &&
     first.viewport.width === next.viewport.width &&
     first.viewport.height === next.viewport.height &&
     first.viewport.scrollX === next.viewport.scrollX &&
@@ -119,7 +124,7 @@ export class CanvasProbe {
 
   state() {
     return {
-      protocolVersion: 'canvas-fixture-probe-1',
+      protocolVersion: 'canvas-fixture-probe-2',
       workspaceId: this.workspaceId,
       siteUrl: this.siteUrl,
       fixture: true,
@@ -130,6 +135,8 @@ export class CanvasProbe {
         representations: ['device'],
         captureFormat: 'png-data-url-experiment',
         nativeImageConsumption: 'unverified',
+        revisionProvenance: 'rendered-document-only',
+        localEditPolicy: 'refuse-certified-read',
       },
       view: { ...this.view, camera: { ...this.view.camera }, mode: this.mode },
       frames: [...this.frames.values()].map((frame) => ({
@@ -141,6 +148,7 @@ export class CanvasProbe {
               status: frame.entry.status,
               revision: frame.entry.document.revision,
               documentId: frame.entry.documentId ?? null,
+              documentInstanceId: frame.entry.documentInstanceId ?? null,
               viewport: { width: frame.descriptor.width, height: frame.descriptor.height },
             }
           : null,
@@ -178,6 +186,7 @@ export class CanvasProbe {
           );
         }
         entry.documentId = layout.documentId;
+        entry.documentInstanceId = layout.documentInstanceId;
         entry.status = 'current';
       },
       fail: () => {
@@ -285,21 +294,21 @@ export class CanvasProbe {
     return [
       definition(
         'get_editor_state',
-        'Read this experimental canvas fixture workspace, current board view and immutable fixed-device targets. Does not move the canvas or change selection. No mutation or publishing tools are available.',
+        'Read this experimental canvas fixture workspace, current board view and immutable fixed-device targets. Device readiness describes the backing render; each inspection/capture checks for local edits. Does not move the canvas or change selection. No mutation or publishing tools are available.',
         {},
         [],
         () => Promise.resolve(this.state()),
       ),
       definition(
         'inspect_frame',
-        'Read the explicitly addressed current fixed-device page and source-aware outline. Requires discovered workspace/frame/representation handles and revision; never uses current focus or navigates.',
+        'Read the explicitly addressed current fixed-device page and source-aware outline. Requires discovered workspace/frame/representation handles and revision; never uses current focus or navigates. Refuses local drafts, modified DOM and inline notices rather than certifying them as the rendered revision.',
         targetProperties,
         targetKeys,
         (args, signal) => this.inspect(args, signal),
       ),
       definition(
         'capture_frame',
-        'Capture the addressed fixed device viewport or one bounded document-coordinate region without changing the board, selection or scroll. Returns PNG data URL plus lineage/coverage/warnings. Native image consumption is experimental and unverified.',
+        'Capture the addressed fixed device viewport or one bounded document-coordinate region without changing the board, selection or scroll. Refuses local drafts, modified DOM and inline notices. Returns PNG data URL plus lineage/coverage/warnings. Native image consumption is experimental and unverified.',
         {
           ...targetProperties,
           kind: { type: 'string', enum: ['viewport', 'region'] },
@@ -376,10 +385,17 @@ export class CanvasProbe {
     this.assertEntry(frame, entry, signal);
     if (
       layout.documentId !== entry.documentId ||
+      layout.documentInstanceId !== entry.documentInstanceId ||
       layout.viewport.width !== frame.descriptor.width ||
       layout.viewport.height !== frame.descriptor.height
     ) {
       throw new ReadError('stale_document', 'The addressed device document or viewport changed.');
+    }
+    if (layout.localEdits.active || layout.localEdits.changed) {
+      throw new ReadError(
+        'local_edits_present',
+        'This surface contains a local draft, modified DOM or an inline notice outside its rendered revision. Preserve the draft; explicitly address a discovered clean verification surface, wait for the notice to clear, or refresh after committing. No clean surface is substituted.',
+      );
     }
     return layout;
   }
@@ -393,6 +409,8 @@ export class CanvasProbe {
       representation: 'device',
       revision: entry.document.revision,
       documentId: layout.documentId,
+      documentInstanceId: layout.documentInstanceId,
+      provenance: { kind: 'rendered-document', localEditGeneration: layout.localEdits.generation },
       viewport: layout.viewport,
       document: layout.document,
     };

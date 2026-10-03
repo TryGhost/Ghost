@@ -15,6 +15,7 @@ export type ExpandedComposition = {
   frameId: string;
   revision: string;
   documentId: string;
+  documentInstanceId: string;
   configuredViewport: { width: number; height: number };
   viewport: PreviewLayout['viewport'];
   document: PreviewLayout['document'];
@@ -71,6 +72,9 @@ export async function measureExpandedComposition(
     assertActive();
     const initial = await surface.measureLayout(controller.signal);
     assertActive();
+    if (initial.localEdits.active || initial.localEdits.changed) {
+      throw new Error('The composition contains local edits outside its rendered revision.');
+    }
     if (initial.viewport.height > EXPANDED_COMPOSITION_LIMITS.maxHeight) {
       throw new Error('The starting composition viewport exceeds its height limit.');
     }
@@ -94,6 +98,10 @@ export async function measureExpandedComposition(
       assertActive();
       if (
         next.documentId !== initial.documentId ||
+        next.documentInstanceId !== initial.documentInstanceId ||
+        next.localEdits.generation !== initial.localEdits.generation ||
+        next.localEdits.active ||
+        next.localEdits.changed ||
         next.viewport.width !== initial.viewport.width ||
         next.viewport.height !== height
       ) {
@@ -137,6 +145,7 @@ export async function measureExpandedComposition(
       frameId,
       revision,
       documentId: current.documentId,
+      documentInstanceId: current.documentInstanceId,
       configuredViewport: { width: initial.viewport.width, height: initial.viewport.height },
       viewport: current.viewport,
       document: current.document,

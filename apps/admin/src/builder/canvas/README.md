@@ -32,7 +32,7 @@ greater while camera controls are used. Back restores the saved overview and
 reports the retained draft outside the frame. Browser evidence uses the actual
 inline runtime and a test commit callback; it does not establish real stock-theme
 source mutation, editor-wide single-draft ownership, dynamic-source eligibility,
-draft-aware inspection provenance, or replacement/conflict persistence. Those
+replacement/conflict persistence. Those
 remain milestone work; the fixture comparison harness still exposes no mutations.
 
 ## Development harness
@@ -123,7 +123,20 @@ The development harness also feature-detects top-document
 handles and current device representation/revision handles. Inspection and capture
 require those explicit targets; selection and focus never retarget a read.
 Only fixed devices are addressed. Surface replacement, stale revisions, changed
-document/layout, cancellation, and out-of-bounds regions return explicit errors.
+document/runtime instance/layout, cancellation, and out-of-bounds regions return explicit errors.
+Protocol `canvas-fixture-probe-2` certifies only the addressed backing render.
+Inspection and capture refuse active local drafts, successfully modified DOM that
+has not been rerendered, and transient inline-edit notices. They preserve draft text,
+camera and scroll rather than silently selecting another surface. Clean reads
+after cancellation require any notice to clear; accepted edits require an explicitly
+discovered fresh render. Each read compares runtime instance and local-edit generation
+before and after its work, including a draft that starts and cancels during the read.
+Document restoration creates a new instance even when it reuses a render ID;
+callbacks from the old instance cannot complete a restored editor. Restoration
+revokes the old callback's signal. Ordinary replacement can be initiated by the
+accepted callback itself, so result delivery is instance-pinned without aborting
+that transaction. Legacy raw surface inspection and screenshots remain raw reads;
+they do not acquire revision certification from this policy.
 Capture uses existing per-image limits and admits one concurrent probe capture;
 it preserves board state and device scroll.
 
@@ -182,5 +195,6 @@ composition/device layout and fidelity differences, label collisions,
 keyboard focus and native scrolling, the opt-in sandbox input boundary, and
 below-fold capture pixels with viewport-height media queries and unchanged device
 scroll, addressed read-only capture without changing focus, and the top-document
-registration boundary. Full
+registration boundary, draft/notice refusal, in-flight draft cancellation and
+restored callback isolation. Full
 repository validation uses `pnpm check`; see the [testing guide](../../../../../docs/contributing/testing.md).

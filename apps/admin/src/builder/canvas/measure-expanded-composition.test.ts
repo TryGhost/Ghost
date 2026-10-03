@@ -12,6 +12,8 @@ function preview(extent: (height: number) => number) {
     measureLayout: vi.fn(() =>
       Promise.resolve<PreviewLayout>({
         documentId: 'composition-document',
+        documentInstanceId: 'composition-instance',
+        localEdits: { generation: 0, active: false, changed: false },
         viewport: { width: 390, height, scrollX: 0, scrollY: 0 },
         document: { width: 390, height: Math.max(height, extent(height)) },
       }),
@@ -35,6 +37,20 @@ function measure(value: ReturnType<typeof preview>, signal = new AbortController
 }
 
 describe('bounded expanded composition measurements', () => {
+  it('does not settle a restored runtime under the previous document identity', async () => {
+    const value = preview(() => 4000);
+    value.resize.mockImplementationOnce(() => {
+      value.surface.measureLayout.mockResolvedValue({
+        documentId: 'composition-document',
+        documentInstanceId: 'restored-instance',
+        localEdits: { generation: 0, active: false, changed: false },
+        viewport: { width: 390, height: 4000, scrollX: 0, scrollY: 0 },
+        document: { width: 390, height: 4000 },
+      });
+      return Promise.resolve();
+    });
+    await expect(measure(value)).rejects.toThrow('changed');
+  });
   it('requires two observations at the expanded viewport before reporting settled geometry', async () => {
     const value = preview(() => 4000);
     const result = await measure(value);
@@ -75,6 +91,8 @@ describe('bounded expanded composition measurements', () => {
     value.resize.mockImplementationOnce(() => {
       value.surface.measureLayout.mockResolvedValue({
         documentId: 'replacement-document',
+        documentInstanceId: 'replacement-instance',
+        localEdits: { generation: 0, active: false, changed: false },
         viewport: { width: 390, height: 4000, scrollX: 0, scrollY: 0 },
         document: { width: 390, height: 4000 },
       });
@@ -90,6 +108,8 @@ describe('bounded expanded composition measurements', () => {
       controller.abort();
       return Promise.resolve({
         documentId: 'composition-document',
+        documentInstanceId: 'composition-instance',
+        localEdits: { generation: 0, active: false, changed: false },
         viewport: { width: 390, height: 844, scrollX: 0, scrollY: 0 },
         document: { width: 390, height: 4000 },
       });

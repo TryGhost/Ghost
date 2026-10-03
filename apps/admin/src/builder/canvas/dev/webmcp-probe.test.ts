@@ -13,6 +13,8 @@ const descriptor = {
 const document = { html: '<h1>Home</h1>', url: 'https://example.com/', revision: 'revision-1' };
 const layout = {
   documentId: 'revision-1:1',
+  documentInstanceId: 'revision-1:bridge-1',
+  localEdits: { generation: 0, active: false, changed: false },
   viewport: { width: 390, height: 844, scrollX: 0, scrollY: 123 },
   document: { width: 390, height: 3000 },
 };
@@ -61,6 +63,48 @@ async function fixture() {
 }
 
 describe('addressed read-only canvas probe', () => {
+  it.each([
+    { generation: 1, active: true, changed: false },
+    { generation: 2, active: false, changed: true },
+  ])('refuses local edits before reading pixels or page text: %j', async (localEdits) => {
+    const { probe, preview } = await fixture();
+    vi.mocked(preview.measureLayout).mockResolvedValue({ ...layout, localEdits });
+    expect(await tool(probe, 'inspect_frame').execute(target(probe))).toMatchObject({
+      status: 'error',
+      code: 'local_edits_present',
+    });
+    expect(
+      await tool(probe, 'capture_frame').execute({ ...target(probe), kind: 'viewport' }),
+    ).toMatchObject({ status: 'error', code: 'local_edits_present' });
+    expect(preview.inspectPage).not.toHaveBeenCalled();
+    expect(preview.screenshot).not.toHaveBeenCalled();
+  });
+
+  it('rejects local editing that starts and cancels while inspection is in flight', async () => {
+    const { probe, preview } = await fixture();
+    const inspect = vi.mocked(preview.inspectPage).getMockImplementation()!;
+    vi.mocked(preview.inspectPage).mockImplementationOnce((url, signal) => {
+      vi.mocked(preview.measureLayout).mockResolvedValue({
+        ...layout,
+        localEdits: { generation: 2, active: false, changed: false },
+      });
+      return inspect(url, signal);
+    });
+    expect(await tool(probe, 'inspect_frame').execute(target(probe))).toMatchObject({
+      code: 'stale_document',
+    });
+  });
+
+  it('rejects a restored document instance without silently substituting its old handle', async () => {
+    const { probe, preview } = await fixture();
+    vi.mocked(preview.measureLayout).mockResolvedValue({
+      ...layout,
+      documentInstanceId: 'restored',
+    });
+    expect(await tool(probe, 'inspect_frame').execute(target(probe))).toMatchObject({
+      code: 'stale_document',
+    });
+  });
   it('reads a discovered device target without selecting it or moving the camera', async () => {
     const { probe } = await fixture();
     const before = probe.state().view;

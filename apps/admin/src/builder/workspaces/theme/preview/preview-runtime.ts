@@ -804,6 +804,8 @@ export function previewRuntimeBootstrap(): void {
     pending: boolean;
   };
   let activeInlineEdit: ActiveInlineEdit | null = null;
+  let localEditGeneration = 0;
+  let localDocumentChanged = false;
   const reportInlineEdit = () => {
     if (!canvasNavigation) {
       return;
@@ -899,7 +901,11 @@ export function previewRuntimeBootstrap(): void {
     notice.style.cssText =
       'position:fixed;right:16px;bottom:16px;z-index:2147483647;max-width:320px;padding:8px 12px;border-radius:8px;background:Canvas;color:CanvasText;border:1px solid Highlight;font:13px system-ui,sans-serif;box-shadow:0 4px 16px rgb(0 0 0 / 20%)';
     document.body.appendChild(notice);
-    window.setTimeout(() => notice.remove(), 3_000);
+    localEditGeneration += 1;
+    window.setTimeout(() => {
+      notice.remove();
+      localEditGeneration += 1;
+    }, 3_000);
   };
   const cancelInlineEdit = () => {
     const active = activeInlineEdit;
@@ -908,6 +914,7 @@ export function previewRuntimeBootstrap(): void {
     }
     active.editor.replaceWith(active.original);
     activeInlineEdit = null;
+    localEditGeneration += 1;
     reportInlineEdit();
   };
   const commitInlineEdit = () => {
@@ -919,6 +926,7 @@ export function previewRuntimeBootstrap(): void {
     if (newText === active.original.data) {
       active.editor.replaceWith(active.original);
       activeInlineEdit = null;
+      localEditGeneration += 1;
       reportInlineEdit();
       return;
     }
@@ -973,6 +981,7 @@ export function previewRuntimeBootstrap(): void {
       editor,
       pending: false,
     };
+    localEditGeneration += 1;
     reportInlineEdit();
     editor.addEventListener(
       'keydown',
@@ -1055,6 +1064,7 @@ export function previewRuntimeBootstrap(): void {
     const generation = inlineModeGeneration;
     const pending = { editId, element, previousOutline: element.style.outline };
     pendingImageEdit = pending;
+    localEditGeneration += 1;
     element.style.outline = '2px solid Highlight';
     try {
       const data = new Uint8Array(await file.arrayBuffer());
@@ -1062,6 +1072,7 @@ export function previewRuntimeBootstrap(): void {
         element.style.outline = pending.previousOutline;
         if (pendingImageEdit === pending) {
           pendingImageEdit = null;
+          localEditGeneration += 1;
         }
         return;
       }
@@ -1081,6 +1092,7 @@ export function previewRuntimeBootstrap(): void {
       element.style.outline = pending.previousOutline;
       if (pendingImageEdit === pending) {
         pendingImageEdit = null;
+        localEditGeneration += 1;
       }
       announceInlineEdit(
         error instanceof Error ? error.message : 'The image could not be read.',
@@ -1189,6 +1201,7 @@ export function previewRuntimeBootstrap(): void {
       if (pendingImageEdit) {
         pendingImageEdit.element.style.outline = pendingImageEdit.previousOutline;
         pendingImageEdit = null;
+        localEditGeneration += 1;
       }
       if (!selectionMode) {
         clearSourceTabStops();
@@ -1228,6 +1241,8 @@ export function previewRuntimeBootstrap(): void {
     const pending = pendingImageEdit;
     if (pending && pending.editId === message.editId) {
       pendingImageEdit = null;
+      localEditGeneration += 1;
+      localDocumentChanged ||= message.ok;
       pending.element.style.outline = pending.previousOutline;
       if (!message.ok) {
         announceInlineEdit(
@@ -1242,7 +1257,7 @@ export function previewRuntimeBootstrap(): void {
       return;
     }
     const active = activeInlineEdit;
-    if (!active || message.editId !== active.editId) {
+    if (!active || !active.pending || message.editId !== active.editId) {
       return;
     }
     if (!message.ok) {
@@ -1256,12 +1271,15 @@ export function previewRuntimeBootstrap(): void {
       } else {
         active.editor.replaceWith(active.original);
         activeInlineEdit = null;
+        localEditGeneration += 1;
       }
       announceInlineEdit(error, true);
       return;
     }
     active.editor.replaceWith(document.createTextNode(active.editor.textContent ?? ''));
     activeInlineEdit = null;
+    localEditGeneration += 1;
+    localDocumentChanged = true;
     reportInlineEdit();
     announceInlineEdit('Preview text updated.');
   };
@@ -1527,6 +1545,13 @@ export function previewRuntimeBootstrap(): void {
         result = inspectPage();
       } else if (message.command === 'measure-layout') {
         result = {
+          localEdits: {
+            generation: localEditGeneration,
+            active: Boolean(activeInlineEdit || pendingImageEdit),
+            changed:
+              localDocumentChanged ||
+              Boolean(document.querySelector('[data-builder-inline-notice]')),
+          },
           viewport: {
             width: window.innerWidth,
             height: window.innerHeight,
