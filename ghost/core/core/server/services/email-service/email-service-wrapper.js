@@ -4,6 +4,14 @@ const url = require('../../api/endpoints/utils/serializers/output/utils/url');
 const events = require('../../lib/common/events');
 
 class EmailServiceWrapper {
+  getEmailProvider({ config, adapterManager, mailgunEmailProvider }) {
+    if (config.get('adapters:email')) {
+      return adapterManager.getAdapter('email');
+    }
+
+    return mailgunEmailProvider;
+  }
+
   getPostUrl(post) {
     const jsonModel = post.toJSON();
     // The URL service routes by resource type. Pages and posts share the
@@ -30,6 +38,7 @@ class EmailServiceWrapper {
     const EmailSegmenter = require('./email-segmenter');
     const MailgunEmailProvider = require('./mailgun-email-provider');
     const { DomainWarmingService } = require('./domain-warming-service');
+    const adapterManager = require('../adapter-manager').default;
 
     const { Post, Newsletter, Email, EmailBatch, EmailRecipient, Member } = require('../../models');
     const urlService = require('../url');
@@ -75,6 +84,12 @@ class EmailServiceWrapper {
       config: configService,
     });
 
+    const emailProvider = this.getEmailProvider({
+      config: configService,
+      adapterManager,
+      mailgunEmailProvider,
+    });
+
     const emailRenderer = new EmailRenderer({
       settingsCache,
       settingsHelpers,
@@ -99,7 +114,7 @@ class EmailServiceWrapper {
     });
 
     const sendingService = new SendingService({
-      emailProvider: mailgunEmailProvider,
+      emailProvider,
       emailRenderer,
       emailAddressService: emailAddressService.service,
     });
