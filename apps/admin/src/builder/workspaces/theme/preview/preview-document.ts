@@ -50,6 +50,14 @@ export type PreviewInlineEditRequest = PreviewInlineTextEditRequest | PreviewInl
 export type PreviewInlineEditResult = { ok: true } | { ok: false; message: string };
 
 export type PreviewCanvasInput =
+  | { kind: 'pan-key'; active: boolean; interactionTime: number }
+  | {
+      kind: 'pan-drag';
+      phase: 'start' | 'move' | 'end' | 'cancel';
+      gesture: number;
+      x: number;
+      y: number;
+    }
   | { kind: 'escape'; interactionTime?: number }
   | { kind: 'pan'; deltaX: number; deltaY: number; deltaMode: number }
   | { kind: 'inline-edit'; box: { x: number; y: number; width: number; height: number } | null }
@@ -962,6 +970,8 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
   private readonly layoutListeners = new Set<(change: PreviewLayoutChange) => void>();
   private readonly canvasInputListeners = new Set<(input: PreviewCanvasInput) => void>();
   private canvasInlineEditActive = false;
+  private canvasPanActive = false;
+  private canvasPanGesture: number | null = null;
   private readonly navigateListeners = new Set<(url: string) => void>();
   private readonly selectionListeners = new Set<
     (selection: BuilderSelectionContext | null, interactionTime?: number) => void
@@ -1615,6 +1625,62 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
 
   private readonly handleCommandMessage = (event: MessageEvent<unknown>) => {
     const message = event.data;
+    // Pan ownership uses the private current-document port, never global messages.
+    if (this.canvasNavigation && event.currentTarget === this.commandPort) {
+      const pan = message as {
+        channel?: unknown;
+        documentId?: unknown;
+        type?: unknown;
+        input?: PreviewCanvasInput;
+      } | null;
+      if (
+        pan?.type === 'canvas-pan' &&
+        pan.channel === this.channel &&
+        pan.documentId === this.activeDocumentId &&
+        pan.documentId === this.committedDocumentId &&
+        pan.documentId === this.canvasReadyDocumentId &&
+        pan.documentId === this.commandPortDocumentId &&
+        this.commandPortInstanceId
+      ) {
+        const input = pan.input;
+        if (
+          input?.kind === 'pan-key' &&
+          typeof input.active === 'boolean' &&
+          Number.isFinite(input.interactionTime) &&
+          input.interactionTime > 0 &&
+          input.interactionTime <= Number.MAX_SAFE_INTEGER
+        ) {
+          this.canvasPanActive = input.active;
+          if (!input.active) {
+            this.canvasPanGesture = null;
+          }
+          this.canvasInputListeners.forEach((listener) => listener(input));
+          return;
+        }
+        if (
+          input?.kind === 'pan-drag' &&
+          ['start', 'move', 'end', 'cancel'].includes(input.phase) &&
+          Number.isFinite(input.gesture) &&
+          input.gesture > 0 &&
+          input.gesture <= Number.MAX_SAFE_INTEGER &&
+          [input.x, input.y].every(
+            (value) =>
+              typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= 1_000_000,
+          )
+        ) {
+          if (input.phase === 'start' && this.canvasPanActive) {
+            this.canvasPanGesture = input.gesture;
+          } else if (this.canvasPanGesture !== input.gesture) {
+            return;
+          }
+          this.canvasInputListeners.forEach((listener) => listener(input));
+          if (input.phase === 'end' || input.phase === 'cancel') {
+            this.canvasPanGesture = null;
+          }
+          return;
+        }
+      }
+    }
     if (this.observeLayout && event.currentTarget === this.commandPort) {
       const hint = message as {
         channel?: unknown;
@@ -1849,6 +1915,17 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
   }
 
   private closeCommandPort(): void {
+    if (this.canvasPanActive || this.canvasPanGesture !== null) {
+      this.canvasPanActive = false;
+      this.canvasPanGesture = null;
+      this.canvasInputListeners.forEach((listener) =>
+        listener({
+          kind: 'pan-key',
+          active: false,
+          interactionTime: performance.timeOrigin + performance.now(),
+        }),
+      );
+    }
     this.clearScreenshotSessions();
     if (this.commandPort) {
       this.commandPort.removeEventListener('message', this.handleCommandMessage);

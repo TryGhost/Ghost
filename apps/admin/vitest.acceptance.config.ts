@@ -107,6 +107,83 @@ const fakeFrameImage: BrowserCommand<
 const getFrameImageRequests: BrowserCommand<[]> = ({ page }) =>
   Promise.resolve(imageRequests.get(page) ?? []);
 
+type CanvasPointerAction =
+  | { kind: 'move'; x: number; y: number }
+  | { kind: 'down' | 'up' | 'space-down' | 'space-up' | 'escape' };
+const canvasPointer: BrowserCommand<[actions: CanvasPointerAction[]]> = async (
+  { page },
+  actions,
+) => {
+  const tester = await page.locator('[data-vitest="true"]').boundingBox();
+  if (!tester) {
+    throw new Error('The browser test viewport is not available.');
+  }
+  for (const action of actions) {
+    if (action.kind === 'move') {
+      await page.mouse.move(tester.x + action.x, tester.y + action.y);
+    } else if (action.kind === 'down') {
+      await page.mouse.down();
+    } else if (action.kind === 'up') {
+      await page.mouse.up();
+    } else if (action.kind === 'space-down') {
+      await page.keyboard.down('Space');
+    } else if (action.kind === 'space-up') {
+      await page.keyboard.up('Space');
+    } else {
+      await page.keyboard.press('Escape');
+    }
+  }
+};
+
+const canvasInputValue: BrowserCommand<[title: string, label: string]> = (
+  { iframe },
+  title,
+  label,
+) =>
+  iframe
+    .frameLocator(`iframe[title="${title}"]`)
+    .getByRole('textbox', { name: label, exact: true })
+    .inputValue();
+const canvasFocusInput: BrowserCommand<[title: string, label: string]> = (
+  { iframe },
+  title,
+  label,
+) =>
+  iframe
+    .frameLocator(`iframe[title="${title}"]`)
+    .getByRole('textbox', { name: label, exact: true })
+    .focus();
+const canvasPointerSizes = new WeakMap<
+  BrowserPage,
+  { size: { width: number; height: number }; transform: string }
+>();
+const canvasPointerViewport: BrowserCommand<[enabled: boolean]> = async ({ page }, enabled) => {
+  if (enabled) {
+    const size = page.viewportSize();
+    if (size) {
+      const transform = await page.locator('[data-vitest="true"]').evaluate((element) => {
+        const wrapper = element.parentElement!;
+        const previous = wrapper.style.transform;
+        wrapper.style.transform = 'none';
+        return previous;
+      });
+      canvasPointerSizes.set(page, { size, transform });
+    }
+    // The runner otherwise scales its 1280x800 tester to fit a 1280x720 outer
+    // page. Native screen-coordinate tests need an unscaled tester viewport.
+    await page.setViewportSize({ width: 1600, height: 1000 });
+  } else {
+    const size = canvasPointerSizes.get(page);
+    if (size) {
+      await page.locator('[data-vitest="true"]').evaluate((element, transform) => {
+        element.parentElement!.style.transform = transform;
+      }, size.transform);
+      await page.setViewportSize(size.size);
+      canvasPointerSizes.delete(page);
+    }
+  }
+};
+
 export default defineConfig({
   plugins: [tailwindcss() as PluginOption, react()],
   server: {
@@ -159,6 +236,10 @@ export default defineConfig({
         fakeFrameOrigin,
         fakeFrameImage,
         getFrameImageRequests,
+        canvasPointer,
+        canvasInputValue,
+        canvasFocusInput,
+        canvasPointerViewport,
         releaseFrameImages,
         guardFrameNavigations,
         resetFakeFrameOrigins,

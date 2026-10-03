@@ -114,6 +114,7 @@ function LivePreview({
   const [composition, setComposition] = useState<ExpandedComposition | null>(null);
   const [layoutStatus, setLayoutStatus] = useState('pending');
   const layoutPaused = useRef(false);
+  const layoutReady = useRef(false);
   const layoutObservation = useRef<ReturnType<typeof observeExpandedComposition> | null>(null);
   const handlers = useRef({
     onInput,
@@ -184,6 +185,7 @@ function LivePreview({
     setComposition(null);
     setLayoutStatus('pending');
     layoutPaused.current = false;
+    layoutReady.current = false;
     setStatus('Loading preview…');
     iframe.current!.style.height = `${height}px`;
     const connection = kind === 'device' ? probe.attach(frame.id, surface, document) : null;
@@ -208,12 +210,21 @@ function LivePreview({
             revision: document.revision,
             viewport: { width, height },
             signal: controller.signal,
-            isPaused: () => layoutPaused.current || handlers.current.draftOwner === frame.id,
+            isPaused: () =>
+              layoutPaused.current ||
+              handlers.current.draftOwner === frame.id ||
+              (layoutReady.current &&
+                (!!iframe.current?.matches(':hover') ||
+                  iframe.current?.ownerDocument.activeElement === iframe.current)),
             onStart: () => setLayoutStatus('measuring'),
             onResult: (result) => {
+              layoutReady.current = true;
               setComposition(result);
               setLayoutStatus(result.status);
-              setStatus('Ready');
+              // Initial readiness also waits for the runtime's interaction mode.
+              if (lastMode.current?.document === document) {
+                setStatus('Ready');
+              }
               handlers.current.onExpanded({
                 status: 'current',
                 composition: result,
@@ -270,6 +281,16 @@ function LivePreview({
     layoutObservation.current?.resume();
   }, [draftOwner]);
   useEffect(() => {
+    const ownerDocument = iframe.current?.ownerDocument;
+    const resume = () => layoutObservation.current?.resume();
+    ownerDocument?.addEventListener('focusin', resume);
+    window.addEventListener('focus', resume);
+    return () => {
+      ownerDocument?.removeEventListener('focusin', resume);
+      window.removeEventListener('focus', resume);
+    };
+  }, []);
+  useEffect(() => {
     if (!surface || ready !== document) {
       return;
     }
@@ -304,6 +325,7 @@ function LivePreview({
           height: kind === 'expanded' && composition ? composition.viewport.height : height,
         }}
         title={`${frame.label} ${kind === 'expanded' ? 'composition' : 'preview'}`}
+        onPointerLeave={() => layoutObservation.current?.resume()}
       />
       {visible && status !== 'Ready' && (
         <Text

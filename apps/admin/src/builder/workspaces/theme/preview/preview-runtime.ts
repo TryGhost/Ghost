@@ -1029,6 +1029,174 @@ export function previewRuntimeBootstrap(): void {
     });
   };
   if (canvasNavigation) {
+    let panKey = false;
+    let panPointer: { element: Element; id: number; gesture: number; x: number; y: number } | null =
+      null;
+    let suppressPanClick = false;
+    const panTime = () => performance.timeOrigin + performance.now();
+    const panInput = (input: Record<string, unknown>) => {
+      if (canvasCommitted) {
+        portPostMessage({ channel, documentId, type: 'canvas-pan', input });
+      }
+    };
+    const panControl = (target: EventTarget | null) =>
+      target instanceof Element &&
+      !!target.closest(
+        'input,textarea,select,button,dialog,[role="button"],[contenteditable]:not([contenteditable="false"]),[role="textbox"],[role="dialog"],[role="menu"],[role="listbox"]',
+      );
+    const finishPanPointer = (phase: 'end' | 'cancel') => {
+      const pointer = panPointer;
+      panPointer = null;
+      if (pointer) {
+        panInput({ kind: 'pan-drag', phase, gesture: pointer.gesture, x: pointer.x, y: pointer.y });
+        if (pointer.element.hasPointerCapture(pointer.id)) {
+          pointer.element.releasePointerCapture(pointer.id);
+        }
+      }
+    };
+    const releasePanKey = () => {
+      finishPanPointer('cancel');
+      if (panKey) {
+        panKey = false;
+        panInput({ kind: 'pan-key', active: false, interactionTime: panTime() });
+      }
+    };
+    window.addEventListener(
+      'keydown',
+      (event) => {
+        if (!event.isTrusted || !canvasCommitted || event.isComposing) {
+          return;
+        }
+        if (event.key === 'Escape' && panKey) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          releasePanKey();
+        } else if (
+          event.code === 'Space' &&
+          !event.altKey &&
+          !event.ctrlKey &&
+          !event.metaKey &&
+          !panControl(event.target)
+        ) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          if (!panKey && !event.repeat) {
+            panKey = true;
+            panInput({ kind: 'pan-key', active: true, interactionTime: panTime() });
+          }
+        }
+      },
+      true,
+    );
+    window.addEventListener(
+      'keyup',
+      (event) => {
+        if (event.isTrusted && event.code === 'Space' && panKey) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          releasePanKey();
+        }
+      },
+      true,
+    );
+    window.addEventListener(
+      'pointerdown',
+      (event) => {
+        if (!event.isTrusted) {
+          return;
+        }
+        suppressPanClick = false;
+        if (
+          !panKey ||
+          event.button !== 0 ||
+          panControl(event.target) ||
+          !(event.target instanceof Element)
+        ) {
+          return;
+        }
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        suppressPanClick = true;
+        event.target.setPointerCapture(event.pointerId);
+        panPointer = {
+          element: event.target,
+          id: event.pointerId,
+          gesture: panTime(),
+          x: event.screenX,
+          y: event.screenY,
+        };
+        panInput({
+          kind: 'pan-drag',
+          phase: 'start',
+          gesture: panPointer.gesture,
+          x: event.screenX,
+          y: event.screenY,
+        });
+      },
+      true,
+    );
+    window.addEventListener(
+      'pointermove',
+      (event) => {
+        if (!event.isTrusted || panPointer?.id !== event.pointerId) {
+          return;
+        }
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        panPointer.x = event.screenX;
+        panPointer.y = event.screenY;
+        panInput({
+          kind: 'pan-drag',
+          phase: 'move',
+          gesture: panPointer.gesture,
+          x: event.screenX,
+          y: event.screenY,
+        });
+      },
+      true,
+    );
+    window.addEventListener(
+      'pointerup',
+      (event) => {
+        if (event.isTrusted && panPointer?.id === event.pointerId) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          panPointer.x = event.screenX;
+          panPointer.y = event.screenY;
+          finishPanPointer('end');
+        }
+      },
+      true,
+    );
+    for (const type of ['pointercancel', 'lostpointercapture']) {
+      window.addEventListener(
+        type,
+        (event) => {
+          if ((event as PointerEvent).pointerId === panPointer?.id) {
+            releasePanKey();
+          }
+        },
+        true,
+      );
+    }
+    window.addEventListener(
+      'click',
+      (event) => {
+        if (event.isTrusted && suppressPanClick) {
+          suppressPanClick = false;
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }
+      },
+      true,
+    );
+    window.addEventListener('blur', releasePanKey);
+    window.addEventListener('pagehide', releasePanKey);
+    window.addEventListener('focusin', (event) => {
+      if (panKey && panControl(event.target)) {
+        releasePanKey();
+      }
+    });
     document.addEventListener(
       'wheel',
       (event) => {
@@ -2053,6 +2221,12 @@ export function previewRuntimeBootstrap(): void {
           timer = setTimeout(notify, 100);
         }
       };
+      const releaseInteraction = () => {
+        // Parent focus events do not fire when focus moves between opaque frames.
+        // Re-send the current geometry so deferred work can resume after this blur.
+        previous = '';
+        schedule();
+      };
       const resize = new ResizeObserver(schedule);
       resize.observe(document.documentElement);
       resize.observe(document.body);
@@ -2110,6 +2284,7 @@ export function previewRuntimeBootstrap(): void {
       });
       layoutObservationActive = true;
       window.addEventListener('resize', schedule);
+      window.addEventListener('blur', releaseInteraction);
       window.addEventListener('load', contentChanged, true);
       window.addEventListener('transitionend', schedule, true);
       window.addEventListener('animationend', schedule, true);
@@ -2125,6 +2300,7 @@ export function previewRuntimeBootstrap(): void {
           resize.disconnect();
           mutations.disconnect();
           window.removeEventListener('resize', schedule);
+          window.removeEventListener('blur', releaseInteraction);
           window.removeEventListener('load', contentChanged, true);
           window.removeEventListener('transitionend', schedule, true);
           window.removeEventListener('animationend', schedule, true);

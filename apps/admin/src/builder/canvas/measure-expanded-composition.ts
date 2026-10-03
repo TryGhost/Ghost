@@ -25,6 +25,14 @@ export type ExpandedComposition = {
   warnings: string[];
 };
 
+/** Text admission can precede the parent's draft reservation; retry after release. */
+export class CompositionEditInterruption extends Error {
+  constructor() {
+    super('Composition measurement is interrupted by a local text edit.');
+    this.name = 'CompositionEditInterruption';
+  }
+}
+
 /** Only resize a dedicated composition surface. The caller retains its fixed device. */
 export async function measureExpandedComposition(
   surface: Pick<IframePreviewDocumentSurface, 'measureLayout'>,
@@ -71,6 +79,13 @@ export async function measureExpandedComposition(
 
   const work = async (): Promise<ExpandedComposition> => {
     assertActive();
+    const preflight = await surface.measureLayout(controller.signal);
+    assertActive();
+    if (preflight.localEdits.active || preflight.localEdits.changed) {
+      throw new CompositionEditInterruption();
+    }
+    const measurements = [preflight];
+    let initial = preflight;
     if (configuredViewport) {
       if (
         !Number.isSafeInteger(configuredViewport.height) ||
@@ -83,19 +98,29 @@ export async function measureExpandedComposition(
       // same bounded pass lets later measurements detect content shrinkage too.
       await resize(configuredViewport.height, controller.signal);
       assertActive();
+      initial = await surface.measureLayout(controller.signal);
+      assertActive();
+      measurements.push(initial);
+      if (
+        initial.documentId !== preflight.documentId ||
+        initial.documentInstanceId !== preflight.documentInstanceId
+      ) {
+        throw new Error('The composition document changed during measurement.');
+      }
     }
-    const initial = await surface.measureLayout(controller.signal);
-    assertActive();
     if (configuredViewport && initial.viewport.width !== configuredViewport.width) {
       throw new Error('The configured composition width changed during measurement.');
     }
-    if (initial.localEdits.active || initial.localEdits.changed) {
-      throw new Error('The composition contains local edits outside its rendered revision.');
+    if (
+      initial.localEdits.generation !== preflight.localEdits.generation ||
+      initial.localEdits.active ||
+      initial.localEdits.changed
+    ) {
+      throw new CompositionEditInterruption();
     }
     if (initial.viewport.height > EXPANDED_COMPOSITION_LIMITS.maxHeight) {
       throw new Error('The starting composition viewport exceeds its height limit.');
     }
-    const measurements = [initial];
     let current = initial;
     let resetForContent = false;
     let status: ExpandedComposition['status'] = 'round-limit';
@@ -119,11 +144,15 @@ export async function measureExpandedComposition(
       const next = await surface.measureLayout(controller.signal);
       assertActive();
       if (
-        next.documentId !== initial.documentId ||
-        next.documentInstanceId !== initial.documentInstanceId ||
         next.localEdits.generation !== initial.localEdits.generation ||
         next.localEdits.active ||
-        next.localEdits.changed ||
+        next.localEdits.changed
+      ) {
+        throw new CompositionEditInterruption();
+      }
+      if (
+        next.documentId !== initial.documentId ||
+        next.documentInstanceId !== initial.documentInstanceId ||
         next.viewport.width !== initial.viewport.width ||
         next.viewport.height !== height
       ) {

@@ -1,18 +1,35 @@
 import { expect, it, vi } from 'vitest';
-import { page } from 'vitest/browser';
+import { commands, page } from 'vitest/browser';
 import { Box } from '@tryghost/shade/primitives';
 import { renderInApp } from '@test-utils/acceptance/render-in-app';
 import { CanvasHarness } from './canvas-harness';
 import { FixtureClient } from './fixture-client';
-import type { IframePreviewDocumentSurface } from '@/builder/workspaces/theme/preview/preview-document';
+import { IframePreviewDocumentSurface } from '@/builder/workspaces/theme/preview/preview-document';
 
 it.each(['source', 'casper'] as const)(
   '%s keeps live geometry current, defers resizing a draft, and falls back one frame without replacing documents',
   { timeout: 60_000 },
   async (fixtureId) => {
+    await commands.canvasPointerViewport(true);
     const compositions = new Map<string, IframePreviewDocumentSurface>();
     const devices = new Map<string, IframePreviewDocumentSurface>();
     const signal = new AbortController().signal;
+    let releaseInitialMode = () => {};
+    let initialModeHeld = false;
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    const setMode = IframePreviewDocumentSurface.prototype.setInteractionMode;
+    vi.spyOn(IframePreviewDocumentSurface.prototype, 'setInteractionMode').mockImplementation(
+      async function (this: IframePreviewDocumentSurface, mode, active) {
+        const element = (this as unknown as { iframe: HTMLIFrameElement }).iframe;
+        if (mode === 'edit' && element.title === 'Home · Mobile composition' && !initialModeHeld) {
+          initialModeHeld = true;
+          await new Promise<void>((resolve) => {
+            releaseInitialMode = resolve;
+          });
+        }
+        return setMode.call(this, mode, active);
+      },
+    );
     // Retain the real fixture worker and its source-proven text targets.
     // eslint-disable-next-line @typescript-eslint/unbound-method
     const render = FixtureClient.prototype.render;
@@ -48,11 +65,20 @@ it.each(['source', 'casper'] as const)(
       </Box>,
     );
     try {
+      await expect.poll(() => initialModeHeld, { timeout: 30_000 }).toBe(true);
+      const pending = document.querySelector<HTMLIFrameElement>(
+        'iframe[title="Home · Mobile composition"]',
+      )!;
+      expect(pending.dataset.previewStatus).not.toBe('Ready');
+      releaseInitialMode();
       await expect
         .poll(() => document.querySelectorAll('iframe[data-preview-status="Ready"]').length, {
           timeout: 30_000,
         })
         .toBe(8);
+      // Leave both pointer and keyboard focus in parent chrome before observing
+      // unpaused late layout; hovering alone does not release iframe focus.
+      await page.getByRole('button', { name: 'Fit all', exact: true }).click();
       const iframe = document.querySelector<HTMLIFrameElement>(
         'iframe[title="Home · Mobile composition"]',
       )!;
@@ -90,7 +116,30 @@ it.each(['source', 'casper'] as const)(
         name: fixtureId === 'casper' ? 'Powered by Ghost' : 'Ghost',
         exact: true,
       });
+      await footer.click();
+      mutate(600);
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 400);
+      });
+      expect(iframe.clientHeight).toBe(initial.viewport.height);
+      const postFooter = page
+        .frameLocator(page.getByTitle('Post · Mobile composition', { exact: true }))
+        .getByRole('link', {
+          name: fixtureId === 'casper' ? 'Powered by Ghost' : 'Ghost',
+          exact: true,
+        });
+      await postFooter.hover();
+      await postFooter.click();
+      await expect
+        .poll(() => iframe.clientHeight, { timeout: 5000 })
+        .toBeGreaterThan(initial.viewport.height + 500);
+      await expect.poll(() => iframe.dataset.compositionStatus).toBe('settled');
+      await page.getByRole('button', { name: 'Fit all', exact: true }).click();
+      mutate(0);
+      await expect.poll(() => iframe.clientHeight, { timeout: 5000 }).toBe(initial.viewport.height);
+      await expect.poll(() => iframe.dataset.compositionStatus).toBe('settled');
       await footer.hover();
+      mutate(1200);
       await new Promise<void>((resolve) => {
         setTimeout(resolve, 400);
       });
@@ -115,6 +164,27 @@ it.each(['source', 'casper'] as const)(
       await new Promise<void>((resolve) => {
         setTimeout(resolve, 400);
       });
+      expect(iframe.clientHeight).toBe(initial.viewport.height);
+      expect((await home.inspectElement({ selector: '[role="textbox"]' }, signal)).text).toBe(
+        'Retained draft',
+      );
+      const board = page.getByRole('region', { name: 'Theme canvas' }).element() as HTMLElement;
+      board.focus();
+      await commands.canvasPointer([{ kind: 'space-down' }]);
+      await expect.poll(() => document.querySelector('[data-canvas-pan-shield]')).not.toBeNull();
+      const bounds = board.getBoundingClientRect();
+      const world = page.getByTestId('canvas-world').element() as HTMLElement;
+      const beforePan = new DOMMatrix(world.style.transform);
+      await commands.canvasPointer([
+        { kind: 'move', x: bounds.left + 200, y: bounds.top + 200 },
+        { kind: 'down' },
+        { kind: 'move', x: bounds.left + 320, y: bounds.top + 250 },
+        { kind: 'up' },
+        { kind: 'space-up' },
+      ]);
+      const afterPan = new DOMMatrix(world.style.transform);
+      expect(afterPan.m41 - beforePan.m41).toBeCloseTo(120, 3);
+      expect(afterPan.m42 - beforePan.m42).toBeCloseTo(50, 3);
       expect(iframe.clientHeight).toBe(initial.viewport.height);
       expect((await home.inspectElement({ selector: '[role="textbox"]' }, signal)).text).toBe(
         'Retained draft',
@@ -169,7 +239,10 @@ it.each(['source', 'casper'] as const)(
       ).toEqual(identities);
       expect(renderer).toHaveBeenCalledTimes(renderCount);
     } finally {
+      releaseInitialMode();
+      await commands.canvasPointer([{ kind: 'up' }, { kind: 'space-up' }]);
       await screen.unmount();
+      await commands.canvasPointerViewport(false);
       vi.restoreAllMocks();
     }
   },

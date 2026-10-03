@@ -16,6 +16,14 @@ export type CanvasFrame = CanvasRect & {
   overviewLabel?: string;
 };
 export type CanvasFrameInput =
+  | { kind: 'pan-key'; active: boolean; interactionTime: number }
+  | {
+      kind: 'pan-drag';
+      phase: 'start' | 'move' | 'end' | 'cancel';
+      gesture: number;
+      x: number;
+      y: number;
+    }
   | { kind: 'escape'; interactionTime?: number }
   | { kind: 'pan'; deltaX: number; deltaY: number; deltaMode: number }
   | { kind: 'inline-edit'; box: CanvasRect | null }
@@ -24,6 +32,7 @@ export type CanvasView = {
   camera: CanvasCamera;
   selectedFrameId: string | null;
 };
+const boardPanOwner = Symbol('canvas-board');
 
 function frameHeaders(frames: readonly CanvasFrame[], camera: CanvasCamera, width = 154) {
   const headers: { frame: CanvasFrame; x: number; y: number }[] = [];
@@ -90,7 +99,37 @@ export function CanvasBoard({
     });
   }, [camera, selected]);
   const initialized = useRef(false);
-  const drag = useRef<{ origin: CanvasPoint; point: CanvasPoint; moved: boolean } | null>(null);
+  const drag = useRef<{
+    origin: CanvasPoint;
+    point: CanvasPoint;
+    moved: boolean;
+    source: string | typeof boardPanOwner;
+    space: boolean;
+    cancelled: boolean;
+    pointerId?: number;
+    gesture?: number;
+  } | null>(null);
+  const [panArmed, setPanArmed] = useState(false);
+  const [panDragging, setPanDragging] = useState(false);
+  const panOwner = useRef<string | typeof boardPanOwner | null>(null);
+  const panTime = useRef(0);
+  const panKeyInput = (source: string | typeof boardPanOwner, active: boolean, time: number) => {
+    if (time < panTime.current || (!active && panOwner.current !== source)) {
+      return;
+    }
+    panTime.current = time;
+    panOwner.current = active ? source : null;
+    setPanArmed(active);
+    if (!active && drag.current?.space) {
+      if (drag.current.source === boardPanOwner) {
+        // Retain capture until pointerup so releasing Space cannot click through.
+        drag.current.cancelled = true;
+      } else {
+        drag.current = null;
+        setPanDragging(false);
+      }
+    }
+  };
   const navigate = useCallback((next: SetStateAction<CanvasCamera>) => {
     initialized.current = true;
     setCamera((current) => {
@@ -104,6 +143,78 @@ export function CanvasBoard({
       }
       return result;
     });
+  }, []);
+
+  useEffect(() => {
+    const editable = (target: EventTarget | null) =>
+      target instanceof Element &&
+      !!target.closest(
+        'input,textarea,select,button,dialog,[role="button"],[contenteditable]:not([contenteditable="false"]),[role="textbox"],[role="dialog"],[role="menu"],[role="listbox"]',
+      );
+    const down = (event: KeyboardEvent) => {
+      if (!event.isTrusted || event.isComposing || !host.current?.contains(event.target as Node)) {
+        return;
+      }
+      if (event.key === 'Escape' && (panOwner.current || drag.current?.space)) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        panKeyInput(
+          panOwner.current ?? boardPanOwner,
+          false,
+          performance.timeOrigin + event.timeStamp,
+        );
+      } else if (
+        event.code === 'Space' &&
+        !event.altKey &&
+        !event.ctrlKey &&
+        !event.metaKey &&
+        !editable(event.target)
+      ) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        // Cancellation lasts until a fresh press, even while the OS repeats Space.
+        if (!event.repeat) {
+          panKeyInput(boardPanOwner, true, performance.timeOrigin + event.timeStamp);
+        }
+      }
+    };
+    const up = (event: KeyboardEvent) => {
+      if (event.isTrusted && event.code === 'Space' && panOwner.current) {
+        event.preventDefault();
+        panKeyInput(panOwner.current, false, performance.timeOrigin + event.timeStamp);
+      }
+    };
+    const blur = () => {
+      panOwner.current = null;
+      setPanArmed(false);
+      const pointer = drag.current?.pointerId;
+      drag.current = null;
+      setPanDragging(false);
+      if (pointer !== undefined && host.current?.hasPointerCapture(pointer)) {
+        host.current.releasePointerCapture(pointer);
+      }
+    };
+    const focus = (event: FocusEvent) => {
+      if (
+        panOwner.current &&
+        (!host.current?.contains(event.target as Node) ||
+          editable(event.target) ||
+          event.target instanceof HTMLIFrameElement)
+      ) {
+        panKeyInput(panOwner.current, false, performance.timeOrigin + performance.now());
+      }
+    };
+    window.addEventListener('keydown', down, true);
+    window.addEventListener('keyup', up, true);
+    window.addEventListener('blur', blur);
+    window.addEventListener('focusin', focus);
+    return () => {
+      window.removeEventListener('keydown', down, true);
+      window.removeEventListener('keyup', up, true);
+      window.removeEventListener('blur', blur);
+      window.removeEventListener('focusin', focus);
+      blur();
+    };
   }, []);
 
   useEffect(() => {
@@ -222,7 +333,7 @@ export function CanvasBoard({
           +
         </Button>
         <Text size="sm" tone="secondary">
-          Scroll to pan · Ctrl/⌘ scroll to zoom · Double-click text to edit
+          Scroll or Space-drag to pan · Ctrl/⌘ scroll to zoom · Double-click text to edit
         </Text>
       </Inline>
       {draftFrames.length > 0 && (
@@ -260,24 +371,49 @@ export function CanvasBoard({
           }
         }}
         onLostPointerCapture={() => {
+          const interrupted = drag.current !== null;
           drag.current = null;
+          setPanDragging(false);
+          if (interrupted) {
+            panOwner.current = null;
+            setPanArmed(false);
+          }
+        }}
+        onPointerCancel={() => {
+          drag.current = null;
+          setPanDragging(false);
+          panOwner.current = null;
+          setPanArmed(false);
         }}
         onPointerDown={(event) => {
           if (
             (event.button !== 0 && event.button !== 1) ||
-            (event.target as HTMLElement).closest('button,[data-canvas-frame]')
+            (!panOwner.current &&
+              (event.target as HTMLElement).closest('button,[data-canvas-frame]'))
           ) {
             return;
           }
           event.preventDefault();
           event.currentTarget.setPointerCapture(event.pointerId);
           const point = { x: event.clientX, y: event.clientY };
-          drag.current = { origin: point, point, moved: false };
-          host.current?.focus({ preventScroll: true });
+          const space = panOwner.current !== null;
+          drag.current = {
+            origin: point,
+            point,
+            moved: false,
+            source: boardPanOwner,
+            space,
+            cancelled: false,
+            pointerId: event.pointerId,
+          };
+          setPanDragging(space);
+          if (!space) {
+            host.current?.focus({ preventScroll: true });
+          }
         }}
         onPointerMove={(event) => {
           const current = drag.current;
-          if (!current) {
+          if (!current || current.source !== boardPanOwner || current.cancelled) {
             return;
           }
           if (
@@ -292,10 +428,11 @@ export function CanvasBoard({
           navigate((value) => panCanvas(value, delta));
         }}
         onPointerUp={(event) => {
-          if (drag.current && !drag.current.moved) {
+          if (drag.current && !drag.current.space && !drag.current.moved) {
             selectFrame(atPoint(localPoint(event.clientX, event.clientY))?.id ?? null);
           }
           drag.current = null;
+          setPanDragging(false);
         }}
       >
         <Box
@@ -318,6 +455,53 @@ export function CanvasBoard({
               {renderFrame(
                 frame,
                 (input) => {
+                  if (input.kind === 'pan-key') {
+                    panKeyInput(frame.id, input.active, input.interactionTime);
+                    return;
+                  }
+                  if (input.kind === 'pan-drag') {
+                    const point = { x: input.x, y: input.y };
+                    if (input.phase === 'start' && panOwner.current === frame.id) {
+                      drag.current = {
+                        origin: point,
+                        point,
+                        moved: false,
+                        source: frame.id,
+                        space: true,
+                        cancelled: false,
+                        gesture: input.gesture,
+                      };
+                      setPanDragging(true);
+                    } else {
+                      const current = drag.current;
+                      if (
+                        !current ||
+                        current.source !== frame.id ||
+                        current.gesture !== input.gesture
+                      ) {
+                        return;
+                      }
+                      if (input.phase === 'move' || input.phase === 'end') {
+                        if (
+                          current.moved ||
+                          Math.hypot(point.x - current.origin.x, point.y - current.origin.y) >= 3
+                        ) {
+                          current.moved = true;
+                          const delta = {
+                            x: point.x - current.point.x,
+                            y: point.y - current.point.y,
+                          };
+                          current.point = point;
+                          navigate((value) => panCanvas(value, delta));
+                        }
+                      }
+                      if (input.phase === 'end' || input.phase === 'cancel') {
+                        drag.current = null;
+                        setPanDragging(false);
+                      }
+                    }
+                    return;
+                  }
                   if (input.kind === 'inline-edit') {
                     if (input.box) {
                       drafts.current.set(frame.id, input.box);
@@ -426,6 +610,12 @@ export function CanvasBoard({
             )}
           </Inline>
         ))}
+        {(panArmed || panDragging) && (
+          <Box
+            className={`absolute inset-0 z-30 ${panDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+            data-canvas-pan-shield
+          />
+        )}
       </Box>
     </Stack>
   );

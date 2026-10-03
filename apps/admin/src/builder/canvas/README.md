@@ -8,13 +8,21 @@ pointer overlay. Single-clicking a header selects without moving the camera.
 Double-click or Enter fits that frame on the board without resizing its document.
 Headers stay in screen coordinates and stagger horizontally outside page content.
 
-Drag empty board space or scroll to pan. Ctrl/Command-scroll zooms at the pointer.
+Drag empty board space, Space-drag or scroll to pan. Ctrl/Command-scroll zooms at the pointer.
 The authenticated `canvasNavigation` bridge relays zoom, Escape and inline draft
 activity. Its additional `canvasPanning` option relays ordinary wheel input from
 live compositions; fixed devices retain native page scrolling. Locally scrollable
 editor controls consume their own scrolling first. Existing non-canvas previews
-leave these options disabled. Space-drag across iframe boundaries remains work
-for a later interaction slice.
+leave these options disabled. Space arms a temporary pointer shield over the board;
+pointer capture keeps deliberate drags moving across frames and board boundaries.
+If a drag begins inside a frame before the shield is hittable, that runtime captures
+and relays it through its current private document port. Pan gestures never select,
+scroll or replace documents. Releasing Space or pressing Escape stops movement;
+capture prevents a cancelled parent gesture from clicking through on pointerup.
+Lost capture, focus loss, control focus and document retirement cancel ownership.
+Held-key repeats cannot re-arm a cancelled gesture; release Space before starting again.
+Space remains ordinary text/input inside editors, controls and dialogs. Enter
+retains keyboard selection/editing. No permanent pointer overlay covers the frames.
 
 Double-click source-proven literal text directly in a ready live frame to edit.
 The board fits only when the target needs a readable scale/position; editing already
@@ -77,7 +85,17 @@ attribute writes, identical DOM replacements and the runtime's own mode/tab-stop
 and hover-outline changes do not restart settling. Each pass resets to the configured viewport to reveal shrinkage,
 then settles within the same round/time/height limits. Changes during an expanding
 pass recheck that viewport floor. These passes retain documents and the camera;
-a retained text draft defers resizing until it is released. A failed or limited
+a pending admission or retained text draft defers resizing until it is released.
+Preflight layout reads protect the current viewport even before the parent has
+reserved a pending admission. A local edit generation change interrupts and
+retries settling without marking the rendered document as failed. Interrupted
+passes restore the previous settled height. After initial settling, pointer hover
+or keyboard focus inside the frame defers further passes until interaction leaves;
+this prevents measurement resizes from moving targets between clicks. Initial
+preview readiness waits for both settling and acknowledgment of interaction mode.
+An authenticated focus-loss geometry hint resumes deferred work when focus moves
+directly between opaque frames, where parent focus events do not fire.
+A failed or limited
 pass stops automatic resizing for that delivered document and offers its fixed
 viewport fallback. Accepted source replacement starts new bounded observation.
 Settling alone does not establish device fidelity or full lazy-content loading.

@@ -12,6 +12,7 @@ function fixture(extent?: (height: number) => number) {
   let generation = 0;
   let sample = 0;
   let paused = false;
+  let localEdits = { generation: 0, active: false, changed: false };
   let listener: ((change: PreviewLayoutChange) => void) | null = null;
   const geometry = () => {
     sample += 1;
@@ -28,7 +29,7 @@ function fixture(extent?: (height: number) => number) {
     measureLayout: vi.fn((): Promise<PreviewLayout> =>
       Promise.resolve({
         ...geometry(),
-        localEdits: { generation: 0, active: false, changed: false },
+        localEdits: { ...localEdits },
         viewport: { width: 390, height, scrollX: 0, scrollY: 0 },
       }),
     ),
@@ -64,6 +65,9 @@ function fixture(extent?: (height: number) => number) {
     observation,
     controller,
     pause: (next: boolean) => (paused = next),
+    edit: (active: boolean) => {
+      localEdits = { generation: localEdits.generation + 1, active, changed: false };
+    },
     change: (next: number) => {
       naturalHeight = next;
       generation += 1;
@@ -75,6 +79,75 @@ function fixture(extent?: (height: number) => number) {
 afterEach(() => vi.useRealTimers());
 
 describe('ongoing composition observation', () => {
+  it('restores the settled viewport if admission begins after the clean preflight', async () => {
+    vi.useFakeTimers();
+    const value = fixture();
+    try {
+      await value.observation.ready;
+      const read = value.surface.measureLayout.getMockImplementation()!;
+      value.surface.measureLayout.mockImplementationOnce(async () => {
+        const result = await read();
+        value.edit(true);
+        return result;
+      });
+      value.change(2400);
+      await vi.advanceTimersByTimeAsync(500);
+      expect((await value.surface.measureLayout()).viewport.height).toBe(1200);
+      expect(value.onError).not.toHaveBeenCalled();
+      expect(value.onResult).toHaveBeenCalledOnce();
+      value.edit(false);
+      value.observation.resume();
+      await vi.advanceTimersByTimeAsync(500);
+      expect(value.onResult).toHaveBeenCalledTimes(2);
+      expect(value.onResult.mock.lastCall![0].viewport.height).toBe(2400);
+    } finally {
+      value.observation.dispose();
+    }
+  });
+  it('preserves the viewport while text admission is pending before the parent reserves it', async () => {
+    vi.useFakeTimers();
+    const value = fixture();
+    try {
+      await value.observation.ready;
+      const count = value.resize.mock.calls.length;
+      value.edit(true);
+      value.change(2400);
+      await vi.advanceTimersByTimeAsync(500);
+      expect(value.resize).toHaveBeenCalledTimes(count);
+      expect(value.onError).not.toHaveBeenCalled();
+      expect(value.onResult).toHaveBeenCalledOnce();
+      value.edit(false);
+      value.observation.resume();
+      await vi.advanceTimersByTimeAsync(500);
+      expect(value.onResult).toHaveBeenCalledTimes(2);
+      expect(value.onResult.mock.lastCall![0].viewport.height).toBe(2400);
+    } finally {
+      value.observation.dispose();
+    }
+  });
+
+  it('remeasures after an admission starts and cancels during a settling pass', async () => {
+    vi.useFakeTimers();
+    const value = fixture();
+    try {
+      await value.observation.ready;
+      const read = value.surface.measureLayout.getMockImplementation()!;
+      value.surface.measureLayout.mockImplementationOnce(async () => {
+        const result = await read();
+        value.edit(true);
+        value.edit(false);
+        value.observation.resume();
+        return result;
+      });
+      value.change(2400);
+      await vi.advanceTimersByTimeAsync(500);
+      expect(value.onError).not.toHaveBeenCalled();
+      expect(value.onResult).toHaveBeenCalledTimes(2);
+      expect(value.onResult.mock.lastCall![0].viewport.height).toBe(2400);
+    } finally {
+      value.observation.dispose();
+    }
+  });
   it('grows and shrinks the retained surface without looping on its own resize notices', async () => {
     vi.useFakeTimers();
     const value = fixture();

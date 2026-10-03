@@ -1,5 +1,5 @@
 import { expect, it, vi } from 'vitest';
-import { page, userEvent } from 'vitest/browser';
+import { commands, page, userEvent } from 'vitest/browser';
 import { Box } from '@tryghost/shade/primitives';
 import { renderInApp } from '@test-utils/acceptance/render-in-app';
 import { CanvasHarness } from './canvas-harness';
@@ -11,6 +11,8 @@ it(
   'edits real Source template text through the canvas and prevents a second retained draft',
   { timeout: 60_000 },
   async () => {
+    // Exercise overview hit testing without Vitest's additional 90% wrapper scale.
+    await commands.canvasPointerViewport(true);
     const devices = new Map<string, IframePreviewDocumentSurface>();
     const signal = new AbortController().signal;
     const heldRequests: MessageEvent<unknown>[] = [];
@@ -348,6 +350,7 @@ it(
       focusFixture.mockRestore();
       releaseMode();
       await screen.unmount();
+      await commands.canvasPointerViewport(false);
     }
   },
 );

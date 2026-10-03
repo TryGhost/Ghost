@@ -1,6 +1,7 @@
 import {
   measureExpandedComposition,
   EXPANDED_COMPOSITION_LIMITS,
+  CompositionEditInterruption,
 } from './measure-expanded-composition';
 import type { ExpandedComposition } from './measure-expanded-composition';
 import type {
@@ -73,6 +74,8 @@ export function observeExpandedComposition({
     onStart?.();
     dirty = false;
     latest = null;
+    let interrupted = false;
+    let resized = false;
     try {
       const result = await measureExpandedComposition(
         surface,
@@ -80,6 +83,7 @@ export function observeExpandedComposition({
           if (isPaused()) {
             throw new Error('Composition measurement is paused for a retained text draft.');
           }
+          resized = true;
           await resize(height, active);
         },
         frameId,
@@ -98,8 +102,22 @@ export function observeExpandedComposition({
       if (stopped) {
         return;
       }
-      if (isPaused()) {
+      if (isPaused() || error instanceof CompositionEditInterruption) {
+        interrupted = true;
         dirty = true;
+        if (resized) {
+          try {
+            // Admission may start after preflight. Restore the last usable
+            // viewport immediately instead of leaving the editor at the floor.
+            await resize(current?.viewport.height ?? viewport.height, controller.signal);
+          } catch (restoreError) {
+            if (!stopped) {
+              limited = true;
+              onError(restoreError);
+              rejectReady(restoreError);
+            }
+          }
+        }
       } else {
         limited = true;
         onError(error);
@@ -109,7 +127,7 @@ export function observeExpandedComposition({
       measuring = false;
       // Our own resize notifications end at the measured geometry. An external
       // change after the final read schedules one follow-up, not a feedback loop.
-      if (!isPaused() && !limited) {
+      if (!interrupted && !isPaused() && !limited) {
         dirty = latest !== null && !matches(latest, current);
       }
       schedule();
@@ -119,8 +137,8 @@ export function observeExpandedComposition({
     latest = change;
     if (!matches(change, current)) {
       dirty = true;
-      schedule();
     }
+    schedule();
   });
   const dispose = () => {
     if (stopped) {
