@@ -1,41 +1,63 @@
-const _ = require('lodash');
-const knex = require('knex');
-const os = require('os');
-const fs = require('fs');
+import fs from 'node:fs';
+import os from 'node:os';
+import type { Knex } from 'knex';
+import _ from 'lodash';
+import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
+import config from '../../../shared/config';
+
 const betterSqlitePatches = require('./better-sqlite3-patches');
 
-const logging = require('@tryghost/logging');
-const config = require('../../../shared/config');
-const errors = require('@tryghost/errors');
-
-/** @type {knex.Knex} */
-let knexInstance;
+/**
+ * The slice of `database` config this module reads. Replace with the schema's
+ * own type once `database` is schemafied.
+ */
+export interface DatabaseConfig {
+  client?: string;
+  connection?: Record<string, unknown>;
+  useNullAsDefault?: boolean;
+  [key: string]: unknown;
+}
 
 // @TODO:
 // - if you require this file before config file was loaded,
 // - then this file is cached and you have no chance to connect to the db anymore
 // - bring dynamic into this file (db.connect())
-function configure(dbConfig) {
+
+/**
+ * Build knex's config from Ghost's `database` config.
+ *
+ * Derives a new object rather than writing into what it was handed: that object
+ * is config's own, and nconf's merge shares nested subtrees by reference, so the
+ * old in-place version leaked `connection.timezone`, `connection.charset` and
+ * `connection.decimalNumbers` into every later reader of `database`.
+ */
+export function configure(dbConfig: DatabaseConfig): Knex.Config {
   let client = dbConfig.client;
+  const derived: DatabaseConfig = {
+    ...dbConfig,
+    connection: { ...dbConfig.connection },
+  };
+  const connection = derived.connection as Record<string, unknown>;
 
   // Alias sqlite3 to better-sqlite3 for backwards compatibility
   // This allows self-hosters and developers to continue using 'sqlite3' in their config
   if (client === 'sqlite3') {
     logging.info('Detected sqlite3 config, using better-sqlite3 as drop-in replacement');
     client = 'better-sqlite3';
-    dbConfig.client = 'better-sqlite3';
+    derived.client = 'better-sqlite3';
   }
 
   if (client === 'better-sqlite3') {
     // Backwards compatibility with old knex behaviour
-    dbConfig.useNullAsDefault = Object.hasOwn(dbConfig, 'useNullAsDefault')
+    derived.useNullAsDefault = Object.hasOwn(dbConfig, 'useNullAsDefault')
       ? dbConfig.useNullAsDefault
       : true;
 
     // Enables foreign key checks and delete on cascade
     // better-sqlite3 uses synchronous .pragma() method instead of async .run()
-    dbConfig.pool = {
-      afterCreate(conn, cb) {
+    derived.pool = {
+      afterCreate(conn: { pragma(command: string): void }, cb: (err: null, conn: unknown) => void) {
         // better-sqlite3 exposes .pragma() method for setting PRAGMA commands
         conn.pragma('foreign_keys = ON');
 
@@ -53,23 +75,23 @@ function configure(dbConfig) {
     // In the default SQLite test config we set the path to /tmp/ghost-test.db,
     // but this won't work on Windows, so we need to replace the /tmp bit with
     // the Windows temp folder
-    const filename = dbConfig.connection.filename;
+    const filename = connection.filename;
     if (process.platform === 'win32' && _.isString(filename) && filename.match(/^\/tmp/)) {
-      dbConfig.connection.filename = filename.replace(/^\/tmp/, os.tmpdir());
-      logging.info(`Ghost DB path: ${dbConfig.connection.filename}`);
+      connection.filename = filename.replace(/^\/tmp/, os.tmpdir());
+      logging.info(`Ghost DB path: ${connection.filename}`);
     }
 
     betterSqlitePatches.applyBetterSqlite3Patches();
   }
 
   if (client === 'mysql2') {
-    dbConfig.connection.timezone = 'Z';
-    dbConfig.connection.charset = 'utf8mb4';
-    dbConfig.connection.decimalNumbers = true;
+    connection.timezone = 'Z';
+    connection.charset = 'utf8mb4';
+    connection.decimalNumbers = true;
 
     if (process.env.REQUIRE_INFILE_STREAM) {
       if (process.env.NODE_ENV === 'development' || process.env.ALLOW_INFILE_STREAM) {
-        dbConfig.connection.infileStreamFactory = (path) => fs.createReadStream(path);
+        connection.infileStreamFactory = (path: string) => fs.createReadStream(path);
       } else {
         throw new errors.InternalServerError({
           message:
@@ -79,11 +101,5 @@ function configure(dbConfig) {
     }
   }
 
-  return dbConfig;
+  return derived as Knex.Config;
 }
-
-if (!knexInstance && config.get('database') && config.get('database').client) {
-  knexInstance = knex(configure(config.get('database')));
-}
-
-module.exports = knexInstance;
