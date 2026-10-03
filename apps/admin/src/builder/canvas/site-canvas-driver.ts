@@ -102,7 +102,7 @@ export class SiteCanvasDriver implements CanvasDriver {
     }
     const result = await this.workspace.applyInlineTextEdit(edit, this.lifetime.signal);
     if (!result.ok) {
-      throw new CanvasRejectedError(result.error.message);
+      throw new CanvasRejectedError(result.error.message, result.error.code, result.error.details);
     }
     const next = this.currentRender();
     this.accepted = next;
@@ -112,15 +112,30 @@ export class SiteCanvasDriver implements CanvasDriver {
     };
   }
 
-  async applyThemePatch(patch: CanvasPatch): Promise<CanvasEditorRender> {
+  async applyThemePatch(
+    patch: CanvasPatch,
+    callerSignal?: AbortSignal,
+  ): Promise<CanvasEditorRender> {
     this.expectCurrent(patch.expectedRevision, patch.expectedDataGeneration);
-    const result = await this.workspace.applyThemePatch(
-      { revision: patch.expectedRevision, files: patch.files, settings: patch.settings },
-      this.lifetime.signal,
-      { promote: true, requirePromotedSource: true },
-    );
+    const signal = AbortSignal.any([this.lifetime.signal, ...(callerSignal ? [callerSignal] : [])]);
+    signal.throwIfAborted();
+    const result = await this.workspace
+      .applyThemePatch(
+        { revision: patch.expectedRevision, files: patch.files, settings: patch.settings },
+        signal,
+        { promote: true, requirePromotedSource: true },
+      )
+      .catch((error: unknown) => {
+        if (signal.aborted && this.workspace.draft.revision === patch.expectedRevision) {
+          throw new CanvasRejectedError('The theme change was cancelled before acceptance.');
+        }
+        throw error;
+      });
     if (!result.ok) {
-      throw new CanvasRejectedError(result.error.message);
+      if (signal.aborted && this.workspace.draft.revision === patch.expectedRevision) {
+        throw new CanvasRejectedError('The theme change was cancelled before acceptance.');
+      }
+      throw new CanvasRejectedError(result.error.message, result.error.code, result.error.details);
     }
     if (result.data.unchanged && this.accepted) {
       return { ...this.accepted, unchanged: true };

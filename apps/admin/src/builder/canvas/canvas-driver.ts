@@ -1,6 +1,7 @@
 import type { ThemeFilePatch } from '@/builder/workspaces/theme/theme-patch';
 import type { PreviewDocument } from '@/builder/workspaces/theme/preview/preview-document';
 import type { RouteCompatibility } from './route-compatibility';
+import type { ThemeDraft } from '@/builder/workspaces/theme/theme-state';
 
 export type CanvasPatch = {
   expectedRevision: string;
@@ -29,14 +30,18 @@ export type CanvasEditorRender = {
   sourceChanges?: Record<string, string | null>;
 };
 export class CanvasRejectedError extends Error {
-  constructor(message: string) {
+  readonly code: string;
+  readonly details?: unknown;
+  constructor(message: string, code = 'change_rejected', details?: unknown) {
     super(message);
     this.name = 'CanvasRejectedError';
+    this.code = code;
+    this.details = details;
   }
 }
 export type CanvasDriver = {
   render: (edit?: CanvasEdit) => Promise<CanvasEditorRender>;
-  applyThemePatch: (patch: CanvasPatch) => Promise<CanvasEditorRender>;
+  applyThemePatch: (patch: CanvasPatch, signal?: AbortSignal) => Promise<CanvasEditorRender>;
   loadAssets: () => Promise<NonNullable<PreviewDocument['assets']>>;
   refresh?: (accepted: CanvasEditorRender) => Promise<CanvasEditorRender>;
   subscribe?: (deliver: (render: CanvasEditorRender) => void) => () => void;
@@ -54,4 +59,5 @@ export type CanvasSource = {
   routing: RouteCompatibility;
   createDriver: () => CanvasDriver;
   refreshLabel?: (snapshot: string) => string;
+  editor?: { readDraft: () => ThemeDraft; state: () => Record<string, unknown> };
 };

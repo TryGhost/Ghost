@@ -167,6 +167,7 @@ export function ThemeCanvasExperience(props: Inputs) {
   const serverMutation = useRef(false);
   const leaveConfirmed = useRef(false);
   const queryClient = useQueryClient();
+  const editorObservation = useRef({ workspace: workspaceState, publication: publishState });
   const observeActivity = useCallback((next: typeof activity) => setActivity(next), []);
 
   useEffect(() => {
@@ -185,7 +186,10 @@ export function ThemeCanvasExperience(props: Inputs) {
             serverMutation.current = true;
           },
         });
-        unsubscribePublisher = publisher.subscribe(setPublishState);
+        unsubscribePublisher = publisher.subscribe((next) => {
+          editorObservation.current.publication = next;
+          setPublishState(next);
+        });
         current = new SiteCanvasDriver({
           draft,
           routes,
@@ -193,7 +197,10 @@ export function ThemeCanvasExperience(props: Inputs) {
             publisher.publish(candidate, { copyName: copyName.current }, signal),
         });
         driver.current = current;
-        unsubscribeWorkspace = current.workspace.subscribe(setWorkspaceState);
+        unsubscribeWorkspace = current.workspace.subscribe((next) => {
+          editorObservation.current.workspace = next;
+          setWorkspaceState(next);
+        });
         await current.start();
         lifetime.signal.throwIfAborted();
         const loaded = current;
@@ -207,10 +214,17 @@ export function ThemeCanvasExperience(props: Inputs) {
           siteUrl: inputs.siteUrl,
           routes,
           routing: inputs.routing,
+          editor: {
+            readDraft: () => loaded.workspace.draft,
+            state: () => ({
+              dirty: editorObservation.current.workspace.dirty,
+              publication: editorObservation.current.publication,
+            }),
+          },
           // The route owns workspace lifetime. Canvas connections only own subscriptions.
           createDriver: () => ({
             render: (edit) => loaded.render(edit),
-            applyThemePatch: (patch) => loaded.applyThemePatch(patch),
+            applyThemePatch: (patch, signal) => loaded.applyThemePatch(patch, signal),
             loadAssets: () => loaded.loadAssets(),
             subscribe: (deliver) => loaded.subscribe(deliver),
             dispose: () => {},

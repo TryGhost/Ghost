@@ -981,6 +981,11 @@ export class ThemeWorkspace implements BuilderWorkspace {
           },
         };
       }
+      // Promoted editor actions must not adopt work cancelled during rendering.
+      // Chat candidates retain their existing interrupted-turn recovery behavior.
+      if (options.promote) {
+        abortIfNeeded(signal);
+      }
       if (this.requireActiveDraft().revision !== source.revision) {
         return {
           ok: false as const,

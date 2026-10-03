@@ -330,6 +330,22 @@ describe('addressed read-only canvas probe', () => {
 });
 
 describe('top-level WebMCP registration', () => {
+  it('registers with the native navigator API on browsers preceding the document API', async () => {
+    const probe = new CanvasProbe([descriptor], 'https://example.com/');
+    const registerTool = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'modelContext', {
+      configurable: true,
+      value: { registerTool },
+    });
+    const registration = registerCanvasProbe(window.document, probe);
+    try {
+      expect(await registration.ready).toBe('registered');
+      expect(registerTool).toHaveBeenCalledTimes(3);
+    } finally {
+      registration.dispose();
+      Reflect.deleteProperty(navigator, 'modelContext');
+    }
+  });
   it('reports a failing browser API without rejecting setup or breaking the manual harness', async () => {
     const probe = new CanvasProbe([descriptor], 'https://example.com/');
     Object.defineProperty(window.document, 'modelContext', {

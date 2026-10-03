@@ -37,6 +37,32 @@ function measure(value: ReturnType<typeof preview>, signal = new AbortController
 }
 
 describe('bounded expanded composition measurements', () => {
+  it('allows finite responsive startup changes to settle instead of prematurely falling back', async () => {
+    const value = preview(() => 1200);
+    const read = value.surface.measureLayout.getMockImplementation()!;
+    let count = 0;
+    value.surface.measureLayout.mockImplementation(async () => {
+      const layout = await read();
+      const generation = Math.min(count, 10);
+      count += 1;
+      return { ...layout, layoutGeneration: generation };
+    });
+    expect((await measure(value)).status).toBe('settled');
+  });
+  it('keeps a responding composition usable after a slow initial layout observation', async () => {
+    const clock = vi.spyOn(performance, 'now').mockReturnValue(0);
+    try {
+      const value = preview(() => 1200);
+      const resize = value.resize.getMockImplementation()!;
+      value.resize.mockImplementationOnce((height) => {
+        clock.mockReturnValue(2000);
+        return resize(height);
+      });
+      expect((await measure(value)).status).toBe('settled');
+    } finally {
+      clock.mockRestore();
+    }
+  });
   it('remeasures the viewport floor when content shrinks during an expanding pass', async () => {
     let extent = 4000;
     let generation = 0;

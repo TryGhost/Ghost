@@ -128,3 +128,55 @@ it('masks hidden stored custom values on initial render and subsequent theme edi
     vi.clearAllMocks();
   }
 });
+
+it('keeps accepted source and render when a native caller cancels candidate rendering', async () => {
+  const draft = await loadDraft();
+  renderer.initialize.mockResolvedValue(undefined);
+  renderer.render.mockImplementation((url: string) =>
+    Promise.resolve({ url, status: 200, html: '<h1>Rendered</h1>', diagnostics: [] }),
+  );
+  const driver = new SiteCanvasDriver({
+    draft,
+    routes: { home: 'https://example.com/' },
+    publish: (candidate) => Promise.resolve({ ok: true, revision: candidate.revision }),
+  });
+  let release!: () => void;
+  try {
+    await driver.start();
+    const initial = await driver.render();
+    let started!: () => void;
+    const rendering = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+    renderer.initialize.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          release = resolve;
+          started();
+        }),
+    );
+    const caller = new AbortController();
+    const pending = driver.applyThemePatch(
+      {
+        expectedRevision: initial.revision,
+        expectedDataGeneration: 0,
+        files: [{ operation: 'write', path: 'index.hbs', content: '<h1>Cancelled theme</h1>' }],
+      },
+      caller.signal,
+    );
+    await rendering;
+    caller.abort();
+    release();
+    await expect(pending).rejects.toMatchObject({
+      name: 'CanvasRejectedError',
+      message: 'The theme change was cancelled before acceptance.',
+    });
+    expect(driver.workspace.draft.revision).toBe(initial.revision);
+    expect((await driver.render()).revision).toBe(initial.revision);
+    expect(driver.workspace.draft.files['index.hbs'].content).toBe('<h1>Home</h1>');
+  } finally {
+    release?.();
+    driver.dispose();
+    vi.clearAllMocks();
+  }
+});

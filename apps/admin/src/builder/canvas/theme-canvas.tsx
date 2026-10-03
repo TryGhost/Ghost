@@ -17,6 +17,7 @@ import { IframePreviewDocumentSurface } from '@/builder/workspaces/theme/preview
 
 import { CanvasProbe, registerCanvasProbe } from './canvas-probe';
 import { CanvasRejectedError } from './canvas-driver';
+import { CanvasEditorTools } from './canvas-editor-tools';
 import type { CanvasSource, CanvasDriver, CanvasPatch, CanvasEditorRender } from './canvas-driver';
 import type { ReactNode } from 'react';
 
@@ -158,6 +159,8 @@ function LivePreview({
   const height = frame.viewport?.height ?? frame.height;
   useEffect(() => {
     const current = new IframePreviewDocumentSurface(iframe.current!, {
+      // Theme resources/fonts can load slowly without invalidating a live frame.
+      timeoutMs: 15_000,
       canvasNavigation: true,
       canvasPanning: kind === 'expanded',
       inlineImageEditing: false,
@@ -474,15 +477,73 @@ export function ThemeCanvas({
     camera: { x: 0, y: 0, scale: 1 },
     selectedFrameId: null,
   });
+  const editorObservation = useRef<Record<string, unknown>>({});
+  editorObservation.current = {
+    selection: selection
+      ? {
+          ...selection,
+          revision: acceptedRender.current?.revision,
+          renderKey: acceptedRender.current?.renderKey,
+          representation:
+            mode === 'device' || fallbacks.has(selection.frameId) ? 'device' : 'expanded',
+        }
+      : null,
+  };
+  const patchAction = useRef<
+    ((patch: CanvasPatch, signal?: AbortSignal) => Promise<CanvasEditorRender>) | null
+  >(null);
   useEffect(() => {
     const current = new CanvasProbe(frames, source.siteUrl, {
       workspaceId: source.fixture ? undefined : source.id,
       fixture: source.fixture,
     });
+    if (source.editor) {
+      current.setEditor(
+        new CanvasEditorTools({
+          workspaceId: source.id,
+          readDraft: source.editor.readDraft,
+          state: () => ({
+            ...source.editor!.state(),
+            ...editorObservation.current,
+            render: acceptedRender.current
+              ? {
+                  revision: acceptedRender.current.revision,
+                  renderKey: acceptedRender.current.renderKey,
+                  dataGeneration: acceptedRender.current.dataGeneration,
+                  observation: 'initial-pinned',
+                }
+              : null,
+            busy:
+              busy.current ||
+              pendingCommit.current ||
+              pendingRefresh.current ||
+              refreshUncertain.current ||
+              !session.current ||
+              !acceptedRender.current ||
+              !delivery.current?.allComplete,
+            manualDraft: owner.current ? { frameId: owner.current } : null,
+          }),
+          applyPatch: (patch, signal) => {
+            if (!patchAction.current) {
+              throw new CanvasRejectedError('The editor is not ready.');
+            }
+            return patchAction.current(patch, signal);
+          },
+        }),
+      );
+    }
     current.setView(view.current, 'expanded');
     setProbe(current);
     probeObserver.current?.(current);
-    const registration = registerCanvasProbe(window.document, current);
+    // Same-origin hosts may embed Admin. Registrations still belong to the owning
+    // page, once per editor, never to the sandboxed theme documents.
+    let toolOwner = window.document;
+    try {
+      toolOwner = window.top?.document ?? toolOwner;
+    } catch {
+      /* Cross-origin hosting cannot use the parent document. */
+    }
+    const registration = registerCanvasProbe(toolOwner, current);
     let disposed = false;
     void registration.ready.then((status) => {
       if (!disposed) {
@@ -761,7 +822,7 @@ export function ThemeCanvas({
     }
   };
   const applyThemePatch = useCallback(
-    async (patch: CanvasPatch): Promise<CanvasEditorRender> => {
+    async (patch: CanvasPatch, signal?: AbortSignal): Promise<CanvasEditorRender> => {
       const current = session.current;
       if (
         !current ||
@@ -777,12 +838,13 @@ export function ThemeCanvas({
           'Finish the current draft or delivery before applying a theme patch.',
         );
       }
+      signal?.throwIfAborted();
       pendingCommit.current = true;
       setCommitPending(true);
       setError(null);
       const restoreReads = probe?.invalidateForRefresh();
       try {
-        const result = await current.client.applyThemePatch(patch);
+        const result = await current.client.applyThemePatch(patch, signal);
         current.deliver(result);
         if (result.unchanged) {
           restoreReads?.();
@@ -810,6 +872,7 @@ export function ThemeCanvas({
     },
     [probe],
   );
+  patchAction.current = applyThemePatch;
   useEffect(() => {
     onApplyThemePatch?.(applyThemePatch);
     return () => {

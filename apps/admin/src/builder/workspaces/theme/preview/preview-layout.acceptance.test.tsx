@@ -213,7 +213,7 @@ it.each(['data-expanded', 'aria-expanded'])(
 it('bounds ongoing viewport-dependent growth in the real sandbox without resize feedback retries', async () => {
   const { observeExpandedComposition } =
     await import('@/builder/canvas/observe-expanded-composition');
-  const { waitForCompositionLayout } =
+  const { waitForCompositionLayout, EXPANDED_COMPOSITION_LIMITS } =
     await import('@/builder/canvas/measure-expanded-composition');
   const iframe = document.createElement('iframe');
   iframe.style.cssText = 'width:390px;height:844px;border:0';
@@ -249,7 +249,7 @@ it('bounds ongoing viewport-dependent growth in the real sandbox without resize 
     });
     await observation.ready;
     expect(results[0].status).toBe('round-limit');
-    expect(results[0].measurements).toHaveLength(8);
+    expect(results[0].measurements).toHaveLength(EXPANDED_COMPOSITION_LIMITS.maxRounds);
     const height = iframe.clientHeight;
     await new Promise<void>((resolve) => {
       setTimeout(resolve, 300);

@@ -3,10 +3,10 @@ import type {
   PreviewLayout,
 } from '@/builder/workspaces/theme/preview/preview-document';
 
-// Provisional feasibility limits, independent of the fixed device and capture budgets.
+// Safety bounds allow ordinary theme startup to settle; these are not speed targets.
 export const EXPANDED_COMPOSITION_LIMITS = {
-  maxRounds: 8,
-  maxDuration: 1_500,
+  maxRounds: 16,
+  maxDuration: 5_000,
   maxHeight: 16_000,
   observationInterval: 70,
 } as const;

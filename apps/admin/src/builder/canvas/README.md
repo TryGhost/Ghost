@@ -48,9 +48,9 @@ actionable reload notice. Workspace disposal belongs to route exit, which also
 invalidates relevant Admin queries after server mutations.
 
 The production preview probe uses the actual `ThemeWorkspace` identity and reports
-`fixture: false`. Its currently registered tools remain read-only: native source
-mutation, replacement-safe manual drafts, editor-owned history and publication
-tools are still to implement. UI and tools must share this workspace rather than
+`fixture: false`. Its registered native tools read and atomically patch the same loaded draft used
+by the UI. Replacement-safe manual drafts, editor-owned history and publication
+tools remain subsequent increments. UI and tools share this workspace rather than
 adding an independent model-owned theme draft.
 
 `CanvasBoard` positions caller-owned live frames in world coordinates and changes
@@ -150,8 +150,10 @@ selection and does not transfer a draft or inspection handle. Presentation chang
 are disabled while a draft is retained. Source-replacement recovery remains
 milestone work.
 
-Composition height uses the authenticated layout bridge, limited to eight
-observations, 1,500ms and 16,000 CSS pixels. Actual composition viewport dimensions
+Composition height uses the authenticated layout bridge, limited to 16
+observations, 5,000ms and 16,000 CSS pixels. Live canvas document loading allows
+15,000ms for theme resources/fonts. These are failure bounds, not speed targets.
+Actual composition viewport dimensions
 can differ from configured device dimensions: viewport-height CSS, fixed/sticky
 behavior and lazy loading require separate device checks. Height caps, instability
 and failures flag the affected frame's fixed-viewport control without resizing the
@@ -244,11 +246,26 @@ the four fixed devices, four live compositions and all eight documents. Failed
 deliveries remain separate from readiness and permit a subsequent refresh retry. These are
 delivery observations rather than screenshot timings or performance benchmarks.
 
-The top-level editor feature-detects `document.modelContext.registerTool` and
-registers `ghost_canvas_probe_get_editor_state`, `ghost_canvas_probe_inspect_frame`
-and `ghost_canvas_probe_capture_frame`. Registrations belong to the editor,
-not individual previews. Camera and presentation changes do not register again;
-unsupported APIs leave manual editing available.
+The top-level editor feature-detects `document.modelContext.registerTool` and the
+older native `navigator.modelContext` location. It registers
+`ghost_canvas_probe_get_editor_state`, `ghost_canvas_probe_inspect_frame` and
+`ghost_canvas_probe_capture_frame`, plus `ghost_canvas_read_theme` and
+`ghost_canvas_apply_theme_patch` on the real editor. Registrations belong to the
+owning same-origin page, once per editor, never individual sandboxed previews.
+Camera and presentation changes do not register again; unsupported APIs leave
+manual editing available.
+
+Theme reads require explicit workspace/current revision and expose bounded file
+list/read/literal search and supported settings. List/settings reads page via
+`offset`/`limit`; oversized loaded setting metadata reports `truncatedFields`.
+Patches additionally require the discovered data generation and share the UI
+validation/adoption/delivery action. Native writes allow at most 32 settings with
+string values up to 8,192 characters. Accepted patches return the actual source
+revision/render key and pending delivery; state reports busy until delivery
+completes. Invalid Home/Post output, stale source, active manual drafts and work
+cancelled before adoption preserve the accepted draft. Cancellation after
+adoption does not misreport the actual outcome. Route exit retires callbacks.
+There is no evaluation/shell tool, independent agent draft or publication bypass.
 
 Protocols `canvas-fixture-probe-3` (fixtures) and `canvas-editor-probe-1` (the real
 workspace) address explicit immutable fixed-device
@@ -271,6 +288,11 @@ proxy, credentialed capture fetch, CORS bypass or sandbox relaxation.
 Probe captures admit one concurrent request and preserve device scroll/camera.
 PNG data URL results are experimental. Mocked API and host Chromium checks do not
 prove native Codex discovery or model-visible image delivery. Real-route Chromium
-acceptance tests exercise Admin embedding and shared direct edits against a fake
-API. They do not prove the external Codex edit loop; native tool writes and visual
-consumption still require implementation and actual integration evidence.
+acceptance tests exercise Admin embedding, native discovery, source reads, atomic
+patches and addressed desktop/mobile captures against a fake API. Run that native
+journey with `VITE_CANVAS_NATIVE_WEBMCP=1 pnpm --filter @tryghost/admin
+test:acceptance src/builder/builder.acceptance.test.tsx -t "drives the real editor
+through native WebMCP" --maxWorkers=1`; the browser config enables experimental
+WebMCP for this explicit lane. This proves native browser execution, not external
+Codex discovery in the built-in WebView or model-visible image consumption. Those
+remain required integration evidence.

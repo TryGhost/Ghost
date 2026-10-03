@@ -8,6 +8,11 @@ declare module 'vitest/browser' {
     fakeFrameImage: (url: string, png: string, cors: boolean, hold?: boolean) => Promise<void>;
     releaseFrameImages: () => Promise<void>;
     getFrameImageRequests: () => Promise<string[]>;
+    canvasNativeTools: () => Promise<string[]>;
+    canvasNativeTool: (
+      name: string,
+      input: Record<string, unknown>,
+    ) => Promise<Record<string, unknown>>;
   }
 }
 

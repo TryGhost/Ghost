@@ -184,6 +184,37 @@ const canvasPointerViewport: BrowserCommand<[enabled: boolean]> = async ({ page 
   }
 };
 
+type NativeCanvasTesting = {
+  listTools: () => Array<{ name: string }>;
+  executeTool: (name: string, input: string) => Promise<string | null>;
+};
+const canvasNativeTools: BrowserCommand<[]> = ({ page }) =>
+  page.evaluate(() => {
+    const testing = (navigator as Navigator & { modelContextTesting?: NativeCanvasTesting })
+      .modelContextTesting;
+    return testing ? testing.listTools().map((tool) => tool.name) : [];
+  });
+const canvasNativeTool: BrowserCommand<[name: string, input: Record<string, unknown>]> = (
+  { page },
+  name,
+  input,
+) =>
+  page.evaluate(
+    async ({ name: toolName, input: toolInput }) => {
+      const testing = (navigator as Navigator & { modelContextTesting?: NativeCanvasTesting })
+        .modelContextTesting;
+      if (!testing) {
+        throw new Error('Native WebMCP testing is unavailable.');
+      }
+      const result = await testing.executeTool(toolName, JSON.stringify(toolInput));
+      if (result === null) {
+        throw new Error('The native tool did not return an editor result.');
+      }
+      return JSON.parse(result) as Record<string, unknown>;
+    },
+    { name, input },
+  );
+
 export default defineConfig({
   plugins: [tailwindcss() as PluginOption, react()],
   server: {
@@ -232,7 +263,17 @@ export default defineConfig({
     browser: {
       enabled: true,
       headless: true,
-      provider: playwright(),
+      provider: playwright({
+        launchOptions: {
+          args:
+            process.env.VITE_CANVAS_NATIVE_WEBMCP === '1'
+              ? [
+                  '--enable-experimental-web-platform-features',
+                  '--enable-features=WebMCPTesting,DevToolsWebMCPSupport',
+                ]
+              : [],
+        },
+      }),
       commands: {
         fakeFrameOrigin,
         fakeFrameImage,
@@ -241,6 +282,8 @@ export default defineConfig({
         canvasInputValue,
         canvasFocusInput,
         canvasPointerViewport,
+        canvasNativeTools,
+        canvasNativeTool,
         releaseFrameImages,
         guardFrameNavigations,
         resetFakeFrameOrigins,

@@ -15,6 +15,7 @@ import {
 } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
 import defaultRoutes from '../../../../ghost/core/core/server/services/route-settings/default-routes.yaml?raw';
+import type { CanvasProbe, ReadResult } from '@/builder/canvas/canvas-probe';
 
 const liveHtml =
   '<html><head><link rel="stylesheet" href="/assets/built/screen.css?v=abc123"><script defer src="/ghost/assets/portal.js" data-i18n="true" data-key="0123456789abcdef"></script><script defer src="/ghost/assets/search.js" data-key="0123456789abcdef" data-styles="/ghost/assets/search.css" data-sodo-search="true"></script></head><body>Live site</body></html>';
@@ -83,6 +84,166 @@ async function fakeBuilderWorld({ post = false } = {}): Promise<void> {
 }
 
 describe('Design Builder route', () => {
+  it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1')(
+    'drives the real editor through native WebMCP reads, atomic patches and responsive captures',
+    { timeout: 60_000 },
+    async () => {
+      await commands.canvasPointerViewport(true);
+      await fakeBuilderWorld({ post: true });
+      const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
+      const state = async () => {
+        const result = (await commands.canvasNativeTool(
+          'ghost_canvas_probe_get_editor_state',
+          {},
+        )) as ReadResult;
+        expect(result.status).toBe('ok');
+        if (result.status !== 'ok') {
+          throw new Error(result.message);
+        }
+        return result.data as ReturnType<CanvasProbe['state']>;
+      };
+      const ready = () =>
+        expect
+          .poll(
+            async () => {
+              const current = await state();
+              return (
+                !current.editor?.busy &&
+                current.frames.every(
+                  (descriptor) =>
+                    descriptor.device?.status === 'current' &&
+                    descriptor.device.revision === current.editor?.sourceRevision,
+                )
+              );
+            },
+            { timeout: 30_000 },
+          )
+          .toBe(true);
+      try {
+        await expect
+          .poll(() => commands.canvasNativeTools())
+          .toContain('ghost_canvas_apply_theme_patch');
+        await ready();
+        const iframeElements = [
+          ...document.querySelectorAll('iframe[title$="composition"],iframe[title$="preview"]'),
+        ];
+        await page.getByRole('button', { name: 'Home · Mobile', exact: true }).dblClick();
+        const compositionFrame = page.frameLocator(
+          page.getByTitle('Home · Mobile composition', { exact: true }),
+        );
+        await compositionFrame.getByRole('link', { name: 'Canvas footer', exact: true }).click();
+        const initial = await state();
+        expect(initial.fixture).toBe(false);
+        expect(initial.capabilities).toMatchObject({ mutations: true, themeReads: true });
+        expect(initial.editor).toMatchObject({ selection: { frameId: 'home-mobile' } });
+        const address = {
+          workspaceId: initial.workspaceId,
+          expectedRevision: initial.editor!.sourceRevision,
+        };
+        const source = await commands.canvasNativeTool('ghost_canvas_read_theme', {
+          ...address,
+          operation: 'read_file',
+          path: 'partials/footer.hbs',
+        });
+        expect(JSON.stringify(source)).toContain('Canvas footer');
+        expect(JSON.stringify(source)).not.toContain('0123456789abcdef');
+        const camera = page.getByTestId('canvas-world').element().getAttribute('style');
+        const rejected = await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
+          ...address,
+          expectedDataGeneration: 0,
+          files: [
+            {
+              operation: 'write',
+              path: 'post.hbs',
+              content: '{{#post}}{{unknown-canvas-helper title}}{{/post}}',
+            },
+          ],
+        });
+        expect(rejected.status).toBe('error');
+        expect(rejected.details).toBeDefined();
+        expect((await state()).editor!.sourceRevision).toBe(address.expectedRevision);
+        const result = await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
+          ...address,
+          expectedDataGeneration: 0,
+          files: [
+            {
+              operation: 'write',
+              path: 'partials/footer.hbs',
+              content: '<a href="/">Agent canvas footer</a>',
+            },
+          ],
+          settings: { 'global.accent_color': '#654321' },
+        });
+        expect(result).toMatchObject({
+          status: 'ok',
+          data: { accepted: true, delivery: 'pending' },
+        });
+        const pendingDelivery = await state();
+        if (pendingDelivery.frames.some((descriptor) => descriptor.device?.status !== 'current')) {
+          expect(pendingDelivery.editor?.busy).toBe(true);
+        }
+        await ready();
+        await expect
+          .poll(() => document.querySelectorAll('iframe[data-preview-status="Ready"]').length)
+          .toBe(8);
+        expect([
+          ...document.querySelectorAll('iframe[title$="composition"],iframe[title$="preview"]'),
+        ]).toEqual(iframeElements);
+        expect(page.getByTestId('canvas-world').element().getAttribute('style')).toBe(camera);
+        const current = await state();
+        expect(current.editor!.sourceRevision).not.toBe(address.expectedRevision);
+        expect(
+          [
+            ...document.querySelectorAll<HTMLIFrameElement>(
+              'iframe[title$="composition"],iframe[title$="preview"]',
+            ),
+          ].every((iframe) => iframe.srcdoc.includes('Agent canvas footer')),
+        ).toBe(true);
+        expect(
+          await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
+            ...address,
+            expectedDataGeneration: 0,
+            settings: { 'global.accent_color': '#abcdef' },
+          }),
+        ).toMatchObject({ code: 'stale_revision' });
+        for (const frameId of ['home-desktop', 'home-mobile']) {
+          const descriptor = current.frames.find((frame) => frame.id === frameId)!;
+          const device = descriptor.device!;
+          const target = {
+            workspaceId: current.workspaceId,
+            frameHandle: descriptor.frameHandle,
+            representationHandle: device.representationHandle,
+            expectedRevision: device.revision,
+            expectedRenderKey: device.renderKey,
+          };
+          const inspected = await commands.canvasNativeTool(
+            'ghost_canvas_probe_inspect_frame',
+            target,
+          );
+          expect(inspected.status).toBe('ok');
+          expect(JSON.stringify(inspected)).toContain('Agent canvas footer');
+          const captured = await commands.canvasNativeTool('ghost_canvas_probe_capture_frame', {
+            ...target,
+            kind: 'viewport',
+          });
+          expect(captured.status).toBe('ok');
+          expect(captured).toMatchObject({
+            data: { image: { width: descriptor.width, height: descriptor.height } },
+          });
+          expect(JSON.stringify(captured)).toContain('data:image/png;base64,');
+        }
+        expect(page.getByTestId('canvas-world').element().getAttribute('style')).toBe(camera);
+        await expect.element(page.getByRole('button', { name: 'Publish changes' })).toBeEnabled();
+        expect(document.querySelector('[data-canvas-diagnostics]')).toBeNull();
+      } finally {
+        await screen.unmount();
+        await commands.canvasPointerViewport(false);
+      }
+      await expect
+        .poll(() => commands.canvasNativeTools())
+        .not.toContain('ghost_canvas_apply_theme_patch');
+    },
+  );
   it(
     'edits the active theme on eight live canvas documents without embedded chat',
     { timeout: 60_000 },

@@ -1,4 +1,5 @@
 import { SCREENSHOT_LIMITS } from '@/builder/workspaces/theme/preview/screenshot';
+import type { CanvasEditorTools } from './canvas-editor-tools';
 
 import type { CanvasView } from '@/builder/canvas/canvas-board';
 import type {
@@ -13,14 +14,14 @@ export type CanvasProbeSurface = Pick<
   'measureLayout' | 'inspectPage' | 'screenshot'
 >;
 type FrameDescriptor = { id: string; label: string; group: string; width: number; height: number };
-type ReadResult =
+export type ReadResult =
   | { status: 'ok'; data: Record<string, unknown> }
-  | { status: 'error'; code: string; message: string };
+  | { status: 'error'; code: string; message: string; details?: unknown };
 export type ProbeTool = {
   name: string;
   description: string;
   inputSchema: Record<string, unknown>;
-  annotations: { readOnlyHint: true; untrustedContentHint: true };
+  annotations: { readOnlyHint: boolean; untrustedContentHint: true };
   execute: (input: unknown, options?: { signal?: AbortSignal }) => Promise<ReadResult>;
 };
 type ModelContext = {
@@ -104,6 +105,7 @@ export class CanvasProbe {
   private diagnostics: Record<string, unknown> = {};
   private readonly siteUrl: string;
   private readonly fixture: boolean;
+  private editor?: CanvasEditorTools;
 
   constructor(
     descriptors: readonly FrameDescriptor[],
@@ -136,16 +138,22 @@ export class CanvasProbe {
     this.diagnostics = structuredClone(diagnostics);
   }
 
+  setEditor(editor: CanvasEditorTools) {
+    this.editor = editor;
+  }
+
   state() {
     return {
       protocolVersion: this.fixture ? 'canvas-fixture-probe-3' : 'canvas-editor-probe-1',
       workspaceId: this.workspaceId,
       siteUrl: this.siteUrl,
       fixture: this.fixture,
+      editor: this.editor?.state() ?? null,
       diagnostics: structuredClone(this.diagnostics),
       capabilities: {
-        readOnly: true,
-        mutations: false,
+        readOnly: !this.editor,
+        mutations: !!this.editor,
+        themeReads: !!this.editor,
         publication: false,
         representations: ['device'],
         captureFormat: 'png-data-url-experiment',
@@ -222,6 +230,7 @@ export class CanvasProbe {
 
   dispose() {
     this.lifetime.abort();
+    this.editor?.dispose();
     for (const frame of this.frames.values()) {
       frame.entry?.lifetime.abort();
     }
@@ -338,7 +347,7 @@ export class CanvasProbe {
     return [
       definition(
         'get_editor_state',
-        'Read this experimental theme canvas workspace, current board view and immutable fixed-device targets. Device readiness describes the backing render; each inspection/capture checks for local edits. Does not move the canvas or change selection. No mutation or publishing tools are available.',
+        'Read the theme canvas workspace, source revision, selected context, board view and fixed-device targets. Device readiness describes the backing render; each inspection/capture checks local edits. Discover actual capabilities here before theme reads/writes. Does not move the canvas or change selection.',
         {},
         [],
         () => Promise.resolve(this.state()),
@@ -364,6 +373,7 @@ export class CanvasProbe {
         [...targetKeys, 'kind'],
         (args, signal) => this.capture(args, signal),
       ),
+      ...(this.editor?.tools(registrationSignal) ?? []),
     ];
   }
 
@@ -602,7 +612,9 @@ export function registerCanvasProbe(owner: Document, probe: CanvasProbe) {
       return 'unsupported';
     }
     try {
-      const context = (owner as Document & { modelContext?: ModelContext }).modelContext;
+      const context =
+        (owner as Document & { modelContext?: ModelContext }).modelContext ??
+        (owner.defaultView.navigator as Navigator & { modelContext?: ModelContext }).modelContext;
       if (typeof context?.registerTool !== 'function') {
         return 'unsupported';
       }
