@@ -10,6 +10,8 @@ import {
   useState,
 } from 'react';
 import { AdminLink } from '@/shared/admin-link';
+import { usePresence } from '@/shared/presence/use-presence';
+import { PresenceAvatars } from '@/shared/presence/presence-avatars';
 import { getPostListReturnUrl } from '@/posts/api';
 import { reloadAdmin } from '@/auth/api';
 import { NotFound } from '@/shared/not-found';
@@ -183,6 +185,14 @@ function EditorContent({
     currentUserId: currentUser?.id,
   });
   const [tkCount, setTkCount] = useState(0);
+  const presenceResource = session.persistedId
+    ? { id: session.persistedId, type: postType }
+    : undefined;
+  const presence = usePresence(
+    presenceResource ? [presenceResource] : [],
+    currentUser?.id,
+    presenceResource,
+  );
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
   const openPublishFlow = useCallback(() => setOpenFlow('publish'), []);
   const publishPost = buildPublishFlowPost({
@@ -326,6 +336,7 @@ function EditorContent({
               />
             ) : null}
             <PageHeader.ActionGroup className="ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] max-sm:col-start-2 max-sm:row-start-1 sm:col-start-3">
+              <PresenceAvatars {...presence} limit={2} />
               <EditorHeaderActions
                 currentUser={currentUser}
                 offersEmailRetry={offersEmailRetry}

@@ -24,6 +24,13 @@ module.exports = function apiRoutes() {
   router.get('/config', mw.authAdminApi, http(api.config.read));
   router.get('/config/featurebase', mw.authAdminApi, http(api.config.featurebase));
 
+  router.post(
+    '/presence',
+    mw.authAdminApi,
+    labs.enabledMiddleware('editorPresence'),
+    http(api.presence.poll),
+  );
+
   // ## Posts
   router.get('/posts', mw.authAdminApi, http(api.posts.browse));
   router.get('/posts/export', mw.authAdminApi, http(api.posts.exportCSV));

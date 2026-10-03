@@ -15,6 +15,7 @@ const allowedKeys = [
   'mail',
   'useGravatar',
   'labs',
+  'editorPresence',
   'clientExtensions',
   'enableDeveloperExperiments',
   'stripeDirect',
