@@ -69,6 +69,9 @@ ghostBookshelf.plugin(require('./plugins/overrides'));
 
 ghostBookshelf.plugin(require('./plugins/relations'));
 
+// Skips Bookshelf's full-attribute format() when a relation is set up
+ghostBookshelf.plugin(require('./plugins/relation-parent-attributes'));
+
 // Manages nested updates (relationships)
 ghostBookshelf.plugin('bookshelf-relations', {
   allowedOptions: ['context', 'importing', 'migrating'],
