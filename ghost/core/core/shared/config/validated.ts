@@ -10,6 +10,7 @@ import { configSchema, type ConfigAt, type ConfigPath, type ValidatedConfig } fr
  *
  * Returns the original value and tolerates cycles. Already-frozen objects are
  * skipped, including their children, so their descendants must already be frozen.
+ * Recursion only follows own enumerable string-keyed properties.
  */
 export function deepFreeze<T>(value: T): T {
   if (value === null || typeof value !== 'object' || Object.isFrozen(value)) {
@@ -202,6 +203,7 @@ export function createConfig(sources: Record<string, unknown>): GhostConfig {
     /**
      * Read a colon-separated path, or the whole snapshot when key is omitted.
      * Missing paths return undefined; object values are shared frozen references.
+     * Previously returned objects are not updated by later set() or reset() calls.
      */
     get(key?: string): unknown {
       if (key === undefined) {
@@ -216,6 +218,9 @@ export function createConfig(sources: Record<string, unknown>): GhostConfig {
     /**
      * Set a test-only override at a colon-separated path, cloning the value so
      * the caller's object is not frozen. Other recorded overrides are retained.
+     * Each override replaces the value at its path, including an entire subtree.
+     * Overlapping paths are applied in the order they were first recorded;
+     * updating an existing path does not move it after later overrides.
      * Cloning errors propagate; a failed rebuild restores the previous override
      * and rebuilds before rethrowing. Permissive validation accepts invalid values.
      */
