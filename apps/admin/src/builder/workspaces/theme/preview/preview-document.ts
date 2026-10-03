@@ -50,7 +50,8 @@ export type PreviewInlineEditRequest = PreviewInlineTextEditRequest | PreviewInl
 export type PreviewInlineEditResult = { ok: true } | { ok: false; message: string };
 
 export type PreviewCanvasInput =
-  | { kind: 'escape' }
+  | { kind: 'escape'; interactionTime?: number }
+  | { kind: 'pan'; deltaX: number; deltaY: number; deltaMode: number }
   | { kind: 'inline-edit'; box: { x: number; y: number; width: number; height: number } | null }
   | { kind: 'zoom'; x: number; y: number; deltaY: number; deltaMode: number };
 
@@ -86,7 +87,9 @@ export interface PreviewDocumentSurface {
   setSelectionMode?(enabled: boolean, signal: AbortSignal): Promise<void>;
   openExternal(url: string): void;
   onNavigate(handler: (url: string) => void): () => void;
-  onSelection(handler: (selection: BuilderSelectionContext | null) => void): () => void;
+  onSelection(
+    handler: (selection: BuilderSelectionContext | null, interactionTime?: number) => void,
+  ): () => void;
   onDiagnostic(handler: (diagnostic: WorkspaceDiagnostic) => void): () => void;
   onInlineEdit?(
     handler: (
@@ -107,8 +110,21 @@ type PreviewMessage =
   | { channel: string; documentId: string; type: 'loaded' }
   | { channel: string; documentId: string; type: 'native-form-submit' }
   | { channel: string; documentId: string; type: 'navigate'; url: string }
-  | { channel: string; documentId: string; type: 'select'; selection: BuilderSelectionContext }
+  | {
+      channel: string;
+      documentId: string;
+      type: 'select';
+      selection: BuilderSelectionContext;
+      interactionTime?: number;
+    }
   | { channel: string; documentId: string; type: 'inline-edit'; edit: PreviewInlineEditRequest }
+  | {
+      channel: string;
+      documentId: string;
+      type: 'inline-text-admission';
+      requestId: number;
+      interactionTime: number;
+    }
   | { channel: string; documentId: string; type: 'canvas-input'; input: PreviewCanvasInput }
   | { channel: string; documentId: string; type: 'command-port' }
   | { channel: string; documentId: string; type: 'runtime-error'; message: string };
@@ -138,6 +154,7 @@ type PreviewCommand =
   | 'screenshot'
   | 'set-inline-edit-mode'
   | 'cancel-inline-text-edit'
+  | 'cancel-inline-text-admission'
   | 'set-selection-mode'
   | 'set-interaction-mode';
 
@@ -431,7 +448,24 @@ function isPreviewMessage(value: unknown): value is PreviewMessage {
     return typeof message.url === 'string' && message.url.length <= 8_192;
   }
   if (message.type === 'select') {
-    return isSelection(message.selection);
+    return (
+      isSelection(message.selection) &&
+      (message.interactionTime === undefined ||
+        (typeof message.interactionTime === 'number' &&
+          Number.isFinite(message.interactionTime) &&
+          message.interactionTime > 0 &&
+          message.interactionTime <= Number.MAX_SAFE_INTEGER))
+    );
+  }
+  if (message.type === 'inline-text-admission') {
+    return (
+      Number.isSafeInteger(message.requestId) &&
+      Number(message.requestId) > 0 &&
+      typeof message.interactionTime === 'number' &&
+      Number.isFinite(message.interactionTime) &&
+      message.interactionTime > 0 &&
+      message.interactionTime <= Number.MAX_SAFE_INTEGER
+    );
   }
   if (message.type === 'inline-edit') {
     return isInlineTextEdit(message.edit) || isInlineImageEdit(message.edit);
@@ -440,7 +474,12 @@ function isPreviewMessage(value: unknown): value is PreviewMessage {
     const input = message.input;
     return (
       !!input &&
-      (input.kind === 'escape' ||
+      ((input.kind === 'escape' &&
+        (input.interactionTime === undefined ||
+          (typeof input.interactionTime === 'number' &&
+            Number.isFinite(input.interactionTime) &&
+            input.interactionTime > 0 &&
+            input.interactionTime <= Number.MAX_SAFE_INTEGER))) ||
         (input.kind === 'inline-edit' &&
           (input.box === null ||
             (typeof input.box === 'object' &&
@@ -450,14 +489,20 @@ function isPreviewMessage(value: unknown): value is PreviewMessage {
                   typeof coordinate === 'number' &&
                   Number.isFinite(coordinate) &&
                   coordinate >= 0 &&
-                  coordinate <= 10_000,
+                  coordinate <= 16_384,
               )))) ||
+        (input.kind === 'pan' &&
+          [input.deltaX, input.deltaY].every(
+            (delta) =>
+              typeof delta === 'number' && Number.isFinite(delta) && Math.abs(delta) <= 10000,
+          ) &&
+          [0, 1, 2].includes(input.deltaMode)) ||
         (input.kind === 'zoom' &&
           [input.x, input.y, input.deltaY].every(
             (coordinate) =>
               typeof coordinate === 'number' &&
               Number.isFinite(coordinate) &&
-              Math.abs(coordinate) <= 10000,
+              Math.abs(coordinate) <= 16_384,
           ) &&
           [0, 1, 2].includes(input.deltaMode)))
     );
@@ -829,6 +874,8 @@ export function createPreviewDocument(
   artifactDocument = false,
   canvasNavigation = false,
   captureLoadedImages = false,
+  canvasPanning = false,
+  inlineImageEditing = true,
 ): string {
   const parsed = new DOMParser().parseFromString(document.html, 'text/html');
   parsed.querySelectorAll('meta[http-equiv]').forEach((meta) => {
@@ -868,6 +915,8 @@ export function createPreviewDocument(
   script.dataset.builderNativeForms = nativeForms ? 'true' : 'false';
   script.dataset.builderArtifactDocument = artifactDocument ? 'true' : 'false';
   script.dataset.builderCanvasNavigation = canvasNavigation ? 'true' : 'false';
+  script.dataset.builderCanvasPanning = canvasNavigation && canvasPanning ? 'true' : 'false';
+  script.dataset.builderInlineImageEditing = inlineImageEditing ? 'true' : 'false';
   script.dataset.builderEditMarkerAttribute = document.editMarkerAttribute ?? 'data-edit';
   if (canvasNavigation) {
     script.dataset.builderInlineTextTargets = JSON.stringify(document.inlineTextTargets ?? {});
@@ -890,12 +939,15 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
   private readonly nativeForms: boolean;
   private readonly artifactDocument: boolean;
   private readonly canvasNavigation: boolean;
+  private readonly canvasPanning: boolean;
+  private readonly inlineImageEditing: boolean;
+  private readonly admitInlineTextEdit: (interactionTime: number) => boolean;
   private readonly captureLoadedImages: boolean;
   private readonly canvasInputListeners = new Set<(input: PreviewCanvasInput) => void>();
   private canvasInlineEditActive = false;
   private readonly navigateListeners = new Set<(url: string) => void>();
   private readonly selectionListeners = new Set<
-    (selection: BuilderSelectionContext | null) => void
+    (selection: BuilderSelectionContext | null, interactionTime?: number) => void
   >();
   private readonly diagnosticListeners = new Set<(diagnostic: WorkspaceDiagnostic) => void>();
   private readonly inlineEditListeners = new Set<
@@ -942,6 +994,9 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
       nativeForms = false,
       artifactDocument = false,
       canvasNavigation = false,
+      canvasPanning = false,
+      inlineImageEditing = true,
+      admitInlineTextEdit = () => true,
       captureLoadedImages = false,
     }: {
       openWindow?: (url: string) => void;
@@ -951,6 +1006,9 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
       nativeForms?: boolean;
       artifactDocument?: boolean;
       canvasNavigation?: boolean;
+      canvasPanning?: boolean;
+      inlineImageEditing?: boolean;
+      admitInlineTextEdit?: (interactionTime: number) => boolean;
       captureLoadedImages?: boolean;
     } = {},
   ) {
@@ -961,6 +1019,9 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     this.nativeForms = nativeForms;
     this.artifactDocument = artifactDocument;
     this.canvasNavigation = canvasNavigation;
+    this.canvasPanning = canvasNavigation && canvasPanning;
+    this.inlineImageEditing = inlineImageEditing;
+    this.admitInlineTextEdit = admitInlineTextEdit;
     this.captureLoadedImages = captureLoadedImages;
     iframe.setAttribute('sandbox', sandbox);
     iframe.addEventListener('load', this.handleLoad);
@@ -1028,6 +1089,8 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
           this.artifactDocument,
           this.canvasNavigation,
           this.captureLoadedImages,
+          this.canvasPanning,
+          this.inlineImageEditing,
         );
       } catch (error) {
         this.rejectPending(error instanceof Error ? error : new Error(String(error)), false);
@@ -1249,6 +1312,10 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     await this.command('cancel-inline-text-edit', undefined, signal);
   }
 
+  async cancelPendingInlineTextEdit(signal: AbortSignal): Promise<void> {
+    await this.command('cancel-inline-text-admission', {}, signal);
+  }
+
   async setInteractionMode(mode: 'browse' | 'select' | 'edit', signal: AbortSignal): Promise<void> {
     if (!this.committedDocumentId) {
       this.inlineEditing = mode === 'edit';
@@ -1284,7 +1351,9 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     return () => this.navigateListeners.delete(handler);
   }
 
-  onSelection(handler: (selection: BuilderSelectionContext | null) => void): () => void {
+  onSelection(
+    handler: (selection: BuilderSelectionContext | null, interactionTime?: number) => void,
+  ): () => void {
     this.selectionListeners.add(handler);
     return () => this.selectionListeners.delete(handler);
   }
@@ -1393,8 +1462,14 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
       );
     } else if (message.type === 'navigate' && message.documentId === this.committedDocumentId) {
       this.navigateListeners.forEach((listener) => listener(message.url));
-    } else if (message.type === 'select' && message.documentId === this.committedDocumentId) {
-      this.selectionListeners.forEach((listener) => listener(message.selection));
+    } else if (
+      message.type === 'select' &&
+      message.documentId === this.committedDocumentId &&
+      (!this.canvasNavigation || message.interactionTime !== undefined)
+    ) {
+      this.selectionListeners.forEach((listener) =>
+        listener(message.selection, message.interactionTime),
+      );
     } else if (
       message.type === 'canvas-input' &&
       this.canvasNavigation &&
@@ -1405,6 +1480,24 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
         this.canvasInlineEditActive = message.input.box !== null;
       }
       this.canvasInputListeners.forEach((listener) => listener(message.input));
+    } else if (
+      message.type === 'inline-text-admission' &&
+      this.canvasNavigation &&
+      this.inlineEditing &&
+      this.canvasReadyDocumentId === message.documentId &&
+      message.documentId === this.committedDocumentId
+    ) {
+      const allowed = this.admitInlineTextEdit(message.interactionTime);
+      if (allowed) {
+        this.canvasInlineEditActive = true;
+      }
+      this.commandPort?.postMessage({
+        channel: this.channel,
+        documentId: message.documentId,
+        type: 'inline-text-admission-result',
+        requestId: message.requestId,
+        allowed,
+      });
     } else if (
       message.type === 'inline-edit' &&
       message.documentId === this.committedDocumentId &&

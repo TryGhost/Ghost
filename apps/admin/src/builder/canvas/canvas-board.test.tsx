@@ -52,34 +52,22 @@ afterEach(() => {
 });
 
 describe('canvas board', () => {
-  it('opens a composition in the fixed device bounds while retaining its mounted device', () => {
+  it('keeps live composition dimensions and documents when a header fits the camera', () => {
     const compositions = frames.map((frame) => ({
       ...frame,
       viewport: { width: frame.width, height: frame.height },
       height: 10_000,
     }));
     render(
-      <CanvasBoard
-        frames={compositions}
-        renderFrame={(frame, _onInput, state) => (
-          <>
-            <iframe title={frame.label} />
-            <span>{state.opened ? 'Live device' : 'Composition'}</span>
-          </>
-        )}
-      />,
+      <CanvasBoard frames={compositions} renderFrame={(frame) => <iframe title={frame.label} />} />,
     );
     const device = screen.getByTitle('Home · Mobile');
     const host = device.parentElement;
-    expect(host).toHaveStyle({ height: '10000px' });
-    const overview = screen.getByTestId('canvas-world').style.transform;
+    expect(host).not.toHaveAttribute('inert');
     fireEvent.doubleClick(screen.getByRole('button', { name: 'Home · Mobile' }));
-    expect(host).toHaveStyle({ height: '844px', width: '390px' });
-    expect(screen.getByText('Live device')).toBeVisible();
+    expect(host).toHaveStyle({ height: '10000px', width: '390px' });
     expect(screen.getByTitle('Home · Mobile')).toBe(device);
-    fireEvent.click(screen.getByRole('button', { name: 'Back to overview' }));
-    expect(host).toHaveStyle({ height: '10000px' });
-    expect(screen.getByTestId('canvas-world').style.transform).toBe(overview);
+    expect(screen.queryByRole('button', { name: 'Back to overview' })).toBeNull();
   });
 
   it('fits initial composition bounds once when ready and respects navigation before readiness', () => {
@@ -104,7 +92,7 @@ describe('canvas board', () => {
     expect(world.style.transform).toBe(moved);
   });
 
-  it('selects a frame without moving the camera, opens it readably, and returns to the saved overview', () => {
+  it('selects without moving the camera and fits in place without changing editing mode', () => {
     render(<CanvasBoard frames={frames} renderFrame={(frame) => <iframe title={frame.label} />} />);
     const world = screen.getByTestId('canvas-world');
     const overview = world.style.transform;
@@ -114,8 +102,8 @@ describe('canvas board', () => {
     expect(world.style.transform).toBe(overview);
     fireEvent.doubleClick(header);
     expect(world.style.transform).not.toBe(overview);
-    expect(screen.getByRole('button', { name: 'Back to overview' })).toBeVisible();
-    fireEvent.click(screen.getByRole('button', { name: 'Back to overview' }));
+    expect(document.querySelector('[data-canvas-frame][inert]')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Fit all' }));
     expect(world.style.transform).toBe(overview);
   });
 
@@ -135,22 +123,15 @@ describe('canvas board', () => {
     expect(host).toHaveStyle({ width: '1440px', height: '900px' });
   });
 
-  it('offers keyboard opening and a camera escape without relying on iframe input', () => {
+  it('offers keyboard camera fits and Escape clears selection without changing documents', () => {
     render(<CanvasBoard frames={frames} renderFrame={(frame) => <iframe title={frame.label} />} />);
     const header = screen.getByRole('button', { name: 'Post · Mobile' });
+    const frame = screen.getByTitle('Post · Mobile');
     fireEvent.keyDown(header, { key: 'Enter' });
-    expect(screen.getByRole('button', { name: 'Back to overview' })).toBeVisible();
+    expect(header).toHaveAttribute('aria-pressed', 'true');
     fireEvent.keyDown(screen.getByRole('region', { name: 'Theme canvas' }), { key: 'Escape' });
-    expect(screen.queryByRole('button', { name: 'Back to overview' })).toBeNull();
-  });
-
-  it('restores keyboard focus to the board when returning from an opened frame', () => {
-    render(<CanvasBoard frames={frames} renderFrame={(frame) => <iframe title={frame.label} />} />);
-    fireEvent.doubleClick(screen.getByRole('button', { name: 'Home · Mobile' }));
-    const back = screen.getByRole('button', { name: 'Back to overview' });
-    back.focus();
-    fireEvent.click(back);
-    expect(screen.getByRole('region', { name: 'Theme canvas' })).toHaveFocus();
+    expect(header).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByTitle('Post · Mobile')).toBe(frame);
   });
 
   it('ignores click jitter and recognizes a slow drag by its total displacement', () => {
@@ -176,7 +157,7 @@ describe('canvas board', () => {
     expect(world.style.transform).not.toBe(before);
   });
 
-  it('keeps dragging available over empty canvas space after opening a frame', () => {
+  it('keeps dragging available over empty canvas space after fitting a frame', () => {
     render(<CanvasBoard frames={frames} renderFrame={(frame) => <iframe title={frame.label} />} />);
     fireEvent.doubleClick(screen.getByRole('button', { name: 'Home · Mobile' }));
     const board = screen.getByRole('region', { name: 'Theme canvas' });

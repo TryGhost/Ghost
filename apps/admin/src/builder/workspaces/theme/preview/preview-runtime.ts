@@ -23,6 +23,8 @@ export function previewRuntimeBootstrap(): void {
   const nativeForms = runtimeScript?.dataset.builderNativeForms === 'true';
   const artifactDocument = runtimeScript?.dataset.builderArtifactDocument === 'true';
   const canvasNavigation = runtimeScript?.dataset.builderCanvasNavigation === 'true';
+  const canvasPanning = runtimeScript?.dataset.builderCanvasPanning === 'true';
+  const inlineImageEditing = runtimeScript?.dataset.builderInlineImageEditing !== 'false';
   const requestedMarkerAttribute = runtimeScript?.dataset.builderEditMarkerAttribute ?? 'data-edit';
   const editMarkerAttribute = /^data-[a-z][a-z0-9-]{0,127}$/.test(requestedMarkerAttribute)
     ? requestedMarkerAttribute
@@ -65,8 +67,32 @@ export function previewRuntimeBootstrap(): void {
   const portAddEventListener = commandPort.addEventListener.bind(commandPort);
   const portStart = commandPort.start.bind(commandPort);
   const portPostMessage = commandPort.postMessage.bind(commandPort);
+  let interactionTime = 0;
+  if (canvasNavigation) {
+    for (const eventType of ['click', 'keydown', 'drop']) {
+      window.addEventListener(
+        eventType,
+        (event) => {
+          if (event.isTrusted) {
+            interactionTime = performance.timeOrigin + event.timeStamp;
+          }
+        },
+        true,
+      );
+    }
+  }
   const send = (message: Record<string, unknown>) =>
-    parentPostMessage({ channel, documentId, ...message }, '*');
+    parentPostMessage(
+      {
+        channel,
+        documentId,
+        ...message,
+        ...(canvasNavigation && ['select', 'inline-text-admission'].includes(String(message.type))
+          ? { interactionTime }
+          : {}),
+      },
+      '*',
+    );
   const fail = (code: string, message: string): Error & { code: string } =>
     Object.assign(new Error(message), { code });
   const bounded = (value: string, limit: number) => {
@@ -961,6 +987,16 @@ export function previewRuntimeBootstrap(): void {
     pending: boolean;
   };
   let activeInlineEdit: ActiveInlineEdit | null = null;
+  let pendingInlineTextAdmission: {
+    id: number;
+    element: Element;
+    text: Text;
+    base: string;
+    marker: string;
+    generation: number;
+    timeout: number;
+  } | null = null;
+  let nextAdmissionId = 0;
   let localEditGeneration = 0;
   let localDocumentChanged = false;
   const reportInlineEdit = () => {
@@ -989,20 +1025,60 @@ export function previewRuntimeBootstrap(): void {
     document.addEventListener(
       'wheel',
       (event) => {
-        if (!event.ctrlKey && !event.metaKey) {
+        const zoom = event.ctrlKey || event.metaKey;
+        if (!zoom && !canvasPanning) {
+          return;
+        }
+        if (!zoom && event.target instanceof Element) {
+          let control: Element | null = event.target.closest(
+            '[contenteditable],input,textarea,select,[role="dialog"]',
+          );
+          while (control) {
+            const style = getComputedStyle(control);
+            const vertical =
+              /(auto|scroll)/.test(style.overflowY) &&
+              ((event.deltaY > 0 &&
+                control.scrollTop + control.clientHeight < control.scrollHeight) ||
+                (event.deltaY < 0 && control.scrollTop > 0));
+            const horizontal =
+              /(auto|scroll)/.test(style.overflowX) &&
+              (style.direction === 'rtl'
+                ? (event.deltaX > 0 && control.scrollLeft < 0) ||
+                  (event.deltaX < 0 &&
+                    control.scrollLeft > -(control.scrollWidth - control.clientWidth))
+                : (event.deltaX > 0 &&
+                    control.scrollLeft + control.clientWidth < control.scrollWidth) ||
+                  (event.deltaX < 0 && control.scrollLeft > 0));
+            if (vertical || horizontal || control instanceof HTMLSelectElement) {
+              return;
+            }
+            control =
+              control.parentElement?.closest(
+                '[contenteditable],input,textarea,select,[role="dialog"]',
+              ) ?? null;
+          }
+        }
+        if (!zoom && (!canvasCommitted || !event.isTrusted)) {
           return;
         }
         event.preventDefault();
         event.stopImmediatePropagation();
         send({
           type: 'canvas-input',
-          input: {
-            kind: 'zoom',
-            x: event.clientX,
-            y: event.clientY,
-            deltaY: event.deltaY,
-            deltaMode: event.deltaMode,
-          },
+          input: zoom
+            ? {
+                kind: 'zoom',
+                x: event.clientX,
+                y: event.clientY,
+                deltaY: event.deltaY,
+                deltaMode: event.deltaMode,
+              }
+            : {
+                kind: 'pan',
+                deltaX: event.deltaX,
+                deltaY: event.deltaY,
+                deltaMode: event.deltaMode,
+              },
         });
       },
       { capture: true, passive: false },
@@ -1018,10 +1094,13 @@ export function previewRuntimeBootstrap(): void {
           event.stopImmediatePropagation();
           if (activeInlineEdit?.pending) {
             announceInlineEdit('This edit is being applied. Wait before cancelling.', true);
-          } else if (activeInlineEdit) {
+          } else if (activeInlineEdit || pendingInlineTextAdmission) {
             cancelInlineEdit();
           } else {
-            send({ type: 'canvas-input', input: { kind: 'escape' } });
+            send({
+              type: 'canvas-input',
+              input: { kind: 'escape', ...(event.isTrusted ? { interactionTime } : {}) },
+            });
           }
         }
       },
@@ -1064,7 +1143,18 @@ export function previewRuntimeBootstrap(): void {
       localEditGeneration += 1;
     }, 3_000);
   };
+  const cancelPendingInlineTextAdmission = () => {
+    if (!pendingInlineTextAdmission) {
+      return false;
+    }
+    clearTimeout(pendingInlineTextAdmission.timeout);
+    pendingInlineTextAdmission = null;
+    localEditGeneration += 1;
+    reportInlineEdit();
+    return true;
+  };
   const cancelInlineEdit = () => {
+    cancelPendingInlineTextAdmission();
     const active = activeInlineEdit;
     if (!active) {
       return;
@@ -1105,7 +1195,7 @@ export function previewRuntimeBootstrap(): void {
       },
     });
   };
-  const beginInlineEdit = (element: Element) => {
+  const beginInlineEdit = (element: Element, admitted = false) => {
     if (!canvasCommitted) {
       announceInlineEdit('Wait for this preview to finish loading before editing.', true);
       return;
@@ -1130,6 +1220,33 @@ export function previewRuntimeBootstrap(): void {
         'Inline editing requires literal template text. Select this dynamic output or unsupported markup to edit its source or settings.',
         true,
       );
+      return;
+    }
+    if (canvasNavigation && !admitted) {
+      if (pendingInlineTextAdmission) {
+        return;
+      }
+      nextAdmissionId += 1;
+      const id = nextAdmissionId;
+      const timeout = window.setTimeout(() => {
+        if (pendingInlineTextAdmission?.id === id) {
+          pendingInlineTextAdmission = null;
+          localEditGeneration += 1;
+          reportInlineEdit();
+          announceInlineEdit('The editor did not acknowledge this text edit. Try again.', true);
+        }
+      }, 5_000);
+      pendingInlineTextAdmission = {
+        id,
+        element,
+        text,
+        base: text.data,
+        marker,
+        generation: inlineModeGeneration,
+        timeout,
+      };
+      localEditGeneration += 1;
+      send({ type: 'inline-text-admission', requestId: id });
       return;
     }
     nextInlineEditId += 1;
@@ -1197,7 +1314,23 @@ export function previewRuntimeBootstrap(): void {
     selection?.removeAllRanges();
     selection?.addRange(range);
   };
+  const selectUnsupportedImage = (element: HTMLImageElement) => {
+    if (inlineImageEditing) {
+      return false;
+    }
+    const selected = context(element);
+    if (selected) {
+      send({ type: 'select', selection: selected });
+    }
+    announceInlineEdit(
+      'Inline image replacement is unavailable here. Select the image to edit its source.',
+    );
+    return true;
+  };
   const submitInlineImage = async (element: HTMLImageElement, file: File) => {
+    if (selectUnsupportedImage(element)) {
+      return;
+    }
     if (!canvasCommitted) {
       announceInlineEdit('Wait for this preview to finish loading before editing.', true);
       return;
@@ -1290,6 +1423,9 @@ export function previewRuntimeBootstrap(): void {
     }
   });
   const beginInlineImage = (element: HTMLImageElement) => {
+    if (selectUnsupportedImage(element)) {
+      return;
+    }
     if (!canvasCommitted) {
       announceInlineEdit('Wait for this preview to finish loading before editing.', true);
       return;
@@ -1691,12 +1827,48 @@ export function previewRuntimeBootstrap(): void {
       requestId?: unknown;
       command?: unknown;
       payload?: unknown;
+      allowed?: unknown;
     };
     if (message.channel !== channel || message.documentId !== documentId) {
       return;
     }
     if (message.type === 'canvas-committed' && canvasNavigation) {
       canvasCommitted = true;
+      return;
+    }
+    if (message.type === 'inline-text-admission-result') {
+      const pending = pendingInlineTextAdmission;
+      if (!pending || message.requestId !== pending.id) {
+        if (message.allowed === true && !pending && !activeInlineEdit) {
+          reportInlineEdit();
+        }
+        return;
+      }
+      clearTimeout(pending.timeout);
+      pendingInlineTextAdmission = null;
+      localEditGeneration += 1;
+      if (
+        message.allowed === true &&
+        inlineEditing &&
+        canvasCommitted &&
+        pending.generation === inlineModeGeneration &&
+        pending.element.isConnected &&
+        pending.element.getAttribute(editMarkerAttribute) === pending.marker &&
+        directEditableText(pending.element) === pending.text &&
+        pending.text.data === pending.base &&
+        pending.element.getBoundingClientRect().width > 0 &&
+        pending.element.getBoundingClientRect().height > 0 &&
+        pending.element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true }) &&
+        !activeInlineEdit &&
+        !pendingImageEdit
+      ) {
+        beginInlineEdit(pending.element, true);
+      } else {
+        reportInlineEdit();
+        if (message.allowed !== true) {
+          announceInlineEdit('Finish or cancel the current text draft first.', true);
+        }
+      }
       return;
     }
     if (message.type === 'inline-edit-result') {
@@ -1713,6 +1885,7 @@ export function previewRuntimeBootstrap(): void {
         'screenshot',
         'set-inline-edit-mode',
         'cancel-inline-text-edit',
+        'cancel-inline-text-admission',
         'set-selection-mode',
         'set-interaction-mode',
       ].includes(String(message.command))
@@ -1727,7 +1900,7 @@ export function previewRuntimeBootstrap(): void {
         result = {
           localEdits: {
             generation: localEditGeneration,
-            active: Boolean(activeInlineEdit || pendingImageEdit),
+            active: Boolean(activeInlineEdit || pendingImageEdit || pendingInlineTextAdmission),
             changed:
               localDocumentChanged ||
               Boolean(document.querySelector('[data-builder-inline-notice]')),
@@ -1747,6 +1920,8 @@ export function previewRuntimeBootstrap(): void {
         result = inspectElement(message.payload as { marker?: unknown; selector?: unknown });
       } else if (message.command === 'screenshot') {
         result = screenshotSnapshot((message.payload as { stable?: unknown })?.stable === true);
+      } else if (message.command === 'cancel-inline-text-admission') {
+        result = cancelPendingInlineTextAdmission();
       } else if (message.command === 'cancel-inline-text-edit') {
         if (activeInlineEdit?.pending) {
           throw fail(

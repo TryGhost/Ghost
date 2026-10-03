@@ -249,7 +249,6 @@ it.each(['inspect', 'capture'] as const)(
         {
           camera: { x: 20, y: 30, scale: 0.2 },
           selectedFrameId: descriptor.id,
-          openedFrameId: descriptor.id,
         },
         'device',
       );
@@ -366,7 +365,6 @@ it('inspects and captures a nonfocused opaque device at its real resolution with
       {
         camera: { x: 10, y: 20, scale: 0.2 },
         selectedFrameId: 'post-desktop',
-        openedFrameId: 'post-desktop',
       },
       'expanded',
     );

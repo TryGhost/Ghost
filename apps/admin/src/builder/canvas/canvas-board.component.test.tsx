@@ -76,7 +76,7 @@ it('keeps every tall-composition label readable and independently clickable at f
   }
 });
 
-it('keeps browser keyboard focus and scroll under the camera when a frame is opened', async () => {
+it('keeps browser keyboard focus and scroll under the camera when a frame is fitted', async () => {
   await renderInApp(
     <section style={{ width: 1100, height: 650 }}>
       <CanvasBoard frames={frames} renderFrame={(frame) => <iframe title={frame.label} />} />
@@ -93,10 +93,37 @@ it('keeps browser keyboard focus and scroll under the camera when a frame is ope
     expect([host.scrollLeft, host.scrollTop]).toEqual([0, 0]);
     expect(world.style.transform).toBe(opened);
   }
-  const back = page.getByRole('button', { name: 'Back to overview' });
-  (back.element() as HTMLElement).focus();
-  await userEvent.keyboard('{Enter}');
-  await expect.poll(() => document.activeElement).toBe(host);
+  await page.getByRole('button', { name: 'Fit all' }).click();
   expect(world.style.transform).toBe(overview);
   expect([host.scrollLeft, host.scrollTop]).toEqual([0, 0]);
+});
+
+it('lets every live frame receive a direct double-click without opening a mode', async () => {
+  await renderInApp(
+    <section style={{ width: 1200, height: 800 }}>
+      <CanvasBoard
+        frames={frames}
+        renderFrame={(frame) => (
+          <iframe
+            srcDoc={
+              '<button style="margin:80px" ondblclick="this.textContent=\'Edited directly\'">Direct edit</button>'
+            }
+            style={{ width: '100%', height: '100%', border: 0 }}
+            title={`${frame.label} direct`}
+          />
+        )}
+      />
+    </section>,
+  );
+  const world = page.getByTestId('canvas-world').element() as HTMLElement;
+  const camera = world.style.transform;
+  for (const descriptor of frames) {
+    const target = page.frameLocator(page.getByTitle(`${descriptor.label} direct`));
+    await target.getByRole('button', { name: 'Direct edit', exact: true }).dblClick();
+    await expect.element(target.getByRole('button', { name: 'Edited directly' })).toBeVisible();
+  }
+  expect(world.style.transform).toBe(camera);
+  expect(document.querySelectorAll('[data-canvas-frame][inert]').length).toBe(0);
+  expect(document.querySelectorAll('button').length).toBeGreaterThan(0);
+  expect(document.body.textContent).not.toContain('Back to overview');
 });

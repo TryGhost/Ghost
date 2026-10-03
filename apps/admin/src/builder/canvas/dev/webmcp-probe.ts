@@ -96,9 +96,9 @@ export class CanvasProbe {
   private view: CanvasView = {
     camera: { x: 0, y: 0, scale: 1 },
     selectedFrameId: null,
-    openedFrameId: null,
   };
-  private mode = 'captured';
+  private mode = 'expanded';
+  private diagnostics: Record<string, unknown> = {};
   private readonly siteUrl: string;
 
   constructor(descriptors: readonly FrameDescriptor[], siteUrl: string) {
@@ -122,12 +122,17 @@ export class CanvasProbe {
     this.mode = mode;
   }
 
+  setDiagnostics(diagnostics: Record<string, unknown>) {
+    this.diagnostics = structuredClone(diagnostics);
+  }
+
   state() {
     return {
       protocolVersion: 'canvas-fixture-probe-2',
       workspaceId: this.workspaceId,
       siteUrl: this.siteUrl,
       fixture: true,
+      diagnostics: structuredClone(this.diagnostics),
       capabilities: {
         readOnly: true,
         mutations: false,

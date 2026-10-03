@@ -304,7 +304,6 @@ describe('top-level WebMCP registration', () => {
         {
           camera: { x: 10, y: 20, scale: 0.2 },
           selectedFrameId: descriptor.id,
-          openedFrameId: null,
         },
         'expanded',
       );
