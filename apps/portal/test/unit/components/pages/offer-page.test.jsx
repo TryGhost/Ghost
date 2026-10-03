@@ -44,4 +44,32 @@ describe('OfferPage', () => {
     expect(termsContent.innerHTML).toBe('');
     expect(termsContent.querySelector('img')).toBeNull();
   });
+
+  test('formats fractional old tier price using site locale and preserves two decimal places', () => {
+    const product = getProductData({
+      monthlyPrice: getPriceData({ interval: 'month', amount: 690, currency: 'USD' }),
+      yearlyPrice: getPriceData({ interval: 'year', amount: 6900, currency: 'USD' }),
+    });
+    const offer = getOfferData({
+      tierId: product.id,
+      cadence: 'month',
+      type: 'percent',
+      amount: 10,
+    });
+    const siteData = {
+      ...getSiteData({
+        products: [product],
+      }),
+      locale: 'de',
+    };
+
+    const { container } = setup({
+      site: siteData,
+      pageData: offer,
+    });
+
+    const oldPrice = container.querySelector('.gh-portal-offer-oldprice');
+    expect(oldPrice).toBeInTheDocument();
+    expect(oldPrice).toHaveTextContent('$ 6,90');
+  });
 });

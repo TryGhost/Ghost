@@ -9,6 +9,7 @@ import {
   getProductFromId,
   getUpdatedOfferPrice,
   formatNumber,
+  formatPrice,
   hasMultipleNewsletters,
 } from '../../utils/helpers';
 import { ValidateInputForm } from '../../utils/form';
@@ -613,7 +614,8 @@ export default class OfferPage extends React.Component {
     }
     return (
       <div className="gh-portal-offer-oldprice">
-        {getCurrencySymbol(price.currency)} {formatNumber(price.amount / 100)}
+        {getCurrencySymbol(price.currency)}{' '}
+        {formatPrice(price.amount / 100, this.context?.site?.locale)}
       </div>
     );
   }

@@ -12,7 +12,7 @@ import {
   getFreeProduct,
   getFreeProductBenefits,
   getSupportAddress,
-  formatNumber,
+  formatPrice,
   isCookiesDisabled,
   hasOnlyFreeProduct,
   isMemberActivePrice,
@@ -644,7 +644,7 @@ function ProductCardPrice({ product }) {
                 {currencySymbol}
               </span>
               <span className="amount" data-testid="product-amount">
-                {formatNumber(getStripeAmount(activePrice.amount))}
+                {formatPrice(getStripeAmount(activePrice.amount), site?.locale)}
               </span>
               <span className="billing-period">/{interval}</span>
             </div>
@@ -674,7 +674,7 @@ function ProductCardPrice({ product }) {
             {currencySymbol}
           </span>
           <span className="amount" data-testid="product-amount">
-            {formatNumber(getStripeAmount(activePrice.amount))}
+            {formatPrice(getStripeAmount(activePrice.amount), site?.locale)}
           </span>
           <span className="billing-period">/{interval}</span>
         </div>
