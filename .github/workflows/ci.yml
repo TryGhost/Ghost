@@ -1030,6 +1030,8 @@ jobs:
 
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
+        with:
+          browsers: ${{ matrix.app == '@tryghost/admin' && 'chromium' || 'chromium firefox webkit' }}
 
       # Cache the msttcorefonts .ttf files so only a cache miss hits the
       # SourceForge download that regularly hangs the koenig-lexical job. Save
