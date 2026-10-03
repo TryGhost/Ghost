@@ -71,10 +71,14 @@ failure for feature config, which is the wrong behaviour for most of it.
    [`schema.ts`](schema.ts) with a schema that is
    **no stricter than what Ghost already accepts**. Look at `defaults.json`,
    `overrides.json`, `env/*.json`, and how the key is actually read first.
-2. Run `pnpm --dir ghost/core test:types` and fix what the new types catch.
+2. Describe it with `.meta({description})`, and `examples` where the shape is not
+   obvious. `z.toJSONSchema()` carries both through, so this is what a generated
+   reference for self-hosters will be built from. Writing it now costs a line;
+   retrofitting it across every key later is a sweep nobody will volunteer for.
+3. Run `pnpm --dir ghost/core test:types` and fix what the new types catch.
    Those are real mismatches between what the code assumes and what the schema
    says — one of the two is wrong.
-3. Run `pnpm --dir ghost/core test:single test/unit/shared/config/validated.test.ts`.
+4. Run `pnpm --dir ghost/core test:single test/unit/shared/config/validated.test.ts`.
    It round-trips `defaults.json` against every shipped env config and fails if
    the schema changed a value rather than only checking it.
 
