@@ -17,6 +17,10 @@ describe('Unit: services/settings/settings-utils', function () {
       assert.equal(isSecretSetting({ key: 'content_api_key' }), true);
     });
 
+    it('identifies mail_smtp_pass as secret', function () {
+      assert.equal(isSecretSetting({ key: 'mail_smtp_pass' }), true);
+    });
+
     it('does not flag non-secret settings', function () {
       assert.equal(isSecretSetting({ key: 'title' }), false);
       assert.equal(isSecretSetting({ key: 'description' }), false);
@@ -32,6 +36,14 @@ describe('Unit: services/settings/settings-utils', function () {
 
     it('obfuscates the value of secret settings', function () {
       const result = hideValueIfSecret({ key: 'admin_api_key', value: 'real-key-value' });
+      assert.equal(result.value, obfuscatedSetting);
+    });
+
+    it('obfuscates the value of mail_smtp_pass', function () {
+      const result = hideValueIfSecret({
+        key: 'mail_smtp_pass',
+        value: 'super-secret-smtp-password',
+      });
       assert.equal(result.value, obfuscatedSetting);
     });
 

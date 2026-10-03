@@ -20,4 +20,12 @@ export const searchKeywords = {
   ],
   defaultRecipients: ['newsletters', 'default recipients', 'emails'],
   mailgun: ['mailgun', 'emails', 'newsletters'],
+  mailTransport: [
+    'mail',
+    'email',
+    'smtp',
+    'mail transport',
+    'transactional email',
+    'email settings',
+  ],
 };

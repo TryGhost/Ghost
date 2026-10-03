@@ -3,8 +3,7 @@
   "compilerOptions": {
     "checkJs": true,
     "module": "commonjs",
-    "target": "es2024",
-    "moduleResolution": "node"
+    "target": "es2024"
   },
   "exclude": ["core/built"]
 }

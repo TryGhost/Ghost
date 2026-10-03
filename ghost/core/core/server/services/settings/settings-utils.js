@@ -13,7 +13,7 @@ const obfuscatedSetting = '••••••••';
  * @returns {boolean}
  */
 function isSecretSetting(setting) {
-  return /secret|api_key/.test(setting.key);
+  return /secret|api_key|mail_smtp_pass/.test(setting.key);
 }
 
 /**

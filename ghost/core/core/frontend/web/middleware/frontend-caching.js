@@ -25,7 +25,7 @@ function calculateMemberTier(member, freeTier) {
 }
 
 /**
- * @typedef {function(): Promise<object>} GetFreeTier
+ * @typedef {() => Promise<object>} GetFreeTier
  */
 
 /**

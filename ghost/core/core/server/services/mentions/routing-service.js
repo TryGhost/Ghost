@@ -15,13 +15,13 @@ const logging = require('@tryghost/logging');
  * @implements {IRoutingService}
  */
 module.exports = class RoutingService {
-  /** @typedef {URL} */
+  /** @type {URL} */
   #siteUrl;
 
-  /** @typedef {IResourceService} */
+  /** @type {IResourceService} */
   #resourceService;
 
-  /** @typedef {import('got')} */
+  /** @type {import('got')} */
   #externalRequest;
 
   /**

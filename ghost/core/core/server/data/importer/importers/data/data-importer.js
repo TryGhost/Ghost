@@ -3,6 +3,7 @@ const ObjectId = require('bson-objectid').default;
 const semver = require('semver');
 const { IncorrectUsageError, DataImportError } = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('importer:data');
+/** @type {any} */
 const models = require('../../../../models');
 const PostsImporter = require('./posts-importer');
 const TagsImporter = require('./tags-importer');
@@ -17,17 +18,24 @@ const RevueSubscriberImporter = require('./revue-subscriber-importer');
 const RolesImporter = require('./roles-importer');
 const { slugify } = require('@tryghost/string/lib');
 
+/** @type {Record<string, any>} */
 const importers = {};
 
 const DataImporter = {
   type: 'data',
 
+  /**
+   * @param {any} importData
+   */
   preProcess: function preProcess(importData) {
     debug('preProcess');
     importData.preProcessedByData = true;
     return importData;
   },
 
+  /**
+   * @param {any} importData
+   */
   init: function init(importData) {
     importers.users = new UsersImporter(importData.data);
     importers.roles = new RolesImporter(importData.data);
@@ -45,6 +53,10 @@ const DataImporter = {
   },
 
   // Allow importing with an options object that is passed through the importer
+  /**
+   * @param {any} importData
+   * @param {any} [importOptions]
+   */
   doImport: async function doImport(importData, importOptions) {
     debug('doImport');
     importOptions = importOptions || {};
@@ -74,11 +86,16 @@ const DataImporter = {
       }
     }
 
+    /** @type {any[]} */
     const ops = [];
+    /** @type {any[]} */
     let problems = [];
+    /** @type {any[]} */
     let errors = [];
+    /** @type {Record<string, any>} */
     const importedData = {};
 
+    /** @type {Record<string, any>} */
     const modelOptions = {
       importing: true,
       context: {
@@ -125,95 +142,101 @@ const DataImporter = {
 
     this.init(importData);
 
-    return models.Base.transaction(async function (transacting) {
-      modelOptions.transacting = transacting;
-
-      _.each(importers, function (importer) {
-        ops.push(async function doModelImport() {
-          await importer.fetchExisting(modelOptions, importOptions);
-          await importer.beforeImport(modelOptions, importOptions);
-
-          if (importer.options.requiredImportedData.length) {
-            _.each(importer.options.requiredImportedData, (key) => {
-              importer.requiredImportedData[key] = importers[key].importedData;
-            });
-          }
-
-          if (importer.options.requiredExistingData.length) {
-            _.each(importer.options.requiredExistingData, (key) => {
-              importer.requiredExistingData[key] = importers[key].existingData;
-            });
-          }
-
-          await importer.replaceIdentifiers(modelOptions, importOptions);
-          await importer.doImport(modelOptions, importOptions);
-
-          errors = errors.concat(importer.errors);
-          problems = problems.concat(importer.problems);
-          if (importOptions.returnImportedData) {
-            importedData[importer.dataKeyToImport] = importer.importedDataToReturn;
-          }
-        });
-      });
-
+    return models.Base.transaction(
       /**
-       * @TODO: figure out how to fix this properly
-       * fixup the circular reference from
-       * stripe_prices -> stripe_products -> products -> stripe_prices
-       *
-       * Note: the product importer validates that all values are either
-       *   - being imported, or
-       *   - already exist in the db
-       * so we only need to map imported products
+       * @param {any} transacting
        */
-      ops.push(async () => {
-        const importedStripePrices = importers.stripe_prices.importedData;
-        const importedProducts = importers.products.importedData;
-        const productOps = [];
+      async function (transacting) {
+        modelOptions.transacting = transacting;
 
-        _.forEach(importedProducts, (importedProduct) => {
-          return _.forEach(['monthly_price_id', 'yearly_price_id'], (field) => {
-            const mappedPrice = _.find(importedStripePrices, {
-              originalId: importedProduct[field],
-            });
-            if (mappedPrice) {
-              productOps.push(() => {
-                return models.Product.edit(
-                  { [field]: mappedPrice.id },
-                  { id: importedProduct.id, transacting },
-                );
+        _.each(importers, function (importer) {
+          ops.push(async function doModelImport() {
+            await importer.fetchExisting(modelOptions, importOptions);
+            await importer.beforeImport(modelOptions, importOptions);
+
+            if (importer.options.requiredImportedData.length) {
+              _.each(importer.options.requiredImportedData, (key) => {
+                importer.requiredImportedData[key] = importers[key].importedData;
               });
+            }
+
+            if (importer.options.requiredExistingData.length) {
+              _.each(importer.options.requiredExistingData, (key) => {
+                importer.requiredExistingData[key] = importers[key].existingData;
+              });
+            }
+
+            await importer.replaceIdentifiers(modelOptions, importOptions);
+            await importer.doImport(modelOptions, importOptions);
+
+            errors = errors.concat(importer.errors);
+            problems = problems.concat(importer.problems);
+            if (importOptions.returnImportedData) {
+              importedData[importer.dataKeyToImport] = importer.importedDataToReturn;
             }
           });
         });
 
-        for (const productOp of productOps) {
-          await productOp();
-        }
-      });
+        /**
+         * @TODO: figure out how to fix this properly
+         * fixup the circular reference from
+         * stripe_prices -> stripe_products -> products -> stripe_prices
+         *
+         * Note: the product importer validates that all values are either
+         *   - being imported, or
+         *   - already exist in the db
+         * so we only need to map imported products
+         */
+        ops.push(async () => {
+          const importedStripePrices = importers.stripe_prices.importedData;
+          const importedProducts = importers.products.importedData;
+          /** @type {any[]} */
+          const productOps = [];
 
-      for (const op of ops) {
-        await op();
-      }
+          _.forEach(importedProducts, (importedProduct) => {
+            return _.forEach(['monthly_price_id', 'yearly_price_id'], (field) => {
+              const mappedPrice = _.find(importedStripePrices, {
+                originalId: importedProduct[field],
+              });
+              if (mappedPrice) {
+                productOps.push(() => {
+                  return models.Product.edit(
+                    { [field]: mappedPrice.id },
+                    { id: importedProduct.id, transacting },
+                  );
+                });
+              }
+            });
+          });
 
-      // Errors preventing import:
-      if (errors.length > 0) {
-        debug(errors);
-        throw new DataImportError({
-          message: errors[0].message,
-          context: errors[0].context,
-          help: errors[0].help,
-          errorDetails: errors,
-          err: errors[0],
+          for (const productOp of productOps) {
+            await productOp();
+          }
         });
-      }
 
-      return {
-        data: importedData,
-        originalData: importData.data,
-        problems: problems,
-      };
-    });
+        for (const op of ops) {
+          await op();
+        }
+
+        // Errors preventing import:
+        if (errors.length > 0) {
+          debug(errors);
+          throw new DataImportError({
+            message: errors[0].message,
+            context: errors[0].context,
+            help: errors[0].help,
+            errorDetails: errors,
+            err: errors[0],
+          });
+        }
+
+        return {
+          data: importedData,
+          originalData: importData.data,
+          problems: problems,
+        };
+      },
+    );
   },
 };
 

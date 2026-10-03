@@ -1,6 +1,7 @@
 import DefaultRecipients from './default-recipients';
 import EnableNewsletters from './enable-newsletters';
 import MailGun from './mailgun';
+import MailTransport from './mail-transport';
 import Newsletters from './newsletters';
 import React from 'react';
 import SearchableSection from '@/settings/components/searchable-section';
@@ -11,9 +12,10 @@ import { searchKeywords } from './search-keywords';
 const EmailSettings: React.FC = () => {
   const { config } = useGlobalData();
   const hasNewslettersEnabled = useNewslettersEnabled() === true;
-  const hasMailgun = hasNewslettersEnabled && !config.mailgunIsConfigured;
+  const hasMailgun = !config.mailgunIsConfigured;
   const visibleSearchKeywords = [
     searchKeywords.enableNewsletters,
+    searchKeywords.mailTransport,
     ...(hasNewslettersEnabled
       ? [searchKeywords.defaultRecipients, searchKeywords.newsletters]
       : []),
@@ -27,9 +29,10 @@ const EmailSettings: React.FC = () => {
         <>
           <DefaultRecipients keywords={searchKeywords.defaultRecipients} />
           <Newsletters keywords={searchKeywords.newsletters} />
-          {hasMailgun && <MailGun keywords={searchKeywords.mailgun} />}
         </>
       )}
+      {hasMailgun && <MailGun keywords={searchKeywords.mailgun} />}
+      <MailTransport keywords={searchKeywords.mailTransport} />
     </SearchableSection>
   );
 };
