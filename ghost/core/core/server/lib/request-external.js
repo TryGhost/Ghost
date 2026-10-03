@@ -119,6 +119,21 @@ function isPrivateIp(addr) {
   return isPrivateAddress(address);
 }
 
+// Opt-in allowlist of internal hosts that requests are explicitly allowed to
+// reach, for services the operator trusts on a private network. Empty by
+// default, so the guard below is unchanged unless an operator sets it.
+function isAllowedInternalHost(hostname) {
+  const allowed = config.get('security:webhookAllowedInternalHosts') ?? [];
+
+  if (!Array.isArray(allowed) || allowed.length === 0) {
+    return false;
+  }
+
+  const normalized = String(hostname).toLowerCase();
+
+  return allowed.some((entry) => String(entry).toLowerCase() === normalized);
+}
+
 async function errorIfHostnameResolvesToPrivateIp(options) {
   // Allow all requests if we are in development mode
   if (config.get('env') === 'development') {
@@ -129,6 +144,11 @@ async function errorIfHostnameResolvesToPrivateIp(options) {
   const siteUrl = new URL(config.get('url'));
   const requestUrl = new URL(options.url.href);
   if (requestUrl.host === siteUrl.host) {
+    return;
+  }
+
+  // allow requests through to hosts the operator explicitly trusts
+  if (isAllowedInternalHost(options.url.hostname)) {
     return;
   }
 
@@ -183,6 +203,11 @@ function installSafeDnsLookup(options) {
 
   const siteUrl = new URL(config.get('url'));
   if (options.url.host === siteUrl.host) {
+    return;
+  }
+
+  // allow requests through to hosts the operator explicitly trusts
+  if (isAllowedInternalHost(options.url.hostname)) {
     return;
   }
 
