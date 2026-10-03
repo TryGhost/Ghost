@@ -173,8 +173,14 @@ server counts it: the title trimmed, with an emoji and its presentation selector
 as one character, and every other field by code point.
 
 A failure the transport reports is mapped onto the same kinds, so the engine's
-state machine reads them the same way: an `UPDATE_COLLISION` code becomes
-`conflict`; a session-expired, unauthorized or 401 failure becomes
+state machine reads them the same way. An `UPDATE_COLLISION` code becomes
+`conflict`.
+
+The server refuses a save that still sends `scheduled` for a post it has since
+published with a validation error. That also becomes `conflict`, since only the
+server's newer copy lets the writer save again.
+
+Of the other failures, a session-expired, unauthorized or 401 failure becomes
 `session-invalid`; a host-limit failure becomes `host-limit`; an unreachable
 server, a maintenance response and a timeout become `transport`; a validation
 failure, a payload the server refuses as too large and a 422 become
