@@ -6,6 +6,7 @@ const ObjectId = require('bson-objectid').default;
 const pick = require('lodash/pick');
 const DomainEvents = require('@tryghost/domain-events');
 const PostEmailHandler = require('./post-email-handler');
+const { POST_UNSCHEDULED_DATA, POST_UNSCHEDULE_METADATA } = require('./unschedule');
 const {
   validateAdminApiBulkFilterTransformer,
 } = require('../../api/endpoints/utils/api-filter-utils');
@@ -140,17 +141,14 @@ class PostsService {
       return updateResult;
     }
     if (data.action === 'unschedule') {
-      const updateResult = await this.#updatePosts(
-        { status: 'draft', published_at: null },
-        {
-          filter: this.#mergeFilters('status:scheduled', options.filter),
-          context: options.context,
-          actionName: 'unscheduled',
-        },
-      );
+      const updateResult = await this.#updatePosts(POST_UNSCHEDULED_DATA, {
+        filter: this.#mergeFilters('status:scheduled', options.filter),
+        context: options.context,
+        actionName: 'unscheduled',
+      });
       // makes sure `email_only` value is reverted for the unscheduled posts
       await this.models.Post.bulkEdit(updateResult.editIds, 'posts_meta', {
-        data: { email_only: false },
+        data: POST_UNSCHEDULE_METADATA,
         column: 'post_id',
         transacting: options.transacting,
         throwErrors: true,
