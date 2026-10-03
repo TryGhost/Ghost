@@ -103,6 +103,7 @@ export default class FeatureService extends Service {
     @feature('editorReact') editorReact;
     @feature('improveSendingUI') improveSendingUI;
     @feature('dunningWarnings') dunningWarnings;
+    @feature('billingReact') billingReact;
 
     // React's auth screens decide before anyone signs in, so both shells read
     // the public /site/ field (copied onto config) and URL overrides, never Labs.

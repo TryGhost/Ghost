@@ -71,6 +71,7 @@ const PRIVATE_FEATURES = [
   'editorReact',
   'authReact',
   'dunningWarnings',
+  'billingReact',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

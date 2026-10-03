@@ -30,94 +30,114 @@ const FORCE_UPGRADE_BMA_HTML = `
 </html>
 `;
 
-test.describe('Ghost Admin - Force Upgrade Mode', () => {
-  test.use({
-    config: {
-      hostSettings__forceUpgrade: 'true',
-      hostSettings__billing__enabled: 'true',
-      hostSettings__billing__url: MOCK_BILLING_URL,
-    },
-  });
+// The same guard with either shell running the billing app.
+for (const { shell, billingReact } of [
+  { shell: 'Ember', billingReact: false },
+  { shell: 'React', billingReact: true },
+] as const) {
+  test.describe(`Ghost Admin - Force Upgrade Mode (${shell} billing)`, () => {
+    test.use({
+      labs: { billingReact },
+      config: {
+        hostSettings__forceUpgrade: 'true',
+        hostSettings__billing__enabled: 'true',
+        hostSettings__billing__url: MOCK_BILLING_URL,
+      },
+    });
 
-  test.beforeEach(async ({ page }) => {
-    await page.route(`${MOCK_BILLING_URL}/**`, async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'text/html',
-        body: FORCE_UPGRADE_BMA_HTML,
+    test.beforeEach(async ({ page }) => {
+      await page.route(`${MOCK_BILLING_URL}/**`, async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'text/html',
+          body: FORCE_UPGRADE_BMA_HTML,
+        });
       });
     });
-  });
 
-  test('sidebar navigation is blocked by billing iframe', async ({ page }) => {
-    const sidebarPage = new SidebarPage(page);
-    const billingPage = new BillingPage(page);
-    await sidebarPage.goto();
-
-    const billingIframe = await billingPage.waitForBillingIframe();
-    await expect(billingIframe).toBeVisible();
-
-    for (const { name } of NAV_ITEMS) {
-      await sidebarPage.getNavLink(name).click();
-      await expect(billingIframe).toBeVisible();
-    }
-  });
-
-  test('direct URL navigation is blocked by billing iframe', async ({ page }) => {
-    const sidebarPage = new SidebarPage(page);
-    const billingPage = new BillingPage(page);
-
-    for (const { directUrl } of NAV_ITEMS) {
-      await sidebarPage.goto(directUrl);
+    test('sidebar navigation is blocked by billing iframe', async ({ page }) => {
+      const sidebarPage = new SidebarPage(page);
+      const billingPage = new BillingPage(page);
+      await sidebarPage.goto();
 
       const billingIframe = await billingPage.waitForBillingIframe();
       await expect(billingIframe).toBeVisible();
-    }
-  });
 
-  test('Settings is accessible via sidebar', async ({ page }) => {
-    const sidebarPage = new SidebarPage(page);
-    const billingPage = new BillingPage(page);
-    await sidebarPage.goto();
+      for (const { name } of NAV_ITEMS) {
+        await sidebarPage.getNavLink(name).click();
+        await expect(billingIframe).toBeVisible();
+      }
+    });
 
-    await billingPage.waitForBillingIframe();
-    await sidebarPage.getNavLink('Settings').click();
+    test('direct URL navigation is blocked by billing iframe', async ({ page }) => {
+      const sidebarPage = new SidebarPage(page);
+      const billingPage = new BillingPage(page);
 
-    await expect(page).toHaveURL(/#\/settings/);
-    await expect(billingPage.billingIframe).toBeHidden();
-  });
+      for (const { directUrl } of NAV_ITEMS) {
+        await sidebarPage.goto(directUrl);
 
-  test('Settings is accessible via direct URL', async ({ page }) => {
-    const sidebarPage = new SidebarPage(page);
-    const billingPage = new BillingPage(page);
-    await sidebarPage.goto('/ghost/#/settings');
+        const billingIframe = await billingPage.waitForBillingIframe();
+        await expect(billingIframe).toBeVisible();
+      }
+    });
 
-    await expect(page).toHaveURL(/#\/settings/);
-    await expect(billingPage.billingIframe).toBeHidden();
-  });
+    test('editor direct URL is blocked by billing iframe', async ({ page }) => {
+      const sidebarPage = new SidebarPage(page);
+      const billingPage = new BillingPage(page);
 
-  test.describe('signed-out navigation', () => {
-    test.use({ isolation: 'per-test' });
+      for (const directUrl of ['/ghost/#/editor/post', '/ghost/#/editor/page']) {
+        await sidebarPage.goto(directUrl);
 
-    test('Sign out is accessible', async ({ page }) => {
+        const billingIframe = await billingPage.waitForBillingIframe();
+        await expect(billingIframe).toBeVisible();
+        await expect(page).toHaveURL(/#\/pro\/?$/);
+      }
+    });
+
+    test('Settings is accessible via sidebar', async ({ page }) => {
       const sidebarPage = new SidebarPage(page);
       const billingPage = new BillingPage(page);
       await sidebarPage.goto();
 
       await billingPage.waitForBillingIframe();
-      await sidebarPage.userDropdownTrigger.click();
-      await sidebarPage.signOutLink.click();
+      await sidebarPage.getNavLink('Settings').click();
 
-      await expect(page).toHaveURL(/signin/);
+      await expect(page).toHaveURL(/#\/settings/);
+      await expect(billingPage.billingIframe).toBeHidden();
+    });
+
+    test('Settings is accessible via direct URL', async ({ page }) => {
+      const sidebarPage = new SidebarPage(page);
+      const billingPage = new BillingPage(page);
+      await sidebarPage.goto('/ghost/#/settings');
+
+      await expect(page).toHaveURL(/#\/settings/);
+      await expect(billingPage.billingIframe).toBeHidden();
+    });
+
+    test.describe('signed-out navigation', () => {
+      test.use({ isolation: 'per-test' });
+
+      test('Sign out is accessible', async ({ page }) => {
+        const sidebarPage = new SidebarPage(page);
+        const billingPage = new BillingPage(page);
+        await sidebarPage.goto();
+
+        await billingPage.waitForBillingIframe();
+        await sidebarPage.userDropdownTrigger.click();
+        await sidebarPage.signOutLink.click();
+
+        await expect(page).toHaveURL(/signin/);
+      });
+    });
+
+    test('Ember-handled tag detail route shows billing iframe', async ({ page }) => {
+      const sidebarPage = new SidebarPage(page);
+      const billingPage = new BillingPage(page);
+      await sidebarPage.goto('/ghost/#/tags/default-tag');
+
+      const billingIframe = await billingPage.waitForBillingIframe();
+      await expect(billingIframe).toBeVisible();
     });
   });
-
-  test('Ember-handled tag detail route shows billing iframe', async ({ page }) => {
-    const sidebarPage = new SidebarPage(page);
-    const billingPage = new BillingPage(page);
-    await sidebarPage.goto('/ghost/#/tags/default-tag');
-
-    const billingIframe = await billingPage.waitForBillingIframe();
-    await expect(billingIframe).toBeVisible();
-  });
-});
+}

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { getListReturnNavigationState } from '@/shared/virtual-list/list-return-state';
 import type { EmberNotificationsHost } from './ember-notifications-host';
 
@@ -28,6 +27,11 @@ export interface StateBridge {
   preloadAdminThemeStylesheet?: () => Promise<void>;
   applyAdminThemePreference?: (mode: AdminThemeMode) => Promise<void> | void;
   navigateToBillingSubRoute?: (subRoute: string) => void;
+  applyBillingSubscriptionUpdate?: (update: BillingSubscriptionUpdate) => Promise<void>;
+  captureBillingAppLoadFailure?: (report: {
+    billingMonitor: Record<string, unknown>;
+    tags: Record<string, string | null>;
+  }) => void;
   setPostListQueryParams?: (resource: 'posts' | 'pages', params: Record<string, string>) => void;
   setReactFullScreen?: (isFullScreen: boolean) => void;
   setReactRoutePattern?: (routePattern: string | null) => void;
@@ -66,6 +70,10 @@ export interface SubscriptionState {
     trial_end: string | null;
     status: string;
   };
+}
+
+export interface BillingSubscriptionUpdate extends SubscriptionState {
+  checkoutRoute: string;
 }
 
 export interface SidebarVisibilityChangeEvent {
@@ -245,7 +253,8 @@ export function useEmberListReturnSync() {
   );
 }
 
-export function useSubscriptionStatus() {
+/** The billing app's subscription state as relayed by Ember's billing iframe. */
+export function useEmberSubscriptionStatus() {
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionState | null>(null);
 
   useEffect(() => {
@@ -326,6 +335,25 @@ export function navigateEmberBillingSubRoute(subRoute: string): boolean {
   }
   stateBridge.navigateToBillingSubRoute(subRoute);
   return true;
+}
+
+/**
+ * Hands a billing app subscription report to Ember, which refreshes its config
+ * and plan limits as its own billing iframe would. Resolves once Ember is done,
+ * or immediately without a bridge.
+ */
+export async function applyEmberBillingSubscriptionUpdate(
+  update: BillingSubscriptionUpdate,
+): Promise<void> {
+  await window.EmberBridge?.state.applyBillingSubscriptionUpdate?.(update);
+}
+
+/** Reports a billing app load failure through Ember's Sentry client; a no-op without a bridge. */
+export function reportEmberBillingLoadFailure(report: {
+  billingMonitor: Record<string, unknown>;
+  tags: Record<string, string | null>;
+}): void {
+  window.EmberBridge?.state.captureBillingAppLoadFailure?.(report);
 }
 
 /** Keep the Ember editor's breadcrumb in sync with the React list. */
@@ -419,38 +447,4 @@ export function useSidebarVisibility(): boolean {
     getSidebarVisibility,
     getSidebarVisibility, // Server snapshot (same as client for now)
   );
-}
-
-/**
- * Hook to get the forceUpgrade state.
- *
- * Returns true when the site is in force upgrade mode (requires billing action).
- * Returns undefined while the initial config request is loading.
- *
- * Force upgrade state is determined by:
- * 1. Config hostSettings.forceUpgrade (set by server, requires restart to change)
- * 2. Subscription status (if subscription becomes 'active', forceUpgrade is cleared)
- */
-export function useForceUpgrade(): boolean | undefined {
-  const { data: config, isLoading } = useBrowseConfig();
-  const subscriptionStatus = useSubscriptionStatus();
-
-  if (isLoading) {
-    return undefined;
-  }
-
-  const configForceUpgrade = config?.config?.hostSettings?.forceUpgrade;
-
-  // If config doesn't have forceUpgrade, we're not in force upgrade mode
-  if (!configForceUpgrade) {
-    return false;
-  }
-
-  // If subscription has become active, billing was completed successfully
-  // The server config hasn't restarted yet, but we can clear forceUpgrade locally
-  if (subscriptionStatus?.subscription?.status === 'active') {
-    return false;
-  }
-
-  return true;
 }

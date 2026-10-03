@@ -140,6 +140,12 @@ const features: Feature[] = [
       'Show payment-failure warnings in Admin, driven by the hosting provider via hostSettings.billing.dunning',
     flag: 'dunningWarnings',
   },
+  {
+    title: 'React Ghost(Pro) billing',
+    description:
+      'Serves the Ghost(Pro) billing screen (/pro) and its background billing app connection from the React app instead of Ember.',
+    flag: 'billingReact',
+  },
 ];
 
 const AlphaFeatures: React.FC = () => {
