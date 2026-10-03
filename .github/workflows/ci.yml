@@ -1126,6 +1126,15 @@ jobs:
           if-no-files-found: ignore
           retention-days: 30
 
+      - name: Summarize Admin acceptance results
+        if: always() && matrix.app == '@tryghost/admin'
+        # Reporting must not change the test step's result if the report is incomplete.
+        continue-on-error: true
+        run: |
+          node scripts/summarize-admin-acceptance.js \
+            --report=apps/admin/test-results/acceptance.json \
+            --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload Admin acceptance results
         if: always() && matrix.app == '@tryghost/admin'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
