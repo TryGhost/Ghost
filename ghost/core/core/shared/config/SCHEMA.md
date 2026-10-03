@@ -83,14 +83,7 @@ failure for feature config, which is the wrong behaviour for most of it.
    the schema changed a value rather than only checking it.
 
 Adding a key to the schema enforces its type: a caller that treated a string as
-a number, or assumed a key is always present, stops compiling. That is the point
-— the compiler is what keeps config honest, because the freeze on its own cannot.
-Ghost's `.js` files are sloppy-mode CommonJS, where writing to a frozen object is
-dropped rather than thrown, and `node --use-strict` does not change that: it makes
-only the entry point strict, while a `require()`d CommonJS module keeps its own
-strictness. Enforcing the freeze at runtime would take `'use strict'` directives
-across the `.js` files, or a Proxy whose `set` trap throws, gated to the test
-environment.
+a number, or assumed a key is always present, stops compiling.
 
 ## Rules
 
@@ -128,7 +121,29 @@ change.
 
 ## Don't mutate what `get()` returns
 
-It is frozen, and it is shared: every reader of a key gets the same object. Build
+In `development` and under test a write throws, naming the key path:
+
+```
+TypeError: Ghost config is read-only: attempted write to `paths:contentPath`.
+```
+
+In production it does not. The config is deep-frozen there, and Ghost's `.js`
+files and its CommonJS dependencies are sloppy-mode, where a write to a frozen
+object is dropped without an error. `node --use-strict` does not change that: it
+makes only the entry point strict, and a `require()`d CommonJS module keeps its
+own strictness.
+
+So the loud failure is a development and CI affordance - [`guard.ts`](guard.ts)
+swaps the freeze for a proxy whose traps throw, which fires whatever mode the
+caller is in. Production keeps the frozen object because it is the cheaper read;
+the two cannot be combined, since a proxy over a deep-frozen target may not
+return a wrapped child. `GHOST_CONFIG_GUARD` overrides in either direction.
+
+Guarded reads cost more - a scalar read goes from 4.5ns to 21ns and a spread of a
+config object from 120ns to 2.4µs - which is why it is not on in production. It
+makes no measurable difference to the test suite.
+
+Config is shared as well as read-only: every reader of a key gets the same object. Build
 a derived object instead. Three places got this wrong, each writing through into
 config for every later reader:
 [`configure-knex.ts`](../../server/data/db/configure-knex.ts) assembling knex's
