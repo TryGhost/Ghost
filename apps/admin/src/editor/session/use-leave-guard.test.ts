@@ -1,7 +1,8 @@
 import { createElement, lazy, Suspense, useEffect, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
-import { createHashRouter, createMemoryRouter, RouterProvider, useLocation } from 'react-router';
+import { createHashRouter, createMemoryRouter, useLocation } from 'react-router';
+import { RouterProvider } from 'react-router/dom';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { installHistoryPopGate } from '@/hooks/use-history-pop-navigation-guard';
 import { deferred } from '@/utils/deferred';

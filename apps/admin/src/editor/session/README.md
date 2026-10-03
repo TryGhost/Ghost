@@ -23,7 +23,10 @@ navigation reaches, including one the router did not create. Any other post, a
 new one included, gets a new session, so two posts opened by URL each get their
 own. The editor tells the screen once its session has created its post, so the
 new-post URL reached afterwards opens a new post even when the router renders
-the create's URL replace and that navigation together.
+the create's URL replace and that navigation together. The replace renders
+synchronously with its URL write: a navigation batched into a transition with
+it could land on a location equal to the one rendered, which the router reports
+as no navigation at all.
 
 Requests are made without the transport's session-expiry redirect, so an expired
 session is surfaced in place rather than navigating away from unsaved content.
