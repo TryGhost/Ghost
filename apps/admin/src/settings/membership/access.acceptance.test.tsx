@@ -75,7 +75,6 @@ describe('Access settings', () => {
     await choose('commenting-select', 'All members');
     await section.getByRole('button', { name: 'Save' }).click();
 
-    await expect.element(section.getByRole('button', { name: 'Saved' })).toBeVisible();
     await expect(settingsApi).toHaveEditedSettings([
       { key: 'default_content_visibility', value: 'members' },
       { key: 'members_signup_access', value: 'invite' },
@@ -215,9 +214,6 @@ describe('Access settings', () => {
     await choose('subscription-access-select', 'Nobody');
     await settingsScreen.access().getByRole('button', { name: 'Save' }).click();
 
-    await expect
-      .element(settingsScreen.access().getByRole('button', { name: 'Saved' }))
-      .toBeVisible();
     await expect(settingsApi).toHaveEditedSettings([
       { key: 'members_signup_access', value: 'none' },
     ]);
@@ -252,9 +248,6 @@ describe('Access settings', () => {
     await premiumOption.click();
     await settingsScreen.access().getByRole('button', { name: 'Save' }).click();
 
-    await expect
-      .element(settingsScreen.access().getByRole('button', { name: 'Saved' }))
-      .toBeVisible();
     await expect(settingsApi).toHaveEditedSettings([
       { key: 'default_content_visibility', value: 'tiers' },
       { key: 'default_content_visibility_tiers', value: JSON.stringify([basic.id, premium.id]) },

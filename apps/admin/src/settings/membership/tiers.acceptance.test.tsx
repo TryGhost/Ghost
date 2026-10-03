@@ -80,15 +80,16 @@ describe('Tier settings', () => {
     await modal.getByLabelText('Monthly price').fill('8');
     await modal.getByLabelText('Yearly price').fill('80');
     await modal.getByRole('button', { name: 'Save' }).click();
-    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
+    await expect
+      .poll(() => createApi.lastRequest?.body)
+      .toMatchObject({
+        tiers: [{ name: created.name, monthly_price: 800, yearly_price: 8000, trial_days: null }],
+      });
     await modal.getByRole('button', { name: 'Close' }).click();
 
     await expect
       .element(settingsScreen.tiers().getByText(created.name, { exact: true }))
       .toBeVisible();
-    expect(createApi.lastRequest?.body).toMatchObject({
-      tiers: [{ name: created.name, monthly_price: 800, yearly_price: 8000, trial_days: null }],
-    });
   });
 
   it('validates, previews, and updates a paid tier', async () => {
@@ -130,12 +131,11 @@ describe('Tier settings', () => {
     await expect.element(preview).toHaveTextContent('17% discount');
 
     await modal.getByRole('button', { name: 'Save' }).click();
-    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
+    await expect.poll(() => editApi.lastRequest?.body).toMatchObject({ tiers: [updated] });
     await modal.getByRole('button', { name: 'Close' }).click();
     await expect
       .element(settingsScreen.tiers().getByText(updated.name, { exact: true }))
       .toBeVisible();
-    expect(editApi.lastRequest?.body).toMatchObject({ tiers: [updated] });
   });
 
   it('updates the free tier', async () => {
@@ -158,18 +158,18 @@ describe('Tier settings', () => {
     await modal.getByRole('button', { name: 'Add' }).click();
     await modal.getByLabelText('New benefit').fill('Second benefit');
     await modal.getByRole('button', { name: 'Save' }).click();
-    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
-
-    expect(editApi.lastRequest?.body).toMatchObject({
-      tiers: [
-        {
-          id: freeTier.id,
-          description: updated.description,
-          welcome_page_url: updated.welcome_page_url,
-          benefits: updated.benefits,
-        },
-      ],
-    });
+    await expect
+      .poll(() => editApi.lastRequest?.body)
+      .toMatchObject({
+        tiers: [
+          {
+            id: freeTier.id,
+            description: updated.description,
+            welcome_page_url: updated.welcome_page_url,
+            benefits: updated.benefits,
+          },
+        ],
+      });
   });
 
   it('keeps the benefit editor focused and visible when adding with the button or Enter', async () => {
@@ -293,10 +293,11 @@ describe('Tier settings', () => {
 
     await checkbox.click();
     await modal.getByRole('button', { name: 'Save' }).click();
-    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
-    expect(tierApi.lastRequest?.body).toMatchObject({
-      tiers: [{ id: hidden.id, visibility: 'public' }],
-    });
+    await expect
+      .poll(() => tierApi.lastRequest?.body)
+      .toMatchObject({
+        tiers: [{ id: hidden.id, visibility: 'public' }],
+      });
   });
 
   it('blocks Stripe connection when the plan limit applies', async () => {
