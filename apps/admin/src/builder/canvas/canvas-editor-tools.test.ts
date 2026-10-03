@@ -130,3 +130,60 @@ it('does not start cancelled work or expose a generic evaluation interface', asy
   expect(apply).not.toHaveBeenCalled();
   tools.dispose();
 });
+
+it('lists checkpoint metadata and restores only an explicit current addressed checkpoint through the shared action', async () => {
+  const { draft, apply, args, tools: original } = await fixture();
+  original.dispose();
+  const restore = vi
+    .fn()
+    .mockResolvedValue({ revision: 'restored', renderKey: 'restored:data-0', dataGeneration: 0 });
+  const history = {
+    available: true,
+    entries: [{ id: 'initial', revision: draft.revision, label: 'Editor opened', current: false }],
+    undoId: 'initial',
+    redoId: null,
+  };
+  const tools = new CanvasEditorTools({
+    workspaceId: 'workspace',
+    readDraft: () => draft,
+    state: () => ({ history }),
+    applyPatch: apply,
+    restoreHistory: restore,
+  });
+  const tool = tools.tools().find((entry) => entry.name === 'ghost_canvas_history')!;
+  expect(await tool.execute({ ...args, operation: 'list' })).toMatchObject({
+    status: 'ok',
+    data: { history },
+  });
+  expect(await tool.execute({ ...args, operation: 'list', checkpointId: 'initial' })).toMatchObject(
+    { code: 'invalid_arguments' },
+  );
+  expect(
+    await tool.execute({
+      ...args,
+      expectedRevision: 'stale',
+      operation: 'restore',
+      checkpointId: 'initial',
+      expectedDataGeneration: 0,
+    }),
+  ).toMatchObject({ code: 'stale_revision' });
+  expect(restore).not.toHaveBeenCalled();
+  expect(
+    await tool.execute({
+      ...args,
+      operation: 'restore',
+      checkpointId: 'initial',
+      expectedDataGeneration: 0,
+    }),
+  ).toMatchObject({ status: 'ok', data: { accepted: true, revision: 'restored' } });
+  expect(restore.mock.calls[0][0]).toEqual({
+    checkpointId: 'initial',
+    expectedRevision: draft.revision,
+    expectedDataGeneration: 0,
+  });
+  expect(apply).not.toHaveBeenCalled();
+  tools.dispose();
+  expect(await tool.execute({ ...args, operation: 'list' })).toMatchObject({
+    code: 'workspace_unavailable',
+  });
+});

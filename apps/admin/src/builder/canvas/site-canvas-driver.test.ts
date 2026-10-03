@@ -3,6 +3,8 @@ import { expect, it, vi } from 'vitest';
 import { SiteCanvasDriver } from './site-canvas-driver';
 import { loadThemeDraft } from '@/builder/workspaces/theme/theme-loader';
 import { withThemeRevision } from '@/builder/workspaces/theme/theme-state';
+import * as themeState from '@/builder/workspaces/theme/theme-state';
+import { ThemePublisher } from '@/builder/workspaces/theme/publish/publish-theme';
 import type { ThemeRendererInitialization } from '@/builder/workspaces/theme/preview/preview-bridge';
 
 const renderer = vi.hoisted(() => ({
@@ -177,6 +179,308 @@ it('keeps accepted source and render when a native caller cancels candidate rend
   } finally {
     release?.();
     driver.dispose();
+    vi.clearAllMocks();
+  }
+});
+
+it('records accepted changes once and restores files/settings through required-page validation', async () => {
+  const draft = await loadDraft();
+  renderer.render.mockImplementation((url: string) =>
+    Promise.resolve({ url, status: 200, html: '<h1>Rendered</h1>', diagnostics: [] }),
+  );
+  const driver = new SiteCanvasDriver({
+    draft,
+    routes: { home: 'https://example.com/', post: 'https://example.com/post/' },
+    publish: (candidate) => Promise.resolve({ ok: true, revision: candidate.revision }),
+  });
+  try {
+    await driver.start();
+    const initial = await driver.render();
+    const first = driver.readHistory().entries[0];
+    const changed = await driver.applyThemePatch({
+      expectedRevision: initial.revision,
+      expectedDataGeneration: 0,
+      files: [
+        { operation: 'write', path: 'index.hbs', content: '<h1>Changed</h1>' },
+        { operation: 'write', path: 'assets/new.css', content: 'body{color:red}' },
+      ],
+      settings: { 'global.accent_color': '#123456' },
+    });
+    await driver.applyThemePatch({
+      expectedRevision: changed.revision,
+      expectedDataGeneration: 0,
+      settings: { 'global.accent_color': '#123456' },
+    });
+    expect(driver.readHistory().entries).toHaveLength(2);
+    expect(driver.readHistory().undoId).toBe(first.id);
+    const restored = await driver.restoreHistory({
+      checkpointId: first.id,
+      expectedRevision: changed.revision,
+      expectedDataGeneration: 0,
+    });
+    expect(restored.revision).toBe(initial.revision);
+    expect(restored.sourceChanges).toMatchObject({
+      'index.hbs': '<h1>Home</h1>',
+      'assets/new.css': null,
+    });
+    expect(driver.workspace.draft.globalSettings.accent_color).toBe(
+      draft.globalSettings.accent_color,
+    );
+    expect(driver.readHistory().redoId).toBeTruthy();
+    await driver.restoreHistory({
+      checkpointId: driver.readHistory().redoId!,
+      expectedRevision: restored.revision,
+      expectedDataGeneration: 0,
+    });
+    expect(driver.workspace.draft.files['index.hbs'].content).toBe('<h1>Changed</h1>');
+    expect(driver.readHistory().entries).toHaveLength(2);
+  } finally {
+    driver.dispose();
+    vi.clearAllMocks();
+  }
+});
+
+it('rejects history restoration queued behind a newer accepted change', async () => {
+  const draft = await loadDraft();
+  renderer.initialize.mockResolvedValue(undefined);
+  renderer.render.mockImplementation((url: string) =>
+    Promise.resolve({ url, status: 200, html: '<h1>Rendered</h1>', diagnostics: [] }),
+  );
+  const driver = new SiteCanvasDriver({
+    draft,
+    routes: { home: 'https://example.com/' },
+    publish: (candidate) => Promise.resolve({ ok: true, revision: candidate.revision }),
+  });
+  let release!: () => void;
+  try {
+    await driver.start();
+    const first = driver.readHistory().entries[0];
+    const changed = await driver.applyThemePatch({
+      expectedRevision: draft.revision,
+      expectedDataGeneration: 0,
+      files: [{ operation: 'write', path: 'index.hbs', content: '<h1>Changed</h1>' }],
+    });
+    let started!: () => void;
+    const rendering = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+    renderer.initialize.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          release = resolve;
+          started();
+        }),
+    );
+    const newer = driver.applyThemePatch({
+      expectedRevision: changed.revision,
+      expectedDataGeneration: 0,
+      files: [{ operation: 'write', path: 'index.hbs', content: '<h1>Newer</h1>' }],
+    });
+    await rendering;
+    const restoring = vi.spyOn(driver.workspace, 'restore');
+    const history = driver.restoreHistory({
+      checkpointId: first.id,
+      expectedRevision: changed.revision,
+      expectedDataGeneration: 0,
+    });
+    const outcome = history.then(
+      () => null,
+      (error) => error as unknown,
+    );
+    await vi.waitFor(() => expect(restoring).toHaveBeenCalledOnce());
+    release();
+    const accepted = await newer;
+    expect(await outcome).toMatchObject({
+      name: 'CanvasRejectedError',
+      details: { diagnostics: [{ code: 'stale_revision' }] },
+    });
+    expect(driver.workspace.draft.files['index.hbs'].content).toBe('<h1>Newer</h1>');
+    expect((await driver.render()).revision).toBe(accepted.revision);
+    expect(driver.readHistory().entries.find((entry) => entry.current)?.revision).toBe(
+      accepted.revision,
+    );
+  } finally {
+    release?.();
+    driver.dispose();
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
+  }
+});
+
+it('rejects failed Post restoration and stale history writes without moving accepted history', async () => {
+  const draft = await loadDraft();
+  let fail = false;
+  renderer.render.mockImplementation((url: string) =>
+    Promise.resolve({
+      url,
+      status: fail && url.endsWith('/post/') ? 500 : 200,
+      html: '<h1>Rendered</h1>',
+      diagnostics: [],
+    }),
+  );
+  const driver = new SiteCanvasDriver({
+    draft,
+    routes: { home: 'https://example.com/', post: 'https://example.com/post/' },
+    publish: (candidate) => Promise.resolve({ ok: true, revision: candidate.revision }),
+  });
+  try {
+    await driver.start();
+    const initial = await driver.render();
+    const first = driver.readHistory().entries[0];
+    const current = await driver.applyThemePatch({
+      expectedRevision: initial.revision,
+      expectedDataGeneration: 0,
+      files: [{ operation: 'write', path: 'index.hbs', content: '<h1>Accepted</h1>' }],
+    });
+    const before = driver.readHistory();
+    const validity: Array<boolean | null> = [];
+    driver.workspace.subscribe((state) => validity.push(state.validation?.valid ?? null));
+    await expect(
+      driver.restoreHistory({
+        checkpointId: first.id,
+        expectedRevision: initial.revision,
+        expectedDataGeneration: 0,
+      }),
+    ).rejects.toMatchObject({ name: 'CanvasRejectedError' });
+    fail = true;
+    await expect(
+      driver.restoreHistory({
+        checkpointId: first.id,
+        expectedRevision: current.revision,
+        expectedDataGeneration: 0,
+      }),
+    ).rejects.toMatchObject({ name: 'CanvasRejectedError' });
+    expect((await driver.render()).revision).toBe(current.revision);
+    expect(driver.workspace.draft.files['index.hbs'].content).toBe('<h1>Accepted</h1>');
+    expect(driver.readHistory()).toEqual(before);
+    expect(validity.at(-1)).toBe(true);
+  } finally {
+    driver.dispose();
+    vi.clearAllMocks();
+  }
+});
+
+it('keeps a published copy identity when undoing earlier theme content', async () => {
+  const draft = await loadDraft();
+  renderer.render.mockImplementation((url: string) =>
+    Promise.resolve({ url, status: 200, html: '<h1>Rendered</h1>', diagnostics: [] }),
+  );
+  const publisher = new ThemePublisher({
+    baseline: draft,
+    transport: {
+      upload: vi.fn().mockResolvedValue(undefined),
+      activate: vi.fn().mockResolvedValue(undefined),
+      updateGlobalSettings: vi.fn().mockResolvedValue(undefined),
+      updateCustomSettings: vi.fn().mockResolvedValue(undefined),
+    },
+  });
+  const driver = new SiteCanvasDriver({
+    draft,
+    routes: { home: 'https://example.com/' },
+    publish: (candidate, signal) =>
+      publisher.publish(candidate, { copyName: 'casper-edited' }, signal),
+  });
+  try {
+    await driver.start();
+    const initial = await driver.render();
+    const first = driver.readHistory().entries[0];
+    await driver.applyThemePatch({
+      expectedRevision: initial.revision,
+      expectedDataGeneration: 0,
+      files: [{ operation: 'write', path: 'index.hbs', content: '<h1>Published edit</h1>' }],
+    });
+    const published = await driver.publish(new AbortController().signal);
+    expect(published.ok).toBe(true);
+    const dirty: boolean[] = [];
+    driver.workspace.subscribe((state) => dirty.push(state.dirty));
+    const sameSource = await driver.restoreHistory({
+      checkpointId: driver.readHistory().undoId!,
+      expectedRevision: driver.workspace.draft.revision,
+      expectedDataGeneration: 0,
+    });
+    expect(sameSource).toMatchObject({ unchanged: true, revision: published.revision });
+    expect(dirty.at(-1)).toBe(false);
+    expect(driver.workspace.draft.files['package.json'].content).toBe(
+      draft.files['package.json'].content,
+    );
+    await driver.restoreHistory({
+      checkpointId: first.id,
+      expectedRevision: driver.workspace.draft.revision,
+      expectedDataGeneration: 0,
+    });
+    expect(driver.workspace.draft.theme).toMatchObject({ name: 'casper-edited', builtIn: false });
+    expect(driver.workspace.draft.files['package.json'].content).toBe(
+      draft.files['package.json'].content,
+    );
+    expect(driver.workspace.draft.files['index.hbs'].content).toBe('<h1>Home</h1>');
+    expect(driver.workspace.snapshot().revision).not.toBe(initial.revision);
+  } finally {
+    driver.dispose();
+    vi.clearAllMocks();
+  }
+});
+
+it('keeps the history cursor when cancellation interrupts hashing an unchanged restore', async () => {
+  const draft = await loadDraft();
+  renderer.render.mockImplementation((url: string) =>
+    Promise.resolve({ url, status: 200, html: '<h1>Rendered</h1>', diagnostics: [] }),
+  );
+  const driver = new SiteCanvasDriver({
+    draft,
+    routes: { home: 'https://example.com/' },
+    publish: (candidate) => Promise.resolve({ ok: true, revision: candidate.revision }),
+  });
+  let release!: () => void;
+  try {
+    await driver.start();
+    const first = driver.readHistory().entries[0];
+    const changed = await driver.applyThemePatch({
+      expectedRevision: draft.revision,
+      expectedDataGeneration: 0,
+      files: [{ operation: 'write', path: 'index.hbs', content: '<h1>Changed</h1>' }],
+    });
+    const current = await driver.applyThemePatch({
+      expectedRevision: changed.revision,
+      expectedDataGeneration: 0,
+      files: [{ operation: 'write', path: 'index.hbs', content: '<h1>Home</h1>' }],
+    });
+    expect(current.revision).toBe(draft.revision);
+    const before = driver.readHistory();
+    let started!: () => void;
+    const hashing = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+    const hash = themeState.withThemeRevision;
+    vi.spyOn(themeState, 'withThemeRevision').mockImplementationOnce(async (candidate) => {
+      started();
+      await new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      return hash(candidate);
+    });
+    const caller = new AbortController();
+    const restoring = driver.restoreHistory(
+      {
+        checkpointId: first.id,
+        expectedRevision: current.revision,
+        expectedDataGeneration: 0,
+      },
+      caller.signal,
+    );
+    const outcome = restoring.then(
+      () => null,
+      (error) => error as unknown,
+    );
+    await hashing;
+    caller.abort();
+    release();
+    expect(await outcome).toMatchObject({ name: 'CanvasRejectedError', code: 'cancelled' });
+    expect(driver.readHistory()).toEqual(before);
+    expect((await driver.render()).revision).toBe(current.revision);
+  } finally {
+    release?.();
+    driver.dispose();
+    vi.restoreAllMocks();
     vi.clearAllMocks();
   }
 });

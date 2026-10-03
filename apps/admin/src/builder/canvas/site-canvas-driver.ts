@@ -4,9 +4,17 @@ import { visibleThemeCustomSettings } from '@/builder/workspaces/theme/theme-loa
 import { CanvasThemePreview } from './canvas-theme-preview';
 import { CanvasRejectedError } from './canvas-driver';
 import { ThemeWorkspace } from '@/builder/workspaces/theme/theme-workspace';
+import { cloneThemeDraft, withThemeRevision } from '@/builder/workspaces/theme/theme-state';
 import { createThemeRendererClient } from '@/builder/workspaces/theme/preview/preview-bridge';
 import type { ThemeDraft } from '@/builder/workspaces/theme/theme-state';
-import type { CanvasDriver, CanvasEdit, CanvasEditorRender, CanvasPatch } from './canvas-driver';
+import type {
+  CanvasDriver,
+  CanvasEdit,
+  CanvasEditorRender,
+  CanvasPatch,
+  CanvasHistory,
+  CanvasHistoryRestore,
+} from './canvas-driver';
 import type { PublishResult, ValidationResult } from '@/builder/core/workspace';
 import type { PreviewDocument } from '@/builder/workspaces/theme/preview/preview-document';
 type ThemePublishAdapterResult = PublishResult & { draft?: ThemeDraft };
@@ -27,6 +35,14 @@ export class SiteCanvasDriver implements CanvasDriver {
   private readonly lifetime = new AbortController();
   private readonly deliveries = new Set<(render: CanvasEditorRender) => void>();
   private accepted: CanvasEditorRender | null = null;
+  private checkpoints: Array<{
+    id: string;
+    revision: string;
+    label: string;
+    createdAt: string;
+    draft: ThemeDraft;
+  }> = [];
+  private historyIndex = -1;
 
   constructor(options: {
     draft: ThemeDraft;
@@ -85,6 +101,7 @@ export class SiteCanvasDriver implements CanvasDriver {
     await this.workspace.load(this.lifetime.signal);
     this.validate(await this.preview.renderCandidate(this.workspace.draft, this.lifetime.signal));
     this.accepted = this.currentRender();
+    this.recordCheckpoint('Editor opened');
   }
 
   async render(edit?: CanvasEdit): Promise<CanvasEditorRender> {
@@ -106,6 +123,7 @@ export class SiteCanvasDriver implements CanvasDriver {
     }
     const next = this.currentRender();
     this.accepted = next;
+    this.recordCheckpoint('Text edit');
     return {
       ...next,
       sourceChanges: { [marker.file]: this.workspace.draft.files[marker.file].content },
@@ -142,6 +160,7 @@ export class SiteCanvasDriver implements CanvasDriver {
     }
     const next = this.currentRender();
     this.accepted = next;
+    this.recordCheckpoint('Theme change');
     return {
       ...next,
       sourceChanges: Object.fromEntries(
@@ -160,6 +179,112 @@ export class SiteCanvasDriver implements CanvasDriver {
     );
   }
 
+  readHistory(): CanvasHistory {
+    return {
+      available: true,
+      entries: this.checkpoints.map(({ draft: _draft, ...entry }, index) => ({
+        ...entry,
+        current: index === this.historyIndex,
+      })),
+      undoId: this.checkpoints[this.historyIndex - 1]?.id ?? null,
+      redoId: this.checkpoints[this.historyIndex + 1]?.id ?? null,
+    };
+  }
+
+  async restoreHistory(
+    input: CanvasHistoryRestore,
+    callerSignal?: AbortSignal,
+  ): Promise<CanvasEditorRender> {
+    this.expectCurrent(input.expectedRevision, input.expectedDataGeneration);
+    const index = this.checkpoints.findIndex((entry) => entry.id === input.checkpointId);
+    if (index < 0) {
+      throw new CanvasRejectedError(
+        'This checkpoint is no longer available.',
+        'checkpoint_unavailable',
+      );
+    }
+    const signal = AbortSignal.any([this.lifetime.signal, ...(callerSignal ? [callerSignal] : [])]);
+    signal.throwIfAborted();
+    if (index === this.historyIndex && this.accepted) {
+      return { ...this.accepted, unchanged: true };
+    }
+    const previous = this.workspace.draft;
+    const restored = cloneThemeDraft(this.checkpoints[index].draft);
+    // Publication can create a custom copy. Undo source/settings, preserving the
+    // active site's current archive identity and renderer credentials/configuration.
+    restored.theme = { ...previous.theme };
+    restored.renderer = structuredClone(previous.renderer);
+    restored.virtualUrl = previous.virtualUrl;
+    restored.selection = null;
+    const candidate = await withThemeRevision(restored);
+    if (signal.aborted) {
+      throw new CanvasRejectedError(
+        'The history change was cancelled before acceptance.',
+        'cancelled',
+      );
+    }
+    this.expectCurrent(input.expectedRevision, input.expectedDataGeneration);
+    if (candidate.revision === previous.revision && this.accepted) {
+      this.historyIndex = index;
+      return { ...this.accepted, unchanged: true };
+    }
+    let validation: ValidationResult;
+    try {
+      validation = await this.workspace.restore(
+        { revision: candidate.revision, payload: candidate },
+        signal,
+        { expectedRevision: input.expectedRevision },
+      );
+    } catch (error) {
+      if (signal.aborted && this.workspace.draft.revision === previous.revision) {
+        throw new CanvasRejectedError(
+          'The history change was cancelled before acceptance.',
+          'cancelled',
+        );
+      }
+      throw error;
+    }
+    if (!validation.valid) {
+      throw new CanvasRejectedError(
+        'The checkpoint could not render every required page.',
+        'checkpoint_rejected',
+        { diagnostics: validation.diagnostics },
+      );
+    }
+    this.historyIndex = index;
+    this.accepted = this.currentRender();
+    const next = this.workspace.draft;
+    return {
+      ...this.accepted,
+      assets: await this.loadAssets(),
+      sourceChanges: Object.fromEntries(
+        [...new Set([...Object.keys(previous.files), ...Object.keys(next.files)])].map((path) => [
+          path,
+          next.files[path]?.content ?? null,
+        ]),
+      ),
+    };
+  }
+
+  private recordCheckpoint(label: string) {
+    const draft = this.workspace.draft;
+    if (this.checkpoints[this.historyIndex]?.revision === draft.revision) {
+      return;
+    }
+    this.checkpoints = this.checkpoints.slice(0, this.historyIndex + 1);
+    this.checkpoints.push({
+      id: crypto.randomUUID(),
+      revision: draft.revision,
+      label,
+      createdAt: new Date().toISOString(),
+      draft: cloneThemeDraft(draft),
+    });
+    if (this.checkpoints.length > 20) {
+      this.checkpoints.shift();
+    }
+    this.historyIndex = this.checkpoints.length - 1;
+  }
+
   subscribe(deliver: (render: CanvasEditorRender) => void): () => void {
     this.deliveries.add(deliver);
     return () => {
@@ -175,6 +300,7 @@ export class SiteCanvasDriver implements CanvasDriver {
           await this.preview.renderCandidate(this.workspace.draft, this.lifetime.signal),
         );
         this.accepted = this.currentRender();
+        this.recordCheckpoint('Published theme');
         for (const deliver of this.deliveries) {
           deliver(this.accepted);
         }

@@ -235,6 +235,55 @@ describe('Design Builder route', () => {
         expect(page.getByTestId('canvas-world').element().getAttribute('style')).toBe(camera);
         await expect.element(page.getByRole('button', { name: 'Publish changes' })).toBeEnabled();
         expect(document.querySelector('[data-canvas-diagnostics]')).toBeNull();
+        await page.getByRole('button', { name: 'Undo theme change', exact: true }).click();
+        await ready();
+        const undone = await state();
+        expect(undone.editor!.sourceRevision).toBe(initial.editor!.sourceRevision);
+        expect(page.getByTestId('canvas-world').element().getAttribute('style')).toBe(camera);
+        expect(
+          [
+            ...document.querySelectorAll<HTMLIFrameElement>(
+              'iframe[title$="composition"],iframe[title$="preview"]',
+            ),
+          ].every(
+            (iframe) =>
+              iframe.srcdoc.includes('Canvas footer') &&
+              !iframe.srcdoc.includes('Agent canvas footer'),
+          ),
+        ).toBe(true);
+        await expect
+          .element(page.getByRole('button', { name: 'Undo theme change', exact: true }))
+          .toBeDisabled();
+        await expect
+          .element(page.getByRole('button', { name: 'Redo theme change', exact: true }))
+          .toBeEnabled();
+        const historyResult = await commands.canvasNativeTool('ghost_canvas_history', {
+          workspaceId: undone.workspaceId,
+          expectedRevision: undone.editor!.sourceRevision,
+          operation: 'list',
+        });
+        expect(historyResult.status).toBe('ok');
+        expect(JSON.stringify(historyResult)).not.toContain('0123456789abcdef');
+        const history = (historyResult.data as { history: { redoId: string } }).history;
+        const redone = await commands.canvasNativeTool('ghost_canvas_history', {
+          workspaceId: undone.workspaceId,
+          expectedRevision: undone.editor!.sourceRevision,
+          expectedDataGeneration: 0,
+          operation: 'restore',
+          checkpointId: history.redoId,
+        });
+        expect(redone).toMatchObject({
+          status: 'ok',
+          data: { accepted: true, revision: current.editor!.sourceRevision },
+        });
+        await ready();
+        expect([
+          ...document.querySelectorAll('iframe[title$="composition"],iframe[title$="preview"]'),
+        ]).toEqual(iframeElements);
+        expect(page.getByTestId('canvas-world').element().getAttribute('style')).toBe(camera);
+        await expect
+          .element(page.getByRole('button', { name: 'Redo theme change', exact: true }))
+          .toBeDisabled();
       } finally {
         await screen.unmount();
         await commands.canvasPointerViewport(false);
@@ -296,6 +345,49 @@ describe('Design Builder route', () => {
         await frame
           .getByRole('link', { name: 'Updated shared canvas footer', exact: true })
           .hover();
+        expect([
+          ...document.querySelectorAll('iframe[title$="composition"],iframe[title$="preview"]'),
+        ]).toEqual(iframes);
+        expect(world.getAttribute('style')).toBe(view);
+        await page.getByRole('button', { name: 'Undo theme change', exact: true }).click();
+        await expect
+          .poll(() =>
+            [
+              ...document.querySelectorAll<HTMLIFrameElement>(
+                'iframe[title$="composition"],iframe[title$="preview"]',
+              ),
+            ].every(
+              (iframe) =>
+                iframe.srcdoc.includes('Canvas footer') &&
+                !iframe.srcdoc.includes('Updated shared canvas footer'),
+            ),
+          )
+          .toBe(true);
+        await expect
+          .poll(() => document.querySelectorAll('iframe[data-preview-status="Ready"]').length, {
+            timeout: 30_000,
+          })
+          .toBe(8);
+        await expect.element(page.getByRole('button', { name: 'Publish changes' })).toBeDisabled();
+        await expect
+          .element(page.getByRole('button', { name: 'Undo theme change', exact: true }))
+          .toBeDisabled();
+        expect(world.getAttribute('style')).toBe(view);
+        await page.getByRole('button', { name: 'Redo theme change', exact: true }).click();
+        await expect
+          .poll(() =>
+            [
+              ...document.querySelectorAll<HTMLIFrameElement>(
+                'iframe[title$="composition"],iframe[title$="preview"]',
+              ),
+            ].every((iframe) => iframe.srcdoc.includes('Updated shared canvas footer')),
+          )
+          .toBe(true);
+        await expect
+          .poll(() => document.querySelectorAll('iframe[data-preview-status="Ready"]').length, {
+            timeout: 30_000,
+          })
+          .toBe(8);
         expect([
           ...document.querySelectorAll('iframe[title$="composition"],iframe[title$="preview"]'),
         ]).toEqual(iframes);

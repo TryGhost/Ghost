@@ -154,6 +154,7 @@ export class CanvasProbe {
         readOnly: !this.editor,
         mutations: !!this.editor,
         themeReads: !!this.editor,
+        history: this.editor?.historyAvailable ?? false,
         publication: false,
         representations: ['device'],
         captureFormat: 'png-data-url-experiment',

@@ -744,6 +744,58 @@ describe('ThemeWorkspace', () => {
     );
   });
 
+  it('serializes checkpoint restoration with subsequent atomic changes', async () => {
+    const source = await loadInput();
+    let release!: () => void;
+    let started!: () => void;
+    const rendering = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+    const workspace = new ThemeWorkspace({
+      id: 'canvas:history',
+      title: 'History',
+      load: (signal) => loadThemeDraft(source, signal),
+      preview: {
+        kind: 'theme',
+        renderCandidate: (draft) =>
+          Promise.resolve({ valid: true, diagnostics: [], revision: draft.revision }),
+        restoreDraft: async (draft) => {
+          started();
+          await new Promise<void>((resolve) => {
+            release = resolve;
+          });
+          return { valid: true, diagnostics: [], revision: draft.revision };
+        },
+      },
+    });
+    const signal = new AbortController().signal;
+    await workspace.load(signal);
+    const initial = workspace.snapshot();
+    await workspace.applyThemePatch(
+      {
+        revision: initial.revision,
+        files: [{ operation: 'write', path: 'index.hbs', content: '<main>Before undo</main>' }],
+      },
+      signal,
+      { promote: true },
+    );
+    const restoring = workspace.restore(initial);
+    await rendering;
+    const patch = workspace.applyThemePatch(
+      {
+        revision: initial.revision,
+        files: [{ operation: 'write', path: 'index.hbs', content: '<main>After undo</main>' }],
+      },
+      signal,
+      { promote: true },
+    );
+    await Promise.resolve();
+    release();
+    expect(await restoring).toMatchObject({ valid: true });
+    expect(await patch).toMatchObject({ ok: true });
+    expect(workspace.draft.files['index.hbs'].content).toBe('<main>After undo</main>');
+  });
+
   it('restores the visible preview before atomically adopting a checkpoint', async () => {
     const source = await loadInput();
     const renderCandidate = vi.fn((candidate: ThemeDraft) =>

@@ -18,7 +18,14 @@ import { IframePreviewDocumentSurface } from '@/builder/workspaces/theme/preview
 import { CanvasProbe, registerCanvasProbe } from './canvas-probe';
 import { CanvasRejectedError } from './canvas-driver';
 import { CanvasEditorTools } from './canvas-editor-tools';
-import type { CanvasSource, CanvasDriver, CanvasPatch, CanvasEditorRender } from './canvas-driver';
+import type {
+  CanvasSource,
+  CanvasDriver,
+  CanvasPatch,
+  CanvasEditorRender,
+  CanvasHistory,
+  CanvasHistoryRestore,
+} from './canvas-driver';
 import type { ReactNode } from 'react';
 
 import type { CanvasFrame, CanvasFrameInput, CanvasView } from '@/builder/canvas/canvas-board';
@@ -447,6 +454,7 @@ export function ThemeCanvas({
   const latestInteractionIntent = useRef(0);
   const iframeInteractionTime = useRef<number | null>(null);
   const [commitPending, setCommitPending] = useState(false);
+  const [history, setHistory] = useState<CanvasHistory | null>(null);
   const pendingCommit = useRef(false);
   useEffect(() => {
     activityObserver.current?.({
@@ -492,6 +500,9 @@ export function ThemeCanvas({
   const patchAction = useRef<
     ((patch: CanvasPatch, signal?: AbortSignal) => Promise<CanvasEditorRender>) | null
   >(null);
+  const historyAction = useRef<
+    ((input: CanvasHistoryRestore, signal?: AbortSignal) => Promise<CanvasEditorRender>) | null
+  >(null);
   useEffect(() => {
     const current = new CanvasProbe(frames, source.siteUrl, {
       workspaceId: source.fixture ? undefined : source.id,
@@ -528,6 +539,12 @@ export function ThemeCanvas({
               throw new CanvasRejectedError('The editor is not ready.');
             }
             return patchAction.current(patch, signal);
+          },
+          restoreHistory: (input, signal) => {
+            if (!historyAction.current) {
+              throw new CanvasRejectedError('The editor is not ready.');
+            }
+            return historyAction.current(input, signal);
           },
         }),
       );
@@ -592,7 +609,11 @@ export function ThemeCanvas({
         }
         let currentAssets = assets;
         const deliver = (rendered: CanvasEditorRender, acceptedAfterMs = 0) => {
-          if (disposed || rendered.unchanged) {
+          if (disposed) {
+            return;
+          }
+          setHistory(client.readHistory?.() ?? null);
+          if (rendered.unchanged) {
             return;
           }
           if (rendered.sourceChanges) {
@@ -609,6 +630,9 @@ export function ThemeCanvas({
               }
             }
             currentAssets = nextAssets;
+          }
+          if (rendered.assets) {
+            currentAssets = rendered.assets;
           }
           if (rendered.editedFile) {
             sourceFiles.current[rendered.editedFile.path] = rendered.editedFile.content;
@@ -821,8 +845,11 @@ export function ThemeCanvas({
       }
     }
   };
-  const applyThemePatch = useCallback(
-    async (patch: CanvasPatch, signal?: AbortSignal): Promise<CanvasEditorRender> => {
+  const runEditAction = useCallback(
+    async (
+      apply: (client: CanvasDriver) => Promise<CanvasEditorRender>,
+      signal?: AbortSignal,
+    ): Promise<CanvasEditorRender> => {
       const current = session.current;
       if (
         !current ||
@@ -835,7 +862,7 @@ export function ThemeCanvas({
         !delivery.current?.allComplete
       ) {
         throw new CanvasRejectedError(
-          'Finish the current draft or delivery before applying a theme patch.',
+          'Finish the current draft or delivery before changing the theme.',
         );
       }
       signal?.throwIfAborted();
@@ -844,7 +871,7 @@ export function ThemeCanvas({
       setError(null);
       const restoreReads = probe?.invalidateForRefresh();
       try {
-        const result = await current.client.applyThemePatch(patch, signal);
+        const result = await apply(current.client);
         current.deliver(result);
         if (result.unchanged) {
           restoreReads?.();
@@ -872,7 +899,34 @@ export function ThemeCanvas({
     },
     [probe],
   );
+  const applyThemePatch = useCallback(
+    (patch: CanvasPatch, signal?: AbortSignal) =>
+      runEditAction((client) => client.applyThemePatch(patch, signal), signal),
+    [runEditAction],
+  );
+  const restoreHistory = useCallback(
+    (input: CanvasHistoryRestore, signal?: AbortSignal) =>
+      runEditAction((client) => {
+        if (!client.restoreHistory) {
+          throw new CanvasRejectedError('History is unavailable in this editor.');
+        }
+        return client.restoreHistory(input, signal);
+      }, signal),
+    [runEditAction],
+  );
+  const restoreCheckpoint = (checkpointId: string | null) => {
+    const render = acceptedRender.current;
+    if (!checkpointId || !render) {
+      return;
+    }
+    void restoreHistory({
+      checkpointId,
+      expectedRevision: render.revision,
+      expectedDataGeneration: render.dataGeneration,
+    }).catch(() => {});
+  };
   patchAction.current = applyThemePatch;
+  historyAction.current = restoreHistory;
   useEffect(() => {
     onApplyThemePatch?.(applyThemePatch);
     return () => {
@@ -1009,6 +1063,42 @@ export function ThemeCanvas({
               </PopoverContent>
             </Popover>
             <PageHeader.ActionGroup>
+              {history && (
+                <>
+                  <PageHeader.Action
+                    disabled={
+                      !history.undoId ||
+                      externalBusy ||
+                      !!draftOwner ||
+                      commitPending ||
+                      refreshing ||
+                      refreshUnavailable ||
+                      !delivery.current?.allComplete
+                    }
+                    label="Undo theme change"
+                    iconOnly
+                    onClick={() => restoreCheckpoint(history.undoId)}
+                  >
+                    <LucideIcon.Undo2 />
+                  </PageHeader.Action>
+                  <PageHeader.Action
+                    disabled={
+                      !history.redoId ||
+                      externalBusy ||
+                      !!draftOwner ||
+                      commitPending ||
+                      refreshing ||
+                      refreshUnavailable ||
+                      !delivery.current?.allComplete
+                    }
+                    label="Redo theme change"
+                    iconOnly
+                    onClick={() => restoreCheckpoint(history.redoId)}
+                  >
+                    <LucideIcon.Redo2 />
+                  </PageHeader.Action>
+                </>
+              )}
               <PageHeader.ActionGroup.MobileMenu>
                 <PageHeader.ActionGroup.MobileMenuTrigger>
                   <PageHeader.Action label="Canvas views" iconOnly>

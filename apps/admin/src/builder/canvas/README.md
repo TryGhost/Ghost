@@ -49,7 +49,13 @@ invalidates relevant Admin queries after server mutations.
 
 The production preview probe uses the actual `ThemeWorkspace` identity and reports
 `fixture: false`. Its registered native tools read and atomically patch the same loaded draft used
-by the UI. Replacement-safe manual drafts, editor-owned history and publication
+by the UI. The editor owns up to 20 in-memory source/settings checkpoints, with
+compact Undo/Redo controls and native checkpoint restoration. New accepted changes
+after undo discard the redo branch; identical changes add no checkpoint. Restores
+check the current revision inside the workspace queue, validate every bound page
+and deliver templates/assets/settings while preserving the active publication
+identity. Failed restores retain accepted source, validity and history position.
+History does not survive reload. Replacement-safe manual drafts and publication
 tools remain subsequent increments. UI and tools share this workspace rather than
 adding an independent model-owned theme draft.
 
@@ -189,8 +195,9 @@ The harness's controlled `onApplyThemePatch` callback exercises delivery to all 
 live documents, including changed assets, without adding controls to the canvas.
 It refuses work while a manual draft or another operation is pending, invalidates
 reads during work and preserves documents after a known rejection or no-op.
-This callback is a development/test seam; native mutation tools, retry/ownership
-recovery and draft preservation across replacement remain controller work.
+This callback is a development/test seam; the active-site editor exposes native
+mutation tools separately. The fixture tools remain read-only. Draft preservation
+across replacement remains controller work.
 
 The harness commits eligible literal text through the real fixture worker, accepting
 source only after Home and Post both render successfully, then updating all eight
@@ -250,7 +257,8 @@ The top-level editor feature-detects `document.modelContext.registerTool` and th
 older native `navigator.modelContext` location. It registers
 `ghost_canvas_probe_get_editor_state`, `ghost_canvas_probe_inspect_frame` and
 `ghost_canvas_probe_capture_frame`, plus `ghost_canvas_read_theme` and
-`ghost_canvas_apply_theme_patch` on the real editor. Registrations belong to the
+`ghost_canvas_apply_theme_patch` and `ghost_canvas_history` on the real editor.
+Registrations belong to the
 owning same-origin page, once per editor, never individual sandboxed previews.
 Camera and presentation changes do not register again; unsupported APIs leave
 manual editing available.
@@ -266,6 +274,13 @@ completes. Invalid Home/Post output, stale source, active manual drafts and work
 cancelled before adoption preserve the accepted draft. Cancellation after
 adoption does not misreport the actual outcome. Route exit retires callbacks.
 There is no evaluation/shell tool, independent agent draft or publication bypass.
+
+`ghost_canvas_history` lists bounded checkpoint metadata or restores an explicit
+checkpoint at the current source revision/data generation through the same action
+as Undo/Redo. It returns no snapshot payload or renderer credentials. Rediscover
+frame readiness after acceptance before inspecting the restored output. Restoration
+after built-in-theme publication retains the custom copy's identity; it changes the
+editor draft and requires publication before customers see it.
 
 Protocols `canvas-fixture-probe-3` (fixtures) and `canvas-editor-probe-1` (the real
 workspace) address explicit immutable fixed-device

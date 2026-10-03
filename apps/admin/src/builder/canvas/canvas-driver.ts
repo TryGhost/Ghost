@@ -16,6 +16,23 @@ export type CanvasEdit = {
   expectedRevision: string;
   expectedDataGeneration?: number;
 };
+export type CanvasHistoryRestore = {
+  checkpointId: string;
+  expectedRevision: string;
+  expectedDataGeneration: number;
+};
+export type CanvasHistory = {
+  available: true;
+  entries: Array<{
+    id: string;
+    revision: string;
+    label: string;
+    createdAt: string;
+    current: boolean;
+  }>;
+  undoId: string | null;
+  redoId: string | null;
+};
 export type CanvasEditorRender = {
   revision: string;
   dataGeneration: number;
@@ -28,6 +45,7 @@ export type CanvasEditorRender = {
   editMarkerAttribute: string;
   editedFile?: { path: string; content: string };
   sourceChanges?: Record<string, string | null>;
+  assets?: NonNullable<PreviewDocument['assets']>;
 };
 export class CanvasRejectedError extends Error {
   readonly code: string;
@@ -42,6 +60,11 @@ export class CanvasRejectedError extends Error {
 export type CanvasDriver = {
   render: (edit?: CanvasEdit) => Promise<CanvasEditorRender>;
   applyThemePatch: (patch: CanvasPatch, signal?: AbortSignal) => Promise<CanvasEditorRender>;
+  readHistory?: () => CanvasHistory;
+  restoreHistory?: (
+    input: CanvasHistoryRestore,
+    signal?: AbortSignal,
+  ) => Promise<CanvasEditorRender>;
   loadAssets: () => Promise<NonNullable<PreviewDocument['assets']>>;
   refresh?: (accepted: CanvasEditorRender) => Promise<CanvasEditorRender>;
   subscribe?: (deliver: (render: CanvasEditorRender) => void) => () => void;

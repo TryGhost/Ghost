@@ -219,12 +219,15 @@ export function ThemeCanvasExperience(props: Inputs) {
             state: () => ({
               dirty: editorObservation.current.workspace.dirty,
               publication: editorObservation.current.publication,
+              history: loaded.readHistory(),
             }),
           },
           // The route owns workspace lifetime. Canvas connections only own subscriptions.
           createDriver: () => ({
             render: (edit) => loaded.render(edit),
             applyThemePatch: (patch, signal) => loaded.applyThemePatch(patch, signal),
+            readHistory: () => loaded.readHistory(),
+            restoreHistory: (input, signal) => loaded.restoreHistory(input, signal),
             loadAssets: () => loaded.loadAssets(),
             subscribe: (deliver) => loaded.subscribe(deliver),
             dispose: () => {},

@@ -294,9 +294,34 @@ export class ThemeWorkspace implements BuilderWorkspace {
     };
   }
 
-  async restore(snapshot: WorkspaceSnapshot): Promise<ValidationResult> {
-    await this.mutationTail;
+  restore(
+    snapshot: WorkspaceSnapshot,
+    signal = new AbortController().signal,
+    options: { expectedRevision?: string } = {},
+  ): Promise<ValidationResult> {
+    const operation = this.mutationTail.then(() =>
+      this.restoreSnapshot(snapshot, signal, options.expectedRevision),
+    );
+    this.mutationTail = operation.then(
+      () => {},
+      () => {},
+    );
+    return operation;
+  }
+
+  private async restoreSnapshot(
+    snapshot: WorkspaceSnapshot,
+    signal: AbortSignal,
+    expectedRevision?: string,
+  ): Promise<ValidationResult> {
+    abortIfNeeded(signal);
     this.syncPreviewOnlyDraft();
+    if (expectedRevision !== undefined && this.requireDraft().revision !== expectedRevision) {
+      return this.invalidSnapshot(
+        'stale_revision',
+        'The theme changed before checkpoint restoration.',
+      );
+    }
     const checkpoint = isThemeCheckpointPayload(snapshot.payload) ? snapshot.payload : null;
     const promotedPayload = checkpoint?.promoted ?? snapshot.payload;
     const activePayload = checkpoint?.candidate ?? promotedPayload;
@@ -325,22 +350,15 @@ export class ThemeWorkspace implements BuilderWorkspace {
     const restorePreview = this.preview.restoreDraft ?? this.preview.renderCandidate;
     if (restorePreview) {
       try {
-        validation = await restorePreview.call(
-          this.preview,
-          cloneThemeDraft(revised),
-          new AbortController().signal,
-        );
+        validation = await restorePreview.call(this.preview, cloneThemeDraft(revised), signal);
       } catch (error) {
+        abortIfNeeded(signal);
         return this.invalidSnapshot(
           'snapshot_preview_failed',
           error instanceof Error ? error.message : String(error),
         );
       }
       if (!validation.valid) {
-        this.setState({
-          ...this.currentState,
-          validation: { ...validation, revision: this.requireActiveDraft().revision },
-        });
         return { ...validation, revision: this.requireActiveDraft().revision };
       }
       if (validation.revision !== snapshot.revision) {
@@ -358,9 +376,16 @@ export class ThemeWorkspace implements BuilderWorkspace {
         );
       }
     }
+    const publishRevision = await themePublishRevision(adopted);
+    abortIfNeeded(signal);
+    if (expectedRevision !== undefined && this.requireDraft().revision !== expectedRevision) {
+      return this.invalidSnapshot(
+        'stale_revision',
+        'The theme changed before checkpoint restoration.',
+      );
+    }
     this.currentDraft = cloneThemeDraft(checkpoint?.candidate ? promoted : adopted);
     this.lastValidCandidate = checkpoint?.candidate ? cloneThemeDraft(adopted) : null;
-    const publishRevision = await themePublishRevision(adopted);
     validation = { ...validation, revision: adopted.revision };
     this.setState({
       revision: adopted.revision,
@@ -1049,7 +1074,6 @@ export class ThemeWorkspace implements BuilderWorkspace {
       diagnostics: [{ code, message, severity: 'error' }],
       revision,
     };
-    this.setState({ ...this.currentState, validation });
     return validation;
   }
 
