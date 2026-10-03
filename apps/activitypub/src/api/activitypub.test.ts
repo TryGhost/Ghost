@@ -2098,6 +2098,75 @@ describe('ActivityPubAPI', function () {
       ]);
     });
 
+    test.each([
+      {},
+      { targetApId: null },
+      { targetApId: null, sent: 'false' },
+      { targetApId: 42, sent: false },
+      { targetApId: 'invalid-url', sent: false },
+      { targetApId: null, sent: true },
+    ])('It rejects malformed migration responses for GET and POST: %j', async (response) => {
+      const fakeFetch = Fetch({
+        'https://auth.api/': { response: JSONResponse({ identities: [{ token: 'fake-token' }] }) },
+        'https://activitypub.api/.ghost/activitypub/v1/migration': {
+          response: JSONResponse(response),
+        },
+      });
+      const api = new ActivityPubAPI(
+        new URL('https://activitypub.api'),
+        new URL('https://auth.api'),
+        'index',
+        fakeFetch,
+      );
+      await expect(api.getAccountMigration()).rejects.toThrow();
+      await expect(api.moveAccount('@new@elsewhere.example')).rejects.toThrow();
+    });
+
+    test('It accepts the empty migration status before a move', async () => {
+      const fakeFetch = Fetch({
+        'https://auth.api/': { response: JSONResponse({ identities: [{ token: 'fake-token' }] }) },
+        'https://activitypub.api/.ghost/activitypub/v1/migration': {
+          response: JSONResponse({ targetApId: null, sent: false }),
+        },
+      });
+      const api = new ActivityPubAPI(
+        new URL('https://activitypub.api'),
+        new URL('https://auth.api'),
+        'index',
+        fakeFetch,
+      );
+      await expect(api.getAccountMigration()).resolves.toEqual({ targetApId: null, sent: false });
+    });
+
+    test('It sends an outbound account migration', async function () {
+      const fakeFetch = Fetch({
+        'https://auth.api/': {
+          response: JSONResponse({ identities: [{ token: 'fake-token' }] }),
+        },
+        'https://activitypub.api/.ghost/activitypub/v1/migration': {
+          async assert(_resource, init) {
+            expect(init?.method).toEqual('POST');
+            expect(init?.body).toEqual('{"targetHandle":"@new@mastodon.social"}');
+          },
+          response: JSONResponse({
+            targetApId: 'https://mastodon.social/users/new',
+            sent: true,
+          }),
+        },
+      });
+
+      const api = new ActivityPubAPI(
+        new URL('https://activitypub.api'),
+        new URL('https://auth.api'),
+        'index',
+        fakeFetch,
+      );
+      expect(await api.moveAccount('@new@mastodon.social')).toEqual({
+        targetApId: 'https://mastodon.social/users/new',
+        sent: true,
+      });
+    });
+
     test('It returns an empty alias response when adding an account alias has no response body', async function () {
       const fakeFetch = Fetch({
         'https://auth.api/': {
