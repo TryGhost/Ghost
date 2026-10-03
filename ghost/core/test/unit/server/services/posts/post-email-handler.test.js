@@ -21,7 +21,12 @@ describe('PostEmailHandler', function () {
     };
 
     mockEmailService = {
-      checkCanSendEmail: sinon.stub().resolves({ emailCount: 42 }),
+      prepareEmail: sinon.stub().callsFake(async (newsletter, emailRecipientFilter) => ({
+        newsletter,
+        emailRecipientFilter,
+        emailCount: 42,
+        csdEmailCount: undefined,
+      })),
       createEmail: sinon.stub(),
       retryEmail: sinon.stub(),
     };
@@ -123,14 +128,14 @@ describe('PostEmailHandler', function () {
       await postEmailHandler.validateBeforeSave(createFrame('draft'));
 
       sinon.assert.notCalled(mockModels.Post.findOne);
-      sinon.assert.notCalled(mockEmailService.checkCanSendEmail);
+      sinon.assert.notCalled(mockEmailService.prepareEmail);
     });
 
     it('returns early when new status is scheduled', async function () {
       await postEmailHandler.validateBeforeSave(createFrame('scheduled'));
 
       sinon.assert.notCalled(mockModels.Post.findOne);
-      sinon.assert.notCalled(mockEmailService.checkCanSendEmail);
+      sinon.assert.notCalled(mockEmailService.prepareEmail);
     });
 
     it('validates when publishing post with newsletter option', async function () {
@@ -144,13 +149,17 @@ describe('PostEmailHandler', function () {
       sinon.assert.calledOnceWithExactly(
         mockModels.Post.findOne,
         { id: 'post-123', status: 'all' },
-        { columns: ['id', 'status', 'newsletter_id', 'email_recipient_filter'] },
+        {
+          columns: ['id', 'status', 'newsletter_id', 'email_recipient_filter'],
+          transacting: undefined,
+        },
       );
-      sinon.assert.calledOnceWithExactly(mockEmailService.checkCanSendEmail, newsletter, 'all');
+      sinon.assert.calledOnceWithExactly(mockEmailService.prepareEmail, newsletter, 'all');
       assert.deepEqual(result, {
         newsletter,
         emailRecipientFilter: 'all',
         emailCount: 42,
+        csdEmailCount: undefined,
       });
     });
 
@@ -160,7 +169,7 @@ describe('PostEmailHandler', function () {
 
       await postEmailHandler.validateBeforeSave(createFrame('published'));
 
-      sinon.assert.calledOnce(mockEmailService.checkCanSendEmail);
+      sinon.assert.calledOnce(mockEmailService.prepareEmail);
     });
 
     it('skips validation when post is already published', async function () {
@@ -168,7 +177,7 @@ describe('PostEmailHandler', function () {
 
       await postEmailHandler.validateBeforeSave(createFrame('published'));
 
-      sinon.assert.notCalled(mockEmailService.checkCanSendEmail);
+      sinon.assert.notCalled(mockEmailService.prepareEmail);
     });
 
     it('skips validation when no newsletter specified', async function () {
@@ -176,7 +185,7 @@ describe('PostEmailHandler', function () {
 
       await postEmailHandler.validateBeforeSave(createFrame('published'));
 
-      sinon.assert.notCalled(mockEmailService.checkCanSendEmail);
+      sinon.assert.notCalled(mockEmailService.prepareEmail);
     });
 
     it('validates when status is sent', async function () {
@@ -185,7 +194,7 @@ describe('PostEmailHandler', function () {
 
       await postEmailHandler.validateBeforeSave(createFrame('sent'));
 
-      sinon.assert.calledOnce(mockEmailService.checkCanSendEmail);
+      sinon.assert.calledOnce(mockEmailService.prepareEmail);
     });
 
     it('validates email recipient filter from frame options', async function () {
@@ -201,11 +210,7 @@ describe('PostEmailHandler', function () {
         filter: 'status:paid',
         limit: 1,
       });
-      sinon.assert.calledOnceWithExactly(
-        mockEmailService.checkCanSendEmail,
-        newsletter,
-        'status:paid',
-      );
+      sinon.assert.calledOnceWithExactly(mockEmailService.prepareEmail, newsletter, 'status:paid');
     });
 
     it('falls back to existing post email_recipient_filter', async function () {
@@ -228,7 +233,7 @@ describe('PostEmailHandler', function () {
       await postEmailHandler.validateBeforeSave(createFrame('published'));
 
       sinon.assert.notCalled(mockModels.Member.findPage);
-      sinon.assert.calledOnceWithExactly(mockEmailService.checkCanSendEmail, newsletter, 'all');
+      sinon.assert.calledOnceWithExactly(mockEmailService.prepareEmail, newsletter, 'all');
     });
 
     it('propagates filter validation errors', async function () {
@@ -243,10 +248,10 @@ describe('PostEmailHandler', function () {
       );
     });
 
-    it('propagates checkCanSendEmail errors', async function () {
+    it('propagates prepareEmail errors', async function () {
       setupExistingPost({ newsletterId: 'newsletter-123' });
       setupNewsletter();
-      mockEmailService.checkCanSendEmail.rejects(new Error('Email limit exceeded'));
+      mockEmailService.prepareEmail.rejects(new Error('Email limit exceeded'));
 
       await assert.rejects(
         postEmailHandler.validateBeforeSave(createFrame('published')),
@@ -307,7 +312,11 @@ describe('PostEmailHandler', function () {
       const result = await postEmailHandler.getNewsletter(createFrame('weekly-digest'), null);
 
       assert.equal(result, newsletter);
-      sinon.assert.calledOnceWithExactly(mockModels.Newsletter.findOne, { slug: 'weekly-digest' });
+      sinon.assert.calledOnceWithExactly(
+        mockModels.Newsletter.findOne,
+        { slug: 'weekly-digest' },
+        { transacting: undefined },
+      );
     });
 
     it('returns newsletter by id from existing post when no slug in options', async function () {
@@ -320,7 +329,11 @@ describe('PostEmailHandler', function () {
       );
 
       assert.equal(result, newsletter);
-      sinon.assert.calledOnceWithExactly(mockModels.Newsletter.findOne, { id: 'newsletter-456' });
+      sinon.assert.calledOnceWithExactly(
+        mockModels.Newsletter.findOne,
+        { id: 'newsletter-456' },
+        { transacting: undefined },
+      );
     });
 
     it('returns null when no newsletter specified and existing post has no newsletter_id', async function () {
@@ -347,7 +360,11 @@ describe('PostEmailHandler', function () {
       );
 
       assert.equal(result, newsletter);
-      sinon.assert.calledOnceWithExactly(mockModels.Newsletter.findOne, { slug: 'new-newsletter' });
+      sinon.assert.calledOnceWithExactly(
+        mockModels.Newsletter.findOne,
+        { slug: 'new-newsletter' },
+        { transacting: undefined },
+      );
     });
   });
 
@@ -412,9 +429,12 @@ describe('PostEmailHandler', function () {
       const preflight = { emailCount: 42 };
       mockEmailService.createEmail.resolves(createdEmail);
 
-      await postEmailHandler.createOrRetryEmail(model, { preflight });
+      await postEmailHandler.createOrRetryEmail(model, { preflight, transacting: undefined });
 
-      sinon.assert.calledOnceWithExactly(mockEmailService.createEmail, model, { preflight });
+      sinon.assert.calledOnceWithExactly(mockEmailService.createEmail, model, {
+        preflight,
+        transacting: undefined,
+      });
       sinon.assert.notCalled(mockEmailService.retryEmail);
       sinon.assert.calledOnceWithExactly(model.set, 'email', createdEmail);
     });
@@ -428,7 +448,9 @@ describe('PostEmailHandler', function () {
       await postEmailHandler.createOrRetryEmail(model);
 
       sinon.assert.notCalled(mockEmailService.createEmail);
-      sinon.assert.calledOnceWithExactly(mockEmailService.retryEmail, failedEmail);
+      sinon.assert.calledOnceWithExactly(mockEmailService.retryEmail, failedEmail, {
+        transacting: undefined,
+      });
       sinon.assert.calledOnceWithExactly(model.set, 'email', retriedEmail);
     });
 
@@ -452,6 +474,7 @@ describe('PostEmailHandler', function () {
 
       sinon.assert.calledOnceWithExactly(mockEmailService.createEmail, model, {
         preflight: undefined,
+        transacting: undefined,
       });
       sinon.assert.calledOnceWithExactly(model.set, 'email', createdEmail);
     });
@@ -464,6 +487,7 @@ describe('PostEmailHandler', function () {
 
       sinon.assert.calledOnceWithExactly(mockEmailService.createEmail, model, {
         preflight: undefined,
+        transacting: undefined,
       });
       sinon.assert.notCalled(model.set);
     });

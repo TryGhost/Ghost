@@ -75,9 +75,18 @@ class PostsService {
   async editPost(frame, options) {
     const preflight = await this.postEmailHandler.validateBeforeSave(frame);
 
-    const model = await this.models.Post.edit(frame.data.posts[0], frame.options);
+    const save = async (transacting) => {
+      const model = await this.models.Post.edit(frame.data.posts[0], {
+        ...frame.options,
+        transacting,
+      });
+      await this.postEmailHandler.createOrRetryEmail(model, { preflight, transacting });
+      return model;
+    };
 
-    await this.postEmailHandler.createOrRetryEmail(model, { preflight });
+    const model = frame.options.transacting
+      ? await save(frame.options.transacting)
+      : await this.models.Post.transaction(save);
 
     const dto = model.toJSON(frame.options);
 

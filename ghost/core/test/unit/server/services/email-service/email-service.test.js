@@ -1,3 +1,4 @@
+const { EventEmitter } = require('node:events');
 const EmailService = require('../../../../../core/server/services/email-service/email-service');
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
@@ -336,30 +337,60 @@ describe('Email Service', function () {
       assert.equal(email.get('email_count'), 42);
     });
 
-    it('Recounts recipients when preflight data does not match the saved post', async function () {
-      const newsletter = createModel({
-        id: 'newsletter-123',
-        status: 'active',
-        feedback_enabled: true,
-      });
-      const post = createModel({
-        id: 'post-123',
-        newsletter,
-        email_recipient_filter: 'status:paid',
-        mobiledoc: 'Mobiledoc',
-      });
-
-      const email = await service.createEmail(post, {
-        preflight: {
-          newsletter,
-          emailRecipientFilter: 'status:free',
-          emailCount: 42,
-        },
-      });
-
-      sinon.assert.calledOnceWithExactly(getMembersCount, newsletter, 'status:paid');
-      assert.equal(email.get('email_count'), memberCount);
+    it('Rejects a changed audience without recounting or scheduling', async function () {
+      const newsletter = createModel({ status: 'active' });
+      const post = createModel({ newsletter, email_recipient_filter: 'status:paid' });
+      await assert.rejects(
+        service.createEmail(post, {
+          preflight: { newsletter, emailRecipientFilter: 'status:free', emailCount: 42 },
+        }),
+        { name: 'UpdateCollisionError' },
+      );
+      sinon.assert.notCalled(getMembersCount);
+      sinon.assert.notCalled(scheduleEmail);
     });
+
+    it('Reuses prepared limits and domain-warming count', async function () {
+      const newsletter = createModel({ status: 'active' });
+      const post = createModel({ newsletter, email_recipient_filter: 'all' });
+      domainWarmingService.isEnabled.returns(true);
+      domainWarmingService.getWarmupLimit.resolves(0);
+      const preflight = await service.prepareEmail(newsletter, 'all');
+      const checkLimits = sinon.spy(service, 'checkLimits');
+      const email = await service.createEmail(post, { preflight });
+      assert.equal(email.get('csd_email_count'), 0);
+      sinon.assert.calledOnce(getMembersCount);
+      sinon.assert.calledOnce(domainWarmingService.getWarmupLimit);
+      sinon.assert.notCalled(checkLimits);
+    });
+
+    it('Requires preparation when creating an email inside a transaction', async function () {
+      const newsletter = createModel({ status: 'active' });
+      const post = createModel({ newsletter, email_recipient_filter: 'all' });
+      await assert.rejects(service.createEmail(post, { transacting: new EventEmitter() }), {
+        name: 'UpdateCollisionError',
+      });
+      sinon.assert.notCalled(getMembersCount);
+      sinon.assert.notCalled(scheduleEmail);
+    });
+
+    for (const committed of [true, false, undefined, 'true', 1, {}]) {
+      it(`Schedules only after a successful commit (committed=${committed})`, async function () {
+        const newsletter = createModel({ status: 'active' });
+        const post = createModel({ newsletter, email_recipient_filter: 'all' });
+        const preflight = await service.prepareEmail(newsletter, 'all');
+        const transacting = new EventEmitter();
+        await service.createEmail(post, { preflight, transacting });
+        sinon.assert.notCalled(scheduleEmail);
+        sinon.assert.notCalled(scheduleRecurringNewslettersJob);
+        transacting.emit('committed', committed);
+        await new Promise((resolve) => {
+          setImmediate(resolve);
+        });
+        assert.equal(scheduleEmail.callCount, committed === true ? 1 : 0);
+        assert.equal(scheduleRecurringNewslettersJob.callCount, committed === true ? 1 : 0);
+      });
+    }
 
     it('Revalidates newsletter status without recounting when preflight data matches', async function () {
       const newsletter = createModel({
@@ -560,6 +591,55 @@ describe('Email Service', function () {
 
       assert.equal(email.get('status'), 'failed');
       assert.equal(email.get('error'), 'Original send error');
+    });
+
+    for (const failure of ['throws', 'rejects']) {
+      for (const transactional of [false, true]) {
+        it(`Restores failed status when scheduling ${failure} (transactional=${transactional})`, async function () {
+          const error = new Error('Scheduling failed');
+          scheduleEmail[failure](error);
+          const logError = sinon.stub(logging, 'error');
+          const email = createModel({
+            status: 'failed',
+            post: createModel({ status: 'published' }),
+          });
+          const transacting = transactional ? new EventEmitter() : undefined;
+
+          if (transacting) {
+            await service.retryEmail(email, { transacting });
+            assert.equal(email.get('status'), 'pending');
+            sinon.assert.notCalled(scheduleEmail);
+            transacting.emit('committed', true);
+            await new Promise((resolve) => {
+              setImmediate(resolve);
+            });
+            sinon.assert.calledWith(logError, error);
+          } else {
+            await assert.rejects(service.retryEmail(email), error);
+          }
+
+          assert.equal(email.get('status'), 'failed');
+          assert.equal(email.get('error'), error.message);
+          scheduleEmail.resetBehavior();
+          await service.retryEmail(email);
+          assert.equal(email.get('status'), 'pending');
+          sinon.assert.calledTwice(scheduleEmail);
+        });
+      }
+    }
+
+    it('Does not schedule a retry after rollback', async function () {
+      const email = createModel({
+        status: 'failed',
+        post: createModel({ status: 'published' }),
+      });
+      const transacting = new EventEmitter();
+      await service.retryEmail(email, { transacting });
+      transacting.emit('committed', false);
+      await new Promise((resolve) => {
+        setImmediate(resolve);
+      });
+      sinon.assert.notCalled(scheduleEmail);
     });
 
     it('Does not schedule email again if draft', async function () {
