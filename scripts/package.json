@@ -16,7 +16,7 @@
     "@octokit/plugin-throttling": "catalog:",
     "@pnpm/releasing.versioning": "catalog:",
     "@pnpm/workspace.workspace-manifest-reader": "catalog:",
-    "camelcase-keys": "10.0.2",
+    "camelcase-keys": "10.0.3",
     "execa": "catalog:",
     "js-yaml": "catalog:",
     "picomatch": "4.0.5",
