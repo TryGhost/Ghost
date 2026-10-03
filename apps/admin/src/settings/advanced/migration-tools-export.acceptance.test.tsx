@@ -42,7 +42,7 @@ async function renderWithExportHost() {
 describe('Migration tools export', () => {
   it('keeps the individual export buttons without the selfServeArchives flag', async () => {
     fakeSettingsScreens();
-    await renderAdminApp('/settings/advanced');
+    await renderAdminApp('/settings/advanced', { labs: { selfServeArchives: false } });
 
     const section = await openExportTab();
     await expect.element(section.getByRole('button', { name: 'Content & settings' })).toBeVisible();

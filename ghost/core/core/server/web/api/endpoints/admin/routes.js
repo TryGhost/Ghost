@@ -396,18 +396,8 @@ module.exports = function apiRoutes() {
   router.post('/db/media/inline', mw.authAdminApi, http(api.db.inlineMedia));
 
   // ## Exports
-  router.get(
-    '/exports/download',
-    mw.authAdminApi,
-    labs.enabledMiddleware('selfServeArchives'),
-    http(api.exports.download),
-  );
-  router.post(
-    '/exports',
-    mw.authAdminApi,
-    labs.enabledMiddleware('selfServeArchives'),
-    http(api.exports.add),
-  );
+  router.get('/exports/download', mw.authAdminApi, http(api.exports.download));
+  router.post('/exports', mw.authAdminApi, http(api.exports.add));
 
   // ## Slack
   router.post('/slack/test', mw.authAdminApi, http(api.slack.sendTest));
