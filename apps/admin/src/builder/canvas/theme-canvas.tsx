@@ -7,6 +7,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  Textarea,
 } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 
@@ -18,6 +19,9 @@ import { IframePreviewDocumentSurface } from '@/builder/workspaces/theme/preview
 import { CanvasProbe, registerCanvasProbe } from './canvas-probe';
 import { CanvasRejectedError } from './canvas-driver';
 import { CanvasEditorTools } from './canvas-editor-tools';
+import { resolveCanvasTextDraft } from './canvas-text-draft';
+import { parseEditMarker } from '@tryghost/theme-renderer/markers';
+import type { CanvasTextDraft } from './canvas-text-draft';
 import type {
   CanvasSource,
   CanvasDriver,
@@ -28,11 +32,12 @@ import type {
 } from './canvas-driver';
 import type { ReactNode } from 'react';
 
-import type { CanvasFrame, CanvasFrameInput, CanvasView } from '@/builder/canvas/canvas-board';
+import type { CanvasFrame, CanvasView } from '@/builder/canvas/canvas-board';
 import type {
   PreviewDocument,
   PreviewInlineEditRequest,
   PreviewInlineEditResult,
+  PreviewCanvasInput,
 } from '@/builder/workspaces/theme/preview/preview-document';
 import type { BuilderSelectionContext } from '@/builder/core/workspace';
 
@@ -111,7 +116,7 @@ function LivePreview({
   kind: OverviewMode;
   visible: boolean;
   draftOwner: string | null;
-  onInput: (input: CanvasFrameInput) => void;
+  onInput: (input: PreviewCanvasInput) => void;
   onExpanded: (state: ExpandedState) => void;
   probe: CanvasProbe;
   onDelivery: (id: string, document: PreviewDocument, status: 'ready' | 'failed') => void;
@@ -455,11 +460,28 @@ export function ThemeCanvas({
   const iframeInteractionTime = useRef<number | null>(null);
   const [commitPending, setCommitPending] = useState(false);
   const [history, setHistory] = useState<CanvasHistory | null>(null);
+  const textDraft = useRef<CanvasTextDraft | null>(null);
+  const [retainedDraft, setRetainedDraft] = useState<CanvasTextDraft | null>(null);
+  const [recoveryOpen, setRecoveryOpen] = useState(false);
+  const undeliveredAccepted = useRef<CanvasEditorRender | null>(null);
+  const retainDraft = (draft: CanvasTextDraft | null) => {
+    textDraft.current = draft;
+    setRetainedDraft(draft);
+    owner.current = draft?.frameId ?? null;
+    setDraftOwner(draft?.frameId ?? null);
+    if (!draft) {
+      setRecoveryOpen(false);
+    }
+  };
   const pendingCommit = useRef(false);
   useEffect(() => {
     activityObserver.current?.({
       manualDraft: !!draftOwner,
-      busy: commitPending || refreshing || !delivery.current?.allComplete,
+      busy:
+        commitPending ||
+        refreshing ||
+        !!undeliveredAccepted.current ||
+        !delivery.current?.allComplete,
       mutationPending: commitPending,
     });
   }, [draftOwner, commitPending, refreshing, deliveryDiagnostics]);
@@ -531,8 +553,24 @@ export function ThemeCanvas({
               refreshUncertain.current ||
               !session.current ||
               !acceptedRender.current ||
+              !!undeliveredAccepted.current ||
               !delivery.current?.allComplete,
-            manualDraft: owner.current ? { frameId: owner.current } : null,
+            manualDraft: textDraft.current
+              ? {
+                  frameId: textDraft.current.frameId,
+                  baseRevision: textDraft.current.baseRevision,
+                  marker: textDraft.current.marker,
+                  text: textDraft.current.captureFailed ? undefined : textDraft.current.newText,
+                  textObservation: textDraft.current.captureFailed
+                    ? 'unavailable-copy-from-preview'
+                    : 'retained',
+                  detached: textDraft.current.detached,
+                  conflict: textDraft.current.conflict,
+                  captureFailed: !!textDraft.current.captureFailed,
+                }
+              : owner.current
+                ? { frameId: owner.current }
+                : null,
           }),
           applyPatch: (patch, signal) => {
             if (!patchAction.current) {
@@ -636,6 +674,15 @@ export function ThemeCanvas({
           }
           if (rendered.editedFile) {
             sourceFiles.current[rendered.editedFile.path] = rendered.editedFile.content;
+          }
+          if (textDraft.current) {
+            const draft = textDraft.current;
+            const compatible = resolveCanvasTextDraft(
+              draft,
+              sourceFiles.current,
+              rendered.inlineTextTargets,
+            );
+            retainDraft({ ...draft, detached: true, conflict: compatible === null });
           }
           setRevision(rendered.revision);
           acceptedRender.current = rendered;
@@ -858,7 +905,8 @@ export function ThemeCanvas({
         pendingCommit.current ||
         pendingRefresh.current ||
         refreshUncertain.current ||
-        owner.current ||
+        undeliveredAccepted.current ||
+        (owner.current && !textDraft.current) ||
         !delivery.current?.allComplete
       ) {
         throw new CanvasRejectedError(
@@ -872,6 +920,26 @@ export function ThemeCanvas({
       const restoreReads = probe?.invalidateForRefresh();
       try {
         const result = await apply(current.client);
+        const draft = textDraft.current;
+        if (!result.unchanged && draft && !draft.detached) {
+          try {
+            const surface = surfaces.current.get(`${draft.frameId}:${draft.kind}`)?.surface;
+            if (!surface) {
+              throw new Error('The text preview is unavailable.');
+            }
+            const captured = await surface.freezeInlineTextDraft(new AbortController().signal);
+            retainDraft(captured ? { ...draft, ...captured } : null);
+          } catch {
+            // Source is already accepted. Keep the old live document/text until
+            // the person copies or cancels it; never claim the write was rejected.
+            undeliveredAccepted.current = result;
+            retainDraft({ ...draft, captureFailed: true });
+            setError(
+              'The theme changed. Copy your text directly from the retained preview, then cancel the draft to show the accepted theme.',
+            );
+            return result;
+          }
+        }
         current.deliver(result);
         if (result.unchanged) {
           restoreReads?.();
@@ -927,6 +995,65 @@ export function ThemeCanvas({
   };
   patchAction.current = applyThemePatch;
   historyAction.current = restoreHistory;
+  const resumeTextDraft = async () => {
+    const draft = textDraft.current;
+    const render = acceptedRender.current;
+    if (
+      !draft ||
+      !render ||
+      undeliveredAccepted.current ||
+      pendingCommit.current ||
+      !delivery.current?.allComplete
+    ) {
+      return;
+    }
+    const marker = resolveCanvasTextDraft(draft, sourceFiles.current, render.inlineTextTargets);
+    const parsed = marker && parseEditMarker(marker);
+    const target = surfaces.current.get(`${draft.frameId}:${draft.kind}`);
+    if (!marker || !parsed || !target) {
+      retainDraft({ ...draft, detached: true, conflict: true });
+      return;
+    }
+    const resumed = {
+      ...draft,
+      marker,
+      baseRevision: render.revision,
+      sourceFile: sourceFiles.current[parsed.file],
+      detached: false,
+      conflict: false,
+    };
+    try {
+      target.reveal();
+      retainDraft(resumed);
+      await target.surface.resumeInlineTextDraft(resumed, new AbortController().signal);
+    } catch (failure) {
+      retainDraft({ ...draft, detached: true, conflict: true });
+      setError(failure instanceof Error ? failure.message : String(failure));
+    }
+  };
+  const cancelTextDraft = async () => {
+    const draft = textDraft.current;
+    try {
+      const frameId = draft?.frameId ?? owner.current;
+      const kind =
+        draft?.kind ??
+        (mode === 'device' || (frameId && fallbacks.has(frameId)) ? 'device' : 'expanded');
+      if (frameId && !draft?.detached && !undeliveredAccepted.current) {
+        await surfaces.current
+          .get(`${frameId}:${kind}`)
+          ?.surface.cancelInlineTextEdit(new AbortController().signal);
+      }
+      retainDraft(null);
+      setError(null);
+      const pending = undeliveredAccepted.current;
+      undeliveredAccepted.current = null;
+      if (pending) {
+        session.current?.deliver(pending);
+      }
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : String(failure));
+    }
+  };
   useEffect(() => {
     onApplyThemePatch?.(applyThemePatch);
     return () => {
@@ -973,6 +1100,7 @@ export function ThemeCanvas({
       });
       // Once submitted, publish the worker's actual accepted outcome even if
       // the original iframe was restored while the render was running.
+      retainDraft(null);
       current.deliver(result);
       return { ok: true };
     } catch (failure) {
@@ -1195,36 +1323,81 @@ export function ThemeCanvas({
         {draftOwner && (
           <Inline gap="sm" wrap>
             <Text size="sm">
-              {commitPending ? 'Applying text edit…' : 'A text draft is retained.'}
+              {commitPending
+                ? 'Applying theme change…'
+                : retainedDraft?.conflict
+                  ? 'The theme text changed. Your draft is preserved.'
+                  : 'A text draft is retained.'}
             </Text>
             <Button
+              disabled={
+                commitPending ||
+                !!retainedDraft?.conflict ||
+                !!undeliveredAccepted.current ||
+                !delivery.current?.allComplete
+              }
               size="sm"
               variant="outline"
-              onClick={() =>
-                surfaces.current
-                  .get(
-                    `${draftOwner}:${mode === 'device' || fallbacks.has(draftOwner) ? 'device' : 'expanded'}`,
-                  )
-                  ?.reveal()
-              }
+              onClick={() => {
+                void resumeTextDraft();
+              }}
             >
               Resume text draft
             </Button>
+            {retainedDraft && (
+              <Popover open={recoveryOpen} onOpenChange={setRecoveryOpen}>
+                <PopoverTrigger asChild>
+                  <Button size="sm" variant="outline">
+                    Recover text draft
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <Stack gap="sm">
+                    <Text size="sm">Your text is separate from the accepted theme.</Text>
+                    {retainedDraft.captureFailed ? (
+                      <Text size="sm">
+                        Copy the complete text directly from the retained preview, then cancel the
+                        draft to show the accepted theme.
+                      </Text>
+                    ) : (
+                      <>
+                        <Textarea
+                          aria-label="Preserved text draft"
+                          value={retainedDraft.newText}
+                          readOnly
+                        />
+                        <Text size="xs">Original text: {retainedDraft.baseText}</Text>
+                      </>
+                    )}
+                    {retainedDraft.detached && (
+                      <Text size="xs">
+                        The canvas shows the current accepted theme; this draft is not included.
+                      </Text>
+                    )}
+                    {!retainedDraft.captureFailed && (
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          void navigator.clipboard
+                            .writeText(retainedDraft.newText)
+                            .catch(() =>
+                              setError('Select the preserved text and copy it with your keyboard.'),
+                            );
+                        }}
+                      >
+                        Copy draft text
+                      </Button>
+                    )}
+                  </Stack>
+                </PopoverContent>
+              </Popover>
+            )}
             <Button
               disabled={commitPending}
               size="sm"
               variant="ghost"
               onClick={() => {
-                const current = surfaces.current.get(
-                  `${draftOwner}:${mode === 'device' || fallbacks.has(draftOwner) ? 'device' : 'expanded'}`,
-                );
-                if (current) {
-                  void current.surface
-                    .cancelInlineTextEdit(new AbortController().signal)
-                    .catch((failure: unknown) =>
-                      setError(failure instanceof Error ? failure.message : String(failure)),
-                    );
-                }
+                void cancelTextDraft();
               }}
             >
               Cancel text draft
@@ -1255,7 +1428,7 @@ export function ThemeCanvas({
                   <LivePreview
                     key={kind}
                     document={documents[frame.id]}
-                    draftOwner={draftOwner}
+                    draftOwner={retainedDraft?.detached ? null : draftOwner}
                     frame={frame}
                     kind={kind}
                     probe={probe}
@@ -1269,6 +1442,8 @@ export function ThemeCanvas({
                         pendingRefresh.current ||
                         pendingCommit.current ||
                         refreshUncertain.current ||
+                        !!undeliveredAccepted.current ||
+                        textDraft.current?.detached ||
                         !delivery.current?.allComplete ||
                         !delivery.current?.ready.has(`${frame.id}:${kind}`) ||
                         interactionTime < latestInteractionIntent.current ||
@@ -1300,12 +1475,31 @@ export function ThemeCanvas({
                         return;
                       }
                       if (input.kind === 'inline-edit') {
-                        if (input.box && (!owner.current || owner.current === frame.id)) {
+                        if (input.draft && (!owner.current || owner.current === frame.id)) {
+                          const original = textDraft.current;
+                          const marker = parseEditMarker(input.draft.marker);
+                          retainDraft(
+                            original
+                              ? { ...original, newText: input.draft.newText }
+                              : {
+                                  ...input.draft,
+                                  frameId: frame.id,
+                                  kind,
+                                  baseRevision: documents[frame.id].revision,
+                                  sourceFile: marker ? sourceFiles.current[marker.file] : '',
+                                  detached: false,
+                                  conflict: false,
+                                },
+                          );
+                        } else if (input.box && (!owner.current || owner.current === frame.id)) {
                           owner.current = frame.id;
                           setDraftOwner(frame.id);
                         } else if (!input.box && owner.current === frame.id) {
-                          owner.current = null;
-                          setDraftOwner(null);
+                          if ((input.retired || textDraft.current?.detached) && textDraft.current) {
+                            retainDraft({ ...textDraft.current, detached: true });
+                          } else {
+                            retainDraft(null);
+                          }
                         }
                       }
                       onInput(input);

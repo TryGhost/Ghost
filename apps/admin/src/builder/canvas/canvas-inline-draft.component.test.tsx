@@ -301,15 +301,19 @@ it('clears canvas draft activity when blocked navigation restores the committed 
   });
   await frame.getByRole('heading', { name: 'Initial heading' }).dblClick();
   await frame.getByRole('textbox').fill('A draft before blocked navigation');
-  await expect.poll(() => inputs.mock.calls.length).toBe(1);
-  expect(inputs.mock.calls[0][0]).toMatchObject({ kind: 'inline-edit' });
-  expect(inputs.mock.calls[0][0]).not.toEqual({ kind: 'inline-edit', box: null });
+  await expect
+    .poll(() => inputs.mock.calls.at(-1)?.[0])
+    .toMatchObject({
+      kind: 'inline-edit',
+      draft: { newText: 'A draft before blocked navigation' },
+    });
+  expect(inputs.mock.calls.at(-1)?.[0]).not.toMatchObject({ kind: 'inline-edit', box: null });
   element.contentWindow!.postMessage('test-blocked-navigation', '*');
   await expect.poll(() => diagnostic.mock.calls.length).toBeGreaterThan(0);
   await expectText(surface, 'h1', 'Initial heading');
   await expect
     .poll(() => inputs.mock.calls.at(-1)?.[0])
-    .toEqual({ kind: 'inline-edit', box: null });
+    .toEqual({ kind: 'inline-edit', box: null, retired: true });
   expect(edit).not.toHaveBeenCalled();
 });
 

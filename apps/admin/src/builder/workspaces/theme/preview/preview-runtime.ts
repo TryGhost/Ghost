@@ -1054,6 +1054,7 @@ export function previewRuntimeBootstrap(): void {
     original: Text;
     editor: HTMLSpanElement;
     pending: boolean;
+    frozen: boolean;
   };
   let activeInlineEdit: ActiveInlineEdit | null = null;
   let pendingInlineTextAdmission: {
@@ -1068,6 +1069,15 @@ export function previewRuntimeBootstrap(): void {
   let nextAdmissionId = 0;
   let localEditGeneration = 0;
   let localDocumentChanged = false;
+  const inlineTextDraft = () =>
+    activeInlineEdit
+      ? {
+          marker: activeInlineEdit.marker,
+          tagName: activeInlineEdit.tagName,
+          baseText: activeInlineEdit.original.data,
+          newText: activeInlineEdit.editor.textContent ?? '',
+        }
+      : null;
   const reportInlineEdit = () => {
     if (!canvasNavigation) {
       return;
@@ -1079,6 +1089,7 @@ export function previewRuntimeBootstrap(): void {
       type: 'canvas-input',
       input: {
         kind: 'inline-edit',
+        ...(activeInlineEdit ? { draft: inlineTextDraft() } : {}),
         box: bounds
           ? {
               x,
@@ -1418,7 +1429,7 @@ export function previewRuntimeBootstrap(): void {
   };
   const commitInlineEdit = () => {
     const active = activeInlineEdit;
-    if (!active || active.pending) {
+    if (!active || active.pending || active.frozen) {
       return;
     }
     const newText = active.editor.textContent ?? '';
@@ -1521,9 +1532,11 @@ export function previewRuntimeBootstrap(): void {
       original: text,
       editor,
       pending: false,
+      frozen: false,
     };
     localEditGeneration += 1;
     reportInlineEdit();
+    editor.addEventListener('input', reportInlineEdit);
     editor.addEventListener(
       'keydown',
       (event) => {
@@ -1837,7 +1850,7 @@ export function previewRuntimeBootstrap(): void {
           : 'The inline edit could not be applied.';
       if (canvasNavigation) {
         active.pending = false;
-        active.editor.contentEditable = 'plaintext-only';
+        active.editor.contentEditable = active.frozen ? 'false' : 'plaintext-only';
       } else {
         active.editor.replaceWith(active.original);
         activeInlineEdit = null;
@@ -2163,6 +2176,8 @@ export function previewRuntimeBootstrap(): void {
         'set-inline-edit-mode',
         'cancel-inline-text-edit',
         'cancel-inline-text-admission',
+        'freeze-inline-text-draft',
+        'resume-inline-text-draft',
         'set-selection-mode',
         'set-interaction-mode',
       ].includes(String(message.command))
@@ -2198,6 +2213,70 @@ export function previewRuntimeBootstrap(): void {
         result = inspectElement(message.payload as LiveTarget);
       } else if (message.command === 'screenshot') {
         result = screenshotSnapshot((message.payload as { stable?: unknown })?.stable === true);
+      } else if (message.command === 'freeze-inline-text-draft') {
+        if (activeInlineEdit) {
+          activeInlineEdit.frozen = true;
+          activeInlineEdit.editor.contentEditable = 'false';
+        }
+        result = inlineTextDraft();
+      } else if (message.command === 'resume-inline-text-draft') {
+        const draft = message.payload as {
+          marker?: unknown;
+          tagName?: unknown;
+          baseText?: unknown;
+          newText?: unknown;
+        };
+        if (
+          !canvasNavigation ||
+          !canvasCommitted ||
+          !inlineEditing ||
+          typeof draft?.marker !== 'string' ||
+          draft.marker.length > 512 ||
+          typeof draft.tagName !== 'string' ||
+          typeof draft.baseText !== 'string' ||
+          typeof draft.newText !== 'string' ||
+          draft.newText.length > 65536 ||
+          draft.baseText.length > 65536
+        ) {
+          throw fail('draft_unavailable', 'The retained text cannot resume in this preview.');
+        }
+        const restoring = !activeInlineEdit;
+        if (restoring) {
+          const matches = Array.from(document.querySelectorAll(`[${editMarkerAttribute}]`)).filter(
+            (element) => element.getAttribute(editMarkerAttribute) === draft.marker,
+          );
+          const element = matches.length === 1 ? matches[0] : null;
+          if (
+            !element ||
+            element.tagName.toLowerCase() !== draft.tagName ||
+            directEditableText(element)?.data !== draft.baseText ||
+            !element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })
+          ) {
+            throw fail(
+              'draft_conflict',
+              'The retained text target is no longer uniquely compatible.',
+            );
+          }
+          beginInlineEdit(element, true);
+        }
+        if (
+          !activeInlineEdit ||
+          activeInlineEdit.marker !== draft.marker ||
+          activeInlineEdit.tagName !== draft.tagName ||
+          activeInlineEdit.original.data !== draft.baseText ||
+          activeInlineEdit.pending
+        ) {
+          throw fail('draft_conflict', 'The retained text target changed.');
+        }
+        activeInlineEdit.frozen = false;
+        activeInlineEdit.editor.contentEditable = 'plaintext-only';
+        // An attached editor owns the latest text; parent input receipts may lag.
+        if (restoring) {
+          activeInlineEdit.editor.textContent = draft.newText;
+        }
+        activeInlineEdit.editor.focus();
+        reportInlineEdit();
+        result = true;
       } else if (message.command === 'cancel-inline-text-admission') {
         result = cancelPendingInlineTextAdmission();
       } else if (message.command === 'cancel-inline-text-edit') {

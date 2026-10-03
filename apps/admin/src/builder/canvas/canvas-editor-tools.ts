@@ -261,7 +261,7 @@ export class CanvasEditorTools {
       ),
       define(
         'apply_theme_patch',
-        'Atomically write/delete loaded theme files and update supported design settings against the discovered workspace/current revision and data generation. Validates every bound page before acceptance and delivers to the shared live board. Returns accepted source/render and delivery pending; rediscover frame readiness and inspect desktop/mobile before concluding. Rejects stale writes, invalid source and active manual drafts. It does not publish the site.',
+        'Atomically write/delete loaded theme files and update supported design settings against the discovered workspace/current revision and data generation. Validates every bound page before acceptance and delivers to the shared live board, preserving retained manual text separately for compatible resume or explicit recovery. Returns accepted source/render and delivery pending; rediscover frame readiness and inspect desktop/mobile before concluding. Rejects stale writes, invalid source and concurrent commits or pending text admission. It does not publish the site.',
         {
           ...address,
           expectedDataGeneration: { type: 'integer', minimum: 0 },

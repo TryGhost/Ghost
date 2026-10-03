@@ -52,6 +52,30 @@ export type PreviewInlineEditRequest = PreviewInlineTextEditRequest | PreviewInl
 
 export type PreviewInlineEditResult = { ok: true } | { ok: false; message: string };
 
+export type PreviewInlineTextDraft = {
+  marker: string;
+  tagName: string;
+  baseText: string;
+  newText: string;
+};
+
+function isInlineTextDraft(value: unknown): value is PreviewInlineTextDraft {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+  const draft = value as PreviewInlineTextDraft;
+  return (
+    typeof draft.marker === 'string' &&
+    draft.marker.length <= 512 &&
+    typeof draft.tagName === 'string' &&
+    /^[a-z][a-z0-9-]{0,63}$/.test(draft.tagName) &&
+    typeof draft.baseText === 'string' &&
+    draft.baseText.length <= 65536 &&
+    typeof draft.newText === 'string' &&
+    draft.newText.length <= 65536
+  );
+}
+
 export type PreviewCanvasInput =
   | { kind: 'pan-key'; active: boolean; interactionTime: number }
   | {
@@ -63,7 +87,12 @@ export type PreviewCanvasInput =
     }
   | { kind: 'escape'; interactionTime?: number }
   | { kind: 'pan'; deltaX: number; deltaY: number; deltaMode: number }
-  | { kind: 'inline-edit'; box: { x: number; y: number; width: number; height: number } | null }
+  | {
+      kind: 'inline-edit';
+      box: { x: number; y: number; width: number; height: number } | null;
+      draft?: PreviewInlineTextDraft;
+      retired?: boolean;
+    }
   | { kind: 'zoom'; x: number; y: number; deltaY: number; deltaMode: number };
 
 export type PreviewLayout = {
@@ -178,6 +207,8 @@ type PreviewCommand =
   | 'set-inline-edit-mode'
   | 'cancel-inline-text-edit'
   | 'cancel-inline-text-admission'
+  | 'freeze-inline-text-draft'
+  | 'resume-inline-text-draft'
   | 'set-selection-mode'
   | 'set-interaction-mode';
 
@@ -507,6 +538,8 @@ function isPreviewMessage(value: unknown): value is PreviewMessage {
             input.interactionTime > 0 &&
             input.interactionTime <= Number.MAX_SAFE_INTEGER))) ||
         (input.kind === 'inline-edit' &&
+          (input.draft === undefined || isInlineTextDraft(input.draft)) &&
+          (input.retired === undefined || typeof input.retired === 'boolean') &&
           (input.box === null ||
             (typeof input.box === 'object' &&
               input.box !== null &&
@@ -1355,6 +1388,21 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     await this.command('cancel-inline-text-edit', undefined, signal);
   }
 
+  async freezeInlineTextDraft(signal: AbortSignal): Promise<PreviewInlineTextDraft | null> {
+    const draft = await this.command('freeze-inline-text-draft', undefined, signal);
+    if (draft !== null && !isInlineTextDraft(draft)) {
+      throw new Error('The preview could not retain its complete text draft.');
+    }
+    return draft;
+  }
+
+  async resumeInlineTextDraft(draft: PreviewInlineTextDraft, signal: AbortSignal): Promise<void> {
+    if (!isInlineTextDraft(draft)) {
+      throw new Error('The retained text draft is invalid.');
+    }
+    await this.command('resume-inline-text-draft', draft, signal);
+  }
+
   async cancelPendingInlineTextEdit(signal: AbortSignal): Promise<void> {
     await this.command('cancel-inline-text-admission', {}, signal);
   }
@@ -1983,7 +2031,9 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
   private clearCanvasInlineEdit(): void {
     if (this.canvasInlineEditActive) {
       this.canvasInlineEditActive = false;
-      this.canvasInputListeners.forEach((listener) => listener({ kind: 'inline-edit', box: null }));
+      this.canvasInputListeners.forEach((listener) =>
+        listener({ kind: 'inline-edit', box: null, retired: true }),
+      );
     }
   }
 

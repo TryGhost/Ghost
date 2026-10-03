@@ -85,6 +85,139 @@ async function fakeBuilderWorld({ post = false } = {}): Promise<void> {
 
 describe('Design Builder route', () => {
   it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1')(
+    'keeps typed text through agent replacement and recovers a conflicting draft',
+    { timeout: 60_000 },
+    async () => {
+      await commands.canvasPointerViewport(true);
+      await fakeBuilderWorld({ post: true });
+      const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
+      const ready = async () => {
+        await expect
+          .poll(
+            async () => {
+              const state = await commands.canvasNativeTool(
+                'ghost_canvas_probe_get_editor_state',
+                {},
+              );
+              const editor = (state.data as { editor?: { busy?: boolean } } | undefined)?.editor;
+              return (
+                editor?.busy === false &&
+                document.querySelectorAll('iframe[data-preview-status="Ready"]').length === 8
+              );
+            },
+            { timeout: 30_000 },
+          )
+          .toBe(true);
+      };
+      const change = async (path: string, content: string) => {
+        const state = await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {});
+        expect(state.status).toBe('ok');
+        const data = state.data as { workspaceId: string; editor: { sourceRevision: string } };
+        const result = await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
+          workspaceId: data.workspaceId,
+          expectedRevision: data.editor.sourceRevision,
+          expectedDataGeneration: 0,
+          files: [{ operation: 'write', path, content }],
+        });
+        expect(result).toMatchObject({ status: 'ok', data: { accepted: true } });
+        await ready();
+      };
+      try {
+        await ready();
+        await page.getByRole('button', { name: 'Home · Mobile', exact: true }).dblClick();
+        const frame = page.frameLocator(
+          page.getByTitle('Home · Mobile composition', { exact: true }),
+        );
+        const iframes = [
+          ...document.querySelectorAll('iframe[title$="composition"],iframe[title$="preview"]'),
+        ];
+        const camera = page.getByTestId('canvas-world').element().getAttribute('style');
+        await frame.getByRole('link', { name: 'Canvas footer', exact: true }).dblClick();
+        await frame.getByRole('textbox', { name: /^Edit / }).fill('Manual footer draft');
+        await change('index.hbs', '<html><body><h1>Agent design</h1>{{> footer}}</body></html>');
+        expect(iframes).toEqual([
+          ...document.querySelectorAll('iframe[title$="composition"],iframe[title$="preview"]'),
+        ]);
+        expect(page.getByTestId('canvas-world').element().getAttribute('style')).toBe(camera);
+        await page.getByRole('button', { name: 'Resume text draft' }).click();
+        await frame.getByRole('textbox', { name: /^Edit / }).click();
+        await userEvent.keyboard('{Enter}');
+        await ready();
+        await frame.getByRole('link', { name: 'Manual footer draft', exact: true }).hover();
+        expect(
+          iframes.every((iframe) =>
+            (iframe as HTMLIFrameElement).srcdoc.includes('Manual footer draft'),
+          ),
+        ).toBe(true);
+        await page.getByRole('button', { name: 'Undo theme change', exact: true }).click();
+        await ready();
+        await frame.getByRole('heading', { name: 'Agent design' }).hover();
+        await frame.getByRole('link', { name: 'Canvas footer', exact: true }).dblClick();
+        await frame.getByRole('textbox', { name: /^Edit / }).fill('Preserve conflicting text');
+        await change('partials/footer.hbs', '<a href="/">Agent footer replacement</a>');
+        await expect
+          .element(page.getByRole('button', { name: 'Resume text draft' }))
+          .toBeDisabled();
+        await page.getByRole('button', { name: 'Recover text draft' }).click();
+        await expect
+          .element(page.getByRole('textbox', { name: 'Preserved text draft' }))
+          .toHaveValue('Preserve conflicting text');
+        await expect.element(page.getByRole('button', { name: 'Copy draft text' })).toBeVisible();
+        await page.getByRole('button', { name: 'Cancel text draft' }).click();
+        await frame.getByRole('link', { name: 'Agent footer replacement', exact: true }).hover();
+        await frame.getByRole('link', { name: 'Agent footer replacement', exact: true }).dblClick();
+        await frame.getByRole('textbox', { name: /^Edit / }).fill('x'.repeat(65537));
+        const state = await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {});
+        const data = state.data as { workspaceId: string; editor: { sourceRevision: string } };
+        expect(
+          await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
+            workspaceId: data.workspaceId,
+            expectedRevision: data.editor.sourceRevision,
+            expectedDataGeneration: 0,
+            files: [
+              {
+                operation: 'write',
+                path: 'partials/footer.hbs',
+                content: '<a href="/">Accepted agent footer</a>',
+              },
+            ],
+          }),
+        ).toMatchObject({ status: 'ok', data: { accepted: true } });
+        expect(
+          await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {}),
+        ).toMatchObject({
+          data: {
+            editor: {
+              busy: true,
+              manualDraft: {
+                captureFailed: true,
+                textObservation: 'unavailable-copy-from-preview',
+              },
+            },
+          },
+        });
+        expect(
+          iframes.every(
+            (iframe) => !(iframe as HTMLIFrameElement).srcdoc.includes('Accepted agent footer'),
+          ),
+        ).toBe(true);
+        await page.getByRole('button', { name: 'Recover text draft' }).click();
+        await expect
+          .element(page.getByRole('textbox', { name: 'Preserved text draft' }))
+          .not.toBeInTheDocument();
+        await expect
+          .element(page.getByRole('button', { name: 'Copy draft text' }))
+          .not.toBeInTheDocument();
+        await page.getByRole('button', { name: 'Cancel text draft' }).click();
+        await ready();
+        await frame.getByRole('link', { name: 'Accepted agent footer', exact: true }).hover();
+      } finally {
+        await screen.unmount();
+        await commands.canvasPointerViewport(false);
+      }
+    },
+  );
+  it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1')(
     'drives the real editor through native WebMCP reads, atomic patches and responsive captures',
     { timeout: 60_000 },
     async () => {

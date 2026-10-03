@@ -21,8 +21,8 @@ rendering. The fixture worker independently checks its pinned routing snapshot
 before rendering or adopting an edit/refresh. A blocked canvas issues no render
 work and exposes compatibility details through probe/console diagnostics.
 `canvas.html?theme=source&routing=custom` exercises the unsupported path without
-adding a debug selector to the canvas. Configuration refresh ownership and retained
-draft recovery remain separate editor work.
+adding a debug selector to the canvas. Configuration refresh ownership remains
+separate editor work.
 
 ## Active-site editor
 
@@ -55,9 +55,15 @@ after undo discard the redo branch; identical changes add no checkpoint. Restore
 check the current revision inside the workspace queue, validate every bound page
 and deliver templates/assets/settings while preserving the active publication
 identity. Failed restores retain accepted source, validity and history position.
-History does not survive reload. Replacement-safe manual drafts and publication
-tools remain subsequent increments. UI and tools share this workspace rather than
-adding an independent model-owned theme draft.
+History does not survive reload. The canvas retains manual text while an agent
+patch or history restore replaces source. Resume reconnects the draft only when its
+authored literal remains uniquely compatible; changed, removed or ambiguous targets
+offer copy/cancel recovery without overwriting accepted source. Typed text remains
+separate from accepted source until manually committed. If the private bridge cannot
+capture the complete draft, the old live preview stays available for copying before
+explicit cancellation displays the accepted theme. Publication tools remain a
+subsequent increment. UI and tools share this workspace rather than adding an
+independent model-owned theme draft.
 
 `CanvasBoard` positions caller-owned live frames in world coordinates and changes
 only the world container's CSS transform for pan/zoom. Frame dimensions, documents
@@ -101,7 +107,8 @@ callers admit by default; the fixture harness supplies the single-owner policy.
 Every board selection intent retires pending admission while preserving an
 already-created draft. The harness records accepted keyboard admission times and
 checks originating input times on iframe selection and Escape, so delayed older
-receipts cannot cancel a newer edit. This policy does not preserve drafts across source replacement.
+receipts cannot cancel a newer edit. The shared canvas controller preserves created
+drafts across source replacement and owns their recovery.
 Canvas selection/admission messages carry the originating trusted input's
 cross-document performance time. A newer selection fences older requests before
 ownership reservation and ignores delayed selection receipts; fresh keyboard
@@ -153,8 +160,8 @@ unavailable while a manual draft is retained; Resume/Cancel remain available.
 Each frame has a screen-space control for switching to its own fixed viewport;
 other frames retain their presentation. A switch clears that frame's source
 selection and does not transfer a draft or inspection handle. Presentation changes
-are disabled while a draft is retained. Source-replacement recovery remains
-milestone work.
+are disabled while a draft is retained. Compatible drafts resume after accepted
+source replacement; changed targets offer explicit text recovery.
 
 Composition height uses the authenticated layout bridge, limited to 16
 observations, 5,000ms and 16,000 CSS pixels. Live canvas document loading allows
@@ -193,11 +200,11 @@ file set rather than validating intermediate template states. A Post-only failur
 preserves accepted source/settings. No-op patches reuse accepted render evidence.
 The harness's controlled `onApplyThemePatch` callback exercises delivery to all eight
 live documents, including changed assets, without adding controls to the canvas.
-It refuses work while a manual draft or another operation is pending, invalidates
-reads during work and preserves documents after a known rejection or no-op.
+It refuses work while text admission or another operation is pending, retains manual
+drafts through accepted changes, invalidates reads during work and preserves
+documents after a known rejection or no-op.
 This callback is a development/test seam; the active-site editor exposes native
-mutation tools separately. The fixture tools remain read-only. Draft preservation
-across replacement remains controller work.
+mutation tools separately. The fixture tools remain read-only.
 
 The harness commits eligible literal text through the real fixture worker, accepting
 source only after Home and Post both render successfully, then updating all eight
@@ -207,9 +214,8 @@ context instead of becoming hardcoded content. Inline image replacement is disab
 in this literal-text harness; images remain selectable without a picker or upload.
 Other preview consumers retain their existing image-edit behavior. Shared literals
 update every use.
-One manual draft can be retained across the board, with Resume/Cancel. Shared
-controller ownership, source-replacement preservation and conflict recovery remain
-future slices.
+One manual draft can be retained across the board, with Resume/Cancel and the same
+source-replacement preservation and conflict recovery as the real editor.
 
 Refresh content switches one recorded Post title to a controlled longer title in
 both Home and Post. Restore content returns to the original recording. The worker
@@ -226,7 +232,7 @@ admission requires its current surface's readiness and completion of all eight
 deliveries. Another refresh also waits until all eight deliveries either
 acknowledge readiness or report failure; healthy
 surfaces remain editable when another delivery fails. A retained text draft disables refresh rather than discarding
-it; replacement recovery is still required in the shared controller. A known
+it. A known
 worker rejection preserves the displayed documents and restores reads under fresh
 handles. Transport loss leaves reads stale and requires reloading the local
 fixture because adoption is uncertain.
@@ -270,8 +276,10 @@ Patches additionally require the discovered data generation and share the UI
 validation/adoption/delivery action. Native writes allow at most 32 settings with
 string values up to 8,192 characters. Accepted patches return the actual source
 revision/render key and pending delivery; state reports busy until delivery
-completes. Invalid Home/Post output, stale source, active manual drafts and work
-cancelled before adoption preserve the accepted draft. Cancellation after
+completes. Invalid Home/Post output, stale source and work
+cancelled before adoption preserve the accepted draft. Manual text stays retained
+through accepted agent changes, with explicit resume or conflict recovery. Pending
+admission and other source operations still fence concurrent writes. Cancellation after
 adoption does not misreport the actual outcome. Route exit retires callbacks.
 There is no evaluation/shell tool, independent agent draft or publication bypass.
 

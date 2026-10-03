@@ -1,6 +1,50 @@
 import { expect, it, vi } from 'vitest';
+import { page } from 'vitest/browser';
 
 import { IframePreviewDocumentSurface } from './preview-document';
+
+it('keeps newer live text on Resume and restores retained text in a replacement document', async () => {
+  const iframe = document.createElement('iframe');
+  iframe.style.cssText = 'width:390px;height:844px';
+  document.body.appendChild(iframe);
+  const surface = new IframePreviewDocumentSurface(iframe, { canvasNavigation: true });
+  const signal = new AbortController().signal;
+  const previewDocument = {
+    html: '<h1 data-edit="index.hbs:1:1">Original heading</h1>',
+    url: 'https://example.com/',
+    revision: 'test-revision',
+    inlineTextTargets: { 'index.hbs:1:1': 'h1' },
+  };
+  try {
+    await surface.replaceDocument(previewDocument, null, signal);
+    await surface.setInlineEditMode(true, signal);
+    const frame = page.frameLocator(page.elementLocator(iframe));
+    await frame.getByRole('heading', { name: 'Original heading' }).dblClick();
+    await frame.getByRole('textbox', { name: /^Edit / }).fill('Newer live text');
+    const olderSnapshot = {
+      marker: 'index.hbs:1:1',
+      tagName: 'h1',
+      baseText: 'Original heading',
+      newText: 'Older parent snapshot',
+    };
+    await surface.resumeInlineTextDraft(olderSnapshot, signal);
+    expect(await surface.freezeInlineTextDraft(signal)).toMatchObject({
+      newText: 'Newer live text',
+    });
+    await surface.replaceDocument({ ...previewDocument, revision: 'next-revision' }, null, signal);
+    await surface.setInlineEditMode(true, signal);
+    await surface.resumeInlineTextDraft(
+      { ...olderSnapshot, newText: 'Retained manual text' },
+      signal,
+    );
+    expect(await surface.freezeInlineTextDraft(signal)).toMatchObject({
+      newText: 'Retained manual text',
+    });
+  } finally {
+    surface.destroy();
+    iframe.remove();
+  }
+});
 
 it.each([false, true])(
   'forwards canvas navigation from a real sandbox only when opted in: %s',
