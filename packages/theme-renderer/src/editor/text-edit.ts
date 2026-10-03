@@ -67,7 +67,7 @@ import type { EditMarker } from '../engine/markers.ts';
 import type { ThemeFiles } from '../theme/theme-source.ts';
 
 /** HTML void elements — no text child to edit. */
-const VOID_TAGS = new Set([
+export const VOID_TAGS = new Set([
   'area',
   'base',
   'br',

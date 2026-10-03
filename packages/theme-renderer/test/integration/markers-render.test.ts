@@ -66,6 +66,29 @@ function markerFor(file: string, needle: string): string {
 }
 
 describe('source markers over the recorded Casper fixtures (hermetic)', function () {
+  it('isolates generated markers from authored attributes without changing unmarked output', async function () {
+    const editMarkerAttribute = 'data-builder-source-fixture';
+    const authoredTheme = {
+      ...theme,
+      'index.hbs': `${theme['index.hbs']}\n<h1 data-edit="index.hbs:1:1">{{@site.title}}</h1>`,
+    };
+    const isolated = await createRenderer({
+      siteUrl: instance.siteUrl,
+      contentApiKey: instance.contentApiKey,
+      theme: authoredTheme,
+      editMarkerAttribute,
+      config: instance.config,
+      fetch: createReplayFetch(JSON.parse(read('content-api.json')) as ApiFixtures),
+    });
+    const request = new Request(new URL(instance.routes.home, instance.siteUrl));
+    const plain = await (await isolated.render(request)).text();
+    const marked = await (await isolated.render(request, { markers: true })).text();
+    assert.match(marked, / data-builder-source-fixture="index\.hbs:/);
+    assert.match(marked, / data-edit="index\.hbs:1:1"/);
+    assert.equal(marked.replace(/ data-builder-source-fixture="[^"]*"/g, ''), plain);
+    assert.equal(await (await isolated.render(request)).text(), plain);
+  });
+
   it('markers off stays byte-identical — before AND after a markers-on render', async function () {
     assert.equal(await renderHome(false), expectedHome);
     const marked = await renderHome(true);

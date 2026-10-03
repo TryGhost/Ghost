@@ -5,6 +5,7 @@
  * tools, not part of the render contract on the package root.
  */
 export { applyTextEdit, applyThemeTextEdit } from './text-edit.ts';
+export { getThemeLiteralTextTargets, applyThemeLiteralTextEdit } from './literal-text-edit.ts';
 export {
   applyAttributeEdit,
   applyAttributeEdits,

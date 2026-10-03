@@ -56,7 +56,7 @@ export function CanvasBoard({
   renderFrame: (
     frame: CanvasFrame,
     onInput: (input: CanvasFrameInput) => void,
-    state: { opened: boolean },
+    state: { opened: boolean; open: () => void },
   ) => ReactNode;
 }) {
   const host = useRef<HTMLDivElement>(null);
@@ -365,7 +365,7 @@ export function CanvasBoard({
                     );
                   }
                 },
-                { opened: focused === frame.id },
+                { opened: focused === frame.id, open: () => open(frame) },
               )}
             </Box>
           ))}

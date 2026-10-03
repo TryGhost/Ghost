@@ -3,7 +3,12 @@ import { expect, it } from 'vitest';
 import { IframePreviewDocumentSurface } from '@/builder/workspaces/theme/preview/preview-document';
 import { getThemeFixture, instance, loadAssets } from './fixture';
 
-type Result = { fixtureId: string; html?: Record<string, string>; error?: string };
+type Result = {
+  fixtureId: string;
+  html?: Record<string, string>;
+  editMarkerAttribute: string;
+  error?: string;
+};
 
 it('serially renders complete Source and Casper fixtures without mixing templates or helper defaults', async () => {
   const worker = new Worker(new URL('./fixture.worker.ts', import.meta.url), { type: 'module' });
@@ -33,7 +38,7 @@ it('serially renders complete Source and Casper fixtures without mixing template
     expect(casper.querySelector('.gh-card')).toBeNull();
     expect(results[0].html!.post).toContain('gh-article');
     expect(results[1].html!.post).toContain('article-title');
-    expect(source.querySelector('[data-edit]')).not.toBeNull();
+    expect(source.querySelector(`[${results[0].editMarkerAttribute}]`)).not.toBeNull();
   } finally {
     worker.terminate();
   }

@@ -23,6 +23,26 @@ export function previewRuntimeBootstrap(): void {
   const nativeForms = runtimeScript?.dataset.builderNativeForms === 'true';
   const artifactDocument = runtimeScript?.dataset.builderArtifactDocument === 'true';
   const canvasNavigation = runtimeScript?.dataset.builderCanvasNavigation === 'true';
+  const requestedMarkerAttribute = runtimeScript?.dataset.builderEditMarkerAttribute ?? 'data-edit';
+  const editMarkerAttribute = /^data-[a-z][a-z0-9-]{0,127}$/.test(requestedMarkerAttribute)
+    ? requestedMarkerAttribute
+    : 'data-edit';
+  let inlineTextTargets: Record<string, string> = {};
+  try {
+    const targets: unknown = JSON.parse(runtimeScript?.dataset.builderInlineTextTargets ?? '{}');
+    if (targets && typeof targets === 'object' && !Array.isArray(targets)) {
+      inlineTextTargets = Object.fromEntries(
+        Object.entries(targets).filter(
+          ([marker, tag]) =>
+            marker.length <= limits.target &&
+            typeof tag === 'string' &&
+            /^[a-z][a-z0-9-]{0,63}$/.test(tag),
+        ),
+      );
+    }
+  } catch {
+    // Missing or invalid source proof never enables a canvas text editor.
+  }
   let canvasCommitted = !canvasNavigation;
   const captureLoadedImages = runtimeScript?.dataset.builderCaptureLoadedImages === 'true';
   const artifactMarkers = new WeakMap<Element, string>();
@@ -234,8 +254,8 @@ export function previewRuntimeBootstrap(): void {
       }
       element = artifactElement?.isConnected
         ? artifactElement
-        : (Array.from(document.querySelectorAll('[data-edit]')).find(
-            (candidate) => candidate.getAttribute('data-edit') === value,
+        : (Array.from(document.querySelectorAll(`[${editMarkerAttribute}]`)).find(
+            (candidate) => candidate.getAttribute(editMarkerAttribute) === value,
           ) ?? null);
     } else {
       try {
@@ -262,7 +282,9 @@ export function previewRuntimeBootstrap(): void {
       (element) => !inaccessible(element),
     );
     const outline = candidates.slice(0, limits.outline).map((element) => {
-      const source = parseSource(artifactMarkers.get(element) ?? element.getAttribute('data-edit'));
+      const source = parseSource(
+        artifactMarkers.get(element) ?? element.getAttribute(editMarkerAttribute),
+      );
       return {
         tag: element.tagName.toLowerCase(),
         role: role(element),
@@ -344,7 +366,9 @@ export function previewRuntimeBootstrap(): void {
     );
     const bounds = element.getBoundingClientRect();
     const text = bounded(visibleText(element), limits.elementText);
-    const source = parseSource(artifactMarkers.get(element) ?? element.getAttribute('data-edit'));
+    const source = parseSource(
+      artifactMarkers.get(element) ?? element.getAttribute(editMarkerAttribute),
+    );
     return {
       tag: element.tagName.toLowerCase(),
       role: role(element),
@@ -605,7 +629,7 @@ export function previewRuntimeBootstrap(): void {
   };
   const artifactMarker = (element: Element) => {
     if (!artifactDocument) {
-      return element.getAttribute('data-edit');
+      return element.getAttribute(editMarkerAttribute);
     }
     if (!document.body.contains(element)) {
       return null;
@@ -953,11 +977,26 @@ export function previewRuntimeBootstrap(): void {
       announceInlineEdit('Wait for this preview to finish loading before editing.', true);
       return;
     }
-    const marker = element.getAttribute('data-edit');
+    const marker = element.getAttribute(editMarkerAttribute);
     const source = parseSource(marker);
     const text = directEditableText(element);
     if (!marker || !source.source || source.truncated || !text) {
       announceInlineEdit('This element does not have directly editable theme text.', true);
+      return;
+    }
+    if (
+      canvasNavigation &&
+      (!(element instanceof HTMLElement) ||
+        inlineTextTargets[marker] !== element.tagName.toLowerCase())
+    ) {
+      const selected = context(element);
+      if (selected) {
+        send({ type: 'select', selection: selected });
+      }
+      announceInlineEdit(
+        'Inline editing requires literal template text. Select this dynamic output or unsupported markup to edit its source or settings.',
+        true,
+      );
       return;
     }
     nextInlineEditId += 1;
@@ -1045,7 +1084,7 @@ export function previewRuntimeBootstrap(): void {
       );
       return;
     }
-    const marker = element.getAttribute('data-edit');
+    const marker = element.getAttribute(editMarkerAttribute);
     const source = parseSource(marker);
     if (!marker || !source.source || source.truncated) {
       announceInlineEdit('This image does not have an editable theme source marker.', true);
@@ -1148,7 +1187,7 @@ export function previewRuntimeBootstrap(): void {
             !element.hasAttribute('data-builder-inline-control') &&
             Boolean(artifactMarker(element)),
         )
-      : Array.from(document.querySelectorAll<HTMLElement>('[data-edit]'));
+      : Array.from(document.querySelectorAll<HTMLElement>(`[${editMarkerAttribute}]`));
   const selectionTarget = (element: Element | null): Element | null => {
     if (!element) {
       return null;
@@ -1160,7 +1199,7 @@ export function previewRuntimeBootstrap(): void {
         ? element
         : null;
     }
-    return element.closest('[data-edit]');
+    return element.closest(`[${editMarkerAttribute}]`);
   };
   const addSourceTabStops = () => {
     selectionTargets().forEach((element) => {
@@ -1412,6 +1451,13 @@ export function previewRuntimeBootstrap(): void {
         event.preventDefault();
         event.stopImmediatePropagation();
         clearInlineHover();
+        if (canvasNavigation && !activeInlineEdit && event.detail < 2) {
+          const selected = context(editable);
+          if (selected) {
+            send({ type: 'select', selection: selected });
+          }
+          return;
+        }
         if (editable instanceof HTMLImageElement) {
           beginInlineImage(editable);
         } else if (!activeInlineEdit) {
@@ -1533,6 +1579,7 @@ export function previewRuntimeBootstrap(): void {
         'inspect-element',
         'screenshot',
         'set-inline-edit-mode',
+        'cancel-inline-text-edit',
         'set-selection-mode',
         'set-interaction-mode',
       ].includes(String(message.command))
@@ -1567,6 +1614,15 @@ export function previewRuntimeBootstrap(): void {
         result = inspectElement(message.payload as { marker?: unknown; selector?: unknown });
       } else if (message.command === 'screenshot') {
         result = screenshotSnapshot();
+      } else if (message.command === 'cancel-inline-text-edit') {
+        if (activeInlineEdit?.pending) {
+          throw fail(
+            'inline_edit_pending',
+            'This edit is being applied. Wait for its actual outcome before cancelling.',
+          );
+        }
+        cancelInlineEdit();
+        result = true;
       } else if (message.command === 'set-inline-edit-mode') {
         const enabled = Boolean((message.payload as { enabled?: unknown })?.enabled);
         setInlineEditMode(enabled);
@@ -1643,8 +1699,8 @@ export function previewRuntimeBootstrap(): void {
     }
     const selected = selectedId
       ? (artifactElements.get(selectedId) ??
-        Array.from(document.querySelectorAll('[data-edit]')).find(
-          (element) => element.getAttribute('data-edit') === selectedId,
+        Array.from(document.querySelectorAll(`[${editMarkerAttribute}]`)).find(
+          (element) => element.getAttribute(editMarkerAttribute) === selectedId,
         ))
       : null;
     send({ type: 'ready', selection: selected ? context(selected) : null });

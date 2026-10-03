@@ -60,15 +60,18 @@ function Preview({
     surface.onCanvasInput((value) => input.current(value));
     surface.onInlineEdit(onEdit);
     const controller = new AbortController();
-    const ready = surface
-      .setInlineEditMode(true, controller.signal)
-      .then(() =>
-        surface.replaceDocument(
-          { html: content, url: 'https://site.example/', revision: 'inline-draft-1' },
-          null,
-          controller.signal,
-        ),
-      );
+    const ready = surface.setInlineEditMode(true, controller.signal).then(() =>
+      surface.replaceDocument(
+        {
+          html: content,
+          url: 'https://site.example/',
+          revision: 'inline-draft-1',
+          inlineTextTargets: { 'index.hbs:1:1': 'h1', 'index.hbs:2:1': 'a' },
+        },
+        null,
+        controller.signal,
+      ),
+    );
     surfaces.set(frame.current!, { surface, ready });
     void ready.catch((error) => {
       if (!controller.signal.aborted) {
@@ -108,7 +111,7 @@ it('preserves real uncommitted text through canvas focus, zoom, pan, Back and re
   const signal = new AbortController().signal;
   const layout = await surface.measureLayout(signal);
   expect(layout.viewport).toMatchObject({ width: 1440, height: 900 });
-  await frame.getByRole('heading', { name: 'Initial heading' }).click();
+  await frame.getByRole('heading', { name: 'Initial heading' }).dblClick();
   const editor = frame.getByRole('textbox', { name: 'Edit Initial heading' });
   await editor.fill('A kept manual draft');
   await page.getByRole('button', { name: 'Zoom out', exact: true }).click();
@@ -152,7 +155,7 @@ it('keeps a canvas draft on Tab, another target and a rejected explicit commit, 
   const { surface, frame } = await preview(
     document.querySelector('iframe[title="default draft preview"]')!,
   );
-  await frame.getByRole('heading', { name: 'Initial heading' }).click();
+  await frame.getByRole('heading', { name: 'Initial heading' }).dblClick();
   const editor = frame.getByRole('textbox', { name: 'Edit Initial heading' });
   await editor.fill('Do not commit on focus');
   await userEvent.keyboard('{Tab}');
@@ -203,7 +206,7 @@ it('does not let a theme script cancel a manual draft with synthetic Escape', as
     'iframe[title="default draft preview"]',
   ) as HTMLIFrameElement;
   const { surface, frame } = await preview(element);
-  await frame.getByRole('heading', { name: 'Initial heading' }).click();
+  await frame.getByRole('heading', { name: 'Initial heading' }).dblClick();
   await frame.getByRole('textbox').fill('Untrusted Escape cannot cancel');
   element.contentWindow!.postMessage('test-synthetic-escape', '*');
   await expectText(
@@ -244,14 +247,14 @@ it('waits for committed readiness before starting an inline editor or submitting
   });
   await expect.poll(getFrameImageRequests).toContain(url);
   expect(committed).toBe(false);
-  await frame.getByRole('heading', { name: 'Initial heading' }).click();
+  await frame.getByRole('heading', { name: 'Initial heading' }).dblClick();
   await userEvent.keyboard('Before readiness{Enter}');
   expect(edit).not.toHaveBeenCalled();
   await releaseFrameImages();
   await state.ready;
   await expectText(state.surface, 'h1', 'Initial heading');
   expect(inputs).not.toHaveBeenCalled();
-  await frame.getByRole('heading', { name: 'Initial heading' }).click();
+  await frame.getByRole('heading', { name: 'Initial heading' }).dblClick();
   const editor = frame.getByRole('textbox');
   await editor.fill('After readiness');
   await userEvent.keyboard('{Enter}');
@@ -282,7 +285,7 @@ it('clears canvas draft activity when blocked navigation restores the committed 
   await new Promise((resolve) => {
     setTimeout(resolve, 150);
   });
-  await frame.getByRole('heading', { name: 'Initial heading' }).click();
+  await frame.getByRole('heading', { name: 'Initial heading' }).dblClick();
   await frame.getByRole('textbox').fill('A draft before blocked navigation');
   await expect.poll(() => inputs.mock.calls.length).toBe(1);
   expect(inputs.mock.calls[0][0]).toMatchObject({ kind: 'inline-edit' });
@@ -312,7 +315,7 @@ it('keeps pending text visible until an explicit commit completes, including aft
   const { surface, frame } = await preview(
     document.querySelector('iframe[title="default draft preview"]')!,
   );
-  await frame.getByRole('heading', { name: 'Initial heading' }).click();
+  await frame.getByRole('heading', { name: 'Initial heading' }).dblClick();
   const editor = frame.getByRole('textbox', { name: 'Edit Initial heading' });
   await editor.fill('Pending manual text');
   await userEvent.keyboard('{Enter}');
@@ -320,6 +323,9 @@ it('keeps pending text visible until an explicit commit completes, including aft
   await frame.getByRole('link', { name: 'Other text' }).click();
   await userEvent.keyboard('{Escape}');
   await expectText(surface, '[role="textbox"]', 'Pending manual text');
+  await expect(surface.cancelInlineTextEdit(new AbortController().signal)).rejects.toMatchObject({
+    code: 'inline_edit_pending',
+  });
   finish({ ok: false, message: 'Commit rejected.' });
   await expectText(surface, '[role="alert"]:last-child', 'Commit rejected.');
   await expectText(surface, '[role="textbox"]', 'Pending manual text');

@@ -85,6 +85,8 @@ export interface CreateRendererOptions {
   contentApiKey: string;
   /** Theme files, path → content (e.g. 'index.hbs', 'partials/card.hbs') */
   theme: ThemeFiles;
+  /** Optional parent-owned source marker lane; defaults to legacy data-edit. */
+  editMarkerAttribute?: string;
   fetch?: typeof globalThis.fetch;
   /** Admin URL when it differs from the site URL */
   adminUrl?: string;
@@ -210,7 +212,10 @@ export async function createRenderer(options: CreateRendererOptions): Promise<Th
       // helper partials compile with no filename and stay unmarked —
       // they are not theme-editable files.
       onCompile(self, source, filename) {
-        const compileSource = markers && filename ? injectEditMarkers(source, filename) : source;
+        const compileSource =
+          markers && filename
+            ? injectEditMarkers(source, filename, options.editMarkerAttribute)
+            : source;
         return self.handlebars.compile(compileSource, { preventIndent: true });
       },
     });

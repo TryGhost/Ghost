@@ -15,6 +15,10 @@ export type PreviewDocument = {
   html: string;
   url: string;
   revision: string;
+  /** Source-proven literal marker → expected tag, owned by this rendered revision. */
+  inlineTextTargets?: Record<string, string>;
+  /** Parent-owned generated marker attribute; legacy previews use data-edit. */
+  editMarkerAttribute?: string;
   assets?: Record<string, PreviewAsset>;
 };
 
@@ -126,6 +130,7 @@ type PreviewCommand =
   | 'inspect-element'
   | 'screenshot'
   | 'set-inline-edit-mode'
+  | 'cancel-inline-text-edit'
   | 'set-selection-mode'
   | 'set-interaction-mode';
 
@@ -850,6 +855,10 @@ export function createPreviewDocument(
   script.dataset.builderNativeForms = nativeForms ? 'true' : 'false';
   script.dataset.builderArtifactDocument = artifactDocument ? 'true' : 'false';
   script.dataset.builderCanvasNavigation = canvasNavigation ? 'true' : 'false';
+  script.dataset.builderEditMarkerAttribute = document.editMarkerAttribute ?? 'data-edit';
+  if (canvasNavigation) {
+    script.dataset.builderInlineTextTargets = JSON.stringify(document.inlineTextTargets ?? {});
+  }
   script.dataset.builderCaptureLoadedImages = captureLoadedImages ? 'true' : 'false';
   script.textContent = `;(${previewRuntimeBootstrap.toString()})();`.replace(
     /<\/script/gi,
@@ -1138,6 +1147,10 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     if (enabled) {
       this.selectionMode = false;
     }
+  }
+
+  async cancelInlineTextEdit(signal: AbortSignal): Promise<void> {
+    await this.command('cancel-inline-text-edit', undefined, signal);
   }
 
   async setInteractionMode(mode: 'browse' | 'select' | 'edit', signal: AbortSignal): Promise<void> {

@@ -27,8 +27,7 @@
  * This module is also exported standalone as the `./markers` subpath so the
  * Admin Builder can import parseEditMarker/EDIT_MARKER_ATTRIBUTE without
  * dragging the engine barrel — and with it the whole renderer — into its
- * bundle. Keep this file's imports limited to the source scanner for that
- * reason.
+ * bundle. Keep this file independent of the engine and render helpers.
  *
  * Deliberate punts (documented in docs/markers.md): helper-emitted HTML,
  * dynamic tag names, raw-block ({{{{raw}}}}) content, and rawtext element
@@ -36,6 +35,7 @@
  * (tag-end walk runs away to EOF) get no marker and cost nothing else — the
  * scanner recovers at the next `<` and the rest of the file is still marked.
  */
+import errors from '@tryghost/errors';
 import { scanAttributes, scanSourceTags } from './source-scanner.ts';
 
 /** The attribute name stamped onto marked elements. */
@@ -65,9 +65,14 @@ export function parseEditMarker(value: string): EditMarker | null {
  * tag region: a value merely CONTAINING the text `data-edit=` (e.g.
  * `<div title="see data-edit=docs">`) must not suppress the marker.
  */
-function hasExistingMarker(source: string, nameEnd: number, end: number): boolean {
+function hasExistingMarker(
+  source: string,
+  nameEnd: number,
+  end: number,
+  attributeName: string,
+): boolean {
   for (const attribute of scanAttributes(source, nameEnd, end)) {
-    if (attribute.name === EDIT_MARKER_ATTRIBUTE) {
+    if (attribute.name === attributeName) {
       return true;
     }
   }
@@ -84,7 +89,16 @@ function escapeAttributeValue(value: string): string {
  * immediately after the tag name. Returns the source unchanged when there is
  * nothing to mark.
  */
-export function injectEditMarkers(source: string, filename: string): string {
+export function injectEditMarkers(
+  source: string,
+  filename: string,
+  attributeName = EDIT_MARKER_ATTRIBUTE,
+): string {
+  if (!/^data-[a-z][a-z0-9-]{0,127}$/.test(attributeName)) {
+    throw new errors.IncorrectUsageError({
+      message: 'Source marker attributes must be lowercase data attributes.',
+    });
+  }
   const file = escapeAttributeValue(filename);
   const insertions: { offset: number; text: string }[] = [];
 
@@ -94,12 +108,12 @@ export function injectEditMarkers(source: string, filename: string): string {
     if (!tag.markable || !tag.closed) {
       continue;
     }
-    if (hasExistingMarker(source, tag.nameEnd, tag.end)) {
+    if (hasExistingMarker(source, tag.nameEnd, tag.end, attributeName)) {
       continue;
     }
     insertions.push({
       offset: tag.nameEnd,
-      text: ` ${EDIT_MARKER_ATTRIBUTE}="${file}:${tag.line}:${tag.column}"`,
+      text: ` ${attributeName}="${file}:${tag.line}:${tag.column}"`,
     });
   }
 

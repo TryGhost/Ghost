@@ -44,6 +44,27 @@ const response = await renderer.render(request, {markers: true});
 
 ## Marker payload
 
+The canvas fixture editor supplies `createRenderer({editMarkerAttribute, ...})`
+with a fresh parent-owned `data-builder-source-<UUID>` attribute for each render.
+`injectEditMarkers(source, filename, attributeName)` supports the same optional
+lowercase data attribute. The default remains `data-edit`, including preservation
+of authored attributes. The canvas passes the chosen attribute separately to its
+preview runtime so authored `data-edit` values and helper/content HTML cannot
+impersonate generated source locations. Theme scripts still run in the preview;
+this is source correspondence for ordinary rendered theme output, not a security
+boundary against scripts deliberately copying or altering generated attributes.
+
+`getThemeLiteralTextTargets(theme, attributeName)` on `./editor` lists static
+tags with one nonempty literal direct text child. Expressions, mixed text,
+nested children and raw-text elements are excluded. Source-authored attributes
+in the chosen lane are excluded, including their static aliases to other tags;
+unresolved dynamic/entity aliases disable eligibility. A legacy `data-edit`
+map alone cannot prove the provenance of helper-emitted HTML. Use the separate
+generated lane and its matching render/runtime configuration for canvas admission.
+The runtime additionally refuses non-HTML namespaces. `applyThemeLiteralTextEdit`
+requires the exact current source position and literal child; callers must also
+check the accepted revision. It returns a new theme without changing its input.
+
 `data-edit="partials/post-card.hbs:4:1"`
 
 - **file** — the theme-relative resolver path, exactly as the virtual fs names

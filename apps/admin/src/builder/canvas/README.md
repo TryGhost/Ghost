@@ -30,10 +30,12 @@ these cleanup signals do not preserve draft text across document replacement.
 The board retains activity per frame and keeps an opened draft at scale one or
 greater while camera controls are used. Back restores the saved overview and
 reports the retained draft outside the frame. Browser evidence uses the actual
-inline runtime and a test commit callback; it does not establish real stock-theme
-source mutation, editor-wide single-draft ownership, dynamic-source eligibility,
-replacement/conflict persistence. Those
-remain milestone work; the fixture comparison harness still exposes no mutations.
+inline runtime. The fixture harness now commits literal template text through its
+real renderer worker and refreshes all four fixed device previews. It admits one
+retained manual text draft across the board, with Resume/Cancel actions when
+another frame is opened. This ownership lasts while its source document is
+retained; source-replacement/conflict persistence and shared controller ownership
+remain milestone work.
 
 ## Development harness
 
@@ -64,7 +66,20 @@ part of the recorded evidence; this is not a full publication dataset.
 
 `canvas.html` is served only by development Vite and is not a production build
 entry. Its Ember boot assets are omitted so the regular Admin app cannot mount
-over this standalone harness. It exposes no theme mutations or publication.
+over this standalone harness. Its theme edits are local fixture drafts that reset
+on reload; it exposes no active-site mutation or publication.
+
+Single-click selects source context; double-click opens an eligible literal text
+child. Enter commits, Escape cancels, and camera/focus actions preserve text.
+Dynamic, mixed, nested and unsupported namespace output remains selectable with
+source context instead of being replaced with hardcoded text. Generated markers
+use a fresh parent-owned attribute separate from authored `data-edit`, including
+helper/content aliases. This is ordinary theme-source correspondence, not a
+security boundary against scripts deliberately manipulating preview markers.
+The source panel is read-only; settings and general source mutations remain later
+work. A worker edit checks its source revision and accepts candidate source only
+after Home and Post both render successfully. Already submitted commits wait for
+their real outcome; Cancel does not claim to undo an accepted write.
 
 The harness starts with an experimental captured composition overview. Each
 device remains mounted at its declared width and height; opening a frame reveals

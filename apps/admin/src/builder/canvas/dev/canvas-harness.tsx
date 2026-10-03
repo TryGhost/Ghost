@@ -12,9 +12,16 @@ import {
 import { IframePreviewDocumentSurface } from '@/builder/workspaces/theme/preview/preview-document';
 import { getThemeFixture, instance, loadAssets } from './fixture';
 import { CanvasProbe, registerCanvasProbe } from './webmcp-probe';
+import { FixtureClient } from './fixture-client';
 
 import type { CanvasFrame, CanvasFrameInput, CanvasView } from '@/builder/canvas/canvas-board';
-import type { PreviewDocument } from '@/builder/workspaces/theme/preview/preview-document';
+import type {
+  PreviewDocument,
+  PreviewInlineEditRequest,
+  PreviewInlineEditResult,
+} from '@/builder/workspaces/theme/preview/preview-document';
+import type { BuilderSelectionContext } from '@/builder/core/workspace';
+import type { FixtureRender } from './fixture-client';
 import type { CapturedOverview } from '@/builder/canvas/capture-overview';
 import type { ExpandedComposition } from '@/builder/canvas/measure-expanded-composition';
 import type { ProbeRegistrationStatus } from './webmcp-probe';
@@ -172,6 +179,11 @@ function Preview({
   onCapture,
   onExpanded,
   probe,
+  draftOwner,
+  open,
+  onSurface,
+  onSelection,
+  onEdit,
 }: {
   frame: CanvasFrame;
   document: PreviewDocument;
@@ -183,6 +195,18 @@ function Preview({
   onCapture: (state: CaptureState) => void;
   onExpanded: (state: ExpandedState) => void;
   probe: CanvasProbe;
+  draftOwner: string | null;
+  open: () => void;
+  onSurface: (
+    id: string,
+    entry: { surface: IframePreviewDocumentSurface; open: () => void } | null,
+  ) => void;
+  onSelection: (id: string, selection: BuilderSelectionContext | null) => void;
+  onEdit: (
+    edit: PreviewInlineEditRequest,
+    document: PreviewDocument,
+    signal: AbortSignal,
+  ) => Promise<PreviewInlineEditResult>;
 }) {
   const iframe = useRef<HTMLIFrameElement>(null);
   const inputHandler = useRef(onInput);
@@ -195,17 +219,35 @@ function Preview({
   } | null>(null);
   const [overview, setOverview] = useState<CapturedOverview | null>(null);
   const [status, setStatus] = useState('Loading preview…');
+  const [surface, setSurface] = useState<IframePreviewDocumentSurface | null>(null);
+  const handlers = useRef({ onSurface, onSelection, onEdit, open });
+  handlers.current = { onSurface, onSelection, onEdit, open };
   useEffect(() => {
+    const current = new IframePreviewDocumentSurface(iframe.current!, {
+      canvasNavigation: true,
+      captureLoadedImages: true,
+    });
+    current.onCanvasInput((input) => inputHandler.current(input));
+    current.onSelection((selection) => handlers.current.onSelection(frame.id, selection));
+    handlers.current.onSurface(frame.id, { surface: current, open: () => handlers.current.open() });
+    setSurface(current);
+    return () => {
+      handlers.current.onSurface(frame.id, null);
+      current.destroy();
+    };
+  }, [frame.id]);
+  useEffect(() => {
+    if (!surface) {
+      return;
+    }
     const controller = new AbortController();
     setReady(null);
     setOverview(null);
     captureHandler.current({ status: 'pending' });
-    const surface = new IframePreviewDocumentSurface(iframe.current!, {
-      canvasNavigation: true,
-      captureLoadedImages: true,
-    });
     const connection = probe.attach(frame.id, surface, document);
-    surface.onCanvasInput((input) => inputHandler.current(input));
+    const removeEdit = surface.onInlineEdit((edit, signal) =>
+      handlers.current.onEdit(edit, document, signal),
+    );
     // Canvas visitor links must select instead of navigating; no Browse mode.
     void surface
       .setInteractionMode('select', controller.signal)
@@ -230,9 +272,26 @@ function Preview({
     return () => {
       controller.abort();
       connection.dispose();
-      surface.destroy();
+      removeEdit();
     };
-  }, [document, frame.id, probe]);
+  }, [surface, document, frame.id, probe]);
+  useEffect(() => {
+    if (!ready || ready.document !== document) {
+      return;
+    }
+    const controller = new AbortController();
+    // Only the opened frame or the retained owner can open an editor. A second
+    // frame stays selectable until the user resumes or explicitly cancels.
+    const editing = draftOwner === frame.id || (opened && !draftOwner);
+    void ready.surface
+      .setInteractionMode(editing ? 'edit' : 'select', controller.signal)
+      .catch((failure: unknown) => {
+        if (!controller.signal.aborted) {
+          setStatus(failure instanceof Error ? failure.message : String(failure));
+        }
+      });
+    return () => controller.abort();
+  }, [ready, document, opened, draftOwner, frame.id]);
   useEffect(() => {
     if (!ready || ready.document !== document) {
       return;
@@ -273,6 +332,7 @@ function Preview({
       <iframe
         ref={iframe}
         className={`absolute top-0 left-0 border-0 ${showCapture || showExpanded ? 'invisible' : ''}`}
+        data-fixture-revision={ready?.document.revision}
         style={{
           width: frame.viewport?.width ?? frame.width,
           height: frame.viewport?.height ?? frame.height,
@@ -327,10 +387,16 @@ function Preview({
   );
 }
 
-export function CanvasHarness({ fixtureId = 'casper' }: { fixtureId?: ThemeFixtureId }) {
+export function CanvasHarness({
+  fixtureId = 'casper',
+  onDeviceSurface,
+}: {
+  fixtureId?: ThemeFixtureId;
+  onDeviceSurface?: (id: string, surface: IframePreviewDocumentSurface | null) => void;
+}) {
   // A fixture is selected once per harness mount; comparison links start a new page.
   const [fixture] = useState(() => getThemeFixture(fixtureId));
-  const revision = fixture.revision;
+  const [revision, setRevision] = useState(fixture.revision);
   const [documents, setDocuments] = useState<Record<string, PreviewDocument>>({});
   const [error, setError] = useState<string | null>(null);
   const [captures, setCaptures] = useState<Record<string, CaptureState>>({});
@@ -338,6 +404,22 @@ export function CanvasHarness({ fixtureId = 'casper' }: { fixtureId?: ThemeFixtu
   const [mode, setMode] = useState<OverviewMode>('captured');
   const [probe, setProbe] = useState<CanvasProbe | null>(null);
   const [siteTools, setSiteTools] = useState<ProbeRegistrationStatus | 'pending'>('pending');
+  const [draftOwner, setDraftOwner] = useState<string | null>(null);
+  const owner = useRef<string | null>(null);
+  const [commitPending, setCommitPending] = useState(false);
+  const pendingCommit = useRef(false);
+  const [selection, setSelection] = useState<{
+    frameId: string;
+    context: BuilderSelectionContext;
+  } | null>(null);
+  const surfaces = useRef(
+    new Map<string, { surface: IframePreviewDocumentSurface; open: () => void }>(),
+  );
+  const sourceFiles = useRef({ ...fixture.theme });
+  const session = useRef<{
+    client: FixtureClient;
+    deliver: (result: FixtureRender) => void;
+  } | null>(null);
   const view = useRef<CanvasView>({
     camera: { x: 0, y: 0, scale: 1 },
     selectedFrameId: null,
@@ -396,48 +478,87 @@ export function CanvasHarness({ fixtureId = 'casper' }: { fixtureId?: ThemeFixtu
     };
   });
   useEffect(() => {
-    const worker = new Worker(new URL('./fixture.worker.ts', import.meta.url), { type: 'module' });
+    const client = new FixtureClient(fixture.id);
     let disposed = false;
-    worker.onmessage = (event: MessageEvent<{ html?: Record<string, string>; error?: string }>) => {
-      if (event.data.error) {
-        setError(event.data.error);
-      } else if (event.data.html) {
-        const html = event.data.html;
-        void loadAssets(fixture.id)
-          .then((assets) => {
-            if (!disposed) {
-              setDocuments(
-                Object.fromEntries(
-                  frames.map((frame) => {
-                    const group = frame.group === 'Home' ? 'home' : 'post';
-                    return [
-                      frame.id,
-                      {
-                        html: html[group],
-                        url: new URL(instance.routes[group], instance.siteUrl).href,
-                        revision,
-                        assets,
-                      },
-                    ];
-                  }),
-                ),
-              );
-            }
-          })
-          .catch((failure: unknown) => {
-            if (!disposed) {
-              setError(failure instanceof Error ? failure.message : String(failure));
-            }
-          });
-      }
-    };
-    worker.onerror = (event) => setError(event.message);
-    worker.postMessage({ fixtureId: fixture.id });
+    void Promise.all([client.render(), loadAssets(fixture.id)])
+      .then(([result, assets]) => {
+        if (disposed) {
+          return;
+        }
+        const deliver = (rendered: FixtureRender) => {
+          if (disposed) {
+            return;
+          }
+          if (rendered.editedFile) {
+            sourceFiles.current[rendered.editedFile.path] = rendered.editedFile.content;
+          }
+          setRevision(rendered.revision);
+          setSelection(null);
+          setDocuments(
+            Object.fromEntries(
+              frames.map((frame) => {
+                const group = frame.group === 'Home' ? 'home' : 'post';
+                return [
+                  frame.id,
+                  {
+                    html: rendered.html[group],
+                    url: new URL(instance.routes[group], instance.siteUrl).href,
+                    revision: rendered.revision,
+                    inlineTextTargets: rendered.inlineTextTargets,
+                    editMarkerAttribute: rendered.editMarkerAttribute,
+                    assets,
+                  },
+                ];
+              }),
+            ),
+          );
+        };
+        session.current = { client, deliver };
+        deliver(result);
+      })
+      .catch((failure: unknown) => {
+        if (!disposed) {
+          setError(failure instanceof Error ? failure.message : String(failure));
+        }
+      });
     return () => {
       disposed = true;
-      worker.terminate();
+      session.current = null;
+      client.dispose();
     };
-  }, [fixture, revision]);
+  }, [fixture]);
+  const editText = async (
+    frameId: string,
+    edit: PreviewInlineEditRequest,
+    document: PreviewDocument,
+    signal: AbortSignal,
+  ): Promise<PreviewInlineEditResult> => {
+    if (signal.aborted) {
+      throw new DOMException('Aborted', 'AbortError');
+    }
+    const current = session.current;
+    if (!current || pendingCommit.current || owner.current !== frameId || edit.kind !== 'text') {
+      return {
+        ok: false,
+        message:
+          'Resume the current text draft before committing. Only literal text editing is available here.',
+      };
+    }
+    pendingCommit.current = true;
+    setCommitPending(true);
+    try {
+      const result = await current.client.render({ ...edit, expectedRevision: document.revision });
+      // Once submitted, publish the worker's actual accepted outcome even if
+      // the original iframe was restored while the render was running.
+      current.deliver(result);
+      return { ok: true };
+    } catch (failure) {
+      return { ok: false, message: failure instanceof Error ? failure.message : String(failure) };
+    } finally {
+      pendingCommit.current = false;
+      setCommitPending(false);
+    }
+  };
   return (
     <Stack className="h-full overflow-hidden" gap="none">
       <Box className="border-b border-border-default bg-background" padding="md">
@@ -471,7 +592,9 @@ export function CanvasHarness({ fixtureId = 'casper' }: { fixtureId?: ThemeFixtu
           Compare captures and separate expanded compositions · Open a frame for its retained fixed
           device · Expanded height changes viewport-dependent layout. Captures omit unreadable
           imagery. Neither experiment establishes animation, sticky behavior, or loaded lazy
-          content. Broader visual fidelity, inline editing, and native site tools remain pending.
+          content. Open a device and double-click literal template text to edit this local fixture.
+          Enter commits to Home and Post; Escape cancels. Changes reset on reload. Dynamic text
+          remains selectable.
         </Text>
         <Button
           aria-pressed={mode === 'captured'}
@@ -505,6 +628,63 @@ export function CanvasHarness({ fixtureId = 'casper' }: { fixtureId?: ThemeFixtu
         >
           Refresh captures
         </Button>
+        {draftOwner && (
+          <Stack gap="xs">
+            <Text size="sm">
+              {commitPending ? 'Applying text edit…' : 'A text draft is retained.'}
+            </Text>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => surfaces.current.get(draftOwner)?.open()}
+            >
+              Resume text draft
+            </Button>
+            <Button
+              disabled={commitPending}
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                const current = surfaces.current.get(draftOwner);
+                if (current) {
+                  void current.surface
+                    .cancelInlineTextEdit(new AbortController().signal)
+                    .catch((failure: unknown) =>
+                      setError(failure instanceof Error ? failure.message : String(failure)),
+                    );
+                }
+              }}
+            >
+              Cancel text draft
+            </Button>
+          </Stack>
+        )}
+        {selection && (
+          <Stack gap="xs">
+            <Text size="sm">
+              {frames.find((frame) => frame.id === selection.frameId)?.label}:{' '}
+              {selection.context.label}
+            </Text>
+            <details>
+              <summary>View template source · {selection.context.id}</summary>
+              <pre className="max-h-40 overflow-auto text-xs">
+                {(() => {
+                  const source = (
+                    selection.context.data as
+                      | { source?: { path: string; line: number } }
+                      | undefined
+                  )?.source;
+                  return source
+                    ? sourceFiles.current[source.path]
+                        ?.split('\n')
+                        .slice(Math.max(0, source.line - 2), source.line + 2)
+                        .join('\n')
+                    : 'Source correspondence unavailable.';
+                })()}
+              </pre>
+            </details>
+          </Stack>
+        )}
         {frames.map((frame) => {
           const state = captures[frame.id];
           const expandedState = expanded[frame.id];
@@ -539,21 +719,46 @@ export function CanvasHarness({ fixtureId = 'casper' }: { fixtureId?: ThemeFixtu
         <CanvasBoard
           frames={displayFrames}
           initialFitReady={initialFitReady}
-          renderFrame={(frame, onInput, { opened }) =>
+          renderFrame={(frame, onInput, { opened, open }) =>
             documents[frame.id] && probe ? (
               <Preview
                 captureTick={captureTick}
                 document={documents[frame.id]}
+                draftOwner={draftOwner}
                 expanded={expanded[frame.id]}
                 frame={frame}
                 mode={mode}
+                open={open}
                 opened={opened}
                 probe={probe}
                 onCapture={(state) => setCaptures((current) => ({ ...current, [frame.id]: state }))}
+                onEdit={(edit, document, signal) => editText(frame.id, edit, document, signal)}
                 onExpanded={(state) =>
                   setExpanded((current) => ({ ...current, [frame.id]: state }))
                 }
-                onInput={onInput}
+                onInput={(input) => {
+                  if (input.kind === 'inline-edit') {
+                    if (input.box && (!owner.current || owner.current === frame.id)) {
+                      owner.current = frame.id;
+                      setDraftOwner(frame.id);
+                    } else if (!input.box && owner.current === frame.id) {
+                      owner.current = null;
+                      setDraftOwner(null);
+                    }
+                  }
+                  onInput(input);
+                }}
+                onSelection={(id, context) =>
+                  setSelection(context ? { frameId: id, context } : null)
+                }
+                onSurface={(id, entry) => {
+                  onDeviceSurface?.(id, entry?.surface ?? null);
+                  if (entry) {
+                    surfaces.current.set(id, entry);
+                  } else {
+                    surfaces.current.delete(id);
+                  }
+                }}
               />
             ) : (
               <Box padding="md">

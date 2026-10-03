@@ -22,6 +22,7 @@ const createEditablePreview = async () => {
     html: '<style>body{margin:0;min-height:1800px}h1{margin:160px 20px 0}</style><h1 data-edit="index.hbs:1:1">Accepted heading</h1><script>window.scrollTo(0,123)</script>',
     url: 'https://example.com/',
     revision: 'read-race-1',
+    inlineTextTargets: { 'index.hbs:1:1': 'h1' },
   };
   await surface.setInlineEditMode(true, signal);
   await surface.replaceDocument(preview, null, signal);
@@ -71,7 +72,7 @@ it('keeps an old inline callback out of a restored runtime with reused document 
       setTimeout(resolve, 150);
     });
     const before = await surface.measureLayout(signal);
-    await frame.getByRole('heading').click();
+    await frame.getByRole('heading').dblClick();
     await frame.getByRole('textbox').fill('Old submitted text');
     await userEvent.keyboard('{Enter}');
     await expect.poll(() => callback.mock.calls.length).toBe(1);
@@ -98,7 +99,7 @@ it('keeps an old inline callback out of a restored runtime with reused document 
       status: 'error',
       code: 'stale_document',
     });
-    await frame.getByRole('heading').click();
+    await frame.getByRole('heading').dblClick();
     await frame.getByRole('textbox').fill('New unsubmitted draft');
     finishOld({ ok: true });
     // Wait for the callback continuation and any bridge delivery, then inspect raw DOM.
@@ -130,7 +131,7 @@ it.each(['inspect', 'capture'] as const)(
       }),
     );
     try {
-      await frame.getByRole('heading').click();
+      await frame.getByRole('heading').dblClick();
       await frame.getByRole('textbox').fill('Uncommitted secret');
       await userEvent.keyboard('{Enter}');
       await expect
@@ -172,7 +173,7 @@ it.each(['inspect', 'capture'] as const)(
     try {
       const before = await surface.measureLayout(signal);
       const injectDraft = async () => {
-        await frame.getByRole('heading').click();
+        await frame.getByRole('heading').dblClick();
         await frame.getByRole('textbox').fill('In-flight draft');
       };
       if (operation === 'inspect') {
@@ -233,6 +234,7 @@ it.each(['inspect', 'capture'] as const)(
       html: '<style>body{margin:0;min-height:1800px}h1{margin:160px 20px 0}</style><h1 data-edit="index.hbs:1:1">Accepted heading</h1><script>window.scrollTo(0,123)</script>',
       url: 'https://example.com/',
       revision: 'draft-evidence-1',
+      inlineTextTargets: { 'index.hbs:1:1': 'h1' },
     };
     const frame = page.frameLocator(page.elementLocator(iframe));
     let connection: ReturnType<CanvasProbe['attach']> | undefined;
@@ -268,7 +270,7 @@ it.each(['inspect', 'capture'] as const)(
         status: 'ok',
         data: { page: { text: 'Accepted heading' } },
       });
-      await frame.getByRole('heading', { name: 'Accepted heading' }).click();
+      await frame.getByRole('heading', { name: 'Accepted heading' }).dblClick();
       await frame.getByRole('textbox').fill('Only in my manual draft');
       for (const [tool, args] of (operation === 'inspect'
         ? [[tools[1], target()]]
@@ -291,7 +293,7 @@ it.each(['inspect', 'capture'] as const)(
         status: 'ok',
         data: { page: { text: 'Accepted heading' } },
       });
-      await frame.getByRole('heading', { name: 'Accepted heading' }).click();
+      await frame.getByRole('heading', { name: 'Accepted heading' }).dblClick();
       await frame.getByRole('textbox').fill('Accepted by the callback');
       await userEvent.keyboard('{Enter}');
       await expect.poll(() => edit.mock.calls.length).toBe(1);
