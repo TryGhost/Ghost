@@ -129,13 +129,12 @@ pnpm test:acceptance:watch                         # watch mode
 pnpm test:acceptance:watch -- --browser.headless=false   # headed, watch the browser
 ```
 
-CI splits this suite across three runners using Vitest's `--shard` option. To
-reproduce any shard from the repository root, including dependency builds:
+CI splits this suite across two runners using Vitest's `--shard` option. To
+reproduce either shard from the repository root, including dependency builds:
 
 ```bash
-pnpm nx run @tryghost/admin:test:acceptance --shard=1/3
-pnpm nx run @tryghost/admin:test:acceptance --shard=2/3
-pnpm nx run @tryghost/admin:test:acceptance --shard=3/3
+pnpm nx run @tryghost/admin:test:acceptance --shard=1/2
+pnpm nx run @tryghost/admin:test:acceptance --shard=2/2
 ```
 
 Each shard uploads its own failure screenshots. Running without `--shard` still
