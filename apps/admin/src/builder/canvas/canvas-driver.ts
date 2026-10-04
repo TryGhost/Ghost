@@ -66,6 +66,15 @@ export type CanvasPostSelection = {
   expectedRevision: string;
   expectedDataGeneration: number;
 };
+export type CanvasContentKind = 'post' | 'page' | 'tag' | 'author';
+export type CanvasRoutes = { home: string } & Partial<Record<CanvasContentKind, string>>;
+export type CanvasContentSelection = CanvasPostSelection & { kind: CanvasContentKind };
+export type CanvasContentProvider = {
+  selected: CanvasPost | null;
+  unavailableReason?: string;
+  list: (page: number, signal: AbortSignal) => Promise<CanvasPostPage>;
+  read: (id: string, signal: AbortSignal) => Promise<CanvasPost>;
+};
 export type CanvasEditorRender = {
   revision: string;
   dataGeneration: number;
@@ -73,14 +82,15 @@ export type CanvasEditorRender = {
   renderKey: string;
   workspaceId?: string;
   unchanged?: boolean;
-  html: { home: string; post?: string };
+  html: { home: string } & Partial<Record<CanvasContentKind, string>>;
   inlineTextTargets: Record<string, string>;
   editMarkerAttribute: string;
   editedFile?: { path: string; content: string };
   sourceChanges?: Record<string, string | null>;
   assets?: NonNullable<PreviewDocument['assets']>;
-  routes?: { home: string; post?: string };
+  routes?: CanvasRoutes;
   representativePost?: CanvasPost | null;
+  representativeContent?: Partial<Record<CanvasContentKind, CanvasPost | null>>;
 };
 export class CanvasRejectedError extends Error {
   readonly code: string;
@@ -103,6 +113,15 @@ export type CanvasDriver = {
   ) => Promise<CanvasEditorRender>;
   listPosts?: (page: number, signal?: AbortSignal) => Promise<CanvasPostPage>;
   selectPost?: (input: CanvasPostSelection, signal?: AbortSignal) => Promise<CanvasEditorRender>;
+  listContent?: (
+    kind: CanvasContentKind,
+    page: number,
+    signal?: AbortSignal,
+  ) => Promise<CanvasPostPage>;
+  selectContent?: (
+    input: CanvasContentSelection,
+    signal?: AbortSignal,
+  ) => Promise<CanvasEditorRender>;
   publish?: (signal: AbortSignal, options: CanvasPublishOptions) => Promise<CanvasPublishResult>;
   loadAssets: () => Promise<NonNullable<PreviewDocument['assets']>>;
   refresh?: (accepted: CanvasEditorRender) => Promise<CanvasEditorRender>;
@@ -116,7 +135,14 @@ export type CanvasSource = {
   version: string;
   revision: string;
   siteUrl: string;
-  routes: { home: string; post?: string };
+  routes: CanvasRoutes;
+  templateKinds?: Array<'home' | CanvasContentKind>;
+  content?: Partial<
+    Record<
+      CanvasContentKind,
+      Pick<CanvasContentProvider, 'selected' | 'list' | 'unavailableReason'>
+    >
+  >;
   files: Record<string, string>;
   routing: RouteCompatibility;
   createDriver: () => CanvasDriver;

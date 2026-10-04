@@ -15,6 +15,7 @@ export function CanvasPostPicker({
   revision,
   dataGeneration,
   busy,
+  kind = 'Post',
   list,
   select,
 }: {
@@ -22,6 +23,7 @@ export function CanvasPostPicker({
   revision: string;
   dataGeneration: number;
   busy: boolean;
+  kind?: string;
   list: (page: number, signal: AbortSignal) => Promise<CanvasPostPage>;
   select: (input: CanvasPostSelection, signal: AbortSignal) => Promise<CanvasEditorRender>;
 }) {
@@ -92,22 +94,22 @@ export function CanvasPostPicker({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <PageHeader.Action label="Choose preview Post" iconOnly>
+        <PageHeader.Action label={`Choose preview ${kind}`} iconOnly>
           <LucideIcon.FileText />
         </PageHeader.Action>
       </PopoverTrigger>
       <PopoverContent
         align="end"
-        aria-label="Preview Post"
+        aria-label={`Preview ${kind}`}
         className="max-h-[70vh] w-80 overflow-y-auto"
         style={{ maxWidth: 'calc(100vw - 3.2rem)' }}
       >
         <Stack gap="md">
           <Text as="h2" weight="semibold">
-            Preview Post
+            Preview {kind}
           </Text>
           <Text size="sm" tone="secondary">
-            {selected ? selected.title : 'No published Post selected'}
+            {selected ? selected.title : `No published ${kind} selected`}
           </Text>
           {error && (
             <Text role="alert" size="sm">
@@ -116,22 +118,22 @@ export function CanvasPostPicker({
           )}
           {loading && (
             <Text role="status" size="sm">
-              Loading published Posts…
+              Loading published {kind}s…
             </Text>
           )}
-          {result && !result.posts.length && <Text size="sm">No published Posts found.</Text>}
+          {result && !result.posts.length && <Text size="sm">No published {kind}s found.</Text>}
           <Stack gap="xs">
             {result?.posts.map((post) => (
               <Button
                 key={post.id}
-                aria-label={`Use Post: ${post.title}`}
+                aria-label={`Use ${kind}: ${post.title}`}
                 aria-pressed={post.id === selected?.id}
                 className="h-auto justify-start text-left whitespace-normal"
                 disabled={busy || loading || selecting}
                 variant="ghost"
                 onClick={() => void choose(post)}
               >
-                {post.title || 'Untitled Post'}
+                {post.title || `Untitled ${kind}`}
               </Button>
             ))}
           </Stack>
@@ -142,7 +144,7 @@ export function CanvasPostPicker({
               variant="outline"
               onClick={() => void load(1)}
             >
-              Load Posts
+              Load {kind}s
             </Button>
             {page > 1 && (
               <Button
@@ -151,7 +153,7 @@ export function CanvasPostPicker({
                 variant="outline"
                 onClick={() => void load(page - 1)}
               >
-                Previous Posts
+                Previous {kind}s
               </Button>
             )}
             {result?.nextPage && (
@@ -161,7 +163,7 @@ export function CanvasPostPicker({
                 variant="outline"
                 onClick={() => void load(result.nextPage!)}
               >
-                Next Posts
+                Next {kind}s
               </Button>
             )}
           </Inline>

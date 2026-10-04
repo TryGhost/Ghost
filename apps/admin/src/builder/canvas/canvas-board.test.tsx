@@ -52,6 +52,37 @@ afterEach(() => {
 });
 
 describe('canvas board', () => {
+  it('keeps every template control inside a height-dominated overview', () => {
+    const templates = ['Home', 'Post', 'Page', 'Tag', 'Author'];
+    const tall = templates.flatMap((group, index) =>
+      ['Desktop', 'Mobile'].map((device) => ({
+        id: `${group}-${device}`,
+        label: `${group} · ${device}`,
+        group,
+        x: (index % 2) * 1974 + (device === 'Mobile' ? 1488 : 0),
+        y: index < 2 ? 0 : index < 4 ? 1028 : 29156,
+        width: device === 'Desktop' ? 1440 : 390,
+        height: group === 'Page' ? (device === 'Desktop' ? 24000 : 28000) : 900,
+      })),
+    );
+    render(
+      <CanvasBoard
+        frames={tall}
+        renderFrame={() => null}
+        renderFrameActions={() => <button type="button">Content</button>}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Fit all' }));
+    for (const frame of tall) {
+      const header = screen.getByRole('button', { name: frame.label }).parentElement!;
+      expect(parseFloat(header.style.left)).toBeGreaterThanOrEqual(0);
+      expect(parseFloat(header.style.left) + 234).toBeLessThanOrEqual(1200);
+      expect(parseFloat(header.style.top)).toBeGreaterThanOrEqual(0);
+      expect(parseFloat(header.style.top) + 32).toBeLessThanOrEqual(800);
+      expect(screen.getByRole('button', { name: frame.label })).not.toHaveAttribute('inert');
+    }
+  });
+
   it('keeps live composition dimensions and documents when a header fits the camera', () => {
     const compositions = frames.map((frame) => ({
       ...frame,

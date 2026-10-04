@@ -9,6 +9,10 @@ import { createThemeRendererClient } from '@/builder/workspaces/theme/preview/pr
 import type { ThemeDraft } from '@/builder/workspaces/theme/theme-state';
 import type {
   CanvasDriver,
+  CanvasRoutes,
+  CanvasContentKind,
+  CanvasContentSelection,
+  CanvasContentProvider,
   CanvasEdit,
   CanvasEditorRender,
   CanvasPatch,
@@ -48,9 +52,11 @@ export class SiteCanvasDriver implements CanvasDriver {
     draft: ThemeDraft;
   }> = [];
   private historyIndex = -1;
-  private routes: { home: string; post?: string };
+  private routes: CanvasRoutes;
   private generation = 0;
   private selectedPost: CanvasPost | null;
+  private selectedContent: Partial<Record<CanvasContentKind, CanvasPost | null>>;
+  private readonly content: Partial<Record<CanvasContentKind, CanvasContentProvider>>;
   private readonly posts?: {
     selected: CanvasPost | null;
     list: (page: number, signal: AbortSignal) => Promise<CanvasPostPage>;
@@ -59,13 +65,18 @@ export class SiteCanvasDriver implements CanvasDriver {
 
   constructor(options: {
     draft: ThemeDraft;
-    routes: { home: string; post?: string };
+    routes: CanvasRoutes;
     posts?: SiteCanvasDriver['posts'];
+    content?: Partial<Record<CanvasContentKind, CanvasContentProvider>>;
     publish: (draft: ThemeDraft, signal: AbortSignal) => Promise<ThemePublishAdapterResult>;
   }) {
     this.routes = { ...options.routes };
     this.posts = options.posts;
-    this.selectedPost = options.posts?.selected ?? null;
+    this.content = { ...options.content, ...(options.posts ? { post: options.posts } : {}) };
+    this.selectedContent = Object.fromEntries(
+      Object.entries(this.content).map(([kind, provider]) => [kind, provider.selected]),
+    );
+    this.selectedPost = this.selectedContent.post ?? null;
     this.preview = new CanvasThemePreview({
       required: this.routes,
       getRenderGeneration: () => this.generation,
@@ -91,12 +102,18 @@ export class SiteCanvasDriver implements CanvasDriver {
           },
           signal,
         );
-        const home = await this.renderer.render(this.routes.home, draft.revision, signal);
-        const post = this.routes.post
-          ? await this.renderer.render(this.routes.post, draft.revision, signal)
-          : undefined;
+        const groups = {} as import('./canvas-theme-preview').CanvasThemeRender['groups'];
+        for (const [kind, url] of Object.entries(this.routes)) {
+          if (url) {
+            groups[kind as keyof CanvasRoutes] = await this.renderer.render(
+              url,
+              draft.revision,
+              signal,
+            );
+          }
+        }
         return {
-          groups: { home, post },
+          groups,
           inlineTextTargets: getThemeLiteralTextTargets(theme, editMarkerAttribute),
           editMarkerAttribute,
         };
@@ -235,29 +252,57 @@ export class SiteCanvasDriver implements CanvasDriver {
     input: CanvasPostSelection,
     callerSignal?: AbortSignal,
   ): Promise<CanvasEditorRender> {
-    if (!this.posts) {
-      throw new CanvasRejectedError('Post selection is unavailable.');
+    return this.selectContent({ ...input, kind: 'post' }, callerSignal);
+  }
+
+  async listContent(
+    kind: CanvasContentKind,
+    page: number,
+    callerSignal?: AbortSignal,
+  ): Promise<CanvasPostPage> {
+    const provider = this.content[kind];
+    if (!provider) {
+      throw new CanvasRejectedError(`${kind} discovery is unavailable.`);
+    }
+    const signal = AbortSignal.any([this.lifetime.signal, ...(callerSignal ? [callerSignal] : [])]);
+    signal.throwIfAborted();
+    return provider.list(page, signal);
+  }
+
+  async selectContent(
+    input: CanvasContentSelection,
+    callerSignal?: AbortSignal,
+  ): Promise<CanvasEditorRender> {
+    const provider = this.content[input.kind];
+    if (!provider) {
+      throw new CanvasRejectedError(`${input.kind} selection is unavailable.`);
     }
     const signal = AbortSignal.any([this.lifetime.signal, ...(callerSignal ? [callerSignal] : [])]);
     return this.workspace
       .updatePreviewInputs(signal, async (draft) => {
         this.expectCurrent(input.expectedRevision, input.expectedDataGeneration);
-        const post = await this.posts!.read(input.id, signal);
+        const post = await provider.read(input.id, signal);
         signal.throwIfAborted();
         if (post.id !== input.id) {
-          throw new CanvasRejectedError('The selected Post is unavailable.');
+          throw new CanvasRejectedError(`The selected ${input.kind} is unavailable.`);
         }
-        if (post.id === this.selectedPost?.id && post.url === this.routes.post && this.accepted) {
+        if (
+          post.id === this.selectedContent[input.kind]?.id &&
+          post.url === this.routes[input.kind] &&
+          this.accepted
+        ) {
           return { ...this.accepted, unchanged: true };
         }
         const previous = {
           routes: this.routes,
           generation: this.generation,
           post: this.selectedPost,
+          content: this.selectedContent,
         };
-        this.routes = { ...this.routes, post: post.url };
+        this.routes = { ...this.routes, [input.kind]: post.url };
         this.generation += 1;
-        this.selectedPost = post;
+        this.selectedContent = { ...this.selectedContent, [input.kind]: post };
+        this.selectedPost = this.selectedContent.post ?? null;
         this.preview.setRequiredRoutes(this.routes);
         try {
           this.validate(await this.preview.renderCandidate(draft, signal));
@@ -268,6 +313,7 @@ export class SiteCanvasDriver implements CanvasDriver {
           this.routes = previous.routes;
           this.generation = previous.generation;
           this.selectedPost = previous.post;
+          this.selectedContent = previous.content;
           this.preview.setRequiredRoutes(this.routes);
           throw error;
         }
@@ -278,11 +324,11 @@ export class SiteCanvasDriver implements CanvasDriver {
         }
         throw new CanvasRejectedError(
           signal.aborted
-            ? 'Post selection was cancelled before acceptance.'
+            ? `The ${input.kind} selection was cancelled before acceptance.`
             : error instanceof Error
               ? error.message
               : String(error),
-          signal.aborted ? 'cancelled' : 'post_selection_rejected',
+          signal.aborted ? 'cancelled' : 'content_selection_rejected',
         );
       });
   }
@@ -476,7 +522,10 @@ export class SiteCanvasDriver implements CanvasDriver {
       renderKey: `${draft.revision}:data-${this.generation}`,
       routes: { ...this.routes },
       representativePost: this.selectedPost ? { ...this.selectedPost } : null,
-      html: { home: output.groups.home.html, post: output.groups.post?.html },
+      representativeContent: structuredClone(this.selectedContent),
+      html: Object.fromEntries(
+        Object.entries(output.groups).map(([kind, result]) => [kind, result?.html]),
+      ) as CanvasEditorRender['html'],
       inlineTextTargets: output.inlineTextTargets,
       editMarkerAttribute: output.editMarkerAttribute,
     };

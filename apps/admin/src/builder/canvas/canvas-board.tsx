@@ -34,24 +34,63 @@ export type CanvasView = {
 };
 const boardPanOwner = Symbol('canvas-board');
 
-function frameHeaders(frames: readonly CanvasFrame[], camera: CanvasCamera, width = 154) {
-  const headers: { frame: CanvasFrame; x: number; y: number }[] = [];
-  for (const frame of frames) {
-    let x = camera.x + frame.x * camera.scale;
-    const y = camera.y + frame.y * camera.scale - 36;
-    while (
-      headers.some(
-        (header) =>
-          x < header.x + width && x + width > header.x && y < header.y + 36 && y + 36 > header.y,
-      )
-    ) {
-      const collision = headers.find(
-        (header) =>
-          x < header.x + width && x + width > header.x && y < header.y + 36 && y + 36 > header.y,
-      )!;
-      x = collision.x + width;
+function frameHeaders(
+  frames: readonly CanvasFrame[],
+  camera: CanvasCamera,
+  size: CanvasSize,
+  width = 154,
+) {
+  const headers: { frame: CanvasFrame; x: number; y: number; bounded: boolean }[] = [];
+  const grid: CanvasPoint[] = [];
+  for (let y = 8; y + 32 <= size.height - 8; y += 40) {
+    for (let x = 8; x + width <= size.width - 8; x += width + 8) {
+      grid.push({ x, y });
     }
-    headers.push({ frame, x, y });
+  }
+  for (const frame of frames) {
+    const left = camera.x + frame.x * camera.scale;
+    const top = camera.y + frame.y * camera.scale;
+    const bounded =
+      size.width >= width + 16 &&
+      size.height >= 48 &&
+      left < size.width &&
+      left + frame.width * camera.scale > 0 &&
+      top < size.height &&
+      top + frame.height * camera.scale > 0;
+    let position = { x: left, y: top - 36 };
+    if (bounded) {
+      const preferred = {
+        x: Math.max(8, Math.min(left, size.width - width - 8)),
+        y: Math.max(8, Math.min(top - 36, size.height - 40)),
+      };
+      // Prefer proximity to the page, then reflow within the viewport. World
+      // geometry cannot guarantee readable headers after fitting very tall pages.
+      const candidates = [
+        preferred,
+        ...headers.map((header) => ({
+          x: header.x + width + 8,
+          y: preferred.y,
+        })),
+        ...grid,
+      ];
+      position =
+        candidates.find(
+          ({ x, y }) =>
+            x >= 8 &&
+            x + width <= size.width - 8 &&
+            y >= 8 &&
+            y + 32 <= size.height - 8 &&
+            !headers.some(
+              (header) =>
+                header.bounded &&
+                x < header.x + width + 4 &&
+                x + width + 4 > header.x &&
+                y < header.y + 36 &&
+                y + 36 > header.y,
+            ),
+        ) ?? preferred;
+    }
+    headers.push({ frame, ...position, bounded });
   }
   return headers;
 }
@@ -278,6 +317,15 @@ export function CanvasBoard({
     });
   };
   const fit = (group?: string) => {
+    if (group && drafts.current.size) {
+      const target = frames.find((frame) => frame.group === group);
+      if (target) {
+        // Text editing keeps native scale. Reveal a frame instead of centering
+        // a whole pair wider than the viewport and stranding its controls.
+        reveal(target);
+        return;
+      }
+    }
     navigate(fitCanvas(group ? frames.filter((frame) => frame.group === group) : frames, size));
   };
   const atPoint = (point: CanvasPoint) => {
@@ -566,50 +614,54 @@ export function CanvasBoard({
             </Box>
           ))}
         </Box>
-        {frameHeaders(frames, camera, renderFrameActions ? 194 : 154).map(({ frame, x, y }) => (
-          <Inline key={frame.id} className="absolute z-20" gap="xs" style={{ left: x, top: y }}>
-            <Button
-              ref={(element) => {
-                if (element) {
-                  element.inert = x < 0 || x + 150 > size.width || y < 0 || y + 32 > size.height;
-                }
-              }}
-              aria-label={frame.label}
-              aria-pressed={selected === frame.id}
-              className="h-8 justify-start truncate bg-background px-2 text-xs shadow-sm"
-              size="sm"
-              style={{
-                width: 150,
-                height: 32,
-              }}
-              tabIndex={x >= 0 && x + 150 <= size.width && y >= 0 && y + 32 <= size.height ? 0 : -1}
-              title={`${frame.label} · ${formatNumber(frame.viewport?.width ?? frame.width)} × ${formatNumber(frame.viewport?.height ?? frame.height)} CSS pixels${frame.overviewLabel ? ` · ${frame.overviewLabel} · ${formatNumber(frame.height)} CSS pixels high` : ''}`}
-              variant="outline"
-              onClick={() => selectFrame(frame.id)}
-              onDoubleClick={() => reveal(frame)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                  event.preventDefault();
-                  reveal(frame);
-                }
-              }}
-            >
-              {frame.label}
-            </Button>
-            {renderFrameActions && (
-              <Box
+        {frameHeaders(frames, camera, size, renderFrameActions ? 234 : 154).map(
+          ({ frame, x, y }) => (
+            <Inline key={frame.id} className="absolute z-20" gap="xs" style={{ left: x, top: y }}>
+              <Button
                 ref={(element) => {
                   if (element) {
-                    element.inert =
-                      x + 154 < 0 || x + 190 > size.width || y < 0 || y + 32 > size.height;
+                    element.inert = x < 0 || x + 150 > size.width || y < 0 || y + 32 > size.height;
+                  }
+                }}
+                aria-label={frame.label}
+                aria-pressed={selected === frame.id}
+                className="h-8 justify-start truncate bg-background px-2 text-xs shadow-sm"
+                size="sm"
+                style={{
+                  width: 150,
+                  height: 32,
+                }}
+                tabIndex={
+                  x >= 0 && x + 150 <= size.width && y >= 0 && y + 32 <= size.height ? 0 : -1
+                }
+                title={`${frame.label} · ${formatNumber(frame.viewport?.width ?? frame.width)} × ${formatNumber(frame.viewport?.height ?? frame.height)} CSS pixels${frame.overviewLabel ? ` · ${frame.overviewLabel} · ${formatNumber(frame.height)} CSS pixels high` : ''}`}
+                variant="outline"
+                onClick={() => selectFrame(frame.id)}
+                onDoubleClick={() => reveal(frame)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault();
+                    reveal(frame);
                   }
                 }}
               >
-                {renderFrameActions(frame)}
-              </Box>
-            )}
-          </Inline>
-        ))}
+                {frame.label}
+              </Button>
+              {renderFrameActions && (
+                <Box
+                  ref={(element) => {
+                    if (element) {
+                      element.inert =
+                        x + 154 < 0 || x + 230 > size.width || y < 0 || y + 32 > size.height;
+                    }
+                  }}
+                >
+                  {renderFrameActions(frame)}
+                </Box>
+              )}
+            </Inline>
+          ),
+        )}
         {(panArmed || panDragging) && (
           <Box
             className={`absolute inset-0 z-30 ${panDragging ? 'cursor-grabbing' : 'cursor-grab'}`}

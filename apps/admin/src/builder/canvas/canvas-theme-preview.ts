@@ -1,12 +1,12 @@
 import { cloneThemeDraft } from '@/builder/workspaces/theme/theme-state';
 import type { ThemeDraft } from '@/builder/workspaces/theme/theme-state';
 import type { ValidationResult } from '@/builder/core/workspace';
+import type { CanvasRoutes } from './canvas-driver';
 
 export type CanvasThemeRender = {
   groups: {
     home: { url: string; status: number; html: string };
-    post?: { url: string; status: number; html: string };
-  };
+  } & Partial<Record<keyof CanvasRoutes, { url: string; status: number; html: string }>>;
   inlineTextTargets: Record<string, string>;
   editMarkerAttribute: string;
 };
@@ -16,7 +16,7 @@ export type CanvasThemeRender = {
  * before the caller delivers that exact revision to any live document. */
 export class CanvasThemePreview {
   readonly kind = 'theme-canvas';
-  private required: { home: string; post?: string };
+  private required: CanvasRoutes;
   private readonly render: (draft: ThemeDraft, signal: AbortSignal) => Promise<CanvasThemeRender>;
   private readonly getRenderGeneration: () => number;
   private tail = Promise.resolve();
@@ -25,7 +25,7 @@ export class CanvasThemePreview {
   private staged: { revision: string; generation: number; output: CanvasThemeRender } | null = null;
 
   constructor(options: {
-    required: { home: string; post?: string };
+    required: CanvasRoutes;
     render: (draft: ThemeDraft, signal: AbortSignal) => Promise<CanvasThemeRender>;
     getRenderGeneration: () => number;
   }) {
@@ -38,7 +38,7 @@ export class CanvasThemePreview {
     return this.getRenderGeneration();
   }
 
-  setRequiredRoutes(required: { home: string; post?: string }) {
+  setRequiredRoutes(required: CanvasRoutes) {
     this.required = structuredClone(required);
     // A rejected/cancelled input generation can be reused. Cached evidence must
     // never survive a route binding change, including restoration after rollback.
@@ -91,23 +91,25 @@ export class CanvasThemePreview {
             ],
           };
         }
-        const diagnostics = (['home', 'post'] as const).flatMap((group) => {
-          if (!required[group]) {
-            return [];
-          }
-          const result = output.groups[group];
-          return result?.status === 200 &&
-            result.url === required[group] &&
-            typeof result.html === 'string'
-            ? []
-            : [
-                {
-                  code: 'canvas_required_route_failed',
-                  severity: 'error' as const,
-                  message: `${group} required render did not resolve ${required[group]} successfully (status ${result?.status ?? 'unavailable'}).`,
-                },
-              ];
-        });
+        const diagnostics = (Object.keys(required) as Array<keyof CanvasRoutes>).flatMap(
+          (group) => {
+            if (!required[group]) {
+              return [];
+            }
+            const result = output.groups[group];
+            return result?.status === 200 &&
+              result.url === required[group] &&
+              typeof result.html === 'string'
+              ? []
+              : [
+                  {
+                    code: 'canvas_required_route_failed',
+                    severity: 'error' as const,
+                    message: `${group} required render did not resolve ${required[group]} successfully (status ${result?.status ?? 'unavailable'}).`,
+                  },
+                ];
+          },
+        );
         if (diagnostics.length) {
           return { valid: false, revision: candidate.revision, diagnostics };
         }

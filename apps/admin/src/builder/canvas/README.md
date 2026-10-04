@@ -34,13 +34,23 @@ React effect reconnection, iframe delivery, camera changes and unrelated query
 cache updates do not create or dispose that shared source. The normal theme route
 has no embedded chat, provider configuration or model-runtime dependency.
 
-Home and Post each have desktop/mobile live compositions and separate fixed-device
-representations. Empty sites render Home and explicitly mark Post unavailable.
+Home, Post, Page, Tag and Author each have desktop/mobile live compositions and
+separate fixed-device representations. Template pairs form rows below the tallest
+accepted composition. Readable screen-space headers reflow within the viewport
+when fitting very tall pages, independently of live frame geometry. Group navigation
+reveals a native-scale frame while a manual text draft is active. Empty sites render Home and explicitly mark each missing published context unavailable.
+Page, Tag and Author frames have bounded published-content pickers; template-group
+navigation keeps the wider board accessible. Native `ghost_canvas_list_preview_content`
+and `ghost_canvas_select_preview_content` expose the same choices with kind, resource
+ID and revision/data-generation checks. Resource selection reloads its published
+record and validates every bound route before acceptance; failures retain prior
+bindings, source and history. Initial discovery errors leave other groups usable
+and appear on the unavailable frame; explicit picker reload can retry discovery.
 Direct source-proven literal commits and atomic patches validate every bound page
 before source adoption. The compact Preview Post picker discovers published content
 on request with explicit bounded paging. Native `ghost_canvas_list_posts` and
 `ghost_canvas_select_post` use the same discovery and selection action. Selection
-reloads the published resource, validates Home/Post through the workspace mutation
+reloads the published resource, validates all bound templates through the workspace mutation
 lane, and changes both Post sizes together. It preserves source revision, dirty
 state, checkpoints, camera, mounted frames and manual values; render-input generation
 advances and old inspection handles retire. Failed or cancelled selection keeps the
@@ -396,12 +406,13 @@ journey with `VITE_CANVAS_NATIVE_WEBMCP=1 pnpm --filter @tryghost/admin
 test:acceptance src/builder/builder.acceptance.test.tsx -t "drives the real editor
 through native WebMCP" --maxWorkers=1`; the browser config enables experimental
 WebMCP for this explicit lane. This proves native browser execution, not external
-Codex discovery in the built-in WebView or model-visible image consumption. Those
-remain required integration evidence.
+Codex discovery in the built-in WebView or model-visible image consumption. The user has separately verified local desktop Codex discovery and shared-editor
+WebMCP usage. This acceptance remains browser-level evidence rather than a claim
+about the host's image-delivery format.
 
 The real-site journey in `e2e/tests/admin/theme-canvas.test.ts` exercises installed
-Source/Casper themes with uploaded cover/Post imagery, a shared Home/Post design
-change, continued manual text during candidate rendering, Post switching, settings,
+Source/Casper themes with real Home/Post/Page/Tag/Author contexts, uploaded
+cover/Post/Tag imagery, a shared template design change, continued manual text during candidate rendering, Post switching, settings,
 history and human-confirmed publication. It retains pending unpublished text and the
 new theme-copy identity after Undo. Native captures record their omission warnings;
 separate screenshots of live desktop/mobile devices show actual browser pixels.

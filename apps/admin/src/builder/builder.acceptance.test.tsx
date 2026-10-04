@@ -59,6 +59,18 @@ async function fakeBuilderWorld({
       `${theme.name}/post.hbs`,
       `<html><body>${design}{{#post}}<h1>{{title}}</h1>{{/post}}{{> footer}}</body></html>`,
     )
+    .file(
+      `${theme.name}/page.hbs`,
+      '<html><body>{{#post}}<h1>{{title}}</h1>{{/post}}{{> footer}}</body></html>',
+    )
+    .file(
+      `${theme.name}/tag.hbs`,
+      '<html><body>{{#tag}}<h1>{{name}}</h1>{{/tag}}{{> footer}}</body></html>',
+    )
+    .file(
+      `${theme.name}/author.hbs`,
+      '<html><body>{{#author}}<h1>{{name}}</h1>{{/author}}{{> footer}}</body></html>',
+    )
     .generateAsync({ type: 'arraybuffer' });
   fakeAdminEndpoint('GET', '/custom_theme_settings/', { custom_theme_settings: customSettings });
   fakeAdminEndpoint('GET', '/settings/routes/yaml/', yamlResponse(defaultRoutes), {
@@ -83,6 +95,12 @@ async function fakeBuilderWorld({
       version: '6.0',
     },
   });
+  for (const resource of ['pages', 'tags', 'authors']) {
+    fakeEndpoint('GET', `${new URL(`/ghost/api/content/${resource}/`, siteUrl).href}*`, {
+      [resource]: [],
+      meta: { pagination: { next: null } },
+    });
+  }
   fakeEndpoint('GET', `${new URL('/ghost/api/content/posts/', siteUrl).href}*`, {
     posts: post
       ? [
@@ -104,6 +122,273 @@ async function fakeBuilderWorld({
 }
 
 describe('Design Builder route', () => {
+  it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1')(
+    'keeps other templates usable after Page discovery fails and retries from its picker',
+    { timeout: 60_000 },
+    async () => {
+      await commands.canvasPointerViewport(true);
+      await fakeBuilderWorld({ post: true });
+      const siteUrl = siteResponse().site.url as string;
+      fakeEndpoint(
+        'GET',
+        `${new URL('/ghost/api/content/pages/', siteUrl).href}*`,
+        {},
+        { status: 503 },
+      );
+      const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
+      try {
+        await expect
+          .poll(
+            async () =>
+              !(
+                (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {}))
+                  .data as { editor: { busy: boolean } }
+              ).editor.busy,
+            { timeout: 30_000 },
+          )
+          .toBe(true);
+        expect(document.querySelectorAll('iframe[data-preview-status="Ready"]')).toHaveLength(8);
+        await page.getByRole('button', { name: 'Fit Page', exact: true }).click();
+        await expect
+          .element(page.getByText('Could not load published pages. Try loading again.').first())
+          .toBeVisible();
+        const about = {
+          id: 'about',
+          slug: 'about',
+          title: 'About after retry',
+          url: new URL('about/', siteUrl).href,
+          html: '<p>Page body</p>',
+          visibility: 'public',
+        };
+        fakeEndpoint('GET', `${new URL('/ghost/api/content/pages/', siteUrl).href}*`, {
+          pages: [about],
+          meta: { pagination: { next: null } },
+        });
+        fakeEndpoint('GET', `${new URL('/ghost/api/content/posts/slug/about/', siteUrl).href}*`, {
+          posts: [],
+        });
+        await page
+          .getByRole('button', { name: 'Choose preview Page', exact: true })
+          .first()
+          .click();
+        await page
+          .getByRole('button', { name: 'Use Page: About after retry', exact: true })
+          .click();
+        await expect
+          .poll(() => document.querySelectorAll('iframe[data-preview-status="Ready"]').length, {
+            timeout: 30_000,
+          })
+          .toBe(12);
+        expect(
+          [...document.querySelectorAll<HTMLIFrameElement>('iframe')]
+            .filter((iframe) => iframe.title.startsWith('Page'))
+            .every((iframe) => iframe.srcdoc.includes(about.title)),
+        ).toBe(true);
+      } finally {
+        await screen.unmount();
+        await commands.canvasPointerViewport(false);
+      }
+    },
+  );
+  it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1')(
+    'renders and switches Page Tag and Author content through the shared native canvas',
+    { timeout: 90_000 },
+    async () => {
+      await commands.canvasPointerViewport(true);
+      await fakeBuilderWorld({ post: true });
+      const siteUrl = siteResponse().site.url as string;
+      const about = {
+        id: 'about',
+        slug: 'about',
+        title: 'About us',
+        url: new URL('about/', siteUrl).href,
+        html: '<p>Page body</p>',
+        visibility: 'public',
+      };
+      const contact = {
+        ...about,
+        id: 'contact',
+        slug: 'contact',
+        title: 'Contact us',
+        url: new URL('contact/', siteUrl).href,
+      };
+      const tag = {
+        id: 'news',
+        slug: 'news',
+        name: 'News',
+        url: new URL('tag/news/', siteUrl).href,
+      };
+      const author = { id: 'jo', slug: 'jo', name: 'Jo', url: new URL('author/jo/', siteUrl).href };
+      for (const [resource, items] of [
+        ['pages', [about, contact]],
+        ['tags', [tag]],
+        ['authors', [author]],
+      ] as const) {
+        fakeEndpoint('GET', `${new URL(`/ghost/api/content/${resource}/`, siteUrl).href}*`, {
+          [resource]: items,
+          meta: { pagination: { next: null } },
+        });
+      }
+      for (const item of [about, contact]) {
+        fakeEndpoint(
+          'GET',
+          `${new URL(`/ghost/api/content/posts/slug/${item.slug}/`, siteUrl).href}*`,
+          { posts: [] },
+        );
+        fakeEndpoint(
+          'GET',
+          `${new URL(`/ghost/api/content/pages/slug/${item.slug}/`, siteUrl).href}*`,
+          { pages: [item] },
+        );
+        fakeEndpoint('GET', `${new URL(`/ghost/api/content/pages/${item.id}/`, siteUrl).href}*`, {
+          pages: [item],
+        });
+      }
+      const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
+      const state = async () =>
+        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {})).data as {
+          workspaceId: string;
+          frames: Array<{ id: string; device?: { status: string }; expanded?: { status: string } }>;
+          editor: {
+            sourceRevision: string;
+            busy: boolean;
+            dirty: boolean;
+            history: unknown;
+            manualDraft: { text: string } | null;
+            render: {
+              dataGeneration: number;
+              representativeContent: Record<string, { id: string }>;
+            };
+          };
+        };
+      const ready = () =>
+        expect
+          .poll(
+            async () => {
+              const current = await state();
+              return (
+                !current.editor.busy &&
+                current.frames.length === 10 &&
+                current.frames
+                  .filter((frame) => !(current.editor.manualDraft && frame.id === 'home-mobile'))
+                  .every(
+                    (frame) =>
+                      frame.device?.status === 'current' && frame.expanded?.status === 'current',
+                  )
+              );
+            },
+            { timeout: 30_000 },
+          )
+          .toBe(true);
+      try {
+        await ready();
+        const initial = await state();
+        await page.getByRole('button', { name: 'Fit all', exact: true }).click();
+        for (const group of ['Home', 'Post', 'Page', 'Tag', 'Author']) {
+          expect(
+            page
+              .getByRole('button', { name: `${group} · Desktop`, exact: true })
+              .element()
+              .closest('[inert]'),
+          ).toBeNull();
+          if (group !== 'Home' && group !== 'Post') {
+            expect(
+              page
+                .getByRole('button', { name: `Choose preview ${group}`, exact: true })
+                .first()
+                .element()
+                .closest('[inert]'),
+            ).toBeNull();
+          }
+        }
+        for (const [group, title] of [
+          ['Page', 'About us'],
+          ['Tag', 'News'],
+          ['Author', 'Jo'],
+        ]) {
+          const previews = [...document.querySelectorAll<HTMLIFrameElement>('iframe')].filter(
+            (iframe) => iframe.title.startsWith(`${group} ·`),
+          );
+          expect(previews).toHaveLength(4);
+          expect(previews.every((iframe) => iframe.srcdoc.includes(title))).toBe(true);
+        }
+        expect(initial.editor.render.representativeContent).toMatchObject({
+          page: { id: 'about' },
+          tag: { id: 'news' },
+          author: { id: 'jo' },
+        });
+        await page.getByRole('button', { name: 'Home · Mobile', exact: true }).dblClick();
+        const home = page.frameLocator(
+          page.getByTitle('Home · Mobile composition', { exact: true }),
+        );
+        await home.getByRole('link', { name: 'Canvas footer', exact: true }).dblClick();
+        await home
+          .getByRole('textbox', { name: /^Edit / })
+          .fill('Manual draft across Page selection');
+        await page.getByRole('button', { name: 'Fit Page', exact: true }).click();
+        await page
+          .getByRole('button', { name: 'Choose preview Page', exact: true })
+          .first()
+          .click();
+        await page.getByRole('button', { name: 'Use Page: Contact us', exact: true }).click();
+        await ready();
+        const switched = await state();
+        expect(switched.editor.render.representativeContent.page.id).toBe('contact');
+        expect(switched.editor.sourceRevision).toBe(initial.editor.sourceRevision);
+        expect(switched.editor.history).toEqual(initial.editor.history);
+        expect(switched.editor.dirty).toBe(false);
+        expect(switched.editor.manualDraft?.text).toBe('Manual draft across Page selection');
+        const listed = await commands.canvasNativeTool('ghost_canvas_list_preview_content', {
+          workspaceId: switched.workspaceId,
+          expectedRevision: switched.editor.sourceRevision,
+          kind: 'page',
+        });
+        expect(listed.data).toMatchObject({
+          kind: 'page',
+          items: [{ id: 'about' }, { id: 'contact' }],
+        });
+        const selected = await commands.canvasNativeTool('ghost_canvas_select_preview_content', {
+          workspaceId: switched.workspaceId,
+          expectedRevision: switched.editor.sourceRevision,
+          expectedDataGeneration: switched.editor.render.dataGeneration,
+          kind: 'page',
+          id: 'about',
+        });
+        expect(selected.data).toMatchObject({ accepted: true });
+        await ready();
+        expect((await state()).editor.manualDraft?.text).toBe('Manual draft across Page selection');
+        await page.getByRole('button', { name: 'Cancel text draft', exact: true }).click();
+        await ready();
+        const beforePatch = await state();
+        const patch = await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
+          workspaceId: beforePatch.workspaceId,
+          expectedRevision: beforePatch.editor.sourceRevision,
+          expectedDataGeneration: beforePatch.editor.render.dataGeneration,
+          files: [
+            {
+              operation: 'replace',
+              path: 'partials/footer.hbs',
+              oldText: 'Canvas footer',
+              newText: 'Shared template design',
+            },
+          ],
+        });
+        expect(patch.data).toMatchObject({ accepted: true });
+        await ready();
+        expect(document.querySelectorAll('iframe[data-preview-status="Ready"]')).toHaveLength(20);
+        expect(
+          [...document.querySelectorAll<HTMLIFrameElement>('iframe')].every((iframe) =>
+            iframe.srcdoc.includes('Shared template design'),
+          ),
+        ).toBe(true);
+        expect((await state()).editor.dirty).toBe(true);
+      } finally {
+        await screen.unmount();
+        await commands.canvasPointerViewport(false);
+      }
+    },
+  );
+
   it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1')(
     'keeps expanded Home ready when a validated dynamic hero image loads after adoption',
     { timeout: 60_000 },
@@ -164,9 +449,11 @@ describe('Design Builder route', () => {
           .toBe(true);
         const awaitingImage = await state();
         expect(
-          awaitingImage.frames.every(
-            (frame) => frame.device?.status === 'current' && frame.expanded?.status === 'current',
-          ),
+          awaitingImage.frames
+            .filter((frame) => frame.device)
+            .every(
+              (frame) => frame.device?.status === 'current' && frame.expanded?.status === 'current',
+            ),
         ).toBe(true);
         expect(
           parseFloat(
@@ -198,11 +485,13 @@ describe('Design Builder route', () => {
           .toBe(true);
         const final = await state();
         expect(
-          final.frames.every(
-            (frame) => frame.device?.status === 'current' && frame.expanded?.status === 'current',
-          ),
+          final.frames
+            .filter((frame) => frame.device)
+            .every(
+              (frame) => frame.device?.status === 'current' && frame.expanded?.status === 'current',
+            ),
         ).toBe(true);
-        for (const frame of final.frames) {
+        for (const frame of final.frames.filter((entry) => entry.device)) {
           const beforeImage = awaitingImage.frames.find((before) => before.id === frame.id)!;
           expect(frame.device!.documentInstanceId).toBe(beforeImage.device!.documentInstanceId);
           expect(frame.expanded!.documentInstanceId).toBe(beforeImage.expanded!.documentInstanceId);
@@ -1038,6 +1327,8 @@ describe('Design Builder route', () => {
             occurrence: selected.context.data.occurrence,
           }),
         ).toMatchObject({ status: 'ok', data: { element: { text: 'Canvas footer' } } });
+        // The larger overview keeps text tiny; reveal its live frame before selecting text.
+        await page.getByRole('button', { name: 'Home · Mobile', exact: true }).dblClick();
         await frame.getByRole('link', { name: 'Canvas footer', exact: true }).click();
         await expect
           .poll(async () => (await state()).editor.selection?.frameId)
@@ -1551,11 +1842,13 @@ describe('Design Builder route', () => {
               const current = await state();
               return (
                 !current.editor?.busy &&
-                current.frames.every(
-                  (descriptor) =>
-                    descriptor.device?.status === 'current' &&
-                    descriptor.device.revision === current.editor?.sourceRevision,
-                )
+                current.frames
+                  .filter((frame) => frame.device)
+                  .every(
+                    (descriptor) =>
+                      descriptor.device?.status === 'current' &&
+                      descriptor.device.revision === current.editor?.sourceRevision,
+                  )
               );
             },
             { timeout: 30_000 },

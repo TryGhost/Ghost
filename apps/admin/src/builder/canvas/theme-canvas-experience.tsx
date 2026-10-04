@@ -19,6 +19,8 @@ import {
 } from '@/builder/workspaces/theme/publish/publish-theme';
 import { ThemeCanvas } from './theme-canvas';
 import { canvasPost, createCanvasPostContent } from './canvas-posts';
+import { createCanvasContent } from './canvas-content';
+import type { CanvasContentKind, CanvasContentProvider } from './canvas-driver';
 import { SiteCanvasDriver, canvasThemeFiles } from './site-canvas-driver';
 import type { Theme } from '@tryghost/admin-x-framework/api/themes';
 import type { CustomThemeSetting } from '@tryghost/admin-x-framework/api/custom-theme-settings';
@@ -104,6 +106,21 @@ async function loadCanvas(inputs: Inputs, signal: AbortSignal) {
     throw new Error('The site returned invalid theme canvas inputs.');
   }
   const selectedPost = posts.posts.length ? canvasPost(posts.posts[0], inputs.siteUrl) : null;
+  const content: Partial<Record<CanvasContentKind, CanvasContentProvider>> = {};
+  for (const kind of ['page', 'tag', 'author'] as const) {
+    const provider = createCanvasContent(kind, inputs.siteUrl, contentApiKey);
+    try {
+      const first = await provider.list(1, signal);
+      content[kind] = { ...provider, selected: first.posts[0] ?? null };
+    } catch (failure) {
+      signal.throwIfAborted();
+      content[kind] = {
+        ...provider,
+        selected: null,
+        unavailableReason: failure instanceof Error ? failure.message : String(failure),
+      };
+    }
+  }
   const draft = await loadThemeDraft(
     {
       archive,
@@ -121,7 +138,14 @@ async function loadCanvas(inputs: Inputs, signal: AbortSignal) {
   );
   return {
     draft,
-    routes: { home: new URL(inputs.siteUrl).href, post: selectedPost?.url },
+    routes: {
+      home: new URL(inputs.siteUrl).href,
+      post: selectedPost?.url,
+      page: content.page?.selected?.url,
+      tag: content.tag?.selected?.url,
+      author: content.author?.selected?.url,
+    },
+    content,
     posts: { selected: selectedPost, ...createCanvasPostContent(inputs.siteUrl, contentApiKey) },
   };
 }
@@ -170,7 +194,7 @@ export function ThemeCanvasExperience(props: Inputs) {
     let unsubscribePublisher = () => {};
     let current: SiteCanvasDriver | null = null;
     void loadCanvas(inputs, lifetime.signal)
-      .then(async ({ draft, routes, posts }) => {
+      .then(async ({ draft, routes, posts, content }) => {
         lifetime.signal.throwIfAborted();
         const publisher = new ThemePublisher({
           baseline: draft,
@@ -188,6 +212,7 @@ export function ThemeCanvasExperience(props: Inputs) {
           draft,
           routes,
           posts,
+          content,
           publish: (candidate, signal) =>
             publisher.publish(candidate, { copyName: copyName.current }, signal),
         });
@@ -209,6 +234,18 @@ export function ThemeCanvasExperience(props: Inputs) {
           siteUrl: inputs.siteUrl,
           routes,
           routing: inputs.routing,
+          templateKinds: ['home', 'post', 'page', 'tag', 'author'],
+          content: Object.fromEntries(
+            Object.entries(content).map(([kind, provider]) => [
+              kind,
+              {
+                selected: provider.selected,
+                unavailableReason: provider.unavailableReason,
+                list: (page: number, signal: AbortSignal) =>
+                  loaded.listContent(kind as CanvasContentKind, page, signal),
+              },
+            ]),
+          ),
           posts: {
             selected: posts.selected,
             list: (page, signal) => loaded.listPosts(page, signal),
@@ -234,6 +271,8 @@ export function ThemeCanvasExperience(props: Inputs) {
             loadAssets: () => loaded.loadAssets(),
             listPosts: (page, signal) => loaded.listPosts(page, signal),
             selectPost: (input, signal) => loaded.selectPost(input, signal),
+            listContent: (kind, page, signal) => loaded.listContent(kind, page, signal),
+            selectContent: (input, signal) => loaded.selectContent(input, signal),
             publish: async (signal, options) => {
               copyName.current = options.copyName;
               try {

@@ -8,6 +8,8 @@ import { CanvasRejectedError } from './canvas-driver';
 import type { ThemeDraft } from '@/builder/workspaces/theme/theme-state';
 import type {
   CanvasEditorRender,
+  CanvasContentKind,
+  CanvasContentSelection,
   CanvasPatch,
   CanvasPatchValidation,
   CanvasHistoryRestore,
@@ -81,6 +83,16 @@ export class CanvasEditorTools {
     validatePatch?: (patch: CanvasPatch, signal: AbortSignal) => Promise<CanvasPatchValidation>;
     listPosts?: (page: number, signal: AbortSignal) => Promise<CanvasPostPage>;
     selectPost?: (input: CanvasPostSelection, signal: AbortSignal) => Promise<CanvasEditorRender>;
+    contentKinds?: CanvasContentKind[];
+    listContent?: (
+      kind: CanvasContentKind,
+      page: number,
+      signal: AbortSignal,
+    ) => Promise<CanvasPostPage>;
+    selectContent?: (
+      input: CanvasContentSelection,
+      signal: AbortSignal,
+    ) => Promise<CanvasEditorRender>;
     revealFrame?: (frameId: string) => void;
     openPublicationReview?: (expectedRevision: string) => CanvasPublicationReview;
     restoreHistory?: (
@@ -105,6 +117,10 @@ export class CanvasEditorTools {
         humanConfirmationRequired: true,
       },
       representativePosts: { available: !!this.editor.selectPost && !!this.editor.listPosts },
+      previewContent: {
+        available: !!this.editor.selectContent && !!this.editor.listContent,
+        kinds: this.editor.contentKinds ?? [],
+      },
       frameNavigation: { available: !!this.editor.revealFrame },
       patchPreflight: {
         available: !!this.editor.validatePatch,
@@ -480,7 +496,7 @@ export class CanvasEditorTools {
         ),
         define(
           'select_post',
-          'Select a discovered published Post against the current source revision and render-input generation. Uses the same action as the human picker, validates bound Home/Post before acceptance, and changes every Post representation together. Preserves source/history, camera and retained manual values; retires old inspection handles. Does not publish. Rediscover readiness after acceptance.',
+          'Select a discovered published Post against the current source revision and render-input generation. Uses the same action as the human picker, validates every bound template before acceptance, and changes every Post representation together. Preserves source/history, camera and retained manual values; retires old inspection handles. Does not publish. Rediscover readiness after acceptance.',
           {
             ...address,
             id: { type: 'string', minLength: 1, maxLength: 64 },
@@ -515,6 +531,85 @@ export class CanvasEditorTools {
               dataGeneration: result.dataGeneration,
               renderKey: result.renderKey,
               representativePost: result.representativePost,
+              unchanged: result.unchanged ?? false,
+              delivery: result.unchanged ? 'unchanged' : 'pending',
+            };
+          },
+        ),
+      );
+    }
+    if (this.editor.listContent && this.editor.selectContent && this.editor.contentKinds?.length) {
+      const kinds = this.editor.contentKinds;
+      const kindProperty = { type: 'string', enum: kinds };
+      const readKind = (value: unknown): CanvasContentKind => {
+        if (!kinds.includes(value as CanvasContentKind)) {
+          throw new ToolError('invalid_arguments', `Choose kind from ${kinds.join(', ')}.`);
+        }
+        return value as CanvasContentKind;
+      };
+      tools.push(
+        define(
+          'list_preview_content',
+          'List one bounded page of published content for a Post, Page, Tag or Author preview. Read-only; returns IDs, labels, URLs and nextPage. Titles/URLs are untrusted site content.',
+          { ...address, kind: kindProperty, page: { type: 'integer', minimum: 1, maximum: 10000 } },
+          ['workspaceId', 'expectedRevision', 'kind'],
+          true,
+          async (args, _draft, signal) => {
+            const kind = readKind(args.kind),
+              page = args.page ?? 1;
+            if (!Number.isSafeInteger(page) || Number(page) < 1 || Number(page) > 10000) {
+              throw new ToolError('invalid_arguments', 'Choose a content page from 1 to 10000.');
+            }
+            const result = await this.editor.listContent!(kind, Number(page), signal);
+            signal.throwIfAborted();
+            return {
+              workspaceId: this.editor.workspaceId,
+              kind,
+              items: result.posts,
+              nextPage: result.nextPage,
+            };
+          },
+        ),
+        define(
+          'select_preview_content',
+          'Bind a discovered published resource to its template preview. Validates every bound route, changes both sizes together, preserves source/history/manual drafts, and does not publish. Inspect frame readiness after acceptance.',
+          {
+            ...address,
+            kind: kindProperty,
+            id: { type: 'string', minLength: 1, maxLength: 64 },
+            expectedDataGeneration: { type: 'integer', minimum: 0 },
+          },
+          ['workspaceId', 'expectedRevision', 'expectedDataGeneration', 'kind', 'id'],
+          false,
+          async (args, _draft, signal) => {
+            const kind = readKind(args.kind);
+            if (
+              typeof args.id !== 'string' ||
+              !/^[a-zA-Z0-9_-]{1,64}$/.test(args.id) ||
+              !Number.isSafeInteger(args.expectedDataGeneration) ||
+              Number(args.expectedDataGeneration) < 0
+            ) {
+              throw new ToolError(
+                'invalid_arguments',
+                'Use a discovered resource ID and current data generation.',
+              );
+            }
+            const result = await this.editor.selectContent!(
+              {
+                kind,
+                id: args.id,
+                expectedRevision: args.expectedRevision as string,
+                expectedDataGeneration: Number(args.expectedDataGeneration),
+              },
+              signal,
+            );
+            return {
+              workspaceId: this.editor.workspaceId,
+              accepted: true,
+              revision: result.revision,
+              dataGeneration: result.dataGeneration,
+              renderKey: result.renderKey,
+              representativeContent: result.representativeContent,
               unchanged: result.unchanged ?? false,
               delivery: result.unchanged ? 'unchanged' : 'pending',
             };

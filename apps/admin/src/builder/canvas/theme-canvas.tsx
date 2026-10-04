@@ -21,12 +21,15 @@ import { CanvasRejectedError } from './canvas-driver';
 import { CanvasEditorTools } from './canvas-editor-tools';
 import { CanvasDesignSettings } from './canvas-design-settings';
 import { CanvasPostPicker } from './canvas-post-picker';
+import { canvasContentLabels } from './canvas-content';
 import type { CanvasSettingsDraft } from './canvas-design-settings';
 import { resolveCanvasTextDraft } from './canvas-text-draft';
 import { parseEditMarker } from '@tryghost/theme-renderer/markers';
 import type { CanvasTextDraft } from './canvas-text-draft';
 import type {
   CanvasSource,
+  CanvasContentKind,
+  CanvasContentSelection,
   CanvasDriver,
   CanvasPatch,
   CanvasEditorRender,
@@ -65,44 +68,32 @@ type ExpandedState =
 
 type OverviewMode = 'expanded' | 'device';
 
-const frames: CanvasFrame[] = [
-  {
-    id: 'home-desktop',
-    label: 'Home · Desktop',
-    group: 'Home',
-    x: 0,
-    y: 0,
-    width: 1440,
-    height: 900,
-  },
-  {
-    id: 'home-mobile',
-    label: 'Home · Mobile',
-    group: 'Home',
-    x: 1488,
-    y: 0,
-    width: 390,
-    height: 844,
-  },
-  {
-    id: 'post-desktop',
-    label: 'Post · Desktop',
-    group: 'Post',
-    x: 1974,
-    y: 0,
-    width: 1440,
-    height: 900,
-  },
-  {
-    id: 'post-mobile',
-    label: 'Post · Mobile',
-    group: 'Post',
-    x: 3462,
-    y: 0,
-    width: 390,
-    height: 844,
-  },
-];
+function templateFrames(kinds: Array<'home' | CanvasContentKind>): CanvasFrame[] {
+  return kinds.flatMap((kind, index) => {
+    const label = kind === 'home' ? 'Home' : canvasContentLabels[kind];
+    return [
+      {
+        id: `${kind}-desktop`,
+        label: `${label} · Desktop`,
+        group: label,
+        x: (index % 2) * 1974,
+        y: Math.floor(index / 2) * 1028,
+        width: 1440,
+        height: 900,
+      },
+      {
+        id: `${kind}-mobile`,
+        label: `${label} · Mobile`,
+        group: label,
+        x: (index % 2) * 1974 + 1488,
+        y: Math.floor(index / 2) * 1028,
+        width: 390,
+        height: 844,
+      },
+    ];
+  });
+}
+const frameKind = (frame: CanvasFrame) => frame.id.split('-')[0] as 'home' | CanvasContentKind;
 
 function LivePreview({
   frame,
@@ -420,12 +411,16 @@ export function ThemeCanvas({
   }) => void;
 }) {
   const [source] = useState(() => inputSource);
+  const [frames] = useState(() => templateFrames(source.templateKinds ?? ['home', 'post']));
   const routing = source.routing;
   const [routes, setRoutes] = useState(source.routes);
-  const [representativePost, setRepresentativePost] = useState(source.posts?.selected ?? null);
-  const availableFrames = frames.filter(
-    (frame) => routes[frame.group === 'Home' ? 'home' : 'post'],
+  const [representativeContent, setRepresentativeContent] = useState(() =>
+    Object.fromEntries(
+      Object.entries(source.content ?? {}).map(([kind, provider]) => [kind, provider.selected]),
+    ),
   );
+  const [representativePost, setRepresentativePost] = useState(source.posts?.selected ?? null);
+  const availableFrames = frames.filter((frame) => routes[frameKind(frame)]);
   const busy = useRef(externalBusy);
   busy.current = externalBusy;
   const activityObserver = useRef(onActivity);
@@ -542,6 +537,9 @@ export function ThemeCanvas({
   });
   const editorObservation = useRef<Record<string, unknown>>({});
   editorObservation.current = { selection };
+  const contentAction = useRef<
+    ((input: CanvasContentSelection, signal?: AbortSignal) => Promise<CanvasEditorRender>) | null
+  >(null);
   const postAction = useRef<
     ((input: CanvasPostSelection, signal?: AbortSignal) => Promise<CanvasEditorRender>) | null
   >(null);
@@ -575,6 +573,7 @@ export function ThemeCanvas({
                   dataGeneration: acceptedRender.current.dataGeneration,
                   observation: 'explicit-content-selection',
                   representativePost: acceptedRender.current.representativePost ?? null,
+                  representativeContent: acceptedRender.current.representativeContent ?? {},
                   routes: acceptedRender.current.routes ?? source.routes,
                 }
               : null,
@@ -622,6 +621,29 @@ export function ThemeCanvas({
             return client.validateThemePatch(patch, signal);
           },
           listPosts: source.posts?.list,
+          contentKinds: source.content
+            ? [
+                ...(Object.keys(source.content) as CanvasContentKind[]),
+                ...(source.posts ? ['post' as const] : []),
+              ]
+            : undefined,
+          listContent: source.content
+            ? (kind, page, signal) => {
+                const client = session.current?.client;
+                if (!client?.listContent) {
+                  throw new CanvasRejectedError('Content discovery is unavailable.');
+                }
+                return client.listContent(kind, page, signal);
+              }
+            : undefined,
+          selectContent: source.content
+            ? (input, signal) => {
+                if (!contentAction.current) {
+                  throw new CanvasRejectedError('The editor is not ready.');
+                }
+                return contentAction.current(input, signal);
+              }
+            : undefined,
           revealFrame: (frameId) => {
             if (!revealAction.current) {
               throw new CanvasRejectedError('The canvas is not ready.', 'target_unavailable');
@@ -698,6 +720,18 @@ export function ThemeCanvas({
       overviewLabel: displayedMode === 'expanded' ? 'Live composition' : 'Fixed viewport fallback',
     };
   });
+  // Keep a template pair together and place later rows below the tallest live page.
+  const rowBottoms: number[] = [];
+  for (const [index, frame] of displayFrames.entries()) {
+    const row = Math.floor(index / 4);
+    rowBottoms[row] = Math.max(rowBottoms[row] ?? 0, frame.height);
+  }
+  const rowOffsets = rowBottoms.map((_, row) =>
+    rowBottoms.slice(0, row).reduce((sum, height) => sum + height + 128, 0),
+  );
+  for (const [index, frame] of displayFrames.entries()) {
+    frame.y = rowOffsets[Math.floor(index / 4)];
+  }
   revealAction.current = (frameId) => {
     const kind = mode === 'device' || fallbacks.has(frameId) ? 'device' : 'expanded';
     const target = surfaces.current.get(`${frameId}:${kind}`);
@@ -796,12 +830,15 @@ export function ThemeCanvas({
           if (rendered.representativePost !== undefined) {
             setRepresentativePost(rendered.representativePost);
           }
+          if (rendered.representativeContent) {
+            setRepresentativeContent(rendered.representativeContent);
+          }
           setDocuments(
             Object.fromEntries(
               frames
-                .filter((frame) => nextRoutes[frame.group === 'Home' ? 'home' : 'post'])
+                .filter((frame) => nextRoutes[frameKind(frame)])
                 .map((frame) => {
-                  const group = frame.group === 'Home' ? 'home' : 'post';
+                  const group = frameKind(frame);
                   return [
                     frame.id,
                     {
@@ -1085,6 +1122,14 @@ export function ThemeCanvas({
       return client.selectPost(input, signal);
     }, signal);
   postAction.current = selectPost;
+  const selectContent = (input: CanvasContentSelection, signal?: AbortSignal) =>
+    runEditAction((client) => {
+      if (!client.selectContent) {
+        throw new CanvasRejectedError('Content selection is unavailable.');
+      }
+      return client.selectContent(input, signal);
+    }, signal);
+  contentAction.current = selectContent;
   const applyThemePatch = useCallback(
     (patch: CanvasPatch, signal?: AbortSignal) =>
       runEditAction((client) => client.applyThemePatch(patch, signal), signal),
@@ -1822,8 +1867,12 @@ export function ThemeCanvas({
                   />
                 ))}
               </>
-            ) : !routes.post && frame.group === 'Post' ? (
-              <Text>No published Post is available.</Text>
+            ) : !routes[frameKind(frame)] ? (
+              <Text>
+                {(frameKind(frame) !== 'home' &&
+                  source.content?.[frameKind(frame) as CanvasContentKind]?.unavailableReason) ||
+                  `No published ${frame.group} is available.`}
+              </Text>
             ) : null
           }
           renderFrameActions={(frame) => {
@@ -1835,46 +1884,67 @@ export function ThemeCanvas({
                 : state?.status === 'current' && state.composition.status !== 'settled'
                   ? 'Full page reached a layout limit. Use fixed viewport.'
                   : null;
+            const kind = frameKind(frame);
+            const provider = kind === 'home' ? undefined : source.content?.[kind];
             return (
-              <Button
-                aria-label={
-                  device
-                    ? `Use full page for ${frame.label}`
-                    : `Use fixed viewport for ${frame.label}`
-                }
-                className="size-8 bg-background"
-                disabled={!!draftOwner || mode === 'device'}
-                size="sm"
-                title={device ? 'Use full page' : (warning ?? 'Use fixed viewport')}
-                variant="outline"
-                onClick={() => {
-                  latestInteractionIntent.current = performance.timeOrigin + performance.now();
-                  for (const kind of ['device', 'expanded']) {
-                    void surfaces.current
-                      .get(`${frame.id}:${kind}`)
-                      ?.surface.cancelPendingInlineTextEdit(new AbortController().signal)
-                      .catch(() => {});
-                  }
-                  setSelection((current) => (current?.frameId === frame.id ? null : current));
-                  setFallbacks((current) => {
-                    const next = new Set(current);
-                    if (next.has(frame.id)) {
-                      next.delete(frame.id);
-                    } else {
-                      next.add(frame.id);
+              <Inline gap="xs">
+                {provider && kind !== 'home' && (
+                  <CanvasPostPicker
+                    busy={
+                      externalBusy ||
+                      commitPending ||
+                      refreshing ||
+                      !!undeliveredAccepted.current ||
+                      !delivery.current?.allComplete
                     }
-                    return next;
-                  });
-                }}
-              >
-                {device ? (
-                  <LucideIcon.Layers />
-                ) : warning ? (
-                  <LucideIcon.TriangleAlert />
-                ) : (
-                  <LucideIcon.Monitor />
+                    dataGeneration={renderState.dataGeneration}
+                    kind={canvasContentLabels[kind]}
+                    list={provider.list}
+                    revision={revision}
+                    select={(input, signal) => selectContent({ ...input, kind }, signal)}
+                    selected={representativeContent[kind] ?? null}
+                  />
                 )}
-              </Button>
+                <Button
+                  aria-label={
+                    device
+                      ? `Use full page for ${frame.label}`
+                      : `Use fixed viewport for ${frame.label}`
+                  }
+                  className="size-8 bg-background"
+                  disabled={!!draftOwner || mode === 'device'}
+                  size="sm"
+                  title={device ? 'Use full page' : (warning ?? 'Use fixed viewport')}
+                  variant="outline"
+                  onClick={() => {
+                    latestInteractionIntent.current = performance.timeOrigin + performance.now();
+                    for (const representation of ['device', 'expanded']) {
+                      void surfaces.current
+                        .get(`${frame.id}:${representation}`)
+                        ?.surface.cancelPendingInlineTextEdit(new AbortController().signal)
+                        .catch(() => {});
+                    }
+                    setSelection((current) => (current?.frameId === frame.id ? null : current));
+                    setFallbacks((current) => {
+                      const next = new Set(current);
+                      if (next.has(frame.id)) {
+                        next.delete(frame.id);
+                      } else {
+                        next.add(frame.id);
+                      }
+                      return next;
+                    });
+                  }}
+                >
+                  {device ? (
+                    <LucideIcon.Layers />
+                  ) : warning ? (
+                    <LucideIcon.TriangleAlert />
+                  ) : (
+                    <LucideIcon.Monitor />
+                  )}
+                </Button>
+              </Inline>
             );
           }}
           onSelectionIntent={() => {

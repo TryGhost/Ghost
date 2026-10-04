@@ -1,4 +1,4 @@
-import { createPostFactory } from '@/data-factory';
+import { createPostFactory, createTagFactory } from '@/data-factory';
 import { expect, test } from '@/helpers/playwright';
 import { randomUUID } from 'node:crypto';
 import { usePerTestIsolation } from '@/helpers/playwright/isolation';
@@ -15,7 +15,11 @@ type CanvasState = {
     sourceRevision: string;
     busy: boolean;
     manualDraft: { text: string } | null;
-    render: { dataGeneration: number; representativePost: { id: string } };
+    render: {
+      dataGeneration: number;
+      representativePost: { id: string };
+      representativeContent: Record<string, { id: string; url: string }>;
+    };
     history: unknown;
     selection: {
       target: Record<string, unknown>;
@@ -103,6 +107,27 @@ function heroSelector(theme: string, label: string): string {
   return theme === 'source' ? '.gh-header' : '.site-header-content';
 }
 
+async function revealCanvasText(page: Page, label: string, text: string) {
+  await page.getByRole('button', { name: label, exact: true }).dblclick();
+  const target = page
+    .frameLocator(`iframe[title="${label} composition"]`)
+    .getByText(text, { exact: true });
+  const bounds = await target.boundingBox();
+  expect(bounds).not.toBeNull();
+  const viewport = page.viewportSize()!;
+  // A full-page iframe does not scroll its enclosing canvas. Pan to below-fold text.
+  await page
+    .getByRole('region', { name: 'Theme canvas', exact: true })
+    .hover({ position: { x: 8, y: 64 } });
+  await page.mouse.wheel(0, bounds!.y + bounds!.height / 2 - viewport.height / 2);
+  await expect
+    .poll(async () => {
+      const current = await target.boundingBox();
+      return !!current && current.y >= 0 && current.y + current.height < viewport.height;
+    })
+    .toBe(true);
+}
+
 usePerTestIsolation();
 test.use({
   actionTimeout: 10_000,
@@ -130,8 +155,25 @@ test.describe('Ghost Admin - Live theme canvas', () => {
       });
       expect(settings.ok()).toBe(true);
       const posts = createPostFactory(page.request);
+      const tag = await createTagFactory(page.request).create({
+        name: 'Canvas archive',
+        slug: 'canvas-archive',
+        feature_image: cover,
+      });
+      const pageData = posts.build({
+        title: 'About the canvas',
+        slug: 'canvas-about',
+        type: 'page',
+        status: 'published',
+        feature_image: cover,
+      });
+      const createdPage = await page.request.post('/ghost/api/admin/pages/', {
+        data: { pages: [pageData] },
+      });
+      expect(createdPage.ok()).toBe(true);
       const first = await posts.create({
         title: 'Canvas published article',
+        tags: [{ id: tag.id }],
         status: 'published',
         feature_image: cover,
       });
@@ -150,7 +192,10 @@ test.describe('Ghost Admin - Live theme canvas', () => {
         await page.reload();
         await page.goto('/ghost/#/builder/theme');
         await expect(page.getByRole('region', { name: 'Theme canvas', exact: true })).toBeVisible();
-        const labels = ['Home · Desktop', 'Home · Mobile', 'Post · Desktop', 'Post · Mobile'];
+        const labels = ['Home', 'Post', 'Page', 'Tag', 'Author'].flatMap((group) => [
+          `${group} · Desktop`,
+          `${group} · Mobile`,
+        ]);
         const state = () =>
           nativeTool<CanvasState>(page, 'ghost_canvas_probe_get_editor_state', {});
         const ready = async () => {
@@ -165,7 +210,9 @@ test.describe('Ghost Admin - Live theme canvas', () => {
           }
         };
         const assertImages = async () => {
-          for (const label of labels) {
+          for (const label of labels.filter(
+            (value) => value.startsWith('Home') || value.startsWith('Post'),
+          )) {
             await expect(
               page
                 .frameLocator(`iframe[title="${label} composition"]`)
@@ -297,6 +344,7 @@ test.describe('Ghost Admin - Live theme canvas', () => {
         await ready();
         await expect(page.getByRole('button', { name: 'Undo theme change' })).toBeEnabled();
         await page.getByRole('button', { name: 'Fit all', exact: true }).click();
+        await revealCanvasText(page, 'Post · Mobile', 'Canvas draft footer');
         await post.getByText('Canvas draft footer', { exact: true }).dblclick();
         const text = post.getByRole('textbox', { name: /^Edit / });
         await expect(text).toBeVisible();
@@ -393,7 +441,9 @@ test.describe('Ghost Admin - Live theme canvas', () => {
         await ready();
         expect((await state()).editor.manualDraft).toMatchObject({ text: 'Canvas footer' });
         await assertImages();
-        for (const label of labels) {
+        for (const label of labels.filter(
+          (value) => value.startsWith('Home') || value.startsWith('Post'),
+        )) {
           await expect(
             page
               .frameLocator(`iframe[title="${label} composition"]`)
@@ -493,6 +543,7 @@ test.describe('Ghost Admin - Live theme canvas', () => {
         await page.getByRole('button', { name: 'Live compositions', exact: true }).click();
         await page.getByRole('button', { name: 'Fit all', exact: true }).click();
 
+        await revealCanvasText(page, 'Post · Mobile', 'Canvas footer');
         await post.getByText('Canvas footer', { exact: true }).dblclick();
         await post.getByRole('textbox', { name: /^Edit / }).fill('Private footer draft');
 
@@ -520,7 +571,15 @@ test.describe('Ghost Admin - Live theme canvas', () => {
         const published = await page.request.get('/');
         expect(published.status()).toBe(200);
         expect(await published.text()).toContain('Canvas footer');
-        for (const url of ['/', `/${first.slug}/`, `/${second.slug}/`]) {
+        const authorUrl = (await state()).editor.render.representativeContent.author.url;
+        for (const url of [
+          '/',
+          `/${first.slug}/`,
+          `/${second.slug}/`,
+          '/canvas-about/',
+          '/tag/canvas-archive/',
+          authorUrl,
+        ]) {
           const response = await page.request.get(url);
           expect(response.status()).toBe(200);
           const html = await response.text();
@@ -531,10 +590,20 @@ test.describe('Ghost Admin - Live theme canvas', () => {
           const css = await stylesheet.text();
           expect(css).toContain('border-bottom: 12px solid #e89538');
           expect(css).toContain('font-size: clamp(40px, 6vw, 80px)');
-          expect(html).toContain('canvas-landscape');
           expect(html).toContain('Canvas footer');
           expect(html).not.toContain('Private footer draft');
           expect(html).toContain('has-serif-title');
+        }
+        for (const url of [
+          '/',
+          `/${first.slug}/`,
+          `/${second.slug}/`,
+          '/canvas-about/',
+          '/tag/canvas-archive/',
+        ]) {
+          const response = await page.request.get(url);
+          expect(response.status()).toBe(200);
+          expect(await response.text()).toContain('canvas-landscape');
         }
         for (const url of [`/${first.slug}/`, `/${second.slug}/`]) {
           const response = await page.request.get(url);
@@ -563,6 +632,21 @@ test.describe('Ghost Admin - Live theme canvas', () => {
         }
         await page.getByRole('button', { name: 'Fit all', exact: true }).click();
         await page.screenshot({ path: testInfo.outputPath(`${theme}-published-overview.png`) });
+      } catch (error) {
+        await testInfo.attach('canvas-failure-state', {
+          body: JSON.stringify(
+            await page.evaluate(() => ({
+              url: location.href,
+              canvas: !!document.querySelector('[aria-label="Theme canvas"]'),
+              tools: (
+                navigator as Navigator & { modelContextTesting?: { listTools(): unknown } }
+              ).modelContextTesting?.listTools(),
+              text: document.body.innerText.slice(-3000),
+            })),
+          ),
+          contentType: 'application/json',
+        });
+        throw error;
       } finally {
         releaseCandidate();
         await changing?.catch(() => {});

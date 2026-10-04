@@ -45,6 +45,110 @@ async function loadDraft() {
   );
 }
 
+it('validates every bound template before adopting a shared theme patch', async () => {
+  const draft = await loadDraft();
+  let failTag = false;
+  renderer.render.mockImplementation((url: string) =>
+    Promise.resolve({
+      url,
+      status: failTag && url.includes('/tag/') ? 500 : 200,
+      html: `<h1>${url}</h1>`,
+      diagnostics: [],
+    }),
+  );
+  const routes = {
+    home: 'https://example.com/',
+    post: 'https://example.com/post/',
+    page: 'https://example.com/about/',
+    tag: 'https://example.com/tag/news/',
+    author: 'https://example.com/author/jo/',
+  };
+  const driver = new SiteCanvasDriver({
+    draft,
+    routes,
+    publish: (candidate) => Promise.resolve({ ok: true, revision: candidate.revision }),
+  });
+  try {
+    await driver.start();
+    const before = await driver.render();
+    expect(before.html.page).toContain('/about/');
+    expect(before.html.tag).toContain('/tag/news/');
+    expect(before.html.author).toContain('/author/jo/');
+    const history = driver.readHistory();
+    failTag = true;
+    await expect(
+      driver.applyThemePatch({
+        expectedRevision: before.revision,
+        expectedDataGeneration: before.dataGeneration,
+        files: [{ operation: 'write', path: 'index.hbs', content: '<h1>Candidate</h1>' }],
+      }),
+    ).rejects.toMatchObject({ code: 'render_invalid' });
+    expect(await driver.render()).toEqual(before);
+    expect(driver.readHistory()).toEqual(history);
+    expect(driver.workspace.draft.files['index.hbs'].content).toBe('<h1>Home</h1>');
+  } finally {
+    driver.dispose();
+    vi.clearAllMocks();
+  }
+});
+
+it('rolls back a failed Page selection and guards later selection against stale generations', async () => {
+  const draft = await loadDraft();
+  const first = { id: 'about', title: 'About', url: 'https://example.com/about/' };
+  const second = { id: 'contact', title: 'Contact', url: 'https://example.com/contact/' };
+  let fail = true;
+  renderer.render.mockImplementation((url: string) =>
+    Promise.resolve({
+      url,
+      status: fail && url === second.url ? 500 : 200,
+      html: '<h1>Page</h1>',
+      diagnostics: [],
+    }),
+  );
+  const driver = new SiteCanvasDriver({
+    draft,
+    routes: { home: 'https://example.com/', page: first.url },
+    content: {
+      page: {
+        selected: first,
+        list: () => Promise.resolve({ posts: [first, second], nextPage: null }),
+        read: () => Promise.resolve(second),
+      },
+    },
+    publish: (candidate) => Promise.resolve({ ok: true, revision: candidate.revision }),
+  });
+  try {
+    await driver.start();
+    const before = await driver.render();
+    const history = driver.readHistory();
+    const selection = {
+      kind: 'page' as const,
+      id: second.id,
+      expectedRevision: before.revision,
+      expectedDataGeneration: before.dataGeneration,
+    };
+    await expect(driver.selectContent(selection)).rejects.toThrow('required render');
+    expect(await driver.render()).toEqual(before);
+    expect(driver.readHistory()).toEqual(history);
+    fail = false;
+    const accepted = await driver.selectContent(selection);
+    expect(accepted).toMatchObject({
+      revision: before.revision,
+      dataGeneration: 1,
+      routes: { page: second.url },
+      representativeContent: { page: second },
+    });
+    expect(driver.readHistory()).toEqual(history);
+    await expect(driver.selectContent(selection)).rejects.toMatchObject({
+      code: 'change_rejected',
+    });
+    expect(await driver.render()).toEqual({ ...accepted, unchanged: false });
+  } finally {
+    driver.dispose();
+    vi.clearAllMocks();
+  }
+});
+
 it('preflights complete Home/Post validation without adopting a draft, checkpoint or render', async () => {
   const draft = await loadDraft();
   renderer.render.mockImplementation((url: string) =>
