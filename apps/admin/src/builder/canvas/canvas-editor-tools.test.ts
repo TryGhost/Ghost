@@ -31,6 +31,48 @@ async function fixture() {
   return { draft, apply, tools, read, patch, args };
 }
 
+it('opens human publication review only at the accepted revision and rejects confirmation arguments', async () => {
+  const { draft, apply } = await fixture();
+  const open = vi.fn(() => ({
+    revision: draft.revision,
+    theme: { name: 'demo', builtIn: false },
+    files: [],
+    settings: [],
+    totalFiles: 0,
+    totalSettings: 0,
+    pending: { text: true, settings: false },
+  }));
+  const tools = new CanvasEditorTools({
+    workspaceId: 'workspace',
+    readDraft: () => draft,
+    state: () => ({}),
+    applyPatch: apply,
+    openPublicationReview: open,
+  });
+  const review = tools
+    .tools()
+    .find((tool) => tool.name === 'ghost_canvas_open_publication_review')!;
+  const args = { workspaceId: 'workspace', expectedRevision: draft.revision };
+  expect(tools.state().publicationTool).toMatchObject({
+    available: true,
+    humanConfirmationRequired: true,
+  });
+  expect(await review.execute({ ...args, confirm: true })).toMatchObject({
+    code: 'invalid_arguments',
+  });
+  expect(await review.execute({ ...args, expectedRevision: 'old' })).toMatchObject({
+    code: 'stale_revision',
+  });
+  expect(open).not.toHaveBeenCalled();
+  expect(await review.execute(args)).toMatchObject({
+    status: 'ok',
+    data: { opened: true, review: { pending: { text: true } } },
+  });
+  expect(open).toHaveBeenCalledWith(draft.revision);
+  expect(apply).not.toHaveBeenCalled();
+  tools.dispose();
+});
+
 it('reads only the addressed revision of loaded source and supported settings without renderer credentials', async () => {
   const { tools, read, args } = await fixture();
   expect(tools.state()).toMatchObject({ selection: { frameId: 'home-mobile' } });

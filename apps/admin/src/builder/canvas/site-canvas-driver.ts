@@ -17,6 +17,7 @@ import type {
   CanvasPost,
   CanvasPostPage,
   CanvasPostSelection,
+  CanvasPublishResult,
 } from './canvas-driver';
 import type { PublishResult, ValidationResult } from '@/builder/core/workspace';
 import type { PreviewDocument } from '@/builder/workspaces/theme/preview/preview-document';
@@ -381,8 +382,13 @@ export class SiteCanvasDriver implements CanvasDriver {
     };
   }
 
-  async publish(signal: AbortSignal): Promise<PublishResult & { previewWarning?: string }> {
-    const result = await this.workspace.publish(AbortSignal.any([signal, this.lifetime.signal]));
+  async publish(
+    signal: AbortSignal,
+    options: { expectedRevision?: string; notify?: boolean } = {},
+  ): Promise<CanvasPublishResult> {
+    const result = await this.workspace.publish(AbortSignal.any([signal, this.lifetime.signal]), {
+      expectedRevision: options.expectedRevision,
+    });
     if (result.ok) {
       try {
         this.validate(
@@ -390,9 +396,12 @@ export class SiteCanvasDriver implements CanvasDriver {
         );
         this.accepted = this.currentRender();
         this.recordCheckpoint('Published theme');
-        for (const deliver of this.deliveries) {
-          deliver(this.accepted);
+        if (options.notify !== false) {
+          for (const deliver of this.deliveries) {
+            deliver(this.accepted);
+          }
         }
+        return { ...result, render: this.accepted };
       } catch (error) {
         return {
           ...result,

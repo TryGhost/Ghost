@@ -2,6 +2,21 @@ import type { ThemeFilePatch } from '@/builder/workspaces/theme/theme-patch';
 import type { PreviewDocument } from '@/builder/workspaces/theme/preview/preview-document';
 import type { RouteCompatibility } from './route-compatibility';
 import type { ThemeDraft } from '@/builder/workspaces/theme/theme-state';
+import type { ThemePublicationReview } from '@/builder/workspaces/theme/theme-workspace';
+import type { PublishResult } from '@/builder/core/workspace';
+
+export type CanvasPublicationReview = ThemePublicationReview & {
+  pending: { text: boolean; settings: boolean };
+};
+export type CanvasPublishOptions = { expectedRevision: string; copyName?: string };
+export type CanvasPublishResult = PublishResult & {
+  previewWarning?: string;
+  render?: CanvasEditorRender;
+};
+export type CanvasPublicationActions = {
+  openReview: (expectedRevision?: string) => CanvasPublicationReview;
+  publish: (options: CanvasPublishOptions) => Promise<CanvasPublishResult>;
+};
 
 export type CanvasPatch = {
   expectedRevision: string;
@@ -76,6 +91,7 @@ export type CanvasDriver = {
   ) => Promise<CanvasEditorRender>;
   listPosts?: (page: number, signal?: AbortSignal) => Promise<CanvasPostPage>;
   selectPost?: (input: CanvasPostSelection, signal?: AbortSignal) => Promise<CanvasEditorRender>;
+  publish?: (signal: AbortSignal, options: CanvasPublishOptions) => Promise<CanvasPublishResult>;
   loadAssets: () => Promise<NonNullable<PreviewDocument['assets']>>;
   refresh?: (accepted: CanvasEditorRender) => Promise<CanvasEditorRender>;
   subscribe?: (deliver: (render: CanvasEditorRender) => void) => () => void;
@@ -93,7 +109,12 @@ export type CanvasSource = {
   routing: RouteCompatibility;
   createDriver: () => CanvasDriver;
   refreshLabel?: (snapshot: string) => string;
-  editor?: { readDraft: () => ThemeDraft; state: () => Record<string, unknown> };
+  editor?: {
+    readDraft: () => ThemeDraft;
+    state: () => Record<string, unknown>;
+    readPublicationReview?: () => ThemePublicationReview;
+    openPublicationReview?: (review: CanvasPublicationReview) => void;
+  };
   posts?: {
     selected: CanvasPost | null;
     list: (page: number, signal: AbortSignal) => Promise<CanvasPostPage>;

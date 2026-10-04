@@ -35,6 +35,149 @@ async function loadInput(): Promise<ThemeLoadInput> {
 }
 
 describe('ThemeWorkspace', () => {
+  it('rejects a reviewed revision changed by an earlier queued edit before publication transport', async () => {
+    const source = await loadInput();
+    let release!: () => void;
+    let entered!: () => void;
+    const rendering = new Promise<void>((resolve) => {
+      entered = resolve;
+    });
+    const publish = vi.fn((draft: ThemeDraft) =>
+      Promise.resolve({ ok: true as const, revision: draft.revision }),
+    );
+    const workspace = new ThemeWorkspace({
+      id: 'review:queued',
+      title: 'Review',
+      load: (signal) => loadThemeDraft(source, signal),
+      preview: {
+        kind: 'canvas',
+        renderCandidate: (draft) =>
+          new Promise((resolve) => {
+            release = () => resolve({ valid: true, diagnostics: [], revision: draft.revision });
+            entered();
+          }),
+      },
+      publish,
+    });
+    const signal = new AbortController().signal;
+    await workspace.load(signal);
+    const reviewed = workspace.draft.revision;
+    const edit = workspace.applyThemePatch(
+      {
+        revision: reviewed,
+        files: [{ operation: 'write', path: 'index.hbs', content: '<main>Later</main>' }],
+      },
+      signal,
+      { promote: true },
+    );
+    await rendering;
+    const confirmation = workspace.publish(signal, { expectedRevision: reviewed });
+    release();
+    expect((await edit).ok).toBe(true);
+    expect(await confirmation).toMatchObject({
+      ok: false,
+      error: { code: 'stale_publication_review' },
+    });
+    expect(publish).not.toHaveBeenCalled();
+    expect(workspace.draft.files['index.hbs'].content).toBe('<main>Later</main>');
+  });
+
+  it('serializes source changes behind publication so successful upload cannot erase a later edit', async () => {
+    const source = await loadInput();
+    let release!: () => void;
+    let entered!: () => void;
+    const uploading = new Promise<void>((resolve) => {
+      entered = resolve;
+    });
+    const render = vi.fn((draft: ThemeDraft) =>
+      Promise.resolve({ valid: true, diagnostics: [], revision: draft.revision }),
+    );
+    const workspace = new ThemeWorkspace({
+      id: 'review:upload',
+      title: 'Review',
+      load: (signal) => loadThemeDraft(source, signal),
+      preview: { kind: 'canvas', renderCandidate: render },
+      publish: (draft) =>
+        new Promise((resolve) => {
+          release = () => resolve({ ok: true, revision: draft.revision });
+          entered();
+        }),
+    });
+    const signal = new AbortController().signal;
+    await workspace.load(signal);
+    const reviewed = workspace.draft.revision;
+    let dirty = false;
+    const unsubscribe = workspace.subscribe((state) => {
+      dirty = state.dirty;
+    });
+    const confirmation = workspace.publish(signal, { expectedRevision: reviewed });
+    await uploading;
+    const inputsChanged = vi.fn();
+    const binding = workspace.updatePreviewInputs(signal, () => {
+      inputsChanged();
+      return Promise.resolve();
+    });
+    const edit = workspace.applyThemePatch(
+      {
+        revision: reviewed,
+        files: [{ operation: 'write', path: 'index.hbs', content: '<main>After upload</main>' }],
+      },
+      signal,
+      { promote: true },
+    );
+    await Promise.resolve();
+    expect(inputsChanged).not.toHaveBeenCalled();
+    expect(render).not.toHaveBeenCalled();
+    release();
+    expect((await confirmation).ok).toBe(true);
+    await binding;
+    expect((await edit).ok).toBe(true);
+    expect(workspace.draft.files['index.hbs'].content).toBe('<main>After upload</main>');
+    expect(dirty).toBe(true);
+    unsubscribe();
+  });
+
+  it('summarizes only accepted changes against the publication baseline and resets it after publication', async () => {
+    const source = await loadInput();
+    const workspace = new ThemeWorkspace({
+      id: 'review:summary',
+      title: 'Review',
+      load: (signal) => loadThemeDraft(source, signal),
+      preview: {
+        kind: 'canvas',
+        renderCandidate: (draft) =>
+          Promise.resolve({ valid: true, diagnostics: [], revision: draft.revision }),
+      },
+      publish: (draft) => Promise.resolve({ ok: true, revision: draft.revision }),
+    });
+    const signal = new AbortController().signal;
+    await workspace.load(signal);
+    await workspace.applyThemePatch(
+      {
+        revision: workspace.draft.revision,
+        files: [
+          { operation: 'write', path: 'index.hbs', content: '<main>Reviewed</main>' },
+          { operation: 'delete', path: 'assets/logo.png' },
+        ],
+        settings: { 'global.accent_color': '#123456' },
+      },
+      signal,
+      { promote: true },
+    );
+    const review = workspace.readPublicationReview();
+    expect(review).toMatchObject({
+      revision: workspace.draft.revision,
+      files: [
+        { path: 'assets/logo.png', change: 'deleted' },
+        { path: 'index.hbs', change: 'modified' },
+      ],
+      settings: ['global.accent_color'],
+    });
+    expect(JSON.stringify(review)).not.toContain('content-key');
+    await workspace.publish(signal, { expectedRevision: review.revision });
+    expect(workspace.readPublicationReview()).toMatchObject({ files: [], settings: [] });
+  });
+
   it('validates a combined patch once and promotes it independently of a Builder session', async () => {
     const source = await loadInput();
     const render = vi.fn((candidate: ThemeDraft) => {

@@ -33,6 +33,10 @@ import type {
   CanvasHistory,
   CanvasHistoryRestore,
   CanvasPostSelection,
+  CanvasPublicationActions,
+  CanvasPublicationReview,
+  CanvasPublishOptions,
+  CanvasPublishResult,
 } from './canvas-driver';
 import type { ReactNode } from 'react';
 
@@ -402,7 +406,7 @@ export function ThemeCanvas({
   onProbe?: (probe: CanvasProbe | null) => void;
   onApplyThemePatch?: (apply: ((patch: CanvasPatch) => Promise<CanvasEditorRender>) | null) => void;
   headerLeading?: ReactNode;
-  headerActions?: ReactNode;
+  headerActions?: ReactNode | ((actions: CanvasPublicationActions) => ReactNode);
   externalBusy?: boolean;
   externalNotice?: string | null;
   onActivity?: (activity: {
@@ -543,6 +547,9 @@ export function ThemeCanvas({
   const historyAction = useRef<
     ((input: CanvasHistoryRestore, signal?: AbortSignal) => Promise<CanvasEditorRender>) | null
   >(null);
+  const publicationAction = useRef<((expectedRevision?: string) => CanvasPublicationReview) | null>(
+    null,
+  );
   useEffect(() => {
     const current = new CanvasProbe(frames, source.siteUrl, {
       workspaceId: source.fixture ? undefined : source.id,
@@ -600,6 +607,14 @@ export function ThemeCanvas({
             return patchAction.current(patch, signal);
           },
           listPosts: source.posts?.list,
+          openPublicationReview: source.editor.openPublicationReview
+            ? (expectedRevision) => {
+                if (!publicationAction.current) {
+                  throw new CanvasRejectedError('The editor is not ready.');
+                }
+                return publicationAction.current(expectedRevision);
+              }
+            : undefined,
           selectPost: source.posts
             ? (input, signal) => {
                 if (!postAction.current) {
@@ -1062,6 +1077,71 @@ export function ThemeCanvas({
   };
   patchAction.current = applyThemePatch;
   historyAction.current = restoreHistory;
+  const openPublicationReview = (expectedRevision?: string): CanvasPublicationReview => {
+    if (
+      !source.editor?.readPublicationReview ||
+      !source.editor.openPublicationReview ||
+      !session.current ||
+      !acceptedRender.current ||
+      busy.current ||
+      pendingCommit.current ||
+      pendingRefresh.current ||
+      refreshUncertain.current ||
+      undeliveredAccepted.current ||
+      !delivery.current?.allComplete
+    ) {
+      throw new CanvasRejectedError(
+        'Wait for the current theme operation before reviewing publication.',
+      );
+    }
+    const summary = source.editor.readPublicationReview();
+    if (expectedRevision !== undefined && expectedRevision !== summary.revision) {
+      throw new CanvasRejectedError(
+        'Read the latest revision before reviewing publication.',
+        'stale_revision',
+      );
+    }
+    if (!source.editor.state().dirty) {
+      throw new CanvasRejectedError(
+        'There are no accepted theme changes to publish.',
+        'no_changes',
+      );
+    }
+    const review = {
+      ...summary,
+      pending: { text: !!owner.current || !!textDraft.current, settings: !!settingsDraft.current },
+    };
+    source.editor.openPublicationReview(review);
+    return review;
+  };
+  publicationAction.current = openPublicationReview;
+  const publishTheme = async (options: CanvasPublishOptions): Promise<CanvasPublishResult> => {
+    let outcome: CanvasPublishResult | undefined;
+    try {
+      await runEditAction(async (client) => {
+        if (!client.publish) {
+          throw new CanvasRejectedError('Publication is unavailable.');
+        }
+        outcome = await client.publish(new AbortController().signal, options);
+        if (!outcome.ok) {
+          throw new CanvasRejectedError(outcome.error.message, outcome.error.code);
+        }
+        if (!outcome.render) {
+          // Server success is authoritative. Preserve the old document/text and
+          // retire its evidence; a refresh failure must never look like rejection.
+          throw new Error(
+            outcome.previewWarning ?? 'The theme was published, but its preview could not refresh.',
+          );
+        }
+        return outcome.render;
+      });
+    } catch (failure) {
+      if (!outcome) {
+        throw failure;
+      }
+    }
+    return outcome!;
+  };
   const resumeTextDraft = async () => {
     const draft = textDraft.current;
     const render = acceptedRender.current;
@@ -1184,7 +1264,11 @@ export function ThemeCanvas({
           <PageHeader.Left>
             {headerLeading}
             <PageHeader.Title className="text-base">
-              Canvas<span className="hidden sm:inline"> · {source.label}</span>
+              Canvas
+              <span className="hidden sm:inline">
+                {' '}
+                · {source.editor?.readDraft().theme.name ?? source.label}
+              </span>
             </PageHeader.Title>
           </PageHeader.Left>
           <PageHeader.Actions>
@@ -1445,7 +1529,11 @@ export function ThemeCanvas({
                 )}
               </PageHeader.ActionGroup>
               {headerActions && (
-                <PageHeader.ActionGroup.Primary>{headerActions}</PageHeader.ActionGroup.Primary>
+                <PageHeader.ActionGroup.Primary>
+                  {typeof headerActions === 'function'
+                    ? headerActions({ openReview: openPublicationReview, publish: publishTheme })
+                    : headerActions}
+                </PageHeader.ActionGroup.Primary>
               )}
             </PageHeader.ActionGroup>
           </PageHeader.Actions>

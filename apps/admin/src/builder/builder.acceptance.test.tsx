@@ -29,24 +29,31 @@ const yamlResponse = (source: string) =>
 async function fakeBuilderWorld({
   post = false,
   customSettings = [],
-}: { post?: boolean; customSettings?: CustomThemeSetting[] } = {}): Promise<void> {
-  const theme = activeThemeResponse().themes[0];
-  if (!theme) {
+  themeName,
+}: {
+  post?: boolean;
+  customSettings?: CustomThemeSetting[];
+  themeName?: string;
+} = {}): Promise<void> {
+  const activeTheme = activeThemeResponse().themes[0];
+  if (!activeTheme) {
     throw new Error('The active theme fixture is missing.');
   }
+  const theme = { ...activeTheme, name: themeName ?? activeTheme.name };
   fakeAdminEndpoint('GET', '/themes/', { themes: [theme] });
+  fakeAdminEndpoint('GET', '/themes/active/', { themes: [theme] });
   const design = customSettings.length
     ? '<style>body{color:{{@site.accent_color}};background:{{@custom.card_color}};}</style><p>{{@custom.short_label}} · {{@custom.card_layout}}</p>'
     : '';
   const archive = await new JSZip()
-    .file('casper/package.json', JSON.stringify({ name: 'casper', version: '1.0.0' }))
+    .file(`${theme.name}/package.json`, JSON.stringify({ name: theme.name, version: '1.0.0' }))
     .file(
-      'casper/index.hbs',
-      `<!doctype html><html><head><title>{{@site.title}}</title></head><body>${design}<main data-edit="casper/index.hbs:1:1"><h1>{{@site.title}}</h1>{{> footer}}</main></body></html>`,
+      `${theme.name}/index.hbs`,
+      `<!doctype html><html><head><title>{{@site.title}}</title></head><body>${design}<main data-edit="${theme.name}/index.hbs:1:1"><h1>{{@site.title}}</h1>{{> footer}}</main></body></html>`,
     )
-    .file('casper/partials/footer.hbs', '<a href="/">Canvas footer</a>')
+    .file(`${theme.name}/partials/footer.hbs`, '<a href="/">Canvas footer</a>')
     .file(
-      'casper/post.hbs',
+      `${theme.name}/post.hbs`,
       `<html><body>${design}{{#post}}<h1>{{title}}</h1>{{/post}}{{> footer}}</body></html>`,
     )
     .generateAsync({ type: 'arraybuffer' });
@@ -93,6 +100,218 @@ async function fakeBuilderWorld({
 }
 
 describe('Design Builder route', () => {
+  it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1')(
+    'publishes the reviewed custom theme in place and reports a later preview failure truthfully',
+    { timeout: 60_000 },
+    async () => {
+      await fakeBuilderWorld({ post: true, themeName: 'edition' });
+      const upload = fakeAdminEndpoint('POST', '/themes/upload/', {
+        themes: [{ name: 'edition', active: true, package: {} }],
+      });
+      const preview = vi.spyOn(CanvasThemePreview.prototype, 'renderCandidate');
+      const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
+      const state = async () =>
+        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {}))
+          .data as ReturnType<CanvasProbe['state']>;
+      try {
+        await expect
+          .poll(async () => !(await state()).editor?.busy, { timeout: 30_000 })
+          .toBe(true);
+        const initial = await state();
+        expect(
+          await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
+            workspaceId: initial.workspaceId,
+            expectedRevision: initial.editor!.sourceRevision,
+            expectedDataGeneration: 0,
+            files: [
+              {
+                operation: 'write',
+                path: 'partials/footer.hbs',
+                content: '<a href="/">Custom publication</a>',
+              },
+            ],
+          }),
+        ).toMatchObject({ status: 'ok' });
+        await expect
+          .poll(async () => !(await state()).editor?.busy, { timeout: 30_000 })
+          .toBe(true);
+        preview.mockResolvedValue({
+          valid: false,
+          revision: (await state()).editor!.sourceRevision,
+          diagnostics: [
+            { severity: 'error', code: 'preview_offline', message: 'Post preview offline' },
+          ],
+        });
+        await page.getByRole('button', { name: 'Publish changes', exact: true }).click();
+        const dialog = page.getByRole('alertdialog');
+        await expect
+          .element(dialog.getByText('partials/footer.hbs', { exact: false }))
+          .toBeVisible();
+        await dialog.getByRole('button', { name: 'Publish changes', exact: true }).click();
+        await expect.element(dialog).not.toBeInTheDocument();
+        await expect
+          .element(page.getByText(/The theme was published, but its preview could not refresh/))
+          .toBeVisible();
+        expect(upload.requests).toHaveLength(1);
+        expect(upload.lastRequest?.body).toMatchObject({ file: { filename: 'edition.zip' } });
+        expect((await state()).editor).toMatchObject({
+          dirty: false,
+          theme: { name: 'edition', builtIn: false },
+          busy: true,
+        });
+        expect(
+          await commands.canvasNativeTool('ghost_canvas_open_publication_review', {
+            workspaceId: (await state()).workspaceId,
+            expectedRevision: (await state()).editor!.sourceRevision,
+          }),
+        ).toMatchObject({ status: 'error' });
+      } finally {
+        vi.restoreAllMocks();
+        await screen.unmount();
+      }
+    },
+  );
+
+  it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1')(
+    'shares pinned publication review with native opening and preserves excluded manual drafts',
+    { timeout: 60_000 },
+    async () => {
+      await commands.canvasPointerViewport(true);
+      await fakeBuilderWorld({ post: true });
+      const themeName = activeThemeResponse().themes[0].name;
+      const upload = fakeAdminEndpoint('POST', `/themes/upload/?copy_settings_from=${themeName}`, {
+        themes: [{ name: `${themeName}-edited`, active: false, package: {} }],
+      });
+      fakeAdminEndpoint('PUT', `/themes/${themeName}-edited/activate/`, {
+        themes: [{ name: `${themeName}-edited`, active: true, package: {} }],
+      });
+      const settings = fakeAdminEndpoint('PUT', '/settings/', ({ body }) => body);
+      const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
+      const state = async () =>
+        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {}))
+          .data as ReturnType<CanvasProbe['state']>;
+      const ready = () =>
+        expect.poll(async () => !(await state()).editor?.busy, { timeout: 30_000 }).toBe(true);
+      const address = async () => {
+        const current = await state();
+        return {
+          workspaceId: current.workspaceId,
+          expectedRevision: current.editor!.sourceRevision,
+          expectedDataGeneration: (current.editor!.render as { dataGeneration: number })
+            .dataGeneration,
+        };
+      };
+      try {
+        await ready();
+        expect(
+          await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
+            ...(await address()),
+            files: [
+              {
+                operation: 'write',
+                path: 'partials/footer.hbs',
+                content: '<a href="/">Reviewed footer</a>',
+              },
+            ],
+            settings: { 'global.accent_color': '#123456' },
+          }),
+        ).toMatchObject({ status: 'ok' });
+        await ready();
+        await page.getByRole('button', { name: /^Theme settings/ }).click();
+        await page
+          .getByRole('textbox', { name: 'Heading font', exact: true })
+          .fill('Pending publication font');
+        await page.getByRole('button', { name: /^Theme settings/ }).click();
+        await page.getByRole('button', { name: 'Home · Mobile', exact: true }).dblClick();
+        const frame = page.frameLocator(
+          page.getByTitle('Home · Mobile composition', { exact: true }),
+        );
+        await frame.getByRole('link', { name: 'Reviewed footer', exact: true }).dblClick();
+        await frame.getByRole('textbox', { name: /^Edit / }).fill('Pending manual footer');
+        const camera = page.getByTestId('canvas-world').element().getAttribute('style');
+        await expect
+          .element(page.getByRole('button', { name: 'Publish changes', exact: true }))
+          .toBeEnabled();
+        await page.getByRole('button', { name: 'Publish changes', exact: true }).click();
+        expect((await state()).editor!.publicationReview).toMatchObject({
+          files: [{ path: 'partials/footer.hbs', change: 'modified' }],
+        });
+        await expect
+          .element(page.getByRole('alertdialog').getByText('partials/footer.hbs', { exact: false }))
+          .toBeVisible();
+        await expect.element(page.getByText('Accent color', { exact: true })).toBeVisible();
+        await expect
+          .element(
+            page.getByText('Pending text and unapplied settings are excluded and will be kept.', {
+              exact: true,
+            }),
+          )
+          .toBeVisible();
+        await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+        expect(
+          await commands.canvasNativeTool('ghost_canvas_open_publication_review', {
+            workspaceId: (await state()).workspaceId,
+            expectedRevision: (await state()).editor!.sourceRevision,
+          }),
+        ).toMatchObject({
+          status: 'ok',
+          data: { opened: true, review: { pending: { text: true, settings: true } } },
+        });
+        expect(upload.requests).toHaveLength(0);
+        expect(
+          await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
+            ...(await address()),
+            settings: { 'global.accent_color': '#654321' },
+          }),
+        ).toMatchObject({ status: 'ok' });
+        await ready();
+        await expect
+          .element(page.getByRole('button', { name: 'Publish and activate copy', exact: true }))
+          .toBeDisabled();
+        await page.getByRole('button', { name: 'Review latest changes', exact: true }).click();
+        await page.getByRole('button', { name: 'Publish and activate copy', exact: true }).click();
+        await expect.poll(() => upload.requests.length).toBe(1);
+        await ready();
+        await expect.element(page.getByRole('alertdialog')).not.toBeInTheDocument();
+        expect(settings.lastRequest?.body).toEqual({
+          settings: [{ key: 'accent_color', value: '#654321' }],
+        });
+        expect((await state()).editor!.theme).toMatchObject({
+          name: `${themeName}-edited`,
+          builtIn: false,
+        });
+        await expect
+          .element(page.getByText(`Canvas · ${themeName}-edited`, { exact: true }))
+          .toBeVisible();
+        expect(page.getByTestId('canvas-world').element().getAttribute('style')).toBe(camera);
+        expect((await state()).editor!.manualDraft).toMatchObject({
+          text: 'Pending manual footer',
+          detached: true,
+          conflict: false,
+        });
+        await page.getByRole('button', { name: /^Theme settings/ }).click();
+        await expect
+          .element(page.getByRole('textbox', { name: 'Heading font', exact: true }))
+          .toHaveValue('Pending publication font');
+        await page.getByRole('button', { name: /^Theme settings/ }).click();
+        await page.getByRole('button', { name: 'Resume text draft', exact: true }).click();
+        await frame.getByRole('textbox', { name: /^Edit / }).click();
+        await userEvent.keyboard('{Enter}');
+        await ready();
+        await frame.getByRole('link', { name: 'Pending manual footer', exact: true }).hover();
+        await page.getByRole('button', { name: 'Undo theme change', exact: true }).click();
+        await ready();
+        expect((await state()).editor!.theme).toMatchObject({
+          name: `${themeName}-edited`,
+          builtIn: false,
+        });
+        expect(upload.requests).toHaveLength(1);
+      } finally {
+        await screen.unmount();
+      }
+    },
+  );
+
   it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1')(
     'loads a later published Post explicitly on an empty site and keeps the mounted Home frames',
     { timeout: 60_000 },

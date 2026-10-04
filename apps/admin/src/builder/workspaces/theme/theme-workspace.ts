@@ -45,6 +45,15 @@ import type { ScreenshotRequest, ScreenshotResult } from './preview/screenshot';
 
 type ThemePublishAdapterResult = PublishResult & { draft?: ThemeDraft };
 
+export type ThemePublicationReview = {
+  revision: string;
+  theme: { name: string; builtIn: boolean };
+  files: Array<{ path: string; change: 'added' | 'modified' | 'deleted' }>;
+  totalFiles: number;
+  settings: string[];
+  totalSettings: number;
+};
+
 type ThemeWorkspaceOptions = {
   id: string;
   title: string;
@@ -700,11 +709,89 @@ export class ThemeWorkspace implements BuilderWorkspace {
     );
   }
 
-  async publish(signal: AbortSignal): Promise<PublishResult> {
+  readPublicationReview(): ThemePublicationReview {
+    const draft = this.requireDraft();
+    const baseline = this.baselineDraft ?? draft;
+    const files: ThemePublicationReview['files'] = [
+      ...new Set([...Object.keys(baseline.files), ...Object.keys(draft.files)]),
+    ]
+      .sort()
+      .flatMap((path) =>
+        valuesEqual(baseline.files[path], draft.files[path])
+          ? []
+          : [
+              {
+                path,
+                change: !draft.files[path]
+                  ? 'deleted'
+                  : !baseline.files[path]
+                    ? 'added'
+                    : 'modified',
+              },
+            ],
+      );
+    const settings = [
+      ...Object.keys(draft.globalSettings)
+        .sort()
+        .filter(
+          (key) =>
+            !valuesEqual(
+              draft.globalSettings[key as keyof ThemeDraft['globalSettings']],
+              baseline.globalSettings[key as keyof ThemeDraft['globalSettings']],
+            ),
+        )
+        .map((key) => `global.${key}`),
+      ...Object.keys(draft.customSettings)
+        .sort()
+        .filter(
+          (key) =>
+            !baseline.customSettings[key] ||
+            !valuesEqual(draft.customSettings[key].value, baseline.customSettings[key].value),
+        )
+        .map((key) => `theme.${key}`),
+    ];
+    return {
+      revision: draft.revision,
+      theme: { name: draft.theme.name, builtIn: draft.theme.builtIn },
+      files: files.slice(0, 100),
+      totalFiles: files.length,
+      settings: settings.slice(0, 100),
+      totalSettings: settings.length,
+    };
+  }
+
+  publish(
+    signal: AbortSignal,
+    options: { expectedRevision?: string } = {},
+  ): Promise<PublishResult> {
+    const operation = this.mutationTail.then(() => this.publishAccepted(signal, options));
+    this.mutationTail = operation.then(
+      () => {},
+      () => {},
+    );
+    return operation;
+  }
+
+  private async publishAccepted(
+    signal: AbortSignal,
+    options: { expectedRevision?: string },
+  ): Promise<PublishResult> {
     abortIfNeeded(signal);
-    await this.flush(signal);
+    await this.preview.flush?.(signal);
+    abortIfNeeded(signal);
     this.syncPreviewOnlyDraft();
     const draft = this.requireDraft();
+    if (options.expectedRevision !== undefined && options.expectedRevision !== draft.revision) {
+      return {
+        ok: false,
+        revision: draft.revision,
+        error: {
+          code: 'stale_publication_review',
+          message: 'The theme changed after review. Review the latest changes before publishing.',
+          retryable: false,
+        },
+      };
+    }
     if (!this.publishDraft) {
       return {
         ok: false,

@@ -24,7 +24,7 @@ import type { Theme } from '@tryghost/admin-x-framework/api/themes';
 import type { CustomThemeSetting } from '@tryghost/admin-x-framework/api/custom-theme-settings';
 import type { ThemePublishState } from '@/builder/workspaces/theme/publish/publish-theme';
 import type { BuilderWorkspaceState } from '@/builder/core/workspace';
-import type { CanvasSource } from './canvas-driver';
+import type { CanvasSource, CanvasPublicationReview } from './canvas-driver';
 import type { RouteCompatibility } from './route-compatibility';
 
 type Inputs = {
@@ -142,6 +142,12 @@ export function ThemeCanvasExperience(props: Inputs) {
   });
   const [publishing, setPublishing] = useState(false);
   const [publishWarning, setPublishWarning] = useState<string | null>(null);
+  const [review, setReview] = useState<CanvasPublicationReview | null>(null);
+  const reviewObservation = useRef<CanvasPublicationReview | null>(null);
+  const changeReview = (next: CanvasPublicationReview | null) => {
+    reviewObservation.current = next;
+    setReview(next);
+  };
   const [publishState, setPublishState] = useState<ThemePublishState>({
     status: 'idle',
     stage: 'idle',
@@ -212,8 +218,11 @@ export function ThemeCanvasExperience(props: Inputs) {
             state: () => ({
               dirty: editorObservation.current.workspace.dirty,
               publication: editorObservation.current.publication,
+              publicationReview: reviewObservation.current,
               history: loaded.readHistory(),
             }),
+            readPublicationReview: () => loaded.workspace.readPublicationReview(),
+            openPublicationReview: changeReview,
           },
           // The route owns workspace lifetime. Canvas connections only own subscriptions.
           createDriver: () => ({
@@ -224,6 +233,17 @@ export function ThemeCanvasExperience(props: Inputs) {
             loadAssets: () => loaded.loadAssets(),
             listPosts: (page, signal) => loaded.listPosts(page, signal),
             selectPost: (input, signal) => loaded.selectPost(input, signal),
+            publish: async (signal, options) => {
+              copyName.current = options.copyName;
+              try {
+                return await loaded.publish(signal, {
+                  expectedRevision: options.expectedRevision,
+                  notify: false,
+                });
+              } finally {
+                copyName.current = undefined;
+              }
+            },
             subscribe: (deliver) => loaded.subscribe(deliver),
             dispose: () => {},
           }),
@@ -267,36 +287,50 @@ export function ThemeCanvasExperience(props: Inputs) {
         <ThemeCanvas
           externalBusy={publishing}
           externalNotice={publishWarning}
-          headerActions={
+          headerActions={(actions) => (
             <PublishThemeDialog
               builtIn={publishTheme.builtIn}
+              currentRevision={workspaceState.revision}
               dirty={workspaceState.dirty}
-              disabled={activity.busy || activity.manualDraft}
+              disabled={activity.busy}
               installedThemeNames={inputs.installedThemeNames}
               publishState={publishState}
+              review={review}
               sessionStatus={publishing ? 'publishing' : 'ready'}
               themeName={publishTheme.name}
+              onCloseReview={() => changeReview(null)}
+              onOpenReview={() => {
+                try {
+                  actions.openReview();
+                } catch (failure) {
+                  setPublishWarning(failure instanceof Error ? failure.message : String(failure));
+                }
+              }}
               onPublish={async (name) => {
                 if (!driver.current) {
                   throw new Error('The canvas is not ready.');
                 }
-                copyName.current = name;
+                if (!review) {
+                  throw new Error('Review the current theme before publishing.');
+                }
                 setPublishing(true);
                 setPublishWarning(null);
                 try {
-                  const result = await driver.current.publish(new AbortController().signal);
+                  const result = await actions.publish({
+                    expectedRevision: review.revision,
+                    copyName: name,
+                  });
                   setPublishWarning(result.previewWarning ?? null);
                   if (result.ok && publishTheme.builtIn && name) {
                     setPublishTheme({ name, builtIn: false });
                   }
                   return result;
                 } finally {
-                  copyName.current = undefined;
                   setPublishing(false);
                 }
               }}
             />
-          }
+          )}
           headerLeading={
             <Button aria-label="Back to Design settings" size="icon" variant="ghost" asChild>
               <Link to="/settings/design">

@@ -2,8 +2,136 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { PublishThemeDialog } from './publish-theme-dialog';
+import type { PublishResult } from '@/builder/core/workspace';
 
 describe('PublishThemeDialog', () => {
+  it('lets a corrected revision publish after a nonretryable validation failure', async () => {
+    const review = {
+      revision: 'invalid',
+      theme: { name: 'edition', builtIn: false },
+      files: [],
+      settings: [],
+      totalFiles: 0,
+      totalSettings: 0,
+      pending: { text: false, settings: false },
+    };
+    const onPublish = vi
+      .fn<() => Promise<PublishResult>>()
+      .mockResolvedValueOnce({
+        ok: false,
+        revision: 'invalid',
+        error: { code: 'gscan_invalid', message: 'Fix package.json', retryable: false },
+      })
+      .mockResolvedValueOnce({ ok: true, revision: 'corrected' });
+    const onCloseReview = vi.fn();
+    const failure = {
+      status: 'failed' as const,
+      stage: 'validation' as const,
+      error: 'Fix package.json',
+      retryable: false,
+    };
+    const { rerender } = render(
+      <PublishThemeDialog
+        builtIn={false}
+        currentRevision="invalid"
+        dirty={true}
+        publishState={{ status: 'idle', stage: 'idle' }}
+        review={review}
+        sessionStatus="ready"
+        themeName="edition"
+        onCloseReview={onCloseReview}
+        onOpenReview={vi.fn()}
+        onPublish={onPublish}
+      />,
+    );
+    fireEvent.click(screen.getAllByRole('button', { name: 'Publish changes' }).at(-1)!);
+    expect(await screen.findByRole('alert')).toHaveTextContent('Fix package.json');
+    rerender(
+      <PublishThemeDialog
+        builtIn={false}
+        currentRevision="invalid"
+        dirty={true}
+        publishState={failure}
+        review={review}
+        sessionStatus="ready"
+        themeName="edition"
+        onCloseReview={onCloseReview}
+        onOpenReview={vi.fn()}
+        onPublish={onPublish}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Close and fix theme' })).toBeInTheDocument();
+    rerender(
+      <PublishThemeDialog
+        builtIn={false}
+        currentRevision="corrected"
+        dirty={true}
+        publishState={failure}
+        review={{ ...review, revision: 'corrected' }}
+        sessionStatus="ready"
+        themeName="edition"
+        onCloseReview={onCloseReview}
+        onOpenReview={vi.fn()}
+        onPublish={onPublish}
+      />,
+    );
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Publish changes' }).at(-1)!);
+    await waitFor(() => expect(onPublish).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(onCloseReview).toHaveBeenCalledOnce());
+  });
+
+  it('shows a native-opened review and requires renewed review after its revision changes', () => {
+    const onPublish = vi.fn();
+    const onOpenReview = vi.fn();
+    const review = {
+      revision: 'reviewed',
+      theme: { name: 'edition', builtIn: false },
+      files: [{ path: 'index.hbs', change: 'modified' as const }],
+      totalFiles: 1,
+      settings: ['global.accent_color'],
+      totalSettings: 1,
+      pending: { text: true, settings: true },
+    };
+    const { rerender } = render(
+      <PublishThemeDialog
+        builtIn={false}
+        currentRevision="reviewed"
+        dirty={true}
+        publishState={{ status: 'idle', stage: 'idle' }}
+        review={review}
+        sessionStatus="ready"
+        themeName="edition"
+        onOpenReview={onOpenReview}
+        onPublish={onPublish}
+      />,
+    );
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+    expect(screen.getByText(/index.hbs/)).toBeInTheDocument();
+    expect(screen.getByText('Accent color')).toBeInTheDocument();
+    expect(
+      screen.getByText('Pending text and unapplied settings are excluded and will be kept.'),
+    ).toBeInTheDocument();
+    expect(onPublish).not.toHaveBeenCalled();
+    rerender(
+      <PublishThemeDialog
+        builtIn={false}
+        currentRevision="later"
+        dirty={true}
+        publishState={{ status: 'idle', stage: 'idle' }}
+        review={review}
+        sessionStatus="ready"
+        themeName="edition"
+        onOpenReview={onOpenReview}
+        onPublish={onPublish}
+      />,
+    );
+    expect(screen.getAllByRole('button', { name: 'Publish changes' }).at(-1)).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Review latest changes' }));
+    expect(onOpenReview).toHaveBeenCalledOnce();
+    expect(onPublish).not.toHaveBeenCalled();
+  });
+
   it('validates and confirms a built-in theme copy explicitly', async () => {
     const onPublish = vi.fn(() => Promise.resolve({ ok: true as const, revision: 'published' }));
     render(

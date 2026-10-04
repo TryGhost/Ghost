@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import {
   AlertDialog,
@@ -13,12 +13,14 @@ import {
   Label,
 } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
+import { formatNumber } from '@tryghost/shade/utils';
 
 import { validateThemeCopyName } from './publish-theme';
 
 import type { PublishResult } from '@/builder/core/workspace';
 import type { BuilderSessionStatus } from '@/builder/core/builder-session';
 import type { ThemePublishState } from './publish-theme';
+import type { ThemePublicationReview } from '@/builder/workspaces/theme/theme-workspace';
 
 function progressLabel(state: ThemePublishState): string | null {
   if (state.status !== 'publishing') {
@@ -47,6 +49,10 @@ export const PublishThemeDialog = ({
   sessionStatus,
   publishState,
   onPublish,
+  review,
+  currentRevision,
+  onOpenReview,
+  onCloseReview,
 }: {
   themeName: string;
   builtIn: boolean;
@@ -56,11 +62,26 @@ export const PublishThemeDialog = ({
   sessionStatus: BuilderSessionStatus;
   publishState: ThemePublishState;
   onPublish: (copyName?: string) => Promise<PublishResult>;
+  review?: (ThemePublicationReview & { pending: { text: boolean; settings: boolean } }) | null;
+  currentRevision?: string;
+  onOpenReview?: () => void;
+  onCloseReview?: () => void;
 }) => {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = onOpenReview ? !!review : internalOpen;
+  const setOpen = (next: boolean) => {
+    setInternalOpen(next);
+    if (!next) {
+      onCloseReview?.();
+    }
+  };
   const [copyName, setCopyName] = useState(`${themeName}-edited`);
   const [nameError, setNameError] = useState<string>();
   const [publishError, setPublishError] = useState<string>();
+  const [staleFailure, setStaleFailure] = useState(false);
+  const observedPublishState = useRef(publishState);
+  observedPublishState.current = publishState;
+  const stale = staleFailure || (!!review && review.revision !== currentRevision);
   const isPublishing = sessionStatus === 'publishing' || publishState.status === 'publishing';
   const canPublish =
     !disabled && dirty && (sessionStatus === 'ready' || sessionStatus === 'interrupted');
@@ -78,10 +99,26 @@ export const PublishThemeDialog = ({
   useEffect(() => {
     setCopyName(`${themeName}-edited`);
   }, [themeName]);
+  useEffect(() => {
+    if (review) {
+      const state = observedPublishState.current;
+      setPublishError(
+        state.status === 'failed' && state.stage !== 'validation' && state.retryable !== false
+          ? state.error
+          : undefined,
+      );
+      setStaleFailure(false);
+    }
+  }, [review?.revision]);
 
   const openDialog = () => {
     setNameError(undefined);
     setPublishError(resumableFailure ? publishState.error : undefined);
+    setStaleFailure(false);
+    if (onOpenReview) {
+      onOpenReview();
+      return;
+    }
     setOpen(true);
   };
 
@@ -110,6 +147,7 @@ export const PublishThemeDialog = ({
         return;
       }
       setPublishError(result.error.message);
+      setStaleFailure(result.error.code === 'stale_publication_review');
     } catch (error) {
       setPublishError(error instanceof Error ? error.message : String(error));
     }
@@ -155,6 +193,61 @@ export const PublishThemeDialog = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <Stack gap="sm">
+          {review && (
+            <Stack gap="sm">
+              <Text size="sm" weight="semibold">
+                {formatNumber(review.totalFiles)} changed files ·{' '}
+                {formatNumber(review.totalSettings)} changed settings
+              </Text>
+              <Stack className="max-h-40 overflow-y-auto" gap="xs">
+                {review.files.slice(0, 20).map((file) => (
+                  <Text key={file.path} className="break-all" size="sm">
+                    {file.path}{' '}
+                    <Text as="span" size="sm" tone="secondary">
+                      ({file.change})
+                    </Text>
+                  </Text>
+                ))}
+                {review.settings.slice(0, 20).map((key) => {
+                  const label = key.slice(key.indexOf('.') + 1).replace(/_/g, ' ');
+                  return (
+                    <Text key={key} size="sm">
+                      {label.charAt(0).toUpperCase() + label.slice(1)}
+                    </Text>
+                  );
+                })}
+                {(review.totalFiles > 20 || review.totalSettings > 20) && (
+                  <Text size="sm" tone="secondary">
+                    Additional changes are included in the totals above.
+                  </Text>
+                )}
+              </Stack>
+              {(review.pending.text || review.pending.settings) && (
+                <Text size="sm" tone="secondary">
+                  {review.pending.text && review.pending.settings
+                    ? 'Pending text and unapplied settings are excluded and will be kept.'
+                    : review.pending.text
+                      ? 'Pending text is excluded and will be kept.'
+                      : 'Unapplied settings are excluded and will be kept.'}
+                </Text>
+              )}
+              {stale && (
+                <Stack gap="xs">
+                  <Text role="alert" size="sm">
+                    The theme changed after review. Review the latest changes before publishing.
+                  </Text>
+                  <Button
+                    disabled={isPublishing || disabled}
+                    type="button"
+                    variant="outline"
+                    onClick={openDialog}
+                  >
+                    Review latest changes
+                  </Button>
+                </Stack>
+              )}
+            </Stack>
+          )}
           {builtIn && (
             <Stack gap="xs">
               <Label htmlFor="builder-theme-copy-name">Theme copy name</Label>
@@ -191,7 +284,7 @@ export const PublishThemeDialog = ({
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPublishing}>Cancel</AlertDialogCancel>
           <Button
-            disabled={isPublishing}
+            disabled={isPublishing || stale || (!!onOpenReview && disabled)}
             type="button"
             onClick={() =>
               activeFailure && publishState.retryable === false ? closeForEditing() : void submit()

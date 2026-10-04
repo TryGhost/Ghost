@@ -48,7 +48,17 @@ accepted binding. An empty site can explicitly load later-published content. Set
 and other content observations remain session inputs; there is no background sync.
 
 The route uses the existing theme publication review/transport and built-in-theme
-copy flow. Dirty source, retained manual text and an in-flight write/publication
+copy flow. Manual Publish and native `ghost_canvas_open_publication_review` open
+the same review, pinned to an explicit accepted source revision. The review lists
+changed files/settings since the initial or last published baseline, the target
+theme/copy and excluded pending text/settings. Summaries return at most 100 file
+and setting names with totals; the compact dialog displays the first 20 of each.
+Only human confirmation publishes. Source changes require renewed review; the
+workspace rechecks the revision inside its mutation lane before transport and
+holds that lane through publication/adoption. Pending manual work does not block
+review and uses the existing text/settings retention during successful delivery.
+After built-in publication, labels/state and history restores retain the new
+copy's identity. Dirty source, retained manual text and an in-flight write/publication
 guard navigation; initial read-only loading does not. Successful server publication
 is reported as successful even if its subsequent preview refresh fails, with an
 actionable reload notice. Workspace disposal belongs to route exit, which also
@@ -68,9 +78,8 @@ authored literal remains uniquely compatible; changed, removed or ambiguous targ
 offer copy/cancel recovery without overwriting accepted source. Typed text remains
 separate from accepted source until manually committed. If the private bridge cannot
 capture the complete draft, the old live preview stays available for copying before
-explicit cancellation displays the accepted theme. Publication tools remain a
-subsequent increment. UI and tools share this workspace rather than adding an
-independent model-owned theme draft.
+explicit cancellation displays the accepted theme. UI and tools share this workspace
+rather than adding an independent model-owned theme draft.
 
 The compact settings action opens writable global/custom design settings on request.
 Color, font/text, boolean and choice controls use the workspace's descriptors and
@@ -79,8 +88,8 @@ required-page validation, live delivery and checkpoint history as native tools.
 Image settings remain read-only in this version. Staged form values survive dismissal,
 agent replacement and viewport changes; the icon marks unapplied values. A changed
 source revision requires explicit Reload before applying, preserving entered values
-until that choice. Pending settings participate in departure/publication guards and
-native `settingsDraft` metadata. They remain separate from accepted theme settings.
+until that choice. Pending settings participate in the departure guard and native
+`settingsDraft` metadata; publication review discloses their exclusion. They remain separate from accepted theme settings.
 The narrow header retains settings and exposes Undo/Redo in its existing view menu.
 
 `CanvasBoard` positions caller-owned live frames in world coordinates and changes
@@ -282,7 +291,8 @@ older native `navigator.modelContext` location. It registers
 `ghost_canvas_probe_get_editor_state`, `ghost_canvas_probe_inspect_frame`,
 `ghost_canvas_probe_inspect_element` and `ghost_canvas_probe_capture_frame`, plus
 `ghost_canvas_read_theme` and
-`ghost_canvas_apply_theme_patch` and `ghost_canvas_history` on the real editor.
+`ghost_canvas_apply_theme_patch`, `ghost_canvas_history`, `ghost_canvas_list_posts`,
+`ghost_canvas_select_post` and `ghost_canvas_open_publication_review` on the real editor.
 Registrations belong to the
 owning same-origin page, once per editor, never individual sandboxed previews.
 Camera and presentation changes do not register again; unsupported APIs leave
