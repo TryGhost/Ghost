@@ -85,9 +85,19 @@ export const mysqlConnection = z.object({
     .string()
     .optional()
     .meta({ examples: ['127.0.0.1'] }),
-  /** A number from env, ghost-cli and Ghost(Pro) alike. */
+  /**
+   * The one transform in the schema. A number from env, ghost-cli and
+   * Ghost(Pro) alike, but a hand-written config may quote it, so a numeric
+   * string is coerced. Safe where other transforms are not (see SCHEMA.md):
+   * if a violation elsewhere means the raw tree is used, mysql2 accepts the
+   * string anyway, and coercing a number is a no-op on every re-parse.
+   *
+   * Only a string of digits is coerced, not whatever `z.coerce.number()`
+   * would take - that turns `true` into port 1 and `""` into 0.
+   */
   port: z
-    .number()
+    .union([z.number(), z.string().regex(/^\d+$/).transform(Number)])
+    .pipe(z.number().int().min(1).max(65535))
     .optional()
     .meta({ examples: [3306] }),
   socketPath: z.string().optional(),
@@ -209,13 +219,13 @@ const sqliteDatabase = z.looseObject({
  *
  * Two rules keep this safe to grow against config that is already running:
  *
- * 1. Validate, don't transform - for now. `z.object()` strips unknown keys and
- *    `z.coerce` rewrites values; either would silently change a live site's
- *    config, and the round-trip test in the unit suite fails if one does.
- *    Secrets are deliberately left unparsed by ./secrets.ts - a password of
- *    `01234` must stay a string. Deliberate transforms can come later, but they
- *    need `get()` rerouted by top-level key first, so a raw read of an unlisted
- *    sibling path can't disagree with a transformed one.
+ * 1. Validate, don't transform. Outside development and test a violation
+ *    hands the raw tree over instead of the parse, so a transform cannot be
+ *    relied on to have run - only one whose raw input is still correct for its
+ *    reader is safe, like `database:connection:port`. Unknown keys are a
+ *    separate decision: the top level is loose, and a nested section is closed
+ *    only where its readers are known. Secrets are deliberately left unparsed
+ *    by ./secrets.ts - a password of `01234` must stay a string. See SCHEMA.md.
  * 2. Nothing here may be stricter than what the loader already enforced.
  *    Tightening beyond that is its own change, with its own release note.
  */

@@ -177,6 +177,27 @@ describe('Config Schema', function () {
       assert.equal(parsed.database.pool?.max, 5);
     });
 
+    it('coerces a quoted port, and leaves a number alone', function () {
+      for (const port of ['3306', 3306]) {
+        const { database } = configSchema.parse(
+          withDatabase({ ...mysql, connection: { ...mysql.connection, port } }),
+        );
+
+        assert.equal(database.client === 'mysql2' ? database.connection.port : undefined, 3306);
+      }
+    });
+
+    ['', 'abc', true, 0, 70000, 3306.5].forEach(function (port) {
+      it(`rejects port ${JSON.stringify(port)} rather than coercing it into one`, function () {
+        const result = configSchema.safeParse(
+          withDatabase({ ...mysql, connection: { ...mysql.connection, port } }),
+        );
+
+        assert.ok(!result.success);
+        assert.match(z.prettifyError(result.error), /database\.connection\.port/);
+      });
+    });
+
     // nconf.env parses values as JSON, so an all-digit password from a plain env
     // var arrives as a number - which mysql2 cannot hash. `_FILE` keeps it a string.
     ['user', 'password', 'database'].forEach(function (key) {

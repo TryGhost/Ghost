@@ -127,6 +127,13 @@ a number, or assumed a key is always present, stops compiling.
   becomes a check someone has to remember — which wants a single entry point
   where that check cannot be skipped.
 
+  One transform is in the schema regardless: `database:connection:port`
+  coerces a string of digits to a number. It qualifies because skipping it is
+  harmless — when a violation elsewhere means the raw tree is used, a quoted
+  port reaches mysql2, which accepts a string anyway. A transform whose raw input is still correct
+  for its reader can go in the schema; one whose raw input is wrong, like a
+  relative path, cannot.
+
   Either way a transform must be idempotent, because `config.set()` re-parses
   from source on every call, and one that moved a value further each pass would
   corrupt config on the second override.
