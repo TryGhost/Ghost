@@ -301,6 +301,9 @@ manual editing available.
 Theme reads require explicit workspace/current revision and expose bounded file
 list/read/literal search and supported settings. List/settings reads page via
 `offset`/`limit`; oversized loaded setting metadata reports `truncatedFields`.
+File reads return numbered `content`: each line starts with `N:` and a space for
+source reference. Remove those labels before writing a file, and read any remaining
+pages when `truncated` is true; an excerpt cannot replace the complete source.
 Patches additionally require the discovered data generation and share the UI
 validation/adoption/delivery action. Native writes allow at most 32 settings with
 string values up to 8,192 characters. Accepted patches return the actual source
