@@ -9,7 +9,8 @@ let lateToastPublishedAfterUnmount = false;
 describe('Acceptance toast isolation', () => {
   it('leaves a persistent error toast for the harness to clean up', async () => {
     await renderAdminApp('/site');
-    await expect.element(page.getByRole('region', { name: 'Notifications' })).toBeInTheDocument();
+    // Sonner subscribes in an effect after its region renders; the user-gated menu commits later.
+    await expect.element(sidebarScreen.userMenuTrigger()).toBeVisible();
 
     toast.error("Couldn't sign out. Please try again.", {
       id: 'acceptance-toast',
