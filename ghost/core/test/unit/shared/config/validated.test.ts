@@ -169,7 +169,11 @@ describe('Config Schema', function () {
         }),
       );
 
-      assert.equal(parsed.database.connection.port, 3306);
+      assert.equal(parsed.database.client, 'mysql2');
+      assert.equal(
+        parsed.database.client === 'mysql2' ? parsed.database.connection.port : undefined,
+        3306,
+      );
       assert.equal(parsed.database.pool?.max, 5);
     });
 
@@ -195,21 +199,58 @@ describe('Config Schema', function () {
       assert.match(z.prettifyError(result.error), /database\.connection\.filename/);
     });
 
-    // the subtree goes to knex and the driver whole, so a key the schema does
-    // not name is still a live option - unlike `paths`, nothing is stripped
-    it('keeps knex and driver options it does not name', function () {
+    it('keeps the driver options config can set', function () {
+      const connection = {
+        ...mysql.connection,
+        ssl: { rejectUnauthorized: false },
+        socketPath: '/var/run/mysqld/mysqld.sock',
+      };
+
+      const parsed = configSchema.parse(withDatabase({ ...mysql, connection }));
+
+      assert.deepEqual(parsed.database.connection, connection);
+    });
+
+    // `connection` is closed to what the driver reads - mysql2 logs anything
+    // else as invalid and ignores it - so an unknown key is dropped, including
+    // the other client's keys, as sanitizeDatabaseProperties drops them
+    it('strips connection keys its driver does not read', function () {
       const parsed = configSchema.parse(
         withDatabase({
           ...mysql,
-          connection: { ...mysql.connection, ssl: { rejectUnauthorized: false }, socketPath: '/s' },
-          acquireConnectionTimeout: 60000,
+          connection: { ...mysql.connection, filename: '/ghost.db', madeUp: true },
         }),
       );
 
-      assert.deepEqual((parsed.database.connection as Record<string, unknown>).ssl, {
-        rejectUnauthorized: false,
+      assert.deepEqual(parsed.database.connection, mysql.connection);
+    });
+
+    it('strips everything but filename from a sqlite connection', function () {
+      const parsed = configSchema.parse(
+        configSources({ database: { connection: { host: '127.0.0.1', mode: 'wal' } } }),
+      );
+
+      assert.deepEqual(parsed.database.connection, { filename: '/tmp/ghost-test.db' });
+    });
+
+    // Ghost sets these on every connection itself, so a configured value would
+    // only reach knex-migrator and leave the two disagreeing
+    ['timezone', 'decimalNumbers'].forEach(function (key) {
+      it(`strips ${key}, which configure-knex supplies`, function () {
+        const parsed = configSchema.parse(
+          withDatabase({ ...mysql, connection: { ...mysql.connection, [key]: 'x' } }),
+        );
+
+        assert.ok(!(key in parsed.database.connection));
       });
-      assert.equal((parsed.database.connection as Record<string, unknown>).socketPath, '/s');
+    });
+
+    // unlike `connection`, the level above is knex's own config, and stays open
+    it('keeps knex options it does not name', function () {
+      const parsed = configSchema.parse(
+        withDatabase({ ...mysql, acquireConnectionTimeout: 60000 }),
+      );
+
       assert.equal((parsed.database as Record<string, unknown>).acquireConnectionTimeout, 60000);
     });
 

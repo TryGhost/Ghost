@@ -136,15 +136,15 @@ a number, or assumed a key is always present, stops compiling.
   matters, so moving it buys nothing until there is a second transform to share
   the plumbing.
 
-  `sanitizeDatabaseProperties` looks like union discrimination - it deletes
-  `connection` keys based on `database:client` - and `database` is now a
-  `z.discriminatedUnion` on `client`. But the deletion cannot move into it.
-  Stripping is what would do the deleting, and `connection` has to stay loose:
-  it is handed to the driver whole, and a self-hoster's `ssl` or `socketPath`
-  is a live option the schema cannot enumerate. So the function still runs in
-  the loader, its client rename and sqlite path-absolutising with it, and the
-  schema describes the tree it leaves - only `mysql2` or `better-sqlite3`,
-  never the `mysql` and `sqlite3` that config files say.
+  `sanitizeDatabaseProperties` is half union discrimination: it deletes the
+  `connection` keys the other client uses. `database` is now a
+  `z.discriminatedUnion` on `client` whose `connection` objects are closed to
+  what each driver reads, so parsing drops those keys too. The function still
+  runs in the loader all the same - outside `development` and `test*` a
+  violation hands over the raw tree, and its other two jobs, renaming `mysql`
+  to `mysql2` and making a sqlite `filename` absolute, are transforms. So the
+  schema describes the tree it leaves: only `mysql2` or `better-sqlite3`, never
+  the `mysql` and `sqlite3` that config files say.
 
 - **Nothing may be stricter than the loader already was.** Tightening beyond
   that is its own change, with its own release note.
@@ -187,6 +187,18 @@ reader needs an unlisted key.
 **The consequence to know:** `z.object()` does not reject an unknown key, it
 strips it. A key added to config but not to its schema disappears, with no error.
 Add both.
+
+`database:connection` is the second worked example, closed for a different
+reason: its reader is a driver whose option list is itself closed. mysql2 logs
+any key outside its own list as invalid and ignores it, and knex hands
+better-sqlite3 only `filename`. So the schema lists what config can set, a
+named exclusion list covers the rest of mysql2's options — the ones Ghost sets
+itself, the function-valued ones config cannot express, and mysql2's own pool
+options that knex never uses — and
+[`database-schema.types.ts`](../../../test/unit/shared/config/database-schema.types.ts)
+fails `test:types` unless the two together equal mysql2's `ConnectionOptions`.
+A driver upgrade that adds an option breaks the build instead of being
+stripped.
 
 That is affordable for `paths` because its readers are enumerable. For a section
 where they are not, the safe form is `z.strictObject({...}).catch((ctx) => ctx.value)`

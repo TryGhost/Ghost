@@ -2,10 +2,11 @@ import type { OmitIndexSignature } from 'type-fest';
 import { z } from 'zod';
 
 /**
- * Keys every client shares. Loose, like `connection` in each variant, because
- * the whole subtree is handed to knex - ../../server/data/db/configure-knex.ts
- * spreads it, and MigratorConfig.js clones it for knex-migrator - so a key named
- * nowhere here, like `acquireConnectionTimeout`, is still a live knex option.
+ * Keys every client shares. The object they sit in stays loose, unlike
+ * `connection`, because it is knex's own config rather than a driver's:
+ * ../../server/data/db/configure-knex.ts spreads it into knex, and
+ * MigratorConfig.js clones it for knex-migrator, so a key named nowhere here,
+ * like `acquireConnectionTimeout`, is still a live knex option.
  */
 const databaseBase = {
   /**
@@ -32,68 +33,168 @@ const databaseBase = {
   }),
 };
 
+/**
+ * The keys of mysql2's `ConnectionOptions` that `mysqlConnection` below
+ * deliberately leaves out. The two together are exactly mysql2's own option
+ * list, which is closed: anything else, it logs as invalid and ignores. That is
+ * checked at compile time in test/unit/shared/config/database-schema.types.ts,
+ * so a mysql2 upgrade that adds an option fails `test:types` instead of the new
+ * option being silently stripped.
+ */
+export type MysqlConnectionKeysNotFromConfig =
+  // Set by configure-knex on every connection, whatever config says.
+  | 'decimalNumbers'
+  | 'infileStreamFactory'
+  // Also forced to 'Z' by configure-knex. Leaving it out keeps knex-migrator,
+  // which would otherwise honour a configured value, on the same timezone.
+  | 'timezone'
+  // Take a function or a runtime object, which a config file, env var or
+  // argument cannot express.
+  | 'authPlugins'
+  | 'authSwitchHandler'
+  | 'Promise'
+  | 'queryFormat'
+  | 'stream'
+  // mysql2's own pool, and its server mode. knex opens single connections with
+  // createConnection and pools them itself, so these do nothing.
+  | 'connectionLimit'
+  | 'idleTimeout'
+  | 'isServer'
+  | 'maxIdle'
+  | 'pool'
+  | 'queueLimit'
+  | 'waitForConnections';
+
+/** One or more PEM strings. mysql2 also takes a Buffer, which config cannot express. */
+const pem = z.union([z.string(), z.array(z.string())]);
+
+/**
+ * mysql2's `connection` options, as far as config can set them. Closed, like
+ * `paths`, because the driver is: knex hands this object to
+ * `mysql2.createConnection()`, which accepts a fixed set of keys - see
+ * MysqlConnectionKeysNotFromConfig. So stripping an unknown key drops only what
+ * the driver would have ignored anyway.
+ *
+ * Every key is optional: env/config.production.json supplies host, user,
+ * password and database, but a self-hoster on their own NODE_ENV supplies their
+ * own, and mysql2 has a default for each - or connects by `socketPath` with no
+ * host at all.
+ */
+export const mysqlConnection = z.object({
+  host: z
+    .string()
+    .optional()
+    .meta({ examples: ['127.0.0.1'] }),
+  /** A number from env, ghost-cli and Ghost(Pro) alike. */
+  port: z
+    .number()
+    .optional()
+    .meta({ examples: [3306] }),
+  socketPath: z.string().optional(),
+  localAddress: z.string().optional(),
+  /** A connection URL, as an alternative to the keys above. */
+  uri: z.string().optional(),
+  /**
+   * `user`, `password` and `database` are strings or the driver throws: mysql2
+   * rejects a non-string `user` or `database` outright, and hashes `password`
+   * with crypto, which refuses a number. That matters because nconf parses env
+   * values as JSON - `database__connection__password=1234` arrives as the
+   * number 1234 and fails here rather than at connect time.
+   * `database__connection__password_FILE` is the way round it: ./secrets.ts
+   * reads the file as a literal string.
+   */
+  user: z.string().optional(),
+  /** An empty string in the shipped production default. */
+  password: z.string().optional(),
+  password1: z.string().optional(),
+  password2: z.string().optional(),
+  password3: z.string().optional(),
+  passwordSha1: z.string().optional(),
+  database: z.string().optional().meta({ description: 'The schema name.' }),
+  /**
+   * Read by knex-migrator to create the database. configure-knex forces
+   * utf8mb4 on every runtime connection.
+   */
+  charset: z.string().optional(),
+  charsetNumber: z.number().optional(),
+  /** A string is the name of one of mysql2's built-in SSL profiles. */
+  ssl: z
+    .union([
+      z.string(),
+      z.object({
+        ca: pem.optional(),
+        cert: pem.optional(),
+        key: pem.optional(),
+        crl: pem.optional(),
+        pfx: z.string().optional(),
+        passphrase: z.string().optional(),
+        ciphers: z.string().optional(),
+        minVersion: z.string().optional(),
+        maxVersion: z.string().optional(),
+        rejectUnauthorized: z.boolean().optional(),
+        verifyIdentity: z.boolean().optional(),
+      }),
+    ])
+    .optional()
+    .meta({ examples: [{ rejectUnauthorized: false }] }),
+  insecureAuth: z.boolean().optional(),
+  enableCleartextPlugin: z.boolean().optional(),
+  connectTimeout: z.number().optional(),
+  enableKeepAlive: z.boolean().optional(),
+  keepAliveInitialDelay: z.number().optional(),
+  compress: z.boolean().optional(),
+  flags: z.array(z.string()).optional(),
+  connectAttributes: z.record(z.string(), z.unknown()).optional(),
+  maxPreparedStatements: z.number().optional(),
+  multipleStatements: z.boolean().optional(),
+  namedPlaceholders: z.boolean().optional(),
+  stringifyObjects: z.boolean().optional(),
+  /** Only the boolean form: the function form cannot come from config. */
+  typeCast: z.boolean().optional(),
+  supportBigNumbers: z.boolean().optional(),
+  bigNumberStrings: z.boolean().optional(),
+  dateStrings: z
+    .union([z.boolean(), z.array(z.enum(['TIMESTAMP', 'DATETIME', 'DATE']))])
+    .optional(),
+  jsonStrings: z.boolean().optional(),
+  nestTables: z.union([z.boolean(), z.string()]).optional(),
+  rowsAsArray: z.boolean().optional(),
+  disableEval: z.boolean().optional(),
+  /** `true`, or the packet types to log. */
+  debug: z.union([z.boolean(), z.array(z.string())]).optional(),
+  trace: z.boolean().optional(),
+  gracefulEnd: z.boolean().optional(),
+});
+
+/**
+ * better-sqlite3's `connection`. Closed, and only `filename`, because that is
+ * all that reaches the driver: knex's dialect opens it as
+ * `new Database(connectionSettings.filename)` and reads nothing else.
+ */
+export const sqliteConnection = z.object({
+  /**
+   * Absolute by the time anything reads it - sanitizeDatabaseProperties
+   * resolves a relative path against Ghost's install directory. Optional,
+   * because better-sqlite3 opens a temporary database without one.
+   */
+  filename: z
+    .string()
+    .optional()
+    .meta({
+      description: 'The SQLite database file.',
+      examples: ['/var/www/ghost/content/data/ghost.db'],
+    }),
+});
+
 const mysqlDatabase = z.looseObject({
   client: z.literal('mysql2'),
-  /**
-   * Every key is optional: env/config.production.json supplies all four, but a
-   * self-hoster on their own NODE_ENV supplies their own, and mysql2 has a
-   * default for each - or connects by `socketPath` with no host at all.
-   *
-   * `filename` is never here: sanitizeDatabaseProperties deletes it.
-   */
-  connection: z
-    .looseObject({
-      host: z
-        .string()
-        .optional()
-        .meta({ examples: ['127.0.0.1'] }),
-      /** A number from env, ghost-cli and Ghost(Pro); a string only if hand-written so. */
-      port: z
-        .union([z.number(), z.string()])
-        .optional()
-        .meta({ examples: [3306] }),
-      /**
-       * `user`, `password` and `database` are strings or the driver throws:
-       * mysql2 rejects a non-string `user` or `database` outright, and hashes
-       * `password` with crypto, which refuses a number. That matters because
-       * nconf parses env values as JSON - `database__connection__password=1234`
-       * arrives as the number 1234 and fails here rather than at connect time.
-       * `database__connection__password_FILE` is the way round it: ./secrets.ts
-       * reads the file as a literal string.
-       */
-      user: z.string().optional(),
-      /** An empty string in the shipped production default. */
-      password: z.string().optional(),
-      database: z.string().optional().meta({ description: 'The schema name.' }),
-      /** Read by knex-migrator to create the database. configure-knex forces utf8mb4. */
-      charset: z.string().optional(),
-    })
-    .meta({
-      description: 'Passed to the mysql2 driver. Keys not listed here, like `ssl`, still reach it.',
-    }),
+  connection: mysqlConnection.meta({ description: 'Passed to the mysql2 driver.' }),
   ...databaseBase,
 });
 
 const sqliteDatabase = z.looseObject({
   client: z.literal('better-sqlite3'),
-  /**
-   * `host`, `user`, `password` and `database` are never here:
-   * sanitizeDatabaseProperties deletes them for every client but mysql2.
-   */
-  connection: z.looseObject({
-    /**
-     * Absolute by the time anything reads it - sanitizeDatabaseProperties
-     * resolves a relative path against Ghost's install directory. Optional,
-     * because better-sqlite3 opens a temporary database without one.
-     */
-    filename: z
-      .string()
-      .optional()
-      .meta({
-        description: 'The SQLite database file.',
-        examples: ['/var/www/ghost/content/data/ghost.db'],
-      }),
-  }),
+  connection: sqliteConnection,
   ...databaseBase,
 });
 
@@ -221,10 +322,11 @@ export const configSchema = z.looseObject({
    * - deletes the connection keys the other client uses
    * - makes a sqlite `filename` absolute
    *
-   * The deletion is not a stripping `z.object` waiting to happen: `connection`
-   * is loose, because it goes to the driver whole and the driver's options are
-   * not enumerable from here (`ssl`, `socketPath`, ...). Closing it would drop
-   * live options a self-hoster sets. See SCHEMA.md.
+   * Each variant's `connection` is closed to exactly what its driver reads, so
+   * parsing also drops the other client's keys - the deletion
+   * sanitizeDatabaseProperties does by hand. It still has to run in the loader:
+   * outside development and test a violation hands over the raw tree, and the
+   * rename and path-absolutising are transforms either way. See SCHEMA.md.
    *
    * Only those two clients, because they are the only ones Ghost can run:
    * knex-migrator refuses anything @tryghost/database-info does not recognise.
