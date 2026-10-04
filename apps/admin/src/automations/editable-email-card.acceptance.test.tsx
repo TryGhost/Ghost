@@ -203,41 +203,47 @@ describe('Editable email cards', () => {
 
   it('retains publish validation and spaces following steps below a taller email card', async () => {
     serve();
-    await renderAdminApp('/automations/first', flags);
-    await page.getByRole('button', { name: 'Publish', exact: true }).click();
-    await emailCards()
-      .nth(1)
-      .getByRole('button', { name: 'Why this step needs attention' })
-      .click();
-    await expect
-      .element(page.getByText('Add a subject line and a message before this email can be sent.'))
-      .toBeVisible();
-    await userEvent.keyboard('{Escape}');
-    await emailCards().nth(1).getByRole('textbox').fill('A subject');
-    await emailCards()
-      .nth(1)
-      .getByRole('button', { name: 'Why this step needs attention' })
-      .click();
-    await expect
-      .element(page.getByText('Add a message before this email can be sent.'))
-      .toBeVisible();
-    await userEvent.keyboard('{Escape}');
-    await expect
-      .element(emailCards().nth(1).getByRole('textbox'))
-      .not.toHaveAttribute('aria-invalid', 'true');
-    const wait = page.getByRole('article', { name: 'Wait: 1 day' });
-    await expect
-      .poll(
-        () =>
-          wait.element().getBoundingClientRect().top -
-          emailCards().nth(0).element().getBoundingClientRect().bottom,
-      )
-      .toBeGreaterThan(80);
-    const firstRect = emailCards().nth(0).element().getBoundingClientRect();
-    const waitRect = wait.element().getBoundingClientRect();
-    expect(
-      Math.abs(firstRect.left + firstRect.width / 2 - waitRect.left - waitRect.width / 2),
-    ).toBeLessThan(2);
+    // Keep this three-card fixture visible without scrolling the transformed canvas DOM.
+    await page.viewport(1280, 1600);
+    try {
+      await renderAdminApp('/automations/first', flags);
+      await page.getByRole('button', { name: 'Publish', exact: true }).click();
+      await emailCards()
+        .nth(1)
+        .getByRole('button', { name: 'Why this step needs attention' })
+        .click();
+      await expect
+        .element(page.getByText('Add a subject line and a message before this email can be sent.'))
+        .toBeVisible();
+      await userEvent.keyboard('{Escape}');
+      await emailCards().nth(1).getByRole('textbox').fill('A subject');
+      await emailCards()
+        .nth(1)
+        .getByRole('button', { name: 'Why this step needs attention' })
+        .click();
+      await expect
+        .element(page.getByText('Add a message before this email can be sent.'))
+        .toBeVisible();
+      await userEvent.keyboard('{Escape}');
+      await expect
+        .element(emailCards().nth(1).getByRole('textbox'))
+        .not.toHaveAttribute('aria-invalid', 'true');
+      const wait = page.getByRole('article', { name: 'Wait: 1 day' });
+      await expect
+        .poll(
+          () =>
+            wait.element().getBoundingClientRect().top -
+            emailCards().nth(0).element().getBoundingClientRect().bottom,
+        )
+        .toBeGreaterThan(80);
+      const firstRect = emailCards().nth(0).element().getBoundingClientRect();
+      const waitRect = wait.element().getBoundingClientRect();
+      expect(
+        Math.abs(firstRect.left + firstRect.width / 2 - waitRect.left - waitRect.width / 2),
+      ).toBeLessThan(2);
+    } finally {
+      await page.viewport(1280, 800);
+    }
   });
 
   it('defers a new empty email warning until another step is used or publishing is attempted', async () => {

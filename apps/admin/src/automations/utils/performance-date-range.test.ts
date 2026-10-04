@@ -2,7 +2,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createPerformanceDateRange } from './performance-date-range';
 
 const useDate = (date: string, timezone: string) => {
-  vi.useFakeTimers();
+  // Keep native Intl so the browser timezone spy applies to its formatter.
+  vi.useFakeTimers({ toFake: ['Date'] });
   vi.setSystemTime(new Date(date));
   const original = Intl.DateTimeFormat().resolvedOptions();
   vi.spyOn(Intl.DateTimeFormat.prototype, 'resolvedOptions').mockReturnValue({
