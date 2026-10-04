@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { membersCountString, useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
@@ -167,21 +167,26 @@ export function useSaveFeedback({ session, displayName, siteUrl }: SaveFeedbackS
 
 export type SaveButtonPhase = 'idle' | 'running' | 'success' | 'failure';
 
-/** A save button's own progress, driven by the save its click asked for. */
-export function useSaveButtonPhase(save: () => Promise<SaveCompletion>) {
+/** A save button's progress belongs to the document its click asked to save. */
+export function useSaveButtonPhase(save: () => Promise<SaveCompletion>, contentKey: number) {
   const [phase, setPhase] = useState<SaveButtonPhase>('idle');
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const mounted = useRef(true);
+  const generation = useRef(0);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     mounted.current = true;
+    generation.current += 1;
+    // Reloads and revision restores replace the document without remounting the header.
+    setPhase('idle');
     return () => {
       mounted.current = false;
       clearTimeout(timer.current);
     };
-  }, []);
+  }, [contentKey]);
 
   const run = useCallback(async () => {
+    const startedGeneration = generation.current;
     clearTimeout(timer.current);
     setPhase('running');
 
@@ -189,7 +194,7 @@ export function useSaveButtonPhase(save: () => Promise<SaveCompletion>) {
     try {
       completion = await save();
     } finally {
-      if (mounted.current) {
+      if (mounted.current && generation.current === startedGeneration) {
         if (completion?.kind === 'saved') {
           setPhase('success');
           clearTimeout(timer.current);

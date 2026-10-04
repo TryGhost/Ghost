@@ -24,6 +24,11 @@ new one included, gets a new session, so two posts opened by URL each get their
 own. The editor tells the screen once its session has created its post, so the
 new-post URL reached afterwards opens a new post even when the router renders
 the create's URL replace and that navigation together.
+Native hash entries reuse the router's default location key, so that combined
+navigation can even retain the same location object. The screen also tracks the
+router's matched params to recognize that navigation and give the new post a
+fresh session. Ordinary rerenders and loader-data-only updates retain those
+params; revalidating the created post's URL also keeps its session.
 
 Requests are made without the transport's session-expiry redirect, so an expired
 session is surfaced in place rather than navigating away from unsaved content.
