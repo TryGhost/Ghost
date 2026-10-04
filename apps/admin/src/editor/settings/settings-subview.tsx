@@ -56,7 +56,7 @@ export function SettingsSubview({
   if (isOpen) {
     return (
       <>
-        <div className="sticky top-0 z-10 bg-sidebar">
+        <Box className="z-10 shrink-0 bg-sidebar">
           <Inline align="center" className="px-4 py-3" gap="sm">
             <Button
               ref={backRef}
@@ -74,9 +74,12 @@ export function SettingsSubview({
             </Text>
             <Box aria-hidden="true" className="size-(--editor-settings-toggle-width) shrink-0" />
           </Inline>
-        </div>
+        </Box>
         <Stack
-          className={cn('px-5 py-4', contentClassName)}
+          className={cn(
+            'min-h-0 flex-1 overflow-y-auto px-5 py-4 [&>*]:shrink-0',
+            contentClassName,
+          )}
           data-testid={settingsSubviewPane}
           gap="lg"
         >

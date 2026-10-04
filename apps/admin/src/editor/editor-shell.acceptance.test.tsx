@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
@@ -17,15 +17,6 @@ const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const LONG_DOCUMENT = buildLexicalParagraph(
   'A long document keeps its editor controls in reach. '.repeat(500),
 );
-let originalFontSize: string;
-
-beforeEach(() => {
-  // The production Ember host sets this baseline in patterns/global.css.
-  // This suite measures the real control sizes; the acceptance host omits that stylesheet.
-  originalFontSize = document.documentElement.style.fontSize;
-  document.documentElement.style.fontSize = '62.5%';
-});
-
 function fakeLongDocument(
   postType: 'post' | 'page',
   status: 'draft' | 'published' | 'scheduled' = 'draft',
@@ -95,7 +86,6 @@ function expectTranslucentSurface(element: Element) {
 }
 
 afterEach(async () => {
-  document.documentElement.style.fontSize = originalFontSize;
   await page.viewport(1280, 800);
 });
 
@@ -170,12 +160,25 @@ describe('Floating editor shell', () => {
     expect(document.activeElement).toBe(editorScreen.settingsToggle().element());
 
     const pane = editorScreen.scrollPane();
+    const settingsPane = editorScreen.settingsScrollPane();
+    const heading = editorScreen
+      .settingsSidebar()
+      .getByRole('heading', { name: 'Post settings', exact: true })
+      .element();
+    const headingBefore = heading.getBoundingClientRect();
+    const fieldsBefore = editorScreen.settingsSlug().element().getBoundingClientRect();
+    expect(settingsPane.contains(heading)).toBe(false);
     pane.scrollTo({ top: 700 });
     await expect.poll(() => pane.scrollTop).toBe(700);
-    expect(sidebar.scrollTop).toBe(0);
+    expect(settingsPane.scrollTop).toBe(0);
 
-    sidebar.scrollTo({ top: sidebar.scrollHeight });
-    await expect.poll(() => sidebar.scrollTop).toBeGreaterThan(0);
+    settingsPane.scrollTo({ top: settingsPane.scrollHeight });
+    await expect.poll(() => settingsPane.scrollTop).toBeGreaterThan(0);
+    expect(heading.getBoundingClientRect()).toEqual(headingBefore);
+    expect(editorScreen.settingsSlug().element().getBoundingClientRect().top).toBeLessThan(
+      fieldsBefore.top,
+    );
+    expect(sidebar.scrollTop).toBe(0);
     expect(pane.scrollTop).toBe(700);
     expect(editorScreen.helpLink().element().getBoundingClientRect().right).toBe(footerAfter.right);
     expect(document.documentElement.scrollHeight).toBeLessThanOrEqual(window.innerHeight);

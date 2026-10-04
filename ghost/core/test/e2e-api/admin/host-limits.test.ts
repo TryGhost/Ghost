@@ -16,7 +16,7 @@ const {
   fixtureManager: { init(...fixtures: string[]): Promise<void> };
   hostLimits: HostLimits;
 } = require('../../utils/e2e-framework');
-const mailService = require('../../../core/server/services/mail') as {
+const mailService = require('../../../core/server/lib/mail') as {
   GhostMailer: { prototype: { send(...args: unknown[]): Promise<unknown> } };
 };
 const membersService = require('../../../core/server/services/members') as {

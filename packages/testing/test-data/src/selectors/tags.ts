@@ -44,4 +44,5 @@ export const codeInjectionTriggerLabel = 'Code injection';
 
 // text fragments
 export const emptyStateText = 'Start organizing your content';
+export const errorStateText = 'Error loading tags';
 export const deleteTagConfirmationText = 'Are you sure you want to delete this tag?';

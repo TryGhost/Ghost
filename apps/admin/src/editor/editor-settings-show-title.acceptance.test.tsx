@@ -1,21 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
   activeThemeResponse,
   currentUserResponse,
+  type EndpointCapture,
   fakeAdminEndpoint,
+  fakeEmailPreview,
   fakeNewsletters,
   fakePages,
   fakePosts,
   fakeSnippets,
   post,
   renderAdminApp,
+  settleTransitions,
   staffRole,
-  unsavedChangesGuarded,
   withoutAutosave,
-  type EndpointCapture,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 
@@ -88,6 +88,7 @@ function submittedPage(capture: EndpointCapture): Record<string, unknown> {
 
 function editorChrome() {
   fakeSnippets([]);
+  fakeEmailPreview();
   fakePosts([]);
   fakePages([]);
   // The header's publish inputs read the newsletter list.
@@ -130,6 +131,8 @@ function fakeSavablePage(overrides: Partial<SavedPage> = {}) {
 async function openSettings() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  // Visible from its first frame; a click while it still slides in can be lost.
+  await settleTransitions();
 }
 
 /**
@@ -166,25 +169,18 @@ describe('Post settings show title and feature image', () => {
     await expect(saveApi).toHaveSavedFields({ show_title_and_feature_image: true });
   });
 
-  it('stages a published page’s choice until Update', async () => {
+  it('saves a published page’s choice on its own', async () => {
     const saveApi = fakeSavablePage({ status: 'published', published_at: PUBLISHED_AT });
     await renderAdminApp(`/editor/page/${PAGE_ID}`, FLAG_ON);
     await openSettings();
 
-    await expect.element(editorScreen.updateButton()).toBeDisabled();
-
     await editorScreen.settingsShowTitle().click();
-
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
-    await expect.poll(unsavedChangesGuarded).toBe(true);
-    expect(saveApi.requests).toHaveLength(0);
-
-    await userEvent.keyboard('{Meta>}s{/Meta}');
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPage(saveApi)).toMatchObject({
+      id: PAGE_ID,
+      updated_at: LOADED_AT,
       show_title_and_feature_image: false,
-      status: 'published',
     });
     await expect.element(editorScreen.updateButton()).toBeDisabled();
   });

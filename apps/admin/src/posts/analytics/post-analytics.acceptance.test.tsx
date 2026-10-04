@@ -7,8 +7,10 @@ import {
   fakeAdminStats,
   fakeAdminEndpoint,
   fakeMembers,
+  fakeNewsletters,
   fakePosts,
   fakePostsListScreen,
+  fakeSnippets,
   fakeTinybirdPipe,
   fakeTinybirdToken,
   post,
@@ -17,6 +19,7 @@ import {
   webAnalyticsBootOverrides,
   type TinybirdPipeCapture,
 } from '@test-utils/acceptance';
+import { editorScreen } from '@/editor/editor.screen';
 import { membersScreen } from '@/members/members.screen';
 import { postsListScreen } from '@/posts/list/posts-list.screen';
 import { sidebarScreen } from '@/layout/sidebar.screen';
@@ -163,31 +166,12 @@ describe('Post analytics overview', () => {
                   opened_count: 400,
                   status: 'submitted',
                 },
+                count: { clicks: 60, positive_feedback: 3, negative_feedback: 1 },
               },
         ),
       ];
     });
-    let detailedPostRequestCount = 0;
-    const detailedPostsApi = fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/`), () => {
-      detailedPostRequestCount += 1;
-      return {
-        posts: [
-          seededPost(
-            detailedPostRequestCount === 1
-              ? postOverrides
-              : {
-                  email: {
-                    id: EMAIL_ID,
-                    email_count: 1000,
-                    opened_count: 400,
-                    status: 'submitted',
-                  },
-                  count: { clicks: 60, positive_feedback: 0, negative_feedback: 0 },
-                },
-          ),
-        ],
-      };
-    });
+    fakeAdminEndpoint('GET', new RegExp(`^/feedback/${POST_ID}/`), { feedback: [] });
     const basicStatsApi = fakeAdminEndpoint('GET', /^\/stats\/newsletter-basic-stats\//, {
       stats: [
         {
@@ -257,6 +241,7 @@ describe('Post analytics overview', () => {
       .element(page.getByRole('button', { name: /View members/ }).first())
       .not.toBeInTheDocument();
 
+    const pendingLinkRequestCount = linksApi.requests.length;
     completeSending = true;
     const pendingStatusRequestCount = statusRequestCount;
     await expect
@@ -264,12 +249,13 @@ describe('Post analytics overview', () => {
       .toBeGreaterThan(pendingStatusRequestCount);
     await expect.element(postAnalyticsScreen.emailSendingStatusLine()).not.toBeInTheDocument();
     await expect.poll(() => postsApi.requests.length).toBeGreaterThan(1);
-    await expect.poll(() => detailedPostsApi.requests.length).toBeGreaterThan(1);
     await expect.poll(() => basicStatsApi.requests.length).toBeGreaterThan(0);
     await expect.poll(() => clickStatsApi.requests.length).toBeGreaterThan(0);
-    await expect.poll(() => linksApi.requests.length).toBeGreaterThan(1);
+    await expect.poll(() => linksApi.requests.length).toBeGreaterThan(pendingLinkRequestCount);
     await expect.element(page.getByText('1,000').first()).toBeVisible();
     await expect.element(page.getByText('400').first()).toBeVisible();
+    await expect.element(page.getByRole('tab', { name: 'More like this 75%' })).toBeVisible();
+    await expect.element(page.getByRole('tab', { name: 'Less like this 25%' })).toBeVisible();
     await expect.element(page.getByRole('button', { name: /View members/ }).first()).toBeEnabled();
     await expect.element(page.getByText(/^Published and sent to 1,000 members on/)).toBeVisible();
     await expect.element(page.getByText(/^Published on your site on/)).not.toBeInTheDocument();
@@ -759,6 +745,32 @@ describe('Post analytics overview', () => {
   });
 });
 
+describe('Post analytics edit', () => {
+  it('opens the editor with a way back to the analytics screen it left', async () => {
+    seedPostAnalyticsWorld();
+    fakeSnippets([]);
+    fakeNewsletters([]);
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), { posts: [seededPost()] });
+    await renderAdminApp(`/posts/analytics/${POST_ID}/web`, {
+      labs: { editorReact: true },
+      boot: webAnalyticsBootOverrides(),
+    });
+
+    await expect.element(postAnalyticsScreen.postTitle('Attack of the Clones')).toBeVisible();
+    await postAnalyticsScreen.moreActionsButton().click();
+    await postAnalyticsScreen.editPostMenuItem().click();
+
+    await expect.poll(currentRoute).toBe(`/editor/post/${POST_ID}`);
+    await expect
+      .element(editorScreen.analyticsBackLink())
+      .toHaveAttribute('href', `#/posts/analytics/${POST_ID}/web`);
+    await editorScreen.analyticsBackLink().click();
+
+    await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}/web`);
+    await expect.element(postAnalyticsScreen.locationsCard()).toBeVisible();
+  });
+});
+
 describe('Post analytics delete', () => {
   const PUBLISHED_BUCKET = 'status:[published,sent]';
 
@@ -776,10 +788,7 @@ describe('Post analytics delete', () => {
     const listBrowses = () =>
       postsApi.requests.filter(({ filter }) => filter === PUBLISHED_BUCKET).length;
 
-    await renderAdminApp('/posts', {
-      labs: { postsListReact: true },
-      boot: webAnalyticsBootOverrides(),
-    });
+    await renderAdminApp('/posts', { boot: webAnalyticsBootOverrides() });
     await expect
       .element(postsListScreen.listItems().first())
       .toHaveTextContent('Attack of the Clones');

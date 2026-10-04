@@ -36,12 +36,17 @@ class AdapterCacheRedis extends CacheBase {
       // @NOTE: this condition can be avoided if we add merging of nested options
       //        to adapter configuration. Than adding adapter-specific {clusterConfig: {options: {ttl: XXX}}}
       //        will be enough to set ttl for redis cluster.
-      if (config.ttl && config.clusterConfig) {
-        if (!config.clusterConfig.options) {
-          config.clusterConfig.options = {};
-        }
+      //
+      // Derived rather than assigned into: `config` here is the adapter's slice
+      // of Ghost config itself, so folding ttl in place wrote through to every
+      // later reader of `adapters:...`.
+      let clusterConfig = config.clusterConfig;
 
-        config.clusterConfig.options.ttl = config.ttl;
+      if (config.ttl && clusterConfig) {
+        clusterConfig = {
+          ...clusterConfig,
+          options: { ...clusterConfig.options, ttl: config.ttl },
+        };
       }
 
       const storeOptions = {
@@ -54,7 +59,7 @@ class AdapterCacheRedis extends CacheBase {
           return (config.storeConfig?.retryConnectSeconds || 10) * 1000;
         },
         ...config.storeConfig,
-        clusterConfig: config.clusterConfig,
+        clusterConfig,
       };
       const store = redisStoreFactory.getRedisStore(storeOptions, config.reuseConnection);
 

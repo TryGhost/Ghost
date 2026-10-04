@@ -39,9 +39,17 @@ authentication endpoints (through the framework hooks, which never retry these
 single-use writes). Replacing the implementation means exporting a different
 `useAuthClient` from `client/auth-client.ts`. Two server behaviours the screens
 rely on and a replacement must keep: the first verification code is emailed
-during sign in (the verify screen only calls `sendOtp` from Resend), and a
-password reset may or may not sign the user in (the screen reloads either way,
-landing on the admin or on sign in).
+during sign in (`sendOtp` is called only from Resend), and a password reset may
+or may not sign the user in (the screen reloads either way, landing on the admin
+or on sign in).
+
+## Resend
+
+`ResendCodeButton` emails a fresh code from the verification code's input group.
+It reads Sending while the request runs, then Sent, and stays disabled for
+fifteen seconds after each code that goes out. A failure is handed to the caller
+as the text to show, and the button is offered again. It is exported through
+`api.ts` for sign-in prompts outside these screens.
 
 ## Session changes reload the page
 

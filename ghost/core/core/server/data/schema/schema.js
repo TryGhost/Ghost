@@ -2171,7 +2171,7 @@ module.exports = {
     },
     name: { type: 'string', maxlength: 191, nullable: false, unique: true },
     description: { type: 'string', maxlength: 2000, nullable: false, defaultTo: '' },
-    slug: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    slug: { type: 'string', maxlength: 191, nullable: true, unique: true },
     trigger_tier_scope: {
       type: 'string',
       maxlength: 50,

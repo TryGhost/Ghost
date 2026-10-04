@@ -65,16 +65,26 @@ class SettingsMenu extends BasePage {
   }
 }
 
+/** The session-expired sign-in prompt of either editor. */
 class ReAuthenticateModal extends BasePage {
   readonly modal: Locator;
   readonly passwordInput: Locator;
   readonly signInButton: Locator;
 
-  constructor(page: Page) {
+  constructor(
+    page: Page,
+    { implementation = 'ember' }: { implementation?: PostEditorImplementation } = {},
+  ) {
     super(page);
 
-    this.modal = page.locator('[data-test-modal="re-authenticate"]');
-    this.passwordInput = this.modal.getByLabel('Your password');
+    const react = implementation === 'react';
+
+    this.modal = react
+      ? page.getByTestId(editorReauthDialog)
+      : page.locator('[data-test-modal="re-authenticate"]');
+    this.passwordInput = react
+      ? this.modal.getByLabel('Password', { exact: true })
+      : this.modal.getByLabel('Your password');
     this.signInButton = this.modal.getByRole('button', { name: /Sign in/ });
   }
 
@@ -103,6 +113,8 @@ class PublishFlow extends BasePage {
   readonly confirmButton: Locator;
   readonly closeButton: Locator;
   readonly completeBookmark: Locator;
+  /** Ember only: the flow hands off to the list, which opens this celebration dialog. */
+  readonly celebration: Locator;
 
   constructor(
     page: Page,
@@ -158,12 +170,15 @@ class PublishFlow extends BasePage {
     this.confirmButton = react
       ? page.getByTestId(publishConfirm)
       : page.locator('[data-test-modal="publish-flow"] [data-test-button="confirm-publish"]');
+    this.celebration = page.getByRole('dialog').filter({ hasText: /published|All set/ });
+    // First: an email-only celebration repeats "Close" in its footer.
     this.closeButton = react
       ? this.modal.getByRole('button', { name: 'Close', exact: true })
-      : page.locator('[data-test-button="close-publish-flow"]');
+      : this.celebration.getByRole('button', { name: 'Close', exact: true }).first();
+    // The celebration's post preview is the one link carrying the post's heading.
     this.completeBookmark = react
       ? page.getByTestId(publishCompleteBookmark)
-      : page.locator('[data-test-complete-bookmark]');
+      : this.celebration.getByRole('link').filter({ has: page.getByRole('heading') });
   }
 
   async open(): Promise<void> {
@@ -172,6 +187,10 @@ class PublishFlow extends BasePage {
 
   async close(): Promise<void> {
     await this.closeButton.click();
+
+    if (this.implementation === 'ember') {
+      await this.celebration.waitFor({ state: 'hidden' });
+    }
   }
 
   /** The complete step offers no Close button; Escape dismisses the dialog. */
@@ -218,20 +237,17 @@ class PublishFlow extends BasePage {
     }
   }
 
-  /**
-   * React's date field is read-only behind a calendar popover, so the only
-   * reachable day is the default the schedule toggle picks.
-   */
   private async scheduleReact({ date, time }: { date?: string; time?: string }): Promise<void> {
-    if (date) {
-      throw new Error('the React publish flow picks its date from a calendar, not a text field');
-    }
-
     await this.publishAtButton.click();
     await this.optionsStep
       .getByRole('radio', { name: publishAtScheduleOption, exact: true })
       .click();
     await this.scheduleDateInput.waitFor({ state: 'visible' });
+
+    if (date) {
+      await this.scheduleDateInput.fill(date);
+      await this.scheduleDateInput.blur();
+    }
 
     if (time) {
       await this.scheduleTimeInput.fill(time);
@@ -274,8 +290,9 @@ export class PostEditorPage extends AdminPage {
   readonly previewModal: PostPreviewModal;
   readonly settingsToggleButton: Locator;
   readonly publishFlow: PublishFlow;
-  readonly screenTitle: Locator;
   readonly lexicalEditor: Locator;
+  /** The body's container: readable while an open dialog hides the page from role queries. */
+  readonly bodyBehindDialog: Locator;
   readonly secondaryEditor: Locator;
   readonly publishSaveButton: Locator;
   readonly updateFlowButton: Locator;
@@ -286,13 +303,12 @@ export class PostEditorPage extends AdminPage {
    * really "arrow-left Posts".
    */
   readonly backButton: Locator;
-  /** The session-expired sign-in prompt of either editor. */
-  readonly reauthPrompt: Locator;
   /** React's update-collision banner. */
   readonly conflictBanner: Locator;
 
   /** Ember's settings menu. */
   readonly settingsMenu: SettingsMenu;
+  /** The session-expired sign-in prompt of either editor. */
   readonly reauthenticateModal: ReAuthenticateModal;
 
   /** React only: the header, the settings sidebar and the feature image. */
@@ -322,12 +338,12 @@ export class PostEditorPage extends AdminPage {
     this.previewModal = new PostPreviewModal(page, { implementation });
     this.settingsToggleButton = page.getByTestId(settingsMenuToggle);
     this.publishFlow = new PublishFlow(page, { implementation });
-    this.screenTitle = page.locator('[data-test-screen-title]');
     // Ember marks the Koenig container; React wraps each instance in its own
     // testid, and the contenteditable is the textbox inside the primary one.
     this.lexicalEditor = react
       ? page.getByTestId(editorBody).getByRole('textbox').first()
       : page.locator('[data-kg="editor"]').first();
+    this.bodyBehindDialog = react ? page.getByTestId(editorBody) : this.lexicalEditor;
     this.secondaryEditor = react
       ? page.getByTestId(editorSecondaryInstance)
       : page.locator('[data-secondary-instance="true"]');
@@ -347,14 +363,11 @@ export class PostEditorPage extends AdminPage {
     this.backButton = react ? this.header.backLink : page.locator('[data-test-breadcrumb]');
 
     this.settingsMenu = new SettingsMenu(page);
-    this.reauthenticateModal = new ReAuthenticateModal(page);
+    this.reauthenticateModal = new ReAuthenticateModal(page, { implementation });
 
     this.settings = new PostSettingsSidebar(page, this.settingsToggleButton);
     this.featureImage = new FeatureImage(page);
 
-    this.reauthPrompt = react
-      ? page.getByTestId(editorReauthDialog)
-      : this.reauthenticateModal.modal;
     this.conflictBanner = page.getByTestId(editorConflictBanner);
   }
 
@@ -439,7 +452,7 @@ export class PageEditorPage extends PostEditorPage {
   constructor(page: Page) {
     super(page);
     this.pageUrl = '/ghost/#/pages';
-    this.newPageButton = page.locator('[data-test-new-page-button]');
+    this.newPageButton = page.getByRole('link', { name: 'New page', exact: true });
   }
 
   async gotoNew(): Promise<void> {

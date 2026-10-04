@@ -36,6 +36,8 @@ const EXTERNAL_URL_BLOCKLIST: Array<{ pattern: string; isMatch: (url: string) =>
   },
   // Tinybird pipes (analytics); declare per test with fakeTinybirdPipe (tinybird.ts)
   { pattern: `${TINYBIRD_ORIGIN}/*`, isMatch: (url) => url.startsWith(`${TINYBIRD_ORIGIN}/`) },
+  // Private-site login on any site origin (src/hooks/use-private-site-login.ts)
+  { pattern: '*/private/', isMatch: (url) => new URL(url).pathname.endsWith('/private/') },
 ];
 
 // Per-test preview URLs are arbitrary site origins, so they cannot live in
@@ -236,7 +238,12 @@ function sleep(ms: number): Promise<void> {
   });
 }
 
-/** Resolves once no tracked request has been in flight for `quietMs` continuously. */
+/**
+ * Resolves once no tracked request has been in flight for `quietMs` continuously.
+ * Teardown drains with it. A spec waits on it for every section on screen to have
+ * its data, before a gesture that the page reflowing mid-way would knock off target,
+ * such as a drag.
+ */
 export async function settleRequests({
   quietMs = 50,
   timeoutMs = 2000,
@@ -262,7 +269,7 @@ export async function settleRequests({
 
   throw new Error(
     [
-      `Request(s) still in flight ${timeoutMs}ms after the test finished:`,
+      `Request(s) still in flight after ${timeoutMs}ms:`,
       // The page and MSW can both hold the same request.
       ...[...new Set(inFlightRequests.values())].map((description) => `  - ${description}`),
     ].join('\n'),

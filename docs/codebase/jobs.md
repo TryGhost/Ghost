@@ -1,21 +1,15 @@
 # Jobs System
 
-Ghost's jobs system runs work in-process through the class-based jobs service
-in `ghost/core/core/server/services/jobs-service/`, or through the legacy jobs
-service for jobs which have not yet migrated. Jobs can run once or on a
+Ghost's jobs system runs work in-process through the jobs service in
+`ghost/core/core/server/services/jobs-service/`. Jobs can run once or on a
 schedule.
 
-Class-based jobs run in-process and share the main process's initialized
-services. Keep their work asynchronous so they do not block the event loop.
-
-The legacy service also supports in-process work through its inline jobs,
-which cannot be scheduled. Its scheduled and offloaded jobs run in worker
-threads through Bree, so they must initialize their own dependencies and
-cannot rely on the main Ghost process's memory.
+Jobs run in-process and share the main process's initialized services. Keep
+their work asynchronous so they do not block the event loop.
 
 ## Adding a job
 
-New jobs use the class-based jobs service. Define a data-only `Job` subclass
+New jobs use the jobs service. Define a data-only `Job` subclass
 with a unique static type and serializable payload, register its handler
 through `jobsService.handle(JobClass, handler)` in
 `ghost/core/core/server/services/jobs-service/register-job-handlers.ts`, which
@@ -28,6 +22,11 @@ Current examples include:
 
 - [Gift reminders](../../ghost/core/core/server/services/gifts/jobs/send-gift-reminders-job.ts),
   dispatched on a recurring schedule.
+- [Site content imports](../../ghost/core/core/server/data/importer/jobs/content-import-job.ts),
+  dispatched once in the shared default lane with the key of the stored upload
+  and the name it was uploaded with. Import failures resolve after reporting by
+  email; completion-email failures reject. Testing environments and explicit
+  direct calls still run inline.
 - [Newsletter sending](../../ghost/core/core/server/services/email-service/jobs/send-email-job.ts),
   dispatched once with an email ID.
 - [Email analytics](../../ghost/core/core/server/services/email-analytics/jobs/email-analytics-job-scheduler.ts),
@@ -46,18 +45,9 @@ boot own service initialization and dependency injection rather than
 initializing on the first request. Wrappers can construct their services
 inside `init()`.
 
-## Legacy jobs
-
-The legacy service in `ghost/core/core/server/services/jobs/` wraps
-`@tryghost/job-manager` and remains for unmigrated jobs. Do not add new jobs to
-it. Existing legacy examples include:
-
-- The site content import (`ghost/core/core/server/data/importer/`), which runs
-  as an inline job.
-
 ## Queues
 
-Handlers registered through the class-based service can declare a queue and a
+Handlers registered through the jobs service can declare a queue and a
 concurrency limit together alongside the handler
 (`jobsService.handle(Job, handler, {queue: 'webmentions', concurrency: 3})`),
 which isolates slow or flood-prone job types from the shared workers; with no
@@ -74,19 +64,22 @@ in-memory backend enforces these limits per process.
 
 ## Testing
 
-Tests for the legacy jobs wrapper live in
-`ghost/core/test/unit/server/services/jobs/`, and tests for the class-based
-service in `ghost/core/test/unit/server/services/jobs-service/`. Tests should
-cover the job's result and failure behavior.
+Tests for the jobs service live in
+`ghost/core/test/unit/server/services/jobs-service/`. Tests should cover the
+job's result and failure behavior.
 
 Awaiting `dispatch()` only waits for the backend's enqueue call. Tests which
 need the work to finish should wait for its observable result. Newsletter
-tests should follow the [email service testing guidance](../../ghost/core/core/server/services/email-service/README.md#testing);
-the legacy job manager's `allSettled` event does not cover class-based jobs.
+tests should follow the [email service testing guidance](../../ghost/core/core/server/services/email-service/README.md#testing).
+Site import tests wait for the completion email, which is sent after the stored
+upload has been deleted. The importer's `site_content_import.completed` event
+records successful imports; generic job completion only records that the handler
+settled, which it also does for an import failure it reported. There are no
+automatic retries and no collection of uploads orphaned by a shutdown between
+dispatch and execution.
 
 ## Scheduling
 
-The legacy jobs service uses Bree for scheduled work; the class-based service
-schedules with cron expressions through its backend. Schedules use the server's
-system timezone. Jobs should have unique names, be safe to run more than once,
+The jobs service schedules with cron expressions through its backend.
+Schedules use the server's system timezone. Jobs should have unique names, be safe to run more than once,
 and receive identifiers rather than large objects where possible.

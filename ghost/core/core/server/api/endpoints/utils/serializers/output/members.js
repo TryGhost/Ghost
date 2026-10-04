@@ -2,6 +2,7 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:members');
 const mappers = require('./mappers');
+const { visibleMetafields } = require('../../../../../services/members/utils');
 const { createCSVTransform } = require('./members-csv-transform');
 const { createCSVStreamResponse } = require('./stream-csv-response');
 module.exports = {
@@ -131,8 +132,9 @@ function serializeMember(member, options) {
     serialized.tiers = json.products;
   }
 
-  if (json.metafields) {
-    serialized.metafields = json.metafields;
+  const metafields = visibleMetafields(json.metafields);
+  if (metafields) {
+    serialized.metafields = metafields;
   }
 
   serialized.current_subscription = json.current_subscription || null;

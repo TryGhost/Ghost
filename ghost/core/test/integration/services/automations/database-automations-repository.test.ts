@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import ObjectId from 'bson-objectid';
+import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 // @ts-expect-error Test utilities currently lack type definitions.
 import testUtils from '../../../utils';
@@ -55,6 +56,46 @@ describe('database automations repository', function () {
     });
     return memberEmail;
   }
+
+  describe('edit', function () {
+    it('rejects duplicate names', async function () {
+      const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
+      const automation = await repo.getById(automationId);
+      assert(automation);
+      const otherId = ObjectId().toHexString();
+      const now = toDatabaseDate(new Date());
+      const name = `Existing automation ${otherId}`;
+      await knex('automations').insert({
+        id: otherId,
+        slug: `duplicate-name-test-${otherId}`,
+        name,
+        status: 'inactive',
+        created_at: now,
+        updated_at: now,
+      });
+
+      try {
+        await assert.rejects(
+          repo.edit(automationId, {
+            ...automation,
+            name,
+            description: 'Should not be saved',
+            status: 'inactive',
+          }),
+          (error: unknown) => {
+            assert(error instanceof errors.ValidationError);
+            assert.equal(error.statusCode, 422);
+            assert.equal(error.property, 'name');
+            assert.equal(error.message, 'An automation with this name already exists.');
+            return true;
+          },
+        );
+        assert.deepEqual(await repo.getById(automationId), automation);
+      } finally {
+        await knex('automations').where('id', otherId).del();
+      }
+    });
+  });
 
   describe('trigger', function () {
     it('only triggers automations once per automation+member, even with race conditions', async function () {

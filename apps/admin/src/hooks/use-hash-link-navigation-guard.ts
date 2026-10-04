@@ -10,16 +10,18 @@ import React from 'react';
  * Ports Ember's proven approach 1:1 (`ghost/admin/app/initializers/trailing-hash.js`):
  * a capture-phase document click listener that, while `when` is true,
  * intercepts unmodified left-clicks on hash anchors and hands the target href
- * back to the caller to confirm. Links rendered by react-router (marked with
- * `data-discover`) are left alone — the router's own blocker guards those.
+ * back to the caller to confirm. A click the caller does not `claim`, because
+ * it already holds another exit, is dropped. Links rendered by react-router
+ * (marked with `data-discover`) are left alone — the router's own blocker
+ * guards those.
  */
-export function useHashLinkNavigationGuard(when: boolean, onBlocked?: () => void) {
+export function useHashLinkNavigationGuard(when: boolean, claim: () => boolean) {
   const [blockedHref, setBlockedHref] = React.useState<string | null>(null);
   const blockedHrefRef = React.useRef<string | null>(null);
   const whenRef = React.useRef(when);
   whenRef.current = when;
-  const onBlockedRef = React.useRef(onBlocked);
-  onBlockedRef.current = onBlocked;
+  const claimRef = React.useRef(claim);
+  claimRef.current = claim;
 
   React.useEffect(() => {
     const onClick = (event: MouseEvent) => {
@@ -37,9 +39,11 @@ export function useHashLinkNavigationGuard(when: boolean, onBlocked?: () => void
       }
       event.preventDefault();
       event.stopPropagation();
+      if (!claimRef.current()) {
+        return;
+      }
       const href = anchor.getAttribute('href');
       blockedHrefRef.current = href;
-      onBlockedRef.current?.();
       setBlockedHref(href);
     };
 

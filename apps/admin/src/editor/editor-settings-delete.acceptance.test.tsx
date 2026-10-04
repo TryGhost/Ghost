@@ -7,10 +7,12 @@ import {
   currentUserResponse,
   fakeAdminEndpoint,
   fakeEditorChrome,
+  fakePages,
   fakePosts,
   fakePostsListScreen,
   post,
   renderAdminApp,
+  settleTransitions,
   staffRole,
   unsavedChangesGuarded,
 } from '@test-utils/acceptance';
@@ -21,7 +23,7 @@ const POST_ID = 'abc123';
 const NEW_POST_ID = 'new123';
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 // The lists are React-owned so the delete's navigation stays in the router.
-const FLAG_ON = { labs: { editorReact: true, postsListReact: true } };
+const FLAG_ON = { labs: { editorReact: true } };
 
 const POLL = { timeout: 10_000 };
 
@@ -121,6 +123,8 @@ function fakeRefusedDelete({
 async function openSidebar() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  // Visible from its first frame; a click while it still slides in can be lost.
+  await settleTransitions();
 }
 
 async function openDeleteDialog() {
@@ -322,6 +326,8 @@ describe('Post settings delete', () => {
 
   it('deletes a page through the pages API and returns to the pages list', async () => {
     editorChrome();
+    // The list the delete returns to.
+    fakePages([]);
     const current = post({
       id: POST_ID,
       title: 'A page',

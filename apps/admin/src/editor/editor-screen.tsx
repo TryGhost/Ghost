@@ -11,13 +11,14 @@ import {
 } from 'react';
 import { AdminLink } from '@/shared/admin-link';
 import { getPostListReturnUrl } from '@/posts/api';
+import { reloadAdmin } from '@/auth/api';
 import { NotFound } from '@/shared/not-found';
-import { Navigate, useNavigate, useParams } from '@tryghost/admin-x-framework';
+import { Navigate, useLocation, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
 import { DirtyConfirmDialog, PageHeader } from '@tryghost/shade/patterns';
 import { Box, Grid, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { APIError } from '@tryghost/admin-x-framework/errors';
+import { APIError, SessionExpiredError } from '@tryghost/admin-x-framework/errors';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useEditPage, useEditorPage } from '@tryghost/admin-x-framework/api/pages';
@@ -42,21 +43,28 @@ import {
   withLiveSettings,
 } from './card-config';
 import { EditorHeaderActions, type OpenFlow } from './editor-header-actions';
+import { readEditorReturn } from './editor-return';
 import { EditorStatus } from './editor-status';
+import { EmailSizeWarning } from './email-size-warning';
 import { PostEditor } from './post-editor';
 import type { EditorStatusRecord } from './post-status';
 import { buildPublishFlowPost } from './publish/flow-post';
 import { initialEmailError } from './publish/use-publish-flow';
 import { SessionBanners } from './session/session-banners';
+import { settingsFieldErrorFor, titleError } from './session/settings-fields';
 import { ReauthDialog } from './session/reauth-dialog';
 import { PostSettingsSidebar } from './settings/post-settings-sidebar';
 import { useFeatureImageBinding } from './session/feature-image-binding';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { useEditorLeaveGuard } from './session/use-leave-guard';
-import { useEditorSession, useEditorSessionKey } from './session/use-editor-session';
+import {
+  EditorSessionCreatedProvider,
+  EditorSessionKeyProvider,
+  useEditorScreenSessionKey,
+} from './session/session-key';
+import { useEditorSession } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
-import { useSaveShortcut } from './use-editor-shortcuts';
 import type { EditorRecord } from './session/projection';
 
 function EditorLoading() {
@@ -78,11 +86,19 @@ function EditorLoadError({ message, onRetry }: { message: string; onRetry: () =>
   );
 }
 
-function EditorHeader({ postType, children }: { postType: PostType; children?: ReactNode }) {
+function EditorHeader({
+  postType,
+  analyticsReturn,
+  children,
+}: {
+  postType: PostType;
+  analyticsReturn?: string;
+  children?: ReactNode;
+}) {
   const listLabel = postType === 'page' ? 'Pages' : 'Posts';
-  const reactOwnsList = useFeatureFlag('postsListReact');
   const resource = postType === 'page' ? 'pages' : 'posts';
-  const listUrl = reactOwnsList ? getPostListReturnUrl(resource) : `/${resource}`;
+  const listUrl = getPostListReturnUrl(resource);
+  const backLabel = analyticsReturn ? 'Analytics' : listLabel;
 
   return (
     <Grid
@@ -94,13 +110,20 @@ function EditorHeader({ postType, children }: { postType: PostType; children?: R
         className="bg-background/80 backdrop-blur-sm"
         fallbackSize="sm"
         fallbackVariant="ghost"
-        label={listLabel}
+        label={backLabel}
         asChild
       >
-        <AdminLink state={getListReturnNavigationState(listUrl)} to={listUrl}>
-          <LucideIcon.ArrowLeft />
-          {listLabel}
-        </AdminLink>
+        {analyticsReturn ? (
+          <AdminLink to={analyticsReturn}>
+            <LucideIcon.ArrowLeft />
+            {backLabel}
+          </AdminLink>
+        ) : (
+          <AdminLink state={getListReturnNavigationState(listUrl)} to={listUrl}>
+            <LucideIcon.ArrowLeft />
+            {backLabel}
+          </AdminLink>
+        )}
       </PageHeader.Action>
       {children}
     </Grid>
@@ -176,6 +199,13 @@ function EditorContent({
   // Core refuses an email retry to Authors and Contributors.
   const offersEmailRetry =
     !!currentUser && !isAuthorOrContributor(currentUser) && !!initialEmailError(publishPost);
+  const location = useLocation();
+  const analyticsReturn = record ? readEditorReturn(location.state) : undefined;
+  const statusRecord = statusRecordOf(session.loadedRecord ?? record, createdId);
+  const didEmailFail =
+    postType === 'post' &&
+    (statusRecord?.status === 'published' || statusRecord?.status === 'sent') &&
+    statusRecord.emailStatus === 'failed';
   // Closed on every editor entry, as the menu it replaces was.
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsPresent, setSettingsPresent] = useState(false);
@@ -248,8 +278,6 @@ function EditorContent({
     [cardConfig, liveShowTitleAndFeatureImage, liveVisibility],
   );
 
-  useSaveShortcut(session.dispatchExplicit);
-
   const settingsToggle = (
     <PageHeader.Action
       ref={settingsToggleRef}
@@ -288,14 +316,16 @@ function EditorContent({
     >
       <Stack className="min-h-0 min-w-0 flex-1" gap="none">
         <Box ref={headerRef} className="pointer-events-none relative z-20 shrink-0">
-          <EditorHeader postType={postType}>
-            <EditorStatus
-              isDirty={session.isDirty()}
-              record={statusRecordOf(session.loadedRecord ?? record, createdId)}
-              state={session.state}
-              onOpenPublishFlow={offersEmailRetry ? openPublishFlow : undefined}
-            />
-            <PageHeader.ActionGroup className="ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] max-sm:col-start-2 max-sm:row-start-1">
+          <EditorHeader analyticsReturn={analyticsReturn} postType={postType}>
+            {!analyticsReturn || didEmailFail || session.state.kind === 'error' ? (
+              <EditorStatus
+                isDirty={session.isDirty()}
+                record={statusRecord}
+                state={session.state}
+                onOpenPublishFlow={offersEmailRetry ? openPublishFlow : undefined}
+              />
+            ) : null}
+            <PageHeader.ActionGroup className="ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] max-sm:col-start-2 max-sm:row-start-1 sm:col-start-3">
               <EditorHeaderActions
                 currentUser={currentUser}
                 offersEmailRetry={offersEmailRetry}
@@ -321,7 +351,7 @@ function EditorContent({
             pendingSave={session.pendingSave}
             state={session.state}
             onReload={session.reload}
-            onRetrySave={session.dispatchExplicit}
+            onRetrySave={session.retrySave}
           />
           <ReauthDialog
             email={currentUser?.email ?? ''}
@@ -338,10 +368,13 @@ function EditorContent({
               {...session.bind}
               autofocusTitle={!record}
               cardConfig={currentCardConfig}
+              excerptError={settingsFieldErrorFor('custom_excerpt', session.settings)}
               featureImage={featureImage}
               postType={postType}
               showExcerpt={showExcerpt}
-              onExcerptBlur={session.commitSettings}
+              titleError={titleError(session.bind.title)}
+              wordCountAccessory={<EmailSizeWarning post={publishPost} />}
+              onExcerptBlur={session.commitField}
               onTkCountChange={setTkCount}
             />
           </div>
@@ -468,7 +501,11 @@ function useLexicalConversion(postType: PostType) {
 function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   // A create replaces the URL with the id it acquired; the load must not restart.
   const [openedId] = useState(id);
+  // Access and conversion are judged until the opening read settles. Later
+  // reads belong to the session; unmounting the editor would dispose it.
+  const [openedWith, setOpenedWith] = useState<EditorRecord>();
   const navigate = useNavigate();
+  const { pathname, search } = useLocation();
   const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const postQuery = useEditorPost(openedId ?? '', {
     enabled: postType === 'post' && !!openedId,
@@ -485,30 +522,48 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
     postType === 'page' ? pageQuery.data?.pages[0] : postQuery.data?.posts[0];
   const { state: conversion, convert } = useLexicalConversion(postType);
   const listPath = postType === 'page' ? '/pages' : '/posts';
+  // A failed refetch keeps the last post read; unmounting the editor would dispose its session.
+  const loadError = openedWith || loaded ? null : query.error;
+  // Reloading is safe only while nothing is unsaved: the signed-out admin
+  // remembers this route and returns to it after sign in.
+  const sessionExpired = loadError instanceof SessionExpiredError;
+  useEffect(() => {
+    if (sessionExpired) {
+      reloadAdmin(`${pathname}${search}`);
+    }
+  }, [sessionExpired, pathname, search]);
 
-  const returnToList = !!currentUser && !!loaded && shouldReturnToList(currentUser, loaded);
+  const opening = openedWith ? undefined : loaded;
+  const returnToList = !!currentUser && !!opening && shouldReturnToList(currentUser, opening);
   useEffect(() => {
     if (returnToList) {
       navigate(listPath, { replace: true });
     }
   }, [returnToList, navigate, listPath]);
 
-  const needsConversion = !!currentUser && !!loaded?.mobiledoc && !loaded.lexical && !returnToList;
+  const needsConversion =
+    !!currentUser && !!opening?.mobiledoc && !opening.lexical && !returnToList;
   useEffect(() => {
-    if (needsConversion && loaded && conversion?.id !== loaded.id) {
-      void convert(loaded);
+    if (needsConversion && opening && conversion?.id !== opening.id) {
+      void convert(opening);
     }
-  }, [needsConversion, loaded, conversion?.id, convert]);
+  }, [needsConversion, opening, conversion?.id, convert]);
 
   if (!openedId) {
     return <EditorSurface createdId={id} postType={postType} />;
   }
 
-  // A failed refetch keeps the last post read; unmounting the editor would dispose its session.
-  const loadError = loaded ? null : query.error;
+  if (openedWith) {
+    return <EditorSurface postType={postType} record={openedWith} />;
+  }
+
   const notFound = loadError instanceof APIError && loadError.response?.status === 404;
   if (notFound) {
     return <NotFound />;
+  }
+
+  if (sessionExpired) {
+    return <EditorLoading />;
   }
 
   if (loadError) {
@@ -548,12 +603,17 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
     record = converted.record;
   }
 
+  // Latched while rendering once the read settles: a reopened post's cached
+  // copy may be stale, so the refetch in flight still decides.
+  if (!query.isFetching) {
+    setOpenedWith(record);
+  }
   return <EditorSurface postType={postType} record={record} />;
 }
 
 export default function EditorScreen() {
   const editorPath = useParams()['*'] ?? '';
-  const sessionKey = useEditorSessionKey();
+  const { key: sessionKey, markCreated } = useEditorScreenSessionKey();
   const [typeSegment, id, ...rest] = editorPath.split('/').filter(Boolean);
 
   if (!typeSegment) {
@@ -564,5 +624,11 @@ export default function EditorScreen() {
     return <NotFound />;
   }
 
-  return <EditorLoader key={sessionKey} id={id} postType={typeSegment} />;
+  return (
+    <EditorSessionKeyProvider value={sessionKey}>
+      <EditorSessionCreatedProvider value={markCreated}>
+        <EditorLoader key={sessionKey} id={id} postType={typeSegment} />
+      </EditorSessionCreatedProvider>
+    </EditorSessionKeyProvider>
+  );
 }

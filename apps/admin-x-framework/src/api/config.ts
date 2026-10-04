@@ -140,8 +140,8 @@ export type Config = {
       emailSendingDisabledMessage?: string;
     };
     export?: {
-      // Host archive webhook — when set, "Export data" delivers the
-      // archive by email instead of a synchronous download
+      // Host export webhook — when set, "Export data" delivers the
+      // export by email instead of a synchronous download
       webhookUrl?: string;
     };
   };
@@ -157,6 +157,12 @@ export type Config = {
   docsbot?: {
     enabled?: boolean;
     id?: string;
+  };
+  clientExtensions?: {
+    script?: {
+      container?: string;
+      src?: string;
+    };
   };
   // Config is relatively fluid, so we only type used properties above and still support arbitrary property access when needed
   [key: string]: JSONValue | undefined;

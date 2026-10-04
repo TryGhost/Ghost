@@ -9,6 +9,7 @@ import {
   renderAdminApp,
   settingsResponse,
   tier,
+  unsavedChangesGuarded,
 } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
@@ -368,6 +369,7 @@ describe('Tier checkout collection', () => {
     });
 
     // The one Save covered both writes: closing asks no questions.
+    await expect.poll(unsavedChangesGuarded).toBe(false);
     await modal.getByRole('button', { name: 'Close' }).click();
     await expect(settingsScreen.tierDetailModal()).toHaveCount(0);
   });
@@ -378,9 +380,11 @@ describe('Tier checkout collection', () => {
 
     const modal = await openSupporterModal();
     await modal.getByLabelText('Collect business tax ID').click();
+    await expect.poll(unsavedChangesGuarded).toBe(true);
     await modal.getByRole('button', { name: 'Save' }).click();
     await expect.poll(() => putApi.requests.length).toBe(1);
 
+    await expect.poll(unsavedChangesGuarded).toBe(false);
     await modal.getByRole('button', { name: 'Close' }).click();
     await expect(settingsScreen.tierDetailModal()).toHaveCount(0);
   });

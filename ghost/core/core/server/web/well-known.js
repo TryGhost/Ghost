@@ -1,34 +1,22 @@
 const express = require('../../shared/express');
-const settings = require('../../shared/settings-cache');
 const config = require('../../shared/config');
 const { cacheControl } = require('./shared/middleware');
-const { getPublicKeyInfo } = require('../lib/public-jwk');
+const signingKeys = require('../services/signing-keys');
 
 module.exports = function setupWellKnownApp() {
   const wellKnownApp = express('well-known');
 
-  const dangerousPrivateKey = settings.get('ghost_private_key');
-  const keyReady = getPublicKeyInfo(dangerousPrivateKey);
+  const staffKeys = signingKeys.getInstance().forPurpose('staff');
 
   const cache = cacheControl('public', { maxAge: config.get('caching:wellKnown:maxAge') });
 
-  wellKnownApp.get('/jwks.json', cache, async function jwksMiddleware(req, res) {
-    const { kid, jwk } = await keyReady;
-
-    // there's only one key in the store atm
-    // based on this setting all of the keys to have
-    // "use": "sig" property
-    const keys = [
-      {
-        e: jwk.e,
-        kid,
-        kty: jwk.kty,
-        n: jwk.n,
-        use: 'sig',
-      },
-    ];
-
-    res.json({ keys });
+  wellKnownApp.get('/jwks.json', cache, async function jwksMiddleware(req, res, next) {
+    try {
+      // The signing key comes first for verifiers that only read keys[0]
+      res.json(await staffKeys.getJwks());
+    } catch (err) {
+      next(err);
+    }
   });
 
   return wellKnownApp;

@@ -17,10 +17,8 @@ export default class SessionService extends ESASessionService {
     @service koenig;
     @service notifications;
     @service router;
-    @service frontend;
     @service settings;
     @service ui;
-    @service upgradeStatus;
     @service membersUtils;
     @service stateBridge;
     @service themeManagement;
@@ -55,8 +53,6 @@ export default class SessionService extends ESASessionService {
         // Theme management requires features to be loaded
         this.themeManagement.fetch().catch(console.error); // eslint-disable-line no-console
 
-        await this.frontend.loginIfNeeded();
-
         // update Sentry with the full Ghost version which we only get after authentication
         if (this.config.sentry_dsn) {
             Sentry.configureScope((scope) => {
@@ -74,10 +70,11 @@ export default class SessionService extends ESASessionService {
             });
         }
 
-        this.loadServerNotifications();
-
-        // pre-emptively load editor code in the background to avoid loading state when opening editor
-        this.koenig.fetch();
+        // pre-emptively load editor code in the background to avoid loading state when opening editor;
+        // with `editorReact` on, React serves the editor and loads its own Koenig
+        if (this.feature.editorReact !== true) {
+            this.koenig.fetch();
+        }
     }
 
     // Some re-auth paths (`setup()` restoring a session, or `this.user` already
@@ -169,22 +166,6 @@ export default class SessionService extends ESASessionService {
     // TODO: this feels hacky, find a better way than using .send
     triggerAuthorizationFailed() {
         getOwner(this).lookup(`route:${this.router.currentRouteName}`)?.send('authorizationFailed');
-    }
-
-    loadServerNotifications() {
-        if (this.isAuthenticated) {
-            if (!this.user.isAuthorOrContributor) {
-                this.dataStore.findAll('notification', {reload: true}).then((serverNotifications) => {
-                    serverNotifications.forEach((notification) => {
-                        if (notification.top || notification.custom) {
-                            this.notifications.handleNotification(notification);
-                        } else {
-                            this.upgradeStatus.handleUpgradeNotification(notification);
-                        }
-                    });
-                });
-            }
-        }
     }
 
     @task({drop: true})

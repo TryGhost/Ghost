@@ -50,8 +50,8 @@ export function init(options: GiftServiceInitOptions): void {
   const { StartGiftDeliveryFlushEvent } = require('./events/start-gift-delivery-flush-event');
   const emailAnalyticsJobs = require('../email-analytics/jobs');
 
-  const { GhostMailer } = require('../mail');
-  const MailgunClient = require('../lib/mailgun-client');
+  const { GhostMailer } = require('../../lib/mail');
+  const MailgunClient = require('../../lib/mailgun/mailgun-client');
   const config = require('../../../shared/config');
   const settingsCache = require('../../../shared/settings-cache');
   const urlUtils = require('../../../shared/url-utils').default;

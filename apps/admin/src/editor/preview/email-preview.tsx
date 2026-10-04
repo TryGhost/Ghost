@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tryghost/shade/components';
-import { Box, Grid, Inline, Stack } from '@tryghost/shade/primitives';
+import { Box, Grid, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { useEmailPreview } from '@tryghost/admin-x-framework/api/email-previews';
@@ -18,12 +18,15 @@ import {
   postPreviewEmail,
   postPreviewEmailFrame,
   postPreviewEmailFrom,
+  postPreviewEmailSizeWarning,
   postPreviewEmailSubject,
   postPreviewNewsletterMissing,
   postPreviewNewslettersError,
 } from '@tryghost/test-data/selectors/editor';
 
+import type { PublishFlowPost } from '@/editor/publish/flow-post';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { useEmailSize } from '@/editor/use-email-size';
 import { useEditorSettings } from '@/editor/use-editor-settings';
 import { SendTestEmail } from './send-test-email';
 import { EmailSubject, type EmailSubjectEditor } from './email-subject';
@@ -62,9 +65,38 @@ function withPreviewDocumentStyles(html: string): string {
     : `${html}${styles}`;
 }
 
+function EmailSizeBanner({ post }: { post: PublishFlowPost }) {
+  const emailSize = useEmailSize(post);
+
+  if (!emailSize?.overLimit) {
+    return null;
+  }
+
+  return (
+    <Inline
+      align="start"
+      className="border-b border-border-default bg-state-warning/10 p-4"
+      data-testid={postPreviewEmailSizeWarning}
+      gap="md"
+    >
+      <LucideIcon.MailWarning className="size-5 shrink-0 text-state-warning" />
+      <Stack gap="xs">
+        <Text size="sm" weight="semibold">
+          This newsletter is <span className="text-state-warning">{emailSize.sizeKb}kB</span>
+        </Text>
+        <Text size="sm" tone="secondary">
+          Emails may get clipped in the inbox behind a “View entire message” link when they’re over
+          100kB.
+        </Text>
+      </Stack>
+    </Inline>
+  );
+}
+
 interface EmailPreviewProps {
   subjectEditor?: EmailSubjectEditor;
   postId: string;
+  post?: PublishFlowPost;
   audience: PreviewAudience;
   /** The selected tier's name, for the test-email audience description. */
   tierName?: string;
@@ -85,6 +117,7 @@ interface EmailPreviewProps {
 export function EmailPreview({
   subjectEditor,
   postId,
+  post,
   audience,
   tierName,
   canSendTestEmail,
@@ -195,7 +228,7 @@ export function EmailPreview({
             Subject
           </span>
           {subjectEditor && device === 'desktop' ? (
-            <EmailSubject editor={subjectEditor} />
+            <EmailSubject editor={subjectEditor} ownsSaveError />
           ) : (
             <p className="min-w-0 truncate text-sm" data-testid={postPreviewEmailSubject}>
               {subjectEditor
@@ -204,6 +237,7 @@ export function EmailPreview({
             </p>
           )}
         </Grid>
+        {post ? <EmailSizeBanner post={post} /> : null}
         {newsletterLookupPending || isFetching ? (
           <Inline className="grow" gap="none" justify="center">
             <LoadingIndicator size="md" />

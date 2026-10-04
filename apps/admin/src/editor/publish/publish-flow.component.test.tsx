@@ -2,7 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
-import { InAppProviders, fakeAdminEndpoint, fakeLabels, fakeTiers } from '@test-utils/acceptance';
+import {
+  InAppProviders,
+  fakeAdminEndpoint,
+  fakeEmailPreview,
+  fakeLabels,
+  fakeTiers,
+} from '@test-utils/acceptance';
 import {
   publishRecipientFree,
   publishRecipientSegments,
@@ -321,6 +327,32 @@ describe('Publish flow', () => {
     expect(dispatch).toHaveBeenCalledWith({ kind: 'publish', options: {} });
   });
 
+  it('warns that an email over 100kB may be clipped while the flow will send it', async () => {
+    fakeEmailPreview(150 * 1024);
+    await renderPublishFlow({ post: draft({ updatedAt: '2026-09-02T09:00:00.000Z' }) });
+
+    await expect.element(publishScreen.emailSizeWarning()).toHaveTextContent('This email is 150kB');
+    await expect
+      .element(publishScreen.emailSizeWarning())
+      .toHaveTextContent(
+        'Email newsletters may get clipped in the inbox behind a “View entire message” link when they’re over 100kB.',
+      );
+
+    await publishScreen.setting('publish-type').click();
+    await page.getByLabelText('Publish only').click();
+
+    await expect(publishScreen.emailSizeWarning()).toHaveCount(0);
+  });
+
+  it('does not warn about an email that fits', async () => {
+    const previewApi = fakeEmailPreview(99 * 1024);
+    await renderPublishFlow({ post: draft({ updatedAt: '2026-09-02T09:00:00.000Z' }) });
+
+    await expect.poll(() => previewApi.requests.length).toBe(1);
+    await expect.element(publishScreen.options()).toBeInTheDocument();
+    await expect(publishScreen.emailSizeWarning()).toHaveCount(0);
+  });
+
   it('schedules a draft and hands over the scheduled celebration key', async () => {
     const { dispatch } = await renderPublishFlow();
 
@@ -436,6 +468,97 @@ describe('Publish flow', () => {
       await expect.element(publishScreen.scheduleDate()).toHaveValue(date);
     },
   );
+
+  it('opens the schedule calendar from its button and picks a day from the keyboard', async () => {
+    await renderPublishFlow({ now: () => new Date('2026-09-03T20:00:00.000Z') });
+
+    await publishScreen.setting('publish-at').click();
+    await page.getByRole('radio', { name: 'Schedule for later' }).click();
+    await userEvent.tab();
+    await expect.element(publishScreen.scheduleCalendarButton()).toHaveFocus();
+
+    await userEvent.keyboard('{Enter}');
+    await expect
+      .element(page.getByRole('gridcell', { selected: true }).getByRole('button'))
+      .toHaveFocus();
+    await userEvent.keyboard('{ArrowRight}{Enter}');
+
+    await expect(page.getByRole('grid')).toHaveCount(0);
+    await expect.element(publishScreen.scheduleCalendarButton()).toHaveFocus();
+    await expect.element(publishScreen.scheduleDate()).toHaveValue('2026-09-04');
+  });
+
+  it('schedules a typed date, however far off', async () => {
+    const { dispatch } = await renderPublishFlow({
+      now: () => new Date('2026-09-03T20:00:00.000Z'),
+    });
+
+    await publishScreen.setting('publish-at').click();
+    await page.getByLabelText('Schedule for later').click();
+    await publishScreen.scheduleDate().fill('2031-06-15');
+    await userEvent.tab();
+
+    await expect.element(publishScreen.scheduleDate()).toHaveValue('2031-06-15');
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    // The day changes; the default time of day stays.
+    expect(dispatch.mock.calls[0][0]).toMatchObject({
+      kind: 'schedule',
+      options: { publishedAt: '2031-06-15T20:10:00.000Z' },
+    });
+  });
+
+  it('moves a typed past date up to the earliest time a post can be scheduled', async () => {
+    await renderPublishFlow({ now: () => new Date('2026-09-03T20:00:00.000Z') });
+
+    await publishScreen.setting('publish-at').click();
+    await page.getByLabelText('Schedule for later').click();
+    await publishScreen.scheduleDate().fill('2020-01-01');
+    await userEvent.tab();
+
+    await expect.element(publishScreen.scheduleDate()).toHaveValue('2026-09-03');
+    await expect.element(publishScreen.scheduleTime()).toHaveValue('20:00');
+  });
+
+  it('keeps the scheduled date while a typed one is refused', async () => {
+    const { dispatch } = await renderPublishFlow({
+      now: () => new Date('2026-09-03T20:00:00.000Z'),
+    });
+
+    await publishScreen.setting('publish-at').click();
+    await page.getByLabelText('Schedule for later').click();
+    await expect.element(publishScreen.scheduleDate()).toBeVisible();
+
+    const fields = () =>
+      publishScreen
+        .scheduleDate()
+        .element()
+        .closest('[data-slot="input-group"]')!
+        .getBoundingClientRect();
+    const radio = () =>
+      page.getByRole('radio', { name: 'Schedule for later' }).element().getBoundingClientRect();
+    const level = fields().top - radio().top;
+
+    await publishScreen.scheduleDate().fill('2031-02-30');
+    await userEvent.tab();
+
+    await expect.element(publishScreen.scheduleDate()).toHaveAccessibleDescription('Invalid date');
+    // The message takes a row of its own under the fields, which stay level with their radio.
+    const message = page.getByText('Invalid date', { exact: true }).element();
+    expect(fields().top - radio().top).toBe(level);
+    expect(message.getBoundingClientRect().left).toBe(fields().left);
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch.mock.calls[0][0]).toMatchObject({
+      kind: 'schedule',
+      options: { publishedAt: '2026-09-03T20:10:00.000Z' },
+    });
+  });
 
   it('sends without publishing when the email-only type is chosen', async () => {
     fakeEmailPolling({ status: 'submitted' });

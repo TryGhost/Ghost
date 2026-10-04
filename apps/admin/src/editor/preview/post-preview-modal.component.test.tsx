@@ -7,6 +7,7 @@ import {
   configResponse,
   currentUserResponse,
   fakeAdminEndpoint,
+  fakeFrameOrigin,
   fakeNewsletters,
   fakeTiers,
   newsletter,
@@ -19,6 +20,7 @@ import {
 } from '@test-utils/acceptance';
 import { installBootOverrides } from '@test-utils/acceptance/boot';
 import { postPreviewNewslettersError } from '@tryghost/test-data/selectors/editor';
+import type { PublishFlowPost } from '@/editor/publish/flow-post';
 import { PostPreviewModal } from '@/editor/preview/post-preview-modal';
 import { previewScreen } from '@/editor/preview/preview.screen';
 
@@ -28,11 +30,7 @@ const CURRENT_USER_EMAIL = String(currentUserResponse().users[0].email);
 
 async function previewViewport(width: number, height: number) {
   const initialViewport = { width: window.innerWidth, height: window.innerHeight };
-  const initialFontSize = document.documentElement.style.fontSize;
-  // Embedded Admin uses a 10px rem base; match it when checking pixel breakpoints.
-  document.documentElement.style.fontSize = '10px';
   onTestFinished(async () => {
-    document.documentElement.style.fontSize = initialFontSize;
     await page.viewport(initialViewport.width, initialViewport.height);
   });
   await page.viewport(width, height);
@@ -40,6 +38,7 @@ async function previewViewport(width: number, height: number) {
 
 interface RenderOptions {
   isPost?: boolean;
+  post?: PublishFlowPost;
   newsletterSlug?: string;
   previewUrl?: string;
   onBeforeOpen?: () => Promise<void>;
@@ -49,6 +48,7 @@ interface RenderOptions {
 
 async function renderPreviewModal({
   isPost = true,
+  post,
   newsletterSlug,
   previewUrl = PREVIEW_URL,
   onBeforeOpen,
@@ -59,6 +59,7 @@ async function renderPreviewModal({
     <PostPreviewModal
       isPost={isPost}
       newsletterSlug={newsletterSlug}
+      post={post}
       postId={POST_ID}
       previewUrl={previewUrl}
       open
@@ -270,6 +271,56 @@ describe('Post preview modal', () => {
     await previewScreen.closeButton().click();
 
     expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('closes the preview on an Escape pressed inside a same-origin site frame', async () => {
+    fakePreviewWorld();
+    const onOpenChange = vi.fn();
+    await renderPreviewModal({
+      onOpenChange,
+      previewUrl: `${window.location.origin}/p/post-uuid/`,
+    });
+
+    const frame = previewScreen.browserFrame().element() as HTMLIFrameElement;
+    // The frame's listener attaches on load, which this test cannot observe directly.
+    await expect
+      .poll(() => {
+        frame.contentDocument?.body?.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+        );
+        return onOpenChange.mock.calls;
+      })
+      .toContainEqual([false]);
+  });
+
+  it('leaves the Web preview cleanly after its frame has followed a link to another site', async () => {
+    fakePreviewWorld();
+    fakeEmailPreview();
+    await fakeFrameOrigin('http://elsewhere.test', '<p>Another site</p>');
+    const onOpenChange = vi.fn();
+    await renderPreviewModal({
+      onOpenChange,
+      previewUrl: `${window.location.origin}/p/post-uuid/`,
+    });
+
+    const frame = previewScreen.browserFrame().element() as HTMLIFrameElement;
+    await expect
+      .poll(() => {
+        frame.contentDocument?.body?.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+        );
+        return onOpenChange.mock.calls;
+      })
+      .toContainEqual([false]);
+    const leftSite = new Promise((resolve) => {
+      frame.addEventListener('load', resolve, { once: true });
+    });
+    frame.contentWindow?.location.assign('http://elsewhere.test/');
+    await leftSite;
+
+    await previewScreen.emailTab().click();
+
+    await expect.element(previewScreen.emailFrame()).toBeVisible();
   });
 
   it('previews as a public visitor', async () => {
@@ -544,6 +595,39 @@ describe('Post preview modal', () => {
     const srcdoc = () => frame.query()?.getAttribute('srcdoc');
     await expect.poll(srcdoc).toContain('Hello from the email');
     await expect.poll(srcdoc).toContain('scrollbar-width: thin');
+  });
+
+  it('warns that an email over 100kB may be clipped', async () => {
+    fakePreviewWorld();
+    fakeAdminEndpoint('GET', new RegExp(`^/email_previews/posts/${POST_ID}/`), {
+      email_previews: [
+        {
+          html: `<html><body>${'a'.repeat(150 * 1024)}</body></html>`,
+          plaintext: '',
+          subject: 'Hello subject',
+        },
+      ],
+    });
+    await renderPreviewModal({
+      post: {
+        id: POST_ID,
+        displayName: 'post',
+        status: 'draft',
+        title: 'Hello from React',
+        updatedAt: '2026-09-02T09:00:00.000Z',
+      },
+    });
+
+    await previewScreen.emailTab().click();
+
+    await expect
+      .element(previewScreen.emailSizeWarning())
+      .toHaveTextContent('This newsletter is 150kB');
+    await expect
+      .element(previewScreen.emailSizeWarning())
+      .toHaveTextContent(
+        'Emails may get clipped in the inbox behind a “View entire message” link when they’re over 100kB.',
+      );
   });
 
   it('previews the email for another newsletter', async () => {

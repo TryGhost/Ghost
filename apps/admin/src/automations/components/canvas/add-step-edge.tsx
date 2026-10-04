@@ -14,6 +14,7 @@ import {
 } from '@tryghost/shade/components';
 
 export type AddStepEdgeData = {
+  label?: string;
   sourceId: string;
   targetId: string;
   disabled: boolean;
@@ -61,7 +62,7 @@ const AddStepEdge: React.FC<EdgeProps> = ({
   const visible = open || edgeHovered || labelHovered;
   const button = (
     <button
-      aria-label="Insert step here"
+      aria-label={edgeData.label ?? 'Insert step here'}
       className={cn(
         'flex size-8 items-center justify-center rounded-full border transition-opacity focus-visible:opacity-100 focus-visible:outline-none',
         INSERT_BUTTON_CLASSES,

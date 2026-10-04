@@ -59,3 +59,35 @@ describe('loadKoenig', () => {
     expect(fetchKoenigLexical).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('preloadKoenig', () => {
+  beforeEach(() => {
+    vi.resetModules();
+    fetchKoenigLexical.mockReset();
+  });
+
+  it('hands the preloaded Koenig to the next editor without suspending or fetching again', async () => {
+    const koenig = { KoenigComposer: () => null };
+    fetchKoenigLexical.mockResolvedValue(koenig);
+
+    const { loadKoenig, preloadKoenig } = await importLoader();
+    await preloadKoenig();
+
+    expect(loadKoenig().read()).toBe(koenig);
+    expect(fetchKoenigLexical).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves a failed preload for the editor to load again', async () => {
+    const koenig = { KoenigComposer: () => null };
+    fetchKoenigLexical.mockRejectedValueOnce(new Error('offline'));
+    fetchKoenigLexical.mockResolvedValueOnce(koenig);
+
+    const { loadKoenig, preloadKoenig } = await importLoader();
+    await preloadKoenig().catch(() => undefined);
+
+    const resource = loadKoenig();
+    await settle(resource);
+    expect(resource.read()).toBe(koenig);
+    expect(fetchKoenigLexical).toHaveBeenCalledTimes(2);
+  });
+});

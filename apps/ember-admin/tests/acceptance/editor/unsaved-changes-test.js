@@ -1,5 +1,6 @@
 import loginAsRole from '../../helpers/login-as-role';
-import {click, currentURL, fillIn, find} from '@ember/test-helpers';
+import sinon from 'sinon';
+import {click, currentRouteName, currentURL, fillIn, find} from '@ember/test-helpers';
 import {editorSelector, pasteInEditor, titleSelector} from '../../helpers/editor';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
@@ -89,12 +90,14 @@ describe('Acceptance: Editor: Unsaved changes', function () {
             });
             await visit('/editor/post/' + post.id);
             await fillIn(titleSelector, 'New Title');
+            const navigate = sinon.stub(this.owner.lookup('route:posts'), '_navigateToReactRoute');
             await click(backToPostsSelector);
             expect(find(unsavedModalSelector), 'unsaved changes modal').to.not.exist;
 
             // new title should be saved
             expect(post.title, 'saved post title').to.equal('New Title');
-            expect(currentURL(), 'currentURL').to.equal('/posts');
+            expect(navigate.calledOnceWith('/posts'), 'navigated to the React posts list').to.be.true;
+            expect(currentRouteName(), 'currentRouteName').to.equal('react-fallback');
         });
 
         it('when loading and leaving published post', async function () {
@@ -109,12 +112,13 @@ describe('Acceptance: Editor: Unsaved changes', function () {
             await visit(`/editor/post/${post.id}`);
             await fillIn(titleSelector, 'Test');
             await fillIn(editorSelector, 'This is a test');
+            const navigate = sinon.stub(this.owner.lookup('route:posts'), '_navigateToReactRoute');
             await click('[data-test-button="publish-flow"]');
             await click('[data-test-button="continue"]');
             await click('[data-test-button="confirm-publish"]');
-            await click('[data-test-button="close-publish-flow"]');
             expect(find(unsavedModalSelector), 'unsaved changes modal').to.not.exist;
-            expect(currentURL(), 'currentURL').to.equal('/posts');
+            expect(navigate.calledOnceWith('/posts'), 'navigated to the React posts list').to.be.true;
+            expect(currentRouteName(), 'currentRouteName').to.equal('react-fallback');
         });
 
         // published and edited content should not warn when changes are reverted (either via undo or manually)
@@ -143,13 +147,13 @@ describe('Acceptance: Editor: Unsaved changes', function () {
             });
             await visit(`/editor/post/${post.id}`);
             await fillIn(titleSelector, 'Test Post ');
+            const navigate = sinon.stub(this.owner.lookup('route:posts'), '_navigateToReactRoute');
             await click('[data-test-button="publish-flow"]');
             await click('[data-test-button="continue"]');
             await click('[data-test-button="confirm-publish"]');
             expect(find(unsavedModalSelector), 'unsaved changes modal').to.not.exist;
-            await click('[data-test-button="close-publish-flow"]');
-            expect(find(unsavedModalSelector), 'unsaved changes modal').to.not.exist;
-            expect(currentURL(), 'currentURL').to.equal('/posts');
+            expect(navigate.calledOnceWith('/posts'), 'navigated to the React posts list').to.be.true;
+            expect(currentRouteName(), 'currentRouteName').to.equal('react-fallback');
         });
     });
 });

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
@@ -7,6 +7,7 @@ import {
   currentUserResponse,
   fakeAdminEndpoint,
   fakeEditorChrome,
+  plainText,
   post,
   renderAdminApp,
   submittedPost,
@@ -14,7 +15,10 @@ import {
   type EndpointCapture,
   type Post,
 } from '@test-utils/acceptance';
+import { reloadAdmin } from '@/auth/reload';
 import { editorScreen } from '@/editor/editor.screen';
+
+vi.mock('@/auth/reload', () => ({ reloadAdmin: vi.fn() }));
 
 const POST_ID = 'abc123';
 const FLAG_ON = withFastAutosave({ labs: { editorReact: true } });
@@ -27,6 +31,9 @@ const EMAIL = String(currentUserResponse().users[0].email);
 const SESSION_GONE = {
   errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }],
 };
+const NO_SESSION = {
+  errors: [{ type: 'NoPermissionError', message: 'Authorization failed' }],
+};
 const PASSWORD_INCORRECT = {
   errors: [
     { code: 'PASSWORD_INCORRECT', type: 'ValidationError', message: 'Your password is incorrect.' },
@@ -37,6 +44,10 @@ const CODE_REQUIRED = {
     { code: '2FA_TOKEN_REQUIRED', type: 'Needs2FAError', message: 'User must verify session.' },
   ],
 };
+const TOO_MANY_ATTEMPTS = {
+  errors: [{ type: 'TooManyRequestsError', message: 'Too many attempts.' }],
+};
+const TEXT_REPLY = { contentType: 'text/plain; charset=utf-8' };
 
 function loadedPost(): Post {
   return post({
@@ -88,6 +99,22 @@ async function expireDuringEdit() {
 async function signIn(password: string) {
   await editorScreen.reauthPassword().fill(password);
   await editorScreen.reauthSignIn().click();
+}
+
+/** Expires the session on a site that asks for an emailed code, through to the code step. */
+async function reachCodeStep() {
+  fakeExpiredPost();
+  fakeAdminEndpoint('POST', '/session/', CODE_REQUIRED, { status: 403 });
+  await expireDuringEdit();
+  await signIn(PASSWORD);
+  await expect.element(editorScreen.reauthCode()).toBeVisible();
+}
+
+/** Lets React render what a fired timer scheduled. */
+async function nextFrame() {
+  await new Promise<void>((resolve) => {
+    requestAnimationFrame(() => resolve());
+  });
 }
 
 // Nothing leaves the page: the content stays and the held save goes out once the session is back.
@@ -164,6 +191,52 @@ describe('Post editor session expiry', () => {
     expect(submittedBody(restoredApi)).toContain('Hello from React and more');
   });
 
+  it('emails a fresh code from the code step and confirms it', async () => {
+    const resendApi = fakeAdminEndpoint('POST', '/session/verify/', plainText('OK'), TEXT_REPLY);
+    await reachCodeStep();
+
+    await editorScreen.reauthResend().click();
+
+    await expect.element(editorScreen.codeSentToast()).toBeVisible();
+    await expect.element(editorScreen.reauthResend('Sent')).toBeDisabled();
+    expect(resendApi.requests).toHaveLength(1);
+  });
+
+  it('holds Resend for fifteen seconds once a code is sent', async () => {
+    const resendApi = fakeAdminEndpoint('POST', '/session/verify/', plainText('OK'), TEXT_REPLY);
+    await reachCodeStep();
+
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    try {
+      await editorScreen.reauthResend().click();
+      await expect.element(editorScreen.reauthResend('Sent')).toBeDisabled();
+
+      // Each retry of a polled assertion advances fake timers, so stop short of the boundary.
+      vi.advanceTimersByTime(14_000);
+      await nextFrame();
+      await expect.element(editorScreen.reauthResend('Sent')).toBeDisabled();
+
+      vi.advanceTimersByTime(1_000);
+    } finally {
+      vi.useRealTimers();
+    }
+    // Real timers drop any fake timer still pending, so a longer hold can't pass here.
+    await expect.element(editorScreen.reauthResend()).toBeEnabled();
+
+    await editorScreen.reauthResend().click();
+    await expect.poll(() => resendApi.requests.length).toBe(2);
+  });
+
+  it('names a resend that failed and offers it again', async () => {
+    fakeAdminEndpoint('POST', '/session/verify/', TOO_MANY_ATTEMPTS, { status: 429 });
+    await reachCodeStep();
+
+    await editorScreen.reauthResend().click();
+
+    await expect.element(editorScreen.reauthError()).toHaveTextContent('Too many attempts.');
+    await expect.element(editorScreen.reauthResend()).toBeEnabled();
+  });
+
   it('keeps the draft dirty behind a banner after the dialog is cancelled', async () => {
     const saveApi = fakeExpiredPost();
     await expireDuringEdit();
@@ -210,5 +283,26 @@ describe('Post editor session expiry', () => {
     await expect.element(editorScreen.reauthDialog()).toBeVisible();
     expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
     expect(saveApi.requests.length).toBeGreaterThan(0);
+  });
+});
+
+// Nothing is unsaved before the post opens, so it reloads into the signed-out admin.
+describe('Opening a post after the session expired', () => {
+  beforeEach(() => {
+    vi.mocked(reloadAdmin).mockClear();
+  });
+
+  it.each([
+    [401, SESSION_GONE],
+    [403, NO_SESSION],
+  ])('reloads onto the post when its first read is refused with %i', async (status, body) => {
+    fakeEditorChrome();
+    fakeAdminEndpoint('GET', POST_ROUTE, body, { status });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect
+      .poll(() => vi.mocked(reloadAdmin).mock.calls)
+      .toEqual([[`/editor/post/${POST_ID}`]]);
+    await expect(editorScreen.loadError()).toHaveCount(0);
   });
 });

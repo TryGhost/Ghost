@@ -8,7 +8,7 @@ import { defineConfig } from 'vitest/config';
 //  - pool 'forks' + isolate:false → N child processes, each booting ONE Ghost
 //    against its own per-process database + port (derived in vitest-setup-db.ts
 //    before Ghost's config loads). Within a fork, files run serially sharing that
-//    single Ghost (Ghost's db/knex, @tryghost/domain-events, the jobs manager,
+//    single Ghost (Ghost's db/knex, @tryghost/domain-events, the jobs service,
 //    nconf, the settings cache and the url service are process-wide singletons
 //    reset in place between boots, never duplicated — exactly one Ghost per
 //    process, the constraint mocha ran under). Across forks, files shard in
@@ -78,18 +78,6 @@ const sharedDbConfig = {
   env: {
     NODE_ENV: 'testing-mysql',
     WEBHOOK_SECRET: process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_SECRET',
-    // Bree runs jobs in worker_threads that inherit this NODE_OPTIONS; tsx lets
-    // them require() Ghost's .ts sources (job files pull in e.g.
-    // labs-flag-overrides.ts). The old mocha lane got tsx from `--node-option
-    // import=tsx`; vitest only registers tsx in the vitest worker itself (not
-    // in the execArgv Bree's worker_threads inherit) and ignores
-    // poolOptions.*.execArgv here, so route it through the env. Applied on
-    // test.env, i.e. inside the vitest worker once it's up, so only the
-    // worker_threads it spawns pick it up — pool-agnostic, works the same
-    // whether the vitest worker is a fork or a thread.
-    NODE_OPTIONS:
-      (process.env.NODE_OPTIONS ? process.env.NODE_OPTIONS + ' ' : '') +
-      '--import tsx --conditions=source',
   },
   hookTimeout: 60000,
 };
