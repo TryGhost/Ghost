@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { fakeFrameImage } from '../../../../../test-utils/acceptance/frames';
 import { IframePreviewDocumentSurface } from './preview-document';
 import { SCREENSHOT_LIMITS, capturePreviewScreenshot } from './screenshot';
 
@@ -109,6 +110,77 @@ describe('preview screenshot proof', () => {
     expect(screenshot.height).toBe(48);
     expect(screenshot.warnings).toEqual(['1 external image was replaced in the screenshot.']);
   });
+
+  it('preserves image-dependent hero styling when external pixels cannot be captured', async () => {
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'width:200px;height:200px;border:0';
+    iframe.srcdoc = `
+      <style>
+        body { margin: 0; }
+        .hero { position: relative; height: 200px; }
+        .hero > img.cover { position: absolute; inset: 0; width: 100%; height: 100%; }
+        h1 { position: absolute; top: 60px; left: 60px; margin: 0; width: 80px; height: 80px; background: rgb(0, 0, 255); z-index: 1; }
+        .hero > img.cover + h1 { background: rgb(0, 255, 0); }
+      </style>
+      <section class="hero"><img class="cover" src="https://external.invalid/hero.png" alt="Hero"><h1></h1></section>
+    `;
+    document.body.appendChild(iframe);
+    iframes.push(iframe);
+    await new Promise<void>((resolve) => {
+      iframe.addEventListener('load', () => resolve(), { once: true });
+    });
+
+    const screenshot = await capturePreviewScreenshot(iframe, { kind: 'viewport' });
+
+    expect(await centerPixel(screenshot.dataUrl)).toEqual([0, 255, 0, 255]);
+    expect(screenshot.warnings).toEqual(['1 external image was replaced in the screenshot.']);
+  });
+
+  it.each(['image', 'picture'] as const)(
+    'preserves loaded responsive %s height when its pixels are omitted',
+    async (kind) => {
+      const bitmap = document.createElement('canvas');
+      bitmap.width = 200;
+      bitmap.height = 100;
+      bitmap.getContext('2d')!.fillRect(0, 0, 200, 100);
+      const url = 'https://image-fixture.example/responsive-hero.png';
+      await fakeFrameImage(url, bitmap.toDataURL('image/png').split(',')[1], false);
+      const content =
+        kind === 'image'
+          ? `<img src="${url}">`
+          : `<picture><source srcset="${url} 2x"><img></picture>`;
+      const iframe = document.createElement('iframe');
+      iframe.style.cssText = 'width:200px;height:200px;border:0';
+      document.body.appendChild(iframe);
+      iframes.push(iframe);
+      const surface = new IframePreviewDocumentSurface(iframe, { captureLoadedImages: true });
+      const signal = new AbortController().signal;
+      try {
+        await surface.replaceDocument(
+          {
+            html: `<style>body{margin:0}img{display:block;width:100%;height:auto}div{height:100px;background:rgb(0,255,0)}</style>${content}<div></div>`,
+            url: 'https://site.example/',
+            revision: 'responsive-hero',
+          },
+          null,
+          signal,
+        );
+        await expect
+          .poll(async () => (await surface.inspectElement({ selector: 'img' }, signal)).box.height)
+          .toBe(100);
+
+        const screenshot = await surface.screenshot({ kind: 'viewport' }, signal);
+
+        expect(await centerPixel(screenshot.dataUrl)).toEqual([0, 255, 0, 255]);
+        expect(screenshot.warnings).toEqual([
+          expect.stringMatching(/1 (external )?image was (replaced|omitted)/),
+        ]);
+        expect((await surface.inspectElement({ selector: 'img' }, signal)).box.height).toBe(100);
+      } finally {
+        surface.destroy();
+      }
+    },
+  );
 
   it('captures through the production opaque-origin preview bridge', async () => {
     const iframe = document.createElement('iframe');

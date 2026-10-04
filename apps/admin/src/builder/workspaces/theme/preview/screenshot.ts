@@ -200,28 +200,19 @@ function replaceExternalImages(
       return;
     }
 
-    const placeholder = clonedDocument.createElement('div');
-    placeholder.textContent = image.alt
-      ? `Image unavailable: ${image.alt}`
-      : 'External image unavailable';
-    placeholder.style.cssText = [
-      `width:${image.width || image.getBoundingClientRect().width}px`,
-      `height:${image.height || image.getBoundingClientRect().height}px`,
-      'display:flex',
-      'align-items:center',
-      'justify-content:center',
-      'background:#f3f4f6',
-      'color:#4b5563',
-      'font:14px sans-serif',
-    ].join(';');
-    if (image === clonedTarget) {
-      image.removeAttribute('srcset');
-      image.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACw=';
-      image.alt = placeholder.textContent;
-      image.style.cssText = placeholder.style.cssText;
-    } else {
-      image.replaceWith(placeholder);
+    // Keep the authored img, classes and styling: changing it to a div changes
+    // image selectors, positioning and neighbouring layout in the captured page.
+    const width = image.naturalWidth || image.width || 1;
+    const height = image.naturalHeight || image.height || 1;
+    image.removeAttribute('srcset');
+    if (image.parentElement?.tagName === 'PICTURE') {
+      image.parentElement
+        .querySelectorAll('source')
+        .forEach((source) => source.removeAttribute('srcset'));
     }
+    image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect width="100%" height="100%" fill="#f3f4f6"/></svg>`,
+    )}`;
   });
   svgImageElements(clonedTarget).forEach((image) => {
     const url = absoluteUrl(
