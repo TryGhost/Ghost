@@ -373,3 +373,11 @@ through native WebMCP" --maxWorkers=1`; the browser config enables experimental
 WebMCP for this explicit lane. This proves native browser execution, not external
 Codex discovery in the built-in WebView or model-visible image consumption. Those
 remain required integration evidence.
+
+The real-site journey in `e2e/tests/admin/theme-canvas.test.ts` exercises installed
+Source/Casper themes with uploaded cover/Post imagery, a shared Home/Post design
+change, continued manual text during candidate rendering, Post switching, settings,
+history and human-confirmed publication. It retains pending unpublished text and the
+new theme-copy identity after Undo. Native captures record their omission warnings;
+separate screenshots of live desktop/mobile devices show actual browser pixels.
+These are local native Chromium and browser observations, not external Codex proof.

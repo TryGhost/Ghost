@@ -2,12 +2,68 @@ import { createPostFactory } from '@/data-factory';
 import { expect, test } from '@/helpers/playwright';
 import { randomUUID } from 'node:crypto';
 import { usePerTestIsolation } from '@/helpers/playwright/isolation';
+import { writeFile } from 'node:fs/promises';
 import type { Page } from '@playwright/test';
 
 type NativeTesting = {
   executeTool: (name: string, input: string) => Promise<string | null>;
 };
-type CanvasState = { workspaceId: string; editor: { sourceRevision: string } };
+type CanvasState = {
+  workspaceId: string;
+  view: unknown;
+  editor: {
+    sourceRevision: string;
+    busy: boolean;
+    manualDraft: { text: string } | null;
+    render: { dataGeneration: number; representativePost: { id: string } };
+    history: unknown;
+  };
+  frames: Array<{
+    id: string;
+    width: number;
+    height: number;
+    frameHandle: string;
+    device: { representationHandle: string; revision: string; renderKey: string };
+  }>;
+};
+
+async function uploadCover(page: Page): Promise<string> {
+  // A recognizable landscape at real cover dimensions, served by Ghost storage.
+  const data = await page.evaluate(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1200;
+    canvas.height = 800;
+    const context = canvas.getContext('2d')!;
+    context.fillStyle = '#b9e4dc';
+    context.fillRect(0, 0, 1200, 800);
+    context.fillStyle = '#f9b45b';
+    context.beginPath();
+    context.arc(900, 180, 100, 0, Math.PI * 2);
+    context.fill();
+    context.fillStyle = '#246e62';
+    context.beginPath();
+    context.moveTo(0, 800);
+    context.lineTo(420, 270);
+    context.lineTo(720, 680);
+    context.lineTo(980, 380);
+    context.lineTo(1200, 800);
+    context.fill();
+    return canvas.toDataURL('image/png').split(',')[1];
+  });
+  const response = await page.request.post('/ghost/api/admin/images/upload/', {
+    multipart: {
+      file: {
+        name: 'canvas-landscape.png',
+        mimeType: 'image/png',
+        buffer: Buffer.from(data, 'base64'),
+      },
+      purpose: 'image',
+    },
+  });
+  expect(response.status()).toBe(201);
+  const { images } = await response.json();
+  return images[0].url as string;
+}
 
 async function nativeTool<T>(page: Page, name: string, input: Record<string, unknown>): Promise<T> {
   const result = await page.evaluate(
@@ -25,12 +81,27 @@ async function nativeTool<T>(page: Page, name: string, input: Record<string, unk
     },
     { name, input },
   );
-  expect(result).toMatchObject({ status: 'ok' });
+  expect(result, JSON.stringify(result)).toMatchObject({ status: 'ok' });
   return result.data;
+}
+
+function imageSelector(theme: string, label: string): string {
+  if (label.startsWith('Post')) {
+    return 'img.gh-feature-image';
+  }
+  return theme === 'source' ? 'img.gh-header-image' : 'img.site-header-cover';
+}
+
+function heroSelector(theme: string, label: string): string {
+  if (label.startsWith('Post')) {
+    return theme === 'source' ? '.gh-article-header' : '.article-header';
+  }
+  return theme === 'source' ? '.gh-header' : '.site-header-content';
 }
 
 usePerTestIsolation();
 test.use({
+  actionTimeout: 10_000,
   labs: { designBuilder: true },
   launchOptions: {
     args: [
@@ -48,24 +119,71 @@ test.describe('Ghost Admin - Live theme canvas', () => {
     test(`edits and publishes the real ${theme} theme through its live canvas`, async ({
       page,
     }, testInfo) => {
+      test.slow(); // Full shared design, content switching, image inspection and publication journey.
+      const cover = await uploadCover(page);
+      const settings = await page.request.put('/ghost/api/admin/settings/', {
+        data: { settings: [{ key: 'cover_image', value: cover }] },
+      });
+      expect(settings.ok()).toBe(true);
       const posts = createPostFactory(page.request);
-      await posts.create({ title: 'Canvas published article', status: 'published' });
+      const first = await posts.create({
+        title: 'Canvas published article',
+        status: 'published',
+        feature_image: cover,
+      });
+      const second = await posts.create({
+        title: 'Another canvas article',
+        status: 'published',
+        feature_image: cover,
+      });
       const activated = await page.request.put(`/ghost/api/admin/themes/${theme}/activate/`);
       expect(activated.ok()).toBe(true);
       const copyName = `canvas-${theme}-${randomUUID()}`;
+      let releaseCandidate = () => {};
+      let changing: Promise<unknown> | undefined;
       try {
+        // API fixture writes happened outside Admin's query cache.
+        await page.reload();
         await page.goto('/ghost/#/builder/theme');
         await expect(page.getByRole('region', { name: 'Theme canvas', exact: true })).toBeVisible();
         const labels = ['Home · Desktop', 'Home · Mobile', 'Post · Desktop', 'Post · Mobile'];
-        for (const label of labels) {
-          for (const kind of ['composition', 'preview']) {
-            await expect(page.getByTitle(`${label} ${kind}`, { exact: true })).toHaveAttribute(
-              'data-preview-status',
-              'Ready',
-            );
+        const state = () =>
+          nativeTool<CanvasState>(page, 'ghost_canvas_probe_get_editor_state', {});
+        const ready = async () => {
+          await expect.poll(async () => !(await state()).editor.busy).toBe(true);
+          for (const label of labels) {
+            for (const kind of ['composition', 'preview']) {
+              await expect(page.getByTitle(`${label} ${kind}`, { exact: true })).toHaveAttribute(
+                'data-preview-status',
+                'Ready',
+              );
+            }
           }
-        }
-
+        };
+        const assertImages = async () => {
+          for (const label of labels) {
+            await expect(
+              page
+                .frameLocator(`iframe[title="${label} composition"]`)
+                .locator(imageSelector(theme, label)),
+            ).toBeVisible();
+            for (const kind of ['composition', 'preview']) {
+              const image = page
+                .frameLocator(`iframe[title="${label} ${kind}"]`)
+                .locator(imageSelector(theme, label));
+              await expect
+                .poll(() =>
+                  image.evaluate(
+                    (node: HTMLImageElement) => node.complete && node.naturalWidth > 0,
+                  ),
+                )
+                .toBe(true);
+              await expect(image).toHaveAttribute('src', /canvas-landscape/);
+            }
+          }
+        };
+        await ready();
+        await assertImages();
         const initial = await nativeTool<CanvasState>(
           page,
           'ghost_canvas_probe_get_editor_state',
@@ -81,19 +199,24 @@ test.describe('Ghost Admin - Live theme canvas', () => {
         await page.getByRole('button', { name: 'Fit all', exact: true }).click();
         await page.getByRole('button', { name: 'Post · Mobile', exact: true }).dblclick();
         const post = page.frameLocator('iframe[title="Post · Mobile composition"]');
-        await expect(post.getByRole('heading', { name: 'Canvas published article' })).toBeVisible();
+        await expect(
+          post.getByRole('heading', {
+            name: /^(Canvas published article|Another canvas article)$/,
+            level: 1,
+          }),
+        ).toBeVisible();
         await page.screenshot({ path: testInfo.outputPath(`${theme}-live-canvas.png`) });
 
         // Installed Source translates its copyright link; edit source through native
         // WebMCP, then use the literal added by that edit for direct manual editing.
-        const state = await nativeTool<CanvasState>(
+        const beforeFooter = await nativeTool<CanvasState>(
           page,
           'ghost_canvas_probe_get_editor_state',
           {},
         );
         const address = {
-          workspaceId: state.workspaceId,
-          expectedRevision: state.editor.sourceRevision,
+          workspaceId: beforeFooter.workspaceId,
+          expectedRevision: beforeFooter.editor.sourceRevision,
         };
         const source = await nativeTool<{ content: string; truncated: boolean }>(
           page,
@@ -109,7 +232,7 @@ test.describe('Ghost Admin - Live theme canvas', () => {
         const template = source.content.replace(/^\d+: /gm, '');
         await nativeTool(page, 'ghost_canvas_apply_theme_patch', {
           ...address,
-          expectedDataGeneration: 0,
+          expectedDataGeneration: beforeFooter.editor.render.dataGeneration,
           files: [
             {
               operation: 'write',
@@ -119,19 +242,168 @@ test.describe('Ghost Admin - Live theme canvas', () => {
           ],
         });
         await expect(post.getByText('Canvas draft footer', { exact: true })).toBeVisible();
+        await ready();
         await expect(page.getByRole('button', { name: 'Undo theme change' })).toBeEnabled();
         await page.getByRole('button', { name: 'Fit all', exact: true }).click();
         await post.getByText('Canvas draft footer', { exact: true }).dblclick();
         const text = post.getByRole('textbox', { name: /^Edit / });
         await expect(text).toBeVisible();
+        await text.fill('Canvas footer in progress');
+
+        const beforeDesign = await state();
+        const layout = await nativeTool<{ content: string; truncated: boolean }>(
+          page,
+          'ghost_canvas_read_theme',
+          {
+            workspaceId: beforeDesign.workspaceId,
+            expectedRevision: beforeDesign.editor.sourceRevision,
+            operation: 'read_file',
+            path: 'default.hbs',
+          },
+        );
+        expect(layout.truncated).toBe(false);
+        const design = `<style>
+          .gh-header, .site-header-content, .gh-article-header, .article-header {
+            border-bottom: 12px solid #e89538;
+          }
+          .gh-feature-image { border-radius: 32px; }
+        </style>`;
+        const designedLayout = layout.content
+          .replace(/^\d+: /gm, '')
+          .replace('</head>', `${design}</head>`);
+        expect(designedLayout).toContain(design);
+
+        // Hold real Content API responses while the worker renders the candidate.
+        // Forward them unchanged; accepted live pages stay interactive meanwhile.
+        let heldCandidate = false;
+        let holding = true;
+        const held = new Promise<void>((resolve) => {
+          releaseCandidate = resolve;
+        });
+        await page.context().route('**/ghost/api/content/posts/**', async (route) => {
+          if (holding) {
+            heldCandidate = true;
+            await held;
+          }
+          await route.continue();
+        });
+        changing = nativeTool(page, 'ghost_canvas_apply_theme_patch', {
+          workspaceId: beforeDesign.workspaceId,
+          expectedRevision: beforeDesign.editor.sourceRevision,
+          expectedDataGeneration: beforeDesign.editor.render.dataGeneration,
+          files: [{ operation: 'write', path: 'default.hbs', content: designedLayout }],
+        });
+        void changing.catch(() => {});
+        await expect.poll(() => heldCandidate).toBe(true);
+        expect((await state()).editor.busy).toBe(true);
         await text.fill('Canvas footer');
+        await nativeTool(page, 'ghost_canvas_reveal_frame', {
+          workspaceId: beforeDesign.workspaceId,
+          expectedRevision: beforeDesign.editor.sourceRevision,
+          frameId: 'home-mobile',
+        });
+        expect((await state()).editor.manualDraft).toMatchObject({ text: 'Canvas footer' });
+        holding = false;
+        releaseCandidate();
+        await changing;
+        await ready();
+        expect((await state()).editor.manualDraft).toMatchObject({ text: 'Canvas footer' });
+        await assertImages();
+        for (const label of labels) {
+          await expect(
+            page
+              .frameLocator(`iframe[title="${label} composition"]`)
+              .locator(heroSelector(theme, label)),
+          ).toHaveCSS('border-bottom-width', '12px');
+        }
+        await page.getByRole('button', { name: 'Resume text draft', exact: true }).click();
         await text.press('Enter');
+        await ready();
         await expect(page.getByRole('button', { name: 'Undo theme change' })).toBeEnabled();
         await expect(post.getByText('Canvas footer', { exact: true })).toBeVisible();
         await page.getByRole('button', { name: 'Undo theme change' }).click();
         await expect(post.getByText('Canvas draft footer', { exact: true })).toBeVisible();
         await page.getByRole('button', { name: 'Redo theme change' }).click();
         await expect(post.getByText('Canvas footer', { exact: true })).toBeVisible();
+        await ready();
+
+        const beforePost = await state();
+        const targetPost = [first, second].find(
+          (candidate) => candidate.id !== beforePost.editor.render.representativePost.id,
+        )!;
+        await page.getByRole('button', { name: 'Choose preview Post', exact: true }).click();
+        await page
+          .getByRole('button', { name: `Use Post: ${targetPost.title}`, exact: true })
+          .click();
+        await ready();
+        expect((await state()).editor.sourceRevision).toBe(beforePost.editor.sourceRevision);
+        expect((await state()).editor.history).toEqual(beforePost.editor.history);
+        for (const label of ['Post · Desktop', 'Post · Mobile']) {
+          for (const kind of ['composition', 'preview']) {
+            await expect(
+              page
+                .frameLocator(`iframe[title="${label} ${kind}"]`)
+                .getByRole('heading', { name: targetPost.title, exact: true, level: 1 }),
+            ).toBeVisible();
+          }
+        }
+        await page.getByRole('button', { name: 'Theme settings', exact: true }).click();
+        await page.getByRole('combobox', { name: 'Title font', exact: true }).click();
+        await page.getByRole('option', { name: 'Elegant serif', exact: true }).click();
+        await page.getByRole('button', { name: 'Apply settings', exact: true }).click();
+        await ready();
+        await page.keyboard.press('Escape');
+        await page.getByRole('button', { name: 'Undo theme change' }).click();
+        await ready();
+        await page.getByRole('button', { name: 'Redo theme change' }).click();
+        await ready();
+        await assertImages();
+
+        const inspected = await state();
+        for (const frame of inspected.frames) {
+          const captured = await nativeTool<{
+            image: { dataUrl: string; width: number; height: number };
+            warnings: unknown[];
+          }>(page, 'ghost_canvas_probe_capture_frame', {
+            workspaceId: inspected.workspaceId,
+            frameHandle: frame.frameHandle,
+            representationHandle: frame.device.representationHandle,
+            expectedRevision: frame.device.revision,
+            expectedRenderKey: frame.device.renderKey,
+            kind: 'viewport',
+          });
+          expect(captured.image).toMatchObject({ width: frame.width, height: frame.height });
+          await writeFile(
+            testInfo.outputPath(`${theme}-${frame.id}-native.png`),
+            Buffer.from(captured.image.dataUrl.split(',')[1], 'base64'),
+          );
+          await testInfo.attach(`${theme}-${frame.id}-capture-warnings`, {
+            body: JSON.stringify(captured.warnings),
+            contentType: 'application/json',
+          });
+        }
+        expect((await state()).view).toEqual(inspected.view);
+
+        // Native capture reports unreadable external pixels. Also inspect the real
+        // live device views, without changing image loading or sandbox policy.
+        await page.getByRole('button', { name: 'Device viewports', exact: true }).click();
+        for (const frame of inspected.frames) {
+          await nativeTool(page, 'ghost_canvas_reveal_frame', {
+            workspaceId: inspected.workspaceId,
+            expectedRevision: inspected.editor.sourceRevision,
+            frameId: frame.id,
+          });
+          const label = labels.find((item) => item.toLowerCase().replace(' · ', '-') === frame.id)!;
+          const device = page.getByTitle(`${label} preview`, { exact: true });
+          const bounds = await device.boundingBox();
+          expect(bounds).toMatchObject({ width: frame.width, height: frame.height });
+          await device.screenshot({ path: testInfo.outputPath(`${theme}-${frame.id}-live.png`) });
+        }
+        await page.getByRole('button', { name: 'Live compositions', exact: true }).click();
+        await page.getByRole('button', { name: 'Fit all', exact: true }).click();
+
+        await post.getByText('Canvas footer', { exact: true }).dblclick();
+        await post.getByRole('textbox', { name: /^Edit / }).fill('Private footer draft');
 
         await expect(
           page.getByRole('button', { name: 'Publish changes', exact: true }),
@@ -146,13 +418,38 @@ test.describe('Ghost Admin - Live theme canvas', () => {
           expectedRevision: current.editor.sourceRevision,
         });
         const review = page.getByRole('alertdialog');
-        await expect(review.getByText(/1 changed file/)).toBeVisible();
+        await expect(review.getByText(/changed file/)).toBeVisible();
+        await expect(review.getByText(/changed setting/)).toBeVisible();
+        await expect(
+          review.getByText('Pending text is excluded and will be kept.', { exact: true }),
+        ).toBeVisible();
         await review.getByLabel('Theme copy name').fill(copyName);
         await review.getByRole('button', { name: 'Publish and activate copy' }).click();
         await expect(review).toBeHidden();
         const published = await page.request.get('/');
         expect(published.status()).toBe(200);
         expect(await published.text()).toContain('Canvas footer');
+        for (const url of ['/', `/${first.slug}/`, `/${second.slug}/`]) {
+          const response = await page.request.get(url);
+          expect(response.status()).toBe(200);
+          const html = await response.text();
+          expect(html).toContain('border-bottom: 12px solid #e89538');
+          expect(html).toContain('canvas-landscape');
+          expect(html).toContain('Canvas footer');
+          expect(html).not.toContain('Private footer draft');
+          expect(html).toContain('has-serif-title');
+        }
+        await ready();
+        expect((await state()).editor.manualDraft).toMatchObject({ text: 'Private footer draft' });
+        await page.getByRole('button', { name: 'Cancel text draft', exact: true }).click();
+        await page.getByRole('button', { name: 'Undo theme change' }).click();
+        await ready();
+        await expect(
+          page.getByRole('heading', { name: `Canvas · ${copyName}`, exact: true }),
+        ).toBeVisible();
+        await page.getByRole('button', { name: 'Redo theme change' }).click();
+        await ready();
+        await assertImages();
         for (const label of labels) {
           for (const kind of ['composition', 'preview']) {
             await expect(
@@ -165,6 +462,8 @@ test.describe('Ghost Admin - Live theme canvas', () => {
         await page.getByRole('button', { name: 'Fit all', exact: true }).click();
         await page.screenshot({ path: testInfo.outputPath(`${theme}-published-overview.png`) });
       } finally {
+        releaseCandidate();
+        await changing?.catch(() => {});
         const restored = await page.request.put(`/ghost/api/admin/themes/${theme}/activate/`);
         expect(restored.ok()).toBe(true);
         const removed = await page.request.delete(`/ghost/api/admin/themes/${copyName}/`);
