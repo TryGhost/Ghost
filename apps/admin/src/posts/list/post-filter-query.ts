@@ -1,21 +1,25 @@
+import {
+  LEGACY_FEATURED_TYPE,
+  type PostListParams,
+  getFeaturedValue,
+  splitTypeParam,
+} from './post-query-params';
+import { getTypeOptions } from './post-filter-fields';
 import type { Filter } from '@tryghost/shade/patterns';
-import type { PostListParams } from './post-query-params';
 
 /**
  * Bridges the posts/pages URL params and the Shade `Filters` chip model.
  *
  * Unlike members, which round-trips a single NQL `?filter=` string, posts are
  * addressed by discrete params (`?type=draft&tag=news`). That shape is fixed:
- * sidebar saved views persist exactly it, and the Ember and React screens have
- * to agree on it while both exist. So this is a small dedicated codec rather
- * than a use of `@/shared/filters`' NQL engine - only `stampPredicates` is
- * shared.
+ * sidebar saved views persist exactly it. So this is a small dedicated codec
+ * rather than a use of `@/shared/filters`' NQL engine.
  *
  * `order` is deliberately absent: it is a sort, not a filter, so it has no
  * operator and would read as a nonsense chip. It is carried alongside these.
  */
 
-export const POST_FILTER_PARAMS = ['type', 'visibility', 'author', 'tag'] as const;
+export const POST_FILTER_PARAMS = ['type', 'featured', 'visibility', 'author', 'tag'] as const;
 
 export type PostFilterParam = (typeof POST_FILTER_PARAMS)[number];
 
@@ -23,13 +27,18 @@ export type PostFilterParamValues = Record<PostFilterParam, string | null>;
 
 const EMPTY_PARAMS: PostFilterParamValues = {
   type: null,
+  featured: null,
   visibility: null,
   author: null,
   tag: null,
 };
 
-/** These fields are single-select equality; Ember offers nothing else. */
+/** `type` matches any of its values; every other field is single-select. */
 const OPERATOR = 'is';
+export const TYPE_OPERATOR = 'is_any_of';
+
+/** Fixed order so one selection always writes one URL, whatever the click order. */
+const TYPE_ORDER = getTypeOptions('posts').map((option) => option.value);
 
 function isFilterParam(field: string): field is PostFilterParam {
   return (POST_FILTER_PARAMS as readonly string[]).includes(field);
@@ -42,16 +51,44 @@ function isFilterParam(field: string): field is PostFilterParam {
  */
 export function parsePostFilters(params: PostListParams): Filter<string>[] {
   return POST_FILTER_PARAMS.flatMap((param, index) => {
-    const value = params[param];
+    const values = paramValues(params, param);
 
-    if (value === null || value === undefined || value.trim() === '') {
+    if (values.length === 0) {
       return [];
     }
 
     // Ids only have to be unique and stable for a given params record;
     // the param name already is.
-    return [{ id: `${param}:${index + 1}`, field: param, operator: OPERATOR, values: [value] }];
+    const operator = param === 'type' ? TYPE_OPERATOR : OPERATOR;
+    return [{ id: `${param}:${index + 1}`, field: param, operator, values }];
   });
+}
+
+/** Legacy `?type=featured` surfaces as a Featured chip, not a type value. */
+function paramValues(params: PostListParams, param: PostFilterParam): string[] {
+  if (param === 'type') {
+    return splitTypeParam(params.type).filter((value) => value !== LEGACY_FEATURED_TYPE);
+  }
+
+  const value = param === 'featured' && !params.featured ? getFeaturedValue(params) : params[param];
+
+  if (value === null || value === undefined || value.trim() === '') {
+    return [];
+  }
+
+  return [value];
+}
+
+function typeOrder(value: string): number {
+  const index = TYPE_ORDER.indexOf(value);
+  return index === -1 ? TYPE_ORDER.length : index;
+}
+
+function toTypeParamValue(values: unknown[]): string | null {
+  const types = [...new Set(values.map(toParamValue).filter((value) => value !== null))];
+  types.sort((a, b) => typeOrder(a) - typeOrder(b));
+
+  return types.length > 0 ? types.join(',') : null;
 }
 
 /**
@@ -83,7 +120,8 @@ export function serializePostFilters(filters: Filter<string>[]): PostFilterParam
       return;
     }
 
-    params[filter.field] = toParamValue(filter.values[0]);
+    params[filter.field] =
+      filter.field === 'type' ? toTypeParamValue(filter.values) : toParamValue(filter.values[0]);
   });
 
   return params;

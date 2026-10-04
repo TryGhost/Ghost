@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  FEATURED_OPTIONS,
   ORDER_OPTIONS,
   VISIBILITY_OPTIONS,
   getOrderLabel,
@@ -8,13 +9,13 @@ import {
 import { getStatusesForType } from './post-query-params';
 
 describe('getTypeOptions', () => {
-  it('offers posts the five Ember types', () => {
+  // Featured is its own field: it is a flag, not a status.
+  it('offers posts the four statuses', () => {
     expect(getTypeOptions('posts').map((option) => option.value)).toEqual([
       'draft',
       'published',
       'sent',
       'scheduled',
-      'featured',
     ]);
   });
 
@@ -24,7 +25,6 @@ describe('getTypeOptions', () => {
       'draft',
       'published',
       'scheduled',
-      'featured',
     ]);
   });
 
@@ -39,14 +39,15 @@ describe('getTypeOptions', () => {
     const known = ['draft', 'published', 'sent', 'scheduled'];
 
     getTypeOptions('posts').forEach((option) => {
-      if (option.value === 'featured') {
-        expect(getStatusesForType(option.value)).toHaveLength(4);
-        return;
-      }
-
       expect(known).toContain(option.value);
       expect(getStatusesForType(option.value)).toEqual([option.value]);
     });
+  });
+});
+
+describe('FEATURED_OPTIONS', () => {
+  it('carries the values the query layer sends as featured:true/false', () => {
+    expect(FEATURED_OPTIONS.map((option) => option.value)).toEqual(['true', 'false']);
   });
 });
 

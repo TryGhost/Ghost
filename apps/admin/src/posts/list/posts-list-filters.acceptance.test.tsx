@@ -68,6 +68,43 @@ describe('Posts list filters', () => {
     await expect.element(postsListScreen.filterBar()).toHaveTextContent('Ada Lovelace');
   });
 
+  it('hydrates several types into one chip', async () => {
+    fakePosts([]);
+    await renderAdminApp('/posts?type=draft,published');
+
+    await expect.element(postsListScreen.filterBar()).toHaveTextContent('2 selected');
+    await expect.poll(currentRoute).toBe('/posts?type=draft,published');
+  });
+
+  it('adds a second type to the same chip', async () => {
+    fakePosts([]);
+    await renderAdminApp('/posts?type=draft');
+
+    await postsListScreen.filterValueButton('Draft posts').click();
+    await postsListScreen.filterValueOption('Published posts').click();
+
+    await expect.poll(currentRoute).toBe('/posts?type=draft%2Cpublished');
+  });
+
+  it('filters by featured alongside type', async () => {
+    fakePosts([]);
+    await renderAdminApp('/posts?type=published');
+
+    await postsListScreen.addFilter('Featured', 'Yes');
+
+    await expect.poll(currentRoute).toBe('/posts?type=published&featured=true');
+  });
+
+  // Saved views and bookmarks from before featured was its own param.
+  it('shows legacy type=featured as a Featured chip', async () => {
+    fakePosts([]);
+    await renderAdminApp('/posts?type=featured');
+
+    await expect.element(postsListScreen.filterBar()).toHaveTextContent('Featured');
+    await expect.element(postsListScreen.filterBar()).not.toHaveTextContent('Unknown');
+    await expect.poll(currentRoute).toBe('/posts?type=featured');
+  });
+
   // A saved view can point at a tag that was later renamed or deleted.
   // The chip has to say *something* — without a fallback option Shade shows
   // "Select…", so the filter vanishes from the UI while staying in the URL
@@ -153,13 +190,14 @@ describe('Posts list filters', () => {
 
   // Ember hides these for roles that can only see their own posts.
   describe('role restrictions', () => {
-    it('offers only the type filter to a contributor', async () => {
+    it('offers only the type and featured filters to a contributor', async () => {
       fakePosts([]);
       await renderAdminApp('/posts', asRole('Contributor'));
 
       await postsListScreen.addFilterButton().click();
 
       await expect.element(postsListScreen.filterFieldOption('Post type')).toBeVisible();
+      await expect.element(postsListScreen.filterFieldOption('Featured')).toBeVisible();
       await expect(postsListScreen.filterFieldOption('Author')).toHaveCount(0);
       await expect(postsListScreen.filterFieldOption('Access')).toHaveCount(0);
       await expect(postsListScreen.filterFieldOption('Tag')).toHaveCount(0);
@@ -175,13 +213,14 @@ describe('Posts list filters', () => {
       await expect(postsListScreen.filterFieldOption('Author')).toHaveCount(0);
     });
 
-    it('offers all four to an administrator', async () => {
+    it('offers every filter to an administrator', async () => {
       fakePosts([]);
       await renderAdminApp('/posts', asRole('Administrator'));
 
       await postsListScreen.addFilterButton().click();
 
       await expect.element(postsListScreen.filterFieldOption('Post type')).toBeVisible();
+      await expect.element(postsListScreen.filterFieldOption('Featured')).toBeVisible();
       await expect.element(postsListScreen.filterFieldOption('Access')).toBeVisible();
       await expect.element(postsListScreen.filterFieldOption('Author')).toBeVisible();
       await expect.element(postsListScreen.filterFieldOption('Tag')).toBeVisible();

@@ -1,9 +1,12 @@
 import { LucideIcon } from '@tryghost/shade/utils';
 import {
+  FEATURED_OPTIONS,
   type PostFilterOption,
   VISIBILITY_OPTIONS,
   getTypeOptions,
 } from '@/posts/list/post-filter-fields';
+import { LEGACY_FEATURED_TYPE, splitTypeParam } from '@/posts/list/post-query-params';
+import { TYPE_OPERATOR } from '@/posts/list/post-filter-query';
 import { isAuthorOrContributor, isContributorUser } from '@tryghost/admin-x-framework/api/users';
 import { usePostAuthorValueSource } from '@/shared/filter-sources/use-post-author-value-source';
 import { usePostTagValueSource } from '@/shared/filter-sources/use-post-tag-value-source';
@@ -14,9 +17,8 @@ import type { User } from '@tryghost/admin-x-framework/api/users';
 /**
  * The Shade field config for the posts/pages filter bar.
  *
- * All four fields are single-select equality — Ember offers nothing else, and
- * the URL can only hold one value per param, so anything richer would produce
- * URLs the Ember screen renders as "Unknown".
+ * Type matches any of several values; the other fields are single-select
+ * equality.
  *
  * `order` is deliberately absent: it is a sort, not a filter, and lives in its
  * own control.
@@ -26,7 +28,7 @@ export interface BuildPostFilterFieldsOptions {
   resource: PostResource;
   authorValueSource: ValueSource<string>;
   tagValueSource: ValueSource<string>;
-  /** Contributors see only their own posts, so only the type filter. */
+  /** Contributors see only their own posts, so only the type and featured filters. */
   isContributor?: boolean;
   /** Authors are scoped to themselves, so the author filter is meaningless. */
   isAuthorOrContributor?: boolean;
@@ -36,21 +38,24 @@ export interface BuildPostFilterFieldsOptions {
    * falls back to "Select…" and the filter vanishes from the UI while
    * staying in the URL. Ember shows a red "Unknown type" for the same case.
    */
-  params?: Partial<Record<'type' | 'visibility', string | null>>;
+  params?: Partial<Record<'type' | 'featured' | 'visibility', string | null>>;
 }
 
 const IS_ONLY = [{ value: 'is', label: 'is' }];
+const IS_ANY_OF = [{ value: TYPE_OPERATOR, label: 'is any of' }];
 
-function withUnknownOption(
+function withUnknownOptions(
   options: PostFilterOption[],
-  value: string | null | undefined,
+  values: string[],
   noun: string,
 ): PostFilterOption[] {
-  if (!value || options.some((option) => option.value === value)) {
-    return options;
-  }
+  const unknown = values.filter((value) => !options.some((option) => option.value === value));
 
-  return [...options, { value, label: `Unknown ${noun}` }];
+  return [...options, ...unknown.map((value) => ({ value, label: `Unknown ${noun}` }))];
+}
+
+function singleValue(value: string | null | undefined): string[] {
+  return value ? [value] : [];
 }
 
 export function buildPostFilterFields({
@@ -63,28 +68,41 @@ export function buildPostFilterFields({
 }: BuildPostFilterFieldsOptions): FilterFieldConfig<string>[] {
   const noun = resource === 'pages' ? 'Page' : 'Post';
 
+  const typeValues = splitTypeParam(params.type).filter((value) => value !== LEGACY_FEATURED_TYPE);
+
   const typeField: FilterFieldConfig<string> = {
     key: 'type',
     label: `${noun} type`,
-    type: 'select',
+    type: 'multiselect',
     icon: <LucideIcon.FileText className="size-4" />,
+    operators: IS_ANY_OF,
+    defaultOperator: TYPE_OPERATOR,
+    options: withUnknownOptions(getTypeOptions(resource), typeValues, 'type'),
+  };
+
+  const featuredField: FilterFieldConfig<string> = {
+    key: 'featured',
+    label: 'Featured',
+    type: 'select',
+    icon: <LucideIcon.Star className="size-4" />,
     operators: IS_ONLY,
-    options: withUnknownOption(getTypeOptions(resource), params.type, 'type'),
+    options: withUnknownOptions(FEATURED_OPTIONS, singleValue(params.featured), 'value'),
   };
 
   if (isContributor) {
-    return [typeField];
+    return [typeField, featuredField];
   }
 
   const fields: FilterFieldConfig<string>[] = [
     typeField,
+    featuredField,
     {
       key: 'visibility',
       label: 'Access',
       type: 'select',
       icon: <LucideIcon.Lock className="size-4" />,
       operators: IS_ONLY,
-      options: withUnknownOption(VISIBILITY_OPTIONS, params.visibility, 'access'),
+      options: withUnknownOptions(VISIBILITY_OPTIONS, singleValue(params.visibility), 'access'),
     },
   ];
 

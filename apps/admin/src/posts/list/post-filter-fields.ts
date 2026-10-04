@@ -13,18 +13,11 @@ export interface PostFilterOption {
   label: string;
 }
 
-/**
- * `featured` sits in the same list as the statuses even though it isn't one -
- * it means "every status, and featured". The URL schema can't express
- * "draft AND featured", so splitting this into a status field plus a featured
- * toggle would produce URLs the Ember screen renders as "Unknown".
- */
 const POST_TYPE_OPTIONS: PostFilterOption[] = [
   { value: 'draft', label: 'Draft posts' },
   { value: 'published', label: 'Published posts' },
   { value: 'sent', label: 'Email only posts' },
   { value: 'scheduled', label: 'Scheduled posts' },
-  { value: 'featured', label: 'Featured posts' },
 ];
 
 /** Pages are never emailed, so they have no "Email only". */
@@ -32,7 +25,12 @@ const PAGE_TYPE_OPTIONS: PostFilterOption[] = [
   { value: 'draft', label: 'Draft pages' },
   { value: 'published', label: 'Published pages' },
   { value: 'scheduled', label: 'Scheduled pages' },
-  { value: 'featured', label: 'Featured pages' },
+];
+
+/** Independent of type: featured is a flag, not a status. */
+export const FEATURED_OPTIONS: PostFilterOption[] = [
+  { value: 'true', label: 'Yes' },
+  { value: 'false', label: 'No' },
 ];
 
 /**
