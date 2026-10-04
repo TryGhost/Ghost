@@ -16,6 +16,7 @@ import {
   fakeUnsplashPhotos,
   post,
   renderAdminApp,
+  settleTransitions,
   staffRole,
   submittedPost,
   unsavedChangesGuarded,
@@ -75,6 +76,7 @@ function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
 async function openFacebookCard() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  await settleTransitions();
   await editorScreen.settingsSubviewRow(settingsFacebookCardRow).click();
   await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
 }

@@ -13,6 +13,7 @@ import {
   renderAdminApp,
   submittedPost,
   withPintura,
+  withoutAutosave,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 import { deferred } from '@/utils/deferred';
@@ -153,7 +154,9 @@ describe('Post editor feature image', () => {
 
   it('saves the caption once it loses focus', async () => {
     const saveApi = fakeSavablePost({ feature_image: UPLOADED });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    // Loading the body arms an autosave that can include caption edits. This
+    // scenario proves the blur-triggered save, so keep that debounce out of it.
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
 
     await expect.element(editorScreen.featureImageCaption()).toBeVisible();
     await editorScreen.featureImageCaption().click();

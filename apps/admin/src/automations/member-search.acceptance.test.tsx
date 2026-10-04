@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
-import { flags, prepareStatuses, run } from './run-list.test-utils';
+import { openPerformanceSidebar, flags, prepareStatuses, run } from './run-list.test-utils';
 
 const list = () => page.getByRole('region', { name: 'Automation runs', exact: true });
 const input = () => page.getByRole('textbox', { name: 'Search members' });
@@ -13,7 +13,7 @@ const result = (cursor: string | null = null, rows = [run()]) => ({
 });
 async function open() {
   await renderAdminApp('/automations/first', flags);
-  await page.getByRole('button', { name: 'Show performance' }).click();
+  await openPerformanceSidebar();
 }
 
 describe('Automation member search', () => {

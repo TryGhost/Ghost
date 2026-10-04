@@ -1,12 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
-import { flags, read, prepareStatuses, run, runsScroller } from './run-list.test-utils';
+import {
+  openPerformanceSidebar,
+  flags,
+  read,
+  prepareStatuses,
+  run,
+  runsScroller,
+} from './run-list.test-utils';
 
 const entries = () => page.getByRole('region', { name: 'Total entries' });
 const statuses = () => page.getByRole('region', { name: 'Automation status counts' });
 const statusCard = (name: string) => statuses().getByRole('button', { name, exact: true });
-const open = () => page.getByRole('button', { name: 'Show performance' }).click();
+const open = openPerformanceSidebar;
 const close = () => page.getByRole('button', { name: 'Hide performance' }).click();
 
 const runsRegion = () => page.getByRole('region', { name: 'Automation runs', exact: true });

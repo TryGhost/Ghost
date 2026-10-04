@@ -11,6 +11,7 @@ import {
   fakeUsers,
   post,
   renderAdminApp,
+  settleTransitions,
   staffRole,
   staffUser,
   submittedPost,
@@ -81,6 +82,7 @@ function fakeSavablePost(overrides: Partial<SavedPost> = {}, staff?: StaffUser[]
 async function openAuthors() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  await settleTransitions();
   await expect.element(editorScreen.settingsAuthors()).toBeVisible();
 }
 

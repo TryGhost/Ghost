@@ -175,6 +175,7 @@ describe('Post editor', () => {
     });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await expect.poll(() => snippetsApi.requests.length).toBe(2);
     const secondPageParams = new URL(snippetsApi.requests[1].url).searchParams;
     expect(secondPageParams.get('page')).toBe('2');
@@ -201,6 +202,7 @@ describe('Post editor', () => {
       });
     });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await expect.poll(() => snippetsApi.requests.length).toBe(2);
 
     await editorScreen.body().click();
@@ -476,8 +478,8 @@ describe('Post editor email size warning', () => {
     const previewApi = fakeEmailPreview(99 * 1024);
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-    await expect.poll(() => previewApi.requests.length).toBe(1);
     await editorSettled();
+    await expect.poll(() => previewApi.requests.length).toBe(1);
     await expect(editorScreen.emailSizeWarning()).toHaveCount(0);
   });
 
@@ -538,6 +540,9 @@ describe('Post editor email size warning', () => {
     const firstCheck = fakeEmailPreview();
     await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
 
+    // The preview needs the loaded post; starting its poll during boot uses up
+    // the assertion window before the editor can issue the request under load.
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await expect.poll(() => firstCheck.requests.length).toBe(1);
     const secondCheck = fakeEmailPreview(OVER_EMAIL_LIMIT);
     await editorScreen.body().click();
