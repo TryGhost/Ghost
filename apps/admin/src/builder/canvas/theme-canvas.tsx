@@ -281,7 +281,7 @@ function LivePreview({
             },
             onError: (failure) => {
               const message = failure instanceof Error ? failure.message : String(failure);
-              connection.fail();
+              connection.fail(failure);
               layoutFailed.current = true;
               setReady(null);
               setComposition(null);
@@ -311,7 +311,7 @@ function LivePreview({
       })
       .catch((failure: unknown) => {
         if (!controller.signal.aborted) {
-          connection?.fail();
+          connection?.fail(failure);
           handlers.current.onDelivery(`${frame.id}:${kind}`, document, 'failed');
           const message = failure instanceof Error ? failure.message : String(failure);
           setStatus(message);

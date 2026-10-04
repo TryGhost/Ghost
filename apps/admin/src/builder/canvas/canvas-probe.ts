@@ -1,4 +1,5 @@
 import { SCREENSHOT_LIMITS } from '@/builder/workspaces/theme/preview/screenshot';
+import { CompositionGeometryChange } from './measure-expanded-composition';
 import type { CanvasEditorTools } from './canvas-editor-tools';
 
 import type { CanvasView } from '@/builder/canvas/canvas-board';
@@ -17,6 +18,7 @@ type FrameDescriptor = { id: string; label: string; group: string; width: number
 export type ReadResult =
   | { status: 'ok'; data: Record<string, unknown> }
   | { status: 'error'; code: string; message: string; details?: unknown };
+type ReadFailure = Extract<ReadResult, { status: 'error' }>;
 export type ProbeTool = {
   name: string;
   description: string;
@@ -31,9 +33,11 @@ export type ProbeRegistrationStatus = 'unsupported' | 'registered' | 'failed';
 
 class ReadError extends Error {
   readonly code: string;
-  constructor(code: string, message: string) {
+  readonly details?: unknown;
+  constructor(code: string, message: string, details?: unknown) {
     super(message);
     this.code = code;
+    this.details = details;
   }
 }
 type Representation = 'device' | 'expanded';
@@ -44,6 +48,7 @@ type Entry = {
   representationHandle: string;
   lifetime: AbortController;
   status: 'pending' | 'current' | 'failed' | 'stale';
+  failure?: Omit<ReadFailure, 'status'>;
   documentId?: string;
   documentInstanceId?: string;
   refreshEpoch?: number;
@@ -200,6 +205,7 @@ export class CanvasProbe {
       dataGeneration: entry.document.dataGeneration ?? 0,
       documentId: entry.documentId ?? null,
       documentInstanceId: entry.documentInstanceId ?? null,
+      ...(entry.failure ? { failure: structuredClone(entry.failure) } : {}),
     });
     return {
       protocolVersion: this.fixture ? 'canvas-fixture-probe-3' : 'canvas-editor-probe-1',
@@ -261,8 +267,21 @@ export class CanvasProbe {
     return {
       ready: async () => {
         const signal = AbortSignal.any([this.lifetime.signal, entry.lifetime.signal]);
+        const assertReady = () => {
+          this.assertEntry(frame, entry, signal);
+          if (entry.status === 'failed') {
+            // A geometry read cannot recover a failed observer; replace its document.
+            // Preserve the cause when the caller forwards this rejection to fail().
+            throw new ReadError(
+              entry.failure?.code ?? 'surface_failed',
+              entry.failure?.message ?? 'The representation failed during readiness measurement.',
+              structuredClone(entry.failure?.details),
+            );
+          }
+        };
+        assertReady();
         const layout = await surface.measureLayout(signal);
-        this.assertEntry(frame, entry, signal);
+        assertReady();
         if (
           layout.viewport.width !== frame.descriptor.width ||
           (entry.representation === 'device' && layout.viewport.height !== frame.descriptor.height)
@@ -275,10 +294,19 @@ export class CanvasProbe {
         entry.documentId = layout.documentId;
         entry.documentInstanceId = layout.documentInstanceId;
         entry.status = 'current';
+        delete entry.failure;
       },
-      fail: () => {
+      fail: (error?: unknown) => {
         if (frame.entries[entry.representation] === entry) {
           entry.status = 'failed';
+          const failure = this.failure(
+            error ?? new Error('The live representation failed to load.'),
+          );
+          entry.failure = {
+            code: failure.code,
+            message: failure.message,
+            ...(failure.details === undefined ? {} : { details: structuredClone(failure.details) }),
+          };
         }
       },
       dispose: () => {
@@ -456,11 +484,17 @@ export class CanvasProbe {
     ];
   }
 
-  private failure(error: unknown): ReadResult {
+  private failure(error: unknown): ReadFailure {
     return {
       status: 'error',
-      code: error instanceof ReadError ? error.code : 'read_failed',
+      code:
+        error instanceof ReadError || error instanceof CompositionGeometryChange
+          ? error.code
+          : 'read_failed',
       message: error instanceof Error ? error.message : 'The addressed fixture read failed.',
+      ...(error instanceof ReadError || error instanceof CompositionGeometryChange
+        ? { details: error.details }
+        : {}),
     };
   }
 
@@ -522,6 +556,9 @@ export class CanvasProbe {
             ? 'stale_render'
             : 'surface_failed',
         'The addressed live representation is not ready.',
+        entry.status === 'failed' && entry.failure
+          ? { failure: structuredClone(entry.failure) }
+          : undefined,
       );
     }
     return { frame, entry };

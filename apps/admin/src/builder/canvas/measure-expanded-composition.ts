@@ -33,6 +33,45 @@ export class CompositionEditInterruption extends Error {
   }
 }
 
+type CompositionGeometry = {
+  documentId: string;
+  documentInstanceId: string;
+  viewport: { width: number; height: number };
+};
+
+/** Preserve the mismatch for native diagnostics without putting geometry in UI copy. */
+export class CompositionGeometryChange extends Error {
+  readonly code: 'composition_document_changed' | 'composition_viewport_changed';
+  readonly details: {
+    phase: 'viewport-reset' | 'expansion';
+    expected: CompositionGeometry;
+    actual: CompositionGeometry;
+  };
+
+  constructor(
+    expected: CompositionGeometry,
+    actual: CompositionGeometry,
+    phase: 'viewport-reset' | 'expansion',
+  ) {
+    const changedDocument =
+      expected.documentId !== actual.documentId ||
+      expected.documentInstanceId !== actual.documentInstanceId;
+    super(
+      changedDocument
+        ? 'The composition document changed during measurement.'
+        : 'The composition viewport changed during measurement.',
+    );
+    this.name = 'CompositionGeometryChange';
+    this.code = changedDocument ? 'composition_document_changed' : 'composition_viewport_changed';
+    const geometry = (value: CompositionGeometry): CompositionGeometry => ({
+      documentId: value.documentId,
+      documentInstanceId: value.documentInstanceId,
+      viewport: { width: value.viewport.width, height: value.viewport.height },
+    });
+    this.details = { phase, expected: geometry(expected), actual: geometry(actual) };
+  }
+}
+
 /** Only resize a dedicated composition surface. The caller retains its fixed device. */
 export async function measureExpandedComposition(
   surface: Pick<IframePreviewDocumentSurface, 'measureLayout'>,
@@ -105,11 +144,19 @@ export async function measureExpandedComposition(
         initial.documentId !== preflight.documentId ||
         initial.documentInstanceId !== preflight.documentInstanceId
       ) {
-        throw new Error('The composition document changed during measurement.');
+        throw new CompositionGeometryChange(
+          { ...preflight, viewport: configuredViewport },
+          initial,
+          'viewport-reset',
+        );
       }
     }
     if (configuredViewport && initial.viewport.width !== configuredViewport.width) {
-      throw new Error('The configured composition width changed during measurement.');
+      throw new CompositionGeometryChange(
+        { ...initial, viewport: configuredViewport },
+        initial,
+        'viewport-reset',
+      );
     }
     if (
       initial.localEdits.generation !== preflight.localEdits.generation ||
@@ -156,8 +203,10 @@ export async function measureExpandedComposition(
         next.viewport.width !== initial.viewport.width ||
         next.viewport.height !== height
       ) {
-        throw new Error(
-          'The composition document or configured viewport changed during measurement.',
+        throw new CompositionGeometryChange(
+          { ...initial, viewport: { width: initial.viewport.width, height } },
+          next,
+          'expansion',
         );
       }
       measurements.push(next);

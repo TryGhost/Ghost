@@ -286,6 +286,13 @@ the four fixed devices, four live compositions and all eight documents. Failed
 deliveries remain separate from readiness and permit a subsequent refresh retry. These are
 delivery observations rather than screenshot timings or performance benchmarks.
 
+Failed native frame entries retain their cause. Composition identity/viewport
+mismatches expose compact expected/observed geometry and the measurement phase;
+addressed reads return the same cause in `surface_failed` details. Healthy devices
+remain independently usable. Failed entries require document replacement; an older
+readiness read cannot clear their cause. Geometry details belong to native diagnostics, while the
+canvas displays a short failure message and its existing fallback control.
+
 The top-level editor feature-detects `document.modelContext.registerTool` and the
 older native `navigator.modelContext` location. It registers
 `ghost_canvas_probe_get_editor_state`, `ghost_canvas_probe_inspect_frame`,

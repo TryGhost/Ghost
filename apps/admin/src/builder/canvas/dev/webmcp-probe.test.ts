@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { CanvasProbe, registerCanvasProbe } from './webmcp-probe';
+import {
+  CompositionGeometryChange,
+  measureExpandedComposition,
+} from '@/builder/canvas/measure-expanded-composition';
 import type { CanvasProbeSurface, ProbeTool } from './webmcp-probe';
 
 const descriptor = {
@@ -65,6 +69,108 @@ async function fixture() {
 }
 
 describe('addressed read-only canvas probe', () => {
+  it('keeps a newer failure when an older readiness read completes', async () => {
+    const { probe } = await fixture();
+    const composition = surface();
+    let finish!: (value: typeof layout) => void;
+    vi.mocked(composition.measureLayout).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const connection = probe.attach(descriptor.id, composition, document, 'expanded');
+    const address = {
+      ...target(probe),
+      representationHandle: probe.state().frames[0].expanded!.representationHandle,
+    };
+    const readiness = connection.ready().catch((error: unknown) => {
+      connection.fail(error);
+      throw error;
+    });
+    const failure = new CompositionGeometryChange(
+      layout,
+      { ...layout, viewport: { width: 390, height: 845 } },
+      'expansion',
+    );
+    connection.fail(failure);
+    finish(layout);
+    await expect(readiness).rejects.toMatchObject({
+      code: failure.code,
+      details: failure.details,
+    });
+    expect(probe.state().frames[0].expanded).toMatchObject({
+      status: 'failed',
+      failure: { code: failure.code, details: failure.details },
+    });
+    expect(await tool(probe, 'inspect_frame').execute(address)).toMatchObject({
+      status: 'error',
+      code: 'surface_failed',
+      details: { failure: { code: failure.code } },
+    });
+    expect(probe.state().frames[0].device!.status).toBe('current');
+    await expect(connection.ready()).rejects.toMatchObject({
+      code: failure.code,
+      details: failure.details,
+    });
+    await probe.attach(descriptor.id, surface(), document, 'expanded').ready();
+    expect(probe.state().frames[0].expanded!.status).toBe('current');
+    expect(probe.state().frames[0].expanded).not.toHaveProperty('failure');
+    probe.dispose();
+  });
+
+  it('retains an expanded failure cause in native state and reads without failing the fixed device', async () => {
+    const { probe, preview } = await fixture();
+    const composition = surface();
+    const connection = probe.attach(descriptor.id, composition, document, 'expanded');
+    const state = probe.state();
+    const expandedTarget = {
+      ...target(probe),
+      representationHandle: state.frames[0].expanded!.representationHandle,
+    };
+    let failure: unknown;
+    try {
+      await measureExpandedComposition(
+        composition,
+        () => Promise.resolve(),
+        descriptor.id,
+        document.revision,
+        new AbortController().signal,
+      );
+    } catch (error) {
+      failure = error;
+    }
+    expect(failure).toBeInstanceOf(Error);
+    connection.fail(failure);
+    const current = probe.state();
+    expect(current.frames[0].device!.status).toBe('current');
+    expect(current.frames[0].expanded).toMatchObject({
+      status: 'failed',
+      failure: {
+        code: 'composition_viewport_changed',
+        details: {
+          expected: { viewport: { width: 390, height: 3000 } },
+          actual: { viewport: { width: 390, height: 844 } },
+        },
+      },
+    });
+    const failed = await tool(probe, 'inspect_frame').execute(expandedTarget);
+    expect(failed).toMatchObject({
+      status: 'error',
+      code: 'surface_failed',
+      details: { failure: { code: 'composition_viewport_changed' } },
+    });
+    expect(composition.inspectPage).not.toHaveBeenCalled();
+    expect(await tool(probe, 'inspect_frame').execute(target(probe))).toMatchObject({
+      status: 'ok',
+    });
+    expect(preview.inspectPage).toHaveBeenCalledOnce();
+    const replacement = probe.attach(descriptor.id, surface(), document, 'expanded');
+    expect(probe.state().frames[0].expanded).not.toHaveProperty('failure');
+    replacement.dispose();
+    probe.dispose();
+  });
+
   it('addresses expanded occurrences independently while keeping responsive captures on fixed devices', async () => {
     const { probe, preview } = await fixture();
     const composition = surface();

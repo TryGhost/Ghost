@@ -37,6 +37,50 @@ function measure(value: ReturnType<typeof preview>, signal = new AbortController
 }
 
 describe('bounded expanded composition measurements', () => {
+  it.each([
+    ['height', 'composition_viewport_changed'],
+    ['width', 'composition_viewport_changed'],
+    ['document', 'composition_document_changed'],
+    ['instance', 'composition_document_changed'],
+  ] as const)(
+    'reports the actual %s mismatch through structured failure details',
+    async (field, code) => {
+      const value = preview(() => 4000);
+      const initial = await value.surface.measureLayout();
+      const actual = {
+        ...initial,
+        documentId: field === 'document' ? 'replacement-document' : initial.documentId,
+        documentInstanceId:
+          field === 'instance' ? 'replacement-instance' : initial.documentInstanceId,
+        viewport: {
+          ...initial.viewport,
+          width: field === 'width' ? 391 : 390,
+          height: field === 'height' ? 844 : 4000,
+        },
+      };
+      value.resize.mockImplementation(() => {
+        value.surface.measureLayout.mockResolvedValue(actual);
+        return Promise.resolve();
+      });
+      await expect(measure(value)).rejects.toMatchObject({
+        code,
+        details: {
+          phase: 'expansion',
+          expected: {
+            documentId: initial.documentId,
+            documentInstanceId: initial.documentInstanceId,
+            viewport: { width: 390, height: 4000 },
+          },
+          actual: {
+            documentId: actual.documentId,
+            documentInstanceId: actual.documentInstanceId,
+            viewport: { width: actual.viewport.width, height: actual.viewport.height },
+          },
+        },
+      });
+    },
+  );
+
   it('allows finite responsive startup changes to settle instead of prematurely falling back', async () => {
     const value = preview(() => 1200);
     const read = value.surface.measureLayout.getMockImplementation()!;

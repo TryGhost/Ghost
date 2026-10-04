@@ -16,6 +16,7 @@ import {
 } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
 import { CanvasThemePreview } from '@/builder/canvas/canvas-theme-preview';
+import { IframePreviewDocumentSurface } from '@/builder/workspaces/theme/preview/preview-document';
 import defaultRoutes from '../../../../ghost/core/core/server/services/route-settings/default-routes.yaml?raw';
 import type { CanvasProbe, ReadResult } from '@/builder/canvas/canvas-probe';
 import type { CustomThemeSetting } from '@tryghost/admin-x-framework/api/custom-theme-settings';
@@ -100,6 +101,121 @@ async function fakeBuilderWorld({
 }
 
 describe('Design Builder route', () => {
+  it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1')(
+    'reports a Post composition mismatch through native tools and retires its cause after recovery',
+    { timeout: 60_000 },
+    async () => {
+      await commands.canvasPointerViewport(true);
+      await fakeBuilderWorld({ post: true });
+      // Keep the real layout bridge; one returned height disagrees with the requested resize.
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      const measure = IframePreviewDocumentSurface.prototype.measureLayout;
+      let reads = 0;
+      let introduced = false;
+      vi.spyOn(IframePreviewDocumentSurface.prototype, 'measureLayout').mockImplementation(
+        async function (this: IframePreviewDocumentSurface, signal) {
+          const result = await measure.call(this, signal);
+          const iframe = (this as unknown as { iframe: HTMLIFrameElement }).iframe;
+          if (iframe.title === 'Post · Desktop composition' && !introduced && (reads += 1) === 3) {
+            introduced = true;
+            return {
+              ...result,
+              viewport: { ...result.viewport, height: result.viewport.height + 1 },
+            };
+          }
+          return result;
+        },
+      );
+      const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
+      const state = async () =>
+        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {}))
+          .data as ReturnType<CanvasProbe['state']>;
+      try {
+        await expect
+          .poll(
+            async () =>
+              (await state()).frames.find((frame) => frame.id === 'post-desktop')?.expanded?.status,
+            { timeout: 30_000 },
+          )
+          .toBe('failed');
+        const failed = await state();
+        const post = failed.frames.find((frame) => frame.id === 'post-desktop')!;
+        expect(post.device!.status).toBe('current');
+        expect(post.expanded).toMatchObject({
+          failure: {
+            code: 'composition_viewport_changed',
+            details: {
+              phase: 'expansion',
+              expected: { viewport: { width: 1440, height: 900 } },
+              actual: { viewport: { width: 1440, height: 901 } },
+            },
+          },
+        });
+        const address = {
+          workspaceId: failed.workspaceId,
+          frameHandle: post.frameHandle,
+          representationHandle: post.expanded!.representationHandle,
+          expectedRevision: post.expanded!.revision,
+          expectedRenderKey: post.expanded!.renderKey,
+        };
+        expect(
+          await commands.canvasNativeTool('ghost_canvas_probe_inspect_frame', address),
+        ).toMatchObject({
+          status: 'error',
+          code: 'surface_failed',
+          details: { failure: { code: 'composition_viewport_changed' } },
+        });
+        expect(
+          await commands.canvasNativeTool('ghost_canvas_probe_inspect_frame', {
+            ...address,
+            representationHandle: post.device!.representationHandle,
+          }),
+        ).toMatchObject({ status: 'ok' });
+        expect(document.body.textContent).not.toContain('composition_viewport_changed');
+        expect(document.body.textContent).not.toContain('documentInstanceId');
+        await page
+          .getByRole('button', { name: 'Use fixed viewport for Post · Desktop', exact: true })
+          .click();
+        await page.getByRole('button', { name: 'Post · Desktop', exact: true }).dblClick();
+        const footer = page
+          .frameLocator(page.getByTitle('Post · Desktop preview', { exact: true }))
+          .getByRole('link', { name: 'Canvas footer', exact: true });
+        await footer.dblClick();
+        await expect
+          .element(page.getByRole('button', { name: 'Cancel text draft', exact: true }))
+          .toBeVisible();
+        await page.getByRole('button', { name: 'Cancel text draft', exact: true }).click();
+        const recovery = await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
+          workspaceId: failed.workspaceId,
+          expectedRevision: failed.editor!.sourceRevision,
+          expectedDataGeneration: (failed.editor!.render as { dataGeneration: number })
+            .dataGeneration,
+          files: [
+            {
+              operation: 'replace',
+              path: 'partials/footer.hbs',
+              oldText: 'Canvas footer',
+              newText: 'Recovered footer',
+            },
+          ],
+        });
+        expect(recovery.status).toBe('ok');
+        await expect
+          .poll(() => document.querySelectorAll('iframe[data-preview-status="Ready"]').length, {
+            timeout: 30_000,
+          })
+          .toBe(8);
+        const recovered = (await state()).frames.find((frame) => frame.id === 'post-desktop')!;
+        expect(recovered.expanded!.status).toBe('current');
+        expect(recovered.expanded).not.toHaveProperty('failure');
+      } finally {
+        await screen.unmount();
+        await commands.canvasPointerViewport(false);
+        vi.restoreAllMocks();
+      }
+    },
+  );
+
   it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1')(
     'reveals the requested shared canvas frame through native tools without discarding manual text',
     { timeout: 60_000 },
