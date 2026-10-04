@@ -113,6 +113,7 @@ function LivePreview({
   onInput,
   onExpanded,
   probe,
+  reveal,
   onSurface,
   onSelection,
   onEdit,
@@ -127,9 +128,10 @@ function LivePreview({
   onInput: (input: PreviewCanvasInput) => void;
   onExpanded: (state: ExpandedState) => void;
   probe: CanvasProbe;
+  reveal: () => void;
   onDelivery: (id: string, document: PreviewDocument, status: 'ready' | 'failed') => void;
   onAdmission: (interactionTime: number) => boolean;
-  onSurface: (id: string, surface: IframePreviewDocumentSurface | null) => void;
+  onSurface: (id: string, surface: IframePreviewDocumentSurface | null, reveal: () => void) => void;
   onSelection: (
     id: string,
     selection: BuilderSelectionContext | null,
@@ -154,6 +156,7 @@ function LivePreview({
   const layoutFailed = useRef(false);
   const layoutObservation = useRef<ReturnType<typeof observeExpandedComposition> | null>(null);
   const handlers = useRef({
+    reveal,
     onInput,
     onExpanded,
     onSurface,
@@ -165,6 +168,7 @@ function LivePreview({
     draftOwner,
   });
   handlers.current = {
+    reveal,
     onInput,
     onExpanded,
     onSurface,
@@ -210,10 +214,10 @@ function LivePreview({
         handlers.current.onSelection(frame.id, selection, interactionTime);
       }
     });
-    handlers.current.onSurface(`${frame.id}:${kind}`, current);
+    handlers.current.onSurface(`${frame.id}:${kind}`, current, () => handlers.current.reveal());
     setSurface(current);
     return () => {
-      handlers.current.onSurface(`${frame.id}:${kind}`, null);
+      handlers.current.onSurface(`${frame.id}:${kind}`, null, () => handlers.current.reveal());
       current.destroy();
     };
   }, [frame.id, kind]);
@@ -550,6 +554,7 @@ export function ThemeCanvas({
   const publicationAction = useRef<((expectedRevision?: string) => CanvasPublicationReview) | null>(
     null,
   );
+  const revealAction = useRef<((frameId: string) => void) | null>(null);
   useEffect(() => {
     const current = new CanvasProbe(frames, source.siteUrl, {
       workspaceId: source.fixture ? undefined : source.id,
@@ -607,6 +612,12 @@ export function ThemeCanvas({
             return patchAction.current(patch, signal);
           },
           listPosts: source.posts?.list,
+          revealFrame: (frameId) => {
+            if (!revealAction.current) {
+              throw new CanvasRejectedError('The canvas is not ready.', 'target_unavailable');
+            }
+            revealAction.current(frameId);
+          },
           openPublicationReview: source.editor.openPublicationReview
             ? (expectedRevision) => {
                 if (!publicationAction.current) {
@@ -677,6 +688,21 @@ export function ThemeCanvas({
       overviewLabel: displayedMode === 'expanded' ? 'Live composition' : 'Fixed viewport fallback',
     };
   });
+  revealAction.current = (frameId) => {
+    const kind = mode === 'device' || fallbacks.has(frameId) ? 'device' : 'expanded';
+    const target = surfaces.current.get(`${frameId}:${kind}`);
+    if (
+      !target ||
+      replacingDocuments.current ||
+      !delivery.current?.ready.has(`${frameId}:${kind}`)
+    ) {
+      throw new CanvasRejectedError(
+        'The requested live frame is unavailable.',
+        'target_unavailable',
+      );
+    }
+    target.reveal();
+  };
   useEffect(() => {
     if (!routing.supported) {
       setError(routing.message);
@@ -1661,6 +1687,7 @@ export function ThemeCanvas({
                     frame={frame}
                     kind={kind}
                     probe={probe}
+                    reveal={reveal}
                     visible={
                       (mode === 'device' || fallbacks.has(frame.id) ? 'device' : 'expanded') ===
                       kind
@@ -1771,9 +1798,9 @@ export function ThemeCanvas({
                           : null,
                       );
                     }}
-                    onSurface={(id, surface) => {
+                    onSurface={(id, surface, revealCurrentFrame) => {
                       if (surface) {
-                        surfaces.current.set(id, { surface, reveal });
+                        surfaces.current.set(id, { surface, reveal: revealCurrentFrame });
                       } else {
                         surfaces.current.delete(id);
                       }

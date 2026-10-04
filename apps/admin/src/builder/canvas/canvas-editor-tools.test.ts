@@ -31,6 +31,45 @@ async function fixture() {
   return { draft, apply, tools, read, patch, args };
 }
 
+it('reveals only a requested frame in the current workspace and never accepts arbitrary camera arguments', async () => {
+  const { draft, apply, args } = await fixture();
+  const reveal = vi.fn();
+  const tools = new CanvasEditorTools({
+    workspaceId: 'workspace',
+    readDraft: () => draft,
+    state: () => ({}),
+    applyPatch: apply,
+    revealFrame: reveal,
+  });
+  const action = tools.tools().find((tool) => tool.name === 'ghost_canvas_reveal_frame');
+  expect(action).toBeDefined();
+  const input = { ...args, frameId: 'home-mobile' };
+  expect(await action!.execute({ ...input, expectedRevision: 'old' })).toMatchObject({
+    code: 'stale_revision',
+  });
+  expect(await action!.execute({ ...input, workspaceId: 'other' })).toMatchObject({
+    code: 'workspace_unavailable',
+  });
+  expect(await action!.execute({ ...input, camera: { scale: 10 } })).toMatchObject({
+    code: 'invalid_arguments',
+  });
+  expect(await action!.execute({ ...input, frameId: '' })).toMatchObject({
+    code: 'invalid_arguments',
+  });
+  const cancelled = AbortSignal.abort();
+  expect(await action!.execute(input, { signal: cancelled })).toMatchObject({ code: 'cancelled' });
+  expect(reveal).not.toHaveBeenCalled();
+  expect(await action!.execute(input)).toMatchObject({
+    status: 'ok',
+    data: { requested: true, frameId: 'home-mobile' },
+  });
+  expect(reveal).toHaveBeenCalledExactlyOnceWith('home-mobile');
+  expect(apply).not.toHaveBeenCalled();
+  tools.dispose();
+  expect(await action!.execute(input)).toMatchObject({ code: 'workspace_unavailable' });
+  expect(reveal).toHaveBeenCalledTimes(1);
+});
+
 it('opens human publication review only at the accepted revision and rejects confirmation arguments', async () => {
   const { draft, apply } = await fixture();
   const open = vi.fn(() => ({

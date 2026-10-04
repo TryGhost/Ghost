@@ -101,6 +101,87 @@ async function fakeBuilderWorld({
 
 describe('Design Builder route', () => {
   it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1')(
+    'reveals the requested shared canvas frame through native tools without discarding manual text',
+    { timeout: 60_000 },
+    async () => {
+      await commands.canvasPointerViewport(true);
+      await fakeBuilderWorld({ post: true });
+      const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
+      const state = async () =>
+        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {}))
+          .data as ReturnType<CanvasProbe['state']>;
+      try {
+        await expect
+          .poll(async () => !(await state()).editor?.busy, { timeout: 30_000 })
+          .toBe(true);
+        const initial = await state();
+        const address = {
+          workspaceId: initial.workspaceId,
+          expectedRevision: initial.editor!.sourceRevision,
+        };
+        const reveal = async (frameId: string, expectedRevision = address.expectedRevision) => {
+          const result = await commands.canvasNativeTool('ghost_canvas_reveal_frame', {
+            ...address,
+            expectedRevision,
+            frameId,
+          });
+          return result;
+        };
+        expect(await reveal('home-mobile', 'obsolete')).toMatchObject({ code: 'stale_revision' });
+        expect(await reveal('missing-frame')).toMatchObject({ code: 'target_unavailable' });
+        expect((await state()).view).toEqual(initial.view);
+        expect(await reveal('home-mobile')).toMatchObject({
+          status: 'ok',
+          data: { requested: true, frameId: 'home-mobile' },
+        });
+        await expect.poll(async () => (await state()).view.selectedFrameId).toBe('home-mobile');
+        const frame = page.frameLocator(
+          page.getByTitle('Home · Mobile composition', { exact: true }),
+        );
+        await frame.getByRole('link', { name: 'Canvas footer', exact: true }).dblClick();
+        const text = frame.getByRole('textbox', { name: /^Edit / });
+        await text.fill('Retained during native navigation');
+        await expect
+          .poll(async () => (await state()).editor!.manualDraft)
+          .toMatchObject({
+            frameId: 'home-mobile',
+            text: 'Retained during native navigation',
+          });
+        expect(await reveal('post-mobile')).toMatchObject({ status: 'ok' });
+        await expect.poll(async () => (await state()).view.selectedFrameId).toBe('post-mobile');
+        await page
+          .frameLocator(page.getByTitle('Post · Mobile composition', { exact: true }))
+          .getByRole('link', { name: 'Canvas footer', exact: true })
+          .hover();
+        expect((await state()).editor).toMatchObject({
+          sourceRevision: address.expectedRevision,
+          dirty: false,
+          manualDraft: { frameId: 'home-mobile', text: 'Retained during native navigation' },
+        });
+        expect((await state()).frames).toEqual(initial.frames);
+        expect(await reveal('home-mobile')).toMatchObject({ status: 'ok' });
+        await text.click();
+        expect((await state()).view.camera.scale).toBe(1);
+        await userEvent.keyboard('{Enter}');
+        await expect.poll(async () => (await state()).editor!.dirty).toBe(true);
+        await expect.poll(async () => !(await state()).editor!.busy).toBe(true);
+        const changed = await state();
+        expect(changed.editor!.sourceRevision).not.toBe(address.expectedRevision);
+        const saved = await commands.canvasNativeTool('ghost_canvas_read_theme', {
+          workspaceId: changed.workspaceId,
+          expectedRevision: changed.editor!.sourceRevision,
+          operation: 'read_file',
+          path: 'partials/footer.hbs',
+        });
+        expect(JSON.stringify(saved)).toContain('Retained during native navigation');
+      } finally {
+        await screen.unmount();
+        await commands.canvasPointerViewport(false);
+      }
+    },
+  );
+
+  it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1')(
     'publishes the reviewed custom theme in place and reports a later preview failure truthfully',
     { timeout: 60_000 },
     async () => {

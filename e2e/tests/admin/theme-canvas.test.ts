@@ -66,7 +66,16 @@ test.describe('Ghost Admin - Live theme canvas', () => {
           }
         }
 
-        await page.getByRole('button', { name: 'Home · Mobile', exact: true }).dblclick();
+        const initial = await nativeTool<CanvasState>(
+          page,
+          'ghost_canvas_probe_get_editor_state',
+          {},
+        );
+        await nativeTool(page, 'ghost_canvas_reveal_frame', {
+          workspaceId: initial.workspaceId,
+          expectedRevision: initial.editor.sourceRevision,
+          frameId: 'home-mobile',
+        });
         const home = page.frameLocator('iframe[title="Home · Mobile composition"]');
         await expect(home.getByRole('heading', { name: 'Canvas published article' })).toBeVisible();
         await page.getByRole('button', { name: 'Fit all', exact: true }).click();

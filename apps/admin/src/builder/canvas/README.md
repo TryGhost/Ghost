@@ -293,6 +293,13 @@ older native `navigator.modelContext` location. It registers
 `ghost_canvas_read_theme` and
 `ghost_canvas_apply_theme_patch`, `ghost_canvas_history`, `ghost_canvas_list_posts`,
 `ghost_canvas_select_post` and `ghost_canvas_open_publication_review` on the real editor.
+`ghost_canvas_reveal_frame` selects and reveals a discovered frame ID at readable
+scale through the board's existing action. It moves the shared camera and clears
+element context only on explicit request, retaining manual text and staged settings.
+It preserves source, responsive dimensions and the frame's current presentation;
+unavailable frames and stale workspace/source addresses reject without navigation.
+The result acknowledges the navigation request; read state for the resulting view.
+Ordinary inspection and captures continue to leave the person's view unchanged.
 Registrations belong to the
 owning same-origin page, once per editor, never individual sandboxed previews.
 Camera and presentation changes do not register again; unsupported APIs leave

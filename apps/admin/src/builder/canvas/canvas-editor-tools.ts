@@ -71,6 +71,7 @@ export class CanvasEditorTools {
     applyPatch: (patch: CanvasPatch, signal: AbortSignal) => Promise<CanvasEditorRender>;
     listPosts?: (page: number, signal: AbortSignal) => Promise<CanvasPostPage>;
     selectPost?: (input: CanvasPostSelection, signal: AbortSignal) => Promise<CanvasEditorRender>;
+    revealFrame?: (frameId: string) => void;
     openPublicationReview?: (expectedRevision: string) => CanvasPublicationReview;
     restoreHistory?: (
       input: CanvasHistoryRestore,
@@ -94,6 +95,7 @@ export class CanvasEditorTools {
         humanConfirmationRequired: true,
       },
       representativePosts: { available: !!this.editor.selectPost && !!this.editor.listPosts },
+      frameNavigation: { available: !!this.editor.revealFrame },
     };
   }
   dispose() {
@@ -163,6 +165,31 @@ export class CanvasEditorTools {
       },
     });
     const tools = [
+      ...(this.editor.revealFrame
+        ? [
+            define(
+              'reveal_frame',
+              'Explicitly select and reveal a discovered frame id from editor state on the shared live canvas at readable scale. Moves the shared camera and clears element selection, while retaining manual text and staged settings. Does not change source, device dimensions or presentation. Returns an accepted navigation request; read state to observe the resulting view. Use only when the person wants the shared view moved; ordinary reads and captures preserve it.',
+              { ...address, frameId: { type: 'string', minLength: 1, maxLength: 256 } },
+              ['workspaceId', 'expectedRevision', 'frameId'],
+              false,
+              (args) => {
+                if (
+                  typeof args.frameId !== 'string' ||
+                  !args.frameId.length ||
+                  args.frameId.length > 256
+                ) {
+                  throw new ToolError(
+                    'invalid_arguments',
+                    'Use a frame id discovered in editor state.',
+                  );
+                }
+                this.editor.revealFrame!(args.frameId);
+                return Promise.resolve({ requested: true, frameId: args.frameId });
+              },
+            ),
+          ]
+        : []),
       ...(this.editor.openPublicationReview
         ? [
             define(
