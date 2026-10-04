@@ -222,6 +222,7 @@ it.each(['source', 'casper'] as const)(
         .poll(() => iframe.dataset.compositionStatus, { timeout: 5000 })
         .toBe('height-limit');
       await page.getByRole('button', { name: 'Fit all', exact: true }).click();
+      await page.getByRole('button', { name: 'Home · Mobile', exact: true }).dblClick();
       await page
         .getByRole('button', { name: 'Use fixed viewport for Home · Mobile', exact: true })
         .click();

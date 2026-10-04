@@ -36,8 +36,10 @@ has no embedded chat, provider configuration or model-runtime dependency.
 
 Home, Post, Page, Tag and Author each have desktop/mobile live compositions and
 separate fixed-device representations. Template pairs form rows below the tallest
-accepted composition. Readable screen-space headers reflow within the viewport
-when fitting very tall pages, independently of live frame geometry. Group navigation
+accepted composition. Screen-space headers remain attached to their live frames when fitting tall pages.
+At low zoom they use compact template/mobile labels with full accessible names and
+titles. Source/content/device controls appear when the frame has enough screen
+width; double-clicking its header reveals the same canvas frame and full controls. Group navigation
 reveals a native-scale frame while a manual text draft is active. Empty sites render Home and explicitly mark each missing published context unavailable.
 Page, Tag and Author frames have bounded published-content pickers; template-group
 navigation keeps the wider board accessible. Native `ghost_canvas_list_preview_content`
@@ -136,7 +138,8 @@ and preview lifetimes remain the caller's responsibility. Every frame accepts
 input directly; there is no opened-frame state, inert overview or permanent
 pointer overlay. Single-clicking a header selects without moving the camera.
 Double-click or Enter fits that frame on the board without resizing its document.
-Headers stay in screen coordinates and stagger horizontally outside page content.
+Headers stay in screen coordinates above their actual frames, using compact labels
+at low zoom. A cropped frame keeps its header within its own visible portion.
 
 Drag empty board space, Space-drag or scroll to pan. Ctrl/Command-scroll zooms at the pointer.
 The authenticated `canvasNavigation` bridge relays zoom, Escape and inline draft
@@ -222,7 +225,7 @@ are displayed by default; four separate fixed-height device iframes remain mount
 for addressed inspection. No automatic screenshot drives the canvas. Switching the
 harness's Full page/Device views retains all eight documents. Switching views is
 unavailable while a manual draft is retained; Resume/Cancel remain available.
-Each frame has a screen-space control for switching to its own fixed viewport;
+Each revealed frame has a screen-space control for switching to its own fixed viewport;
 other frames retain their presentation. A switch clears that frame's source
 selection and does not transfer a draft or inspection handle. Presentation changes
 are disabled while a draft is retained. Compatible drafts resume after accepted

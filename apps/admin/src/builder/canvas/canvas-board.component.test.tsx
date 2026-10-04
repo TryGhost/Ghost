@@ -43,7 +43,8 @@ const frames = [
   },
 ];
 
-it('keeps every tall-composition label readable and independently clickable at fit-all scale', async () => {
+it('keeps every tall-composition label attached to its preview and independently clickable at fit-all scale', async () => {
+  let actions = 0;
   await renderInApp(
     <section style={{ width: 1200, height: 800 }}>
       <CanvasBoard
@@ -53,6 +54,16 @@ it('keeps every tall-composition label readable and independently clickable at f
           viewport: { width: frame.width, height: frame.height },
         }))}
         renderFrame={(frame) => <iframe title={frame.label} />}
+        renderFrameActions={(frame) => (
+          <button
+            type="button"
+            onClick={() => {
+              actions += 1;
+            }}
+          >
+            Settings for {frame.label}
+          </button>
+        )}
       />
     </section>,
   );
@@ -61,6 +72,11 @@ it('keeps every tall-composition label readable and independently clickable at f
   );
   const boxes = buttons.map((button) => button.element().getBoundingClientRect());
   boxes.forEach((box, index) => {
+    const preview = document
+      .querySelector(`[data-canvas-frame="${frames[index].id}"]`)!
+      .getBoundingClientRect();
+    expect(box.left).toBeCloseTo(preview.left, 1);
+    expect(box.right).toBeLessThanOrEqual(preview.right + 1);
     for (const other of boxes.slice(index + 1)) {
       expect(
         box.right <= other.left ||
@@ -74,6 +90,11 @@ it('keeps every tall-composition label readable and independently clickable at f
     await button.click();
     await expect.element(button).toHaveAttribute('aria-pressed', 'true');
   }
+  await expect(page.getByRole('button', { name: /^Settings for/ })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Home · Mobile', exact: true }).dblClick();
+  const settings = page.getByRole('button', { name: 'Settings for Home · Mobile', exact: true });
+  await settings.click();
+  expect(actions).toBe(1);
 });
 
 it('keeps browser keyboard focus and scroll under the camera when a frame is fitted', async () => {
@@ -96,6 +117,60 @@ it('keeps browser keyboard focus and scroll under the camera when a frame is fit
   await page.getByRole('button', { name: 'Fit all' }).click();
   expect(world.style.transform).toBe(overview);
   expect([host.scrollLeft, host.scrollTop]).toEqual([0, 0]);
+});
+
+it('keeps a revealed desktop header and its controls usable on a narrow board', async () => {
+  let actions = 0;
+  await renderInApp(
+    <section style={{ width: 600, height: 650 }}>
+      <CanvasBoard
+        frames={[frames[0]]}
+        renderFrame={() => null}
+        renderFrameActions={() => (
+          <button
+            type="button"
+            onClick={() => {
+              actions += 1;
+            }}
+          >
+            Desktop settings
+          </button>
+        )}
+      />
+    </section>,
+  );
+  const header = page.getByRole('button', { name: 'Home · Desktop', exact: true });
+  await header.dblClick();
+  await header.click();
+  await page.getByRole('button', { name: 'Desktop settings', exact: true }).click();
+  expect(actions).toBe(1);
+});
+
+it('keeps cropped-frame actions from covering a neighboring header', async () => {
+  await renderInApp(
+    <section style={{ width: 600, height: 650 }}>
+      <CanvasBoard
+        frames={frames.slice(0, 2)}
+        initialFitReady={false}
+        renderFrame={() => null}
+        renderFrameActions={(frame) => (
+          <button aria-label={`Settings for ${frame.label}`} style={{ width: 32 }} type="button">
+            …
+          </button>
+        )}
+      />
+    </section>,
+  );
+  const host = page.getByRole('region', { name: 'Theme canvas' }).element();
+  host.dispatchEvent(new WheelEvent('wheel', { deltaX: 1340, deltaY: -60, bubbles: true }));
+  await expect(
+    page.getByRole('button', { name: 'Settings for Home · Desktop', exact: true }),
+  ).toHaveCount(0);
+  const mobile = page.getByRole('button', { name: 'Home · Mobile', exact: true });
+  await mobile.click();
+  await expect.element(mobile).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('button', { name: 'Home · Desktop', exact: true }).dblClick();
+  await page.getByRole('button', { name: 'Settings for Home · Desktop', exact: true }).click();
 });
 
 it('lets every live frame receive a direct double-click without opening a mode', async () => {
@@ -128,7 +203,7 @@ it('lets every live frame receive a direct double-click without opening a mode',
   expect(document.body.textContent).not.toContain('Back to overview');
 });
 
-it('keeps a visible header interactive when only its fallback action is clipped', async () => {
+it('keeps a visible header interactive when its fallback action does not fit', async () => {
   await renderInApp(
     <section style={{ width: 500, height: 650 }}>
       <CanvasBoard
@@ -151,13 +226,12 @@ it('keeps a visible header interactive when only its fallback action is clipped'
     .poll(() => header.element().getBoundingClientRect().left - host.getBoundingClientRect().left)
     .toBe(330);
   expect(header.element().closest('[inert]')).toBeNull();
-  expect(
-    page.getByRole('button', { name: 'Fallback' }).element().closest('[inert]'),
-  ).not.toBeNull();
+  await expect(page.getByRole('button', { name: 'Fallback' })).toHaveCount(0);
   await header.click();
   await expect.element(header).toHaveAttribute('aria-pressed', 'true');
   const world = page.getByTestId('canvas-world').element() as HTMLElement;
   const before = world.style.transform;
   await header.dblClick();
   expect(world.style.transform).not.toBe(before);
+  await page.getByRole('button', { name: 'Fallback' }).click();
 });
