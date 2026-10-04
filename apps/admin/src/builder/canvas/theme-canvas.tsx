@@ -20,6 +20,7 @@ import { CanvasProbe, registerCanvasProbe } from './canvas-probe';
 import { CanvasRejectedError } from './canvas-driver';
 import { CanvasEditorTools } from './canvas-editor-tools';
 import { CanvasDesignSettings } from './canvas-design-settings';
+import { CanvasPostPicker } from './canvas-post-picker';
 import type { CanvasSettingsDraft } from './canvas-design-settings';
 import { resolveCanvasTextDraft } from './canvas-text-draft';
 import { parseEditMarker } from '@tryghost/theme-renderer/markers';
@@ -31,6 +32,7 @@ import type {
   CanvasEditorRender,
   CanvasHistory,
   CanvasHistoryRestore,
+  CanvasPostSelection,
 } from './canvas-driver';
 import type { ReactNode } from 'react';
 
@@ -411,8 +413,10 @@ export function ThemeCanvas({
 }) {
   const [source] = useState(() => inputSource);
   const routing = source.routing;
+  const [routes, setRoutes] = useState(source.routes);
+  const [representativePost, setRepresentativePost] = useState(source.posts?.selected ?? null);
   const availableFrames = frames.filter(
-    (frame) => source.routes[frame.group === 'Home' ? 'home' : 'post'],
+    (frame) => routes[frame.group === 'Home' ? 'home' : 'post'],
   );
   const busy = useRef(externalBusy);
   busy.current = externalBusy;
@@ -530,6 +534,9 @@ export function ThemeCanvas({
   });
   const editorObservation = useRef<Record<string, unknown>>({});
   editorObservation.current = { selection };
+  const postAction = useRef<
+    ((input: CanvasPostSelection, signal?: AbortSignal) => Promise<CanvasEditorRender>) | null
+  >(null);
   const patchAction = useRef<
     ((patch: CanvasPatch, signal?: AbortSignal) => Promise<CanvasEditorRender>) | null
   >(null);
@@ -554,7 +561,9 @@ export function ThemeCanvas({
                   revision: acceptedRender.current.revision,
                   renderKey: acceptedRender.current.renderKey,
                   dataGeneration: acceptedRender.current.dataGeneration,
-                  observation: 'initial-pinned',
+                  observation: 'explicit-content-selection',
+                  representativePost: acceptedRender.current.representativePost ?? null,
+                  routes: acceptedRender.current.routes ?? source.routes,
                 }
               : null,
             busy:
@@ -590,6 +599,15 @@ export function ThemeCanvas({
             }
             return patchAction.current(patch, signal);
           },
+          listPosts: source.posts?.list,
+          selectPost: source.posts
+            ? (input, signal) => {
+                if (!postAction.current) {
+                  throw new CanvasRejectedError('The editor is not ready.');
+                }
+                return postAction.current(input, signal);
+              }
+            : undefined,
           restoreHistory: (input, signal) => {
             if (!historyAction.current) {
               throw new CanvasRejectedError('The editor is not ready.');
@@ -722,24 +740,31 @@ export function ThemeCanvas({
             allReadyMs: null,
           });
           setSelection(null);
+          const nextRoutes = rendered.routes ?? source.routes;
+          setRoutes(nextRoutes);
+          if (rendered.representativePost !== undefined) {
+            setRepresentativePost(rendered.representativePost);
+          }
           setDocuments(
             Object.fromEntries(
-              availableFrames.map((frame) => {
-                const group = frame.group === 'Home' ? 'home' : 'post';
-                return [
-                  frame.id,
-                  {
-                    html: rendered.html[group]!,
-                    url: new URL(source.routes[group]!, source.siteUrl).href,
-                    revision: rendered.revision,
-                    renderKey: rendered.renderKey,
-                    dataGeneration: rendered.dataGeneration,
-                    inlineTextTargets: rendered.inlineTextTargets,
-                    editMarkerAttribute: rendered.editMarkerAttribute,
-                    assets: currentAssets,
-                  },
-                ];
-              }),
+              frames
+                .filter((frame) => nextRoutes[frame.group === 'Home' ? 'home' : 'post'])
+                .map((frame) => {
+                  const group = frame.group === 'Home' ? 'home' : 'post';
+                  return [
+                    frame.id,
+                    {
+                      html: rendered.html[group]!,
+                      url: new URL(nextRoutes[group]!, source.siteUrl).href,
+                      revision: rendered.revision,
+                      renderKey: rendered.renderKey,
+                      dataGeneration: rendered.dataGeneration,
+                      inlineTextTargets: rendered.inlineTextTargets,
+                      editMarkerAttribute: rendered.editMarkerAttribute,
+                      assets: currentAssets,
+                    },
+                  ];
+                }),
             ),
           );
         };
@@ -1001,6 +1026,14 @@ export function ThemeCanvas({
     },
     [probe],
   );
+  const selectPost = (input: CanvasPostSelection, signal?: AbortSignal) =>
+    runEditAction((client) => {
+      if (!client.selectPost) {
+        throw new CanvasRejectedError('Post selection is unavailable.');
+      }
+      return client.selectPost(input, signal);
+    }, signal);
+  postAction.current = selectPost;
   const applyThemePatch = useCallback(
     (patch: CanvasPatch, signal?: AbortSignal) =>
       runEditAction((client) => client.applyThemePatch(patch, signal), signal),
@@ -1155,79 +1188,98 @@ export function ThemeCanvas({
             </PageHeader.Title>
           </PageHeader.Left>
           <PageHeader.Actions>
-            <Popover
-              open={sourceOpen && !!selection}
-              onOpenChange={(open) => {
-                if (open) {
-                  sourceRestoreFocus.current = true;
-                }
-                setSourceOpen(open);
-              }}
-            >
-              <PopoverTrigger asChild>
-                <PageHeader.Action
-                  data-source-selection={selection ? true : undefined}
-                  disabled={!selection}
-                  label="View template source"
-                  iconOnly
-                >
-                  <LucideIcon.Code />
-                  {selection && (
-                    <span className="sr-only">
-                      {frames.find((frame) => frame.id === selection.frameId)?.label}:{' '}
-                      {selection.context.label} · {selection.context.id}
-                    </span>
-                  )}
-                </PageHeader.Action>
-              </PopoverTrigger>
-              <PopoverContent
-                align="end"
-                aria-label="Template source"
-                className="w-80"
-                style={{ maxWidth: 'calc(100vw - 3.2rem)' }}
-                onCloseAutoFocus={(event) => {
-                  if (
-                    !sourceRestoreFocus.current ||
-                    document.activeElement instanceof HTMLIFrameElement
-                  ) {
-                    event.preventDefault();
+            <PageHeader.ActionGroup>
+              <Popover
+                open={sourceOpen && !!selection}
+                onOpenChange={(open) => {
+                  if (open) {
+                    sourceRestoreFocus.current = true;
                   }
-                }}
-                onInteractOutside={(event) => {
-                  const target = event.detail.originalEvent.target;
-                  if (!(target instanceof Element && target.closest('[data-source-selection]'))) {
-                    sourceRestoreFocus.current = false;
-                  }
+                  setSourceOpen(open);
                 }}
               >
-                {selection && (
-                  <Stack gap="xs" data-source-context>
-                    <Text size="sm">
-                      {frames.find((frame) => frame.id === selection.frameId)?.label}:{' '}
-                      {selection.context.label}
-                    </Text>
-                    <Text size="xs">{selection.context.id}</Text>
-                    <pre className="max-h-40 overflow-auto text-xs">
-                      {(() => {
-                        const selectedSource = (
-                          selection.context.data as
-                            | { source?: { path: string; line: number } }
-                            | undefined
-                        )?.source;
-                        return selectedSource
-                          ? sourceFiles.current[selectedSource.path]
-                              ?.split('\n')
-                              .slice(Math.max(0, selectedSource.line - 2), selectedSource.line + 2)
-                              .join('\n')
-                          : 'Source correspondence unavailable.';
-                      })()}
-                    </pre>
-                  </Stack>
-                )}
-              </PopoverContent>
-            </Popover>
-            {source.editor && (
-              <PageHeader.ActionGroup>
+                <PopoverTrigger asChild>
+                  <PageHeader.Action
+                    data-source-selection={selection ? true : undefined}
+                    disabled={!selection}
+                    label="View template source"
+                    iconOnly
+                  >
+                    <LucideIcon.Code />
+                    {selection && (
+                      <span className="sr-only">
+                        {frames.find((frame) => frame.id === selection.frameId)?.label}:{' '}
+                        {selection.context.label} · {selection.context.id}
+                      </span>
+                    )}
+                  </PageHeader.Action>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="end"
+                  aria-label="Template source"
+                  className="w-80"
+                  style={{ maxWidth: 'calc(100vw - 3.2rem)' }}
+                  onCloseAutoFocus={(event) => {
+                    if (
+                      !sourceRestoreFocus.current ||
+                      document.activeElement instanceof HTMLIFrameElement
+                    ) {
+                      event.preventDefault();
+                    }
+                  }}
+                  onInteractOutside={(event) => {
+                    const target = event.detail.originalEvent.target;
+                    if (!(target instanceof Element && target.closest('[data-source-selection]'))) {
+                      sourceRestoreFocus.current = false;
+                    }
+                  }}
+                >
+                  {selection && (
+                    <Stack gap="xs" data-source-context>
+                      <Text size="sm">
+                        {frames.find((frame) => frame.id === selection.frameId)?.label}:{' '}
+                        {selection.context.label}
+                      </Text>
+                      <Text size="xs">{selection.context.id}</Text>
+                      <pre className="max-h-40 overflow-auto text-xs">
+                        {(() => {
+                          const selectedSource = (
+                            selection.context.data as
+                              | { source?: { path: string; line: number } }
+                              | undefined
+                          )?.source;
+                          return selectedSource
+                            ? sourceFiles.current[selectedSource.path]
+                                ?.split('\n')
+                                .slice(
+                                  Math.max(0, selectedSource.line - 2),
+                                  selectedSource.line + 2,
+                                )
+                                .join('\n')
+                            : 'Source correspondence unavailable.';
+                        })()}
+                      </pre>
+                    </Stack>
+                  )}
+                </PopoverContent>
+              </Popover>
+              {source.posts && (
+                <CanvasPostPicker
+                  busy={
+                    externalBusy ||
+                    commitPending ||
+                    refreshing ||
+                    !!undeliveredAccepted.current ||
+                    !delivery.current?.allComplete
+                  }
+                  dataGeneration={renderState.dataGeneration}
+                  list={source.posts.list}
+                  revision={revision}
+                  select={selectPost}
+                  selected={representativePost}
+                />
+              )}
+              {source.editor && (
                 <CanvasDesignSettings
                   apply={applyThemePatch}
                   busy={
@@ -1242,97 +1294,13 @@ export function ThemeCanvas({
                   revision={revision}
                   onDraftChange={observeSettingsDraft}
                 />
-              </PageHeader.ActionGroup>
-            )}
-            <PageHeader.ActionGroup>
-              {history && (
-                <>
-                  <PageHeader.Action
-                    disabled={
-                      !history.undoId ||
-                      externalBusy ||
-                      !!draftOwner ||
-                      commitPending ||
-                      refreshing ||
-                      refreshUnavailable ||
-                      !delivery.current?.allComplete
-                    }
-                    label="Undo theme change"
-                    iconOnly
-                    onClick={() => restoreCheckpoint(history.undoId)}
-                  >
-                    <LucideIcon.Undo2 />
-                  </PageHeader.Action>
-                  <PageHeader.Action
-                    disabled={
-                      !history.redoId ||
-                      externalBusy ||
-                      !!draftOwner ||
-                      commitPending ||
-                      refreshing ||
-                      refreshUnavailable ||
-                      !delivery.current?.allComplete
-                    }
-                    label="Redo theme change"
-                    iconOnly
-                    onClick={() => restoreCheckpoint(history.redoId)}
-                  >
-                    <LucideIcon.Redo2 />
-                  </PageHeader.Action>
-                </>
               )}
-              <PageHeader.ActionGroup.MobileMenu>
-                <PageHeader.ActionGroup.MobileMenuTrigger>
-                  <PageHeader.Action label="Canvas views" iconOnly>
-                    <LucideIcon.Ellipsis />
-                  </PageHeader.Action>
-                </PageHeader.ActionGroup.MobileMenuTrigger>
-                <PageHeader.ActionGroup.MobileMenuContent className="z-[60]">
-                  {history && (
-                    <>
-                      <DropdownMenuItem
-                        disabled={
-                          !history.undoId ||
-                          externalBusy ||
-                          !!draftOwner ||
-                          commitPending ||
-                          refreshing ||
-                          refreshUnavailable ||
-                          !delivery.current?.allComplete
-                        }
-                        onSelect={() => restoreCheckpoint(history.undoId)}
-                      >
-                        <LucideIcon.Undo2 />
-                        Undo theme change
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        disabled={
-                          !history.redoId ||
-                          externalBusy ||
-                          !!draftOwner ||
-                          commitPending ||
-                          refreshing ||
-                          refreshUnavailable ||
-                          !delivery.current?.allComplete
-                        }
-                        onSelect={() => restoreCheckpoint(history.redoId)}
-                      >
-                        <LucideIcon.Redo2 />
-                        Redo theme change
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                  <DropdownMenuItem disabled={!!draftOwner} onSelect={() => setMode('expanded')}>
-                    <LucideIcon.Layers />
-                    Full page
-                  </DropdownMenuItem>
-                  <DropdownMenuItem disabled={!!draftOwner} onSelect={() => setMode('device')}>
-                    <LucideIcon.Monitor />
-                    Device
-                  </DropdownMenuItem>
-                  {source.refreshLabel && (
-                    <DropdownMenuItem
+              <PageHeader.ActionGroup>
+                {history && (
+                  <>
+                    <PageHeader.Action
                       disabled={
+                        !history.undoId ||
                         externalBusy ||
                         !!draftOwner ||
                         commitPending ||
@@ -1340,57 +1308,142 @@ export function ThemeCanvas({
                         refreshUnavailable ||
                         !delivery.current?.allComplete
                       }
-                      onSelect={() => {
-                        void refreshContent();
-                      }}
+                      label="Undo theme change"
+                      iconOnly
+                      onClick={() => restoreCheckpoint(history.undoId)}
                     >
-                      <LucideIcon.RefreshCw />
-                      {source.refreshLabel?.(renderState.dataSnapshot)}
+                      <LucideIcon.Undo2 />
+                    </PageHeader.Action>
+                    <PageHeader.Action
+                      disabled={
+                        !history.redoId ||
+                        externalBusy ||
+                        !!draftOwner ||
+                        commitPending ||
+                        refreshing ||
+                        refreshUnavailable ||
+                        !delivery.current?.allComplete
+                      }
+                      label="Redo theme change"
+                      iconOnly
+                      onClick={() => restoreCheckpoint(history.redoId)}
+                    >
+                      <LucideIcon.Redo2 />
+                    </PageHeader.Action>
+                  </>
+                )}
+                <PageHeader.ActionGroup.MobileMenu>
+                  <PageHeader.ActionGroup.MobileMenuTrigger>
+                    <PageHeader.Action label="Canvas views" iconOnly>
+                      <LucideIcon.Ellipsis />
+                    </PageHeader.Action>
+                  </PageHeader.ActionGroup.MobileMenuTrigger>
+                  <PageHeader.ActionGroup.MobileMenuContent className="z-[60]">
+                    {history && (
+                      <>
+                        <DropdownMenuItem
+                          disabled={
+                            !history.undoId ||
+                            externalBusy ||
+                            !!draftOwner ||
+                            commitPending ||
+                            refreshing ||
+                            refreshUnavailable ||
+                            !delivery.current?.allComplete
+                          }
+                          onSelect={() => restoreCheckpoint(history.undoId)}
+                        >
+                          <LucideIcon.Undo2 />
+                          Undo theme change
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          disabled={
+                            !history.redoId ||
+                            externalBusy ||
+                            !!draftOwner ||
+                            commitPending ||
+                            refreshing ||
+                            refreshUnavailable ||
+                            !delivery.current?.allComplete
+                          }
+                          onSelect={() => restoreCheckpoint(history.redoId)}
+                        >
+                          <LucideIcon.Redo2 />
+                          Redo theme change
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                    <DropdownMenuItem disabled={!!draftOwner} onSelect={() => setMode('expanded')}>
+                      <LucideIcon.Layers />
+                      Full page
                     </DropdownMenuItem>
-                  )}
-                </PageHeader.ActionGroup.MobileMenuContent>
-              </PageHeader.ActionGroup.MobileMenu>
-              <PageHeader.Action
-                aria-pressed={mode === 'expanded'}
-                disabled={!!draftOwner}
-                label="Live compositions"
-                onClick={() => setMode('expanded')}
-              >
-                <LucideIcon.Layers />
-                Full page
-              </PageHeader.Action>
-              <PageHeader.Action
-                aria-pressed={mode === 'device'}
-                disabled={!!draftOwner}
-                label="Device viewports"
-                onClick={() => setMode('device')}
-              >
-                <LucideIcon.Monitor />
-                Device
-              </PageHeader.Action>
-              {source.refreshLabel && (
+                    <DropdownMenuItem disabled={!!draftOwner} onSelect={() => setMode('device')}>
+                      <LucideIcon.Monitor />
+                      Device
+                    </DropdownMenuItem>
+                    {source.refreshLabel && (
+                      <DropdownMenuItem
+                        disabled={
+                          externalBusy ||
+                          !!draftOwner ||
+                          commitPending ||
+                          refreshing ||
+                          refreshUnavailable ||
+                          !delivery.current?.allComplete
+                        }
+                        onSelect={() => {
+                          void refreshContent();
+                        }}
+                      >
+                        <LucideIcon.RefreshCw />
+                        {source.refreshLabel?.(renderState.dataSnapshot)}
+                      </DropdownMenuItem>
+                    )}
+                  </PageHeader.ActionGroup.MobileMenuContent>
+                </PageHeader.ActionGroup.MobileMenu>
                 <PageHeader.Action
-                  disabled={
-                    externalBusy ||
-                    !!draftOwner ||
-                    commitPending ||
-                    refreshing ||
-                    refreshUnavailable ||
-                    !delivery.current?.allComplete
-                  }
-                  label={source.refreshLabel?.(renderState.dataSnapshot)}
-                  onClick={() => {
-                    void refreshContent();
-                  }}
+                  aria-pressed={mode === 'expanded'}
+                  disabled={!!draftOwner}
+                  label="Live compositions"
+                  onClick={() => setMode('expanded')}
                 >
-                  <LucideIcon.RefreshCw />
-                  {refreshing
-                    ? 'Refreshing…'
-                    : source.refreshLabel?.(renderState.dataSnapshot) === 'Restore recorded content'
-                      ? 'Restore content'
-                      : 'Refresh content'}
+                  <LucideIcon.Layers />
+                  Full page
                 </PageHeader.Action>
-              )}
+                <PageHeader.Action
+                  aria-pressed={mode === 'device'}
+                  disabled={!!draftOwner}
+                  label="Device viewports"
+                  onClick={() => setMode('device')}
+                >
+                  <LucideIcon.Monitor />
+                  Device
+                </PageHeader.Action>
+                {source.refreshLabel && (
+                  <PageHeader.Action
+                    disabled={
+                      externalBusy ||
+                      !!draftOwner ||
+                      commitPending ||
+                      refreshing ||
+                      refreshUnavailable ||
+                      !delivery.current?.allComplete
+                    }
+                    label={source.refreshLabel?.(renderState.dataSnapshot)}
+                    onClick={() => {
+                      void refreshContent();
+                    }}
+                  >
+                    <LucideIcon.RefreshCw />
+                    {refreshing
+                      ? 'Refreshing…'
+                      : source.refreshLabel?.(renderState.dataSnapshot) ===
+                          'Restore recorded content'
+                        ? 'Restore content'
+                        : 'Refresh content'}
+                  </PageHeader.Action>
+                )}
+              </PageHeader.ActionGroup>
               {headerActions && (
                 <PageHeader.ActionGroup.Primary>{headerActions}</PageHeader.ActionGroup.Primary>
               )}
@@ -1644,7 +1697,7 @@ export function ThemeCanvas({
                   />
                 ))}
               </>
-            ) : !source.routes.post && frame.group === 'Post' ? (
+            ) : !routes.post && frame.group === 'Post' ? (
               <Text>No published Post is available.</Text>
             ) : null
           }

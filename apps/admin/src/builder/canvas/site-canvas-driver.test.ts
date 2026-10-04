@@ -484,3 +484,206 @@ it('keeps the history cursor when cancellation interrupts hashing an unchanged r
     vi.clearAllMocks();
   }
 });
+
+it('changes representative Post inputs without source checkpoints and rejects stale queued edits', async () => {
+  const draft = await loadDraft();
+  const post = { id: 'second', title: 'Second post', url: 'https://example.com/second/' };
+  renderer.render.mockImplementation((url: string) =>
+    Promise.resolve({ url, status: 200, html: `<h1>${url}</h1>`, diagnostics: [] }),
+  );
+  const driver = new SiteCanvasDriver({
+    draft,
+    routes: { home: 'https://example.com/', post: 'https://example.com/post/' },
+    posts: {
+      selected: { id: 'first', title: 'First post', url: 'https://example.com/post/' },
+      list: () => Promise.resolve({ posts: [post], nextPage: null }),
+      read: () => Promise.resolve(post),
+    },
+    publish: (candidate) => Promise.resolve({ ok: true, revision: candidate.revision }),
+  });
+  try {
+    await driver.start();
+    const before = await driver.render();
+    const history = driver.readHistory();
+    const selection = driver.selectPost({
+      id: 'second',
+      expectedRevision: before.revision,
+      expectedDataGeneration: 0,
+    });
+    const stale = driver.applyThemePatch({
+      expectedRevision: before.revision,
+      expectedDataGeneration: 0,
+      files: [{ operation: 'write', path: 'index.hbs', content: '<h1>Stale</h1>' }],
+    });
+    const outcome = stale.catch((error) => error as unknown);
+    const next = await selection;
+    expect(next).toMatchObject({
+      revision: before.revision,
+      dataGeneration: 1,
+      routes: { post: post.url },
+      representativePost: post,
+    });
+    expect(next.renderKey).not.toBe(before.renderKey);
+    expect(next.html.post).toContain(post.url);
+    expect(await outcome).toMatchObject({ name: 'CanvasRejectedError' });
+    expect(driver.readHistory()).toEqual(history);
+    expect(driver.workspace.draft).toEqual(draft);
+    const changed = await driver.applyThemePatch({
+      expectedRevision: next.revision,
+      expectedDataGeneration: 1,
+      files: [{ operation: 'write', path: 'index.hbs', content: '<h1>Current</h1>' }],
+    });
+    expect(changed).toMatchObject({ dataGeneration: 1, routes: { post: post.url } });
+  } finally {
+    driver.dispose();
+    vi.clearAllMocks();
+  }
+});
+
+it('retains the accepted Post binding and render when the new required route fails', async () => {
+  const draft = await loadDraft();
+  renderer.render.mockImplementation((url: string) =>
+    Promise.resolve({
+      url,
+      status: url.endsWith('/missing/') ? 404 : 200,
+      html: '<h1>Accepted</h1>',
+      diagnostics: [],
+    }),
+  );
+  const driver = new SiteCanvasDriver({
+    draft,
+    routes: { home: 'https://example.com/', post: 'https://example.com/post/' },
+    posts: {
+      selected: { id: 'first', title: 'First post', url: 'https://example.com/post/' },
+      list: () => Promise.resolve({ posts: [], nextPage: null }),
+      read: () =>
+        Promise.resolve({ id: 'missing', title: 'Missing', url: 'https://example.com/missing/' }),
+    },
+    publish: (candidate) => Promise.resolve({ ok: true, revision: candidate.revision }),
+  });
+  try {
+    await driver.start();
+    const before = await driver.render();
+    await expect(
+      driver.selectPost({
+        id: 'missing',
+        expectedRevision: before.revision,
+        expectedDataGeneration: 0,
+      }),
+    ).rejects.toMatchObject({ name: 'CanvasRejectedError' });
+    expect(await driver.render()).toEqual(before);
+    expect(driver.readHistory().entries).toHaveLength(1);
+  } finally {
+    driver.dispose();
+    vi.clearAllMocks();
+  }
+});
+
+it('cancels Post adoption during rendering and accepts a later retry on the same source', async () => {
+  const draft = await loadDraft();
+  let release!: () => void;
+  let entered!: () => void;
+  const rendering = new Promise<void>((resolve) => {
+    entered = resolve;
+  });
+  const held = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  let delay = true;
+  renderer.render.mockImplementation(async (url: string) => {
+    if (url.endsWith('/second/') && delay) {
+      entered();
+      await held;
+    }
+    return { url, status: 200, html: '<h1>Rendered</h1>', diagnostics: [] };
+  });
+  const driver = new SiteCanvasDriver({
+    draft,
+    routes: { home: 'https://example.com/' },
+    posts: {
+      selected: null,
+      list: () => Promise.resolve({ posts: [], nextPage: null }),
+      read: () =>
+        Promise.resolve({ id: 'second', title: 'Second', url: 'https://example.com/second/' }),
+    },
+    publish: (candidate) => Promise.resolve({ ok: true, revision: candidate.revision }),
+  });
+  try {
+    await driver.start();
+    const before = await driver.render();
+    const caller = new AbortController();
+    const pending = driver
+      .selectPost(
+        { id: 'second', expectedRevision: before.revision, expectedDataGeneration: 0 },
+        caller.signal,
+      )
+      .catch((error) => error as unknown);
+    await rendering;
+    caller.abort();
+    release();
+    expect(await pending).toMatchObject({ name: 'CanvasRejectedError', code: 'cancelled' });
+    expect(await driver.render()).toEqual(before);
+    delay = false;
+    expect(
+      await driver.selectPost({
+        id: 'second',
+        expectedRevision: before.revision,
+        expectedDataGeneration: 0,
+      }),
+    ).toMatchObject({ dataGeneration: 1, representativePost: { id: 'second' } });
+    expect(driver.readHistory().entries).toHaveLength(1);
+  } finally {
+    release?.();
+    driver.dispose();
+    vi.clearAllMocks();
+  }
+});
+
+it('does not reuse a cancelled staged render for a different subsequent Post', async () => {
+  const draft = await loadDraft();
+  renderer.render.mockImplementation((url: string) =>
+    Promise.resolve({ url, status: 200, html: `<h1>${url}</h1>`, diagnostics: [] }),
+  );
+  const driver = new SiteCanvasDriver({
+    draft,
+    routes: { home: 'https://example.com/' },
+    posts: {
+      selected: null,
+      list: () => Promise.resolve({ posts: [], nextPage: null }),
+      read: (id) => Promise.resolve({ id, title: id, url: `https://example.com/${id}/` }),
+    },
+    publish: (candidate) => Promise.resolve({ ok: true, revision: candidate.revision }),
+  });
+  try {
+    await driver.start();
+    const before = await driver.render();
+    const caller = new AbortController();
+    const validate = driver.preview.renderCandidate.bind(driver.preview);
+    vi.spyOn(driver.preview, 'renderCandidate').mockImplementationOnce(
+      async (candidate, signal) => {
+        const result = await validate(candidate, signal);
+        caller.abort();
+        return result;
+      },
+    );
+    await expect(
+      driver.selectPost(
+        { id: 'cancelled', expectedRevision: before.revision, expectedDataGeneration: 0 },
+        caller.signal,
+      ),
+    ).rejects.toMatchObject({ code: 'cancelled' });
+    expect(await driver.render()).toEqual(before);
+    const next = await driver.selectPost({
+      id: 'different',
+      expectedRevision: before.revision,
+      expectedDataGeneration: 0,
+    });
+    expect(next.routes?.post).toBe('https://example.com/different/');
+    expect(next.html.post).toContain('https://example.com/different/');
+    expect(next.html.post).not.toContain('cancelled');
+  } finally {
+    driver.dispose();
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
+  }
+});

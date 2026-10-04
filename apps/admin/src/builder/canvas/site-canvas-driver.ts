@@ -14,6 +14,9 @@ import type {
   CanvasPatch,
   CanvasHistory,
   CanvasHistoryRestore,
+  CanvasPost,
+  CanvasPostPage,
+  CanvasPostSelection,
 } from './canvas-driver';
 import type { PublishResult, ValidationResult } from '@/builder/core/workspace';
 import type { PreviewDocument } from '@/builder/workspaces/theme/preview/preview-document';
@@ -43,15 +46,27 @@ export class SiteCanvasDriver implements CanvasDriver {
     draft: ThemeDraft;
   }> = [];
   private historyIndex = -1;
+  private routes: { home: string; post?: string };
+  private generation = 0;
+  private selectedPost: CanvasPost | null;
+  private readonly posts?: {
+    selected: CanvasPost | null;
+    list: (page: number, signal: AbortSignal) => Promise<CanvasPostPage>;
+    read: (id: string, signal: AbortSignal) => Promise<CanvasPost>;
+  };
 
   constructor(options: {
     draft: ThemeDraft;
     routes: { home: string; post?: string };
+    posts?: SiteCanvasDriver['posts'];
     publish: (draft: ThemeDraft, signal: AbortSignal) => Promise<ThemePublishAdapterResult>;
   }) {
+    this.routes = { ...options.routes };
+    this.posts = options.posts;
+    this.selectedPost = options.posts?.selected ?? null;
     this.preview = new CanvasThemePreview({
-      required: options.routes,
-      getRenderGeneration: () => 0,
+      required: this.routes,
+      getRenderGeneration: () => this.generation,
       render: async (draft, signal) => {
         const theme = canvasThemeFiles(draft);
         const visible = visibleThemeCustomSettings(draft.customSettings);
@@ -74,9 +89,9 @@ export class SiteCanvasDriver implements CanvasDriver {
           },
           signal,
         );
-        const home = await this.renderer.render(options.routes.home, draft.revision, signal);
-        const post = options.routes.post
-          ? await this.renderer.render(options.routes.post, draft.revision, signal)
+        const home = await this.renderer.render(this.routes.home, draft.revision, signal);
+        const post = this.routes.post
+          ? await this.renderer.render(this.routes.post, draft.revision, signal)
           : undefined;
         return {
           groups: { home, post },
@@ -117,7 +132,9 @@ export class SiteCanvasDriver implements CanvasDriver {
     if (!marker) {
       throw new CanvasRejectedError('The selected source is unavailable.');
     }
-    const result = await this.workspace.applyInlineTextEdit(edit, this.lifetime.signal);
+    const result = await this.workspace.applyInlineTextEdit(edit, this.lifetime.signal, {
+      expectedRenderGeneration: edit.expectedDataGeneration ?? this.generation,
+    });
     if (!result.ok) {
       throw new CanvasRejectedError(result.error.message, result.error.code, result.error.details);
     }
@@ -141,7 +158,11 @@ export class SiteCanvasDriver implements CanvasDriver {
       .applyThemePatch(
         { revision: patch.expectedRevision, files: patch.files, settings: patch.settings },
         signal,
-        { promote: true, requirePromotedSource: true },
+        {
+          promote: true,
+          requirePromotedSource: true,
+          expectedRenderGeneration: patch.expectedDataGeneration,
+        },
       )
       .catch((error: unknown) => {
         if (signal.aborted && this.workspace.draft.revision === patch.expectedRevision) {
@@ -167,6 +188,71 @@ export class SiteCanvasDriver implements CanvasDriver {
         result.data.paths.map((path) => [path, this.workspace.draft.files[path]?.content ?? null]),
       ),
     };
+  }
+
+  async listPosts(page: number, callerSignal?: AbortSignal): Promise<CanvasPostPage> {
+    if (!this.posts) {
+      throw new CanvasRejectedError('Post discovery is unavailable.');
+    }
+    const signal = AbortSignal.any([this.lifetime.signal, ...(callerSignal ? [callerSignal] : [])]);
+    signal.throwIfAborted();
+    return this.posts.list(page, signal);
+  }
+
+  async selectPost(
+    input: CanvasPostSelection,
+    callerSignal?: AbortSignal,
+  ): Promise<CanvasEditorRender> {
+    if (!this.posts) {
+      throw new CanvasRejectedError('Post selection is unavailable.');
+    }
+    const signal = AbortSignal.any([this.lifetime.signal, ...(callerSignal ? [callerSignal] : [])]);
+    return this.workspace
+      .updatePreviewInputs(signal, async (draft) => {
+        this.expectCurrent(input.expectedRevision, input.expectedDataGeneration);
+        const post = await this.posts!.read(input.id, signal);
+        signal.throwIfAborted();
+        if (post.id !== input.id) {
+          throw new CanvasRejectedError('The selected Post is unavailable.');
+        }
+        if (post.id === this.selectedPost?.id && post.url === this.routes.post && this.accepted) {
+          return { ...this.accepted, unchanged: true };
+        }
+        const previous = {
+          routes: this.routes,
+          generation: this.generation,
+          post: this.selectedPost,
+        };
+        this.routes = { ...this.routes, post: post.url };
+        this.generation += 1;
+        this.selectedPost = post;
+        this.preview.setRequiredRoutes(this.routes);
+        try {
+          this.validate(await this.preview.renderCandidate(draft, signal));
+          signal.throwIfAborted();
+          this.accepted = this.currentRender();
+          return this.accepted;
+        } catch (error) {
+          this.routes = previous.routes;
+          this.generation = previous.generation;
+          this.selectedPost = previous.post;
+          this.preview.setRequiredRoutes(this.routes);
+          throw error;
+        }
+      })
+      .catch((error: unknown) => {
+        if (error instanceof CanvasRejectedError) {
+          throw error;
+        }
+        throw new CanvasRejectedError(
+          signal.aborted
+            ? 'Post selection was cancelled before acceptance.'
+            : error instanceof Error
+              ? error.message
+              : String(error),
+          signal.aborted ? 'cancelled' : 'post_selection_rejected',
+        );
+      });
   }
 
   loadAssets(): Promise<NonNullable<PreviewDocument['assets']>> {
@@ -233,7 +319,10 @@ export class SiteCanvasDriver implements CanvasDriver {
       validation = await this.workspace.restore(
         { revision: candidate.revision, payload: candidate },
         signal,
-        { expectedRevision: input.expectedRevision },
+        {
+          expectedRevision: input.expectedRevision,
+          expectedRenderGeneration: input.expectedDataGeneration,
+        },
       );
     } catch (error) {
       if (signal.aborted && this.workspace.draft.revision === previous.revision) {
@@ -323,7 +412,7 @@ export class SiteCanvasDriver implements CanvasDriver {
 
   private expectCurrent(revision: string, generation: number): void {
     this.lifetime.signal.throwIfAborted();
-    if (revision !== this.workspace.draft.revision || generation !== 0) {
+    if (revision !== this.workspace.draft.revision || generation !== this.generation) {
       throw new CanvasRejectedError(
         'The theme changed. Reselect the current render before editing.',
       );
@@ -342,9 +431,11 @@ export class SiteCanvasDriver implements CanvasDriver {
     return {
       workspaceId: this.workspace.id,
       revision: draft.revision,
-      dataGeneration: 0,
-      dataSnapshot: 'initial',
-      renderKey: `${draft.revision}:data-0`,
+      dataGeneration: this.generation,
+      dataSnapshot: `post:${this.selectedPost?.id ?? 'unbound'}:data-${this.generation}`,
+      renderKey: `${draft.revision}:data-${this.generation}`,
+      routes: { ...this.routes },
+      representativePost: this.selectedPost ? { ...this.selectedPost } : null,
       html: { home: output.groups.home.html, post: output.groups.post?.html },
       inlineTextTargets: output.inlineTextTargets,
       editMarkerAttribute: output.editMarkerAttribute,

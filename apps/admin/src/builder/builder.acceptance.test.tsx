@@ -94,6 +94,345 @@ async function fakeBuilderWorld({
 
 describe('Design Builder route', () => {
   it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1')(
+    'loads a later published Post explicitly on an empty site and keeps the mounted Home frames',
+    { timeout: 60_000 },
+    async () => {
+      await fakeBuilderWorld();
+      const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
+      const state = async () =>
+        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {})).data as {
+          workspaceId: string;
+          editor: {
+            sourceRevision: string;
+            busy: boolean;
+            dirty: boolean;
+            render: { dataGeneration: number; representativePost: { id: string } | null };
+            history: unknown;
+          };
+        };
+      try {
+        await expect.poll(async () => !(await state()).editor.busy, { timeout: 30_000 }).toBe(true);
+        const initial = await state();
+        const home = [...document.querySelectorAll('iframe[title^="Home"]')];
+        expect(home).toHaveLength(4);
+        await page.getByRole('button', { name: 'Choose preview Post', exact: true }).click();
+        await expect
+          .element(page.getByText('No published Posts found.', { exact: true }))
+          .toBeVisible();
+        const siteUrl = siteResponse().site.url as string;
+        const post = {
+          id: 'later',
+          slug: 'later',
+          title: 'Published later',
+          url: new URL('later/', siteUrl).href,
+          visibility: 'public',
+          html: '<p>Later body</p>',
+          tags: [],
+          authors: [],
+        };
+        fakeEndpoint('GET', `${new URL('/ghost/api/content/posts/', siteUrl).href}*`, {
+          posts: [post],
+          meta: { pagination: { next: null } },
+        });
+        fakeEndpoint('GET', `${new URL('/ghost/api/content/posts/later/', siteUrl).href}*`, {
+          posts: [post],
+        });
+        fakeEndpoint('GET', `${new URL('/ghost/api/content/posts/slug/later/', siteUrl).href}*`, {
+          posts: [post],
+        });
+        await page.getByRole('button', { name: 'Load Posts', exact: true }).click();
+        await page.getByRole('button', { name: 'Use Post: Published later', exact: true }).click();
+        await expect
+          .poll(
+            async () =>
+              !(await state()).editor.busy &&
+              document.querySelectorAll('iframe[data-preview-status="Ready"]').length === 8,
+            { timeout: 30_000 },
+          )
+          .toBe(true);
+        const current = await state();
+        expect(current.editor).toMatchObject({
+          sourceRevision: initial.editor.sourceRevision,
+          dirty: false,
+          render: { dataGeneration: 1, representativePost: { id: 'later' } },
+        });
+        expect(current.editor.history).toEqual(initial.editor.history);
+        expect([...document.querySelectorAll('iframe[title^="Home"]')]).toEqual(home);
+        expect(
+          [...document.querySelectorAll('iframe[title^="Post"]')].every((iframe) =>
+            (iframe as HTMLIFrameElement).srcdoc.includes(post.title),
+          ),
+        ).toBe(true);
+      } finally {
+        await screen.unmount();
+      }
+    },
+  );
+  it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1')(
+    'preserves live text and the accepted binding when a listed Post disappears',
+    { timeout: 60_000 },
+    async () => {
+      await commands.canvasPointerViewport(true);
+      await fakeBuilderWorld({ post: true });
+      const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
+      const state = async () =>
+        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {})).data as {
+          editor: {
+            sourceRevision: string;
+            busy: boolean;
+            render: unknown;
+            manualDraft: { text: string } | null;
+          };
+        };
+      try {
+        await expect.poll(async () => !(await state()).editor.busy, { timeout: 30_000 }).toBe(true);
+        const initial = await state();
+        const iframes = [
+          ...document.querySelectorAll('iframe[title$="composition"],iframe[title$="preview"]'),
+        ];
+        await page.getByRole('button', { name: 'Home · Mobile', exact: true }).dblClick();
+        const frame = page.frameLocator(
+          page.getByTitle('Home · Mobile composition', { exact: true }),
+        );
+        await frame.getByRole('link', { name: 'Canvas footer', exact: true }).dblClick();
+        await frame.getByRole('textbox', { name: /^Edit / }).fill('Keep this live text');
+        const siteUrl = siteResponse().site.url as string;
+        fakeEndpoint('GET', `${new URL('/ghost/api/content/posts/', siteUrl).href}*`, {
+          posts: [{ id: 'gone', title: 'Gone Post', url: new URL('gone/', siteUrl).href }],
+          meta: { pagination: { next: null } },
+        });
+        fakeEndpoint(
+          'GET',
+          `${new URL('/ghost/api/content/posts/slug/published-post/', siteUrl).href}*`,
+          {
+            posts: [
+              {
+                id: 'published-post',
+                slug: 'published-post',
+                url: new URL('published-post/', siteUrl).href,
+                title: 'Published canvas example',
+                visibility: 'public',
+                html: '<p>Real post content</p>',
+                tags: [],
+                authors: [],
+              },
+            ],
+          },
+        );
+        fakeEndpoint(
+          'GET',
+          `${new URL('/ghost/api/content/posts/gone/', siteUrl).href}*`,
+          { errors: [] },
+          { status: 404 },
+        );
+        await page.getByRole('button', { name: 'Choose preview Post', exact: true }).click();
+        await page.getByRole('button', { name: 'Use Post: Gone Post', exact: true }).click();
+        await expect
+          .element(
+            page
+              .getByRole('dialog', { name: 'Preview Post' })
+              .getByText('Could not load published Posts. Try loading again.', { exact: true }),
+          )
+          .toBeVisible();
+        expect((await state()).editor).toMatchObject({
+          sourceRevision: initial.editor.sourceRevision,
+          busy: false,
+          render: initial.editor.render,
+          manualDraft: { text: 'Keep this live text' },
+        });
+        expect([
+          ...document.querySelectorAll('iframe[title$="composition"],iframe[title$="preview"]'),
+        ]).toEqual(iframes);
+        await page.getByRole('button', { name: 'Choose preview Post', exact: true }).click();
+        await frame.getByRole('textbox', { name: /^Edit / }).click();
+        await userEvent.keyboard('{Enter}');
+        await expect.poll(async () => !(await state()).editor.busy, { timeout: 30_000 }).toBe(true);
+        expect(
+          iframes.every((iframe) =>
+            (iframe as HTMLIFrameElement).srcdoc.includes('Keep this live text'),
+          ),
+        ).toBe(true);
+      } finally {
+        await screen.unmount();
+        await commands.canvasPointerViewport(false);
+      }
+    },
+  );
+  it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1')(
+    'switches representative Posts through the picker and native action without losing source, frames or manual text',
+    { timeout: 60_000 },
+    async () => {
+      await commands.canvasPointerViewport(true);
+      await fakeBuilderWorld({ post: true });
+      const siteUrl = siteResponse().site.url as string;
+      const first = {
+        id: 'published-post',
+        slug: 'published-post',
+        url: new URL('published-post/', siteUrl).href,
+        title: 'Published canvas example',
+        visibility: 'public',
+        html: '<p>First body</p>',
+        tags: [],
+        authors: [],
+      };
+      const second = {
+        ...first,
+        id: 'second-post',
+        slug: 'second-post',
+        url: new URL('second-post/', siteUrl).href,
+        title: 'Another published Post',
+      };
+      for (const post of [first, second]) {
+        fakeEndpoint('GET', `${new URL(`/ghost/api/content/posts/${post.id}/`, siteUrl).href}*`, {
+          posts: [post],
+        });
+        fakeEndpoint(
+          'GET',
+          `${new URL(`/ghost/api/content/posts/slug/${post.slug}/`, siteUrl).href}*`,
+          { posts: [post] },
+        );
+      }
+      const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
+      const state = async () =>
+        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {})).data as {
+          workspaceId: string;
+          editor: {
+            sourceRevision: string;
+            busy: boolean;
+            dirty: boolean;
+            render: { dataGeneration: number; representativePost: { id: string } };
+            history: unknown;
+            manualDraft: { text: string } | null;
+          };
+          frames: Array<{
+            id: string;
+            frameHandle: string;
+            device: { representationHandle: string; revision: string; renderKey: string };
+          }>;
+        };
+      const ready = () =>
+        expect
+          .poll(
+            async () =>
+              !(await state()).editor.busy &&
+              document.querySelectorAll('iframe[data-preview-status="Ready"]').length === 8,
+            { timeout: 30_000 },
+          )
+          .toBe(true);
+      try {
+        await ready();
+        const initial = await state();
+        const oldPost = initial.frames.find((frame) => frame.id === 'post-mobile')!;
+        const staleTarget = {
+          workspaceId: initial.workspaceId,
+          frameHandle: oldPost.frameHandle,
+          representationHandle: oldPost.device.representationHandle,
+          expectedRevision: oldPost.device.revision,
+          expectedRenderKey: oldPost.device.renderKey,
+        };
+        const iframes = [
+          ...document.querySelectorAll('iframe[title$="composition"],iframe[title$="preview"]'),
+        ];
+        await page.getByRole('button', { name: 'Home · Mobile', exact: true }).dblClick();
+        const frame = page.frameLocator(
+          page.getByTitle('Home · Mobile composition', { exact: true }),
+        );
+        await frame.getByRole('link', { name: 'Canvas footer', exact: true }).dblClick();
+        await frame
+          .getByRole('textbox', { name: /^Edit / })
+          .fill('Manual text across Post changes');
+        const camera = page.getByTestId('canvas-world').element().getAttribute('style');
+        fakeEndpoint('GET', `${new URL('/ghost/api/content/posts/', siteUrl).href}*`, {
+          posts: [first, second],
+          meta: { pagination: { next: null } },
+        });
+        // Reinstall exact resource reads above the broad browse response.
+        for (const post of [first, second]) {
+          fakeEndpoint('GET', `${new URL(`/ghost/api/content/posts/${post.id}/`, siteUrl).href}*`, {
+            posts: [post],
+          });
+          fakeEndpoint(
+            'GET',
+            `${new URL(`/ghost/api/content/posts/slug/${post.slug}/`, siteUrl).href}*`,
+            { posts: [post] },
+          );
+        }
+        await page.getByRole('button', { name: 'Choose preview Post', exact: true }).click();
+        await page
+          .getByRole('button', { name: 'Use Post: Another published Post', exact: true })
+          .click();
+        await ready();
+        let current = await state();
+        expect(current.editor).toMatchObject({
+          sourceRevision: initial.editor.sourceRevision,
+          dirty: false,
+          render: { dataGeneration: 1, representativePost: { id: second.id } },
+          manualDraft: { text: 'Manual text across Post changes' },
+        });
+        expect(current.editor.history).toEqual(initial.editor.history);
+        expect([
+          ...document.querySelectorAll('iframe[title$="composition"],iframe[title$="preview"]'),
+        ]).toEqual(iframes);
+        expect(page.getByTestId('canvas-world').element().getAttribute('style')).toBe(camera);
+        expect(
+          iframes
+            .filter((iframe) => iframe.getAttribute('title')?.startsWith('Post'))
+            .every((iframe) => (iframe as HTMLIFrameElement).srcdoc.includes(second.title)),
+        ).toBe(true);
+        expect(
+          await commands.canvasNativeTool('ghost_canvas_probe_inspect_frame', staleTarget),
+        ).toMatchObject({ status: 'error' });
+        expect(
+          await commands.canvasNativeTool('ghost_canvas_list_posts', {
+            workspaceId: current.workspaceId,
+            expectedRevision: current.editor.sourceRevision,
+          }),
+        ).toMatchObject({
+          status: 'ok',
+          data: { posts: [{ id: first.id }, { id: second.id }], nextPage: null },
+        });
+        expect(
+          await commands.canvasNativeTool('ghost_canvas_select_post', {
+            workspaceId: current.workspaceId,
+            expectedRevision: current.editor.sourceRevision,
+            expectedDataGeneration: 0,
+            id: first.id,
+          }),
+        ).toMatchObject({ status: 'error' });
+        expect(
+          await commands.canvasNativeTool('ghost_canvas_select_post', {
+            workspaceId: current.workspaceId,
+            expectedRevision: current.editor.sourceRevision,
+            expectedDataGeneration: 1,
+            id: first.id,
+          }),
+        ).toMatchObject({ status: 'ok', data: { accepted: true, dataGeneration: 2 } });
+        await ready();
+        current = await state();
+        expect(current.editor.history).toEqual(initial.editor.history);
+        expect(current.editor.manualDraft?.text).toBe('Manual text across Post changes');
+        expect(
+          iframes
+            .filter((iframe) => iframe.getAttribute('title')?.startsWith('Post'))
+            .every((iframe) => (iframe as HTMLIFrameElement).srcdoc.includes(first.title)),
+        ).toBe(true);
+        await page.getByRole('button', { name: 'Resume text draft', exact: true }).click();
+        await frame.getByRole('textbox', { name: /^Edit / }).click();
+        await userEvent.keyboard('{Enter}');
+        await ready();
+        expect(
+          iframes.every((iframe) =>
+            (iframe as HTMLIFrameElement).srcdoc.includes('Manual text across Post changes'),
+          ),
+        ).toBe(true);
+      } finally {
+        await screen.unmount();
+        await commands.canvasPointerViewport(false);
+      }
+    },
+  );
+
+  it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1')(
     'inspects the selected live composition through native WebMCP and clears obsolete board context',
     { timeout: 60_000 },
     async () => {

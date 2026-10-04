@@ -33,6 +33,13 @@ export type CanvasHistory = {
   undoId: string | null;
   redoId: string | null;
 };
+export type CanvasPost = { id: string; title: string; url: string };
+export type CanvasPostPage = { posts: CanvasPost[]; nextPage: number | null };
+export type CanvasPostSelection = {
+  id: string;
+  expectedRevision: string;
+  expectedDataGeneration: number;
+};
 export type CanvasEditorRender = {
   revision: string;
   dataGeneration: number;
@@ -46,6 +53,8 @@ export type CanvasEditorRender = {
   editedFile?: { path: string; content: string };
   sourceChanges?: Record<string, string | null>;
   assets?: NonNullable<PreviewDocument['assets']>;
+  routes?: { home: string; post?: string };
+  representativePost?: CanvasPost | null;
 };
 export class CanvasRejectedError extends Error {
   readonly code: string;
@@ -65,6 +74,8 @@ export type CanvasDriver = {
     input: CanvasHistoryRestore,
     signal?: AbortSignal,
   ) => Promise<CanvasEditorRender>;
+  listPosts?: (page: number, signal?: AbortSignal) => Promise<CanvasPostPage>;
+  selectPost?: (input: CanvasPostSelection, signal?: AbortSignal) => Promise<CanvasEditorRender>;
   loadAssets: () => Promise<NonNullable<PreviewDocument['assets']>>;
   refresh?: (accepted: CanvasEditorRender) => Promise<CanvasEditorRender>;
   subscribe?: (deliver: (render: CanvasEditorRender) => void) => () => void;
@@ -83,4 +94,8 @@ export type CanvasSource = {
   createDriver: () => CanvasDriver;
   refreshLabel?: (snapshot: string) => string;
   editor?: { readDraft: () => ThemeDraft; state: () => Record<string, unknown> };
+  posts?: {
+    selected: CanvasPost | null;
+    list: (page: number, signal: AbortSignal) => Promise<CanvasPostPage>;
+  };
 };

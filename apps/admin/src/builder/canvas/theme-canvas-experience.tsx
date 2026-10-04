@@ -18,6 +18,7 @@ import {
   ThemePublisher,
 } from '@/builder/workspaces/theme/publish/publish-theme';
 import { ThemeCanvas } from './theme-canvas';
+import { canvasPost, createCanvasPostContent } from './canvas-posts';
 import { SiteCanvasDriver, canvasThemeFiles } from './site-canvas-driver';
 import type { Theme } from '@tryghost/admin-x-framework/api/themes';
 import type { CustomThemeSetting } from '@tryghost/admin-x-framework/api/custom-theme-settings';
@@ -102,24 +103,7 @@ async function loadCanvas(inputs: Inputs, signal: AbortSignal) {
   ) {
     throw new Error('The site returned invalid theme canvas inputs.');
   }
-  let postUrl: string | undefined;
-  if (posts.posts.length) {
-    const first: unknown = posts.posts[0];
-    if (!first || typeof first !== 'object' || !('url' in first) || typeof first.url !== 'string') {
-      throw new Error('The published Post did not provide a usable URL.');
-    }
-    const url = new URL(first.url);
-    const site = new URL(inputs.siteUrl);
-    if (
-      url.origin !== site.origin ||
-      !url.pathname.startsWith(site.pathname.endsWith('/') ? site.pathname : `${site.pathname}/`) ||
-      url.search ||
-      url.hash
-    ) {
-      throw new Error('The published Post URL is outside this site.');
-    }
-    postUrl = url.href;
-  }
+  const selectedPost = posts.posts.length ? canvasPost(posts.posts[0], inputs.siteUrl) : null;
   const draft = await loadThemeDraft(
     {
       archive,
@@ -135,7 +119,11 @@ async function loadCanvas(inputs: Inputs, signal: AbortSignal) {
     },
     signal,
   );
-  return { draft, routes: { home: new URL(inputs.siteUrl).href, post: postUrl } };
+  return {
+    draft,
+    routes: { home: new URL(inputs.siteUrl).href, post: selectedPost?.url },
+    posts: { selected: selectedPost, ...createCanvasPostContent(inputs.siteUrl, contentApiKey) },
+  };
 }
 
 export function ThemeCanvasExperience(props: Inputs) {
@@ -176,7 +164,7 @@ export function ThemeCanvasExperience(props: Inputs) {
     let unsubscribePublisher = () => {};
     let current: SiteCanvasDriver | null = null;
     void loadCanvas(inputs, lifetime.signal)
-      .then(async ({ draft, routes }) => {
+      .then(async ({ draft, routes, posts }) => {
         lifetime.signal.throwIfAborted();
         const publisher = new ThemePublisher({
           baseline: draft,
@@ -193,6 +181,7 @@ export function ThemeCanvasExperience(props: Inputs) {
         current = new SiteCanvasDriver({
           draft,
           routes,
+          posts,
           publish: (candidate, signal) =>
             publisher.publish(candidate, { copyName: copyName.current }, signal),
         });
@@ -214,6 +203,10 @@ export function ThemeCanvasExperience(props: Inputs) {
           siteUrl: inputs.siteUrl,
           routes,
           routing: inputs.routing,
+          posts: {
+            selected: posts.selected,
+            list: (page, signal) => loaded.listPosts(page, signal),
+          },
           editor: {
             readDraft: () => loaded.workspace.draft,
             state: () => ({
@@ -229,6 +222,8 @@ export function ThemeCanvasExperience(props: Inputs) {
             readHistory: () => loaded.readHistory(),
             restoreHistory: (input, signal) => loaded.restoreHistory(input, signal),
             loadAssets: () => loaded.loadAssets(),
+            listPosts: (page, signal) => loaded.listPosts(page, signal),
+            selectPost: (input, signal) => loaded.selectPost(input, signal),
             subscribe: (deliver) => loaded.subscribe(deliver),
             dispose: () => {},
           }),

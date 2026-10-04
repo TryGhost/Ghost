@@ -70,6 +70,7 @@ type ThemeMutationPreview = BuilderPreviewAdapter & {
   navigate?: (target: string, signal: AbortSignal) => Promise<ThemeNavigationResult>;
   screenshot?: (request: ScreenshotRequest, signal: AbortSignal) => Promise<ScreenshotResult>;
   flush?: (signal: AbortSignal) => Promise<void>;
+  readonly renderInputGeneration?: number;
   readonly draft?: ThemeDraft;
   readonly state?: { url?: string };
 };
@@ -270,9 +271,30 @@ export class ThemeWorkspace implements BuilderWorkspace {
   applyThemePatch(
     patch: unknown,
     signal: AbortSignal,
-    options: { promote?: boolean; requirePromotedSource?: boolean } = {},
+    options: {
+      promote?: boolean;
+      requirePromotedSource?: boolean;
+      expectedRenderGeneration?: number;
+    } = {},
   ) {
     return this.enqueueMutation(signal, (draft) => stageThemePatch(draft, patch), options);
+  }
+
+  /** Render-input changes share the source mutation lane without changing source/history. */
+  updatePreviewInputs<T>(
+    signal: AbortSignal,
+    update: (draft: ThemeDraft) => Promise<T>,
+  ): Promise<T> {
+    const operation = this.mutationTail.then(() => {
+      abortIfNeeded(signal);
+      this.syncPreviewOnlyDraft();
+      return update(cloneThemeDraft(this.requireActiveDraft()));
+    });
+    this.mutationTail = operation.then(
+      () => {},
+      () => {},
+    );
+    return operation;
   }
 
   snapshot(): WorkspaceSnapshot {
@@ -297,11 +319,20 @@ export class ThemeWorkspace implements BuilderWorkspace {
   restore(
     snapshot: WorkspaceSnapshot,
     signal = new AbortController().signal,
-    options: { expectedRevision?: string } = {},
+    options: { expectedRevision?: string; expectedRenderGeneration?: number } = {},
   ): Promise<ValidationResult> {
-    const operation = this.mutationTail.then(() =>
-      this.restoreSnapshot(snapshot, signal, options.expectedRevision),
-    );
+    const operation = this.mutationTail.then(() => {
+      if (
+        options.expectedRenderGeneration !== undefined &&
+        options.expectedRenderGeneration !== this.preview.renderInputGeneration
+      ) {
+        return this.invalidSnapshot(
+          'stale_render_inputs',
+          'The displayed content changed before checkpoint restoration.',
+        );
+      }
+      return this.restoreSnapshot(snapshot, signal, options.expectedRevision);
+    });
     this.mutationTail = operation.then(
       () => {},
       () => {},
@@ -639,12 +670,13 @@ export class ThemeWorkspace implements BuilderWorkspace {
   applyInlineTextEdit(
     input: { marker: string; tagName: string; newText: string },
     signal: AbortSignal,
+    options: { expectedRenderGeneration?: number } = {},
   ): Promise<BuilderToolResult<{ path: string; marker: string } & MutationRenderData>> {
     const revision = this.activeDraftForRead().revision;
     return this.enqueueMutation(
       signal,
       (draft) => editThemeTextAtMarker(draft, { ...input, revision }),
-      { promote: true, requirePromotedSource: true },
+      { promote: true, requirePromotedSource: true, ...options },
     );
   }
 
@@ -937,11 +969,29 @@ export class ThemeWorkspace implements BuilderWorkspace {
   private enqueueMutation<T extends Record<string, unknown>>(
     signal: AbortSignal,
     operation: (draft: ThemeDraft) => Promise<ThemeCandidateResult<T>>,
-    options: { promote?: boolean; requirePromotedSource?: boolean } = {},
+    options: {
+      promote?: boolean;
+      requirePromotedSource?: boolean;
+      expectedRenderGeneration?: number;
+    } = {},
   ): Promise<BuilderToolResult<T & MutationRenderData>> {
     const queued = this.mutationTail.then(async () => {
       abortIfNeeded(signal);
       this.syncPreviewOnlyDraft();
+      if (
+        options.expectedRenderGeneration !== undefined &&
+        options.expectedRenderGeneration !== this.preview.renderInputGeneration
+      ) {
+        return {
+          ok: false as const,
+          revision: this.requireActiveDraft().revision,
+          error: {
+            code: 'stale_render_inputs',
+            message: 'The displayed content changed. Read the current render before editing.',
+            retryable: true,
+          },
+        };
+      }
       if (options.requirePromotedSource && this.lastValidCandidate) {
         return {
           ok: false as const,

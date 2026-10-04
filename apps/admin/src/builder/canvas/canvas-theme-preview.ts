@@ -16,7 +16,7 @@ export type CanvasThemeRender = {
  * before the caller delivers that exact revision to any live document. */
 export class CanvasThemePreview {
   readonly kind = 'theme-canvas';
-  private readonly required: { home: string; post?: string };
+  private required: { home: string; post?: string };
   private readonly render: (draft: ThemeDraft, signal: AbortSignal) => Promise<CanvasThemeRender>;
   private readonly getRenderGeneration: () => number;
   private tail = Promise.resolve();
@@ -34,6 +34,17 @@ export class CanvasThemePreview {
     this.getRenderGeneration = options.getRenderGeneration;
   }
 
+  get renderInputGeneration() {
+    return this.getRenderGeneration();
+  }
+
+  setRequiredRoutes(required: { home: string; post?: string }) {
+    this.required = structuredClone(required);
+    // A rejected/cancelled input generation can be reused. Cached evidence must
+    // never survive a route binding change, including restoration after rollback.
+    this.staged = null;
+  }
+
   renderCandidate(draft: ThemeDraft, signal: AbortSignal): Promise<ValidationResult> {
     if (this.queued >= 32) {
       return Promise.reject(new Error('Canvas validation is busy. Wait for outstanding work.'));
@@ -44,6 +55,7 @@ export class CanvasThemePreview {
     const operation = this.tail.then(async () => {
       activeSignal.throwIfAborted();
       const generation = this.getRenderGeneration();
+      const required = structuredClone(this.required);
       if (this.staged?.revision === candidate.revision && this.staged.generation === generation) {
         return { valid: true, revision: candidate.revision, diagnostics: [] };
       }
@@ -66,19 +78,19 @@ export class CanvasThemePreview {
           };
         }
         const diagnostics = (['home', 'post'] as const).flatMap((group) => {
-          if (!this.required[group]) {
+          if (!required[group]) {
             return [];
           }
           const result = output.groups[group];
           return result?.status === 200 &&
-            result.url === this.required[group] &&
+            result.url === required[group] &&
             typeof result.html === 'string'
             ? []
             : [
                 {
                   code: 'canvas_required_route_failed',
                   severity: 'error' as const,
-                  message: `${group} required render did not resolve ${this.required[group]} successfully (status ${result?.status ?? 'unavailable'}).`,
+                  message: `${group} required render did not resolve ${required[group]} successfully (status ${result?.status ?? 'unavailable'}).`,
                 },
               ];
         });

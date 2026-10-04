@@ -37,8 +37,15 @@ has no embedded chat, provider configuration or model-runtime dependency.
 Home and Post each have desktop/mobile live compositions and separate fixed-device
 representations. Empty sites render Home and explicitly mark Post unavailable.
 Direct source-proven literal commits and atomic patches validate every bound page
-before source adoption. The initial Post/settings observation is pinned for this
-mounted editor; it is not a live-content synchronization service or Post picker.
+before source adoption. The compact Preview Post picker discovers published content
+on request with explicit bounded paging. Native `ghost_canvas_list_posts` and
+`ghost_canvas_select_post` use the same discovery and selection action. Selection
+reloads the published resource, validates Home/Post through the workspace mutation
+lane, and changes both Post sizes together. It preserves source revision, dirty
+state, checkpoints, camera, mounted frames and manual values; render-input generation
+advances and old inspection handles retire. Failed or cancelled selection keeps the
+accepted binding. An empty site can explicitly load later-published content. Settings
+and other content observations remain session inputs; there is no background sync.
 
 The route uses the existing theme publication review/transport and built-in-theme
 copy flow. Dirty source, retained manual text and an in-flight write/publication
