@@ -18,7 +18,8 @@
 // _compile. The directive goes on the first line, so line numbers in stack
 // traces and coverage are unchanged.
 //
-// Set GHOST_TEST_STRICT_MODE=0 to run without it.
+// Set GHOST_TEST_STRICT_MODE=0 to run without it. Runs that collect coverage
+// turn it off automatically (see coverageEnv below).
 
 import Module from 'node:module';
 import path from 'node:path';
@@ -55,6 +56,27 @@ function addUseStrict(content: string): string {
   }
 
   return `'use strict';${content}`;
+}
+
+// The prepended directive shifts every V8 coverage offset in the file, and
+// @vitest/coverage-v8 only corrects offsets for modules vitest loads itself —
+// not ones loaded through Node's require — so with the hook on, coverage maps
+// counts onto the wrong ranges. Runs that collect coverage therefore skip it.
+// In CI those are only the acceptance lanes on the primary Node version; the
+// other Node leg runs the same suites without coverage and keeps strict mode.
+//
+// Called from the vitest configs, which run in the main process where --coverage
+// is visible; the result goes into `test.env`, which reaches every worker.
+export function coverageEnv(argv: string[] = process.argv): Record<string, string> {
+  const collectingCoverage = argv.some(
+    (arg) =>
+      arg === '--coverage' ||
+      arg === '--coverage=true' ||
+      arg === '--coverage.enabled' ||
+      arg === '--coverage.enabled=true',
+  );
+
+  return collectingCoverage ? { GHOST_TEST_STRICT_MODE: '0' } : {};
 }
 
 export function enableStrictMode(): void {
