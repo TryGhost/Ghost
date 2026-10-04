@@ -11,6 +11,7 @@ import {
   fakeTiers,
   post,
   renderAdminApp,
+  settleTransitions,
   settingsResponse,
   staffRole,
   submittedPost,
@@ -83,6 +84,8 @@ function fakeSavablePost(overrides: Partial<SavedPost> = {}, tiers = SITE_TIERS)
 async function openAccess() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  // Visible from its first frame; wait for its controls to stop sliding before clicking.
+  await settleTransitions();
   await expect.element(editorScreen.settingsVisibility()).toBeVisible();
 }
 
