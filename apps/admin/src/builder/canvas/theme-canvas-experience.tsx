@@ -48,7 +48,7 @@ async function contentResponse(
   url.searchParams.set('key', key);
   if (resource === 'posts') {
     url.searchParams.set('limit', '1');
-    url.searchParams.set('fields', 'id,title,url');
+    url.searchParams.set('fields', 'id,title,url,slug,custom_template');
   }
   // eslint-disable-next-line no-restricted-syntax -- Public Content API inputs to the browser theme renderer.
   const response = await fetch(url, {

@@ -148,6 +148,15 @@ test.describe('Ghost Admin - Live theme canvas', () => {
     test(`edits and publishes the real ${theme} theme through its live canvas`, async ({
       page,
     }, testInfo) => {
+      const reloadSignals: Array<{ url: string; payload: string }> = [];
+      page.on('websocket', (socket) =>
+        socket.on('framereceived', (event) => {
+          const payload = String(event.payload);
+          if (payload.includes('reload')) {
+            reloadSignals.push({ url: socket.url(), payload: payload.slice(0, 2000) });
+          }
+        }),
+      );
       test.slow(); // Full shared design, content switching, image inspection and publication journey.
       const cover = await uploadCover(page);
       const settings = await page.request.put('/ghost/api/admin/settings/', {
@@ -173,6 +182,7 @@ test.describe('Ghost Admin - Live theme canvas', () => {
       expect(createdPage.ok()).toBe(true);
       const first = await posts.create({
         title: 'Canvas published article',
+        custom_template: 'custom-canvas',
         tags: [{ id: tag.id }],
         status: 'published',
         feature_image: cover,
@@ -397,6 +407,19 @@ test.describe('Ghost Admin - Live theme canvas', () => {
           .split('\n')
           .find((line) => line.includes('rel="stylesheet"') && line.includes('{{asset'))!;
 
+        const postTemplate = await nativeTool<{ content: string; truncated: boolean }>(
+          page,
+          'ghost_canvas_read_theme',
+          {
+            workspaceId: beforeDesign.workspaceId,
+            expectedRevision: beforeDesign.editor.sourceRevision,
+            operation: 'read_file',
+            path: 'post.hbs',
+          },
+        );
+        expect(postTemplate.truncated).toBe(false);
+        const variantSource = postTemplate.content.replace(/^\d+: /gm, '');
+
         // Hold real Content API responses while the worker renders the candidate.
         // Forward them unchanged; accepted live pages stay interactive meanwhile.
         let heldCandidate = false;
@@ -423,6 +446,16 @@ test.describe('Ghost Admin - Live theme canvas', () => {
               newText: `${styleLink}\n<link rel="stylesheet" href="{{asset "css/canvas-design.css"}}">`,
             },
             { operation: 'write', path: 'assets/css/canvas-design.css', content: design },
+            {
+              operation: 'write',
+              path: 'custom-canvas.hbs',
+              content: `${variantSource}\n<p>Custom canvas variation</p>`,
+            },
+            {
+              operation: 'write',
+              path: 'page-canvas-about.hbs',
+              content: `${variantSource}\n<p>Slug canvas variation</p>`,
+            },
           ],
         });
         void changing.catch(() => {});
@@ -486,6 +519,45 @@ test.describe('Ghost Admin - Live theme canvas', () => {
                 .frameLocator(`iframe[title="${label} ${kind}"]`)
                 .getByRole('heading', { name: targetPost.title, exact: true, level: 1 }),
             ).toBeVisible();
+          }
+        }
+        const beforeVariant = await state();
+        const variants = await nativeTool<{
+          templates: Array<{ path: string; items: Array<{ id: string }> }>;
+        }>(page, 'ghost_canvas_list_preview_content', {
+          workspaceId: beforeVariant.workspaceId,
+          expectedRevision: beforeVariant.editor.sourceRevision,
+          kind: 'post',
+        });
+        expect(
+          variants.templates.find((choice) => choice.path === 'custom-canvas.hbs')?.items,
+        ).toContainEqual(expect.objectContaining({ id: first.id }));
+        await nativeTool(page, 'ghost_canvas_select_preview_content', {
+          workspaceId: beforeVariant.workspaceId,
+          expectedRevision: beforeVariant.editor.sourceRevision,
+          expectedDataGeneration: beforeVariant.editor.render.dataGeneration,
+          kind: 'post',
+          id: first.id,
+          expectedTemplate: 'custom-canvas.hbs',
+        });
+        await ready();
+        expect((await state()).editor.history).toEqual(beforeVariant.editor.history);
+        await page.getByRole('button', { name: 'Fit Page', exact: true }).click();
+        await page
+          .getByRole('button', { name: 'Choose preview Page', exact: true })
+          .first()
+          .click();
+        await page
+          .getByRole('button', { name: 'Use template: page-canvas-about.hbs', exact: true })
+          .click();
+        await ready();
+        for (const label of ['Page · Desktop', 'Page · Mobile']) {
+          for (const kind of ['composition', 'preview']) {
+            await expect(
+              page
+                .frameLocator(`iframe[title="${label} ${kind}"]`)
+                .getByText('Slug canvas variation', { exact: true }),
+            ).toHaveText('Slug canvas variation');
           }
         }
         await page.getByRole('button', { name: 'Theme settings', exact: true }).click();
@@ -571,6 +643,10 @@ test.describe('Ghost Admin - Live theme canvas', () => {
         const published = await page.request.get('/');
         expect(published.status()).toBe(200);
         expect(await published.text()).toContain('Canvas footer');
+        const liveCustom = await page.request.get(`/${first.slug}/`);
+        expect(await liveCustom.text()).toContain('Custom canvas variation');
+        const liveSlug = await page.request.get('/canvas-about/');
+        expect(await liveSlug.text()).toContain('Slug canvas variation');
         const authorUrl = (await state()).editor.render.representativeContent.author.url;
         for (const url of [
           '/',
@@ -633,6 +709,10 @@ test.describe('Ghost Admin - Live theme canvas', () => {
         await page.getByRole('button', { name: 'Fit all', exact: true }).click();
         await page.screenshot({ path: testInfo.outputPath(`${theme}-published-overview.png`) });
       } catch (error) {
+        await testInfo.attach('canvas-reload-signals', {
+          body: JSON.stringify(reloadSignals),
+          contentType: 'application/json',
+        });
         await testInfo.attach('canvas-failure-state', {
           body: JSON.stringify(
             await page.evaluate(() => ({

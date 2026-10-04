@@ -57,6 +57,22 @@ advances and old inspection handles retire. Failed or cancelled selection keeps 
 accepted binding. An empty site can explicitly load later-published content. Settings
 and other content observations remain session inputs; there is no background sync.
 
+Content pickers also list root custom and slug-specific template variations from
+the current accepted theme. Published `slug` and `custom_template` fields determine
+eligibility using Ghost's default hierarchy: slug-specific first, assigned custom
+entry template next, then Page/Post or taxonomy/index fallbacks. The picker shows
+the resolved active template and the title a variation choice will preview. Empty
+choices explain that the current bounded content page has no match; paging is
+explicit. Dotted/Unicode root names remain valid, while paths outside the theme root
+are rejected. Choosing a variation selects real eligible content; it never forces
+a file onto a different route or changes publication content assignments.
+
+Native `list_posts`/`list_preview_content` return `templates` and `activeTemplate`.
+Selection accepts optional `expectedTemplate`, rereads the resource and rejects a
+changed assignment before adoption. A same-ID resource whose slug/custom assignment
+changed re-renders with a new input generation. Theme source/history remain intact.
+These session bindings do not background-sync external content changes.
+
 The route uses the existing theme publication review/transport and built-in-theme
 copy flow. Manual Publish and native `ghost_canvas_open_publication_review` open
 the same review, pinned to an explicit accepted source revision. The review lists

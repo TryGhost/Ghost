@@ -848,3 +848,55 @@ it('does not reuse a cancelled staged render for a different subsequent Post', a
     vi.clearAllMocks();
   }
 });
+
+it('rejects changed template bindings and reloads an existing resource whose assignment changed', async () => {
+  const draft = await loadDraft();
+  draft.files['custom-wide.hbs'] = { ...draft.files['post.hbs'], content: '<h1>Wide</h1>' };
+  const first = {
+    id: 'about',
+    title: 'About',
+    url: 'https://example.com/about/',
+    slug: 'about',
+    customTemplate: null as string | null,
+  };
+  let current = first;
+  renderer.render.mockImplementation((url: string) =>
+    Promise.resolve({ url, status: 200, html: '<h1>Rendered</h1>', diagnostics: [] }),
+  );
+  const driver = new SiteCanvasDriver({
+    draft,
+    routes: { home: 'https://example.com/', page: first.url },
+    content: {
+      page: {
+        selected: first,
+        list: () => Promise.resolve({ posts: [current], nextPage: null }),
+        read: () => Promise.resolve(current),
+      },
+    },
+    publish: (candidate) => Promise.resolve({ ok: true, revision: candidate.revision }),
+  });
+  try {
+    await driver.start();
+    const before = await driver.render();
+    const history = driver.readHistory();
+    const input = {
+      kind: 'page' as const,
+      id: first.id,
+      expectedRevision: before.revision,
+      expectedDataGeneration: before.dataGeneration,
+    };
+    current = { ...first, customTemplate: 'custom-wide' };
+    await expect(
+      driver.selectContent({ ...input, expectedTemplate: 'post.hbs' }),
+    ).rejects.toMatchObject({ code: 'template_binding_changed' });
+    expect(await driver.render()).toEqual(before);
+    const after = await driver.selectContent({ ...input, expectedTemplate: 'custom-wide.hbs' });
+    expect(after.dataGeneration).toBe(before.dataGeneration + 1);
+    expect(after.representativeContent?.page?.customTemplate).toBe('custom-wide');
+    expect(after.revision).toBe(before.revision);
+    expect(driver.readHistory()).toEqual(history);
+  } finally {
+    driver.dispose();
+    vi.clearAllMocks();
+  }
+});

@@ -32,11 +32,13 @@ async function fakeBuilderWorld({
   customSettings = [],
   themeName,
   featureImage,
+  themeFiles = {},
 }: {
   post?: boolean;
   customSettings?: CustomThemeSetting[];
   themeName?: string;
   featureImage?: string;
+  themeFiles?: Record<string, string>;
 } = {}): Promise<void> {
   const activeTheme = activeThemeResponse().themes[0];
   if (!activeTheme) {
@@ -48,7 +50,7 @@ async function fakeBuilderWorld({
   const design = customSettings.length
     ? '<style>body{color:{{@site.accent_color}};background:{{@custom.card_color}};}</style><p>{{@custom.short_label}} · {{@custom.card_layout}}</p>'
     : '';
-  const archive = await new JSZip()
+  const zip = new JSZip()
     .file(`${theme.name}/package.json`, JSON.stringify({ name: theme.name, version: '1.0.0' }))
     .file(
       `${theme.name}/index.hbs`,
@@ -70,8 +72,11 @@ async function fakeBuilderWorld({
     .file(
       `${theme.name}/author.hbs`,
       '<html><body>{{#author}}<h1>{{name}}</h1>{{/author}}{{> footer}}</body></html>',
-    )
-    .generateAsync({ type: 'arraybuffer' });
+    );
+  for (const [path, content] of Object.entries(themeFiles)) {
+    zip.file(`${theme.name}/${path}`, content);
+  }
+  const archive = await zip.generateAsync({ type: 'arraybuffer' });
   fakeAdminEndpoint('GET', '/custom_theme_settings/', { custom_theme_settings: customSettings });
   fakeAdminEndpoint('GET', '/settings/routes/yaml/', yamlResponse(defaultRoutes), {
     contentType: 'application/yaml',
@@ -195,11 +200,21 @@ describe('Design Builder route', () => {
     { timeout: 90_000 },
     async () => {
       await commands.canvasPointerViewport(true);
-      await fakeBuilderWorld({ post: true });
+      await fakeBuilderWorld({
+        post: true,
+        themeFiles: {
+          'page-about.hbs':
+            '<html><body><p>Slug variation</p>{{#post}}<h1>{{title}}</h1>{{/post}}{{> footer}}</body></html>',
+          'custom-wide.layout.hbs':
+            '<html><body><p>Custom variation</p>{{#post}}<h1>{{title}}</h1>{{/post}}{{> footer}}</body></html>',
+          'custom-unused.hbs': '<html><body><p>Unused variation</p></body></html>',
+        },
+      });
       const siteUrl = siteResponse().site.url as string;
       const about = {
         id: 'about',
         slug: 'about',
+        custom_template: 'custom-wide.layout',
         title: 'About us',
         url: new URL('about/', siteUrl).href,
         html: '<p>Page body</p>',
@@ -330,8 +345,23 @@ describe('Design Builder route', () => {
           .getByRole('button', { name: 'Choose preview Page', exact: true })
           .first()
           .click();
-        await page.getByRole('button', { name: 'Use Page: Contact us', exact: true }).click();
+        await expect
+          .element(page.getByText('Current template: page-about.hbs', { exact: true }))
+          .toBeVisible();
+        await expect
+          .element(
+            page.getByRole('button', { name: 'Use template: custom-unused.hbs', exact: true }),
+          )
+          .toBeDisabled();
+        await page
+          .getByRole('button', { name: 'Use template: custom-wide.layout.hbs', exact: true })
+          .click();
         await ready();
+        expect(
+          [...document.querySelectorAll<HTMLIFrameElement>('iframe[title^="Page"]')].every(
+            (frame) => frame.srcdoc.includes('Custom variation'),
+          ),
+        ).toBe(true);
         const switched = await state();
         expect(switched.editor.render.representativeContent.page.id).toBe('contact');
         expect(switched.editor.sourceRevision).toBe(initial.editor.sourceRevision);
@@ -347,16 +377,60 @@ describe('Design Builder route', () => {
           kind: 'page',
           items: [{ id: 'about' }, { id: 'contact' }],
         });
+        expect(listed.data).toHaveProperty(
+          'templates',
+          expect.arrayContaining([
+            { path: 'page-about.hbs', items: [expect.objectContaining({ id: 'about' })] },
+            { path: 'custom-wide.layout.hbs', items: [expect.objectContaining({ id: 'contact' })] },
+            { path: 'custom-unused.hbs', items: [] },
+          ]),
+        );
         const selected = await commands.canvasNativeTool('ghost_canvas_select_preview_content', {
           workspaceId: switched.workspaceId,
           expectedRevision: switched.editor.sourceRevision,
           expectedDataGeneration: switched.editor.render.dataGeneration,
           kind: 'page',
           id: 'about',
+          expectedTemplate: 'page-about.hbs',
         });
         expect(selected.data).toMatchObject({ accepted: true });
         await ready();
         expect((await state()).editor.manualDraft?.text).toBe('Manual draft across Page selection');
+        expect(
+          [...document.querySelectorAll<HTMLIFrameElement>('iframe[title^="Page"]')].every(
+            (frame) => frame.srcdoc.includes('Slug variation'),
+          ),
+        ).toBe(true);
+        await page
+          .getByRole('button', { name: 'Choose preview Page', exact: true })
+          .first()
+          .click();
+        await expect
+          .element(page.getByText('Current template: page-about.hbs', { exact: true }))
+          .toBeVisible();
+        const openState = await state();
+        await commands.canvasNativeTool('ghost_canvas_select_preview_content', {
+          workspaceId: openState.workspaceId,
+          expectedRevision: openState.editor.sourceRevision,
+          expectedDataGeneration: openState.editor.render.dataGeneration,
+          kind: 'page',
+          id: 'contact',
+          expectedTemplate: 'custom-wide.layout.hbs',
+        });
+        await ready();
+        await expect
+          .element(page.getByText('Current template: custom-wide.layout.hbs', { exact: true }))
+          .toBeVisible();
+        await expect
+          .element(
+            page.getByRole('button', { name: 'Use template: custom-wide.layout.hbs', exact: true }),
+          )
+          .toHaveAttribute('aria-pressed', 'true');
+        expect((await state()).editor.manualDraft?.text).toBe('Manual draft across Page selection');
+        await page
+          .getByRole('button', { name: 'Use template: page-about.hbs', exact: true })
+          .click();
+        await ready();
         await page.getByRole('button', { name: 'Cancel text draft', exact: true }).click();
         await ready();
         const beforePatch = await state();

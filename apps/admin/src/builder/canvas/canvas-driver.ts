@@ -59,10 +59,22 @@ export type CanvasHistory = {
   undoId: string | null;
   redoId: string | null;
 };
-export type CanvasPost = { id: string; title: string; url: string };
-export type CanvasPostPage = { posts: CanvasPost[]; nextPage: number | null };
+export type CanvasPost = {
+  id: string;
+  title: string;
+  url: string;
+  slug?: string;
+  customTemplate?: string | null;
+};
+export type CanvasPostPage = {
+  posts: CanvasPost[];
+  nextPage: number | null;
+  activeTemplate?: string | null;
+  templates?: import('./canvas-templates').CanvasTemplateChoice[];
+};
 export type CanvasPostSelection = {
   id: string;
+  expectedTemplate?: string;
   expectedRevision: string;
   expectedDataGeneration: number;
 };

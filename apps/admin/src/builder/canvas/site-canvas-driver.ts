@@ -1,6 +1,7 @@
 import { getThemeLiteralTextTargets } from '@tryghost/theme-renderer/editor';
 import { parseEditMarker } from '@tryghost/theme-renderer/markers';
 import { visibleThemeCustomSettings } from '@/builder/workspaces/theme/theme-loader';
+import { canvasTemplate, canvasTemplates } from './canvas-templates';
 import { CanvasThemePreview } from './canvas-theme-preview';
 import { CanvasRejectedError } from './canvas-driver';
 import { ThemeWorkspace } from '@/builder/workspaces/theme/theme-workspace';
@@ -243,9 +244,7 @@ export class SiteCanvasDriver implements CanvasDriver {
     if (!this.posts) {
       throw new CanvasRejectedError('Post discovery is unavailable.');
     }
-    const signal = AbortSignal.any([this.lifetime.signal, ...(callerSignal ? [callerSignal] : [])]);
-    signal.throwIfAborted();
-    return this.posts.list(page, signal);
+    return this.listContent('post', page, callerSignal);
   }
 
   async selectPost(
@@ -266,7 +265,15 @@ export class SiteCanvasDriver implements CanvasDriver {
     }
     const signal = AbortSignal.any([this.lifetime.signal, ...(callerSignal ? [callerSignal] : [])]);
     signal.throwIfAborted();
-    return provider.list(page, signal);
+    const result = await provider.list(page, signal);
+    signal.throwIfAborted();
+    return {
+      ...result,
+      activeTemplate: this.selectedContent[kind]
+        ? canvasTemplate(canvasThemeFiles(this.workspace.draft), kind, this.selectedContent[kind])
+        : null,
+      templates: canvasTemplates(canvasThemeFiles(this.workspace.draft), kind, result.posts),
+    };
   }
 
   async selectContent(
@@ -287,7 +294,18 @@ export class SiteCanvasDriver implements CanvasDriver {
           throw new CanvasRejectedError(`The selected ${input.kind} is unavailable.`);
         }
         if (
+          input.expectedTemplate &&
+          canvasTemplate(canvasThemeFiles(draft), input.kind, post) !== input.expectedTemplate
+        ) {
+          throw new CanvasRejectedError(
+            'The published content no longer uses that template. Reload the choices.',
+            'template_binding_changed',
+          );
+        }
+        if (
           post.id === this.selectedContent[input.kind]?.id &&
+          post.slug === this.selectedContent[input.kind]?.slug &&
+          post.customTemplate === this.selectedContent[input.kind]?.customTemplate &&
           post.url === this.routes[input.kind] &&
           this.accepted
         ) {

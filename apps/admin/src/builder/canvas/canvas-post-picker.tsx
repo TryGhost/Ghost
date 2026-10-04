@@ -34,12 +34,14 @@ export function CanvasPostPicker({
   const [loading, setLoading] = useState(false);
   const [selecting, setSelecting] = useState(false);
   const request = useRef<AbortController | null>(null);
+  const selectionRequest = useRef<AbortController | null>(null);
   const load = useCallback(
     async (next: number) => {
       request.current?.abort();
       const current = new AbortController();
       request.current = current;
       setLoading(true);
+      setResult(null);
       setError(null);
       try {
         const loaded = await list(next, current.signal);
@@ -65,19 +67,35 @@ export function CanvasPostPicker({
     return () => {
       request.current?.abort();
     };
-  }, [open, load]);
-  const choose = async (post: CanvasPost) => {
+  }, [open, load, revision, dataGeneration]);
+  useEffect(() => {
+    if (!open) {
+      selectionRequest.current?.abort();
+    }
+  }, [open]);
+  useEffect(
+    () => () => {
+      selectionRequest.current?.abort();
+    },
+    [],
+  );
+  const choose = async (post: CanvasPost, expectedTemplate?: string) => {
     if (busy || selecting) {
       return;
     }
     request.current?.abort();
     const current = new AbortController();
-    request.current = current;
+    selectionRequest.current = current;
     setSelecting(true);
     setError(null);
     try {
       await select(
-        { id: post.id, expectedRevision: revision, expectedDataGeneration: dataGeneration },
+        {
+          id: post.id,
+          expectedTemplate,
+          expectedRevision: revision,
+          expectedDataGeneration: dataGeneration,
+        },
         current.signal,
       );
       if (!current.signal.aborted) {
@@ -111,6 +129,11 @@ export function CanvasPostPicker({
           <Text size="sm" tone="secondary">
             {selected ? selected.title : `No published ${kind} selected`}
           </Text>
+          {result?.activeTemplate && (
+            <Text size="sm" tone="secondary">
+              Current template: {result.activeTemplate}
+            </Text>
+          )}
           {error && (
             <Text role="alert" size="sm">
               {error}
@@ -122,6 +145,37 @@ export function CanvasPostPicker({
             </Text>
           )}
           {result && !result.posts.length && <Text size="sm">No published {kind}s found.</Text>}
+          {result?.templates && result.templates.length > 1 && (
+            <Stack gap="xs">
+              <Text weight="semibold">Template variations</Text>
+              {result.templates.map((template) => (
+                <Stack key={template.path} gap="xs">
+                  <Button
+                    aria-label={`Use template: ${template.path}`}
+                    aria-pressed={template.path === result.activeTemplate}
+                    className="h-auto justify-start text-left whitespace-normal"
+                    disabled={busy || loading || selecting || !template.items.length}
+                    variant="ghost"
+                    onClick={() => void choose(template.items[0], template.path)}
+                  >
+                    <Stack gap="xs">
+                      <Text>{template.path}</Text>
+                      {template.items[0] && (
+                        <Text size="sm" tone="secondary">
+                          {template.items[0].title}
+                        </Text>
+                      )}
+                    </Stack>
+                  </Button>
+                  {!template.items.length && (
+                    <Text size="sm" tone="secondary">
+                      No matching published content on this page.
+                    </Text>
+                  )}
+                </Stack>
+              ))}
+            </Stack>
+          )}
           <Stack gap="xs">
             {result?.posts.map((post) => (
               <Button

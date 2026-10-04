@@ -21,7 +21,9 @@ export function createCanvasContent(
     url.searchParams.set('key', key);
     url.searchParams.set(
       'fields',
-      kind === 'tag' || kind === 'author' ? 'id,name,url' : 'id,title,url',
+      kind === 'tag' || kind === 'author'
+        ? 'id,name,url,slug'
+        : 'id,title,url,slug,custom_template',
     );
     if (page !== undefined) {
       if (!Number.isSafeInteger(page) || page < 1 || page > 10000) {

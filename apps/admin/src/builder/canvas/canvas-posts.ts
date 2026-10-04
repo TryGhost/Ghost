@@ -1,3 +1,4 @@
+import { isCanvasTemplatePath } from './canvas-templates';
 import type { CanvasPost, CanvasPostPage } from './canvas-driver';
 
 export function canvasPost(value: unknown, siteUrl: string): CanvasPost {
@@ -27,7 +28,19 @@ export function canvasPost(value: unknown, siteUrl: string): CanvasPost {
   ) {
     throw new Error('The published Post URL is outside this site.');
   }
-  return { id: post.id, title: post.title.slice(0, 512), url: url.href };
+  return {
+    id: post.id,
+    title: post.title.slice(0, 512),
+    url: url.href,
+    ...(typeof post.slug === 'string' && post.slug.length <= 191 && !post.slug.includes('/')
+      ? { slug: post.slug }
+      : {}),
+    ...(post.custom_template === null ||
+    (typeof post.custom_template === 'string' &&
+      isCanvasTemplatePath(`${post.custom_template}.hbs`))
+      ? { customTemplate: post.custom_template }
+      : {}),
+  };
 }
 
 /** Public Content API discovery; credentials remain private to the loaded session. */
@@ -35,7 +48,7 @@ export function createCanvasPostContent(siteUrl: string, key: string) {
   const request = async (path: string, signal: AbortSignal, page?: number) => {
     const url = new URL(`${siteUrl.replace(/\/$/, '')}/ghost/api/content/posts/${path}`);
     url.searchParams.set('key', key);
-    url.searchParams.set('fields', 'id,title,url');
+    url.searchParams.set('fields', 'id,title,url,slug,custom_template');
     if (page !== undefined) {
       if (!Number.isSafeInteger(page) || page < 1 || page > 10000) {
         throw new Error('Choose a Post page from 1 to 10000.');
