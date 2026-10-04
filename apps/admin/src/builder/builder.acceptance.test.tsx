@@ -196,6 +196,147 @@ describe('Design Builder route', () => {
     },
   );
   it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1')(
+    'edits themed 404 pages and validates the error hierarchy through the shared native canvas',
+    { timeout: 90_000 },
+    async () => {
+      await commands.canvasPointerViewport(true);
+      const errorTemplate = (label: string) =>
+        `<html><body><h1>{{statusCode}}</h1><p>${label}</p>{{> footer}}</body></html>`;
+      await fakeBuilderWorld({
+        themeFiles: {
+          'error-404.hbs': errorTemplate('Specific missing page'),
+          'error-4xx.hbs': errorTemplate('Category missing page'),
+          'error.hbs': errorTemplate('Generic missing page'),
+        },
+      });
+      const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
+      const state = async () =>
+        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {})).data as {
+          workspaceId: string;
+          frames: Array<{
+            id: string;
+            device?: { status: string } | null;
+            expanded?: { status: string } | null;
+          }>;
+          editor: {
+            sourceRevision: string;
+            busy: boolean;
+            history: unknown;
+            selection: unknown;
+            render: {
+              dataGeneration: number;
+              errorPreview: { template: string; status: number } | null;
+            };
+          };
+        };
+      const ready = () =>
+        expect
+          .poll(
+            async () => {
+              const current = await state();
+              return (
+                !current.editor.busy &&
+                current.frames
+                  .filter((frame) => frame.id.startsWith('error-'))
+                  .every(
+                    (frame) =>
+                      frame.device?.status === 'current' && frame.expanded?.status === 'current',
+                  )
+              );
+            },
+            { timeout: 30_000 },
+          )
+          .toBe(true);
+      const patch = async (
+        files: Array<{ operation: 'write' | 'delete'; path: string; content?: string }>,
+      ) => {
+        const current = await state();
+        return commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
+          workspaceId: current.workspaceId,
+          expectedRevision: current.editor.sourceRevision,
+          expectedDataGeneration: current.editor.render.dataGeneration,
+          files,
+        });
+      };
+      try {
+        await ready();
+        expect((await state()).editor.render.errorPreview).toMatchObject({
+          template: 'error-404.hbs',
+          status: 404,
+        });
+        const errorFrames = () =>
+          [...document.querySelectorAll<HTMLIFrameElement>('iframe')].filter((frame) =>
+            frame.title.startsWith('404'),
+          );
+        expect(errorFrames()).toHaveLength(4);
+        expect(
+          errorFrames().every(
+            (frame) =>
+              frame.srcdoc.includes('Specific missing page') && frame.srcdoc.includes('404'),
+          ),
+        ).toBe(true);
+        await page.getByRole('button', { name: 'Fit 404', exact: true }).click();
+        const frame = page.frameLocator(
+          page.getByTitle('404 · Mobile composition', { exact: true }),
+        );
+        await frame.getByText('Specific missing page', { exact: true }).click();
+        await expect
+          .poll(async () => (await state()).editor.selection)
+          .toMatchObject({ context: { data: { source: { path: 'error-404.hbs' } } } });
+        await frame.getByText('Specific missing page', { exact: true }).dblClick();
+        await frame.getByRole('textbox', { name: /^Edit / }).fill('Find your next story');
+        await userEvent.keyboard('{Enter}');
+        await ready();
+        expect(errorFrames().every((value) => value.srcdoc.includes('Find your next story'))).toBe(
+          true,
+        );
+        const beforeInvalid = await state();
+        expect(
+          await patch([
+            {
+              operation: 'write',
+              path: 'error-404.hbs',
+              content: '{{unknown-canvas-helper statusCode}}',
+            },
+          ]),
+        ).toMatchObject({ status: 'error' });
+        expect((await state()).editor.sourceRevision).toBe(beforeInvalid.editor.sourceRevision);
+        expect((await state()).editor.history).toEqual(beforeInvalid.editor.history);
+        expect(await patch([{ operation: 'delete', path: 'error-404.hbs' }])).toMatchObject({
+          status: 'ok',
+        });
+        await ready();
+        expect((await state()).editor.render.errorPreview?.template).toBe('error-4xx.hbs');
+        expect(errorFrames().every((value) => value.srcdoc.includes('Category missing page'))).toBe(
+          true,
+        );
+        expect(await patch([{ operation: 'delete', path: 'error-4xx.hbs' }])).toMatchObject({
+          status: 'ok',
+        });
+        await ready();
+        expect((await state()).editor.render.errorPreview?.template).toBe('error.hbs');
+        expect(errorFrames().every((value) => value.srcdoc.includes('Generic missing page'))).toBe(
+          true,
+        );
+        expect(await patch([{ operation: 'delete', path: 'error.hbs' }])).toMatchObject({
+          status: 'ok',
+        });
+        await expect.poll(async () => (await state()).editor.busy).toBe(false);
+        expect((await state()).editor.render.errorPreview).toBeNull();
+        expect(errorFrames()).toHaveLength(0);
+        await expect
+          .element(page.getByText('This theme has no custom 404 template.').first())
+          .toBeVisible();
+        await page.getByRole('button', { name: 'Undo theme change' }).click();
+        await ready();
+        expect((await state()).editor.render.errorPreview?.template).toBe('error.hbs');
+      } finally {
+        await screen.unmount();
+        await commands.canvasPointerViewport(false);
+      }
+    },
+  );
+  it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1')(
     'renders and switches Page Tag and Author content through the shared native canvas',
     { timeout: 90_000 },
     async () => {
@@ -283,9 +424,13 @@ describe('Design Builder route', () => {
               const current = await state();
               return (
                 !current.editor.busy &&
-                current.frames.length === 10 &&
+                current.frames.length === 12 &&
                 current.frames
-                  .filter((frame) => !(current.editor.manualDraft && frame.id === 'home-mobile'))
+                  .filter(
+                    (frame) =>
+                      !frame.id.startsWith('error-') &&
+                      !(current.editor.manualDraft && frame.id === 'home-mobile'),
+                  )
                   .every(
                     (frame) =>
                       frame.device?.status === 'current' && frame.expanded?.status === 'current',

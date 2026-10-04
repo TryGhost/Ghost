@@ -17,6 +17,7 @@ type CanvasState = {
     manualDraft: { text: string } | null;
     render: {
       dataGeneration: number;
+      errorPreview: { template: string; url: string; status: 404 } | null;
       representativePost: { id: string };
       representativeContent: Record<string, { id: string; url: string }>;
     };
@@ -28,6 +29,7 @@ type CanvasState = {
   };
   frames: Array<{
     id: string;
+    label: string;
     width: number;
     height: number;
     frameHandle: string;
@@ -93,6 +95,28 @@ async function nativeTool<T>(page: Page, name: string, input: Record<string, unk
   return result.data;
 }
 
+async function errorTemplateSource(
+  page: Page,
+  theme: string,
+  current: CanvasState,
+): Promise<string> {
+  if (theme === 'source') {
+    return '{{!< default}}\n<main><h1>{{statusCode}}</h1><p>{{message}}</p></main>';
+  }
+  const source = await nativeTool<{ content: string; truncated: boolean }>(
+    page,
+    'ghost_canvas_read_theme',
+    {
+      workspaceId: current.workspaceId,
+      expectedRevision: current.editor.sourceRevision,
+      operation: 'read_file',
+      path: 'error-404.hbs',
+    },
+  );
+  expect(source.truncated).toBe(false);
+  return source.content.replace(/^\d+: /gm, '');
+}
+
 function imageSelector(theme: string, label: string): string {
   if (label.startsWith('Post')) {
     return 'img.gh-feature-image';
@@ -108,7 +132,10 @@ function heroSelector(theme: string, label: string): string {
 }
 
 async function revealCanvasText(page: Page, label: string, text: string) {
+  const composition = page.getByTitle(`${label} composition`, { exact: true });
+  await expect(composition).toHaveAttribute('data-composition-status', 'settled');
   await page.getByRole('button', { name: label, exact: true }).dblclick();
+  await expect(composition).toHaveAttribute('data-composition-status', 'settled');
   const target = page
     .frameLocator(`iframe[title="${label} composition"]`)
     .getByText(text, { exact: true });
@@ -202,7 +229,7 @@ test.describe('Ghost Admin - Live theme canvas', () => {
         await page.reload();
         await page.goto('/ghost/#/builder/theme');
         await expect(page.getByRole('region', { name: 'Theme canvas', exact: true })).toBeVisible();
-        const labels = ['Home', 'Post', 'Page', 'Tag', 'Author'].flatMap((group) => [
+        const labels = ['Home', 'Post', 'Page', 'Tag', 'Author', '404'].flatMap((group) => [
           `${group} · Desktop`,
           `${group} · Mobile`,
         ]);
@@ -210,7 +237,10 @@ test.describe('Ghost Admin - Live theme canvas', () => {
           nativeTool<CanvasState>(page, 'ghost_canvas_probe_get_editor_state', {});
         const ready = async () => {
           await expect.poll(async () => !(await state()).editor.busy).toBe(true);
-          for (const label of labels) {
+          const current = await state();
+          for (const label of labels.filter(
+            (value) => !value.startsWith('404') || current.editor.render.errorPreview !== null,
+          )) {
             for (const kind of ['composition', 'preview']) {
               await expect(page.getByTitle(`${label} ${kind}`, { exact: true })).toHaveAttribute(
                 'data-preview-status',
@@ -245,6 +275,9 @@ test.describe('Ghost Admin - Live theme canvas', () => {
         };
         await ready();
         await assertImages();
+        await expect(page.getByText('This theme has no custom 404 template.').first()).toBeVisible({
+          visible: theme === 'source',
+        });
         const initial = await nativeTool<CanvasState>(
           page,
           'ghost_canvas_probe_get_editor_state',
@@ -419,6 +452,7 @@ test.describe('Ghost Admin - Live theme canvas', () => {
         );
         expect(postTemplate.truncated).toBe(false);
         const variantSource = postTemplate.content.replace(/^\d+: /gm, '');
+        const errorSource = await errorTemplateSource(page, theme, beforeDesign);
 
         // Hold real Content API responses while the worker renders the candidate.
         // Forward them unchanged; accepted live pages stay interactive meanwhile.
@@ -448,6 +482,11 @@ test.describe('Ghost Admin - Live theme canvas', () => {
             { operation: 'write', path: 'assets/css/canvas-design.css', content: design },
             {
               operation: 'write',
+              path: 'error-404.hbs',
+              content: `${errorSource}\n<p>Error canvas variation</p>`,
+            },
+            {
+              operation: 'write',
               path: 'custom-canvas.hbs',
               content: `${variantSource}\n<p>Custom canvas variation</p>`,
             },
@@ -472,6 +511,19 @@ test.describe('Ghost Admin - Live theme canvas', () => {
         releaseCandidate();
         await changing;
         await ready();
+        expect((await state()).editor.render.errorPreview).toMatchObject({
+          template: 'error-404.hbs',
+          status: 404,
+        });
+        for (const label of labels.filter((value) => value.startsWith('404'))) {
+          for (const kind of ['composition', 'preview']) {
+            await expect(
+              page
+                .frameLocator(`iframe[title="${label} ${kind}"]`)
+                .getByText('Error canvas variation', { exact: true }),
+            ).toHaveText('Error canvas variation');
+          }
+        }
         expect((await state()).editor.manualDraft).toMatchObject({ text: 'Canvas footer' });
         await assertImages();
         for (const label of labels.filter(
@@ -606,7 +658,7 @@ test.describe('Ghost Admin - Live theme canvas', () => {
             expectedRevision: inspected.editor.sourceRevision,
             frameId: frame.id,
           });
-          const label = labels.find((item) => item.toLowerCase().replace(' · ', '-') === frame.id)!;
+          const label = frame.label;
           const device = page.getByTitle(`${label} preview`, { exact: true });
           const bounds = await device.boundingBox();
           expect(bounds).toMatchObject({ width: frame.width, height: frame.height });
@@ -647,6 +699,13 @@ test.describe('Ghost Admin - Live theme canvas', () => {
         expect(await liveCustom.text()).toContain('Custom canvas variation');
         const liveSlug = await page.request.get('/canvas-about/');
         expect(await liveSlug.text()).toContain('Slug canvas variation');
+        const errorUrl = (await state()).editor.render.errorPreview!.url;
+        const liveError = await page.request.get(errorUrl);
+        expect(liveError.status()).toBe(404);
+        const errorHtml = await liveError.text();
+        expect(errorHtml).toContain('Error canvas variation');
+        expect(errorHtml).toContain('Canvas footer');
+        expect(errorHtml).toContain('canvas-design.css');
         const authorUrl = (await state()).editor.render.representativeContent.author.url;
         for (const url of [
           '/',
@@ -709,6 +768,14 @@ test.describe('Ghost Admin - Live theme canvas', () => {
         await page.getByRole('button', { name: 'Fit all', exact: true }).click();
         await page.screenshot({ path: testInfo.outputPath(`${theme}-published-overview.png`) });
       } catch (error) {
+        await testInfo.attach('canvas-failure-probe', {
+          body: JSON.stringify(
+            await nativeTool<CanvasState>(page, 'ghost_canvas_probe_get_editor_state', {}).catch(
+              (failure) => ({ error: String(failure) }),
+            ),
+          ),
+          contentType: 'application/json',
+        });
         await testInfo.attach('canvas-reload-signals', {
           body: JSON.stringify(reloadSignals),
           contentType: 'application/json',

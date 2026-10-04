@@ -5,8 +5,13 @@ import type { CanvasRoutes } from './canvas-driver';
 
 export type CanvasThemeRender = {
   groups: {
-    home: { url: string; status: number; html: string };
-  } & Partial<Record<keyof CanvasRoutes, { url: string; status: number; html: string }>>;
+    home: { url: string; status: number; html: string; contentType?: string | null };
+  } & Partial<
+    Record<
+      keyof CanvasRoutes,
+      { url: string; status: number; html: string; contentType?: string | null }
+    >
+  >;
   inlineTextTargets: Record<string, string>;
   editMarkerAttribute: string;
 };
@@ -19,6 +24,7 @@ export class CanvasThemePreview {
   private required: CanvasRoutes;
   private readonly render: (draft: ThemeDraft, signal: AbortSignal) => Promise<CanvasThemeRender>;
   private readonly getRenderGeneration: () => number;
+  private readonly getRequiredRoutes?: (draft: ThemeDraft, bound: CanvasRoutes) => CanvasRoutes;
   private tail = Promise.resolve();
   private queued = 0;
   private readonly disposal = new AbortController();
@@ -28,10 +34,12 @@ export class CanvasThemePreview {
     required: CanvasRoutes;
     render: (draft: ThemeDraft, signal: AbortSignal) => Promise<CanvasThemeRender>;
     getRenderGeneration: () => number;
+    getRequiredRoutes?: (draft: ThemeDraft, bound: CanvasRoutes) => CanvasRoutes;
   }) {
     this.required = structuredClone(options.required);
     this.render = options.render;
     this.getRenderGeneration = options.getRenderGeneration;
+    this.getRequiredRoutes = options.getRequiredRoutes;
   }
 
   get renderInputGeneration() {
@@ -67,7 +75,8 @@ export class CanvasThemePreview {
     const operation = this.tail.then(async () => {
       activeSignal.throwIfAborted();
       const generation = this.getRenderGeneration();
-      const required = structuredClone(this.required);
+      const bound = structuredClone(this.required);
+      const required = this.getRequiredRoutes?.(candidate, bound) ?? bound;
       if (this.staged?.revision === candidate.revision && this.staged.generation === generation) {
         return { valid: true, revision: candidate.revision, diagnostics: [] };
       }
@@ -97,15 +106,18 @@ export class CanvasThemePreview {
               return [];
             }
             const result = output.groups[group];
-            return result?.status === 200 &&
+            const expectedStatus = group === 'error' ? 404 : 200;
+            return result?.status === expectedStatus &&
               result.url === required[group] &&
-              typeof result.html === 'string'
+              typeof result.html === 'string' &&
+              (group !== 'error' ||
+                result.contentType?.split(';')[0].trim().toLowerCase() === 'text/html')
               ? []
               : [
                   {
                     code: 'canvas_required_route_failed',
                     severity: 'error' as const,
-                    message: `${group} required render did not resolve ${required[group]} successfully (status ${result?.status ?? 'unavailable'}).`,
+                    message: `${group} required render did not resolve ${required[group]} as expected (expected ${expectedStatus}${group === 'error' ? ' themed HTML' : ''}; status ${result?.status ?? 'unavailable'}).`,
                   },
                 ];
           },

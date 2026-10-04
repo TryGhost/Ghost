@@ -1,7 +1,12 @@
 import { getThemeLiteralTextTargets } from '@tryghost/theme-renderer/editor';
 import { parseEditMarker } from '@tryghost/theme-renderer/markers';
 import { visibleThemeCustomSettings } from '@/builder/workspaces/theme/theme-loader';
-import { canvasTemplate, canvasTemplates } from './canvas-templates';
+import {
+  canvasErrorRoute,
+  canvasErrorTemplate,
+  canvasTemplate,
+  canvasTemplates,
+} from './canvas-templates';
 import { CanvasThemePreview } from './canvas-theme-preview';
 import { CanvasRejectedError } from './canvas-driver';
 import { ThemeWorkspace } from '@/builder/workspaces/theme/theme-workspace';
@@ -81,6 +86,7 @@ export class SiteCanvasDriver implements CanvasDriver {
     this.preview = new CanvasThemePreview({
       required: this.routes,
       getRenderGeneration: () => this.generation,
+      getRequiredRoutes: (draft, bound) => this.requiredRoutes(draft, bound),
       render: async (draft, signal) => {
         const theme = canvasThemeFiles(draft);
         const visible = visibleThemeCustomSettings(draft.customSettings);
@@ -104,7 +110,7 @@ export class SiteCanvasDriver implements CanvasDriver {
           signal,
         );
         const groups = {} as import('./canvas-theme-preview').CanvasThemeRender['groups'];
-        for (const [kind, url] of Object.entries(this.routes)) {
+        for (const [kind, url] of Object.entries(this.requiredRoutes(draft))) {
           if (url) {
             groups[kind as keyof CanvasRoutes] = await this.renderer.render(
               url,
@@ -532,13 +538,16 @@ export class SiteCanvasDriver implements CanvasDriver {
   private currentRender(): CanvasEditorRender {
     const draft = this.workspace.draft;
     const output = this.preview.stagedFor(draft.revision);
+    const routes = this.requiredRoutes(draft);
+    const template = canvasErrorTemplate(canvasThemeFiles(draft));
     return {
       workspaceId: this.workspace.id,
       revision: draft.revision,
       dataGeneration: this.generation,
       dataSnapshot: `post:${this.selectedPost?.id ?? 'unbound'}:data-${this.generation}`,
       renderKey: `${draft.revision}:data-${this.generation}`,
-      routes: { ...this.routes },
+      routes,
+      errorPreview: routes.error && template ? { template, url: routes.error, status: 404 } : null,
       representativePost: this.selectedPost ? { ...this.selectedPost } : null,
       representativeContent: structuredClone(this.selectedContent),
       html: Object.fromEntries(
@@ -546,6 +555,15 @@ export class SiteCanvasDriver implements CanvasDriver {
       ) as CanvasEditorRender['html'],
       inlineTextTargets: output.inlineTextTargets,
       editMarkerAttribute: output.editMarkerAttribute,
+    };
+  }
+
+  private requiredRoutes(draft: ThemeDraft, bound: CanvasRoutes = this.routes): CanvasRoutes {
+    return {
+      ...bound,
+      error: canvasErrorTemplate(canvasThemeFiles(draft))
+        ? canvasErrorRoute(draft.renderer.siteUrl)
+        : undefined,
     };
   }
 }

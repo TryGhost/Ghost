@@ -16,13 +16,16 @@ vi.mock('@/builder/workspaces/theme/preview/preview-bridge', () => ({
   createThemeRendererClient: () => renderer,
 }));
 
-async function loadDraft() {
+async function loadDraft(themeFiles: Record<string, string> = {}) {
   const signal = new AbortController().signal;
-  const archive = await new JSZip()
+  const zip = new JSZip()
     .file('casper/package.json', JSON.stringify({ name: 'casper', version: '1.0.0' }))
     .file('casper/index.hbs', '<h1>Home</h1>')
-    .file('casper/post.hbs', '<h1>Post</h1>')
-    .generateAsync({ type: 'arraybuffer' });
+    .file('casper/post.hbs', '<h1>Post</h1>');
+  for (const [path, content] of Object.entries(themeFiles)) {
+    zip.file(`casper/${path}`, content);
+  }
+  const archive = await zip.generateAsync({ type: 'arraybuffer' });
   return loadThemeDraft(
     {
       archive,
@@ -895,6 +898,77 @@ it('rejects changed template bindings and reloads an existing resource whose ass
     expect(after.representativeContent?.page?.customTemplate).toBe('custom-wide');
     expect(after.revision).toBe(before.revision);
     expect(driver.readHistory()).toEqual(history);
+  } finally {
+    driver.dispose();
+    vi.clearAllMocks();
+  }
+});
+
+it('adds, restores and removes the authored 404 context without changing ordinary route rules', async () => {
+  const draft = await loadDraft();
+  let invalid: 'success' | 'plain' | 'ordinary' | null = null;
+  renderer.render.mockImplementation((url: string) => {
+    const error = url.includes('/__ghost_canvas__/not-found/');
+    return Promise.resolve({
+      url,
+      status: error ? (invalid === 'success' ? 200 : 404) : invalid === 'ordinary' ? 404 : 200,
+      contentType: error && invalid === 'plain' ? 'text/plain' : 'text/html; charset=utf-8',
+      html: error ? '<h1>Missing page</h1>' : '<h1>Home</h1>',
+      diagnostics: [],
+    });
+  });
+  const driver = new SiteCanvasDriver({
+    draft,
+    routes: { home: 'https://example.com/' },
+    publish: (candidate) => Promise.resolve({ ok: true, revision: candidate.revision }),
+  });
+  try {
+    await driver.start();
+    const initial = await driver.render();
+    expect(initial.routes?.error).toBeUndefined();
+    const added = await driver.applyThemePatch({
+      expectedRevision: initial.revision,
+      expectedDataGeneration: initial.dataGeneration,
+      files: [{ operation: 'write', path: 'error-4xx.hbs', content: '<h1>Missing page</h1>' }],
+    });
+    expect(added.errorPreview).toMatchObject({ template: 'error-4xx.hbs', status: 404 });
+    expect(added.html.error).toContain('Missing page');
+    const specific = await driver.applyThemePatch({
+      expectedRevision: added.revision,
+      expectedDataGeneration: added.dataGeneration,
+      files: [
+        { operation: 'write', path: 'error-404.hbs', content: '<h1>Specific missing page</h1>' },
+      ],
+    });
+    expect(specific.errorPreview?.template).toBe('error-404.hbs');
+    const restored = await driver.restoreHistory({
+      checkpointId: driver.readHistory().undoId!,
+      expectedRevision: specific.revision,
+      expectedDataGeneration: specific.dataGeneration,
+    });
+    expect(restored.errorPreview?.template).toBe('error-4xx.hbs');
+    const history = driver.readHistory();
+    for (const failure of ['success', 'plain', 'ordinary'] as const) {
+      invalid = failure;
+      await expect(
+        driver.applyThemePatch({
+          expectedRevision: restored.revision,
+          expectedDataGeneration: restored.dataGeneration,
+          files: [{ operation: 'write', path: 'index.hbs', content: `<h1>${failure}</h1>` }],
+        }),
+      ).rejects.toMatchObject({ code: 'render_invalid' });
+      expect((await driver.render()).revision).toBe(restored.revision);
+      expect(driver.readHistory()).toEqual(history);
+    }
+    invalid = null;
+    const removed = await driver.applyThemePatch({
+      expectedRevision: restored.revision,
+      expectedDataGeneration: restored.dataGeneration,
+      files: [{ operation: 'delete', path: 'error-4xx.hbs' }],
+    });
+    expect(removed.errorPreview).toBeNull();
+    expect(removed.routes?.error).toBeUndefined();
+    expect(removed.html.error).toBeUndefined();
   } finally {
     driver.dispose();
     vi.clearAllMocks();

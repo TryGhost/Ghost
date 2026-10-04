@@ -127,10 +127,10 @@ export class CanvasProbe {
     this.workspaceId = options.workspaceId ?? crypto.randomUUID();
     this.fixture = options.fixture ?? true;
     if (
-      descriptors.length > 10 ||
+      descriptors.length > 12 ||
       new Set(descriptors.map((frame) => frame.id)).size !== descriptors.length
     ) {
-      throw new Error('The fixture probe requires at most ten uniquely identified frames.');
+      throw new Error('The canvas probe requires at most twelve uniquely identified frames.');
     }
     for (const descriptor of descriptors) {
       this.frames.set(descriptor.id, {

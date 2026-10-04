@@ -79,7 +79,10 @@ export type CanvasPostSelection = {
   expectedDataGeneration: number;
 };
 export type CanvasContentKind = 'post' | 'page' | 'tag' | 'author';
-export type CanvasRoutes = { home: string } & Partial<Record<CanvasContentKind, string>>;
+export type CanvasTemplateKind = 'home' | CanvasContentKind | 'error';
+export type CanvasRoutes = { home: string } & Partial<
+  Record<Exclude<CanvasTemplateKind, 'home'>, string>
+>;
 export type CanvasContentSelection = CanvasPostSelection & { kind: CanvasContentKind };
 export type CanvasContentProvider = {
   selected: CanvasPost | null;
@@ -94,7 +97,8 @@ export type CanvasEditorRender = {
   renderKey: string;
   workspaceId?: string;
   unchanged?: boolean;
-  html: { home: string } & Partial<Record<CanvasContentKind, string>>;
+  html: { home: string } & Partial<Record<Exclude<CanvasTemplateKind, 'home'>, string>>;
+  errorPreview?: { template: string; url: string; status: 404 } | null;
   inlineTextTargets: Record<string, string>;
   editMarkerAttribute: string;
   editedFile?: { path: string; content: string };
@@ -148,7 +152,7 @@ export type CanvasSource = {
   revision: string;
   siteUrl: string;
   routes: CanvasRoutes;
-  templateKinds?: Array<'home' | CanvasContentKind>;
+  templateKinds?: CanvasTemplateKind[];
   content?: Partial<
     Record<
       CanvasContentKind,

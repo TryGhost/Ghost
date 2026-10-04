@@ -29,6 +29,7 @@ import type { CanvasTextDraft } from './canvas-text-draft';
 import type {
   CanvasSource,
   CanvasContentKind,
+  CanvasTemplateKind,
   CanvasContentSelection,
   CanvasDriver,
   CanvasPatch,
@@ -68,9 +69,9 @@ type ExpandedState =
 
 type OverviewMode = 'expanded' | 'device';
 
-function templateFrames(kinds: Array<'home' | CanvasContentKind>): CanvasFrame[] {
+function templateFrames(kinds: CanvasTemplateKind[]): CanvasFrame[] {
   return kinds.flatMap((kind, index) => {
-    const label = kind === 'home' ? 'Home' : canvasContentLabels[kind];
+    const label = kind === 'home' ? 'Home' : kind === 'error' ? '404' : canvasContentLabels[kind];
     return [
       {
         id: `${kind}-desktop`,
@@ -93,7 +94,7 @@ function templateFrames(kinds: Array<'home' | CanvasContentKind>): CanvasFrame[]
     ];
   });
 }
-const frameKind = (frame: CanvasFrame) => frame.id.split('-')[0] as 'home' | CanvasContentKind;
+const frameKind = (frame: CanvasFrame) => frame.id.split('-')[0] as CanvasTemplateKind;
 
 function LivePreview({
   frame,
@@ -575,6 +576,7 @@ export function ThemeCanvas({
                   representativePost: acceptedRender.current.representativePost ?? null,
                   representativeContent: acceptedRender.current.representativeContent ?? {},
                   routes: acceptedRender.current.routes ?? source.routes,
+                  errorPreview: acceptedRender.current.errorPreview ?? null,
                 }
               : null,
             busy:
@@ -1869,9 +1871,11 @@ export function ThemeCanvas({
               </>
             ) : !routes[frameKind(frame)] ? (
               <Text>
-                {(frameKind(frame) !== 'home' &&
-                  source.content?.[frameKind(frame) as CanvasContentKind]?.unavailableReason) ||
-                  `No published ${frame.group} is available.`}
+                {frameKind(frame) === 'error'
+                  ? 'This theme has no custom 404 template.'
+                  : (frameKind(frame) !== 'home' &&
+                      source.content?.[frameKind(frame) as CanvasContentKind]?.unavailableReason) ||
+                    `No published ${frame.group} is available.`}
               </Text>
             ) : null
           }
@@ -1885,10 +1889,11 @@ export function ThemeCanvas({
                   ? 'Full page reached a layout limit. Use fixed viewport.'
                   : null;
             const kind = frameKind(frame);
-            const provider = kind === 'home' ? undefined : source.content?.[kind];
+            const provider =
+              kind === 'home' || kind === 'error' ? undefined : source.content?.[kind];
             return (
               <Inline gap="xs">
-                {provider && kind !== 'home' && (
+                {provider && kind !== 'home' && kind !== 'error' && (
                   <CanvasPostPicker
                     busy={
                       externalBusy ||

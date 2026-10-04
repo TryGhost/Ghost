@@ -61,6 +61,7 @@ export function createThemeRendererWorkerHandler({
       }
       return {
         status: response.status,
+        contentType: response.headers.get('content-type'),
         html: await response.text(),
         url: currentUrl,
         diagnostics: [],

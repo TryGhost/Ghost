@@ -234,7 +234,7 @@ export function ThemeCanvasExperience(props: Inputs) {
           siteUrl: inputs.siteUrl,
           routes,
           routing: inputs.routing,
-          templateKinds: ['home', 'post', 'page', 'tag', 'author'],
+          templateKinds: ['home', 'post', 'page', 'tag', 'author', 'error'],
           content: Object.fromEntries(
             Object.entries(content).map(([kind, provider]) => [
               kind,

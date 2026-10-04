@@ -129,3 +129,83 @@ it('reports a genuinely truncated long composition and keeps the full fixed-devi
     value.dispose();
   }
 });
+
+it.each(['mobile', 'desktop'])(
+  'settles %s navigation rebuilt on resize while retaining inline editing',
+  async (kind) => {
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'width:390px;height:844px;border:0';
+    document.body.appendChild(iframe);
+    const surface = new IframePreviewDocumentSurface(iframe, {
+      observeLayout: true,
+      canvasNavigation: true,
+    });
+    const signal = new AbortController().signal;
+    try {
+      await surface.replaceDocument(
+        {
+          html: `<style>body{margin:0}main{height:2400px}</style><nav><span data-edit="navigation">Menu</span></nav><main>Story</main><script>
+      const nav = document.querySelector('nav');
+      const source = nav.innerHTML;
+      function rebuild() {
+        nav.innerHTML = source;
+        if ('${kind}' === 'desktop') {
+          const item = nav.lastElementChild;
+          item.remove();
+          const button = document.createElement('button');
+          button.appendChild(item);
+          nav.appendChild(button);
+        }
+      }
+      rebuild();
+      window.addEventListener('resize', () => setTimeout(rebuild, 1));
+      window.addEventListener('message', event => {
+        if (event.data === 'shrink') document.querySelector('main').style.height = '1000px';
+      });</script>`,
+          revision: 'responsive-navigation',
+          url: 'https://example.com/',
+          inlineTextTargets: { navigation: 'span' },
+        },
+        null,
+        signal,
+      );
+      await surface.setInteractionMode('edit', signal);
+      expect(
+        (
+          await surface.inspectElement(
+            { selector: '[data-edit="navigation"][tabindex="0"]' },
+            signal,
+          )
+        ).text,
+      ).toBe('Menu');
+      const measure = () =>
+        measureExpandedComposition(
+          surface,
+          (height, active) => {
+            iframe.style.height = `${height}px`;
+            return waitForCompositionLayout(active);
+          },
+          'home-mobile',
+          'responsive-navigation',
+          signal,
+          { width: 390, height: 844 },
+        );
+      const result = await measure();
+      expect(result.status).toBe('settled');
+      expect(result.viewport.height).toBeGreaterThan(2400);
+      const generation = (await surface.measureLayout(signal)).layoutGeneration!;
+      iframe.contentWindow!.postMessage('shrink', '*');
+      await expect
+        .poll(async () => (await surface.measureLayout(signal)).layoutGeneration)
+        .toBeGreaterThan(generation);
+      const shrunk = await measure();
+      expect(shrunk.status).toBe('settled');
+      expect(shrunk.viewport.height).toBeGreaterThanOrEqual(1000);
+      expect(shrunk.viewport.height).toBeLessThan(1200);
+      expect((await surface.inspectElement({ marker: 'navigation' }, signal)).text).toBe('Menu');
+    } finally {
+      surface.destroy();
+      iframe.remove();
+    }
+  },
+);

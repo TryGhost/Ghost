@@ -2407,6 +2407,56 @@ export function previewRuntimeBootstrap(): void {
         layoutGeneration += 1;
         schedule();
       };
+      // Compare the completed authored tree, not intermediate remove/insert
+      // records. Responsive navigation can rebuild equivalent markup on every
+      // resize; counting that as new content makes expansion reset forever.
+      const authoredTree = () => {
+        const nodes: unknown[] = [];
+        const walker = document.createTreeWalker(document.documentElement, NodeFilter.SHOW_ALL);
+        let node: Node | null = walker.currentNode;
+        while (node) {
+          if (node instanceof Element) {
+            const element = node;
+            const attributes = Array.from(element.attributes)
+              .flatMap((attribute) => {
+                if (
+                  element === document.documentElement &&
+                  ['data-selection-mode', 'data-inline-edit-mode'].includes(attribute.name)
+                ) {
+                  return [];
+                }
+                let value: string | null = attribute.value;
+                if (
+                  attribute.name === 'tabindex' &&
+                  value === '0' &&
+                  inlineTabStops.has(element as HTMLElement)
+                ) {
+                  value = inlineTabStops.get(element as HTMLElement)!;
+                }
+                if (attribute.name === 'style' && inlineOutlineElements.has(element)) {
+                  const style = document.createElement('span').style;
+                  style.cssText = value ?? '';
+                  style.removeProperty('outline');
+                  value = style.cssText || null;
+                }
+                return value === null ? [] : [[attribute.name, value]];
+              })
+              .sort(([first], [second]) => first.localeCompare(second));
+            nodes.push([
+              node.nodeType,
+              node.namespaceURI,
+              node.nodeName,
+              attributes,
+              node.childNodes.length,
+            ]);
+          } else {
+            nodes.push([node.nodeType, node.nodeValue]);
+          }
+          node = walker.nextNode();
+        }
+        return JSON.stringify(nodes);
+      };
+      let previousTree = authoredTree();
       const mutations = new MutationObserver((records) => {
         const changed = records
           .map((record) => {
@@ -2431,22 +2481,14 @@ export function previewRuntimeBootstrap(): void {
               }
               return record.oldValue !== element.getAttribute(attribute);
             }
-            if (
-              record.type === 'childList' &&
-              record.addedNodes.length === record.removedNodes.length &&
-              record.addedNodes.length <= 32
-            ) {
-              // Responsive scripts may recreate identical markup on every resize.
-              return [...record.addedNodes].some(
-                (node, index) => !node.isEqualNode(record.removedNodes[index]),
-              );
-            }
             return true;
           })
           .some(Boolean);
-        if (changed) {
+        const tree = authoredTree();
+        if (changed && tree !== previousTree) {
           contentChanged();
         }
+        previousTree = tree;
       });
       mutations.observe(document.documentElement, {
         subtree: true,

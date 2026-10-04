@@ -18,6 +18,7 @@ export type ThemeRendererCandidateSettings = Pick<
 
 export type ThemeRenderResult = {
   status: number;
+  contentType?: string | null;
   html: string;
   url: string;
   diagnostics: WorkspaceDiagnostic[];

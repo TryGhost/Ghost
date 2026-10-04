@@ -11,6 +11,18 @@ export function isCanvasTemplatePath(value: unknown): value is string {
 
 export type CanvasTemplateChoice = { path: string; items: CanvasPost[] };
 
+export function canvasErrorTemplate(files: Record<string, string>): string | null {
+  return (
+    ['error-404.hbs', 'error-4xx.hbs', 'error.hbs'].find((path) => Object.hasOwn(files, path)) ??
+    null
+  );
+}
+
+/** Two path segments deliberately fall outside the supported /{slug}/ routing. */
+export function canvasErrorRoute(siteUrl: string): string {
+  return new URL('__ghost_canvas__/not-found/', `${siteUrl.replace(/\/$/, '')}/`).href;
+}
+
 /** Default Ghost hierarchy: slug > assigned custom > kind > entry/index fallback.
  * This describes eligible published routes; it never overrides the renderer. */
 export function canvasTemplate(

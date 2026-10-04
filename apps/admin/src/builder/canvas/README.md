@@ -57,6 +57,18 @@ advances and old inspection handles retire. Failed or cancelled selection keeps 
 accepted binding. An empty site can explicitly load later-published content. Settings
 and other content observations remain session inputs; there is no background sync.
 
+The 404 group renders a theme-authored `error-404.hbs`, `error-4xx.hbs` or
+`error.hbs` in Ghost's normal precedence at both sizes. It binds a deliberately
+missing two-segment URL under the configured site path. Candidate validation
+requires that exact URL to return 404 with HTML content; a successful ordinary
+page, redirect or plain-text error fallback rejects adoption. All ordinary bound
+pages still require 200. Adding/removing error templates updates this context
+within source validation, Undo/Redo and publication, without changing published
+content or introducing a synthetic error document. If no authored error template
+exists, the group explains that state and mounts no preview. Native editor state
+reports `render.errorPreview` with the active template, URL and expected status;
+existing inspection/source/patch/reveal tools address the same live error frames.
+
 Content pickers also list root custom and slug-specific template variations from
 the current accepted theme. Published `slug` and `custom_template` fields determine
 eligibility using Ghost's default hierarchy: slug-specific first, assigned custom
