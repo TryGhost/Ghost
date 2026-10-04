@@ -328,6 +328,14 @@ or ambiguous originals reject the whole patch. `ghost_canvas_validate_theme_patc
 uses the same final-candidate and required-page validation without source adoption,
 live delivery or history changes. Preflight does not reserve a revision; applying
 still checks current source and data generation.
+Preflight explicitly reports `validationScope: source-and-required-renderer-pages`
+and `runtimeReadiness: not-checked`. Its `valid` result proves source and required
+renderer output, not browser resource loading or expanded-composition readiness.
+The renderer does not mount browser documents. Image/font changes and expanded
+geometry are observed after adoption through the existing live delivery state;
+inspect both representations before concluding that a design works. A lazy image
+may change a composition after its first measurement. The retained layout observer
+continues bounded measurement without replacing its fixed-device counterpart.
 Patches additionally require the discovered data generation and share the UI
 validation/adoption/delivery action. Native writes allow at most 32 settings with
 string values up to 8,192 characters. Accepted patches return the actual source

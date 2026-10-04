@@ -35,6 +35,8 @@ it('exposes read-only preflight and exact replacements with useful operation arg
   const { draft, apply, args } = await fixture();
   const validate = vi.fn().mockResolvedValue({
     valid: true,
+    validationScope: 'source-and-required-renderer-pages',
+    runtimeReadiness: 'not-checked',
     revision: draft.revision,
     candidateRevision: 'candidate',
     dataGeneration: 0,
@@ -51,6 +53,12 @@ it('exposes read-only preflight and exact replacements with useful operation arg
   });
   const action = tools.tools().find((tool) => tool.name === 'ghost_canvas_validate_theme_patch')!;
   expect(action.annotations.readOnlyHint).toBe(true);
+  expect(tools.state().patchPreflight).toMatchObject({
+    available: true,
+    reservesRevision: false,
+    validationScope: 'source-and-required-renderer-pages',
+    runtimeReadiness: 'not-checked',
+  });
   const patch = {
     ...args,
     expectedDataGeneration: 0,
@@ -65,7 +73,12 @@ it('exposes read-only preflight and exact replacements with useful operation arg
   };
   expect(await action.execute(patch)).toMatchObject({
     status: 'ok',
-    data: { valid: true, candidateRevision: 'candidate' },
+    data: {
+      valid: true,
+      candidateRevision: 'candidate',
+      validationScope: 'source-and-required-renderer-pages',
+      runtimeReadiness: 'not-checked',
+    },
   });
   expect(validate).toHaveBeenCalledWith(
     expect.objectContaining({ files: patch.files }),

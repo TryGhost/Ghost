@@ -26,6 +26,8 @@ export type CanvasPatch = {
 };
 export type CanvasPatchValidation = {
   valid: true;
+  validationScope: 'source-and-required-renderer-pages';
+  runtimeReadiness: 'not-checked';
   revision: string;
   candidateRevision: string;
   dataGeneration: number;

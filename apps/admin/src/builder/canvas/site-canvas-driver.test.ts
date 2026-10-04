@@ -67,7 +67,13 @@ it('preflights complete Home/Post validation without adopting a draft, checkpoin
       files: [{ operation: 'write' as const, path: 'index.hbs', content: '<h1>Candidate</h1>' }],
     };
     const result = await driver.validateThemePatch(patch);
-    expect(result).toMatchObject({ valid: true, revision: before.revision, unchanged: false });
+    expect(result).toMatchObject({
+      valid: true,
+      revision: before.revision,
+      unchanged: false,
+      validationScope: 'source-and-required-renderer-pages',
+      runtimeReadiness: 'not-checked',
+    });
     expect(result.candidateRevision).not.toBe(before.revision);
     expect(driver.workspace.draft.files['index.hbs'].content).toBe('<h1>Home</h1>');
     expect(driver.readHistory()).toEqual(history);

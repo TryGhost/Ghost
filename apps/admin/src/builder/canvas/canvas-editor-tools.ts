@@ -106,7 +106,12 @@ export class CanvasEditorTools {
       },
       representativePosts: { available: !!this.editor.selectPost && !!this.editor.listPosts },
       frameNavigation: { available: !!this.editor.revealFrame },
-      patchPreflight: { available: !!this.editor.validatePatch, reservesRevision: false },
+      patchPreflight: {
+        available: !!this.editor.validatePatch,
+        reservesRevision: false,
+        validationScope: 'source-and-required-renderer-pages',
+        runtimeReadiness: 'not-checked',
+      },
       cssEditing: {
         themeBuilds: false,
         preferred: 'directly-linked-authored-stylesheet',
@@ -423,7 +428,7 @@ export class CanvasEditorTools {
         ? [
             define(
               'validate_theme_patch',
-              'Preflight the same atomic source/settings patch and required Home/Post renderer validation without adopting, delivering, checkpointing or publishing. Does not reserve the revision; apply must recheck current source/data generation. Reports candidate revision, affected paths/settings and whether the patch is unchanged. No shell or theme build scripts run.',
+              'Preflight the same atomic source/settings patch and required Home/Post renderer validation without adopting, delivering, checkpointing or publishing. valid means source/renderer validation only: browser image/font loading and expanded-composition geometry are not checked. After applying, inspect delivery state and both device/expanded frames before concluding that the design works. Does not reserve the revision; apply must recheck current source/data generation. Reports validation scope, candidate revision, affected paths/settings and whether the patch is unchanged. No shell or theme build scripts run.',
               patchProperties,
               ['workspaceId', 'expectedRevision', 'expectedDataGeneration'],
               true,

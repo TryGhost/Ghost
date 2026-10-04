@@ -31,10 +31,12 @@ async function fakeBuilderWorld({
   post = false,
   customSettings = [],
   themeName,
+  featureImage,
 }: {
   post?: boolean;
   customSettings?: CustomThemeSetting[];
   themeName?: string;
+  featureImage?: string;
 } = {}): Promise<void> {
   const activeTheme = activeThemeResponse().themes[0];
   if (!activeTheme) {
@@ -91,6 +93,7 @@ async function fakeBuilderWorld({
             title: 'Published canvas example',
             visibility: 'public',
             html: '<p>Real post content</p>',
+            feature_image: featureImage,
             tags: [],
             authors: [],
           },
@@ -101,6 +104,117 @@ async function fakeBuilderWorld({
 }
 
 describe('Design Builder route', () => {
+  it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1')(
+    'keeps expanded Home ready when a validated dynamic hero image loads after adoption',
+    { timeout: 60_000 },
+    async () => {
+      await commands.canvasPointerViewport(true);
+      const imageUrl = 'https://images.example.com/delayed-hero.png';
+      const bitmap = document.createElement('canvas');
+      bitmap.width = 100;
+      bitmap.height = 300;
+      bitmap.getContext('2d')!.fillRect(0, 0, 100, 300);
+      await commands.fakeFrameImage(imageUrl, bitmap.toDataURL().split(',')[1], false, true);
+      await fakeBuilderWorld({ post: true, featureImage: imageUrl });
+      const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
+      const state = async () =>
+        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {}))
+          .data as ReturnType<CanvasProbe['state']>;
+      try {
+        await expect
+          .poll(async () => !(await state()).editor?.busy, { timeout: 30_000 })
+          .toBe(true);
+        const initial = await state();
+        const patch = {
+          workspaceId: initial.workspaceId,
+          expectedRevision: initial.editor!.sourceRevision,
+          expectedDataGeneration: (initial.editor!.render as { dataGeneration: number })
+            .dataGeneration,
+          files: [
+            {
+              operation: 'write',
+              path: 'index.hbs',
+              content:
+                '<html><body style="margin:0"><h1>{{@site.title}}</h1>{{#foreach posts limit="1"}}<img loading="lazy" style="display:block;width:100%;height:auto" src="{{feature_image}}" alt="Dynamic hero">{{/foreach}}{{> footer}}</body></html>',
+            },
+          ],
+        };
+        const validated = await commands.canvasNativeTool(
+          'ghost_canvas_validate_theme_patch',
+          patch,
+        );
+        expect(validated).toMatchObject({
+          status: 'ok',
+          data: {
+            valid: true,
+            validationScope: 'source-and-required-renderer-pages',
+            runtimeReadiness: 'not-checked',
+          },
+        });
+        expect((await state()).editor!.sourceRevision).toBe(initial.editor!.sourceRevision);
+        expect(await commands.getFrameImageRequests()).toEqual([]);
+        expect(
+          await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', patch),
+        ).toMatchObject({ status: 'ok' });
+        await expect
+          .poll(async () => (await commands.getFrameImageRequests()).length)
+          .toBeGreaterThan(0);
+        await expect
+          .poll(async () => !(await state()).editor?.busy, { timeout: 30_000 })
+          .toBe(true);
+        const awaitingImage = await state();
+        expect(
+          awaitingImage.frames.every(
+            (frame) => frame.device?.status === 'current' && frame.expanded?.status === 'current',
+          ),
+        ).toBe(true);
+        expect(
+          parseFloat(
+            page.getByTitle('Home · Desktop composition', { exact: true }).element().style.height,
+          ),
+        ).toBe(900);
+        await commands.releaseFrameImages();
+        await expect
+          .poll(async () => !(await state()).editor?.busy, { timeout: 30_000 })
+          .toBe(true);
+        await expect
+          .poll(
+            async () => {
+              const frames = (await state()).frames;
+              return [
+                ['home-desktop', 'Home · Desktop composition', 4_000],
+                ['home-mobile', 'Home · Mobile composition', 1_000],
+              ].every(([id, title, minimum]) => {
+                const iframe = page.getByTitle(String(title), { exact: true }).element();
+                return (
+                  frames.find((frame) => frame.id === id)?.expanded?.status === 'current' &&
+                  iframe.dataset.compositionStatus === 'settled' &&
+                  parseFloat(iframe.style.height) > Number(minimum)
+                );
+              });
+            },
+            { timeout: 30_000 },
+          )
+          .toBe(true);
+        const final = await state();
+        expect(
+          final.frames.every(
+            (frame) => frame.device?.status === 'current' && frame.expanded?.status === 'current',
+          ),
+        ).toBe(true);
+        for (const frame of final.frames) {
+          const beforeImage = awaitingImage.frames.find((before) => before.id === frame.id)!;
+          expect(frame.device!.documentInstanceId).toBe(beforeImage.device!.documentInstanceId);
+          expect(frame.expanded!.documentInstanceId).toBe(beforeImage.expanded!.documentInstanceId);
+        }
+      } finally {
+        await commands.releaseFrameImages();
+        await screen.unmount();
+        await commands.canvasPointerViewport(false);
+      }
+    },
+  );
+
   it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1')(
     'reports a Post composition mismatch through native tools and retires its cause after recovery',
     { timeout: 60_000 },

@@ -211,6 +211,8 @@ export class SiteCanvasDriver implements CanvasDriver {
     this.expectCurrent(patch.expectedRevision, patch.expectedDataGeneration);
     return {
       valid: true,
+      validationScope: 'source-and-required-renderer-pages',
+      runtimeReadiness: 'not-checked',
       revision: result.revision,
       candidateRevision: result.data.candidateRevision!,
       dataGeneration: patch.expectedDataGeneration,
