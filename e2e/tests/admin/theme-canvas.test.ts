@@ -17,6 +17,10 @@ type CanvasState = {
     manualDraft: { text: string } | null;
     render: { dataGeneration: number; representativePost: { id: string } };
     history: unknown;
+    selection: {
+      target: Record<string, unknown>;
+      context: { data: { occurrence: string; source: { path: string; line: number } } };
+    } | null;
   };
   frames: Array<{
     id: string;
@@ -207,6 +211,54 @@ test.describe('Ghost Admin - Live theme canvas', () => {
         ).toBeVisible();
         await page.screenshot({ path: testInfo.outputPath(`${theme}-live-canvas.png`) });
 
+        // Discover the clicked heading's source through native context, rather than
+        // supplying a known template path to the agent.
+        await post.getByRole('heading', { level: 1 }).click();
+        await expect.poll(async () => (await state()).editor.selection?.target).toBeTruthy();
+        const selected = await state();
+        const selection = selected.editor.selection!;
+        const inspectedHeading = await nativeTool<{
+          element: { source: { path: string; line: number }; attributes: { class: string } };
+        }>(page, 'ghost_canvas_probe_inspect_element', {
+          ...selection.target,
+          occurrence: selection.context.data.occurrence,
+        });
+        expect(inspectedHeading.element.source).toMatchObject(selection.context.data.source);
+        const selectedSource = await nativeTool<{ content: string; truncated: boolean }>(
+          page,
+          'ghost_canvas_read_theme',
+          {
+            workspaceId: selected.workspaceId,
+            expectedRevision: selected.editor.sourceRevision,
+            operation: 'read_file',
+            path: inspectedHeading.element.source.path,
+          },
+        );
+        expect(selectedSource.truncated).toBe(false);
+        const titleLine = selectedSource.content.replace(/^\d+: /gm, '').split('\n')[
+          inspectedHeading.element.source.line - 1
+        ];
+        expect(titleLine).toContain('<h1');
+        const headingPatch = {
+          workspaceId: selected.workspaceId,
+          expectedRevision: selected.editor.sourceRevision,
+          expectedDataGeneration: selected.editor.render.dataGeneration,
+          files: [
+            {
+              operation: 'replace',
+              path: inspectedHeading.element.source.path,
+              oldText: titleLine,
+              newText: `<p class="canvas-editorial-kicker">From the journal</p>\n${titleLine}`,
+            },
+          ],
+        };
+        await nativeTool(page, 'ghost_canvas_validate_theme_patch', headingPatch);
+        expect((await state()).editor.sourceRevision).toBe(selected.editor.sourceRevision);
+        await nativeTool(page, 'ghost_canvas_apply_theme_patch', headingPatch);
+        await ready();
+        await expect(post.getByText('From the journal', { exact: true })).toBeVisible();
+        const postTitleClass = inspectedHeading.element.attributes.class.split(' ')[0];
+
         // Installed Source translates its copyright link; edit source through native
         // WebMCP, then use the literal added by that edit for direct manual editing.
         const beforeFooter = await nativeTool<CanvasState>(
@@ -251,6 +303,17 @@ test.describe('Ghost Admin - Live theme canvas', () => {
         await text.fill('Canvas footer in progress');
 
         const beforeDesign = await state();
+        const stylesheetLinks = await nativeTool<{
+          matches: Array<{ path: string; text: string }>;
+        }>(page, 'ghost_canvas_read_theme', {
+          workspaceId: beforeDesign.workspaceId,
+          expectedRevision: beforeDesign.editor.sourceRevision,
+          operation: 'search_files',
+          query: 'rel="stylesheet"',
+        });
+        const layoutPath = stylesheetLinks.matches.find(
+          (match) => match.path.endsWith('.hbs') && match.text.includes('{{asset'),
+        )!.path;
         const layout = await nativeTool<{ content: string; truncated: boolean }>(
           page,
           'ghost_canvas_read_theme',
@@ -258,20 +321,33 @@ test.describe('Ghost Admin - Live theme canvas', () => {
             workspaceId: beforeDesign.workspaceId,
             expectedRevision: beforeDesign.editor.sourceRevision,
             operation: 'read_file',
-            path: 'default.hbs',
+            path: layoutPath,
           },
         );
         expect(layout.truncated).toBe(false);
-        const design = `<style>
+        const design = `
           .gh-header, .site-header-content, .gh-article-header, .article-header {
             border-bottom: 12px solid #e89538;
           }
           .gh-feature-image { border-radius: 32px; }
-        </style>`;
-        const designedLayout = layout.content
+          .${postTitleClass} {
+            font-size: clamp(40px, 6vw, 80px);
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -.045em;
+            text-wrap: balance;
+          }
+          .canvas-editorial-kicker {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+          }
+        `;
+        const styleLink = layout.content
           .replace(/^\d+: /gm, '')
-          .replace('</head>', `${design}</head>`);
-        expect(designedLayout).toContain(design);
+          .split('\n')
+          .find((line) => line.includes('rel="stylesheet"') && line.includes('{{asset'))!;
 
         // Hold real Content API responses while the worker renders the candidate.
         // Forward them unchanged; accepted live pages stay interactive meanwhile.
@@ -291,7 +367,15 @@ test.describe('Ghost Admin - Live theme canvas', () => {
           workspaceId: beforeDesign.workspaceId,
           expectedRevision: beforeDesign.editor.sourceRevision,
           expectedDataGeneration: beforeDesign.editor.render.dataGeneration,
-          files: [{ operation: 'write', path: 'default.hbs', content: designedLayout }],
+          files: [
+            {
+              operation: 'replace',
+              path: layoutPath,
+              oldText: styleLink,
+              newText: `${styleLink}\n<link rel="stylesheet" href="{{asset "css/canvas-design.css"}}">`,
+            },
+            { operation: 'write', path: 'assets/css/canvas-design.css', content: design },
+          ],
         });
         void changing.catch(() => {});
         await expect.poll(() => heldCandidate).toBe(true);
@@ -315,6 +399,13 @@ test.describe('Ghost Admin - Live theme canvas', () => {
               .frameLocator(`iframe[title="${label} composition"]`)
               .locator(heroSelector(theme, label)),
           ).toHaveCSS('border-bottom-width', '12px');
+        }
+        for (const label of ['Post · Desktop', 'Post · Mobile']) {
+          await expect(
+            page
+              .frameLocator(`iframe[title="${label} composition"]`)
+              .getByRole('heading', { level: 1 }),
+          ).toHaveCSS('font-size', label.endsWith('Desktop') ? '80px' : '40px');
         }
         await page.getByRole('button', { name: 'Resume text draft', exact: true }).click();
         await text.press('Enter');
@@ -433,11 +524,22 @@ test.describe('Ghost Admin - Live theme canvas', () => {
           const response = await page.request.get(url);
           expect(response.status()).toBe(200);
           const html = await response.text();
-          expect(html).toContain('border-bottom: 12px solid #e89538');
+          const stylesheetUrl = html.match(/href="([^"]*canvas-design\.css[^"]*)"/)?.[1];
+          expect(stylesheetUrl).toBeTruthy();
+          const stylesheet = await page.request.get(new URL(stylesheetUrl!, response.url()).href);
+          expect(stylesheet.status()).toBe(200);
+          const css = await stylesheet.text();
+          expect(css).toContain('border-bottom: 12px solid #e89538');
+          expect(css).toContain('font-size: clamp(40px, 6vw, 80px)');
           expect(html).toContain('canvas-landscape');
           expect(html).toContain('Canvas footer');
           expect(html).not.toContain('Private footer draft');
           expect(html).toContain('has-serif-title');
+        }
+        for (const url of [`/${first.slug}/`, `/${second.slug}/`]) {
+          const response = await page.request.get(url);
+          expect(response.status()).toBe(200);
+          expect(await response.text()).toContain('From the journal');
         }
         await ready();
         expect((await state()).editor.manualDraft).toMatchObject({ text: 'Private footer draft' });
