@@ -6,7 +6,8 @@ import { sidebarScreen } from '@/layout/sidebar.screen';
 
 let lateToastPublishedAfterUnmount = false;
 
-describe('Acceptance toast isolation', () => {
+// This pair verifies cleanup across afterEach, so setup must precede the next-app check.
+describe('Acceptance toast isolation', { shuffle: false, concurrent: false }, () => {
   it('leaves a persistent error toast for the harness to clean up', async () => {
     await renderAdminApp('/site');
     await expect.element(page.getByRole('region', { name: 'Notifications' })).toBeInTheDocument();
