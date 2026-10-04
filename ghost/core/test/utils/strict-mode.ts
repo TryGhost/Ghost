@@ -31,10 +31,6 @@ const EXCLUDED_DIRS = [
   path.join(SOURCE_DIR, 'frontend', 'src') + path.sep,
 ];
 
-// Matches a "use strict" directive at the start of the directive prologue,
-// after any leading whitespace and comments.
-const HAS_USE_STRICT = /^(?:\s|\/\/[^\n]*\n|\/\*[\s\S]*?\*\/)*['"]use strict['"]/;
-
 const INSTALLED = Symbol.for('ghost.test.strictMode');
 
 function isGhostSource(filename: string): boolean {
@@ -49,6 +45,9 @@ function isGhostSource(filename: string): boolean {
   return path.dirname(filename) === CORE_ROOT;
 }
 
+// Files that already have the directive get a second one, which is harmless:
+// any number of directives can open a file. That avoids parsing for an
+// existing directive past leading comments.
 function addUseStrict(content: string): string {
   // A shebang has to stay first, so the directive starts the second line.
   if (content.startsWith('#!')) {
@@ -78,7 +77,7 @@ export function enableStrictMode(): void {
   const originalCompile = proto._compile;
 
   proto._compile = function compile(content, filename, ...rest) {
-    if (isGhostSource(filename) && !HAS_USE_STRICT.test(content)) {
+    if (isGhostSource(filename)) {
       content = addUseStrict(content);
     }
 
