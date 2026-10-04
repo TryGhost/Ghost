@@ -12,6 +12,7 @@ import type {
   CanvasEdit,
   CanvasEditorRender,
   CanvasPatch,
+  CanvasPatchValidation,
   CanvasHistory,
   CanvasHistoryRestore,
   CanvasPost,
@@ -188,6 +189,34 @@ export class SiteCanvasDriver implements CanvasDriver {
       sourceChanges: Object.fromEntries(
         result.data.paths.map((path) => [path, this.workspace.draft.files[path]?.content ?? null]),
       ),
+    };
+  }
+
+  async validateThemePatch(
+    patch: CanvasPatch,
+    callerSignal?: AbortSignal,
+  ): Promise<CanvasPatchValidation> {
+    this.expectCurrent(patch.expectedRevision, patch.expectedDataGeneration);
+    const signal = AbortSignal.any([this.lifetime.signal, ...(callerSignal ? [callerSignal] : [])]);
+    signal.throwIfAborted();
+    const result = await this.workspace.validateThemePatch(
+      { revision: patch.expectedRevision, files: patch.files, settings: patch.settings },
+      signal,
+      patch.expectedDataGeneration,
+    );
+    signal.throwIfAborted();
+    if (!result.ok) {
+      throw new CanvasRejectedError(result.error.message, result.error.code, result.error.details);
+    }
+    this.expectCurrent(patch.expectedRevision, patch.expectedDataGeneration);
+    return {
+      valid: true,
+      revision: result.revision,
+      candidateRevision: result.data.candidateRevision!,
+      dataGeneration: patch.expectedDataGeneration,
+      unchanged: result.data.unchanged,
+      paths: result.data.paths,
+      settings: result.data.settings,
     };
   }
 

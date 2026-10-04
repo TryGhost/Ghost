@@ -291,7 +291,7 @@ older native `navigator.modelContext` location. It registers
 `ghost_canvas_probe_get_editor_state`, `ghost_canvas_probe_inspect_frame`,
 `ghost_canvas_probe_inspect_element` and `ghost_canvas_probe_capture_frame`, plus
 `ghost_canvas_read_theme` and
-`ghost_canvas_apply_theme_patch`, `ghost_canvas_history`, `ghost_canvas_list_posts`,
+`ghost_canvas_validate_theme_patch`, `ghost_canvas_apply_theme_patch`, `ghost_canvas_history`, `ghost_canvas_list_posts`,
 `ghost_canvas_select_post` and `ghost_canvas_open_publication_review` on the real editor.
 `ghost_canvas_reveal_frame` selects and reveals a discovered frame ID at readable
 scale through the board's existing action. It moves the shared camera and clears
@@ -311,6 +311,16 @@ list/read/literal search and supported settings. List/settings reads page via
 File reads return numbered `content`: each line starts with `N:` and a space for
 source reference. Remove those labels before writing a file, and read any remaining
 pages when `truncated` is true; an excerpt cannot replace the complete source.
+Literal search accepts an optional exact file `path`. CSS list/read metadata identifies
+generated stylesheets and authored sources that require a build. Theme builds are
+unavailable; prefer a directly linked authored override stylesheet and its template
+reference in one patch. Changed generated CSS loses source-map comment directives
+so it cannot point to stale mappings; its authored pipeline source is not rebuilt.
+Atomic patches accept write, delete or one exact text replacement per file. Missing
+or ambiguous originals reject the whole patch. `ghost_canvas_validate_theme_patch`
+uses the same final-candidate and required-page validation without source adoption,
+live delivery or history changes. Preflight does not reserve a revision; applying
+still checks current source and data generation.
 Patches additionally require the discovered data generation and share the UI
 validation/adoption/delivery action. Native writes allow at most 32 settings with
 string values up to 8,192 characters. Accepted patches return the actual source

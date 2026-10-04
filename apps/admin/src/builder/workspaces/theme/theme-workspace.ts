@@ -65,6 +65,7 @@ type ThemeWorkspaceOptions = {
 
 type ThemeMutationPreview = BuilderPreviewAdapter & {
   renderCandidate?: (draft: ThemeDraft, signal: AbortSignal) => Promise<ValidationResult>;
+  validateCandidate?: (draft: ThemeDraft, signal: AbortSignal) => Promise<ValidationResult>;
   restoreDraft?: (draft: ThemeDraft, signal: AbortSignal) => Promise<ValidationResult>;
   rebaseDraft?: (draft: ThemeDraft) => void;
   inspectPage?: (
@@ -86,6 +87,7 @@ type ThemeMutationPreview = BuilderPreviewAdapter & {
 
 type MutationRenderData = {
   render: { valid: true; url?: string };
+  candidateRevision?: string;
 };
 
 type ThemeCheckpointPayload = {
@@ -287,6 +289,15 @@ export class ThemeWorkspace implements BuilderWorkspace {
     } = {},
   ) {
     return this.enqueueMutation(signal, (draft) => stageThemePatch(draft, patch), options);
+  }
+
+  /** Uses the same staging/render validation, with no source or preview adoption. */
+  validateThemePatch(patch: unknown, signal: AbortSignal, expectedRenderGeneration: number) {
+    return this.enqueueMutation(signal, (draft) => stageThemePatch(draft, patch), {
+      validateOnly: true,
+      requirePromotedSource: true,
+      expectedRenderGeneration,
+    });
   }
 
   /** Render-input changes share the source mutation lane without changing source/history. */
@@ -1057,6 +1068,7 @@ export class ThemeWorkspace implements BuilderWorkspace {
     signal: AbortSignal,
     operation: (draft: ThemeDraft) => Promise<ThemeCandidateResult<T>>,
     options: {
+      validateOnly?: boolean;
       promote?: boolean;
       requirePromotedSource?: boolean;
       expectedRenderGeneration?: number;
@@ -1097,7 +1109,10 @@ export class ThemeWorkspace implements BuilderWorkspace {
         return result;
       }
       abortIfNeeded(signal);
-      if (!this.preview.renderCandidate) {
+      const renderCandidate = options.validateOnly
+        ? this.preview.validateCandidate
+        : this.preview.renderCandidate;
+      if (!renderCandidate) {
         return {
           ok: false as const,
           revision: source.revision,
@@ -1111,7 +1126,11 @@ export class ThemeWorkspace implements BuilderWorkspace {
       }
       let validation: ValidationResult;
       try {
-        validation = await this.preview.renderCandidate(cloneThemeDraft(result.candidate), signal);
+        validation = await renderCandidate.call(
+          this.preview,
+          cloneThemeDraft(result.candidate),
+          signal,
+        );
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') {
           throw error;
@@ -1130,7 +1149,9 @@ export class ThemeWorkspace implements BuilderWorkspace {
       }
       if (!validation.valid) {
         const rejectedValidation = { ...validation, revision: source.revision };
-        this.setState({ ...this.currentState, validation: rejectedValidation });
+        if (!options.validateOnly) {
+          this.setState({ ...this.currentState, validation: rejectedValidation });
+        }
         return {
           ok: false as const,
           revision: source.revision,
@@ -1145,7 +1166,7 @@ export class ThemeWorkspace implements BuilderWorkspace {
       }
       // Promoted editor actions must not adopt work cancelled during rendering.
       // Chat candidates retain their existing interrupted-turn recovery behavior.
-      if (options.promote) {
+      if (options.promote || options.validateOnly) {
         abortIfNeeded(signal);
       }
       if (this.requireActiveDraft().revision !== source.revision) {
@@ -1158,6 +1179,28 @@ export class ThemeWorkspace implements BuilderWorkspace {
               'The theme changed while the candidate was rendering. Read the latest revision and retry.',
             retryable: true,
             details: { currentRevision: this.requireActiveDraft().revision },
+          },
+        };
+      }
+      if (options.validateOnly) {
+        if (validation.revision !== result.candidate.revision) {
+          return {
+            ok: false as const,
+            revision: source.revision,
+            error: {
+              code: 'render_revision_mismatch',
+              message: 'Preflight validated a different candidate revision.',
+              retryable: true,
+            },
+          };
+        }
+        return {
+          ok: true as const,
+          revision: source.revision,
+          data: {
+            ...result.data,
+            candidateRevision: result.candidate.revision,
+            render: { valid: true as const },
           },
         };
       }

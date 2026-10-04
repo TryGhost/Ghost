@@ -46,6 +46,18 @@ export class CanvasThemePreview {
   }
 
   renderCandidate(draft: ThemeDraft, signal: AbortSignal): Promise<ValidationResult> {
+    return this.validate(draft, signal, true);
+  }
+
+  validateCandidate(draft: ThemeDraft, signal: AbortSignal): Promise<ValidationResult> {
+    return this.validate(draft, signal, false);
+  }
+
+  private validate(
+    draft: ThemeDraft,
+    signal: AbortSignal,
+    stage: boolean,
+  ): Promise<ValidationResult> {
     if (this.queued >= 32) {
       return Promise.reject(new Error('Canvas validation is busy. Wait for outstanding work.'));
     }
@@ -59,7 +71,9 @@ export class CanvasThemePreview {
       if (this.staged?.revision === candidate.revision && this.staged.generation === generation) {
         return { valid: true, revision: candidate.revision, diagnostics: [] };
       }
-      this.staged = null;
+      if (stage) {
+        this.staged = null;
+      }
       try {
         const output = await this.render(candidate, activeSignal);
         activeSignal.throwIfAborted();
@@ -97,7 +111,13 @@ export class CanvasThemePreview {
         if (diagnostics.length) {
           return { valid: false, revision: candidate.revision, diagnostics };
         }
-        this.staged = { revision: candidate.revision, generation, output: structuredClone(output) };
+        if (stage) {
+          this.staged = {
+            revision: candidate.revision,
+            generation,
+            output: structuredClone(output),
+          };
+        }
         return { valid: true, revision: candidate.revision, diagnostics: [] };
       } catch (error) {
         activeSignal.throwIfAborted();

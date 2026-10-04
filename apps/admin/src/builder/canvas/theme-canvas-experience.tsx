@@ -228,6 +228,7 @@ export function ThemeCanvasExperience(props: Inputs) {
           createDriver: () => ({
             render: (edit) => loaded.render(edit),
             applyThemePatch: (patch, signal) => loaded.applyThemePatch(patch, signal),
+            validateThemePatch: (patch, signal) => loaded.validateThemePatch(patch, signal),
             readHistory: () => loaded.readHistory(),
             restoreHistory: (input, signal) => loaded.restoreHistory(input, signal),
             loadAssets: () => loaded.loadAssets(),

@@ -31,6 +31,71 @@ async function fixture() {
   return { draft, apply, tools, read, patch, args };
 }
 
+it('exposes read-only preflight and exact replacements with useful operation argument errors', async () => {
+  const { draft, apply, args } = await fixture();
+  const validate = vi.fn().mockResolvedValue({
+    valid: true,
+    revision: draft.revision,
+    candidateRevision: 'candidate',
+    dataGeneration: 0,
+    unchanged: false,
+    paths: ['index.hbs'],
+    settings: [],
+  });
+  const tools = new CanvasEditorTools({
+    workspaceId: 'workspace',
+    readDraft: () => draft,
+    state: () => ({}),
+    applyPatch: apply,
+    validatePatch: validate,
+  });
+  const action = tools.tools().find((tool) => tool.name === 'ghost_canvas_validate_theme_patch')!;
+  expect(action.annotations.readOnlyHint).toBe(true);
+  const patch = {
+    ...args,
+    expectedDataGeneration: 0,
+    files: [
+      {
+        operation: 'replace',
+        path: 'index.hbs',
+        oldText: 'Selected Home',
+        newText: 'Editorial Home',
+      },
+    ],
+  };
+  expect(await action.execute(patch)).toMatchObject({
+    status: 'ok',
+    data: { valid: true, candidateRevision: 'candidate' },
+  });
+  expect(validate).toHaveBeenCalledWith(
+    expect.objectContaining({ files: patch.files }),
+    expect.any(AbortSignal),
+  );
+  expect(apply).not.toHaveBeenCalled();
+  const read = tools.tools().find((tool) => tool.name === 'ghost_canvas_read_theme')!;
+  expect(
+    await read.execute({ ...args, operation: 'search_files', query: 'Home', path: 'index.hbs' }),
+  ).toMatchObject({ status: 'ok', data: { matches: [{ path: 'index.hbs' }] } });
+  expect(
+    await read.execute({ ...args, operation: 'read_file', path: 'index.hbs', query: 'Home' }),
+  ).toMatchObject({
+    status: 'error',
+    code: 'invalid_arguments',
+    details: {
+      invalidArguments: ['query'],
+      validArguments: [
+        'workspaceId',
+        'expectedRevision',
+        'operation',
+        'path',
+        'startLine',
+        'startColumn',
+        'endLine',
+      ],
+    },
+  });
+});
+
 it('reveals only a requested frame in the current workspace and never accepts arbitrary camera arguments', async () => {
   const { draft, apply, args } = await fixture();
   const reveal = vi.fn();

@@ -611,6 +611,16 @@ export function ThemeCanvas({
             }
             return patchAction.current(patch, signal);
           },
+          validatePatch: (patch, signal) => {
+            const client = session.current?.client;
+            if (!client?.validateThemePatch) {
+              throw new CanvasRejectedError(
+                'Patch preflight is unavailable in this editor.',
+                'preview_unavailable',
+              );
+            }
+            return client.validateThemePatch(patch, signal);
+          },
           listPosts: source.posts?.list,
           revealFrame: (frameId) => {
             if (!revealAction.current) {

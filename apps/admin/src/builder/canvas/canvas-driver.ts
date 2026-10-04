@@ -24,6 +24,15 @@ export type CanvasPatch = {
   files?: ThemeFilePatch[];
   settings?: Record<string, unknown>;
 };
+export type CanvasPatchValidation = {
+  valid: true;
+  revision: string;
+  candidateRevision: string;
+  dataGeneration: number;
+  unchanged: boolean;
+  paths: string[];
+  settings: string[];
+};
 export type CanvasEdit = {
   marker: string;
   tagName: string;
@@ -84,6 +93,7 @@ export class CanvasRejectedError extends Error {
 export type CanvasDriver = {
   render: (edit?: CanvasEdit) => Promise<CanvasEditorRender>;
   applyThemePatch: (patch: CanvasPatch, signal?: AbortSignal) => Promise<CanvasEditorRender>;
+  validateThemePatch?: (patch: CanvasPatch, signal?: AbortSignal) => Promise<CanvasPatchValidation>;
   readHistory?: () => CanvasHistory;
   restoreHistory?: (
     input: CanvasHistoryRestore,

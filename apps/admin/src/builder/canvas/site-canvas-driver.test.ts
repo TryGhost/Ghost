@@ -45,6 +45,57 @@ async function loadDraft() {
   );
 }
 
+it('preflights complete Home/Post validation without adopting a draft, checkpoint or render', async () => {
+  const draft = await loadDraft();
+  renderer.render.mockImplementation((url: string) =>
+    Promise.resolve({ url, status: 200, html: '<h1>Rendered</h1>', diagnostics: [] }),
+  );
+  const driver = new SiteCanvasDriver({
+    draft,
+    routes: { home: 'https://example.com/', post: 'https://example.com/post/' },
+    publish: (candidate) => Promise.resolve({ ok: true, revision: candidate.revision }),
+  });
+  try {
+    await driver.start();
+    const before = await driver.render();
+    const history = driver.readHistory();
+    const states: unknown[] = [];
+    driver.workspace.subscribe((state) => states.push(state));
+    const patch = {
+      expectedRevision: before.revision,
+      expectedDataGeneration: before.dataGeneration,
+      files: [{ operation: 'write' as const, path: 'index.hbs', content: '<h1>Candidate</h1>' }],
+    };
+    const result = await driver.validateThemePatch(patch);
+    expect(result).toMatchObject({ valid: true, revision: before.revision, unchanged: false });
+    expect(result.candidateRevision).not.toBe(before.revision);
+    expect(driver.workspace.draft.files['index.hbs'].content).toBe('<h1>Home</h1>');
+    expect(driver.readHistory()).toEqual(history);
+    expect(await driver.render()).toEqual(before);
+    expect(states).toEqual([expect.objectContaining({ dirty: false })]);
+    renderer.render.mockImplementation((url: string) =>
+      Promise.resolve({
+        url,
+        status: url.endsWith('/post/') ? 500 : 200,
+        html: '<h1>Rendered</h1>',
+        diagnostics: [],
+      }),
+    );
+    await expect(
+      driver.validateThemePatch({
+        ...patch,
+        files: [{ operation: 'write', path: 'index.hbs', content: '<h1>Rejected</h1>' }],
+      }),
+    ).rejects.toMatchObject({ code: 'render_invalid' });
+    expect(await driver.render()).toEqual(before);
+    expect(states).toHaveLength(1);
+    expect(states[0]).toMatchObject({ validation: { valid: true } });
+  } finally {
+    driver.dispose();
+    vi.clearAllMocks();
+  }
+});
+
 it('reports successful publication separately from a failed preview refresh', async () => {
   const signal = new AbortController().signal;
   const draft = await loadDraft();

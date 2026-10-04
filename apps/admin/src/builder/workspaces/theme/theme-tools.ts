@@ -26,6 +26,7 @@ type ThemeFileSummary = {
   path: string;
   kind: ThemeFile['kind'];
   sizeBytes: number;
+  editing?: ReturnType<typeof stylesheetEditing>;
 };
 
 type ThemeSearchMatch = {
@@ -357,10 +358,69 @@ function uncompiledStylesheetFailure(draft: ThemeDraft, path: string): ToolFailu
   );
 }
 
+/** Build guidance is available before an agent prepares a complete file write. */
+function stylesheetEditing(draft: ThemeDraft, path: string) {
+  if (!path.endsWith('.css')) {
+    return undefined;
+  }
+  if (path.startsWith('assets/built/')) {
+    return {
+      mode: 'generated-stylesheet' as const,
+      sourceMapPolicy: 'remove-or-regenerate' as const,
+    };
+  }
+  const blocked = uncompiledStylesheetFailure(draft, path);
+  if (blocked) {
+    return {
+      mode: 'build-required' as const,
+      renderedPaths: (blocked.error.details as { renderedPaths: string[] }).renderedPaths,
+    };
+  }
+  return { mode: 'direct-edit' as const };
+}
+
+/** Generated CSS edits invalidate its old map; quoted CSS content is not a comment. */
+export function themeWriteContent(draft: ThemeDraft, path: string, content: string): string {
+  if (
+    !path.startsWith('assets/built/') ||
+    !path.endsWith('.css') ||
+    draft.files[path]?.content === content
+  ) {
+    return content;
+  }
+  let quote = '';
+  let copied = 0;
+  const parts: string[] = [];
+  for (let index = 0; index < content.length; index++) {
+    const character = content[index];
+    if (character === '\\') {
+      index += 1;
+    } else if (quote) {
+      if (character === quote) {
+        quote = '';
+      }
+    } else if (character === '"' || character === "'") {
+      quote = character;
+    } else if (character === '/' && content[index + 1] === '*') {
+      const end = content.indexOf('*/', index + 2);
+      if (end < 0) {
+        break;
+      }
+      if (/^\s*[@#]\s*sourceMappingURL\s*=/.test(content.slice(index + 2, end))) {
+        parts.push(content.slice(copied, index));
+        copied = end + 2;
+      }
+      index = end + 1;
+    }
+  }
+  return parts.length ? [...parts, content.slice(copied)].join('') : content;
+}
+
 function validateTextSize(
   draft: ThemeDraft,
   path: string,
   content: string,
+  includeTheme = true,
 ): BuilderToolResult<null> {
   const fileBytes = encoder.encode(content).byteLength;
   if (fileBytes > THEME_TEXT_LIMITS.maxFileBytes) {
@@ -371,6 +431,9 @@ function validateTextSize(
       false,
       { path, sizeBytes: fileBytes },
     );
+  }
+  if (!includeTheme) {
+    return { ok: true, revision: draft.revision, data: null };
   }
   const totalBytes = Object.entries(draft.files).reduce((total, [candidatePath, file]) => {
     if (candidatePath === path || file.kind !== 'text' || file.content === null) {
@@ -409,6 +472,9 @@ export function listThemeFiles(
       return {
         path,
         kind: file.kind,
+        ...(file.kind === 'text' && path.endsWith('.css')
+          ? { editing: stylesheetEditing(draft, path) }
+          : {}),
         sizeBytes:
           file.kind === 'text'
             ? encoder.encode(file.content ?? '').byteLength
@@ -648,7 +714,7 @@ export async function editThemeImageAtMarker(
 
 export function searchThemeFiles(
   draft: ThemeDraft,
-  input: { query?: unknown; regex?: unknown },
+  input: { query?: unknown; regex?: unknown; path?: unknown },
 ): BuilderToolResult<{ matches: ThemeSearchMatch[]; truncated: boolean }> {
   if (typeof input.query !== 'string' || !input.query) {
     return failure(draft, 'invalid_search_query', 'Provide a non-empty text search query.');
@@ -683,7 +749,15 @@ export function searchThemeFiles(
   const matches: ThemeSearchMatch[] = [];
   let truncated = false;
   let remainingCharacters = THEME_TEXT_LIMITS.maxSearchScannedCharacters;
-  for (const path of Object.keys(draft.files).sort()) {
+  let paths = Object.keys(draft.files).sort();
+  if (input.path !== undefined) {
+    const scoped = textFile(draft, input.path);
+    if (!scoped.ok) {
+      return scoped;
+    }
+    paths = [scoped.data.path];
+  }
+  for (const path of paths) {
     const file = draft.files[path];
     if (file.kind !== 'text' || file.content === null) {
       continue;
@@ -815,6 +889,9 @@ export function readThemeFile(
       startColumn: Number(startColumn),
       endLine,
       totalLines: lines.length,
+      ...(resolved.data.path.endsWith('.css')
+        ? { editing: stylesheetEditing(draft, resolved.data.path) }
+        : {}),
       content: chunks.join('\n'),
       truncated: next !== null,
       next,
@@ -838,14 +915,44 @@ export async function replaceInThemeFile(
   if (uncompiled) {
     return uncompiled;
   }
-  if (typeof input.oldText !== 'string' || !input.oldText || typeof input.newText !== 'string') {
+  const replacement = replaceThemeFileText(draft, input.path, input.oldText, input.newText);
+  if (!replacement.ok) {
+    return replacement;
+  }
+  const size = validateTextSize(draft, resolved.data.path, replacement.data.content);
+  if (!size.ok) {
+    return size;
+  }
+  const { candidate, data } = await revisedCandidate(draft, (next) => {
+    next.files[resolved.data.path].content = themeWriteContent(
+      draft,
+      resolved.data.path,
+      replacement.data.content,
+    );
+    return { path: resolved.data.path, replacements: 1 as const };
+  });
+  return { ok: true, revision: candidate.revision, data, candidate };
+}
+
+/** Resolve text only; an atomic patch validates build constraints on its final file set. */
+export function replaceThemeFileText(
+  draft: ThemeDraft,
+  path: unknown,
+  oldText: unknown,
+  newText: unknown,
+): BuilderToolResult<{ content: string }> {
+  const resolved = textFile(draft, path);
+  if (!resolved.ok) {
+    return resolved;
+  }
+  if (typeof oldText !== 'string' || !oldText || typeof newText !== 'string') {
     return failure(
       draft,
       'invalid_replacement',
       'Provide non-empty oldText and string newText values.',
     );
   }
-  const first = resolved.data.file.content.indexOf(input.oldText);
+  const first = resolved.data.file.content.indexOf(oldText);
   if (first === -1) {
     return failure(
       draft,
@@ -853,23 +960,20 @@ export async function replaceInThemeFile(
       `The exact text was not found in ${resolved.data.path}. Read the latest file and retry.`,
     );
   }
-  if (resolved.data.file.content.indexOf(input.oldText, first + input.oldText.length) !== -1) {
+  if (resolved.data.file.content.indexOf(oldText, first + 1) !== -1) {
     return failure(
       draft,
       'replacement_ambiguous',
       `The exact text appears more than once in ${resolved.data.path}. Include more surrounding text.`,
     );
   }
-  const content = `${resolved.data.file.content.slice(0, first)}${input.newText}${resolved.data.file.content.slice(first + input.oldText.length)}`;
-  const size = validateTextSize(draft, resolved.data.path, content);
+  const content = `${resolved.data.file.content.slice(0, first)}${newText}${resolved.data.file.content.slice(first + oldText.length)}`;
+  // Atomic patches check aggregate bytes only after all files are staged.
+  const size = validateTextSize(draft, resolved.data.path, content, false);
   if (!size.ok) {
     return size;
   }
-  const { candidate, data } = await revisedCandidate(draft, (next) => {
-    next.files[resolved.data.path].content = content;
-    return { path: resolved.data.path, replacements: 1 as const };
-  });
-  return { ok: true, revision: candidate.revision, data, candidate };
+  return { ok: true, revision: draft.revision, data: { content } };
 }
 
 export async function writeThemeFile(
@@ -920,13 +1024,14 @@ export async function writeThemeFile(
     return size;
   }
   const created = !existing;
+  const content = themeWriteContent(draft, safe.data.path, input.content);
   const { candidate, data } = await revisedCandidate(draft, (next) => {
     const file: ThemeFile = existing
-      ? { ...existing, content: input.content as string }
+      ? { ...existing, content }
       : {
           path: safe.data.path,
           kind: 'text',
-          content: input.content as string,
+          content,
           binary: null,
           unixPermissions: null,
           dosPermissions: null,

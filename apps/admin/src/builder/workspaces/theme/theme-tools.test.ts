@@ -67,6 +67,27 @@ const onePixelPng = new Uint8Array([
 ]);
 
 describe('theme file tools', () => {
+  it('constrains literal search to the requested readable file and rejects a missing scope', async () => {
+    const source = await draft();
+    source.files['post.hbs'] = {
+      ...source.files['index.hbs'],
+      path: 'post.hbs',
+      content: 'Welcome to a post',
+    };
+    expect(searchThemeFiles(source, { query: 'Welcome', path: 'post.hbs' })).toMatchObject({
+      ok: true,
+      data: { matches: [{ path: 'post.hbs', line: 1, column: 1 }] },
+    });
+    expect(searchThemeFiles(source, { query: 'Welcome', path: 'missing.hbs' })).toMatchObject({
+      ok: false,
+      error: { code: 'file_not_found' },
+    });
+    expect(searchThemeFiles(source, { query: 'Welcome', path: '../index.hbs' })).toMatchObject({
+      ok: false,
+      error: { code: 'unsafe_path' },
+    });
+  });
+
   it('rejects edits to authored CSS when the theme renders a compiled stylesheet', async () => {
     const source = await draft();
     source.files['assets/css/screen.css'] = {
@@ -102,6 +123,27 @@ describe('theme file tools', () => {
       dosPermissions: null,
     };
     const revised = await withThemeRevision(source);
+
+    const listed = listThemeFiles(revised);
+    expect(listed.ok).toBe(true);
+    if (listed.ok) {
+      expect(listed.data.files).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: 'assets/css/screen.css',
+            editing: { mode: 'build-required', renderedPaths: ['assets/built/screen.css'] },
+          }),
+          expect.objectContaining({
+            path: 'assets/built/screen.css',
+            editing: { mode: 'generated-stylesheet', sourceMapPolicy: 'remove-or-regenerate' },
+          }),
+        ]),
+      );
+    }
+    expect(readThemeFile(revised, { path: 'assets/css/global.css' })).toMatchObject({
+      ok: true,
+      data: { editing: { mode: 'build-required', renderedPaths: ['assets/built/screen.css'] } },
+    });
 
     await expect(
       replaceInThemeFile(revised, {

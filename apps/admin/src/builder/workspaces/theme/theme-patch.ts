@@ -1,5 +1,10 @@
 import { cloneThemeDraft, withThemeRevision } from './theme-state';
-import { deleteThemeFile, writeThemeFile } from './theme-tools';
+import {
+  deleteThemeFile,
+  replaceThemeFileText,
+  themeWriteContent,
+  writeThemeFile,
+} from './theme-tools';
 import { updateDesignSettings } from './design-setting-tools';
 import type { ThemeDraft } from './theme-state';
 import type { ThemeCandidateResult } from './theme-tools';
@@ -8,6 +13,7 @@ export type ThemePatchData = { paths: string[]; settings: string[]; unchanged: b
 
 export type ThemeFilePatch =
   | { operation: 'write'; path: string; content: string }
+  | { operation: 'replace'; path: string; oldText: string; newText: string }
   | { operation: 'delete'; path: string };
 export type ThemePatch = {
   revision: string;
@@ -55,25 +61,41 @@ export async function stageThemePatch(
     return invalid('A patch supports at most 32 file operations and 32 design settings.');
   }
   const paths = new Set<string>();
-  const operations: ThemeFilePatch[] = [];
+  const operations: Exclude<ThemeFilePatch, { operation: 'replace' }>[] = [];
   for (const file of files) {
     if (
       !record(file) ||
       typeof file.path !== 'string' ||
       paths.has(file.path) ||
-      (file.operation !== 'write' && file.operation !== 'delete') ||
+      !['write', 'delete', 'replace'].includes(String(file.operation)) ||
       Object.keys(file).some(
         (key) =>
           !(
-            file.operation === 'write' ? ['operation', 'path', 'content'] : ['operation', 'path']
+            file.operation === 'write'
+              ? ['operation', 'path', 'content']
+              : file.operation === 'replace'
+                ? ['operation', 'path', 'oldText', 'newText']
+                : ['operation', 'path']
           ).includes(key),
       ) ||
-      (file.operation === 'write' && typeof file.content !== 'string')
+      (file.operation === 'write' && typeof file.content !== 'string') ||
+      (file.operation === 'replace' &&
+        (typeof file.oldText !== 'string' || typeof file.newText !== 'string'))
     ) {
-      return invalid('Each file has one explicit write or delete operation; paths cannot repeat.');
+      return invalid(
+        'Each file has one explicit write, replace or delete operation; paths cannot repeat.',
+      );
     }
     paths.add(file.path);
-    operations.push(file as ThemeFilePatch);
+    if (file.operation === 'replace') {
+      const resolved = replaceThemeFileText(draft, file.path, file.oldText, file.newText);
+      if (!resolved.ok) {
+        return { ...resolved, error: { ...resolved.error, details: { path: file.path } } };
+      }
+      operations.push({ operation: 'write', path: file.path, content: resolved.data.content });
+    } else {
+      operations.push({ ...file } as Exclude<ThemeFilePatch, { operation: 'replace' }>);
+    }
   }
 
   const candidate = cloneThemeDraft(draft);
@@ -82,6 +104,7 @@ export async function stageThemePatch(
     if (file.operation === 'delete') {
       staged.delete(file.path);
     } else {
+      file.content = themeWriteContent(draft, file.path, file.content);
       const previous = staged.get(file.path);
       staged.set(
         file.path,
@@ -128,7 +151,17 @@ export async function stageThemePatch(
       });
     }
     if (!checked.ok) {
-      return { ...checked, revision: draft.revision };
+      return {
+        ...checked,
+        revision: draft.revision,
+        error: {
+          ...checked.error,
+          details: {
+            ...(record(checked.error.details) ? checked.error.details : {}),
+            path: file.path,
+          },
+        },
+      };
     }
   }
   const settings = input.settings;

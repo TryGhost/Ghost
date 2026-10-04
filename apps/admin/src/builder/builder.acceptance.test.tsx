@@ -1374,18 +1374,34 @@ describe('Design Builder route', () => {
         expect(rejected.status).toBe('error');
         expect(rejected.details).toBeDefined();
         expect((await state()).editor!.sourceRevision).toBe(address.expectedRevision);
-        const result = await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
+        const patch = {
           ...address,
           expectedDataGeneration: 0,
           files: [
             {
-              operation: 'write',
+              operation: 'replace',
               path: 'partials/footer.hbs',
-              content: '<a href="/">Agent canvas footer</a>',
+              oldText: 'Canvas footer',
+              newText: 'Agent canvas footer',
             },
           ],
           settings: { 'global.accent_color': '#654321' },
+        };
+        const beforePreflight = await state();
+        const preflight = await commands.canvasNativeTool(
+          'ghost_canvas_validate_theme_patch',
+          patch,
+        );
+        expect(preflight).toMatchObject({
+          status: 'ok',
+          data: { valid: true, revision: address.expectedRevision, unchanged: false },
         });
+        const afterPreflight = await state();
+        expect(afterPreflight.editor!.sourceRevision).toBe(address.expectedRevision);
+        expect(afterPreflight.editor!.history).toEqual(beforePreflight.editor!.history);
+        expect(afterPreflight.frames).toEqual(beforePreflight.frames);
+        expect(page.getByTestId('canvas-world').element().getAttribute('style')).toBe(camera);
+        const result = await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', patch);
         expect(result).toMatchObject({
           status: 'ok',
           data: { accepted: true, delivery: 'pending' },
