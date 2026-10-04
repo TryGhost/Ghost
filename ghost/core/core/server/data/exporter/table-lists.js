@@ -73,7 +73,6 @@ const BACKUP_TABLES = [
     'automation_runs',
     'welcome_email_automation_runs',
     'welcome_email_automated_emails',
-    'forms',
     'form_submissions'
 ];
 
