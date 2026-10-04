@@ -5,6 +5,7 @@ import _ from 'lodash';
 import { z } from 'zod';
 import { configSchema } from '../../../../core/shared/config/schema';
 import { createConfig, deepFreeze, validateConfig } from '../../../../core/shared/config/validated';
+import { configSources } from '../../../utils/config-sources';
 
 const sloppy = require('../../../utils/fixtures/sloppy-config-writer');
 
@@ -14,7 +15,9 @@ function readJson(...parts: string[]): Record<string, unknown> {
   return JSON.parse(fs.readFileSync(path.join(configDir, ...parts), 'utf8'));
 }
 
-const minimal = { env: 'testing', url: 'http://localhost:2368' };
+// the smallest tree the schema accepts; `paths` is covered now, so a literal
+// here would need restating every time a key lands
+const minimal = configSources();
 
 describe('Config Schema', function () {
   describe('parsing the config Ghost ships', function () {
@@ -38,18 +41,69 @@ describe('Config Schema', function () {
     });
 
     it('keeps keys that have no schema yet', function () {
-      const parsed = configSchema.parse({ ...minimal, somethingProInjects: { nested: true } });
+      const parsed = configSchema.parse(configSources({ somethingProInjects: { nested: true } }));
 
+      assert.deepEqual(parsed.somethingProInjects, { nested: true });
+    });
+  });
+
+  describe('paths', function () {
+    it('requires every key the shipped config always provides', function () {
+      const without = configSources();
+      delete (without.paths as Record<string, unknown>).migrationPath;
+
+      const result = configSchema.safeParse(without);
+
+      assert.ok(!result.success);
+      assert.match(z.prettifyError(result.error), /paths\.migrationPath/);
+    });
+
+    it('rejects a path that is not a string', function () {
+      const result = configSchema.safeParse(configSources({ paths: { contentPath: 42 } }));
+
+      assert.ok(!result.success);
+      assert.match(z.prettifyError(result.error), /paths\.contentPath/);
+    });
+
+    it('accepts an absent installedAdaptersPath, the one key with no default', function () {
+      const sources = configSources();
+      assert.ok(!('installedAdaptersPath' in (sources.paths as object)));
+
+      const result = configSchema.safeParse(sources);
+
+      assert.ok(result.success, result.success ? '' : z.prettifyError(result.error));
+      assert.equal(result.data.paths.installedAdaptersPath, undefined);
+    });
+
+    it('keeps installedAdaptersPath when a self-hoster sets it', function () {
+      const parsed = configSchema.parse(
+        configSources({ paths: { installedAdaptersPath: '/opt/adapters' } }),
+      );
+
+      assert.equal(parsed.paths.installedAdaptersPath, '/opt/adapters');
+    });
+
+    // `paths` is closed, unlike the top level - so an unlisted key is dropped
+    // rather than carried. Nothing reads one, but the silence is the cost of
+    // closing it, and a key added to config without its schema disappears.
+    it('strips a key it does not name, unlike the loose top level', function () {
+      const parsed = configSchema.parse(
+        configSources({
+          paths: { storage: '/some/adapter.js' },
+          somethingProInjects: { nested: true },
+        }),
+      );
+
+      assert.ok(!('storage' in parsed.paths));
+      // the top level keeps its unknown key, which is the contrast
       assert.deepEqual(parsed.somethingProInjects, { nested: true });
     });
   });
 
   describe('url', function () {
     it('requires a protocol, matching the long-standing boot check', function () {
-      assert.ok(configSchema.safeParse({ env: 'testing', url: 'my-ghost-blog.com' }).error);
-      assert.ok(
-        configSchema.safeParse({ env: 'testing', url: 'http://my-ghost-blog.com' }).success,
-      );
+      assert.ok(configSchema.safeParse(configSources({ url: 'my-ghost-blog.com' })).error);
+      assert.ok(configSchema.safeParse(configSources({ url: 'http://my-ghost-blog.com' })).success);
     });
   });
 });
@@ -85,7 +139,7 @@ describe('Validated Config', function () {
       // but a developer may have GHOST_CONFIG_GUARD exported - see ./guard.test.ts
       vi.stubEnv('GHOST_CONFIG_GUARD', 'true');
 
-      const validated = validateConfig({ ...minimal, paths: { contentPath: '/a' } });
+      const validated = validateConfig(configSources({ paths: { contentPath: '/a' } }));
 
       assert.throws(() => sloppy.write(validated.paths, 'contentPath', '/b'), /read-only/);
     });
@@ -93,7 +147,7 @@ describe('Validated Config', function () {
     it('deep-freezes instead where the guard is off, as production does', function () {
       vi.stubEnv('GHOST_CONFIG_GUARD', 'false');
 
-      const validated = validateConfig({ ...minimal, paths: { contentPath: '/a' } });
+      const validated = validateConfig(configSources({ paths: { contentPath: '/a' } }));
 
       assert.ok(Object.isFrozen(validated));
       assert.ok(Object.isFrozen(validated.paths));
@@ -101,13 +155,13 @@ describe('Validated Config', function () {
 
     it('throws outside production when the config is invalid', function () {
       assert.throws(
-        () => validateConfig({ env: 'testing', url: 'no-protocol' }),
+        () => validateConfig(configSources({ url: 'no-protocol' })),
         /Ghost config failed validation/,
       );
     });
 
     it('throws for testing-mysql too, matching isTestEnv()', function () {
-      assert.throws(() => validateConfig({ env: 'testing-mysql', url: 'nope' }));
+      assert.throws(() => validateConfig(configSources({ env: 'testing-mysql', url: 'nope' })));
     });
 
     // a live site's boot must not depend on this repo having got the schema
@@ -116,7 +170,7 @@ describe('Validated Config', function () {
       it(`warns instead of throwing in ${env}`, function () {
         const error = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-        const validated = validateConfig({ env, url: 'no-protocol' });
+        const validated = validateConfig(configSources({ env, url: 'no-protocol' }));
 
         assert.equal(validated.url, 'no-protocol');
         assert.match(error.mock.calls[0][0] as string, /not enforced/);
@@ -126,14 +180,17 @@ describe('Validated Config', function () {
     it('is forced strict by GHOST_CONFIG_SCHEMA_STRICT', function () {
       vi.stubEnv('GHOST_CONFIG_SCHEMA_STRICT', 'true');
 
-      assert.throws(() => validateConfig({ env: 'staging', url: 'no-protocol' }));
+      assert.throws(() => validateConfig(configSources({ env: 'staging', url: 'no-protocol' })));
     });
 
     it('is forced lenient by GHOST_CONFIG_SCHEMA_STRICT', function () {
       vi.spyOn(console, 'error').mockImplementation(() => {});
       vi.stubEnv('GHOST_CONFIG_SCHEMA_STRICT', 'false');
 
-      assert.equal(validateConfig({ env: 'development', url: 'no-protocol' }).url, 'no-protocol');
+      assert.equal(
+        validateConfig(configSources({ env: 'development', url: 'no-protocol' })).url,
+        'no-protocol',
+      );
     });
   });
 
@@ -143,21 +200,23 @@ describe('Validated Config', function () {
     });
 
     it('reads key paths out of the frozen tree', function () {
-      const config = createConfig({ ...minimal, paths: { contentPath: '/a' } });
+      const config = createConfig(configSources({ paths: { contentPath: '/a' } }));
 
       assert.equal(config.get('url'), 'http://localhost:2368');
       assert.equal(config.get('paths:contentPath'), '/a');
-      assert.deepEqual(config.get('paths'), { contentPath: '/a' });
+      // a key the test did not pin still arrives, layered out of overrides.json
+      assert.equal(config.get('paths:migrationPath'), 'core/server/data/migrations');
     });
 
     it('makes every key read-only, not only the ones with a schema', function () {
       vi.stubEnv('GHOST_CONFIG_GUARD', 'true');
 
-      const config = createConfig({ ...minimal, paths: { contentPath: '/a' } });
+      const config = createConfig(configSources({ storage: { active: 'local-storage' } }));
 
       // the schema is loose, so an unlisted key is validated and protected too -
       // that is what makes the whole config immutable
       assert.throws(() => sloppy.write(config.get('paths'), 'contentPath', '/b'), /read-only/);
+      assert.throws(() => sloppy.write(config.get('storage'), 'active', 'other'), /read-only/);
       assert.throws(() => sloppy.write(config.get(), 'url', 'http://nope.test'), /read-only/);
     });
 
@@ -169,12 +228,12 @@ describe('Validated Config', function () {
     });
 
     it('does not freeze the sources it was handed', function () {
-      const sources = { ...minimal, paths: { contentPath: '/a' } };
+      const sources = configSources({ paths: { contentPath: '/a' } });
 
       createConfig(sources);
-      sources.paths.contentPath = '/b';
+      (sources.paths as Record<string, unknown>).contentPath = '/b';
 
-      assert.equal(sources.paths.contentPath, '/b');
+      assert.equal((sources.paths as Record<string, unknown>).contentPath, '/b');
     });
 
     it('rebuilds atomically on set, so config is never half-written', function () {
@@ -187,7 +246,7 @@ describe('Validated Config', function () {
     });
 
     it('keeps earlier overrides when a later one is set', function () {
-      const config = createConfig({ ...minimal, paths: { contentPath: '/a' } });
+      const config = createConfig(configSources({ paths: { contentPath: '/a' } }));
 
       config.set('paths:contentPath', '/b');
       config.set('url', 'http://elsewhere.test');
@@ -213,47 +272,47 @@ describe('Validated Config', function () {
       assert.throws(() => config.set('url', 'no-protocol'));
 
       // the rejected value must not linger, or this would throw too
-      config.set('paths', { contentPath: '/a' });
+      config.set('storage', { active: 'local-storage' });
 
       assert.equal(config.get('url'), 'http://localhost:2368');
-      assert.equal(config.get('paths:contentPath'), '/a');
+      assert.equal(config.get('storage:active'), 'local-storage');
     });
 
     it('replays overrides in write order, so the latest wins', function () {
-      const config = createConfig({ ...minimal, paths: { contentPath: '/base' } });
+      const config = createConfig(configSources({ storage: { active: 'base' } }));
 
       // a Map keeps an existing key's original position on set, which would let
-      // the first write of `paths:contentPath` replay before `paths` and lose
-      config.set('paths:contentPath', '/first');
-      config.set('paths', { contentPath: '/second' });
-      config.set('paths:contentPath', '/last');
+      // the first write of `storage:active` replay before `storage` and lose
+      config.set('storage:active', 'first');
+      config.set('storage', { active: 'second' });
+      config.set('storage:active', 'last');
 
-      assert.equal(config.get('paths:contentPath'), '/last');
+      assert.equal(config.get('storage:active'), 'last');
     });
 
     it('lets a parent override replace a child written earlier', function () {
-      const config = createConfig({ ...minimal, paths: { contentPath: '/base' } });
+      const config = createConfig(configSources({ storage: { active: 'base' } }));
 
-      config.set('paths:contentPath', '/first');
-      config.set('paths', { contentPath: '/second' });
+      config.set('storage:active', 'first');
+      config.set('storage', { active: 'second' });
 
-      assert.equal(config.get('paths:contentPath'), '/second');
+      assert.equal(config.get('storage:active'), 'second');
     });
 
     it('keeps write order when a rejected override is rolled back', function () {
-      const config = createConfig({ ...minimal, paths: { contentPath: '/base' } });
+      const config = createConfig(configSources({ storage: { active: 'base' } }));
 
-      config.set('paths:contentPath', '/first');
-      config.set('paths', { contentPath: '/second' });
-      config.set('paths:contentPath', '/last');
+      config.set('storage:active', 'first');
+      config.set('storage', { active: 'second' });
+      config.set('storage:active', 'last');
 
       assert.throws(() => config.set('url', 'no-protocol'));
 
-      assert.equal(config.get('paths:contentPath'), '/last');
+      assert.equal(config.get('storage:active'), 'last');
     });
 
     it('keeps earlier overrides when the value cannot be cloned', function () {
-      const config = createConfig({ ...minimal, paths: { contentPath: '/base' } });
+      const config = createConfig(configSources({ paths: { contentPath: '/base' } }));
       config.set('paths:contentPath', '/kept');
 
       // cloneDeep throws on this; nothing may be recorded or dropped before it
@@ -273,7 +332,7 @@ describe('Validated Config', function () {
     });
 
     it('clears a leaf of an object set earlier, which is what callers do', function () {
-      const config = createConfig({ ...minimal, tinybird: {} });
+      const config = createConfig(configSources({ tinybird: {} }));
 
       config.set('tinybird', { tracker: { token: 'secret', endpoint: '/e' } });
       config.set('tinybird:tracker:token', undefined);
@@ -289,12 +348,12 @@ describe('Validated Config', function () {
         vi.stubEnv('GHOST_CONFIG_GUARD', guard);
         const config = createConfig(minimal);
 
-        config.set('paths', { contentPath: '/first' });
-        const previous = config.get('paths');
-        config.set('paths:contentPath', '/second');
+        config.set('storage', { active: 'first' });
+        const previous = config.get('storage');
+        config.set('storage:active', 'second');
 
-        assert.equal(previous.contentPath, '/first');
-        assert.equal(config.get('paths:contentPath'), '/second');
+        assert.equal(previous.active, 'first');
+        assert.equal(config.get('storage:active'), 'second');
       });
     }
 
@@ -308,7 +367,7 @@ describe('Validated Config', function () {
     });
 
     it('binds the url and content-path helpers', function () {
-      const config = createConfig({ ...minimal, paths: { contentPath: '/a/' } });
+      const config = createConfig(configSources({ paths: { contentPath: '/a/' } }));
 
       assert.equal(config.getSiteUrl(), 'http://localhost:2368/');
       assert.equal(config.getContentPath('images'), '/a/images/');
