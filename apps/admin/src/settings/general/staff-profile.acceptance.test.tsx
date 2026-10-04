@@ -90,8 +90,8 @@ describe('Staff profiles', () => {
     await modal.getByTestId('website-input').fill('https://example.com');
     // Observe the short Saved feedback while the browser click is in flight.
     await Promise.all([
-      expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible(),
-      modal.getByRole('button', { name: 'Save', exact: true }).click(),
+      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
+      settingsScreen.modalSaveButton(modal).click(),
     ]);
 
     expect(editApi.lastRequest?.body).toMatchObject({
@@ -121,8 +121,8 @@ describe('Staff profiles', () => {
     await modal.getByLabelText('Location').fill(saved.location);
     await modal.getByLabelText('Bio').fill(saved.bio);
     await Promise.all([
-      expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible(),
-      modal.getByRole('button', { name: 'Save', exact: true }).click(),
+      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
+      settingsScreen.modalSaveButton(modal).click(),
     ]);
     expect(editApi.lastRequest?.body).toMatchObject({
       users: [{ name: saved.name, email: saved.email, location: saved.location, bio: saved.bio }],
@@ -170,8 +170,8 @@ describe('Staff profiles', () => {
       .toHaveAttribute('src', 'http://example.com/cover.png');
 
     await Promise.all([
-      expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible(),
-      modal.getByRole('button', { name: 'Save', exact: true }).click(),
+      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
+      settingsScreen.modalSaveButton(modal).click(),
     ]);
     expect(uploadApi.requests).toHaveLength(2);
     expect(editApi.lastRequest?.body).toMatchObject({
@@ -221,8 +221,8 @@ describe('Staff profiles', () => {
     }
     await modal.getByLabelText('Paid member cancellations').click();
     await Promise.all([
-      expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible(),
-      modal.getByRole('button', { name: 'Save', exact: true }).click(),
+      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
+      settingsScreen.modalSaveButton(modal).click(),
     ]);
 
     expect(editApi.lastRequest?.body).toMatchObject({
@@ -357,8 +357,8 @@ describe('Staff profiles', () => {
     const modal = settingsScreen.userDetailModal();
     await modal.getByLabelText('Slug').fill('New Admin');
     await Promise.all([
-      expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible(),
-      modal.getByRole('button', { name: 'Save', exact: true }).click(),
+      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
+      settingsScreen.modalSaveButton(modal).click(),
     ]);
 
     expect(currentRoute()).toBe('/settings/staff/new-admin');

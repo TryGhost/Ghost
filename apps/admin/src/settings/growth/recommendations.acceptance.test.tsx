@@ -176,8 +176,8 @@ describe('Recommendations settings', () => {
     await modal.getByLabelText('Short description').fill(updated.description);
     // Observe the short Saved feedback while the browser click is in flight.
     await Promise.all([
-      expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible(),
-      modal.getByRole('button', { name: 'Save', exact: true }).click(),
+      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
+      settingsScreen.modalSaveButton(modal).click(),
     ]);
     expect(editApi.lastRequest?.body).toEqual({ recommendations: [updated] });
   });

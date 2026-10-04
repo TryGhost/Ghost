@@ -54,8 +54,8 @@ describe('Staff roles', () => {
     await settingsScreen.selectOption('Editor').click();
     // Observe the short Saved feedback while the browser click is in flight.
     await Promise.all([
-      expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible(),
-      modal.getByRole('button', { name: 'Save', exact: true }).click(),
+      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
+      settingsScreen.modalSaveButton(modal).click(),
     ]);
     expect(editApi.lastRequest?.body).toMatchObject({
       users: [{ id: author.id, roles: [{ id: role('Editor').id, name: 'Editor' }] }],
@@ -108,8 +108,8 @@ describe('Staff roles', () => {
     await expect(modal.getByTestId('role-select')).toHaveCount(0);
     await modal.getByLabelText('Full name').fill('Updated Contributor');
     await Promise.all([
-      expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible(),
-      modal.getByRole('button', { name: 'Save', exact: true }).click(),
+      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
+      settingsScreen.modalSaveButton(modal).click(),
     ]);
     expect(editApi.lastRequest?.body).toMatchObject({ users: [{ name: 'Updated Contributor' }] });
     await modal.getByRole('button', { name: 'Close' }).click();

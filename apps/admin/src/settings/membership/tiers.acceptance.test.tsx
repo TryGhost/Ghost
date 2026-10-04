@@ -81,8 +81,8 @@ describe('Tier settings', () => {
     await modal.getByLabelText('Yearly price').fill('80');
     // Observe the short Saved feedback while the browser click is in flight.
     await Promise.all([
-      expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible(),
-      modal.getByRole('button', { name: 'Save', exact: true }).click(),
+      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
+      settingsScreen.modalSaveButton(modal).click(),
     ]);
     await modal.getByRole('button', { name: 'Close' }).click();
 
@@ -133,8 +133,8 @@ describe('Tier settings', () => {
     await expect.element(preview).toHaveTextContent('17% discount');
 
     await Promise.all([
-      expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible(),
-      modal.getByRole('button', { name: 'Save', exact: true }).click(),
+      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
+      settingsScreen.modalSaveButton(modal).click(),
     ]);
     await modal.getByRole('button', { name: 'Close' }).click();
     await expect
@@ -163,8 +163,8 @@ describe('Tier settings', () => {
     await modal.getByRole('button', { name: 'Add' }).click();
     await modal.getByLabelText('New benefit').fill('Second benefit');
     await Promise.all([
-      expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible(),
-      modal.getByRole('button', { name: 'Save', exact: true }).click(),
+      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
+      settingsScreen.modalSaveButton(modal).click(),
     ]);
 
     expect(editApi.lastRequest?.body).toMatchObject({
@@ -300,8 +300,8 @@ describe('Tier settings', () => {
 
     await checkbox.click();
     await Promise.all([
-      expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible(),
-      modal.getByRole('button', { name: 'Save', exact: true }).click(),
+      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
+      settingsScreen.modalSaveButton(modal).click(),
     ]);
     expect(tierApi.lastRequest?.body).toMatchObject({
       tiers: [{ id: hidden.id, visibility: 'public' }],

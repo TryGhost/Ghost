@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { automationsScreen } from './automations.screen';
 import { page, userEvent } from 'vitest/browser';
 import { openPerformanceSidebar } from './run-list.test-utils';
 import { fakeAdminEndpoint, renderAdminApp, settleTransitions } from '@test-utils/acceptance';
@@ -82,12 +83,11 @@ const boot = (tracking = true, redesigned = true) =>
       },
     },
   });
-const panel = () => page.getByRole('complementary', { name: 'Email performance', exact: true });
-const card = (name = 'First') =>
-  editingCanvas().getByRole('article', { name: `Send email: ${name}` });
+const panel = automationsScreen.emailPerformancePanel;
+const card = automationsScreen.emailCard;
 const show = async (name = 'First') => {
   await settleTransitions();
-  await card(name).getByRole('button', { name: 'View email analytics' }).click();
+  await automationsScreen.viewEmailAnalyticsButton(name).click();
   await expect.element(panel()).toBeVisible();
   await settleTransitions();
 };
@@ -145,15 +145,11 @@ describe('Email performance sidebar', () => {
       if (sidebar === 'email') {
         await expect.element(panel()).toBeVisible();
       } else {
-        await expect
-          .element(page.getByRole('button', { name: 'Hide performance', exact: true }))
-          .toBeVisible();
+        await expect.element(automationsScreen.hidePerformanceButton()).toBeVisible();
       }
       await userEvent.keyboard('{Escape}');
       await expect.element(panel()).not.toBeInTheDocument();
-      await expect
-        .element(page.getByRole('button', { name: 'Show performance', exact: true }))
-        .toBeVisible();
+      await expect.element(automationsScreen.showPerformanceButton()).toBeVisible();
     },
   );
 
@@ -349,14 +345,10 @@ describe('Email performance sidebar', () => {
       await show();
       await openPerformanceSidebar();
       await expect.element(panel()).not.toBeInTheDocument();
-      await expect
-        .element(page.getByRole('button', { name: 'Hide performance', exact: true }))
-        .toBeVisible();
+      await expect.element(automationsScreen.hidePerformanceButton()).toBeVisible();
       await show();
       await expect.element(panel()).toBeVisible();
-      await expect
-        .element(page.getByRole('button', { name: 'Show performance', exact: true }))
-        .toBeVisible();
+      await expect.element(automationsScreen.showPerformanceButton()).toBeVisible();
     } finally {
       await page.viewport(1280, 800);
     }

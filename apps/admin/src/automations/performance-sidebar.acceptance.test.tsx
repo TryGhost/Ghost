@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { automationsScreen } from './automations.screen';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import {
@@ -251,7 +252,7 @@ describe('Performance sidebar layout', () => {
     let transition: Animation | undefined;
     try {
       // This case inspects the opening transition before it settles.
-      await page.getByRole('button', { name: 'Show performance', exact: true }).click();
+      await automationsScreen.showPerformanceButton().click();
       await expect
         .poll(() => {
           transition = panel
