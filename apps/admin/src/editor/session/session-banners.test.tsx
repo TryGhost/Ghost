@@ -9,6 +9,11 @@ import type { ReloadOutcome } from './use-editor-session';
 
 vi.mock('@/editor/report-error', () => ({ reportShownAlert: vi.fn() }));
 
+vi.mock('@tryghost/admin-x-framework/api/config', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@tryghost/admin-x-framework/api/config')>()),
+  useBrowseConfig: () => ({ data: undefined }),
+}));
+
 const noop = () => undefined;
 
 interface BannerOverrides {

@@ -1,13 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act } from 'react';
-import { run, setupEmbeddedRootFontSize } from './run-list.test-utils';
+import { run } from './run-list.test-utils';
 
 import { QueryCache } from '@tanstack/react-query';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import type { AutomationPerformanceStats } from '@tryghost/admin-x-framework/api/automations';
-
-setupEmbeddedRootFontSize();
 
 const flags = {
   labs: { automations: true, automationRunAnalytics: true, automationsTinybirdSync: true },
@@ -217,7 +215,7 @@ describe('Automation performance date filter', () => {
       finish();
     }
     await expectCounts([0, 0, 0]);
-    await expect.element(runs().getByRole('status')).toHaveTextContent('No entries in this period');
+    await expect.element(runs().getByRole('status')).toHaveTextContent('No members match');
   });
 
   it('retains the selected period on reopening and clears back to all time', async () => {
@@ -304,16 +302,16 @@ describe('Automation performance date filter', () => {
     const expectEmpty = async (message: string) => {
       await expect.element(runs().getByRole('status')).toHaveTextContent(message);
       await expect(page.getByText(message, { exact: true })).toHaveCount(1);
-      await expect.element(entries()).not.toHaveTextContent('No entries');
+      await expect.element(entries()).not.toHaveTextContent('No members match');
       await expectCounts([0, 0, 0]);
     };
-    await expectEmpty('No entries yet');
+    await expectEmpty('No members match');
     await selectRange('Last 7 days');
-    await expectEmpty('No entries in this period');
+    await expectEmpty('No members match');
     await card('Completed').click();
-    await expectEmpty('No matching entries');
+    await expectEmpty('No members match');
     await card('Completed').click();
-    await expectEmpty('No entries in this period');
+    await expectEmpty('No members match');
   });
 
   it('rejects a backend that ignores the date range and retries the selected range', async () => {

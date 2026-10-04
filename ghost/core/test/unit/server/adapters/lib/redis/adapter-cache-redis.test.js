@@ -5,6 +5,8 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
 const RedisCache = require('../../../../../../core/server/adapters/lib/redis/AdapterCacheRedis');
+const redisStoreFactory = require('../../../../../../core/server/adapters/lib/redis/redis-store-factory');
+const cacheManager = require('cache-manager');
 
 const PREFIX_HASH = 'mock-prefix-hash';
 
@@ -72,6 +74,60 @@ describe('Adapter Cache Redis', function () {
     assert.ok(cache);
     assert.equal(cache.redisClient.options.username, 'myusername');
     assert.equal(cache.redisClient.options.retryStrategy, false);
+  });
+
+  describe('clusterConfig', function () {
+    // resolveAdapterOptions hands the adapter its slice of Ghost config by
+    // reference, so folding ttl into clusterConfig in place wrote through to
+    // every later reader of `adapters:...`. These freeze their input: the
+    // mutation is silent otherwise, since this file is sloppy-mode CommonJS.
+    function buildWith(adapterConfig) {
+      const getRedisStore = sinon
+        .stub(redisStoreFactory, 'getRedisStore')
+        .returns({ name: 'stub-store' });
+      // the store stub is not a real cache-manager store, so short-circuit the
+      // cache it would otherwise be handed to
+      sinon.stub(cacheManager, 'caching').returns(createCacheStub());
+
+      new RedisCache(adapterConfig);
+
+      return getRedisStore.firstCall.args[0];
+    }
+
+    it('folds ttl into a derived clusterConfig without touching the config it was given', function () {
+      const clusterConfig = Object.freeze({ nodes: Object.freeze([]) });
+      const adapterConfig = Object.freeze({ ttl: 600, clusterConfig, reuseConnection: false });
+
+      const storeOptions = buildWith(adapterConfig);
+
+      assert.equal(storeOptions.clusterConfig.options.ttl, 600);
+      assert.notEqual(storeOptions.clusterConfig, clusterConfig);
+      assert.equal(clusterConfig.options, undefined);
+    });
+
+    it('keeps the existing cluster options alongside the ttl', function () {
+      const clusterConfig = Object.freeze({
+        nodes: Object.freeze([]),
+        options: Object.freeze({ slotsRefreshTimeout: 2000 }),
+      });
+      const adapterConfig = Object.freeze({ ttl: 600, clusterConfig, reuseConnection: false });
+
+      const storeOptions = buildWith(adapterConfig);
+
+      assert.deepEqual(storeOptions.clusterConfig.options, {
+        slotsRefreshTimeout: 2000,
+        ttl: 600,
+      });
+      assert.deepEqual(clusterConfig.options, { slotsRefreshTimeout: 2000 });
+    });
+
+    it('passes the cluster config straight through when no ttl is configured', function () {
+      const clusterConfig = Object.freeze({ nodes: Object.freeze([]) });
+
+      const storeOptions = buildWith(Object.freeze({ clusterConfig, reuseConnection: false }));
+
+      assert.equal(storeOptions.clusterConfig, clusterConfig);
+    });
   });
 
   describe('retryStrategy', function () {

@@ -95,7 +95,7 @@ catalog:
   '@tryghost/string': 0.3.6
   '@tryghost/timezone-data': 1.0.1
   '@tryghost/tpl': 2.3.16
-  '@tryghost/url-utils': 5.3.0
+  '@tryghost/url-utils': 5.4.0
   '@types/express': 4.17.25
   '@types/html-minifier': ^4.0.6
   '@types/lodash': 4.17.25
@@ -109,7 +109,7 @@ catalog:
   '@types/semver': 7.8.0
   '@types/sinon': 22.0.0
   '@types/validator': 13.15.10
-  '@typescript-eslint/parser': 8.67.0
+  '@typescript-eslint/parser': 8.71.0
   '@uiw/codemirror-extensions-basic-setup': 4.25.11
   '@uiw/react-codemirror': 4.25.11
   '@vitejs/plugin-react': 6.0.3
@@ -130,7 +130,7 @@ catalog:
   cross-fetch: 4.1.0
   dependency-cruiser: ^18.1.1
   dequal: 2.0.3
-  dompurify: 3.4.13
+  dompurify: 3.4.16
   dotenv: 17.4.2
   entities: 4.5.0
   esbuild: 0.28.2
@@ -160,8 +160,8 @@ catalog:
   lucide-react: 1.23.0
   microdiff: 1.5.0
   mingo: 2.5.3
-  moment: 2.30.1
-  moment-timezone: 0.5.45
+  moment: 2.31.0
+  moment-timezone: 0.6.4
   msw: 2.14.6
   nock: 14.0.17
   node-html-markdown: 2.0.0
@@ -197,13 +197,13 @@ catalog:
   # `typescript: <7.x>` entry once typescript-eslint supports the TS7.1 API.
   typescript: 'npm:@typescript/typescript6@6.0.2'
   '@typescript/native': 'npm:typescript@7.0.2'
-  typescript-eslint: 8.67.0
+  typescript-eslint: 8.71.0
   validator: 13.15.35
   vite: 8.1.3
   vite-plugin-svgr: 4.5.0
   vitest: 4.1.11
   vitest-browser-react: 2.2.0
-  zod: 4.4.3
+  zod: 4.6.5
   form-data: 4.0.6
   '@dnd-kit/core': 6.3.1
   '@dnd-kit/sortable': 7.0.2
@@ -263,8 +263,8 @@ overrides:
   broccoli-persistent-filter: ^2.3.1
   ember-basic-dropdown: 6.0.2
   ember-in-viewport: 4.1.0
-  'eslint-plugin-ghost>@typescript-eslint/eslint-plugin': 8.67.0
-  'eslint-plugin-ghost>@typescript-eslint/utils': 8.67.0
+  'eslint-plugin-ghost>@typescript-eslint/eslint-plugin': 8.71.0
+  'eslint-plugin-ghost>@typescript-eslint/utils': 8.71.0
   'ember-svg-jar>cheerio': 'catalog:'
   # juice 11 pins cheerio 1.0.0 exactly. Point it at the catalog's 1.2.0 so juice
   # and ghost/core share one copy instead of keeping two parsers resident - both
@@ -281,51 +281,26 @@ overrides:
   '@babel/runtime@<7.26.10': ^7.26.10
   '@tootallnate/once@<3.0.1': ^3.0.1
   'ansi-html@<0.0.8': ^0.0.9
-  'axios@<1.15.2': ^1.15.2
-  'baseline-browser-mapping@<2.11.0': ^2.11.0
   'braces@<3.0.3': ^3.0.3
-  'browserslist@>=4.0.0 <4.28.7': ^4.28.7
   'clean-css@<4.1.11': ^4.1.11
-  'codemirror@<5.58.2': ^5.58.2
-  'colord@<2.9.4': ^2.9.4
   # consolidate 0.15 pulls in a bunch of legacy dependencies that ultimately
   # make their way into the Ghost docker image, forcing a 1.x upgrade trims
   # the final dependency list
   'consolidate@0.15.1': ^1.0.4
-  'debug@>=4.0.0 <4.3.1': ^4.3.1
   'debug@<2.6.9': ^2.6.9
   'diff@<3.5.1': ^3.5.1
-  'diff@>=6.0.0 <8.0.3': ^8.0.3
   'esbuild@>=0.28.0': 'catalog:'
-  'fast-xml-parser@<5.7.0': ^5.7.0
-  'follow-redirects@<1.16.0': ^1.16.0
-  'form-data@<2.5.4': ^2.5.4
   'growl@<1.10.0': ^1.10.0
-  'handlebars@>=4.0.0 <=4.7.8': ^4.7.9
-  'ip-address@<=10.1.0': ^10.2.0
-  'js-yaml@>=4.0.0 <4.1.1': ^4.1.1
   'json5@<1.0.2': ^1.0.2
-  'lodash@<4.18.0': ^4.18.0
-  'lodash-es@<4.18.0': ^4.18.0
   'merge@<2.1.1': ^2.1.1
   'micromatch@<4.0.8': ^4.0.8
   'minimatch@<3.1.4': ^3.1.4
-  'minimatch@>=9.0.0 <9.0.7': ^9.0.7
   'minimist@<0.2.4': ^0.2.4
-  'morgan@<1.12.0': ^1.12.0
   'nth-check@<2.0.1': ^2.0.1
-  'path-to-regexp@<0.1.13': ^0.1.13
-  'postcss@>=8.0.0 <8.5.23': ^8.5.23
-  'protobufjs@<7.6.5': ^7.6.5
   'smol-toml@<1.7.1': ^1.7.1
-  'socket.io-parser@<4.2.7': ^4.2.7
   supports-color: '10.2.2'
-  'svgo@>=4.0.0 <4.1.0': ^4.1.0
-  'tar@<7.5.21': ^7.5.21
   'tmp@<=0.2.3': ^0.2.4
-  'tough-cookie@<4.1.3': ^4.1.3
   'trim@<0.0.3': ^0.0.3
-  'undici@<6.24.0': ^6.24.0
   'underscore@>=1.3.2 <1.12.1': ^1.12.1
   '@xmldom/xmldom@<0.9.12': ^0.9.12
   # liquid-wormhole 3.0.1 pins this to a personal-fork git URL; redirect to the
@@ -350,38 +325,6 @@ minimumReleaseAgeExclude:
   - 'ghost-storage-base'
   - 'gscan'
   - 'knex-migrator'
-  # Renovate security update: file-type@21.3.1 || 21.3.2
-  - file-type@21.3.1 || 21.3.2
-  # sharp 0.35.5 bundles libvips 8.18.7 with updated librsvg and libheif
-  - sharp@0.35.5
-  - '@img/sharp-darwin-arm64@0.35.5'
-  - '@img/sharp-darwin-x64@0.35.5'
-  - '@img/sharp-freebsd-wasm32@0.35.5'
-  - '@img/sharp-linux-arm@0.35.5'
-  - '@img/sharp-linux-arm64@0.35.5'
-  - '@img/sharp-linux-ppc64@0.35.5'
-  - '@img/sharp-linux-riscv64@0.35.5'
-  - '@img/sharp-linux-s390x@0.35.5'
-  - '@img/sharp-linux-x64@0.35.5'
-  - '@img/sharp-linuxmusl-arm64@0.35.5'
-  - '@img/sharp-linuxmusl-x64@0.35.5'
-  - '@img/sharp-wasm32@0.35.5'
-  - '@img/sharp-webcontainers-wasm32@0.35.5'
-  - '@img/sharp-win32-arm64@0.35.5'
-  - '@img/sharp-win32-ia32@0.35.5'
-  - '@img/sharp-win32-x64@0.35.5'
-  - '@img/sharp-libvips-darwin-arm64@1.3.4'
-  - '@img/sharp-libvips-darwin-x64@1.3.4'
-  - '@img/sharp-libvips-linux-arm@1.3.4'
-  - '@img/sharp-libvips-linux-arm64@1.3.4'
-  - '@img/sharp-libvips-linux-ppc64@1.3.4'
-  - '@img/sharp-libvips-linux-riscv64@1.3.4'
-  - '@img/sharp-libvips-linux-s390x@1.3.4'
-  - '@img/sharp-libvips-linux-x64@1.3.4'
-  - '@img/sharp-libvips-linuxmusl-arm64@1.3.4'
-  - '@img/sharp-libvips-linuxmusl-x64@1.3.4'
-  # Renovate security update: markdown-it@14.3.1
-  - markdown-it@14.3.1
 
 # configuration for pnpm's changeset functionality
 versioning:

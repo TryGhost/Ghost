@@ -212,6 +212,36 @@ describe('automation run pagination queries', () => {
     }
   });
 
+  it('allows the same cursor sequence when refetching loaded pages', async () => {
+    const cursors: Array<string | null> = [];
+    const fetch = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const cursor = new URL(String(input)).searchParams.get('cursor');
+      cursors.push(cursor);
+      return Response.json({
+        automation_runs: [row(cursor ?? 'first')],
+        meta: {
+          pagination: { limit: 50, next_cursor: cursor ? null : 'next-page' },
+        },
+      });
+    });
+    try {
+      const { result } = renderRuns();
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      await act(async () => {
+        await result.current.fetchNextPage();
+      });
+      await waitFor(() => expect(result.current.hasNextPage).toBe(false));
+      await act(async () => {
+        await result.current.refetch();
+      });
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(cursors).toEqual([null, 'next-page', null, 'next-page']);
+      expect(result.current.data?.runs).toEqual([row('first'), row('next-page')]);
+    } finally {
+      fetch.mockRestore();
+    }
+  });
+
   it('stops fetching after the final page', async () => {
     await withMockFetch(
       {

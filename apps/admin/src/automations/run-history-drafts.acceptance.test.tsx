@@ -19,9 +19,10 @@ describe('Run history preserves editor drafts', () => {
     setup();
     respond({ ...history('a'), status: 'exited_early' });
     await renderAdminApp('/automations/first', flags);
-    await page.getByRole('button', { name: 'Wait: 1 day' }).click();
+    await page.getByRole('article', { name: 'Wait: 1 day' }).click();
     const input = page.getByRole('textbox', { name: 'Wait for' });
     await input.fill('5');
+    await expect.element(input).toHaveValue('5');
     const originalInput = input.element();
     await open();
     await select();
@@ -44,7 +45,7 @@ describe('Run history preserves editor drafts', () => {
     const data = history('a');
     respond(data);
     await renderAdminApp('/automations/first', flags);
-    await page.getByRole('button', { name: 'Wait: 1 day' }).click();
+    await page.getByRole('article', { name: 'Wait: 1 day' }).click();
     await page.getByRole('textbox', { name: 'Wait for' }).fill('5');
     await open();
     await select();
@@ -65,29 +66,29 @@ describe('Run history preserves editor drafts', () => {
     await expect.element(page.getByRole('textbox', { name: 'Wait for' })).toHaveValue('5');
   });
 
-  it('preserves the unsaved workflow and local sidebar field text, without saving', async () => {
+  it('preserves the unsaved workflow and local inline field text, without saving', async () => {
     setup();
     respond(history('a'));
     const save = fakeAdminEndpoint('PUT', '/automations/first/', {
       automations: [detail('first')],
     });
     await renderAdminApp('/automations/first', flags);
-    await page.getByRole('button', { name: 'Wait: 1 day' }).click();
+    await page.getByRole('article', { name: 'Wait: 1 day' }).click();
     const input = page.getByRole('textbox', { name: 'Wait for' });
     await input.fill('3');
     await expect.element(page.getByRole('button', { name: 'Save', exact: true })).toBeEnabled();
-    // Invalid field text lives in the sidebar, outside the saved editor draft.
+    // Invalid field text lives in the input, outside the saved editor draft.
     await input.fill('0');
     await open();
     await select();
     await expect.element(canvas()).toHaveTextContent('Alex');
     await expect
-      .element(document.querySelector<HTMLElement>('[aria-label="Step details"]'))
+      .element(document.querySelector<HTMLElement>('[aria-label="Editing canvas"]'))
       .not.toBeVisible();
     await expect.element(page.getByRole('button', { name: 'Save', exact: true })).toBeDisabled();
     await close();
     await expect.element(input).toHaveValue('0');
-    await expect.element(page.getByRole('button', { name: 'Wait: 3 days' })).toBeVisible();
+    await expect.element(page.getByRole('article', { name: 'Wait: 3 days' })).toBeVisible();
     await expect.element(page.getByRole('button', { name: 'Save', exact: true })).toBeEnabled();
     expect(save.requests).toHaveLength(0);
   });
@@ -96,7 +97,7 @@ describe('Run history preserves editor drafts', () => {
     setup();
     respond(history('a'));
     await renderAdminApp('/automations/first', flags);
-    await page.getByRole('button', { name: 'Wait: 1 day' }).click();
+    await page.getByRole('article', { name: 'Wait: 1 day' }).click();
     await page.getByRole('textbox', { name: 'Wait for' }).fill('3');
     await open();
     await select();
@@ -106,7 +107,7 @@ describe('Run history preserves editor drafts', () => {
     await page.getByRole('button', { name: 'Stay', exact: true }).click();
     await expect.element(canvas()).toHaveTextContent('Alex');
     await close();
-    await expect.element(page.getByRole('button', { name: 'Wait: 3 days' })).toBeVisible();
+    await expect.element(page.getByRole('article', { name: 'Wait: 3 days' })).toBeVisible();
   });
 
   it('restores the selected email settings and unsaved subject after leaving history', async () => {
@@ -129,18 +130,19 @@ describe('Run history preserves editor drafts', () => {
     const save = fakeAdminEndpoint('PUT', '/automations/first/', { automations: [emailDetail] });
     respond(history('a'));
     await renderAdminApp('/automations/first', flags);
-    await page.getByRole('button', { name: 'Send email: Welcome' }).click();
-    await page.getByPlaceholder('Subject line').fill('Unsaved subject');
+    await page.getByRole('textbox', { name: 'Subject line' }).fill('Unsaved subject');
     await open();
     await select();
     await expect.element(canvas()).toHaveTextContent('Alex');
     await expect
-      .element(document.querySelector<HTMLElement>('[aria-label="Step details"]'))
-      .not.toBeVisible();
+      .element(page.getByRole('complementary', { name: 'Step details' }))
+      .not.toBeInTheDocument();
     await close();
-    await expect.element(page.getByPlaceholder('Subject line')).toHaveValue('Unsaved subject');
     await expect
-      .element(page.getByRole('button', { name: 'Send email: Unsaved subject' }))
+      .element(page.getByRole('textbox', { name: 'Subject line' }))
+      .toHaveValue('Unsaved subject');
+    await expect
+      .element(page.getByRole('article', { name: 'Send email: Unsaved subject' }))
       .toBeVisible();
     expect(save.requests).toHaveLength(0);
   });

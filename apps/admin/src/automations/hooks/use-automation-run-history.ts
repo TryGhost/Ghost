@@ -32,14 +32,14 @@ export const useAutomationRunHistory = (automationId: string, runId: string) => 
   const waitingForPlan = needsPlan && planQuery.isPending;
   const history = !waitingForPlan && !planQuery.isError ? currentHistory : undefined;
   const summary = useMemo(() => history && mapAutomationRun(history), [history]);
-  const unavailable =
+  const notFound =
     query.isError && query.error instanceof APIError && query.error.response?.status === 404;
   return {
     history,
     summary,
     isLoading: query.isPending || waitingForPlan,
-    isError: (query.isError && !unavailable) || (needsPlan && planQuery.isError),
-    unavailable,
+    isError: (query.isError && !notFound) || (needsPlan && planQuery.isError),
+    notFound,
     retry: () => setGeneration((value) => value + 1),
     plan,
   };

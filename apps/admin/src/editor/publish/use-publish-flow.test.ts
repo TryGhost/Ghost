@@ -188,6 +188,81 @@ describe('post reads after an emailed publish', () => {
   });
 });
 
+describe('sends under improveSendingUI', () => {
+  const FAILED_EMAIL = {
+    id: 'email-1',
+    status: 'failed' as const,
+    error: 'The email service was unavailable.',
+    email_count: 20,
+    opened_count: 0,
+  };
+
+  it.each([
+    ['a publish that emails', {}, undefined],
+    ['an email-only send', {}, 'send' as const],
+    ['a draft whose earlier send failed', { email: FAILED_EMAIL }, undefined],
+  ])('completes %s as soon as it saves', async (_case, post, publishType) => {
+    const inputs = options();
+    inputs.post = { ...inputs.post, ...post };
+    inputs.improveSendingUI = true;
+    inputs.onCompleted = vi.fn();
+    inputs.dispatch = vi.fn().mockResolvedValue({
+      kind: 'saved',
+      executedAs: 'publish',
+      result: { id: 'post-1', status: 'published', updatedAt: NOW.toISOString() },
+    });
+    const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
+    await waitFor(() => expect(result.current.limitsChecked).toBe(true));
+    if (publishType) {
+      act(() => result.current.setPublishType(publishType));
+    }
+    expect(result.current.state.willEmailImmediately).toBe(true);
+
+    act(() => result.current.toConfirm());
+    let publishing: Promise<void> = Promise.resolve();
+    act(() => {
+      publishing = result.current.confirmPublish();
+    });
+
+    await waitFor(() =>
+      expect(inputs.onCompleted).toHaveBeenCalledWith({
+        postId: 'post-1',
+        isScheduled: false,
+        hasEmail: true,
+      }),
+    );
+    await act(() => publishing);
+    expect(confirmation.settle).toBeUndefined();
+    expect(result.current.step).toBe('complete');
+  });
+
+  it('still waits on the email when a failed send is retried', async () => {
+    const inputs = options();
+    inputs.post = { ...inputs.post, status: 'published', email: FAILED_EMAIL };
+    inputs.improveSendingUI = true;
+    inputs.onCompleted = vi.fn();
+    const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
+    await waitFor(() => expect(result.current.limitsChecked).toBe(true));
+
+    let retrying: Promise<void> = Promise.resolve();
+    act(() => {
+      retrying = result.current.retryEmail();
+    });
+    await waitFor(() => expect(confirmation.settle).toBeDefined());
+    expect(inputs.onCompleted).not.toHaveBeenCalled();
+
+    await act(async () => {
+      confirmation.settle?.({ kind: 'submitted' });
+      await retrying;
+    });
+    expect(inputs.onCompleted).toHaveBeenCalledWith({
+      postId: 'post-1',
+      isScheduled: false,
+      hasEmail: true,
+    });
+  });
+});
+
 describe('failed newsletter retry', () => {
   it.each([null, ''])('keeps a failed retry recoverable with error %j', async (error) => {
     const inputs = options();

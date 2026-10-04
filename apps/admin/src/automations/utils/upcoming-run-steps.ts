@@ -5,18 +5,13 @@ import type {
 import { emailTextExcerpt } from './history-email-preview';
 import { waitDuration, type HistoryCardData } from './run-history';
 
-export type UpcomingRunSteps = { cards: HistoryCardData[]; message: string };
-
 export function mapUpcomingRunSteps(
   history: AutomationRunHistory,
   plan: AutomationRunPlan,
   now = Date.now(),
-): UpcomingRunSteps {
-  if (history.status !== 'in_progress') {
-    return { cards: [], message: '' };
-  }
-  if (plan.status === 'inactive') {
-    return { cards: [], message: 'This automation is off. No further steps will run.' };
+): HistoryCardData[] {
+  if (history.status !== 'in_progress' || plan.status === 'inactive') {
+    return [];
   }
   const pending = history.steps.filter((step) => step.status === 'pending');
   if (pending.length !== 1 || history.steps.at(-1) !== pending[0]) {
@@ -24,13 +19,6 @@ export function mapUpcomingRunSteps(
   }
   const anchor = pending[0].action.id;
   const actions = new Map(plan.actions.map((action) => [action.id, action]));
-  if (!actions.has(anchor)) {
-    return {
-      cards: [],
-      message:
-        'Upcoming steps are unavailable. The queued step is no longer in the saved workflow.',
-    };
-  }
   const visited = new Set([anchor]);
   const cards: HistoryCardData[] = [];
   let current = anchor;
@@ -52,6 +40,7 @@ export function mapUpcomingRunSteps(
       state: 'planned' as const,
       statusLabel: 'Not reached',
     };
+    const startsAt = expected;
     switch (next.type) {
       case 'wait': {
         const duration = waitDuration(next.data.wait_hours);
@@ -83,6 +72,9 @@ export function mapUpcomingRunSteps(
         label: 'est.',
         value: new Date(expected).toISOString(),
         estimated: true,
+        ...(next.type === 'wait' && startsAt !== undefined
+          ? { rangeStart: new Date(startsAt).toISOString() }
+          : {}),
       };
     }
     current = next.id;
@@ -90,9 +82,9 @@ export function mapUpcomingRunSteps(
   cards.push({
     id: `end:${history.id}`,
     kind: 'end',
-    title: 'End of automation',
+    title: 'Completed',
     state: 'planned',
     statusLabel: 'Not reached',
   });
-  return { cards, message: '' };
+  return cards;
 }

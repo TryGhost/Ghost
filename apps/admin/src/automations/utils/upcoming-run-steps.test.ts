@@ -53,17 +53,13 @@ describe('upcoming downstream steps', () => {
 
   it('follows saved edges after the pending action and marks the future path distinctly', () => {
     const upcoming = mapUpcomingRunSteps(active, plan);
-    expect(upcoming.cards.map(({ id }) => id)).toEqual([
-      'planned:next-wait',
-      'planned:email',
-      'end:run',
-    ]);
-    expect(upcoming.cards[0]).toMatchObject({
+    expect(upcoming.map(({ id }) => id)).toEqual(['planned:next-wait', 'planned:email', 'end:run']);
+    expect(upcoming[0]).toMatchObject({
       state: 'planned',
       title: 'Wait 2 days',
       statusLabel: 'Not reached',
     });
-    expect(upcoming.cards[1].email?.subject).toBe('Current saved email');
+    expect(upcoming[1].email?.subject).toBe('Current saved email');
   });
 
   it('estimates dates from recorded eligibility and accumulates downstream waits', () => {
@@ -79,49 +75,54 @@ describe('upcoming downstream steps', () => {
         { source_action_id: 'short-wait', target_action_id: 'email' },
       ],
     };
-    const { cards } = mapUpcomingRunSteps(active, extended, Date.parse(entered));
+    const cards = mapUpcomingRunSteps(active, extended, Date.parse(entered));
     expect(cards.map((card) => card.timestamp?.value)).toEqual([
       '2026-09-15T12:00:00.000Z',
       '2026-09-15T12:30:00.000Z',
       '2026-09-15T12:30:00.000Z',
       undefined,
     ]);
+    expect(cards.map((card) => card.timestamp?.rangeStart)).toEqual([
+      eligible,
+      '2026-09-15T12:00:00.000Z',
+      undefined,
+      undefined,
+    ]);
     expect(cards[0].timestamp).toMatchObject({ label: 'est.', estimated: true });
   });
 
   it('estimates an overdue pending step from now without changing its recorded eligibility', () => {
-    const { cards } = mapUpcomingRunSteps(active, plan, Date.parse('2026-09-20T15:00:00.000Z'));
+    const cards = mapUpcomingRunSteps(active, plan, Date.parse('2026-09-20T15:00:00.000Z'));
     expect(cards[0].timestamp?.value).toBe('2026-09-22T15:00:00.000Z');
-    expect(cards[1].timestamp).toEqual(cards[0].timestamp);
+    expect(cards[0].timestamp?.rangeStart).toBe('2026-09-20T15:00:00.000Z');
+    expect(cards[1].timestamp?.value).toBe(cards[0].timestamp?.value);
+    expect(cards[1].timestamp?.rangeStart).toBeUndefined();
     expect(mapRunHistory(active).at(-1)?.timestamp?.value).toBe(eligible);
   });
 
   it('keeps upcoming steps without dates when the member has been deleted', () => {
-    const { cards } = mapUpcomingRunSteps({ ...active, member: null }, plan);
+    const cards = mapUpcomingRunSteps({ ...active, member: null }, plan);
     expect(cards).toHaveLength(3);
     expect(cards.every((card) => !card.timestamp)).toBe(true);
   });
 
   it('shows only the end marker when the pending step is the final saved action', () => {
-    expect(
-      mapUpcomingRunSteps(active, { ...plan, edges: [] }).cards.map(({ title }) => title),
-    ).toEqual(['End of automation']);
+    expect(mapUpcomingRunSteps(active, { ...plan, edges: [] }).map(({ title }) => title)).toEqual([
+      'Completed',
+    ]);
   });
 
-  it('explains a pending action that was removed from the saved workflow', () => {
+  it('shows the end marker after a pending action removed from the saved workflow', () => {
     const result = mapUpcomingRunSteps(active, {
       ...plan,
       actions: plan.actions.filter((action) => action.id !== 'old-wait'),
+      edges: plan.edges.filter((edge) => edge.source_action_id !== 'old-wait'),
     });
-    expect(result.cards).toEqual([]);
-    expect(result.message).toContain('The queued step is no longer in the saved workflow');
+    expect(result.map(({ title }) => title)).toEqual(['Completed']);
   });
 
   it('does not suggest more execution for an inactive automation', () => {
-    expect(mapUpcomingRunSteps(active, { ...plan, status: 'inactive' })).toEqual({
-      cards: [],
-      message: 'This automation is off. No further steps will run.',
-    });
+    expect(mapUpcomingRunSteps(active, { ...plan, status: 'inactive' })).toEqual([]);
   });
 
   it.each([
@@ -142,6 +143,6 @@ describe('upcoming downstream steps', () => {
         },
       ],
     };
-    expect(mapUpcomingRunSteps(ended, plan)).toEqual({ cards: [], message: '' });
+    expect(mapUpcomingRunSteps(ended, plan)).toEqual([]);
   });
 });

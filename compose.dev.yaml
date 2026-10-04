@@ -2,7 +2,7 @@ name: ghost-dev
 
 services:
   mysql:
-    image: mysql:8.4.11@sha256:85b9bf2e29cf836ecb8c2a15a935d4ba0c606631dff1dd79531a11983c638f2a
+    image: mysql:8.4.11@sha256:6ea90827b1100f8f2ae306a539f86d2c264a26ed435a2a9f75551dd5c3aeb242
     container_name: ghost-dev-mysql
     command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT --log-error-verbosity=1
     ports:
@@ -32,7 +32,7 @@ services:
       start_period: 10s
 
   redis:
-    image: redis:7.4@sha256:71da9275c5f3fcb97d0fa0c8c5b36cc995327265420f17a04bfd544f458059f7
+    image: redis:7.4@sha256:c6eabf748fc7a61dbb5a705c78bcf3d6377b1127a97d0ce965c11c44ba46896f
     container_name: ghost-dev-redis
     command: ['redis-server', '--loglevel', 'warning']
     ports:
@@ -50,7 +50,7 @@ services:
       retries: 120
 
   mailpit:
-    image: axllent/mailpit@sha256:74d609a42ec279aa63c6b4622a6fa9b5408d1ad5b1d76a1c4be40a265ce0863d
+    image: axllent/mailpit@sha256:ed9b00c609e77e99c79b93f1178255ebc271868920f2c69a8d166bd5634ed10d
     container_name: ghost-dev-mailpit
     command: ['--quiet']
     ports:
@@ -165,7 +165,7 @@ services:
         condition: service_healthy
 
   stripe:
-    image: stripe/stripe-cli:latest@sha256:da11dbbdb78100602014096a6cbf764b211243111b3b8a57309d18c3939c9777
+    image: stripe/stripe-cli:latest@sha256:92dbb87a9342196d6b4c0aa305ef8d0cacc1edd81da12f1e819ed78e9e99bead
     container_name: ghost-dev-stripe
     entrypoint: ['/entrypoint.sh']
     profiles: ['stripe']

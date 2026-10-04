@@ -3,9 +3,8 @@ import { fakeAdminEndpoint } from '@test-utils/acceptance';
 import type { AutomationDetail, AutomationRun } from '@tryghost/admin-x-framework/api/automations';
 import type { AutomationRunHistory } from '@tryghost/admin-x-framework/api/automation-run-history';
 
-import { setupEmbeddedRootFontSize, response } from './run-list.test-utils';
+import { response } from './run-list.test-utils';
 export { flags } from './run-list.test-utils';
-setupEmbeddedRootFontSize();
 
 export const timestamp = '2026-09-14T12:00:00.000Z';
 export const run = (id: string, name = 'Alex'): AutomationRun => ({

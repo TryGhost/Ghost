@@ -12,8 +12,9 @@ afterEach(() => {
 
 function renderScreen(initialEntry: string) {
   let key = '';
+  let markCreated = () => {};
   function Screen() {
-    key = useEditorScreenSessionKey();
+    ({ key, markCreated } = useEditorScreenSessionKey());
     return null;
   }
   const router = createMemoryRouter([{ path: '/editor/*', element: createElement(Screen) }], {
@@ -31,7 +32,12 @@ function renderScreen(initialEntry: string) {
       await router.navigate(-1);
     });
   };
-  return { navigate, back, key: () => key };
+  const created = () => {
+    act(() => {
+      markCreated();
+    });
+  };
+  return { navigate, back, created, key: () => key };
 }
 
 describe('useEditorScreenSessionKey', () => {
@@ -68,6 +74,26 @@ describe('useEditorScreenSessionKey', () => {
     await screen.navigate('/editor/post');
 
     expect(new Set([first, second, screen.key()]).size).toBe(3);
+  });
+
+  it('gives a new key when the new-post URL is reached after a create whose URL replace never rendered', async () => {
+    const screen = renderScreen('/editor/post');
+    const created = screen.key();
+    screen.created();
+
+    // The router can render the create's URL replace and this navigation as one.
+    await screen.navigate('/editor/post');
+
+    expect(screen.key()).not.toBe(created);
+  });
+
+  it('keeps the key when the new-post URL is reached again before a create', async () => {
+    const screen = renderScreen('/editor/post');
+    const opened = screen.key();
+
+    await screen.navigate('/editor/post');
+
+    expect(screen.key()).toBe(opened);
   });
 
   it('gives a new key on Back to a created post from a new one', async () => {

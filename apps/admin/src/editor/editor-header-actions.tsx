@@ -23,6 +23,7 @@ import { describeCompletionFailure } from './publish/completion-message';
 import { usePublishInputs } from './publish/use-publish-inputs';
 import { usePublishLimits } from './publish/use-publish-limits';
 import { useEditorSettings } from './use-editor-settings';
+import { stateSaveError } from './session/error-mapping';
 import type { EditorSessionHandle } from './session/use-editor-session';
 import type { SaveCompletion } from './engine/save-engine';
 import { usePreviewShortcut, usePublishShortcut, useSaveShortcut } from './use-editor-shortcuts';
@@ -143,8 +144,9 @@ export function EditorHeaderActions({
       fallback: session.title,
       hasUnsavedChanges: session.isDirty(),
       isSaving,
+      saveError: stateSaveError(session.state),
       onChange: (value) => session.stageSettings({ email_subject: value }),
-      onSave: saveBeforePreview,
+      onCommit: session.commitSettings,
     },
     isPost: postType === 'post',
     post,
@@ -237,6 +239,10 @@ function PublishActions({
   const { data: settingsData } = useEditorSettings();
   const siteTitle = getSettingValue<string>(settingsData?.settings ?? null, 'title') ?? undefined;
   const paywallImprovements = useFeatureFlag('paywallImprovements', {
+    defaultErrorHandler: false,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
+  const improveSendingUI = useFeatureFlag('improveSendingUI', {
     defaultErrorHandler: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
@@ -365,6 +371,7 @@ function PublishActions({
         <PublishFlowModal
           animate={!openedFromPreview}
           dispatch={session.dispatchPublish}
+          improveSendingUI={improveSendingUI}
           limits={limits}
           paywallImprovements={paywallImprovements}
           post={post}

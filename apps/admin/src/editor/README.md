@@ -6,6 +6,10 @@ preview flows it opens, plus the restore screen that turns a local copy of a
 lost draft back into a post. `api.ts` is the domain's public surface — the shell
 mounts both screens lazily through it and everything else here is internal.
 
+While React serves the editor, the shell also fetches the editor screen and
+Koenig through `api.ts` once a signed-in admin is idle, so opening the first
+post doesn't wait on either download.
+
 ## The modules
 
 | Module                                           | What it is                                                                                                           |
@@ -27,10 +31,12 @@ mounts both screens lazily through it and everything else here is internal.
 Two small modules are shared across all of the above. `request-options.ts`
 carries the editor's opt-out from the transport's session-expiry redirect, which
 every request the editor makes passes: leaving the page would take unsaved
-content with it, so the editor surfaces an expired session itself. The opt-out
-belongs to whichever component starts a fetch rather than to the cache entry, so
-a component reading a query key it shares with a screen outside the editor opts
-out too. `layering.ts` carries the z-index a confirmation dialog opened from
+content with it, so the editor surfaces an expired session itself. Until a post
+has opened nothing is unsaved, so a first read refused because the session has
+expired reloads the page instead: the signed-out admin asks the writer to sign
+in and then reopens the post. The opt-out belongs to whichever component starts
+a fetch rather than to the cache entry, so a component reading a query key it
+shares with a screen outside the editor opts out too. `layering.ts` carries the z-index a confirmation dialog opened from
 inside another editor surface needs in order to paint above it.
 
 ## Title and excerpt limits
@@ -58,14 +64,19 @@ post whose status line offers the retry. After a retry, or a publish that
 emails, a published post's status line reads "Published and sending to N
 members" while the email is on its way and "Published and sent to N members"
 once the flow's email confirmation finds it submitted; an email-only send reads
-"Sent to N members" throughout.
+"Sent to N members" throughout. With the `improveSendingUI` flag on, a publish
+does not wait for that confirmation, so the status line shows the send as the
+save left it.
 
 After successful completion, the editor follows the publish flow's celebration
 handoff to the destination screen. Pages return to `/pages`; scheduled posts
 and posts without email return to `/posts`. Immediately published posts with
 email, including email-only sends and posts that were emailed previously, open
 `/posts/analytics/:id`. Failed saves and failed sends keep the flow open so the
-writer can retry.
+writer can retry. With the flag on, a publish that emails opens analytics as
+soon as it saves, and a send that fails after that is reported there rather
+than in the flow; retrying a failed send from the status line still waits for
+the email.
 
 ## Leaving the editor
 
