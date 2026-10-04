@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
+import { openPerformanceSidebar } from './run-list.test-utils';
+import { fakeAdminEndpoint, renderAdminApp, settleTransitions } from '@test-utils/acceptance';
 import { buildLexicalParagraph, settingsResponse } from '@tryghost/test-data';
 import type {
   AutomationDetail,
@@ -84,8 +85,12 @@ const boot = (tracking = true, redesigned = true) =>
 const panel = () => page.getByRole('complementary', { name: 'Email performance', exact: true });
 const card = (name = 'First') =>
   editingCanvas().getByRole('article', { name: `Send email: ${name}` });
-const show = (name = 'First') =>
-  card(name).getByRole('button', { name: 'View email analytics' }).click();
+const show = async (name = 'First') => {
+  await settleTransitions();
+  await card(name).getByRole('button', { name: 'View email analytics' }).click();
+  await expect.element(panel()).toBeVisible();
+  await settleTransitions();
+};
 const linksPath = (name = 'First') => `/automations/first/actions/${name}/links/`;
 
 describe('Email performance sidebar', () => {
@@ -113,7 +118,7 @@ describe('Email performance sidebar', () => {
     await boot();
     await show();
     const sidebar = panel().element();
-    await page.getByRole('button', { name: 'Show performance', exact: true }).click();
+    await openPerformanceSidebar();
     await select();
     await expect.element(sidebar).not.toBeInTheDocument();
     await close();
@@ -131,7 +136,7 @@ describe('Email performance sidebar', () => {
         await show();
         await card().getByRole('button', { name: 'Email actions' }).click();
       } else {
-        await page.getByRole('button', { name: 'Show performance', exact: true }).click();
+        await openPerformanceSidebar();
         await page.getByRole('button', { name: 'Filter performance' }).click();
       }
       await expect.element(page.getByRole('menu')).toBeVisible();
@@ -186,7 +191,7 @@ describe('Email performance sidebar', () => {
       if (sidebar === 'email') {
         await show();
       } else {
-        await page.getByRole('button', { name: 'Show performance', exact: true }).click();
+        await openPerformanceSidebar();
       }
       await editingCanvas().getByRole('textbox', { name: 'Subject line' }).fill('Updated subject');
       await expect.element(card('Updated subject')).toBeVisible();
@@ -342,7 +347,7 @@ describe('Email performance sidebar', () => {
       fakeAdminEndpoint('GET', linksPath(), { automation_action_links: [] });
       await boot();
       await show();
-      await page.getByRole('button', { name: 'Show performance', exact: true }).click();
+      await openPerformanceSidebar();
       await expect.element(panel()).not.toBeInTheDocument();
       await expect
         .element(page.getByRole('button', { name: 'Hide performance', exact: true }))

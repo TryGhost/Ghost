@@ -7,6 +7,7 @@ import {
   fakeMembers,
   member,
   renderAdminApp,
+  settleAnimations,
 } from '@test-utils/acceptance';
 import { importMembersScreen } from './import-members.screen';
 import { membersScreen } from './members.screen';
@@ -100,6 +101,11 @@ async function openMappingStep(csv: string = CSV) {
   await importMembersScreen
     .fileInput()
     .upload(new File([csv], 'members.csv', { type: 'text/csv' }));
+
+  // File selection starts an asynchronous parse and widens the dialog. Wait
+  // for the mapping controls, then settle their motion before the first click.
+  await expect.element(importMembersScreen.fieldSelect('email')).toBeVisible();
+  await settleAnimations(importMembersScreen.dialog().element());
 }
 
 const fieldSelect = importMembersScreen.fieldSelect;
@@ -108,6 +114,7 @@ const importToggle = importMembersScreen.importToggle;
 
 async function openCreateForm(column: string) {
   await importToggle(column).click();
+  await expect.element(importToggle(column)).toBeChecked();
   await fieldSelect(column).click();
   await importMembersScreen.addCustomFieldOption().click();
 }
@@ -397,6 +404,7 @@ describe('Import members custom fields', () => {
     // `name` is auto-detected, so this deselects a column that has a field; the three
     // undetected columns are already out, having nothing to import them as.
     await importToggle('name').click();
+    await expect.element(importToggle('name')).not.toBeChecked();
     await importMembersScreen.importButton(1).click();
 
     await expect

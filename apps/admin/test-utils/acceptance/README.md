@@ -39,6 +39,12 @@ await expect.poll(() => document.documentElement.classList.contains("dark")).toB
 
 **Unsaved-changes guards.** Typing into a dirty screen arms its navigation guard through a chain of passive effects, so a spec that navigates straight after a `fill` races the guard and an unguarded navigation just goes through. Wait for the guard itself, never for a frame count: `await expect.poll(unsavedChangesGuarded).toBe(true)` before the click or `window.history.back()`.
 
+**Moving panels.** Visibility can precede the end of a panel's movement. After the panel becomes visible, use `await settleTransitions()` before clicking inside a sliding sidebar. When reopening, also settle the previous closing transition before clicking the toggle again. For a dialog that opens with a CSS animation, use `await settleAnimations(dialog.element())`; it waits for finite motion in that dialog and its descendants.
+
+**Transient feedback.** A short-lived label such as settings modals' 500 ms "Saved" feedback can disappear while a browser command returns. Begin the visibility assertion alongside the gesture with `Promise.all`, so it observes the feedback as it appears. For a journey that closes after saving, also wait for its write and for `unsavedChangesGuarded()` to become false.
+
+**Initial requests.** `renderAdminApp` resolves before a lazy route and its reads finish loading. Before polling a supporting request such as snippets or an email preview, await the loaded screen that issues it. Anchor loading and error scenarios to the states they exercise.
+
 **One render per test.** Each `renderAdminApp` gets a fresh QueryClient, which it resolves with for a wait nothing on screen can show, and the fake API resets between tests — there is no reload. State that would be persisted on a real server (user preferences, settings) is _represented_ by boot overrides; a journey that genuinely needs persistence across reloads belongs in `e2e/`.
 
 **Host page.** `renderAdminApp` mounts into a stand-in of the production host page (the `react-admin` body class + `#root` from index.html), so the shell's viewport-bounded grid applies and scroll-driven behaviors — virtualized lists, infinite paging — work like production.
@@ -149,6 +155,60 @@ runs the full suite.
 - **Failure screenshots** land in `__screenshots__/` (gitignored) — the fastest way to see what actually rendered.
 - **418 bodies** name the unhandled request and list what is faked.
 - There are **no Playwright traces** in this tier — a spec that needs trace-level debugging belongs in `e2e/`.
+
+## Repeated runs and flake investigation
+
+From the monorepo root, first run the Nx acceptance target once so its workspace
+dependencies are built:
+
+```bash
+pnpm nx run @tryghost/admin:test:acceptance
+pnpm exec node scripts/stress-admin-acceptance.js --runs=30
+```
+
+The stress runner starts fresh Vitest/Chromium processes for every attempt, with
+retries disabled. A round runs both CI shards concurrently, with three workers
+each, and alternates ordinary and seeded shuffled order. It counts a round as
+clean only when every expected test file appears exactly once, both commands
+exit successfully, and both nonempty JSON reports contain only passing tests.
+The collected test inventory must stay unchanged across rounds. CI worker
+counts do not reproduce Linux, fonts, or the CPU speed of the CI runners on a Mac.
+
+Each batch gets a new directory under `test-results/stress/` (gitignored),
+containing the source commit and patch, runner snapshot, exact commands and
+seeds, a JSON and Markdown summary, per-shard reports and console logs, and
+separate copies of failure screenshots. An existing batch directory cannot be
+reused. Keep each batch on unchanged source; the runner stops if tracked source
+changes. Review the failures, make fixes, and start a fresh batch. Finish build and validation commands before starting a batch: cache restoration can temporarily remove compiled workspace exports that the browser is loading.
+
+To require 100 consecutive clean rounds, with an explicit upper bound:
+
+```bash
+pnpm exec node scripts/stress-admin-acceptance.js --runs=150 --until-clean=100
+```
+
+Add `--review-after=30` to stop a failing batch after at least 30 rounds so the
+failures can be fixed before continuing. A completely clean batch keeps running
+until its target.
+
+For comparisons under load, run each batch in a separate checkout with the same
+shard and worker counts. Before combining identical-source batches, verify that
+their source hashes, runner snapshots, and collected test inventories match.
+Only complete full-suite rounds contribute to a full-suite total.
+
+Use `--order=shuffled --seed=31318` to select seeded order, or `--order=default`
+to match the CI ordering. `--workers` and `--shards` control the concurrency.
+Positional file-name filters restrict the selected suite; for example:
+
+```bash
+pnpm exec node scripts/stress-admin-acceptance.js --runs=30 --shards=1 --workers=1 --order=shuffled automations/member-search
+```
+
+Filtered repetitions are reported as selected-suite rounds and do not establish
+a clean full suite. A nonzero exit, missing report, missing file, or collection
+error fails the round even if no assertion is marked failed. The runner exits
+unsuccessfully if any fixed-count round failed or the consecutive-clean target
+was not reached.
 
 ## Known limitations
 

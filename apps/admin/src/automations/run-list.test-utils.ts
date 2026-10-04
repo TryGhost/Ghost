@@ -1,5 +1,6 @@
+import { expect } from 'vitest';
 import { page } from 'vitest/browser';
-import { fakeAdminEndpoint } from '@test-utils/acceptance';
+import { fakeAdminEndpoint, settleTransitions } from '@test-utils/acceptance';
 import type {
   AutomationDetail,
   AutomationPerformanceStats,
@@ -90,3 +91,13 @@ export const scrollRunsToEnd = () => {
   scroller.scrollTop = scroller.scrollHeight;
   scroller.dispatchEvent(new Event('scroll'));
 };
+
+/** Opens the moving panel and waits until its controls can be clicked. */
+export async function openPerformanceSidebar(): Promise<void> {
+  await settleTransitions();
+  await page.getByRole('button', { name: 'Show performance', exact: true }).click();
+  await expect
+    .element(page.getByRole('heading', { name: 'Performance', exact: true }))
+    .toBeVisible();
+  await settleTransitions();
+}

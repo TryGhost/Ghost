@@ -10,6 +10,7 @@ import {
   fakeTiers,
   post,
   renderAdminApp,
+  settleTransitions,
   settingsResponse,
   staffRole,
   submittedPost,
@@ -89,6 +90,7 @@ function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
 async function openPublishDate() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  await settleTransitions();
   await expect.element(editorScreen.settingsPublishDate()).toBeVisible();
 }
 
