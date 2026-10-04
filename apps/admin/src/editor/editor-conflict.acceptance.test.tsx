@@ -4,6 +4,7 @@ import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
   currentRoute,
+  editorReadLanded,
   fakeAdminEndpoint,
   fakeEditorChrome,
   post,
@@ -376,7 +377,7 @@ describe('Post editor update collision', () => {
 
   it('accepts a newer detail read that finishes before an older reload', async () => {
     const { saveApi } = fakeCollidingPost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await collide(saveApi);
 
     await editorScreen.reloadAfterConflict().click();
@@ -421,9 +422,7 @@ describe('Post editor update collision', () => {
       updated_at: '2026-01-01T11:00:00.000Z',
     });
     pendingDetailRead.resolve({ posts: [newest] });
-    await new Promise<void>((resolve) => {
-      setTimeout(resolve, 0);
-    });
+    await editorReadLanded(queryClient, newest);
     pendingReload.resolve({
       posts: [
         theirs({
