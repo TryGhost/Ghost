@@ -134,9 +134,17 @@ a number, or assumed a key is always present, stops compiling.
   Both existing transforms stay in [`utils.ts`](utils.ts) for now.
   `makePathsAbsolute` is unconditional there already, which is the property that
   matters, so moving it buys nothing until there is a second transform to share
-  the plumbing. `sanitizeDatabaseProperties` is not really a transform: it
-  deletes keys based on a sibling's value, making it a discriminated union on
-  `database:client`, and it waits for `database` to be schemafied.
+  the plumbing.
+
+  `sanitizeDatabaseProperties` looks like union discrimination - it deletes
+  `connection` keys based on `database:client` - and `database` is now a
+  `z.discriminatedUnion` on `client`. But the deletion cannot move into it.
+  Stripping is what would do the deleting, and `connection` has to stay loose:
+  it is handed to the driver whole, and a self-hoster's `ssl` or `socketPath`
+  is a live option the schema cannot enumerate. So the function still runs in
+  the loader, its client rename and sqlite path-absolutising with it, and the
+  schema describes the tree it leaves - only `mysql2` or `better-sqlite3`,
+  never the `mysql` and `sqlite3` that config files say.
 
 - **Nothing may be stricter than the loader already was.** Tightening beyond
   that is its own change, with its own release note.

@@ -2,6 +2,102 @@ import type { OmitIndexSignature } from 'type-fest';
 import { z } from 'zod';
 
 /**
+ * Keys every client shares. Loose, like `connection` in each variant, because
+ * the whole subtree is handed to knex - ../../server/data/db/configure-knex.ts
+ * spreads it, and MigratorConfig.js clones it for knex-migrator - so a key named
+ * nowhere here, like `acquireConnectionTimeout`, is still a live knex option.
+ */
+const databaseBase = {
+  /**
+   * Passed to knex as-is for mysql2. For better-sqlite3, configure-knex
+   * replaces it outright to install the pragma hook.
+   */
+  pool: z
+    .looseObject({
+      min: z.number().optional(),
+      max: z.number().optional(),
+    })
+    .optional()
+    .meta({
+      description: "knex's connection pool. Ghost(Pro) sets `max` per site.",
+      examples: [{ min: 0, max: 5 }],
+    }),
+  debug: z.boolean().optional().meta({ description: 'Log every query knex runs.' }),
+  /**
+   * Only meaningful for sqlite. Note the two defaults disagree: configure-knex
+   * treats absent as true, knex-migrator as false.
+   */
+  useNullAsDefault: z.boolean().optional().meta({
+    description: 'Insert NULL for a column a row omits. SQLite only.',
+  }),
+};
+
+const mysqlDatabase = z.looseObject({
+  client: z.literal('mysql2'),
+  /**
+   * Every key is optional: env/config.production.json supplies all four, but a
+   * self-hoster on their own NODE_ENV supplies their own, and mysql2 has a
+   * default for each - or connects by `socketPath` with no host at all.
+   *
+   * `filename` is never here: sanitizeDatabaseProperties deletes it.
+   */
+  connection: z
+    .looseObject({
+      host: z
+        .string()
+        .optional()
+        .meta({ examples: ['127.0.0.1'] }),
+      /** A number from env, ghost-cli and Ghost(Pro); a string only if hand-written so. */
+      port: z
+        .union([z.number(), z.string()])
+        .optional()
+        .meta({ examples: [3306] }),
+      /**
+       * `user`, `password` and `database` are strings or the driver throws:
+       * mysql2 rejects a non-string `user` or `database` outright, and hashes
+       * `password` with crypto, which refuses a number. That matters because
+       * nconf parses env values as JSON - `database__connection__password=1234`
+       * arrives as the number 1234 and fails here rather than at connect time.
+       * `database__connection__password_FILE` is the way round it: ./secrets.ts
+       * reads the file as a literal string.
+       */
+      user: z.string().optional(),
+      /** An empty string in the shipped production default. */
+      password: z.string().optional(),
+      database: z.string().optional().meta({ description: 'The schema name.' }),
+      /** Read by knex-migrator to create the database. configure-knex forces utf8mb4. */
+      charset: z.string().optional(),
+    })
+    .meta({
+      description: 'Passed to the mysql2 driver. Keys not listed here, like `ssl`, still reach it.',
+    }),
+  ...databaseBase,
+});
+
+const sqliteDatabase = z.looseObject({
+  client: z.literal('better-sqlite3'),
+  /**
+   * `host`, `user`, `password` and `database` are never here:
+   * sanitizeDatabaseProperties deletes them for every client but mysql2.
+   */
+  connection: z.looseObject({
+    /**
+     * Absolute by the time anything reads it - sanitizeDatabaseProperties
+     * resolves a relative path against Ghost's install directory. Optional,
+     * because better-sqlite3 opens a temporary database without one.
+     */
+    filename: z
+      .string()
+      .optional()
+      .meta({
+        description: 'The SQLite database file.',
+        examples: ['/var/www/ghost/content/data/ghost.db'],
+      }),
+  }),
+  ...databaseBase,
+});
+
+/**
  * The validated shape of Ghost's config.
  *
  * A key is listed here once it has a real schema. `config.get()` then returns
@@ -104,6 +200,39 @@ export const configSchema = z.looseObject({
     defaultSettings: z
       .string()
       .meta({ description: 'Default settings loaded on a fresh install.' }),
+  }),
+
+  /**
+   * How Ghost connects to its database: a union on `client`, because the
+   * connection keys that mean anything depend on it.
+   *
+   * `null` in defaults.json - the shape comes from env/*.json, a self-hoster's
+   * config.<env>.json (written by ghost-cli) or Ghost(Pro)'s injected config and
+   * `database__*` env vars. Required all the same: sanitizeDatabaseProperties
+   * dereferences `database.connection` unconditionally, so a boot without one
+   * has always thrown in the loader.
+   *
+   * Like `paths`, this describes the tree after ./utils.ts has run.
+   * sanitizeDatabaseProperties still lives there, and does three things before
+   * createConfig sees the tree:
+   *
+   * - renames `mysql` to `mysql2` and `sqlite3` to `better-sqlite3`, so only
+   *   the two driver names are ever valid here
+   * - deletes the connection keys the other client uses
+   * - makes a sqlite `filename` absolute
+   *
+   * The deletion is not a stripping `z.object` waiting to happen: `connection`
+   * is loose, because it goes to the driver whole and the driver's options are
+   * not enumerable from here (`ssl`, `socketPath`, ...). Closing it would drop
+   * live options a self-hoster sets. See SCHEMA.md.
+   *
+   * Only those two clients, because they are the only ones Ghost can run:
+   * knex-migrator refuses anything @tryghost/database-info does not recognise.
+   * Rejecting `pg` here is no stricter than boot already was.
+   */
+  database: z.discriminatedUnion('client', [mysqlDatabase, sqliteDatabase]).meta({
+    description:
+      'Database connection. `client` is `mysql` or `sqlite3` in config; Ghost normalises them to their driver names.',
   }),
 });
 

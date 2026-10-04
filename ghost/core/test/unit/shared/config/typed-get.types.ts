@@ -13,9 +13,22 @@ declare const config: ConfigInstance;
 const url: string = config.get('url');
 const env: string = config.get('env');
 
-// a key with no schema keeps nconf's `any`, so existing call sites still compile
 const contentPath: string = config.get('paths:contentPath');
-const database: Record<string, unknown> = config.get('database');
+
+// database is a union on client, and the client narrows the connection
+const database = config.get('database');
+const client: 'mysql2' | 'better-sqlite3' = config.get('database:client');
+const host: string | undefined =
+  database.client === 'mysql2' ? database.connection.host : undefined;
+
+// @ts-expect-error unnarrowed, host is `unknown`: a sqlite connection names no host
+const unnarrowedHost: string | undefined = database.connection.host;
+
+// connection is loose, so callers that hand it to knex still can
+const connection: Record<string, unknown> = config.get('database:connection');
+
+// a key with no schema keeps nconf's `any`, so existing call sites still compile
+const logging: number = config.get('logging:level');
 
 // so does a key path built at runtime
 declare const dynamic: string;
@@ -37,4 +50,19 @@ const pathsObject: { contentPath: string; migrationPath: string } = config.get('
 // @ts-expect-error a key the paths schema does not name
 const pathsTypo = config.get('paths').contentPatth;
 
-export { url, env, contentPath, database, fromDynamic, whole, wrongType, pathsObject, pathsTypo };
+export {
+  url,
+  env,
+  contentPath,
+  database,
+  client,
+  host,
+  unnarrowedHost,
+  connection,
+  logging,
+  fromDynamic,
+  whole,
+  wrongType,
+  pathsObject,
+  pathsTypo,
+};
