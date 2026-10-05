@@ -99,10 +99,21 @@ function useAutosize(ref: React.RefObject<HTMLTextAreaElement | null>, value: st
   }, [ref, measure]);
 }
 
-function TkIndicator({ onClick, testId }: { onClick: () => void; testId: string }) {
+function TkIndicator({
+  className,
+  onClick,
+  testId,
+}: {
+  className: string;
+  onClick: () => void;
+  testId: string;
+}) {
   return (
     <button
-      className="absolute top-1 -left-12 rounded-sm bg-state-warning px-1.5 py-0.5 text-2xs font-bold text-foreground"
+      className={cn(
+        'absolute rounded-sm bg-state-warning px-1.5 py-0.5 text-2xs font-bold text-foreground',
+        className,
+      )}
       data-testid={testId}
       type="button"
       onClick={onClick}
@@ -340,26 +351,34 @@ export function PostEditor({
               onImageClear={featureImage.onFeatureImageClear}
               onTkCountChange={setFeatureImageTkCount}
             />
-            {titleHasTk && <TkIndicator testId={tkIndicator} onClick={focusTitle} />}
-            <textarea
-              ref={titleRef}
-              aria-describedby={titleError ? titleErrorId : undefined}
-              aria-invalid={!!titleError}
-              aria-label={`${capitalize(postType)} title`}
-              autoFocus={autofocusTitle}
-              className={cn(
-                fieldClassName,
-                'heading-font-features mb-4 min-h-0 max-w-none min-w-0 pb-1 text-[4.8rem] leading-[1.1] font-bold tracking-[-0.017em] text-foreground placeholder:font-bold placeholder:text-muted-foreground max-[769px]:text-[3.6rem] max-[501px]:text-[2.8rem]',
+            <div className="relative">
+              {titleHasTk && (
+                <TkIndicator
+                  className="top-4.5 -right-14"
+                  testId={tkIndicator}
+                  onClick={focusTitle}
+                />
               )}
-              data-testid={editorTitleInput}
-              placeholder={`${capitalize(postType)} title`}
-              rows={1}
-              value={title}
-              onBlur={onTitleBlur}
-              onChange={(event) => onTitleChange(event.target.value)}
-              onKeyDown={onTitleKeyDown}
-              onPaste={cleanPastedTitle}
-            />
+              <textarea
+                ref={titleRef}
+                aria-describedby={titleError ? titleErrorId : undefined}
+                aria-invalid={!!titleError}
+                aria-label={`${capitalize(postType)} title`}
+                autoFocus={autofocusTitle}
+                className={cn(
+                  fieldClassName,
+                  'heading-font-features mb-4 min-h-0 max-w-none min-w-0 pb-1 text-[4.8rem] leading-[1.1] font-bold tracking-[-0.017em] text-foreground placeholder:font-bold placeholder:text-muted-foreground max-[769px]:text-[3.6rem] max-[501px]:text-[2.8rem]',
+                )}
+                data-testid={editorTitleInput}
+                placeholder={`${capitalize(postType)} title`}
+                rows={1}
+                value={title}
+                onBlur={onTitleBlur}
+                onChange={(event) => onTitleChange(event.target.value)}
+                onKeyDown={onTitleKeyDown}
+                onPaste={cleanPastedTitle}
+              />
+            </div>
             {titleError ? (
               <FieldError className="-mt-2 mb-4" id={titleErrorId}>
                 {titleError}
@@ -367,7 +386,13 @@ export function PostEditor({
             ) : null}
             {showExcerpt && (
               <div className="relative">
-                {excerptHasTk && <TkIndicator testId={tkIndicatorExcerpt} onClick={focusExcerpt} />}
+                {excerptHasTk && (
+                  <TkIndicator
+                    className="top-1 -left-12"
+                    testId={tkIndicatorExcerpt}
+                    onClick={focusExcerpt}
+                  />
+                )}
                 <textarea
                   ref={excerptRef}
                   aria-describedby={excerptError ? excerptErrorId : undefined}
