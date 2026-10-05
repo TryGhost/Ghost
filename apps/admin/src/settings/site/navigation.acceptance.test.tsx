@@ -258,6 +258,31 @@ describe('Navigation settings', () => {
     await expect.element(suggestions().getByRole('option', { name: /^About/ })).toBeInTheDocument();
   });
 
+  it('finds an offer past the first five by typing its name', async () => {
+    fakeSettingsScreens();
+    fakeSiteContent();
+    fakeOffers([
+      offer({ name: 'Offer One', code: 'one' }),
+      offer({ name: 'Offer Two', code: 'two' }),
+      offer({ name: 'Offer Three', code: 'three' }),
+      offer({ name: 'Offer Four', code: 'four' }),
+      offer({ name: 'Offer Five', code: 'five' }),
+      offer({ name: 'Offer Six', code: 'six' }),
+    ]);
+    await renderAdminApp('/settings/navigation/edit', stripeConnectedBoot);
+
+    await newItem().getByLabelText('URL').click();
+    await expect
+      .element(suggestions().getByRole('option', { name: /Offer — Offer One/ }))
+      .toBeInTheDocument();
+    await expect(suggestions().getByRole('option', { name: /Offer — Offer Six/ })).toHaveCount(0);
+
+    await userEvent.keyboard('six');
+    await expect
+      .element(suggestions().getByRole('option', { name: /Offer — Offer Six/ }))
+      .toBeInTheDocument();
+  });
+
   it('offers no checkout destinations while Stripe is disconnected', async () => {
     fakeSettingsScreens();
     fakeSiteContent();

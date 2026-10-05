@@ -117,6 +117,16 @@ const UrlSuggestionInput: React.FC<UrlSuggestionInputProps> = ({
 
   useEffect(() => () => clearTimeout(debounceTimer.current), []);
 
+  // Keeps the highlighted option in view while arrowing through a long list
+  useEffect(() => {
+    if (activeIndex < 0) {
+      return;
+    }
+    document
+      .getElementById(`${listId}-option-${activeIndex}`)
+      ?.scrollIntoView({ block: 'nearest' });
+  }, [activeIndex, listId]);
+
   const openWithSuggestions = useCallback(
     (term: string) => {
       setOpen(true);

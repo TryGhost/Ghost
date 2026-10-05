@@ -103,9 +103,11 @@ const useNavigationLinkSuggestions = () => {
       [],
     );
 
-    const offers = (offersData?.offers || [])
-      .filter((offer) => offer.status === 'active' && offer.redemption_type === 'signup')
-      .slice(0, CONTENT_LIMIT);
+    // Keep every active signup offer here; the five-result cap is applied
+    // after search, so typing still finds offers past the first five
+    const offers = (offersData?.offers || []).filter(
+      (offer) => offer.status === 'active' && offer.redemption_type === 'signup',
+    );
 
     return [
       { label: 'Links', items: links },
@@ -156,12 +158,14 @@ const useNavigationLinkSuggestions = () => {
         { label: 'Posts', items: toItems(posts) },
       ];
 
-      const filteredStaticGroups = term
-        ? staticGroups.map((group) => ({
-            ...group,
-            items: group.items.filter((item) => matches(item, term)),
-          }))
-        : staticGroups;
+      const filteredStaticGroups = staticGroups.map((group) => {
+        const items = term ? group.items.filter((item) => matches(item, term)) : group.items;
+        return {
+          ...group,
+          // Offers only: Links are few enough to show in full
+          items: group.label === 'Offers' ? items.slice(0, CONTENT_LIMIT) : items,
+        };
+      });
 
       return [...filteredStaticGroups, ...contentGroups].filter((group) => group.items.length > 0);
     },
