@@ -7,8 +7,9 @@
   "type": "module",
   "scripts": {
     "lint": "eslint . --cache",
-    "test:unit": "node --test",
-    "test": "pnpm run '/^test:/'"
+    "test:unit": "node --test test/*.test.js test/*.test.cjs test/*.test.ts",
+    "test": "pnpm run '/^test:/'",
+    "test:types": "tsc6 --noEmit"
   },
   "dependencies": {
     "@octokit/core": "catalog:",
@@ -20,10 +21,13 @@
     "execa": "catalog:",
     "js-yaml": "catalog:",
     "picomatch": "4.0.5",
-    "semver": "catalog:"
+    "semver": "catalog:",
+    "typescript": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-typescript": "workspace:*",
+    "@types/node": "catalog:",
     "eslint": "catalog:"
   }
 }

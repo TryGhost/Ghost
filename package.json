@@ -73,7 +73,8 @@
     "tb:test": "pnpm tb test run",
     "data:analytics:generate": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js generate",
     "data:analytics:clear": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js clear",
-    "release": "node scripts/release.js"
+    "release": "node scripts/release.js",
+    "inventory:typescript": "node scripts/typescript-inventory.ts"
   },
   "devDependencies": {
     "@playwright/test": "catalog:",
