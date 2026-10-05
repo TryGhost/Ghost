@@ -198,8 +198,12 @@ vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
     useBrowseAutomationActionLinks: (...args: unknown[]) =>
       mockUseBrowseAutomationActionLinks(...args),
     useEditAutomation: () => mockEditMutation,
+    useReadAutomationPerformanceStats: () => ({ isFetching: true }),
   };
 });
+
+// The virtualized run list requires browser layout; its behavior is covered by acceptance tests.
+vi.mock('./components/canvas/run-list', () => ({ RunList: () => null }));
 
 const mockLabs = vi.hoisted((): { current: Record<string, boolean> } => ({ current: {} }));
 
@@ -1061,7 +1065,7 @@ describe('AutomationEditor', () => {
     },
   );
 
-  it('renders the performance toggle and panel shell when both analytics flags are enabled', () => {
+  it('opens performance for an active automation when both analytics flags are enabled', () => {
     mockLabs.current = { automationRunAnalytics: true, automationsTinybirdSync: true };
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [automationDetail] },
@@ -1071,7 +1075,7 @@ describe('AutomationEditor', () => {
 
     renderEditor();
 
-    expect(screen.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Hide performance' })).toBeVisible();
     expect(screen.getByText('Performance')).toBeInTheDocument();
   });
 

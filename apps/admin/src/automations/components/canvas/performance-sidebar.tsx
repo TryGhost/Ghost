@@ -158,7 +158,7 @@ export const PerformanceSidebar: React.FC<{
   const [search, setSearch] = useState('');
   const searchActive = !!input || !!search;
   const updating = input !== search;
-  const [hasOpened, setHasOpened] = useState(false);
+  const [hasOpened, setHasOpened] = useState(isOpen);
   const [status, setStatus] = useState<AutomationRunStatusFilter | null>(null);
   const [direction, setDirection] = useState<RunSortDirection>('desc');
   const [queryRevision, setQueryRevision] = useState(0);
@@ -167,6 +167,11 @@ export const PerformanceSidebar: React.FC<{
   const headingId = useId();
   // List selections refetch runs without invalidating the date-range summary.
   const runQueryScope = `${panelId}:${queryRevision}`;
+
+  // Mount on the first opening, including the active-flow default, then retain cached content.
+  if (isOpen && !hasOpened) {
+    setHasOpened(true);
+  }
 
   return (
     <>
@@ -178,10 +183,7 @@ export const PerformanceSidebar: React.FC<{
         size="icon"
         type="button"
         variant="ghost"
-        onClick={() => {
-          setHasOpened(true);
-          onOpenChange(!isOpen);
-        }}
+        onClick={() => onOpenChange(!isOpen)}
       >
         <LucideIcon.PanelLeft strokeWidth={2} />
       </Button>

@@ -47,8 +47,8 @@ export const response = (
   };
   return { automation_performance_stats: [data] };
 };
-export const read = (id: string) =>
-  fakeAdminEndpoint('GET', `/automations/${id}/`, { automations: [detail(id)] });
+export const read = (id: string, status: AutomationDetail['status'] = 'active') =>
+  fakeAdminEndpoint('GET', `/automations/${id}/`, { automations: [{ ...detail(id), status }] });
 export const prepareStatuses = (id = 'first') => {
   read(id);
   return fakeAdminEndpoint(
@@ -93,10 +93,14 @@ export const scrollRunsToEnd = () => {
   scroller.dispatchEvent(new Event('scroll'));
 };
 
-/** Opens the moving panel and waits until its controls can be clicked. */
+/** Ensures the panel is open and waits until its controls can be clicked. */
 export async function openPerformanceSidebar(): Promise<void> {
   await settleTransitions();
-  await automationsScreen.showPerformanceButton().click();
+  const toggle = page.getByRole('button', { name: /^(Show|Hide) performance$/ });
+  await expect.element(toggle).toBeVisible();
+  if (toggle.element().getAttribute('aria-label') === 'Show performance') {
+    await toggle.click();
+  }
   await expect.element(automationsScreen.performanceHeading()).toBeVisible();
   await settleTransitions();
 }
