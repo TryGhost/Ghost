@@ -379,8 +379,10 @@ drift.
 | `generating(manual; custom)`                  | `settled(ok)`       | the answer is blank                                                           | `idle(custom)`                                | resolve(request: empty-result), notify(empty-result)                                                                        |
 | `generating(manual, deferred title; custom)`  | `settled(ok)`       | the edit applies                                                              | `idle(custom)`                                | resolve(request: manual), notify(manual), resolve(deferred: custom), notify(custom)                                         |
 | `generating(manual, deferred title; custom)`  | `settled(ok)`       | the edit reverts; the settled mode is custom                                  | `idle(custom)`                                | resolve(request: reverted), notify(reverted), resolve(deferred: custom), notify(custom)                                     |
+| `generating(manual, deferred title; custom)`  | `settled(ok)`       | the answer is blank; the settled mode is custom                               | `idle(custom)`                                | resolve(request: empty-result), notify(empty-result), resolve(deferred: custom), notify(custom)                             |
 | `generating(manual, deferred manual; custom)` | `settled(ok)`       | the edit applies; the deferred edit differs from the slug                     | `generating(manual; custom)`                  | resolve(request: manual), notify(manual), request(deferred), notify(null)                                                   |
 | `generating(manual, deferred manual; custom)` | `settled(ok)`       | the edit reverts; the deferred edit differs from the slug                     | `generating(manual; custom)`                  | resolve(request: reverted), notify(reverted), request(deferred), notify(null)                                               |
+| `generating(manual, deferred manual; custom)` | `settled(ok)`       | the answer is blank; the deferred edit differs from the slug                  | `generating(manual; custom)`                  | resolve(request: empty-result), notify(empty-result), request(deferred), notify(null)                                       |
 | `idle(derived)`                               | `settled(error)`    | no request is on the wire                                                     | `idle(derived)`                               | none                                                                                                                        |
 | `idle(custom)`                                | `settled(error)`    | no request is on the wire                                                     | `idle(custom)`                                | none                                                                                                                        |
 | `generating(title)`                           | `settled(error)`    | always                                                                        | `idle(derived)`                               | resolve(request: error), notify(error)                                                                                      |
@@ -411,7 +413,8 @@ Consequences worth naming:
   `stale` at once and frees the wire. A deferred title commit behind a withdrawn
   manual edit and a deferred manual edit behind a withdrawn title generation
   start immediately; a deferred title commit behind a withdrawn title
-  generation is dropped. The late generator answer for a withdrawn request is
+  generation is dropped. Withdrawing does not cancel the generator call, so it
+  can still be outstanding when the next request starts; its late answer is
   ignored because its ticket is no longer held.
 - Withdrawing a deferred manual edit (a no-op blur while a title generation is
   out) drops it and leaves the generation running.

@@ -668,6 +668,15 @@ const TRANSITIONS: readonly Row[] = [
     CUSTOM_MINE,
     finished(IDLE_CUSTOM, REVERTED_MINE),
   ),
+  answers(
+    MANUAL_CUSTOM_DEFERRED_TITLE,
+    ok(''),
+    `${BLANK_ANSWER}; ${CUSTOM_MODE}`,
+    IDLE_CUSTOM,
+    DEFERRED,
+    CUSTOM_MINE,
+    finished(IDLE_CUSTOM, unchanged('empty-result', 'mine')),
+  ),
   starts(
     MANUAL_CUSTOM_DEFERRED_MANUAL,
     ok('yours'),
@@ -681,6 +690,13 @@ const TRANSITIONS: readonly Row[] = [
     `${EDIT_REVERTS}; ${DEFERRED_DIFFERS}`,
     started(CUSTOM, 'manual', 'theirs', DEFERRED),
     finished(IDLE_CUSTOM, REVERTED_MINE),
+  ),
+  starts(
+    MANUAL_CUSTOM_DEFERRED_MANUAL,
+    ok(''),
+    `${BLANK_ANSWER}; ${DEFERRED_DIFFERS}`,
+    started(CUSTOM, 'manual', 'theirs', DEFERRED),
+    finished(IDLE_CUSTOM, unchanged('empty-result', 'mine')),
   ),
 
   stays(IDLE, failed(), NO_WIRE),
