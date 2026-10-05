@@ -2491,7 +2491,8 @@ services:
           Import constructs the wrapper. First init checks
           hostSettings:postsPublicCache:enabled, optionally obtains the cache:postsPublic
           adapter and attaches a site.changed reset listener, then assigns api. Later init
-          calls return even when the cache was disabled.
+          calls preserve the adapter and cached entries, and return even when caching was
+          disabled.
         sources:
           - core/server/services/posts-public/service.js
           - core/boot.js
@@ -2502,7 +2503,8 @@ services:
         summary: >-
           Posts browse and read capture the initialized root cache when their endpoint module
           loads. The API pipeline reuses cached responses for identical requests, separates
-          changed options and refreshes after site.changed. Pages remain uncached.
+          changed options and refreshes after site.changed. With caching disabled, neither
+          endpoint binds a cache. Pages remain uncached.
         sources:
           - core/boot.js
           - core/server/api/endpoints/index.js
@@ -3091,7 +3093,8 @@ services:
       construction:
         summary: >-
           First init optionally obtains the cache:tagsPublic adapter and publishes an api
-          object; subsequent calls return when api exists.
+          object; subsequent calls return when api exists, preserving the adapter and cached
+          entries.
         sources:
           - core/server/services/tags-public/service.js
         tests:
@@ -3110,7 +3113,8 @@ services:
         summary: >-
           Tags browse captures the initialized root cache when its endpoint module loads.
           The API pipeline reuses cached responses for identical requests, separates changed
-          options and refreshes after site.changed. Tags read remains uncached.
+          options and refreshes after site.changed. With caching disabled, browse binds no
+          cache. Tags read remains uncached.
         sources:
           - core/boot.js
           - core/server/api/endpoints/index.js

@@ -38,7 +38,7 @@ describe('Public response caches', function () {
     previousEndpoints = new Map(
       Object.values(endpointPaths).map((path) => [path, require.cache[path]]),
     );
-    previousListeners = events.listeners('site.changed');
+    previousListeners = events.rawListeners('site.changed');
 
     // The roots initialize once; clear them so each test sees a first init.
     services.tags.api = undefined;
@@ -54,7 +54,7 @@ describe('Public response caches', function () {
     sandbox.restore();
     services.tags.api = previousApis.tags;
     services.posts.api = previousApis.posts;
-    for (const listener of events.listeners('site.changed')) {
+    for (const listener of events.rawListeners('site.changed')) {
       if (!previousListeners.includes(listener)) {
         events.removeListener('site.changed', listener);
       }
@@ -103,7 +103,16 @@ describe('Public response caches', function () {
         await services[resource].init();
         caches[resource].set('key', 'value');
 
-        events.emit('site.changed');
+        // Exercise only the listener registered by this init. Broadcasting on
+        // the shared emitter would also clear caches owned by other tests.
+        // Actual event dispatch is covered by the isolated HTTP tests.
+        const listeners = events
+          .rawListeners('site.changed')
+          .filter(
+            (listener: (...args: unknown[]) => void) => !previousListeners.includes(listener),
+          );
+        assert.equal(listeners.length, 1);
+        listeners[0].call(events);
 
         assert.deepEqual(caches[resource].keys(), []);
       });
@@ -112,8 +121,13 @@ describe('Public response caches', function () {
         setFlags({ tags: true, posts: true });
 
         await services[resource].init();
+        const cache = services[resource].api.cache;
+        cache.set('key', 'value');
+
         await services[resource].init();
 
+        assert.equal(services[resource].api.cache, cache);
+        assert.equal(cache.get('key'), 'value');
         sinon.assert.calledOnce(getAdapter);
         assert.equal(events.listenerCount('site.changed'), previousListeners.length + 1);
       });
@@ -121,27 +135,29 @@ describe('Public response caches', function () {
   }
 
   describe('endpoint bindings', function () {
-    it('bind each cached endpoint to its own service cache, and leave the rest uncached', async function () {
-      setFlags({ tags: true, posts: true });
-      await services.tags.init();
-      await services.posts.init();
+    for (const enabled of [true, false]) {
+      it(`binds only enabled caches to their endpoints (enabled: ${enabled})`, async function () {
+        setFlags({ tags: enabled, posts: enabled });
+        await services.tags.init();
+        await services.posts.init();
 
-      // Endpoints read `service.api.cache` when they load, as they do after
-      // boot has initialized the roots.
-      for (const path of Object.values(endpointPaths)) {
-        delete require.cache[path];
-      }
-      const tags = require(endpointPaths.tags);
-      const posts = require(endpointPaths.posts);
-      const pages = require(endpointPaths.pages);
+        // Endpoints read `service.api.cache` when they load, as they do after
+        // boot has initialized the roots.
+        for (const path of Object.values(endpointPaths)) {
+          delete require.cache[path];
+        }
+        const tags = require(endpointPaths.tags);
+        const posts = require(endpointPaths.posts);
+        const pages = require(endpointPaths.pages);
 
-      assert.equal(tags.browse.cache, caches.tags);
-      assert.equal(posts.browse.cache, caches.posts);
-      assert.equal(posts.read.cache, caches.posts);
+        assert.equal(tags.browse.cache, enabled ? caches.tags : undefined);
+        assert.equal(posts.browse.cache, enabled ? caches.posts : undefined);
+        assert.equal(posts.read.cache, enabled ? caches.posts : undefined);
 
-      assert.equal(tags.read.cache, undefined);
-      assert.equal(pages.browse.cache, undefined);
-      assert.equal(pages.read.cache, undefined);
-    });
+        assert.equal(tags.read.cache, undefined);
+        assert.equal(pages.browse.cache, undefined);
+        assert.equal(pages.read.cache, undefined);
+      });
+    }
   });
 });
