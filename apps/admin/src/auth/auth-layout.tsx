@@ -39,8 +39,8 @@ export function AuthLayout({ children }: { children: ReactNode }) {
   useSiteAccentColor();
 
   return (
-    <div className="flex min-h-screen w-full justify-center overflow-y-auto bg-sidebar px-6 [--control-height:calc(var(--spacing)*12)] [--text-control:var(--text-md)]">
-      <Stack className="w-full max-w-lg py-12 sm:py-20" gap="xl">
+    <div className="flex min-h-screen w-full flex-col items-center overflow-y-auto bg-sidebar px-6 [--control-height:calc(var(--spacing)*12)] [--text-control:var(--text-md)]">
+      <Stack className="my-auto w-full max-w-lg py-12" gap="xl">
         {children}
       </Stack>
     </div>
