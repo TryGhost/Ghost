@@ -6,14 +6,16 @@ import type { PostType } from './card-config';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import {
   type AutocompleteLink,
+  buildAutocompleteLinks,
+  buildOfferLinks,
+} from '@/shared/autocomplete-links';
+import {
   type LatestPostSource,
   type LinkSearchGroup,
   type LinkSearchResultGroup,
   type SearchIndexEntity,
   type SearchIndexPost,
-  buildAutocompleteLinks,
   buildLatestPostsGroup,
-  buildOfferLinks,
   filterLinkSearchResults,
   searchIndexEntitiesGroup,
   searchIndexPostsGroup,
