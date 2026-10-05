@@ -567,6 +567,64 @@ describe('createChangeTracker', () => {
     });
   });
 
+  describe('dirtyFields', () => {
+    it('names the fields behind the verdict, the body only once it departs from the baseline too', () => {
+      const tracker = createChangeTracker();
+      tracker.load(POST_ID, post());
+      const transformedOnLoad = serialize(appendParagraph(SAVED_DOC, ''));
+      tracker.setBaseline(POST_ID, transformedOnLoad);
+      tracker.setLive(POST_ID, {
+        lexical: transformedOnLoad,
+        title: 'Edited',
+        custom_excerpt: 'Excerpt',
+      });
+
+      expect(tracker.dirtyFields()).toEqual(['title', 'custom_excerpt']);
+
+      tracker.setLive(POST_ID, { lexical: serialize(appendParagraph(SAVED_DOC, 'Edit')) });
+
+      expect(tracker.dirtyFields()).toEqual(['title', 'lexical', 'custom_excerpt']);
+    });
+  });
+
+  describe('bodyDivergence', () => {
+    it('excerpts where the live body departs from saved and, once reported, the baseline', () => {
+      const tracker = createChangeTracker();
+      tracker.load(POST_ID, post());
+
+      expect(tracker.bodyDivergence()).toBeNull();
+
+      tracker.setLive(POST_ID, { lexical: serialize(appendParagraph(SAVED_DOC, 'Edit')) });
+      const appended: unknown = expect.objectContaining({
+        live: expect.stringContaining('"text":"Edit"') as unknown,
+        other: ']',
+      });
+
+      expect(tracker.bodyDivergence()).toEqual({ saved: appended, baseline: null });
+
+      tracker.setBaseline(POST_ID, serialize(SAVED_DOC));
+
+      expect(tracker.bodyDivergence()).toEqual({ saved: appended, baseline: appended });
+
+      tracker.setLive(POST_ID, { lexical: serialize(SAVED_DOC) });
+
+      expect(tracker.bodyDivergence()).toBeNull();
+    });
+
+    it('compares a body that cannot be parsed as written', () => {
+      const tracker = loadedTracker();
+      tracker.setLive(POST_ID, { lexical: '{"root":' });
+      const written = {
+        at: 8,
+        before: '{"root":',
+        live: '',
+        other: serialize(SAVED_DOC).slice(8, 208),
+      };
+
+      expect(tracker.bodyDivergence()).toEqual({ saved: written, baseline: written });
+    });
+  });
+
   describe('mutable aliasing', () => {
     it('clones the saved state at ingress', () => {
       const saved = post({ tags: [{ name: 'News' }], feature_image_caption: 'Caption' });
