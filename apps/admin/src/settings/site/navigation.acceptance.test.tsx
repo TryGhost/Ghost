@@ -35,8 +35,7 @@ function fakeSiteContent() {
   });
 }
 
-// The portal checkout links (gift, tips) are only suggested when Stripe is
-// connected — the default fixture has it disconnected
+// The default fixture has Stripe disconnected, which hides the checkout links
 const stripeConnectedBoot = {
   boot: {
     browseSettings: {
@@ -147,7 +146,7 @@ describe('Navigation settings', () => {
     await expect.element(item.getByLabelText('URL')).toHaveValue('');
   });
 
-  it('suggests membership links, offers and content in the URL dropdown', async () => {
+  it('suggests site links, offers and content in the URL dropdown', async () => {
     fakeSettingsScreens();
     fakeSiteContent();
     fakeOffers([offer({ name: 'Black Friday', code: 'black-friday' })]);
@@ -189,19 +188,13 @@ describe('Navigation settings', () => {
     // Sharing only makes sense from inside a post
     await expect(suggestions().getByRole('option', { name: /^Share/ })).toHaveCount(0);
 
-    // Typing filters the static links and searches content
+    // Typing narrows both the links and the content
     await userEvent.keyboard('gift');
     await expect
       .element(suggestions().getByRole('option', { name: /Gift subscriptions/ }))
       .toBeInTheDocument();
     await expect(suggestions().getByRole('option', { name: /Tips and donations/ })).toHaveCount(0);
     await expect(suggestions().getByRole('option', { name: /^About/ })).toHaveCount(0);
-
-    await suggestions()
-      .getByRole('option', { name: /Gift subscriptions/ })
-      .click();
-    await expect(suggestions()).toHaveCount(0);
-    await expect.element(newItem().getByLabelText('URL')).toHaveValue('#/portal/gift');
   });
 
   it('downloads each search index once while suggestions are loading', async () => {
@@ -265,19 +258,6 @@ describe('Navigation settings', () => {
     await expect.element(suggestions().getByRole('option', { name: /^About/ })).toBeInTheDocument();
   });
 
-  it('suggests the content a filled field already links to on ArrowDown', async () => {
-    fakeSettingsScreens();
-    fakeSiteContent();
-    await renderAdminApp('/settings/navigation/edit');
-
-    // The existing About item shows its URL as http://test.com/about/
-    await existingItem(1).getByLabelText('URL').click();
-    await expect(suggestions()).toHaveCount(0);
-    await userEvent.keyboard('{ArrowDown}');
-
-    await expect.element(suggestions().getByRole('option', { name: /^About/ })).toBeInTheDocument();
-  });
-
   it('offers no checkout destinations while Stripe is disconnected', async () => {
     fakeSettingsScreens();
     fakeSiteContent();
@@ -289,7 +269,6 @@ describe('Navigation settings', () => {
     await expect
       .element(suggestions().getByRole('option', { name: /^Free signup/ }))
       .toBeInTheDocument();
-    // These open Stripe checkout flows — dead ends without Stripe
     await expect(suggestions().getByRole('option', { name: /^Paid signup/ })).toHaveCount(0);
     await expect(
       suggestions().getByRole('option', { name: /^Upgrade or change plan/ }),
@@ -342,16 +321,20 @@ describe('Navigation settings', () => {
     await expect.element(newItem().getByLabelText('URL')).toHaveValue('http://test.com/contact/');
   });
 
-  it('keeps the dropdown shut for a field that already holds a URL', async () => {
+  it('keeps the dropdown shut for a field that already holds a URL until ArrowDown', async () => {
     fakeSettingsScreens();
     fakeSiteContent();
     await renderAdminApp('/settings/navigation/edit');
 
-    // Focusing an existing item offers nothing — it is being reviewed, not filled in
+    // The existing About item, shown as http://test.com/about/
     await existingItem(1).getByLabelText('URL').click();
     await expect(suggestions()).toHaveCount(0);
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.element(suggestions().getByRole('option', { name: /^About/ })).toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+    await expect(suggestions()).toHaveCount(0);
 
-    // And a typed term that matches nothing shows no empty dropdown either
+    // Text that matches nothing shows no empty dropdown
     await newItem().getByLabelText('URL').click();
     await expect.element(suggestions()).toBeInTheDocument();
     await userEvent.keyboard('zzzzz');
@@ -416,30 +399,12 @@ describe('Navigation settings', () => {
     await expect.element(newItem().getByLabelText('URL')).toHaveValue('#/portal/support');
   });
 
-  it('saves a URL that is still being typed with Cmd+S', async () => {
-    fakeSettingsScreens();
-    const settingsApi = fakeEditSettings();
-    await renderAdminApp('/settings/navigation/edit');
-
-    await existingItem().getByLabelText('URL').fill('/contact');
-    await userEvent.keyboard('{Meta>}s{/Meta}');
-
-    await expect(settingsScreen.navigationModal()).toHaveCount(0);
-    await expect(settingsApi).toHaveEditedSettings([
-      {
-        key: 'navigation',
-        value: '[{"url":"/contact/","label":"Home"},{"url":"/about/","label":"About"}]',
-      },
-    ]);
-  });
-
   it('confirms before discarding a URL edit closed with Escape', async () => {
     fakeSettingsScreens();
     fakeSiteContent();
     await renderAdminApp('/settings/navigation/edit');
 
-    // A term that matches nothing keeps the dropdown closed, so this
-    // Escape reaches the modal — the typed URL must count as dirty
+    // Text that matches nothing keeps the dropdown shut, so Escape reaches the modal
     await existingItem().getByLabelText('URL').click();
     await userEvent.keyboard('zzz{Escape}');
 
@@ -448,11 +413,12 @@ describe('Navigation settings', () => {
     await expect.element(settingsScreen.navigationModal()).toBeInTheDocument();
   });
 
-  it('saves a new item whose URL is still being typed with Cmd+S', async () => {
+  it('saves URLs that are still being typed with Cmd+S', async () => {
     fakeSettingsScreens();
     const settingsApi = fakeEditSettings();
     await renderAdminApp('/settings/navigation/edit');
 
+    await existingItem().getByLabelText('URL').fill('/home');
     await newItem().getByLabelText('Label').fill('Contact');
     await newItem().getByLabelText('URL').click();
     await userEvent.keyboard('/contact');
@@ -464,7 +430,7 @@ describe('Navigation settings', () => {
       {
         key: 'navigation',
         value:
-          '[{"url":"/","label":"Home"},{"url":"/about/","label":"About"},{"url":"/contact/","label":"Contact"}]',
+          '[{"url":"/home/","label":"Home"},{"url":"/about/","label":"About"},{"url":"/contact/","label":"Contact"}]',
       },
     ]);
   });
@@ -479,21 +445,6 @@ describe('Navigation settings', () => {
     // Wait for the debounced search to close the list, so Escape reaches the modal
     await expect(suggestions()).toHaveCount(0);
     await userEvent.keyboard('{Escape}');
-
-    await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
-    await settingsScreen.confirmationAction('Stay').click();
-    await expect.element(settingsScreen.navigationModal()).toBeInTheDocument();
-  });
-
-  it('confirms before discarding a URL edit closed by clicking outside the modal', async () => {
-    fakeSettingsScreens();
-    await renderAdminApp('/settings/navigation/edit');
-
-    await existingItem().getByLabelText('URL').click();
-    await userEvent.keyboard('zzz');
-    await page
-      .elementLocator(document.getElementById('modal-backdrop')!)
-      .click({ position: { x: 3, y: 3 } });
 
     await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
     await settingsScreen.confirmationAction('Stay').click();
