@@ -1,3 +1,4 @@
+import { performanceBoot } from './run-list.test-utils';
 import { describe, expect, it } from 'vitest';
 import { automationsScreen } from './automations.screen';
 import { page, userEvent } from 'vitest/browser';
@@ -70,6 +71,7 @@ const boot = (tracking = true, redesigned = true) =>
       automationsTinybirdSync: true,
     },
     boot: {
+      ...performanceBoot,
       browseSettings: {
         response: {
           settings: [

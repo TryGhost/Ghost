@@ -48,6 +48,7 @@ import { StepSidebar } from './step-sidebar';
 import { EmailPerformanceSidebar } from './email-performance-sidebar';
 import { formatWait } from './format-wait';
 import { isEmptyEmailLexical } from '@/automations/utils';
+import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useLocation, useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
 import type { EmailModalMode } from '@/automations/components/types';
@@ -707,11 +708,14 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   );
   const automationAnalyticsEnabled = useFeatureFlag('automationAnalytics');
   const automationsTinybirdSyncEnabled = useFeatureFlag('automationsTinybirdSync');
-  // Flow data arrives after mount. Use its status until the user chooses a panel state.
-  const isPerformanceOpen =
+  const configQuery = useBrowseConfig();
+  const canShowPerformance =
     automationRunAnalyticsEnabled &&
     automationsTinybirdSyncEnabled &&
-    (performanceOpenOverride ?? automation?.status === 'active');
+    Boolean(configQuery.data?.config.stats);
+  // Flow data arrives after mount. Use its status until the user chooses a panel state.
+  const isPerformanceOpen =
+    canShowPerformance && (performanceOpenOverride ?? automation?.status === 'active');
   const initialViewport = getInitialViewport(
     window.innerWidth - (isPerformanceOpen && window.innerWidth >= 960 ? 480 : 0),
   );
@@ -915,7 +919,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       data-testid="automation-canvas"
       gap="none"
     >
-      {automationRunAnalyticsEnabled && automationsTinybirdSyncEnabled && (
+      {canShowPerformance && (
         <PerformanceSidebar
           automationId={automation.id}
           isOpen={isPerformanceOpen}

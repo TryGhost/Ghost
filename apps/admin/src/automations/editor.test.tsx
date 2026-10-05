@@ -205,6 +205,13 @@ vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
 // The virtualized run list requires browser layout; its behavior is covered by acceptance tests.
 vi.mock('./components/canvas/run-list', () => ({ RunList: () => null }));
 
+const mockStats = vi.hoisted(
+  (): { current: { endpoint: string } | undefined; loaded: boolean } => ({
+    current: undefined,
+    loaded: true,
+  }),
+);
+
 const mockLabs = vi.hoisted((): { current: Record<string, boolean> } => ({ current: {} }));
 
 vi.mock('@tryghost/admin-x-framework/api/config', async () => {
@@ -213,7 +220,11 @@ vi.mock('@tryghost/admin-x-framework/api/config', async () => {
   );
   return {
     ...actual,
-    useBrowseConfig: () => ({ data: { config: { labs: mockLabs.current } } }),
+    useBrowseConfig: () => ({
+      data: mockStats.loaded
+        ? { config: { labs: mockLabs.current, stats: mockStats.current } }
+        : undefined,
+    }),
   };
 });
 
@@ -509,6 +520,8 @@ describe('AutomationEditor', () => {
     mockEditMutation.variables = undefined;
     mockToastError.mockReset();
     mockLabs.current = {};
+    mockStats.current = { endpoint: 'https://api.tinybird.test' };
+    mockStats.loaded = true;
     mockEmailTracking.emailTrackOpens = true;
     mockEmailTracking.emailTrackClicks = true;
   });
@@ -1062,6 +1075,29 @@ describe('AutomationEditor', () => {
 
       expect(screen.queryByRole('button', { name: /performance/i })).not.toBeInTheDocument();
       expect(screen.queryByText('Performance')).not.toBeInTheDocument();
+    },
+  );
+
+  it.each([false, true])(
+    'keeps editing without performance when stats are unavailable (config loaded: %s)',
+    (loaded) => {
+      mockLabs.current = { automationRunAnalytics: true, automationsTinybirdSync: true };
+      mockStats.current = undefined;
+      mockStats.loaded = loaded;
+      mockUseReadAutomation.mockReturnValue({
+        data: { automations: [automationDetail] },
+        isLoading: false,
+        isError: false,
+      });
+
+      renderEditor();
+
+      expect(screen.queryByRole('button', { name: /performance/i })).not.toBeInTheDocument();
+      expect(
+        loaded
+          ? screen.getByRole('textbox', { name: 'Wait for' })
+          : screen.getByRole('button', { name: 'Wait: 1 day' }),
+      ).toBeVisible();
     },
   );
 

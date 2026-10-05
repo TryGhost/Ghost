@@ -3,7 +3,12 @@ import { automationsScreen } from './automations.screen';
 import { page } from 'vitest/browser';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import { detail } from './run-history.test-utils';
-import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
+import {
+  automation,
+  fakeAutomations,
+  fakeAdminEndpoint,
+  renderAdminApp,
+} from '@test-utils/acceptance';
 import {
   openPerformanceSidebar,
   flags,
@@ -29,6 +34,76 @@ const statuses = () => page.getByRole('region', { name: 'Automation status count
 const statusCard = (name: string) => statuses().getByRole('button', { name, exact: true });
 const open = openPerformanceSidebar;
 const close = () => page.getByRole('button', { name: 'Hide performance' }).click();
+
+describe('Performance without Tinybird configuration', () => {
+  it.each([
+    { width: 1280, fromList: false, status: 'active' as const },
+    { width: 400, fromList: false, status: 'active' as const },
+    { width: 1280, fromList: true, status: 'inactive' as const },
+  ])(
+    'keeps editing usable without analytics ($width, $fromList, $status)',
+    async ({ width, fromList, status }) => {
+      await page.viewport(width, 800);
+      try {
+        const data = { ...detail('first'), status };
+        fakeAdminEndpoint('GET', '/automations/first/', { automations: [data] });
+        const stats = fakeAdminEndpoint('GET', statsUrl('first'), response('first'));
+        const runs = fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?/, {
+          meta: { pagination: { limit: 50, next_cursor: null } },
+          automation_runs: [],
+        });
+        const save = fakeAdminEndpoint('PUT', '/automations/first/', ({ body }) => ({
+          automations: [
+            { ...data, ...(body as { automations: Partial<AutomationDetail>[] }).automations[0] },
+          ],
+        }));
+        if (fromList) {
+          fakeAutomations([automation({ id: 'first', name: data.name, status })]);
+        }
+        // Default boot config omits stats, as an unconfigured or older Core does.
+        await renderAdminApp(fromList ? '/automations' : '/automations/first', {
+          labs: flags.labs,
+        });
+        if (fromList) {
+          await page.getByRole('link', { name: data.name, exact: true }).click();
+        }
+        const canvas = page.getByRole('region', { name: 'Editing canvas' });
+        await expect.element(canvas).toBeVisible();
+        await expect.element(page.getByRole('textbox', { name: 'Wait for' })).toBeVisible();
+        await expect
+          .element(page.getByRole('button', { name: /^(Show|Hide) performance$/ }))
+          .not.toBeInTheDocument();
+        await expect
+          .element(page.getByRole('complementary', { name: 'Performance' }))
+          .not.toBeInTheDocument();
+        await expect
+          .element(page.getByText('Could not load performance data'))
+          .not.toBeInTheDocument();
+        await expect
+          .poll(() => canvas.element().getBoundingClientRect().width)
+          .toBe(page.getByTestId('automation-canvas').element().getBoundingClientRect().width);
+        await page.getByRole('textbox', { name: 'Wait for' }).fill('2');
+        const saveLabel = status === 'active' ? 'Publish changes' : 'Save';
+        await page.getByRole('button', { name: saveLabel, exact: true }).click();
+        if (status === 'active') {
+          await page
+            .getByRole('alertdialog')
+            .getByRole('button', { name: saveLabel, exact: true })
+            .click();
+        }
+        await expect.poll(() => save.requests.length).toBe(1);
+        expect(
+          (save.requests[0].body as { automations: AutomationDetail[] }).automations[0].actions[0]
+            .data,
+        ).toEqual({ wait_hours: 48 });
+        expect(stats.requests).toHaveLength(0);
+        expect(runs.requests).toHaveLength(0);
+      } finally {
+        await page.viewport(1280, 800);
+      }
+    },
+  );
+});
 
 describe('Performance sidebar defaults', () => {
   it('opens on an active flow deep link after loading and respects close/reopen through edits', async () => {
@@ -314,7 +389,10 @@ describe('Performance sidebar request lifecycle', () => {
     'hides performance and does not fetch stats with %s disabled',
     async (flag) => {
       const request = prepare();
-      await renderAdminApp('/automations/first', { labs: { ...flags.labs, [flag]: false } });
+      await renderAdminApp('/automations/first', {
+        ...flags,
+        labs: { ...flags.labs, [flag]: false },
+      });
       await expect
         .element(
           page.getByRole(flag === 'automationRunAnalytics' ? 'button' : 'article', {
