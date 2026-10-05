@@ -66,9 +66,15 @@ export default function SigninVerify() {
         <Stack gap="lg">
           <AuthHeader title={twoFactorRequired ? '2FA confirmation' : "Verify it's really you"}>
             <p className="text-lg text-muted-foreground">
-              {twoFactorRequired
-                ? 'Enter the sign-in verification code sent to your email.'
-                : "It looks like you're signing in from a new device. A 6-digit sign-in verification code has been sent to your email to keep your account safe."}
+              {twoFactorRequired ? (
+                'Enter the sign-in verification code sent to your email.'
+              ) : (
+                <>
+                  It looks like you&apos;re signing in from a new device. A{' '}
+                  <span className="whitespace-nowrap">6-digit</span> sign-in verification code has
+                  been sent to your email to keep your account safe.
+                </>
+              )}
             </p>
           </AuthHeader>
           <Field>
