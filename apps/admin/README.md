@@ -83,6 +83,18 @@ acceptance tests cover selection, drafts, retries, responsive layouts, and cards
 pnpm dev
 ```
 
+This builds Ember's development assets once before starting Vite. React,
+Admin Framework, Shade and Portal continue watching for changes. Ember still
+boots in the browser for the bridge, flag-off editor/auth screens and `/pro/*`;
+its source edits take effect after restarting the command. Use `pnpm dev:ember`
+when you need Ember's live-reload server and continuous rebuilds.
+
+Development commands do not change Labs settings. To preview the React editor
+and auth screens in one browser tab, open
+`http://localhost:2368/ghost/#/signin?labs=editorReact,authReact`. These
+[session overrides](../../docs/practices/feature-flags.md#admin-session-overrides)
+survive navigation and reloads in that tab; use `?labs=` to clear them.
+
 Build new Admin features in this React app. Use `admin-x-framework` for API
 access and Shade for UI rather than adding new `admin-x-design-system`
 components. Product copy belongs in the `ghost` namespace; follow the
@@ -91,7 +103,7 @@ components. Product copy belongs in the `ghost` namespace; follow the
 `pnpm nx run @tryghost/admin:build:dev` prepares library outputs and Ember's
 development assets. Its prerequisites select `ghost-admin:build:dev` once;
 they do not also compile Ember's production bundle. The normal `pnpm dev`
-watchers are configured separately.
+command uses this preparation before starting the React watchers.
 
 The post editor is the largest area with documentation of its own — start at
 [src/editor/README.md](src/editor/README.md) before changing anything under
@@ -121,6 +133,10 @@ settings such as Node version, platform, timezone and CI mode. A digest of
 local `.env` and `.env.*` files covers Vite's mode-specific configuration without
 printing their values. Shard and other
 CLI arguments get separate cache keys. Use `--skip-nx-cache` to force a fresh run.
+
+`pnpm test` and `pnpm check` at the root select Admin's aggregate `test` target.
+It schedules the same `test:unit` and `test:types` tasks and their prerequisites.
+Only those tasks are cached, so an outer cache cannot skip their input checks.
 
 CI changes confined to Admin's `*.test.ts(x)`, `*.screen.ts`, `test-utils/` or
 `vitest.acceptance.config.ts` skip the build, packaging and browser E2E lane.

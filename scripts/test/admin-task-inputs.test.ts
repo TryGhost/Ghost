@@ -44,6 +44,64 @@ function inputs(target: string): Promise<TaskInputs> {
 }
 
 describe('Admin task inputs', () => {
+  it('runs the local aggregate through the cached unit and typecheck tasks', async () => {
+    const target = await nxJson<{
+      executor: string;
+      cache: boolean;
+      dependsOn: string[];
+      transitiveTasks: string[];
+    }>(['show', 'target', '@tryghost/admin:test']);
+    assert.equal(target.executor, 'nx:noop');
+    assert.equal(target.cache, false);
+    assert.deepEqual(target.dependsOn, ['@tryghost/admin:test:types', '@tryghost/admin:test:unit']);
+    assert.ok(target.transitiveTasks.includes('@tryghost/shade:build'));
+    assert.ok(!target.transitiveTasks.some((task) => task.startsWith('ghost-admin:')));
+  });
+
+  it('builds Ember once for normal dev while retaining the React and Portal watchers', async () => {
+    const target = await nxJson<{
+      dependsOn: string[];
+      transitiveTasks: string[];
+    }>(['show', 'target', 'ghost-monorepo:docker:dev']);
+    const tasks = [...target.dependsOn, ...target.transitiveTasks];
+    for (const task of [
+      '@tryghost/admin:dev',
+      '@tryghost/admin:build:dev',
+      'ghost-admin:build:dev',
+      'ghost-monorepo:docker:up',
+      'ghost:build:assets',
+      '@tryghost/admin-x-framework:dev',
+      '@tryghost/shade:dev',
+      '@tryghost/portal:dev',
+    ]) {
+      assert.ok(tasks.includes(task), task);
+    }
+    assert.deepEqual(
+      tasks.filter((task) => task.startsWith('ghost-admin:')),
+      ['ghost-admin:build:dev'],
+    );
+  });
+
+  it('keeps the Ember live-reload workflow available through dev:ember', async () => {
+    const target = await nxJson<{
+      dependsOn: string[];
+      transitiveTasks: string[];
+    }>(['show', 'target', 'ghost-monorepo:docker:dev:ember']);
+    const tasks = [...target.dependsOn, ...target.transitiveTasks];
+    for (const task of [
+      '@tryghost/admin:dev:ember',
+      'ghost-admin:dev',
+      'ghost-monorepo:docker:up',
+      '@tryghost/admin-x-framework:dev',
+      '@tryghost/shade:dev',
+      '@tryghost/portal:dev',
+    ]) {
+      assert.ok(tasks.includes(task), task);
+    }
+    assert.ok(!tasks.includes('ghost-admin:build:dev'));
+    assert.ok(!tasks.includes('ghost-admin:build'));
+  });
+
   for (const target of ['test:unit', 'test:acceptance', 'test:types']) {
     it(`${target} tracks React dependencies and fixtures without Ember source`, async () => {
       const { files } = await inputs(target);
