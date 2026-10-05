@@ -411,6 +411,10 @@ export function useEditorSession({
       return 'gone';
     }
 
+    // Before adopting: an older refetch must not land after the seed below, and an
+    // edit made while this waits must reach the session's own refusal.
+    await queryClient.cancelQueries({ queryKey, exact: true });
+
     // A normal detail refetch may have completed while this isolated reload was
     // in flight. Never replace a version we already know is newer.
     const cachedData = queryClient.getQueryData<EditorReadResponse>(queryKey);
@@ -425,8 +429,6 @@ export function useEditorSession({
     }
     // The loader owns the same query. Seed it with the accepted document so a
     // quick close and reopen cannot resurrect the stale version it first read.
-    // Cancel first so an older refetch cannot land after this write.
-    await queryClient.cancelQueries({ queryKey, exact: true });
     queryClient.setQueryData(queryKey, data);
     setTitle(fresh.title === DEFAULT_TITLE ? '' : fresh.title);
     setInitialLexical(fresh.lexical ?? null);

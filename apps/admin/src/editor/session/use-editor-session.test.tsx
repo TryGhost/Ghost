@@ -340,3 +340,34 @@ describe('useEditorSession saved record', () => {
     expect(queryClient.getQueryData(screenRead)).toBe(theirs);
   });
 });
+
+describe('useEditorSession reload', () => {
+  it('refuses a newer version when the writer edits while the reload waits', async () => {
+    const newer = record({ title: 'Their title', updated_at: '2026-01-02T00:00:00.000Z' });
+    stable.fetchApi.mockResolvedValueOnce({ posts: [newer] });
+    const cancelled = deferred<void>();
+    const cancelQueries = vi
+      .spyOn(queryClient, 'cancelQueries')
+      .mockReturnValueOnce(cancelled.promise);
+    const { result } = setup();
+    const loaded = result.current.loadedRecord;
+
+    let reloading!: Promise<string>;
+    act(() => {
+      reloading = result.current.reload();
+    });
+    await waitFor(() => expect(cancelQueries).toHaveBeenCalledTimes(1));
+    act(() => result.current.bind.onTitleChange('Typed while reloading'));
+
+    let outcome = '';
+    await act(async () => {
+      cancelled.resolve();
+      outcome = await reloading;
+    });
+
+    expect(outcome).toBe('failed');
+    expect(result.current.loadedRecord).toBe(loaded);
+    expect(result.current.bind.title).toBe('Typed while reloading');
+    cancelQueries.mockRestore();
+  });
+});
