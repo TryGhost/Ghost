@@ -1284,6 +1284,53 @@ describe('Editor header actions', () => {
     await expect.element(editorScreen.unpublishButton()).toHaveFocus();
   });
 
+  describe('without an active newsletter', () => {
+    const NO_NEWSLETTER_NOTE = 'Email is unavailable because there are no active newsletters.';
+
+    /** Opens the publish types on a mail-configured site with every newsletter archived. */
+    async function openPublishTypes(role: StaffRoleName, labs: Record<string, boolean> = {}) {
+      publishChrome();
+      fakeNewsletters([newsletter({ slug: 'weekly', name: 'Weekly', status: 'archived' })]);
+      fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, {
+        labs: { ...FLAG_ON.labs, ...labs },
+        boot: { ...MAILGUN_ON.boot, ...asRole(role).boot },
+      });
+
+      await expect.element(editorScreen.publishButton()).toBeEnabled();
+      await editorScreen.publishButton().click();
+      await publishScreen.setting('publish-type').click();
+    }
+
+    it.each([
+      [false, '#/settings/newsletters'],
+      [true, '#/settings/emails'],
+    ])(
+      'tells an admin why email is off and links to the newsletters (automations: %s)',
+      async (automations, href) => {
+        await openPublishTypes('Administrator', { automations });
+
+        await expect.element(page.getByRole('radio', { name: 'Publish and email' })).toBeDisabled();
+        await expect
+          .element(page.getByTestId(publishTypeError))
+          .toHaveTextContent(NO_NEWSLETTER_NOTE);
+        await expect
+          .element(page.getByTestId(publishTypeError).getByRole('link', { name: 'newsletters' }))
+          .toHaveAttribute('href', href);
+      },
+    );
+
+    it('tells an editor why email is off without linking to Settings', async () => {
+      await openPublishTypes('Editor');
+
+      await expect.element(page.getByRole('radio', { name: 'Publish and email' })).toBeDisabled();
+      await expect
+        .element(page.getByTestId(publishTypeError))
+        .toHaveTextContent(NO_NEWSLETTER_NOTE);
+      await expect(page.getByTestId(publishTypeError).getByRole('link')).toHaveCount(0);
+    });
+  });
+
   describe('host limits', () => {
     const MEMBERS_LIMIT_MESSAGE =
       'Your plan supports up to 500 members, please upgrade to add more.';
