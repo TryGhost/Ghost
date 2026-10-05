@@ -19,7 +19,14 @@ export function category(file) {
   if (/(^|\/)(scripts|configs?|\.github)(\/|$)|(^|\/)[^/]*config[^/]*\.[^.]+$/.test(file)) {
     return 'tooling';
   }
-  return 'production';
+  if (
+    file.startsWith('apps/') ||
+    /^koenig\/(koenig-lexical|kg-simplemde|kg-unsplash-selector)\//.test(file) ||
+    file.startsWith('ghost/core/core/frontend/public/')
+  ) {
+    return 'frontend';
+  }
+  return 'backend';
 }
 
 export function parseSource(file, source) {
@@ -293,7 +300,7 @@ export function inventory(root, { scope = '' } = {}) {
     );
   }
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     revision: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root }).toString().trim(),
     scope,
     summary: summarize(selected),

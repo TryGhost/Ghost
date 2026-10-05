@@ -66,9 +66,16 @@ files and physical lines (including comments and blanks); they do not measure
 type safety or enforce conversion of intentional JavaScript tooling.
 
 Files are grouped by their nearest package manifest. Tests and tooling use path
-and filename conventions; these categories are approximate. Static imports,
-re-exports, literal dynamic imports, and `require()` calls are parsed with the
-TypeScript compiler API. Dependency resolution uses the nearest tracked
+and filename conventions; these categories are approximate. Production is split
+into frontend (`apps/`, Koenig's three editor UI packages, and Core's
+`core/frontend/public/` browser scripts) and backend (remaining server code and
+library packages, including libraries shared with the frontend). Core's
+`core/frontend/` routing and rendering code executes on the server and therefore
+belongs to backend. Tests and tooling take precedence over this split. JSON
+schema version 2 replaces the old `production` category with these two values.
+
+Static imports, re-exports, literal dynamic imports, and `require()` calls are
+parsed with the TypeScript compiler API. Dependency resolution uses the nearest tracked
 `tsconfig.json`, including inherited options, or NodeNext defaults when absent.
 Resolution runs with `allowJs` to identify JavaScript dependencies. The report
 shows the configuration and resolved path for each dependency. Node built-ins

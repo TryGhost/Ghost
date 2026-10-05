@@ -4,7 +4,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
-import { inventory, parseSource, scoreFile } from '../typescript-inventory.js';
+import { category, inventory, parseSource, scoreFile } from '../typescript-inventory.js';
 import { renderInventory } from '../lib/typescript-inventory-html.js';
 
 test('parses real imports, re-exports and computed calls without matching comments or strings', () => {
@@ -84,6 +84,9 @@ test('inventories tracked files and resolves aliases, declarations, package expo
   put('node_modules/untyped-package/package.json', '{"name":"untyped-package","main":"index.js"}');
   put('node_modules/untyped-package/index.js', 'module.exports = 1;');
   const report = inventory(root);
+  assert.equal(report.schemaVersion, 2);
+  assert.equal(report.groups.category.backend.javascript, 2);
+  assert.equal(report.groups.category.production, undefined);
   assert.equal(report.summary.javascript, 3);
   assert.equal(report.summary.typescript, 1);
   assert.equal(report.summary.typescriptPercent, 25);
@@ -130,4 +133,31 @@ test('escapes report data so paths cannot inject script markup', () => {
   const html = renderInventory({ files: [{ path: '</script><script>alert(1)</script>' }] });
   assert.ok(!html.includes('</script><script>alert(1)'));
   assert.ok(html.includes('\\u003c/script>'));
+});
+
+test('splits production by codebase area while preserving tests and tooling', () => {
+  for (const file of [
+    'apps/admin/src/app.tsx',
+    'apps/portal/src/index.js',
+    'koenig/koenig-lexical/src/index.ts',
+    'koenig/kg-simplemde/src/js/simplemde.js',
+    'koenig/kg-unsplash-selector/src/index.tsx',
+    'ghost/core/core/frontend/public/private.js',
+  ]) {
+    assert.equal(category(file), 'frontend', file);
+  }
+  for (const file of [
+    'ghost/core/core/server/services/members/index.js',
+    'ghost/core/core/frontend/services/routing/index.js',
+    'packages/api-framework/src/index.ts',
+    'koenig/kg-lexical-html-renderer/src/index.ts',
+    'koenig/kg-default-nodes/src/index.ts',
+  ]) {
+    assert.equal(category(file), 'backend', file);
+  }
+  assert.equal(category('apps/admin/src/app.test.tsx'), 'tests');
+  assert.equal(category('koenig/kg-default-nodes/test/index.test.ts'), 'tests');
+  assert.equal(category('ghost/core/test/unit/frontend/public/private.test.js'), 'tests');
+  assert.equal(category('apps/portal/vite.config.js'), 'tooling');
+  assert.equal(category('koenig/koenig-lexical/scripts/build.js'), 'tooling');
 });
