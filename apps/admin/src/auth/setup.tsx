@@ -181,7 +181,7 @@ function SetupForm({
   return (
     <AuthLayout>
       <header className="flex flex-col items-center gap-3 text-center">
-        <GhostOrb aria-label="Ghost" className="size-18" />
+        <GhostOrb aria-label="Ghost" className="size-15" />
         <h1 className="text-3xl leading-tight font-bold tracking-tight text-foreground">
           Welcome to Ghost.
         </h1>
