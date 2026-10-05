@@ -29,5 +29,36 @@
     "@internal/cfg-typescript": "workspace:*",
     "@types/node": "catalog:",
     "eslint": "catalog:"
+  },
+  "nx": {
+    "namedInputs": {
+      "adminTestContracts": [
+        "{workspaceRoot}/apps/admin/package.json",
+        "{workspaceRoot}/apps/ember-admin/package.json",
+        "{workspaceRoot}/.github/workflows/ci.yml"
+      ]
+    },
+    "targets": {
+      "test": {
+        "inputs": [
+          "default",
+          "^default",
+          "adminTestContracts",
+          {
+            "runtime": "node -v"
+          }
+        ]
+      },
+      "test:unit": {
+        "inputs": [
+          "default",
+          "^default",
+          "adminTestContracts",
+          {
+            "runtime": "node -v"
+          }
+        ]
+      }
+    }
   }
 }

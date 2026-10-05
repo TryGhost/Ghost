@@ -60,16 +60,22 @@ function sentrySourcemapsPlugin(): PluginOption {
 }
 
 // https://vite.dev/config/
-export default defineConfig(({ command }) => ({
+export default defineConfig(({ command, mode }) => ({
   base: getBase(command),
   plugins: [
     tailwindcss() as PluginOption,
     react(),
-    emberAssetsPlugin(),
-    embedRendererPlugin(),
-    ghostBackendProxyPlugin(),
-    // Sentry's plugin goes after all others
-    sentrySourcemapsPlugin(),
+    // Unit tests have no Ghost backend or Ember assets. Keep filesystem and
+    // shipping side effects out of this lane, including Sentry uploads.
+    ...(command === 'serve' && mode === 'test'
+      ? []
+      : [
+          emberAssetsPlugin(),
+          embedRendererPlugin(),
+          ghostBackendProxyPlugin(),
+          // Sentry's plugin goes after all others
+          sentrySourcemapsPlugin(),
+        ]),
   ],
   build: {
     sourcemap: 'hidden',

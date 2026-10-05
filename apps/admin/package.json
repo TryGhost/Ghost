@@ -12,6 +12,7 @@
     "test:unit": "vitest run",
     "test:acceptance": "vitest run -c vitest.acceptance.config.ts",
     "test:acceptance:watch": "vitest -c vitest.acceptance.config.ts",
+    "test:types": "tsc -b",
     "typecheck": "tsc -b"
   },
   "dependencies": {
@@ -107,6 +108,58 @@
     "vitest-browser-react": "catalog:"
   },
   "nx": {
+    "namedInputs": {
+      "cardAssets": [
+        "{workspaceRoot}/ghost/core/core/frontend/src/cards/**/*"
+      ],
+      "reactTests": [
+        "default",
+        "cardAssets",
+        "{workspaceRoot}/scripts/hash-vite-env.ts",
+        {
+          "runtime": "node scripts/hash-vite-env.ts --directory=apps/admin"
+        },
+        {
+          "runtime": "node -v"
+        },
+        {
+          "runtime": "node -p \"process.platform + ':' + process.arch\""
+        },
+        {
+          "runtime": "node -p \"Intl.DateTimeFormat().resolvedOptions().timeZone\""
+        },
+        {
+          "env": "CI"
+        },
+        {
+          "env": "GITHUB_ACTIONS"
+        },
+        {
+          "env": "NODE_ENV"
+        },
+        {
+          "env": "TZ"
+        },
+        {
+          "env": "LANG"
+        },
+        {
+          "env": "LC_ALL"
+        },
+        {
+          "env": "GHOST_URL"
+        },
+        {
+          "env": "GHOST_CDN_URL"
+        },
+        {
+          "env": "VITE_TEST"
+        },
+        {
+          "env": "PLAYWRIGHT_BROWSERS_PATH"
+        }
+      ]
+    },
     "tags": [
       "playwright"
     ],
@@ -115,6 +168,10 @@
     ],
     "targets": {
       "test:unit": {
+        "inputs": [
+          "reactTests",
+          "^reactAdminDependency"
+        ],
         "dependsOn": [
           {
             "projects": [
@@ -135,6 +192,39 @@
         ]
       },
       "test:acceptance": {
+        "cache": true,
+        "inputs": [
+          "reactTests",
+          "^reactAdminDependency"
+        ],
+        "outputs": [
+          "{projectRoot}/test-results/acceptance.json"
+        ],
+        "dependsOn": [
+          {
+            "projects": [
+              "@tryghost/activitypub",
+              "@tryghost/admin-x-framework",
+              "@tryghost/checkout",
+              "@tryghost/i18n",
+              "@tryghost/kg-clean-basic-html",
+              "@tryghost/kg-converters",
+              "@tryghost/kg-unsplash-selector",
+              "@tryghost/koenig-lexical",
+              "@tryghost/metafield-types",
+              "@tryghost/nql-string",
+              "@tryghost/shade"
+            ],
+            "target": "build"
+          }
+        ]
+      },
+      "test:types": {
+        "inputs": [
+          "default",
+          "^reactAdminDependency"
+        ],
+        "outputs": [],
         "dependsOn": [
           {
             "projects": [
@@ -203,6 +293,7 @@
             "env": "IS_SHIPPING"
           },
           "default",
+          "cardAssets",
           "^default"
         ],
         "outputs": [

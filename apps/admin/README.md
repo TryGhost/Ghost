@@ -101,14 +101,31 @@ The post editor is the largest area with documentation of its own — start at
 
 - **Unit tests** (`pnpm test:unit`): Vitest + jsdom, colocated `*.test.ts(x)` files.
 - **Acceptance tests** (`pnpm test:acceptance`): the real app in real Chromium against a fake admin API served through MSW — see [test-utils/acceptance/README.md](test-utils/acceptance/README.md).
+- **Typechecks** (`pnpm test:types`): TypeScript checks app code, test code and Vite configuration without bundling Admin.
 - **Browser e2e** against a real Ghost instance lives in the top-level [`e2e/`](../../e2e) workspace.
 
 From the monorepo root, use `pnpm nx run @tryghost/admin:test:unit` or
-`pnpm nx run @tryghost/admin:test:acceptance` to build the required React
+`pnpm nx run @tryghost/admin:test:acceptance`, or
+`pnpm nx run @tryghost/admin:test:types` to build the required React
 libraries first. These targets do not compile Ember or boot Ghost. Their
 `dependsOn` lists, and the React library prerequisites of `build:dev`, explicitly
-name the React dependencies with a `build` target; update all three when adding
+name the React dependencies with a `build` target; update all four when adding
 one. Using `^build` here would also select the implicit Ember dependency.
+
+Nx caches unit, acceptance and typecheck results. The global
+`reactAdminDependency` input retains every transitive dependency's default
+inputs; Ember overrides it with an empty input because these targets do not
+execute Ember. The production build still uses `^default`, including Ember.
+Test inputs also include Core's aliased card assets, the lockfile and runtime
+settings such as Node version, platform, timezone and CI mode. A digest of
+local `.env` and `.env.*` files covers Vite's mode-specific configuration without
+printing their values. Shard and other
+CLI arguments get separate cache keys. Use `--skip-nx-cache` to force a fresh run.
+
+CI changes confined to Admin's `*.test.ts(x)`, `*.screen.ts`, `test-utils/` or
+`vitest.acceptance.config.ts` skip the build, packaging and browser E2E lane.
+Affected unit, app acceptance, lint and typecheck checks still run. Changes to
+runtime code or shared configuration keep the full lane.
 
 ## Building for Production
 

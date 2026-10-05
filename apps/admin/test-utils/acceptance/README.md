@@ -11,6 +11,11 @@ journeys, and investigate timeouts. A failure alone does not prove flakiness;
 compare repeated runs of the same commit. Console output stays minimal;
 failure screenshots remain separate artifacts.
 
+Local runs also write the JSON report. A successful Nx cache hit restores
+`test-results/acceptance.json` for the requested shard, so CI summaries and
+artifacts remain available when the browser suite is reused. Report timings
+describe the original execution; use `--skip-nx-cache` when measuring a new run.
+
 ## Anatomy of a spec
 
 Use [`src/tags/tags.acceptance.test.tsx`](../../src/tags/tags.acceptance.test.tsx) as the happy-path template, and [`src/whats-new/whats-new.acceptance.test.tsx`](../../src/whats-new/whats-new.acceptance.test.tsx) as the worked example for the escape hatches (boot override, external feed, non-browse admin endpoint).
