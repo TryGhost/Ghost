@@ -176,7 +176,8 @@
       "reactAdminDependency": []
     },
     "implicitDependencies": [
-      "!ghost"
+      "!ghost",
+      "@internal/scripts"
     ],
     "targets": {
       "dev": {
