@@ -54,7 +54,9 @@ Run `pnpm inventory:typescript --output /tmp/ghost-typescript` from the root to
 write a searchable HTML report and a JSON inventory. Open
 `/tmp/ghost-typescript.html` in a browser. Use `--scope ghost/core` (or another
 repository-relative directory) to focus the report. Resolution and dependent
-counts still consider the whole repository.
+counts still consider the whole repository. The HTML folder tree expands down
+to individual files, with recursive JS/TS counts on each folder. Select a file
+to inspect its dependencies.
 
 The inventory reads tracked working-tree JS/JSX/TS/TSX files, including `.mjs`,
 `.cjs`, `.mts`, and `.cts`. It excludes submodules, untracked files, fixture and

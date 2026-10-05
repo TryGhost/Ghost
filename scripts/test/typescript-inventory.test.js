@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import { category, inventory, parseSource, scoreFile } from '../typescript-inventory.js';
-import { renderInventory } from '../lib/typescript-inventory-html.js';
+import { buildFileTree, renderInventory } from '../lib/typescript-inventory-html.js';
 
 test('parses real imports, re-exports and computed calls without matching comments or strings', () => {
   const result = parseSource(
@@ -160,4 +160,37 @@ test('splits production by codebase area while preserving tests and tooling', ()
   assert.equal(category('ghost/core/test/unit/frontend/public/private.test.js'), 'tests');
   assert.equal(category('apps/portal/vite.config.js'), 'tooling');
   assert.equal(category('koenig/koenig-lexical/scripts/build.js'), 'tooling');
+});
+
+test('folder tree rolls up nested JS and TS totals without mixing similarly named folders', () => {
+  const tree = buildFileTree([
+    { path: 'root.js', language: 'javascript' },
+    { path: 'apps/admin/app.tsx', language: 'typescript' },
+    { path: 'apps/admin/helpers/a.js', language: 'javascript' },
+    { path: 'apps/admin/helpers/b.ts', language: 'typescript' },
+    { path: 'apps/admin-x/index.ts', language: 'typescript' },
+    { path: 'ghost/core/index.cjs', language: 'javascript' },
+  ]);
+  assert.equal(tree.javascript, 3);
+  assert.equal(tree.typescript, 3);
+  assert.deepEqual(
+    tree.children.map((node) => node.name),
+    ['apps', 'ghost', 'root.js'],
+  );
+  const apps = tree.children[0];
+  assert.equal(apps.javascript, 1);
+  assert.equal(apps.typescript, 3);
+  const admin = apps.children.find((node) => node.name === 'admin');
+  assert.equal(admin.javascript, 1);
+  assert.equal(admin.typescript, 2);
+  assert.deepEqual(
+    admin.children.map((node) => node.name),
+    ['helpers', 'app.tsx'],
+  );
+  assert.deepEqual(admin.children[0].children[0], {
+    name: 'a.js',
+    path: 'apps/admin/helpers/a.js',
+    language: 'javascript',
+  });
+  assert.deepEqual(buildFileTree([]).children, []);
 });
