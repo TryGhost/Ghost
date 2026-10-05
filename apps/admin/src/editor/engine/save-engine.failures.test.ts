@@ -262,7 +262,7 @@ describe('createSaveEngine', () => {
       const adopt = vi.fn();
       expect(h.engine.contentReloaded(FUTURE, adopt)).toBe(false);
       expect(adopt).not.toHaveBeenCalled();
-      expect(h.engine.getState()).toEqual({ kind: 'halted' });
+      expect(h.engine.getState()).toEqual({ kind: 'halted', error: notFound });
     });
 
     it('adopts the replacement before recovery subscribers edit or dispatch', async () => {

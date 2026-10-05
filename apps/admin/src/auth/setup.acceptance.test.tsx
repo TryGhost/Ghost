@@ -45,11 +45,11 @@ it('checks every field on submit', async () => {
 
   await authScreen.startPublishingButton().click();
 
-  await expect.element(authScreen.text('Please enter a site title.')).toBeVisible();
-  await expect.element(authScreen.text('Please enter a name.')).toBeVisible();
-  await expect.element(authScreen.text('Please enter an email.')).toBeVisible();
+  await expect.element(authScreen.text('Enter a site title.')).toBeVisible();
+  await expect.element(authScreen.text('Enter a name.')).toBeVisible();
+  await expect.element(authScreen.text('Enter an email.')).toBeVisible();
   await expect
-    .element(authScreen.text('Please fill out every field correctly to set up your site.'))
+    .element(authScreen.text('Fill out every field correctly to set up your site.'))
     .toBeVisible();
 });
 

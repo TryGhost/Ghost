@@ -11,7 +11,6 @@ const framework = {
     navigateTo(link.route, { replace: link.replace });
   },
   unsplashConfig: defaultUnsplashConfig,
-  sentryDSN: null,
   ...emberMutationHandlers,
 };
 

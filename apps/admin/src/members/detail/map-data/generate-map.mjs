@@ -4,6 +4,10 @@
 import { createHash } from 'node:crypto';
 import { writeFile } from 'node:fs/promises';
 import { geoArea, geoContains, geoMercator, geoPath } from 'd3-geo';
+import isoCountries from 'i18n-iso-countries';
+import countryNames from 'i18n-iso-countries/langs/en.json' with { type: 'json' };
+
+isoCountries.registerLocale(countryNames);
 
 const base = 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/';
 const projection = geoMercator()
@@ -31,7 +35,7 @@ function distanceSquared([x, y], [ax, ay], [bx, by]) {
   return (x - ax - t * dx) ** 2 + (y - ay - t * dy) ** 2;
 }
 
-function location(feature, id, name) {
+function location(feature, id, name, locationPath = path) {
   // Natural Earth GeoJSON uses RFC winding; D3 expects clockwise exteriors.
   const coordinates =
     feature.geometry.type === 'Polygon'
@@ -50,7 +54,7 @@ function location(feature, id, name) {
   // Fit the principal landmass, not distant islands/territories. In particular,
   // the continental US determines the country overview, rather than Alaska.
   const main = polygons.reduce((a, b) => (geoArea(a) > geoArea(b) ? a : b));
-  const [[x0, y0], [x1, y1]] = path.bounds(main);
+  const [[x0, y0], [x1, y1]] = locationPath.bounds(main);
   // Mercator clips the poles; keep edge-distance calculations finite there too.
   const rings = main.coordinates.map((ring) =>
     ring.map(([longitude, latitude]) =>
@@ -73,7 +77,7 @@ function location(feature, id, name) {
   }
   if (!anchor || !geoContains(geometry, projection.invert(anchor)))
     throw new Error(`No interior anchor: ${id}`);
-  return { id, name, path: path(geometry), bounds: [x0, y0, x1 - x0, y1 - y0], anchor };
+  return { id, name, path: locationPath(geometry), bounds: [x0, y0, x1 - x0, y1 - y0], anchor };
 }
 
 const countries = (await read('ne_50m_admin_0_countries')).map((feature) => {
@@ -84,6 +88,37 @@ const countries = (await read('ne_50m_admin_0_countries')).map((feature) => {
   ].find((value) => /^[A-Z]{2}$/.test(value));
   return location(feature, code?.toLowerCase() ?? `ne-${p.NE_ID}`, p.NAME_EN || p.ADMIN);
 });
+
+// Country-level geometry omits small territories and combines others with
+// their sovereign country. Map units provide their own shapes, so a Réunion
+// member gets a pin in Réunion rather than mainland France.
+const missingCodes = Object.keys(isoCountries.getAlpha2Codes()).filter(
+  (code) => !countries.some((country) => country.id === code.toLowerCase()),
+);
+const mapUnits = await read('ne_10m_admin_0_map_units');
+// Keep tiny islands from collapsing when their projected coordinates round.
+const territoryPath = geoPath(projection).digits(4);
+for (const code of missingCodes) {
+  const units = mapUnits.filter(({ properties: p }) => {
+    // Natural Earth assigns the US code to each outlying island, and Norway's
+    // code to Jan Mayen. Group them under their distinct ISO territory codes.
+    if (p.ADM0_A3 === 'UMI') return code === 'UM';
+    if (p.GU_A3 === 'NJM') return code === 'SJ';
+    return [p.ISO_A2, p.ISO_A2_EH].find((value) => /^[A-Z]{2}$/.test(value)) === code;
+  });
+  if (!units.length) throw new Error(`Missing country geometry: ${code}`);
+  const feature = {
+    geometry: {
+      type: 'MultiPolygon',
+      coordinates: units.flatMap(({ geometry }) =>
+        geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates,
+      ),
+    },
+  };
+  countries.push(
+    location(feature, code.toLowerCase(), isoCountries.getName(code, 'en'), territoryPath),
+  );
+}
 if (new Set(countries.map((country) => country.id)).size !== countries.length) {
   throw new Error('Country identifiers must be unique');
 }

@@ -3,6 +3,25 @@ import _ from 'lodash';
 
 export type Dictionary = Record<string, unknown>;
 
+export interface FrameValues extends Dictionary {
+  id?: string;
+}
+
+export interface FrameShape {
+  data?: Dictionary;
+  options?: Dictionary;
+}
+
+type FrameData<TShape extends FrameShape> = TShape extends { data: infer TData extends Dictionary }
+  ? TData
+  : FrameValues;
+
+type FrameOptions<TShape extends FrameShape> = TShape extends {
+  options: infer TOptions extends Dictionary;
+}
+  ? TOptions
+  : FrameValues;
+
 export interface FrameInput extends Dictionary {
   body?: Dictionary;
   context?: Dictionary;
@@ -24,12 +43,14 @@ export interface FrameConfiguration {
 const debug = createDebug('frame');
 
 /** Holds all information associated with an API request. */
-export class Frame {
+export class Frame<TShape extends FrameShape = FrameShape> {
   #headers: Record<string, string> = {};
 
   original: FrameInput;
-  options: Dictionary & { context?: Dictionary } = {};
-  data: Dictionary = {};
+  options: FrameOptions<TShape> & { context?: Dictionary } = {} as FrameOptions<TShape> & {
+    context?: Dictionary;
+  };
+  data: FrameData<TShape> = {} as FrameData<TShape>;
   user: unknown = {};
   file: unknown = {};
   files: unknown[] = [];
@@ -56,7 +77,7 @@ export class Frame {
     this.options.context = this.original.context;
 
     if (this.original.body && Object.keys(this.original.body).length) {
-      this.data = _.cloneDeep(this.original.body);
+      this.data = _.cloneDeep(this.original.body) as FrameData<TShape>;
     } else {
       let dataNames = apiConfig.data;
       if (typeof dataNames === 'function') {

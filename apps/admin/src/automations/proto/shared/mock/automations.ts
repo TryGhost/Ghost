@@ -66,6 +66,7 @@ const DESIGN = 'ds_default';
 export const welcomeSeries: AutomationDetail = {
   id: 'auto_welcome',
   name: 'Free member welcome flow',
+  description: '',
   slug: 'member-welcome-email-free',
   status: 'active',
   created_at: '2026-06-01T09:00:00Z',
@@ -139,6 +140,7 @@ export const welcomeSeries: AutomationDetail = {
 export const paidUpgradeNudge: AutomationDetail = {
   id: 'auto_upgrade',
   name: 'Paid member welcome flow',
+  description: '',
   slug: 'member-welcome-email-paid',
   status: 'active',
   created_at: '2026-06-20T08:00:00Z',
@@ -207,6 +209,7 @@ export const paidUpgradeNudge: AutomationDetail = {
 export const leadMagnetDelivery: AutomationDetail = {
   id: 'auto_lead_magnet',
   name: 'SEO guide delivery',
+  description: '',
   slug: 'lead-magnet-seo-guide',
   status: 'active',
   created_at: '2026-06-28T11:00:00Z',
@@ -272,6 +275,7 @@ export const leadMagnetDelivery: AutomationDetail = {
 export const winbackLapsed: AutomationDetail = {
   id: 'auto_winback',
   name: 'Winback lapsed members',
+  description: '',
   slug: 'winback-subscription-ended',
   status: 'active',
   created_at: '2026-06-14T10:00:00Z',
@@ -337,6 +341,7 @@ export const winbackLapsed: AutomationDetail = {
 export const engagedUpsell: AutomationDetail = {
   id: 'auto_segment_upsell',
   name: 'Engaged reader upsell',
+  description: '',
   slug: 'segment-engaged-upsell',
   status: 'active',
   created_at: '2026-07-02T09:15:00Z',

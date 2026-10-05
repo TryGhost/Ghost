@@ -13,6 +13,7 @@ import {
   fakeTiers,
   post,
   renderAdminApp,
+  settleTransitions,
   staffRole,
   type StaffRoleName,
 } from '@test-utils/acceptance';
@@ -65,6 +66,7 @@ function fakeEditablePost(overrides: Partial<ReturnType<typeof post>> = {}) {
 async function openShortcuts() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  await settleTransitions();
   await editorScreen.settingsSubviewRow(settingsKeyboardShortcutsRow).click();
   await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
 }

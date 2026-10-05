@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
+const { ADMIN } = require('../../../members-metafields');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const DomainEvents = require('@tryghost/domain-events');
@@ -21,6 +22,7 @@ const {
 } = require('../../../automations/events/start-automations-poll-event');
 const { MEMBER_WELCOME_EMAIL_SLUGS } = require('../../../member-welcome-emails/constants');
 const db = require('../../../../data/db');
+const schema = require('../../../../data/schema');
 const labs = require('../../../../../shared/labs');
 /** @import {Knex} from 'knex' */
 /** @import * as automationsApi from '../../../automations/automations-api' */
@@ -58,9 +60,78 @@ const WELCOME_EMAIL_SOURCES = ['member'];
 const MEMBER_STATUSES = ['free', 'paid', 'comped', 'gift'];
 
 /**
+ * @internal
+ * @typedef {object} MemberModel
+ * @prop {string} id
+ * @prop {(get: 'email') => string} get
+ * @prop {(related: 'products') => {fetch: (options: {transacting: unknown}) => Promise<null | {models: {id: string}[]}>}} related
+ */
+
+/**
  * @typedef {object} ITokenService
  * @prop {(token: string) => Promise<import('jsonwebtoken').JwtPayload>} decodeToken
  */
+
+/**
+ * The attribution columns shared by the member and subscription created records.
+ *
+ * The URLs, referrer and UTM tags come from the visitor's browser and have no length
+ * limit, so each is cut to its column's length: a value too long to store would
+ * otherwise fail the signup or Stripe webhook it is recorded with.
+ *
+ * @param {'members_created_events' | 'members_subscription_created_events'} table
+ * @param {Partial<import('../../../member-attribution/attribution-builder').Attribution> | undefined} attribution
+ */
+function attributionColumns(table, attribution) {
+  const columns = schema.tables[table];
+  /** @param {'attribution_url' | 'referrer_source' | 'referrer_medium' | 'referrer_url' | 'utm_source' | 'utm_medium' | 'utm_campaign' | 'utm_term' | 'utm_content'} column */
+  const fitted = (column, /** @type {string | null | undefined} */ value) =>
+    // By character rather than UTF-16 unit, as the column counts them, so an emoji
+    // is never split in half.
+    value ? Array.from(value).slice(0, columns[column].maxlength).join('') : null;
+
+  return {
+    attribution_id: attribution?.id ?? null,
+    attribution_url: fitted('attribution_url', attribution?.url),
+    attribution_type: attribution?.type ?? null,
+    referrer_source: fitted('referrer_source', attribution?.referrerSource),
+    referrer_medium: fitted('referrer_medium', attribution?.referrerMedium),
+    referrer_url: fitted('referrer_url', attribution?.referrerUrl),
+    utm_source: fitted('utm_source', attribution?.utmSource),
+    utm_medium: fitted('utm_medium', attribution?.utmMedium),
+    utm_campaign: fitted('utm_campaign', attribution?.utmCampaign),
+    utm_term: fitted('utm_term', attribution?.utmTerm),
+    utm_content: fitted('utm_content', attribution?.utmContent),
+  };
+}
+
+/**
+ * @param {MemberModel} member
+ * @param {'free' | 'paid'} memberStatus
+ * @param {object} bookshelfOptions
+ * @param {Knex.Transaction} [bookshelfOptions.transacting]
+ * @returns {Promise<string[]>}
+ */
+const getMemberTierIds = async (member, memberStatus, bookshelfOptions) => {
+  switch (memberStatus) {
+    case 'free':
+      return [];
+    case 'paid': {
+      const productCollection = await member
+        .related('products')
+        .fetch({ transacting: bookshelfOptions?.transacting });
+      const products = productCollection?.models ?? [];
+      return products.map((product) => product.id);
+    }
+    default: {
+      /** @type {never} */
+      const _exhaustive = memberStatus;
+      throw new errors.InternalServerError({
+        message: `Invalid member status ${_exhaustive}`,
+      });
+    }
+  }
+};
 
 module.exports = class MemberRepository {
   /**
@@ -73,12 +144,15 @@ module.exports = class MemberRepository {
    * @param {any} deps.MemberPaidSubscriptionEvent
    * @param {any} deps.MemberStatusEvent
    * @param {any} deps.MemberProductEvent
+   * @param {any} deps.MemberCreatedEvent
+   * @param {any} deps.SubscriptionCreatedEvent
    * @param {any} deps.StripeCustomer
    * @param {any} deps.StripeCustomerSubscription
    * @param {any} deps.OfferRedemption
    * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
    * @param {any} deps.productRepository
    * @param {any} deps.offersAPI
+   * @param {import('../../../members-metafields/values-service').MetafieldValuesService} deps.metafieldValues
    * @param {ITokenService} deps.tokenService
    * @param {any} deps.newslettersService
    * @param {Pick<automationsApi, 'trigger'>} deps.automationsApi
@@ -94,12 +168,15 @@ module.exports = class MemberRepository {
     MemberPaidSubscriptionEvent,
     MemberStatusEvent,
     MemberProductEvent,
+    MemberCreatedEvent: MemberCreatedEventModel,
+    SubscriptionCreatedEvent: SubscriptionCreatedEventModel,
     StripeCustomer,
     StripeCustomerSubscription,
     OfferRedemption,
     stripeAPIService,
     productRepository,
     offersAPI,
+    metafieldValues,
     tokenService,
     newslettersService,
     automationsApi,
@@ -114,39 +191,71 @@ module.exports = class MemberRepository {
     this._MemberPaidSubscriptionEvent = MemberPaidSubscriptionEvent;
     this._MemberStatusEvent = MemberStatusEvent;
     this._MemberProductEvent = MemberProductEvent;
+    this._MemberCreatedEvent = MemberCreatedEventModel;
+    this._SubscriptionCreatedEvent = SubscriptionCreatedEventModel;
     this._OfferRedemption = OfferRedemption;
     this._StripeCustomer = StripeCustomer;
     this._StripeCustomerSubscription = StripeCustomerSubscription;
     this._stripeAPIService = stripeAPIService;
     this._productRepository = productRepository;
     this._offersAPI = offersAPI;
+    this._metafieldValues = metafieldValues;
     this.tokenService = tokenService;
     this._newslettersService = newslettersService;
     this._automationsApi = automationsApi;
     this._Automation = Automation;
     this._WelcomeEmailAutomationRun = WelcomeEmailAutomationRun;
+  }
 
-    DomainEvents.subscribe(OfferRedemptionEvent, async function (event) {
-      if (!event.data.offerId) {
-        return;
-      }
+  /**
+   * Records that a subscription redeemed an offer, once: Stripe can deliver the same
+   * subscription update more than once, so a redemption already recorded is left alone.
+   * A new redemption sends `OfferRedemptionEvent` once the change commits.
+   *
+   * @param {{memberId: string, subscriptionId: string, offerId: string, createdAt?: Date}} redemption
+   * @param {object} [options] joins `options.transacting` when given
+   */
+  async recordOfferRedemption({ memberId, subscriptionId, offerId, createdAt }, options) {
+    const transacting = _.pick(options, 'transacting');
+    const existing = await this._OfferRedemption.findOne(
+      { member_id: memberId, subscription_id: subscriptionId, offer_id: offerId },
+      transacting,
+    );
+    if (existing) {
+      return;
+    }
+    await this._OfferRedemption.add(
+      {
+        member_id: memberId,
+        subscription_id: subscriptionId,
+        offer_id: offerId,
+        created_at: createdAt ?? new Date(),
+      },
+      transacting,
+    );
+    this.dispatchEvent(
+      OfferRedemptionEvent.create({ memberId, subscriptionId, offerId }, createdAt),
+      options,
+    );
+  }
 
-      // To be extra safe, check if the redemption already exists before adding it
-      const existingRedemption = await OfferRedemption.findOne({
-        member_id: event.data.memberId,
-        subscription_id: event.data.subscriptionId,
-        offer_id: event.data.offerId,
-      });
-
-      if (!existingRedemption) {
-        await OfferRedemption.add({
-          member_id: event.data.memberId,
-          subscription_id: event.data.subscriptionId,
-          offer_id: event.data.offerId,
-          created_at: event.timestamp || Date.now(),
-        });
-      }
-    });
+  /**
+   * Runs `fn` once the work it follows has committed.
+   *
+   * Without a transaction each query commits as it runs, so `fn` runs now, and whatever it
+   * throws or returns is the caller's. Inside `options.transacting` it runs when that
+   * transaction commits, after the caller has moved on, and not at all if it rolls back;
+   * a rollback, or a failure in `fn`, goes to `onFailure`.
+   *
+   * @param {{transacting?: {executionPromise: Promise<unknown>}}} options
+   * @param {() => unknown} fn
+   * @param {(err: unknown) => void} onFailure
+   */
+  afterCommit(options, fn, onFailure) {
+    if (!options?.transacting) {
+      return fn();
+    }
+    options.transacting.executionPromise.then(() => fn()).catch(onFailure);
   }
 
   /**
@@ -157,26 +266,20 @@ module.exports = class MemberRepository {
    * @returns {void}
    */
   dispatchEvent(event, options) {
-    if (options?.transacting) {
-      // Only dispatch the event after the transaction has finished
-      options.transacting.executionPromise
-        .then(async () => {
-          DomainEvents.dispatch(event);
-        })
-        .catch((err) => {
-          // catches transaction errors/rollback to not dispatch event
-          let memberMessageFragment = '';
-          if (event.data && typeof event.data === 'object' && 'memberId' in event.data) {
-            memberMessageFragment = `for member ${event.data.memberId} `;
-          }
-          logging.error({
-            err,
-            message: `Error dispatching event ${event.constructor.name} ${memberMessageFragment}after transaction finished`,
-          });
+    this.afterCommit(
+      options,
+      () => DomainEvents.dispatch(event),
+      (err) => {
+        let memberMessageFragment = '';
+        if (event.data && typeof event.data === 'object' && 'memberId' in event.data) {
+          memberMessageFragment = `for member ${event.data.memberId} `;
+        }
+        logging.error({
+          err,
+          message: `Error dispatching event ${event.constructor.name} ${memberMessageFragment}after transaction finished`,
         });
-    } else {
-      DomainEvents.dispatch(event);
-    }
+      },
+    );
   }
 
   isActiveSubscriptionStatus(status) {
@@ -192,20 +295,24 @@ module.exports = class MemberRepository {
   }
 
   /**
-   * @param {string} memberId
-   * @param {string} memberEmail
+   * @param {MemberModel} member
    * @param {'free' | 'paid'} memberStatus
    * @param {object} bookshelfOptions
    * @param {Knex.Transaction} [bookshelfOptions.transacting]
    * @returns {Promise<void>}
    */
-  async #triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions) {
+  async #triggerMemberSignupAutomation(member, memberStatus, bookshelfOptions) {
+    const memberId = member.id;
+    const memberEmail = member.get('email');
+    const memberTierIds = await getMemberTierIds(member, memberStatus, bookshelfOptions);
+
     const trigger = async () => {
       await this._automationsApi.trigger({
         event: 'member_sign_up',
         memberId,
         memberEmail,
         memberStatus,
+        memberTierIds,
       });
     };
 
@@ -275,16 +382,15 @@ module.exports = class MemberRepository {
    * Callers are responsible for any eligibility gating (member status, source, etc.)
    * before calling this.
    *
-   * @param {string} memberId
-   * @param {string} memberEmail
+   * @param {MemberModel} member
    * @param {'free' | 'paid'} memberStatus
    * @param {object} bookshelfOptions
    * @returns {Promise<void>}
    */
-  async triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions) {
+  async triggerMemberSignupAutomation(member, memberStatus, bookshelfOptions) {
     await Promise.all([
-      this.#triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions),
-      this.#triggerMemberSignupLegacyAutomation(memberId, memberStatus, bookshelfOptions),
+      this.#triggerMemberSignupAutomation(member, memberStatus, bookshelfOptions),
+      this.#triggerMemberSignupLegacyAutomation(member.id, memberStatus, bookshelfOptions),
     ]);
   }
 
@@ -491,7 +597,10 @@ module.exports = class MemberRepository {
     // Exception: Gifts remain redeemable even if the tier is later archived, since the entitlement has already been paid for
     if (memberData.products && memberData.status !== 'gift') {
       for (const productData of memberData.products) {
-        const product = await this._productRepository.get(productData);
+        const product = await this._productRepository.get(
+          productData,
+          _.pick(options, 'transacting'),
+        );
         if (product.get('active') !== true) {
           throw new errors.BadRequestError({ message: tpl(messages.tierArchived) });
         }
@@ -531,7 +640,7 @@ module.exports = class MemberRepository {
           { ...memberAddOptions, transacting },
         );
 
-        await this.triggerMemberSignupAutomation(newMember.id, newMember.get('email'), 'free', {
+        await this.triggerMemberSignupAutomation(newMember, 'free', {
           transacting,
         });
 
@@ -637,6 +746,19 @@ module.exports = class MemberRepository {
         }
       }
     }
+    // Saved with the member rather than by a subscriber to the event below, so a read
+    // straight after the create already shows where the member came from.
+    await this._MemberCreatedEvent.add(
+      {
+        member_id: member.id,
+        created_at: eventData.created_at,
+        source,
+        batch_id: options.batch_id ?? null,
+        ...attributionColumns('members_created_events', data.attribution),
+      },
+      options,
+    );
+
     this.dispatchEvent(
       MemberCreatedEvent.create(
         {
@@ -981,17 +1103,41 @@ module.exports = class MemberRepository {
     }
 
     if (this._stripeAPIService.configured && member._changed.email) {
-      await member.related('stripeCustomers').fetch();
-      const customers = member.related('stripeCustomers');
-      for (const customer of customers.models) {
-        await this._stripeAPIService.updateCustomerEmail(
-          customer.get('customer_id'),
-          member.get('email'),
-        );
-      }
+      // Stripe can't be rolled back, so it only hears about an address Ghost has saved.
+      await this.afterCommit(
+        options,
+        () => this.updateStripeCustomerEmails(member),
+        (err) => {
+          logging.error(
+            {
+              event: { name: 'members.stripe_customer_email.not_updated' },
+              err,
+              memberId: member.id,
+            },
+            'The Stripe customer email was not updated after a member edit',
+          );
+        },
+      );
     }
 
     return member;
+  }
+
+  /**
+   * Sends a member's email address to every Stripe customer linked to them.
+   *
+   * @private
+   * @param {object} member
+   */
+  async updateStripeCustomerEmails(member) {
+    await member.related('stripeCustomers').fetch();
+    const customers = member.related('stripeCustomers');
+    for (const customer of customers.models) {
+      await this._stripeAPIService.updateCustomerEmail(
+        customer.get('customer_id'),
+        member.get('email'),
+      );
+    }
   }
 
   async list(options) {
@@ -1041,13 +1187,29 @@ module.exports = class MemberRepository {
       }
     }
 
-    // require: false so concurrent deletes don't throw "No Rows Deleted"
-    return this._Member.destroy(
-      {
-        id: data.id,
-      },
-      { ...options, require: false },
-    );
+    // The member's metafields are deleted with them. They're read first, in the same
+    // transaction, and kept on the deleted member, whose member.deleted webhook is sent
+    // once the transaction commits.
+    const destroy = async (transacting) => {
+      const previousMetafields = await this._metafieldValues.getValuesForMember(
+        member.id,
+        ADMIN,
+        transacting,
+      );
+      // require: false so concurrent deletes don't throw "No Rows Deleted"
+      const deleted = await this._Member.destroy(
+        {
+          id: data.id,
+        },
+        { ...options, transacting, require: false },
+      );
+      if (deleted && previousMetafields) {
+        deleted._previousMetafields = previousMetafields;
+      }
+      return deleted;
+    };
+
+    return options.transacting ? destroy(options.transacting) : this._Member.transaction(destroy);
   }
 
   async bulkDestroy(options) {
@@ -1510,7 +1672,6 @@ module.exports = class MemberRepository {
 
       // CASE: Record offer redemption when offer_id changes to a new non-null value
       // This covers: null→new (free member upgrade), old→new (retention offer replacing expired signup offer)
-      // The OfferRedemptionEvent handler has a dedup check for repeated webhook deliveries
       if (
         !isIncomplete &&
         !subscriptionToRecord &&
@@ -1520,15 +1681,15 @@ module.exports = class MemberRepository {
         const redemptionTimestamp =
           subscriptionData.discount_start ||
           updatedStripeCustomerSubscriptionModel.get('created_at');
-        const offerRedemptionEvent = OfferRedemptionEvent.create(
+        await this.recordOfferRedemption(
           {
             memberId: memberModel.id,
             offerId: subscriptionData.offer_id,
             subscriptionId: updatedStripeCustomerSubscriptionModel.id,
+            createdAt: redemptionTimestamp,
           },
-          redemptionTimestamp,
+          options,
         );
-        this.dispatchEvent(offerRedemptionEvent, options);
       }
 
       if (
@@ -1700,15 +1861,30 @@ module.exports = class MemberRepository {
         batchId: options.batch_id,
       });
 
+      // Saved with the subscription, as the member's created record is, so a read
+      // straight after already shows where the subscription came from.
+      await this._SubscriptionCreatedEvent.add(
+        {
+          member_id: memberModel.id,
+          subscription_id: subscriptionToRecord.get('id'),
+          created_at: subscriptionCreatedEvent.timestamp,
+          batch_id: options.batch_id ?? null,
+          ...attributionColumns('members_subscription_created_events', attribution),
+        },
+        options,
+      );
+
       this.dispatchEvent(subscriptionCreatedEvent, options);
 
       if (offerId) {
-        const offerRedemptionEvent = OfferRedemptionEvent.create({
-          memberId: memberModel.id,
-          offerId: offerId,
-          subscriptionId: subscriptionToRecord.get('id'),
-        });
-        this.dispatchEvent(offerRedemptionEvent, options);
+        await this.recordOfferRedemption(
+          {
+            memberId: memberModel.id,
+            offerId: offerId,
+            subscriptionId: subscriptionToRecord.get('id'),
+          },
+          options,
+        );
       }
 
       if (getStatus(subscriptionToRecord) === 'active') {
@@ -1961,12 +2137,7 @@ module.exports = class MemberRepository {
         updatedMember.get('status') === 'paid' &&
         updatedMember._previousAttributes.status !== 'gift'
       ) {
-        await this.triggerMemberSignupAutomation(
-          memberModel.id,
-          memberModel.get('email'),
-          'paid',
-          options,
-        );
+        await this.triggerMemberSignupAutomation(memberModel, 'paid', options);
       }
     }
 

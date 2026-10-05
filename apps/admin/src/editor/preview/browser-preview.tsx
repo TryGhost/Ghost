@@ -6,6 +6,7 @@ import {
   postPreviewBrowserFrame,
   postPreviewUnavailable,
 } from '@tryghost/test-data/selectors/editor';
+import { useRef, type SyntheticEvent } from 'react';
 
 import { browserPreviewUrl, type PreviewAudience, type PreviewDevice } from './preview-url';
 
@@ -14,9 +15,33 @@ interface BrowserPreviewProps {
   previewUrl: string;
   audience: PreviewAudience;
   device: PreviewDevice;
+  /** Called for an Escape pressed inside a same-origin site frame. */
+  onEscape: () => void;
 }
 
-export function BrowserPreview({ previewUrl, audience, device }: BrowserPreviewProps) {
+/** Keydowns inside the frame never reach the admin document, so listen on each page it loads. */
+function useFrameEscape(onEscape: () => void) {
+  const onEscapeRef = useRef(onEscape);
+  onEscapeRef.current = onEscape;
+
+  // A listener goes with the page it was added to. Removing it would reach into
+  // whatever page the frame holds by then, which may be another site's.
+  return (event: SyntheticEvent<HTMLIFrameElement>) => {
+    try {
+      event.currentTarget.contentWindow?.addEventListener('keydown', (keyEvent) => {
+        if (keyEvent.key === 'Escape') {
+          onEscapeRef.current();
+        }
+      });
+    } catch {
+      // A cross-origin site frame cannot be observed.
+    }
+  };
+}
+
+export function BrowserPreview({ previewUrl, audience, device, onEscape }: BrowserPreviewProps) {
+  const onFrameLoad = useFrameEscape(onEscape);
+
   if (!previewUrl) {
     return (
       <EmptyIndicator
@@ -43,6 +68,7 @@ export function BrowserPreview({ previewUrl, audience, device }: BrowserPreviewP
         data-testid={postPreviewBrowserFrame}
         src={browserPreviewUrl(previewUrl, audience)}
         title="Post preview"
+        onLoad={onFrameLoad}
       />
     </Frame>
   );

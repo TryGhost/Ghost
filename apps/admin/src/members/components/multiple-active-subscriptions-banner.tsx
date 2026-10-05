@@ -45,7 +45,7 @@ const MultipleActiveSubscriptionsBanner = ({
         <div className="flex items-baseline gap-3">
           {banner.canDismiss && (
             <button
-              className="nowrap font-semibold !underline"
+              className="font-semibold whitespace-nowrap !underline"
               type="button"
               onClick={banner.handleViewMembers}
             >
@@ -53,7 +53,7 @@ const MultipleActiveSubscriptionsBanner = ({
             </button>
           )}
           <a
-            className="nowrap font-semibold underline"
+            className="font-semibold whitespace-nowrap underline"
             href="https://ghost.org/help/duplicate-subscription-warning/"
             rel="noopener noreferrer"
             target="_blank"

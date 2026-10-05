@@ -77,7 +77,9 @@ interface ScheduledRecipientAudience {
 }
 
 /** Who a scheduled send will reach, or null once an email exists or none is going out. */
-function scheduledRecipientAudience(record: EditorStatusRecord): ScheduledRecipientAudience | null {
+export function scheduledRecipientAudience(
+  record: EditorStatusRecord,
+): ScheduledRecipientAudience | null {
   if (!record.newsletter || record.hasEmail || record.emailSegment === 'none') {
     return null;
   }

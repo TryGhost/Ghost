@@ -430,6 +430,10 @@ export const blankAutomation = (): ProtoAutomation => {
     automation: {
       id,
       name,
+      // The API's own description field, new on main. The proto keeps the one
+      // it edits on the ProtoAutomation wrapper (see `description` below), so
+      // this is only here to satisfy the type.
+      description: '',
       slug: `${slugify(name)}-${id.slice(5)}`,
       // Nothing with no steps should read as running.
       status: 'inactive',

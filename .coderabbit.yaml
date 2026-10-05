@@ -120,10 +120,11 @@ reviews:
     - path: 'apps/{admin,activitypub,admin-x-framework,shade}/**/*.{ts,tsx}'
       instructions: |
         Review Admin UI for existing Shade reuse, correct component layer, semantic
-        tokens, accessible interaction states, and whole-sentence translations. New UI
-        that depends on backend settings, endpoints, or config must feature-detect old
-        backend support and cover the not-yet-deployed backend case. Do not apply these
-        rules to independent public UMD apps. Do not repeat ESLint/Tailwind findings.
+        tokens, and accessible interaction states. New UI that depends on backend
+        settings, endpoints, or config must feature-detect old backend support and cover
+        the not-yet-deployed backend case. Admin UI copy is not translated, so do not ask
+        for translations. Do not apply these rules to independent public UMD apps. Do not
+        repeat ESLint/Tailwind findings.
     - path: 'apps/{portal,comments-ui,signup-form,sodo-search,announcement-bar}/**/*.{js,jsx,ts,tsx}'
       instructions: |
         These are independent public UMD/CDN surfaces, not embedded Shade apps. Review

@@ -29,10 +29,4 @@ export default class SigninRoute extends UnauthenticatedRoute {
         // clear the properties that hold the credentials when we're no longer on the signin screen
         this.controllerFor('signin').model = defaultModel();
     }
-
-    buildRouteInfoMetadata() {
-        return Object.assign(super.buildRouteInfoMetadata(), {
-            titleToken: 'Sign In'
-        });
-    }
 }

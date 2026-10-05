@@ -111,14 +111,29 @@ class WebhookTrigger {
       onError: this.onError.bind(this),
     };
 
-    const hooks = await this.getAll(event);
-
-    debug(`${hooks.models.length} webhooks found for ${event}.`);
+    let hooks;
+    let payload;
+    try {
+      hooks = await this.getAll(event);
+      debug(`${hooks.models.length} webhooks found for ${event}.`);
+      if (hooks.models.length === 0) {
+        return;
+      }
+      // Once per event: every webhook for it gets the same payload, apart from its signature.
+      payload = await this.payload(event, model);
+    } catch (err) {
+      // Nothing awaits a trigger, so an error here would otherwise go unlogged.
+      logging.error(
+        { event: { name: 'webhooks.trigger.failed' }, err, webhookEvent: event },
+        'Failed to prepare webhooks for an event, so none were sent',
+      );
+      return;
+    }
 
     for (const webhook of hooks.models) {
       const hookPayload = {
         event: webhook.get('event'),
-        ...(await this.payload(webhook.get('event'), model)),
+        ...payload,
       };
 
       const reqPayload = JSON.stringify(hookPayload);

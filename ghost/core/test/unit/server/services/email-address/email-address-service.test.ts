@@ -20,6 +20,26 @@ describe('EmailAddressService', function () {
     return new EmailAddressService(createConfig(configOverrides));
   };
 
+  describe('getMembersSupportAddress', function () {
+    it('uses the current default address until the support domain is allowed', function () {
+      let sendingDomain = 'other.example.com';
+      let defaultAddress = 'noreply@first.example.com';
+      const service = createService({
+        getMembersSupportAddress: () => 'support@custom.example.com',
+        getSendingDomain: () => sendingDomain,
+        getDefaultEmail: () => ({ address: defaultAddress, name: 'Ghost' }),
+      });
+
+      assert.equal(service.getMembersSupportAddress(), 'noreply@first.example.com');
+
+      defaultAddress = 'noreply@second.example.com';
+      assert.equal(service.getMembersSupportAddress(), 'noreply@second.example.com');
+
+      sendingDomain = 'custom.example.com';
+      assert.equal(service.getMembersSupportAddress(), 'support@custom.example.com');
+    });
+  });
+
   describe('getAddress with fallback domain', function () {
     it('uses fallback address when useFallbackAddress is true', function () {
       const service = createService();

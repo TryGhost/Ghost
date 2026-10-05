@@ -32,6 +32,8 @@ export interface PublishFlowPost {
   emailCreatedAt?: string | null;
   /** The unsaved body when the editor has one; read only by the public-preview predicate. */
   lexical?: string | null;
+  /** The version of the server's copy, absent until there is one. */
+  updatedAt?: string | null;
 }
 
 export function isPage(post: PublishFlowPost): boolean {
@@ -43,6 +45,13 @@ export interface PublishFlowPostSources {
   snapshot: Pick<EditorSaveSnapshot, 'id' | 'status' | 'title' | 'publishedAt'>;
   /** The record the session is loaded at; absent until a created post has been read back. */
   record?: EditorRecord;
+  /** The access the settings sidebar shows, which a save may not have written yet. */
+  access: {
+    visibility: string | null;
+    tiers: ReadonlyArray<{ id: string; slug?: string | null }>;
+  };
+  /** The site's tiers as far as they have loaded, which name a tier picked before its save lands. */
+  knownTiers?: ReadonlyArray<{ id: string; slug?: string | null }>;
   displayName: 'post' | 'page';
   /** The body the writer is looking at, which the public-preview predicate reads. */
   lexical?: string | null;
@@ -50,13 +59,15 @@ export interface PublishFlowPostSources {
 
 /**
  * Projects the post the editor holds into the publish flow's input. Status,
- * publish time and title come from the engine, so a publish that has landed is
- * described before the record has been read back; everything else needs the
- * server's copy and is left out until there is one.
+ * publish time and title come from the engine, and access from the settings
+ * the writer chose, so neither waits for a save to be read back; everything
+ * else needs the server's copy and is left out until there is one.
  */
 export function buildPublishFlowPost({
   snapshot,
   record,
+  access,
+  knownTiers,
   displayName,
   lexical,
 }: PublishFlowPostSources): PublishFlowPost {
@@ -72,8 +83,15 @@ export function buildPublishFlowPost({
     url: record?.url ?? null,
     featureImage: record?.feature_image ?? null,
     publishedAt: snapshot.publishedAt,
-    visibility: record?.visibility ?? null,
-    tiers: (record?.tiers ?? []).flatMap((tier) => (tier.slug ? [{ slug: tier.slug }] : [])),
+    visibility: access.visibility,
+    tiers: access.tiers.flatMap((tier) => {
+      // A tier picked in the sidebar holds only its id until its save is read back.
+      const slug =
+        tier.slug ??
+        knownTiers?.find(({ id }) => id === tier.id)?.slug ??
+        record?.tiers?.find(({ id }) => id === tier.id)?.slug;
+      return slug ? [{ slug }] : [];
+    }),
     newsletter: newsletter?.slug ?? null,
     newsletterName: newsletter?.name ?? null,
     newsletterStatus: newsletter?.status ?? null,
@@ -82,5 +100,6 @@ export function buildPublishFlowPost({
     email,
     emailCreatedAt: email?.created_at ?? null,
     lexical: lexical ?? record?.lexical ?? null,
+    updatedAt: record?.updated_at ?? null,
   };
 }

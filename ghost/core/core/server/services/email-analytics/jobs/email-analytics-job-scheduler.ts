@@ -4,6 +4,7 @@ import EmailAnalyticsFetchLatestJob from './email-analytics-fetch-latest-job';
 import moment from 'moment';
 import type { Job, JobConstructor } from '../../jobs-service/job';
 import type { JobsService } from '../../jobs-service/jobs-service';
+import { randomFiveMinuteCron } from '../../jobs-service/cron';
 
 const logging = require('@tryghost/logging');
 
@@ -28,15 +29,6 @@ type Models = {
   };
 };
 type Config = { get(key: string): unknown };
-function randomFiveMinuteCron(): string {
-  // Use a random seconds value to avoid spikes to external APIs on the minute.
-  const seconds = Math.floor(Math.random() * 60); // 0-59
-  // Run every 5 minutes, on 1,6,11..., 2,7,12..., 3,8,13..., etc.
-  const minutes = Math.floor(Math.random() * 5); // 0-4
-
-  return `${seconds} ${minutes}/5 * * * *`;
-}
-
 type RecurringJobClass = JobConstructor<Job, void>;
 
 function thirtyDaysAgo(): Date {

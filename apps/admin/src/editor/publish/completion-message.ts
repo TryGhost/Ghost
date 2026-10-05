@@ -1,6 +1,6 @@
 import { splitUpgradeMessage } from './publish-options';
 import type { LimitMessagePart } from './publish-options';
-import type { SaveCompletion } from '@/editor/engine/save-engine';
+import type { SaveCompletion, SaveError } from '@/editor/engine/save-engine';
 
 export const UNREACHABLE_MESSAGE =
   'Unable to connect, please check your internet connection and try again.';
@@ -49,8 +49,11 @@ export function describeCompletionFailure(completion: SaveCompletion): Completio
     return { message: DROPPED_MESSAGE };
   }
 
-  const { error } = completion;
+  return describeSaveError(completion.error);
+}
 
+/** Turns the error a save failed with into inline copy. */
+export function describeSaveError(error: SaveError): CompletionFailure {
   switch (error.kind) {
     case 'validation':
       return { message: `Validation failed: ${error.message || UNKNOWN_MESSAGE}` };

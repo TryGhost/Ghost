@@ -6,7 +6,7 @@ import { postListItemLink, postsList, postsListItem } from '@tryghost/test-data/
 
 for (const editorReact of [false, true]) {
   test.describe(`Posts scroll restoration (${editorReact ? 'React' : 'Ember'} editor)`, () => {
-    test.use({ labs: { postsListReact: true, editorReact } });
+    test.use({ labs: { editorReact } });
 
     for (const returnWith of ['back', 'breadcrumb']) {
       test(`restores loaded rows and scroll using ${returnWith}`, async ({ page }) => {
@@ -49,7 +49,7 @@ for (const editorReact of [false, true]) {
           });
         });
 
-        const postsPage = new PostsPage(page, { implementation: 'react' });
+        const postsPage = new PostsPage(page);
         const editor = new PostEditorPage(page, {
           implementation: editorReact ? 'react' : 'ember',
         });

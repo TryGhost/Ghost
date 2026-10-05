@@ -7,6 +7,10 @@ import {getTopLevelNativeElement} from './getTopLevelNativeElement';
  * @returns {boolean}
  */
 export function $isAtTopOfNode(nativeSelection, threshold = 10) {
+    if (!nativeSelection?.rangeCount) {
+        return false;
+    }
+
     const range = nativeSelection.getRangeAt(0).cloneRange();
     const rects = range.getClientRects();
 
@@ -16,6 +20,9 @@ export function $isAtTopOfNode(nativeSelection, threshold = 10) {
         // the top position check
         const rangeRect = rects[1] || rects[0];
         const nativeTopLevelElement = getTopLevelNativeElement(nativeSelection.anchorNode);
+        if (!nativeTopLevelElement) {
+            return false;
+        }
         const elemRect = nativeTopLevelElement.getBoundingClientRect();
 
         return Math.abs(rangeRect.top - elemRect.top) <= threshold;

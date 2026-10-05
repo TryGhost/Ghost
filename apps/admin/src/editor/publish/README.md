@@ -152,6 +152,10 @@ It is self-contained: the caller supplies the post projection, the site and user
 
 The stateful journey is keyed by post id. If a mounted caller replaces the post, the gates, options machine, limits readiness, failures and completion state all start again for the new post.
 
+## Opening the flow
+
+The flow opens at its email-failure step for a published or sent post whose email failed, and at the options step for anything else. `initialEmailError()` is that test, exported so a caller can tell whether opening the flow leads to a retry. A caller must not open the flow before `usePublishInputs()` reports the inputs ready: the machine is built from them once.
+
 ## Steps
 
 The flow is a four-way branch, taken in this order:
@@ -163,7 +167,7 @@ The flow is a four-way branch, taken in this order:
 | The user asked for the final review      | `ConfirmStep`                |
 | Otherwise                                | `OptionsStep`                |
 
-`OptionsStep` is an accordion of the three settings — publish type, email recipients, publish time — with at most one section open, plus the read-only row describing a send the post already had. Its continue button waits for `checkLimits()`, since a block landing late demotes the publish type and the user must not carry a stale choice into the review. `ConfirmStep` captures the publish intent on entry, so the copy on the button and in the sentence cannot change while the save is in flight. `CompleteStep` shows the post as a bookmark card and, for a schedule, offers the revert.
+`OptionsStep` is an accordion of the three settings — publish type, email recipients, publish time — with at most one section open, plus the read-only row describing a send the post already had, which is hidden while the site has newsletters or members turned off. While `willEmail` holds, the publish type row carries the email size warning when the post's email is estimated at 100kB or more; the estimate is the editor's, described in [the editor README](../README.md#email-size). Its continue button waits for `checkLimits()`, since a block landing late demotes the publish type and the user must not carry a stale choice into the review. `ConfirmStep` captures the publish intent on entry, so the copy on the button and in the sentence cannot change while the save is in flight. `CompleteStep` shows the post as a bookmark card and, for a schedule, offers the revert.
 
 ## Gates
 
@@ -175,14 +179,14 @@ Confirming runs `onBeforePublish` (the editor's pre-save cleanup), dispatches th
 
 | Completion              | Result                                                             |
 | ----------------------- | ------------------------------------------------------------------ |
-| `saved`                 | The email confirmation runs when the publish emails immediately    |
+| `saved`                 | Confirms the email of an immediate send, unless `improveSendingUI` |
 | `needs-retry`           | Back to confirm, told the session is back; the user confirms again |
 | `failed` (`conflict`)   | The collision message, in place                                    |
 | `failed` (`host-limit`) | The host's message, with the upgrade phrase rendered as a link     |
 | `failed` (`validation`) | The validation message, in place                                   |
 | `dropped`/`superseded`  | The post is no longer publishable from here                        |
 
-No completion closes the modal or navigates. Reaching the complete step writes the celebration handoff (`ghost-last-published-post` or `ghost-last-scheduled-post`), and calls `onCompleted` so the caller can navigate; where the user lands is the caller's decision, not this component's.
+No completion closes the modal or navigates. Successful completion writes the celebration handoff (`ghost-last-published-post` or `ghost-last-scheduled-post`), and calls `onCompleted` so the caller can navigate; where the user lands is the caller's decision, not this component's. The editor sets `showCompletion={false}` to keep the current step pending until navigation unmounts it, avoiding a flash of the fallback completion screen while the destination loads. Other callers show the completion screen by default.
 
 ## Email confirmation
 
@@ -193,6 +197,10 @@ A `failed` outcome moves to the email-error step with the message the API stored
 A reload that throws — a transport failure, or the 401 the redirect opt-out below turns into a rejection — completes the flow with a note instead. The post is published by that point and only the email's fate is unknown, so the alternatives are both wrong: claiming the email failed would invent a fact, and leaving the button running would strand the user on a disabled control for a publish that already succeeded.
 
 The email's id is only knowable from a reload, so the poller's reload records it for the retry. For the same reason the flow polls rather than short-circuiting on a known email: the acknowledged save result carries no email, and the pre-save one would resolve the confirmation to "not needed" immediately. Closing the flow cancels the poll and marks every pending pre-save, save, confirmation and retry continuation as abandoned, so none can complete the post journey after the caller closes it.
+
+The poller reads the post around the query cache, so the cached post reads never see what it found. Once a confirmation settles with any outcome but `cancelled`, after a publish or a retry, the flow invalidates the post reads so whatever is drawn from them catches up with the send. A reload that throws leaves them alone, since a refetch would most likely fail the same way.
+
+With the `improveSendingUI` flag on, a publish that emails immediately is complete as soon as its save is acknowledged. The flow does not poll, so that publish never moves to the email-error step and the flow invalidates no post reads after it; the caller is told the post has an email, so it can route to post analytics, which reports the send's progress and any failure. Retrying a failed send from the email-error step still waits on the confirmation with the flag on.
 
 ## Requests
 
@@ -217,7 +225,3 @@ It reads the newsletter from the post rather than from the options machine, beca
 Its email copy also follows the persisted post rather than the draft-only machine. A scheduled post will email when it has a newsletter and no email record yet; a published or sent post counts as emailed only when it is a post with a non-failed email. A scheduled post with an existing email describes that record separately as a previous send.
 
 That reading depends on what the caller supplies. `newsletterName` and `newsletterStatus` need a post read that includes the newsletter relation, and the earlier-send sentence needs `emailCreatedAt`; the editor's read carries both. A caller whose read omits them gets copy that degrades rather than lying — the newsletter goes unnamed, and the sentence drops its date.
-
-## Not here yet
-
-Known gaps, listed so they are not mistaken for decisions: the size of a newsletter is not shown, so a send over the 100kB clipping threshold goes unflagged even though the options step keeps the slot the warning belongs in.

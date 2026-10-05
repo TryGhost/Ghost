@@ -16,6 +16,12 @@ Embedded React applications are built before Ember Admin; Ember's asset-delivery
 addon copies their production output and the Admin assets into
 `ghost/core/core/built/admin/` for Ghost Core to serve.
 
+Ember is an Nx implicit dependency of this app so Ember source changes still
+invalidate the combined production build and mark Admin as affected. It is not
+a package dependency: a filtered `@tryghost/admin...` install contains the React
+test dependencies, while development and production builds need the full
+workspace install to include Ember's toolchain.
+
 ### CSS
 
 `src/index.css` is the single Tailwind CSS entry point for Admin. It imports
@@ -43,6 +49,33 @@ Add an acceptance test for the older-backend case. The social accounts settings
 and membership tiers tests contain current examples of hiding controls until
 their supporting settings are present.
 
+### Automation run history
+
+With automation run analytics enabled, selecting a Performance row opens read-only
+history by run ID. Closing it restores the mounted editor and its unsaved draft.
+List filters, sorting, and pagination do not refresh the selected history. A new
+selection or Retry fetches it again; there is no polling or refresh control.
+
+Recorded cards use the action revisions and timestamps returned by the history
+endpoint, including saved email subjects and send/delivery evidence. Active runs
+also fetch the saved workflow and show the remaining path after the pending step,
+with upcoming cards distinct from recorded events. Both requests must succeed;
+a failure shows the history error state and Retry reloads both. Upcoming cards
+estimate dates from the pending step’s recorded eligibility (or now if overdue),
+adding each downstream wait. These estimates are calculated when history loads;
+they are not scheduled send times. Deleted members have no projected dates.
+Removed pending actions have no downstream path and lead to the end marker.
+Inactive automations show recorded history without projected steps.
+Completed runs do not get an invented end timestamp.
+
+Email snippets show up to 400 characters of ordinary text from the saved revision,
+rendered as plain text. Rich cards (including HTML and Markdown) are skipped;
+emails without extractable text show their subject alone. This does not mount or
+import the editor.
+
+History mapping tests live in `src/automations/utils/`; the `run-history*`
+acceptance tests cover selection, drafts, retries, responsive layouts, and cards.
+
 ## Development
 
 ```bash
@@ -55,6 +88,11 @@ access and Shade for UI rather than adding new `admin-x-design-system`
 components. Product copy belongs in the `ghost` namespace; follow the
 [internationalization guide](../../docs/practices/internationalization.md).
 
+`pnpm nx run @tryghost/admin:build:dev` prepares library outputs and Ember's
+development assets. Its prerequisites select `ghost-admin:build:dev` once;
+they do not also compile Ember's production bundle. The normal `pnpm dev`
+watchers are configured separately.
+
 The post editor is the largest area with documentation of its own — start at
 [src/editor/README.md](src/editor/README.md) before changing anything under
 `src/editor/`.
@@ -63,7 +101,31 @@ The post editor is the largest area with documentation of its own — start at
 
 - **Unit tests** (`pnpm test:unit`): Vitest + jsdom, colocated `*.test.ts(x)` files.
 - **Acceptance tests** (`pnpm test:acceptance`): the real app in real Chromium against a fake admin API served through MSW — see [test-utils/acceptance/README.md](test-utils/acceptance/README.md).
+- **Typechecks** (`pnpm test:types`): TypeScript checks app code, test code and Vite configuration without bundling Admin.
 - **Browser e2e** against a real Ghost instance lives in the top-level [`e2e/`](../../e2e) workspace.
+
+From the monorepo root, use `pnpm nx run @tryghost/admin:test:unit` or
+`pnpm nx run @tryghost/admin:test:acceptance`, or
+`pnpm nx run @tryghost/admin:test:types` to build the required React
+libraries first. These targets do not compile Ember or boot Ghost. Their
+`dependsOn` lists, and the React library prerequisites of `build:dev`, explicitly
+name the React dependencies with a `build` target; update all four when adding
+one. Using `^build` here would also select the implicit Ember dependency.
+
+Nx caches unit, acceptance and typecheck results. The global
+`reactAdminDependency` input retains every transitive dependency's default
+inputs; Ember overrides it with an empty input because these targets do not
+execute Ember. The production build still uses `^default`, including Ember.
+Test inputs also include Core's aliased card assets, the lockfile and runtime
+settings such as Node version, platform, timezone and CI mode. A digest of
+local `.env` and `.env.*` files covers Vite's mode-specific configuration without
+printing their values. Shard and other
+CLI arguments get separate cache keys. Use `--skip-nx-cache` to force a fresh run.
+
+CI changes confined to Admin's `*.test.ts(x)`, `*.screen.ts`, `test-utils/` or
+`vitest.acceptance.config.ts` skip the build, packaging and browser E2E lane.
+Affected unit, app acceptance, lint and typecheck checks still run. Changes to
+runtime code or shared configuration keep the full lane.
 
 ## Building for Production
 
@@ -73,3 +135,23 @@ pnpm nx run @tryghost/admin:build
 ```
 
 This outputs to `apps/admin/dist/` and updates the assets in `ghost/core/core/built/admin/`.
+
+The build also writes hidden sourcemaps: `.map` files that no bundle references.
+With `IS_SHIPPING` set, as CI does for `main` and release tags, it uploads them
+to Sentry under the release Admin's Sentry client reports. Without
+`VITE_SENTRY_AUTH_TOKEN` the upload is skipped.
+
+## Automation member search
+
+The initial Performance search matches current member name/email across all time
+and statuses. While a search is active, the chart, status cards, and date controls
+collapse; clearing or closing search restores the browsing filters. Entered
+sorting remains available. Input is debounced for 300 ms.
+
+Search pages can report `scanning` even with no matching rows. The list continues
+these requests sequentially, shows a skeleton row while scanning, and reports
+no matches only after exhaustion. A failed later page retains loaded rows and
+retries that page. Search-scoped charts and date/status controls are a separate
+enhancement. Opening search replaces the Performance heading with the input.
+Typing slides the chart, status cards, and applied date chip closed over 200 ms;
+clearing search expands them again. Reduced-motion preferences disable the transition.

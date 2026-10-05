@@ -6,8 +6,8 @@ const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
 const adapterManager = require('../../../core/server/services/adapter-manager').default;
-const MailgunClient = require('../../../core/server/services/lib/mailgun-client');
-const mailService = require('../../../core/server/services/mail');
+const MailgunClient = require('../../../core/server/lib/mailgun/mailgun-client');
+const mailService = require('../../../core/server/lib/mail');
 const membersService = require('../../../core/server/services/members');
 const { getSignedAdminToken } = require('../../../core/server/adapters/scheduling/utils');
 const {
@@ -222,6 +222,24 @@ describe('Members Automations', function () {
     sinon.restore();
     mockManager.restore();
     await cleanupAutomationsFixture();
+  });
+
+  it('returns descriptions when browsing and reading automations', async function () {
+    const description = 'Welcome new free members with a short email sequence';
+    await db
+      .knex('automations')
+      .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
+      .update({ description });
+
+    const { body: browseBody } = await agent.get('automations').expectStatus(200);
+    const summary = browseBody.automations.find(
+      (automation) => automation.slug === MEMBER_WELCOME_EMAIL_SLUGS.free,
+    );
+    assert(summary);
+    assert.equal(summary.description, description);
+
+    const { body: readBody } = await agent.get(`automations/${summary.id}`).expectStatus(200);
+    assert.equal(readBody.automations[0].description, description);
   });
 
   it('runs every step in the free member signup automation', async function () {

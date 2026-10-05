@@ -13,7 +13,7 @@ type SignedWebhookRequestOptions = {
 
 /**
  * Wire format for webhooks Ghost posts to the host (e.g. email verification,
- * export archive requests). The receiver verifies
+ * export requests). The receiver verifies
  * `X-Ghost-Signature: base64(HMAC-SHA256(secret, "{timestamp}:{rawBody}"))`
  * against the raw request body, so the body must be sent exactly as signed.
  */

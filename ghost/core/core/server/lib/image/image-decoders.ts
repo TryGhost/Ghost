@@ -1,4 +1,4 @@
-import type SharpType from 'sharp';
+import { setAllowedDecoders } from '@tryghost/image-transform';
 import { getImageLoader } from './image-formats';
 
 // sharp picks its decoder from a file's contents, not its name, so limit the
@@ -22,35 +22,17 @@ export function getAllowedImageLoaders(extensions: readonly string[]): string[] 
   return [...loaders].sort();
 }
 
-function loadSharp(): typeof SharpType | undefined {
-  try {
-    return require('sharp');
-  } catch {
-    // sharp is optional - without it Ghost stores images without processing them
-    return undefined;
-  }
-}
-
 /**
  * Blocks every libvips loader except the ones needed for the given extensions.
- * The block is process-wide, but lives in libvips, so it only covers copies of
+ * Doesn't load sharp: @tryghost/image-transform applies the block when sharp is
+ * first needed, so get sharp from there rather than requiring it directly. The
+ * block is process-wide, but lives in libvips, so it only covers copies of
  * sharp that share Ghost's libvips.
  *
- * @returns the allowed loaders, or undefined when sharp isn't installed
+ * @returns the allowed loaders
  */
-export function restrictImageDecoders(
-  extensions: readonly string[],
-  { requireSharp = loadSharp }: { requireSharp?: () => typeof SharpType | undefined } = {},
-): string[] | undefined {
-  const sharp = requireSharp();
-  if (!sharp) {
-    return undefined;
-  }
-
+export function restrictImageDecoders(extensions: readonly string[]): string[] {
   const loaders = getAllowedImageLoaders(extensions);
-
-  sharp.block({ operation: ['VipsForeignLoad'] });
-  sharp.unblock({ operation: loaders });
-
+  setAllowedDecoders(loaders);
   return loaders;
 }

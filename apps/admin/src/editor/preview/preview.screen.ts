@@ -14,10 +14,12 @@ import {
   postPreviewEmail,
   postPreviewEmailFrame,
   postPreviewEmailFrom,
+  postPreviewEmailSizeWarning,
   postPreviewEmailSubject,
   postPreviewModal,
   postPreviewNewsletterMissing,
   postPreviewSaveFailed,
+  postPreviewTestEmailError,
   postPreviewTestEmailInput,
   postPreviewUnavailable,
   previewAsSelectLabel,
@@ -53,6 +55,7 @@ export const previewScreen = {
   emailFrame: () => page.getByTestId(postPreviewEmailFrame),
   emailChrome: () => page.getByTestId(postPreviewEmail),
   emailFrom: () => page.getByTestId(postPreviewEmailFrom),
+  emailSizeWarning: () => page.getByTestId(postPreviewEmailSizeWarning),
   unavailable: () => page.getByTestId(postPreviewUnavailable),
   newsletterMissing: () => page.getByTestId(postPreviewNewsletterMissing),
   saveFailed: () => page.getByTestId(postPreviewSaveFailed),
@@ -61,6 +64,7 @@ export const previewScreen = {
   emailSubject: () => page.getByTestId(postPreviewEmailSubject),
   testEmailButton: () => page.getByRole('button', { name: testEmailButton }),
   testEmailInput: () => page.getByTestId(postPreviewTestEmailInput),
+  testEmailError: () => page.getByTestId(postPreviewTestEmailError),
   sendTestEmailButton: () => page.getByRole('button', { name: sendTestEmailButton, exact: true }),
   /** Opens the "preview as" select and picks one of its options. */
   previewAs: async (option: string) => {

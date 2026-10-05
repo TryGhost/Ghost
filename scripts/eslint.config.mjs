@@ -22,6 +22,12 @@ const cliRules = {
 
 export default [
   ...nodeLibConfig({
+    srcGlobs: ['*.ts', 'lib/**/*.ts'],
+    testGlobs: ['test/**/*.test.ts'],
+    extraSrcRules: cliRules,
+    extraTestRules: cliRules,
+  }),
+  ...nodeLibConfig({
     typescript: false,
     srcGlobs: ['*.js', 'lib/**/*.js'],
     testGlobs: ['test/**/*.test.js'],

@@ -19,10 +19,10 @@ type DialogContentProps = ComponentPropsWithoutRef<typeof DialogContent>;
 export interface FullscreenDialogProps extends Omit<DialogContentProps, 'title'> {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Non-modal leaves the page behind interactive; the frame still covers it. */
-  modal?: boolean;
   title: ReactNode;
   layout?: keyof typeof LAYOUTS;
+  /** Skip transitions when moving between fullscreen editor surfaces. */
+  animate?: boolean;
   /** Controls rendered in the header row beside the title. */
   headerActions?: ReactNode;
   /** View controls centered between the title and actions on wide screens. */
@@ -36,9 +36,9 @@ export interface FullscreenDialogProps extends Omit<DialogContentProps, 'title'>
 export function FullscreenDialog({
   open,
   onOpenChange,
-  modal = true,
   title,
   layout = 'plain',
+  animate = true,
   headerActions,
   headerControls,
   className,
@@ -74,9 +74,14 @@ export function FullscreenDialog({
   };
 
   return (
-    <Dialog modal={modal} open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className={cn(FRAME, LAYOUTS[layout], className)}
+        className={cn(
+          FRAME,
+          LAYOUTS[layout],
+          !animate && 'data-[state=closed]:animate-none data-[state=open]:animate-none',
+          className,
+        )}
         onCloseAutoFocus={returnFocus}
         // The frame covers the viewport, so an outside interaction is never a dismissal.
         onInteractOutside={(event) => event.preventDefault()}

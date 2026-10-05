@@ -13,7 +13,7 @@ describe('hasUnsavedWork', () => {
     const states: SaveEngineState[] = [
       { kind: 'idle' },
       { kind: 'debouncing' },
-      { kind: 'halted' },
+      { kind: 'halted', error: { kind: 'not-found', message: 'Post not found.' } },
       { kind: 'crashed' },
       { kind: 'disposed' },
     ];
@@ -57,6 +57,17 @@ describe('isCreatedIdUrlSwap', () => {
     ).toBe(true);
     expect(
       isCreatedIdUrlSwap({ pathname: '/editor/page' }, swapTo('/editor/page/abc'), 'page', SESSION),
+    ).toBe(true);
+  });
+
+  it('recognizes the swap from a new-post URL with a trailing slash', () => {
+    expect(
+      isCreatedIdUrlSwap(
+        { pathname: '/editor/post/' },
+        swapTo('/editor/post/abc'),
+        'post',
+        SESSION,
+      ),
     ).toBe(true);
   });
 
