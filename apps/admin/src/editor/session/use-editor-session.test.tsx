@@ -263,6 +263,7 @@ describe('useEditorSession refetched record', () => {
 
     expect(result.current.loadedRecord).toBe(loaded);
     expect(result.current.isDirty()).toBe(false);
+    expect(result.current.newerVersionAvailable).toBe(true);
   });
 
   it('describes a read of its own save once that save has landed', async () => {
@@ -283,6 +284,7 @@ describe('useEditorSession refetched record', () => {
     postApi.read = { posts: [ownSave] };
     rerender();
     expect(result.current.loadedRecord).toBe(loaded);
+    expect(result.current.newerVersionAvailable).toBe(false);
 
     await act(async () => {
       answer.resolve({ posts: [ownSave] });
@@ -291,6 +293,7 @@ describe('useEditorSession refetched record', () => {
 
     expect(result.current.loadedRecord).toBe(ownSave);
     expect(result.current.isDirty()).toBe(false);
+    expect(result.current.newerVersionAvailable).toBe(false);
   });
 });
 

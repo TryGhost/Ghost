@@ -443,6 +443,8 @@ export function createSaveEngine<
   } | null = null;
   // A failed retry cannot prove a rejected collision token safe.
   let conflict: { updatedAt: string | null; error: SaveError; intent: SaveIntent } | null = null;
+  // Set while a reload's adoption runs: a clean post would otherwise accept a nested reload.
+  let adopting = false;
   let leaveInProgress: Promise<LeaveDecision> | null = null;
   let disposed = false;
 
@@ -1097,20 +1099,23 @@ export function createSaveEngine<
   function contentReloaded(updatedAt?: string, adopt?: () => void): boolean {
     const candidate = updatedAt ?? readSnapshot()?.updatedAt;
     if (
+      adopting ||
       disposed ||
       isTerminal() ||
-      !conflict ||
       inFlight ||
       frozen ||
       !isCollisionToken(candidate) ||
-      candidate === conflict.updatedAt
+      // Without a collision to recover from, only a post with nothing unsaved is replaced.
+      (conflict ? candidate === conflict.updatedAt : readSnapshot()?.isDirty !== false)
     ) {
       return false;
     }
     // Consume recovery before adoption can notify its own subscribers and reenter.
     conflict = null;
     hold = null;
+    adopting = true;
     adopt?.();
+    adopting = false;
     if (disposed) {
       return false;
     }

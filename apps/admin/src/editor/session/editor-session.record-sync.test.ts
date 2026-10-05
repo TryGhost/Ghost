@@ -10,6 +10,7 @@ import {
 import type { EditorRecord } from './projection';
 
 const THEIR_SAVE_AT = '2026-01-02T00:00:00.000Z';
+const LATER_SAVE_AT = '2026-01-03T00:00:00.000Z';
 
 describe('createEditorSession', () => {
   it('adopts a refetched record without re-baselining', () => {
@@ -84,7 +85,7 @@ describe('createEditorSession', () => {
       expect(session.recordRefetched(theirs())).toBe(false);
       await Promise.resolve();
 
-      expect(session.getView()).toBe(before);
+      expect(session.getView()).toEqual({ ...before, newerVersionAvailable: true });
       expect(session.getSaveSnapshot()).toMatchObject({
         updatedAt: LOADED_AT,
         status: 'draft',
@@ -150,6 +151,116 @@ describe('createEditorSession', () => {
       expect(built.session.getSaveSnapshot().updatedAt).toBe(ownSave?.updated_at);
       expect(built.session.recordRefetched(ownSave!)).toBe(true);
       expect(built.session.isDirty()).toBe(false);
+    });
+
+    describe('offers their version', () => {
+      it('only while nothing is unsaved', () => {
+        const { session } = sessionHarness({ record: record(), baseline: record().lexical });
+        session.patchTitle('My title');
+
+        expect(session.recordRefetched(theirs())).toBe(false);
+        expect(session.getView().newerVersionAvailable).toBe(false);
+
+        session.patchTitle('Hello');
+
+        expect(session.getView().newerVersionAvailable).toBe(true);
+      });
+
+      it('not for a read of its own save while that save is under way', async () => {
+        const offered: boolean[] = [];
+        const built = sessionHarness(
+          { record: record(), baseline: record().lexical },
+          {
+            acknowledge: (acknowledged) => {
+              built.session.recordRefetched(acknowledged);
+              offered.push(built.session.getView().newerVersionAvailable);
+              return acknowledged;
+            },
+          },
+        );
+
+        await built.session.dispatchExplicit();
+
+        expect(offered).toEqual([false]);
+        expect(built.session.getView().newerVersionAvailable).toBe(false);
+      });
+
+      it.each([
+        ['an older version', record({ updated_at: '2025-12-31T23:59:59.000Z' })],
+        ['a malformed token', record({ updated_at: 'not-a-date' })],
+        ['another post', record({ id: 'someone-else', updated_at: THEIR_SAVE_AT })],
+      ])('not for a read of %s', (_label, read) => {
+        const { session } = sessionHarness({ record: record(), baseline: record().lexical });
+
+        expect(session.recordRefetched(read)).toBe(false);
+        expect(session.getView().newerVersionAvailable).toBe(false);
+      });
+
+      it('until a reload brings the session to it', () => {
+        const { session } = sessionHarness({ record: record(), baseline: record().lexical });
+        session.recordRefetched(theirs());
+        expect(session.getView().newerVersionAvailable).toBe(true);
+
+        expect(session.recordReloaded(theirs())).toBe(true);
+
+        expect(session.getView()).toMatchObject({
+          title: 'Their title',
+          isDirty: false,
+          newerVersionAvailable: false,
+        });
+        expect(session.getSaveSnapshot().updatedAt).toBe(THEIR_SAVE_AT);
+      });
+
+      it('until the session holds the latest version a read carried', () => {
+        const { session } = sessionHarness({ record: record(), baseline: record().lexical });
+        session.recordRefetched(record({ updated_at: LATER_SAVE_AT }));
+        session.recordRefetched(theirs());
+
+        expect(session.recordReloaded(theirs())).toBe(true);
+
+        expect(session.getView().newerVersionAvailable).toBe(true);
+      });
+
+      it('until a save is answered at it or later', async () => {
+        const { session } = sessionHarness(
+          { record: record(), baseline: record().lexical },
+          { acknowledge: (acknowledged) => ({ ...acknowledged, updated_at: LATER_SAVE_AT }) },
+        );
+        session.recordRefetched(theirs());
+        expect(session.getView().newerVersionAvailable).toBe(true);
+
+        session.patchLexical(body('My words'));
+        await session.dispatchExplicit();
+
+        expect(session.getView()).toMatchObject({ isDirty: false, newerVersionAvailable: false });
+      });
+
+      it('and gives way to the collision once the writer edits instead', async () => {
+        const { session } = sessionHarness(
+          { record: record(), baseline: record().lexical },
+          { failUpdateWith: updateCollision() },
+        );
+        session.recordRefetched(theirs());
+        expect(session.getView().newerVersionAvailable).toBe(true);
+
+        session.patchLexical(body('My words'));
+        expect(session.getView().newerVersionAvailable).toBe(false);
+        await session.dispatchExplicit();
+
+        expect(session.getState().kind).toBe('conflict');
+        expect(session.getView().newerVersionAvailable).toBe(false);
+      });
+
+      it('and never reloads it over unsaved work', () => {
+        const { session } = sessionHarness({ record: record(), baseline: record().lexical });
+        session.patchLexical(body('My words'));
+        session.recordRefetched(theirs());
+
+        expect(session.recordReloaded(theirs())).toBe(false);
+
+        expect(session.getLiveLexical()).toBe(JSON.stringify(body('My words')));
+        expect(session.getSaveSnapshot()).toMatchObject({ updatedAt: LOADED_AT, isDirty: true });
+      });
     });
   });
 

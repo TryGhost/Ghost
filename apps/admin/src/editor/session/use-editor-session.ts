@@ -92,6 +92,8 @@ export interface EditorSessionHandle {
   contentText: () => string;
   /** Replaces the document with the server's copy, or says why it could not. */
   reload: () => Promise<ReloadOutcome>;
+  /** A later version was saved elsewhere, and a reload onto it would lose nothing. */
+  newerVersionAvailable: boolean;
   /** Puts a revision's content back into the editor and saves it; true once persisted. */
   restoreRevision: (restored: RestoredRevision) => Promise<boolean>;
   patchFeatureImage: EditorSession['patchFeatureImage'];
@@ -329,6 +331,7 @@ export function useEditorSession({
     publishTime,
     featureImageAlt,
     featureImageCaption,
+    newerVersionAvailable,
   } = view;
 
   // The view keeps its identity until one of the values it publishes
@@ -543,6 +546,7 @@ export function useEditorSession({
       hasUnsavedContent: session.hasUnsavedContent,
       contentText,
       reload,
+      newerVersionAvailable,
       restoreRevision,
       patchFeatureImage: session.patchFeatureImage,
       featureImageAlt,
@@ -582,6 +586,7 @@ export function useEditorSession({
       isDirtyNow,
       isNew,
       loadedRecord,
+      newerVersionAvailable,
       persistedId,
       publishTime,
       reload,
