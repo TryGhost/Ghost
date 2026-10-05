@@ -456,7 +456,11 @@ export function createSlugMachine({
           try {
             listener(effect.view, effect.proposal);
           } catch (error) {
-            onListenerError(error);
+            try {
+              onListenerError(error);
+            } catch {
+              // A throwing sink must not strand the effects still queued behind this one.
+            }
           }
         }
     }

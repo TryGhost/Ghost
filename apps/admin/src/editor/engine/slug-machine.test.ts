@@ -982,6 +982,27 @@ describe('createSlugMachine', () => {
     expect(machine.getState()).toMatchObject({ pending: false, mode: 'derived', slug: 'changed' });
   });
 
+  it('runs the deferred submission when the listener error sink throws', async () => {
+    const first = deferred<string>();
+    const generateSlug = vi.fn().mockReturnValueOnce(first.promise).mockResolvedValueOnce('mine');
+    const onListenerError = vi.fn(() => {
+      throw new Error('sink failed');
+    });
+    const { machine } = createHarness(generateSlug, onListenerError);
+    machine.loaded({ slug: 'hello', title: 'Hello' });
+    machine.subscribe(() => {
+      throw new Error('listener failed');
+    });
+
+    const commit = machine.titleCommitted('One');
+    const edit = machine.slugEdited('mine');
+    first.resolve('one');
+
+    await expect(commit).resolves.toEqual({ slug: 'one', source: 'generated' });
+    await expect(edit).resolves.toEqual({ slug: 'mine', source: 'manual' });
+    expect(generateSlug).toHaveBeenCalledTimes(2);
+  });
+
   it('keeps a manual response atomic with its pending custom mode', async () => {
     const pending = deferred<string>();
     const generateSlug = vi.fn().mockReturnValueOnce(pending.promise);
