@@ -168,6 +168,9 @@ module.exports = {
     return apiFramework.pipeline(require('./tags'), localUtils);
   },
 
+  get upgrades() {
+    return apiFramework.pipeline(require('./upgrades').controller, localUtils);
+  },
   get users() {
     return apiFramework.pipeline(require('./users'), localUtils);
   },

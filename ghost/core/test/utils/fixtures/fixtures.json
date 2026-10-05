@@ -787,6 +787,21 @@
                     "object_type": "recommendation"
                 },
                 {
+                    "name": "Browse upgrades",
+                    "action_type": "browse",
+                    "object_type": "upgrade"
+                },
+                {
+                    "name": "Read upgrades",
+                    "action_type": "read",
+                    "object_type": "upgrade"
+                },
+                {
+                    "name": "Add upgrades",
+                    "action_type": "add",
+                    "object_type": "upgrade"
+                },
+                {
                     "name": "Browse automations",
                     "action_type": "browse",
                     "object_type": "automation"
@@ -1147,6 +1162,7 @@
                     "recommendation": "all",
                     "gift_link": "all",
                     "automation": ["browse", "read", "edit", "add"],
+                    "upgrade": ["browse", "read", "add"],
                     "identity": "read"
                 },
                 "DB Backup Integration": {

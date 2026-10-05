@@ -507,6 +507,27 @@ module.exports = function apiRoutes() {
     http(api.redirects.upload),
   );
 
+  // ## Host-managed upgrades
+  router.get(
+    '/upgrades/',
+    shared.middleware.brute.upgradeApiLimiter,
+    mw.authAdminApi,
+    http(api.upgrades.browse),
+  );
+  router.post(
+    '/upgrades/',
+    shared.middleware.brute.upgradeApiLimiter,
+    mw.authAdminApi,
+    shared.middleware.brute.upgradeLimiter,
+    http(api.upgrades.add),
+  );
+  router.get(
+    '/upgrades/:id/',
+    shared.middleware.brute.upgradeApiLimiter,
+    mw.authAdminApi,
+    http(api.upgrades.read),
+  );
+
   // ## Webhooks (RESTHooks)
   router.post('/webhooks', mw.authAdminApi, http(api.webhooks.add));
   router.put('/webhooks/:id', mw.authAdminApi, http(api.webhooks.edit));

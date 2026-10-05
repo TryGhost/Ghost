@@ -92,6 +92,7 @@
     "@tryghost/adapter-base-route-settings": "workspace:*",
     "@tryghost/adapter-base-scheduling": "workspace:*",
     "@tryghost/adapter-base-sso": "workspace:*",
+    "@tryghost/adapter-base-upgrade": "workspace:*",
     "@tryghost/admin-api-schema": "workspace:*",
     "@tryghost/api-framework": "workspace:*",
     "@tryghost/bookshelf-plugins": "2.3.17",

@@ -169,7 +169,7 @@ const validators = {
 
     // NOTE: this block should be removed completely once JSON Schema validations
     //       are introduced for all of the endpoints
-    if (!['posts', 'tags'].includes(docName)) {
+    if (!['posts', 'tags', 'upgrades'].includes(docName)) {
       const resource = data[docName];
       const firstResource = Array.isArray(resource) ? resource[0] : undefined;
       if (_.isEmpty(data) || _.isEmpty(resource) || _.isEmpty(firstResource)) {
