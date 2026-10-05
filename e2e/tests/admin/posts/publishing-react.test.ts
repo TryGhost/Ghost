@@ -15,7 +15,9 @@ const POSTS_API = '/ghost/api/admin/posts/';
 const PAGES_API = '/ghost/api/admin/pages/';
 
 async function readPost(page: Page, postId: string) {
-  const response = await page.request.get(`${POSTS_API}${postId}/?formats=lexical&include=email`);
+  const response = await page.request.get(
+    `${POSTS_API}${postId}/?formats=lexical&include=email,newsletter`,
+  );
   expect(response.status()).toBe(200);
   const {
     posts: [post],
@@ -395,6 +397,56 @@ test.describe('Ghost Admin - Publishing (React)', () => {
 
       const detail = await emailClient.getMessageDetailed(delivered[0]);
       expect(detail.HTML).toContain(body);
+    });
+
+    test('draft - scheduled publish and send holds the email and lists as scheduled', async ({
+      page,
+    }) => {
+      // A member, a scheduled flow and a trip through the list do not fit the
+      // default budget
+      test.setTimeout(90000);
+
+      const title = `react-scheduled-publish-send-${Date.now()}`;
+
+      await addSubscribedMember(page, 'react-scheduled-publish-send@example.com');
+
+      const { editor, postId, postsPage } = await startDraft(page, {
+        title,
+        body: 'This is my scheduled publish and send post body.',
+      });
+
+      await editor.publishFlow.open();
+      await expect(editor.publishFlow.optionsStep).toBeVisible();
+      await editor.publishFlow.selectPublishType('publish+send');
+      await editor.publishFlow.schedule({ date: '2050-01-01' });
+      await Promise.all([waitForPostSave(page, postId), editor.publishFlow.confirm()]);
+      await expect(page).toHaveURL('/ghost/#/posts');
+
+      const post = await readPost(page, postId);
+      expect(post.status).toBe('scheduled');
+      expect(post.email_only).toBe(false);
+      expect(post.published_at).toMatch(/^2050-01-01T/);
+      // The newsletter rides on the post; the email is only created at publish time
+      expect(post.newsletter?.slug).toBe('default-newsletter');
+      expect(post.email).toBeNull();
+      expect((await page.request.get(`/${post.slug}/`)).status()).toBe(404);
+
+      // The list consumes the handoff and opens its celebration over itself
+      const listFlow = new PostEditorPage(page, { implementation: 'ember' }).publishFlow;
+      await expect(listFlow.celebration).toBeVisible();
+      await listFlow.close();
+      await postsPage.waitForPageToFullyLoad();
+      const row = postsPage.getPostByTitle(title);
+      await expect(row).toContainText('Scheduled');
+      await postsPage.hoverPost(title);
+      await expect(row).toContainText(/to be published and sent at .*2050/);
+
+      await row.click();
+      await expect(editor.postStatus).toContainText('Scheduled');
+      await editor.postStatus.hover();
+      await expect(editor.header.scheduleCountdown).toContainText(
+        /to be published and sent to .*2050/,
+      );
     });
 
     test('draft - scheduled email only holds the send and keeps the post off the site', async ({
