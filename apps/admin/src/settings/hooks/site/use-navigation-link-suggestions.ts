@@ -11,7 +11,7 @@ import {
   type SuggestionGroup,
 } from '@/settings/site/navigation/url-suggestion-input';
 
-/** We only ever show a handful of each type so the dropdown stays scannable. */
+// Per group, so the dropdown stays short enough to scan
 const CONTENT_LIMIT = 5;
 
 type SearchIndexKey = 'pages' | 'posts';
@@ -23,12 +23,10 @@ type SearchIndexPost = {
   status: string;
 };
 
-// Unpublished content resolves to /404/ in the URL service — never offer it
-// as a destination. The fallback format is `notFoundUrl` in the server's
-// lazy-url-service.ts; keep the two in sync.
+// Unpublished content gets a /404/ URL (`notFoundUrl` in the server's
+// lazy-url-service.ts), so it's never somewhere to link to
 const isRoutable = (url?: string) => Boolean(url) && !url!.endsWith('/404/');
 
-/** Content rows are subtitled with their path — the full absolute URL is just noise. */
 const toPath = (url: string) => {
   try {
     const parsed = new URL(url);
@@ -56,23 +54,21 @@ const useNavigationLinkSuggestions = () => {
       'recommendations_enabled',
     ]);
 
-  // Paid signup, plan changes, gifts and tips open Stripe checkout flows, so
-  // they are gated the same way as the other surfaces that offer them
-  // (membership-settings.tsx, portal-links.tsx)
+  // Paid signup, plan changes, gifts and tips all go through Stripe checkout,
+  // so they need Stripe connected, as in membership-settings.tsx and
+  // portal-links.tsx
   const stripeEnabled = checkStripeEnabled(settings, config);
 
-  // Offers can only exist with working paid membership — skip the request
-  // entirely otherwise (the modal mounts this hook whether or not a URL
-  // field is ever focused)
+  // Offers need paid membership with Stripe, so there's nothing to fetch otherwise
   const { data: offersData } = useBrowseOffers({ enabled: paidMembersEnabled && stripeEnabled });
 
   const fetchApi = useFetchApi();
   const searchIndex = useRef<Partial<Record<SearchIndexKey, Promise<SearchIndexPost[]>>>>({});
 
-  // The search-index endpoints ignore `filter` and `limit` and always return
-  // the full index (up to 10k rows), so each one is downloaded once and
-  // filtered here. Sharing the request while it is in flight stops every
-  // search made during a slow first download from starting another.
+  // The search-index endpoints ignore `filter` and `limit` and return
+  // everything (up to 10k rows). So each index is downloaded once per modal
+  // and filtered here, and searches made while it's downloading wait for the
+  // same request.
   const loadIndex = useCallback(
     (key: SearchIndexKey) => {
       const cached = searchIndex.current[key];
@@ -129,16 +125,15 @@ const useNavigationLinkSuggestions = () => {
 
   const loadSuggestions = useCallback(
     async (term: string): Promise<SuggestionGroup[]> => {
-      // Each source degrades independently: one failing search shouldn't take
-      // the membership and offer groups down with it.
+      // A failed download only leaves out its own group
       const [pages, posts] = await Promise.all([
         loadIndex('pages').catch(() => []),
         loadIndex('posts').catch(() => []),
       ]);
 
-      // People type paths into a URL field, and ArrowDown on a filled field
-      // searches with the whole absolute URL. Paths rather than full URLs, so
-      // typing the site's domain doesn't match every post.
+      // Paths too, because people type them, and ArrowDown on a filled field
+      // searches with its full URL. Not full URLs, or typing the site's
+      // domain would match every post.
       const needle = term.toLowerCase();
       const pathNeedle = toPath(term).toLowerCase();
       const isMatch = (result: SearchIndexPost) =>

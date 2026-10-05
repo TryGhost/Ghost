@@ -440,7 +440,7 @@ const SEARCH_INDEX_KINDS = ['posts', 'pages'] as const;
 
 export type SearchIndexKind = (typeof SEARCH_INDEX_KINDS)[number];
 
-/** A search-index row as the navigation URL suggestions read it. */
+/** The fields of a search-index row that the navigation suggestions read */
 export interface SearchIndexEntry {
   id: string;
   url: string;
@@ -449,12 +449,9 @@ export interface SearchIndexEntry {
 }
 
 /**
- * Search-index fake (passthrough) for the `/search-index/<kind>/` endpoints
- * the navigation URL suggestions read.
- *
- * Faithful by construction: the real endpoints ignore `filter` and `limit`
- * and always serve the whole index (the client filters what it got), so
- * there is no query behavior here to re-implement.
+ * Fake for the `/search-index/<kind>/` endpoints. The real ones ignore
+ * `filter` and `limit` and always return everything, so there's no query
+ * handling to fake.
  */
 export function fakeSearchIndex(
   world: Partial<Record<SearchIndexKind, SearchIndexEntry[]>> = {},

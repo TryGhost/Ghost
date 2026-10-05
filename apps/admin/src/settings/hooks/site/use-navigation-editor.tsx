@@ -72,8 +72,8 @@ const useNavigationEditor = ({
   const list = useSortableIndexedList<Omit<EditableItem, 'id'>>({
     items: editableItems,
     setItems: setNavigationItems,
-    // Blank rather than '/' so the URL field starts empty and the suggestion
-    // dropdown is the obvious way in, instead of prefilling the site root
+    // Empty rather than '/', so a new item starts with the suggestions
+    // instead of the site root
     blank: { url: '', label: '', icon: '', visibility: 'public', errors: {} },
     canAddNewItem: hasNewItem,
   });
@@ -141,9 +141,8 @@ const useNavigationEditor = ({
 
   const newItemId = 'new';
 
-  // Functional updates throughout: clearing an error often lands in the same
-  // event as the change that fixed it (picking a suggestion commits the URL
-  // and clears in one go), and a snapshot-based merge would revert the URL
+  // Updaters, because picking a suggestion saves the URL and clears its error
+  // in the same event. Building both from the same render would undo the URL.
   const clearError = (id: string, key: keyof NavigationItem) => {
     if (id === newItemId) {
       list.setNewItem((current) => ({

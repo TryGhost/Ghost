@@ -92,9 +92,8 @@ describe('useSortableIndexedList', () => {
       }),
     );
 
-    // Two updates before any re-render — e.g. committing a value and then
-    // clearing its validation error in the same event. The second must see
-    // the first's result, not the shared pre-event snapshot.
+    // Like saving a URL and clearing its error in one event: the second
+    // update has to see the first
     act(() => {
       result.current.updateItem('0', { name: 'Committed' });
       result.current.updateItem('0', (current) => ({ name: `${current.name}!` }));

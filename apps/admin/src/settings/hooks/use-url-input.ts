@@ -25,9 +25,9 @@ const useUrlInput = ({
 }: UseUrlInputOptions) => {
   const [displayValue, setDisplayValue] = useState('');
 
-  // The value last saved by `setDraftValue`. When it comes back as `value`,
-  // re-syncing the display would reformat what the user is still typing
-  // ('/con' is saved as '/con/' and displayed as 'https://site.com/con/')
+  // What `setDraftValue` last saved. When it comes back as `value`, the display
+  // is left alone, or the URL would be reformatted mid-typing ('/con' would
+  // jump to 'https://site.com/con/')
   const draftValue = useRef<string | null | undefined>(undefined);
 
   useEffect(() => {
@@ -64,8 +64,8 @@ const useUrlInput = ({
     }
   }, [displayValue, onChange, resolveUrls, value]);
 
-  // Saves as the user types, so the form is dirty straight away, while
-  // leaving the text as typed until `commitValue` normalizes it
+  // Saves on every keystroke, so the form knows about the change straight
+  // away, but leaves the text as typed until `commitValue` tidies it
   const setDraftValue = useCallback(
     (text: string) => {
       setDisplayValue(text);

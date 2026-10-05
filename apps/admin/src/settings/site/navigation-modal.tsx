@@ -61,7 +61,7 @@ function NavigationModal() {
     setItems: setSecondaryNavigationItems,
   });
 
-  // Shared across both tabs so the search-index responses are only fetched once
+  // One for both tabs, so each search index is only downloaded once
   const { loadSuggestions } = useNavigationLinkSuggestions();
 
   const [selectedTab, setSelectedTab] = useState('primary-nav');

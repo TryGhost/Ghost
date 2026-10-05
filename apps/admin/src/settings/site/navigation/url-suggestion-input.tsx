@@ -7,11 +7,10 @@ import { formatUrl } from '@/settings/utils/format-url';
 const SUGGESTION_DEBOUNCE_MS = 150;
 
 export type Suggestion = {
-  /** Human readable name, e.g. "Tips and donations" or a post title */
   label: string;
-  /** The value written into the URL field when picked */
+  /** Written into the URL field when picked */
   value: string;
-  /** Secondary line under the label — the URL for portal links, the path for content */
+  /** Shown under the label: the URL for links, the path for content */
   description?: string;
 };
 
@@ -22,10 +21,8 @@ export type SuggestionGroup = {
 
 type IndexedSuggestion = Suggestion & { index: number };
 
-/**
- * Assign each item its position in the flattened list, so arrow-key navigation
- * and `aria-activedescendant` can address items across group boundaries.
- */
+// Numbers items across all groups, so arrow keys and `aria-activedescendant`
+// can move from one group into the next
 const indexGroups = (groups: SuggestionGroup[]) => {
   let offset = 0;
   return groups.map((group) => {
@@ -35,9 +32,9 @@ const indexGroups = (groups: SuggestionGroup[]) => {
   });
 };
 
-// The field owns these: a caller's `onBlur` would stop URLs committing, and
-// its `onKeyDown` would break Enter and arrow navigation. `onSubmit` also
-// shadows the native form-event handler on <input>.
+// The field handles these itself: a caller's `onBlur` would stop the URL being
+// tidied up, and an `onKeyDown` would break Enter and the arrow keys.
+// `onSubmit` is redefined below, replacing the native form event.
 export type UrlSuggestionInputProps = Omit<
   React.ComponentProps<typeof Input>,
   | 'value'
@@ -55,14 +52,13 @@ export type UrlSuggestionInputProps = Omit<
   | 'aria-expanded'
 > & {
   baseUrl: string;
-  /** The stored (usually relative) value */
+  /** The saved value, usually relative to the site */
   value: string;
   loadSuggestions: (term: string) => Promise<SuggestionGroup[]>;
-  /** Called with the value to store */
   onChange: (value: string) => void;
-  /** Enter pressed while the dropdown has no active suggestion */
+  /** Enter pressed with no suggestion highlighted */
   onSubmit?: () => void;
-  /** The user changed the field — used to clear validation errors as they type */
+  /** Any edit by the user, e.g. to clear a validation error */
   onEdit?: () => void;
 };
 
@@ -102,7 +98,7 @@ const UrlSuggestionInput: React.FC<UrlSuggestionInputProps> = ({
 
       loadSuggestions(term)
         .then((result) => {
-          // A newer request has been issued since — drop this response
+          // A newer search has started since, so this result is stale
           if (requestId.current !== id) {
             return;
           }
@@ -137,9 +133,7 @@ const UrlSuggestionInput: React.FC<UrlSuggestionInputProps> = ({
     setActiveIndex(-1);
   }, []);
 
-  // Like the editor's Button URL field: the list is only ever a hint, so it
-  // stays hidden until there is something to suggest — no empty dropdown, and
-  // nothing on focusing a field that already holds a URL.
+  // Like the editor's Button URL field, an empty list stays hidden
   const isVisible = open && suggestions.length > 0;
 
   const selectSuggestion = (suggestion: Suggestion) => {
@@ -164,8 +158,7 @@ const UrlSuggestionInput: React.FC<UrlSuggestionInputProps> = ({
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault();
 
-      // Retry rather than dead-end when there is nothing on screen: the
-      // list may be closed, or open with a term that matched nothing
+      // Nothing on screen to move through, so search with what's in the field
       if (!isVisible) {
         openWithSuggestions(urlInput.displayValue);
         return;
@@ -226,8 +219,7 @@ const UrlSuggestionInput: React.FC<UrlSuggestionInputProps> = ({
           onFocus={(event) => {
             urlInput.handleFocus(event);
 
-            // Only offer the list for an empty field — a field that
-            // already holds a URL is being reviewed, not filled in
+            // A field that already has a URL is being checked, not filled in
             if (!event.target.value) {
               openWithSuggestions('');
             }
@@ -238,9 +230,9 @@ const UrlSuggestionInput: React.FC<UrlSuggestionInputProps> = ({
       <PopoverContent
         align="start"
         className="max-h-72 w-(--radix-popover-trigger-width) overflow-y-auto p-0"
-        // The input is the anchor, not a trigger, so Radix counts focusing
-        // and clicking it as an outside interaction and would dismiss the
-        // list the moment it opens. Closing is ours to do (blur/Escape/select).
+        // The input anchors the popover rather than triggering it, so Radix
+        // treats clicking it as clicking outside and would close the list as
+        // it opens
         onInteractOutside={(event) => {
           if (
             inputRef.current &&
@@ -250,15 +242,14 @@ const UrlSuggestionInput: React.FC<UrlSuggestionInputProps> = ({
             event.preventDefault();
           }
         }}
-        // Prevent default on the whole surface — a mousedown on a group
-        // heading, padding, or a scrollbar drag would otherwise blur
-        // the input, which closes the list mid-interaction
+        // Keeps focus in the input: pressing on a heading, the padding or the
+        // scrollbar would otherwise blur it and close the list
         onMouseDown={(event) => event.preventDefault()}
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
-        {/* Geometry mirrors Shade's CommandList / CommandGroup / CommandItem so this
-                    reads the same as the Members filter dropdown: the inset lives on the
-                    group, not the item, which is what keeps the highlight off the edges. */}
+        {/* Spacing matches Shade's Command components, as in the Members filter
+                    dropdown. The padding is on the group, not the item, which keeps
+                    the highlight off the edges. */}
         <div aria-label="URL suggestions" className="p-1" id={listId} role="listbox">
           {indexedGroups.map((group) => (
             <div key={group.label} aria-label={group.label} className="p-1.5" role="group">
@@ -281,10 +272,7 @@ const UrlSuggestionInput: React.FC<UrlSuggestionInputProps> = ({
                     )}
                     id={`${listId}-option-${item.index}`}
                     role="option"
-                    // The popover's mousedown handler keeps focus in the input,
-                    // so the click lands normally — and only fires for the main
-                    // button, unlike mousedown (right-click opens a context menu,
-                    // it shouldn't also pick the option)
+                    // Click, not mousedown, so a right-click doesn't pick it
                     onClick={() => selectSuggestion(item)}
                     onMouseMove={() => setActiveIndex(item.index)}
                   >

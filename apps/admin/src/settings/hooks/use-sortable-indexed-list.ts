@@ -16,11 +16,7 @@ const stableStringify = (value: unknown) =>
 
 export type SortableIndexedList<Item> = {
   items: Array<{ item: Item; id: string }>;
-  /**
-   * Accepts a plain value or an updater. Use the updater form when several
-   * updates can land in one event (commit a URL, then clear its error) —
-   * plain values built from the render snapshot would each revert the other.
-   */
+  /** Pass an updater when one event makes several updates, so each builds on the last */
   updateItem: (id: string, item: Item | ((current: Item) => Item)) => void;
   addItem: () => void;
   removeItem: (id: string) => void;
@@ -45,9 +41,8 @@ const useSortableIndexedList = <Item>({
     items.map((item, index) => ({ item, id: index.toString() })),
   );
 
-  // Mirror of `editableItems` that is readable in the same event it was
-  // written, so consecutive mutations in one event build on each other
-  // instead of on the shared pre-event render snapshot
+  // Updated the moment it's written, unlike state, so several changes in one
+  // event build on each other
   const editableItemsRef = useRef(editableItems);
   const setEditableItems = (nextItems: Array<{ item: Item; id: string }>) => {
     editableItemsRef.current = nextItems;
