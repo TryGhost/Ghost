@@ -35,10 +35,24 @@ const indexGroups = (groups: SuggestionGroup[]) => {
   });
 };
 
-// `onSubmit` shadows the native form-event handler on <input>, so drop that too
+// The field owns these: a caller's `onBlur` would stop URLs committing, and
+// its `onKeyDown` would break Enter and arrow navigation. `onSubmit` also
+// shadows the native form-event handler on <input>.
 export type UrlSuggestionInputProps = Omit<
   React.ComponentProps<typeof Input>,
-  'value' | 'onChange' | 'onSubmit'
+  | 'value'
+  | 'onChange'
+  | 'onSubmit'
+  | 'onBlur'
+  | 'onFocus'
+  | 'onKeyDown'
+  | 'ref'
+  | 'role'
+  | 'autoComplete'
+  | 'aria-activedescendant'
+  | 'aria-autocomplete'
+  | 'aria-controls'
+  | 'aria-expanded'
 > & {
   baseUrl: string;
   /** The stored (usually relative) value */
@@ -194,6 +208,7 @@ const UrlSuggestionInput: React.FC<UrlSuggestionInputProps> = ({
     <Popover open={isVisible} onOpenChange={(isOpen) => !isOpen && close()}>
       <PopoverAnchor asChild>
         <Input
+          {...props}
           ref={inputRef}
           aria-activedescendant={activeIndex >= 0 ? `${listId}-option-${activeIndex}` : undefined}
           aria-autocomplete="list"
@@ -218,7 +233,6 @@ const UrlSuggestionInput: React.FC<UrlSuggestionInputProps> = ({
             }
           }}
           onKeyDown={handleKeyDown}
-          {...props}
         />
       </PopoverAnchor>
       <PopoverContent
