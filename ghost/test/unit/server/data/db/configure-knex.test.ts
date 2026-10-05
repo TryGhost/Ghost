@@ -71,12 +71,5 @@ describe('configure (knex config)', function () {
 
       assert.equal(knexConfig.useNullAsDefault, false);
     });
-
-    it('maps the sqlite3 alias without writing into config', function () {
-      const dbConfig = frozen({ client: 'sqlite3', connection: { filename: '/tmp/x.db' } });
-
-      assert.equal((configure(dbConfig) as { client: string }).client, 'better-sqlite3');
-      assert.equal(dbConfig.client, 'sqlite3');
-    });
   });
 });

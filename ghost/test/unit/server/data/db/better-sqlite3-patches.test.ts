@@ -242,6 +242,15 @@ describe('better-sqlite3 patches', function () {
       assert.notEqual(BetterSqlite3Client.prototype._formatBindings, originalFormatBindings);
     });
 
+    it('does not stack a second wrapper when applied again', function () {
+      applyBetterSqlite3Patches();
+      const patchedQuery = BetterSqlite3Client.prototype._query;
+
+      applyBetterSqlite3Patches();
+
+      assert.equal(BetterSqlite3Client.prototype._query, patchedQuery);
+    });
+
     it('patched _formatBindings restores INTEGER affinity', function () {
       applyBetterSqlite3Patches();
 

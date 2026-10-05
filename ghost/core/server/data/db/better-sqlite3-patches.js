@@ -194,10 +194,17 @@ function formatBindings(bindings) {
  *
  * @returns {boolean} whether the patches were applied
  */
+const PATCHED = Symbol('ghost.betterSqlite3Patched');
+
 function applyBetterSqlite3Patches() {
   try {
     const BetterSqlite3Client = require('knex/lib/dialects/better-sqlite3/index.js');
     const originalQuery = BetterSqlite3Client.prototype._query;
+
+    // configure() runs once per knex config (app and MigratorConfig), so don't stack wrappers.
+    if (originalQuery[PATCHED]) {
+      return true;
+    }
 
     BetterSqlite3Client.prototype._query = function (connection, obj) {
       // Expand array bindings before executing query
@@ -213,6 +220,8 @@ function applyBetterSqlite3Patches() {
     BetterSqlite3Client.prototype._formatBindings = function (bindings) {
       return formatBindings(bindings);
     };
+
+    BetterSqlite3Client.prototype._query[PATCHED] = true;
 
     return true;
   } catch (err) {

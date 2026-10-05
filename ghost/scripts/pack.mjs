@@ -296,6 +296,8 @@ const requiredFiles = [
   'pnpm-lock.yaml',
   'package.json',
   'index.js',
+  // tsc's output: the prune drops MigratorConfig.ts, and Ghost-CLI migrates with this.
+  'MigratorConfig.js',
   'scripts/prune.mts',
   // Admin's client build. Ghost boots without it, so a release missing it would
   // pass an install smoke test and serve no Admin.
