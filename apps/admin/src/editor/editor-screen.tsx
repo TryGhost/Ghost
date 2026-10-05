@@ -23,6 +23,7 @@ import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useEditPage, useEditorPage } from '@tryghost/admin-x-framework/api/pages';
 import { useEditPost, useEditorPost } from '@tryghost/admin-x-framework/api/posts';
+import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import {
   type User,
   isAdminUser,
@@ -49,6 +50,7 @@ import { EmailSizeWarning } from './email-size-warning';
 import { PostEditor } from './post-editor';
 import type { EditorStatusRecord } from './post-status';
 import { buildPublishFlowPost } from './publish/flow-post';
+import { PAID_TIERS_SEARCH_PARAMS } from './browse-params';
 import { initialEmailError } from './publish/use-publish-flow';
 import { SessionBanners } from './session/session-banners';
 import { settingsFieldErrorFor, titleError } from './session/settings-fields';
@@ -185,6 +187,13 @@ function EditorContent({
   const [tkCount, setTkCount] = useState(0);
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
   const openPublishFlow = useCallback(() => setOpenFlow('publish'), []);
+  // Only reads what the sidebar's tier picker loaded, which names a tier picked before its save lands.
+  const { data: tiersData } = useBrowseTiers({
+    defaultErrorHandler: false,
+    enabled: false,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+    searchParams: PAID_TIERS_SEARCH_PARAMS,
+  });
   const publishPost = buildPublishFlowPost({
     snapshot: {
       id: session.persistedId,
@@ -193,6 +202,8 @@ function EditorContent({
       title: session.title,
     },
     record: session.loadedRecord,
+    access: session.settings,
+    knownTiers: tiersData?.tiers,
     displayName: postType,
     lexical: session.getLiveLexical(),
   });

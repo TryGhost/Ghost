@@ -1,12 +1,6 @@
 import type React from 'react';
 import { fetchKoenigLexical } from '@/utils/fetch-koenig-lexical';
 
-declare global {
-  interface Window {
-    '@tryghost/koenig-lexical'?: { version?: string };
-  }
-}
-
 type KoenigComponent = React.ComponentType<Record<string, unknown>>;
 
 // Minimal surface of the untyped @tryghost/koenig-lexical bundle used by the admin editors

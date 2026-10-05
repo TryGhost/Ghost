@@ -101,6 +101,11 @@ pnpm nx run @tryghost/admin:build
 
 This outputs to `apps/admin/dist/` and updates the assets in `ghost/core/core/built/admin/`.
 
+The build also writes hidden sourcemaps: `.map` files that no bundle references.
+With `IS_SHIPPING` set, as CI does for `main` and release tags, it uploads them
+to Sentry under the release Admin's Sentry client reports. Without
+`VITE_SENTRY_AUTH_TOKEN` the upload is skipped.
+
 ## Automation member search
 
 The initial Performance search matches current member name/email across all time

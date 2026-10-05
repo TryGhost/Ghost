@@ -78,6 +78,7 @@
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-eslint-react": "workspace:*",
+    "@sentry/vite-plugin": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:",

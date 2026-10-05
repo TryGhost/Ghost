@@ -1,6 +1,8 @@
+import { createRequire } from 'node:module';
 import { configDefaults, defineConfig } from 'vitest/config';
 import type { PluginOption } from 'vite';
 import react from '@vitejs/plugin-react';
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 
 import { emberAssetsPlugin } from './vite-ember-assets';
@@ -35,6 +37,28 @@ function getBase(command: 'build' | 'serve'): string {
   return `${getSubdir()}${DEV_BASE}`;
 }
 
+// Uploads the build's sourcemaps to Sentry; shipping builds only, as for Koenig
+function sentrySourcemapsPlugin(): PluginOption {
+  if (!process.env.IS_SHIPPING) {
+    return null;
+  }
+
+  // Matches the release Admin's Sentry client reports once `/config/` has loaded
+  const require = createRequire(import.meta.url);
+  const { version } = require('../../ghost/core/package.json') as { version: string };
+
+  return sentryVitePlugin({
+    org: 'ghost-foundation',
+    project: 'admin',
+    authToken: process.env.VITE_SENTRY_AUTH_TOKEN,
+    release: {
+      name: `ghost@${process.env.GHOST_BUILD_VERSION || version}`,
+      inject: false,
+    },
+    telemetry: false,
+  });
+}
+
 // https://vite.dev/config/
 export default defineConfig(({ command }) => ({
   base: getBase(command),
@@ -44,7 +68,12 @@ export default defineConfig(({ command }) => ({
     emberAssetsPlugin(),
     embedRendererPlugin(),
     ghostBackendProxyPlugin(),
+    // Sentry's plugin goes after all others
+    sentrySourcemapsPlugin(),
   ],
+  build: {
+    sourcemap: 'hidden',
+  },
   define: sharedDefine,
   server: {
     host: '0.0.0.0',
