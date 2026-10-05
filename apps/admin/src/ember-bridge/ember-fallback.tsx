@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useLayoutEffect } from 'react';
 import { useEmberContext } from './ember-context';
 
 /**
@@ -9,7 +9,8 @@ import { useEmberContext } from './ember-context';
 export function EmberFallback() {
   const { registerFallback, unregisterFallback } = useEmberContext();
 
-  useEffect(() => {
+  // Registered before paint: the Ember app must show in the same frame that removes React's screen.
+  useLayoutEffect(() => {
     registerFallback();
     return () => {
       unregisterFallback();

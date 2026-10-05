@@ -1,4 +1,5 @@
 import { beforeEach, expect, it, vi } from 'vitest';
+import { page } from 'vitest/browser';
 import {
   currentRoute,
   fakeAdminEndpoint,
@@ -6,6 +7,7 @@ import {
   plainText,
   renderAdminApp,
   signedOut,
+  siteResponse,
 } from '@test-utils/acceptance';
 import { authScreen } from './auth.screen';
 import { reloadAdmin } from './reload';
@@ -41,6 +43,30 @@ it.each([
 
   await expect.poll(emberFrameHidden).toBe(false);
   await expect(authScreen.signInButton()).toHaveCount(0);
+});
+
+it('shows the boot loader until it knows who serves sign in', async () => {
+  let releaseSite = () => {};
+  const siteReleased = new Promise<void>((resolve) => {
+    releaseSite = resolve;
+  });
+  const { boot } = signedOut();
+  const browseSite = {
+    response: async () => {
+      await siteReleased;
+      return siteResponse();
+    },
+  };
+  await renderAdminApp('/signin', { boot: { ...boot, browseSite } });
+
+  const bootLoader = page.getByRole('status', { name: 'Loading Ghost Admin' });
+  await expect.element(bootLoader).toBeVisible();
+  expect(emberFrameHidden()).toBe(true);
+
+  releaseSite();
+
+  await expect.poll(emberFrameHidden).toBe(false);
+  await expect(bootLoader).toHaveCount(0);
 });
 
 it('serves sign in from React with the Labs URL override', async () => {
