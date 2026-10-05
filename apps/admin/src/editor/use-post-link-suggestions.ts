@@ -27,6 +27,7 @@ export interface PostLinkSuggestionOptions {
   paidMembersEnabled: boolean;
   donationsEnabled: boolean;
   recommendationsEnabled: boolean;
+  membersSignupAccess?: string;
   membersEnabled: boolean;
   timezone: string;
 }
@@ -51,6 +52,7 @@ export function usePostLinkSuggestions({
   paidMembersEnabled,
   donationsEnabled,
   recommendationsEnabled,
+  membersSignupAccess,
   membersEnabled,
   timezone,
 }: PostLinkSuggestionOptions) {
@@ -95,7 +97,14 @@ export function usePostLinkSuggestions({
     const offerLinks = await cache.current.offerLinks;
 
     return buildAutocompleteLinks(
-      { postType, homepageUrl, paidMembersEnabled, donationsEnabled, recommendationsEnabled },
+      {
+        postType,
+        homepageUrl,
+        paidMembersEnabled,
+        donationsEnabled,
+        recommendationsEnabled,
+        membersSignupAccess,
+      },
       offerLinks,
     );
   }, [
@@ -105,6 +114,7 @@ export function usePostLinkSuggestions({
     paidMembersEnabled,
     donationsEnabled,
     recommendationsEnabled,
+    membersSignupAccess,
   ]);
 
   const decorationSettings = useMemo(

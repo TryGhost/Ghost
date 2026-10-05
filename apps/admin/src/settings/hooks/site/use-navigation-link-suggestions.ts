@@ -53,6 +53,9 @@ const useNavigationLinkSuggestions = () => {
       'donations_enabled',
       'recommendations_enabled',
     ]);
+  const [membersSignupAccess = 'all'] = getSettingValues<string>(settings, [
+    'members_signup_access',
+  ]);
 
   // Paid signup, plan changes, gifts and tips all go through Stripe checkout,
   // so they need Stripe connected, as in membership-settings.tsx and
@@ -99,6 +102,7 @@ const useNavigationLinkSuggestions = () => {
         paidMembersEnabled: paidMembersEnabled && stripeEnabled,
         donationsEnabled: donationsEnabled && stripeEnabled,
         recommendationsEnabled,
+        membersSignupAccess,
       },
       [],
     );
@@ -118,6 +122,7 @@ const useNavigationLinkSuggestions = () => {
     }));
   }, [
     donationsEnabled,
+    membersSignupAccess,
     offersData?.offers,
     paidMembersEnabled,
     recommendationsEnabled,

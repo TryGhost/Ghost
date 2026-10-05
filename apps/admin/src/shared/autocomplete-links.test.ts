@@ -8,6 +8,7 @@ describe('buildAutocompleteLinks', () => {
     paidMembersEnabled: true,
     donationsEnabled: true,
     recommendationsEnabled: true,
+    membersSignupAccess: 'all',
   };
 
   it('lists every portal link in display order', () => {
@@ -52,6 +53,32 @@ describe('buildAutocompleteLinks', () => {
     const links = buildAutocompleteLinks({ ...settings, postType: undefined }, []);
 
     expect(links.map((link) => link.value)).not.toContain('#/share');
+  });
+
+  it('hides free signup when members signup access is not all', () => {
+    const links = buildAutocompleteLinks({ ...settings, membersSignupAccess: 'paid' }, []);
+
+    expect(links.map((link) => link.label)).not.toContain('Free signup');
+    expect(links.map((link) => link.label)).toContain('Paid signup');
+  });
+
+  it('hides both signup links when members signup is invite-only', () => {
+    const labels = buildAutocompleteLinks({ ...settings, membersSignupAccess: 'invite' }, []).map(
+      (link) => link.label,
+    );
+
+    expect(labels).not.toContain('Free signup');
+    expect(labels).not.toContain('Paid signup');
+    expect(labels).toContain('Gift subscriptions');
+  });
+
+  it('hides both signup links when members are off', () => {
+    const labels = buildAutocompleteLinks({ ...settings, membersSignupAccess: 'none' }, []).map(
+      (link) => link.label,
+    );
+
+    expect(labels).not.toContain('Free signup');
+    expect(labels).not.toContain('Paid signup');
   });
 
   it('resolves offer codes against a subdirectory homepage', () => {

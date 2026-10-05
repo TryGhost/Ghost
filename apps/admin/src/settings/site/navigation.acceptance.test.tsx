@@ -302,6 +302,32 @@ describe('Navigation settings', () => {
     await expect(suggestions().getByRole('option', { name: /Tips and donations/ })).toHaveCount(0);
   });
 
+  it('offers no signup destinations when members signup is invite-only', async () => {
+    fakeSettingsScreens();
+    fakeSiteContent();
+    await renderAdminApp('/settings/navigation/edit', {
+      boot: {
+        browseSettings: {
+          response: settingsResponse({
+            settings: {
+              stripe_connect_publishable_key: 'pk_test_123',
+              stripe_connect_secret_key: 'sk_test_123',
+              members_signup_access: 'invite',
+            },
+          }),
+        },
+      },
+    });
+
+    await newItem().getByLabelText('URL').click();
+    await expect.element(suggestions()).toBeInTheDocument();
+    await expect(suggestions().getByRole('option', { name: /^Free signup/ })).toHaveCount(0);
+    await expect(suggestions().getByRole('option', { name: /^Paid signup/ })).toHaveCount(0);
+    await expect
+      .element(suggestions().getByRole('option', { name: /Gift subscriptions/ }))
+      .toBeInTheDocument();
+  });
+
   it('adds the item when Enter is pressed in the URL field', async () => {
     fakeSettingsScreens();
     fakeSiteContent();

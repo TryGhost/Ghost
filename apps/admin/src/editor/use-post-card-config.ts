@@ -75,13 +75,15 @@ export function usePostCardConfig({
     return labelsRequest.current;
   }, [fetchApi]);
 
+  const membersSignupAccess = getSettingValue<string>(settings, 'members_signup_access') ?? 'all';
   const { fetchAutocompleteLinks, searchLinks } = usePostLinkSuggestions({
     postType: post.displayName,
     homepageUrl: site ? getHomepageUrl(site) : '/',
     paidMembersEnabled: getSettingValue<boolean>(settings, 'paid_members_enabled') === true,
     donationsEnabled: getSettingValue<boolean>(settings, 'donations_enabled') === true,
     recommendationsEnabled: getSettingValue<boolean>(settings, 'recommendations_enabled') === true,
-    membersEnabled: getSettingValue<string>(settings, 'members_signup_access') !== 'none',
+    membersSignupAccess,
+    membersEnabled: membersSignupAccess !== 'none',
     timezone,
   });
 

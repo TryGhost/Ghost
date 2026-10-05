@@ -117,16 +117,6 @@ const UrlSuggestionInput: React.FC<UrlSuggestionInputProps> = ({
 
   useEffect(() => () => clearTimeout(debounceTimer.current), []);
 
-  // Keeps the highlighted option in view while arrowing through a long list
-  useEffect(() => {
-    if (activeIndex < 0) {
-      return;
-    }
-    document
-      .getElementById(`${listId}-option-${activeIndex}`)
-      ?.scrollIntoView({ block: 'nearest' });
-  }, [activeIndex, listId]);
-
   const openWithSuggestions = useCallback(
     (term: string) => {
       setOpen(true);
@@ -175,13 +165,16 @@ const UrlSuggestionInput: React.FC<UrlSuggestionInputProps> = ({
       }
 
       const offset = event.key === 'ArrowDown' ? 1 : -1;
-      setActiveIndex((current) => {
-        const next = current + offset;
-        if (next < 0) {
-          return suggestions.length - 1;
-        }
-        return next >= suggestions.length ? 0 : next;
-      });
+      const next =
+        activeIndex + offset < 0
+          ? suggestions.length - 1
+          : activeIndex + offset >= suggestions.length
+            ? 0
+            : activeIndex + offset;
+      setActiveIndex(next);
+      // Keyboard only — hovering a clipped row must not scroll the list
+      // under the pointer
+      document.getElementById(`${listId}-option-${next}`)?.scrollIntoView({ block: 'nearest' });
       return;
     }
 

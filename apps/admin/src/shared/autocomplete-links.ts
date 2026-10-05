@@ -10,6 +10,12 @@ export interface AutocompleteLinkSettings {
   paidMembersEnabled: boolean;
   donationsEnabled: boolean;
   recommendationsEnabled: boolean;
+  /**
+   * Mirrors Portal's signup rules (`isFreeSignupAllowed` / `isSignupAllowed`):
+   * free signup only when `all`, paid signup when `all` or `paid`.
+   * Defaults to `all` when omitted.
+   */
+  membersSignupAccess?: string;
 }
 
 export interface OfferLinkSource {
@@ -31,9 +37,14 @@ export function buildAutocompleteLinks(
   settings: AutocompleteLinkSettings,
   offerLinks: AutocompleteLink[],
 ): AutocompleteLink[] {
+  // Same rules as Portal's isFreeSignupAllowed / isSignupAllowed
+  const membersSignupAccess = settings.membersSignupAccess ?? 'all';
+  const isFreeSignupAllowed = membersSignupAccess === 'all';
+  const isSignupAllowed = membersSignupAccess === 'all' || membersSignupAccess === 'paid';
+
   const defaults = [
     { label: 'Homepage', value: settings.homepageUrl },
-    { label: 'Free signup', value: '#/portal/signup/free' },
+    ...(isFreeSignupAllowed ? [{ label: 'Free signup', value: '#/portal/signup/free' }] : []),
   ];
 
   const shareLink = settings.postType
@@ -42,7 +53,7 @@ export function buildAutocompleteLinks(
 
   const memberLinks = settings.paidMembersEnabled
     ? [
-        { label: 'Paid signup', value: '#/portal/signup' },
+        ...(isSignupAllowed ? [{ label: 'Paid signup', value: '#/portal/signup' }] : []),
         { label: 'Upgrade or change plan', value: '#/portal/account/plans' },
       ]
     : [];
