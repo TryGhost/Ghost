@@ -136,10 +136,21 @@ function HiddenIndicator({
   );
 }
 
-function TkIndicator({ onClick, testId }: { onClick: () => void; testId: string }) {
+function TkIndicator({
+  className,
+  onClick,
+  testId,
+}: {
+  className: string;
+  onClick: () => void;
+  testId: string;
+}) {
   return (
     <button
-      className="absolute top-1 -left-12 rounded-sm bg-state-warning px-1.5 py-0.5 text-2xs font-bold text-foreground"
+      className={cn(
+        'absolute rounded-sm bg-state-warning px-1.5 py-0.5 text-2xs font-bold text-foreground',
+        className,
+      )}
       data-testid={testId}
       type="button"
       onClick={onClick}
@@ -387,13 +398,19 @@ export function PostEditor({
                 testId={featureImageHiddenIndicator}
               />
             )}
-            {titleHasTk && <TkIndicator testId={tkIndicator} onClick={focusTitle} />}
             <div className="relative">
               {titleAndFeatureImageHidden && !hasFeatureImage && (
                 <HiddenIndicator
                   className="top-4.5"
                   label="Post title is hidden on page"
                   testId={titleHiddenIndicator}
+                />
+              )}
+              {titleHasTk && (
+                <TkIndicator
+                  className="top-4.5 -right-14"
+                  testId={tkIndicator}
+                  onClick={focusTitle}
                 />
               )}
               <textarea
@@ -424,7 +441,13 @@ export function PostEditor({
             ) : null}
             {showExcerpt && (
               <div className="relative">
-                {excerptHasTk && <TkIndicator testId={tkIndicatorExcerpt} onClick={focusExcerpt} />}
+                {excerptHasTk && (
+                  <TkIndicator
+                    className="top-1 -left-12"
+                    testId={tkIndicatorExcerpt}
+                    onClick={focusExcerpt}
+                  />
+                )}
                 <textarea
                   ref={excerptRef}
                   aria-describedby={excerptError ? excerptErrorId : undefined}
