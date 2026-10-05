@@ -132,7 +132,7 @@ describe('Performance sidebar defaults', () => {
 });
 
 describe('Performance sidebar data and errors', () => {
-  it('keeps drafts closed and fetches only when opened', async () => {
+  it('remains closed by default for draft automations and fetches only when opened', async () => {
     const request = prepare('first', 'inactive');
     await renderAdminApp('/automations/first', flags);
     await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
