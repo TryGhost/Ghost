@@ -4670,8 +4670,8 @@ importers:
         specifier: 'catalog:'
         version: 1100.1.5
       camelcase-keys:
-        specifier: 10.0.2
-        version: 10.0.2
+        specifier: 10.0.3
+        version: 10.0.3
       execa:
         specifier: 'catalog:'
         version: 10.0.1
@@ -12085,8 +12085,8 @@ packages:
     resolution: {integrity: sha512-QOSvevhslijgYwRx6Rv7zKdMF8lbRmx+uQGx2+vDc+KI/eBnsy9kit5aj23AgGu3pa4t9AgwbnXWqS+iOY+2aA==}
     engines: {node: '>= 6'}
 
-  camelcase-keys@10.0.2:
-    resolution: {integrity: sha512-PVHCLVbJ7nWGal0lPAmBN5eSLjIynlMUk2EPmL9aPl6QyJ6+FoszTKwldPzkuVqg5teZbPTbb8Oenzyw9GSJRw==}
+  camelcase-keys@10.0.3:
+    resolution: {integrity: sha512-+WSfgt7e6uZSWfEO9xdFmWEf/bwvA6lJY2mmj4U+N1MHY6h01jQUlZ2dyxnaL4dumg/cxXyRci1fKUtGQfX5+g==}
     engines: {node: '>=20'}
 
   camelcase@5.3.1:
@@ -32366,7 +32366,7 @@ snapshots:
 
   camelcase-css@2.0.1: {}
 
-  camelcase-keys@10.0.2:
+  camelcase-keys@10.0.3:
     dependencies:
       camelcase: 9.0.0
       map-obj: 6.0.0
