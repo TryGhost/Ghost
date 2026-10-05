@@ -30,7 +30,6 @@ const pageChromeClassName = [
   '[&_[data-page-header=main]]:flex-wrap',
   '[&_[data-page-header=left]]:h-auto',
   '[&_[data-page-header=left]]:max-w-full',
-  '[&_.admin-x-container-error]:bg-background',
   '[&_.gh-canvas]:max-w-(--content-width)',
   '[&_.gh-canvas]:px-(--page-gutter)',
   '[&_.gh-main-width]:max-w-(--content-width)',
