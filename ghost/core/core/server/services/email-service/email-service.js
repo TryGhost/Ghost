@@ -169,6 +169,7 @@ class EmailService {
   }
 
   /**
+   * Creates the pending email for a post being published. Start sending it with `scheduleEmail`.
    *
    * @param {Post} post
    * @param {object} [options]
@@ -193,7 +194,7 @@ class EmailService {
       ? await this.#domainWarmingService.getWarmupLimit(emailCount)
       : undefined; // Undefined here means domain warming was not used -- distinct from 0
 
-    const email = await this.#models.Email.add({
+    return this.#models.Email.add({
       post_id: post.id,
       newsletter_id: newsletter.id,
       status: 'pending',
@@ -211,7 +212,15 @@ class EmailService {
       source: post.get('lexical') || post.get('mobiledoc'),
       source_type: post.get('lexical') ? 'lexical' : 'mobiledoc',
     });
+  }
 
+  /**
+   * Starts sending a pending email. A scheduling failure is saved on the email.
+   *
+   * @param {Email} email
+   * @returns {Promise<Email>}
+   */
+  async scheduleEmail(email) {
     try {
       await this.#batchSendingService.scheduleEmail(email);
     } catch (e) {

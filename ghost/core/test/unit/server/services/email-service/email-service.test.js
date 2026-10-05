@@ -16,6 +16,7 @@ describe('Email Service', function () {
   let domainWarmingService;
   let getMembersCount;
   let sendingStatusService;
+  let Email;
 
   beforeEach(function () {
     memberCount = 123;
@@ -81,6 +82,7 @@ describe('Email Service', function () {
       getWarmupLimit: sinon.stub(),
     };
     getMembersCount = sinon.stub().callsFake(() => Promise.resolve(memberCount));
+    Email = createModelClass();
 
     sendingStatusService = {
       retryEligibilityFor: sinon.stub().resolves('retryable'),
@@ -112,7 +114,7 @@ describe('Email Service', function () {
         },
       },
       models: {
-        Email: createModelClass(),
+        Email,
       },
       batchSendingService: {
         scheduleEmail,
@@ -315,7 +317,7 @@ describe('Email Service', function () {
       await assert.rejects(service.createEmail(post), /Cannot send email to archived newsletters/);
     });
 
-    it('Creates and schedules an email', async function () {
+    it('Creates a pending email without scheduling it', async function () {
       const post = createModel({
         id: '123',
         newsletter: createModel({
@@ -326,14 +328,14 @@ describe('Email Service', function () {
       });
 
       const email = await service.createEmail(post);
-      sinon.assert.calledOnce(scheduleEmail);
+      sinon.assert.notCalled(scheduleEmail);
+      sinon.assert.notCalled(scheduleRecurringNewslettersJob);
       assert.equal(email.get('feedback_enabled'), true);
       assert.equal(email.get('newsletter_id'), post.get('newsletter').id);
       assert.equal(email.get('post_id'), post.id);
       assert.equal(email.get('status'), 'pending');
       assert.equal(email.get('source'), post.get('mobiledoc'));
       assert.equal(email.get('source_type'), 'mobiledoc');
-      sinon.assert.calledOnce(scheduleRecurringNewslettersJob);
     });
 
     it('Reuses the recipient count when preflight data matches the saved post', async function () {
@@ -472,22 +474,7 @@ describe('Email Service', function () {
       });
     });
 
-    it('Ignores analytics job scheduling errors', async function () {
-      const post = createModel({
-        id: '123',
-        newsletter: createModel({
-          status: 'active',
-          feedback_enabled: true,
-        }),
-        mobiledoc: 'Mobiledoc',
-      });
-
-      scheduleRecurringNewslettersJob.rejects(new Error('Test error'));
-      await service.createEmail(post);
-      sinon.assert.calledOnce(scheduleRecurringNewslettersJob);
-    });
-
-    it('Creates and schedules an email with lexical', async function () {
+    it('Creates an email with lexical', async function () {
       const post = createModel({
         id: '123',
         newsletter: createModel({
@@ -498,49 +485,12 @@ describe('Email Service', function () {
       });
 
       const email = await service.createEmail(post);
-      sinon.assert.calledOnce(scheduleEmail);
       assert.equal(email.get('feedback_enabled'), true);
       assert.equal(email.get('newsletter_id'), post.get('newsletter').id);
       assert.equal(email.get('post_id'), post.id);
       assert.equal(email.get('status'), 'pending');
       assert.equal(email.get('source'), post.get('lexical'));
       assert.equal(email.get('source_type'), 'lexical');
-    });
-
-    it('Stores the error in the email model if scheduling fails', async function () {
-      const post = createModel({
-        id: '123',
-        newsletter: createModel({
-          status: 'active',
-          feedback_enabled: true,
-        }),
-      });
-
-      scheduleEmail.rejects(new Error('Test error'));
-
-      const email = await service.createEmail(post);
-      sinon.assert.calledOnce(scheduleEmail);
-
-      assert.equal(email.get('error'), 'Test error');
-      assert.equal(email.get('status'), 'failed');
-    });
-
-    it('Stores a default error in the email model if scheduling fails', async function () {
-      const post = createModel({
-        id: '123',
-        newsletter: createModel({
-          status: 'active',
-          feedback_enabled: true,
-        }),
-      });
-
-      scheduleEmail.rejects(new Error());
-
-      const email = await service.createEmail(post);
-      sinon.assert.calledOnce(scheduleEmail);
-
-      assert.equal(email.get('error'), 'Something went wrong while scheduling the email');
-      assert.equal(email.get('status'), 'failed');
     });
 
     it('Checks limits before scheduling', async function () {
@@ -552,9 +502,48 @@ describe('Email Service', function () {
         }),
       });
       limited.emails = true;
+      const add = sinon.spy(Email, 'add');
 
       await assert.rejects(service.createEmail(post));
-      sinon.assert.notCalled(scheduleEmail);
+      sinon.assert.notCalled(add);
+    });
+  });
+
+  describe('scheduleEmail', function () {
+    it('Schedules the email and the analytics job', async function () {
+      const email = createModel({ status: 'pending' });
+
+      assert.equal(await service.scheduleEmail(email), email);
+      sinon.assert.calledOnceWithExactly(scheduleEmail, email);
+      sinon.assert.calledOnceWithExactly(scheduleRecurringNewslettersJob, true);
+    });
+
+    it('Ignores analytics job scheduling errors', async function () {
+      scheduleRecurringNewslettersJob.rejects(new Error('Test error'));
+      sinon.stub(logging, 'error');
+
+      await service.scheduleEmail(createModel({ status: 'pending' }));
+      sinon.assert.calledOnce(scheduleRecurringNewslettersJob);
+    });
+
+    it('Stores the error in the email model if scheduling fails', async function () {
+      scheduleEmail.rejects(new Error('Test error'));
+      const email = createModel({ status: 'pending' });
+
+      await service.scheduleEmail(email);
+
+      assert.equal(email.get('error'), 'Test error');
+      assert.equal(email.get('status'), 'failed');
+    });
+
+    it('Stores a default error in the email model if scheduling fails', async function () {
+      scheduleEmail.rejects(new Error());
+      const email = createModel({ status: 'pending' });
+
+      await service.scheduleEmail(email);
+
+      assert.equal(email.get('error'), 'Something went wrong while scheduling the email');
+      assert.equal(email.get('status'), 'failed');
     });
   });
 
