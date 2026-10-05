@@ -236,6 +236,12 @@ export function getDefaultRecipientFilter(
   return filter;
 }
 
+export function isEmailDisabledInSettings(
+  site: Pick<PublishSiteInput, 'membersEnabled' | 'editorDefaultEmailRecipients'>,
+): boolean {
+  return site.editorDefaultEmailRecipients === 'disabled' || !site.membersEnabled;
+}
+
 export function getEmailUnavailableReason(
   post: PublishPostInput,
   site: Pick<PublishSiteInput, 'membersEnabled' | 'editorDefaultEmailRecipients'>,
@@ -246,7 +252,7 @@ export function getEmailUnavailableReason(
   if (post.email) {
     return 'already-emailed';
   }
-  if (site.editorDefaultEmailRecipients === 'disabled' || !site.membersEnabled) {
+  if (isEmailDisabledInSettings(site)) {
     return 'disabled-in-settings';
   }
   return null;

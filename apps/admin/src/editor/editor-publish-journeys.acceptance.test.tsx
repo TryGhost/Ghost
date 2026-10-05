@@ -194,6 +194,26 @@ describe('Editor publish journeys', () => {
     expect(saveApi.lastRequest?.url).not.toContain('newsletter=');
   });
 
+  it.each(['submitted', 'failed'])(
+    'leaves out a %s earlier send while member signup is off',
+    async (emailStatus) => {
+      publishChrome([WEEKLY]);
+      fakeTiers([]);
+      fakeLabels([]);
+      fakeSavableDraft({
+        email: { id: 'email-1', status: emailStatus, email_count: 20, opened_count: 0 },
+      });
+      await renderAdminApp(`/editor/post/${POST_ID}`, emailSite({ members_signup_access: 'none' }));
+
+      await editorScreen.publishButton().click();
+      await expect
+        .element(publishScreen.setting('publish-type'))
+        .toHaveTextContent('Publish on site');
+
+      await expect(publishScreen.alreadySent()).toHaveCount(0);
+    },
+  );
+
   it('previews the web post, then the email for the post’s newsletter, and sends a test', async () => {
     publishChrome([WEEKLY, MONTHLY]);
     fakeTiers([]);
