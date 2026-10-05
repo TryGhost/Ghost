@@ -52,6 +52,8 @@ export interface NewsletterInput {
   status?: string;
   visibility?: string;
   sortOrder?: number;
+  /** Shown in the newsletter picker; only admins' newsletter reads include it. */
+  activeMembers?: number;
 }
 
 export type DefaultEmailRecipients = 'disabled' | 'visibility' | 'filter';

@@ -1,9 +1,10 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { membersCountString, useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { getNewsletterRecipientFilter } from '@tryghost/admin-x-framework/utils/recipient-filter';
-import { NEWSLETTERS_SEARCH_PARAMS } from './browse-params';
+import { newslettersSearchParams } from './browse-params';
 import { scheduledRecipientAudience } from './post-status';
 import { postPreviewUrl } from './preview/preview-url';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
@@ -83,11 +84,12 @@ export function useSaveFeedback({ session, displayName, siteUrl }: SaveFeedbackS
   const { count } = useMembersCount(audience?.filter ?? null, {
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
+  const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const { data: newslettersData } = useBrowseNewsletters({
     defaultErrorHandler: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
-    searchParams: NEWSLETTERS_SEARCH_PARAMS,
-    enabled: audience !== null,
+    searchParams: newslettersSearchParams(currentUser),
+    enabled: audience !== null && currentUser !== undefined,
   });
   const activeNewsletters = (newslettersData?.newsletters ?? []).filter(
     (newsletter) => newsletter.status === 'active',
