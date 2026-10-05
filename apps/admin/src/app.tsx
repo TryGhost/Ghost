@@ -25,6 +25,7 @@ import { useAccentColorProperties } from './hooks/use-accent-color-properties';
 import { useDocumentTitle } from './hooks/use-document-title';
 import { usePrivateSiteLogin } from './hooks/use-private-site-login';
 import { SignedOutApp, useAuthNotice, useAuthScreensOwner } from './auth/api';
+import { useSentry } from './sentry';
 
 function App() {
   const { data: currentUser, errorUpdatedAt } = useCurrentUser();
@@ -33,6 +34,7 @@ function App() {
   const isSignedOut = !currentUser && errorUpdatedAt > 0;
   const authScreensOwner = useAuthScreensOwner();
   const [alerts] = useState(createAlertsStore);
+  useSentry();
   // Warm the settings cache at boot (as the removed AppProvider did): screens
   // hold on settings, and resolving it before routes mount keeps route guards
   // (e.g. force-upgrade) ahead of screen-level data fetches.
