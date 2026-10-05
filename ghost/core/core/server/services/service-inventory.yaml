@@ -2771,7 +2771,7 @@ services:
   route-settings:
     kind: directory
     disposition: retain
-    status: auditing
+    status: audited
     entryPoints:
       - route-settings/index.js
     notes: >-
@@ -2798,17 +2798,106 @@ services:
           - core/server/services/route-settings/dynamic-routing-service.js
           - core/boot.js
         tests: []
-    unverified:
-      - consumers
-      - startup
-      - lifetime
-      - configuration
-      - resources
-      - failures
+      consumers:
+        summary: >-
+          Boot configures storage and starts routing. The settings API uploads/downloads
+          routes, and site exports download them. FileStore and S3RouteSettingsStore use the
+          parsers without initializing the service.
+        sources:
+          - core/boot.js
+          - core/server/api/endpoints/settings.js
+          - core/server/api/endpoints/exports.js
+          - core/server/adapters/route-settings/FileStore.ts
+          - core/server/adapters/route-settings/S3RouteSettingsStore.ts
+        tests:
+          - test/e2e-api/admin/settings-files.test.js
+          - test/e2e-api/admin/exports-download.test.js
+          - test/unit/server/services/route-settings/route-settings-parser.test.ts
+          - test/unit/server/services/route-settings/yaml-parser.test.js
+      startup:
+        summary: >-
+          Reads require a configured store. start additionally needs an initialized
+          RouterManager and awaits the settings read before registering routes. Boot
+          configures storage and starts routing for frontend and backend-only operation.
+        sources:
+          - core/server/services/route-settings/dynamic-routing-service.js
+          - core/boot.js
+          - core/frontend/services/routing/router-manager.js
+        tests:
+          - test/e2e-server/boot-backend-only.isolated.test.ts
+          - test/e2e-server/boot-frontend-only.isolated.test.ts
+      lifetime:
+        summary: >-
+          configure and start replace collaborator references on the same service. Upload
+          uses the URL singleton, persists settings, then rereads them through the bridge
+          before resetting and rebuilding routing. Reload retains the service identities;
+          backend-only upload also rebuilds frontend routing without mounting it.
+        sources:
+          - core/server/services/route-settings/index.js
+          - core/server/services/route-settings/dynamic-routing-service.js
+          - core/bridge.js
+          - core/frontend/web/site.js
+        tests:
+          - test/unit/bridge.test.js
+          - test/e2e-server/boot-backend-only.isolated.test.ts
+      configuration:
+        summary: >-
+          FileStore is the default; normalization supplies content settings and bundled
+          defaults paths. S3RouteSettingsStore captures bucket, prefix and client options.
+          init reselects the adapter, but adapter-manager caches by name and class, so
+          changing options for a cached class does not recreate its store.
+        sources:
+          - core/shared/config/defaults.json
+          - core/server/services/route-settings/index.js
+          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/server/services/adapter-manager/utils.ts
+          - core/server/adapters/route-settings/FileStore.ts
+          - core/server/adapters/route-settings/S3RouteSettingsStore.ts
+        tests:
+          - test/unit/server/services/adapter-manager/route-settings-wiring.test.ts
+          - test/unit/server/services/adapter-manager/utils.test.ts
+          - test/integration/adapters/route-settings/adapter-manager-wiring.test.ts
+      resources:
+        summary: >-
+          The service retains its store and routing collaborators. FileStore awaits file
+          operations, backs up existing content and replaces through a temporary file,
+          attempting temporary-file cleanup on failure. The S3 store retains an SDK client.
+          Neither the service nor adapter-manager provides store disposal or operation drain.
+        sources:
+          - core/server/services/route-settings/dynamic-routing-service.js
+          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/server/adapters/route-settings/FileStore.ts
+          - core/server/adapters/route-settings/S3RouteSettingsStore.ts
+        tests:
+          - test/unit/server/adapters/route-settings/file-store.test.ts
+          - test/unit/server/adapters/route-settings/s3-route-settings-store.test.ts
+      failures:
+        summary: >-
+          Invalid uploads reject before persistence. Stored-content validation failures are
+          logged and rethrown; download also validates. Missing files/objects use bundled
+          defaults, while other storage failures propagate. Reload failure leaves the new
+          YAML persisted; a failed reread leaves existing routers and readiness untouched.
+        sources:
+          - core/server/services/route-settings/dynamic-routing-service.js
+          - core/server/adapters/route-settings/FileStore.ts
+          - core/server/adapters/route-settings/S3RouteSettingsStore.ts
+          - core/bridge.js
+        tests:
+          - test/unit/server/services/route-settings/dynamic-routing-service.test.ts
+          - test/integration/services/route-settings/dynamic-routing-service.test.ts
+          - test/unit/server/adapters/route-settings/file-store.test.ts
+          - test/unit/server/adapters/route-settings/s3-route-settings-store.test.ts
+          - test/unit/bridge.test.js
+    unverified: []
     blockers:
       - >-
-        Characterize repeated configuration/start and upload reload with actual boot and
-        adapter ownership; parser helpers are independently consumed before service startup.
+        Repeated configure/start has no disposal or idempotency guard. Establish ownership
+        of replaced/cached stores, S3 clients and in-flight reads/writes before adding a
+        managed lifecycle; the current absence of cleanup is not a preservation requirement.
+      - >-
+        Concurrent uploads have no service-level serialization. Recovery from failures after
+        reset or during router registration is not characterized; existing tests cover reads
+        before reset and persistence without rollback. Keep parser use independent of startup.
   settings:
     kind: directory
     disposition: retain
@@ -3590,7 +3679,7 @@ services:
   url:
     kind: directory
     disposition: retain
-    status: auditing
+    status: audited
     entryPoints:
       - url/index.js
     notes: >-
@@ -3600,9 +3689,11 @@ services:
       exports:
         summary: >-
           CommonJS exports one LazyUrlService instance, shared by frontend, API and service
-          callers.
+          callers. The implementation also exports its constructor for direct construction
+          in tests.
         sources:
           - core/server/services/url/index.js
+          - core/server/services/url/lazy-url-service.ts
         tests: []
       construction:
         summary: >-
@@ -3614,24 +3705,131 @@ services:
           - core/server/services/url/lazy-url-service.ts
           - core/server/services/url/lazy-find-resource.ts
         tests: []
+      consumers:
+        summary: >-
+          API serializers and search query routing fields/relations and generate URLs.
+          Frontend helpers, metadata, sitemap and routing controllers retain the service or
+          use RouterManager forwarding. Service consumers include audience-feedback,
+          comments, content-import, email-service, indexnow-ping, machine-payments,
+          member-attribution, members, mentions, slack-ping, stats and webhooks.
+        sources:
+          - core/server/api/endpoints/utils/serializers/input/utils/url.js
+          - core/server/api/endpoints/utils/serializers/output/utils/url.js
+          - core/server/api/endpoints/utils/serializers/input/comments.js
+          - core/server/api/endpoints/search-index.js
+          - core/server/api/endpoints/search-index-public.js
+          - core/frontend/services/proxy.js
+          - core/frontend/services/sitemap/site-map-manager.js
+          - core/frontend/services/routing/router-manager.js
+          - core/frontend/helpers/authors.js
+          - core/frontend/helpers/tags.js
+          - core/frontend/meta/url.js
+          - core/frontend/meta/author-url.js
+          - core/server/services/audience-feedback/index.js
+          - core/server/services/comments/index.js
+          - core/server/services/content-import/index.ts
+          - core/server/services/email-service/email-service-wrapper.js
+          - core/server/services/indexnow-ping/index.ts
+          - core/server/services/machine-payments/index.js
+          - core/server/services/member-attribution/index.js
+          - core/server/services/members/api.js
+          - core/server/services/mentions/service.js
+          - core/server/services/slack-ping/index.ts
+          - core/server/services/stats/service.js
+          - core/server/services/webhooks/index.js
+        tests:
+          - test/e2e-api/members-comments/comments-lazy-url-parity.test.js
+          - test/e2e-server/boot-backend-only.isolated.test.ts
+          - test/e2e-server/boot-frontend-only.isolated.test.ts
       startup:
         summary: >-
           initDynamicRouting gives the shared URL service to RouterManager even without a
-          frontend, then awaits route-settings start.
+          frontend, then awaits route-settings start. Registration sets hasFinished, which
+          gates root-app maintenance. Reverse lookup and enumeration also require the model
+          layer/database; forward lookup uses registered routes and caller-supplied records.
         sources:
           - core/boot.js
+          - core/app.js
           - core/server/services/route-settings/dynamic-routing-service.js
-        tests: []
-    unverified:
-      - consumers
-      - lifetime
-      - configuration
-      - resources
-      - failures
+          - core/server/services/url/lazy-url-service.ts
+        tests:
+          - test/unit/server/services/url/lazy-url-service.test.ts
+          - test/e2e-server/boot-backend-only.isolated.test.ts
+          - test/e2e-server/boot-frontend-only.isolated.test.ts
+      lifetime:
+        summary: >-
+          Registrations retain priority order. reset clears routers, derived relations,
+          readiness and diagnostic counters while retaining collaborators; onRouterUpdated
+          only invalidates derived relations. Reverse-lookup memoization lasts one call.
+          Bridge reload resets and re-registers the shared instance after reading settings.
+        sources:
+          - core/server/services/url/lazy-url-service.ts
+          - core/bridge.js
+          - core/frontend/services/routing/router-manager.js
+        tests:
+          - test/unit/server/services/url/lazy-url-service.test.ts
+          - test/unit/bridge.test.js
+          - test/e2e-server/boot-backend-only.isolated.test.ts
+      configuration:
+        summary: >-
+          Registration captures route filters/permalinks; reload refreshes them. Required
+          fields and relations follow current registrations and are queried by consumers at
+          operation time. Construction copies static filter exclusions. Shared url-utils
+          freezes production site, subdirectory and admin URL getters at construction.
+        sources:
+          - core/server/services/url/lazy-url-service.ts
+          - core/server/services/url/config.js
+          - core/shared/url-utils.ts
+          - core/server/api/endpoints/utils/serializers/input/utils/url.js
+          - core/server/api/endpoints/search-index.js
+          - core/server/services/email-service/email-service-wrapper.js
+          - core/server/services/webhooks/serialize.js
+        tests:
+          - test/unit/server/services/url/lazy-url-service.test.ts
+          - test/e2e-server/boot-backend-only.isolated.test.ts
+      resources:
+        summary: >-
+          The service owns in-memory routing/filter state, with no timer, subscription or
+          database pool of its own. Reverse lookup uses model queries; enumeration fetches
+          through shared models with SQLite batching. There is no service shutdown, query
+          cancellation or drain method.
+        sources:
+          - core/server/services/url/lazy-url-service.ts
+          - core/server/services/url/lazy-find-resource.ts
+          - core/server/services/url/routable-resources.js
+        tests:
+          - test/unit/server/services/url/lazy-find-resource.test.js
+          - test/unit/server/services/url/routable-resources.test.js
+      failures:
+        summary: >-
+          Unknown/unrouted resources return /404/. Thin resources log structured errors at
+          increasing occurrence thresholds and degrade to /404/; unexpected failures
+          propagate. Reverse misses/malformed paths return null, while lookup failures
+          propagate. NQL evaluation errors warn and do not match. Unknown enumeration types
+          reject.
+        sources:
+          - core/server/services/url/lazy-url-service.ts
+          - core/server/services/url/router-filter.ts
+          - core/server/services/url/permalink-matcher.ts
+          - core/server/services/url/lazy-find-resource.ts
+          - core/server/services/url/routable-resources.js
+        tests:
+          - test/unit/server/services/url/lazy-url-service.test.ts
+          - test/unit/server/services/url/router-filter.test.ts
+          - test/unit/server/services/url/permalink-matcher.test.js
+          - test/unit/server/services/url/lazy-find-resource.test.js
+          - test/unit/server/services/url/routable-resources.test.js
+    unverified: []
     blockers:
       - >-
-        Audit router reset/re-registration, lookup callers and retained references across
-        routes reload and repeated boot.
+        Normal boot/shutdown does not reset URL registrations, and bridge.init adds settings
+        listeners on each boot. Repeated boot can retain/append routing state; establish
+        restart ownership rather than preserving this missing cleanup as a guarantee.
+      - >-
+        Reload coverage protects a retained API consumer, not every service/helper across a
+        future instance replacement. Characterize those references, failures after reset,
+        in-flight queries and timezone changes before changing the lifecycle; the current
+        timezone handler only invalidates derived relations.
   users.js:
     kind: file
     disposition: retain
