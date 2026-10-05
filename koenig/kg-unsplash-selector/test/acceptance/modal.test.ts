@@ -66,4 +66,20 @@ test.describe('Acceptance test - Unsplash Selector', async () => {
       'https://unsplash.com/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit',
     );
   });
+
+  test('Adds the referral to the like and download links', async ({ page }) => {
+    await page.goto('/');
+    const photo = page.locator('[data-kg-unsplash-gallery-item="true"]', {
+      hasText: 'Christian Lue',
+    });
+
+    await expect(photo.locator('[data-kg-button="unsplash-like"]')).toHaveAttribute(
+      'href',
+      'https://unsplash.com/photos/a-train-station-with-a-train-on-the-tracks-b4kKyX0BQvc?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit',
+    );
+    await expect(photo.locator('[data-kg-button="unsplash-download"]')).toHaveAttribute(
+      'href',
+      'https://unsplash.com/photos/b4kKyX0BQvc/download?ixid=M3wxMTc3M3wwfDF8YWxsfDV8fHx8fHwyfHwxNzEwMTUzMjA1fA&utm_source=ghost&utm_medium=referral&utm_campaign=api-credit&force=true',
+    );
+  });
 });
