@@ -53,7 +53,7 @@ export function AuthHeader({ title, children }: { title: ReactNode; children?: R
   return (
     <header className="mb-4 flex flex-col items-center gap-5 text-center">
       <img alt="" className="size-15 rounded-sm" src={data?.site.icon || GHOST_ORB} />
-      <h1 className="text-3xl leading-tight font-bold tracking-tight text-foreground">{title}</h1>
+      <h1 className="text-4xl leading-tight font-bold tracking-tighter text-foreground">{title}</h1>
       {children}
     </header>
   );
