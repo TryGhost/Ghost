@@ -193,6 +193,7 @@ function EditorContent({
       title: session.title,
     },
     record: session.loadedRecord,
+    access: session.settings,
     displayName: postType,
     lexical: session.getLiveLexical(),
   });
