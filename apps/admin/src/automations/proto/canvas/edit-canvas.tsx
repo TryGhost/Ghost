@@ -109,7 +109,7 @@ import {
 import { UpdateMemberFields } from './update-member-fields';
 import { EmailAnalyticsSheet, type SheetEmail } from './email-analytics-sheet';
 import { EmailAnalyticsModal } from './email-analytics-modal';
-import { EmailStatsFooter } from './email-analytics';
+import { EmailStatsExpandable, EmailStatsFooter } from './email-analytics';
 import { NODE_BODY_PADDING, NODE_CARD_FRAME, NodeCard, NodeHeader } from './flow-node-shell';
 import { EmailPreview } from './email-preview';
 import { EMPTY_LEXICAL, SEEDED_LEXICAL } from '@/automations/proto/shared/mock';
@@ -282,6 +282,11 @@ type StepNodeData = {
   // splitting open/close across two would let them disagree.
   analyticsOpen?: boolean;
   onToggleAnalytics?: () => void;
+  // The canvas's 'inline' analyticsSurface: no header button, and the toggle
+  // expands the card's own footer instead of opening a separate surface.
+  analyticsInline?: boolean;
+  // The action this card is — the inline footer keys its links fixture on it.
+  actionId?: string;
   // Trigger node. Without onTriggerConfigChange the summary is read-only — the
   // read canvas passes no handler, since it shows what's running rather than
   // what's being edited.
@@ -650,7 +655,7 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
   // open-state control in the proto takes (the lane switcher, an open menu's
   // trigger), so "this button's panel is open" reads the same everywhere.
   const analyticsAction =
-    isEmail && d.stats ? (
+    isEmail && d.stats && !d.analyticsInline ? (
       <Button
         aria-label={d.analyticsOpen ? 'Hide email analytics' : 'View email analytics'}
         aria-pressed={d.analyticsOpen}
@@ -843,7 +848,16 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
                                     control in the header instead. */}
               {d.stats && (
                 <div className="mt-3">
-                  <EmailStatsFooter divider={false} stats={d.stats} />
+                  {d.analyticsInline && d.actionId ? (
+                    <EmailStatsExpandable
+                      actionId={d.actionId}
+                      expanded={Boolean(d.analyticsOpen)}
+                      stats={d.stats}
+                      onToggle={() => d.onToggleAnalytics?.()}
+                    />
+                  ) : (
+                    <EmailStatsFooter divider={false} stats={d.stats} />
+                  )}
                 </div>
               )}
             </div>
@@ -1145,9 +1159,11 @@ interface EditCanvasProps {
   // so the inserts fall back to hover the way the shipping canvas does.
   alwaysShowInserts?: boolean;
   // Where an email's report opens: the sheet over the canvas's right edge
-  // (every lane's default), or a centred modal. Phase 2 takes the modal — its
-  // side panel owns the right edge now. See email-analytics-modal.
-  analyticsSurface?: 'sheet' | 'modal';
+  // (every lane's default), a centred modal, or 'inline' — no separate surface
+  // at all: the card's footer grows a chevron that expands the clicked links in
+  // place (EmailStatsExpandable). Phase 2 takes inline; the modal is unused for
+  // now but kept, since it's the last thing a reviewer saw there.
+  analyticsSurface?: 'sheet' | 'modal' | 'inline';
   // Whether the trigger card states the exit sentence under its fields ("Members
   // exit early if they…"). On by default; phase 2 turns it off because the
   // sentence moved to its Settings tab, under Exit conditions.
@@ -1193,6 +1209,10 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   const { canvasRef, onInit, size, centerOn, contentHeightRef, recenter } = useCenteredColumn();
   // Which email the right-hand analytics sheet is reporting on.
   const [analyticsActionId, setAnalyticsActionId] = useState<string | null>(null);
+  // Inline surface only: which email cards have their footer expanded. A set,
+  // not one id like the sheet's — expanding a card doesn't take the screen from
+  // any other, so two can be open side by side for comparing.
+  const [expandedEmailIds, setExpandedEmailIds] = useState<ReadonlySet<string>>(() => new Set());
   // Email-content dialog, opened from a card's inline "Edit email content" button.
   // Keyed by the action that opened it, because the dialog can now WRITE — its
   // simulate toggle fills or empties that email's lexical, so it has to know
@@ -1664,9 +1684,24 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
             settleOthers(action.id);
             setEmailDialogActionId(action.id);
           },
-          analyticsOpen: action.id === analyticsActionId,
+          actionId: action.id,
+          analyticsInline: analyticsSurface === 'inline',
+          analyticsOpen:
+            analyticsSurface === 'inline'
+              ? expandedEmailIds.has(action.id)
+              : action.id === analyticsActionId,
           onToggleAnalytics: () => {
             settleOthers(action.id);
+            if (analyticsSurface === 'inline') {
+              setExpandedEmailIds((current) => {
+                const next = new Set(current);
+                if (!next.delete(action.id)) {
+                  next.add(action.id);
+                }
+                return next;
+              });
+              return;
+            }
             // Functional, not a read of analyticsActionId: this closure lives in
             // node data built under useMemo, and a stale read would re-open the
             // sheet on the press that should close it.
@@ -1729,6 +1764,8 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     draft,
     ordered,
     analyticsActionId,
+    analyticsSurface,
+    expandedEmailIds,
     triggerConfig,
     onTriggerConfigChange,
     changeTriggerConfig,
@@ -1839,9 +1876,10 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         </ReactFlow>
       </div>
 
-      {analyticsSurface === 'modal' ? (
+      {analyticsSurface === 'modal' && (
         <EmailAnalyticsModal email={sheetEmail} onClose={() => setAnalyticsActionId(null)} />
-      ) : (
+      )}
+      {analyticsSurface === 'sheet' && (
         <EmailAnalyticsSheet email={sheetEmail} onClose={() => setAnalyticsActionId(null)} />
       )}
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import type { AutomationEmailStats } from '@tryghost/admin-x-framework/api/automations';
 import {
+  Button,
   type ChartConfig,
   ChartContainer,
   DataList,
@@ -17,7 +18,7 @@ import {
   TooltipTrigger,
 } from '@tryghost/shade/components';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { Recharts, cn, formatNumber, formatPercentage } from '@tryghost/shade/utils';
+import { LucideIcon, Recharts, cn, formatNumber, formatPercentage } from '@tryghost/shade/utils';
 import { type ProtoActionLink, actionLinks } from '@/automations/proto/shared/email-links';
 import { OffValue } from '@/automations/components/canvas/off-value';
 
@@ -108,6 +109,73 @@ export const EmailStatsFooter: React.FC<StatsProps & { divider?: boolean }> = ({
 // email card was consolidated to one implementation across every lane. The
 // right-hand sheet is how analytics open now; if on-card analytics come back,
 // they come back as that one card growing the section, not as a second card.
+
+// --- Expandable footer (phase 2) -------------------------------------------
+
+// On-card analytics, back as the note above asked: the same card growing the
+// section, not a second card. The footer's three numbers stay exactly as they
+// are, with a chevron after them that opens the clicked links underneath — so
+// the deeper read happens where the numbers already are, with no sheet or modal
+// taking over the screen.
+//
+// No donut. The rings plotted the same Sent / Opened / Clicked the footer
+// already prints, so on the card they'd be a second, larger copy of it.
+//
+// The chevron only shows while the card is hovered (group/node, from NodeCard)
+// or once it's open — opacity, not display, so its slot is always reserved and
+// the numbers never shift when it appears. focus-visible too, so keyboard users
+// aren't relying on a hover they can't produce.
+export const EmailStatsExpandable: React.FC<
+  StatsProps & { actionId: string; expanded: boolean; onToggle: () => void }
+> = ({ stats, opensTracked = true, clicksTracked = true, actionId, expanded, onToggle }) => (
+  <Stack gap="lg">
+    <div className="flex items-center gap-3">
+      <div className="min-w-0 flex-1">
+        <EmailStatsFooter
+          clicksTracked={clicksTracked}
+          divider={false}
+          opensTracked={opensTracked}
+          stats={stats}
+        />
+      </div>
+      {/* type="button": Shade's Button defaults to submit, which jumps the
+          Ember-embedded admin's scroll on click. */}
+      <Button
+        aria-expanded={expanded}
+        aria-label={expanded ? 'Hide clicked links' : 'Show clicked links'}
+        className={cn(
+          'shrink-0 opacity-0 transition-opacity group-hover/node:opacity-100 focus-visible:opacity-100',
+          expanded && 'opacity-100',
+        )}
+        size="icon"
+        type="button"
+        variant="ghost"
+        onClick={onToggle}
+      >
+        <LucideIcon.ChevronDown
+          className={cn('transition-transform duration-200', expanded && 'rotate-180')}
+        />
+      </Button>
+    </div>
+    {expanded && (
+      <Stack gap="md">
+        <Inline justify="between">
+          <Text size="sm" tone="secondary" weight="medium">
+            Top clicked links
+          </Text>
+          <Text size="sm" tone="tertiary" weight="medium">
+            Members
+          </Text>
+        </Inline>
+        <TopClickedLinksContent
+          clickedCount={stats.email_clicked_count}
+          links={actionLinks(actionId, stats.email_clicked_count)}
+          sentCount={stats.email_sent_count}
+        />
+      </Stack>
+    )}
+  </Stack>
+);
 
 // A metrics-as-a-field experiment lived here briefly (EmailStatsField): the
 // footer's three numbers in input chrome, opening the top links in a

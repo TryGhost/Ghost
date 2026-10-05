@@ -846,9 +846,11 @@ const AutomationFloat: React.FC = () => {
                 // from the moment it exists, zeros included; see the canvas's
                 // ZERO_EMAIL_STATS.)
                 alwaysShowInserts={liveStatus === 'inactive'}
-                // An email's report opens as a modal here: the side panel owns the
-                // right edge, where the other lanes' sheet slides in.
-                analyticsSurface="modal"
+                // An email's report expands in place on its card: the footer's
+                // chevron opens the clicked links under the numbers. (It was a
+                // modal before — the side panel owns the right edge, where the
+                // other lanes' sheet slides in — and the modal didn't land.)
+                analyticsSurface="inline"
                 // The messaging spec's wording: the trigger's settings reset, and
                 // the rest of the flow is untouched.
                 changeTriggerDescription="Your settings on this trigger will be reset. All other steps in this automation will remain unchanged."
