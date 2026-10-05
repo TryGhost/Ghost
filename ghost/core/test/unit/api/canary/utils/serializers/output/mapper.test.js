@@ -19,6 +19,51 @@ describe('Unit: utils/serializers/output/mappers', function () {
     sinon.restore();
   });
 
+  describe('Emails Mapper', function () {
+    it('omits internal accounting fields and the loaded post relation', function () {
+      const result = mappers.emails(
+        {
+          id: 'email-id',
+          post: { id: 'post-id' },
+          preflight_email_count: 3,
+          candidate_count: 3,
+          preparation_excluded_count: 1,
+          prepared_at: new Date(),
+        },
+        { options: {} },
+      );
+
+      assert.deepEqual(result, { id: 'email-id' });
+    });
+
+    it('renders an email preview while omitting internal accounting fields', function () {
+      const emailService = require('../../../../../../../core/server/services/email-service');
+      const replaceDefinitions = sinon.stub().returns('Rendered preview');
+      sinon.define(emailService, 'renderer', {
+        buildReplacementDefinitions: sinon.stub().returns([]),
+      });
+      sinon.define(emailService, 'service', {
+        getDefaultExampleMember: sinon.stub().returns({}),
+        replaceDefinitions,
+      });
+
+      const result = mappers.emails(
+        {
+          html: '<p>Hello %%{first_name}%%</p>',
+          plaintext: 'Hello %%{first_name}%%',
+          candidate_count: 1,
+        },
+        { options: {} },
+      );
+
+      assert.deepEqual(result, {
+        html: 'Rendered preview',
+        plaintext: 'Rendered preview',
+      });
+      sinon.assert.calledTwice(replaceDefinitions);
+    });
+  });
+
   describe('Posts Mapper', function () {
     beforeEach(function () {
       sinon.stub(dateUtil, 'forPost').returns({});
@@ -615,6 +660,30 @@ describe('Unit: utils/serializers/output/mappers', function () {
     beforeEach(function () {
       sinon.stub(urlUtil, 'forPost').callsFake((_, a) => {
         a.url = 'https://generatedurl';
+      });
+    });
+
+    it('omits internal accounting fields from an embedded email', function () {
+      const event = {
+        type: 'email_event',
+        data: {
+          email: {
+            id: 'email-id',
+            candidate_count: 3,
+            preparation_excluded_count: 1,
+            preflight_email_count: 3,
+            prepared_at: new Date(),
+          },
+          batch_id: 'batch-id',
+          subscriptionCreatedEvent: { id: 'subscription-event-id' },
+        },
+      };
+
+      const result = mappers.activityFeedEvents(event, {});
+
+      assert.deepEqual(result, {
+        type: 'email_event',
+        data: { email: { id: 'email-id' }, member: null },
       });
     });
 
