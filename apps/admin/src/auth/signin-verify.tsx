@@ -67,12 +67,16 @@ export default function SigninVerify() {
           <AuthHeader title={twoFactorRequired ? '2FA confirmation' : "Verify it's really you"}>
             <p className="text-lg text-muted-foreground">
               {twoFactorRequired ? (
-                'Enter the sign-in verification code sent to your email.'
+                <>
+                  Enter the <span className="whitespace-nowrap">sign-in</span> verification code
+                  sent to your email.
+                </>
               ) : (
                 <>
                   It looks like you&apos;re signing in from a new device. A{' '}
-                  <span className="whitespace-nowrap">6-digit</span> sign-in verification code has
-                  been sent to your email to keep your account safe.
+                  <span className="whitespace-nowrap">6-digit</span>{' '}
+                  <span className="whitespace-nowrap">sign-in</span> verification code has been sent
+                  to your email to keep your account safe.
                 </>
               )}
             </p>
