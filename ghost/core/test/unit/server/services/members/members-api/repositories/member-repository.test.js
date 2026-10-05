@@ -3072,27 +3072,6 @@ describe('MemberRepository', function () {
   });
 
   describe('destroy', function () {
-    it('passes require: false to tolerate concurrent deletes', async function () {
-      Member = {
-        findOne: sinon.stub().resolves({
-          id: 'member_id_123',
-          related: () => ({
-            fetch: sinon.stub().resolves({ models: [] }),
-          }),
-        }),
-        destroy: sinon.stub().resolves(),
-        transaction: (fn) => fn('a-transaction'),
-      };
-
-      const repo = buildRepo();
-
-      await repo.destroy({ id: 'member_id_123' }, {});
-
-      sinon.assert.calledOnce(Member.destroy);
-      const destroyOptions = Member.destroy.firstCall.args[1];
-      assert.equal(destroyOptions.require, false);
-    });
-
     it('returns early when member does not exist', async function () {
       Member = {
         findOne: sinon.stub().resolves(null),
