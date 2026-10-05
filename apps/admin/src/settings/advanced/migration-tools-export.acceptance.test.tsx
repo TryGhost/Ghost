@@ -141,7 +141,7 @@ describe('Migration tools export', () => {
 
     const dialog = page.getByRole('dialog');
     await expect
-      .element(dialog.getByText('emailed to the site owner', { exact: false }))
+      .element(dialog.getByText('download link emailed to you', { exact: false }))
       .toBeVisible();
     await expect.element(dialog.getByText('Media files', { exact: true })).toBeVisible();
 
@@ -190,7 +190,7 @@ describe('Migration tools export', () => {
     await expect.element(dialog.getByRole('button', { name: 'Cancel' })).toBeDisabled();
     await userEvent.keyboard('{Escape}');
     await expect
-      .element(dialog.getByText('emailed to the site owner', { exact: false }))
+      .element(dialog.getByText('download link emailed to you', { exact: false }))
       .toBeVisible();
 
     releaseRequest();
