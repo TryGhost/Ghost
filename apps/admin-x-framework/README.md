@@ -15,6 +15,14 @@ Follow the instructions for the top-level repo.
 1. `git clone` this repo & `cd` into it as usual
 2. Run `pnpm bootstrap` to install the workspace and initialize submodules.
 
+### Source exports
+
+Admin’s Vite development, production and test configurations select the `source`
+export condition to load this package directly from `src/`. Changes reach Vite
+without waiting for the library build. Consumers without that condition keep
+using the compiled exports; TypeScript continues using the generated declarations.
+The library build remains required for those consumers, including Ember.
+
 ## Test
 
 - `pnpm lint` - run just eslint

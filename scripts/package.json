@@ -36,6 +36,14 @@
         "{workspaceRoot}/apps/admin/package.json",
         "{workspaceRoot}/apps/ember-admin/package.json",
         "{workspaceRoot}/.github/workflows/ci.yml"
+      ],
+      "adminSourceContracts": [
+        "{workspaceRoot}/apps/admin-x-framework/package.json",
+        "{workspaceRoot}/apps/shade/package.json",
+        "{workspaceRoot}/apps/admin/vite*.ts",
+        "{workspaceRoot}/apps/admin/vitest.acceptance.config.ts",
+        "{workspaceRoot}/apps/admin/tsconfig*.json",
+        "{workspaceRoot}/apps/shade/tsconfig.json"
       ]
     },
     "targets": {
@@ -44,6 +52,7 @@
           "default",
           "^default",
           "adminTestContracts",
+          "adminSourceContracts",
           {
             "runtime": "node -v"
           }
@@ -54,6 +63,7 @@
           "default",
           "^default",
           "adminTestContracts",
+          "adminSourceContracts",
           {
             "runtime": "node -v"
           }
