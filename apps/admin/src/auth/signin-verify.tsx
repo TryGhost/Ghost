@@ -65,10 +65,20 @@ export default function SigninVerify() {
       <form noValidate onSubmit={(event) => void verify(event)}>
         <Stack gap="lg">
           <AuthHeader title={twoFactorRequired ? '2FA confirmation' : "Verify it's really you"}>
-            <p className="text-muted-foreground">
-              {twoFactorRequired
-                ? 'Enter the sign-in verification code sent to your email.'
-                : "It looks like you're signing in from a new device. A 6-digit sign-in verification code has been sent to your email to keep your account safe."}
+            <p className="text-lg text-muted-foreground">
+              {twoFactorRequired ? (
+                <>
+                  Enter the <span className="whitespace-nowrap">sign-in</span> verification code
+                  sent to your email.
+                </>
+              ) : (
+                <>
+                  It looks like you&apos;re signing in from a new device. A{' '}
+                  <span className="whitespace-nowrap">6-digit</span>{' '}
+                  <span className="whitespace-nowrap">sign-in</span> verification code has been sent
+                  to your email to keep your account safe.
+                </>
+              )}
             </p>
           </AuthHeader>
           <Field>
