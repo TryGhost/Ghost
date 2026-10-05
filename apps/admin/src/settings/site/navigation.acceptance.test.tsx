@@ -252,6 +252,32 @@ describe('Navigation settings', () => {
     expect(pages.requests).toHaveLength(2);
   });
 
+  it('suggests content whose path matches what is typed', async () => {
+    fakeSettingsScreens();
+    fakeSiteContent();
+    await renderAdminApp('/settings/navigation/edit');
+
+    await newItem().getByLabelText('URL').click();
+    await userEvent.keyboard('/abo');
+
+    // Wait for the debounced search to replace the list shown on focus
+    await expect(suggestions().getByRole('option', { name: /^Welcome to Ghost/ })).toHaveCount(0);
+    await expect.element(suggestions().getByRole('option', { name: /^About/ })).toBeInTheDocument();
+  });
+
+  it('suggests the content a filled field already links to on ArrowDown', async () => {
+    fakeSettingsScreens();
+    fakeSiteContent();
+    await renderAdminApp('/settings/navigation/edit');
+
+    // The existing About item shows its URL as http://test.com/about/
+    await existingItem(1).getByLabelText('URL').click();
+    await expect(suggestions()).toHaveCount(0);
+    await userEvent.keyboard('{ArrowDown}');
+
+    await expect.element(suggestions().getByRole('option', { name: /^About/ })).toBeInTheDocument();
+  });
+
   it('offers no checkout destinations while Stripe is disconnected', async () => {
     fakeSettingsScreens();
     fakeSiteContent();

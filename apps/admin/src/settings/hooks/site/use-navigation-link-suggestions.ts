@@ -136,11 +136,19 @@ const useNavigationLinkSuggestions = () => {
         loadIndex('posts').catch(() => []),
       ]);
 
+      // People type paths into a URL field, and ArrowDown on a filled field
+      // searches with the whole absolute URL. Paths rather than full URLs, so
+      // typing the site's domain doesn't match every post.
       const needle = term.toLowerCase();
+      const pathNeedle = toPath(term).toLowerCase();
+      const isMatch = (result: SearchIndexPost) =>
+        result.title.toLowerCase().includes(needle) ||
+        toPath(result.url).toLowerCase().includes(pathNeedle);
+
       const toItems = (results: SearchIndexPost[]): Suggestion[] =>
         results
           .filter((result) => result.status === 'published' && isRoutable(result.url))
-          .filter((result) => !term || result.title.toLowerCase().includes(needle))
+          .filter((result) => !term || isMatch(result))
           .slice(0, CONTENT_LIMIT)
           .map((result) => ({
             label: result.title,
