@@ -170,6 +170,8 @@ test('escapes report data so paths cannot inject script markup', () => {
   const html = renderInventory(report);
   assert.ok(!html.includes('</script><script>alert(1)'));
   assert.ok(html.includes('\\u003c/script>'));
+  assert.ok(!html.includes('Object.defineProperty(exports'));
+  assert.ok(!html.includes('export {};'));
 });
 
 test('splits production by codebase area while preserving tests and tooling', () => {

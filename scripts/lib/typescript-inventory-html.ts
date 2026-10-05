@@ -75,7 +75,7 @@ export function renderInventory(report: Inventory) {
   const browserScript = ts
     .transpileModule(
       readFileSync(new URL('./typescript-inventory-browser.ts', import.meta.url), 'utf8'),
-      { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None } },
+      { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } },
     )
     .outputText.replace(/^export \{\};?$/m, '');
   return `<!doctype html>
