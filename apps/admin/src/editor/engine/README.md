@@ -318,7 +318,8 @@ drift.
 | `generating(title, deferred title)`           | `submitted(title)`  | the title generates                                                           | `generating(title, deferred title)`           | resolve(deferred: stale)                                                                                                    |
 | `generating(title, deferred title)`           | `submitted(title)`  | it is the slug's source title                                                 | `idle(derived)`                               | resolve(deferred: stale), resolve(request: stale), resolve(submission: same-title), notify(same-title)                      |
 | `generating(title, deferred manual)`          | `submitted(title)`  | the title generates                                                           | `generating(title, deferred title)`           | resolve(deferred: stale)                                                                                                    |
-| `generating(title, deferred manual)`          | `submitted(title)`  | the title is blank                                                            | `idle(derived)`                               | resolve(deferred: stale), resolve(request: stale), resolve(submission: frozen), notify(frozen)                              |
+| `generating(title, deferred manual)`          | `submitted(title)`  | it is the slug's source title; the deferred edit differs from the slug        | `generating(manual)`                          | resolve(request: stale), resolve(submission: same-title), notify(same-title), request(deferred), notify(null)               |
+| `generating(title, deferred manual)`          | `submitted(title)`  | the title is blank; the deferred edit differs from the slug                   | `generating(manual)`                          | resolve(request: stale), resolve(submission: frozen), notify(frozen), request(deferred), notify(null)                       |
 | `generating(manual)`                          | `submitted(title)`  | always                                                                        | `generating(manual, deferred title)`          | none                                                                                                                        |
 | `generating(manual, deferred title)`          | `submitted(title)`  | always                                                                        | `generating(manual, deferred title)`          | resolve(deferred: stale)                                                                                                    |
 | `generating(manual, deferred manual)`         | `submitted(title)`  | always                                                                        | `generating(manual, deferred title)`          | resolve(deferred: stale)                                                                                                    |
@@ -408,7 +409,8 @@ Consequences worth naming:
 - Withdrawing a request (a no-op blur over a manual request, or committing the
   slug's source title or a frozen title over a title request) resolves it
   `stale` at once and frees the wire. A deferred title commit behind a withdrawn
-  manual edit starts immediately; a deferred submission behind a withdrawn title
+  manual edit and a deferred manual edit behind a withdrawn title generation
+  start immediately; a deferred title commit behind a withdrawn title
   generation is dropped. The late generator answer for a withdrawn request is
   ignored because its ticket is no longer held.
 - Withdrawing a deferred manual edit (a no-op blur while a title generation is

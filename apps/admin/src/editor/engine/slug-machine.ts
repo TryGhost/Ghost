@@ -336,16 +336,18 @@ function submitGenerating(
     };
   }
   // A title behind a manual request waits for its outcome: applied means custom, failed means
-  // generate. A title that would not generate withdraws title generation on the wire at once.
+  // generate. A title that would not generate withdraws title generation on the wire at once;
+  // a manual edit waiting behind it then starts.
   if (request.kind === 'manual') {
     return defer(state, ticket, submission);
   }
   const title = submission.value.trim();
+  const keepManual = deferred?.submission.kind === 'manual';
   if (isSameTitle(state, title)) {
-    return withdraw(state, ticket, 'same-title', false);
+    return withdraw(state, ticket, 'same-title', keepManual);
   }
   if (isFrozen(state, title)) {
-    return withdraw(state, ticket, 'frozen', false);
+    return withdraw(state, ticket, 'frozen', keepManual);
   }
   return defer(state, ticket, submission);
 }

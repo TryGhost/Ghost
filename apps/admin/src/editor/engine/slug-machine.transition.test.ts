@@ -358,14 +358,27 @@ const TRANSITIONS: readonly Row[] = [
     withdrawn(TITLE_DEFERRED_TITLE),
   ),
   defers(TITLE_DEFERRED_MANUAL, title('Again'), GENERATES, deferredTitle(SUBMISSION)),
-  answers(
+  starts(
+    TITLE_DEFERRED_MANUAL,
+    title('Hello'),
+    `${SOURCE_TITLE}; ${DEFERRED_DIFFERS}`,
+    started(HELLO, 'manual', 'yours', DEFERRED),
+    [
+      resolve(REQUEST, STALE),
+      resolve(SUBMISSION, unchanged('same-title')),
+      notify(IDLE, unchanged('same-title')),
+    ],
+  ),
+  starts(
     TITLE_DEFERRED_MANUAL,
     title(''),
-    BLANK_TITLE,
-    IDLE,
-    SUBMISSION,
-    unchanged('frozen'),
-    withdrawn(TITLE_DEFERRED_MANUAL),
+    `${BLANK_TITLE}; ${DEFERRED_DIFFERS}`,
+    started(HELLO, 'manual', 'yours', DEFERRED),
+    [
+      resolve(REQUEST, STALE),
+      resolve(SUBMISSION, unchanged('frozen')),
+      notify(IDLE, unchanged('frozen')),
+    ],
   ),
   defers(MANUAL, title('World'), 'always', deferredTitle(SUBMISSION, 'World')),
   defers(MANUAL_DEFERRED_TITLE, title('World'), 'always', deferredTitle(SUBMISSION, 'World')),
