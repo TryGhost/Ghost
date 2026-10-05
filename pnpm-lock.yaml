@@ -4678,6 +4678,9 @@ importers:
       semver:
         specifier: 'catalog:'
         version: 7.8.5
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*

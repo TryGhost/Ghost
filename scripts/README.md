@@ -47,3 +47,53 @@ stays where it is. It carries its own lockfile, eslint config and CI workflow so
 its `pull_request_target` job can install from a sparse checkout of `main`
 without the root lockfile, and so its CI-only deps never reach a dev's install.
 See that directory's README before changing anything about how it's wired.
+
+## TypeScript inventory
+
+Run `pnpm inventory:typescript --output /tmp/ghost-typescript` from the root to
+write a searchable HTML report and a JSON inventory. Open
+`/tmp/ghost-typescript.html` in a browser. Use `--scope ghost/core` (or another
+repository-relative directory) to focus the report. Resolution and dependent
+counts still consider the whole repository.
+
+The inventory reads tracked working-tree JS/JSX/TS/TSX files, including `.mjs`,
+`.cjs`, `.mts`, and `.cts`. It excludes submodules, untracked files, fixture and
+snapshot directories, vendor directories, build/dist/coverage output, minified
+JavaScript, the package template, and SimpleMDE's generated debug bundles.
+Declaration files are counted separately. Exclusion paths and declaration totals
+are repository-wide, even in scoped reports. Percentages compare implementation
+files and physical lines (including comments and blanks); they do not measure
+type safety or enforce conversion of intentional JavaScript tooling.
+
+Files are grouped by their nearest package manifest. Tests and tooling use path
+and filename conventions; these categories are approximate. Static imports,
+re-exports, literal dynamic imports, and `require()` calls are parsed with the
+TypeScript compiler API. Dependency resolution uses the nearest tracked
+`tsconfig.json`, including inherited options, or NodeNext defaults when absent.
+Resolution runs with `allowJs` to identify JavaScript dependencies. The report
+shows the configuration and resolved path for each dependency. Node built-ins
+are marked typed only when Node declarations resolve from the importing file.
+
+Difficulty is a transparent triage heuristic:
+
+- Each dependency resolving to JavaScript adds 3 points.
+- Each unresolved dependency or built-in without available Node types adds 5.
+- Each computed import or require adds 5.
+- Each 100 physical lines and each 5 functions adds 1 (rounded up).
+- CommonJS adds 2; each parse error adds 10.
+- Scores up to 5 are easier, up to 15 moderate, and above 15 harder.
+
+Repeated imports are deduplicated by specifier and import/require mode. Direct
+callers are listed separately to show conversion impact. This is a static module
+graph: runtime loading and shadowed `require` calls are not resolved semantically.
+Cycles, ambient module declarations, JSDoc quality, bundler-specific resolution,
+and business complexity are not assessed. Missing builds or dependencies can
+produce unresolved imports; available declarations can still contain `any`.
+Inspect the evidence before choosing a conversion. The report neither executes
+source modules nor queries package registries.
+
+The implementation follows TypeScript's
+[module resolution reference](https://www.typescriptlang.org/docs/handbook/modules/reference)
+and [compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API).
+Run its tests with
+`pnpm --filter @internal/scripts exec node --test test/typescript-inventory.test.js`.

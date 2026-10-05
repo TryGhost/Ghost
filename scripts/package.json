@@ -20,7 +20,8 @@
     "execa": "catalog:",
     "js-yaml": "catalog:",
     "picomatch": "4.0.5",
-    "semver": "catalog:"
+    "semver": "catalog:",
+    "typescript": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
