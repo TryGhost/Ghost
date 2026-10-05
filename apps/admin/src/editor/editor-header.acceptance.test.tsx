@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { page, userEvent } from 'vitest/browser';
+import { page, userEvent, type Locator } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 import { publishTypeError } from '@tryghost/test-data/selectors/editor';
 
@@ -243,6 +243,30 @@ async function publishThroughFlow() {
   await expect.element(publishScreen.options()).toBeVisible();
   await publishScreen.continueButton().click();
   await publishScreen.confirmButton().click();
+}
+
+/** Clicks, tabs and typing aimed past an open flow must not reach the editor behind it. */
+async function expectEditorOutOfReach(dialog: Locator, blankSpot: Locator) {
+  await expect.element(dialog).toBeVisible();
+  const focusInside = () => dialog.element().contains(document.activeElement);
+  await expect.poll(focusInside).toBe(true);
+
+  const canvas = editorScreen.bodyBehindDialog().element().getBoundingClientRect();
+  const hit = document.elementFromPoint(canvas.x + canvas.width / 2, canvas.y + canvas.height / 2);
+  expect(dialog.element().contains(hit)).toBe(true);
+
+  // Blank space focuses the dialog itself, the one place Shift+Tab could step out from.
+  await blankSpot.click();
+  for (const key of ['{Shift>}{Tab}{/Shift}', '{Tab}']) {
+    for (let press = 0; press < 8; press += 1) {
+      await userEvent.keyboard(key);
+      expect(focusInside()).toBe(true);
+    }
+  }
+
+  await userEvent.keyboard('Sneaky');
+  await expect.element(dialog).toBeVisible();
+  expect(editorScreen.bodyBehindDialog().element().textContent).not.toContain('Sneaky');
 }
 
 afterEach(() => {
@@ -1257,7 +1281,7 @@ describe('Editor header actions', () => {
       await editorScreen.publishButton().click();
       await expect.element(publishScreen.options()).toBeVisible();
       await expect.poll(() => settingsApi.requests.length).toBeGreaterThan(0);
-      await expect.element(editorScreen.publishButton()).toBeEnabled();
+      await expect.element(editorScreen.publishButtonBehindDialog()).toBeEnabled();
 
       await userEvent.keyboard('{Escape}');
       await expect(publishScreen.root()).toHaveCount(0);
@@ -1282,6 +1306,30 @@ describe('Editor header actions', () => {
 
     await expect(publishScreen.updateFlow()).toHaveCount(0);
     await expect.element(editorScreen.unpublishButton()).toHaveFocus();
+  });
+
+  it('keeps focus and typing inside the publish flow', async () => {
+    publishChrome();
+    fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.publishButton().click();
+
+    await expectEditorOutOfReach(
+      publishScreen.root(),
+      publishScreen.options().getByRole('heading', { name: 'Ready, set, publish.' }),
+    );
+  });
+
+  it('keeps focus and typing inside the update flow', async () => {
+    publishChrome();
+    fakeSavablePost({ status: 'published', published_at: '2026-02-01T10:00:00.000Z' });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await editorScreen.unpublishButton().click();
+
+    await expectEditorOutOfReach(publishScreen.updateFlow(), publishScreen.updateFlowTitle());
   });
 
   describe('host limits', () => {
