@@ -23,6 +23,7 @@ vi.mock('./ember-bridge', () => ({
     }
     return stateBridge.isFeatureEnabled(flag) ?? null;
   },
+  useForceUpgrade: () => false,
 }));
 
 // Stand in for the real lazy screen module so the test asserts the wiring
