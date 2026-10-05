@@ -299,7 +299,7 @@ describe('Post editor refetch', () => {
     ],
     ['drops the Author from its authors', 'Author', { authors: [{ id: 'other-user' }] }],
   ])(
-    'keeps the editor and the unsaved text when another writer %s, and the next save is refused',
+    'keeps the editor and the unsaved text when another writer %s, and stops saving at the refusal',
     async (_change, role, theirChanges) => {
       const shared = fakeSharedPost(
         { authors: [{ id: CURRENT_USER_ID }] },
@@ -320,8 +320,10 @@ describe('Post editor refetch', () => {
       await saveShortcut();
 
       await expect
-        .element(editorScreen.saveErrorBanner())
-        .toHaveTextContent('You do not have permission to perform this action');
+        .element(editorScreen.conflictBanner())
+        .toHaveTextContent('You no longer have permission to edit this post');
+      await expect.element(editorScreen.copyConflictedContent()).toBeVisible();
+      await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
       expect(shared.saveApi.requests).toHaveLength(2);
       await expect.element(editorScreen.titleInput()).toHaveValue('My title');
       await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and mine');

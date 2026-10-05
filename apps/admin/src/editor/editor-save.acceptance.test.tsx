@@ -505,6 +505,22 @@ describe('Post editor saving', () => {
     expect(bodyElement()).toBe(mountedBody);
   });
 
+  it('says the editor has crashed when a create is answered with a 404, and keeps the content', async () => {
+    fakeEditorChrome();
+    fakeAdminEndpoint('GET', /^\/slugs\/post\/untitled\//, { slugs: [{ slug: 'untitled' }] });
+    const createApi = fakeAdminEndpoint('POST', /^\/posts\/\?/, POST_NOT_FOUND, { status: 404 });
+    await renderAdminApp('/editor/post', FLAG_ON);
+
+    await appendToBody('First words');
+
+    await expect.poll(() => createApi.requests.length).toBe(1);
+    await expect.element(editorScreen.conflictBanner()).toHaveTextContent('The editor has crashed');
+    await expect.element(editorScreen.copyConflictedContent()).toBeVisible();
+    await expect(editorScreen.conflictBanner().getByRole('button')).toHaveCount(1);
+    await expect.element(editorScreen.body()).toHaveTextContent('First words');
+    expect(currentRoute()).toBe('/editor/post');
+  });
+
   it('holds a title past the limit where it is typed, and refuses it on Cmd-S', async () => {
     const saveApi = fakeSavablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);

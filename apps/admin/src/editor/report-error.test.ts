@@ -222,6 +222,7 @@ describe('reportSaveFailure', () => {
   it.each<[string, SaveError]>([
     ['a validation failure', { kind: 'validation', message: 'Title is too long' }],
     ['a host limit', { kind: 'host-limit', message: 'Upgrade required' }],
+    ['a writer who lost access', { kind: 'forbidden', message: 'Permission error' }],
     [
       'an unreachable server',
       { kind: 'transport', message: 'Unreachable', cause: new ServerUnreachableError() },

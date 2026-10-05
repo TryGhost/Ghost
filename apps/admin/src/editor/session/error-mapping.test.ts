@@ -13,7 +13,13 @@ import {
   type ErrorResponse,
 } from '@tryghost/admin-x-framework/errors';
 import type { SaveError } from '@/editor/engine/save-engine';
-import { POST_DELETED, stateSaveError, toSaveError } from './error-mapping';
+import {
+  ACCESS_LOST,
+  EDITOR_CRASHED,
+  POST_DELETED,
+  stateSaveError,
+  toSaveError,
+} from './error-mapping';
 
 function errorBody(overrides: Partial<ErrorResponse['errors'][number]> = {}): ErrorResponse {
   return {
@@ -38,6 +44,12 @@ function response(status: number): Response {
   return new Response(null, { status });
 }
 
+const NO_PERMISSION = errorBody({
+  type: 'NoPermissionError',
+  message: 'Permission error, cannot edit post.',
+  context: 'You do not have permission to perform this action',
+});
+
 describe('toSaveError', () => {
   it.each<[string, unknown, string]>([
     // Core answers 409 for a collision, which no framework error class claims,
@@ -53,6 +65,8 @@ describe('toSaveError', () => {
       new UnauthorizedError(response(401), errorBody()),
       'session-invalid',
     ],
+    // The framework classes Core's refusal of a writer who lost access as a ValidationError.
+    ['a writer who lost access', new ValidationError(response(403), NO_PERMISSION), 'forbidden'],
     ['a host limit', new HostLimitError(response(403), errorBody()), 'host-limit'],
     ['an unreachable server', new ServerUnreachableError(), 'transport'],
     ['maintenance', new MaintenanceError(response(503), ''), 'transport'],
@@ -132,6 +146,15 @@ describe('toSaveError', () => {
     });
   });
 
+  it('carries the reason Core gave for refusing a writer who lost access', () => {
+    expect(
+      toSaveError(new ValidationError(response(403), NO_PERMISSION), 'fallback'),
+    ).toMatchObject({
+      kind: 'forbidden',
+      message: 'You do not have permission to perform this action',
+    });
+  });
+
   it('keeps its own message for a refused payload that carries no reason', () => {
     const tooLarge = new RequestEntityTooLargeError(response(413), '');
 
@@ -145,13 +168,17 @@ describe('toSaveError', () => {
 });
 
 describe('stateSaveError', () => {
-  it('reports a failed save, a collision and a deleted post, and nothing otherwise', () => {
+  it('reports a failed save, a collision, a halt and a crash, and nothing otherwise', () => {
     const failure: SaveError = { kind: 'transport', message: 'offline' };
     const collision: SaveError = { kind: 'conflict', message: 'Saving failed!' };
+    const missing: SaveError = { kind: 'not-found', message: 'Post not found.' };
+    const refused: SaveError = { kind: 'forbidden', message: 'Permission error.' };
 
     expect(stateSaveError({ kind: 'error', intent: 'field', error: failure })).toBe(failure);
     expect(stateSaveError({ kind: 'conflict', intent: 'field', error: collision })).toBe(collision);
-    expect(stateSaveError({ kind: 'halted' })).toBe(POST_DELETED);
+    expect(stateSaveError({ kind: 'halted', error: missing })).toBe(POST_DELETED);
+    expect(stateSaveError({ kind: 'halted', error: refused })).toBe(ACCESS_LOST);
+    expect(stateSaveError({ kind: 'crashed' })).toBe(EDITOR_CRASHED);
     expect(stateSaveError({ kind: 'saving', intent: 'field' })).toBeNull();
     expect(stateSaveError({ kind: 'idle' })).toBeNull();
   });
