@@ -1,4 +1,4 @@
-import { type CSSProperties, type ReactNode } from 'react';
+import { type ReactNode, useLayoutEffect } from 'react';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
@@ -7,18 +7,39 @@ import { cn } from '@tryghost/shade/utils';
 const GHOST_ORB = 'https://static.ghost.org/v4.0.0/images/ghost-orb-2.png';
 
 /**
- * Full-page frame for the auth screens. Settings are unreadable before sign
- * in, so the site's accent colour comes from the public site payload here.
+ * Settings are unreadable before sign in, so the site's accent colour comes
+ * from the public site payload. Shade's `ghostaccent` token resolves
+ * `--accent-color` on :root, so it has to be published there.
  */
-export function AuthLayout({ children }: { children: ReactNode }) {
+function useSiteAccentColor() {
   const { data } = useBrowseSite({ defaultErrorHandler: false });
   const accentColor = data?.site.accent_color;
 
+  useLayoutEffect(() => {
+    if (!accentColor) {
+      return;
+    }
+
+    const { style } = document.documentElement;
+    const previous = style.getPropertyValue('--accent-color');
+    style.setProperty('--accent-color', accentColor);
+
+    return () => {
+      if (previous) {
+        style.setProperty('--accent-color', previous);
+      } else {
+        style.removeProperty('--accent-color');
+      }
+    };
+  }, [accentColor]);
+}
+
+/** Full-page frame for the auth screens, with larger controls than the rest of Admin. */
+export function AuthLayout({ children }: { children: ReactNode }) {
+  useSiteAccentColor();
+
   return (
-    <div
-      className="flex min-h-screen w-full justify-center overflow-y-auto bg-background px-6 [--control-height:calc(var(--spacing)*12)]"
-      style={accentColor ? ({ '--accent-color': accentColor } as CSSProperties) : undefined}
-    >
+    <div className="flex min-h-screen w-full justify-center overflow-y-auto bg-background px-6 [--control-height:calc(var(--spacing)*12)]">
       <Stack className="w-full max-w-lg py-12 sm:py-20" gap="xl">
         {children}
       </Stack>
