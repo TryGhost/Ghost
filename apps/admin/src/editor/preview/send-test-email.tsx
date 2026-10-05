@@ -9,18 +9,25 @@ import {
   PopoverTrigger,
 } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { Stack } from '@tryghost/shade/primitives';
+import { Stack, Text } from '@tryghost/shade/primitives';
 import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
+import { SessionExpiredError } from '@tryghost/admin-x-framework/errors';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useSendTestEmail } from '@tryghost/admin-x-framework/api/email-previews';
-import { postPreviewTestEmailInput } from '@tryghost/test-data/selectors/editor';
+import {
+  postPreviewTestEmailError,
+  postPreviewTestEmailInput,
+} from '@tryghost/test-data/selectors/editor';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { ReauthDialog } from '@/editor/session/reauth-dialog';
 import { useEditorSettings } from '@/editor/use-editor-settings';
 
 import { emailPreviewAudience, type PreviewAudience } from './preview-url';
+
+const SESSION_EXPIRED = 'Your session expired. Send again to sign in.';
 
 interface SendTestEmailProps {
   postId: string;
@@ -45,6 +52,9 @@ export function SendTestEmail({
   const { mutateAsync: sendTestEmail, isPending } = useSendTestEmail();
   const handleError = useHandleError();
   const [editedAddress, setEditedAddress] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
 
   const address = editedAddress ?? currentUser?.email ?? '';
   const [mailgunApiKey, mailgunDomain, mailgunBaseUrl] = getSettingValues<string>(
@@ -63,6 +73,8 @@ export function SendTestEmail({
     if (disabled) {
       return;
     }
+
+    setSendError(null);
 
     if (!validator.isEmail(recipient)) {
       toast.error('Please enter a valid email');
@@ -83,12 +95,18 @@ export function SendTestEmail({
       });
       toast.success(`Test email sent to ${recipient}`);
     } catch (error) {
+      if (error instanceof SessionExpiredError) {
+        // The sign-in dialog renders inside the popover, so a closed one must reopen.
+        setOpen(true);
+        setSigningIn(true);
+        return;
+      }
       handleError(error);
     }
   };
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button className="shrink-0" disabled={disabled} variant="outline">
           <LucideIcon.Send />
@@ -119,8 +137,32 @@ export function SendTestEmail({
             <Button disabled={disabled || isPending || !mailgunStatusKnown} type="submit">
               {isPending ? 'Sending...' : 'Send'}
             </Button>
+            {sendError ? (
+              <Text
+                className="text-destructive"
+                data-testid={postPreviewTestEmailError}
+                role="alert"
+                size="sm"
+              >
+                {sendError}
+              </Text>
+            ) : null}
           </Stack>
         </form>
+        {/* Inside the popover so signing in leaves it open; outside the form, whose
+            onSubmit the dialog's own submit would reach through the portal. */}
+        <ReauthDialog
+          email={currentUser?.email ?? ''}
+          open={signingIn}
+          onAbandoned={() => {
+            setSigningIn(false);
+            setSendError(SESSION_EXPIRED);
+          }}
+          onSucceeded={() => {
+            setSigningIn(false);
+            void send();
+          }}
+        />
       </PopoverContent>
     </Popover>
   );
