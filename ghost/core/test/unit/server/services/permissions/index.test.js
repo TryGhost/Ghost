@@ -6,6 +6,7 @@ const _ = require('lodash');
 const models = require('../../../../../core/server/models');
 const actionsMap = require('../../../../../core/server/services/permissions/actions-map-cache');
 const permissions = require('../../../../../core/server/services/permissions');
+const policy = require('../../../../../core/server/services/permissions/policy');
 
 describe('Permissions', function () {
   let fakePermissions = [];
@@ -70,6 +71,23 @@ describe('Permissions', function () {
   });
 
   describe('Init (build actions map)', function () {
+    it('preserves the previous policy when reinitialization rejects invalid role data', async function () {
+      models.Role.findAll.resolves({
+        toJSON: () => [{ id: 'policy-owner', name: 'Owner', permissions: [] }],
+      });
+      await permissions.init();
+      const previous = policy.permissionsForRole('policy-owner', 'Owner');
+      assert.deepEqual(previous, []);
+      models.Role.findAll.resolves({ toJSON: () => [{ id: 'invalid' }] });
+      try {
+        await assert.rejects(() => permissions.init(), { name: 'ZodError' });
+        assert.equal(policy.permissionsForRole('policy-owner', 'Owner'), previous);
+      } finally {
+        models.Role.findAll.resolves(models.Roles.forge([]));
+        await permissions.init();
+      }
+    });
+
     it('can load an actions map from existing permissions', async function () {
       fakePermissions = loadFakePermissions();
 

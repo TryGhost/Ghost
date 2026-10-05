@@ -5,7 +5,7 @@ const permissionSchema = z.object({
   name: z.string(),
   action_type: z.string(),
   object_type: z.string(),
-  object_id: z.string().nullable().optional(),
+  object_id: z.string().nullable().default(null),
 });
 
 const fixturesSchema = z.object({
@@ -30,7 +30,7 @@ type PermissionDefinition = z.infer<typeof permissionSchema>;
 // Keep the existing provider contract at the CommonJS/model boundary. The policy
 // itself owns immutable values and does not depend on Bookshelf.
 export type StaticPermission = Readonly<{
-  get: (key: string) => string | null | undefined;
+  get: <Key extends keyof PermissionDefinition>(key: Key) => PermissionDefinition[Key];
 }>;
 
 function permissionKey(permission: PermissionDefinition): string {
@@ -95,11 +95,15 @@ export class PermissionPolicy {
       }
 
       const values = definitions.map((definition) => {
-        const attributes: Readonly<Record<string, string | null | undefined>> = Object.freeze({
-          ...definition,
-          object_id: definition.object_id ?? null,
+        const attributes = Object.freeze({ ...definition });
+        return Object.freeze({
+          get: <Key extends keyof PermissionDefinition>(key: Key): PermissionDefinition[Key] => {
+            if (!Object.hasOwn(attributes, key)) {
+              throw new errors.InternalServerError({ message: 'Unknown permission field' });
+            }
+            return attributes[key];
+          },
         });
-        return Object.freeze({ get: (key: string) => attributes[key] });
       });
       this.#roles.set(role.id, { name: role.name, permissions: Object.freeze(values) });
     }

@@ -28,15 +28,18 @@ module.exports = {
 
         const seenPerms = {};
 
-        const rolePerms = await Promise.all(
-          foundUser.related('roles').models.map(async (role) => {
-            const staticPermissions = policy.permissionsForRole(role.id, role.get('name'));
-            if (staticPermissions !== undefined) {
-              return staticPermissions;
-            }
-            await role.load('permissions');
-            return role.related('permissions').models;
-          }),
+        const roles = foundUser.related('roles').models;
+        const staticPermissions = roles.map((role) =>
+          policy.permissionsForRole(role.id, role.get('name')),
+        );
+        const fallbackRoles = roles.filter((role, index) => staticPermissions[index] === undefined);
+        if (fallbackRoles.length) {
+          // Load all incompatible roles together, retaining the legacy single
+          // grant query for users with multiple custom roles.
+          await models.Roles.forge(fallbackRoles).load('permissions');
+        }
+        const rolePerms = roles.map(
+          (role, index) => staticPermissions[index] ?? role.related('permissions').models,
         );
 
         const allPerms = [];

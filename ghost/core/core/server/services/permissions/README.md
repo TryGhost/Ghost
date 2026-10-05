@@ -23,6 +23,8 @@ direct user grants on each call. They do not cache principals or authorization
 decisions across requests. User suspension, demotion and key deletion therefore
 take effect on the next check. Existing permission tables, API relation includes,
 fixtures and migrations remain available for compatibility and backups.
+When a user has several incompatible roles, their grants are loaded together in
+one query, preserving the legacy query count for customized installations.
 
 ## Multiple instances and policy changes
 
@@ -48,4 +50,9 @@ pnpm exec vitest run test/unit/server/services/permissions
 
 The database-backed permission tests and Admin API suites cover current identity
 state, direct grants, compatibility fallback, model restrictions and relation
-includes. See the [testing guide](../../../../../../docs/contributing/testing.md).
+includes. Unit tests compare the compiler with the legacy fixture matcher for
+every built-in role. Integration tests independently load the legacy eager
+database relations and compare complete grant sets and tag allow/deny decisions
+with the memory providers for every built-in role. These comparisons run in
+tests; requests use the path selected by boot reconciliation. See the
+[testing guide](../../../../../../docs/contributing/testing.md).

@@ -77,6 +77,41 @@ describe('PermissionPolicy', function () {
     assert(Object.isFrozen(permissions[0]));
     input.models[0].entries[0].name = 'Changed';
     assert.equal(permissions[0].get('name'), 'Browse posts');
+    const action: string = permissions[0].get('action_type');
+    const objectId: string | null = permissions[0].get('object_id');
+    assert.equal(action, 'browse');
+    assert.equal(objectId, null);
+    assert.throws(
+      // @ts-expect-error Only schema-defined permission fields are accepted.
+      () => permissions[0].get('toString'),
+      { errorType: 'InternalServerError' },
+    );
+  });
+
+  it('rejects malformed fixture grants and database roles at the boundary', function () {
+    assert.throws(
+      () => new PermissionPolicy({ ...customFixtures, models: 'invalid' }, []),
+      z.ZodError,
+    );
+    assert.throws(
+      () =>
+        new PermissionPolicy(
+          {
+            ...customFixtures,
+            relations: [{ ...customFixtures.relations[0], entries: { Writer: { post: 3 } } }],
+          },
+          [],
+        ),
+      z.ZodError,
+    );
+    assert.throws(
+      () => new PermissionPolicy(customFixtures, [{ id: 3, name: 'Reader', permissions: [] }]),
+      z.ZodError,
+    );
+    assert.throws(
+      () => new PermissionPolicy(customFixtures, [{ id: 'reader', name: 'Reader' }]),
+      z.ZodError,
+    );
   });
 
   it('keeps separately constructed instance policies independent', function () {
