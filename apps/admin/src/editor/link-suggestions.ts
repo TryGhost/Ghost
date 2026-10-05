@@ -255,5 +255,9 @@ function matchTerm<Entry>(entries: Entry[], term: string, text: (entry: Entry) =
     return [];
   }
 
-  return entries.filter((entry) => text(entry).toLowerCase().includes(needle));
+  const words = needle.split(/\s+/);
+  return entries.filter((entry) => {
+    const haystack = text(entry).toLowerCase();
+    return words.every((word) => haystack.includes(word));
+  });
 }
