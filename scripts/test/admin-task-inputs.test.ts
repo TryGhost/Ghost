@@ -77,6 +77,8 @@ describe('Admin task inputs', () => {
     for (const target of ['test:unit', 'test:acceptance']) {
       const { files, runtime, environment } = await inputs(target);
       assert.ok(files.includes('ghost/core/core/frontend/src/cards/js/video.js'));
+      assert.ok(files.includes('scripts/hash-vite-env.ts'));
+      assert.ok(runtime.includes('node scripts/hash-vite-env.ts --directory=apps/admin'));
       assert.ok(runtime.includes('node -v'));
       assert.ok(runtime.some((command) => command.includes('process.platform')));
       assert.ok(runtime.some((command) => command.includes('timeZone')));
@@ -116,6 +118,32 @@ describe('Admin task inputs', () => {
       if (name === 'test:types') {
         assert.equal(target.command, 'tsc -b');
         assert.deepEqual(target.outputs, []);
+      }
+    }
+  });
+
+  it('reruns the contract suites when their external configuration changes', async () => {
+    for (const target of ['test', 'test:unit']) {
+      const { files } = await nxJson<TaskInputs>([
+        'show',
+        'target',
+        'inputs',
+        `@internal/scripts:${target}`,
+      ]);
+      for (const file of [
+        'apps/admin/package.json',
+        'apps/ember-admin/package.json',
+        '.github/workflows/ci.yml',
+      ]) {
+        assert.ok(files.includes(file), `${target}: ${file}`);
+        const affected = await nxJson<string[]>([
+          'show',
+          'projects',
+          '--affected',
+          `--files=${file}`,
+          `--withTarget=${target}`,
+        ]);
+        assert.ok(affected.includes('@internal/scripts'), `${target}: ${file}`);
       }
     }
   });

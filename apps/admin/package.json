@@ -115,6 +115,10 @@
       "reactTests": [
         "default",
         "cardAssets",
+        "{workspaceRoot}/scripts/hash-vite-env.ts",
+        {
+          "runtime": "node scripts/hash-vite-env.ts --directory=apps/admin"
+        },
         {
           "runtime": "node -v"
         },

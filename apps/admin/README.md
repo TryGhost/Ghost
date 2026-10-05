@@ -117,7 +117,9 @@ Nx caches unit, acceptance and typecheck results. The global
 inputs; Ember overrides it with an empty input because these targets do not
 execute Ember. The production build still uses `^default`, including Ember.
 Test inputs also include Core's aliased card assets, the lockfile and runtime
-settings such as Node version, platform, timezone and CI mode. Shard and other
+settings such as Node version, platform, timezone and CI mode. A digest of
+local `.env` and `.env.*` files covers Vite's mode-specific configuration without
+printing their values. Shard and other
 CLI arguments get separate cache keys. Use `--skip-nx-cache` to force a fresh run.
 
 CI changes confined to Admin's `*.test.ts(x)`, `*.screen.ts`, `test-utils/` or
