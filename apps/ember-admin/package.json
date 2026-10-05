@@ -44,8 +44,6 @@
     "@html-next/vertical-collection": "3.0.0",
     "@internal/cfg-eslint": "workspace:*",
     "@sentry/ember": "7.120.3",
-    "@sentry/integrations": "7.114.0",
-    "@sentry/replay": "7.116.0",
     "@tryghost/admin-x-framework": "workspace:*",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "catalog:",
