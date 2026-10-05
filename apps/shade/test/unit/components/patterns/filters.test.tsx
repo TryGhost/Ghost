@@ -939,4 +939,28 @@ describe('Filters', () => {
       expect(document.activeElement?.getAttribute('data-slot')).not.toBe('filters-input');
     });
   });
+
+  describe('pillLabel', () => {
+    it('labels an applied pill with pillLabel instead of the menu label', () => {
+      render(
+        <Filters
+          fields={[
+            {
+              key: 'featured',
+              label: 'Featured',
+              pillLabel: 'Post',
+              type: 'custom',
+              operators: [{ value: 'is', label: 'is' }],
+              customRenderer: () => <span>Featured value</span>,
+            },
+          ]}
+          filters={[createFilter('featured', 'is', ['true'])]}
+          onChange={vi.fn()}
+        />,
+      );
+
+      expect(screen.getByText('Post')).toBeDefined();
+      expect(screen.queryByText('Featured')).toBeNull();
+    });
+  });
 });

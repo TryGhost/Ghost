@@ -1,12 +1,15 @@
 import { LucideIcon } from '@tryghost/shade/utils';
 import {
-  FEATURED_OPTIONS,
+  FEATURED_VALUE,
+  NOT_FEATURED_OPERATOR,
+  TYPE_OPERATOR,
+} from '@/posts/list/post-filter-query';
+import {
   type PostFilterOption,
   VISIBILITY_OPTIONS,
   getTypeOptions,
 } from '@/posts/list/post-filter-fields';
 import { LEGACY_FEATURED_TYPE, splitTypeParam } from '@/posts/list/post-query-params';
-import { TYPE_OPERATOR } from '@/posts/list/post-filter-query';
 import { isAuthorOrContributor, isContributorUser } from '@tryghost/admin-x-framework/api/users';
 import { usePostAuthorValueSource } from '@/shared/filter-sources/use-post-author-value-source';
 import { usePostTagValueSource } from '@/shared/filter-sources/use-post-tag-value-source';
@@ -38,11 +41,15 @@ export interface BuildPostFilterFieldsOptions {
    * falls back to "Select…" and the filter vanishes from the UI while
    * staying in the URL. Ember shows a red "Unknown type" for the same case.
    */
-  params?: Partial<Record<'type' | 'featured' | 'visibility', string | null>>;
+  params?: Partial<Record<'type' | 'visibility', string | null>>;
 }
 
 const IS_ONLY = [{ value: 'is', label: 'is' }];
 const IS_ANY_OF = [{ value: TYPE_OPERATOR, label: 'is any of' }];
+const IS_OR_IS_NOT = [
+  { value: 'is', label: 'is' },
+  { value: NOT_FEATURED_OPERATOR, label: 'is not' },
+];
 
 function withUnknownOptions(
   options: PostFilterOption[],
@@ -80,13 +87,18 @@ export function buildPostFilterFields({
     options: withUnknownOptions(getTypeOptions(resource), typeValues, 'type'),
   };
 
+  // Reads as "Post is Featured" / "Post is not Featured"; picking it from the
+  // menu adds the chip directly, since its value is fixed.
   const featuredField: FilterFieldConfig<string> = {
     key: 'featured',
     label: 'Featured',
-    type: 'select',
+    pillLabel: noun,
+    type: 'custom',
     icon: <LucideIcon.Star className="size-4" />,
-    operators: IS_ONLY,
-    options: withUnknownOptions(FEATURED_OPTIONS, singleValue(params.featured), 'value'),
+    operators: IS_OR_IS_NOT,
+    defaultOperator: 'is',
+    defaultValue: FEATURED_VALUE,
+    customRenderer: () => <span>Featured</span>,
   };
 
   if (isContributor) {

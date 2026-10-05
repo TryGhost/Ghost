@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  FEATURED_OPTIONS,
   ORDER_OPTIONS,
   VISIBILITY_OPTIONS,
   getOrderLabel,
@@ -42,12 +41,6 @@ describe('getTypeOptions', () => {
       expect(known).toContain(option.value);
       expect(getStatusesForType(option.value)).toEqual([option.value]);
     });
-  });
-});
-
-describe('FEATURED_OPTIONS', () => {
-  it('carries the values the query layer sends as featured:true/false', () => {
-    expect(FEATURED_OPTIONS.map((option) => option.value)).toEqual(['true', 'false']);
   });
 });
 

@@ -1038,6 +1038,9 @@ export interface ValueSource<T = string> {
 export interface FilterFieldConfig<T = unknown> {
   key?: string;
   label?: string;
+  // Label on an applied pill, when it should read differently from the field's
+  // entry in the add-filter menu (e.g. menu "Featured", pill "Post is Featured").
+  pillLabel?: string;
   icon?: React.ReactNode;
   type?:
     | 'select'
@@ -2774,7 +2777,7 @@ export const FiltersContent = <T = unknown,>({
               })}
             >
               {field.icon}
-              {field.label}
+              {field.pillLabel ?? field.label}
             </div>
 
             {/* Operator Dropdown */}
@@ -3315,7 +3318,7 @@ export function Filters<T = unknown>({
                 })}
               >
                 {field.icon}
-                {field.label}
+                {field.pillLabel ?? field.label}
               </div>
 
               {/* Operator Dropdown */}

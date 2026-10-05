@@ -27,12 +27,6 @@ const PAGE_TYPE_OPTIONS: PostFilterOption[] = [
   { value: 'scheduled', label: 'Scheduled pages' },
 ];
 
-/** Independent of type: featured is a flag, not a status. */
-export const FEATURED_OPTIONS: PostFilterOption[] = [
-  { value: 'true', label: 'Yes' },
-  { value: 'false', label: 'No' },
-];
-
 /**
  * `[paid,tiers]` is an opaque option value, not structure - Ember interpolates
  * it straight into the filter string.

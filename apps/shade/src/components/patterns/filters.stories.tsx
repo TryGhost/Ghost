@@ -284,6 +284,36 @@ export const WithBooleanFields: Story = {
   },
 };
 
+// A flag read as a sentence: the menu offers "Featured", the pill reads
+// "Post is Featured" and its operator flips it to "is not".
+const pillLabelFields: FilterFieldConfig[] = [
+  {
+    key: 'featured',
+    label: 'Featured',
+    pillLabel: 'Post',
+    type: 'custom',
+    icon: <CheckCircle className="size-4" />,
+    operators: [
+      { value: 'is', label: 'is' },
+      { value: 'is_not', label: 'is not' },
+    ],
+    defaultValue: 'true',
+    customRenderer: () => <span>Featured</span>,
+  },
+];
+
+export const WithPillLabel: Story = {
+  render: () => <FilterDemo fields={pillLabelFields} />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A pill label that differs from the menu entry, for flags that read as "Post is Featured".',
+      },
+    },
+  },
+};
+
 // Grouped fields
 const groupedFields: FilterFieldConfig[] = [
   {

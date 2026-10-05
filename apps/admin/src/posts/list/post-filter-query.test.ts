@@ -46,6 +46,16 @@ describe('parsePostFilters', () => {
     ]);
   });
 
+  it('turns featured=false into an "is not" featured filter', () => {
+    expect(withoutIds(parsePostFilters({ featured: 'false' }))).toEqual([
+      { field: 'featured', operator: 'is_not', values: ['true'] },
+    ]);
+  });
+
+  it('has no featured filter for a featured value that is not a boolean', () => {
+    expect(parsePostFilters({ featured: 'maybe' })).toEqual([]);
+  });
+
   // Saved views and bookmarks from before featured was its own param.
   it('reads legacy type=featured as a featured filter', () => {
     expect(withoutIds(parsePostFilters({ type: 'featured' }))).toEqual([
@@ -55,7 +65,7 @@ describe('parsePostFilters', () => {
 
   it('lets an explicit featured param win over legacy type=featured', () => {
     expect(withoutIds(parsePostFilters({ type: 'featured', featured: 'false' }))).toEqual([
-      { field: 'featured', operator: 'is', values: ['false'] },
+      { field: 'featured', operator: 'is_not', values: ['true'] },
     ]);
   });
 

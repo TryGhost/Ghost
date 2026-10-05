@@ -122,6 +122,8 @@ export const postsListScreen = {
   /** An applied chip's value, which opens its picker. */
   filterValueButton: (label: string) =>
     page.getByTestId(postsFilters).getByRole('button', { name: label, exact: true }),
+  /** An entry in a chip's operator menu, which renders into a portal. */
+  filterOperatorOption: (label: string) => page.getByRole('menuitem', { name: label, exact: true }),
   /** An option in a chip's value picker, which renders into a portal. */
   filterValueOption: (label: string) => page.getByRole('option', { name: label, exact: true }),
   /** A field in the add-filter popover, which renders into a portal. */

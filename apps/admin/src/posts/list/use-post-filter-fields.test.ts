@@ -76,9 +76,22 @@ describe('buildPostFilterFields', () => {
     expect(type?.operators?.map((operator) => operator.value)).toEqual(['is_any_of']);
   });
 
+  // Reads "Post is Featured" / "Post is not Featured".
+  it('makes featured a flag whose operator carries the value', () => {
+    const featured = build().find((field) => field.key === 'featured');
+
+    expect(featured?.label).toBe('Featured');
+    expect(featured?.pillLabel).toBe('Post');
+    expect(featured?.operators?.map((operator) => operator.value)).toEqual(['is', 'is_not']);
+    expect(featured?.defaultValue).toBe('true');
+    expect(build({ resource: 'pages' }).find((field) => field.key === 'featured')?.pillLabel).toBe(
+      'Page',
+    );
+  });
+
   it('uses single-select equality for every other field', () => {
     build()
-      .filter((field) => field.key !== 'type')
+      .filter((field) => field.key !== 'type' && field.key !== 'featured')
       .forEach((field) => {
         expect(field.operators?.map((operator) => operator.value)).toEqual(['is']);
       });

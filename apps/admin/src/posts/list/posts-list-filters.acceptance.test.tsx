@@ -86,13 +86,26 @@ describe('Posts list filters', () => {
     await expect.poll(currentRoute).toBe('/posts?type=draft%2Cpublished');
   });
 
+  // Featured has a fixed value, so picking it from the menu adds the chip.
   it('filters by featured alongside type', async () => {
     fakePosts([]);
     await renderAdminApp('/posts?type=published');
 
-    await postsListScreen.addFilter('Featured', 'Yes');
+    await postsListScreen.addFilterButton().click();
+    await postsListScreen.filterFieldOption('Featured').click();
 
+    await expect.element(postsListScreen.filterBar()).toHaveTextContent(/Post\s*is\s*Featured/);
     await expect.poll(currentRoute).toBe('/posts?type=published&featured=true');
+  });
+
+  it('flips featured to "is not"', async () => {
+    fakePosts([]);
+    await renderAdminApp('/posts?featured=true');
+
+    await postsListScreen.filterValueButton('is').click();
+    await postsListScreen.filterOperatorOption('is not').click();
+
+    await expect.poll(currentRoute).toBe('/posts?featured=false');
   });
 
   // Saved views and bookmarks from before featured was its own param.

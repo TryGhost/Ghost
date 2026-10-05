@@ -37,6 +37,13 @@ const EMPTY_PARAMS: PostFilterParamValues = {
 const OPERATOR = 'is';
 export const TYPE_OPERATOR = 'is_any_of';
 
+/**
+ * Featured is a flag: the chip's value is fixed and its operator carries the
+ * param - "is" writes `featured=true`, "is not" writes `featured=false`.
+ */
+export const FEATURED_VALUE = 'true';
+export const NOT_FEATURED_OPERATOR = 'is_not';
+
 /** Fixed order so one selection always writes one URL, whatever the click order. */
 const TYPE_ORDER = getTypeOptions('posts').map((option) => option.value);
 
@@ -59,18 +66,28 @@ export function parsePostFilters(params: PostListParams): Filter<string>[] {
 
     // Ids only have to be unique and stable for a given params record;
     // the param name already is.
+    const id = `${param}:${index + 1}`;
+
+    if (param === 'featured') {
+      const operator = values[0] === 'false' ? NOT_FEATURED_OPERATOR : OPERATOR;
+      return [{ id, field: param, operator, values: [FEATURED_VALUE] }];
+    }
+
     const operator = param === 'type' ? TYPE_OPERATOR : OPERATOR;
-    return [{ id: `${param}:${index + 1}`, field: param, operator, values }];
+    return [{ id, field: param, operator, values }];
   });
 }
 
-/** Legacy `?type=featured` surfaces as a Featured chip, not a type value. */
+/**
+ * Legacy `?type=featured` surfaces as a Featured chip, not a type value. A
+ * featured value other than true/false has no chip; the query ignores it too.
+ */
 function paramValues(params: PostListParams, param: PostFilterParam): string[] {
   if (param === 'type') {
     return splitTypeParam(params.type).filter((value) => value !== LEGACY_FEATURED_TYPE);
   }
 
-  const value = param === 'featured' && !params.featured ? getFeaturedValue(params) : params[param];
+  const value = param === 'featured' ? getFeaturedValue(params) : params[param];
 
   if (value === null || value === undefined || value.trim() === '') {
     return [];
@@ -117,6 +134,11 @@ export function serializePostFilters(filters: Filter<string>[]): PostFilterParam
 
   filters.forEach((filter) => {
     if (!isFilterParam(filter.field)) {
+      return;
+    }
+
+    if (filter.field === 'featured') {
+      params.featured = filter.operator === NOT_FEATURED_OPERATOR ? 'false' : 'true';
       return;
     }
 
