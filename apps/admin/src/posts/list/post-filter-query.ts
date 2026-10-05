@@ -57,7 +57,7 @@ function isFilterParam(field: string): field is PostFilterParam {
  * build understands. Dropping it would silently rewrite the user's URL.
  */
 export function parsePostFilters(params: PostListParams): Filter<string>[] {
-  return POST_FILTER_PARAMS.flatMap((param, index) => {
+  return POST_FILTER_PARAMS.flatMap((param, index): Filter<string>[] => {
     const values = paramValues(params, param);
 
     if (values.length === 0) {
