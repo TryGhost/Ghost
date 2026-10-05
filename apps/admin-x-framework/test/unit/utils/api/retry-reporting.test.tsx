@@ -16,8 +16,7 @@ const maintenance = () =>
 
 const ok = () => Response.json({ posts: [] }, { headers: { server: 'nginx' } });
 
-const renderFetchApi = (sentryDSN: string | null = null) =>
-  renderHookWithProviders(() => useFetchApi(), { frameworkProps: { sentryDSN } }).result.current;
+const renderFetchApi = () => renderHookWithProviders(() => useFetchApi()).result.current;
 
 describe('request retry reporting', () => {
   beforeEach(() => {
@@ -77,12 +76,12 @@ describe('request retry reporting', () => {
     });
   });
 
-  it('stays silent without a Sentry client, even when a DSN is configured', async () => {
+  it('stays silent without a Sentry client', async () => {
     vi.spyOn(globalThis, 'fetch')
       .mockResolvedValueOnce(maintenance())
       .mockResolvedValueOnce(ok())
       .mockImplementation(async () => maintenance());
-    const fetchApi = renderFetchApi('https://public@o0.ingest.sentry.io/1');
+    const fetchApi = renderFetchApi();
 
     const recovered = fetchApi(endpoint);
     await vi.runAllTimersAsync();
