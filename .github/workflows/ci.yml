@@ -714,6 +714,11 @@ jobs:
       fail-fast: false
       matrix:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
+    env:
+      # Only the primary Node leg is instrumented, as in the acceptance job —
+      # the other leg covers the same code, and would collide on the
+      # unit-coverage artifact name.
+      COVERAGE_ENABLED: ${{ needs.job_setup.outputs.coverage_enabled == 'true' && matrix.node == needs.job_setup.outputs.node_version }}
     name: Unit tests (Node ${{ matrix.node }})
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -749,9 +754,26 @@ jobs:
         # its suites but never exits (lingering worker/handle) would otherwise
         # wedge the job until the 6h runner limit. Killing it turns the hang
         # into a retriable failure. A full cold (uncached) run takes ~10min.
+        #
+        # On the instrumented leg, ghost/core runs test:ci:unit instead, which
+        # writes coverage-unit/cobertura-coverage.xml. It's an Nx output, so a
+        # cache hit restores the report rather than skipping it. The other
+        # projects run test:unit as usual.
         run: |
+          PROJECTS="${{ needs.job_setup.outputs.unit_test_projects_str }}"
+          GHOST_COVERAGE=false
+          if [ "$COVERAGE_ENABLED" = "true" ] && [[ ",${PROJECTS}," == *",ghost,"* ]]; then
+            GHOST_COVERAGE=true
+          fi
+
           for attempt in 1 2 3; do
-            timeout 25m pnpm nx run-many -t test:unit -p "${{ needs.job_setup.outputs.unit_test_projects_str }}" && exit 0
+            if [ "$GHOST_COVERAGE" = "true" ]; then
+              timeout 25m pnpm nx run-many -t test:unit -p "$PROJECTS" --exclude ghost \
+                && timeout 25m pnpm nx run ghost:test:ci:unit \
+                && exit 0
+            else
+              timeout 25m pnpm nx run-many -t test:unit -p "$PROJECTS" && exit 0
+            fi
             if [ "${attempt}" -lt 3 ]; then
               echo "::warning::Unit tests attempt ${attempt} failed — retrying"
             else
@@ -772,6 +794,14 @@ jobs:
             git diff
             exit 1
           fi
+
+      # Absent when ghost/core wasn't among the affected projects; Codecov
+      # carries the unit-tests flag forward from the last report instead.
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: env.COVERAGE_ENABLED == 'true' && hashFiles('ghost/core/coverage-unit/cobertura-coverage.xml') != ''
+        with:
+          name: unit-coverage
+          path: ghost/core/coverage-unit/cobertura-coverage.xml
 
       - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -2405,6 +2435,24 @@ jobs:
         with:
           flags: e2e-tests
           files: ghost/core/coverage-e2e/cobertura-coverage.xml,ghost/core/coverage-integration/cobertura-coverage.xml
+          disable_search: true
+
+      # The unit job only uploads this artifact when ghost/core was among the
+      # affected projects, so a missing artifact is expected, not an error.
+      - name: Restore Unit coverage
+        if: contains(needs.job_unit-tests.result, 'success')
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: unit-coverage
+          path: ghost/core/coverage-unit
+
+      - name: Upload Unit test coverage
+        if: contains(needs.job_unit-tests.result, 'success') && hashFiles('ghost/core/coverage-unit/cobertura-coverage.xml') != ''
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          flags: unit-tests
+          files: ghost/core/coverage-unit/cobertura-coverage.xml
           disable_search: true
 
   job_required_tests:
