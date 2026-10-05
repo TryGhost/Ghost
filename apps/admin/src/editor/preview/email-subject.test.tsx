@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import type { SaveError } from '@/editor/engine/save-engine';
 import { CONFLICT_MESSAGE, UNREACHABLE_MESSAGE } from '@/editor/publish/completion-message';
-import { POST_DELETED } from '@/editor/session/error-mapping';
+import { ACCESS_LOST, POST_DELETED } from '@/editor/session/error-mapping';
 import { EMAIL_SUBJECT_TOO_LONG } from '@/editor/session/settings-fields';
 import { EmailSubject } from './email-subject';
 
@@ -104,6 +104,7 @@ describe('EmailSubject', () => {
   it.each([
     ['a collision', COLLISION, CONFLICT_MESSAGE],
     ['a deleted post', POST_DELETED, POST_DELETED.message],
+    ['lost access', ACCESS_LOST, ACCESS_LOST.message],
   ])('keeps %s in view through an edit', (_case, saveError, message) => {
     render(<Harness saveError={saveError} />);
 

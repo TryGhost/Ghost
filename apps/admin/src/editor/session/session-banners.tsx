@@ -23,13 +23,12 @@ import { EDITOR_CONFIRM_DIALOG_LAYER } from '@/editor/layering';
 import { LimitMessage } from '@/editor/publish/components/limit-message';
 import { splitUpgradeMessage } from '@/editor/publish/publish-options';
 import { reportShownAlert } from '@/editor/report-error';
-import { POST_DELETED } from './error-mapping';
+import { POST_DELETED, terminalSaveError } from './error-mapping';
 import type { ReloadOutcome } from './use-editor-session';
 
 const SESSION_EXPIRED = 'Your session expired. Retry to sign in again and save.';
 const CONFLICT =
   'Someone else is editing this post. Reloading replaces what you have with their version, so copy your content first if you need it.';
-const GONE = POST_DELETED.message;
 
 export interface SessionBannersProps {
   state: SaveEngineState;
@@ -65,7 +64,8 @@ type ConflictBannerProps = Pick<
   'hasUnsavedContent' | 'contentText' | 'onReload'
 > & {
   error: SaveError;
-  deleted?: boolean;
+  /** Saving has stopped for good: the error says why, and copying is the only way out. */
+  stopped?: boolean;
 };
 
 function ConflictBanner({
@@ -73,13 +73,14 @@ function ConflictBanner({
   contentText,
   onReload,
   error,
-  deleted = false,
+  stopped = false,
 }: ConflictBannerProps) {
   const [confirming, setConfirming] = useState(false);
   const [reloading, setReloading] = useState(false);
   const [reloadFoundDeleted, setReloadFoundDeleted] = useState(false);
-  const gone = deleted || reloadFoundDeleted;
-  useShownAlert(gone ? GONE : CONFLICT, gone ? POST_DELETED : error);
+  const halt = stopped ? error : reloadFoundDeleted ? POST_DELETED : null;
+  const message = halt ? halt.message : CONFLICT;
+  useShownAlert(message, halt ?? error);
 
   const reload = async () => {
     setConfirming(false);
@@ -113,9 +114,9 @@ function ConflictBanner({
         variant="destructive"
       >
         <Inline align="center" gap="sm" justify="center" wrap>
-          <Text className="text-center text-inherit">{gone ? GONE : CONFLICT}</Text>
+          <Text className="text-center text-inherit">{message}</Text>
           <Inline align="center" gap="sm" justify="center">
-            {!gone && (
+            {!halt && (
               <Button
                 className="border-destructive-foreground/40 text-destructive-foreground hover:bg-destructive-foreground/10 hover:text-destructive-foreground"
                 disabled={reloading}
@@ -177,21 +178,18 @@ export function SessionBanners({
   const saveError = state.kind === 'error' ? state.error : null;
   useShownAlert(saveError && saveErrorMessage(saveError), saveError);
 
+  const halt = terminalSaveError(state);
   const conflict =
     state.kind === 'conflict'
       ? state.error
-      : state.kind === 'halted'
-        ? POST_DELETED
-        : pendingSave?.blockedBy?.kind === 'conflict'
-          ? pendingSave.blockedBy
-          : null;
+      : (halt ?? (pendingSave?.blockedBy?.kind === 'conflict' ? pendingSave.blockedBy : null));
   if (conflict) {
     return (
       <ConflictBanner
         contentText={contentText}
-        deleted={state.kind === 'halted'}
         error={conflict}
         hasUnsavedContent={hasUnsavedContent}
+        stopped={halt !== null}
         onReload={onReload}
       />
     );

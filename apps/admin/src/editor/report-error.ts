@@ -63,9 +63,10 @@ function responseTags(error: SaveError): Record<string, TagValue | undefined> {
 }
 
 /**
- * Reports a request that settled as failed. Validation, host limits and an
- * unreachable server are the writer's or the host's to act on and are not
- * reported; every other failure is, once, with what the request was.
+ * Reports a request that settled as failed. Validation, host limits, a writer
+ * who lost access to the post and an unreachable server are not faults in the
+ * editor and are not reported; every other failure is, once, with what the
+ * request was.
  */
 export function reportSaveFailure(failure: EditorSaveFailure, postType: PostType): void {
   const { command, error, persisted, durationMs, postId, status } = failure;
@@ -94,6 +95,7 @@ export function reportSaveFailure(failure: EditorSaveFailure, postType: PostType
   if (
     error.kind === 'validation' ||
     error.kind === 'host-limit' ||
+    error.kind === 'forbidden' ||
     error.cause instanceof ServerUnreachableError
   ) {
     return;
