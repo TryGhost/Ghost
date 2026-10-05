@@ -39,6 +39,11 @@ const NOTICE = tag({ id: 'tag3', name: 'Notice', slug: 'notice', visibility: 'pu
 // Same name, different tag: what tells them apart is the id, not what they read as.
 const NEWS_2 = tag({ id: 'tag4', name: 'News', slug: 'news-2', visibility: 'public' });
 const SITE_TAGS = [NEWS, SPORT, NOTICE, NEWS_2];
+// More than the hundred tags one page of the browse holds.
+const PAGED_TAGS = tag.many(150, (index) => {
+  const number = String(index + 1).padStart(3, '0');
+  return { name: `Tag ${number}`, slug: `tag-${number}` };
+});
 
 function submittedTags(capture: EndpointCapture): Array<Record<string, unknown>> {
   return (submittedPost(capture).tags ?? []) as Array<Record<string, unknown>>;
@@ -210,6 +215,38 @@ describe('Post settings tags', () => {
     // Without it, every tag list — the posts list's tag filter too — keeps
     // serving a cache without the new tag for the five-minute staleTime.
     await expect.poll(() => tagsApi.requests.length, POLL).toBeGreaterThan(browsesBefore);
+  });
+
+  it('loads the next page of tags once the list is scrolled to its end', async () => {
+    fakeTaggablePost();
+    const tagsApi = fakeTags(PAGED_TAGS);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    await openTagList();
+    await expect(editorScreen.settingsTagOptions()).toHaveCount(100);
+
+    editorScreen.scrollSettingsTagListToEnd();
+
+    await expect.poll(() => tagsApi.lastRequest?.page, POLL).toBe(2);
+    await expect(editorScreen.settingsTagOptions()).toHaveCount(150);
+    await expect.element(editorScreen.settingsTagOption('Tag 150')).toBeVisible();
+  });
+
+  it('finds a tag past the first page by searching for it', async () => {
+    const { saveApi } = fakeTaggablePost();
+    const wanted = PAGED_TAGS[139];
+    const tagsApi = fakeTags(({ filter }) =>
+      filter?.includes('tags.name:~') ? [wanted] : PAGED_TAGS,
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    await openTagList();
+
+    await editorScreen.settingsTagsInput().fill('Tag 140');
+
+    await expect.poll(() => tagsApi.lastRequest?.filter, POLL).toBe("tags.name:~'Tag 140'");
+    await editorScreen.settingsTagOption('Tag 140').click();
+    await expect(saveApi).toHaveSavedFields({ tags: [{ id: wanted.id }] });
   });
 
   it('drops an uncommitted term when the list closes', async () => {

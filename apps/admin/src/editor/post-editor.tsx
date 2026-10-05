@@ -8,7 +8,14 @@ import React, {
   useState,
 } from 'react';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { Button, FieldError, buttonVariants } from '@tryghost/shade/components';
+import {
+  Button,
+  FieldError,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  buttonVariants,
+} from '@tryghost/shade/components';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { useFocusContext } from '@tryghost/shade/app';
 import { focusKoenigEditorOnBottomClick } from '@tryghost/admin-x-framework';
@@ -16,7 +23,9 @@ import {
   editorExcerptInput,
   editorTitleInput,
   editorWordCount,
+  featureImageHiddenIndicator,
   postEditor,
+  titleHiddenIndicator,
   tkIndicator,
   tkIndicatorExcerpt,
 } from '@tryghost/test-data/selectors/editor';
@@ -37,6 +46,8 @@ export interface PostEditorProps {
   /** The rule the excerpt breaks, shown under it. */
   excerptError?: string | null;
   featureImage: FeatureImageBinding;
+  /** A page that leaves out its own title and feature image: the canvas fades both. */
+  titleAndFeatureImageHidden?: boolean;
   /** Initial body; the editor owns its own state after mount. */
   initialLexical: string | null;
   cardConfig: PostCardConfig;
@@ -99,6 +110,32 @@ function useAutosize(ref: React.RefObject<HTMLTextAreaElement | null>, value: st
   }, [ref, measure]);
 }
 
+function HiddenIndicator({
+  className,
+  label,
+  testId,
+}: {
+  className: string;
+  label: string;
+  testId: string;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span
+          aria-label={label}
+          className={cn('absolute -left-15 text-muted-foreground', className)}
+          data-testid={testId}
+          role="img"
+        >
+          <LucideIcon.EyeOff />
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
+  );
+}
+
 function TkIndicator({
   className,
   onClick,
@@ -130,6 +167,7 @@ export function PostEditor({
   titleError = null,
   excerptError = null,
   featureImage,
+  titleAndFeatureImageHidden = false,
   initialLexical,
   cardConfig,
   showExcerpt,
@@ -186,6 +224,7 @@ export function PostEditor({
     };
   }, []);
 
+  const hasFeatureImage = !!featureImage.featureImage;
   const titleHasTk = textHasTk(title);
   const excerptHasTk = showExcerpt && textHasTk(excerpt);
 
@@ -342,6 +381,7 @@ export function PostEditor({
               captionKey={featureImage.featureImageCaptionKey}
               cardConfig={cardConfig}
               darkMode={darkMode}
+              faded={titleAndFeatureImageHidden}
               image={featureImage.featureImage}
               onAltChange={featureImage.onFeatureImageAltChange}
               onCaptionBlur={featureImage.onFeatureImageCaptionBlur}
@@ -351,7 +391,21 @@ export function PostEditor({
               onImageClear={featureImage.onFeatureImageClear}
               onTkCountChange={setFeatureImageTkCount}
             />
+            {titleAndFeatureImageHidden && hasFeatureImage && (
+              <HiddenIndicator
+                className="-top-px"
+                label="Feature image and post title are hidden on page"
+                testId={featureImageHiddenIndicator}
+              />
+            )}
             <div className="relative">
+              {titleAndFeatureImageHidden && !hasFeatureImage && (
+                <HiddenIndicator
+                  className="top-4.5"
+                  label="Post title is hidden on page"
+                  testId={titleHiddenIndicator}
+                />
+              )}
               {titleHasTk && (
                 <TkIndicator
                   className="top-4.5 -right-14"
@@ -368,6 +422,7 @@ export function PostEditor({
                 className={cn(
                   fieldClassName,
                   'heading-font-features mb-4 min-h-0 max-w-none min-w-0 pb-1 text-[4.8rem] leading-[1.1] font-bold tracking-[-0.017em] text-foreground placeholder:font-bold placeholder:text-muted-foreground max-[769px]:text-[3.6rem] max-[501px]:text-[2.8rem]',
+                  titleAndFeatureImageHidden && 'opacity-50 focus:opacity-100',
                 )}
                 data-testid={editorTitleInput}
                 placeholder={`${capitalize(postType)} title`}
