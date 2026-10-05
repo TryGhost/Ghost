@@ -987,6 +987,29 @@ describe('Editor header actions', () => {
     await expect(editorScreen.publishInputsError()).toHaveCount(0);
   });
 
+  it.each([
+    ['published', '2026-02-01T10:00:00.000Z', 'unpublishButton'],
+    ['scheduled', '2030-02-01T10:00:00.000Z', 'unscheduleButton'],
+  ] as const)(
+    'offers a retry when the publish inputs fail to load for a %s post',
+    async (status, publishedAt, button) => {
+      publishChrome();
+      fakeSavablePost({ status, published_at: publishedAt });
+      failNewsletters();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.publishInputsError()).toHaveTextContent('went wrong');
+      await expect.element(editorScreen.publishInputsError()).toHaveAttribute('role', 'alert');
+
+      restoreNewsletters();
+      await editorScreen.retryPublishInputs().click();
+      await expect(editorScreen.publishInputsError()).toHaveCount(0);
+
+      await editorScreen[button]().click();
+      await expect.element(publishScreen.updateFlow()).toBeVisible();
+    },
+  );
+
   it.each(['Close', 'Escape', 'preview shortcut'])(
     'returns to the editor when a preview opened from Publish is dismissed with %s',
     async (closeWith) => {
