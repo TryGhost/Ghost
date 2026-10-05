@@ -654,15 +654,17 @@ function createTable(table, transaction = db.knex, tableSpec = schema[table]) {
 
     if (tableSpec['@@INDEXES@@']) {
       tableSpec['@@INDEXES@@'].forEach((index) => {
+        // The object form gives a prefix length, or a name for when the one knex derives
+        // from the table and every column would overrun MySQL's 64-character limit.
         if (index && typeof index === 'object' && !Array.isArray(index)) {
           if (index.length && DatabaseInfo.isMySQL(transaction)) {
             t.index(
               prefixIndexColumns(transaction, index.columns, index.length),
-              defaultIndexName(table, index.columns),
+              index.indexName ?? defaultIndexName(table, index.columns),
             );
           } else {
             // SQLite doesn't support prefix indexes, so we index the whole thing.
-            t.index(index.columns);
+            t.index(index.columns, index.indexName);
           }
         } else {
           t.index(index);

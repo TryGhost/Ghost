@@ -57,7 +57,9 @@ describe('schema commands', function () {
       client: string,
       tableSpec: Record<
         string,
-        { type: string; maxlength?: number; nullable?: boolean } | string[][]
+        | { type: string; maxlength?: number; nullable?: boolean }
+        | string[][]
+        | { columns: string[]; indexName: string }[]
       >,
     ) {
       const knex = createKnex({ client, useNullAsDefault: true });
@@ -117,6 +119,23 @@ describe('schema commands', function () {
 
       assert.match(ddl, /`bounded` varchar\(50\)/);
       assert.match(ddl, /`unbounded` varchar\(191\)/);
+    });
+
+    it('names an index as the spec says, on both engines', function () {
+      const spec = {
+        owner_id: { type: 'string', maxlength: 24, nullable: false },
+        owner_type: { type: 'string', maxlength: 50, nullable: false },
+        '@@INDEXES@@': [{ columns: ['owner_id', 'owner_type'], indexName: 'test_table_owner' }],
+      };
+
+      assert.match(
+        ddlFor('mysql2', spec),
+        /add index `test_table_owner`\(`owner_id`, `owner_type`\)/,
+      );
+      assert.match(
+        ddlFor('better-sqlite3', spec),
+        /create index `test_table_owner` on `test_table` \(`owner_id`, `owner_type`\)/,
+      );
     });
   });
 
