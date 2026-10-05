@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
+import { holdSessionExpiryRedirect } from '@tryghost/admin-x-framework/helpers';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { PostType } from '@/editor/card-config';
 import type { SaveEngineState } from '@/editor/engine/save-engine';
@@ -27,8 +28,9 @@ export interface EditorLeaveGuard {
  * made outside the router) are put to the save engine, which finishes or saves
  * whatever is outstanding and answers `proceed` (leaving loses nothing) or
  * `confirm` (ask first); a held pop keeps the editor's URL until then. A tab
- * close or reload gets the browser's own prompt. The session's own URL replace
- * after a create is not an exit and passes silently.
+ * close or reload gets the browser's own prompt, and an expired session found by
+ * another request does not leave the page. The session's own URL replace after a
+ * create is not an exit and passes silently.
  */
 export function useEditorLeaveGuard(
   session: EditorSessionHandle,
@@ -48,6 +50,9 @@ export function useEditorLeaveGuard(
       isCreatedIdUrlSwap(currentLocation, nextLocation, postType, sessionKey),
     guardHistoryPops: true,
   });
+
+  // Another request's expired session must not take unsaved work off the page.
+  useEffect(() => (hasWork ? holdSessionExpiryRedirect() : undefined), [hasWork]);
 
   const guardRef = useRef(guard);
   guardRef.current = guard;

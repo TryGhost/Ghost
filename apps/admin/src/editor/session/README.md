@@ -442,6 +442,12 @@ history, so Back after leaving can step through them. A change to the URL that
 keeps the editor's screen, such as dropping a trailing slash, stays in the
 address bar and leaves the held exit in place.
 
+An expired session is not a way out either. The editor's own requests never
+leave the page for sign in, but another request made while it is open, such as
+closing a notice from the server, would. While the post holds unsaved work the
+editor holds that redirect for every request: the page stays, the next save asks
+for the password in place, and leaving goes through the steps above.
+
 ## What the session reports
 
 Failures never reach the writer as thrown errors; the session reports them. Every

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
@@ -11,10 +11,13 @@ import {
   post,
   renderAdminApp,
   submittedPost,
+  unsavedChangesGuarded,
   withFastAutosave,
+  withoutAutosave,
   type EndpointCapture,
   type Post,
 } from '@test-utils/acceptance';
+import { alertsScreen } from '@/alerts/alerts.screen';
 import { reloadAdmin } from '@/auth/reload';
 import { editorScreen } from '@/editor/editor.screen';
 
@@ -48,6 +51,16 @@ const TOO_MANY_ATTEMPTS = {
   errors: [{ type: 'TooManyRequestsError', message: 'Too many attempts.' }],
 };
 const TEXT_REPLY = { contentType: 'text/plain; charset=utf-8' };
+// A notice shown on every screen, whose close is a request the editor does not make.
+const SERVER_NOTICE = {
+  id: 'update-notice',
+  type: 'info',
+  status: 'alert',
+  message: 'A new version of Ghost is available.',
+  custom: true,
+  dismissible: true,
+  location: 'top',
+};
 
 function loadedPost(): Post {
   return post({
@@ -108,6 +121,19 @@ async function reachCodeStep() {
   await expireDuringEdit();
   await signIn(PASSWORD);
   await expect.element(editorScreen.reauthCode()).toBeVisible();
+}
+
+/** The `beforeunload` events a real navigation fires; the app's own guard probes are untrusted. */
+function recordLeavingThePage(): Event[] {
+  const fired: Event[] = [];
+  const record = (event: Event) => {
+    if (event.isTrusted) {
+      fired.push(event);
+    }
+  };
+  window.addEventListener('beforeunload', record);
+  onTestFinished(() => window.removeEventListener('beforeunload', record));
+  return fired;
 }
 
 /** Lets React render what a fired timer scheduled. */
@@ -265,6 +291,35 @@ describe('Post editor session expiry', () => {
     await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent('session expired');
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
     expect(saveApi.requests).toHaveLength(1);
+  });
+
+  it('stays on unsaved work when a request from elsewhere in Admin finds no session', async () => {
+    fakeExpiredPost();
+    const closeNotice = fakeAdminEndpoint('DELETE', /^\/notifications\//, SESSION_GONE, {
+      status: 401,
+    });
+    await renderAdminApp(
+      `/editor/post/${POST_ID}`,
+      withoutAutosave({
+        labs: { editorReact: true },
+        boot: { browseNotifications: { response: { notifications: [SERVER_NOTICE] } } },
+      }),
+    );
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await appendToBody(' and more');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+    const leaving = recordLeavingThePage();
+
+    await alertsScreen.closeButton(SERVER_NOTICE.message).click();
+    await expect.poll(() => closeNotice.requests.length).toBe(1);
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+
+    await expect.element(editorScreen.reauthDialog()).toHaveTextContent('Are you still here?');
+    await expect
+      .element(editorScreen.bodyBehindDialog())
+      .toHaveTextContent('Hello from React and more');
+    expect(leaving).toHaveLength(0);
+    expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
   });
 
   it('does not leave the editor when the slug request finds no session', async () => {
