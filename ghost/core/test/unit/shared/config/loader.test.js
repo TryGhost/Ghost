@@ -15,6 +15,15 @@ describe('Config Loader', function () {
   });
 
   describe('hierarchy of config channels', function () {
+    const envKeys = [
+      'NODE_ENV',
+      'paths__contentPath',
+      'logging__level',
+      'database__client',
+      'logging__level_FILE',
+      'database__connection__password_FILE',
+      'paths__corePath',
+    ];
     let originalEnv;
     let originalArgv;
     let customConfig;
@@ -28,7 +37,7 @@ describe('Config Loader', function () {
     }
 
     beforeEach(function () {
-      originalEnv = _.clone(process.env);
+      originalEnv = new Map(envKeys.map((key) => [key, process.env[key]]));
       originalArgv = _.clone(process.argv);
       tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-loader-'));
       loader = require('../../../../core/shared/config/loader');
@@ -43,7 +52,15 @@ describe('Config Loader', function () {
     });
 
     afterEach(function () {
-      process.env = originalEnv;
+      // Vitest retains the original env object for vi.stubEnv cleanup. Replacing
+      // it leaves later tests unable to remove their own environment overrides.
+      for (const [key, value] of originalEnv) {
+        if (value === undefined) {
+          delete process.env[key];
+        } else {
+          process.env[key] = value;
+        }
+      }
       process.argv = originalArgv;
       fs.rmSync(tmpDir, { recursive: true, force: true });
       sinon.restore();
