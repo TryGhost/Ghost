@@ -109,16 +109,17 @@ Run its tests with
 
 ### Published reports
 
-Ghost-Benchmarks owns scheduling, generation and publication. Ghost CI has no
-inventory jobs or dispatch steps. The generator remains here so it evolves with
-the codebase and can be run locally.
+The `TypeScript inventory` workflow runs independently on every push to `main`.
+It installs locked dependencies and builds workspace declarations before scanning,
+then retains the HTML and JSON as a `typescript-inventory` artifact for 30 days.
+Runs do not cancel each other. Each push measures its head commit; commits batched
+into a single push do not each get a separate measurement.
 
-Ghost-Benchmarks polls main every 15 minutes. After an initial report for the
-current main commit, it processes each new first-parent main commit, including
-commits batched into a single push. It installs that checkout's dependencies and
-builds declarations on its own runners before generating the report.
-
-The latest report is published at
-[TypeScript inventory](https://tryghost.github.io/Ghost-Benchmarks/typescript/),
-with compact per-commit totals in `typescript/history.json`. See the
-Ghost-Benchmarks dashboard documentation for setup and retry instructions.
+After a successful run, a separate workflow dispatches its run ID to
+Ghost-Benchmarks using the existing cross-repository publishing credential.
+The receiver verifies the source run before publishing the latest report at
+[TypeScript inventory](https://tryghost.github.io/Ghost-Benchmarks/typescript/).
+It retains compact per-commit counts in `typescript/history.json`. Older runs
+can add history without replacing a newer report. Failed scans leave the last
+published report intact; rerun the failed workflow to retry. Publishing requires
+the receiver workflow to be installed on Ghost-Benchmarks main first.
