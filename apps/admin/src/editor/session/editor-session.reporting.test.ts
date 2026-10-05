@@ -90,9 +90,8 @@ describe('createEditorSession reporting', () => {
 
     expect(await session.leaveRequested()).toBe('confirm');
 
-    const edit: unknown = expect.objectContaining({
-      live: expect.stringMatching(/^ and more"/) as unknown,
-    });
+    // A body this short is reported by offset only.
+    const edit: unknown = expect.objectContaining({ before: '', live: '', other: '' });
     expect(leaves).toEqual([
       {
         postId: 'abc123',

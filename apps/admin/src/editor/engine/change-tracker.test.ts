@@ -54,6 +54,9 @@ function withLtrEverywhere(value: unknown): unknown {
 }
 
 const SAVED_DOC = doc([paragraph('Hello')]);
+const LONG_DOC = doc([
+  paragraph(Array.from({ length: 300 }, (_, index) => `word${index}`).join(' ')),
+]);
 const BLANK_DOC = doc([{ ...paragraph(''), children: [] }]);
 const POST_ID = 'post-1';
 const T0 = '2026-09-01T10:00:00.000Z';
@@ -590,36 +593,41 @@ describe('createChangeTracker', () => {
   describe('bodyDivergence', () => {
     it('excerpts where the live body departs from saved and, once reported, the baseline', () => {
       const tracker = createChangeTracker();
-      tracker.load(POST_ID, post());
+      tracker.load(POST_ID, post({ lexical: serialize(LONG_DOC) }));
 
       expect(tracker.bodyDivergence()).toBeNull();
 
-      tracker.setLive(POST_ID, { lexical: serialize(appendParagraph(SAVED_DOC, 'Edit')) });
+      tracker.setLive(POST_ID, { lexical: serialize(appendParagraph(LONG_DOC, 'Edit')) });
       const appended: unknown = expect.objectContaining({
+        before: expect.stringContaining('word299') as unknown,
         live: expect.stringContaining('"text":"Edit"') as unknown,
         other: ']',
       });
 
       expect(tracker.bodyDivergence()).toEqual({ saved: appended, baseline: null });
 
-      tracker.setBaseline(POST_ID, serialize(SAVED_DOC));
+      tracker.setBaseline(POST_ID, serialize(LONG_DOC));
 
       expect(tracker.bodyDivergence()).toEqual({ saved: appended, baseline: appended });
 
-      tracker.setLive(POST_ID, { lexical: serialize(SAVED_DOC) });
+      tracker.setLive(POST_ID, { lexical: serialize(LONG_DOC) });
 
       expect(tracker.bodyDivergence()).toBeNull();
+    });
+
+    it('keeps only the offset for a body short enough to piece together from excerpts', () => {
+      const tracker = loadedTracker();
+      tracker.setLive(POST_ID, { lexical: serialize(appendParagraph(SAVED_DOC, 'Edit')) });
+      const offsetOnly: unknown = expect.objectContaining({ before: '', live: '', other: '' });
+
+      expect(tracker.bodyDivergence()).toEqual({ saved: offsetOnly, baseline: offsetOnly });
+      expect(JSON.stringify(tracker.bodyDivergence())).not.toContain('Hello');
     });
 
     it('compares a body that cannot be parsed as written', () => {
       const tracker = loadedTracker();
       tracker.setLive(POST_ID, { lexical: '{"root":' });
-      const written = {
-        at: 8,
-        before: '{"root":',
-        live: '',
-        other: serialize(SAVED_DOC).slice(8, 208),
-      };
+      const written = { at: 8, before: '', live: '', other: '' };
 
       expect(tracker.bodyDivergence()).toEqual({ saved: written, baseline: written });
     });

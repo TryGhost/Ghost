@@ -263,6 +263,8 @@ function isOlderToken(candidate: string | null, held: string | null): boolean {
 
 // Characters kept on each side of the first difference.
 const EXCERPT_LENGTH = 200;
+// The live body is excerpted against saved and baseline, so two windows can cover a body this long.
+const SHORTEST_EXCERPTED_BODY = 4 * EXCERPT_LENGTH;
 
 function firstDifference(live: string, other: string): BodyDifference | null {
   const shared = Math.min(live.length, other.length);
@@ -272,6 +274,12 @@ function firstDifference(live: string, other: string): BodyDifference | null {
   }
   if (at === live.length && at === other.length) {
     return null;
+  }
+  // Excerpts that would add up to a whole body are dropped; the offset still locates the change.
+  const otherWhole =
+    other.length > 0 && at <= EXCERPT_LENGTH && other.length - at <= EXCERPT_LENGTH;
+  if (otherWhole || live.length <= SHORTEST_EXCERPTED_BODY) {
+    return { at, before: '', live: '', other: '' };
   }
   return {
     at,
