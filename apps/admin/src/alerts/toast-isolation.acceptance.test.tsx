@@ -1,15 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { toast } from 'sonner';
-import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
+import { fakeAdminEndpoint, fakeTags, renderAdminApp } from '@test-utils/acceptance';
 import { sidebarScreen } from '@/layout/sidebar.screen';
+import { tagsScreen } from '@/tags/tags.screen';
 
 let lateToastPublishedAfterUnmount = false;
 
-describe('Acceptance toast isolation', () => {
+// This pair verifies cleanup across afterEach, so setup must precede the next-app check.
+describe('Acceptance toast isolation', { shuffle: false, concurrent: false }, () => {
   it('leaves a persistent error toast for the harness to clean up', async () => {
-    await renderAdminApp('/site');
+    fakeTags([]);
+    await renderAdminApp('/tags');
     await expect.element(page.getByRole('region', { name: 'Notifications' })).toBeInTheDocument();
+    // The region mounts before Sonner subscribes; wait for the loaded screen before publishing.
+    await expect.element(tagsScreen.emptyStateHeading()).toBeVisible();
 
     toast.error("Couldn't sign out. Please try again.", {
       id: 'acceptance-toast',

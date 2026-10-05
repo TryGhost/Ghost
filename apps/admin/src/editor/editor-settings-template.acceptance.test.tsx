@@ -7,6 +7,7 @@ import {
   fakeThemes,
   post,
   renderAdminApp,
+  settleTransitions,
   submittedPost,
   theme,
   withoutAutosave,
@@ -71,6 +72,7 @@ function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
 async function openTemplate() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  await settleTransitions();
   await expect.element(editorScreen.settingsTemplate()).toBeVisible();
 }
 
@@ -124,6 +126,7 @@ describe('Post settings template', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await editorScreen.settingsToggle().click();
     await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+    await settleTransitions();
 
     await expect
       .element(editorScreen.settingsLoadError())

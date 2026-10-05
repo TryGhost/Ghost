@@ -19,6 +19,7 @@ import {
   fakeTiers,
   post,
   renderAdminApp,
+  settleTransitions,
   staffRole,
   submittedPost,
   withoutAutosave,
@@ -101,6 +102,7 @@ function footEditor() {
 async function openCodeInjection() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  await settleTransitions();
   await editorScreen.settingsSubviewRow(settingsCodeInjectionRow).click();
   await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
   await expect.element(headEditor()).toBeVisible();
@@ -197,6 +199,7 @@ describe('Post settings code injection', () => {
     await renderAdminApp(`/editor/page/${POST_ID}`, FLAG_ON);
     await editorScreen.settingsToggle().click();
     await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+    await settleTransitions();
     await editorScreen.settingsSubviewRow(settingsCodeInjectionRow).click();
 
     await expect

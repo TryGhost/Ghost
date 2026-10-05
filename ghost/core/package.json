@@ -66,6 +66,7 @@
     "test:legacy": "vitest run -c vitest.config.db.ts --project legacy",
     "test:ci:e2e": "COVERAGE_LANE=e2e pnpm test:e2e --coverage",
     "test:ci:integration": "COVERAGE_LANE=integration pnpm test:integration --coverage",
+    "test:ci:unit": "vitest run --coverage --coverage.reportsDirectory=coverage-unit --coverage.reporter=cobertura --coverage.reporter=text-summary",
     "test:int:slow": "pnpm test:integration",
     "test:e2e:slow": "vitest run -c vitest.config.db.ts --project e2e --project e2e-api --reporter=verbose",
     "test:leg:slow": "vitest run -c vitest.config.db.ts --project legacy --reporter=verbose",
@@ -391,6 +392,15 @@
         ],
         "outputs": [
           "{projectRoot}/coverage-integration/cobertura-coverage.xml"
+        ]
+      },
+      "test:ci:unit": {
+        "dependsOn": [
+          "build:assets",
+          "^build"
+        ],
+        "outputs": [
+          "{projectRoot}/coverage-unit/cobertura-coverage.xml"
         ]
       }
     }

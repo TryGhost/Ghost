@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { availableParallelism } from 'node:os';
 import { defineConfig } from 'vitest/config';
+import { coverageEnv } from './test/utils/strict-mode';
 
 // DB-backed suite runner (integration / e2e / legacy) — separate from the unit
 // vitest.config.ts because these suites boot a real Ghost against a database.
@@ -78,6 +79,8 @@ const sharedDbConfig = {
   env: {
     NODE_ENV: 'testing-mysql',
     WEBHOOK_SECRET: process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_SECRET',
+    // Turns the strict-mode test hook off under --coverage; see strict-mode.ts.
+    ...coverageEnv(),
   },
   hookTimeout: 60000,
 };

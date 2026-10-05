@@ -296,6 +296,7 @@
     "Too many sign-up attempts, try again later": "تلاش\u200cهای ثبت\u200c نام بسیار زیاد، بعداً دوباره تلاش کنید",
     "Try free for {amount} days, then {originalPrice}.": "برای {amount} روز رایگان امتحان کنید، سپس {originalPrice}.",
     "Unable to initiate checkout session": "شروع نشست پرداخت ممکن نیست",
+    "Unable to verify your request, please try again": "",
     "Unlock access to all newsletters by becoming a paid subscriber.": "با اشتراک ویژه، دسترسی به همه خبرنامه\u200cها را باز کنید.",
     "Unsubscribe from all emails": "لغو اشتراک همه ایمیل\u200cها",
     "Unsubscribed": "اشتراک لغو شد",

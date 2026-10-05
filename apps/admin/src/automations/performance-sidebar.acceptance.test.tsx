@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import { automationsScreen } from './automations.screen';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
-import { flags, response, read as readAutomation } from './run-list.test-utils';
+import {
+  openPerformanceSidebar,
+  flags,
+  response,
+  read as readAutomation,
+} from './run-list.test-utils';
 
 const read = (id: string) => {
   fakeAdminEndpoint('GET', new RegExp(`/automations/${id}/runs/\\?`), {
@@ -19,7 +25,7 @@ const prepare = (id = 'first') => {
 const entries = () => page.getByRole('region', { name: 'Total entries' });
 const statuses = () => page.getByRole('region', { name: 'Automation status counts' });
 const statusCard = (name: string) => statuses().getByRole('button', { name, exact: true });
-const open = () => page.getByRole('button', { name: 'Show performance' }).click();
+const open = openPerformanceSidebar;
 const close = () => page.getByRole('button', { name: 'Hide performance' }).click();
 
 describe('Performance sidebar data and errors', () => {
@@ -245,14 +251,19 @@ describe('Performance sidebar layout', () => {
     panel.style.transitionDuration = '100s';
     let transition: Animation | undefined;
     try {
-      await open();
-      transition = panel
-        .getAnimations()
-        .find(
-          (animation) =>
-            animation instanceof CSSTransition && animation.transitionProperty === 'width',
-        );
-      expect(transition).toBeDefined();
+      // This case inspects the opening transition before it settles.
+      await automationsScreen.showPerformanceButton().click();
+      await expect
+        .poll(() => {
+          transition = panel
+            .getAnimations()
+            .find(
+              (animation) =>
+                animation instanceof CSSTransition && animation.transitionProperty === 'width',
+            );
+          return transition;
+        })
+        .toBeDefined();
       transition!.pause();
       const duration = Number(transition!.effect!.getComputedTiming().duration);
       for (const progress of [0, 0.25, 0.5, 0.75, 1]) {

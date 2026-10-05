@@ -100,6 +100,7 @@ function bootAs(role: 'Author' | 'Contributor'): RenderAdminAppOptions {
 
 async function appendToBody(text: string) {
   const body = editorScreen.body();
+  await expect.element(body).toBeVisible();
   // One input event: a fast autosave must not split a keyboard sequence into several saves.
   await body.fill(`${body.element().textContent ?? ''}${text}`);
 }
