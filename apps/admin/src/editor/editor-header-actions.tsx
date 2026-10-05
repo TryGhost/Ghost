@@ -255,6 +255,7 @@ function PublishActions({
   // A refetch of any input must not unmount an open flow, so readiness latches once.
   const [everReady, setEverReady] = useState(false);
   const [openedFromPreview, setOpenedFromPreview] = useState(false);
+  const [flowNewsletterSlug, setFlowNewsletterSlug] = useState<string>();
 
   if (inputs.isReady && !everReady) {
     setEverReady(true);
@@ -356,6 +357,7 @@ function PublishActions({
           <PostPreviewModal
             {...preview}
             animate={openFlow !== 'publish'}
+            fallbackNewsletterSlug={flowNewsletterSlug}
             publishDisabled={!inputs.isReady}
             onOpenChange={changePreviewOpen}
             onPublish={publishFromPreview}
@@ -420,6 +422,7 @@ function PublishActions({
                   : '/posts';
             navigate(destination, { crossApp: isEmberOwned(destination) });
           }}
+          onNewsletterChange={setFlowNewsletterSlug}
           onPreview={onPreview}
           onRevertToDraft={revertToDraft}
         />

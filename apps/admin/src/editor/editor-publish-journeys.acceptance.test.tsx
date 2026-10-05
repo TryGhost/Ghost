@@ -418,6 +418,39 @@ describe('Editor publish journeys', () => {
       });
   });
 
+  it('previews the email for the newsletter picked in the publish flow', async () => {
+    publishChrome([WEEKLY, MONTHLY]);
+    fakeTiers([]);
+    fakeLabels([]);
+    fakeSavableDraft();
+    const emailPreviewApi = fakeAdminEndpoint('GET', /^\/email_previews\/posts\/[^/]+\/\?/, {
+      email_previews: [
+        { subject: 'Hello from React', html: '<p>Email body</p>', plaintext: 'Email body' },
+      ],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, emailSite());
+
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.publishButton().click();
+    await publishScreen.setting('email-recipients').click();
+    await publishScreen.newsletterSelect().click();
+    await page.getByRole('option', { name: /^Monthly roundup/ }).click();
+    await publishScreen.previewButton().click();
+    await previewScreen.emailTab().click();
+
+    await expect.element(previewScreen.newsletterSelect()).toHaveTextContent('Monthly roundup');
+    await expect
+      .poll(() => emailPreviewApi.lastRequest?.url)
+      .toContain('newsletter=monthly-roundup');
+
+    // A preview opened from the header, outside the flow, keeps the site's first newsletter.
+    await previewScreen.closeButton().click();
+    await expect(publishScreen.root()).toHaveCount(0);
+    await editorScreen.previewButton().click();
+    await expect.element(previewScreen.newsletterSelect()).toHaveTextContent('Weekly');
+    await expect.poll(() => emailPreviewApi.lastRequest?.url).toContain('newsletter=weekly');
+  });
+
   it.each([
     ['on a self-hosted site', null, 'news@example.com'],
     ['with managed email', { enabled: true }, 'default@example.com'],
