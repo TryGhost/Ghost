@@ -347,6 +347,250 @@ describe('Batch Sending Service', function () {
     });
   });
 
+  describe('createBatches', function () {
+    function createAudienceService(rows = []) {
+      const getSegments = sinon.stub().resolves([null]);
+      const getFilteredCollectionQuery = sinon.stub().callsFake(() => createDb({ all: rows }));
+      const db = {
+        knex() {
+          let counted = false;
+          return {
+            clone() {
+              return this;
+            },
+            join() {
+              return this;
+            },
+            where() {
+              return this;
+            },
+            whereNot() {
+              return this;
+            },
+            groupBy() {
+              return this;
+            },
+            select() {
+              return this;
+            },
+            limit() {
+              return this;
+            },
+            count() {
+              counted = true;
+              return this;
+            },
+            first() {
+              return Promise.resolve(counted ? { count: 0 } : null);
+            },
+            then(resolve, reject) {
+              return Promise.resolve([]).then(resolve, reject);
+            },
+          };
+        },
+      };
+      const service = new BatchSendingService({
+        db,
+        models: {
+          EmailBatch: createModelClass({ findAll: [] }),
+          Member: { getFilteredCollectionQuery },
+        },
+        domainWarmingService: { isEnabled: () => false },
+        emailRenderer: { getSegments },
+        emailSegmenter: { getMemberFilterForSegment: () => '' },
+        sendingService: { getMaximumRecipients: () => 5 },
+      });
+      return { service, getSegments, getFilteredCollectionQuery };
+    }
+
+    it('freezes an empty accounted audience and reuses it on retry', async function () {
+      const { service, getSegments, getFilteredCollectionQuery } = createAudienceService();
+      const email = createModel({ preflight_email_count: 0, email_count: 0 });
+      const args = { email, post: createModel({}), newsletter: createModel({}) };
+
+      assert.deepEqual(await service.createBatches(args), []);
+      assert.equal(email.get('candidate_count'), 0);
+      assert.equal(email.get('preparation_excluded_count'), 0);
+      assert.ok(email.get('prepared_at'));
+
+      assert.deepEqual(await service.createBatches(args), []);
+      sinon.assert.calledOnce(getSegments);
+      sinon.assert.calledOnce(getFilteredCollectionQuery);
+    });
+
+    it('opts an unsent legacy email into accounting before freezing its audience', async function () {
+      const { service } = createAudienceService();
+      const email = createModel({ email_count: 0 });
+
+      assert.deepEqual(
+        await service.createBatches({
+          email,
+          post: createModel({}),
+          newsletter: createModel({}),
+        }),
+        [],
+      );
+      assert.equal(email.get('preflight_email_count'), 0);
+      assert.equal(email.get('candidate_count'), 0);
+      assert.ok(email.get('prepared_at'));
+    });
+
+    it('reuses already-started legacy batches without inventing accounting metadata', async function () {
+      const EmailBatch = createModelClass({
+        findAll: [{ id: 'batch-id', status: 'submitted' }],
+      });
+      const service = new BatchSendingService({ models: { EmailBatch } });
+      const email = createModel({ email_count: 1 });
+
+      const batches = await service.createBatches({
+        email,
+        post: createModel({}),
+        newsletter: createModel({}),
+      });
+
+      assert.equal(batches.length, 1);
+      assert.equal(batches[0].get('status'), 'submitted');
+      assert.equal(email.get('preflight_email_count'), undefined);
+      assert.equal(email.get('prepared_at'), undefined);
+    });
+
+    it('counts an invalid candidate as an explicit preparation exclusion', async function () {
+      const { service } = createAudienceService([{ id: 'member-id' }]);
+      const email = createModel({ preflight_email_count: 1, email_count: 1 });
+
+      assert.deepEqual(
+        await service.createBatches({
+          email,
+          post: createModel({}),
+          newsletter: createModel({}),
+        }),
+        [],
+      );
+      assert.equal(email.get('candidate_count'), 1);
+      assert.equal(email.get('preparation_excluded_count'), 1);
+      assert.equal(email.get('email_count'), 0);
+    });
+
+    it('stores and verifies a batch for one eligible recipient', async function () {
+      const member = {
+        id: '000000000000000000000001',
+        uuid: 'member-uuid',
+        email: 'member@example.com',
+        name: 'Member',
+      };
+      const batches = [];
+      const recipients = [];
+      const EmailBatch = {
+        findAll: async () => ({ models: batches }),
+        transaction: async (callback) => callback({}),
+        add: async (attributes) => {
+          const batch = createModel(attributes);
+          batches.push(batch);
+          return batch;
+        },
+      };
+      const db = {
+        knex() {
+          let grouped = false;
+          let counted = false;
+          return {
+            clone() {
+              return this;
+            },
+            join() {
+              return this;
+            },
+            where() {
+              return this;
+            },
+            whereNot() {
+              return this;
+            },
+            groupBy() {
+              grouped = true;
+              return this;
+            },
+            select() {
+              return this;
+            },
+            limit() {
+              return this;
+            },
+            count() {
+              counted = true;
+              return this;
+            },
+            insert(rows) {
+              recipients.push(...rows);
+              return this;
+            },
+            transacting() {
+              return this;
+            },
+            first() {
+              return Promise.resolve(counted ? { count: recipients.length } : null);
+            },
+            then(resolve, reject) {
+              const result = grouped ? [{ batch_id: batches[0].id, count: recipients.length }] : [];
+              return Promise.resolve(result).then(resolve, reject);
+            },
+          };
+        },
+      };
+      const service = new BatchSendingService({
+        db,
+        models: {
+          EmailBatch,
+          Member: { getFilteredCollectionQuery: () => createDb({ all: [member] }) },
+        },
+        domainWarmingService: { isEnabled: () => false },
+        emailRenderer: { getSegments: async () => [null] },
+        emailSegmenter: { getMemberFilterForSegment: () => '' },
+        sendingService: { getMaximumRecipients: () => 5 },
+      });
+      const email = createModel({
+        id: 'ffffffffffffffffffffffff',
+        preflight_email_count: 1,
+        email_count: 1,
+      });
+      const args = { email, post: createModel({}), newsletter: createModel({}) };
+
+      const prepared = await service.createBatches(args);
+      assert.equal(prepared.length, 1);
+      assert.equal(prepared[0].get('recipient_count'), 1);
+      assert.equal(recipients[0].member_id, member.id);
+      assert.equal(email.get('candidate_count'), 1);
+      assert.equal(email.get('preparation_excluded_count'), 0);
+      assert.equal(email.get('email_count'), 1);
+      assert.ok(email.get('prepared_at'));
+      assert.equal((await service.createBatches(args))[0].id, prepared[0].id);
+    });
+
+    it('rejects a frozen preparation when candidates no longer balance', async function () {
+      const { service } = createAudienceService();
+      const email = createModel({ preflight_email_count: 0, email_count: 0 });
+      const args = { email, post: createModel({}), newsletter: createModel({}) };
+      await service.createBatches(args);
+      await email.save({ candidate_count: 1 });
+
+      await assert.rejects(() => service.createBatches(args), {
+        code: 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
+      });
+    });
+
+    it('rejects a frozen preparation when its stored email count changes', async function () {
+      const { service } = createAudienceService();
+      const email = createModel({ preflight_email_count: 0, email_count: 0 });
+      const args = { email, post: createModel({}), newsletter: createModel({}) };
+      await service.createBatches(args);
+      await email.save({ email_count: 1 });
+
+      await assert.rejects(() => service.createBatches(args), {
+        code: 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
+      });
+    });
+  });
+
   describe('createBatch', function () {
     it('does not create if rows missing data', async function () {
       const EmailBatch = createModelClass({});
