@@ -193,9 +193,11 @@ There is no keyboard reorder: Enter and Space on a chip remove it.
 Access is two coupled fields, `visibility` and `tiers`, and only an Owner,
 Administrator or Editor sees them. A post carries no visibility until its first
 save applies the site default, so the select shows `default_content_visibility`
-until then. Re-choosing the value already shown is not an edit and sends
-nothing. Choosing anything other than `Specific tier(s)` clears the tiers it
-granted. The tier list is every one of the site's paid
+until then. When that default is `Specific tier(s)`, the list ticks the tiers
+in `default_content_visibility_tiers` until then too, and ticking or unticking
+a tier starts from them. Re-choosing the value already shown is not an edit and
+sends nothing. Choosing anything other than `Specific tier(s)` clears the tiers
+it granted. The tier list is every one of the site's paid
 tiers, active ones before archived, and it loads only while `Specific tier(s)`
 is the choice. The browse is followed page by page, and the list shows once the
 last page has arrived. Reads carry tier relations for Public, Members and Paid posts;

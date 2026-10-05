@@ -58,6 +58,16 @@ export function postTiers(tiers: ReadonlyArray<PostTier>): PostRelationLike[] {
   return selectedTierIds(tiers).map((id) => ({ id }));
 }
 
+/** The tier IDs in `default_content_visibility_tiers`, which the API serves as a JSON string. */
+export function defaultTierIds(setting: string | null | undefined): string[] {
+  try {
+    const ids: unknown = JSON.parse(setting || '[]');
+    return Array.isArray(ids) ? ids.filter((id): id is string => typeof id === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
 /**
  * The tier relations a selection writes, in option order so the payload does
  * not depend on the order the writer ticked the boxes. A selected tier the
