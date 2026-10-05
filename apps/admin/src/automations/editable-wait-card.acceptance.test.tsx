@@ -108,6 +108,35 @@ describe('Inline wait editing', () => {
     ).toEqual({ wait_hours: 240 });
   });
 
+  it('holds the warning until the field is left, then keeps it until the value is valid', async () => {
+    const save = serve();
+    await renderAdminApp('/automations/first', flags);
+    const card = waits().nth(0);
+    const first = card.getByRole('textbox', { name: 'Wait for' });
+    const warning = card.getByRole('button', { name: 'Why this step needs attention' });
+    await first.click();
+    await first.fill('');
+    await expect.element(first).toHaveFocus();
+    await expect.element(warning).not.toBeInTheDocument();
+    await userEvent.tab();
+    await expect.element(warning).toBeVisible();
+    // The card carries the warning; the field itself is never marked invalid.
+    await expect.element(first).not.toHaveAttribute('aria-invalid', 'true');
+    await first.click();
+    await expect.element(warning).toBeVisible();
+    await first.fill('31');
+    await expect.element(warning).toBeVisible();
+    await first.fill('4');
+    await expect.element(warning).not.toBeInTheDocument();
+    // Fixed once, so the next invalid edit waits for the field to be left again.
+    await first.fill('');
+    await expect.element(warning).not.toBeInTheDocument();
+    // Saving is blocked the whole time, shown or not.
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect.element(warning).toBeVisible();
+    expect(save.requests).toHaveLength(0);
+  });
+
   it('preserves invalid input and blocks saving or publishing stale valid values', async () => {
     const save = serve();
     await renderAdminApp('/automations/first', flags);
@@ -119,9 +148,7 @@ describe('Inline wait editing', () => {
       await expect.element(first).toHaveValue(value);
       await waits().nth(0).getByRole('button', { name: 'Why this step needs attention' }).click();
       await expect
-        .element(
-          page.getByText('Enter a whole number between 1 and 30 days.', { exact: true }).last(),
-        )
+        .element(page.getByText('Enter a wait between 1 and 30 days.', { exact: true }).last())
         .toBeVisible();
       await userEvent.keyboard('{Escape}');
       await page.getByRole('button', { name: 'Save', exact: true }).click();

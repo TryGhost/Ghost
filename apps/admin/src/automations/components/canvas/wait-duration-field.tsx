@@ -13,7 +13,7 @@ import { Stack } from '@tryghost/shade/primitives';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 
 const MAX_WAIT_DAYS = 30;
-export const WAIT_VALIDATION_MESSAGE = 'Enter a whole number between 1 and 30 days.';
+export const WAIT_VALIDATION_MESSAGE = 'Enter a wait between 1 and 30 days.';
 const WHOLE_NUMBER_PATTERN = /^\d+$/;
 const NON_DIGITS_PATTERN = /\D/g;
 const LEADING_ZEROS_PATTERN = /^0+/;
@@ -36,7 +36,8 @@ export const WaitDurationField: React.FC<{
   onUpdate: (hours: number) => void;
   inline?: boolean;
   onValidityChange?: (valid: boolean) => void;
-}> = ({ waitHours, onUpdate, inline = false, onValidityChange }) => {
+  onErrorVisibilityChange?: (visible: boolean) => void;
+}> = ({ waitHours, onUpdate, inline = false, onValidityChange, onErrorVisibilityChange }) => {
   const fieldId = useId();
   const inputId = inline ? fieldId : 'automation-wait-days';
   const errorId = `${inputId}-error`;
@@ -48,6 +49,12 @@ export const WaitDurationField: React.FC<{
   const initialDays = waitHours / 24;
   const [daysText, setDaysText] = useState<string>(String(initialDays));
   const [hasBlurredDaysInput, setHasBlurredDaysInput] = useState(false);
+  // Shown on blur and cleared once valid; validity itself is still reported on every change.
+  const [isInlineErrorVisible, setIsInlineErrorVisible] = useState(false);
+  const showInlineError = (visible: boolean) => {
+    setIsInlineErrorVisible(visible);
+    onErrorVisibilityChange?.(visible);
+  };
 
   const days = Number(daysText);
   const isValid = getValidWaitDays(daysText) !== null;
@@ -82,6 +89,7 @@ export const WaitDurationField: React.FC<{
     if (nextDays === null) {
       return;
     }
+    showInlineError(false);
     updateWaitDays(nextDays);
   };
 
@@ -97,11 +105,12 @@ export const WaitDurationField: React.FC<{
         {inline ? (
           <InputGroup>
             <InputGroupInput
-              aria-describedby={!isValid ? errorId : undefined}
-              aria-invalid={!isValid}
+              // No aria-invalid: the card carries the warning, as on the email card.
+              aria-describedby={isInlineErrorVisible ? errorId : undefined}
               id={inputId}
               inputMode="numeric"
               value={daysText}
+              onBlur={() => showInlineError(!isValid)}
               onChange={handleChange}
             />
             <InputGroupAddon align="inline-end">
@@ -148,7 +157,7 @@ export const WaitDurationField: React.FC<{
             </InputGroupAddon>
           </InputGroup>
         )}
-        {inline && !isValid && (
+        {inline && isInlineErrorVisible && (
           <span className="sr-only" id={errorId}>
             {WAIT_VALIDATION_MESSAGE}
           </span>
