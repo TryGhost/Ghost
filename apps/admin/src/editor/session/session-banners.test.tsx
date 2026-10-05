@@ -190,6 +190,15 @@ describe('SessionBanners', () => {
     expect(screen.queryByRole('button', { name: 'Reload' })).not.toBeInTheDocument();
   });
 
+  it('says the editor has crashed when a create finds nothing, and leaves only the copy', () => {
+    renderBanners({ kind: 'crashed' });
+
+    expect(screen.getByRole('alert')).toHaveTextContent('The editor has crashed');
+    expect(screen.getByRole('button', { name: 'Copy content' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Reload' })).not.toBeInTheDocument();
+  });
+
   it('tells a writer who lost access that they can no longer edit, and leaves only the copy', () => {
     renderBanners(ACCESS_LOST);
 
@@ -312,6 +321,16 @@ describe('SessionBanners reporting', () => {
     expect(reportShownAlert).toHaveBeenCalledTimes(1);
     expect(reportShownAlert).toHaveBeenCalledWith(
       expect.stringContaining('This post has been deleted'),
+      expect.objectContaining({ kind: 'not-found' }),
+    );
+  });
+
+  it('reports a crash banner by the text shown', () => {
+    renderBanners({ kind: 'crashed' });
+
+    expect(reportShownAlert).toHaveBeenCalledTimes(1);
+    expect(reportShownAlert).toHaveBeenCalledWith(
+      expect.stringContaining('The editor has crashed'),
       expect.objectContaining({ kind: 'not-found' }),
     );
   });

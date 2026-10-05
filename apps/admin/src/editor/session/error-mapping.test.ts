@@ -13,7 +13,13 @@ import {
   type ErrorResponse,
 } from '@tryghost/admin-x-framework/errors';
 import type { SaveError } from '@/editor/engine/save-engine';
-import { ACCESS_LOST, POST_DELETED, stateSaveError, toSaveError } from './error-mapping';
+import {
+  ACCESS_LOST,
+  EDITOR_CRASHED,
+  POST_DELETED,
+  stateSaveError,
+  toSaveError,
+} from './error-mapping';
 
 function errorBody(overrides: Partial<ErrorResponse['errors'][number]> = {}): ErrorResponse {
   return {
@@ -162,7 +168,7 @@ describe('toSaveError', () => {
 });
 
 describe('stateSaveError', () => {
-  it('reports a failed save, a collision and a halt, and nothing otherwise', () => {
+  it('reports a failed save, a collision, a halt and a crash, and nothing otherwise', () => {
     const failure: SaveError = { kind: 'transport', message: 'offline' };
     const collision: SaveError = { kind: 'conflict', message: 'Saving failed!' };
     const missing: SaveError = { kind: 'not-found', message: 'Post not found.' };
@@ -172,6 +178,7 @@ describe('stateSaveError', () => {
     expect(stateSaveError({ kind: 'conflict', intent: 'field', error: collision })).toBe(collision);
     expect(stateSaveError({ kind: 'halted', error: missing })).toBe(POST_DELETED);
     expect(stateSaveError({ kind: 'halted', error: refused })).toBe(ACCESS_LOST);
+    expect(stateSaveError({ kind: 'crashed' })).toBe(EDITOR_CRASHED);
     expect(stateSaveError({ kind: 'saving', intent: 'field' })).toBeNull();
     expect(stateSaveError({ kind: 'idle' })).toBeNull();
   });

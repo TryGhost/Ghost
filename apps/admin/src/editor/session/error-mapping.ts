@@ -26,12 +26,18 @@ export const ACCESS_LOST: SaveError = {
     'You no longer have permission to edit this post. Copy your content to keep your changes.',
 };
 
+/** What a crash, a create the server answered with a 404, tells the writer. */
+export const EDITOR_CRASHED: SaveError = {
+  kind: 'not-found',
+  message: 'The editor has crashed. Copy your content and paste it into a new post to keep it.',
+};
+
 /** What a state that takes no later save tells the writer, if the state is one. */
 export function terminalSaveError(state: SaveEngineState): SaveError | null {
   if (state.kind === 'halted') {
     return state.error.kind === 'forbidden' ? ACCESS_LOST : POST_DELETED;
   }
-  return null;
+  return state.kind === 'crashed' ? EDITOR_CRASHED : null;
 }
 
 /** The failed save an engine state reports, if it reports one. */

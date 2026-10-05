@@ -385,6 +385,10 @@ What a halted queue looks like is the session's caller's decision, not the
 engine's: `reauth-pending` and `conflict` are states, not UI. The writer gets a
 way back in and the content stays untouched.
 
+A create the server answers with a 404 leaves the editor with no post to save
+to. Saving stops for good there too: the banner says the editor has crashed and
+offers the content to copy into a new post, with no retry.
+
 ## Signing in again without leaving
 
 A save that finds the session gone freezes the queue and opens a sign-in dialog
