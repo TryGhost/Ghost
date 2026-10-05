@@ -132,6 +132,7 @@ class PostEmailHandler {
 
     if (!postEmail) {
       email = await this.emailService.createEmail(model, { preflight });
+      await this.emailService.scheduleEmail(email);
     } else if (postEmail.get('status') === 'failed') {
       email = await this.#retryEmail(postEmail, model.id);
     }
