@@ -357,7 +357,9 @@ describe('Navigation settings', () => {
 
     await newItem().getByLabelText('Label').fill('Contact');
     await newItem().getByLabelText('URL').click();
-    await userEvent.keyboard('/contact{Meta>}s{/Meta}');
+    await userEvent.keyboard('/contact');
+    await expect.element(newItem().getByLabelText('URL')).toHaveValue('/contact');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
 
     await expect(settingsScreen.navigationModal()).toHaveCount(0);
     await expect(settingsApi).toHaveEditedSettings([
