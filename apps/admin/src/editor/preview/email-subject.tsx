@@ -41,7 +41,11 @@ interface EmailSubjectProps {
 }
 
 // The engine refuses every later field save after these, so an edit cannot clear them.
-const LASTING_FAILURES: ReadonlySet<SaveErrorKind> = new Set(['conflict', 'not-found']);
+const LASTING_FAILURES: ReadonlySet<SaveErrorKind> = new Set([
+  'conflict',
+  'not-found',
+  'forbidden',
+]);
 
 export function EmailSubject({ editor, ownsSaveError }: EmailSubjectProps) {
   const errorId = useId();

@@ -32,6 +32,7 @@ export const postPreviewEmailFrom = 'post-preview-email-from';
 export const postPreviewEmailSubject = 'post-preview-email-subject';
 export const postPreviewEmailSizeWarning = 'post-preview-email-size-warning';
 export const postPreviewTestEmailInput = 'post-preview-test-email-input';
+export const postPreviewTestEmailError = 'post-preview-test-email-error';
 export const postPreviewUnavailable = 'post-preview-unavailable';
 export const postPreviewNewsletterMissing = 'post-preview-newsletter-missing';
 export const postPreviewNewslettersError = 'post-preview-newsletters-error';

@@ -11,6 +11,12 @@ import {
 } from '@tryghost/shade/components';
 import { Box, Grid, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
+import {
+  type Config,
+  hasSendingDomain,
+  isManagedEmail,
+  useBrowseConfig,
+} from '@tryghost/admin-x-framework/api/config';
 import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { useEmailPreview } from '@tryghost/admin-x-framework/api/email-previews';
 import type { Newsletter } from '@tryghost/admin-x-framework/api/newsletters';
@@ -63,6 +69,21 @@ function withPreviewDocumentStyles(html: string): string {
   return html.includes('</head>')
     ? html.replace('</head>', `${styles}</head>`)
     : `${html}${styles}`;
+}
+
+// Managed email sends from the default address unless the sender is on the sending domain.
+function senderEmailAddress(sender: string | null, defaultAddress: string, config: Config): string {
+  if (!isManagedEmail(config)) {
+    return sender || defaultAddress;
+  }
+
+  if (!hasSendingDomain(config)) {
+    return defaultAddress;
+  }
+
+  const sendingDomain = config.hostSettings?.managedEmail?.sendingDomain;
+
+  return sender && sender.split('@')[1] === sendingDomain ? sender : defaultAddress;
 }
 
 function EmailSizeBanner({ post }: { post: PublishFlowPost }) {
@@ -131,6 +152,7 @@ export function EmailPreview({
   onRetryNewsletterLookup,
 }: EmailPreviewProps) {
   const { data: settingsData } = useEditorSettings();
+  const { data: configData } = useBrowseConfig({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const [defaultEmailAddress] = getSettingValues<string>(settingsData?.settings ?? [], [
     'default_email_address',
   ]);
@@ -146,7 +168,10 @@ export function EmailPreview({
   // Only the newsletter the preview was requested for, so the From line, the
   // selection and the test send can never name a different one.
   const selectedNewsletter = newsletters.find((newsletter) => newsletter.slug === newsletterSlug);
-  const senderAddress = (sender: string | null) => sender ?? defaultEmailAddress ?? '';
+  const config = configData?.config;
+  // Managed email can override the newsletter's sender, so no address until config is read.
+  const senderAddress = (sender: string | null) =>
+    config ? senderEmailAddress(sender, defaultEmailAddress ?? '', config) : '';
 
   const Frame = device === 'mobile' ? PreviewChrome : Box;
 

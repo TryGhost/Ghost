@@ -3,6 +3,7 @@ import * as Sentry from '@sentry/react';
 import { APIError, ServerUnreachableError } from '@tryghost/admin-x-framework/errors';
 import type { SaveCommand, SaveError } from '@/editor/engine/save-engine';
 import type { EditorSaveFailure } from '@/editor/session/editor-session';
+import { preloadKoenig } from '@/settings/components/koenig-loader';
 import {
   reportEditorError,
   reportKoenigError,
@@ -13,6 +14,10 @@ import {
 } from './report-error';
 
 vi.mock('@sentry/react', () => ({ captureException: vi.fn(), captureMessage: vi.fn() }));
+
+vi.mock('@/utils/fetch-koenig-lexical', () => ({
+  fetchKoenigLexical: () => Promise.resolve({ version: '1.2.3' }),
+}));
 
 const FIELD: SaveCommand = {
   kind: 'field',
@@ -73,8 +78,8 @@ describe('reportEditorError', () => {
     expect(Sentry.captureException).toHaveBeenCalledWith(error, undefined);
   });
 
-  it('tags Koenig failures with the Lexical version', () => {
-    window['@tryghost/koenig-lexical'] = { version: '1.2.3' };
+  it('tags Koenig failures with the Lexical version', async () => {
+    await preloadKoenig();
     const error = new Error('lexical exploded');
 
     reportKoenigError(error);
@@ -87,8 +92,8 @@ describe('reportEditorError', () => {
 });
 
 describe('reportKoenigRenderError', () => {
-  it('tags a boundary crash as Lexical and keeps where in the tree it happened', () => {
-    window['@tryghost/koenig-lexical'] = { version: '1.2.3' };
+  it('tags a boundary crash as Lexical and keeps where in the tree it happened', async () => {
+    await preloadKoenig();
     const error = new Error('render exploded');
 
     reportKoenigRenderError(error, { componentStack: '\n    at KoenigComposer' });
@@ -217,6 +222,7 @@ describe('reportSaveFailure', () => {
   it.each<[string, SaveError]>([
     ['a validation failure', { kind: 'validation', message: 'Title is too long' }],
     ['a host limit', { kind: 'host-limit', message: 'Upgrade required' }],
+    ['a writer who lost access', { kind: 'forbidden', message: 'Permission error' }],
     [
       'an unreachable server',
       { kind: 'transport', message: 'Unreachable', cause: new ServerUnreachableError() },

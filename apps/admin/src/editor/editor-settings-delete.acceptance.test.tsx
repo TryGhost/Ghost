@@ -26,6 +26,8 @@ const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const FLAG_ON = { labs: { editorReact: true } };
 
 const POLL = { timeout: 10_000 };
+const PASSWORD = 'hunter22';
+const EMAIL = String(currentUserResponse().users[0].email);
 
 type SavedPost = ReturnType<typeof post>;
 
@@ -117,6 +119,16 @@ function fakeRefusedDelete({
     `/posts/${POST_ID}/`,
     { errors: [{ type: 'NoPermissionError', message, context }] },
     { status },
+  );
+}
+
+/** Deletes find the session gone; declared after `fakeDeletablePost`, so it answers them. */
+function fakeExpiredDelete() {
+  return fakeAdminEndpoint(
+    'DELETE',
+    `/posts/${POST_ID}/`,
+    { errors: [{ type: 'UnauthorizedError', message: 'Please sign in again.' }] },
+    { status: 401 },
   );
 }
 
@@ -260,21 +272,20 @@ describe('Post settings delete', () => {
 
   it('keeps unsaved work editable when the delete is refused by an expired session', async () => {
     const { saveApi } = fakeDeletablePost();
-    fakeAdminEndpoint(
-      'DELETE',
-      `/posts/${POST_ID}/`,
-      { errors: [{ type: 'UnauthorizedError', message: 'Please sign in again.' }] },
-      { status: 401 },
-    );
+    fakeExpiredDelete();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await typeIntoBody(' and more');
     await expect.poll(unsavedChangesGuarded).toBe(true);
     await openDeleteDialog();
     await editorScreen.confirmSettingsDelete().click();
 
+    await expect.element(editorScreen.reauthDialog()).toHaveTextContent('Are you still here?');
+    await editorScreen.cancelReauth().click();
+
+    await expect(editorScreen.reauthDialog()).toHaveCount(0);
     await expect
       .element(editorScreen.settingsDeleteError())
-      .toHaveTextContent('Your session expired. Delete again to sign in and continue.');
+      .toHaveTextContent('Your session expired. Delete again to sign in.');
     expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
     await editorScreen.cancelSettingsDelete().click();
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
@@ -284,6 +295,46 @@ describe('Post settings delete', () => {
     await expect
       .poll(() => JSON.stringify(saveApi.lastRequest?.body), POLL)
       .toContain('after refusal');
+  });
+
+  it('deletes once the writer signs in again after the session expired', async () => {
+    fakeDeletablePost();
+    fakeExpiredDelete();
+    const sessionApi = fakeAdminEndpoint('POST', '/session/', () => 'Created', { status: 201 });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openDeleteDialog();
+    await editorScreen.confirmSettingsDelete().click();
+    await expect.element(editorScreen.reauthDialog()).toBeVisible();
+
+    // Declared after the expired fake, so it answers the delete held behind the sign-in.
+    const deleteApi = fakeAdminEndpoint('DELETE', `/posts/${POST_ID}/`, null, { status: 204 });
+    await editorScreen.reauthPassword().fill(PASSWORD);
+    await editorScreen.reauthSignIn().click();
+
+    await expect.poll(() => deleteApi.requests.length, POLL).toBe(1);
+    expect(sessionApi.lastRequest?.body).toEqual({ username: EMAIL, password: PASSWORD });
+    await expect.poll(currentRoute, POLL).toBe('/posts');
+  });
+
+  it('asks to sign in again when the delete is retried after the sign-in is abandoned', async () => {
+    fakeDeletablePost();
+    const expiredApi = fakeExpiredDelete();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openDeleteDialog();
+    await editorScreen.confirmSettingsDelete().click();
+    await expect.element(editorScreen.reauthDialog()).toBeVisible();
+    await userEvent.keyboard('{Escape}');
+
+    await expect(editorScreen.reauthDialog()).toHaveCount(0);
+    await expect
+      .element(editorScreen.settingsDeleteError())
+      .toHaveTextContent('Your session expired. Delete again to sign in.');
+
+    await editorScreen.confirmSettingsDelete().click();
+
+    await expect.element(editorScreen.reauthDialog()).toHaveTextContent('Are you still here?');
+    expect(expiredApi.requests).toHaveLength(2);
+    expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
   });
 
   it('leaves for a list that no longer carries the deleted post', async () => {

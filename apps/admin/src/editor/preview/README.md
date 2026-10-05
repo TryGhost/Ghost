@@ -53,7 +53,11 @@ The rendered email arrives as a complete HTML document and is shown in a `srcdoc
 
 The newsletters offered are the site's active ones, read from the same full browse the publish flow reads and narrowed here, every page of it. The post's own newsletter stays selectable even once it has been archived, which is looked up by slug; a newsletter the site has deleted leaves the email unsendable.
 
+Each newsletter is shown with the address its email goes out from: its sender address, or the site's default address when it has none. When the host manages the site's email, the default address also replaces a sender that is not on the host's sending domain, or any sender when there is no sending domain.
+
 Switching newsletters re-renders the preview against that newsletter, and the test send goes to exactly one address — the current user's, unless it is edited — for the audience currently selected.
+
+A test send that finds the session expired opens the editor's sign-in dialog over the preview and goes out once the writer has signed in. Abandoning the sign-in says beneath Send that the session expired, and sending again asks again.
 
 When the caller passes the saved post, a banner above the rendered email gives its size once the email is estimated at 100kB or more. The estimate is the editor's, described in [the editor README](../README.md#email-size), so it does not follow the newsletter or audience picked here.
 
@@ -76,4 +80,4 @@ marking the subject invalid, which only its own length or failed save does.
 
 ## Not here yet
 
-Known gaps, listed so they are not mistaken for decisions: an already-sent post is re-rendered by the preview endpoint rather than showing its stored email, and the sender address does not apply the managed-email override.
+Known gaps, listed so they are not mistaken for decisions: an already-sent post is re-rendered by the preview endpoint rather than showing its stored email.

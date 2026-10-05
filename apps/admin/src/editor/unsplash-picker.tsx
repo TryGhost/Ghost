@@ -28,6 +28,21 @@ export interface UnsplashPickerProps {
   onSelect: (image: UnsplashSelection) => void;
 }
 
+// Unsplash's API guidelines ask for this referral on every link in a photo credit.
+const REFERRAL = { utm_source: 'ghost', utm_medium: 'referral', utm_campaign: 'api-credit' };
+
+function withReferral(credit: string): string {
+  const doc = new DOMParser().parseFromString(credit, 'text/html');
+  for (const link of doc.body.querySelectorAll<HTMLAnchorElement>('a[href]')) {
+    const url = new URL(link.href);
+    for (const [key, value] of Object.entries(REFERRAL)) {
+      url.searchParams.set(key, value);
+    }
+    link.href = url.href;
+  }
+  return doc.body.innerHTML;
+}
+
 /**
  * The Unsplash affordance on an image field: the button over an empty
  * dropzone, and the search modal it opens.
@@ -120,7 +135,10 @@ export function UnsplashPicker({
                   onClose={() => setIsOpen(false)}
                   onImageInsert={(inserted) => {
                     if (inserted.src) {
-                      onSelect({ src: inserted.src, caption: inserted.caption ?? '' });
+                      onSelect({
+                        src: inserted.src,
+                        caption: withReferral(inserted.caption ?? ''),
+                      });
                     }
                     setIsOpen(false);
                   }}

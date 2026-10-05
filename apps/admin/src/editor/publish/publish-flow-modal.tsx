@@ -16,6 +16,7 @@ import { ConfirmStep } from './components/confirm-step';
 import { GateDialog } from './components/gate-dialog';
 import { OptionsStep } from './components/options-step';
 import { PUBLIC_PREVIEW_WARNING_COPY, getPublicPreviewWarning } from './public-preview-warning';
+import { isEmailDisabledInSettings } from './publish-options';
 import { usePublishFlow } from './use-publish-flow';
 import type { PublishDispatcher } from './publish-options';
 import type { PublishFlowPost } from './flow-post';
@@ -239,7 +240,7 @@ function PublishFlowDialog({
             />
           ) : (
             <OptionsStep
-              emailDisabledInSettings={site.editorDefaultEmailRecipients === 'disabled'}
+              emailDisabledInSettings={isEmailDisabledInSettings(site)}
               limitsChecked={flow.limitsChecked}
               limitsFailure={flow.limitsFailure}
               post={post}

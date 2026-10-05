@@ -19,6 +19,7 @@ import {
   postPreviewModal,
   postPreviewNewsletterMissing,
   postPreviewSaveFailed,
+  postPreviewTestEmailError,
   postPreviewTestEmailInput,
   postPreviewUnavailable,
   previewAsSelectLabel,
@@ -63,6 +64,7 @@ export const previewScreen = {
   emailSubject: () => page.getByTestId(postPreviewEmailSubject),
   testEmailButton: () => page.getByRole('button', { name: testEmailButton }),
   testEmailInput: () => page.getByTestId(postPreviewTestEmailInput),
+  testEmailError: () => page.getByTestId(postPreviewTestEmailError),
   sendTestEmailButton: () => page.getByRole('button', { name: sendTestEmailButton, exact: true }),
   /** Opens the "preview as" select and picks one of its options. */
   previewAs: async (option: string) => {
