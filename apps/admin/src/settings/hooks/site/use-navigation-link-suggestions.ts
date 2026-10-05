@@ -1,8 +1,9 @@
 import { checkStripeEnabled, getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { getHomepageUrl } from '@tryghost/admin-x-framework/api/site';
 import { useBrowseOffers } from '@tryghost/admin-x-framework/api/offers';
-import { useCallback, useMemo } from 'react';
-import { useFilterableApi } from '@tryghost/admin-x-framework/hooks';
+import { useCallback, useMemo, useRef } from 'react';
+import { apiUrl } from '@tryghost/admin-x-framework/helpers';
+import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import {
   type Suggestion,
@@ -12,12 +13,10 @@ import {
 export type NavigationLinkSuggestion = Suggestion;
 export type NavigationLinkSuggestionGroup = SuggestionGroup;
 
-/**
- * The search-index endpoints ignore `filter` and `limit` and always return the
- * full set, which useFilterableApi then filters client side. We only ever show
- * a handful of each type so the dropdown stays scannable.
- */
+/** We only ever show a handful of each type so the dropdown stays scannable. */
 const CONTENT_LIMIT = 5;
+
+type SearchIndexKey = 'pages' | 'posts';
 
 type SearchIndexPost = {
   id: string;
@@ -67,16 +66,33 @@ const useNavigationLinkSuggestions = () => {
   // field is ever focused)
   const { data: offersData } = useBrowseOffers({ enabled: paidMembersEnabled && stripeEnabled });
 
-  const searchPosts = useFilterableApi<SearchIndexPost, 'posts', 'title'>({
-    path: '/search-index/posts/',
-    filterKey: 'title',
-    responseKey: 'posts',
-  });
-  const searchPages = useFilterableApi<SearchIndexPost, 'pages', 'title'>({
-    path: '/search-index/pages/',
-    filterKey: 'title',
-    responseKey: 'pages',
-  });
+  const fetchApi = useFetchApi();
+  const searchIndex = useRef<Partial<Record<SearchIndexKey, Promise<SearchIndexPost[]>>>>({});
+
+  // The search-index endpoints ignore `filter` and `limit` and always return
+  // the full index (up to 10k rows), so each one is downloaded once and
+  // filtered here. Sharing the request while it is in flight stops every
+  // search made during a slow first download from starting another.
+  const loadIndex = useCallback(
+    (key: SearchIndexKey) => {
+      const cached = searchIndex.current[key];
+      if (cached) {
+        return cached;
+      }
+
+      const request = fetchApi<Partial<Record<SearchIndexKey, SearchIndexPost[]>>>(
+        apiUrl(`/search-index/${key}/`),
+      )
+        .then((response) => response[key] ?? [])
+        .catch((error: unknown) => {
+          delete searchIndex.current[key];
+          throw error;
+        });
+      searchIndex.current[key] = request;
+      return request;
+    },
+    [fetchApi],
+  );
 
   const staticGroups = useMemo<NavigationLinkSuggestionGroup[]>(() => {
     const membership: NavigationLinkSuggestion[] = [];
@@ -108,14 +124,11 @@ const useNavigationLinkSuggestions = () => {
 
   const loadSuggestions = useCallback(
     async (term: string): Promise<NavigationLinkSuggestionGroup[]> => {
-      // Always fetch with an empty term: the endpoints serve the full index
-      // regardless, and useFilterableApi only caches (`allLoaded`) after an
-      // empty-term fetch — so this makes every call after the first one free.
       // Each source degrades independently: one failing search shouldn't take
       // the membership and offer groups down with it.
       const [pages, posts] = await Promise.all([
-        searchPages.loadData('').catch(() => []),
-        searchPosts.loadData('').catch(() => []),
+        loadIndex('pages').catch(() => []),
+        loadIndex('posts').catch(() => []),
       ]);
 
       const needle = term.toLowerCase();
@@ -144,7 +157,7 @@ const useNavigationLinkSuggestions = () => {
 
       return [...filteredStaticGroups, ...contentGroups].filter((group) => group.items.length > 0);
     },
-    [searchPages, searchPosts, staticGroups],
+    [loadIndex, staticGroups],
   );
 
   return { loadSuggestions };

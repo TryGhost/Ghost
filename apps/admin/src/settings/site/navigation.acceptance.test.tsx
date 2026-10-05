@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import {
+  fakeAdminEndpoint,
   fakeEditSettings,
   fakeOffers,
   fakeSearchIndex,
@@ -22,9 +23,11 @@ function suggestions() {
   return page.getByRole('listbox', { name: 'URL suggestions' });
 }
 
+const aboutPage = { id: 'p1', title: 'About', url: 'http://test.com/about/', status: 'published' };
+
 function fakeSiteContent() {
   fakeSearchIndex({
-    pages: [{ id: 'p1', title: 'About', url: 'http://test.com/about/', status: 'published' }],
+    pages: [aboutPage],
     posts: [
       { id: 'p2', title: 'Welcome to Ghost', url: 'http://test.com/welcome/', status: 'published' },
       { id: 'p3', title: 'Draft thoughts', url: 'http://test.com/404/', status: 'draft' },
@@ -185,6 +188,54 @@ describe('Navigation settings', () => {
       .click();
     await expect(suggestions()).toHaveCount(0);
     await expect.element(newItem().getByLabelText('URL')).toHaveValue('#/portal/gift');
+  });
+
+  it('downloads each search index once while suggestions are loading', async () => {
+    fakeSettingsScreens();
+    let release = () => {};
+    const released = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const pages = fakeAdminEndpoint('GET', /^\/search-index\/pages\//, async () => {
+      await released;
+      return { pages: [aboutPage] };
+    });
+    const posts = fakeAdminEndpoint('GET', /^\/search-index\/posts\//, async () => {
+      await released;
+      return { posts: [] };
+    });
+    await renderAdminApp('/settings/navigation/edit');
+
+    // Focusing starts the download, and ArrowDown searches again straight
+    // away while nothing is showing yet
+    await newItem().getByLabelText('URL').click();
+    await userEvent.keyboard('{ArrowDown}{ArrowDown}');
+    release();
+
+    await expect.element(suggestions().getByRole('option', { name: /^About/ })).toBeInTheDocument();
+    expect(pages.requests).toHaveLength(1);
+    expect(posts.requests).toHaveLength(1);
+  });
+
+  it('retries a search index download that failed', async () => {
+    fakeSettingsScreens();
+    let failNext = true;
+    const pages = fakeAdminEndpoint('GET', /^\/search-index\/pages\//, () => {
+      if (failNext) {
+        failNext = false;
+        return new Response(null, { status: 500 });
+      }
+      return { pages: [aboutPage] };
+    });
+    fakeAdminEndpoint('GET', /^\/search-index\/posts\//, { posts: [] });
+    await renderAdminApp('/settings/navigation/edit');
+
+    await newItem().getByLabelText('URL').click();
+    await expect.poll(() => pages.requests.length).toBe(1);
+    await userEvent.keyboard('{ArrowDown}');
+
+    await expect.element(suggestions().getByRole('option', { name: /^About/ })).toBeInTheDocument();
+    expect(pages.requests).toHaveLength(2);
   });
 
   it('offers no checkout destinations while Stripe is disconnected', async () => {
