@@ -166,7 +166,6 @@ function KeyedUpdateFlowModal({
   return (
     <FullscreenDialog
       data-testid={updateFlowModal}
-      modal={false}
       title={isScheduled ? 'Unschedule' : 'Unpublish'}
       open
       onOpenChange={(open) => !open && close()}
