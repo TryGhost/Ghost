@@ -1232,5 +1232,128 @@ describe('MemberBreadService', function () {
       assert.equal(member.subscriptions[0].offer, null);
       assert.deepEqual(member.subscriptions[0].offer_redemptions, []);
     });
+
+    it('fetches shared offers concurrently with one call per id', async function () {
+      let inFlight = 0;
+      let maxInFlight = 0;
+      const resolvers = new Map();
+      const getOffer = sinon.stub().callsFake(({id}) => {
+        inFlight += 1;
+        maxInFlight = Math.max(maxInFlight, inFlight);
+        return new Promise((resolve) => {
+          resolvers.set(id, () => {
+            inFlight -= 1;
+            resolve({id, name: `Offer ${id}`});
+          });
+        });
+      });
+      const memberBreadService = getService({
+        offersAPI: {
+          getOffer,
+          getRedeemedOfferIdsForSubscriptions: sinon.stub().resolves([]),
+        },
+      });
+      const modelFor = (subscriptionId, offerId) => ({
+        id: subscriptionId,
+        get: (key) => (key === 'subscription_id' ? subscriptionId : offerId),
+      });
+
+      const pending = memberBreadService.fetchSubscriptionOffers([
+        modelFor('sub_1', 'offer_A'),
+        modelFor('sub_2', 'offer_A'),
+        modelFor('sub_3', 'offer_B'),
+      ]);
+
+      assert.equal(getOffer.callCount, 2);
+      assert.ok(maxInFlight > 1, `expected concurrent fetches, saw max in-flight ${maxInFlight}`);
+      resolvers.get('offer_A')();
+      resolvers.get('offer_B')();
+      const result = await pending;
+
+      assert.equal(result.get('sub_1').id, 'offer_A');
+      assert.equal(result.get('sub_2').id, 'offer_A');
+      assert.equal(result.get('sub_3').id, 'offer_B');
+    });
+
+    it('keeps fulfilled offers and skips rejected ids without throwing', async function () {
+      const getOffer = sinon.stub().callsFake(async ({id}) => {
+        if (id === 'offer_bad') {
+          throw new Error('offer unavailable');
+        }
+        return {id, name: `Offer ${id}`};
+      });
+      const memberBreadService = getService({
+        offersAPI: {
+          getOffer,
+          getRedeemedOfferIdsForSubscriptions: sinon.stub().resolves([]),
+        },
+      });
+      const modelFor = (subscriptionId, offerId) => ({
+        id: subscriptionId,
+        get: (key) => (key === 'subscription_id' ? subscriptionId : offerId),
+      });
+
+      const result = await memberBreadService.fetchSubscriptionOffers([
+        modelFor('sub_1', 'offer_good'),
+        modelFor('sub_2', 'offer_bad'),
+        modelFor('sub_3', 'offer_good2'),
+      ]);
+
+      assert.equal(result.get('sub_1').id, 'offer_good');
+      assert.equal(result.get('sub_3').id, 'offer_good2');
+      assert.equal(result.get('sub_2'), undefined);
+    });
+
+    it('maps offers that resolve to null through to the caller', async function () {
+      const getOffer = sinon.stub().resolves(null);
+      const memberBreadService = getService({
+        offersAPI: {
+          getOffer,
+          getRedeemedOfferIdsForSubscriptions: sinon.stub().resolves([]),
+        },
+      });
+      const modelFor = (subscriptionId, offerId) => ({
+        id: subscriptionId,
+        get: (key) => (key === 'subscription_id' ? subscriptionId : offerId),
+      });
+
+      const result = await memberBreadService.fetchSubscriptionOffers([
+        modelFor('sub_1', 'offer_A'),
+      ]);
+
+      assert.ok(result.has('sub_1'));
+      assert.equal(result.get('sub_1'), null);
+    });
+
+    it('keeps fulfilled redemption offers when an earlier fetch rejects', async function () {
+      const getOffer = sinon.stub().callsFake(async ({id}) => {
+        if (id === 'offer_bad') {
+          throw new Error('offer unavailable');
+        }
+        return {id, name: `Offer ${id}`};
+      });
+      const memberBreadService = getService({
+        offersAPI: {
+          getOffer,
+          getRedeemedOfferIdsForSubscriptions: sinon.stub().resolves([
+            {subscription_id: '1', offer_id: 'offer_bad'},
+            {subscription_id: '2', offer_id: 'offer_good'},
+          ]),
+        },
+      });
+      const subFor = (dbId, stripeId) => ({
+        id: dbId,
+        get: (key) => (key === 'subscription_id' ? stripeId : undefined),
+      });
+
+      const result = await memberBreadService.fetchSubscriptionOfferRedemptions([
+        subFor('1', 'stripe_1'),
+        subFor('2', 'stripe_2'),
+      ]);
+
+      assert.equal(result.get('stripe_2').length, 1);
+      assert.equal(result.get('stripe_2')[0].id, 'offer_good');
+      assert.ok(!result.has('stripe_1'));
+    });
   });
 });

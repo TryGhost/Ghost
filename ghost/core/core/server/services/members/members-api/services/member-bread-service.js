@@ -226,30 +226,23 @@ module.exports = class MemberBREADService {
    * @returns {Promise<Map<string, OfferDTO>>}
    */
   async fetchSubscriptionOffers(subscriptions) {
-    const fetchedOffers = new Map();
+    const offerIds = [...new Set(subscriptions.map((s) => s.get('offer_id')).filter(Boolean))];
+    const settled = await Promise.allSettled(
+      offerIds.map(async (id) => [id, await this.offersAPI.getOffer({id})]),
+    );
+    const fetchedOffers = new Map(
+      settled.filter((r) => r.status === 'fulfilled').map((r) => r.value),
+    );
     const subscriptionOffers = new Map();
 
-    try {
-      for (const subscriptionModel of subscriptions) {
-        const offerId = subscriptionModel.get('offer_id');
+    for (const subscriptionModel of subscriptions) {
+      const offerId = subscriptionModel.get('offer_id');
 
-        if (!offerId) {
-          continue;
-        }
-
-        let offer = fetchedOffers.get(offerId);
-        if (!offer) {
-          offer = await this.offersAPI.getOffer({ id: offerId });
-          fetchedOffers.set(offerId, offer);
-        }
-
-        subscriptionOffers.set(subscriptionModel.get('subscription_id'), offer);
+      if (!offerId) {
+        continue;
       }
-    } catch (e) {
-      logging.error(
-        `Failed to load offers for subscriptions - ${subscriptions.map((s) => s.id).join(', ')}.`,
-      );
-      logging.error(e);
+
+      subscriptionOffers.set(subscriptionModel.get('subscription_id'), fetchedOffers.get(offerId));
     }
 
     return subscriptionOffers;
@@ -281,18 +274,18 @@ module.exports = class MemberBREADService {
         subscriptionIds,
       });
 
-      const fetchedOffers = new Map();
+      const offerIds = [...new Set(redemptions.map((r) => r.offer_id).filter(Boolean))];
+      const settled = await Promise.allSettled(
+        offerIds.map(async (id) => [id, await this.offersAPI.getOffer({id})]),
+      );
+      const fetchedOffers = new Map(
+        settled.filter((r) => r.status === 'fulfilled').map((r) => r.value),
+      );
 
       for (const redemption of redemptions) {
         const stripeSubId = subscriptionIdMap.get(redemption.subscription_id);
 
-        let offer = fetchedOffers.get(redemption.offer_id);
-
-        if (!offer) {
-          offer = await this.offersAPI.getOffer({ id: redemption.offer_id });
-
-          fetchedOffers.set(redemption.offer_id, offer);
-        }
+        const offer = fetchedOffers.get(redemption.offer_id);
 
         if (offer && stripeSubId) {
           if (!subscriptionOfferRedemptions.has(stripeSubId)) {
