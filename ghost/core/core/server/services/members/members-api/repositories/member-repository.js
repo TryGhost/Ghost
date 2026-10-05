@@ -1158,12 +1158,12 @@ module.exports = class MemberRepository {
         transacting,
       );
       // require: false so concurrent deletes don't throw "No Rows Deleted"
-      const deleted = await this._Member.destroy(
-        {
-          id: data.id,
-        },
-        { ...options, transacting, require: false },
-      );
+      const deleted = await this._Member.destroy({
+        ...options,
+        id: data.id,
+        transacting,
+        require: false,
+      });
       if (deleted && previousMetafields) {
         deleted._previousMetafields = previousMetafields;
       }
