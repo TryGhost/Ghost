@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/react';
 import type { ErrorInfo } from 'react';
 import { APIError, ServerUnreachableError } from '@tryghost/admin-x-framework/errors';
+import { loadedKoenigVersion } from '@/settings/components/koenig-loader';
 import type { PostType } from '@/editor/card-config';
 import type { SaveError } from '@/editor/engine/save-engine';
 import type { EditorLeaveConfirmation, EditorSaveFailure } from '@/editor/session/editor-session';
@@ -31,7 +32,7 @@ export function reportEditorError(error: unknown, context?: EditorErrorContext):
 export function reportKoenigError(error: unknown): void {
   reportEditorError(error, {
     tags: { lexical: true },
-    contexts: { koenig: { version: window['@tryghost/koenig-lexical']?.version } },
+    contexts: { koenig: { version: loadedKoenigVersion() } },
   });
 }
 
@@ -40,7 +41,7 @@ export function reportKoenigRenderError(error: unknown, info: ErrorInfo): void {
   reportEditorError(error, {
     tags: { lexical: true },
     contexts: {
-      koenig: { version: window['@tryghost/koenig-lexical']?.version },
+      koenig: { version: loadedKoenigVersion() },
       react: { componentStack: info.componentStack },
     },
   });
@@ -63,9 +64,10 @@ function responseTags(error: SaveError): Record<string, TagValue | undefined> {
 }
 
 /**
- * Reports a request that settled as failed. Validation, host limits and an
- * unreachable server are the writer's or the host's to act on and are not
- * reported; every other failure is, once, with what the request was.
+ * Reports a request that settled as failed. Validation, host limits, a writer
+ * who lost access to the post and an unreachable server are not faults in the
+ * editor and are not reported; every other failure is, once, with what the
+ * request was.
  */
 export function reportSaveFailure(failure: EditorSaveFailure, postType: PostType): void {
   const { command, error, persisted, durationMs, postId, status } = failure;
@@ -94,6 +96,7 @@ export function reportSaveFailure(failure: EditorSaveFailure, postType: PostType
   if (
     error.kind === 'validation' ||
     error.kind === 'host-limit' ||
+    error.kind === 'forbidden' ||
     error.cause instanceof ServerUnreachableError
   ) {
     return;

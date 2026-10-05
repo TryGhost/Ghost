@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
+import { userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
@@ -27,6 +28,7 @@ import {
 import { editorScreen } from '@/editor/editor.screen';
 import { previewScreen } from '@/editor/preview/preview.screen';
 import { publishScreen } from '@/editor/publish/publish.screen';
+import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
 const POST_UUID = 'post-uuid';
@@ -35,6 +37,11 @@ const CURRENT_USER = currentUserResponse().users[0];
 
 const WEEKLY = newsletter({ slug: 'weekly', name: 'Weekly', status: 'active' });
 const MONTHLY = newsletter({ slug: 'monthly-roundup', name: 'Monthly roundup', status: 'active' });
+
+const SESSION_GONE = {
+  errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }],
+};
+const PASSWORD = 'hunter22';
 
 /** A site whose bulk email provider is configured, so the flow offers a send. */
 function emailSite(settings: Record<string, unknown> = {}) {
@@ -115,6 +122,14 @@ function fakeSavableDraft(overrides: Record<string, unknown> = {}) {
     }
     return { posts: [current] };
   });
+}
+
+/** Opens the preview's email and sends a test to the current user. */
+async function sendTestFromPreview() {
+  await editorScreen.previewButton().click();
+  await previewScreen.emailTab().click();
+  await previewScreen.testEmailButton().click();
+  await previewScreen.sendTestEmailButton().click();
 }
 
 afterEach(() => {
@@ -264,4 +279,96 @@ describe('Editor publish journeys', () => {
       await expect.element(previewScreen.emailFrom()).toHaveTextContent(`Weekly <${from}>`);
     },
   );
+
+  it('asks for the password when a test send finds the session expired, then sends it', async () => {
+    publishChrome([WEEKLY]);
+    fakeTiers([]);
+    fakeSavableDraft();
+    const expiredSendApi = fakeAdminEndpoint('POST', /^\/email_previews\/posts\//, SESSION_GONE, {
+      status: 401,
+    });
+    const sessionApi = fakeAdminEndpoint('POST', '/session/', () => 'Created', { status: 201 });
+    await renderAdminApp(`/editor/post/${POST_ID}`, emailSite());
+
+    await sendTestFromPreview();
+
+    await expect.element(editorScreen.reauthDialog()).toHaveTextContent('Are you still here?');
+    expect(expiredSendApi.requests).toHaveLength(1);
+
+    // Declared after the expired fake, so it answers the send held behind the sign-in.
+    const testSendApi = fakeAdminEndpoint('POST', /^\/email_previews\/posts\//, null, {
+      status: 204,
+    });
+    await editorScreen.reauthPassword().fill(PASSWORD);
+    await editorScreen.reauthSignIn().click();
+
+    await expect(editorScreen.reauthDialog()).toHaveCount(0);
+    expect(sessionApi.lastRequest?.body).toEqual({
+      username: String(CURRENT_USER.email),
+      password: PASSWORD,
+    });
+    await expect.poll(() => testSendApi.requests.length).toBe(1);
+    await expect
+      .element(previewScreen.toastWithText(`Test email sent to ${String(CURRENT_USER.email)}`))
+      .toBeVisible();
+    await expect.element(previewScreen.modal()).toBeVisible();
+    expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+  });
+
+  it.each(['Cancel', 'Escape'])(
+    'says the session expired beneath Send when the sign-in is abandoned with %s',
+    async (abandonWith) => {
+      publishChrome([WEEKLY]);
+      fakeTiers([]);
+      fakeSavableDraft();
+      const testSendApi = fakeAdminEndpoint('POST', /^\/email_previews\/posts\//, SESSION_GONE, {
+        status: 401,
+      });
+      await renderAdminApp(`/editor/post/${POST_ID}`, emailSite());
+
+      await sendTestFromPreview();
+      await expect.element(editorScreen.reauthDialog()).toBeVisible();
+      if (abandonWith === 'Cancel') {
+        await editorScreen.cancelReauth().click();
+      } else {
+        await userEvent.keyboard('{Escape}');
+      }
+
+      await expect(editorScreen.reauthDialog()).toHaveCount(0);
+      await expect
+        .element(previewScreen.testEmailError())
+        .toHaveTextContent('Your session expired. Send again to sign in.');
+      await expect.element(previewScreen.modal()).toBeVisible();
+
+      // Sending again is the way back in.
+      await previewScreen.sendTestEmailButton().click();
+
+      await expect.element(editorScreen.reauthDialog()).toBeVisible();
+      expect(testSendApi.requests).toHaveLength(2);
+    },
+  );
+
+  it('asks for the password when the test popover closed while the expired send was out', async () => {
+    publishChrome([WEEKLY]);
+    fakeTiers([]);
+    fakeSavableDraft();
+    const answered = deferred<void>();
+    fakeAdminEndpoint(
+      'POST',
+      /^\/email_previews\/posts\//,
+      async () => {
+        await answered.promise;
+        return SESSION_GONE;
+      },
+      { status: 401 },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, emailSite());
+
+    await sendTestFromPreview();
+    await userEvent.keyboard('{Escape}');
+    await expect(previewScreen.testEmailInput()).toHaveCount(0);
+    answered.resolve();
+
+    await expect.element(editorScreen.reauthDialog()).toHaveTextContent('Are you still here?');
+  });
 });

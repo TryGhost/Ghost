@@ -38,6 +38,14 @@ function renderBanners(state: SaveEngineState, overrides: BannerOverrides = {}) 
 
 const CONFLICT_ERROR: SaveError = { kind: 'conflict', message: 'Someone else got there first.' };
 const CONFLICT: SaveEngineState = { kind: 'conflict', intent: 'autosave', error: CONFLICT_ERROR };
+const DELETED: SaveEngineState = {
+  kind: 'halted',
+  error: { kind: 'not-found', message: 'Post not found.' },
+};
+const ACCESS_LOST: SaveEngineState = {
+  kind: 'halted',
+  error: { kind: 'forbidden', message: 'You do not have permission to perform this action' },
+};
 
 function errored(error: Partial<SaveError>): SaveEngineState {
   return {
@@ -175,10 +183,31 @@ describe('SessionBanners', () => {
   });
 
   it('keeps the deleted-post copy escape visible after saving halts', () => {
-    renderBanners({ kind: 'halted' });
+    renderBanners(DELETED);
 
     expect(screen.getByRole('alert')).toHaveTextContent('This post has been deleted');
     expect(screen.getByRole('button', { name: 'Copy content' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Reload' })).not.toBeInTheDocument();
+  });
+
+  it('says the editor has crashed when a create finds nothing, and leaves only the copy', () => {
+    renderBanners({ kind: 'crashed' });
+
+    expect(screen.getByRole('alert')).toHaveTextContent('The editor has crashed');
+    expect(screen.getByRole('button', { name: 'Copy content' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Reload' })).not.toBeInTheDocument();
+  });
+
+  it('tells a writer who lost access that they can no longer edit, and leaves only the copy', () => {
+    renderBanners(ACCESS_LOST);
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'You no longer have permission to edit this post',
+    );
+    expect(screen.getByRole('alert')).not.toHaveTextContent('You do not have permission');
+    expect(screen.getByRole('button', { name: 'Copy content' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Reload' })).not.toBeInTheDocument();
   });
 
@@ -287,12 +316,32 @@ describe('SessionBanners reporting', () => {
   });
 
   it('reports a deleted-post banner as a not-found', () => {
-    renderBanners({ kind: 'halted' });
+    renderBanners(DELETED);
 
     expect(reportShownAlert).toHaveBeenCalledTimes(1);
     expect(reportShownAlert).toHaveBeenCalledWith(
       expect.stringContaining('This post has been deleted'),
       expect.objectContaining({ kind: 'not-found' }),
+    );
+  });
+
+  it('reports a crash banner by the text shown', () => {
+    renderBanners({ kind: 'crashed' });
+
+    expect(reportShownAlert).toHaveBeenCalledTimes(1);
+    expect(reportShownAlert).toHaveBeenCalledWith(
+      expect.stringContaining('The editor has crashed'),
+      expect.objectContaining({ kind: 'not-found' }),
+    );
+  });
+
+  it('reports a lost-access banner by the text shown', () => {
+    renderBanners(ACCESS_LOST);
+
+    expect(reportShownAlert).toHaveBeenCalledTimes(1);
+    expect(reportShownAlert).toHaveBeenCalledWith(
+      expect.stringContaining('You no longer have permission to edit this post'),
+      expect.objectContaining({ kind: 'forbidden' }),
     );
   });
 

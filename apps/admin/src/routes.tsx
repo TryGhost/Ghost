@@ -275,11 +275,16 @@ function matchedRoutePattern(pathname: string): string {
   return pattern.replace(/\/\/+/g, '/') || '/';
 }
 
-/** Tells Ember which route pattern React is showing, or null while Ember serves the screen. */
-export function useSyncEmberRoutePattern(): void {
+/** The route pattern React is showing, or null while Ember serves the screen. */
+export function useRoutePattern(): string | null {
   const { pathname } = useLocation();
   const isEmberOwned = useIsEmberOwnedRoute(pathname);
-  const routePattern = isEmberOwned ? null : matchedRoutePattern(pathname);
+  return isEmberOwned ? null : matchedRoutePattern(pathname);
+}
+
+/** Tells Ember which route pattern React is showing, or null while Ember serves the screen. */
+export function useSyncEmberRoutePattern(): void {
+  const routePattern = useRoutePattern();
 
   useEffect(() => syncEmberRoutePattern(routePattern), [routePattern]);
 }

@@ -57,6 +57,8 @@ Each newsletter is shown with the address its email goes out from: its sender ad
 
 Switching newsletters re-renders the preview against that newsletter, and the test send goes to exactly one address — the current user's, unless it is edited — for the audience currently selected.
 
+A test send that finds the session expired opens the editor's sign-in dialog over the preview and goes out once the writer has signed in. Abandoning the sign-in says beneath Send that the session expired, and sending again asks again.
+
 When the caller passes the saved post, a banner above the rendered email gives its size once the email is estimated at 100kB or more. The estimate is the editor's, described in [the editor README](../README.md#email-size), so it does not follow the newsletter or audience picked here.
 
 The sender and subject controls share a label column and a local 28px height;
