@@ -11,9 +11,6 @@ import {
   type SuggestionGroup,
 } from '@/settings/site/navigation/url-suggestion-input';
 
-export type NavigationLinkSuggestion = Suggestion;
-export type NavigationLinkSuggestionGroup = SuggestionGroup;
-
 /** We only ever show a handful of each type so the dropdown stays scannable. */
 const CONTENT_LIMIT = 5;
 
@@ -41,7 +38,7 @@ const toPath = (url: string) => {
   }
 };
 
-const matches = (suggestion: NavigationLinkSuggestion, term: string) => {
+const matches = (suggestion: Suggestion, term: string) => {
   const needle = term.toLowerCase();
   return (
     suggestion.label.toLowerCase().includes(needle) ||
@@ -49,7 +46,7 @@ const matches = (suggestion: NavigationLinkSuggestion, term: string) => {
   );
 };
 
-const useNavigationLinkSuggestions = () => {
+const useSuggestions = () => {
   const { config, settings, siteData } = useGlobalData();
 
   const [paidMembersEnabled = false, donationsEnabled = false, recommendationsEnabled = false] =
@@ -97,7 +94,7 @@ const useNavigationLinkSuggestions = () => {
     [fetchApi],
   );
 
-  const staticGroups = useMemo<NavigationLinkSuggestionGroup[]>(() => {
+  const staticGroups = useMemo<SuggestionGroup[]>(() => {
     const homepageUrl = getHomepageUrl(siteData);
 
     const links = buildAutocompleteLinks(
@@ -131,7 +128,7 @@ const useNavigationLinkSuggestions = () => {
   ]);
 
   const loadSuggestions = useCallback(
-    async (term: string): Promise<NavigationLinkSuggestionGroup[]> => {
+    async (term: string): Promise<SuggestionGroup[]> => {
       // Each source degrades independently: one failing search shouldn't take
       // the membership and offer groups down with it.
       const [pages, posts] = await Promise.all([
@@ -140,7 +137,7 @@ const useNavigationLinkSuggestions = () => {
       ]);
 
       const needle = term.toLowerCase();
-      const toItems = (results: SearchIndexPost[]): NavigationLinkSuggestion[] =>
+      const toItems = (results: SearchIndexPost[]): Suggestion[] =>
         results
           .filter((result) => result.status === 'published' && isRoutable(result.url))
           .filter((result) => !term || result.title.toLowerCase().includes(needle))
@@ -151,7 +148,7 @@ const useNavigationLinkSuggestions = () => {
             description: toPath(result.url),
           }));
 
-      const contentGroups: NavigationLinkSuggestionGroup[] = [
+      const contentGroups: SuggestionGroup[] = [
         { label: 'Pages', items: toItems(pages) },
         { label: 'Posts', items: toItems(posts) },
       ];
@@ -171,4 +168,4 @@ const useNavigationLinkSuggestions = () => {
   return { loadSuggestions };
 };
 
-export default useNavigationLinkSuggestions;
+export default useSuggestions;

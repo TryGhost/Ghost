@@ -4,7 +4,7 @@ import { Button, SortableList } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { type NavigationEditor } from '@/settings/hooks/site/use-navigation-editor';
-import { type NavigationLinkSuggestionGroup } from '@/settings/hooks/site/use-navigation-link-suggestions';
+import { type SuggestionGroup } from './url-suggestion-input';
 import {
   navigationColumnClasses,
   navigationDragHandleSpacerClasses,
@@ -17,7 +17,7 @@ const NavigationEditForm: React.FC<{
   baseUrl: string;
   idPrefix: string;
   navigation: NavigationEditor;
-  loadSuggestions: (term: string) => Promise<NavigationLinkSuggestionGroup[]>;
+  loadSuggestions: (term: string) => Promise<SuggestionGroup[]>;
   showIcon: boolean;
   showPaidVisibility: boolean;
   showVisibility: boolean;

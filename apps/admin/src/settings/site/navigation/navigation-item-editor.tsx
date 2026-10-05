@@ -1,7 +1,7 @@
 import NavigationIconUpload from './navigation-icon-upload';
 import NavigationVisibilityDropdown from './navigation-visibility-dropdown';
 import React, { type ReactNode } from 'react';
-import UrlSuggestionInput from './url-suggestion-input';
+import UrlSuggestionInput, { type SuggestionGroup } from './url-suggestion-input';
 import clsx from 'clsx';
 import {
   type EditableItem,
@@ -10,7 +10,6 @@ import {
 } from '@/settings/hooks/site/use-navigation-editor';
 import { Field, FieldError, FieldLabel, Input } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
-import { type NavigationLinkSuggestionGroup } from '@/settings/hooks/site/use-navigation-link-suggestions';
 import {
   navigationColumnClasses,
   navigationFieldOffsetClass,
@@ -21,7 +20,7 @@ export type NavigationItemEditorProps = React.HTMLAttributes<HTMLDivElement> & {
   baseUrl: string;
   idPrefix: string;
   item: EditableItem;
-  loadSuggestions: (term: string) => Promise<NavigationLinkSuggestionGroup[]>;
+  loadSuggestions: (term: string) => Promise<SuggestionGroup[]>;
   clearError?: (key: keyof NavigationItemErrors) => void;
   updateItem?: (item: Partial<NavigationItem>) => void;
   uploadIcon?: (file: File) => Promise<string | undefined>;
