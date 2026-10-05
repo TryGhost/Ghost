@@ -18,6 +18,7 @@ import {
   post,
   renderAdminApp,
   settingsResponse,
+  siteResponse,
   staffRole,
   withoutAutosave,
   type RenderAdminAppOptions,
@@ -347,6 +348,29 @@ describe('Post editor', () => {
     await editorScreen.retryLoad().click();
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect(editorScreen.loadError()).toHaveCount(0);
+  });
+
+  it('shows the load error when the site cannot be read, and opens the editor on retry', async () => {
+    fakeEditorChrome();
+    await renderAdminApp('/editor/post', {
+      ...FLAG_ON,
+      boot: {
+        browseSite: {
+          response: { errors: [{ type: 'NotFoundError', message: 'Not found.' }] },
+          responseStatus: 404,
+        },
+      },
+    });
+
+    await expect.element(editorScreen.loadError()).toHaveTextContent('Couldn’t load the editor.');
+    await expect(editorScreen.titleInput()).toHaveCount(0);
+
+    // A later handler for the same route wins: the retried read finds the site.
+    fakeAdminEndpoint('GET', '/site/', siteResponse());
+    await editorScreen.retryLoad().click();
+
+    await expect.element(editorScreen.titleInput()).toBeVisible();
     await expect(editorScreen.loadError()).toHaveCount(0);
   });
 
