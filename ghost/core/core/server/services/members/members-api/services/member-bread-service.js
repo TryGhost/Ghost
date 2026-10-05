@@ -233,6 +233,11 @@ module.exports = class MemberBREADService {
     const fetchedOffers = new Map(
       settled.filter((r) => r.status === 'fulfilled').map((r) => r.value),
     );
+    settled.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        logging.warn(`Failed to load subscription offer ${offerIds[index]}: ${result.reason?.message ?? result.reason}`);
+      }
+    });
     const subscriptionOffers = new Map();
 
     for (const subscriptionModel of subscriptions) {
@@ -281,6 +286,11 @@ module.exports = class MemberBREADService {
       const fetchedOffers = new Map(
         settled.filter((r) => r.status === 'fulfilled').map((r) => r.value),
       );
+      settled.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          logging.warn(`Failed to load redeemed offer ${offerIds[index]}: ${result.reason?.message ?? result.reason}`);
+        }
+      });
 
       for (const redemption of redemptions) {
         const stripeSubId = subscriptionIdMap.get(redemption.subscription_id);
