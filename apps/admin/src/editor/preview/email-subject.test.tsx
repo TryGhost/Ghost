@@ -14,18 +14,11 @@ interface HarnessProps {
   subject?: string | null;
   title?: string;
   saveError?: SaveError | null;
-  ownsSaveError?: boolean;
   calls?: string[];
 }
 
 /** Holds the subject the way the session does, recording what the field stages and commits. */
-function Harness({
-  subject = null,
-  title = TITLE,
-  saveError = null,
-  ownsSaveError = true,
-  calls = [],
-}: HarnessProps) {
+function Harness({ subject = null, title = TITLE, saveError = null, calls = [] }: HarnessProps) {
   const [value, setValue] = useState(subject);
 
   return (
@@ -42,7 +35,6 @@ function Harness({
         },
         onCommit: () => calls.push('commit'),
       }}
-      ownsSaveError={ownsSaveError}
     />
   );
 }
@@ -111,19 +103,5 @@ describe('EmailSubject', () => {
     fireEvent.change(subjectInput(), { target: { value: 'A new subject' } });
     expect(screen.getByRole('alert')).toHaveTextContent(message);
     expect(subjectInput()).toHaveAttribute('aria-invalid', 'true');
-  });
-
-  it('shows another save’s failure without marking the subject invalid', () => {
-    render(
-      <Harness
-        ownsSaveError={false}
-        saveError={{ kind: 'validation', message: 'Title cannot be that long.' }}
-      />,
-    );
-
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      'Validation failed: Title cannot be that long.',
-    );
-    expect(subjectInput()).toHaveAttribute('aria-invalid', 'false');
   });
 });

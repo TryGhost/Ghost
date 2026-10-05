@@ -33,6 +33,7 @@ import { previewScreen } from '@/editor/preview/preview.screen';
 import { CONFLICT_MESSAGE } from '@/editor/publish/completion-message';
 import { publishScreen } from '@/editor/publish/publish.screen';
 import { POST_DELETED } from '@/editor/session/error-mapping';
+import { TITLE_MAX, TITLE_TOO_LONG } from '@/editor/session/settings-fields';
 
 const POST_ID = 'abc123';
 const POST_UUID = 'post-uuid';
@@ -42,6 +43,7 @@ const SITE_URL = 'http://test.com';
 
 const SAVE_POLL = { timeout: 10_000 };
 const CURRENT_USER_ID = String(currentUserResponse().users[0].id);
+const GENERIC_ERROR_TOAST = /something went wrong/i;
 
 const MAILGUN_SETTINGS = {
   mailgun_domain: 'mail.test.com',
@@ -580,6 +582,34 @@ describe('Editor header actions', () => {
     await expect
       .element(previewScreen.browserFrame())
       .toHaveAttribute('src', `${SITE_URL}/p/${POST_UUID}/?member_status=free`);
+  });
+
+  it('names the title limit when it stops the save before previewing, with no toast', async () => {
+    publishChrome();
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await editorScreen.titleInput().fill('a'.repeat(TITLE_MAX + 1));
+    await editorScreen.previewButton().click();
+
+    await expect.element(previewScreen.saveFailed()).toHaveTextContent(TITLE_TOO_LONG);
+    await expect.element(previewScreen.emailSubject()).not.toHaveAccessibleDescription();
+    await expect(previewScreen.toastWithText(GENERIC_ERROR_TOAST)).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
+  });
+
+  it('shows the reason the server refused the save before previewing', async () => {
+    publishChrome();
+    fakeSavablePost({}, { failWith: 422, resource: 'pages' });
+    await renderAdminApp(`/editor/page/${POST_ID}`, FLAG_ON);
+
+    await typeIntoBody(' and more');
+    await editorScreen.previewButton().click();
+
+    await expect
+      .element(previewScreen.saveFailed())
+      .toHaveTextContent('Validation failed: Title cannot be that long.');
+    await expect(previewScreen.toastWithText(GENERIC_ERROR_TOAST)).toHaveCount(0);
   });
 
   it('toggles the preview with the keyboard shortcut', async () => {
