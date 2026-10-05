@@ -21,6 +21,13 @@ ngrok http 2368
 Open the HTTPS forwarding URL on the other device. Ghost Admin is available at
 `/ghost/` on the same URL.
 
+Start the Admin watcher with `ADMIN_DEV_TUNNEL_ORIGIN=https://your-forwarding-domain.example`
+when using a public tunnel. This restricts development WebSocket connections to
+the preview origin, blocking Vite's fallback to the viewer's `localhost:5174` before
+it can request local-network permission on sign-in. HTTPS API requests, live editor
+previews and WebMCP remain available. If the proxy cannot carry hot-reload WebSockets,
+refresh after changing Admin source code. Ordinary direct development needs no override.
+
 The development Caddy gateway trusts the forwarded protocol supplied by ngrok,
 Tailscale Funnel, and similar HTTPS tunnel agents. Tunnel the gateway on port
 `2368`, not an individual Admin or public-app development server, so requests

@@ -50,6 +50,13 @@ export default defineConfig(({ command }) => ({
     host: '0.0.0.0',
     port: 5174,
     allowedHosts: true,
+    // A public preview must not let development WebSocket fallbacks connect
+    // to services on the viewer's own device. Keep normal dev unchanged.
+    headers: process.env.ADMIN_DEV_TUNNEL_ORIGIN
+      ? {
+          'Content-Security-Policy': `connect-src 'self' https: wss://${new URL(process.env.ADMIN_DEV_TUNNEL_ORIGIN).host}`,
+        }
+      : undefined,
     // Vite 8 already forwards browser console warn/error to the terminal
     // when it detects an AI agent is driving the dev server, and stays
     // quiet for humans. Uncomment to force it on for everyone (noisier):
