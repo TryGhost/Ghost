@@ -76,7 +76,7 @@ const RunHistoryContent: React.FC<RunHistoryProps> = ({
         <Inline
           className={cn(
             'pointer-events-none sticky top-0 z-10 shrink-0 px-6 py-4',
-            !isPerformanceOpen && 'pl-16',
+            !isPerformanceOpen && 'pr-16',
           )}
           gap="sm"
         >

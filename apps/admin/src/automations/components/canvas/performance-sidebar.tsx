@@ -141,6 +141,7 @@ const PerformanceContent: React.FC<{
 export const PerformanceSidebar: React.FC<{
   automationId: string;
   isOpen: boolean;
+  isEmailPerformanceOpen: boolean;
   onOpenChange: (open: boolean) => void;
   selectedRunId: string | null;
   onSelectRun: (id: string, memberName: string) => void;
@@ -148,6 +149,7 @@ export const PerformanceSidebar: React.FC<{
 }> = ({
   automationId,
   isOpen,
+  isEmailPerformanceOpen,
   onOpenChange,
   selectedRunId,
   onSelectRun,
@@ -174,7 +176,10 @@ export const PerformanceSidebar: React.FC<{
         aria-controls={panelId}
         aria-expanded={isOpen}
         aria-label={isOpen ? 'Hide performance' : 'Show performance'}
-        className="absolute top-4 left-4 z-20"
+        className={cn(
+          'absolute top-4 z-20',
+          isEmailPerformanceOpen ? 'right-[calc(min(400px,100cqw_-_6rem)_+_1rem)]' : 'right-4',
+        )}
         size="icon"
         type="button"
         variant="ghost"
@@ -183,7 +188,7 @@ export const PerformanceSidebar: React.FC<{
           onOpenChange(!isOpen);
         }}
       >
-        <LucideIcon.PanelLeft strokeWidth={2} />
+        <LucideIcon.PanelRight strokeWidth={2} />
       </Button>
       <aside
         ref={(panel) => {
@@ -195,18 +200,18 @@ export const PerformanceSidebar: React.FC<{
         aria-labelledby={headingId}
         className={cn(
           'shrink-0 overflow-hidden bg-surface-elevated transition-[width] duration-150 ease-out motion-reduce:transition-none',
-          '@max-[960px]/automation:absolute @max-[960px]/automation:inset-y-0 @max-[960px]/automation:left-0 @max-[960px]/automation:z-10',
+          '@max-[960px]/automation:absolute @max-[960px]/automation:inset-y-0 @max-[960px]/automation:right-0 @max-[960px]/automation:z-10',
           isOpen ? 'w-[480px] @max-[960px]/automation:w-full' : 'w-0',
         )}
         id={panelId}
       >
         {/* Keep content at its full width while the sidebar animates open or closed. */}
         <Stack
-          className="h-full w-[480px] overflow-y-auto border-r border-border-default px-6 py-4 @max-[960px]/automation:w-[100cqw]"
+          className="h-full w-[480px] overflow-y-auto border-l border-border-default px-6 py-4 @max-[960px]/automation:w-[100cqw]"
           gap="none"
           style={{ overflowAnchor: 'none' }}
         >
-          <Inline className="h-9 shrink-0 pl-10" gap="sm">
+          <Inline className="h-9 shrink-0 pr-10" gap="sm">
             <Text
               as="h2"
               className={searchOpen ? 'sr-only' : 'min-w-0 flex-1'}

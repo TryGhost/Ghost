@@ -908,21 +908,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       data-testid="automation-canvas"
       gap="none"
     >
-      {automationRunAnalyticsEnabled && automationsTinybirdSyncEnabled && (
-        <PerformanceSidebar
-          automationId={automation.id}
-          isOpen={isPerformanceOpen}
-          isRunSelectionDisabled={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
-          selectedRunId={selectedRunId}
-          onOpenChange={(open) => {
-            setIsPerformanceOpen(open);
-            if (open) {
-              clearDetail();
-            }
-          }}
-          onSelectRun={handleSelectRun}
-        />
-      )}
       <Box
         ref={viewport.measureCanvas}
         className={cn(
@@ -997,6 +982,27 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           />
         )}
       </Box>
+      {automationRunAnalyticsEnabled && automationsTinybirdSyncEnabled && (
+        <PerformanceSidebar
+          automationId={automation.id}
+          isEmailPerformanceOpen={
+            automationAnalyticsEnabled &&
+            automation.actions.some(
+              (action) => action.id === selectedStepId && action.type === 'send_email',
+            )
+          }
+          isOpen={isPerformanceOpen}
+          isRunSelectionDisabled={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
+          selectedRunId={selectedRunId}
+          onOpenChange={(open) => {
+            setIsPerformanceOpen(open);
+            if (open) {
+              clearDetail();
+            }
+          }}
+          onSelectRun={handleSelectRun}
+        />
+      )}
       {/* The redesigned editor exposes settings in its cards and performance in this panel. */}
       <Box className={isHistoryOpen ? 'hidden' : 'contents'}>
         {automationRunAnalyticsEnabled ? (
