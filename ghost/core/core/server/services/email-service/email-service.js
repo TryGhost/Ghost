@@ -11,6 +11,7 @@
  * @property {object} newsletter
  * @property {string} emailRecipientFilter
  * @property {number} emailCount
+ * @property {number} [csdEmailCount] - How many to send from the warming domain, when domain warming is enabled
  */
 
 const BatchSendingService = require('./batch-sending-service');
@@ -28,6 +29,7 @@ const messages = {
   retryEmailStatusError: 'Can only retry emails for published posts',
   retryEmailNotFailed: 'Only failed emails can be retried',
   retryEmailUnknownOutcome: 'Cannot retry email because the delivery outcome is unknown',
+  postChangedWhilePublishing: 'The post was changed while it was being published, please try again',
 };
 
 // Resume scanner won't pick up `pending` or `submitting` rows older than this. Rows beyond
@@ -140,11 +142,9 @@ class EmailService {
    *
    * @param {object} newsletter - The newsletter model to send to
    * @param {string} emailRecipientFilter - The recipient filter for the email
-   * @param {object} [options]
-   * @param {number} [options.emailCount] - A previously counted audience to revalidate without recounting
-   * @returns {Promise<{emailCount: number}>} The email count if checks pass, throws if email cannot be sent
+   * @returns {Promise<{emailCount: number, csdEmailCount?: number}>} The recipient counts if checks pass, throws if email cannot be sent
    */
-  async checkCanSendEmail(newsletter, emailRecipientFilter, { emailCount: knownEmailCount } = {}) {
+  async checkCanSendEmail(newsletter, emailRecipientFilter) {
     if (!newsletter) {
       throw new errors.EmailError({
         message: tpl(messages.missingNewsletterError),
@@ -159,63 +159,68 @@ class EmailService {
       });
     }
 
-    const emailCount =
-      knownEmailCount === undefined
-        ? await this.#emailSegmenter.getMembersCount(newsletter, emailRecipientFilter)
-        : knownEmailCount;
+    const emailCount = await this.#emailSegmenter.getMembersCount(newsletter, emailRecipientFilter);
     await this.checkLimits(emailCount);
-
-    return { emailCount };
-  }
-
-  /**
-   * Creates the pending email for a post being published. Start sending it with `scheduleEmail`.
-   *
-   * @param {Post} post
-   * @param {object} [options]
-   * @param {EmailPreflight} [options.preflight] - The emailCount is reused if the newsletter and filter still match the saved post
-   * @returns {Promise<Email>}
-   */
-  async createEmail(post, { preflight } = {}) {
-    const newsletter = await post.getLazyRelation('newsletter');
-    const emailRecipientFilter = post.get('email_recipient_filter');
-
-    const preflightMatches =
-      preflight?.newsletter?.id &&
-      preflight.newsletter.id === newsletter?.id &&
-      preflight.emailRecipientFilter === emailRecipientFilter;
-    const { emailCount } = preflightMatches
-      ? await this.checkCanSendEmail(newsletter, emailRecipientFilter, {
-          emailCount: preflight.emailCount,
-        })
-      : await this.checkCanSendEmail(newsletter, emailRecipientFilter);
 
     const csdEmailCount = this.#domainWarmingService.isEnabled()
       ? await this.#domainWarmingService.getWarmupLimit(emailCount)
       : undefined; // Undefined here means domain warming was not used -- distinct from 0
 
-    return this.#models.Email.add({
-      post_id: post.id,
-      newsletter_id: newsletter.id,
-      status: 'pending',
-      submitted_at: new Date(),
-      track_opens: !!this.#settingsCache.get('email_track_opens'),
-      track_clicks: !!this.#settingsCache.get('email_track_clicks'),
-      feedback_enabled: !!newsletter.get('feedback_enabled'),
-      recipient_filter: emailRecipientFilter,
-      subject: this.#emailRenderer.getSubject(post),
-      from: this.#emailRenderer.getFromAddress(post, newsletter),
-      replyTo: this.#emailRenderer.getReplyToAddress(post, newsletter),
-      email_count: emailCount,
-      preflight_email_count: emailCount,
-      csd_email_count: csdEmailCount,
-      source: post.get('lexical') || post.get('mobiledoc'),
-      source_type: post.get('lexical') ? 'lexical' : 'mobiledoc',
-    });
+    return { emailCount, csdEmailCount };
   }
 
   /**
-   * Starts sending a pending email. A scheduling failure is saved on the email.
+   * Creates the pending email for a post being published, from the checks `checkCanSendEmail`
+   * ran before the save. Schedule it with `scheduleEmail` once the post and email have committed.
+   *
+   * It runs no other queries, because the transaction saving the post holds a connection, and
+   * on SQLite the only one.
+   *
+   * @param {Post} post
+   * @param {object} options
+   * @param {EmailPreflight|null} options.preflight
+   * @param {object} [options.transacting]
+   * @returns {Promise<Email>}
+   */
+  async createEmail(post, { preflight, transacting }) {
+    const { newsletter, emailRecipientFilter, emailCount, csdEmailCount } = preflight ?? {};
+
+    // Only a concurrent edit can save a newsletter or audience other than the one checked
+    if (
+      !newsletter ||
+      post.get('newsletter_id') !== newsletter.id ||
+      post.get('email_recipient_filter') !== emailRecipientFilter
+    ) {
+      throw new errors.UpdateCollisionError({
+        message: tpl(messages.postChangedWhilePublishing),
+      });
+    }
+
+    return this.#models.Email.add(
+      {
+        post_id: post.id,
+        newsletter_id: newsletter.id,
+        status: 'pending',
+        submitted_at: new Date(),
+        track_opens: !!this.#settingsCache.get('email_track_opens'),
+        track_clicks: !!this.#settingsCache.get('email_track_clicks'),
+        feedback_enabled: !!newsletter.get('feedback_enabled'),
+        recipient_filter: emailRecipientFilter,
+        subject: this.#emailRenderer.getSubject(post),
+        from: this.#emailRenderer.getFromAddress(post, newsletter),
+        replyTo: this.#emailRenderer.getReplyToAddress(post, newsletter),
+        email_count: emailCount,
+        preflight_email_count: emailCount,
+        csd_email_count: csdEmailCount,
+        source: post.get('lexical') || post.get('mobiledoc'),
+        source_type: post.get('lexical') ? 'lexical' : 'mobiledoc',
+      },
+      { transacting },
+    );
+  }
+
+  /**
+   * Starts sending a committed pending email. A scheduling failure is saved on the email.
    *
    * @param {Email} email
    * @returns {Promise<Email>}
