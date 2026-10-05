@@ -439,6 +439,81 @@ describe('MemberBreadService', function () {
     });
   });
 
+  describe('attachSubscriptionsToMember', function () {
+    const createLookupService = () => new MemberBreadService({
+      memberRepository: {
+        isActiveSubscriptionStatus: (status) => status === 'active',
+      },
+    });
+
+    it('attaches one synthetic subscription for the product without an active subscription', function () {
+      const productA = {id: 'prod_A'};
+      const productB = {id: 'prod_B'};
+      const service = createLookupService();
+      const member = {
+        id: 'member_1',
+        name: 'Test User',
+        email: 'test@example.com',
+        status: 'comped',
+        products: [productA, productB],
+        productEvents: [
+          {product_id: 'prod_B', action: 'added', created_at: new Date('2023-09-13T15:15:00')},
+        ],
+        subscriptions: [
+          {id: 'sub_1', status: 'active', price: {product: {product_id: 'prod_A'}}},
+        ],
+      };
+
+      service.attachSubscriptionsToMember(member);
+
+      assert.equal(member.subscriptions.length, 2);
+      assert.strictEqual(member.subscriptions[0].tier, productA);
+      assert.strictEqual(member.subscriptions[1].tier, productB);
+    });
+
+    it('treats undefined productEvents as empty instead of throwing', function () {
+      const productA = {id: 'prod_A'};
+      const productB = {id: 'prod_B'};
+      const service = createLookupService();
+      const member = {
+        id: 'member_1',
+        name: 'Test User',
+        email: 'test@example.com',
+        status: 'comped',
+        products: [productA, productB],
+        subscriptions: [
+          {id: 'sub_1', status: 'active', price: {product: {product_id: 'prod_A'}}},
+        ],
+      };
+
+      service.attachSubscriptionsToMember(member);
+
+      assert.equal(member.subscriptions.length, 2);
+      assert.strictEqual(member.subscriptions[1].tier, productB);
+    });
+
+    it('keeps the first match for duplicate product ids when backfilling tiers', function () {
+      const first = {id: 'prod_X', name: 'first'};
+      const second = {id: 'prod_X', name: 'second'};
+      const service = createLookupService();
+      const member = {
+        id: 'member_1',
+        name: 'Test User',
+        email: 'test@example.com',
+        status: 'free',
+        products: [first, second],
+        productEvents: [],
+        subscriptions: [
+          {id: 'sub_1', status: 'active', price: {product: {product_id: 'prod_X'}}},
+        ],
+      };
+
+      service.attachSubscriptionsToMember(member);
+
+      assert.strictEqual(member.subscriptions[0].tier, first);
+    });
+  });
+
   describe('read', function () {
     const MEMBER_ID = 123;
     const MEMBER_UUID = 'abcd-efgh';

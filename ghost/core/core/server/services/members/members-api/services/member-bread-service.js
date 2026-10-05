@@ -126,9 +126,23 @@ module.exports = class MemberBREADService {
       return member;
     }
 
-    const subscriptionProducts = (member.subscriptions || [])
-      .filter((sub) => this.memberRepository.isActiveSubscriptionStatus(sub.status))
-      .map((sub) => sub.price.product.product_id);
+    const subscriptionProducts = new Set(
+      (member.subscriptions || [])
+        .filter((sub) => this.memberRepository.isActiveSubscriptionStatus(sub.status))
+        .map((sub) => sub.price.product.product_id),
+    );
+    const addedEventByProduct = new Map();
+    for (const event of member.productEvents || []) {
+      if (event.action === 'added' && !addedEventByProduct.has(event.product_id)) {
+        addedEventByProduct.set(event.product_id, event);
+      }
+    }
+    const productById = new Map();
+    for (const product of member.products) {
+      if (!productById.has(product.id)) {
+        productById.set(product.id, product);
+      }
+    }
 
     // Remove incomplete subscriptions from the API
     member.subscriptions = member.subscriptions.filter(
@@ -162,10 +176,8 @@ module.exports = class MemberBREADService {
       }
 
       for (const product of member.products) {
-        if (!subscriptionProducts.includes(product.id)) {
-          const productAddEvent = member.productEvents.find(
-            (event) => event.product_id === product.id && event.action === 'added',
-          );
+        if (!subscriptionProducts.has(product.id)) {
+          const productAddEvent = addedEventByProduct.get(product.id);
           let startDate;
           if (!productAddEvent) {
             startDate = moment();
@@ -214,9 +226,7 @@ module.exports = class MemberBREADService {
 
     for (const subscription of member.subscriptions) {
       if (!subscription.tier) {
-        subscription.tier = member.products.find(
-          (product) => product.id === subscription.price.product.product_id,
-        );
+        subscription.tier = productById.get(subscription.price.product.product_id);
       }
     }
   }
