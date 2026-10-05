@@ -208,13 +208,40 @@ describe('Navigation settings', () => {
     await expect(primaryNavigation().getByTestId(sel.navigationItemEditor)).toHaveCount(2);
     await newItem().getByLabelText('Label').fill('Contact');
     await newItem().getByLabelText('URL').click();
-    // The typed URL is only committed on Enter, so it has to reach the add
     await userEvent.keyboard('/contact{Enter}');
 
     await expect(primaryNavigation().getByTestId(sel.navigationItemEditor)).toHaveCount(3);
     const added = existingItem(2);
     await expect.element(added.getByLabelText('Label')).toHaveValue('Contact');
     await expect.element(added.getByLabelText('URL')).toHaveValue('http://test.com/contact/');
+    await expect.element(newItem().getByLabelText('Label')).toHaveValue('');
+    await expect.element(newItem().getByLabelText('URL')).toHaveValue('');
+  });
+
+  it('keeps the typed URL when Enter fails validation', async () => {
+    fakeSettingsScreens();
+    await renderAdminApp('/settings/navigation/edit');
+
+    await newItem().getByLabelText('URL').click();
+    await userEvent.keyboard('/contact{Enter}');
+
+    await expect.element(newItem()).toHaveTextContent(/You must specify a label/);
+    await expect.element(newItem().getByLabelText('URL')).toHaveValue('http://test.com/contact/');
+  });
+
+  it('leaves the URL as typed until the field loses focus', async () => {
+    fakeSettingsScreens();
+    await renderAdminApp('/settings/navigation/edit');
+
+    // Saved as '/con/' on every keystroke, but not reformatted mid-word
+    await newItem().getByLabelText('URL').click();
+    await userEvent.keyboard('/con');
+    await expect.element(newItem().getByLabelText('URL')).toHaveValue('/con');
+    await userEvent.keyboard('tact');
+    await expect.element(newItem().getByLabelText('URL')).toHaveValue('/contact');
+
+    await userEvent.tab();
+    await expect.element(newItem().getByLabelText('URL')).toHaveValue('http://test.com/contact/');
   });
 
   it('keeps the dropdown shut for a field that already holds a URL', async () => {
@@ -291,13 +318,11 @@ describe('Navigation settings', () => {
     await expect.element(newItem().getByLabelText('URL')).toHaveValue('#/portal/support');
   });
 
-  it('commits an in-progress URL edit when saving with Cmd+S', async () => {
+  it('saves a URL that is still being typed with Cmd+S', async () => {
     fakeSettingsScreens();
     const settingsApi = fakeEditSettings();
     await renderAdminApp('/settings/navigation/edit');
 
-    // The URL only commits on blur — Cmd+S with the field still focused
-    // must flush the edit before saving
     await existingItem().getByLabelText('URL').fill('/contact');
     await userEvent.keyboard('{Meta>}s{/Meta}');
 
@@ -319,6 +344,56 @@ describe('Navigation settings', () => {
     // Escape reaches the modal — the typed URL must count as dirty
     await existingItem().getByLabelText('URL').click();
     await userEvent.keyboard('zzz{Escape}');
+
+    await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
+    await settingsScreen.confirmationAction('Stay').click();
+    await expect.element(settingsScreen.navigationModal()).toBeInTheDocument();
+  });
+
+  it('saves a new item whose URL is still being typed with Cmd+S', async () => {
+    fakeSettingsScreens();
+    const settingsApi = fakeEditSettings();
+    await renderAdminApp('/settings/navigation/edit');
+
+    await newItem().getByLabelText('Label').fill('Contact');
+    await newItem().getByLabelText('URL').click();
+    await userEvent.keyboard('/contact{Meta>}s{/Meta}');
+
+    await expect(settingsScreen.navigationModal()).toHaveCount(0);
+    await expect(settingsApi).toHaveEditedSettings([
+      {
+        key: 'navigation',
+        value:
+          '[{"url":"/","label":"Home"},{"url":"/about/","label":"About"},{"url":"/contact/","label":"Contact"}]',
+      },
+    ]);
+  });
+
+  it('confirms before discarding a URL typed into the new item with Escape', async () => {
+    fakeSettingsScreens();
+    fakeSiteContent();
+    await renderAdminApp('/settings/navigation/edit');
+
+    await newItem().getByLabelText('URL').click();
+    await userEvent.keyboard('zzz');
+    // Wait for the debounced search to close the list, so Escape reaches the modal
+    await expect(suggestions()).toHaveCount(0);
+    await userEvent.keyboard('{Escape}');
+
+    await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
+    await settingsScreen.confirmationAction('Stay').click();
+    await expect.element(settingsScreen.navigationModal()).toBeInTheDocument();
+  });
+
+  it('confirms before discarding a URL edit closed by clicking outside the modal', async () => {
+    fakeSettingsScreens();
+    await renderAdminApp('/settings/navigation/edit');
+
+    await existingItem().getByLabelText('URL').click();
+    await userEvent.keyboard('zzz');
+    await page
+      .elementLocator(document.getElementById('modal-backdrop')!)
+      .click({ position: { x: 3, y: 3 } });
 
     await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
     await settingsScreen.confirmationAction('Stay').click();

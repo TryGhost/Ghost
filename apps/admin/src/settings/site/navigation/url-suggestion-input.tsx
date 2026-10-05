@@ -145,7 +145,7 @@ const UrlSuggestionInput: React.FC<UrlSuggestionInputProps> = ({
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const term = event.target.value;
-    urlInput.setDisplayValue(term);
+    urlInput.setDraftValue(term);
     onEdit?.();
 
     setOpen(true);
