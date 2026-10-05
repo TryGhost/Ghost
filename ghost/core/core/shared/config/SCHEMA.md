@@ -127,12 +127,9 @@ a number, or assumed a key is always present, stops compiling.
   becomes a check someone has to remember — which wants a single entry point
   where that check cannot be skipped.
 
-  One transform is in the schema regardless: `database:connection:port`
-  coerces a string of digits to a number. It qualifies because skipping it is
-  harmless — when a violation elsewhere means the raw tree is used, a quoted
-  port reaches mysql2, which accepts a string anyway. A transform whose raw input is still correct
-  for its reader can go in the schema; one whose raw input is wrong, like a
-  relative path, cannot.
+  The exception is a transform whose raw input still works for its reader:
+  `database:connection:port` coerces a quoted port, and mysql2 accepts the
+  string anyway if the parse is skipped.
 
   Either way a transform must be idempotent, because `config.set()` re-parses
   from source on every call, and one that moved a value further each pass would
@@ -143,15 +140,9 @@ a number, or assumed a key is always present, stops compiling.
   matters, so moving it buys nothing until there is a second transform to share
   the plumbing.
 
-  `sanitizeDatabaseProperties` is half union discrimination: it deletes the
-  `connection` keys the other client uses. `database` is now a
-  `z.discriminatedUnion` on `client` whose `connection` objects are closed to
-  what each driver reads, so parsing drops those keys too. The function still
-  runs in the loader all the same - outside `development` and `test*` a
-  violation hands over the raw tree, and its other two jobs, renaming `mysql`
-  to `mysql2` and making a sqlite `filename` absolute, are transforms. So the
-  schema describes the tree it leaves: only `mysql2` or `better-sqlite3`, never
-  the `mysql` and `sqlite3` that config files say.
+  `sanitizeDatabaseProperties` stays in the loader too. Its client rename and
+  sqlite path fix are transforms, so the schema describes the tree it leaves:
+  only `mysql2` or `better-sqlite3`.
 
 - **Nothing may be stricter than the loader already was.** Tightening beyond
   that is its own change, with its own release note.
@@ -195,17 +186,9 @@ reader needs an unlisted key.
 strips it. A key added to config but not to its schema disappears, with no error.
 Add both.
 
-`database:connection` is the second worked example, closed for a different
-reason: its reader is a driver whose option list is itself closed. mysql2 logs
-any key outside its own list as invalid and ignores it, and knex hands
-better-sqlite3 only `filename`. So the schema lists what config can set, a
-named exclusion list covers the rest of mysql2's options — the ones Ghost sets
-itself, the function-valued ones config cannot express, and mysql2's own pool
-options that knex never uses — and
-[`database-schema.types.ts`](../../../test/unit/shared/config/database-schema.types.ts)
-fails `test:types` unless the two together equal mysql2's `ConnectionOptions`.
-A driver upgrade that adds an option breaks the build instead of being
-stripped.
+`database:connection` is closed for sqlite, where knex hands the driver only
+`filename`, and loose for mysql2, whose options are too many to list — only the
+common ones are validated.
 
 That is affordable for `paths` because its readers are enumerable. For a section
 where they are not, the safe form is `z.strictObject({...}).catch((ctx) => ctx.value)`

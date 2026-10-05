@@ -10,8 +10,7 @@ import overrides from '../../core/shared/config/overrides.json';
  * asserting on how many adapters it configured should not silently inherit the
  * five in defaults.json. `paths` is layered out of the shipped files the way
  * loader.ts layers them, so its keys stay correct without being restated here.
- * `database` is the sqlite test default, as the loader leaves it - shipped as
- * `null` in defaults.json, so there is nothing to layer.
+ * `database` is the sqlite test default; defaults.json has none to layer.
  *
  * `extra` is merged last so a test can pin the one value it cares about, and
  * deeply, so pinning `paths:contentPath` leaves the other path keys in place.

@@ -9,12 +9,8 @@ import config from '../../../shared/config';
 const betterSqlitePatches = require('./better-sqlite3-patches');
 
 /**
- * The slice of `database` config this module reads.
- *
- * Deliberately wider than the schema's type for `database`. Outside development
- * and test a schema violation only logs and the raw tree is used, so what
- * arrives here is not guaranteed to have passed it - an unrenamed `sqlite3`
- * included, which is why that alias is still handled below.
+ * The slice of `database` config this module reads. Wider than the schema's
+ * type, as the raw tree is used when validation fails.
  */
 export interface DatabaseConfig {
   client?: string;

@@ -15,16 +15,15 @@ const env: string = config.get('env');
 
 const contentPath: string = config.get('paths:contentPath');
 
-// database is a union on client, and the client narrows the connection
+// database is a union on client
 const database = config.get('database');
 const client: 'mysql2' | 'better-sqlite3' = config.get('database:client');
 const host: string | undefined =
   database.client === 'mysql2' ? database.connection.host : undefined;
 
-// @ts-expect-error unnarrowed, host is `unknown`: a sqlite connection names no host
+// @ts-expect-error a sqlite connection has no host
 const unnarrowedHost: string | undefined = database.connection.host;
 
-// connection is loose, so callers that hand it to knex still can
 const connection: Record<string, unknown> = config.get('database:connection');
 
 // a key with no schema keeps nconf's `any`, so existing call sites still compile

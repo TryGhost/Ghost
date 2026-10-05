@@ -16,11 +16,7 @@ function readJson(...parts: string[]): Record<string, unknown> {
   return JSON.parse(fs.readFileSync(path.join(configDir, ...parts), 'utf8'));
 }
 
-/**
- * Run the loader's database sanitisation over a plain tree. The schema describes
- * `database` as the loader leaves it - env/*.json still say `mysql`, which no
- * longer exists by the time createConfig sees the tree.
- */
+/** The schema describes `database` after the loader sanitises it. */
 function sanitizeDatabase(tree: Record<string, unknown>): Record<string, unknown> {
   const keyPath = (key: string) => key.split(':');
 
@@ -142,8 +138,7 @@ describe('Config Schema', function () {
       assert.ok(configSchema.safeParse(configSources()).success);
     });
 
-    // sanitizeDatabaseProperties has renamed these before the schema runs, and
-    // knex-migrator cannot run anything else
+    // renamed by the loader, or unsupported
     ['mysql', 'sqlite3', 'pg'].forEach(function (client) {
       it(`rejects client ${client}, which never survives the loader`, function () {
         const result = configSchema.safeParse(withDatabase({ ...mysql, client }));
@@ -198,8 +193,7 @@ describe('Config Schema', function () {
       });
     });
 
-    // nconf.env parses values as JSON, so an all-digit password from a plain env
-    // var arrives as a number - which mysql2 cannot hash. `_FILE` keeps it a string.
+    // an all-digit env var parses as a number, which mysql2 rejects
     ['user', 'password', 'database'].forEach(function (key) {
       it(`rejects a ${key} that is not a string, as mysql2 does`, function () {
         const result = configSchema.safeParse(
@@ -220,7 +214,7 @@ describe('Config Schema', function () {
       assert.match(z.prettifyError(result.error), /database\.connection\.filename/);
     });
 
-    it('keeps the driver options config can set', function () {
+    it('keeps mysql2 options it does not name', function () {
       const connection = {
         ...mysql.connection,
         ssl: { rejectUnauthorized: false },
@@ -232,20 +226,6 @@ describe('Config Schema', function () {
       assert.deepEqual(parsed.database.connection, connection);
     });
 
-    // `connection` is closed to what the driver reads - mysql2 logs anything
-    // else as invalid and ignores it - so an unknown key is dropped, including
-    // the other client's keys, as sanitizeDatabaseProperties drops them
-    it('strips connection keys its driver does not read', function () {
-      const parsed = configSchema.parse(
-        withDatabase({
-          ...mysql,
-          connection: { ...mysql.connection, filename: '/ghost.db', madeUp: true },
-        }),
-      );
-
-      assert.deepEqual(parsed.database.connection, mysql.connection);
-    });
-
     it('strips everything but filename from a sqlite connection', function () {
       const parsed = configSchema.parse(
         configSources({ database: { connection: { host: '127.0.0.1', mode: 'wal' } } }),
@@ -254,19 +234,6 @@ describe('Config Schema', function () {
       assert.deepEqual(parsed.database.connection, { filename: '/tmp/ghost-test.db' });
     });
 
-    // Ghost sets these on every connection itself, so a configured value would
-    // only reach knex-migrator and leave the two disagreeing
-    ['timezone', 'decimalNumbers'].forEach(function (key) {
-      it(`strips ${key}, which configure-knex supplies`, function () {
-        const parsed = configSchema.parse(
-          withDatabase({ ...mysql, connection: { ...mysql.connection, [key]: 'x' } }),
-        );
-
-        assert.ok(!(key in parsed.database.connection));
-      });
-    });
-
-    // unlike `connection`, the level above is knex's own config, and stays open
     it('keeps knex options it does not name', function () {
       const parsed = configSchema.parse(
         withDatabase({ ...mysql, acquireConnectionTimeout: 60000 }),

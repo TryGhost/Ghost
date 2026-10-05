@@ -49,8 +49,7 @@ describe('Config Loader', function () {
       sinon.restore();
     });
 
-    // database:connection:filename rather than database:client: the schema only
-    // accepts a client Ghost can run, and the fixture file sets this key too
+    // not database:client, which the schema restricts
     it('env parameter is stronger than file', function () {
       process.env.database__connection__filename = '/from-env.db';
 
