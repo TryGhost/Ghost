@@ -2361,14 +2361,18 @@ services:
       construction:
         summary: >-
           Import loads authorization helpers and the shared actions-map module. Each async
-          init queries all permissions and rebuilds the map; boot awaits it in the main
-          service group. This is shared module state rather than a service-class instance.
+          init queries the permission catalog and role grants, rebuilds the actions map and
+          compiles immutable fixture grants for matching roles; boot awaits it in the main
+          service group. Principals and incompatible role grants remain live database reads.
         sources:
           - core/server/services/permissions/index.js
           - core/server/services/permissions/actions-map-cache.js
+          - core/server/services/permissions/policy.ts
           - core/boot.js
         tests:
           - test/unit/server/services/permissions/index.test.js
+          - test/unit/server/services/permissions/policy.test.ts
+          - test/integration/services/permissions.test.ts
     unverified:
       - consumers
       - startup
@@ -2378,8 +2382,9 @@ services:
       - failures
     blockers:
       - >-
-        Existing tests prove initial map loading and the pre-init error, but do not establish
-        repeated-boot refresh or every early authorization caller.
+        Unit and integration tests cover policy compilation, repeated initialization and
+        current principal state. Early authorization callers and boot-load failure behavior
+        still need lifecycle characterization.
   post-scheduling:
     kind: directory
     disposition: retain

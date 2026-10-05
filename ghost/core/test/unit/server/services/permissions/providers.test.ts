@@ -8,6 +8,13 @@ import models from '../../../../../core/server/models';
 import providers from '../../../../../core/server/services/permissions/providers';
 
 describe('Permission Providers', function () {
+  beforeEach(function () {
+    // Legacy fixtures in this suite already contain their permission relations.
+    sinon.stub(models.Role.prototype, 'load').callsFake(function (this: unknown) {
+      return Promise.resolve(this);
+    });
+  });
+
   afterEach(function () {
     sinon.restore();
   });

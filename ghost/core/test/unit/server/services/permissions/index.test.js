@@ -11,6 +11,7 @@ describe('Permissions', function () {
   let fakePermissions = [];
 
   beforeEach(function () {
+    sinon.stub(models.Role, 'findAll').resolves(models.Roles.forge([]));
     sinon.stub(models.Permission, 'findAll').callsFake(function () {
       return Promise.resolve(models.Permissions.forge(fakePermissions));
     });

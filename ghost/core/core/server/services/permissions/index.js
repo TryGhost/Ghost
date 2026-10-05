@@ -2,16 +2,21 @@
 // canThis(someUser).edit.post(somePost|somePostId)
 
 const models = require('../../models');
+const config = require('../../../shared/config');
 
 const actionsMap = require('./actions-map-cache');
+const policy = require('./policy');
 
-const init = function init(options) {
+const init = async function init(options) {
   options = options || {};
 
-  // Load all the permissions
-  return models.Permission.findAll(options).then(function (permissionsCollection) {
-    return actionsMap.init(permissionsCollection);
-  });
+  const [permissionsCollection, rolesCollection] = await Promise.all([
+    models.Permission.findAll(options),
+    models.Role.findAll({ ...options, withRelated: ['permissions'] }),
+  ]);
+
+  policy.init(require(config.get('paths').fixtures), rolesCollection.toJSON());
+  return actionsMap.init(permissionsCollection);
 };
 
 module.exports = {
