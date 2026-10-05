@@ -74,7 +74,7 @@ catalog:
   '@tailwindcss/postcss': 4.2.2
   '@tailwindcss/vite': 4.2.2
   '@tanstack/react-query': 5.101.4
-  '@tanstack/react-virtual': 3.14.9
+  '@tanstack/react-virtual': 3.14.13
   '@testing-library/jest-dom': 6.9.1
   '@testing-library/react': 14.3.1
   '@tryghost/brute-knex': 3.2.2
