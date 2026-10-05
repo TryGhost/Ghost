@@ -38,7 +38,7 @@ import {
   isOwnerUser,
 } from '@tryghost/admin-x-framework/api/users';
 
-import { NEWSLETTERS_SEARCH_PARAMS, PAID_TIERS_SEARCH_PARAMS } from '@/editor/browse-params';
+import { PAID_TIERS_SEARCH_PARAMS, newslettersSearchParams } from '@/editor/browse-params';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { postPreviewModal, postPreviewSaveFailed } from '@tryghost/test-data/selectors/editor';
 import { useEditorSettings } from '@/editor/use-editor-settings';
@@ -149,7 +149,7 @@ export function PostPreviewModal({
     isFetchingNextPage: isFetchingNextNewsletterPage,
     refetch: refetchActiveNewsletters,
   } = useBrowseNewsletters({
-    searchParams: NEWSLETTERS_SEARCH_PARAMS,
+    searchParams: newslettersSearchParams(currentUser),
     enabled: open && prepareState === 'ready' && emailAvailable,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
