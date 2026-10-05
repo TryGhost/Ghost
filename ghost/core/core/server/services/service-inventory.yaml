@@ -2484,7 +2484,7 @@ services:
           - core/server/services/posts-public/service.js
           - core/server/api/endpoints/posts-public.js
         tests:
-          - test/unit/api/endpoints/utils/public-cache-wiring.test.ts
+          - test/unit/server/services/public-response-caches.test.ts
           - test/e2e-server/public-response-caches.isolated.test.ts
       construction:
         summary: >-
@@ -2496,7 +2496,7 @@ services:
           - core/server/services/posts-public/service.js
           - core/boot.js
         tests:
-          - test/unit/api/endpoints/utils/public-cache-wiring.test.ts
+          - test/unit/server/services/public-response-caches.test.ts
           - test/e2e-server/public-response-caches.isolated.test.ts
       consumers:
         summary: >-
@@ -2509,7 +2509,7 @@ services:
           - core/server/api/endpoints/posts-public.js
           - core/server/api/endpoints/pages-public.js
         tests:
-          - test/unit/api/endpoints/utils/public-cache-wiring.test.ts
+          - test/unit/server/services/public-response-caches.test.ts
           - test/e2e-server/public-response-caches.isolated.test.ts
     unverified:
       - startup
@@ -3086,7 +3086,7 @@ services:
           - core/server/services/tags-public/index.js
           - core/server/services/tags-public/service.js
         tests:
-          - test/unit/api/endpoints/utils/public-cache-wiring.test.ts
+          - test/unit/server/services/public-response-caches.test.ts
           - test/e2e-server/public-response-caches.isolated.test.ts
       construction:
         summary: >-
@@ -3095,7 +3095,7 @@ services:
         sources:
           - core/server/services/tags-public/service.js
         tests:
-          - test/unit/api/endpoints/utils/public-cache-wiring.test.ts
+          - test/unit/server/services/public-response-caches.test.ts
           - test/e2e-server/public-response-caches.isolated.test.ts
       resources:
         summary: >-
@@ -3104,7 +3104,7 @@ services:
         sources:
           - core/server/services/tags-public/service.js
         tests:
-          - test/unit/api/endpoints/utils/public-cache-wiring.test.ts
+          - test/unit/server/services/public-response-caches.test.ts
           - test/e2e-server/public-response-caches.isolated.test.ts
       consumers:
         summary: >-
@@ -3116,7 +3116,7 @@ services:
           - core/server/api/endpoints/index.js
           - core/server/api/endpoints/tags-public.js
         tests:
-          - test/unit/api/endpoints/utils/public-cache-wiring.test.ts
+          - test/unit/server/services/public-response-caches.test.ts
           - test/e2e-server/public-response-caches.isolated.test.ts
     unverified:
       - startup
