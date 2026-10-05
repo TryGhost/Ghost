@@ -447,7 +447,8 @@ the API's answer, not the panel's.
 
 Confirming names the post and says the deletion is permanent. Cancelling returns
 focus to the Delete button. An expired session asks the writer to sign in, in
-place, before retrying, so their draft stays open. A refusal keeps
+place, before retrying, so their draft stays open. Abandoning the sign-in keeps
+the dialog, says the session expired, and the next Delete asks again. A refusal keeps
 the dialog, shows the sentence the API gave for it and leaves the editor as it
 was, so unsaved work is still the writer's to save. A deletion that succeeds
 ends the editing session before leaving for the list: the save in flight is

@@ -14,6 +14,7 @@ import { Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { useNavigate } from '@tryghost/admin-x-framework';
 import { getErrorMessage, SessionExpiredError } from '@tryghost/admin-x-framework/errors';
+import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { pagesDataType, useDeletePage } from '@tryghost/admin-x-framework/api/pages';
 import { postsDataType, useDeletePost } from '@tryghost/admin-x-framework/api/posts';
 import { useQueryClient } from '@tanstack/react-query';
@@ -24,8 +25,12 @@ import {
 } from '@tryghost/test-data/selectors/editor';
 import type { PostType } from '@/editor/card-config';
 import { DEFAULT_TITLE } from '@/editor/engine/save-engine';
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { ReauthDialog } from '@/editor/session/reauth-dialog';
 import type { EditorSettingsPort } from './editor-settings-port';
 import { SettingsSection } from './settings-section';
+
+const SESSION_EXPIRED = 'Your session expired. Delete again to sign in.';
 
 export interface DeleteSectionProps {
   session: EditorSettingsPort;
@@ -41,8 +46,10 @@ export function DeleteSection({ session, postType }: DeleteSectionProps) {
   const queryClient = useQueryClient();
   const { mutateAsync: deletePost } = useDeletePost();
   const { mutateAsync: deletePage } = useDeletePage();
+  const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const postId = session.loadedRecord?.id ?? session.createdId;
@@ -70,12 +77,12 @@ export function DeleteSection({ session, postType }: DeleteSectionProps) {
         ? deletePage({ id: postId, sessionExpiryRedirect: false })
         : deletePost({ id: postId, sessionExpiryRedirect: false }));
     } catch (deleteError) {
-      setError(
-        deleteError instanceof SessionExpiredError
-          ? 'Your session expired. Delete again to sign in and continue.'
-          : getErrorMessage(deleteError, `Couldn’t delete this ${noun}.`),
-      );
       setIsDeleting(false);
+      if (deleteError instanceof SessionExpiredError) {
+        setSigningIn(true);
+        return;
+      }
+      setError(getErrorMessage(deleteError, `Couldn’t delete this ${noun}.`));
       return;
     }
 
@@ -132,6 +139,18 @@ export function DeleteSection({ session, postType }: DeleteSectionProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <ReauthDialog
+        email={currentUser?.email ?? ''}
+        open={signingIn}
+        onAbandoned={() => {
+          setSigningIn(false);
+          setError(SESSION_EXPIRED);
+        }}
+        onSucceeded={() => {
+          setSigningIn(false);
+          void confirm();
+        }}
+      />
     </SettingsSection>
   );
 }
