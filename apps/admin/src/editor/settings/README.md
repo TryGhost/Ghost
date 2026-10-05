@@ -179,8 +179,8 @@ the save because that is the rule the server applies. Two tags can share a name
 and differ only by slug, so what makes them the same tag is the id whenever both
 sides have one.
 
-The list offers the first hundred tags matching what is typed, in name order.
-Narrowing the search is how the rest are reached. Enter takes the highlighted
+The list offers the tags matching what is typed, in name order, a hundred at a
+time: scrolling to its end reads the next hundred. Enter takes the highlighted
 row, and so does Tab once something is typed; Tab through an empty field moves
 on. Escape closes the list and leaves the term where it was typed. A chip is
 removed by clicking it, or with Backspace on an empty field. Dragging a chip

@@ -1,4 +1,5 @@
 import { page } from 'vitest/browser';
+import { getScrollParent } from '@tryghost/shade/utils';
 import {
   addFacebookImageLabel,
   addFeatureImageLabel,
@@ -280,6 +281,12 @@ export const editorScreen = {
   settingsTagsTokens: () => page.getByTestId(settingsTagsToken),
   settingsTagOption: (name: string | RegExp) =>
     page.getByTestId(settingsTagsList).getByRole('option', { name }),
+  settingsTagOptions: () => page.getByTestId(settingsTagsList).getByRole('option'),
+  /** Scrolls the open tag list to its last row. */
+  scrollSettingsTagListToEnd: (): void => {
+    const scroller = getScrollParent(page.getByTestId(settingsTagsList).element());
+    scroller?.scrollTo({ top: scroller.scrollHeight });
+  },
   removeSettingsTag: (name: string) =>
     page
       .getByTestId(settingsTagsField)
