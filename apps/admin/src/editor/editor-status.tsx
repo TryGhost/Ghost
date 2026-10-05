@@ -79,16 +79,30 @@ function EmailFailureAction({ label, onOpen }: { label: string; onOpen: () => vo
   );
 }
 
+/** Opens the update flow, which describes what was sent. */
+function SentAction({ onOpen }: { onOpen: () => void }) {
+  // The flow is built from the publish inputs, so it cannot open before they load.
+  const { isReady } = usePublishInputs();
+
+  return (
+    <Button className="h-auto p-0" disabled={!isReady} variant="link" onClick={onOpen}>
+      Sent
+    </Button>
+  );
+}
+
 function StatusBody({
   view,
   timezone,
   isHovered,
   onOpenPublishFlow,
+  onOpenUpdateFlow,
 }: {
   view: EditorStatusView;
   timezone: string;
   isHovered: boolean;
   onOpenPublishFlow?: () => void;
+  onOpenUpdateFlow?: () => void;
 }) {
   switch (view.kind) {
     case 'problem':
@@ -106,6 +120,10 @@ function StatusBody({
           {onOpenPublishFlow ? (
             <EmailFailureAction label="Retry now" onOpen={onOpenPublishFlow} />
           ) : null}
+        </>
+      ) : onOpenUpdateFlow ? (
+        <>
+          <SentAction onOpen={onOpenUpdateFlow} /> to {members(view.count)}
         </>
       ) : (
         <>Sent to {members(view.count)}</>
@@ -160,10 +178,18 @@ export interface EditorStatusProps {
   isDirty: boolean;
   /** Opens the publish flow at a failed send; omitted unless the role may retry it. */
   onOpenPublishFlow?: () => void;
+  /** Opens the update flow from a sent post's "Sent"; omitted unless the role may publish. */
+  onOpenUpdateFlow?: () => void;
 }
 
 /** Where the post stands: its status, the newsletter, and the last save. */
-export function EditorStatus({ state, record, isDirty, onOpenPublishFlow }: EditorStatusProps) {
+export function EditorStatus({
+  state,
+  record,
+  isDirty,
+  onOpenPublishFlow,
+  onOpenUpdateFlow,
+}: EditorStatusProps) {
   const { isAdmin7 } = useShade();
   const timezone = useSiteTimezone();
   const isSaving = useSavingHold(state.kind === 'saving' || state.kind === 'pending-coalesced');
@@ -206,6 +232,7 @@ export function EditorStatus({ state, record, isDirty, onOpenPublishFlow }: Edit
           timezone={timezone}
           view={deriveEditorStatus({ state, record, isDirty, isSaving })}
           onOpenPublishFlow={onOpenPublishFlow}
+          onOpenUpdateFlow={onOpenUpdateFlow}
         />
       </span>
     </Text>

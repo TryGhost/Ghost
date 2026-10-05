@@ -192,6 +192,7 @@ function EditorContent({
   const [tkCount, setTkCount] = useState(0);
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
   const openPublishFlow = useCallback(() => setOpenFlow('publish'), []);
+  const openUpdateFlow = useCallback(() => setOpenFlow('update'), []);
   // Only reads what the sidebar's tier picker loaded, which names a tier picked before its save lands.
   const { data: tiersData } = useBrowseTiers({
     defaultErrorHandler: false,
@@ -215,6 +216,8 @@ function EditorContent({
   // Core refuses an email retry to Authors and Contributors.
   const offersEmailRetry =
     !!currentUser && !isAuthorOrContributor(currentUser) && !!initialEmailError(publishPost);
+  // The update flow is mounted with the publish controls, which Contributors never get.
+  const canPublish = !!currentUser && !isContributorUser(currentUser);
   const location = useLocation();
   const analyticsReturn = record ? readEditorReturn(location.state) : undefined;
   const statusRecord = statusRecordOf(session.loadedRecord ?? record, createdId);
@@ -362,6 +365,7 @@ function EditorContent({
                 record={statusRecord}
                 state={session.state}
                 onOpenPublishFlow={offersEmailRetry ? openPublishFlow : undefined}
+                onOpenUpdateFlow={canPublish ? openUpdateFlow : undefined}
               />
             ) : null}
             <PageHeader.ActionGroup className="ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] max-sm:col-start-2 max-sm:row-start-1 sm:col-start-3">

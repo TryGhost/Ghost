@@ -75,6 +75,8 @@ export const publishScreen = {
   tkReminder: () => page.getByTestId(tkReminderDialog),
   publicPreviewWarning: () => page.getByTestId(publicPreviewWarningDialog),
   updateFlow: () => page.getByTestId(updateFlowModal),
+  updateFlowCloseButton: () =>
+    page.getByTestId(updateFlowModal).getByRole('button', { name: 'Close', exact: true }),
   updateFlowConfirmation: () => page.getByTestId(updateFlowConfirmation),
   updateFlowPreviousEmail: () => page.getByTestId(updateFlowPreviousEmail),
   updateFlowTitle: () => page.getByTestId(updateFlowTitle),

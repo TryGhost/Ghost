@@ -314,10 +314,11 @@ function PublishActions({
 
   // Ember routes a sent post to the update flow from its status line, not the header.
   const offersUpdateFlow = !isDraft && post.status !== 'sent';
+  const sentOpensUpdateFlow = post.status === 'sent' && post.email?.status !== 'failed';
 
-  // Publish, Unpublish, Unschedule and the status line's retry open nothing until these load.
+  // Publish, Unpublish, Unschedule and the status line's Sent and retry open nothing until these load.
   const inputsError =
-    (isDraft || offersUpdateFlow || offersEmailRetry) && inputs.error ? (
+    (isDraft || offersUpdateFlow || sentOpensUpdateFlow || offersEmailRetry) && inputs.error ? (
       <>
         <Text
           className="bg-background/80 text-destructive backdrop-blur-sm"

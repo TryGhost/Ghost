@@ -470,6 +470,36 @@ describe('Editor header actions', () => {
     await expect.element(editorScreen.saveToast('Post reverted to a draft.')).toBeVisible();
   });
 
+  it.each(['Owner', 'Author'] as const)(
+    'shows an %s what a sent post went out as from Sent in the status line',
+    async (role) => {
+      publishChrome();
+      fakeSavablePost({
+        status: 'sent',
+        email_only: true,
+        published_at: '2026-02-01T10:00:00.000Z',
+        email: { id: 'email-1', status: 'submitted', email_count: 20, opened_count: 0 },
+      });
+      await renderAdminApp(`/editor/post/${POST_ID}`, asRole(role));
+
+      await expect.element(editorScreen.status()).toHaveTextContent('Sent to 20 members');
+      await editorScreen.sentStatusButton().click();
+
+      await expect
+        .element(publishScreen.updateFlowTitle())
+        .toHaveTextContent('This post was sent by email');
+      await expect
+        .element(publishScreen.updateFlowConfirmation())
+        .toHaveTextContent('Your post was sent to 20 subscribers on 1 Feb 2026 at 10:00.');
+      await expect(publishScreen.revertToDraft()).toHaveCount(0);
+
+      await publishScreen.updateFlowCloseButton().click();
+
+      await expect(publishScreen.updateFlow()).toHaveCount(0);
+      await expect.element(editorScreen.sentStatusButton()).toHaveFocus();
+    },
+  );
+
   it('reverts a published page to a draft and says so', async () => {
     publishChrome();
     fakeSavablePost(
@@ -1134,6 +1164,27 @@ describe('Editor header actions', () => {
     await editorScreen.retryPublishInputs().click();
 
     await expect.element(editorScreen.viewNewsletterDetails()).toBeEnabled();
+    await expect(editorScreen.publishInputsError()).toHaveCount(0);
+  });
+
+  it('offers a retry when the publish inputs fail to load for a sent post', async () => {
+    publishChrome();
+    fakeSavablePost({
+      status: 'sent',
+      email_only: true,
+      published_at: '2026-02-01T10:00:00.000Z',
+      email: { id: 'email-1', status: 'submitted', email_count: 20, opened_count: 0 },
+    });
+    failNewsletters();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.publishInputsError()).toHaveTextContent('went wrong');
+    await expect.element(editorScreen.sentStatusButton()).toBeDisabled();
+
+    restoreNewsletters();
+    await editorScreen.retryPublishInputs().click();
+
+    await expect.element(editorScreen.sentStatusButton()).toBeEnabled();
     await expect(editorScreen.publishInputsError()).toHaveCount(0);
   });
 

@@ -70,9 +70,10 @@ excerpt, opening the settings panel when the field lives there. Update moves
 focus the same way.
 
 Every opener stays unavailable until the publish inputs have loaded, and so
-does the update flow behind Unpublish and Unschedule. When they fail to load,
-the header shows the error with a Retry beside Publish, Unpublish or Unschedule,
-and for a post whose status line offers the retry. After a retry, or a publish that
+does the update flow behind Unpublish, Unschedule and a sent post's "Sent" in
+the status line. When they fail to load, the header shows the error with a
+Retry beside Publish, Unpublish or Unschedule, and for a post whose status line
+offers "Sent" or the retry. After a retry, or a publish that
 emails, a published post's status line reads "Published and sending to N
 members" while the email is on its way and "Published and sent to N members"
 once the flow's email confirmation finds it submitted; an email-only send reads

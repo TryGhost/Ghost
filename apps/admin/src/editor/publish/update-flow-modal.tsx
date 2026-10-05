@@ -176,11 +176,9 @@ function KeyedUpdateFlowModal({
             {isScheduled ? 'Unschedule' : 'Unpublish'}
           </Text>
           <PageHeader.ActionGroup>
-            {isSent ? null : (
-              <Button variant="outline" onClick={close}>
-                Close
-              </Button>
-            )}
+            <Button variant="outline" onClick={close}>
+              Close
+            </Button>
           </PageHeader.ActionGroup>
         </Inline>
 
