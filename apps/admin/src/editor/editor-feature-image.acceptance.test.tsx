@@ -24,6 +24,7 @@ const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const UPLOADED = 'https://example.com/content/images/2026/09/hills.png';
 const EXISTING = 'https://example.com/content/images/2026/09/coast.png';
 const EDITED = 'https://example.com/content/images/2026/09/coast-edited.png';
+const UNSPLASH_REFERRAL = 'utm_source=ghost&utm_medium=referral&utm_campaign=api-credit';
 
 const SAVE_POLL = { timeout: 10_000 };
 
@@ -261,6 +262,14 @@ describe('Post editor feature image', () => {
     expect(saved.feature_image).toBe(UNSPLASH_PICKED);
     // The photographer credit the picker hands over, as the caption stores it.
     expect(String(saved.feature_image_caption)).toContain('A Photographer');
+    const credit = new DOMParser().parseFromString(
+      String(saved.feature_image_caption),
+      'text/html',
+    );
+    expect(Array.from(credit.links, (link) => link.href)).toEqual([
+      `https://unsplash.com/@photographer?${UNSPLASH_REFERRAL}`,
+      `https://unsplash.com/?${UNSPLASH_REFERRAL}`,
+    ]);
     await expect.element(editorScreen.removeFeatureImage()).toBeVisible();
   });
 
