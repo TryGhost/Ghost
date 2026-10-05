@@ -1,3 +1,4 @@
+import { toast } from 'sonner';
 import { describe, expect, it, onTestFinished } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
@@ -25,10 +26,19 @@ const UPLOADED = 'https://example.com/content/images/2026/09/hills.png';
 const EXISTING = 'https://example.com/content/images/2026/09/coast.png';
 const EDITED = 'https://example.com/content/images/2026/09/coast-edited.png';
 const UNSPLASH_REFERRAL = 'utm_source=ghost&utm_medium=referral&utm_campaign=api-credit';
+const UPLOAD_REFUSED =
+  'Your plan supports uploads up to 5MB. Please upgrade to upload larger files.';
 
 const SAVE_POLL = { timeout: 10_000 };
 
 type SavedPost = ReturnType<typeof post>;
+
+function refusal(status: number, error: Record<string, string>): Response {
+  return new Response(JSON.stringify({ errors: [error] }), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
 
 function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
   fakeEditorChrome();
@@ -102,6 +112,30 @@ describe('Post editor feature image', () => {
       feature_image: UPLOADED,
     });
     await expect.element(editorScreen.removeFeatureImage()).toBeVisible();
+  });
+
+  it('shows a progress bar while the image uploads, until it lands', async () => {
+    const saveApi = fakeSavablePost();
+    const uploaded = deferred<{ images: { url: string; ref: null }[] }>();
+    const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', () => uploaded.promise);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.featureImage()).toBeVisible();
+    await userEvent.upload(
+      editorScreen.featureImageInput().element(),
+      new File(['image'], 'hills.png', { type: 'image/png' }),
+    );
+
+    try {
+      await expect.poll(() => uploadApi.requests.length, SAVE_POLL).toBe(1);
+      await expect.element(editorScreen.featureImageProgress()).toBeVisible();
+    } finally {
+      uploaded.resolve({ images: [{ url: UPLOADED, ref: null }] });
+    }
+
+    await expect(saveApi).toHaveSavedFields({ feature_image: UPLOADED });
+    await expect.element(editorScreen.removeFeatureImage()).toBeVisible();
+    await expect(editorScreen.featureImageProgress()).toHaveCount(0);
   });
 
   it('does not insert a dropped feature image into the post body', async () => {
@@ -316,6 +350,67 @@ describe('Post editor feature image', () => {
     expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
     await expect.element(editorScreen.featureImageInput()).toBeInTheDocument();
     await expect.element(page.getByText('Couldn’t upload the feature image.')).toBeVisible();
+  });
+
+  it.each([
+    {
+      status: 413,
+      type: 'RequestEntityTooLargeError',
+      message: 'Request too large, cannot upload image.',
+    },
+    { status: 403, type: 'HostLimitError', message: 'Host Limit error, cannot upload image.' },
+  ])(
+    'shows the reason the server gives for a $status under the field, with no toast',
+    async ({ status, type, message }) => {
+      fakeSavablePost();
+      const uploadApi = fakeAdminEndpoint(
+        'POST',
+        '/images/upload/',
+        { errors: [{ type, message, context: UPLOAD_REFUSED }] },
+        { status },
+      );
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.featureImage()).toBeVisible();
+      await userEvent.upload(
+        editorScreen.featureImageInput().element(),
+        new File(['image'], 'hills.png', { type: 'image/png' }),
+      );
+
+      await expect.poll(() => uploadApi.requests.length, SAVE_POLL).toBe(1);
+      await expect.element(editorScreen.featureImageError()).toHaveTextContent(UPLOAD_REFUSED);
+      expect(toast.getToasts()).toEqual([]);
+      await expect.element(editorScreen.featureImageInput()).toBeEnabled();
+    },
+  );
+
+  it('sends the same file again from Try again, and shows the image once it lands', async () => {
+    const saveApi = fakeSavablePost();
+    let attempts = 0;
+    const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', () => {
+      attempts += 1;
+      return attempts === 1 ? refusal(500, {}) : { images: [{ url: UPLOADED, ref: null }] };
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.featureImage()).toBeVisible();
+    await userEvent.upload(
+      editorScreen.featureImageInput().element(),
+      new File(['image'], 'hills.png', { type: 'image/png' }),
+    );
+    await expect
+      .element(editorScreen.featureImageError())
+      .toHaveTextContent('Couldn’t upload the feature image.');
+    expect(saveApi.requests).toHaveLength(0);
+
+    await editorScreen.retryFeatureImage().click();
+
+    await expect.poll(() => uploadApi.requests.length, SAVE_POLL).toBe(2);
+    const sent = { file: { filename: 'hills.png', type: 'image/png' }, purpose: 'image' };
+    expect(uploadApi.requests.map(({ body }) => body)).toEqual([sent, sent]);
+    await expect(saveApi).toHaveSavedFields({ feature_image: UPLOADED });
+    await expect.element(editorScreen.removeFeatureImage()).toBeVisible();
+    await expect(editorScreen.featureImageError()).toHaveCount(0);
   });
 
   it('offers no edit while the site has no image editor', async () => {

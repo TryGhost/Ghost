@@ -76,6 +76,13 @@ function fakeImageUpload() {
   });
 }
 
+function refusal(status: number, error: Record<string, string>): Response {
+  return new Response(JSON.stringify({ errors: [error] }), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
 async function openXCard() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
@@ -348,6 +355,48 @@ describe('Post settings X card', () => {
     await expect.element(page.getByText('Couldn’t upload the X image.')).toBeVisible();
     await expect.element(editorScreen.settingsXImage()).toHaveTextContent('Add X image');
     expect(saveApi.requests).toHaveLength(0);
+  });
+
+  it('shows why an upload was refused under the X image, and sends the same file again from Try again', async () => {
+    const saveApi = fakeSavablePost();
+    const retried = deferred<{ images: { url: string; ref: null }[] }>();
+    let attempts = 0;
+    const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', () => {
+      attempts += 1;
+      return attempts === 1
+        ? refusal(422, {
+            type: 'ValidationError',
+            message: 'Validation error, cannot upload image.',
+            context: 'Please select a valid image.',
+          })
+        : retried.promise;
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openXCard();
+
+    await userEvent.upload(
+      editorScreen.settingsXImageInput().element(),
+      new File(['image'], 'hills.png', { type: 'image/png' }),
+    );
+    await expect
+      .element(editorScreen.settingsXImageError())
+      .toHaveTextContent('Please select a valid image.');
+
+    await editorScreen.retrySettingsXImage().click();
+
+    try {
+      await expect.poll(() => uploadApi.requests.length, POLL).toBe(2);
+      await expect.element(editorScreen.settingsXImageProgress()).toBeVisible();
+      await expect(editorScreen.settingsXImageError()).toHaveCount(0);
+    } finally {
+      retried.resolve({ images: [{ url: UPLOADED, ref: null }] });
+    }
+
+    const sent = { file: { filename: 'hills.png', type: 'image/png' }, purpose: 'image' };
+    expect(uploadApi.requests.map(({ body }) => body)).toEqual([sent, sent]);
+    await expect(saveApi).toHaveSavedFields({ twitter_image: UPLOADED });
+    await expect.element(editorScreen.removeSettingsXImage()).toBeVisible();
+    await expect(editorScreen.settingsXImageProgress()).toHaveCount(0);
   });
 
   it('falls back to the meta fields where the post has none of its own', async () => {

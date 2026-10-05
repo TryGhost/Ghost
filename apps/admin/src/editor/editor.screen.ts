@@ -93,6 +93,7 @@ import {
   settingsXTitleInput,
   xImageUnsplashButton,
   restoreRevisionButton,
+  retryImageUploadButton,
   settingsPostHistoryButton,
   settingsShowTitleToggle,
   settingsShowTitleWarning,
@@ -325,6 +326,10 @@ export const editorScreen = {
       .map((row) => row.textContent ?? ''),
   settingsXImage: () => page.getByTestId(settingsXImage),
   settingsXImageInput: () => page.getByLabelText(addXImageLabel),
+  settingsXImageProgress: () => page.getByTestId(settingsXImage).getByRole('progressbar'),
+  settingsXImageError: () => page.getByTestId(settingsXImage).getByRole('alert'),
+  retrySettingsXImage: () =>
+    page.getByTestId(settingsXImage).getByRole('button', { name: retryImageUploadButton }),
   settingsXImageUnsplashButton: () => page.getByRole('button', { name: xImageUnsplashButton }),
   removeSettingsXImage: () => page.getByRole('button', { name: removeXImageButton }),
   editSettingsXImage: () => page.getByRole('button', { name: editXImageButton }),
@@ -372,6 +377,10 @@ export const editorScreen = {
 
   featureImage: () => page.getByTestId(editorFeatureImage),
   featureImageInput: () => page.getByLabelText(addFeatureImageLabel),
+  featureImageProgress: () => page.getByTestId(editorFeatureImage).getByRole('progressbar'),
+  featureImageError: () => page.getByTestId(editorFeatureImage).getByRole('alert'),
+  retryFeatureImage: () =>
+    page.getByTestId(editorFeatureImage).getByRole('button', { name: retryImageUploadButton }),
   featureImageUnsplashButton: () => page.getByRole('button', { name: featureImageUnsplashButton }),
   /** The Unsplash search modal, wherever the picker that opened it sits. */
   unsplashModal: () => page.getByRole('heading', { name: unsplashSearchHeading }),

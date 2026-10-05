@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { toast } from 'sonner';
-import { LoadingIndicator } from '@tryghost/shade/components';
+import { Button, FieldError } from '@tryghost/shade/components';
 import {
   ImageUpload,
   ImageUploadAction,
@@ -27,6 +27,7 @@ const VARIANTS = {
     icon: LucideIcon.Plus,
     iconClassName: 'size-4',
     label: 'text-base font-medium',
+    progress: 'w-40',
     unsplash: 'static',
   },
   panel: {
@@ -37,6 +38,7 @@ const VARIANTS = {
     icon: LucideIcon.Upload,
     iconClassName: 'size-6 stroke-[1.5px]',
     label: 'text-sm',
+    progress: 'w-3/5',
     unsplash: '',
   },
 };
@@ -64,6 +66,29 @@ export interface ImageFieldProps {
   children?: ReactNode;
 }
 
+function UploadProgress({
+  label,
+  value,
+  className,
+}: {
+  label: string;
+  value: number;
+  className: string;
+}) {
+  return (
+    <div
+      aria-label={label}
+      aria-valuemax={100}
+      aria-valuemin={0}
+      aria-valuenow={value}
+      className={cn('h-1.5 overflow-hidden rounded-full bg-muted', className)}
+      role="progressbar"
+    >
+      <div className="h-full rounded-full bg-primary" style={{ width: `${value}%` }} />
+    </div>
+  );
+}
+
 /**
  * An image the writer gives the post: uploaded from the file picker or a drop,
  * picked from Unsplash, previewed, edited in Pintura when the site has it, and
@@ -82,7 +107,7 @@ export function ImageField({
   onUnsplashSelect,
   children,
 }: ImageFieldProps) {
-  const { isUploading, onUpload } = upload;
+  const { isUploading, progress, error, onUpload, retry, clearError } = upload;
   const editor = usePinturaEditor({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const busy = isUploading || editor.isOpen;
   const styles = VARIANTS[variant];
@@ -90,97 +115,95 @@ export function ImageField({
   const PromptContainer = variant === 'bar' ? Inline : Stack;
   const PromptIcon = styles.icon;
   const addLabel = `Add ${subject}`;
+  const progressLabel = `Uploading ${subject}`;
 
-  if (!src) {
-    return (
-      <EmptyContainer
-        className={cn(styles.empty, className)}
-        data-testid={testId}
-        {...(variant === 'bar' ? { gap: 'sm' as const } : {})}
+  const pickFromUnsplash = (picked: UnsplashSelection) => {
+    clearError();
+    if (onUnsplashSelect) {
+      onUnsplashSelect(picked);
+    } else {
+      onChange(picked.src);
+    }
+  };
+
+  const remove = () => {
+    clearError();
+    onChange(null);
+  };
+
+  const field = !src ? (
+    <EmptyContainer className={styles.empty} {...(variant === 'bar' ? { gap: 'sm' as const } : {})}>
+      <ImageUploadDropzone
+        accept={ACCEPTED_IMAGE_TYPES}
+        className={styles.dropzone}
+        disabled={isUploading}
+        inputAriaLabel={addLabel}
+        noDragEventsBubbling
+        onDropAccepted={(files) => files[0] && void onUpload(files[0])}
+        onDropRejected={() => toast.error(UNSUPPORTED_IMAGE_MESSAGE)}
       >
-        <ImageUploadDropzone
-          accept={ACCEPTED_IMAGE_TYPES}
-          className={styles.dropzone}
-          disabled={isUploading}
-          inputAriaLabel={addLabel}
-          noDragEventsBubbling
-          onDropAccepted={(files) => files[0] && void onUpload(files[0])}
-          onDropRejected={() => toast.error(UNSUPPORTED_IMAGE_MESSAGE)}
-        >
-          {isUploading ? (
-            <LoadingIndicator size="sm" />
-          ) : (
-            <PromptContainer align="center" gap="sm">
-              <PromptIcon
-                aria-hidden="true"
-                className={cn('text-muted-foreground', styles.iconClassName, styles.prompt)}
-              />
-              <span className={cn('text-muted-foreground', styles.prompt, styles.label)}>
-                {addLabel}
-              </span>
-            </PromptContainer>
-          )}
-        </ImageUploadDropzone>
-        <UnsplashPicker
-          className={styles.unsplash}
-          disabled={isUploading}
-          enabled={unsplashEnabled}
-          label={`Select ${subject} from Unsplash`}
-          variant={variant === 'bar' ? 'inline' : 'overlay'}
-          onSelect={(picked) =>
-            onUnsplashSelect ? onUnsplashSelect(picked) : onChange(picked.src)
-          }
-        />
-      </EmptyContainer>
-    );
-  }
-
-  const preview = (
-    <ImageUploadPreview className={variant === 'bar' ? 'rounded-none' : undefined}>
-      <ImageUploadImage alt={alt ?? ''} role={alt ? 'img' : 'presentation'} src={src} />
-      {isUploading ? (
-        <Inline align="center" className="absolute inset-0 bg-background/60" justify="center">
-          <LoadingIndicator size="sm" />
-        </Inline>
-      ) : null}
-      <ImageUploadActions>
-        {editor.isEnabled && (
-          <ImageUploadAction
-            aria-label={`Edit ${subject}`}
-            disabled={busy}
-            onClick={() => editor.openEditor({ image: src, handleSave: onUpload })}
-          >
-            <LucideIcon.Pencil />
-          </ImageUploadAction>
+        {isUploading ? (
+          <UploadProgress className={styles.progress} label={progressLabel} value={progress} />
+        ) : (
+          <PromptContainer align="center" gap="sm">
+            <PromptIcon
+              aria-hidden="true"
+              className={cn('text-muted-foreground', styles.iconClassName, styles.prompt)}
+            />
+            <span className={cn('text-muted-foreground', styles.prompt, styles.label)}>
+              {addLabel}
+            </span>
+          </PromptContainer>
         )}
-        <ImageUploadAction
-          aria-label={`Remove ${subject}`}
-          disabled={busy}
-          onClick={() => onChange(null)}
-        >
-          <LucideIcon.Trash2 />
-        </ImageUploadAction>
-      </ImageUploadActions>
-    </ImageUploadPreview>
+      </ImageUploadDropzone>
+      <UnsplashPicker
+        className={styles.unsplash}
+        disabled={isUploading}
+        enabled={unsplashEnabled}
+        label={`Select ${subject} from Unsplash`}
+        variant={variant === 'bar' ? 'inline' : 'overlay'}
+        onSelect={pickFromUnsplash}
+      />
+    </EmptyContainer>
+  ) : (
+    <ImageUpload className={variant === 'panel' ? 'max-h-[480px]' : 'rounded-none'}>
+      <ImageUploadPreview className={variant === 'bar' ? 'rounded-none' : undefined}>
+        <ImageUploadImage alt={alt ?? ''} role={alt ? 'img' : 'presentation'} src={src} />
+        {isUploading ? (
+          <Inline align="center" className="absolute inset-0 bg-background/60" justify="center">
+            <UploadProgress className="w-3/5" label={progressLabel} value={progress} />
+          </Inline>
+        ) : null}
+        <ImageUploadActions>
+          {editor.isEnabled && (
+            <ImageUploadAction
+              aria-label={`Edit ${subject}`}
+              disabled={busy}
+              onClick={() => editor.openEditor({ image: src, handleSave: onUpload })}
+            >
+              <LucideIcon.Pencil />
+            </ImageUploadAction>
+          )}
+          <ImageUploadAction aria-label={`Remove ${subject}`} disabled={busy} onClick={remove}>
+            <LucideIcon.Trash2 />
+          </ImageUploadAction>
+        </ImageUploadActions>
+      </ImageUploadPreview>
+    </ImageUpload>
   );
-
-  if (!children) {
-    return (
-      <ImageUpload
-        className={cn(variant === 'panel' ? 'max-h-[480px]' : 'rounded-none', className)}
-        data-testid={testId}
-      >
-        {preview}
-      </ImageUpload>
-    );
-  }
 
   return (
     <Stack className={className} data-testid={testId} gap="sm">
-      <ImageUpload className={variant === 'panel' ? 'max-h-[480px]' : 'rounded-none'}>
-        {preview}
-      </ImageUpload>
-      {children}
+      {field}
+      {error ? (
+        <Inline gap="sm" wrap>
+          <FieldError>{error}</FieldError>
+          <Button size="sm" variant="outline" onClick={retry}>
+            Try again
+          </Button>
+        </Inline>
+      ) : null}
+      {src ? children : null}
     </Stack>
   );
 }

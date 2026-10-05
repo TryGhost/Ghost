@@ -108,6 +108,11 @@ Remove are disabled and the preview shows the upload in progress. An edited
 image that fails to upload is reported, leaves the original in place, and is not
 counted as a saved edit.
 
+An upload shows a progress bar that fills with the share of the file sent. One
+the server refuses is explained under the field, in the server's own words
+where it gives them, with Try again to send the same file once more. The
+explanation stays until another upload starts or the writer changes the image.
+
 ## Dates and times
 
 The publish date in the settings panel and the schedule in the publish flow

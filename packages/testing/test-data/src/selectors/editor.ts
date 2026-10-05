@@ -178,6 +178,7 @@ export const addXImageLabel = 'Add X image';
 export const removeXImageButton = 'Remove X image';
 export const editXImageButton = 'Edit X image';
 export const xImageUnsplashButton = 'Select X image from Unsplash';
+export const retryImageUploadButton = 'Try again';
 export const stayInEditorButton = 'Stay';
 export const leaveEditorButton = 'Leave';
 export const conflictReloadButton = 'Reload';
