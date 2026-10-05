@@ -505,7 +505,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   onEmailDirtyChange,
   onKeepEditingAfterBlockedEmailNavigation,
 }) => {
-  const [performanceOpenOverride, setIsPerformanceOpen] = useState<boolean | null>(null);
+  const [performanceOpenOverride, setPerformanceOpenOverride] = useState<boolean | null>(null);
   const layoutRef = useRef<HTMLElement>(null);
   const [nodeSizes, setNodeSizes] = useState<Record<string, { width: number; height: number }>>({});
   const handleNodesChange = useCallback((changes: NodeChange<AutomationFlowNode>[]) => {
@@ -729,7 +729,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     onSelectRun(id);
     // Below the sidebar breakpoint, show either the member list or the canvas.
     if (layoutRef.current && layoutRef.current.clientWidth < 960) {
-      setIsPerformanceOpen(false);
+      setPerformanceOpenOverride(false);
     }
   };
 
@@ -764,7 +764,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           automationRunAnalyticsEnabled && current?.id === id ? null : { id },
         );
         if (automationRunAnalyticsEnabled) {
-          setIsPerformanceOpen(false);
+          setPerformanceOpenOverride(false);
         }
       },
       newStepId,
@@ -817,7 +817,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         if (isPerformanceOpen) {
-          setIsPerformanceOpen(false);
+          setPerformanceOpenOverride(false);
         } else {
           handleCloseEmailPerformance();
         }
@@ -922,7 +922,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           isRunSelectionDisabled={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
           selectedRunId={selectedRunId}
           onOpenChange={(open) => {
-            setIsPerformanceOpen(open);
+            setPerformanceOpenOverride(open);
             if (open) {
               clearDetail();
             }
