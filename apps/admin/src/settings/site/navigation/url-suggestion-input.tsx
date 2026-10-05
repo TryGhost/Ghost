@@ -128,16 +128,13 @@ const UrlSuggestionInput: React.FC<UrlSuggestionInputProps> = ({
   // nothing on focusing a field that already holds a URL.
   const isVisible = open && suggestions.length > 0;
 
-  const selectSuggestion = useCallback(
-    (suggestion: Suggestion) => {
-      const urls = formatUrl(suggestion.value, baseUrl, true);
-      urlInput.setDisplayValue(urls.display);
-      onChange(urls.save || '');
-      onEdit?.();
-      close();
-    },
-    [baseUrl, close, onChange, onEdit, urlInput],
-  );
+  const selectSuggestion = (suggestion: Suggestion) => {
+    const urls = formatUrl(suggestion.value, baseUrl, true);
+    urlInput.setDisplayValue(urls.display);
+    onChange(urls.save || '');
+    onEdit?.();
+    close();
+  };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const term = event.target.value;
