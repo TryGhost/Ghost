@@ -67,6 +67,44 @@ test.describe('Acceptance test - Unsplash Selector', async () => {
     );
   });
 
+  test('Closes with the keyboard', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByRole('textbox', { name: 'Search Unsplash' })).toBeFocused();
+
+    await page.keyboard.press('Shift+Tab');
+    await expect(page.getByRole('button', { name: 'Close' })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('[data-kg-modal="unsplash"]')).toBeHidden();
+  });
+
+  test('Escape leaves a zoomed photo before closing', async ({ page }) => {
+    await page.goto('/');
+    await page
+      .locator('[data-kg-unsplash-gallery-item="true"]', { hasText: 'Christian Lue' })
+      .click();
+    await expect(page.locator('[data-kg-unsplash-zoomed="true"]')).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(page.locator('[data-kg-unsplash-zoomed="true"]')).toBeHidden();
+    await expect(page.locator('[data-kg-modal="unsplash"]')).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(page.locator('[data-kg-modal="unsplash"]')).toBeHidden();
+  });
+
+  test('Inserts an image with the keyboard', async ({ page }) => {
+    await page.goto('/');
+    await page
+      .locator('[data-kg-unsplash-gallery-item="true"]', { hasText: 'Christian Lue' })
+      .locator('[data-kg-unsplash-insert-button="true"]')
+      .focus();
+    await page.keyboard.press('Enter');
+
+    await expect(page.getByTestId('inserted-caption')).toHaveText(
+      'Photo by Christian Lue / Unsplash',
+    );
+  });
+
   test('Adds the referral to the like and download links', async ({ page }) => {
     await page.goto('/');
     const photo = page.locator('[data-kg-unsplash-gallery-item="true"]', {

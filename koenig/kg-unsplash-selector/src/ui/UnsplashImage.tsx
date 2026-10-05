@@ -63,7 +63,7 @@ const UnsplashImage: FC<UnsplashImageProps> = ({
         width={width}
         data-kg-unsplash-gallery-img
       />
-      <div className="absolute inset-0 flex flex-col justify-between bg-gradient-to-b from-black/5 via-black/5 to-black/30 p-5 opacity-0 transition-all ease-in-out hover:opacity-100">
+      <div className="absolute inset-0 flex flex-col justify-between bg-gradient-to-b from-black/5 via-black/5 to-black/30 p-5 opacity-0 transition-all ease-in-out focus-within:opacity-100 hover:opacity-100">
         <div className="flex items-center justify-end gap-3">
           <UnsplashButton
             data-kg-button="unsplash-like"
@@ -91,9 +91,11 @@ const UnsplashImage: FC<UnsplashImageProps> = ({
             </div>
           </div>
           <UnsplashButton
+            href="#"
             label="Insert image"
             data-kg-unsplash-insert-button
             onClick={(e) => {
+              e.preventDefault();
               e.stopPropagation();
               insertImage({
                 src: urls.regular.replace(/&w=1080/, '&w=2000'),
