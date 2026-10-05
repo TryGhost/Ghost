@@ -75,8 +75,8 @@ title, as text. Closing preview preserves unsaved subject edits. If those edits 
 saving when preview reopens, the save-failure screen keeps the subject field available
 for correction, and committing the corrected subject retries preparation, whose save
 carries it, before displaying the preview or enabling sharing and test sends. That
-screen's failed save is the preview's own, so it is shown beside the field without
-marking the subject invalid, which only its own length or failed save does.
+screen says why the preview's save failed, so the field there reports only the
+subject's own length.
 
 ## Not here yet
 

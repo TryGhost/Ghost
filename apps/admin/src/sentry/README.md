@@ -17,6 +17,8 @@ response. Without a DSN nothing initialises and nothing is sent.
 - `beforeSend` tags `shown_to_user` (default `false`) and `grammarly`, drops
   events already shown to the user and events about analytics requests, and
   replaces post/page ids in messages so they group together.
+- Handled errors are tagged `source: useHandleError`; API errors count as shown
+  to the user, so only unexpected ones are sent.
 - Outside `testing`, replays are buffered and sent with half of the errors.
   Lexical content and inputs are masked and media is blocked.
 - While an Automations route shows, the body carries

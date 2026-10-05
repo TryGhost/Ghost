@@ -2,6 +2,17 @@ import UnsplashButton from './UnsplashButton';
 import { FC, MouseEvent } from 'react';
 import { InsertImageFn, Photo, SelectImgFn, User } from '../UnsplashTypes';
 
+// Unsplash's API guidelines ask for this referral on every link back to Unsplash.
+const REFERRAL = { utm_source: 'ghost', utm_medium: 'referral', utm_campaign: 'api-credit' };
+
+function withReferral(href: string, params: Record<string, string> = {}): string {
+  const url = new URL(href);
+  for (const [key, value] of Object.entries({ ...REFERRAL, ...params })) {
+    url.searchParams.set(key, value);
+  }
+  return url.href;
+}
+
 export interface UnsplashImageProps {
   payload: Photo;
   srcUrl: string;
@@ -52,11 +63,11 @@ const UnsplashImage: FC<UnsplashImageProps> = ({
         width={width}
         data-kg-unsplash-gallery-img
       />
-      <div className="absolute inset-0 flex flex-col justify-between bg-gradient-to-b from-black/5 via-black/5 to-black/30 p-5 opacity-0 transition-all ease-in-out hover:opacity-100">
+      <div className="absolute inset-0 flex flex-col justify-between bg-gradient-to-b from-black/5 via-black/5 to-black/30 p-5 opacity-0 transition-all ease-in-out focus-within:opacity-100 hover:opacity-100">
         <div className="flex items-center justify-end gap-3">
           <UnsplashButton
             data-kg-button="unsplash-like"
-            href={`${links.html}/?utm_source=ghost&amp;utm_medium=referral&amp;utm_campaign=api-credit`}
+            href={withReferral(links.html)}
             icon="heart"
             label={likes.toString()}
             rel="noopener noreferrer"
@@ -64,7 +75,7 @@ const UnsplashImage: FC<UnsplashImageProps> = ({
           />
           <UnsplashButton
             data-kg-button="unsplash-download"
-            href={`${links.download}/?utm_source=ghost&amp;utm_medium=referral&amp;utm_campaign=api-credit&amp;force=true`}
+            href={withReferral(links.download, { force: 'true' })}
             icon="download"
           />
         </div>
@@ -80,13 +91,15 @@ const UnsplashImage: FC<UnsplashImageProps> = ({
             </div>
           </div>
           <UnsplashButton
+            href="#"
             label="Insert image"
             data-kg-unsplash-insert-button
             onClick={(e) => {
+              e.preventDefault();
               e.stopPropagation();
               insertImage({
                 src: urls.regular.replace(/&w=1080/, '&w=2000'),
-                caption: `<span>Photo by <a href="${user.links.html}?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit">${user.name}</a> / <a href="https://unsplash.com/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit">Unsplash</a></span>`,
+                caption: `<span>Photo by <a href="${withReferral(user.links.html)}">${user.name}</a> / <a href="${withReferral('https://unsplash.com/')}">Unsplash</a></span>`,
                 height: height,
                 width: width,
                 alt: alt,

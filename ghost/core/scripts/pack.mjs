@@ -297,6 +297,10 @@ const requiredFiles = [
   'package.json',
   'index.js',
   'scripts/prune.mts',
+  // Admin's client build. Ghost boots without it, so a release missing it would
+  // pass an install smoke test and serve no Admin.
+  'core/built/admin/index.html',
+  'core/built/admin/assets',
   // Every patch the trimmed workspace file declares, so a patch that never made
   // it into the build tree fails here rather than at a consumer's install.
   ...patchSpecs,

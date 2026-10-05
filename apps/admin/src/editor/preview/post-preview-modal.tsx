@@ -29,7 +29,6 @@ import { PageHeader } from '@tryghost/shade/patterns';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
-import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import {
@@ -44,6 +43,7 @@ import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { postPreviewModal, postPreviewSaveFailed } from '@tryghost/test-data/selectors/editor';
 import { useEditorSettings } from '@/editor/use-editor-settings';
 import { FullscreenDialog } from '@/editor/fullscreen-dialog';
+import { describeRejectedAction } from '@/editor/publish/completion-message';
 import type { PublishFlowPost } from '@/editor/publish/flow-post';
 import { BrowserPreview } from './browser-preview';
 import { EmailPreview } from './email-preview';
@@ -77,7 +77,10 @@ export interface PostPreviewModalProps {
   post?: PublishFlowPost;
   /** The post's own newsletter, preselected in the email preview. */
   newsletterSlug?: string;
-  /** Awaited before the preview renders, so the caller can save the draft first. */
+  /**
+   * Awaited before the preview renders, so the caller can save the draft first.
+   * A rejection's message is shown to the writer as the reason it could not.
+   */
   onBeforeOpen?: () => Promise<void>;
   /** Renders a Publish button; supplied for users who can publish. */
   onPublish?: () => void;
@@ -108,9 +111,9 @@ export function PostPreviewModal({
   const [prepareState, setPrepareState] = useState<PrepareState>(() =>
     onBeforeOpen && open ? 'preparing' : 'ready',
   );
+  const [prepareFailure, setPrepareFailure] = useState('');
   const [wasOpen, setWasOpen] = useState(open);
 
-  const handleError = useHandleError();
   const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const { data: settingsData } = useEditorSettings();
   const paidMembersEnabled = usePaidMembersEnabled({ requestOptions: EDITOR_REQUEST_OPTIONS });
@@ -244,7 +247,7 @@ export function PostPreviewModal({
       },
       (error: unknown) => {
         if (!cancelled) {
-          handleError(error);
+          setPrepareFailure(describeRejectedAction(error).message);
           setPrepareState('failed');
         }
       },
@@ -253,7 +256,7 @@ export function PostPreviewModal({
     return () => {
       cancelled = true;
     };
-  }, [handleError, open, prepareState]);
+  }, [open, prepareState]);
 
   const segmentOptions = useMemo<SegmentOption[]>(() => {
     const options: SegmentOption[] =
@@ -486,10 +489,9 @@ export function PostPreviewModal({
                 {emailAvailable && subjectEditor && (
                   <Stack className="text-left" gap="xs">
                     <span className="text-sm text-muted-foreground">Email subject</span>
-                    {/* The failure is the preview's own save, and retrying it carries the subject. */}
+                    {/* Retrying the preview's own save carries the subject; the body says why it failed. */}
                     <EmailSubject
-                      editor={{ ...subjectEditor, onCommit: retryPreparation }}
-                      ownsSaveError={false}
+                      editor={{ ...subjectEditor, saveError: null, onCommit: retryPreparation }}
                     />
                   </Stack>
                 )}
@@ -500,7 +502,7 @@ export function PostPreviewModal({
             }
             className="grow justify-center self-center"
             data-testid={postPreviewSaveFailed}
-            description="Saving the post failed, so there is nothing new to preview."
+            description={<span role="alert">{prepareFailure}</span>}
             title="Couldn’t preview this post"
           >
             <LucideIcon.TriangleAlert />

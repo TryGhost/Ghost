@@ -78,6 +78,7 @@
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-eslint-react": "workspace:*",
+    "@sentry/vite-plugin": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:",
@@ -95,7 +96,6 @@
     "d3-geo": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-no-relative-import-paths": "1.6.1",
-    "ghost-admin": "workspace:*",
     "jsdom": "catalog:",
     "msw": "catalog:",
     "sirv": "3.0.2",
@@ -110,15 +110,48 @@
     "tags": [
       "playwright"
     ],
+    "implicitDependencies": [
+      "ghost-admin"
+    ],
     "targets": {
       "test:unit": {
         "dependsOn": [
-          "^build"
+          {
+            "projects": [
+              "@tryghost/activitypub",
+              "@tryghost/admin-x-framework",
+              "@tryghost/checkout",
+              "@tryghost/i18n",
+              "@tryghost/kg-clean-basic-html",
+              "@tryghost/kg-converters",
+              "@tryghost/kg-unsplash-selector",
+              "@tryghost/koenig-lexical",
+              "@tryghost/metafield-types",
+              "@tryghost/nql-string",
+              "@tryghost/shade"
+            ],
+            "target": "build"
+          }
         ]
       },
       "test:acceptance": {
         "dependsOn": [
-          "^build"
+          {
+            "projects": [
+              "@tryghost/activitypub",
+              "@tryghost/admin-x-framework",
+              "@tryghost/checkout",
+              "@tryghost/i18n",
+              "@tryghost/kg-clean-basic-html",
+              "@tryghost/kg-converters",
+              "@tryghost/kg-unsplash-selector",
+              "@tryghost/koenig-lexical",
+              "@tryghost/metafield-types",
+              "@tryghost/nql-string",
+              "@tryghost/shade"
+            ],
+            "target": "build"
+          }
         ]
       },
       "dev": {
@@ -137,7 +170,22 @@
       },
       "build:dev": {
         "dependsOn": [
-          "^build",
+          {
+            "projects": [
+              "@tryghost/activitypub",
+              "@tryghost/admin-x-framework",
+              "@tryghost/checkout",
+              "@tryghost/i18n",
+              "@tryghost/kg-clean-basic-html",
+              "@tryghost/kg-converters",
+              "@tryghost/kg-unsplash-selector",
+              "@tryghost/koenig-lexical",
+              "@tryghost/metafield-types",
+              "@tryghost/nql-string",
+              "@tryghost/shade"
+            ],
+            "target": "build"
+          },
           {
             "projects": [
               "ghost-admin"

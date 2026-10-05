@@ -21,6 +21,7 @@ import {
   post,
   renderAdminApp,
   settingsResponse,
+  settleTransitions,
   submittedPost,
   tier,
   type Newsletter,
@@ -40,6 +41,9 @@ const MONTHLY = newsletter({ slug: 'monthly-roundup', name: 'Monthly roundup', s
 
 const SESSION_GONE = {
   errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }],
+};
+const SAVE_FAILED = {
+  errors: [{ type: 'InternalServerError', message: 'The post could not be saved.' }],
 };
 const PASSWORD = 'hunter22';
 
@@ -86,7 +90,13 @@ function publishChrome(newsletters: Newsletter[]) {
  * A draft that answers saves the way Ghost does: a send creates the email
  * pending, and the flow's email confirmation reads it back as submitted.
  */
-function fakeSavableDraft(overrides: Record<string, unknown> = {}) {
+function fakeSavableDraft(
+  overrides: Record<string, unknown> = {},
+  {
+    holdFirstSave,
+    failFirstSave = false,
+  }: { holdFirstSave?: Promise<void>; failFirstSave?: boolean } = {},
+) {
   let current: Record<string, unknown> = {
     ...post({
       id: POST_ID,
@@ -103,6 +113,7 @@ function fakeSavableDraft(overrides: Record<string, unknown> = {}) {
     }),
     ...overrides,
   };
+  let attempts = 0;
   let saves = 0;
 
   fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), ({ url }) => {
@@ -113,7 +124,14 @@ function fakeSavableDraft(overrides: Record<string, unknown> = {}) {
     return { posts: [current] };
   });
 
-  return fakeAdminEndpoint('PUT', new RegExp(`^/posts/${POST_ID}/\\?`), ({ body, url }) => {
+  return fakeAdminEndpoint('PUT', new RegExp(`^/posts/${POST_ID}/\\?`), async ({ body, url }) => {
+    attempts += 1;
+    if (attempts === 1) {
+      await holdFirstSave;
+      if (failFirstSave) {
+        return Response.json(SAVE_FAILED, { status: 500 });
+      }
+    }
     saves += 1;
     const submitted = (body as { posts: Record<string, unknown>[] }).posts[0];
     current = { ...current, ...submitted, updated_at: `2026-01-01T00:00:0${saves}.000Z` };
@@ -122,6 +140,15 @@ function fakeSavableDraft(overrides: Record<string, unknown> = {}) {
     }
     return { posts: [current] };
   });
+}
+
+/** Changes the post's access in the settings sidebar, which saves a draft at once. */
+async function chooseAccess(label: string) {
+  await editorScreen.settingsToggle().click();
+  await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  await settleTransitions();
+  await editorScreen.settingsVisibility().click();
+  await editorScreen.settingsVisibilityOption(label).click();
 }
 
 /** Opens the preview's email and sends a test to the current user. */
@@ -168,6 +195,91 @@ describe('Editor publish journeys', () => {
     const params = new URL(saveApi.lastRequest?.url ?? '').searchParams;
     expect(params.get('newsletter')).toBe('weekly');
     expect(params.get('email_segment')).toBe('tier:gold,label:vip');
+  });
+
+  it('defaults the recipients to an access change whose save is still out', async () => {
+    publishChrome([WEEKLY]);
+    fakeTiers([]);
+    const accessSaved = deferred<void>();
+    const saveApi = fakeSavableDraft(
+      { visibility: 'public' },
+      { holdFirstSave: accessSaved.promise },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, emailSite());
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+
+    await chooseAccess('Paid-members only');
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    await userEvent.keyboard('{Meta>}{Shift>}p{/Shift}{/Meta}');
+
+    await expect
+      .element(publishScreen.setting('email-recipients'))
+      .toHaveTextContent('20 paid subscribers');
+
+    accessSaved.resolve();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
+    expect(submittedPost(saveApi, 0)).toMatchObject({ visibility: 'paid' });
+    expect(submittedPost(saveApi)).toMatchObject({ status: 'published' });
+    const params = new URL(saveApi.lastRequest?.url ?? '').searchParams;
+    expect(params.get('email_segment')).toBe('status:-free');
+  });
+
+  it('defaults the recipients to a tier picked while its save is still out', async () => {
+    publishChrome([WEEKLY]);
+    const silver = tier({ slug: 'silver', name: 'Silver', active: true });
+    fakeTiers([tier({ slug: 'gold', name: 'Gold', active: true }), silver]);
+    const accessSaved = deferred<void>();
+    const saveApi = fakeSavableDraft(
+      { visibility: 'tiers', tiers: [silver] },
+      { holdFirstSave: accessSaved.promise },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, emailSite());
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+
+    await editorScreen.settingsToggle().click();
+    await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+    await settleTransitions();
+    await editorScreen.settingsTier('Gold').click();
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    await userEvent.keyboard('{Meta>}{Shift>}p{/Shift}{/Meta}');
+    await expect.element(publishScreen.continueButton()).toBeVisible();
+
+    accessSaved.resolve();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
+    const params = new URL(saveApi.lastRequest?.url ?? '').searchParams;
+    expect(params.get('email_segment')?.split(',').sort()).toEqual(['tier:gold', 'tier:silver']);
+  });
+
+  it('defaults the recipients to an access change a failed save left, saving it first', async () => {
+    publishChrome([WEEKLY]);
+    fakeTiers([]);
+    const saveApi = fakeSavableDraft({ visibility: 'public' }, { failFirstSave: true });
+    await renderAdminApp(`/editor/post/${POST_ID}`, emailSite());
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+
+    await chooseAccess('Paid-members only');
+    await expect.element(editorScreen.saveErrorBanner()).toBeVisible();
+    await userEvent.keyboard('{Meta>}{Shift>}p{/Shift}{/Meta}');
+
+    await expect
+      .element(publishScreen.setting('email-recipients'))
+      .toHaveTextContent('20 paid subscribers');
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
+    expect(saveApi.requests).toHaveLength(3);
+    expect(submittedPost(saveApi, 1)).toMatchObject({ status: 'draft', visibility: 'paid' });
+    expect(submittedPost(saveApi)).toMatchObject({ status: 'published' });
+    const params = new URL(saveApi.lastRequest?.url ?? '').searchParams;
+    expect(params.get('email_segment')).toBe('status:-free');
   });
 
   it('offers no email options while member signup is off', async () => {

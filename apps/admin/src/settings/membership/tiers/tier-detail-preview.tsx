@@ -131,7 +131,7 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({ tier, isFreeTier 
         )}
       </div>
       <div className="rounded-sm border border-gray-200 bg-white dark:border-transparent">
-        <div className="flex-column relative flex min-h-[200px] w-full max-w-[420px] scale-90 items-start justify-stretch rounded bg-white p-4">
+        <div className="relative flex min-h-[200px] w-full max-w-[420px] scale-90 flex-col items-start justify-stretch rounded bg-white p-4">
           <div className="min-h-[56px] w-full">
             <h4
               className={`-mt-1 mb-0 w-full text-lg leading-tight font-semibold break-words text-ghostaccent ${!name && 'opacity-30'}`}
@@ -160,7 +160,7 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({ tier, isFreeTier 
             </div>
             {showingYearly && yearlyDiscount > 0 && <DiscountLabel discount={yearlyDiscount} />}
           </div>
-          <div className="flex-column flex w-full flex-1">
+          <div className="flex w-full flex-1 flex-col">
             <div className="flex-1">
               <div
                 className={`mt-4 w-full text-[1.55rem] leading-snug font-semibold text-gray-900 ${!description && 'opacity-30'}`}

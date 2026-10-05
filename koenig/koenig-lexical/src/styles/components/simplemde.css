@@ -51,7 +51,7 @@
     }
 
     .editor-toolbar a.disabled {
-        color: var(--lightgrey) !important;
+        color: var(--grey-400) !important;
         pointer-events: none;
     }
 

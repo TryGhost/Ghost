@@ -90,12 +90,16 @@ describe('createEditorSession reporting', () => {
 
     expect(await session.leaveRequested()).toBe('confirm');
 
+    // A body this short is reported by offset only.
+    const edit: unknown = expect.objectContaining({ before: '', live: '', other: '' });
     expect(leaves).toEqual([
       {
         postId: 'abc123',
         status: 'published',
         engineState: 'conflict',
         reasons: ['POST_HAS_ERROR', 'SCRATCH_DIVERGED_FROM_SECONDARY'],
+        dirtyFields: ['lexical'],
+        bodyDiff: { saved: edit, baseline: edit },
       },
     ]);
   });

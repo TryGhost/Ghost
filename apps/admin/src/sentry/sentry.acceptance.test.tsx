@@ -4,8 +4,11 @@ import { afterEach, describe, expect, it } from 'vitest';
 import {
   type EndpointCapture,
   configResponse,
+  fakeAdminEndpoint,
   fakeEndpoint,
+  fakeMembers,
   fakeTags,
+  member,
   renderAdminApp,
   settleRequests,
   siteResponse,
@@ -30,6 +33,13 @@ function envelopeItems(ingest: EndpointCapture): EnvelopeItem[] {
     }
     return items;
   });
+}
+
+function handledErrorEvents(ingest: EndpointCapture): Sentry.Event[] {
+  return envelopeItems(ingest)
+    .filter(({ type }) => type === 'event')
+    .map(({ payload }) => payload as Sentry.Event)
+    .filter(({ tags }) => tags?.source === 'useHandleError');
 }
 
 function sentryBoot() {
@@ -85,5 +95,31 @@ describe('Sentry', () => {
         user: { role: 'Owner' },
         tags: { route: '/tags', shown_to_user: false },
       });
+  });
+
+  it('reports handled errors the user was not shown', async () => {
+    fakeMembers([member({ name: 'First Member' })]);
+    // The newsletters schema rejects this response
+    fakeAdminEndpoint('GET', /^\/newsletters\//, { newsletters: [{}] });
+    const offersApi = fakeAdminEndpoint(
+      'GET',
+      /^\/offers\//,
+      { errors: [{ message: 'Offers could not be loaded.' }] },
+      { status: 400 },
+    );
+    const ingest = fakeEndpoint('POST', ENVELOPE_URL, {});
+
+    await renderAdminApp('/members', { boot: sentryBoot() });
+
+    await expect
+      .poll(() => handledErrorEvents(ingest)[0])
+      .toMatchObject({
+        exception: { values: [{ type: 'ZodError' }] },
+        tags: { source: 'useHandleError', shown_to_user: false },
+      });
+    await expect.poll(() => offersApi.requests.length).toBeGreaterThan(0);
+    await settleRequests();
+    await Sentry.flush();
+    expect(handledErrorEvents(ingest).filter(({ tags }) => tags?.api_url)).toEqual([]);
   });
 });

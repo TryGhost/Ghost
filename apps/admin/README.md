@@ -16,6 +16,12 @@ Embedded React applications are built before Ember Admin; Ember's asset-delivery
 addon copies their production output and the Admin assets into
 `ghost/core/core/built/admin/` for Ghost Core to serve.
 
+Ember is an Nx implicit dependency of this app so Ember source changes still
+invalidate the combined production build and mark Admin as affected. It is not
+a package dependency: a filtered `@tryghost/admin...` install contains the React
+test dependencies, while development and production builds need the full
+workspace install to include Ember's toolchain.
+
 ### CSS
 
 `src/index.css` is the single Tailwind CSS entry point for Admin. It imports
@@ -82,6 +88,11 @@ access and Shade for UI rather than adding new `admin-x-design-system`
 components. Product copy belongs in the `ghost` namespace; follow the
 [internationalization guide](../../docs/practices/internationalization.md).
 
+`pnpm nx run @tryghost/admin:build:dev` prepares library outputs and Ember's
+development assets. Its prerequisites select `ghost-admin:build:dev` once;
+they do not also compile Ember's production bundle. The normal `pnpm dev`
+watchers are configured separately.
+
 The post editor is the largest area with documentation of its own — start at
 [src/editor/README.md](src/editor/README.md) before changing anything under
 `src/editor/`.
@@ -92,6 +103,13 @@ The post editor is the largest area with documentation of its own — start at
 - **Acceptance tests** (`pnpm test:acceptance`): the real app in real Chromium against a fake admin API served through MSW — see [test-utils/acceptance/README.md](test-utils/acceptance/README.md).
 - **Browser e2e** against a real Ghost instance lives in the top-level [`e2e/`](../../e2e) workspace.
 
+From the monorepo root, use `pnpm nx run @tryghost/admin:test:unit` or
+`pnpm nx run @tryghost/admin:test:acceptance` to build the required React
+libraries first. These targets do not compile Ember or boot Ghost. Their
+`dependsOn` lists, and the React library prerequisites of `build:dev`, explicitly
+name the React dependencies with a `build` target; update all three when adding
+one. Using `^build` here would also select the implicit Ember dependency.
+
 ## Building for Production
 
 ```bash
@@ -100,6 +118,11 @@ pnpm nx run @tryghost/admin:build
 ```
 
 This outputs to `apps/admin/dist/` and updates the assets in `ghost/core/core/built/admin/`.
+
+The build also writes hidden sourcemaps: `.map` files that no bundle references.
+With `IS_SHIPPING` set, as CI does for `main` and release tags, it uploads them
+to Sentry under the release Admin's Sentry client reports. Without
+`VITE_SENTRY_AUTH_TOKEN` the upload is skipped.
 
 ## Automation member search
 
