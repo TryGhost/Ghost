@@ -117,7 +117,9 @@ describe('service migration inventory', function () {
       } else {
         assert.ok(recorded.length > 0, 'Audit status requires recorded evidence');
       }
-      if (service.status === 'audited') {
+      if (service.status === 'auditing') {
+        assert.ok(service.unverified.length > 0, 'Use audited when all facets have been recorded');
+      } else if (service.status === 'audited') {
         assert.equal(service.unverified.length, 0, 'Unverified facets block a complete audit');
       }
     });
