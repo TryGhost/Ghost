@@ -628,25 +628,22 @@ services:
         summary: >-
           The wrapper passes callbacks that read managed-email enablement/domains, fallback
           address and settings-helper addresses at use time, rather than capturing their
-          values during init. Retained renderer and sending consumers use changed From,
-          Reply-To and provider fallback values without reinitialization.
+          values during init.
         sources:
           - core/server/services/email-address/email-address-service-wrapper.js
           - core/server/services/email-address/email-address-service.ts
-          - core/server/services/email-service/email-renderer.js
-          - core/server/services/email-service/sending-service.js
         tests:
-          - test/unit/server/services/email-address/retained-consumer.test.ts
+          - test/unit/server/services/email-address/wrapper.test.ts
       lifetime:
         summary: >-
-          Repeated init retains the same implementation held by an existing renderer. Missing
-          managed-email config produces false enablement and null optional domains/addresses;
-          the implementation continues to read current config and settings through callbacks.
+          Repeated init keeps the same service instance. Missing managed-email config produces
+          false enablement and null domains and fallback address; the service keeps reading
+          current config and settings through callbacks.
         sources:
           - core/server/services/email-address/email-address-service-wrapper.js
           - core/server/services/email-address/email-address-service.ts
         tests:
-          - test/unit/server/services/email-address/retained-consumer.test.ts
+          - test/unit/server/services/email-address/wrapper.test.ts
     unverified:
       - consumers
       - startup
@@ -655,8 +652,9 @@ services:
     blockers:
       - >-
         Complete the consumer audit, including EmailServiceWrapper dependency injection,
-        members and newsletters. Retained renderer/sender tests do not prove full boot,
-        restart or delivery through the HTTP and background-job boundaries.
+        members and newsletters, including whether consumers derive and keep values from
+        the service. Wrapper tests do not prove full boot, restart or delivery through the
+        HTTP and background-job boundaries.
   email-analytics:
     kind: directory
     disposition: retain
@@ -2597,7 +2595,6 @@ services:
           - core/server/services/remote-flags/index.ts
         tests:
           - test/unit/server/services/remote-flags/index.test.js
-          - test/unit/server/services/remote-flags/lifecycle.test.ts
       configuration:
         summary: >-
           URL, site UUID and valid polling interval are captured when the instance is built.
@@ -2607,7 +2604,6 @@ services:
           - core/server/services/remote-flags/index.ts
         tests:
           - test/unit/server/services/remote-flags/index.test.js
-          - test/unit/server/services/remote-flags/lifecycle.test.ts
       lifetime:
         summary: >-
           The same loaded root supports disabled/enabled/stop/reconfigure cycles. A running
@@ -2619,7 +2615,8 @@ services:
           - core/server/services/remote-flags/remote-flags-service.ts
           - core/shared/labs-flag-overrides.ts
         tests:
-          - test/unit/server/services/remote-flags/lifecycle.test.ts
+          - test/unit/server/services/remote-flags/index.test.js
+          - test/unit/server/services/remote-flags/remote-flags-service.test.js
       resources:
         summary: >-
           The implementation owns an unrefed timeout chain and coalesces concurrent refresh
@@ -2636,7 +2633,7 @@ services:
     blockers:
       - >-
         No production call to stop or boot cleanup registration was found under core. Root
-        tests prove non-blocking init with a deferred request through the real poller, not
+        tests prove init returns before the first refresh settles through the real start, not
         full boot readiness.
         An in-flight fetch can apply overrides after stop; establish shutdown/drain ownership
         rather than treating the missing drain as behavior the migration must preserve.
@@ -2728,6 +2725,7 @@ services:
           - core/boot.js
         tests:
           - test/unit/server/services/settings/repeated-init.test.ts
+          - test/unit/server/services/settings/settings-service.test.js
           - test/e2e-api/admin/settings.test.js
           - test/e2e-api/content/settings.test.js
       configuration:
@@ -3309,6 +3307,7 @@ services:
           - core/server/services/tinybird/tinybird-service.js
           - core/server/api/endpoints/tinybird.js
         tests:
+          - test/unit/server/services/tinybird/tinybird-service.test.js
           - test/unit/server/services/tinybird/consumer-configuration.test.ts
           - test/e2e-api/admin/tinybird.test.js
       lifetime:

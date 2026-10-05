@@ -21,7 +21,7 @@ describe('Tinybird API', function () {
       await agent.loginAsOwner();
     });
 
-    it('uses changed signing credentials and disables tokens without reloading the endpoint', async function () {
+    it('reads the current signing config on every token request, including when disabled', async function () {
       const jwt = require('jsonwebtoken');
       const previousConfig = configUtils.config.get('tinybird');
       try {

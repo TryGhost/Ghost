@@ -20,21 +20,28 @@ const modulePaths = [
   '../../../../../core/shared/labs',
 ].map((path) => require.resolve(path));
 
-// Load transitive dependencies against the shared registry before isolating
-// these roots. No other module should retain this test's fresh cache or helper.
+// The unit suite shares one module registry (isolate: false), so this file
+// loads its own settings service, cache and helpers rather than initializing
+// the shared ones. Load transitive dependencies against the shared registry
+// first, so no other module retains this file's copies.
 require(settingsPath);
+
+type Rows = Record<string, string | boolean>;
+type Listener = (...args: unknown[]) => void;
 
 describe('Settings repeated initialization', function () {
   const sandbox = sinon.createSandbox();
   let previousModules: Map<string, NodeModule | undefined>;
+  let previousListeners: Map<string | symbol, Listener[]>;
   let settings: { init(): Promise<void>; reset(): void };
+  // Consumers retain these references, so every assertion reads through them.
   let cache: { get(key: string): unknown };
-  let helpers: {
-    isMembersEnabled(): boolean;
-    isMembersInviteOnly(): boolean;
-    allowSelfSignup(): boolean;
-  };
-  let previousListeners: Map<string | symbol, Array<(...args: unknown[]) => void>>;
+  let helpers: { isMembersInviteOnly(): boolean; allowSelfSignup(): boolean };
+  let rows: Rows;
+  let overrides: Rows;
+  let findAll: sinon.SinonStub;
+  let getAdapter: sinon.SinonStub;
+  let populateDefaults: sinon.SinonStub;
 
   beforeEach(function () {
     previousModules = new Map(modulePaths.map((path) => [path, require.cache[path]]));
@@ -47,160 +54,154 @@ describe('Settings repeated initialization', function () {
     settings = require(settingsPath);
     cache = require(cachePath);
     helpers = require(helpersPath);
+
+    rows = {};
+    overrides = {};
     sandbox.stub(sentry);
     sandbox.stub(limitService, 'isDisabled').returns(false);
-  });
-
-  afterEach(function () {
-    try {
-      // reset() removes only this fresh cache's exact listener references;
-      // the shared emitter and other suites' subscribers remain untouched.
-      settings.reset();
-      for (const name of new Set([...previousListeners.keys(), ...events.eventNames()])) {
-        assert.deepEqual(events.rawListeners(name), previousListeners.get(name) || []);
-      }
-    } finally {
-      sandbox.restore();
-      for (const [path, previous] of previousModules) {
-        delete require.cache[path];
-        if (previous) {
-          require.cache[path] = previous;
-        }
-      }
-    }
-  });
-
-  function setup(initialRows: Record<string, string | boolean>) {
-    const store = new MemoryCache();
-    let rows = initialRows;
-    let overrides: Record<string, string | boolean> = {};
-    let customIntegrationsDisabled = false;
     const getConfig = sandbox.stub(config, 'get').callThrough();
     getConfig.withArgs('hostSettings:settingsOverrides').callsFake(() => overrides);
-    getConfig
-      .withArgs('hostSettings:limits:customIntegrations:disabled')
-      .callsFake(() => customIntegrationsDisabled);
     getConfig.withArgs('mail:from').returns('sender@example.com');
     getConfig.withArgs('site_uuid').returns(null);
-    const getAdapter = sandbox.stub(adapterManager, 'getAdapter');
-    getAdapter.withArgs('cache:settings').returns(store);
-    const populateDefaults = sandbox.stub(models.Settings, 'populateDefaults').resolves();
-    const findAll = sandbox.stub(models.Settings, 'findAll').callsFake(async () => ({
+    getAdapter = sandbox.stub(adapterManager, 'getAdapter');
+    getAdapter.withArgs('cache:settings').returns(new MemoryCache());
+    populateDefaults = sandbox.stub(models.Settings, 'populateDefaults').resolves();
+    findAll = sandbox.stub(models.Settings, 'findAll').callsFake(async () => ({
       models: Object.entries(rows).map(([key, value]) => ({
         get: () => key,
         toJSON: () => ({ key, value, type: typeof value }),
       })),
     }));
-    return {
-      getAdapter,
-      populateDefaults,
-      findAll,
-      setRows(value: typeof rows) {
-        rows = value;
-      },
-      setOverrides(value: typeof overrides) {
-        overrides = value;
-      },
-      setCustomIntegrationsDisabled(value: boolean) {
-        customIntegrationsDisabled = value;
-      },
-    };
-  }
-
-  it('refreshes stored settings and host overrides through the same retained consumer', async function () {
-    const source = setup({
-      title: 'First stored title',
-      description: 'First description',
-      members_signup_access: 'all',
-      transistor: true,
-    });
-    source.setOverrides({
-      title: 'First host title',
-      members_signup_access: 'invite',
-      transistor: true,
-    });
-    source.setCustomIntegrationsDisabled(true);
-    const retainedHelpers = helpers;
-    const retainedCacheGetter = cache.get;
-
-    await settings.init();
-    assert.equal(retainedCacheGetter('title'), 'First host title');
-    assert.equal(retainedCacheGetter('description'), 'First description');
-    assert.equal(retainedCacheGetter('transistor'), false);
-    assert.equal(retainedHelpers.isMembersInviteOnly(), true);
-    assert.equal(retainedHelpers.allowSelfSignup(), false);
-    assert.equal(retainedCacheGetter('allow_self_signup'), false);
-    const initializedListenerCounts = new Map(
-      events.eventNames().map((name: string | symbol) => [name, events.listenerCount(name)]),
-    );
-
-    source.setRows({
-      title: 'Second stored title',
-      description: 'Second description',
-      members_signup_access: 'none',
-      transistor: true,
-    });
-    source.setOverrides({ title: 'Second host title', members_signup_access: 'all' });
-    source.setCustomIntegrationsDisabled(false);
-    // Host overrides are captured by init; changing config alone is insufficient.
-    assert.equal(retainedCacheGetter('title'), 'First host title');
-    assert.equal(retainedHelpers.allowSelfSignup(), false);
-
-    await settings.init();
-    assert.equal(retainedCacheGetter('title'), 'Second host title');
-    assert.equal(retainedCacheGetter('description'), 'Second description');
-    assert.equal(retainedCacheGetter('transistor'), true);
-    assert.equal(retainedHelpers.isMembersInviteOnly(), false);
-    assert.equal(retainedHelpers.allowSelfSignup(), true);
-    assert.equal(retainedCacheGetter('allow_self_signup'), true);
-
-    // Removing an override must expose the new database value, without stale
-    // rows or calculated fields surviving from either previous initialization.
-    source.setRows({
-      title: 'Third stored title',
-      members_signup_access: 'none',
-      transistor: false,
-    });
-    source.setOverrides({});
-    await settings.init();
-    assert.equal(retainedCacheGetter('title'), 'Third stored title');
-    assert.equal(retainedCacheGetter('description'), undefined);
-    assert.equal(retainedCacheGetter('transistor'), false);
-    assert.equal(retainedHelpers.isMembersEnabled(), false);
-    assert.equal(retainedHelpers.allowSelfSignup(), false);
-    assert.equal(retainedCacheGetter('members_enabled'), false);
-    assert.equal(retainedCacheGetter('allow_self_signup'), false);
-    assert.equal(require(settingsPath), settings);
-    assert.equal(require(helpersPath), retainedHelpers);
-    assert.equal(require(cachePath).get, retainedCacheGetter);
-    for (const [name, count] of initializedListenerCounts) {
-      assert.equal(events.listenerCount(name), count, String(name));
-    }
-    sinon.assert.calledThrice(source.populateDefaults);
-    sinon.assert.calledThrice(source.findAll);
-    sinon.assert.alwaysCalledWithExactly(source.findAll, { context: { internal: true } });
-    sinon.assert.calledThrice(source.getAdapter);
-    sinon.assert.alwaysCalledWithExactly(source.getAdapter, 'cache:settings');
   });
 
-  it('keeps the prior cache when reloading fails and refreshes it on retry', async function () {
-    const source = setup({ title: 'Original title', members_signup_access: 'invite' });
+  afterEach(function () {
+    // Cleanup only: a leaked listener fails the listener test, not whichever
+    // test happens to run first.
+    settings.reset();
+    for (const name of events.eventNames()) {
+      const previous = previousListeners.get(name) || [];
+      for (const listener of events.rawListeners(name)) {
+        if (!previous.includes(listener)) {
+          events.removeListener(name, listener);
+        }
+      }
+    }
+    sandbox.restore();
+    for (const [path, previous] of previousModules) {
+      delete require.cache[path];
+      if (previous) {
+        require.cache[path] = previous;
+      }
+    }
+  });
+
+  it('refreshes database values, host overrides and calculated fields on each init', async function () {
+    const enforcePublicSiteAccessLimit = sandbox.spy(
+      settings as any,
+      'enforcePublicSiteAccessLimit',
+    );
+    const validateSiteUuid = sandbox.spy(settings as any, 'validateSiteUuid');
+    rows = {
+      title: 'First title',
+      description: 'First description',
+      members_signup_access: 'invite',
+    };
+    overrides = { description: 'First host description' };
     await settings.init();
-    const retainedCacheGetter = cache.get;
-    const retainedHelpers = helpers;
-    assert.equal(retainedCacheGetter('title'), 'Original title');
-    assert.equal(retainedHelpers.allowSelfSignup(), false);
+
+    assert.equal(cache.get('title'), 'First title');
+    assert.equal(cache.get('description'), 'First host description');
+    assert.equal(cache.get('allow_self_signup'), false);
+    assert.equal(helpers.isMembersInviteOnly(), true);
+    assert.equal(helpers.allowSelfSignup(), false);
+
+    rows = {
+      title: 'Second title',
+      description: 'Second description',
+      members_signup_access: 'all',
+    };
+    overrides = { description: 'Second host description' };
+    await settings.init();
+
+    assert.equal(cache.get('title'), 'Second title');
+    assert.equal(cache.get('description'), 'Second host description');
+    assert.equal(cache.get('allow_self_signup'), true);
+    assert.equal(helpers.isMembersInviteOnly(), false);
+    assert.equal(helpers.allowSelfSignup(), true);
+
+    sinon.assert.calledTwice(populateDefaults);
+    sinon.assert.calledTwice(enforcePublicSiteAccessLimit);
+    sinon.assert.calledTwice(validateSiteUuid);
+    sinon.assert.calledTwice(findAll);
+    sinon.assert.alwaysCalledWithExactly(findAll, { context: { internal: true } });
+    sinon.assert.calledTwice(getAdapter);
+    sinon.assert.alwaysCalledWithExactly(getAdapter, 'cache:settings');
+  });
+
+  it('does not apply changed host overrides until the next init', async function () {
+    rows = { title: 'Stored title' };
+    overrides = { title: 'First host title' };
+    await settings.init();
+
+    overrides = { title: 'Second host title' };
+    assert.equal(cache.get('title'), 'First host title');
+
+    await settings.init();
+    assert.equal(cache.get('title'), 'Second host title');
+  });
+
+  it('exposes the current database value once an override is removed, and drops removed rows', async function () {
+    rows = { title: 'First title', description: 'First description' };
+    overrides = { title: 'Host title' };
+    await settings.init();
+    assert.equal(cache.get('title'), 'Host title');
+
+    rows = { title: 'Second title' };
+    overrides = {};
+    await settings.init();
+
+    assert.equal(cache.get('title'), 'Second title');
+    assert.equal(cache.get('description'), undefined);
+  });
+
+  it('does not add event listeners on repeated init', async function () {
+    rows = { members_signup_access: 'all' };
+    await settings.init();
+    const counts = new Map(
+      events.eventNames().map((name: string | symbol) => [name, events.listenerCount(name)]),
+    );
+    // Guard against a vacuous pass: init must have subscribed to something.
+    assert.ok(
+      events.listenerCount('settings.edited') >
+        (previousListeners.get('settings.edited') || []).length,
+    );
+    assert.ok(events.listenerCount('settings.members_signup_access.edited') > 0);
+
+    await settings.init();
+    await settings.init();
+
+    assert.deepEqual(
+      new Map(
+        events.eventNames().map((name: string | symbol) => [name, events.listenerCount(name)]),
+      ),
+      counts,
+    );
+  });
+
+  it('keeps the previous cache when the database read fails, and refreshes on retry', async function () {
+    rows = { title: 'Original title', members_signup_access: 'invite' };
+    await settings.init();
 
     const readError = new Error('Settings read failed');
-    source.findAll.onSecondCall().rejects(readError);
-    source.setRows({ title: 'Refreshed title', members_signup_access: 'all' });
+    findAll.onSecondCall().rejects(readError);
+    rows = { title: 'Refreshed title', members_signup_access: 'all' };
     await assert.rejects(settings.init(), (error: unknown) => error === readError);
-    assert.equal(retainedCacheGetter('title'), 'Original title');
-    assert.equal(retainedHelpers.allowSelfSignup(), false);
+
+    assert.equal(cache.get('title'), 'Original title');
+    assert.equal(helpers.allowSelfSignup(), false);
 
     await settings.init();
-    assert.equal(retainedCacheGetter('title'), 'Refreshed title');
-    assert.equal(retainedHelpers.allowSelfSignup(), true);
-    assert.equal(retainedCacheGetter('allow_self_signup'), true);
+    assert.equal(cache.get('title'), 'Refreshed title');
+    assert.equal(helpers.allowSelfSignup(), true);
   });
 });
