@@ -33,6 +33,7 @@ const lexicalLib = require('../../lib/lexical');
 
 const MAX_AUTOMATION_ACTIONS = 50;
 const RUN_PAGE_SIZE = 50;
+const MAX_WAIT_HOURS = 720; // 30 days
 
 const messages = {
   invalidRunOrder: 'Automation run order must be one of: created_at desc, created_at asc.',
@@ -63,7 +64,7 @@ const waitActionSchema = z.object({
   id: objectIdSchema,
   type: z.literal('wait'),
   data: z.object({
-    wait_hours: z.number().int().positive(),
+    wait_hours: z.number().int().positive().max(MAX_WAIT_HOURS),
   }),
 });
 
