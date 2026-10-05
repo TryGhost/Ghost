@@ -16,6 +16,12 @@ Embedded React applications are built before Ember Admin; Ember's asset-delivery
 addon copies their production output and the Admin assets into
 `ghost/core/core/built/admin/` for Ghost Core to serve.
 
+Ember is an Nx implicit dependency of this app so Ember source changes still
+invalidate the combined production build and mark Admin as affected. It is not
+a package dependency: a filtered `@tryghost/admin...` install contains the React
+test dependencies, while development and production builds need the full
+workspace install to include Ember's toolchain.
+
 ### CSS
 
 `src/index.css` is the single Tailwind CSS entry point for Admin. It imports
@@ -91,6 +97,13 @@ The post editor is the largest area with documentation of its own — start at
 - **Unit tests** (`pnpm test:unit`): Vitest + jsdom, colocated `*.test.ts(x)` files.
 - **Acceptance tests** (`pnpm test:acceptance`): the real app in real Chromium against a fake admin API served through MSW — see [test-utils/acceptance/README.md](test-utils/acceptance/README.md).
 - **Browser e2e** against a real Ghost instance lives in the top-level [`e2e/`](../../e2e) workspace.
+
+From the monorepo root, use `pnpm nx run @tryghost/admin:test:unit` or
+`pnpm nx run @tryghost/admin:test:acceptance` to build the required React
+libraries first. These targets do not compile Ember or boot Ghost. Their
+`dependsOn` lists explicitly name the React dependencies with a `build` target;
+update both when adding one. Using `^build` here would also select the implicit
+Ember dependency.
 
 ## Building for Production
 
