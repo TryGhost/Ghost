@@ -77,8 +77,19 @@ export type AutomationBrowseResult = AutomationSummary & {
 export type Automation = AutomationSummary & {
   actions: AutomationAction[];
   edges: AutomationEdge[];
-};
+} & (
+    | {
+        trigger_tier_scope: null | 'free' | 'all_paid';
+        trigger_tier_ids: null;
+      }
+    | {
+        trigger_tier_scope: 'selected_paid';
+        trigger_tier_ids: string[];
+      }
+  );
 
+// TODO(NY-1638) Add `trigger_tier_scope` and `trigger_tier_ids` here.
+// Use a union type to prevent `trigger_tier_ids` being set for null/free/all_paid scopes.
 export type EditAutomationData = {
   name?: string;
   description?: string;
