@@ -680,10 +680,12 @@ function buildRunHistoryStep(
         },
       };
       break;
+    /* v8 ignore start -- @preserve */
     default: {
       const _exhaustive: never = row.action_type;
       throw new errors.InternalServerError({ message: `Unhandled action type: ${_exhaustive}` });
     }
+    /* v8 ignore stop -- @preserve */
   }
   return {
     id: row.id,
@@ -717,10 +719,12 @@ function getRunHistoryStatus(steps: AutomationRunHistoryStep[]): AutomationRunHi
           status = 'exited_early';
         }
         break;
+      /* v8 ignore start -- @preserve */
       default: {
         const _exhaustive: never = step.status;
         throw new errors.InternalServerError({ message: `Unhandled step status: ${_exhaustive}` });
       }
+      /* v8 ignore stop -- @preserve */
     }
   }
   return status;
@@ -1367,12 +1371,14 @@ function getReadyAtForAction(
     }
     case 'send_email':
       return now;
+    /* v8 ignore start -- @preserve */
     default: {
       const _exhaustive: never = action.type;
       throw new errors.IncorrectUsageError({
         message: `Unexpected action type ${_exhaustive}`,
       });
     }
+    /* v8 ignore stop -- @preserve */
   }
 }
 
@@ -1744,12 +1750,14 @@ function buildRevisionActionData(
         email_lexical: revision.email_lexical,
         email_design_setting_id: revision.email_design_setting_id,
       };
+    /* v8 ignore start -- @preserve */
     default: {
       const _exhaustive: never = action;
       throw new errors.InternalServerError({
         message: `Unhandled action type: ${_exhaustive}`,
       });
     }
+    /* v8 ignore stop -- @preserve */
   }
 }
 
@@ -1855,12 +1863,14 @@ function buildActionRevision(actionId: string, action: AutomationAction, created
         email_lexical: action.data.email_lexical,
         email_design_setting_id: action.data.email_design_setting_id,
       };
+    /* v8 ignore start -- @preserve */
     default: {
       const _exhaustive: never = action;
       throw new errors.InternalServerError({
         message: `Unexpected action type ${_exhaustive}`,
       });
     }
+    /* v8 ignore stop -- @preserve */
   }
 }
 
