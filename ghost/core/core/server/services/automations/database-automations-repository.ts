@@ -102,6 +102,7 @@ type AutomationRow = {
   status: string;
   created_at: DatabaseDate;
   updated_at: DatabaseDate;
+  trigger_tier_scope: AutomationTriggerTierScope | null;
 };
 
 type AutomationBrowseRow = AutomationRow & {
@@ -380,6 +381,7 @@ export function createDatabaseAutomationsRepository({
 
         const now = new Date();
 
+        // TODO(NY-1638) Add `trigger_tier_scope` and `trigger_tier_ids` here.
         const updatedAutomation = await updateAutomation(trx, {
           ...automation,
           name: data.name ?? automation.name,
@@ -1483,7 +1485,16 @@ async function loadAutomation(
   automationId: string,
 ): Promise<AutomationRow | null> {
   const row = await trx('automations')
-    .select('id', 'slug', 'name', 'description', 'status', 'created_at', 'updated_at')
+    .select(
+      'id',
+      'slug',
+      'name',
+      'description',
+      'status',
+      'trigger_tier_scope',
+      'created_at',
+      'updated_at',
+    )
     .where('id', automationId)
     .first();
   return row ?? null;
@@ -1918,8 +1929,32 @@ async function buildAutomation(
     actionRows.map((row) => row.id),
   );
   const edgeRows = await loadEdgeRows(trx, automation.id);
+
+  let triggerData;
+  switch (automation.trigger_tier_scope) {
+    case null:
+    case 'free':
+    case 'all_paid':
+      triggerData = { trigger_tier_scope: automation.trigger_tier_scope, trigger_tier_ids: null };
+      break;
+    case 'selected_paid':
+      triggerData = {
+        trigger_tier_scope: automation.trigger_tier_scope,
+        trigger_tier_ids: await trx('automation_trigger_tiers')
+          .where('automation_id', automation.id)
+          .orderBy('product_id')
+          .pluck<string[]>('product_id'),
+      };
+      break;
+    default:
+      throw new errors.InternalServerError({
+        message: `Unexpected trigger_tier_scope value from database: ${automation.trigger_tier_scope}`,
+      });
+  }
+
   return {
     ...buildAutomationSummary(automation),
+    ...triggerData,
     actions: actionRows.map((row) => buildActionPayload(row, actionStats.get(row.id) ?? null)),
     edges: edgeRows.map((row) => buildEdgePayload(row)),
   };

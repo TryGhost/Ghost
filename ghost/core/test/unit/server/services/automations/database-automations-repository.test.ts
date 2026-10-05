@@ -1715,6 +1715,26 @@ describe('automations repository', function () {
       assert.equal(edited.description, 'Updated description');
     });
 
+    it('can edit the automation trigger tier scope and IDs', async function () {
+      const initial = await getAutomationBySlug('member-welcome-email-free');
+      // TODO(NY-1638) You can't currently edit these, so we hit the database
+      // directly. This will be updated soon.
+      const tierIds = [ObjectId().toHexString(), ObjectId().toHexString()];
+      await knex('automations')
+        .where({ id: initial.id })
+        .update({ trigger_tier_scope: 'selected_paid' });
+      await knex('automation_trigger_tiers').insert(
+        tierIds.map((product_id) => ({ automation_id: initial.id, product_id })),
+      );
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+
+      const edited = await repo.edit(automation.id, automation);
+
+      assert(edited);
+      assert.equal(edited.trigger_tier_scope, 'selected_paid');
+      assert.deepEqual(edited.trigger_tier_ids, [...tierIds].toSorted());
+    });
+
     it('persists optional metadata and preserves omitted fields', async function () {
       const automation = await getAutomationBySlug('member-welcome-email-free');
       const graph = {
