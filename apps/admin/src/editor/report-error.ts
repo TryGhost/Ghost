@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/react';
 import type { ErrorInfo } from 'react';
 import { APIError, ServerUnreachableError } from '@tryghost/admin-x-framework/errors';
+import { loadedKoenigVersion } from '@/settings/components/koenig-loader';
 import type { PostType } from '@/editor/card-config';
 import type { SaveError } from '@/editor/engine/save-engine';
 import type { EditorLeaveConfirmation, EditorSaveFailure } from '@/editor/session/editor-session';
@@ -31,7 +32,7 @@ export function reportEditorError(error: unknown, context?: EditorErrorContext):
 export function reportKoenigError(error: unknown): void {
   reportEditorError(error, {
     tags: { lexical: true },
-    contexts: { koenig: { version: window['@tryghost/koenig-lexical']?.version } },
+    contexts: { koenig: { version: loadedKoenigVersion() } },
   });
 }
 
@@ -40,7 +41,7 @@ export function reportKoenigRenderError(error: unknown, info: ErrorInfo): void {
   reportEditorError(error, {
     tags: { lexical: true },
     contexts: {
-      koenig: { version: window['@tryghost/koenig-lexical']?.version },
+      koenig: { version: loadedKoenigVersion() },
       react: { componentStack: info.componentStack },
     },
   });
