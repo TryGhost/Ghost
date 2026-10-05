@@ -38,14 +38,14 @@ const problemWith = (
   switch (field) {
     case 'blogTitle':
       if (!values.blogTitle) {
-        return 'Please enter a site title.';
+        return 'Enter a site title.';
       }
       return validator.isLength(values.blogTitle, { max: 150 }) ? undefined : 'Title is too long';
     case 'name':
-      return values.name ? undefined : 'Please enter a name.';
+      return values.name ? undefined : 'Enter a name.';
     case 'email':
       if (!values.email.trim()) {
-        return 'Please enter an email.';
+        return 'Enter an email.';
       }
       return validator.isEmail(values.email) ? undefined : 'Invalid Email.';
     case 'password':
@@ -104,7 +104,7 @@ function SetupForm({
     );
     setErrors(nextErrors);
     if (Object.values(nextErrors).some(Boolean)) {
-      setFlowError('Please fill out every field correctly to set up your site.');
+      setFlowError('Fill out every field correctly to set up your site.');
       return;
     }
 

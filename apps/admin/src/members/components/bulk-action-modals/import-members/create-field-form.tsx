@@ -13,7 +13,7 @@ import {
 } from '@tryghost/shade/components';
 import { CustomFieldTypeOption } from '@/shared/member-custom-fields/custom-field-type-option';
 import { memberCustomFieldUserTypes } from '@tryghost/admin-x-framework/api/member-custom-fields';
-import { suggestedFieldName } from '@/members/components/bulk-action-modals/import-members/custom-fields/mapping';
+import { suggestedFieldName } from '@/members/components/bulk-action-modals/import-members/mapping';
 import { useEffect, useRef, useState } from 'react';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 

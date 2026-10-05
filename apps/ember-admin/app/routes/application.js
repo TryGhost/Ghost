@@ -176,6 +176,11 @@ export default Route.extend(ShortcutsRoute, {
         }
     },
 
+    // React handles the app-wide shortcuts on the screens it shows
+    shouldHandleShortcuts() {
+        return this.stateBridge.reactRoutePattern === null;
+    },
+
     willDestroy() {
         this.ui.cleanupBodyDragHandlers();
     },

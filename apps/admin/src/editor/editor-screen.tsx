@@ -429,7 +429,7 @@ function EditorSurface({
         : undefined,
     visibility: record?.visibility,
   }));
-  const cardConfig = usePostCardConfig({
+  const { cardConfig, failed, retry } = usePostCardConfig({
     post: cardConfigPost,
     snippets,
     createSnippet,
@@ -437,7 +437,11 @@ function EditorSurface({
   });
 
   if (!cardConfig) {
-    return <EditorLoading />;
+    return failed ? (
+      <EditorLoadError message="Couldn’t load the editor." onRetry={retry} />
+    ) : (
+      <EditorLoading />
+    );
   }
 
   return (
