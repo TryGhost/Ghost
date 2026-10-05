@@ -59,7 +59,7 @@ same change as that code.
 
 Two alternatives were tried and rejected. Self-registration
 (`registerConfigSection()` at import time) cannot work: config is the first thing
-loaded — `loggingrc.js` and `MigratorConfig.js` require it before any feature
+loaded — `loggingrc.js` and `MigratorConfig.ts` require it before any feature
 module exists — so which keys got validated would depend on import order. A
 schema per feature, parsed by the feature at init, was built and dropped: no
 migrated service turned out to own a top-level key outright, and a feature
@@ -215,8 +215,8 @@ a derived object instead. Three places got this wrong, each writing through into
 config for every later reader:
 [`configure-knex.ts`](../../server/data/db/configure-knex.ts) assembling knex's
 options, `AdapterCacheRedis` folding `ttl` into `clusterConfig`, and
-[`MigratorConfig.js`](../../../MigratorConfig.js) handing the `database` subtree
-to knex-migrator, which mutates what it is given.
+`MigratorConfig` handing the `database` subtree to knex-migrator before 6.4,
+which mutated what it was given.
 
 The last one is the case to watch for: when a dependency assembles its own options
 from what you pass it, give it a copy. `_.cloneDeep` rather than

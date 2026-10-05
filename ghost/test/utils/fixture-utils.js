@@ -6,7 +6,7 @@ const crypto = require('crypto');
 const ObjectId = require('bson-objectid').default;
 const { IncorrectUsageError } = require('@tryghost/errors');
 const KnexMigrator = require('knex-migrator');
-// Resolve MigratorConfig.js from the package root, not process.cwd() — see db-utils.js.
+// Resolve MigratorConfig from the package root, not process.cwd() — see db-utils.js.
 const knexMigrator = new KnexMigrator({ knexMigratorFilePath: path.join(__dirname, '../..') });
 
 // Ghost Internals

@@ -636,8 +636,8 @@ catalogs:
       specifier: 3.3.0
       version: 3.3.0
     knex-migrator:
-      specifier: 6.2.1
-      version: 6.2.1
+      specifier: 6.4.1
+      version: 6.4.1
     knip:
       specifier: 6.44.2
       version: 6.44.2
@@ -836,7 +836,6 @@ overrides:
   moment: 2.31.0
   moment-timezone: 0.6.6
   '@types/bookshelf>knex': 3.3.0
-  knex-migrator>better-sqlite3: 13.0.3
   juice>cheerio: 1.2.0
   mppx>ox: 0.14.59
   '@tryghost/kg-default-cards': workspace:*
@@ -2481,7 +2480,7 @@ importers:
         version: 3.3.0(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
       knex-migrator:
         specifier: 'catalog:'
-        version: 6.2.1(@types/node@22.20.5)(knex@3.3.0(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2))(supports-color@10.2.2)
+        version: 6.4.1(@types/node@22.20.5)(knex@3.3.0(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2))(supports-color@10.2.2)
       leaky-bucket:
         specifier: 2.2.0
         version: 2.2.0
@@ -4578,7 +4577,7 @@ importers:
         version: 3.3.0(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
       knex-migrator:
         specifier: 'catalog:'
-        version: 6.2.1(@types/node@22.20.5)(knex@3.3.0(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2))(supports-color@10.2.2)
+        version: 6.4.1(@types/node@22.20.5)(knex@3.3.0(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2))(supports-color@10.2.2)
       luxon:
         specifier: 'catalog:'
         version: 3.7.2
@@ -10609,6 +10608,10 @@ packages:
     resolution: {integrity: sha512-z67u4ZhzCL/Tydu1lJARtEZYWbWaN7oYLHbsuzocr6y4N6WZAagG3RQ4FW61V1/0+jImpj293XfrcYnd1qxtPg==}
     engines: {node: '>=22.12.0'}
 
+  commander@15.1.0:
+    resolution: {integrity: sha512-cgnQ88TRrWcC7pVq46RzJVRMktu3W2RcbnoidnfBsl1bmDCBwJS/udcIZpKoCrbAYYaCqsz1yZCVIgbIaU3ddQ==}
+    engines: {node: '>=22.12.0'}
+
   commander@2.20.3:
     resolution: {integrity: sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==}
 
@@ -12759,9 +12762,9 @@ packages:
     resolution: {integrity: sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==}
     engines: {node: '>=6'}
 
-  knex-migrator@6.2.1:
-    resolution: {integrity: sha512-Vyms0Q26mCc/N6X+CtdA9Abn8e3ARvpJxN6SRUeX7xvzv8DVCN4RO7fphfvdcXqcxZuZ/wxo3fLN432n8ZxAcw==}
-    engines: {node: ^22.13.1 || ^24.14.1}
+  knex-migrator@6.4.1:
+    resolution: {integrity: sha512-sbXliJr9wjMtPvkEQvoiC62QXswmyuFtZewOUqKkATsbJAQd46GnlAveIPXbKqxajDhAS5kyD36VuN4quYhZ3Q==}
+    engines: {node: ^22.18.0 || ^24.14.1}
     hasBin: true
     peerDependencies:
       knex: ^2.4.2 || ^3.0.0
@@ -22724,6 +22727,8 @@ snapshots:
 
   commander@15.0.0: {}
 
+  commander@15.1.0: {}
+
   commander@2.20.3: {}
 
   commander@4.1.1: {}
@@ -25328,16 +25333,16 @@ snapshots:
 
   kleur@4.1.5: {}
 
-  knex-migrator@6.2.1(@types/node@22.20.5)(knex@3.3.0(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2))(supports-color@10.2.2):
+  knex-migrator@6.4.1(@types/node@22.20.5)(knex@3.3.0(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2))(supports-color@10.2.2):
     dependencies:
       '@tryghost/database-info': 2.3.21
       '@tryghost/errors': 3.4.7
       '@tryghost/logging': 6.0.4(supports-color@10.2.2)
-      commander: 15.0.0
+      commander: 15.1.0
       debug: 4.4.3(supports-color@10.2.2)
       knex: 3.3.0(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
       mysql2: 3.24.6(@types/node@22.20.5)
-      semver: 7.8.5
+      semver: 7.8.6
     optionalDependencies:
       better-sqlite3: 13.0.3
     transitivePeerDependencies:
