@@ -46,7 +46,7 @@ const matches = (suggestion: Suggestion, term: string) => {
   );
 };
 
-const useSuggestions = () => {
+const useNavigationLinkSuggestions = () => {
   const { config, settings, siteData } = useGlobalData();
 
   const [paidMembersEnabled = false, donationsEnabled = false, recommendationsEnabled = false] =
@@ -168,4 +168,4 @@ const useSuggestions = () => {
   return { loadSuggestions };
 };
 
-export default useSuggestions;
+export default useNavigationLinkSuggestions;
