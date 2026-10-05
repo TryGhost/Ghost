@@ -88,6 +88,11 @@ access and Shade for UI rather than adding new `admin-x-design-system`
 components. Product copy belongs in the `ghost` namespace; follow the
 [internationalization guide](../../docs/practices/internationalization.md).
 
+`pnpm nx run @tryghost/admin:build:dev` prepares library outputs and Ember's
+development assets. Its prerequisites select `ghost-admin:build:dev` once;
+they do not also compile Ember's production bundle. The normal `pnpm dev`
+watchers are configured separately.
+
 The post editor is the largest area with documentation of its own — start at
 [src/editor/README.md](src/editor/README.md) before changing anything under
 `src/editor/`.
@@ -101,9 +106,9 @@ The post editor is the largest area with documentation of its own — start at
 From the monorepo root, use `pnpm nx run @tryghost/admin:test:unit` or
 `pnpm nx run @tryghost/admin:test:acceptance` to build the required React
 libraries first. These targets do not compile Ember or boot Ghost. Their
-`dependsOn` lists explicitly name the React dependencies with a `build` target;
-update both when adding one. Using `^build` here would also select the implicit
-Ember dependency.
+`dependsOn` lists, and the React library prerequisites of `build:dev`, explicitly
+name the React dependencies with a `build` target; update all three when adding
+one. Using `^build` here would also select the implicit Ember dependency.
 
 ## Building for Production
 

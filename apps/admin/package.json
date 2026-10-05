@@ -169,7 +169,22 @@
       },
       "build:dev": {
         "dependsOn": [
-          "^build",
+          {
+            "projects": [
+              "@tryghost/activitypub",
+              "@tryghost/admin-x-framework",
+              "@tryghost/checkout",
+              "@tryghost/i18n",
+              "@tryghost/kg-clean-basic-html",
+              "@tryghost/kg-converters",
+              "@tryghost/kg-unsplash-selector",
+              "@tryghost/koenig-lexical",
+              "@tryghost/metafield-types",
+              "@tryghost/nql-string",
+              "@tryghost/shade"
+            ],
+            "target": "build"
+          },
           {
             "projects": [
               "ghost-admin"
