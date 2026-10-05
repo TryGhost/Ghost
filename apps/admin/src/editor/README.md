@@ -10,6 +10,11 @@ While React serves the editor, the shell also fetches the editor screen and
 Koenig through `api.ts` once a signed-in admin is idle, so opening the first
 post doesn't wait on either download.
 
+The editor opens once it has the site's settings, config and site record and
+the current user, which Koenig's cards are configured from. If one of them fails
+to load with no copy cached, the editor shows its load error, and Retry reads it
+again.
+
 ## The modules
 
 | Module                                           | What it is                                                                                                           |

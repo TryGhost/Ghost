@@ -79,12 +79,20 @@ afterAll(() => server.close());
 // The redirect-once guard is module state, so each test re-imports a fresh
 // fetch-api module (and its errors module, to keep instanceof checks valid)
 const loadModules = async () => {
-  const [{ useFetchApi }, { SessionExpiredError, UnauthorizedError, ValidationError }] =
-    await Promise.all([
-      import('../../../../src/utils/api/fetch-api'),
-      import('../../../../src/utils/errors'),
-    ]);
-  return { useFetchApi, SessionExpiredError, UnauthorizedError, ValidationError };
+  const [
+    { holdSessionExpiryRedirect, useFetchApi },
+    { SessionExpiredError, UnauthorizedError, ValidationError },
+  ] = await Promise.all([
+    import('../../../../src/utils/api/fetch-api'),
+    import('../../../../src/utils/errors'),
+  ]);
+  return {
+    holdSessionExpiryRedirect,
+    useFetchApi,
+    SessionExpiredError,
+    UnauthorizedError,
+    ValidationError,
+  };
 };
 
 type FetchApi = ReturnType<Awaited<ReturnType<typeof loadModules>>['useFetchApi']>;
@@ -125,6 +133,30 @@ describe('session expiry handling', () => {
       .catch((fetchError) => fetchError);
     expect(error).toBeInstanceOf(SessionExpiredError);
     expect(error.data).toEqual(unauthorizedBody);
+
+    expect(window.location.replace).toHaveBeenCalledExactlyOnceWith('/ghost/');
+  });
+
+  it('stays on the page while a screen holds the redirect, and redirects once every hold is released', async () => {
+    const { holdSessionExpiryRedirect, useFetchApi, SessionExpiredError } = await loadModules();
+    const { result } = renderHook(() => useFetchApi());
+    await confirmSession(result.current);
+    const expire = () =>
+      expect(
+        result.current('http://localhost:3000/ghost/api/admin/posts/', { retry: false }),
+      ).rejects.toBeInstanceOf(SessionExpiredError);
+
+    const releaseFirst = holdSessionExpiryRedirect();
+    const releaseSecond = holdSessionExpiryRedirect();
+    await expire();
+    releaseFirst();
+    releaseFirst();
+    await expire();
+
+    expect(window.location.replace).not.toHaveBeenCalled();
+
+    releaseSecond();
+    await expire();
 
     expect(window.location.replace).toHaveBeenCalledExactlyOnceWith('/ghost/');
   });

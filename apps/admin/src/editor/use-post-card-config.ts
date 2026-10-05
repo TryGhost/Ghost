@@ -29,29 +29,39 @@ export interface PostCardConfigOptions {
   deleteSnippet?: (snippet: { name: string }) => void;
 }
 
+export interface PostCardConfigState {
+  /** Null until the boot data it reads has resolved. */
+  cardConfig: PostCardConfig | null;
+  /** A boot read failed with no copy cached, so the config waits until it is read again. */
+  failed: boolean;
+  /** Reads the failed boot data again. */
+  retry: () => void;
+}
+
 /**
  * Assembles the post editor's Koenig `cardConfig` from the framework's data
- * hooks. Returns null until the boot data it reads has resolved.
+ * hooks, and says when the boot data it reads could not be loaded.
  */
 export function usePostCardConfig({
   post,
   snippets,
   createSnippet,
   deleteSnippet,
-}: PostCardConfigOptions): PostCardConfig | null {
-  const { data: settingsData } = useEditorSettings();
+}: PostCardConfigOptions): PostCardConfigState {
+  const settingsRead = useEditorSettings();
   const timezone = useSiteTimezone();
-  const { data: configData } = useBrowseConfig({ requestOptions: EDITOR_REQUEST_OPTIONS });
-  const { data: siteData } = useBrowseSite({ requestOptions: EDITOR_REQUEST_OPTIONS });
-  const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const configRead = useBrowseConfig({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const siteRead = useBrowseSite({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const currentUserRead = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const { unsplashConfig } = useFramework();
   const pinturaConfig = usePinturaConfig({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const fetchEmbed = useKoenigFetchEmbed(EDITOR_REQUEST_OPTIONS);
   const fetchApi = useFetchApi();
 
-  const settings = settingsData?.settings ?? null;
-  const config = configData?.config;
-  const site = siteData?.site;
+  const settings = settingsRead.data?.settings ?? null;
+  const config = configRead.data?.config;
+  const site = siteRead.data?.site;
+  const currentUser = currentUserRead.data;
 
   const labelsRequest = useRef<Promise<string[]> | null>(null);
   const fetchLabels = useCallback(() => {
@@ -82,7 +92,7 @@ export function usePostCardConfig({
     [post, defaultContentVisibility],
   );
 
-  return useMemo(() => {
+  const cardConfig = useMemo(() => {
     if (!settings || !config || !site || !currentUser) {
       return null;
     }
@@ -123,4 +133,19 @@ export function usePostCardConfig({
     createSnippet,
     deleteSnippet,
   ]);
+
+  // Nothing reads a failed query again on its own, so without a copy the config never builds.
+  const failedReads = [settingsRead, configRead, siteRead, currentUserRead].filter(
+    (read) => read.data === undefined && read.isError && !read.isFetching,
+  );
+
+  return {
+    cardConfig,
+    failed: failedReads.length > 0,
+    retry: () => {
+      for (const read of failedReads) {
+        void read.refetch();
+      }
+    },
+  };
 }
