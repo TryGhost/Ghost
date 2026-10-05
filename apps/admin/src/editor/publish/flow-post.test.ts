@@ -188,6 +188,21 @@ describe('buildPublishFlowPost', () => {
     expect(post.tiers).toEqual([{ slug: 'gold' }, { slug: 'bronze' }]);
   });
 
+  it('names a tier picked before its save lands from the site’s tiers', () => {
+    const post = buildPublishFlowPost({
+      snapshot: snapshot(),
+      record: record({ visibility: 'tiers', tiers: [{ id: 'tier-2', slug: 'silver' }] }),
+      access: { visibility: 'tiers', tiers: [{ id: 'tier-2' }, { id: 'tier-1' }] },
+      knownTiers: [
+        { id: 'tier-1', slug: 'gold' },
+        { id: 'tier-2', slug: 'silver' },
+      ],
+      displayName: 'post',
+    });
+
+    expect(post.tiers).toEqual([{ slug: 'silver' }, { slug: 'gold' }]);
+  });
+
   it('prefers the unsaved body over the record it was loaded with', () => {
     const post = buildPublishFlowPost({
       snapshot: snapshot(),

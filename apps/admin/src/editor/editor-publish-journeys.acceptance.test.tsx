@@ -227,6 +227,35 @@ describe('Editor publish journeys', () => {
     expect(params.get('email_segment')).toBe('status:-free');
   });
 
+  it('defaults the recipients to a tier picked while its save is still out', async () => {
+    publishChrome([WEEKLY]);
+    const silver = tier({ slug: 'silver', name: 'Silver', active: true });
+    fakeTiers([tier({ slug: 'gold', name: 'Gold', active: true }), silver]);
+    const accessSaved = deferred<void>();
+    const saveApi = fakeSavableDraft(
+      { visibility: 'tiers', tiers: [silver] },
+      { holdFirstSave: accessSaved.promise },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, emailSite());
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+
+    await editorScreen.settingsToggle().click();
+    await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+    await settleTransitions();
+    await editorScreen.settingsTier('Gold').click();
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    await userEvent.keyboard('{Meta>}{Shift>}p{/Shift}{/Meta}');
+    await expect.element(publishScreen.continueButton()).toBeVisible();
+
+    accessSaved.resolve();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
+    const params = new URL(saveApi.lastRequest?.url ?? '').searchParams;
+    expect(params.get('email_segment')?.split(',').sort()).toEqual(['tier:gold', 'tier:silver']);
+  });
+
   it('defaults the recipients to an access change a failed save left, saving it first', async () => {
     publishChrome([WEEKLY]);
     fakeTiers([]);

@@ -50,6 +50,8 @@ export interface PublishFlowPostSources {
     visibility: string | null;
     tiers: ReadonlyArray<{ id: string; slug?: string | null }>;
   };
+  /** The site's tiers as far as they have loaded, which name a tier picked before its save lands. */
+  knownTiers?: ReadonlyArray<{ id: string; slug?: string | null }>;
   displayName: 'post' | 'page';
   /** The body the writer is looking at, which the public-preview predicate reads. */
   lexical?: string | null;
@@ -65,6 +67,7 @@ export function buildPublishFlowPost({
   snapshot,
   record,
   access,
+  knownTiers,
   displayName,
   lexical,
 }: PublishFlowPostSources): PublishFlowPost {
@@ -83,7 +86,10 @@ export function buildPublishFlowPost({
     visibility: access.visibility,
     tiers: access.tiers.flatMap((tier) => {
       // A tier picked in the sidebar holds only its id until its save is read back.
-      const slug = tier.slug ?? record?.tiers?.find(({ id }) => id === tier.id)?.slug;
+      const slug =
+        tier.slug ??
+        knownTiers?.find(({ id }) => id === tier.id)?.slug ??
+        record?.tiers?.find(({ id }) => id === tier.id)?.slug;
       return slug ? [{ slug }] : [];
     }),
     newsletter: newsletter?.slug ?? null,
