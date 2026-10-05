@@ -35,6 +35,7 @@ import {
   editorScheduleCountdown,
   editorSaveErrorBanner,
   editorSecondaryInstance,
+  editorSentStatusButton,
   editorStatus,
   editorTitleInput,
   editorWordCount,
@@ -188,6 +189,11 @@ export const editorScreen = {
     page.getByTestId(editorStatus).getByRole('button', { name: editorRetryNewsletterButton }),
   viewNewsletterDetails: () =>
     page.getByTestId(editorStatus).getByRole('button', { name: editorNewsletterDetailsButton }),
+  /** The status line's way into the update flow once a post was sent. */
+  sentStatusButton: () =>
+    page
+      .getByTestId(editorStatus)
+      .getByRole('button', { name: editorSentStatusButton, exact: true }),
   pendingSaveNotice: () =>
     page.getByRole('status').filter({ hasText: 'Changes are waiting to save.' }),
 

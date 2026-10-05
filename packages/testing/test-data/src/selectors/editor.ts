@@ -193,6 +193,7 @@ export const editorUnpublishButton = 'Unpublish';
 export const editorUnscheduleButton = 'Unschedule';
 export const editorRetryNewsletterButton = 'Retry now';
 export const editorNewsletterDetailsButton = 'View details';
+export const editorSentStatusButton = 'Sent';
 export const publishTypePublishAndEmailOption = 'Publish and email';
 export const publishTypePublishOnlyOption = 'Publish only';
 export const publishTypeEmailOnlyOption = 'Email only';
