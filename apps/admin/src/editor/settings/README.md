@@ -294,8 +294,9 @@ disabled and names the template the URL picked.
 
 A page can render without its own title and feature image, and only a page: the
 field has no meaning for a post, so the section is left out there. Every role
-that can open the editor sees it, and the editor's cards read the live value
-rather than the saved one.
+that can open the editor sees it, and the editor's cards and canvas read the
+live value rather than the saved one: while the choice is off, the canvas fades
+the title and feature image and marks them with an eye-off icon.
 
 Honouring the choice is the theme's job. When the active theme's report says its
 page-builder helper is missing and the writer has turned the setting off, the

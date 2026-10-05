@@ -417,6 +417,9 @@ function EditorContent({
               handleRef={postEditorRef}
               postType={postType}
               showExcerpt={showExcerpt}
+              titleAndFeatureImageHidden={
+                postType === 'page' && liveShowTitleAndFeatureImage === false
+              }
               titleError={titleError(session.bind.title)}
               wordCountAccessory={<EmailSizeWarning post={publishPost} />}
               onExcerptBlur={session.commitField}
