@@ -399,7 +399,10 @@ describe('Batch Sending Service', function () {
         domainWarmingService: { isEnabled: () => false },
         emailRenderer: { getSegments },
         emailSegmenter: { getMemberFilterForSegment: () => '' },
-        sendingService: { getMaximumRecipients: () => 5 },
+        sendingService: {
+          getMaximumRecipients: () => 5,
+          getTargetDeliveryWindow: () => 0,
+        },
       });
       return { service, getSegments, getFilteredCollectionQuery };
     }
@@ -417,6 +420,24 @@ describe('Batch Sending Service', function () {
       assert.deepEqual(await service.createBatches(args), []);
       sinon.assert.calledOnce(getSegments);
       sinon.assert.calledOnce(getFilteredCollectionQuery);
+    });
+
+    it('verifies an empty prepared audience through submission', async function () {
+      const { service } = createAudienceService();
+      const email = createModel({ preflight_email_count: 0, email_count: 0 });
+      const post = createModel({});
+      const newsletter = createModel({});
+      const batches = await service.createBatches({ email, post, newsletter });
+
+      const submission = await service.sendBatches({ email, batches, post, newsletter });
+
+      assert.deepEqual(submission, { submittedCount: 0, submissionExcludedCount: 0 });
+      sinon.assert.calledWithMatch(logging.info, {
+        event: { name: 'email.submission.verified' },
+        email_id: email.id,
+        candidate_count: 0,
+        submitted_count: 0,
+      });
     });
 
     it('opts an unsent legacy email into accounting before freezing its audience', async function () {
