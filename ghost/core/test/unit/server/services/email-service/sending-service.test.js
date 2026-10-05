@@ -118,7 +118,7 @@ describe('Sending service', function () {
         },
       );
       // Verify domain is not included when useFallbackAddress is not set
-      assert.equal(sendStub.getCall(0).args[0].domain, undefined);
+      assert.equal(sendStub.getCall(0).args[0].domainOverride, undefined);
     });
 
     it('calls mailgun client without the deliverytime if it is not defined', async function () {
@@ -560,7 +560,7 @@ describe('Sending service', function () {
         );
 
         // Verify domain was not included in the message
-        assert.equal(sendStub.getCall(0).args[0].domain, undefined);
+        assert.equal(sendStub.getCall(0).args[0].domainOverride, undefined);
       });
 
       it('does not include domain when useFallbackAddress is true but fallback domain is not configured', async function () {
