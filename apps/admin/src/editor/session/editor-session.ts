@@ -21,9 +21,11 @@ import {
   type SaveResult,
 } from '@/editor/engine/save-engine';
 import type {
+  BodyDivergence,
   ChangeReasonCode,
   EditablePostPatch,
   EditablePostProjection,
+  ProjectionKey,
   RestoredRevision,
   RevisionProjection,
 } from '@/editor/engine/change-tracker';
@@ -75,6 +77,8 @@ export interface EditorLeaveConfirmation {
   readonly status: PostStatus;
   readonly engineState: SaveEngineState['kind'];
   readonly reasons: ChangeReasonCode[];
+  readonly dirtyFields: ProjectionKey[];
+  readonly bodyDiff: BodyDivergence | null;
 }
 
 /** Fields the engine writes onto the request rather than reading from the live post. */
@@ -1131,6 +1135,8 @@ export function createEditorSession({
             status,
             engineState: engine.getState().kind,
             reasons: tracker.verdict().reasons.map((reason) => reason.code),
+            dirtyFields: tracker.dirtyFields(),
+            bodyDiff: tracker.bodyDivergence(),
           });
         } catch (error) {
           onError(error);
