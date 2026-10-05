@@ -33,7 +33,12 @@ import { previewScreen } from '@/editor/preview/preview.screen';
 import { CONFLICT_MESSAGE } from '@/editor/publish/completion-message';
 import { publishScreen } from '@/editor/publish/publish.screen';
 import { POST_DELETED } from '@/editor/session/error-mapping';
-import { TITLE_MAX, TITLE_TOO_LONG } from '@/editor/session/settings-fields';
+import {
+  EXCERPT_MAX,
+  EXCERPT_TOO_LONG,
+  TITLE_MAX,
+  TITLE_TOO_LONG,
+} from '@/editor/session/settings-fields';
 
 const POST_ID = 'abc123';
 const POST_UUID = 'post-uuid';
@@ -879,6 +884,97 @@ describe('Editor header actions', () => {
     await expect.element(publishScreen.options()).toBeVisible();
     await expect(previewScreen.modal()).toHaveCount(0);
   });
+
+  it.each([
+    { opener: 'Publish', open: () => editorScreen.publishButton().click() },
+    {
+      opener: 'its shortcut',
+      open: () => userEvent.keyboard('{Meta>}{Shift>}p{/Shift}{/Meta}'),
+    },
+  ])('focuses an over-long title instead of opening the flow from $opener', async ({ open }) => {
+    publishChrome();
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+
+    await editorScreen.titleInput().fill('a'.repeat(TITLE_MAX + 1));
+    await editorScreen.body().click();
+    await open();
+
+    await expect.element(editorScreen.titleInput()).toHaveFocus();
+    await expect.element(editorScreen.titleInput()).toHaveAccessibleDescription(TITLE_TOO_LONG);
+    await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(TITLE_TOO_LONG);
+    await expect(publishScreen.root()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
+
+    await editorScreen.titleInput().fill('A title the server keeps');
+    await open();
+    await expect.element(publishScreen.options()).toBeVisible();
+  });
+
+  it.each([
+    {
+      home: 'under the title',
+      options: { labs: { editorReact: true, editorExcerpt: true } },
+      excerpt: () => editorScreen.excerptInput(),
+      show: async () => {},
+      hide: async () => {},
+    },
+    {
+      home: 'in the closed settings panel',
+      options: FLAG_ON,
+      excerpt: () => editorScreen.settingsExcerpt(),
+      show: () => editorScreen.settingsToggle().click(),
+      hide: async () => {
+        await editorScreen.settingsToggle().click();
+        await expect(editorScreen.settingsSidebar()).toHaveCount(0);
+      },
+    },
+  ])(
+    'focuses an over-long excerpt $home instead of opening the flow',
+    async ({ options, excerpt, show, hide }) => {
+      publishChrome();
+      const saveApi = fakeSavablePost({ custom_excerpt: null });
+      await renderAdminApp(`/editor/post/${POST_ID}`, options);
+      await expect.element(editorScreen.publishButton()).toBeEnabled();
+
+      await show();
+      await excerpt().fill('a'.repeat(EXCERPT_MAX + 1));
+      await hide();
+      await editorScreen.publishButton().click();
+
+      await expect.element(excerpt()).toHaveFocus();
+      await expect.element(excerpt()).toHaveAccessibleDescription(EXCERPT_TOO_LONG);
+      await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(EXCERPT_TOO_LONG);
+      await expect(publishScreen.root()).toHaveCount(0);
+      expect(saveApi.requests).toHaveLength(0);
+
+      await excerpt().fill('An excerpt the server keeps');
+      await editorScreen.publishButton().click();
+      await expect.element(publishScreen.options()).toBeVisible();
+    },
+  );
+
+  it.each(['Unpublish', 'Update'])(
+    'focuses an over-long title when %s is pressed on a published post',
+    async (label) => {
+      publishChrome();
+      const saveApi = fakeSavablePost({
+        status: 'published',
+        published_at: '2026-02-01T10:00:00.000Z',
+      });
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await editorScreen.titleInput().fill('a'.repeat(TITLE_MAX + 1));
+      await editorScreen.body().click();
+      await editorScreen.headerButton(label).click();
+
+      await expect.element(editorScreen.titleInput()).toHaveFocus();
+      await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(TITLE_TOO_LONG);
+      await expect(publishScreen.updateFlow()).toHaveCount(0);
+      expect(saveApi.requests).toHaveLength(0);
+    },
+  );
 
   it('animates opening from the editor but switches fullscreen surfaces without animation', async () => {
     publishChrome();
