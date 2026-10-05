@@ -7,6 +7,7 @@ import { useAdminSidebarVisibility } from '@/layout/sidebar-visibility';
 import { cn } from '@tryghost/shade/utils';
 import AppSidebar from './app-sidebar';
 import { MobileNavBar } from './app-sidebar/mobile-nav-bar';
+import { SkipLink } from './skip-link';
 import { ContributorUserMenu } from './app-sidebar/user-menu';
 import { DunningBanner, DunningOverlay, useDunningLockTakeover } from '@/dunning';
 import { GlobalSearchProvider } from '@/global-search/global-search-provider';
@@ -93,7 +94,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   if (isContributor) {
     return (
       <div className="relative h-full bg-background">
-        <main ref={mainRef} className="flex h-full flex-col overflow-y-auto">
+        {!dunningLocked && <SkipLink target={mainRef} />}
+        <main ref={mainRef} className="flex h-full flex-col overflow-y-auto focus:outline-hidden">
           <DunningBanner />
           <div className="min-h-0 flex-1">{children}</div>
         </main>
@@ -110,6 +112,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <GlobalSearchProvider>
+      {!dunningLocked && <SkipLink target={mainRef} />}
       <SidebarProvider
         className={cn(
           sidebarVisible &&
@@ -136,7 +139,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <DunningBanner />
           <main
             ref={mainRef}
-            className={cn('flex-1', sidebarVisible ? pageChromeClassName : 'min-h-0')}
+            className={cn(
+              'flex-1 focus:outline-hidden',
+              sidebarVisible ? pageChromeClassName : 'min-h-0',
+            )}
           >
             <ActivityPubHostLayoutProvider value={sidebarVisible ? networkPageChrome : undefined}>
               {children}
