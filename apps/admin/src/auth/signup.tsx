@@ -52,7 +52,7 @@ function SignupForm({ email, token }: { email: string; token: string }) {
 
   const problemWith = (field: SignupField, values = { name, password }) => {
     if (field === 'name') {
-      return values.name ? undefined : 'Please enter a name.';
+      return values.name ? undefined : 'Enter a name.';
     }
     return passwordProblems(values.password, { email, siteTitle: siteData?.site.title })[0];
   };
@@ -67,7 +67,7 @@ function SignupForm({ email, token }: { email: string; token: string }) {
     const nextErrors = { name: problemWith('name'), password: problemWith('password') };
     setErrors(nextErrors);
     if (nextErrors.name || nextErrors.password) {
-      setFlowError('Please fill out the form to complete your signup');
+      setFlowError('Fill out the form to complete your signup');
       setSubmitState('failed');
       return;
     }
