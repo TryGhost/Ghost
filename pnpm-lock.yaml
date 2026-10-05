@@ -4688,6 +4688,12 @@ importers:
       '@internal/cfg-eslint':
         specifier: workspace:*
         version: link:../configs/eslint
+      '@internal/cfg-typescript':
+        specifier: workspace:*
+        version: link:../configs/typescript
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.1
       eslint:
         specifier: 'catalog:'
         version: 9.39.4(jiti@2.7.0)(supports-color@10.2.2)

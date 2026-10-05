@@ -11,7 +11,7 @@ devs via `pnpm ship`, while `release.js` is run by a workflow.
 
 ## Adding a script
 
-Write it as ESM (`.js` — the package is `type: module`) and parse arguments with
+Write new scripts in TypeScript (`.ts`, ESM) and parse arguments with
 `node:util`'s `parseArgs`. Declare any dependency in `scripts/package.json`;
 `semver` is already there. Keep it cheap: everything here lands in every dev's
 `pnpm install`, so prefer `node:` built-ins.
@@ -19,7 +19,9 @@ Write it as ESM (`.js` — the package is `type: module`) and parse arguments wi
 Put logic shared by several scripts in `lib/`. A script that is its own
 entrypoint can just export the parts worth testing and guard the CLI path with
 `import.meta.main` — see `build-public-apps-matrix.js`. Either way, cover it in
-`test/`: tests are plain `node --test`, discovered automatically. Note this
+`test/`: tests use `node --test` with explicit JS/TS globs. TypeScript runs directly on
+the pinned Node version; `test:types` checks source, renderer and tests with the
+shared strict configuration. Note this
 package is _not_ part of the root Vitest watcher (`pnpm test:watch`), which only
 covers Vitest-based projects.
 
@@ -105,7 +107,7 @@ The implementation follows TypeScript's
 [module resolution reference](https://www.typescriptlang.org/docs/handbook/modules/reference)
 and [compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API).
 Run its tests with
-`pnpm --filter @internal/scripts exec node --test test/typescript-inventory.test.js`.
+`pnpm --filter @internal/scripts exec node --test test/typescript-inventory.test.ts`.
 
 ### Published reports
 

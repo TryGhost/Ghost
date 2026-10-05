@@ -1,10 +1,20 @@
+import type {
+  Category,
+  Dependency,
+  DependencyStatus,
+  ResolvedDependency,
+  SourceSignals,
+  SourceFile,
+  Counts,
+  Inventory,
+} from './lib/typescript-inventory-types.ts';
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { isBuiltin } from 'node:module';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import ts from 'typescript';
-import { renderInventory } from './lib/typescript-inventory-html.js';
+import { renderInventory } from './lib/typescript-inventory-html.ts';
 
 const sourcePattern = /\.[cm]?[jt]sx?$/;
 const declarationPattern = /\.d\.[cm]?ts$/;
@@ -12,7 +22,7 @@ const typedPattern = /\.[cm]?tsx?$/;
 const excludedPattern =
   /(^|\/)(node_modules|vendor|dist|build|coverage|_template|fixtures?|__fixtures__|__snapshots__)(\/|$)|^koenig\/kg-simplemde\/debug\/|\.min\.js$/;
 
-export function category(file) {
+export function category(file: string): Category {
   if (/(^|\/)(tests?|__tests__|e2e)(\/|$)|\.(test|spec|acceptance)\.[^.]+$/.test(file)) {
     return 'tests';
   }
@@ -29,20 +39,20 @@ export function category(file) {
   return 'backend';
 }
 
-export function parseSource(file, source) {
+export function parseSource(file: string, source: string) {
   const ast = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true);
-  const imports = new Map();
+  const imports = new Map<string, Dependency>();
   let dynamicImports = 0;
   let functions = 0;
   let commonjs = false;
-  function add(argument, mode) {
+  function add(argument: ts.Expression | undefined, mode: Dependency['mode']) {
     if (argument && ts.isStringLiteralLike(argument)) {
       imports.set(`${mode}:${argument.text}`, { specifier: argument.text, mode });
     } else {
       dynamicImports += 1;
     }
   }
-  function visit(node) {
+  function visit(node: ts.Node) {
     if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
       if (node.moduleSpecifier) {
         add(node.moduleSpecifier, 'import');
@@ -64,7 +74,7 @@ export function parseSource(file, source) {
     ) {
       commonjs = true;
     }
-    if (ts.isFunctionLike(node) && node.body) {
+    if (ts.isFunctionLike(node) && 'body' in node && node.body) {
       functions += 1;
     }
     ts.forEachChild(node, visit);
@@ -75,18 +85,25 @@ export function parseSource(file, source) {
     dynamicImports,
     functions,
     commonjs,
-    parseErrors: ast.parseDiagnostics.length,
+    parseErrors: (ast as ts.SourceFile & { parseDiagnostics: readonly ts.Diagnostic[] })
+      .parseDiagnostics.length,
     lines: source ? source.replace(/\r\n/g, '\n').replace(/\n$/, '').split('\n').length : 0,
   };
 }
 
-function createResolver(root, tracked, warnings) {
-  const configs = new Map();
-  const directories = new Map();
-  function configuration(file) {
+function createResolver(root: string, tracked: Set<string>, warnings: Set<string>) {
+  const configs = new Map<
+    string,
+    { options: ts.CompilerOptions; config: string | null; cache: ts.ModuleResolutionCache }
+  >();
+  const directories = new Map<
+    string,
+    { options: ts.CompilerOptions; config: string | null; cache: ts.ModuleResolutionCache }
+  >();
+  function configuration(file: string) {
     const dir = path.dirname(file);
     if (directories.has(dir)) {
-      return directories.get(dir);
+      return directories.get(dir)!;
     }
     let current = dir;
     let config;
@@ -103,7 +120,7 @@ function createResolver(root, tracked, warnings) {
     }
     const key = config || 'default';
     if (!configs.has(key)) {
-      let options = {
+      let options: ts.CompilerOptions = {
         module: ts.ModuleKind.NodeNext,
         moduleResolution: ts.ModuleResolutionKind.NodeNext,
         allowJs: true,
@@ -137,11 +154,11 @@ function createResolver(root, tracked, warnings) {
         cache: ts.createModuleResolutionCache(root, (value) => value, options),
       });
     }
-    const result = configs.get(key);
+    const result = configs.get(key)!;
     directories.set(dir, result);
     return result;
   }
-  return (file, dependency) => {
+  return (file: string, dependency: Dependency): ResolvedDependency => {
     const { options, config, cache } = configuration(file);
     const { specifier, mode } = dependency;
     if (isBuiltin(specifier)) {
@@ -184,7 +201,7 @@ function createResolver(root, tracked, warnings) {
   };
 }
 
-export function summarize(files) {
+export function summarize(files: Pick<SourceFile, 'language' | 'lines'>[]): Counts {
   const result = { javascript: 0, typescript: 0, javascriptLines: 0, typescriptLines: 0 };
   for (const file of files) {
     result[file.language] += 1;
@@ -199,8 +216,11 @@ export function summarize(files) {
   };
 }
 
-export function scoreFile(file) {
-  const count = (status) => file.imports.filter((item) => status.includes(item.status)).length;
+export function scoreFile(
+  file: SourceSignals & { imports: Pick<ResolvedDependency, 'status'>[] },
+): Pick<SourceFile, 'signals' | 'score' | 'difficulty'> {
+  const count = (status: DependencyStatus[]) =>
+    file.imports.filter((item) => status.includes(item.status)).length;
   const signals = {
     javascriptDependencies: count(['javascript']),
     uncertainDependencies: count(['unresolved', 'builtin-types-unavailable']),
@@ -225,7 +245,7 @@ export function scoreFile(file) {
   };
 }
 
-export function inventory(root, { scope = '' } = {}) {
+export function inventory(root: string, { scope = '' } = {}): Inventory {
   root = path.resolve(root);
   const trackedFiles = execFileSync('git', ['ls-files', '-z'], {
     cwd: root,
@@ -235,20 +255,20 @@ export function inventory(root, { scope = '' } = {}) {
     .split('\0')
     .filter(Boolean);
   const tracked = new Set(trackedFiles.map((file) => path.join(root, file)));
-  const warnings = new Set();
+  const warnings = new Set<string>();
   const resolve = createResolver(root, tracked, warnings);
-  const packages = new Map();
+  const packages = new Map<string, string>();
   for (const file of trackedFiles.filter(
     (item) => item.endsWith('package.json') && !excludedPattern.test(item),
   )) {
     const manifest = JSON.parse(readFileSync(path.join(root, file), 'utf8'));
     packages.set(path.posix.dirname(file), manifest.name || path.posix.dirname(file));
   }
-  function owner(file) {
+  function owner(file: string): string {
     let dir = path.posix.dirname(file);
     while (dir !== '.') {
       if (packages.has(dir)) {
-        return packages.get(dir);
+        return packages.get(dir)!;
       }
       dir = path.posix.dirname(dir);
     }
@@ -256,7 +276,7 @@ export function inventory(root, { scope = '' } = {}) {
   }
   const excluded = [];
   const declarations = [];
-  const files = [];
+  const files: SourceFile[] = [];
   for (const file of trackedFiles.filter((item) => sourcePattern.test(item))) {
     if (excludedPattern.test(file)) {
       excluded.push(file);
@@ -268,7 +288,7 @@ export function inventory(root, { scope = '' } = {}) {
     }
     const absolute = path.join(root, file);
     const parsed = parseSource(file, readFileSync(absolute, 'utf8'));
-    const record = {
+    const record: Omit<SourceFile, 'signals' | 'score' | 'difficulty'> = {
       ...parsed,
       path: file,
       package: owner(file),
@@ -282,7 +302,9 @@ export function inventory(root, { scope = '' } = {}) {
   const byPath = new Map(files.map((file) => [file.path, file]));
   for (const file of files) {
     for (const target of new Set(file.imports.map((item) => item.target))) {
-      byPath.get(target)?.dependents.push(file.path);
+      if (target) {
+        byPath.get(target)?.dependents.push(file.path);
+      }
     }
   }
   const selected = files.filter(
@@ -291,8 +313,8 @@ export function inventory(root, { scope = '' } = {}) {
   if (scope && !selected.length) {
     throw new Error(`No tracked source files match scope: ${scope}`);
   }
-  const groups = {};
-  for (const field of ['package', 'category']) {
+  const groups: Inventory['groups'] = { package: {}, category: {} };
+  for (const field of ['package', 'category'] as const) {
     groups[field] = Object.fromEntries(
       [...new Set(selected.map((file) => file[field]))]
         .sort()
@@ -347,7 +369,7 @@ if (import.meta.main) {
       }
     }
   } catch (error) {
-    console.error(error.message);
+    console.error(error instanceof Error ? error.message : String(error));
     process.exitCode = 1;
   }
 }

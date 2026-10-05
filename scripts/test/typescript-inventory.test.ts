@@ -1,11 +1,16 @@
+import type {
+  Inventory,
+  SourceFile,
+  ResolvedDependency,
+} from '../lib/typescript-inventory-types.ts';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
-import { category, inventory, parseSource, scoreFile } from '../typescript-inventory.js';
-import { buildFileTree, renderInventory } from '../lib/typescript-inventory-html.js';
+import { category, inventory, parseSource, scoreFile } from '../typescript-inventory.ts';
+import { buildFileTree, renderInventory } from '../lib/typescript-inventory-html.ts';
 
 test('parses real imports, re-exports and computed calls without matching comments or strings', () => {
   const result = parseSource(
@@ -36,8 +41,8 @@ test('parses real imports, re-exports and computed calls without matching commen
 test('inventories tracked files and resolves aliases, declarations, package exports and JS edges', (t) => {
   const root = mkdtempSync(path.join(os.tmpdir(), 'ghost-ts-inventory-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
-  const git = (...args) => execFileSync('git', args, { cwd: root });
-  const put = (file, content) => {
+  const git = (...args: string[]) => execFileSync('git', args, { cwd: root });
+  const put = (file: string, content: string) => {
     mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
     writeFileSync(path.join(root, file), content);
   };
@@ -85,7 +90,7 @@ test('inventories tracked files and resolves aliases, declarations, package expo
   put('node_modules/untyped-package/index.js', 'module.exports = 1;');
   const report = inventory(root);
   assert.equal(report.schemaVersion, 2);
-  assert.equal(report.groups.category.backend.javascript, 2);
+  assert.equal(report.groups.category.backend!.javascript, 2);
   assert.equal(report.groups.category.production, undefined);
   assert.equal(report.summary.javascript, 3);
   assert.equal(report.summary.typescript, 1);
@@ -95,16 +100,17 @@ test('inventories tracked files and resolves aliases, declarations, package expo
   assert.equal(report.excluded.length, 2);
   assert.deepEqual(report.warnings, []);
   const main = report.files.find((file) => file.path === 'src/main.js');
+  assert.ok(main);
   assert.deepEqual(
     main.imports.map((item) => item.status),
     ['typed', 'javascript', 'typed', 'typed', 'javascript', 'unresolved'],
   );
   assert.deepEqual(main.dependents, ['test/main.test.js']);
-  assert.equal(report.files.find((file) => file.path === 'src/legacy.js').dependents.length, 1);
-  assert.equal(report.groups.category.tests.javascript, 1);
+  assert.equal(report.files.find((file) => file.path === 'src/legacy.js')!.dependents.length, 1);
+  assert.equal(report.groups.category.tests!.javascript, 1);
   const scoped = inventory(root, { scope: 'src' });
   assert.equal(scoped.summary.javascript, 2);
-  assert.deepEqual(scoped.files.find((file) => file.path === 'src/main.js').dependents, [
+  assert.deepEqual(scoped.files.find((file) => file.path === 'src/main.js')!.dependents, [
     'test/main.test.js',
   ]);
   assert.throws(() => inventory(root, { scope: 'missing' }), /No tracked source/);
@@ -122,7 +128,10 @@ test('unknown and dynamic dependencies make a candidate harder', () => {
   assert.equal(scoreFile(base).difficulty, 'easier');
   const risky = {
     ...base,
-    imports: [{ status: 'javascript' }, { status: 'unresolved' }],
+    imports: [{ status: 'javascript' }, { status: 'unresolved' }] satisfies Pick<
+      ResolvedDependency,
+      'status'
+    >[],
     dynamicImports: 2,
   };
   assert.equal(scoreFile(risky).difficulty, 'harder');
@@ -130,7 +139,35 @@ test('unknown and dynamic dependencies make a candidate harder', () => {
 });
 
 test('escapes report data so paths cannot inject script markup', () => {
-  const html = renderInventory({ files: [{ path: '</script><script>alert(1)</script>' }] });
+  const file: SourceFile = {
+    path: '</script><script>alert(1)</script>',
+    package: 'test',
+    category: 'tooling',
+    language: 'javascript',
+    dependents: [],
+    ...parseSource('a.js', ''),
+    imports: [],
+    ...scoreFile({ ...parseSource('a.js', ''), imports: [] }),
+  };
+  const report: Inventory = {
+    schemaVersion: 2,
+    revision: 'a'.repeat(40),
+    scope: '',
+    files: [file],
+    summary: {
+      javascript: 1,
+      typescript: 0,
+      javascriptLines: 0,
+      typescriptLines: 0,
+      typescriptPercent: 0,
+      typescriptLinePercent: 0,
+    },
+    groups: { category: {}, package: {} },
+    declarations: 0,
+    excluded: [],
+    warnings: [],
+  };
+  const html = renderInventory(report);
   assert.ok(!html.includes('</script><script>alert(1)'));
   assert.ok(html.includes('\\u003c/script>'));
 });
@@ -177,17 +214,19 @@ test('folder tree rolls up nested JS and TS totals without mixing similarly name
     tree.children.map((node) => node.name),
     ['apps', 'ghost', 'root.js'],
   );
-  const apps = tree.children[0];
+  const apps = tree.children[0]!;
+  assert.ok('children' in apps);
   assert.equal(apps.javascript, 1);
   assert.equal(apps.typescript, 3);
   const admin = apps.children.find((node) => node.name === 'admin');
+  assert.ok(admin && 'children' in admin);
   assert.equal(admin.javascript, 1);
   assert.equal(admin.typescript, 2);
   assert.deepEqual(
     admin.children.map((node) => node.name),
     ['helpers', 'app.tsx'],
   );
-  assert.deepEqual(admin.children[0].children[0], {
+  assert.deepEqual('children' in admin.children[0]! ? admin.children[0].children[0] : undefined, {
     name: 'a.js',
     path: 'apps/admin/helpers/a.js',
     language: 'javascript',

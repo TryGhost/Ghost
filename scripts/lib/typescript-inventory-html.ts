@@ -1,12 +1,28 @@
-export function buildFileTree(files) {
-  const root = { name: '', path: '', javascript: 0, typescript: 0, children: new Map() };
+import { readFileSync } from 'node:fs';
+import ts from 'typescript';
+import type {
+  Inventory,
+  Language,
+  FileNode,
+  DirectoryNode,
+  TreeNode,
+} from './typescript-inventory-types.ts';
+export function buildFileTree(files: { path: string; language: Language }[]): DirectoryNode {
+  interface Directory {
+    name: string;
+    path: string;
+    javascript: number;
+    typescript: number;
+    children: Map<string, Directory | FileNode>;
+  }
+  const root: Directory = { name: '', path: '', javascript: 0, typescript: 0, children: new Map() };
   for (const file of files) {
     const parts = file.path.split('/');
     let directory = root;
     for (let index = 0; index < parts.length; index += 1) {
       directory.javascript += Number(file.language === 'javascript');
       directory.typescript += Number(file.language === 'typescript');
-      const name = parts[index];
+      const name = parts[index]!;
       if (index === parts.length - 1) {
         directory.children.set(name, { name, path: file.path, language: file.language });
       } else {
@@ -19,12 +35,16 @@ export function buildFileTree(files) {
             children: new Map(),
           });
         }
-        directory = directory.children.get(name);
+        const child = directory.children.get(name)!;
+        if (!('children' in child)) {
+          throw new Error('File conflicts with directory');
+        }
+        directory = child;
       }
     }
   }
-  function serialize(node) {
-    if (!node.children) {
+  function serialize(node: Directory | FileNode): TreeNode {
+    if (!('children' in node)) {
       return node;
     }
     return {
@@ -32,20 +52,32 @@ export function buildFileTree(files) {
       children: [...node.children.values()]
         .sort(
           (a, b) =>
-            Number(Boolean(b.children)) - Number(Boolean(a.children)) ||
-            a.name.localeCompare(b.name),
+            Number('children' in b) - Number('children' in a) || a.name.localeCompare(b.name),
         )
         .map(serialize),
     };
   }
-  return serialize(root);
+  return {
+    ...root,
+    children: [...root.children.values()]
+      .sort(
+        (a, b) => Number('children' in b) - Number('children' in a) || a.name.localeCompare(b.name),
+      )
+      .map(serialize),
+  };
 }
 
-export function renderInventory(report) {
+export function renderInventory(report: Inventory) {
   const data = JSON.stringify({ ...report, tree: buildFileTree(report.files) }).replaceAll(
     '<',
     '\\u003c',
   );
+  const browserScript = ts
+    .transpileModule(
+      readFileSync(new URL('./typescript-inventory-browser.ts', import.meta.url), 'utf8'),
+      { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None } },
+    )
+    .outputText.replace(/^export \{\};?$/m, '');
   return `<!doctype html>
 <html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ghost · TypeScript inventory</title>
@@ -67,20 +99,6 @@ export function renderInventory(report) {
 <p><button id="previous">Previous</button> <span id="page"></span> <button id="next">Next</button></p><div id="detail" hidden></div>
 <script type="application/json" id="data">${data}</script>
 <script>
-const report=JSON.parse(document.getElementById('data').textContent);
-const el=id=>document.getElementById(id), number=value=>value.toLocaleString();
-function cell(row,value){const td=document.createElement('td');td.textContent=value;row.append(td);return td;}
-el('revision').textContent=report.revision.slice(0,10);el('scope').textContent=report.scope||'Whole repository';
-for(const [title,value] of [['TypeScript files',report.summary.typescriptPercent+'%'],['JavaScript files remaining',number(report.summary.javascript)],['JavaScript lines remaining',number(report.summary.javascriptLines)],['TypeScript by lines',report.summary.typescriptLinePercent+'%']]){const box=document.createElement('div');box.className='card';const strong=document.createElement('strong');strong.textContent=value;box.append(strong,document.createTextNode(title));el('cards').append(box);}
-el('warnings').textContent=report.declarations+' declaration files; '+report.excluded.length+' excluded source files (repository-wide).\\n'+(report.warnings.join('\\n')||'No configuration warnings.')+'\\nExcluded paths:\\n'+report.excluded.join('\\n');
-for(const [name,stats] of Object.entries(report.groups.package)){const row=document.createElement('tr');for(const value of [name,number(stats.javascript),number(stats.typescript),stats.typescriptPercent+'%',stats.typescriptLinePercent+'%'])cell(row,value);el('packages').append(row);const option=document.createElement('option');option.value=name;option.textContent=name;el('package').append(option);}
-for(const [name,stats] of Object.entries(report.groups.category)){const row=document.createElement('tr');for(const value of [name,number(stats.javascript),number(stats.typescript),stats.typescriptPercent+'%',stats.typescriptLinePercent+'%'])cell(row,value);el('kinds').append(row);}
-const filesByPath=new Map(report.files.map(file=>[file.path,file]));
-function treeEntry(node){const item=document.createElement('li');if(node.children){const details=document.createElement('details');const summary=document.createElement('summary');const name=document.createElement('span');name.className='tree-name';name.textContent=node.name+'/';const counts=document.createElement('span');counts.className='tree-count';counts.textContent=number(node.javascript)+' JS · '+number(node.typescript)+' TS';summary.append(name,counts);details.append(summary);let populated=false;details.addEventListener('toggle',()=>{if(details.open&&!populated){const list=document.createElement('ul');for(const child of node.children)list.append(treeEntry(child));details.append(list);populated=true;}});item.append(details);}else{const button=document.createElement('button');button.textContent=node.name;button.title=node.path;const language=document.createElement('span');language.className='tree-count';language.textContent=node.language==='typescript'?'TS':'JS';button.append(language);button.onclick=()=>inspect(filesByPath.get(node.path));item.append(button);}return item;}
-for(const node of report.tree.children)el('file-tree').append(treeEntry(node));
-let page=0;
-function inspect(file){const detail=el('detail');detail.hidden=false;detail.replaceChildren();const h=document.createElement('h2');h.textContent=file.path;const p=document.createElement('p');p.textContent='Score '+file.score+' · '+file.functions+' functions · '+file.dynamicImports+' computed imports · '+file.parseErrors+' parse errors'+(file.commonjs?' · CommonJS':'');detail.append(h,p);const pre=document.createElement('pre');pre.textContent=file.imports.map(item=>item.specifier+' ['+item.mode+'] → '+item.status+(item.target?'\\n  '+item.target:'')+'\\n  Config: '+(item.config||'NodeNext defaults')).join('\\n\\n')+'\\n\\nDependents:\\n'+(file.dependents.join('\\n')||'None found');detail.append(pre);detail.scrollIntoView({behavior:'smooth',block:'nearest'});}
-function render(){const query=el('search').value.toLowerCase();const selected=report.files.filter(f=>f.language==='javascript'&&(!el('package').value||f.package===el('package').value)&&(!el('category').value||f.category===el('category').value)&&(f.path+' '+f.package).toLowerCase().includes(query));const sorts={easy:(a,b)=>a.score-b.score,hard:(a,b)=>b.score-a.score,impact:(a,b)=>b.dependents.length-a.dependents.length,lines:(a,b)=>b.lines-a.lines};selected.sort((a,b)=>sorts[el('sort').value](a,b)||a.path.localeCompare(b.path));const pages=Math.max(1,Math.ceil(selected.length/100));page=Math.min(page,pages-1);el('count').textContent=number(selected.length)+' matching JavaScript files';el('page').textContent=(page+1)+' / '+pages;el('previous').disabled=page===0;el('next').disabled=page===pages-1;el('candidates').replaceChildren();for(const f of selected.slice(page*100,(page+1)*100)){const row=document.createElement('tr');const button=document.createElement('button');button.textContent=f.path;button.onclick=()=>inspect(f);cell(row,'').append(button);for(const value of [f.difficulty+' · '+f.score,number(f.lines),f.imports.filter(i=>i.status==='typed'||i.status==='typed-builtin').length,f.signals.javascriptDependencies,f.signals.uncertainDependencies+f.dynamicImports,f.dependents.length])cell(row,value);el('candidates').append(row);}}
-for(const id of ['search','package','category','sort'])el(id).addEventListener('input',()=>{page=0;el('detail').hidden=true;render();});el('previous').onclick=()=>{page--;render();};el('next').onclick=()=>{page++;render();};render();
+${browserScript}
 </script></html>`;
 }
