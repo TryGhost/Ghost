@@ -43,6 +43,7 @@ import {
   editorEmailSizeWarning,
   facebookImageUnsplashButton,
   featureImageAltLabel,
+  featureImageHiddenIndicator,
   featureImageTkIndicator,
   featureImageUnsplashButton,
   leaveEditorButton,
@@ -112,6 +113,7 @@ import {
   settingsVisibilitySelect,
   showTitleLearnMoreLink,
   stayInEditorButton,
+  titleHiddenIndicator,
   tkIndicator,
   toggleFeatureImageAltButton,
   unsplashSearchHeading,
@@ -234,6 +236,11 @@ export const editorScreen = {
     page.getByTestId(editorLeaveDialog).getByRole('button', { name: leaveEditorButton }),
   notFound: () => page.getByRole('heading', { name: 'Page not found' }),
   titleTkIndicator: () => page.getByTestId(tkIndicator),
+  /** The marks a page that leaves out its title and feature image puts beside them. */
+  titleHiddenIndicator: () => page.getByTestId(titleHiddenIndicator),
+  featureImageHiddenIndicator: () => page.getByTestId(featureImageHiddenIndicator),
+  /** The tooltip a hovered control shows, by its text. */
+  tooltip: (text: string) => page.getByRole('tooltip', { name: text, exact: true }),
 
   settingsToggle: () => page.getByTestId(settingsMenuToggle),
   settingsSidebar: () => page.getByTestId(postSettingsSidebar),
