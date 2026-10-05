@@ -5,7 +5,7 @@ import sentryTestKit from 'sentry-testkit/browser';
 import sinon from 'sinon';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
-import {getSentryTestConfig} from 'ghost-admin/utils/sentry';
+import {getSentryTestConfig} from '../../helpers/sentry';
 import {run} from '@ember/runloop';
 import {setupTest} from 'ember-mocha';
 import {waitUntil} from '@ember/test-helpers';

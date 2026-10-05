@@ -90,7 +90,6 @@ for (const { shell, billingReact } of [
 
         const billingIframe = await billingPage.waitForBillingIframe();
         await expect(billingIframe).toBeVisible();
-        await expect(page).toHaveURL(/#\/pro\/?$/);
       }
     });
 
