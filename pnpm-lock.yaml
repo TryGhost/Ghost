@@ -492,8 +492,8 @@ catalogs:
       specifier: 1.7.22
       version: 1.7.22
     better-sqlite3:
-      specifier: 13.0.3
-      version: 13.0.3
+      specifier: 13.1.1
+      version: 13.1.1
     bson-objectid:
       specifier: 2.0.4
       version: 2.0.4
@@ -636,8 +636,8 @@ catalogs:
       specifier: 3.3.0
       version: 3.3.0
     knex-migrator:
-      specifier: 6.2.1
-      version: 6.2.1
+      specifier: 6.4.2
+      version: 6.4.2
     knip:
       specifier: 6.44.2
       version: 6.44.2
@@ -836,7 +836,6 @@ overrides:
   moment: 2.31.0
   moment-timezone: 0.6.6
   '@types/bookshelf>knex': 3.3.0
-  knex-migrator>better-sqlite3: 13.0.3
   juice>cheerio: 1.2.0
   mppx>ox: 0.14.59
   '@tryghost/kg-default-cards': workspace:*
@@ -2174,7 +2173,7 @@ importers:
         version: 4.22.3(supports-color@10.2.2)
       knex:
         specifier: 'catalog:'
-        version: 3.3.0(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
+        version: 3.3.0(better-sqlite3@13.1.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
       stripe:
         specifier: 8.222.0
         version: 8.222.0
@@ -2399,10 +2398,10 @@ importers:
         version: 1.20.9(supports-color@10.2.2)
       bookshelf:
         specifier: 1.2.0
-        version: 1.2.0(knex@3.3.0(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2))
+        version: 1.2.0(knex@3.3.0(better-sqlite3@13.1.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2))
       bookshelf-relations:
         specifier: 3.0.0
-        version: 3.0.0(bookshelf@1.2.0(knex@3.3.0(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)))(supports-color@10.2.2)
+        version: 3.0.0(bookshelf@1.2.0(knex@3.3.0(better-sqlite3@13.1.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)))(supports-color@10.2.2)
       bson-objectid:
         specifier: 'catalog:'
         version: 2.0.4
@@ -2552,10 +2551,10 @@ importers:
         version: 11.1.1(patch_hash=9b56fcd925d7de8dd73a700a918dcb387ef39410581a11d9ac683b3eed9790d0)
       knex:
         specifier: 'catalog:'
-        version: 3.3.0(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
+        version: 3.3.0(better-sqlite3@13.1.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
       knex-migrator:
         specifier: 'catalog:'
-        version: 6.2.1(@types/node@22.20.5)(knex@3.3.0(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2))(supports-color@10.2.2)
+        version: 6.4.2(@types/node@22.20.5)(knex@3.3.0(better-sqlite3@13.1.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2))(supports-color@10.2.2)
       leaky-bucket:
         specifier: 2.2.0
         version: 2.2.0
@@ -2691,7 +2690,7 @@ importers:
         version: 2.4.0(nock@14.0.17)
       '@types/bookshelf':
         specifier: 1.2.9
-        version: 1.2.9(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
+        version: 1.2.9(better-sqlite3@13.1.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
       '@types/common-tags':
         specifier: 1.8.4
         version: 1.8.4
@@ -2827,7 +2826,7 @@ importers:
     optionalDependencies:
       better-sqlite3:
         specifier: 'catalog:'
-        version: 13.0.3
+        version: 13.1.1
 
   koenig/kg-card-factory:
     devDependencies:
@@ -4287,7 +4286,7 @@ importers:
         version: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)
       knex:
         specifier: 'catalog:'
-        version: 3.3.0(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
+        version: 3.3.0(better-sqlite3@13.1.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -4575,10 +4574,10 @@ importers:
         version: 9.0.3
       knex:
         specifier: 'catalog:'
-        version: 3.3.0(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
+        version: 3.3.0(better-sqlite3@13.1.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
       knex-migrator:
         specifier: 'catalog:'
-        version: 6.2.1(@types/node@22.20.5)(knex@3.3.0(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2))(supports-color@10.2.2)
+        version: 6.4.2(@types/node@22.20.5)(knex@3.3.0(better-sqlite3@13.1.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2))(supports-color@10.2.2)
       luxon:
         specifier: 'catalog:'
         version: 3.7.2
@@ -10186,8 +10185,8 @@ packages:
       zod:
         optional: true
 
-  better-sqlite3@13.0.3:
-    resolution: {integrity: sha512-RbOBxmLBG8uvFUc15X9+9SFemKcQ0WBuISBVkpuiaUB2qblC8UWlHEjdWVoZ8AdhSwmoEgsiXKfopX0CQxaACQ==}
+  better-sqlite3@13.1.1:
+    resolution: {integrity: sha512-JjyLCATp+VLxZVFyWkicyzKYwpEFLCrV4MmshW97xv3JXdhw5jBDcsbEWRGm2L/96E+k7rtjON8q9nml05h3Pw==}
     engines: {node: '>=22'}
 
   bidi-js@1.0.3:
@@ -10615,6 +10614,10 @@ packages:
 
   commander@15.0.0:
     resolution: {integrity: sha512-z67u4ZhzCL/Tydu1lJARtEZYWbWaN7oYLHbsuzocr6y4N6WZAagG3RQ4FW61V1/0+jImpj293XfrcYnd1qxtPg==}
+    engines: {node: '>=22.12.0'}
+
+  commander@15.1.0:
+    resolution: {integrity: sha512-cgnQ88TRrWcC7pVq46RzJVRMktu3W2RcbnoidnfBsl1bmDCBwJS/udcIZpKoCrbAYYaCqsz1yZCVIgbIaU3ddQ==}
     engines: {node: '>=22.12.0'}
 
   commander@2.20.3:
@@ -12767,9 +12770,9 @@ packages:
     resolution: {integrity: sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==}
     engines: {node: '>=6'}
 
-  knex-migrator@6.2.1:
-    resolution: {integrity: sha512-Vyms0Q26mCc/N6X+CtdA9Abn8e3ARvpJxN6SRUeX7xvzv8DVCN4RO7fphfvdcXqcxZuZ/wxo3fLN432n8ZxAcw==}
-    engines: {node: ^22.13.1 || ^24.14.1}
+  knex-migrator@6.4.2:
+    resolution: {integrity: sha512-aCUnSssLbJcUl3XhkRhulNAaITx06+p/GqyZpD1tfs8dJqnHSDPWkgw2q0pq52toeg+ktisRKlrDKk6/Sk4YVA==}
+    engines: {node: ^22.18.0 || ^24.14.1}
     hasBin: true
     peerDependencies:
       knex: ^2.4.2 || ^3.0.0
@@ -21057,12 +21060,12 @@ snapshots:
       '@types/connect': 3.4.38
       '@types/node': 22.20.5
 
-  '@types/bookshelf@1.2.9(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)':
+  '@types/bookshelf@1.2.9(better-sqlite3@13.1.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)':
     dependencies:
       '@types/bluebird': 3.5.42
       '@types/create-error': 0.3.33
       '@types/lodash': 4.17.27
-      knex: 3.3.0(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
+      knex: 3.3.0(better-sqlite3@13.1.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
     transitivePeerDependencies:
       - better-sqlite3
       - mariadb
@@ -22270,7 +22273,7 @@ snapshots:
     optionalDependencies:
       zod: 4.6.7
 
-  better-sqlite3@13.0.3:
+  better-sqlite3@13.1.1:
     dependencies:
       node-addon-api: 8.9.2
     optional: true
@@ -22318,22 +22321,22 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  bookshelf-relations@3.0.0(bookshelf@1.2.0(knex@3.3.0(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)))(supports-color@10.2.2):
+  bookshelf-relations@3.0.0(bookshelf@1.2.0(knex@3.3.0(better-sqlite3@13.1.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)))(supports-color@10.2.2):
     dependencies:
       '@tryghost/debug': 2.3.23(supports-color@10.2.2)
       '@tryghost/errors': 3.4.7
       bluebird: 3.7.2
-      bookshelf: 1.2.0(knex@3.3.0(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2))
+      bookshelf: 1.2.0(knex@3.3.0(better-sqlite3@13.1.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2))
       lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
-  bookshelf@1.2.0(knex@3.3.0(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)):
+  bookshelf@1.2.0(knex@3.3.0(better-sqlite3@13.1.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)):
     dependencies:
       bluebird: 3.7.2
       create-error: 0.3.1
       inflection: 1.13.4
-      knex: 3.3.0(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
+      knex: 3.3.0(better-sqlite3@13.1.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
       lodash: 4.18.1
 
   boolbase@1.0.0: {}
@@ -22741,6 +22744,8 @@ snapshots:
     optional: true
 
   commander@15.0.0: {}
+
+  commander@15.1.0: {}
 
   commander@2.20.3: {}
 
@@ -25346,23 +25351,23 @@ snapshots:
 
   kleur@4.1.5: {}
 
-  knex-migrator@6.2.1(@types/node@22.20.5)(knex@3.3.0(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2))(supports-color@10.2.2):
+  knex-migrator@6.4.2(@types/node@22.20.5)(knex@3.3.0(better-sqlite3@13.1.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2))(supports-color@10.2.2):
     dependencies:
       '@tryghost/database-info': 2.4.0
       '@tryghost/errors': 3.4.7
       '@tryghost/logging': 6.0.6(supports-color@10.2.2)
-      commander: 15.0.0
+      commander: 15.1.0
       debug: 4.4.3(supports-color@10.2.2)
-      knex: 3.3.0(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
+      knex: 3.3.0(better-sqlite3@13.1.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
       mysql2: 3.24.6(@types/node@22.20.5)
-      semver: 7.8.5
+      semver: 7.8.6
     optionalDependencies:
-      better-sqlite3: 13.0.3
+      better-sqlite3: 13.1.1
     transitivePeerDependencies:
       - '@types/node'
       - supports-color
 
-  knex@3.3.0(better-sqlite3@13.0.3)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2):
+  knex@3.3.0(better-sqlite3@13.1.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2):
     dependencies:
       colorette: 2.0.19
       commander: 10.0.1
@@ -25379,7 +25384,7 @@ snapshots:
       tarn: 3.1.2
       tildify: 2.0.0
     optionalDependencies:
-      better-sqlite3: 13.0.3
+      better-sqlite3: 13.1.1
       mysql2: 3.24.6(@types/node@22.20.5)
     transitivePeerDependencies:
       - supports-color
