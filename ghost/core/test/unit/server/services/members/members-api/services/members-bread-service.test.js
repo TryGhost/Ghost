@@ -492,6 +492,25 @@ describe('MemberBreadService', function () {
       assert.strictEqual(member.subscriptions[1].tier, productB);
     });
 
+    it('skips malformed productEvent rows instead of throwing', function () {
+      const productB = {id: 'prod_B'};
+      const service = createLookupService();
+      const member = {
+        id: 'member_1',
+        name: 'Test User',
+        email: 'test@example.com',
+        status: 'comped',
+        products: [productB],
+        subscriptions: [],
+        productEvents: [null, 'added', {action: 'added'}, {action: 'added', product_id: null}],
+      };
+
+      service.attachSubscriptionsToMember(member);
+
+      assert.equal(member.subscriptions.length, 1);
+      assert.strictEqual(member.subscriptions[0].tier, productB);
+    });
+
     it('keeps the first match for duplicate product ids when backfilling tiers', function () {
       const first = {id: 'prod_X', name: 'first'};
       const second = {id: 'prod_X', name: 'second'};

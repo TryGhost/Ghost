@@ -131,9 +131,12 @@ module.exports = class MemberBREADService {
         .filter((sub) => this.memberRepository.isActiveSubscriptionStatus(sub.status))
         .map((sub) => sub.price.product.product_id),
     );
+    const productEvents = Array.isArray(member.productEvents) ? member.productEvents : [];
     const addedEventByProduct = new Map();
-    for (const event of member.productEvents || []) {
-      if (event.action === 'added' && !addedEventByProduct.has(event.product_id)) {
+    for (const event of productEvents) {
+      // Rows come from the database layer shape-unchecked, so verify each row
+      // before reading fields off it; malformed rows are skipped, not fatal.
+      if (event && typeof event === 'object' && event.action === 'added' && event.product_id !== undefined && event.product_id !== null && !addedEventByProduct.has(event.product_id)) {
         addedEventByProduct.set(event.product_id, event);
       }
     }
