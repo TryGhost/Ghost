@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, onTestFinished } from 'vitest';
 import { page, userEvent, type Locator } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 import { publishTypeError } from '@tryghost/test-data/selectors/editor';
@@ -49,6 +49,10 @@ const SITE_URL = 'http://test.com';
 const SAVE_POLL = { timeout: 10_000 };
 const CURRENT_USER_ID = String(currentUserResponse().users[0].id);
 const GENERIC_ERROR_TOAST = /something went wrong/i;
+const MAC_AGENT =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
+const WINDOWS_AGENT =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
 const MAILGUN_SETTINGS = {
   mailgun_domain: 'mail.test.com',
@@ -236,6 +240,14 @@ function asRole(name: StaffRoleName) {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name })];
   return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+}
+
+/** The header reads the platform as it renders, so the agent has to be in place first. */
+function onPlatform(userAgent: string) {
+  Object.defineProperty(navigator, 'userAgent', { configurable: true, get: () => userAgent });
+  onTestFinished(() => {
+    Reflect.deleteProperty(navigator, 'userAgent');
+  });
 }
 
 async function typeIntoBody(text: string) {
@@ -938,6 +950,30 @@ describe('Editor header actions', () => {
     await expect.element(publishScreen.options()).toBeVisible();
     await expect(previewScreen.modal()).toHaveCount(0);
   });
+
+  it.each([
+    ['a Mac', MAC_AGENT, '⌘P', '⌘⇧P'],
+    ['other platforms', WINDOWS_AGENT, 'Ctrl+P', 'Ctrl+Shift+P'],
+  ])(
+    'names the preview and publish shortcuts in the tooltips on %s',
+    async (_platform, agent, previewKeys, publishKeys) => {
+      onPlatform(agent);
+      publishChrome();
+      fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await expect.element(editorScreen.publishButton()).toBeEnabled();
+
+      // Header tooltips open on focus and describe the focused button.
+      editorScreen.previewButton().element().focus();
+      await expect
+        .element(editorScreen.previewButton())
+        .toHaveAccessibleDescription(`Preview ${previewKeys}`);
+      editorScreen.publishButton().element().focus();
+      await expect
+        .element(editorScreen.publishButton())
+        .toHaveAccessibleDescription(`Publish ${publishKeys}`);
+    },
+  );
 
   it.each([
     { opener: 'Publish', open: () => editorScreen.publishButton().click() },
