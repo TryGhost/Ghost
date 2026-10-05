@@ -381,14 +381,45 @@ export function createDatabaseAutomationsRepository({
 
         const now = new Date();
 
-        // TODO(NY-1638) Add `trigger_tier_scope` and `trigger_tier_ids` here.
+        if (data.trigger_tier_scope === 'selected_paid') {
+          // Lock the products so they aren't deleted while we're editing.
+          const tiers = await trx('products')
+            .select('id')
+            .whereIn('id', data.trigger_tier_ids)
+            .where('type', 'paid')
+            .orderBy('id')
+            .forUpdate();
+          if (tiers.length !== new Set(data.trigger_tier_ids).size) {
+            throw new errors.ValidationError({
+              message: 'Trigger tiers must all be paid tiers.',
+              property: 'trigger_tier_ids',
+            });
+          }
+        }
+
         const updatedAutomation = await updateAutomation(trx, {
           ...automation,
           name: data.name ?? automation.name,
           description: data.description ?? automation.description,
           status: data.status,
+          trigger_tier_scope:
+            data.trigger_tier_scope === undefined
+              ? automation.trigger_tier_scope
+              : data.trigger_tier_scope,
           updated_at: toDatabaseDate(now),
         });
+
+        if (data.trigger_tier_scope !== undefined) {
+          await trx('automation_trigger_tiers').where('automation_id', id).delete();
+          if (data.trigger_tier_scope === 'selected_paid') {
+            await trx('automation_trigger_tiers').insert(
+              [...new Set(data.trigger_tier_ids)].map((productId) => ({
+                automation_id: id,
+                product_id: productId,
+              })),
+            );
+          }
+        }
 
         await replaceAutomationGraph(trx, updatedAutomation.id, data.actions, data.edges);
 
@@ -1546,6 +1577,7 @@ async function updateAutomation(
         name: automation.name,
         description: automation.description,
         status: automation.status,
+        trigger_tier_scope: automation.trigger_tier_scope,
         updated_at: automation.updated_at,
       })
       .where('id', automation.id);
