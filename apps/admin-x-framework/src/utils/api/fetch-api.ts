@@ -68,6 +68,19 @@ const CURRENT_USER_REQUEST = /\/ghost\/api\/admin\/users\/me\/([?#]|$)/;
 // before that are the signed-out state, which the signin flow handles.
 let sessionConfirmed = false;
 let sessionExpiryHandled = false;
+const sessionExpiryRedirectHolds = new Set<symbol>();
+
+/**
+ * Keeps an expired session found by any request from leaving the page until the
+ * returned release is called, for a screen that signs in again in place.
+ */
+export const holdSessionExpiryRedirect = (): (() => void) => {
+  const hold = Symbol('sessionExpiryRedirectHold');
+  sessionExpiryRedirectHolds.add(hold);
+  return () => {
+    sessionExpiryRedirectHolds.delete(hold);
+  };
+};
 
 const isUnauthenticatedAdminRoute = (adminRoot: string) => {
   return (
@@ -86,11 +99,16 @@ const isSessionExpiry = (endpoint: string | URL) => {
 };
 
 // Replace to the admin root at most once across concurrent failures, unless
-// Ember is already booting or displaying an unauthenticated route
+// Ember is already booting or displaying an unauthenticated route, or a screen holds it
 const redirectOnSessionExpiry = () => {
   const { adminRoot } = getGhostPaths();
 
-  if (sessionConfirmed && !sessionExpiryHandled && !isUnauthenticatedAdminRoute(adminRoot)) {
+  if (
+    sessionConfirmed &&
+    !sessionExpiryHandled &&
+    sessionExpiryRedirectHolds.size === 0 &&
+    !isUnauthenticatedAdminRoute(adminRoot)
+  ) {
     sessionExpiryHandled = true;
     window.location.replace(adminRoot);
   }

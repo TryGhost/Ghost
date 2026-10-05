@@ -3,12 +3,18 @@ import { flushSync } from 'react-dom';
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import { createHashRouter, createMemoryRouter, RouterProvider, useLocation } from 'react-router';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { holdSessionExpiryRedirect } from '@tryghost/admin-x-framework/helpers';
 import { installHistoryPopGate } from '@/hooks/use-history-pop-navigation-guard';
 import { deferred } from '@/utils/deferred';
 import type { SaveEngineState } from '@/editor/engine/save-engine';
 import { LEAVE_DECISION_DEADLINE_MS } from './leave-guard';
 import { useEditorLeaveGuard, type EditorLeaveGuard } from './use-leave-guard';
 import type { EditorSessionHandle } from './use-editor-session';
+
+vi.mock('@tryghost/admin-x-framework/helpers', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@tryghost/admin-x-framework/helpers')>()),
+  holdSessionExpiryRedirect: vi.fn(() => () => {}),
+}));
 
 describe('useEditorLeaveGuard', () => {
   const reached: string[] = [];
@@ -471,5 +477,47 @@ describe('useEditorLeaveGuard', () => {
     } finally {
       router.dispose();
     }
+  });
+
+  it('holds the session-expiry redirect only while the post holds unsaved work', () => {
+    const release = vi.fn();
+    vi.mocked(holdSessionExpiryRedirect).mockClear().mockReturnValue(release);
+    let setDirty!: (dirty: boolean) => void;
+    function Editor() {
+      const [dirty, setDirtyState] = useState(false);
+      setDirty = setDirtyState;
+      useEditorLeaveGuard(
+        {
+          state: { kind: 'idle' },
+          createdId: null,
+          isDirty: () => dirty,
+          leaveRequested: vi.fn(),
+        } as unknown as EditorSessionHandle,
+        'post',
+      );
+      return null;
+    }
+    const router = createMemoryRouter(
+      [{ path: '/editor/post/abc', element: createElement(Editor) }],
+      {
+        initialEntries: ['/editor/post/abc'],
+      },
+    );
+    const screen = render(createElement(RouterProvider, { router }));
+
+    expect(holdSessionExpiryRedirect).not.toHaveBeenCalled();
+
+    act(() => setDirty(true));
+    expect(holdSessionExpiryRedirect).toHaveBeenCalledTimes(1);
+    expect(release).not.toHaveBeenCalled();
+
+    act(() => setDirty(false));
+    expect(release).toHaveBeenCalledTimes(1);
+
+    act(() => setDirty(true));
+    screen.unmount();
+    expect(holdSessionExpiryRedirect).toHaveBeenCalledTimes(2);
+    expect(release).toHaveBeenCalledTimes(2);
+    router.dispose();
   });
 });
