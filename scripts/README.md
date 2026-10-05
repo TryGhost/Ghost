@@ -106,3 +106,20 @@ The implementation follows TypeScript's
 and [compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API).
 Run its tests with
 `pnpm --filter @internal/scripts exec node --test test/typescript-inventory.test.js`.
+
+### Published reports
+
+The `TypeScript inventory` workflow runs independently on every push to `main`.
+It installs locked dependencies and builds workspace declarations before scanning,
+then retains the HTML and JSON as a `typescript-inventory` artifact for 30 days.
+Runs do not cancel each other. Each push measures its head commit; commits batched
+into a single push do not each get a separate measurement.
+
+After a successful run, a separate workflow dispatches its run ID to
+Ghost-Benchmarks using the existing cross-repository publishing credential.
+The receiver verifies the source run before publishing the latest report at
+[TypeScript inventory](https://tryghost.github.io/Ghost-Benchmarks/typescript/).
+It retains compact per-commit counts in `typescript/history.json`. Older runs
+can add history without replacing a newer report. Failed scans leave the last
+published report intact; rerun the failed workflow to retry. Publishing requires
+the receiver workflow to be installed on Ghost-Benchmarks main first.
