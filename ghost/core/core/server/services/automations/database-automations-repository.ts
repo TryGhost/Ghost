@@ -94,7 +94,7 @@ const messages = {
 
 const DEFAULT_EMAIL_DESIGN_SETTING_REFERENCE = DEFAULT_EMAIL_DESIGN_SETTING_SLUG;
 
-type AutomationRow = {
+type AutomationSummaryRow = {
   id: string;
   slug: null | string;
   name: string;
@@ -102,10 +102,13 @@ type AutomationRow = {
   status: string;
   created_at: DatabaseDate;
   updated_at: DatabaseDate;
+};
+
+type AutomationRow = AutomationSummaryRow & {
   trigger_tier_scope: AutomationTriggerTierScope | null;
 };
 
-type AutomationBrowseRow = AutomationRow & {
+type AutomationBrowseRow = AutomationSummaryRow & {
   last_run_created_at: DatabaseDate | null;
   total_run_count: string | number | null;
   in_progress_run_count: string | number | null;
@@ -369,6 +372,64 @@ export function createDatabaseAutomationsRepository({
         url: urlUtils.transformReadyToAbsolute(row.url),
         clicked_count: Number(row.clicked_count),
       }));
+    },
+
+    async add(data) {
+      return await knex.transaction(async (trx) => {
+        const tierIds = data.trigger_tier_ids ?? [];
+        if (tierIds.length > 0) {
+          // Lock the products so they aren't archived or deleted while we're adding.
+          const tiers = await trx('products')
+            .select('id')
+            .whereIn('id', tierIds)
+            .where({ type: 'paid', active: true })
+            .orderBy('id')
+            .forUpdate();
+          if (tiers.length !== tierIds.length) {
+            throw new errors.ValidationError({
+              message: 'Trigger tiers must all be active paid tiers.',
+              property: 'trigger_tier_ids',
+            });
+          }
+        }
+
+        const now = toDatabaseDate(new Date());
+        const automation: AutomationRow = {
+          id: ObjectId().toHexString(),
+          slug: null,
+          name: data.name,
+          description: data.description,
+          status: 'inactive',
+          trigger_tier_scope: data.trigger_tier_scope ?? null,
+          created_at: now,
+          updated_at: now,
+        };
+
+        try {
+          await trx('automations').insert(automation);
+        } catch (error) {
+          if (
+            error instanceof Error &&
+            'code' in error &&
+            error.code === 'ER_DUP_ENTRY' &&
+            /automations_name_unique/.test(error.message)
+          ) {
+            throw new errors.ValidationError({
+              message: 'An automation with this name already exists.',
+              property: 'name',
+            });
+          }
+          throw error;
+        }
+
+        if (tierIds.length > 0) {
+          await trx('automation_trigger_tiers').insert(
+            tierIds.map((productId) => ({ automation_id: automation.id, product_id: productId })),
+          );
+        }
+
+        return await buildAutomation(trx, automation);
+      });
     },
 
     async edit(id: string, data: EditAutomationData): Promise<Automation | null> {
@@ -1531,7 +1592,7 @@ async function loadAutomation(
   return row ?? null;
 }
 
-async function loadAutomations(trx: Knex.Transaction): Promise<AutomationRow[]> {
+async function loadAutomations(trx: Knex.Transaction): Promise<AutomationSummaryRow[]> {
   return await trx('automations')
     .select('id', 'slug', 'name', 'description', 'status', 'created_at', 'updated_at')
     .orderBy('name');
@@ -1992,7 +2053,7 @@ async function buildAutomation(
   };
 }
 
-function buildAutomationSummary(automation: AutomationRow): AutomationSummary {
+function buildAutomationSummary(automation: AutomationSummaryRow): AutomationSummary {
   return {
     id: automation.id,
     slug: automation.slug,
