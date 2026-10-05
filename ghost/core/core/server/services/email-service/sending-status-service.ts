@@ -57,7 +57,11 @@ export class SendingStatusService {
   async retryEligibilityFor(emailId: string): Promise<RetryEligibility> {
     const email = await this.#knex('emails').select('status').where('id', emailId).first();
 
-    if (email?.status !== 'failed') {
+    if (!email) {
+      return 'not-failed';
+    }
+
+    if (StoredSendingStatus.parse(email.status) !== 'failed') {
       return 'not-failed';
     }
 

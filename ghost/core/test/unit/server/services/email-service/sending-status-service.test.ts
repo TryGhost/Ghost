@@ -241,6 +241,13 @@ describe('SendingStatusService', function () {
     });
   }
 
+  it('rejects invalid stored email statuses when reading retry eligibility', async function () {
+    await addEmail({ status: 'failed', emailCount: 20 });
+    await knex('emails').where('id', 'email-id').update({ status: 'invalid' });
+
+    await assert.rejects(service.retryEligibilityFor('email-id'), { name: 'ZodError' });
+  });
+
   it('derives the sending status of an unsubmitted email from its batches and their recipient counts', async function () {
     await addEmail({ status: 'submitting', emailCount: 50, updatedAt: '2026-09-02 12:01:00' });
     await addBatch({

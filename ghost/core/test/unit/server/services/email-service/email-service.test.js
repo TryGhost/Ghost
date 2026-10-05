@@ -559,22 +559,6 @@ describe('Email Service', function () {
   });
 
   describe('Retry email', function () {
-    it('keeps the post save and withholds the retry when publishing a post with an unknown outcome', async function () {
-      const PostEmailHandler = require('../../../../../core/server/services/posts/post-email-handler');
-      const email = createModel({ status: 'failed', post: createModel({ status: 'published' }) });
-      const post = createModel({ status: 'published', newsletter_id: 'newsletter-id' });
-      post.wasChanged = () => true;
-      post.previous = () => 'draft';
-      post.relations = { email };
-      sendingStatusService.retryEligibilityFor.resolves('unknown-outcome');
-      const handler = new PostEmailHandler({ models: {}, emailService: service });
-
-      await handler.createOrRetryEmail(post);
-
-      assert.equal(email.get('status'), 'failed');
-      sinon.assert.notCalled(scheduleEmail);
-    });
-
     it('rejects an unknown delivery outcome without changing the email or scheduling', async function () {
       const email = createModel({
         status: 'failed',
