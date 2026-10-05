@@ -40,7 +40,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center overflow-y-auto bg-sidebar px-6 [--control-height:var(--control-height-lg)] [--text-control:var(--text-control-lg)]">
-      <Stack className="my-auto w-full max-w-md py-12" gap="xl">
+      <Stack className="my-auto w-full max-w-sm py-12" gap="xl">
         {children}
       </Stack>
     </div>
