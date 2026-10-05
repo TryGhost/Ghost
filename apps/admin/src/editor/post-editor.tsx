@@ -1,4 +1,12 @@
-import React, { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useId,
+  useImperativeHandle,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { Button, FieldError, buttonVariants } from '@tryghost/shade/components';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
@@ -46,6 +54,13 @@ export interface PostEditorProps {
   onTkCountChange?: (count: number) => void;
   /** Rendered in the footer after the word count. */
   wordCountAccessory?: React.ReactNode;
+  /** Lets the screen take the writer to the title or the excerpt. */
+  handleRef?: React.Ref<PostEditorHandle>;
+}
+
+export interface PostEditorHandle {
+  focusTitle: () => void;
+  focusExcerpt: () => void;
 }
 
 const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
@@ -119,6 +134,7 @@ export function PostEditor({
   registerSecondaryApi,
   onTkCountChange,
   wordCountAccessory,
+  handleRef,
 }: PostEditorProps) {
   const { darkMode, isAdmin7 } = useFocusContext();
   const isKeyboardOpen = useOnscreenKeyboard();
@@ -177,6 +193,8 @@ export function PostEditor({
     // runs after the keyboard event so the caret lands at the end
     setTimeout(() => excerptRef.current?.setSelectionRange(-1, -1), 0);
   }, []);
+
+  useImperativeHandle(handleRef, () => ({ focusTitle, focusExcerpt }), [focusTitle, focusExcerpt]);
 
   const registerApi = useCallback(
     (api: KoenigInstance | null) => {

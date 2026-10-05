@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { flushSync } from 'react-dom';
 import { AdminLink } from '@/shared/admin-link';
 import { getPostListReturnUrl } from '@/posts/api';
 import { reloadAdmin } from '@/auth/api';
@@ -47,13 +48,17 @@ import { EditorHeaderActions, type OpenFlow } from './editor-header-actions';
 import { readEditorReturn } from './editor-return';
 import { EditorStatus } from './editor-status';
 import { EmailSizeWarning } from './email-size-warning';
-import { PostEditor } from './post-editor';
+import { PostEditor, type PostEditorHandle } from './post-editor';
 import type { EditorStatusRecord } from './post-status';
 import { buildPublishFlowPost } from './publish/flow-post';
 import { PAID_TIERS_SEARCH_PARAMS } from './browse-params';
 import { initialEmailError } from './publish/use-publish-flow';
 import { SessionBanners } from './session/session-banners';
-import { settingsFieldErrorFor, titleError } from './session/settings-fields';
+import {
+  VALIDATED_SETTINGS_FIELD_KEYS,
+  settingsFieldErrorFor,
+  titleError,
+} from './session/settings-fields';
 import { ReauthDialog } from './session/reauth-dialog';
 import { PostSettingsSidebar } from './settings/post-settings-sidebar';
 import { useFeatureImageBinding } from './session/feature-image-binding';
@@ -276,6 +281,29 @@ function EditorContent({
     setSettingsPresent(true);
     setSettingsOpen((open) => !open);
   }, []);
+  const postEditorRef = useRef<PostEditorHandle>(null);
+  const settingsExcerptRef = useRef<HTMLTextAreaElement>(null);
+  /** Takes the writer to the first field a save would refuse; true when there is one. */
+  const revealInvalidField = useCallback((): boolean => {
+    const field = titleError(session.bind.title)
+      ? 'title'
+      : VALIDATED_SETTINGS_FIELD_KEYS.find((key) => settingsFieldErrorFor(key, session.settings));
+    if (field === 'title') {
+      postEditorRef.current?.focusTitle();
+    } else if (field === 'custom_excerpt' && showExcerpt) {
+      postEditorRef.current?.focusExcerpt();
+    } else if (field && field !== 'email_subject') {
+      // Rendered at once, so the excerpt is there to take focus.
+      flushSync(() => {
+        setSettingsPresent(true);
+        setSettingsOpen(true);
+      });
+      if (field === 'custom_excerpt') {
+        settingsExcerptRef.current?.focus();
+      }
+    }
+    return field !== undefined;
+  }, [session.bind.title, session.settings, showExcerpt]);
   const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
   const leaveGuard = useEditorLeaveGuard(session, postType);
   const liveVisibility = session.settings.visibility;
@@ -343,6 +371,7 @@ function EditorContent({
                 openFlow={openFlow}
                 post={publishPost}
                 postType={postType}
+                revealInvalidField={revealInvalidField}
                 session={session}
                 siteUrl={cardConfig.siteUrl}
                 tkCount={tkCount}
@@ -381,6 +410,7 @@ function EditorContent({
               cardConfig={currentCardConfig}
               excerptError={settingsFieldErrorFor('custom_excerpt', session.settings)}
               featureImage={featureImage}
+              handleRef={postEditorRef}
               postType={postType}
               showExcerpt={showExcerpt}
               titleError={titleError(session.bind.title)}
@@ -398,6 +428,7 @@ function EditorContent({
         <PostSettingsSidebar
           cardConfig={currentCardConfig}
           currentUser={currentUser}
+          excerptRef={settingsExcerptRef}
           featureImage={featureImage.featureImage}
           hasInlineExcerpt={showExcerpt}
           postType={postType}
