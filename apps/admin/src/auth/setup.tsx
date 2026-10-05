@@ -174,7 +174,7 @@ function SetupForm({
         onChange={(event) => setValue(name, event.target.value)}
         {...input}
       />
-      <FieldError>{errors[name]}</FieldError>
+      <FieldError className="text-base">{errors[name]}</FieldError>
     </Field>
   );
 

@@ -64,7 +64,7 @@ export function FlowMessage({ error, children }: { error?: boolean; children?: R
   return (
     <p
       className={cn(
-        'min-h-5 text-center text-sm',
+        'min-h-5 text-center text-base',
         error ? 'text-destructive' : 'text-muted-foreground',
       )}
     >

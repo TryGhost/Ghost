@@ -132,7 +132,7 @@ function SignupForm({ email, token }: { email: string; token: string }) {
               }}
               onChange={(event) => setName(event.target.value)}
             />
-            <FieldError>{errors.name}</FieldError>
+            <FieldError className="text-base">{errors.name}</FieldError>
           </Field>
           <Field>
             <FieldLabel htmlFor="username">Email address</FieldLabel>
@@ -162,7 +162,7 @@ function SignupForm({ email, token }: { email: string; token: string }) {
               onBlur={() => validateField('password')}
               onChange={(event) => setPassword(event.target.value)}
             />
-            <FieldError>{errors.password}</FieldError>
+            <FieldError className="text-base">{errors.password}</FieldError>
           </Field>
           <SubmitButton
             label="Create Account →"
