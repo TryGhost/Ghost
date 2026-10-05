@@ -196,6 +196,11 @@ export const editorScreen = {
     page.getByTestId(editorHeaderActions).getByRole('button', { name: editorPreviewButton }),
   publishButton: () =>
     page.getByTestId(editorHeaderActions).getByRole('button', { name: editorPublishButton }),
+  /** Publish while an open dialog hides the header from role queries. */
+  publishButtonBehindDialog: () =>
+    page
+      .getByTestId(editorHeaderActions)
+      .getByRole('button', { name: editorPublishButton, includeHidden: true }),
   updateButton: () =>
     page.getByTestId(editorHeaderActions).getByRole('button', { name: editorUpdateButton }),
   saveButton: () =>

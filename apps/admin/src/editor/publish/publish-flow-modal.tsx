@@ -173,7 +173,6 @@ function PublishFlowDialog({
     <FullscreenDialog
       animate={animate}
       data-testid={publishFlowModal}
-      modal={false}
       title="Publish"
       open
       onOpenChange={(open) => !open && close()}
