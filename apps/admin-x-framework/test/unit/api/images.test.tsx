@@ -95,4 +95,48 @@ describe('useUploadImage', () => {
 
     expect(options?.sessionExpiryRedirect).toBe(false);
   });
+
+  it('reports the share of the file sent to an upload-progress callback', async () => {
+    // The transport reads progress from XMLHttpRequest, which jsdom cannot report without a server.
+    class UploadXhr {
+      upload: { onprogress?: (event: Partial<ProgressEvent>) => void } = {};
+      status = 0;
+      statusText = '';
+      response: ArrayBuffer | null = null;
+      withCredentials = false;
+      responseType = '';
+      onload?: () => void;
+      open() {}
+      setRequestHeader() {}
+      getAllResponseHeaders() {
+        return 'content-type: application/json';
+      }
+      send() {
+        this.upload.onprogress?.({ lengthComputable: true, loaded: 5, total: 10 });
+        this.status = 200;
+        this.response = new TextEncoder().encode(JSON.stringify(uploaded)).buffer;
+        this.onload?.();
+      }
+    }
+    vi.stubGlobal('XMLHttpRequest', UploadXhr);
+    const progress: number[] = [];
+
+    try {
+      // Answers an upload that drops the callback, so that failure reads as missing progress.
+      await withMockFetch({ json: uploaded }, async () => {
+        const { result } = renderHook(() => useUploadImage(), { wrapper });
+        await waitFor(() => expect(result.current.mutateAsync).toBeTypeOf('function'));
+        const response = await result.current.mutateAsync({
+          file: new File(['image'], 'hills.png'),
+          onUploadProgress: (percent) => progress.push(percent),
+        });
+
+        expect(response).toEqual(uploaded);
+      });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+
+    expect(progress).toEqual([50]);
+  });
 });

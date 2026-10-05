@@ -12,6 +12,8 @@ export interface UploadImagePayload {
   file: File;
   /** False when the caller handles an expired session itself instead of leaving the page. */
   sessionExpiryRedirect?: boolean;
+  /** Receives the percentage of the file sent so far. */
+  onUploadProgress?: (progress: number) => void;
 }
 
 export const useUploadImage = createMutation<ImagesResponseType, UploadImagePayload>({
@@ -23,7 +25,10 @@ export const useUploadImage = createMutation<ImagesResponseType, UploadImagePayl
     formData.append('purpose', 'image');
     return formData;
   },
-  requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
+  requestOptions: ({ sessionExpiryRedirect, onUploadProgress }) => ({
+    sessionExpiryRedirect,
+    onUploadProgress,
+  }),
 });
 
 const UploadedImageResponseSchema = z.object({
