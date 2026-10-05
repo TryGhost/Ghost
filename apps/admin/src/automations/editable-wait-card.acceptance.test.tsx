@@ -79,11 +79,40 @@ describe('Inline wait editing', () => {
     }
   });
 
+  it('labels the unit inline and keeps non-digits and leading zeros out of the field', async () => {
+    const save = serve();
+    await renderAdminApp('/automations/first', flags);
+    const card = waits().nth(0);
+    const first = card.getByRole('textbox', { name: 'Wait for' });
+    await expect.element(first).toHaveValue('1');
+    await expect.element(card.getByText('Day', { exact: true })).toBeVisible();
+    await expect.element(card.getByRole('combobox')).not.toBeInTheDocument();
+    await first.fill('2');
+    await expect.element(card.getByText('Days', { exact: true })).toBeVisible();
+    await first.fill('0');
+    await expect.element(first).toHaveValue('');
+    await first.fill('05');
+    await expect.element(first).toHaveValue('5');
+    await first.fill('1.5');
+    await expect.element(first).toHaveValue('15');
+    await first.fill('7d');
+    await expect.element(first).toHaveValue('7');
+    await first.fill('abc');
+    await expect.element(first).toHaveValue('');
+    await first.fill('10');
+    await expect.element(first).toHaveValue('10');
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect.poll(() => save.requests.length).toBe(1);
+    expect(
+      (save.requests[0].body as { automations: AutomationDetail[] }).automations[0].actions[0].data,
+    ).toEqual({ wait_hours: 240 });
+  });
+
   it('preserves invalid input and blocks saving or publishing stale valid values', async () => {
     const save = serve();
     await renderAdminApp('/automations/first', flags);
     const first = waits().nth(0).getByRole('textbox', { name: 'Wait for' });
-    for (const value of ['', '0', '31', '1.5']) {
+    for (const value of ['', '31', '99']) {
       await first.click();
       await first.fill(value);
       await userEvent.tab();
@@ -116,14 +145,14 @@ describe('Inline wait editing', () => {
     const save = serve('active');
     await renderAdminApp('/automations/first', flags);
     const first = waits().nth(0).getByRole('textbox', { name: 'Wait for' });
-    await first.fill('1.5');
+    await first.fill('31');
     await page.getByRole('button', { name: 'Publish changes', exact: true }).click();
     await expect.element(page.getByRole('alertdialog')).not.toBeInTheDocument();
     expect(save.requests).toHaveLength(0);
     await page.getByRole('link', { name: 'Back to automations' }).click();
     await expect.element(page.getByRole('alertdialog')).toBeVisible();
     await page.getByRole('button', { name: 'Stay', exact: true }).click();
-    await expect.element(first).toHaveValue('1.5');
+    await expect.element(first).toHaveValue('31');
     await first.fill('2');
     await page.getByRole('button', { name: 'Publish changes', exact: true }).click();
     await page
@@ -139,7 +168,7 @@ describe('Inline wait editing', () => {
   it('deletes through the overflow menu without a right-click menu or automatic save', async () => {
     const save = serve();
     await renderAdminApp('/automations/first', flags);
-    await waits().nth(0).getByRole('textbox', { name: 'Wait for' }).fill('0');
+    await waits().nth(0).getByRole('textbox', { name: 'Wait for' }).fill('31');
     await waits().nth(0).getByRole('heading', { name: 'Wait' }).click({ button: 'right' });
     await expect.element(page.getByRole('menu')).not.toBeInTheDocument();
     await waits().nth(0).getByRole('button', { name: 'Wait actions' }).click();

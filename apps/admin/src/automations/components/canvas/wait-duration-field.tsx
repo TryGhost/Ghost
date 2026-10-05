@@ -3,24 +3,20 @@ import {
   Field,
   FieldLabel,
   FieldError,
-  Input,
   InputGroup,
   InputGroupInput,
   InputGroupText,
   InputGroupAddon,
   InputGroupButton,
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
 } from '@tryghost/shade/components';
-import { Inline, Stack } from '@tryghost/shade/primitives';
+import { Stack } from '@tryghost/shade/primitives';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 
 const MAX_WAIT_DAYS = 30;
 export const WAIT_VALIDATION_MESSAGE = 'Enter a whole number between 1 and 30 days.';
 const WHOLE_NUMBER_PATTERN = /^\d+$/;
+const NON_DIGITS_PATTERN = /\D/g;
+const LEADING_ZEROS_PATTERN = /^0+/;
 
 const getValidWaitDays = (value: string): number | null => {
   const days = Number(value);
@@ -75,7 +71,10 @@ export const WaitDurationField: React.FC<{
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const nextDaysText = event.target.value;
+    // Waits are whole days from 1, so non-digits and leading zeros are dropped as they're typed.
+    const nextDaysText = event.target.value
+      .replace(NON_DIGITS_PATTERN, '')
+      .replace(LEADING_ZEROS_PATTERN, '');
     setDaysText(nextDaysText);
 
     const nextDays = getValidWaitDays(nextDaysText);
@@ -96,25 +95,19 @@ export const WaitDurationField: React.FC<{
           Wait for
         </FieldLabel>
         {inline ? (
-          <Inline gap="sm">
-            <Input
+          <InputGroup>
+            <InputGroupInput
               aria-describedby={!isValid ? errorId : undefined}
               aria-invalid={!isValid}
-              className="h-9 min-w-0 flex-1"
               id={inputId}
               inputMode="numeric"
               value={daysText}
               onChange={handleChange}
             />
-            <Select value="days">
-              <SelectTrigger aria-label="Wait unit" className="h-9 min-w-0 flex-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent updatePositionStrategy="always">
-                <SelectItem value="days">Days</SelectItem>
-              </SelectContent>
-            </Select>
-          </Inline>
+            <InputGroupAddon align="inline-end">
+              <InputGroupText>{days === 1 ? 'Day' : 'Days'}</InputGroupText>
+            </InputGroupAddon>
+          </InputGroup>
         ) : (
           <InputGroup
             aria-label="Wait duration in days"
