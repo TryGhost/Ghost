@@ -5,6 +5,7 @@ import { useCallback, useMemo, useRef } from 'react';
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { useGlobalData } from '@/settings/providers/global-data-context';
+import { buildAutocompleteLinks, buildOfferLinks } from '@/shared/autocomplete-links';
 import {
   type Suggestion,
   type SuggestionGroup,
@@ -51,13 +52,15 @@ const matches = (suggestion: NavigationLinkSuggestion, term: string) => {
 const useNavigationLinkSuggestions = () => {
   const { config, settings, siteData } = useGlobalData();
 
-  const [paidMembersEnabled = false, donationsEnabled = false] = getSettingValues<boolean>(
-    settings,
-    ['paid_members_enabled', 'donations_enabled'],
-  );
+  const [paidMembersEnabled = false, donationsEnabled = false, recommendationsEnabled = false] =
+    getSettingValues<boolean>(settings, [
+      'paid_members_enabled',
+      'donations_enabled',
+      'recommendations_enabled',
+    ]);
 
-  // Both portal destinations below open Stripe checkout flows, so they are
-  // gated the same way as the other surfaces that offer them
+  // Paid signup, plan changes, gifts and tips open Stripe checkout flows, so
+  // they are gated the same way as the other surfaces that offer them
   // (membership-settings.tsx, portal-links.tsx)
   const stripeEnabled = checkStripeEnabled(settings, config);
 
@@ -95,32 +98,37 @@ const useNavigationLinkSuggestions = () => {
   );
 
   const staticGroups = useMemo<NavigationLinkSuggestionGroup[]>(() => {
-    const membership: NavigationLinkSuggestion[] = [];
+    const homepageUrl = getHomepageUrl(siteData);
 
-    if (paidMembersEnabled && stripeEnabled) {
-      membership.push({ label: 'Gift subscriptions', value: '#/portal/gift' });
-    }
+    const links = buildAutocompleteLinks(
+      {
+        homepageUrl,
+        paidMembersEnabled: paidMembersEnabled && stripeEnabled,
+        donationsEnabled: donationsEnabled && stripeEnabled,
+        recommendationsEnabled,
+      },
+      [],
+    );
 
-    if (donationsEnabled && stripeEnabled) {
-      membership.push({ label: 'Tips and donations', value: '#/portal/support' });
-    }
-
-    const offers: NavigationLinkSuggestion[] = (offersData?.offers || [])
+    const offers = (offersData?.offers || [])
       .filter((offer) => offer.status === 'active' && offer.redemption_type === 'signup')
-      .slice(0, CONTENT_LIMIT)
-      .map((offer) => ({
-        label: `Offer — ${offer.name}`,
-        value: new URL(offer.code, getHomepageUrl(siteData)).toString(),
-      }));
+      .slice(0, CONTENT_LIMIT);
 
     return [
-      { label: 'Membership', items: membership },
-      { label: 'Offers', items: offers },
+      { label: 'Links', items: links },
+      { label: 'Offers', items: buildOfferLinks(offers, homepageUrl) },
     ].map((group) => ({
       ...group,
       items: group.items.map((item) => ({ ...item, description: item.value })),
     }));
-  }, [donationsEnabled, offersData?.offers, paidMembersEnabled, siteData, stripeEnabled]);
+  }, [
+    donationsEnabled,
+    offersData?.offers,
+    paidMembersEnabled,
+    recommendationsEnabled,
+    siteData,
+    stripeEnabled,
+  ]);
 
   const loadSuggestions = useCallback(
     async (term: string): Promise<NavigationLinkSuggestionGroup[]> => {

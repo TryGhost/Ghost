@@ -159,6 +159,18 @@ describe('Navigation settings', () => {
     await newItem().getByLabelText('URL').click();
     await expect.element(suggestions()).toBeInTheDocument();
     await expect
+      .element(suggestions().getByRole('option', { name: /^Homepage/ }))
+      .toBeInTheDocument();
+    await expect
+      .element(suggestions().getByRole('option', { name: /^Free signup/ }))
+      .toBeInTheDocument();
+    await expect
+      .element(suggestions().getByRole('option', { name: /^Paid signup/ }))
+      .toBeInTheDocument();
+    await expect
+      .element(suggestions().getByRole('option', { name: /^Upgrade or change plan/ }))
+      .toBeInTheDocument();
+    await expect
       .element(suggestions().getByRole('option', { name: /Gift subscriptions/ }))
       .toBeInTheDocument();
     await expect
@@ -174,6 +186,8 @@ describe('Navigation settings', () => {
 
     // Unpublished content is never offered as a destination
     await expect(suggestions().getByRole('option', { name: /Draft thoughts/ })).toHaveCount(0);
+    // Sharing only makes sense from inside a post
+    await expect(suggestions().getByRole('option', { name: /^Share/ })).toHaveCount(0);
 
     // Typing filters the static links and searches content
     await userEvent.keyboard('gift');
@@ -232,7 +246,7 @@ describe('Navigation settings', () => {
 
     await newItem().getByLabelText('URL').click();
     await expect.poll(() => pages.requests.length).toBe(1);
-    await userEvent.keyboard('{ArrowDown}');
+    await userEvent.keyboard('Ab');
 
     await expect.element(suggestions().getByRole('option', { name: /^About/ })).toBeInTheDocument();
     expect(pages.requests).toHaveLength(2);
@@ -246,7 +260,14 @@ describe('Navigation settings', () => {
     await newItem().getByLabelText('URL').click();
     await expect.element(suggestions()).toBeInTheDocument();
     await expect.element(suggestions().getByRole('option', { name: /^About/ })).toBeInTheDocument();
-    // Gift and tips open Stripe checkout flows — dead ends without Stripe
+    await expect
+      .element(suggestions().getByRole('option', { name: /^Free signup/ }))
+      .toBeInTheDocument();
+    // These open Stripe checkout flows — dead ends without Stripe
+    await expect(suggestions().getByRole('option', { name: /^Paid signup/ })).toHaveCount(0);
+    await expect(
+      suggestions().getByRole('option', { name: /^Upgrade or change plan/ }),
+    ).toHaveCount(0);
     await expect(suggestions().getByRole('option', { name: /Gift subscriptions/ })).toHaveCount(0);
     await expect(suggestions().getByRole('option', { name: /Tips and donations/ })).toHaveCount(0);
   });
