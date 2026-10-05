@@ -27,7 +27,7 @@ class PostEmailHandler {
    * Validates email can be sent before saving the post (if an email will be sent)
    *
    * @param {import('@tryghost/api-framework').Frame} frame
-   * @returns {Promise<{newsletter: Object, emailRecipientFilter: string, emailCount: number}|null>}
+   * @returns {Promise<import('../email-service/email-service').EmailPreflight|null>}
    */
   async validateBeforeSave(frame) {
     const newStatus = frame.data.posts[0].status;
@@ -38,30 +38,36 @@ class PostEmailHandler {
 
     const existingPost = await this.models.Post.findOne(
       { id: frame.options.id, status: 'all' },
-      { columns: ['id', 'status', 'newsletter_id', 'email_recipient_filter'] },
+      {
+        columns: ['id', 'status', 'newsletter_id', 'email_recipient_filter'],
+        transacting: frame.options.transacting,
+      },
     );
     const previousStatus = existingPost?.get('status');
+    const existingNewsletterId = existingPost?.get('newsletter_id');
 
-    const hasNewsletter = frame.options.newsletter || existingPost?.get('newsletter_id');
+    const hasNewsletter = frame.options.newsletter || existingNewsletterId;
     const sendingEmail = hasNewsletter && this.shouldSendEmail(newStatus, previousStatus);
 
     if (!sendingEmail) {
       return null;
     }
 
-    const emailRecipientFilter =
-      frame.options.email_segment || existingPost?.get('email_recipient_filter') || 'all';
+    // A post keeps the newsletter and audience it already has, as the Post model does on save
+    const emailRecipientFilter = existingNewsletterId
+      ? existingPost.get('email_recipient_filter')
+      : frame.options.email_segment || 'all';
 
     await this.validateEmailRecipientFilter(emailRecipientFilter);
 
     const newsletter = await this.getNewsletter(frame, existingPost);
 
-    const { emailCount } = await this.emailService.checkCanSendEmail(
+    const { emailCount, csdEmailCount } = await this.emailService.checkCanSendEmail(
       newsletter,
       emailRecipientFilter,
     );
 
-    return { newsletter, emailRecipientFilter, emailCount };
+    return { newsletter, emailRecipientFilter, emailCount, csdEmailCount };
   }
 
   /**
@@ -86,36 +92,42 @@ class PostEmailHandler {
   }
 
   /**
-   * Retrieves the newsletter for the post
+   * Retrieves the newsletter the post will be saved with: the one it has, otherwise the one requested
    *
    * @param {import('@tryghost/api-framework').Frame} frame
    * @param {Object|null} existingPost
    * @returns {Promise<Object|null>}
    */
   async getNewsletter(frame, existingPost) {
-    if (frame.options.newsletter) {
-      return this.models.Newsletter.findOne({ slug: frame.options.newsletter });
+    if (frame.options.newsletter && !existingPost?.get('newsletter_id')) {
+      return this.models.Newsletter.findOne(
+        { slug: frame.options.newsletter },
+        { transacting: frame.options.transacting },
+      );
     }
 
     if (existingPost?.get('newsletter_id')) {
-      return this.models.Newsletter.findOne({ id: existingPost.get('newsletter_id') });
+      return this.models.Newsletter.findOne(
+        { id: existingPost.get('newsletter_id') },
+        { transacting: frame.options.transacting },
+      );
     }
 
     return null;
   }
 
   /**
-   * Handles creating or retrying the newsletter email after post is saved
+   * Creates a new newsletter email inside the transaction that publishes the post, so the post
+   * is only published if its email is created. Sending, or retrying a failed email, waits for
+   * the commit.
    *
-   * @param {Object} model - The post model
+   * @param {Object} model - The saved post model
    * @param {Object} [options]
-   * @param {Object} [options.preflight] - Validation result from validateBeforeSave, passed through to createEmail
-   * @param {Object} [options.preflight.newsletter]
-   * @param {string} [options.preflight.emailRecipientFilter]
-   * @param {number} [options.preflight.emailCount]
-   * @returns {Promise<void>}
+   * @param {import('../email-service/email-service').EmailPreflight|null} [options.preflight] - Result of validateBeforeSave, passed through to createEmail
+   * @param {object} [options.transacting]
+   * @returns {Promise<(() => Promise<void>)|undefined>} Sends the email; call it once the transaction has committed
    */
-  async createOrRetryEmail(model, { preflight } = {}) {
+  async createOrRetryEmail(model, { preflight, transacting } = {}) {
     if (!model.get('newsletter_id')) {
       return;
     }
@@ -128,18 +140,25 @@ class PostEmailHandler {
     }
 
     const postEmail = model.relations.email;
-    let email;
 
     if (!postEmail) {
-      email = await this.emailService.createEmail(model, { preflight });
-      await this.emailService.scheduleEmail(email);
-    } else if (postEmail.get('status') === 'failed') {
-      email = await this.#retryEmail(postEmail, model.id);
-    }
-
-    if (email) {
+      const email = await this.emailService.createEmail(model, { preflight, transacting });
       model.relations.email = email;
       model.set('email', email);
+      return async () => {
+        await this.emailService.scheduleEmail(email);
+      };
+    }
+
+    if (postEmail.get('status') === 'failed') {
+      // Retrying reads the post outside the transaction, so it must be published first.
+      return async () => {
+        const email = await this.#retryEmail(postEmail, model.id);
+        if (email) {
+          model.relations.email = email;
+          model.set('email', email);
+        }
+      };
     }
   }
 
