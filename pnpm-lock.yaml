@@ -1169,9 +1169,6 @@ importers:
       eslint-plugin-no-relative-import-paths:
         specifier: 1.6.1
         version: 1.6.1
-      ghost-admin:
-        specifier: workspace:*
-        version: link:../ember-admin
       jsdom:
         specifier: 'catalog:'
         version: 30.0.1(@noble/hashes@1.8.0)
