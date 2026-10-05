@@ -3,6 +3,7 @@ import { userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
+  configResponse,
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
@@ -235,6 +236,49 @@ describe('Editor publish journeys', () => {
         member_status: 'free',
       });
   });
+
+  it.each([
+    ['on a self-hosted site', null, 'news@example.com'],
+    ['with managed email', { enabled: true }, 'default@example.com'],
+    [
+      'with managed email and a sending domain',
+      { enabled: true, sendingDomain: 'example.com' },
+      'news@example.com',
+    ],
+    [
+      'with managed email and a sender off the sending domain',
+      { enabled: true, sendingDomain: 'example.org' },
+      'default@example.com',
+    ],
+  ])(
+    'previews the email from the address it is sent from %s',
+    async (_site, managedEmail, from) => {
+      publishChrome([
+        newsletter({
+          slug: 'weekly',
+          name: 'Weekly',
+          status: 'active',
+          sender_email: 'news@example.com',
+        }),
+      ]);
+      fakeTiers([]);
+      fakeSavableDraft();
+      const config = configResponse();
+      if (managedEmail) {
+        config.config.hostSettings = { managedEmail };
+      }
+      const site = emailSite();
+      await renderAdminApp(`/editor/post/${POST_ID}`, {
+        ...site,
+        boot: { ...site.boot, browseConfig: { response: config } },
+      });
+
+      await editorScreen.previewButton().click();
+      await previewScreen.emailTab().click();
+
+      await expect.element(previewScreen.emailFrom()).toHaveTextContent(`Weekly <${from}>`);
+    },
+  );
 
   it('asks for the password when a test send finds the session expired, then sends it', async () => {
     publishChrome([WEEKLY]);
