@@ -749,7 +749,9 @@ test.describe('Image card', async () => {
                                         <div contenteditable="true" role="textbox" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true">
                                         <p dir="ltr">
                                         <span data-lexical-text="true">Photo by</span>
-                                        <a href="https://unsplash.com/@jamillatrach" dir="ltr">
+                                        <a
+                                          href="https://unsplash.com/@jamillatrach?utm_source=ghost&amp;utm_medium=referral&amp;utm_campaign=api-credit"
+                                          dir="ltr">
                                             <span data-lexical-text="true">Latrach Med Jamil</span>
                                         </a>
                                         <span data-lexical-text="true">/</span>

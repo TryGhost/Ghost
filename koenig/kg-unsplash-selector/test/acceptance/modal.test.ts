@@ -47,4 +47,23 @@ test.describe('Acceptance test - Unsplash Selector', async () => {
     const zoomed = await modal.waitForSelector('[data-kg-unsplash-zoomed="true"]');
     expect(zoomed).toBeTruthy();
   });
+
+  test('Credits the photographer and Unsplash with the referral', async ({ page }) => {
+    await page.goto('/');
+    await page
+      .locator('[data-kg-unsplash-gallery-item="true"]', { hasText: 'Christian Lue' })
+      .locator('[data-kg-unsplash-insert-button="true"]')
+      .click();
+
+    const caption = page.getByTestId('inserted-caption');
+    await expect(caption).toHaveText('Photo by Christian Lue / Unsplash');
+    await expect(caption.getByRole('link', { name: 'Christian Lue' })).toHaveAttribute(
+      'href',
+      'https://unsplash.com/@christianlue?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit',
+    );
+    await expect(caption.getByRole('link', { name: 'Unsplash' })).toHaveAttribute(
+      'href',
+      'https://unsplash.com/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit',
+    );
+  });
 });
