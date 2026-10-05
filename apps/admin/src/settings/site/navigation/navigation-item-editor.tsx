@@ -29,7 +29,7 @@ export type NavigationItemEditorProps = React.HTMLAttributes<HTMLDivElement> & {
   unstyled?: boolean;
   textFieldClasses?: string;
   action?: ReactNode;
-  addItem?: (overrides?: Partial<NavigationItem>) => void;
+  addItem?: () => void;
   showIcon: boolean;
   showPaidVisibility: boolean;
   showVisibility: boolean;
@@ -122,7 +122,7 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({
               // eslint-disable-next-line @typescript-eslint/no-unused-expressions
               !!item.errors.url && clearError?.('url');
             }}
-            onSubmit={(url) => addItem?.({ url })}
+            onSubmit={addItem}
           />
           {item.errors.url && <FieldError>{item.errors.url}</FieldError>}
         </Field>

@@ -46,12 +46,8 @@ export type UrlSuggestionInputProps = Omit<
   loadSuggestions: (term: string) => Promise<SuggestionGroup[]>;
   /** Called with the value to store */
   onChange: (value: string) => void;
-  /**
-   * Enter pressed while the dropdown has no active suggestion. Receives the
-   * value just committed, which the caller needs because the `onChange` for
-   * it has not flushed yet.
-   */
-  onSubmit?: (committedValue: string) => void;
+  /** Enter pressed while the dropdown has no active suggestion */
+  onSubmit?: () => void;
   /** The user changed the field — used to clear validation errors as they type */
   onEdit?: () => void;
 };
@@ -184,11 +180,8 @@ const UrlSuggestionInput: React.FC<UrlSuggestionInputProps> = ({
       }
 
       close();
-      // Commit unconditionally — an optional call doesn't evaluate its
-      // arguments when the callee is undefined, and Enter should
-      // normalize the field whether or not anyone listens for it
-      const committed = urlInput.commitValue() || '';
-      onSubmit?.(committed);
+      urlInput.commitValue();
+      onSubmit?.();
       return;
     }
 

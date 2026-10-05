@@ -22,12 +22,7 @@ export type SortableIndexedList<Item> = {
    * plain values built from the render snapshot would each revert the other.
    */
   updateItem: (id: string, item: Item | ((current: Item) => Item)) => void;
-  /**
-   * `overrides` are merged over the current new item. Pass them when the
-   * caller already knows a field's value but the state update carrying it
-   * hasn't flushed yet — e.g. committing an input and submitting in one event.
-   */
-  addItem: (overrides?: Partial<Item>) => void;
+  addItem: () => void;
   removeItem: (id: string) => void;
   moveItem: (activeId: string, overId?: string) => void;
   newItem: Item;
@@ -88,13 +83,11 @@ const useSortableIndexedList = <Item>({
     setItems(updatedItems.map((updatedItem) => updatedItem.item));
   };
 
-  const addItem = (overrides?: Partial<Item>) => {
-    const item = overrides ? { ...newItem, ...overrides } : newItem;
-
-    if (canAddNewItem(item)) {
+  const addItem = () => {
+    if (canAddNewItem(newItem)) {
       const currentItems = editableItemsRef.current;
       const maxId = currentItems.reduce((max, current) => Math.max(max, parseInt(current.id)), 0);
-      const updatedItems = currentItems.concat({ item, id: (maxId + 1).toString() });
+      const updatedItems = currentItems.concat({ item: newItem, id: (maxId + 1).toString() });
       setEditableItems(updatedItems);
       setItems(updatedItems.map((updatedItem) => updatedItem.item));
       setNewItem(blank);

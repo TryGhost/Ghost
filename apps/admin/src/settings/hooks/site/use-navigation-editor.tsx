@@ -31,7 +31,7 @@ const hasNewItem = (newItem: NavigationItem) =>
 export type NavigationEditor = {
   items: EditableItem[];
   updateItem: (id: string, item: Partial<NavigationItem>) => void;
-  addItem: (overrides?: Partial<NavigationItem>) => void;
+  addItem: () => void;
   removeItem: (id: string) => void;
   moveItem: (activeId: string, overId?: string) => void;
   newItem: EditableItem;
@@ -121,19 +121,13 @@ const useNavigationEditor = ({
     list.updateItem(id, (current) => mergeItemUpdates(current, item));
   };
 
-  // `overrides` let a caller submit a value it has just committed but which
-  // hasn't flushed into `list.newItem` yet — pressing Enter in the URL field
-  // commits and adds within a single event.
-  const addItem = (overrides?: Partial<NavigationItem>) => {
-    const candidate = { ...list.newItem, ...overrides };
-    const errors = validateItem(candidate);
+  const addItem = () => {
+    const errors = validateItem(list.newItem);
 
     if (Object.values(errors).some((message) => message)) {
-      list.setNewItem({ ...candidate, errors });
+      list.setNewItem({ ...list.newItem, errors });
     } else {
-      // Pass the merged object down so the added item is exactly what
-      // was validated — a second independent merge could drift
-      list.addItem(candidate);
+      list.addItem();
     }
   };
 
