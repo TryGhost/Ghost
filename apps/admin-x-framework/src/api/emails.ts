@@ -41,7 +41,6 @@ export const EmailSendingStateSchema = z.discriminatedUnion('status', [
     status: z.literal('failed'),
     progress: EmailSendingProgressSchema,
     failed_during: EmailSendingPhaseSchema,
-    // Older Core versions omit eligibility; only an explicit true enables retry.
     retryable: z.boolean().optional(),
   }),
 ]);

@@ -857,43 +857,50 @@ describe('Acceptance: Publish flow', function () {
             });
         }
 
-        it('refreshes API retry eligibility when the retry is rejected', async function () {
-            await loginAsRole('Administrator', this.server);
-            const post = this.server.create('post', {status: 'draft'});
-            const email = this.server.create('email', {status: 'pending'});
-            this.server.put('/posts/:id/', function ({posts}, {params}) {
-                return posts.find(params.id).update({status: 'published', email});
-            });
-            this.server.get('/posts/:id/', function ({posts}, {params}) {
-                const savedPost = posts.find(params.id);
-                if (savedPost.status === 'published') {
-                    email.update({status: 'failed', error: 'Mailgun rejected the batch.'});
+        for (const retryableAfterRejection of [false, true]) {
+            it(`refreshes API retry eligibility to ${retryableAfterRejection} when the retry is rejected`, async function () {
+                await loginAsRole('Administrator', this.server);
+                const post = this.server.create('post', {status: 'draft'});
+                const email = this.server.create('email', {status: 'pending'});
+                this.server.put('/posts/:id/', function ({posts}, {params}) {
+                    return posts.find(params.id).update({status: 'published', email});
+                });
+                this.server.get('/posts/:id/', function ({posts}, {params}) {
+                    const savedPost = posts.find(params.id);
+                    if (savedPost.status === 'published') {
+                        email.update({status: 'failed', error: 'Mailgun rejected the batch.'});
+                    }
+                    return savedPost;
+                });
+                let retryable = true;
+                this.server.get('/emails/:id/status/', () => {
+                    return {email_statuses: [{id: email.id, sending: {
+                        status: 'failed', failed_during: 'submitting', retryable,
+                        progress: {completed: 0, total: 7, estimated_seconds_remaining: null}
+                    }}]};
+                });
+                this.server.put('/emails/:id/retry/', () => {
+                    retryable = retryableAfterRejection;
+                    return new Response(400, {}, {errors: [{type: 'BadRequestError', message: 'Retry was rejected'}]});
+                });
+
+                await visit(`/editor/post/${post.id}`);
+                await click('[data-test-button="publish-flow"]');
+                await click('[data-test-button="continue"]');
+                await click('[data-test-button="confirm-publish"]');
+                await waitFor('.gh-publish-cta button');
+                await click('.gh-publish-cta button');
+
+                await waitFor('.gh-box-error');
+                if (retryableAfterRejection) {
+                    await waitFor('.gh-publish-cta button');
+                    expect(find('.gh-publish-cta button')).to.exist;
+                } else {
+                    await waitUntil(() => !find('.gh-publish-cta button'));
+                    expect(find('.gh-publish-cta button')).not.to.exist;
                 }
-                return savedPost;
             });
-            let retryable = true;
-            this.server.get('/emails/:id/status/', () => {
-                return {email_statuses: [{id: email.id, sending: {
-                    status: 'failed', failed_during: 'submitting', retryable,
-                    progress: {completed: 0, total: 7, estimated_seconds_remaining: null}
-                }}]};
-            });
-            this.server.put('/emails/:id/retry/', () => {
-                // Eligibility changed after it was read, so Core rejects the stale retry.
-                retryable = false;
-                return new Response(400, {}, {errors: [{type: 'BadRequestError', message: 'Delivery outcome is unknown'}]});
-            });
-
-            await visit(`/editor/post/${post.id}`);
-            await click('[data-test-button="publish-flow"]');
-            await click('[data-test-button="continue"]');
-            await click('[data-test-button="confirm-publish"]');
-            await waitFor('.gh-publish-cta button');
-            await click('.gh-publish-cta button');
-
-            await waitUntil(() => !find('.gh-publish-cta button'));
-            expect(find('.gh-publish-cta button')).not.to.exist;
-        });
+        }
 
         it('preserves the legacy email failure flow when improved sending UI is disabled', async function () {
             await loginAsRole('Administrator', this.server);
