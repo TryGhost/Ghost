@@ -14,7 +14,7 @@ export interface SlugPortAdapter {
   reset: () => void;
 }
 
-/** Adapter over the slug machine. Settling follows the latest submission's promise. */
+/** Adapter over the slug machine. Settling waits for the latest submission and for the machine to go idle. */
 export function createSlugPort(machine: SlugMachine): SlugPortAdapter {
   let latest: Promise<unknown> = Promise.resolve();
   let boundary = deferred<void>();
@@ -24,11 +24,27 @@ export function createSlugPort(machine: SlugMachine): SlugPortAdapter {
     return submission;
   }
 
+  // Reads the machine, not the notified view: a drained submission can notify an
+  // idle view after the state it started has already been committed.
+  function idle(): Promise<void> {
+    return new Promise((resolve) => {
+      const check = () => {
+        if (!machine.getState().pending) {
+          stop();
+          resolve();
+        }
+      };
+      const stop = machine.subscribe(check);
+      check();
+    });
+  }
+
   async function settled(): Promise<void> {
     let awaited;
     do {
       awaited = latest;
       await Promise.race([awaited, boundary.promise]);
+      await Promise.race([idle(), boundary.promise]);
     } while (awaited !== latest);
   }
 
