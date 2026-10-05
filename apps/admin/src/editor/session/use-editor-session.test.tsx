@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import { buildPostEditorReadParams } from '@tryghost/admin-x-framework/api/post-contract';
 import { postsDataType } from '@tryghost/admin-x-framework/api/posts';
@@ -342,6 +342,10 @@ describe('useEditorSession saved record', () => {
 });
 
 describe('useEditorSession reload', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('refuses a newer version when the writer edits while the reload waits', async () => {
     const newer = record({ title: 'Their title', updated_at: '2026-01-02T00:00:00.000Z' });
     stable.fetchApi.mockResolvedValueOnce({ posts: [newer] });
@@ -368,6 +372,5 @@ describe('useEditorSession reload', () => {
     expect(outcome).toBe('failed');
     expect(result.current.loadedRecord).toBe(loaded);
     expect(result.current.bind.title).toBe('Typed while reloading');
-    cancelQueries.mockRestore();
   });
 });
