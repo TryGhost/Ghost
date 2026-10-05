@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "pnpm test:unit",
+    "test": "pnpm test:types && pnpm test:unit",
     "test:unit": "vitest run",
     "test:acceptance": "vitest run -c vitest.acceptance.config.ts",
     "test:acceptance:watch": "vitest -c vitest.acceptance.config.ts",
@@ -167,6 +167,14 @@
       "ghost-admin"
     ],
     "targets": {
+      "test": {
+        "executor": "nx:noop",
+        "cache": false,
+        "dependsOn": [
+          "test:types",
+          "test:unit"
+        ]
+      },
       "test:unit": {
         "inputs": [
           "reactTests",
@@ -245,6 +253,20 @@
         ]
       },
       "dev": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/admin",
+          "command": "vite"
+        },
+        "dependsOn": [
+          "ghost-monorepo:docker:up",
+          "build:dev",
+          "@tryghost/admin-x-framework:dev",
+          "@tryghost/shade:dev"
+        ]
+      },
+      "dev:ember": {
         "continuous": true,
         "executor": "nx:run-commands",
         "options": {
