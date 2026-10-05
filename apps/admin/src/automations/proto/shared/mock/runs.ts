@@ -263,6 +263,34 @@ const welcomeRunsBase: AutomationRun[] = [
     ],
   },
   {
+    // The exit this flow exists to produce: a free member who starts paying
+    // leaves the free welcome flow (and enters the paid one). 'upgraded' belongs
+    // HERE and only here among the two production flows — a member in the paid
+    // flow is already paying, so there is nothing for them to upgrade to.
+    //
+    // First of the exited templates, and recent, so it's near the top of the
+    // list when the demo filters to exits.
+    id: 'run_leo',
+    automation_id: welcomeSeries.id,
+    member: { id: 'mem_leo', name: 'Leo Hartmann', email: 'leo.hartmann@example.com' },
+    status: 'exited_early',
+    enrolled_at: '2026-07-17T13:26:00Z',
+    completed_at: null,
+    current_action_id: null,
+    exit_reason: 'upgraded',
+    steps: [
+      {
+        action_id: 'act_welcome_email',
+        state: 'done',
+        occurred_at: '2026-07-17T13:26:00Z',
+        detail: 'Opened (upgraded)',
+      },
+      { action_id: 'act_wait_3d', state: 'skipped', occurred_at: null, detail: null },
+      { action_id: 'act_tips_email', state: 'skipped', occurred_at: null, detail: null },
+      { action_id: 'act_week1_email', state: 'skipped', occurred_at: null, detail: null },
+    ],
+  },
+  {
     id: 'run_priya',
     automation_id: welcomeSeries.id,
     member: { id: 'mem_priya', name: 'Priya Nair', email: 'priya.nair@example.com' },
@@ -462,13 +490,16 @@ const upgradeRunsBase: AutomationRun[] = [
     enrolled_at: '2026-07-16T14:20:00Z',
     completed_at: null,
     current_action_id: null,
-    exit_reason: 'upgraded',
+    // Unsubscribed, not 'upgraded': this is the PAID welcome flow, and its
+    // members are already paying. It was 'upgraded' until the phase 1 demo
+    // caught it — that exit is the free flow's (see run_leo).
+    exit_reason: 'unsubscribed',
     steps: [
       {
         action_id: 'act_up_email',
         state: 'done',
         occurred_at: '2026-07-16T14:20:00Z',
-        detail: 'Opened (upgraded)',
+        detail: 'Unsubscribed',
       },
       { action_id: 'act_up_wait', state: 'skipped', occurred_at: null, detail: null },
       { action_id: 'act_up_email2', state: 'skipped', occurred_at: null, detail: null },

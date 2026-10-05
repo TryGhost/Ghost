@@ -16,12 +16,7 @@ import {
   TableRow,
 } from '@tryghost/shade/components';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
-import {
-  FilterBar,
-  GhAreaChart,
-  KpiCardHeaderLabel,
-  KpiCardHeaderValue,
-} from '@tryghost/shade/patterns';
+import { GhAreaChart, KpiCardHeaderLabel, KpiCardHeaderValue } from '@tryghost/shade/patterns';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import type { AutomationRun } from '@/automations/proto/shared/mock';
 import type { LeftPanelProps } from '@/automations/proto/shared/left-panel-types';
@@ -375,32 +370,22 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
                 members page does it — so what's narrowing the list is always visible
                 rather than hidden inside the button that set it. "All time" is the
                 default, so it isn't a filter and doesn't earn a row. */}
+      {/* The chip on its own, exactly as the shipping sidebar renders it
+                (components/canvas/performance-sidebar.tsx) — no FilterBar around
+                it. FilterBar draws a grey tray behind its children under Admin 7,
+                which production's chip doesn't sit on. */}
       {range !== 'all' && (
-        <FilterBar className={cn('shrink-0 pb-3', gutter)}>
-          {/* One child, not one per chip: FilterBar justifies between its
-                        children so it can hold filters at the left and controls like
-                        "Save view" at the right, and handing it two peer chips pushed
-                        them to opposite ends. Grouped, they append to each other and
-                        the right-hand slot stays free. */}
-          <Inline align="center" gap="sm" wrap>
-            {/* Value only. The field name was carrying its weight when
-                            the chip read "Entered: Last 30 days", but every value
-                            here already names its own field — a timeframe reads as a
-                            timeframe, "Unsubscribed" reads as a reason — so the
-                            prefix was repeating what the words underneath it said. */}
-            {/* Default size, not sm: Shade's own Filters pattern renders
-                            its chips at md — h-(--control-height), px-2.5, size-4
-                            icon — so these now match the chips on members and
-                            comments rather than sitting a size below them. The X
-                            takes Button's base svg size for the same reason. */}
-            {range !== 'all' && (
-              <Button type="button" variant="outline" onClick={() => setRange('all')}>
-                {rangeLabel}
-                <LucideIcon.X strokeWidth={2} />
-              </Button>
-            )}
-          </Inline>
-        </FilterBar>
+        <div className={cn('flex shrink-0 pb-3', gutter)}>
+          <Button
+            aria-label="Clear date filter"
+            type="button"
+            variant="outline"
+            onClick={() => setRange('all')}
+          >
+            {rangeLabel}
+            <LucideIcon.X strokeWidth={2} />
+          </Button>
+        </div>
       )}
 
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">

@@ -89,7 +89,17 @@ const AutomationRow: React.FC<{
   onRename?: (entry: ProtoAutomation) => void;
   onToggleStatus?: (entry: ProtoAutomation) => void;
   publishBlocked?: (entry: ProtoAutomation) => boolean;
-}> = ({ entry, basePath, onArchive, onDuplicate, onRename, onToggleStatus, publishBlocked }) => {
+  showTriggerIcon?: boolean;
+}> = ({
+  entry,
+  basePath,
+  onArchive,
+  onDuplicate,
+  onRename,
+  onToggleStatus,
+  publishBlocked,
+  showTriggerIcon = true,
+}) => {
   const { automation, description, trigger } = entry;
   const toVersioned = useVersionLink();
   const { metrics } = getRunData(automation.id);
@@ -191,14 +201,16 @@ const AutomationRow: React.FC<{
                     on the trigger's node card, which is where the same icon appears
                     once you're inside. */}
         <div className="flex min-w-0 items-center gap-3">
-          <span
-            className={cn(
-              'flex size-8 min-w-8 items-center justify-center rounded-md bg-muted',
-              trigger ? 'text-foreground' : 'text-muted-foreground',
-            )}
-          >
-            <TriggerIcon className="size-4" />
-          </span>
+          {showTriggerIcon && (
+            <span
+              className={cn(
+                'flex size-8 min-w-8 items-center justify-center rounded-md bg-muted',
+                trigger ? 'text-foreground' : 'text-muted-foreground',
+              )}
+            >
+              <TriggerIcon className="size-4" />
+            </span>
+          )}
           <div className="min-w-0">
             <Link
               className="before:absolute before:inset-0 before:z-10 before:rounded-sm focus-visible:outline-hidden focus-visible:before:ring-2 focus-visible:before:ring-focus-ring"
@@ -311,6 +323,9 @@ interface AutomationsTableProps {
   // Whether Publish should be inert for this row — the caller knows about Stripe
   // and validity; the table only knows how to grey the item.
   publishBlocked?: (entry: ProtoAutomation) => boolean;
+  // The trigger mark at the start of each row. On by default; phase 1 turns it
+  // off — the mark isn't in that release, and the lane has to match what ships.
+  showTriggerIcon?: boolean;
 }
 
 // Column headers + body. `data-testid` stays "automations-list" — callers
@@ -323,6 +338,7 @@ export const AutomationsTable: React.FC<AutomationsTableProps> = ({
   onRename,
   onToggleStatus,
   publishBlocked,
+  showTriggerIcon,
 }) => (
   <Table className="flex flex-col" data-testid="automations-list">
     <TableHeader className="hidden lg:flex lg:flex-col">
@@ -346,6 +362,7 @@ export const AutomationsTable: React.FC<AutomationsTableProps> = ({
           basePath={basePath}
           entry={entry}
           publishBlocked={publishBlocked}
+          showTriggerIcon={showTriggerIcon}
           onArchive={onArchive}
           onDuplicate={onDuplicate}
           onRename={onRename}

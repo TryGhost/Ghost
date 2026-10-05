@@ -1,7 +1,9 @@
 import React from 'react';
+import { Badge } from '@tryghost/shade/components';
 import { Box, Container } from '@tryghost/shade/primitives';
 import { ListPage } from '@tryghost/shade/page-templates';
 import { PageHeader } from '@tryghost/shade/patterns';
+import AutomationsHelpCards from '@/automations/components/automations-help-cards';
 import { AutomationsTable } from '@/automations/proto/shared/automations-table';
 import { lanePath } from '@/automations/proto/shared/lanes';
 import { LaneSwitcher } from '@/automations/proto/shared/lane-switcher';
@@ -46,12 +48,32 @@ const AutomationsList: React.FC = () => {
           <ListPage.Header>
             <PageHeader blurredBackground={false} sticky={false}>
               <PageHeader.Left>
-                <PageHeader.Title>Automations</PageHeader.Title>
+                {/* The shipping list's title, Beta badge included — copied
+                    verbatim from automations/automations.tsx. */}
+                <PageHeader.Title>
+                  <span className="inline-flex items-baseline gap-2">
+                    Automations
+                    <Badge
+                      className="px-1 py-px text-[10px] leading-none tracking-wider uppercase"
+                      variant="secondary"
+                    >
+                      Beta
+                    </Badge>
+                  </span>
+                </PageHeader.Title>
               </PageHeader.Left>
             </PageHeader>
           </ListPage.Header>
           <ListPage.Body>
-            <AutomationsTable automations={automations} basePath={lanePath(LANE)} />
+            {/* No trigger mark on the rows: it isn't in this release. */}
+            <AutomationsTable
+              automations={automations}
+              basePath={lanePath(LANE)}
+              showTriggerIcon={false}
+            />
+            {/* The shipping list's own education and feedback cards — the real
+                component, not a copy, so they stay whatever production has. */}
+            <AutomationsHelpCards />
           </ListPage.Body>
         </ListPage>
       </Container>
