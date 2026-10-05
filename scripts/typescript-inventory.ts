@@ -20,10 +20,30 @@ const sourcePattern = /\.[cm]?[jt]sx?$/;
 const declarationPattern = /\.d\.[cm]?ts$/;
 const typedPattern = /\.[cm]?tsx?$/;
 const excludedPattern =
-  /(^|\/)(node_modules|vendor|dist|build|coverage|_template|fixtures?|__fixtures__|__snapshots__)(\/|$)|^koenig\/kg-simplemde\/debug\/|\.min\.js$/;
+  /(^|\/)(node_modules|vendor|dist|build|coverage|_template|__snapshots__)(\/|$)|^koenig\/kg-simplemde\/debug\/|\.min\.js$/;
+
+// These files are inputs whose JavaScript representation is part of the test,
+// or bundled theme assets, rather than modules to migrate.
+const preservedTestInputs = [
+  'ghost/core/test/unit/frontend/services/assets-minification/fixtures/',
+  'ghost/core/test/utils/fixtures/themes/casper/assets/built/',
+  'ghost/core/test/utils/fixtures/themes/source/assets/built/',
+];
+export function excludedSource(file: string): boolean {
+  return (
+    excludedPattern.test(file) ||
+    preservedTestInputs.some((prefix) => file.startsWith(prefix)) ||
+    file === 'ghost/core/test/utils/fixtures/sloppy-config-writer.js'
+  );
+}
 
 export function category(file: string): Category {
-  if (/(^|\/)(tests?|__tests__|e2e)(\/|$)|\.(test|spec|acceptance)\.[^.]+$/.test(file)) {
+  if (
+    /(^|\/)(tests?|test-utils|__tests__|__fixtures__|mirage|e2e)(\/|$)|\.(test|spec|acceptance)\.[^.]+$/.test(
+      file,
+    ) ||
+    file.startsWith('packages/testing/')
+  ) {
     return 'tests';
   }
   if (/(^|\/)(scripts|configs?|\.github)(\/|$)|(^|\/)[^/]*config[^/]*\.[^.]+$/.test(file)) {
@@ -259,7 +279,7 @@ export function inventory(root: string, { scope = '' } = {}): Inventory {
   const resolve = createResolver(root, tracked, warnings);
   const packages = new Map<string, string>();
   for (const file of trackedFiles.filter(
-    (item) => item.endsWith('package.json') && !excludedPattern.test(item),
+    (item) => item.endsWith('package.json') && !excludedSource(item),
   )) {
     const manifest = JSON.parse(readFileSync(path.join(root, file), 'utf8'));
     packages.set(path.posix.dirname(file), manifest.name || path.posix.dirname(file));
@@ -278,7 +298,7 @@ export function inventory(root: string, { scope = '' } = {}): Inventory {
   const declarations = [];
   const files: SourceFile[] = [];
   for (const file of trackedFiles.filter((item) => sourcePattern.test(item))) {
-    if (excludedPattern.test(file)) {
+    if (excludedSource(file)) {
       excluded.push(file);
       continue;
     }
@@ -323,6 +343,7 @@ export function inventory(root: string, { scope = '' } = {}): Inventory {
   }
   return {
     schemaVersion: 2,
+    measurementVersion: 2,
     revision: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root }).toString().trim(),
     scope,
     summary: summarize(selected),
@@ -345,7 +366,7 @@ if (import.meta.main) {
     });
     if (values.help) {
       console.log(
-        'Usage: pnpm inventory:typescript [--scope ghost/core] [--output /tmp/ghost-typescript]\nWrites .json and .html reports when --output is supplied. Counts tracked working-tree files, excluding fixtures, vendored code and build output; submodules are not included.',
+        'Usage: pnpm inventory:typescript [--scope ghost/core] [--output /tmp/ghost-typescript]\nWrites .json and .html reports when --output is supplied. Counts tracked working-tree files, excluding preserved test inputs, vendored code and build output; submodules are not included.',
       );
     } else {
       const root = path.resolve(import.meta.dirname, '..');

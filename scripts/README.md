@@ -61,9 +61,22 @@ to individual files, with recursive JS/TS counts on each folder. Select a file
 to inspect its dependencies.
 
 The inventory reads tracked working-tree JS/JSX/TS/TSX files, including `.mjs`,
-`.cjs`, `.mts`, and `.cts`. It excludes submodules, untracked files, fixture and
-snapshot directories, vendor directories, build/dist/coverage output, minified
+`.cjs`, `.mts`, and `.cts`. It includes maintained fixture modules and test
+helpers. It excludes submodules, untracked files, snapshot directories, vendor
+directories, build/dist/coverage output, minified
 JavaScript, the package template, and SimpleMDE's generated debug bundles.
+Explicit test-input exclusions cover Core's assets-minification fixture directory,
+the bundled Casper/Source theme assets under test fixtures, and
+`sloppy-config-writer.js`, which deliberately exercises non-strict JavaScript.
+Other files are not excluded merely because their directory is named `fixtures`.
+
+`measurementVersion: 2` identifies these counting rules separately from the JSON
+schema. Reports without this field used the earlier fixture exclusion and are
+not directly comparable. A future history chart must treat this as a baseline
+change, not migration progress. Compact history currently stores counts and
+source revisions; the measurement version is available in full reports retained
+in artifacts and the publishing branch's Git history.
+
 Declaration files are counted separately. Exclusion paths and declaration totals
 are repository-wide, even in scoped reports. Percentages compare implementation
 files and physical lines (including comments and blanks); they do not measure
@@ -75,7 +88,9 @@ into frontend (`apps/`, Koenig's three editor UI packages, and Core's
 `core/frontend/public/` browser scripts) and backend (remaining server code and
 library packages, including libraries shared with the frontend). Core's
 `core/frontend/` routing and rendering code executes on the server and therefore
-belongs to backend. Tests and tooling take precedence over this split. JSON
+belongs to backend. Tests and tooling take precedence over this split. Test support includes
+`test-utils`, `__fixtures__`, Mirage modules and `packages/testing/`; backend
+schema fixtures remain backend code. JSON
 schema version 2 replaces the old `production` category with these two values.
 
 Static imports, re-exports, literal dynamic imports, and `require()` calls are
