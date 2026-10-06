@@ -209,6 +209,8 @@ export class AppInstallationsService {
         context: parsed.errors
           .map(({ path, message }) => (path ? `${path}: ${message}` : message))
           .join('; '),
+        // The same problems one by one, so Admin can list them for the app's developer.
+        errorDetails: parsed.errors,
       });
     }
     const serialised = z.encode(StoredManifest, parsed.manifest);

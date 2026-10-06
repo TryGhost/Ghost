@@ -334,6 +334,10 @@ describe('App installations Admin API', function () {
       const error = await preview(MANIFEST_URL, 422);
       assert.equal(error.code, 'APP_MANIFEST_INVALID');
       assert.match(error.context, /id: /);
+      assert.deepEqual(
+        error.details.map(({ path }: { path: string }) => path),
+        ['id'],
+      );
     });
   });
 
