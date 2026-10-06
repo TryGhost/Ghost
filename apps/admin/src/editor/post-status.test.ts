@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import type { SaveEngineState } from './engine/save-engine';
+import { UNEXPECTED_MESSAGE } from './publish/completion-message';
 import {
   MAX_SCHEDULE_TIMEOUT_MS,
   SAVING_MIN_DISPLAY_MS,
@@ -48,6 +49,20 @@ describe('deriveEditorStatus', () => {
     expect(
       derive({ status: 'draft' }, { state: { kind: 'error', intent: 'field', error } }),
     ).toEqual({ kind: 'problem', message: 'Title is too long.' });
+  });
+
+  it('shows a generic message for an exception thrown in the browser', () => {
+    const cause = new TypeError("Cannot read properties of undefined (reading 'x')");
+    const state: SaveEngineState = {
+      kind: 'error',
+      intent: 'autosave',
+      error: { kind: 'unknown', message: cause.message, cause },
+    };
+
+    expect(derive({ status: 'draft' }, { state })).toEqual({
+      kind: 'problem',
+      message: UNEXPECTED_MESSAGE,
+    });
   });
 
   it('leaves a collision to its own banner', () => {

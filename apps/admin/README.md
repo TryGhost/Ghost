@@ -25,6 +25,15 @@ a package dependency: a filtered `@tryghost/admin...` install contains the React
 test dependencies, while development and production builds need the full
 workspace install to include Ember's toolchain.
 
+### Sidebar visibility
+
+React route handles own sidebar visibility on React screens. The
+`hideAdminSidebar` handle hides it for focused screens, including the editor
+with either implementation. On Ember-owned routes, the shell also respects
+Ember's fullscreen state. Ember state left behind after a navigation cannot
+hide the sidebar on a React screen. React continues publishing its fullscreen
+state to Ember for legacy shortcuts.
+
 ### CSS
 
 `src/index.css` is the single Tailwind CSS entry point for Admin. It imports
@@ -35,6 +44,10 @@ Admin Framework, and the embedded Koenig selector. Only this app loads the
 Embedded Admin apps must not import `@tryghost/shade/styles.css` themselves.
 Doing so generates duplicate utilities and creates cascade conflicts with
 Ember's legacy CSS.
+
+Admin also owns the shared `.koenig-react-editor` width and centering rule.
+Koenig loads its own editor stylesheet through `fetchKoenigLexical`; keep that
+stylesheet when removing Ember assets.
 
 Shade's Tailwind imports are unlayered because Ember's legacy CSS is also
 unlayered. This lets source order resolve overlapping utilities. Do not move

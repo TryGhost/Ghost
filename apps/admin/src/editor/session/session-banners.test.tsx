@@ -6,6 +6,7 @@ import {
 } from '@tryghost/test-data/selectors/editor';
 import { toast } from 'sonner';
 import type { PendingSave, SaveEngineState, SaveError } from '@/editor/engine/save-engine';
+import { UNEXPECTED_MESSAGE } from '@/editor/publish/completion-message';
 import { reportShownAlert } from '@/editor/report-error';
 import { SessionBanners } from './session-banners';
 import type { ReloadOutcome } from './use-editor-session';
@@ -282,6 +283,15 @@ describe('SessionBanners', () => {
     expect(screen.getByRole('alert')).not.toHaveTextContent('Failed to fetch');
   });
 
+  it('shows a generic reason rather than an exception thrown in the browser', () => {
+    const cause = new TypeError("Cannot read properties of undefined (reading 'x')");
+    renderBanners(errored({ kind: 'unknown', message: cause.message, cause }));
+
+    expect(screen.getByRole('alert')).toHaveTextContent(UNEXPECTED_MESSAGE);
+    expect(screen.getByRole('alert')).not.toHaveTextContent('Cannot read properties');
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeVisible();
+  });
+
   it('repeats a session failure the writer already dismissed', () => {
     renderBanners(errored({ kind: 'session-invalid', message: 'Unauthorized' }));
 
@@ -325,6 +335,14 @@ describe('SessionBanners reporting', () => {
       'Couldn’t reach the server. Your changes are still here.',
       error,
     );
+  });
+
+  it('reports a generic banner with the exception behind it', () => {
+    const cause = new TypeError("Cannot read properties of undefined (reading 'x')");
+    const error: SaveError = { kind: 'unknown', message: cause.message, cause };
+    renderBanners(errored(error));
+
+    expect(reportShownAlert).toHaveBeenCalledWith(UNEXPECTED_MESSAGE, error);
   });
 
   it('reports a collision held on a pending save once across re-renders', () => {

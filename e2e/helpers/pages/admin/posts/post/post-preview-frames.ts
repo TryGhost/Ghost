@@ -4,49 +4,24 @@ import {
   postPreviewEmailFrame,
 } from '@tryghost/test-data/selectors/editor';
 
-/** Which implementation renders the preview — decided by the `editorReact` flag. */
-export type PostPreviewImplementation = 'ember' | 'react';
+const BROWSER_FRAME = `iframe[data-testid="${postPreviewBrowserFrame}"]`;
+const EMAIL_FRAME = `iframe[data-testid="${postPreviewEmailFrame}"]`;
 
 class PreviewFrame {
   protected readonly page: Page;
-  private readonly implementation: PostPreviewImplementation;
 
-  constructor(page: Page, implementation: PostPreviewImplementation) {
+  constructor(page: Page) {
     this.page = page;
-    this.implementation = implementation;
   }
 
+  /** The modal listens for Escape once the preview document has loaded. */
   protected async waitForEscapeScriptToBeReady(): Promise<void> {
-    // React listens for Escape once the preview document has loaded.
-    if (this.implementation === 'react') {
-      await this.page.waitForFunction(
-        (selector) => {
-          const iframe = document.querySelector(selector) as HTMLIFrameElement | null;
-          return iframe?.contentDocument?.readyState === 'complete';
-        },
-        `iframe[data-testid="${postPreviewBrowserFrame}"]`,
-        { timeout: 5000 },
-      );
-      return;
-    }
-
     await this.page.waitForFunction(
-      () => {
-        const iframe = document.querySelector('iframe[title*="preview"]') as HTMLIFrameElement;
-        if (!iframe?.contentWindow) {
-          return false;
-        }
-
-        try {
-          const iframeWindow = iframe.contentWindow as Window & {
-            ghostPreviewEscapeHandlerReady?: boolean;
-          };
-          return iframeWindow.ghostPreviewEscapeHandlerReady === true;
-        } catch {
-          return false;
-        }
+      (selector) => {
+        const iframe = document.querySelector(selector) as HTMLIFrameElement | null;
+        return iframe?.contentDocument?.readyState === 'complete';
       },
-      undefined,
+      BROWSER_FRAME,
       { timeout: 5000 },
     );
   }
@@ -57,18 +32,10 @@ export class EmailPreviewFrame extends PreviewFrame {
   readonly previewBody: Locator;
   readonly frameBody: Locator;
 
-  constructor(
-    page: Page,
-    { implementation = 'ember' }: { implementation?: PostPreviewImplementation } = {},
-  ) {
-    super(page, implementation);
-    // Both implementations title the iframe "Email preview"; React also marks it.
-    const selector =
-      implementation === 'react'
-        ? `iframe[data-testid="${postPreviewEmailFrame}"]`
-        : 'iframe[title="Email preview"]';
+  constructor(page: Page) {
+    super(page);
 
-    this.frame = this.page.frameLocator(selector);
+    this.frame = this.page.frameLocator(EMAIL_FRAME);
     this.previewBody = this.frame.getByTestId('email-preview-body');
     this.frameBody = this.frame.locator('body');
   }
@@ -84,20 +51,11 @@ export class DesktopPreviewFrame extends PreviewFrame {
   /** The iframe element itself, for reading the URL the preview was pointed at. */
   readonly frameElement: Locator;
 
-  constructor(
-    page: Page,
-    { implementation = 'ember' }: { implementation?: PostPreviewImplementation } = {},
-  ) {
-    super(page, implementation);
-    // React renders one preview iframe and changes the chrome around it; Ember
-    // titles a separate iframe per device.
-    const selector =
-      implementation === 'react'
-        ? `iframe[data-testid="${postPreviewBrowserFrame}"]`
-        : 'iframe[title="Desktop browser post preview"]';
+  constructor(page: Page) {
+    super(page);
 
-    this.desktopPreviewFrame = page.frameLocator(selector);
-    this.frameElement = page.locator(selector);
+    this.desktopPreviewFrame = page.frameLocator(BROWSER_FRAME);
+    this.frameElement = page.locator(BROWSER_FRAME);
   }
 
   async focus(): Promise<void> {
