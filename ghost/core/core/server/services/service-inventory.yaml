@@ -3157,50 +3157,232 @@ services:
   posts:
     kind: directory
     disposition: retain
-    status: auditing
+    status: audited
     entryPoints:
       - posts/posts-service-instance.js
       - posts/post-scheduling.js
     notes: >-
-      Preserve factory-created caller instances and the separate scheduling module state;
-      prove isolation before choosing shared composition.
+      Record factory-created caller lifetimes and the separate scheduling module state;
+      establish which identity boundaries must survive before choosing shared composition.
+      The pilot needs focused construction/readiness and retained-consumer checks, not a
+      rewrite of unrelated post business logic.
     contracts:
       exports:
         summary: >-
-          There is no index. posts-service-instance exports a factory with PostsService
-          attached for tests. The independent post-scheduling module exports publish and
-          handleCacheInvalidation for the schedules endpoint.
-        sources:
-          - core/server/services/posts/posts-service-instance.js
-          - core/server/services/posts/post-scheduling.js
-          - core/server/api/endpoints/schedules.js
-        tests: []
-      construction:
-        summary: >-
-          Every factory call constructs PostStats, PostsExporter and PostsService;
-          PostsService also constructs PostEmailHandler. API modules retain factory results,
-          explore-ping injects one into each constructed ExplorePingService, and lexical
-          caches one on first rendering. post-scheduling separately retains an inFlight Set at
-          module scope.
+          There is no directory index. CommonJS posts-service-instance exports a synchronous
+          zero-argument factory with PostsService attached for tests. Each result exposes
+          browse/read/edit, bulk operations, export, visibility mapping, copying, cache helpers
+          and public collaborators including stats and postEmailHandler. Most methods require
+          their receiver; generateCopiedPostLocationFromUrl is passed unbound by posts/pages.
+          The separate post-scheduling module exports publish and handleCacheInvalidation.
+          Units assert selected copy/cache/edit results and handler dependencies; root/factory
+          export identity and repeated construction are source-only.
         sources:
           - core/server/services/posts/posts-service-instance.js
           - core/server/services/posts/posts-service.js
+          - core/server/services/posts/post-email-handler.js
           - core/server/services/posts/post-scheduling.js
           - core/server/api/endpoints/posts.js
+          - core/server/api/endpoints/pages.js
+        tests:
+          - test/unit/server/services/posts/posts-service.test.js
+          - test/unit/server/services/posts/post-email-handler.test.js
+      construction:
+        summary: >-
+          Every factory call creates PostStats, PostsExporter and PostsService, which creates
+          PostEmailHandler. It captures email-service.service immediately, shares the models
+          object with the handler, and gives the exporter a separate object of captured model
+          constructors. PostStats retains the shared DB facade and resolves knex on use. Other
+          dependencies are retained URL/settings helpers plus an isSet closure; the latter is
+          stored but unused by current PostsService methods. Constructors do no queries or
+          subscriptions themselves, although imports acquire shared modules. No guard, init or
+          singleton cache exists in the factory. Handler constructor tests assert injected
+          model/email identity; no test directly exercises the real factory dependency graph.
+        sources:
+          - core/server/services/posts/posts-service-instance.js
+          - core/server/services/posts/posts-service.js
+          - core/server/services/posts/post-email-handler.js
+          - core/server/services/posts/posts-exporter.js
+          - core/server/services/posts/stats/post-stats.js
+        tests:
+          - test/unit/server/services/posts/post-email-handler.test.js
+      consumers:
+        summary: >-
+          Posts/pages, public-post browse, admin/public search indexes, site exports and the
+          post output mapper each retain a factory result at module evaluation. Their uses
+          include edit/email, bulk/copy/cache headers, browse, export and legacy visibility
+          conversion; several other endpoint actions bypass this service and use models
+          directly. ExplorePingService receives a new result per construction and uses stats.
+          Lexical render/validate lazily creates and retains a result, but currently never
+          invokes it. The schedules endpoint calls the separate publisher. Search controller
+          units replace PostsService.prototype.browsePosts and assert URL-required columns;
+          real HTTP tests assert search projections, CSV/copy responses and bulk DB results.
+          Newsletter integration and retry HTTP tests exercise the real post/email connection
+          with provider or scheduling seams. They do not pin factory/caller identity timing.
+        sources:
+          - core/server/api/endpoints/posts.js
+          - core/server/api/endpoints/pages.js
+          - core/server/api/endpoints/posts-public.js
+          - core/server/api/endpoints/search-index.js
+          - core/server/api/endpoints/search-index-public.js
+          - core/server/api/endpoints/exports.js
+          - core/server/api/endpoints/utils/serializers/output/mappers/posts.js
           - core/server/services/explore-ping/index.ts
+          - core/server/services/explore-ping/explore-ping-service.ts
           - core/server/lib/lexical.js
-        tests: []
-    unverified:
-      - consumers
-      - startup
-      - lifetime
-      - configuration
-      - resources
-      - failures
+          - core/server/api/endpoints/schedules.js
+        tests:
+          - test/unit/api/endpoints/search-index.test.js
+          - test/unit/api/endpoints/search-index-public.test.js
+          - test/e2e-api/admin/search-index.test.js
+          - test/e2e-api/content/search-index.test.js
+          - test/e2e-api/admin/posts.test.js
+          - test/e2e-api/admin/posts-bulk.test.js
+          - test/integration/services/email-service/batch-sending.test.js
+          - test/e2e-api/admin/email-retry.test.ts
+      startup:
+        summary: >-
+          Boot has no posts initialization call. Factory readiness depends on the operation:
+          model/DB reads can work without email, while publication preflight/create/retry needs
+          the email implementation captured at construction. API pipeline getters and lazy
+          routers defer many caller imports; boot initializes email before mounting/readiness,
+          and Explore constructs posts during its later invocation in that service group.
+          Direct/early imports and Lexical construction are not guarded against capturing an
+          absent email service. Current HTTP tests prove selected normal boot/request paths,
+          not initialization order for retained callers or rejection before readiness. A new
+          managed root must explicitly coordinate these existing construction sites with boot.
+        sources:
+          - core/boot.js
+          - core/server/services/posts/posts-service-instance.js
+          - core/server/services/posts/post-email-handler.js
+          - core/server/api/endpoints/index.js
+          - core/shared/express.js
+          - core/server/web/api/app.js
+          - core/server/web/api/endpoints/admin/routes.js
+          - core/server/lib/lexical.js
+          - core/server/services/explore-ping/index.ts
+        tests:
+          - test/integration/services/email-service/batch-sending.test.js
+          - test/e2e-api/admin/email-retry.test.ts
+      lifetime:
+        summary: >-
+          Factory instances persist as long as callers retain them, with mutable public
+          collaborator fields and an independently retained email reference inside the handler.
+          Replacing email-service.service does not update either reference; replacing the
+          outer PostsService.emailService alone does not update its handler. Production callers
+          inspected do not replace these fields; units do replace postEmailHandler. No reset or
+          shutdown is exposed. Export state is per invocation. Scheduling has a module-wide
+          inFlight Set keyed by resource type/id and a shared no-op object; publish releases
+          the key in finally. Its gated unit proves same-key overlap returns no-op while the
+          first read is held, then one edit occurs. Error release, independent keys and
+          retained-consumer behavior across initialization remain source-only.
+        sources:
+          - core/server/services/posts/posts-service.js
+          - core/server/services/posts/post-email-handler.js
+          - core/server/services/posts/posts-service-instance.js
+          - core/server/services/posts/posts-exporter.js
+          - core/server/services/posts/post-scheduling.js
+        tests:
+          - test/unit/server/services/posts/posts-service.test.js
+          - test/unit/server/services/post-scheduling/post-scheduling.test.js
+      configuration:
+        summary: >-
+          Factory captures helper/model/email objects rather than a config subtree. Export
+          awaits newsletter/label/tier reads, then snapshots member, paid-member, tracking and
+          feedback settings for that stream; later exports read the retained facades again.
+          URL generation calls the shared output helper for each row. Scheduling reads the
+          configured minute tolerance at the beginning of each publish attempt, then uses that
+          captured value after its API read. PostStats has fixed published/sent filters.
+          Export units assert selected column changes after fake settings changes, default
+          limit 15, requested limits and order forwarding. This establishes per-call behavior
+          with fakes, not config hot reload or dependency rebinding; immutable config rules
+          still apply. Real factory capture/config timing lacks a dedicated test.
+        sources:
+          - core/server/services/posts/posts-service-instance.js
+          - core/server/services/posts/posts-exporter.js
+          - core/server/services/posts/post-scheduling.js
+          - core/server/services/posts/stats/post-stats.js
+        tests:
+          - test/unit/server/services/posts/posts-exporter.test.js
+      resources:
+        summary: >-
+          The factory graph owns no recurring timer, subscriber or provider client. It borrows
+          DB/models, email and URL/settings helpers. Operations perform model queries/writes;
+          bulk operations use local transactions and dispatch domain events without waiting
+          for subscribers. Export owns a Readable over an async generator, one metadata
+          context and bounded pages of up to 50 rows; the HTTP serializer owns its CSV transform
+          and pipeline to the response, while site export owns its enclosing pipeline. Export
+          units consume the stream and assert 75 exact IDs across two 50-row queries. This does
+          not establish early-close cancellation of an already-running DB query. Scheduling
+          owns only the active-key guard, with no timeout/drain; queued timer ownership belongs
+          to the separate post-scheduling service/adapter, not this module.
+        sources:
+          - core/server/services/posts/posts-service.js
+          - core/server/services/posts/posts-exporter.js
+          - core/server/services/posts/post-scheduling.js
+          - core/server/services/posts/stats/post-stats.js
+          - core/server/api/endpoints/utils/serializers/output/posts.js
+          - core/server/api/endpoints/utils/serializers/output/stream-csv-response.ts
+          - core/server/api/endpoints/utils/serializers/output/stream-response.ts
+          - core/server/api/endpoints/exports.js
+        tests:
+          - test/unit/server/services/posts/posts-exporter.test.js
+          - test/e2e-api/admin/posts.test.js
+      failures:
+        summary: >-
+          editPost awaits preflight, model edit and email creation/retry, serializes synchronously,
+          then awaits the optional callback; it adds no transaction/compensation across those
+          stages. Validation
+          failure prevents edit; a later failure can reject after a saved post. Handler wraps
+          invalid recipient-filter queries as BadRequest and tolerates only a lost retry claim
+          whose refreshed email is pending/submitting/submitted. Units assert selected exact
+          arguments/results and rejection/no-edit behavior, but not held completion barriers.
+          Bulk methods propagate write failures and dispatch after their awaited local work;
+          no whole-operation/subscriber atomicity is implied. Export-context failure rejects
+          before returning a stream, later page/mapping failure reaches the stream; invalid
+          human-readable filters log and fall back. Scheduling treats missing/non-scheduled/
+          early resources as no-op, keeps overdue non-forced publishes as errors and propagates
+          other API failures. Legacy real HTTP cases assert publish/no-op/status and concurrent
+          one-email outcomes with outbound scheduler/provider mocks; they do not prove every
+          transaction rollback, guard-release failure or delivery completion.
+        sources:
+          - core/server/services/posts/posts-service.js
+          - core/server/services/posts/post-email-handler.js
+          - core/server/services/posts/posts-exporter.js
+          - core/server/services/posts/post-scheduling.js
+          - core/server/api/endpoints/schedules.js
+        tests:
+          - test/unit/server/services/posts/posts-service.test.js
+          - test/unit/server/services/posts/post-email-handler.test.js
+          - test/unit/server/services/posts/posts-exporter.test.js
+          - test/e2e-api/admin/email-retry.test.ts
+          - test/legacy/api/admin/schedules.test.js
+    unverified: []
     blockers:
       - >-
-        Audit all factory consumers and mutable dependencies before replacing per-caller
-        instances. Keep the scheduling inFlight guard distinct from those instance lifetimes.
+        Pilot gate: characterize the real factory's fresh identities/shared collaborators and
+        immediate email capture, then prove the proposed managed facade remains usable by
+        retained endpoint/mapper/Explore/Lexical consumers. Import-time availability and
+        call-time readiness must be explicit; current business tests do not pin those boundaries.
+      - >-
+        Pilot gate: add the smallest boot/consumer assertion that publication reaches the
+        initialized email implementation through the retained posts service. Preserve the
+        real PostEmailHandler connection and existing DTO, preflight and retry results; a
+        prototype-only controller stub would miss a broken facade/dependency reference.
+      - >-
+        Pilot gate if edit composition changes: hold preflight/email/callback completion and
+        assert downstream calls/results remain pending, with original failures propagated at
+        each boundary. Existing edit units assert calls/results but replace the handler and
+        do not hold those stages unresolved. Reuse existing real HTTP/provider-mock coverage.
+      - >-
+        If migration touches the separate scheduling module, preserve its process-wide guard
+        and add failure-release/independent-key checks. Do not accidentally give each factory
+        its own guard. Existing overlap unit and HTTP test cover the successful same-key case.
+      - >-
+        Wider characterization, not a prerequisite for a composition-only pilot: export
+        interruption/page failure and transaction/subscriber failure boundaries remain partly
+        source-only, and PostStats real query behavior has no dedicated assertion found.
+        Preserve their existing owners and behavior unless the migration changes them.
   posts-public:
     kind: directory
     disposition: retain
