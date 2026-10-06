@@ -14,9 +14,9 @@ const presets = [
   { days: 30, start: '2024-02-10', counts: [4, 5, 6] },
   { days: 90, start: '2023-12-12', counts: [7, 8, 9] },
 ] as const;
-const entries = () => page.getByRole('region', { name: 'Total entries' });
+const entries = () => page.getByRole('region', { name: 'Total runs' });
 const card = (name: string) => page.getByRole('button', { name, exact: true });
-const labels = ['In progress', 'Completed', 'Exited early'] as const;
+const labels = ['In progress', 'Completed', 'Stopped'] as const;
 
 // Freeze only Date so network, polling, and UI timers still run normally.
 beforeEach(() => {
@@ -82,7 +82,7 @@ const expectCounts = async (counts: readonly [number, number, number]) => {
   const total = counts.reduce((sum, count) => sum + count, 0);
   await expect
     .element(entries().getByRole('status'))
-    .toHaveTextContent(`Total entries loaded: ${total}.`);
+    .toHaveTextContent(`Total runs loaded: ${total}.`);
   await expect.element(entries().getByRole('figure')).toBeVisible();
   for (const [index, label] of labels.entries()) {
     await expect.element(card(label)).toHaveTextContent(String(counts[index]));
@@ -200,9 +200,7 @@ describe('Automation performance date filter', () => {
     await expect.element(runs()).toHaveTextContent('Noah Bennett');
     try {
       await selectRange('Last 7 days');
-      await expect
-        .element(entries().getByRole('status'))
-        .toHaveTextContent('Loading total entries');
+      await expect.element(entries().getByRole('status')).toHaveTextContent('Loading total runs');
       await expect.element(runs().getByRole('status')).toHaveTextContent('Loading automation runs');
       await expect.element(runs()).not.toHaveTextContent('Noah Bennett');
       for (const label of labels) {
@@ -255,9 +253,7 @@ describe('Automation performance date filter', () => {
       const cards = labels.map((label) => card(label).element());
       const chartCard = entries().element();
       await selectRange('Last 7 days');
-      await expect
-        .element(entries().getByRole('status'))
-        .toHaveTextContent('Loading total entries');
+      await expect.element(entries().getByRole('status')).toHaveTextContent('Loading total runs');
       expect(entries().element()).toBe(chartCard);
       for (const [index, label] of labels.entries()) {
         expect(card(label).element()).toBe(cards[index]);

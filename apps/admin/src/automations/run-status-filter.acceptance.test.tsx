@@ -9,7 +9,7 @@ import {
   run,
 } from './run-list.test-utils';
 
-const entries = () => page.getByRole('region', { name: 'Total entries' });
+const entries = () => page.getByRole('region', { name: 'Total runs' });
 const statuses = () => page.getByRole('region', { name: 'Automation status counts' });
 const statusCard = (name: string) => statuses().getByRole('button', { name, exact: true });
 const open = openAutomationSidebar;
@@ -60,7 +60,7 @@ describe('Automation run status filtering', () => {
     await expect.element(entries()).toHaveTextContent('1,432');
     for (const [label, status] of [
       ['Completed', 'completed'],
-      ['Exited early', 'exited_early'],
+      ['Stopped', 'exited_early'],
       ['In progress', 'in_progress'],
     ]) {
       await statusCard(label).click();
@@ -194,9 +194,7 @@ describe('Automation run status filtering', () => {
     await renderAdminApp('/automations/first', flags);
     await open();
     await statusCard('Completed').click();
-    await expect
-      .element(runsRegion().getByRole('alert'))
-      .toHaveTextContent('Could not load entries');
+    await expect.element(runsRegion().getByRole('alert')).toHaveTextContent('Could not load runs');
     await statusCard('Completed').click();
     await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
     await statusCard('Completed').click();

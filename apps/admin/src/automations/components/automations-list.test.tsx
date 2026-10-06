@@ -83,8 +83,8 @@ describe('AutomationsList', () => {
     expect(screen.getByText('Another automation')).toBeInTheDocument();
     expect(screen.getAllByText('Live')).toHaveLength(1);
     expect(screen.getAllByText('Off')).toHaveLength(2);
-    expect(screen.getByRole('columnheader', { name: 'Last entry' })).toBeInTheDocument();
-    expect(screen.getByRole('columnheader', { name: 'Total entries' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Last started' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Total runs' })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'In progress' })).toBeInTheDocument();
     expect(screen.getByText('1,432')).toBeInTheDocument();
     expect(screen.getByText('118')).toBeInTheDocument();
@@ -104,8 +104,8 @@ describe('AutomationsList', () => {
 
     renderWithRouter(<AutomationsList automations={automationsWithoutStats} />);
 
-    expect(screen.queryByRole('columnheader', { name: 'Last entry' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('columnheader', { name: 'Total entries' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'Last started' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'Total runs' })).not.toBeInTheDocument();
     expect(screen.queryByRole('columnheader', { name: 'In progress' })).not.toBeInTheDocument();
     expect(screen.queryByText('1,432')).not.toBeInTheDocument();
   });
