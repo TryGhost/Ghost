@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-utils",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "Shared utilities for Ghost's Koenig editor packages",
   "license": "MIT",
   "author": "Ghost Foundation",

@@ -1,5 +1,13 @@
 # @tryghost/admin
 
+## 0.0.3
+
+### Patch Changes
+
+- Updated dependencies:
+  - @tryghost/kg-clean-basic-html@4.3.6
+  - @tryghost/kg-converters@1.2.6
+
 ## 0.0.2
 
 ### Patch Changes
