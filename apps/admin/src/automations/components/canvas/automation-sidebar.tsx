@@ -2,7 +2,18 @@ import type { PerformanceDateRange } from '@/automations/utils/performance-date-
 import { useAutomationPerformanceStats } from '@/automations/hooks/use-automation-performance-stats';
 import React, { useId, useState } from 'react';
 import type { AutomationRunStatusFilter } from '@tryghost/admin-x-framework/api/automations';
-import { Button } from '@tryghost/shade/components';
+import {
+  Button,
+  Field,
+  FieldLabel,
+  FieldError,
+  Input,
+  Textarea,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from '@tryghost/shade/components';
 import { Box, Grid, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { TotalEntries } from './total-entries';
@@ -15,6 +26,9 @@ import {
   createPerformanceDateRange,
   PERFORMANCE_RANGES,
 } from '@/automations/utils/performance-date-range';
+
+type AutomationSidebarTab = 'performance' | 'settings';
+type AutomationMetadata = 'hidden' | 'editable' | 'readonly';
 
 const PerformanceContent: React.FC<{
   automationId: string;
@@ -138,8 +152,13 @@ const PerformanceContent: React.FC<{
   );
 };
 
-export const PerformanceSidebar: React.FC<{
+export const AutomationSidebar: React.FC<{
   automationId: string;
+  name: string;
+  description: string;
+  performanceEnabled: boolean;
+  metadata: AutomationMetadata;
+  onDetailsChange: (details: { name: string; description: string }) => void;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   selectedRunId: string | null;
@@ -147,18 +166,44 @@ export const PerformanceSidebar: React.FC<{
   isRunSelectionDisabled: boolean;
 }> = ({
   automationId,
+  name,
+  description,
+  performanceEnabled,
+  metadata,
+  onDetailsChange,
   isOpen,
   onOpenChange,
   selectedRunId,
   onSelectRun,
   isRunSelectionDisabled,
 }) => {
+  const [selectedTab, setSelectedTab] = useState<AutomationSidebarTab>(
+    performanceEnabled ? 'performance' : 'settings',
+  );
+  let activeTab: AutomationSidebarTab;
+  switch (metadata) {
+    case 'hidden':
+      activeTab = performanceEnabled ? 'performance' : 'settings';
+      break;
+    case 'editable':
+    case 'readonly':
+      activeTab = performanceEnabled ? selectedTab : 'settings';
+      break;
+    default: {
+      const _exhaustive: never = metadata;
+      throw new Error(`Unknown automation metadata mode: ${String(_exhaustive)}`);
+    }
+  }
+  const nameId = useId();
+  const descriptionId = useId();
+  const nameErrorId = useId();
+  const isNameValid = name.trim().length > 0;
   const [searchOpen, setSearchOpen] = useState(false);
   const [input, setInput] = useState('');
   const [search, setSearch] = useState('');
   const searchActive = !!input || !!search;
   const updating = input !== search;
-  const [hasOpened, setHasOpened] = useState(isOpen);
+  const [hasOpened, setHasOpened] = useState(isOpen && performanceEnabled);
   const [status, setStatus] = useState<AutomationRunStatusFilter | null>(null);
   const [direction, setDirection] = useState<RunSortDirection>('desc');
   const [queryRevision, setQueryRevision] = useState(0);
@@ -169,7 +214,7 @@ export const PerformanceSidebar: React.FC<{
   const runQueryScope = `${panelId}:${queryRevision}`;
 
   // Mount on the first opening, including the active-flow default, then retain cached content.
-  if (isOpen && !hasOpened) {
+  if (isOpen && performanceEnabled && activeTab === 'performance' && !hasOpened) {
     setHasOpened(true);
   }
 
@@ -178,7 +223,7 @@ export const PerformanceSidebar: React.FC<{
       <Button
         aria-controls={panelId}
         aria-expanded={isOpen}
-        aria-label={isOpen ? 'Hide performance' : 'Show performance'}
+        aria-label={isOpen ? 'Hide automation sidebar' : 'Show automation sidebar'}
         className="absolute top-4 left-4 z-20"
         size="icon"
         type="button"
@@ -208,66 +253,125 @@ export const PerformanceSidebar: React.FC<{
           gap="none"
           style={{ overflowAnchor: 'none' }}
         >
-          <Inline className="h-9 shrink-0 pl-10" gap="sm">
-            <Text
-              as="h2"
-              className={searchOpen ? 'sr-only' : 'min-w-0 flex-1'}
-              id={headingId}
-              size="md"
-              weight="semibold"
+          <Text as="h2" className="sr-only" id={headingId}>
+            {activeTab === 'performance' ? 'Performance' : 'Settings'}
+          </Text>
+          <Tabs
+            className="flex min-h-0 flex-1 flex-col"
+            value={activeTab}
+            variant="button"
+            onValueChange={(value) => {
+              if (value === 'performance' || value === 'settings') {
+                setSelectedTab(value);
+              }
+            }}
+          >
+            <Inline className="h-9 shrink-0 pl-10" gap="sm">
+              <TabsList
+                aria-label="Automation sidebar"
+                className={searchOpen && activeTab === 'performance' ? 'sr-only' : 'min-w-0 flex-1'}
+              >
+                {performanceEnabled && <TabsTrigger value="performance">Performance</TabsTrigger>}
+                {metadata !== 'hidden' && <TabsTrigger value="settings">Settings</TabsTrigger>}
+              </TabsList>
+              {activeTab === 'performance' && (
+                <>
+                  <MemberSearch
+                    open={searchOpen}
+                    onInputChange={setInput}
+                    onOpenChange={setSearchOpen}
+                    onSearchChange={(next) => {
+                      if (next !== search) {
+                        setSearch(next);
+                        setQueryRevision((revision) => revision + 1);
+                      }
+                    }}
+                  />
+                  {!searchActive && (
+                    <PerformanceDateFilter
+                      value={dateRange.value}
+                      onChange={(value) => {
+                        if (value !== dateRange.value) {
+                          setDateRange(createPerformanceDateRange(value));
+                        }
+                      }}
+                    />
+                  )}
+                </>
+              )}
+            </Inline>
+            <TabsContent
+              className="flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden"
+              hidden={activeTab !== 'performance'}
+              value="performance"
+              forceMount
             >
-              Performance
-            </Text>
-            <MemberSearch
-              open={searchOpen}
-              onInputChange={setInput}
-              onOpenChange={setSearchOpen}
-              onSearchChange={(next) => {
-                if (next !== search) {
-                  setSearch(next);
-                  setQueryRevision((revision) => revision + 1);
-                }
-              }}
-            />
-            {!searchActive && (
-              <PerformanceDateFilter
-                value={dateRange.value}
-                onChange={(value) => {
-                  if (value !== dateRange.value) {
-                    setDateRange(createPerformanceDateRange(value));
-                  }
-                }}
-              />
+              {performanceEnabled && hasOpened && (
+                <Stack className="mt-4 min-h-0 flex-1" gap="none">
+                  <PerformanceContent
+                    automationId={automationId}
+                    dateRange={dateRange}
+                    direction={direction}
+                    enabled={isOpen && activeTab === 'performance'}
+                    isRunSelectionDisabled={isRunSelectionDisabled}
+                    queryScope={panelId}
+                    runQueryScope={runQueryScope}
+                    search={search}
+                    searchActive={searchActive}
+                    selectedRunId={selectedRunId}
+                    selectedStatus={status}
+                    updating={updating}
+                    onClearDate={() => setDateRange(createPerformanceDateRange('all'))}
+                    onDirectionChange={(next) => {
+                      setDirection(next);
+                      setQueryRevision((revision) => revision + 1);
+                    }}
+                    onSelectRun={onSelectRun}
+                    onStatusChange={(selected) => {
+                      setStatus(status === selected ? null : selected);
+                      setQueryRevision((revision) => revision + 1);
+                    }}
+                  />
+                </Stack>
+              )}
+            </TabsContent>
+            {metadata !== 'hidden' && (
+              <TabsContent className="mt-6" value="settings">
+                <Stack gap="xl">
+                  <Field data-invalid={!isNameValid || undefined}>
+                    <FieldLabel htmlFor={nameId}>Name</FieldLabel>
+                    <Input
+                      aria-describedby={!isNameValid ? nameErrorId : undefined}
+                      aria-invalid={!isNameValid || undefined}
+                      disabled={metadata === 'readonly'}
+                      id={nameId}
+                      maxLength={191}
+                      value={name}
+                      onChange={(event) =>
+                        onDetailsChange({ name: event.target.value, description })
+                      }
+                    />
+                    {!isNameValid && (
+                      <FieldError id={nameErrorId}>Add an automation name.</FieldError>
+                    )}
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor={descriptionId}>Description</FieldLabel>
+                    <Textarea
+                      disabled={metadata === 'readonly'}
+                      id={descriptionId}
+                      maxLength={2000}
+                      rows={4}
+                      value={description}
+                      onChange={(event) =>
+                        onDetailsChange({ name, description: event.target.value })
+                      }
+                    />
+                  </Field>
+                </Stack>
+              </TabsContent>
             )}
-          </Inline>
-          {hasOpened && (
-            <Stack className="mt-4 min-h-0 flex-1" gap="none">
-              <PerformanceContent
-                automationId={automationId}
-                dateRange={dateRange}
-                direction={direction}
-                enabled={isOpen}
-                isRunSelectionDisabled={isRunSelectionDisabled}
-                queryScope={panelId}
-                runQueryScope={runQueryScope}
-                search={search}
-                searchActive={searchActive}
-                selectedRunId={selectedRunId}
-                selectedStatus={status}
-                updating={updating}
-                onClearDate={() => setDateRange(createPerformanceDateRange('all'))}
-                onDirectionChange={(next) => {
-                  setDirection(next);
-                  setQueryRevision((revision) => revision + 1);
-                }}
-                onSelectRun={onSelectRun}
-                onStatusChange={(selected) => {
-                  setStatus(status === selected ? null : selected);
-                  setQueryRevision((revision) => revision + 1);
-                }}
-              />
-            </Stack>
-          )}
+          </Tabs>
         </Stack>
       </aside>
     </>

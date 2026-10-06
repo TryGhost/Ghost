@@ -10,7 +10,7 @@ import {
   renderAdminApp,
 } from '@test-utils/acceptance';
 import {
-  openPerformanceSidebar,
+  openAutomationSidebar,
   flags,
   response,
   read as readAutomation,
@@ -32,8 +32,8 @@ const prepare = (id = 'first', status: 'active' | 'inactive' = 'active') => {
 const entries = () => page.getByRole('region', { name: 'Total entries' });
 const statuses = () => page.getByRole('region', { name: 'Automation status counts' });
 const statusCard = (name: string) => statuses().getByRole('button', { name, exact: true });
-const open = openPerformanceSidebar;
-const close = () => page.getByRole('button', { name: 'Hide performance' }).click();
+const open = openAutomationSidebar;
+const close = () => page.getByRole('button', { name: 'Hide automation sidebar' }).click();
 
 describe('Performance without Tinybird configuration', () => {
   it.each([
@@ -71,8 +71,8 @@ describe('Performance without Tinybird configuration', () => {
         await expect.element(canvas).toBeVisible();
         await expect.element(page.getByRole('textbox', { name: 'Wait for' })).toBeVisible();
         await expect
-          .element(page.getByRole('button', { name: /^(Show|Hide) performance$/ }))
-          .not.toBeInTheDocument();
+          .element(page.getByRole('button', { name: 'Show automation sidebar' }))
+          .toBeVisible();
         await expect
           .element(page.getByRole('complementary', { name: 'Performance' }))
           .not.toBeInTheDocument();
@@ -82,6 +82,10 @@ describe('Performance without Tinybird configuration', () => {
         await expect
           .poll(() => canvas.element().getBoundingClientRect().width)
           .toBe(page.getByTestId('automation-canvas').element().getBoundingClientRect().width);
+        await page.getByRole('button', { name: 'Show automation sidebar' }).click();
+        await expect.element(page.getByRole('tab', { name: 'Settings' })).toBeVisible();
+        await page.getByRole('textbox', { name: 'Name', exact: true }).fill('Updated flow');
+        await page.getByRole('button', { name: 'Hide automation sidebar' }).click();
         await page.getByRole('textbox', { name: 'Wait for' }).fill('2');
         const saveLabel = status === 'active' ? 'Publish changes' : 'Save';
         await page.getByRole('button', { name: saveLabel, exact: true }).click();
@@ -105,7 +109,7 @@ describe('Performance without Tinybird configuration', () => {
   );
 });
 
-describe('Performance sidebar defaults', () => {
+describe('Automation sidebar defaults', () => {
   it('opens on an active flow deep link after loading and respects close/reopen through edits', async () => {
     prepare();
     let finish!: () => void;
@@ -123,7 +127,7 @@ describe('Performance sidebar defaults', () => {
       finish();
     }
     await expect.element(statusCard('Completed')).toHaveTextContent('1,260');
-    await expect.element(automationsScreen.hidePerformanceButton()).toBeVisible();
+    await expect.element(automationsScreen.hideAutomationSidebarButton()).toBeVisible();
     const canvas = page.getByRole('region', { name: 'Editing canvas' });
     const card = page.getByRole('article', { name: 'Wait: 1 day' });
     await expect
@@ -135,7 +139,7 @@ describe('Performance sidebar defaults', () => {
       .toBeLessThan(2);
     await close();
     await page.getByRole('textbox', { name: 'Wait for' }).fill('2');
-    await expect.element(automationsScreen.showPerformanceButton()).toBeVisible();
+    await expect.element(automationsScreen.showAutomationSidebarButton()).toBeVisible();
     await open();
     await expect.element(statusCard('Completed')).toHaveTextContent('1,260');
   });
@@ -155,11 +159,11 @@ describe('Performance sidebar defaults', () => {
     window.location.hash = '#/automations/second';
     await expect.element(statusCard('Completed')).toHaveTextContent('2,500');
     window.location.hash = '#/automations/draft';
-    await expect.element(automationsScreen.showPerformanceButton()).toBeVisible();
+    await expect.element(automationsScreen.showAutomationSidebarButton()).toBeVisible();
     expect(draftRequests.requests).toHaveLength(0);
     window.location.hash = '#/automations/first';
     await expect.element(statusCard('Completed')).toBeVisible();
-    await expect.element(automationsScreen.hidePerformanceButton()).toBeVisible();
+    await expect.element(automationsScreen.hideAutomationSidebarButton()).toBeVisible();
   });
 
   it.each([false, true])(
@@ -173,7 +177,7 @@ describe('Performance sidebar defaults', () => {
         ],
       }));
       await renderAdminApp('/automations/first', flags);
-      await expect.element(automationsScreen.showPerformanceButton()).toBeVisible();
+      await expect.element(automationsScreen.showAutomationSidebarButton()).toBeVisible();
       if (explicitClose) {
         await open();
         await close();
@@ -189,8 +193,8 @@ describe('Performance sidebar defaults', () => {
       await expect
         .element(
           explicitClose
-            ? automationsScreen.showPerformanceButton()
-            : automationsScreen.hidePerformanceButton(),
+            ? automationsScreen.showAutomationSidebarButton()
+            : automationsScreen.hideAutomationSidebarButton(),
         )
         .toBeVisible();
       await page.getByRole('button', { name: 'Turn off', exact: true }).click();
@@ -201,16 +205,18 @@ describe('Performance sidebar defaults', () => {
       await expect
         .element(page.getByRole('button', { name: 'Publish', exact: true }))
         .toBeVisible();
-      await expect.element(automationsScreen.showPerformanceButton()).toBeVisible();
+      await expect.element(automationsScreen.showAutomationSidebarButton()).toBeVisible();
     },
   );
 });
 
-describe('Performance sidebar data and errors', () => {
+describe('Automation sidebar data and errors', () => {
   it('remains closed by default for draft automations and fetches only when opened', async () => {
     const request = prepare('first', 'inactive');
     await renderAdminApp('/automations/first', flags);
-    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    await expect
+      .element(page.getByRole('button', { name: 'Show automation sidebar' }))
+      .toBeVisible();
     expect(request.requests).toHaveLength(0);
     await open();
     await expect.element(statusCard('In progress')).toHaveTextContent('118');
@@ -325,7 +331,7 @@ describe('Performance sidebar data and errors', () => {
   });
 });
 
-describe('Performance sidebar request lifecycle', () => {
+describe('Automation sidebar request lifecycle', () => {
   it('shares one request across the chart and cards, reopening, focus, and reconnect', async () => {
     const request = prepare();
     await renderAdminApp('/automations/first', flags);
@@ -364,7 +370,9 @@ describe('Performance sidebar request lifecycle', () => {
     await open();
     await expect.poll(() => first.requests.length).toBe(1);
     window.location.hash = '#/automations/second';
-    await expect.element(page.getByRole('button', { name: 'Hide performance' })).toBeVisible();
+    await expect
+      .element(page.getByRole('button', { name: 'Hide automation sidebar' }))
+      .toBeVisible();
     await open();
     await expect.element(statusCard('Completed')).toHaveTextContent('2,500');
     finish();
@@ -378,7 +386,9 @@ describe('Performance sidebar request lifecycle', () => {
       response('first', { inProgress: 118, completed: 1600, exitedEarly: 54 }),
     );
     window.location.hash = '#/automations/first';
-    await expect.element(page.getByRole('button', { name: 'Hide performance' })).toBeVisible();
+    await expect
+      .element(page.getByRole('button', { name: 'Hide automation sidebar' }))
+      .toBeVisible();
     await open();
     await expect.element(statusCard('Completed')).toHaveTextContent('1,600');
     await expect.element(entries()).toHaveTextContent('1,772');
@@ -401,15 +411,16 @@ describe('Performance sidebar request lifecycle', () => {
         )
         .toBeVisible();
       expect(request.requests).toHaveLength(0);
+      await expect.element(page.getByRole('tab', { name: 'Performance' })).not.toBeInTheDocument();
       await expect
-        .element(page.getByRole('button', { name: 'Show performance' }))
-        .not.toBeInTheDocument();
+        .element(page.getByRole('button', { name: 'Show automation sidebar' }))
+        .toBeVisible();
       await expect.element(statuses()).not.toBeInTheDocument();
     },
   );
 });
 
-describe('Performance sidebar layout', () => {
+describe('Automation sidebar layout', () => {
   it('keeps the chart and cards at a stable width throughout reopening', async () => {
     prepare();
     await renderAdminApp('/automations/first', flags);
@@ -433,7 +444,7 @@ describe('Performance sidebar layout', () => {
     let transition: Animation | undefined;
     try {
       // This case inspects the opening transition before it settles.
-      await automationsScreen.showPerformanceButton().click();
+      await automationsScreen.showAutomationSidebarButton().click();
       await expect
         .poll(() => {
           transition = panel
