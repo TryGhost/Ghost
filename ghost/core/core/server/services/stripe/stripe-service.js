@@ -11,6 +11,7 @@ const CheckoutSessionEventService = require('./services/webhook/checkout-session
 const ChargeRefundedEventService = require('./services/webhook/charge-refunded-event-service');
 const memberWelcomeEmailService = require('../member-welcome-emails/service');
 const metafields = require('../members-metafields');
+const stripeCheckoutConfig = require('../stripe-checkout-config');
 
 /**
  * @typedef {object} IStripeServiceConfig
@@ -135,10 +136,13 @@ module.exports = class StripeService {
         memberWelcomeEmailService.init();
         return memberWelcomeEmailService.api.isMemberWelcomeEmailActive('paid');
       },
-      // A getter because the metafields services are built during boot: reading the
-      // binding at construction would capture the empty value it had beforehand.
+      // Getters because these services are built during boot: reading them at
+      // construction would capture the empty values they had beforehand.
       get metafieldBindings() {
         return metafields.bindings;
+      },
+      get stripeCheckoutConfig() {
+        return stripeCheckoutConfig.service;
       },
       get memberBREADService() {
         return membersService.api.memberBREADService;

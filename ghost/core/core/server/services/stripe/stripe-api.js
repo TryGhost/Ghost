@@ -559,7 +559,7 @@ module.exports = class StripeAPI {
    * @param {string} options.customerEmail
    * @param {number} options.trialDays
    * @param {string} [options.coupon]
-   * @param {import('../tier-checkout-config').ResolvedCheckout} [options.checkout] What
+   * @param {import('../stripe-checkout-config').ResolvedCheckout} [options.checkout] What
    *   the tier's checkout asks for beyond the payment. Absent, or empty, adds nothing.
    *
    * @returns {Promise<ICheckoutSession>}

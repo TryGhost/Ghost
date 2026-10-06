@@ -1166,14 +1166,25 @@ describe('CheckoutSessionEventService', function () {
       const PLAN = { writes: [{ value: 'Large' }], origin: { source: 'checkout' } };
       let labsService;
       let metafieldBindings;
+      let stripeCheckoutConfig;
       let memberBREADService;
 
       beforeEach(function () {
         labsService = { isSet: sinon.stub().returns(true) };
         metafieldBindings = { planCollected: sinon.stub().resolves({ plans: [PLAN] }) };
+        stripeCheckoutConfig = {
+          collectedPorts: sinon.stub().resolves(new Set(['shipping_name', 'shipping_address'])),
+        };
         memberBREADService = { updateWithMetafields: sinon.stub().resolves() };
-        service = createService({ labsService, metafieldBindings, memberBREADService });
+        service = createService({
+          labsService,
+          metafieldBindings,
+          stripeCheckoutConfig,
+          memberBREADService,
+        });
         session.metadata.ghostTierId = 'tier_123';
+        // Something to save: a checkout that collected nothing has nothing to look up.
+        session.shipping = { name: 'Bex Jones', address: { line1: '1 High Street' } };
         api.getCustomer.resolves(customer);
         sinon.stub(logging, 'warn');
         sinon.stub(logging, 'error');
@@ -1189,11 +1200,8 @@ describe('CheckoutSessionEventService', function () {
 
         await service.handleSubscriptionEvent(session);
 
-        sinon.assert.calledOnceWithExactly(
-          metafieldBindings.planCollected,
-          'tier_123',
-          sinon.match.array,
-        );
+        sinon.assert.calledOnceWithExactly(stripeCheckoutConfig.collectedPorts, 'tier_123');
+        sinon.assert.calledOnceWithExactly(metafieldBindings.planCollected, sinon.match.array);
         sinon.assert.calledOnceWithExactly(
           memberBREADService.updateWithMetafields,
           {},

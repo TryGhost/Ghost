@@ -88,6 +88,7 @@ module.exports = class CheckoutSessionEventService {
    * @param {function} deps.sendSignupEmail
    * @param {function} deps.isPaidWelcomeEmailActive
    * @param {Pick<import('../../../members-metafields/bindings-service').MetafieldBindingsService, 'planCollected'>} deps.metafieldBindings
+   * @param {Pick<import('../../../stripe-checkout-config').StripeCheckoutConfigService, 'collectedPorts'>} deps.stripeCheckoutConfig
    * @param {{updateWithMetafields: (data: object, options: {id: string}, plans: import('../../../members-metafields/values-service').MetafieldPlan[]) => Promise<unknown>}} deps.memberBREADService
    */
   constructor(deps) {
@@ -467,8 +468,9 @@ module.exports = class CheckoutSessionEventService {
    * @param {boolean} options.memberPreexisted Whether the member's record existed before this event resolved it
    */
   async writeCollectedFields(memberId, session, { memberPreexisted }) {
-    // Stamped at create time. A session predating this feature carries none. Read
-    // outside the try so a failure below can name the tier whose answers were lost.
+    // Stamped at create time, and what decides which of the values Stripe returned this
+    // tier asked for. A session predating this feature carries none. Read outside the try
+    // so a failure below can name the tier whose values were lost.
     const tierId = session.metadata?.ghostTierId;
 
     try {
@@ -495,9 +497,14 @@ module.exports = class CheckoutSessionEventService {
         return;
       }
 
+      const collected = collectedByPort.parse(session);
+      if (collected.length === 0) {
+        return;
+      }
+
+      const asked = await this.deps.stripeCheckoutConfig.collectedPorts(tierId);
       const { plans, failure } = await this.deps.metafieldBindings.planCollected(
-        tierId,
-        collectedByPort.parse(session),
+        collected.filter(({ port }) => asked.has(port)),
       );
       if (plans.length > 0) {
         // Through the members service, like any other edit, so the values reach webhooks.

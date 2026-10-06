@@ -1386,6 +1386,13 @@ describe('Members API', function () {
         return body.members_metafields[0].key;
       }
 
+      async function setCheckout(config) {
+        await adminAgent
+          .put('/stripe/checkout/config/')
+          .body({ checkout_config: [config] })
+          .expectStatus(200);
+      }
+
       async function sendCheckoutWebhook(email, sessionExtras) {
         set(customer, {
           id: 'cus_123',
@@ -1438,29 +1445,25 @@ describe('Members API', function () {
           vat: await createField('VAT number', 'short_text'),
           recipient: await createField('Recipient name', 'short_text'),
         };
-        // A destination is set by configuring a tier to collect into it, which is
-        // the only way a publisher gets one: the checkbox and the field are one
+        // A destination is set by configuring the checkout to collect into it, which
+        // is the only way a publisher gets one: the toggle and the field are one
         // choice. The binding it creates is what the webhook resolves against.
-        const product = await getPaidProduct();
-        await adminAgent.put(`/tiers/${product.id}/checkout_config/`).body({
-          tiers_checkout_config: [
-            {
-              shipping: {
-                collect: true,
-                allowed_countries: ['GB'],
-                name: { custom_field_key: fieldKeys.recipient },
-                address: { custom_field_key: fieldKeys.address },
-              },
-              tax_number: { collect: true },
-            },
-          ],
+        await setCheckout({
+          shipping: {
+            collect: true,
+            allowed_countries: ['GB'],
+            name: { custom_field_key: fieldKeys.recipient },
+            address: { custom_field_key: fieldKeys.address },
+          },
+          tax_number: { collect: true },
         });
       });
 
       afterEach(async function () {
         await models.Base.knex('members_metafield_values').del();
         await models.Base.knex('members_metafield_bindings').del();
-        await models.Base.knex('products_checkout_config').del();
+        await models.Base.knex('stripe_checkout_config_tiers').del();
+        await models.Base.knex('stripe_checkout_config').del();
         await models.Base.knex('members_metafields').del();
         // The second tier one test adds is a paid product, and `getPaidProduct` asks for
         // whichever paid product comes first. Leaving it behind would decide that answer
@@ -1592,22 +1595,9 @@ describe('Members API', function () {
         }
       });
 
-      // Turning collection off has to stop the collecting, and Stripe keeps returning
-      // the recipient and address on every completed session whatever a tier asked for,
-      // so "stopped" can only mean the values stop landing on the member.
-      //
-      // A second tier still collects, because that is what makes the difference between
-      // one tier changing its mind and the site doing so — and a publisher running a
-      // print tier beside a digital one is the ordinary case, not a corner.
       it('keeps a phone number a checkout collected', async function () {
         const phone = await createField('Contact number', 'short_text');
-        const product = await getPaidProduct();
-        await adminAgent
-          .put(`/tiers/${product.id}/checkout_config/`)
-          .body({
-            tiers_checkout_config: [{ phone: { collect: true, custom_field_key: phone } }],
-          })
-          .expectStatus(200);
+        await setCheckout({ phone: { collect: true, custom_field_key: phone } });
 
         const member = await sendCheckoutWebhook('checkout-phone@email.com', {
           customer_details: { phone: '+447700900123' },
@@ -1622,13 +1612,7 @@ describe('Members API', function () {
       // too long to store is no reason to lose it.
       it('keeps the values it can when one of them is refused', async function () {
         const phone = await createField('Contact number', 'short_text');
-        const product = await getPaidProduct();
-        await adminAgent
-          .put(`/tiers/${product.id}/checkout_config/`)
-          .body({
-            tiers_checkout_config: [{ phone: { collect: true, custom_field_key: phone } }],
-          })
-          .expectStatus(200);
+        await setCheckout({ phone: { collect: true, custom_field_key: phone } });
 
         const member = await sendCheckoutWebhook('checkout-partly-refused@email.com', {
           shipping: { name: 'Bex Jones', address: { line1: '1 High Street', country: 'GB' } },
@@ -1665,7 +1649,14 @@ describe('Members API', function () {
         );
       });
 
-      it('stops collecting for a tier that has turned it off, while another still does', async function () {
+      // Stripe keeps returning the recipient and address on every completed session
+      // whatever a tier asked for, so a tier the publisher does not collect for can only
+      // mean the values stop landing on the member.
+      //
+      // A second tier still collects, because that is what makes the difference between
+      // one tier being left out and the site stopping — and a publisher running a print
+      // tier beside a digital one is the ordinary case, not a corner.
+      it('keeps nothing a tier was not asked for, while another tier still collects', async function () {
         const [existing] = await models.Base.knex('products').where(
           'id',
           (await getPaidProduct()).id,
@@ -1676,26 +1667,17 @@ describe('Members API', function () {
           name: 'Still shipping',
           slug: 'still-shipping-tier',
         });
-        await adminAgent
-          .put(`/tiers/${SECOND_TIER_ID}/checkout_config/`)
-          .body({
-            tiers_checkout_config: [
-              {
-                shipping: {
-                  collect: true,
-                  allowed_countries: ['GB'],
-                  name: { custom_field_key: fieldKeys.recipient },
-                  address: { custom_field_key: fieldKeys.address },
-                },
-              },
-            ],
-          })
-          .expectStatus(200);
 
-        // The publisher stops collecting on the tier this session is for.
-        const product = await getPaidProduct();
-        await adminAgent.put(`/tiers/${product.id}/checkout_config/`).body({
-          tiers_checkout_config: [{ shipping: { collect: false }, tax_number: { collect: false } }],
+        // Shipping moves to the second tier only, so the tier this session is for no
+        // longer asks for it.
+        await setCheckout({
+          shipping: {
+            collect: true,
+            tier_ids: [SECOND_TIER_ID],
+            allowed_countries: ['GB'],
+            name: { custom_field_key: fieldKeys.recipient },
+            address: { custom_field_key: fieldKeys.address },
+          },
         });
 
         const member = await sendCheckoutWebhook('checkout-collection-off@email.com', {

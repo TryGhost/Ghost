@@ -1108,24 +1108,19 @@ module.exports = {
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
-  // Where a source sends what it collected. The source is who collects, the port is that
-  // source's own name for the thing, and the destination is the publisher's field, which
-  // they can repoint without the source knowing. The row is the collecting: there is one
-  // and the source writes through it, or there is none and it does not.
+  // Where a source sends what it collected. The port is the source's own name for the
+  // thing, and the destination is the publisher's field, which they can repoint without the
+  // source knowing. The row is the collecting: there is one and the source writes through
+  // it, or there is none and it does not.
   //
-  // A second kind of source becomes a `source_type` beside a widened id. What it must not
-  // become is a second table holding destinations.
+  // Stripe Checkout is the only source, and it collects into the same field whichever tier
+  // was bought, so a port is bound once for the site. A second kind of source becomes a
+  // `source_type` beside the port. What it must not become is a second table holding
+  // destinations.
   members_metafield_bindings: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
-    product_id: {
-      type: 'string',
-      maxlength: 24,
-      nullable: false,
-      references: 'products.id',
-      cascadeDelete: true,
-    },
-    port: { type: 'string', maxlength: 191, nullable: false },
-    // Indexed rather than unique: several sources landing in one field is expected.
+    port: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    // Indexed rather than unique: several ports landing in one field is allowed.
     metafield_key: {
       type: 'string',
       maxlength: 191,
@@ -1135,31 +1130,40 @@ module.exports = {
     },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
-    '@@UNIQUE_CONSTRAINTS@@': [
-      { columns: ['product_id', 'port'], indexName: 'members_metafield_bindings_unique' },
-    ],
     '@@INDEXES@@': [['metafield_key']],
   },
-  // The options a tier's collection needs, and the one thing it collects without keeping.
-  // Whether it collects anything it *does* keep is the binding above.
-  products_checkout_config: {
+  // What Stripe Checkout collects beyond the payment, for the whole site. One row, keyed by
+  // slug so a save can upsert it in one statement. Each section is its own column, holding
+  // JSON or null when it is switched off, so a save that names one section never rewrites
+  // another. Where a collected value lands is the binding above, not this row.
+  stripe_checkout_config: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    slug: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    shipping: { type: 'text', maxlength: 65535, nullable: true },
+    phone: { type: 'text', maxlength: 65535, nullable: true },
+    tax_number: { type: 'text', maxlength: 65535, nullable: true },
+    created_at: { type: 'dateTime', nullable: false },
+    updated_at: { type: 'dateTime', nullable: true },
+  },
+  // The tiers a section of `stripe_checkout_config` is limited to, when it is limited to
+  // some rather than every paid tier. Deleting a tier takes it out of every list, so checkout
+  // settings never stop a tier being deleted and never point at one that is gone. A section
+  // whose last tier is deleted reads as switched off, rather than widening to all of them.
+  stripe_checkout_config_tiers: {
+    section: {
+      type: 'string',
+      maxlength: 50,
+      nullable: false,
+      validations: { isIn: [['shipping', 'phone', 'tax_number']] },
+    },
     product_id: {
       type: 'string',
       maxlength: 24,
       nullable: false,
-      unique: true,
       references: 'products.id',
       cascadeDelete: true,
     },
-    // ISO 3166-1 alpha-2, comma-joined. A processor will not render an address form
-    // without them, and a wrong code fails the session create.
-    shipping_allowed_countries: { type: 'string', maxlength: 2000, nullable: true },
-    // Stripe keeps a tax number against the customer it invoices, so there is no
-    // destination to bind and nothing to record but whether to ask.
-    tax_number_collect: { type: 'boolean', nullable: false, defaultTo: false },
-    created_at: { type: 'dateTime', nullable: false },
-    updated_at: { type: 'dateTime', nullable: true },
+    '@@PRIMARY_KEY@@': ['section', 'product_id'],
   },
   members_metafield_values: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },

@@ -14,7 +14,7 @@ class PaymentsService {
    * @param {import('../../../offers/application/offers-api')} deps.offersAPI
    * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
    * @param {{get(key: string): any}} deps.settingsCache
-   * @param {{checkout: import('../../../tier-checkout-config').TierCheckoutConfigService}} deps.tiersService
+   * @param {Pick<import('../../../stripe-checkout-config').StripeCheckoutConfigService, 'resolve'>} [deps.stripeCheckoutConfig]
    * @param {{isSet(flag: string): boolean}} deps.labsService
    */
   constructor(deps) {
@@ -33,7 +33,7 @@ class PaymentsService {
     /** @private */
     this.settingsCache = deps.settingsCache;
     /** @private */
-    this.tiersService = deps.tiersService;
+    this.stripeCheckoutConfig = deps.stripeCheckoutConfig;
     /** @private */
     this.labsService = deps.labsService;
     DomainEvents.subscribe(OfferCreatedEvent, async (event) => {
@@ -160,7 +160,7 @@ class PaymentsService {
    * @param {import('../../../tiers/tier')} tier
    */
   async getCheckoutConfigForTier(tier) {
-    const checkoutConfig = this.tiersService?.checkout;
+    const checkoutConfig = this.stripeCheckoutConfig;
     if (!this.labsService?.isSet('stripeCheckoutCollection') || !checkoutConfig) {
       return undefined;
     }

@@ -2698,57 +2698,6 @@ describe('Member Custom Fields Admin API', function () {
         await agent.delete(`members/metafields/custom/${existingKey}/`).expectStatus(403);
       });
 
-      // Turning checkout collection on makes the field the collected value lands in, so
-      // this route creates definitions without going near the routes above. That is
-      // deliberate and stays allowed: the publisher is not managing custom fields here,
-      // they are turning on shipping, and the field is the machinery that serves it.
-      //
-      // What makes it safe is the packaging, not anything enforced along the way. Only one
-      // plan limit is involved at all: limitStripeConnect, which withholds Stripe, without
-      // which there is nothing to charge for and so no reason to have a paid tier. Admin
-      // then offers a checkout configuration only on a paid tier. The plan that includes
-      // Stripe is the plan that will include custom fields, so a site that reaches here is
-      // entitled to what it provisions.
-      //
-      // That chain holds by coincidence of pricing, and only its first link is enforced.
-      // The last one is a convention of the interface: this route accepts a free tier, and
-      // checks neither the tier's type nor whether Stripe is connected. Nor does the
-      // stripeCheckoutCollection flag stand in for any of it, being a rollout switch with
-      // no view on what a site pays for.
-      //
-      // So this pins a decision, not a mechanism. If checkout collection is ever sold
-      // apart from custom fields, this route needs a limit of its own rather than
-      // borrowing this one, because what it governs is what a checkout may collect.
-      it('still provisions the field a checkout collection needs', async function () {
-        const { body: tiers } = await agent
-          .get('tiers/?limit=1&filter=type:paid')
-          .expectStatus(200);
-
-        await agent
-          .put(`tiers/${tiers.tiers[0].id}/checkout_config/`)
-          .body({
-            tiers_checkout_config: [
-              {
-                shipping: {
-                  collect: true,
-                  allowed_countries: ['GB'],
-                  name: { custom_field_key: 'shipping_name' },
-                  address: { custom_field_key: 'shipping_address' },
-                },
-              },
-            ],
-          })
-          .expectStatus(200);
-
-        const { body } = await agent.get('members/metafields/custom/').expectStatus(200);
-        assert.equal(
-          body.members_metafields.some(
-            (field: { key: string }) => field.key === 'shipping_address',
-          ),
-          true,
-        );
-      });
-
       it('falls back to generic copy when the host sets no message', async function () {
         await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
 

@@ -1,6 +1,6 @@
 import logging from '@tryghost/logging';
 import { STRIPE_ALLOWED_COUNTRIES } from '@tryghost/checkout';
-import type { ResolvedCheckout } from '../../../tier-checkout-config';
+import type { ResolvedCheckout } from '../../../stripe-checkout-config';
 
 /**
  * The Stripe session parameters a tier's checkout configuration asks for.

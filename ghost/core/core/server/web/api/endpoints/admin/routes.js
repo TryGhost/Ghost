@@ -147,27 +147,25 @@ module.exports = function apiRoutes() {
   // Tiers
   router.get('/tiers', mw.authAdminApi, http(api.tiers.browse));
   router.post('/tiers', mw.authAdminApi, http(api.tiers.add));
-  // What a tier's checkout asks for, read when a Stripe checkout session is built.
-  // Registered before /tiers/:id so the literal path isn't captured by :id.
-  //
-  // A sub-resource rather than a key on the tier, because the tier payload is a public
-  // projection: `tiers-public` shares this docName's serializer, so anything on a tier is
-  // rendered by themes. This is admin-only configuration that no client renders, since
-  // what it collects is asked for by Stripe's own checkout page rather than by Portal.
-  //
-  // Named for the configuration rather than the checkout, so it cannot be mistaken for
-  // the session that `create-stripe-checkout-session` creates from it.
-  router.get('/tiers/checkout_config', mw.authAdminApi, http(api.tiersCheckoutConfig.browse));
-  router.get('/tiers/:id/checkout_config', mw.authAdminApi, http(api.tiersCheckoutConfig.read));
-  router.put(
-    '/tiers/:id/checkout_config',
-    mw.authAdminApi,
-    labs.enabledMiddleware('stripeCheckoutCollection'),
-    http(api.tiersCheckoutConfig.edit),
-  );
-
   router.get('/tiers/:id', mw.authAdminApi, http(api.tiers.read));
   router.put('/tiers/:id', mw.authAdminApi, http(api.tiers.edit));
+
+  // ## Stripe Checkout
+  // What Stripe Checkout collects beyond the payment, for the whole site. Named for the
+  // configuration rather than the checkout, so it cannot be mistaken for the session that
+  // `create-stripe-checkout-session` creates from it.
+  router.get(
+    '/stripe/checkout/config',
+    mw.authAdminApi,
+    labs.enabledMiddleware('stripeCheckoutCollection'),
+    http(api.stripeCheckoutConfig.read),
+  );
+  router.put(
+    '/stripe/checkout/config',
+    mw.authAdminApi,
+    labs.enabledMiddleware('stripeCheckoutCollection'),
+    http(api.stripeCheckoutConfig.edit),
+  );
 
   // ## Members
   router.get('/members', mw.authAdminApi, http(api.members.browse));

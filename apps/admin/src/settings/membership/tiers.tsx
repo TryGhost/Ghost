@@ -46,7 +46,6 @@ import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { useFeatureFlag, useHandleError, useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
-import { useTierCheckoutCollection } from './tiers/use-tier-checkout-collection';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
 
@@ -70,9 +69,6 @@ const StripeConnectedButton: React.FC<{ className?: string; onClick: () => void 
 };
 
 const Tiers: React.FC<{ keywords: string[] }> = ({ keywords }) => {
-  // Warms the tier-independent checkout-config read (cached, one request) so the tier
-  // modal's deferred first paint has nothing left to wait for by the time one opens.
-  useTierCheckoutCollection(undefined);
   const [selectedTab, setSelectedTab] = useState('active-tiers');
   const [currencyOpen, setCurrencyOpen] = useState(false);
   const [machinePaymentsAmountError, setMachinePaymentsAmountError] = useState<

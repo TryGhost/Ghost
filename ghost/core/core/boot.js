@@ -165,6 +165,12 @@ async function initCore({ ghostServer, config }) {
   memberMetafieldsService.init();
   debug('End: Member Metafields Service');
 
+  // Stripe Checkout config: binds collected values through the metafields services above.
+  debug('Begin: Stripe Checkout Config Service');
+  const stripeCheckoutConfigService = require('./server/services/stripe-checkout-config');
+  stripeCheckoutConfigService.init();
+  debug('End: Stripe Checkout Config Service');
+
   if (ghostServer) {
     // Jobs Service allows parts of Ghost to run in the background
     debug('Begin: Jobs Service');

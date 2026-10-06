@@ -14,7 +14,7 @@ collects nothing.
   Checkout accepts in `shipping_address_collection`.
 - `STRIPE_PORTS` / `STRIPE_PORT` / `isStripePort` — the names Stripe returns
   collected values under.
-- `PORT_FIELD` — what each port supplies, and the custom field type that can hold it.
+- `PORT_FIELD` — the custom field type that can hold what each port supplies.
 
 ## Measured, not read
 

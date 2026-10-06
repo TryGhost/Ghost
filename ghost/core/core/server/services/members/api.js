@@ -23,6 +23,7 @@ const commentsService = require('../comments');
 const emailAddressService = require('../email-address');
 const giftService = require('../gifts');
 const metafieldsService = require('../members-metafields');
+const stripeCheckoutConfigService = require('../stripe-checkout-config');
 const signingKeys = require('../signing-keys');
 const { t } = require('../i18n');
 const sentry = require('../../../shared/sentry');
@@ -278,6 +279,7 @@ function createApiInstance(config) {
     // two together in boot order. Metafields is initialised in initCore, the
     // members API is built in initServices, so this is always the live instance.
     metafieldValues: metafieldsService.values,
+    stripeCheckoutConfig: stripeCheckoutConfigService.service,
   });
 
   return membersApiInstance;

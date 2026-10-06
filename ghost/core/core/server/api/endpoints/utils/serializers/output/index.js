@@ -88,8 +88,8 @@ module.exports = {
     return require('./tiers');
   },
 
-  get tiers_checkout_config() {
-    return require('./tiers-checkout-config');
+  get checkout_config() {
+    return require('./stripe-checkout-config');
   },
 
   get images() {

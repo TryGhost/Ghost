@@ -79,24 +79,26 @@ describe('Tier requirements Content API', function () {
     return body.members_metafields[0].key;
   }
 
-  async function collectShipping(tierId, allowedCountries) {
+  async function collectShipping(tierIds, allowedCountries) {
+    const recipient = await defineField('Recipient name', 'short_text');
     const address = await defineField('Delivery address', 'address');
     await adminAgent
-      .put(`tiers/${tierId}/checkout_config/`)
+      .put('stripe/checkout/config/')
       .body({
-        tiers_checkout_config: [
+        checkout_config: [
           {
             shipping: {
               collect: true,
+              ...(tierIds ? { tier_ids: tierIds } : {}),
               ...(allowedCountries ? { allowed_countries: allowedCountries } : {}),
-              name: { custom_field_key: 'shipping_name' },
+              name: { custom_field_key: recipient },
               address: { custom_field_key: address },
             },
           },
         ],
       })
       .expectStatus(200);
-    return address;
+    return { recipient, address };
   }
 
   async function readTiers() {
@@ -123,14 +125,15 @@ describe('Tier requirements Content API', function () {
   });
 
   afterEach(async function () {
-    await models.Base.knex('products_checkout_config').del();
+    await models.Base.knex('stripe_checkout_config_tiers').del();
+    await models.Base.knex('stripe_checkout_config').del();
     await models.Base.knex('members_metafield_bindings').del();
     await models.Base.knex('members_metafields').del();
     mockManager.restore();
   });
 
   it('says what a tier asks for, on the tier', async function () {
-    await collectShipping(paidTier.id, ['GB', 'IE']);
+    await collectShipping([paidTier.id], ['GB', 'IE']);
 
     const tiers = await readTiers();
 
@@ -140,7 +143,7 @@ describe('Tier requirements Content API', function () {
   });
 
   it('says a tier asks for nothing rather than staying silent', async function () {
-    await collectShipping(paidTier.id, ['GB']);
+    await collectShipping([paidTier.id], ['GB']);
 
     const tiers = await readTiers();
 
@@ -149,8 +152,23 @@ describe('Tier requirements Content API', function () {
     assert.deepEqual(find(tiers, otherTier.id).requirements, {});
   });
 
+  // Naming no tiers covers every paid tier, and a free tier never reaches a checkout.
+  it('says every paid tier asks when the site names none', async function () {
+    await collectShipping(null, ['GB']);
+
+    const tiers = await readTiers();
+
+    for (const tier of [paidTier, otherTier]) {
+      assert.deepEqual(find(tiers, tier.id).requirements, {
+        shipping: { collect: true, allowed_countries: ['GB'] },
+      });
+    }
+    const free = tiers.find((tier) => tier.type === 'free');
+    assert.deepEqual(free.requirements, {});
+  });
+
   it('leaves the countries out when a tier ships anywhere', async function () {
-    await collectShipping(paidTier.id, null);
+    await collectShipping([paidTier.id], null);
 
     const tiers = await readTiers();
 
@@ -160,18 +178,18 @@ describe('Tier requirements Content API', function () {
   });
 
   it('never names the field a value is kept in', async function () {
-    const address = await collectShipping(paidTier.id, ['GB']);
+    const { recipient, address } = await collectShipping([paidTier.id], ['GB']);
 
     const answer = JSON.stringify(await readTiers());
 
     // A member supplies a delivery address, not a value for a field. Where it lands is
     // the publisher's business, and naming it would invite a client to write there.
     assert.ok(!answer.includes(address), 'the destination field is not named');
-    assert.ok(!answer.includes('shipping_name'), 'nor the one the recipient name goes into');
+    assert.ok(!answer.includes(recipient), 'nor the one the recipient name goes into');
   });
 
   it('says nothing at all on a site without the feature', async function () {
-    await collectShipping(paidTier.id, ['GB']);
+    await collectShipping([paidTier.id], ['GB']);
     mockManager.mockLabsDisabled('stripeCheckoutCollection');
 
     const tiers = await readTiers();

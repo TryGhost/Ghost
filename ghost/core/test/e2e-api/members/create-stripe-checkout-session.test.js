@@ -768,6 +768,9 @@ describe('Create Stripe Checkout Session', function () {
   // themselves are settled next to the builder; what is proven here is the whole chain —
   // a publisher's configuration reaching Stripe through the payment link.
   describe("Collecting a tier's checkout fields", function () {
+    // A second paid tier, inserted rather than created through the API so no Stripe
+    // product is made for it. The cleanup has to name the same id.
+    const OTHER_TIER_ID = 'ffffffffffffffffffffffff';
     let paidTier;
 
     function mockStripe(captureSessionBody) {
@@ -855,11 +858,20 @@ describe('Create Stripe Checkout Session', function () {
         body: { tiers },
       } = await adminAgent.get('/tiers/?include=monthly_price&yearly_price');
       paidTier = tiers.find((tier) => tier.type === 'paid');
+
+      // Where the recipient's name lands. Destinations are chosen from the fields a site
+      // keeps, never made by the checkout, so each test starts with one to choose.
+      await adminAgent
+        .post('/members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'Shipping name', type: 'short_text' }] })
+        .expectStatus(201);
     });
 
     afterEach(async function () {
       nock.cleanAll();
-      await models.Base.knex('products_checkout_config').del();
+      await models.Base.knex('stripe_checkout_config_tiers').del();
+      await models.Base.knex('stripe_checkout_config').del();
+      await models.Base.knex('products').where('id', OTHER_TIER_ID).del();
       await models.Base.knex('members_metafield_bindings').del();
       await models.Base.knex('members_metafields').del();
     });
@@ -873,8 +885,8 @@ describe('Create Stripe Checkout Session', function () {
         .post('/members/metafields/custom/')
         .body({ members_metafields: [{ name: 'Delivery address', type: 'address' }] });
 
-      await adminAgent.put(`/tiers/${paidTier.id}/checkout_config/`).body({
-        tiers_checkout_config: [
+      await adminAgent.put('/stripe/checkout/config/').body({
+        checkout_config: [
           {
             shipping: {
               collect: true,
@@ -908,8 +920,8 @@ describe('Create Stripe Checkout Session', function () {
         .post('/members/metafields/custom/')
         .body({ members_metafields: [{ name: 'Delivery address', type: 'address' }] });
 
-      await adminAgent.put(`/tiers/${paidTier.id}/checkout_config/`).body({
-        tiers_checkout_config: [
+      await adminAgent.put('/stripe/checkout/config/').body({
+        checkout_config: [
           {
             shipping: {
               collect: true,
@@ -961,8 +973,8 @@ describe('Create Stripe Checkout Session', function () {
         .post('/members/metafields/custom/')
         .body({ members_metafields: [{ name: 'Phone', type: 'short_text' }] });
 
-      await adminAgent.put(`/tiers/${paidTier.id}/checkout_config/`).body({
-        tiers_checkout_config: [
+      await adminAgent.put('/stripe/checkout/config/').body({
+        checkout_config: [
           {
             tax_number: { collect: true },
             phone: { collect: true, custom_field_key: phone.key },
@@ -974,6 +986,44 @@ describe('Create Stripe Checkout Session', function () {
 
       assert.equal(sessionBody['tax_id_collection[enabled]'], 'true');
       assert.equal(sessionBody['phone_number_collection[enabled]'], 'true');
+    });
+
+    // A section names the tiers it applies to, so a tier it leaves out asks for nothing
+    // from it, and one it names asks as if it covered every tier.
+    it('asks only on the tiers a section names', async function () {
+      const [existing] = await models.Base.knex('products').where('id', paidTier.id);
+      await models.Base.knex('products').insert({
+        ...existing,
+        id: OTHER_TIER_ID,
+        name: 'Other',
+        slug: 'other-tier',
+      });
+      const {
+        body: {
+          members_metafields: [phone],
+        },
+      } = await adminAgent
+        .post('/members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'Phone', type: 'short_text' }] });
+      const phoneOn = (tierId) =>
+        adminAgent
+          .put('/stripe/checkout/config/')
+          .body({
+            checkout_config: [
+              { phone: { collect: true, tier_ids: [tierId], custom_field_key: phone.key } },
+            ],
+          })
+          .expectStatus(200);
+
+      await phoneOn(OTHER_TIER_ID);
+      const elsewhere = await startCheckout();
+      assert.equal(elsewhere['phone_number_collection[enabled]'], undefined);
+
+      // Each checkout's Stripe mocks persist, so the first would answer the second.
+      nock.cleanAll();
+      await phoneOn(paidTier.id);
+      const here = await startCheckout();
+      assert.equal(here['phone_number_collection[enabled]'], 'true');
     });
 
     // Each destination drops out on its own. Neither of the two behind the shipping
@@ -995,8 +1045,8 @@ describe('Create Stripe Checkout Session', function () {
         .post('/members/metafields/custom/')
         .body({ members_metafields: [{ name: 'Delivery address', type: 'address' }] });
 
-      await adminAgent.put(`/tiers/${paidTier.id}/checkout_config/`).body({
-        tiers_checkout_config: [
+      await adminAgent.put('/stripe/checkout/config/').body({
+        checkout_config: [
           {
             shipping: {
               collect: true,
@@ -1030,8 +1080,8 @@ describe('Create Stripe Checkout Session', function () {
         .post('/members/metafields/custom/')
         .body({ members_metafields: [{ name: 'Delivery address', type: 'address' }] });
 
-      await adminAgent.put(`/tiers/${paidTier.id}/checkout_config/`).body({
-        tiers_checkout_config: [
+      await adminAgent.put('/stripe/checkout/config/').body({
+        checkout_config: [
           {
             shipping: {
               collect: true,
@@ -1052,9 +1102,8 @@ describe('Create Stripe Checkout Session', function () {
     }
 
     it('goes on collecting while one destination is left', async function () {
-      // The recipient's name is kept in the field Ghost provisioned when the collection
-      // was turned on, and that field is still active, so the ask stands and the address
-      // is what gets thrown away.
+      // The recipient's name is kept in a field that is still active, so the ask stands
+      // and the address is what gets thrown away.
       await collectShippingThenArchive(['address']);
 
       const sessionBody = await startCheckout();
@@ -1089,8 +1138,8 @@ describe('Create Stripe Checkout Session', function () {
         .post('/members/metafields/custom/')
         .body({ members_metafields: [{ name: 'Delivery address', type: 'address' }] });
 
-      await adminAgent.put(`/tiers/${paidTier.id}/checkout_config/`).body({
-        tiers_checkout_config: [
+      await adminAgent.put('/stripe/checkout/config/').body({
+        checkout_config: [
           {
             shipping: {
               collect: true,
@@ -1125,9 +1174,9 @@ describe('Create Stripe Checkout Session', function () {
     // Every other collection test here checks out anonymously and would miss it.
     it('lets a member with a customer buy a tier that collects a tax number', async function () {
       await adminAgent
-        .put(`/tiers/${paidTier.id}/checkout_config/`)
+        .put('/stripe/checkout/config/')
         .body({
-          tiers_checkout_config: [
+          checkout_config: [
             {
               tax_number: { collect: true },
             },
@@ -1162,9 +1211,9 @@ describe('Create Stripe Checkout Session', function () {
     // tax needs, and break tax calculation on a site that had it working.
     it('keeps what automatic tax asks for when a tier also collects a tax number', async function () {
       await adminAgent
-        .put(`/tiers/${paidTier.id}/checkout_config/`)
+        .put('/stripe/checkout/config/')
         .body({
-          tiers_checkout_config: [
+          checkout_config: [
             {
               tax_number: { collect: true },
             },
@@ -1202,9 +1251,9 @@ describe('Create Stripe Checkout Session', function () {
         .body({ members_metafields: [{ name: 'Delivery address', type: 'address' }] });
 
       await adminAgent
-        .put(`/tiers/${paidTier.id}/checkout_config/`)
+        .put('/stripe/checkout/config/')
         .body({
-          tiers_checkout_config: [
+          checkout_config: [
             {
               shipping: {
                 collect: true,
@@ -1236,9 +1285,9 @@ describe('Create Stripe Checkout Session', function () {
         .post('/members/metafields/custom/')
         .body({ members_metafields: [{ name: 'Phone', type: 'short_text' }] });
       await adminAgent
-        .put(`/tiers/${paidTier.id}/checkout_config/`)
+        .put('/stripe/checkout/config/')
         .body({
-          tiers_checkout_config: [{ phone: { collect: true, custom_field_key: phone.key } }],
+          checkout_config: [{ phone: { collect: true, custom_field_key: phone.key } }],
         })
         .expectStatus(200);
 

@@ -120,13 +120,9 @@ async function main(): Promise<void> {
   // an empty shipping_address_collection form-encodes to nothing, so Stripe accepts a
   // request it was never actually asked to collect an address by.
   const collection = stripeCheckoutCollectionOptions({
-    shipping: {
-      allowedCountries: ['GB', 'US'],
-      nameCustomFieldKey: 'recipient_name',
-      addressCustomFieldKey: 'delivery_address',
-    },
+    shipping: { allowedCountries: ['GB', 'US'] },
     taxNumber: true,
-    phone: null,
+    phone: false,
   });
 
   save(
