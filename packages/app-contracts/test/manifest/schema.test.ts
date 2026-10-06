@@ -40,11 +40,24 @@ describe('shape', () => {
   it('rejects a missing, empty or overlong name', () => {
     expect(errorsOf(manifest({ name: undefined }))[0]?.path).toBe('name');
     expect(errorsOf(manifest({ name: '   ' }))[0]?.path).toBe('name');
+    expect(errorsOf(manifest({ name: '\u0301\ufe0f' }))).toEqual([
+      { path: 'name', message: 'Expected text' },
+    ]);
     expect(errorsOf(manifest({ name: 'a'.repeat(51) }))[0]?.path).toBe('name');
   });
 
   it('rejects a name or description that could read as something else', () => {
-    for (const value of ['Pod\ncast', 'Pod\u202ecast', 'Pod\u0000cast', 'Pod\u2066cast']) {
+    for (const value of [
+      'Pod\ncast',
+      'Pod\u2028cast',
+      'Pod\u2029cast',
+      'Pod\u202ecast',
+      'Pod\u0000cast',
+      'Pod\u2066cast',
+      'Pod\u200bcast',
+      'Pod\u00adcast',
+      'Pod\ue000',
+    ]) {
       expect(errorsOf(manifest({ name: value }))).toEqual([
         { path: 'name', message: 'Expected plain text on one line' },
       ]);
@@ -52,7 +65,9 @@ describe('shape', () => {
         { path: 'description', message: 'Expected plain text on one line' },
       ]);
     }
-    expect(manifestOf(manifest({ name: 'Pödcast 🎙️' })).name).toBe('Pödcast 🎙️');
+    for (const value of ['Pödcast 🎙️', '播客', 'नमस्ते', 'می‌خواهم', '👨‍👩‍👧 🇳🇱']) {
+      expect(manifestOf(manifest({ name: value })).name).toBe(value);
+    }
   });
 
   it('rejects a missing, empty, overlong or non-text description', () => {

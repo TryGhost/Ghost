@@ -54,7 +54,6 @@ export function urlField({ base, ghostOrigins, allowLocalhost }: UrlRules, linkO
   return z
     .string('Expected a URL, or a path relative to the manifest')
     .min(1, 'Expected a URL, or a path relative to the manifest')
-    .max(URL_MAX_LENGTH, `Expected at most ${URL_MAX_LENGTH} characters`)
     .transform((value, ctx) => {
       let url: URL;
       try {
@@ -64,6 +63,12 @@ export function urlField({ base, ghostOrigins, allowLocalhost }: UrlRules, linkO
           code: 'custom',
           message: 'Expected a URL, or a path relative to the manifest',
         });
+        return z.NEVER;
+      }
+      // Measured once resolved, as that is what is stored and checked again later: a short
+      // relative path can resolve to more than the limit.
+      if (url.href.length > URL_MAX_LENGTH) {
+        ctx.addIssue({ code: 'custom', message: `Expected at most ${URL_MAX_LENGTH} characters` });
         return z.NEVER;
       }
       const problem = checkResolvedUrl(url, allowLocalhost);

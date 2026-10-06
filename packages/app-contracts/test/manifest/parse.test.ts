@@ -22,6 +22,11 @@ describe('parseManifest', () => {
     ]);
   });
 
+  it('accepts a manifest it has already parsed, unchanged', () => {
+    const parsed = manifestOf(manifest({ name: ' Podcast ' }));
+    expect(manifestOf(parsed)).toEqual(parsed);
+  });
+
   it('accepts absolute URLs on another host', () => {
     const parsed = manifestOf(
       manifest({

@@ -38,6 +38,12 @@ describe('URLs', () => {
     expect(surfaceUrlError(`/${'a'.repeat(2000)}`)).toContain('at most 2000');
   });
 
+  it('measures a URL once it is resolved', () => {
+    const path = 'a'.repeat(2000 - 'https://podcast.example.com/'.length);
+    expect(manifestOf(manifest({ surfaces: [{ type: 'admin_page', url: path }] }))).toBeTruthy();
+    expect(surfaceUrlError(`${path}a`)).toContain('at most 2000');
+  });
+
   it('applies the same rules to the icon', () => {
     expect(errorsOf(manifest({ icon: { url: 'data:image/svg+xml,<svg/>' } }))).toEqual([
       { path: 'icon.url', message: 'Expected an https URL' },
