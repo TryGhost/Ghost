@@ -1,9 +1,9 @@
-import $ from 'jquery';
 import Ember from 'ember';
 import EmberError from '@ember/error';
 import Service, {inject as service} from '@ember/service';
 import classic from 'ember-classic-decorator';
 import {computed, set} from '@ember/object';
+import {createAdminThemeController} from '@tryghost/admin-x-framework/utils/admin-theme';
 import {inject} from 'ghost-admin/decorators/inject';
 
 const LABS_STORAGE_KEY = 'ghost-admin:labs-overrides';
@@ -72,18 +72,17 @@ export default class FeatureService extends Service {
     @feature('nightShift', {user: true, onChange: '_setAdminTheme'})
         _nightShiftPref;
 
-    _osPrefersDark = false;
+    _resolvedNightShift = undefined;
+    _themeController = null;
+    _reactThemeConnection = null;
+    _themeStylesheetPromise = null;
 
-    _systemThemeMediaQuery = null;
-    _systemThemeListener = null;
-
-    @computed('_nightShiftPref', '_osPrefersDark')
+    @computed('_nightShiftPref', '_resolvedNightShift')
     get nightShift() {
-        const preference = this._nightShiftPref;
-
-        if (preference === 'system') {
-            return this._osPrefersDark;
+        if (typeof this._resolvedNightShift === 'boolean') {
+            return this._resolvedNightShift;
         }
+        const preference = this._nightShiftPref;
 
         return preference === 'dark' || preference === true;
     }
@@ -188,107 +187,75 @@ export default class FeatureService extends Service {
     }
 
     _loadAdminThemeStylesheet() {
-        return this.lazyLoader.loadStyle('dark', 'assets/ghost-dark.css', true);
+        // Both owners may await the same in-flight link during the boot handoff.
+        // lazyLoader otherwise resolves immediately when it sees that link.
+        if (!this._themeStylesheetPromise) {
+            this._themeStylesheetPromise = this.lazyLoader.loadStyle('dark', 'assets/ghost-dark.css', true).catch((error) => {
+                this._themeStylesheetPromise = null;
+                document.getElementById('dark-styles')?.remove();
+                throw error;
+            });
+        }
+        return this._themeStylesheetPromise;
+    }
+
+    _themeAdapter() {
+        return {
+            preload: () => this._loadAdminThemeStylesheet(),
+            apply: (theme) => {
+                document.querySelectorAll('link[title=dark]').forEach((link) => {
+                    link.disabled = theme !== 'dark';
+                });
+                set(this, '_resolvedNightShift', theme === 'dark');
+            }
+        };
+    }
+
+    connectAdminTheme() {
+        this._themeController?.destroy();
+        this._themeController = null;
+        const connection = this._themeAdapter();
+        this._reactThemeConnection = connection;
+        return {
+            ...connection,
+            disconnect: () => {
+                if (this._reactThemeConnection === connection) {
+                    this._reactThemeConnection = null;
+                    if (!this.isDestroying && !this.isDestroyed) {
+                        void this._setAdminTheme();
+                    }
+                }
+            }
+        };
     }
 
     _setAdminTheme(value) {
-        let mode = value;
-
-        if (typeof mode === 'undefined') {
-            mode = this._nightShiftPref;
+        // React's preference query drives the connected shell. Ember store
+        // refreshes must not overwrite an optimistic selection mid-save.
+        if (this._reactThemeConnection) {
+            return Promise.resolve();
         }
-
-        this._removeSystemThemeListener();
-
-        if (mode === true) {
-            mode = 'dark';
-        } else if (mode === false) {
-            mode = 'light';
-        } else if (mode !== 'dark' && mode !== 'light' && mode !== 'system') {
-            mode = 'light';
+        const preference = value === undefined ? this._nightShiftPref : value;
+        const mode = preference === true ? 'dark' : preference === false ? 'light' : preference;
+        const theme = ['light', 'dark', 'system'].includes(mode) ? mode : 'light';
+        if (!this._themeController) {
+            this._themeController = createAdminThemeController();
+            // The initial adapter application is superseded by this preference.
+            void this._themeController.setAdapter(this._themeAdapter()).catch(() => {});
         }
-
-        let isDark = mode === 'dark';
-
-        const html = document.documentElement;
-
-        // Double-rAF: first frame paints the new theme, second frame releases
-        // the suppression so subsequent hover/focus transitions resume cleanly.
-        const releaseSuppression = () => {
-            requestAnimationFrame(() => requestAnimationFrame(() => {
-                html.classList.remove('theme-switching');
-            }));
-        };
-
-        if (mode === 'system') {
-            const mediaQuery = this._getSystemThemeMediaQuery();
-            isDark = mediaQuery?.matches ?? false;
-            set(this, '_osPrefersDark', isDark);
-
-            if (mediaQuery) {
-                this._systemThemeMediaQuery = mediaQuery;
-                this._systemThemeListener = (event) => {
-                    html.classList.add('theme-switching');
-                    html.classList.toggle('dark', event.matches);
-                    $('link[title=dark]').prop('disabled', !event.matches);
-                    set(this, '_osPrefersDark', event.matches);
-                    releaseSuppression();
-                };
-                this._addSystemThemeListener();
+        const controller = this._themeController;
+        return controller.setTheme(theme).catch(() => {
+            if (this.isDestroying || this.isDestroyed || this._reactThemeConnection || this._themeController !== controller) {
+                return;
             }
-        } else {
-            set(this, '_osPrefersDark', false);
-        }
-
-        html.classList.add('theme-switching');
-        html.classList.toggle('dark', isDark);
-        $('link[title=dark]').prop('disabled', !isDark);
-
-        return this._loadAdminThemeStylesheet().then(() => {
-            // In `system` mode the OS theme may have changed while the
-            // stylesheet was loading — re-read the current preference so we
-            // don't stomp the listener's update with a stale `isDark`.
-            const currentIsDark = mode === 'system' ? this._osPrefersDark : isDark;
-            html.classList.toggle('dark', currentIsDark);
-            $('link[title=dark]').prop('disabled', !currentIsDark);
-            releaseSuppression();
-        }).catch(() => {
-            $('link[title=dark]').prop('disabled', true);
-            html.classList.remove('dark');
-            releaseSuppression();
+            // Preserve the standalone Ember fallback when a stylesheet fails.
+            document.documentElement.classList.remove('dark');
+            this._themeAdapter().apply('light');
         });
-    }
-
-    _getSystemThemeMediaQuery() {
-        if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
-            return null;
-        }
-
-        return window.matchMedia('(prefers-color-scheme: dark)');
-    }
-
-    _addSystemThemeListener() {
-        if (typeof this._systemThemeMediaQuery?.addEventListener === 'function') {
-            this._systemThemeMediaQuery.addEventListener('change', this._systemThemeListener);
-        } else if (typeof this._systemThemeMediaQuery?.addListener === 'function') {
-            this._systemThemeMediaQuery.addListener(this._systemThemeListener);
-        }
-    }
-
-    _removeSystemThemeListener() {
-        if (this._systemThemeListener) {
-            if (typeof this._systemThemeMediaQuery?.removeEventListener === 'function') {
-                this._systemThemeMediaQuery.removeEventListener('change', this._systemThemeListener);
-            } else if (typeof this._systemThemeMediaQuery?.removeListener === 'function') {
-                this._systemThemeMediaQuery.removeListener(this._systemThemeListener);
-            }
-            this._systemThemeMediaQuery = null;
-            this._systemThemeListener = null;
-        }
     }
 
     willDestroy() {
         super.willDestroy(...arguments);
-        this._removeSystemThemeListener();
+        this._themeController?.destroy();
     }
 }

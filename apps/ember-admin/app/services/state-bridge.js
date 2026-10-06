@@ -235,13 +235,8 @@ export default class StateBridgeService extends Service.extend(Evented) {
     }
 
     @action
-    preloadAdminThemeStylesheet() {
-        return this.feature._loadAdminThemeStylesheet();
-    }
-
-    @action
-    applyAdminThemePreference(mode) {
-        return this.feature._setAdminTheme(mode);
+    connectAdminTheme() {
+        return this.feature.connectAdminTheme();
     }
 
     /* Ember -> React -------------------------------------------------------

@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { getListReturnNavigationState } from '@/shared/virtual-list/list-return-state';
 import type { EmberNotificationsHost } from './ember-notifications-host';
+import type { AdminThemeAdapter } from '@tryghost/admin-x-framework/utils/admin-theme';
 
 export interface EmberBridge {
   state: StateBridge;
@@ -17,16 +18,13 @@ export type StateBridgeEventMap = {
   restoreListState: { path: string };
 };
 
-export type AdminThemeMode = 'light' | 'dark' | 'system';
-
 export interface StateBridge {
   onUpdate: (dataType: string, response: unknown) => void;
   onInvalidate: (dataType: string) => void;
   onDelete: (dataType: string, id: string) => void;
   refreshFeatureFlagOverrides?: () => void;
   isFeatureEnabled?: (name: string) => boolean | undefined;
-  preloadAdminThemeStylesheet?: () => Promise<void>;
-  applyAdminThemePreference?: (mode: AdminThemeMode) => Promise<void> | void;
+  connectAdminTheme?: () => AdminThemeAdapter & { disconnect: () => void };
   navigateToBillingSubRoute?: (subRoute: string) => void;
   setPostListQueryParams?: (resource: 'posts' | 'pages', params: Record<string, string>) => void;
   setReactFullScreen?: (isFullScreen: boolean) => void;
@@ -279,40 +277,20 @@ export function useEmberFeatureFlag(flag: string): boolean | null | undefined {
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
 
-/**
- * Whether Ember owns the DOM theme. In the embedded admin, Ember manages the
- * `dark` class and the dark stylesheet, and installs its own
- * prefers-color-scheme listener, so React must not apply the theme itself.
- *
- * Deliberately a synchronous snapshot (no waitForStateBridge): theme effects
- * need the answer at effect time and fall back to applying the theme
- * themselves while the bridge is absent.
- */
-export function isEmberThemeManaged(): boolean {
-  return typeof window !== 'undefined' && Boolean(window.EmberBridge);
-}
-
-/**
- * Preloads Ember's dark stylesheet so a subsequent theme switch lands without
- * a flash. Resolves immediately when no bridge (or an older Ember without the
- * method) is present.
- */
-export async function preloadEmberAdminThemeStylesheet(): Promise<void> {
-  await window.EmberBridge?.state.preloadAdminThemeStylesheet?.();
-}
-
-/**
- * Asks Ember to apply an admin theme preference. Returns false when no bridge
- * (or an older Ember without the method) is present, so the caller can fall
- * back to applying the theme itself.
- */
-export function applyEmberAdminThemePreference(mode: AdminThemeMode): boolean {
-  const stateBridge = window.EmberBridge?.state;
-  if (!stateBridge?.applyAdminThemePreference) {
-    return false;
-  }
-  void stateBridge.applyAdminThemePreference(mode);
-  return true;
+/** React owns the controller; Ember supplies stylesheet and editor compatibility. */
+export function connectEmberAdminTheme(onReady: (adapter: AdminThemeAdapter) => void): () => void {
+  let disconnect: (() => void) | undefined;
+  const stopPolling = waitForStateBridge((stateBridge) => {
+    const connection = stateBridge.connectAdminTheme?.();
+    if (connection) {
+      disconnect = connection.disconnect;
+      onReady(connection);
+    }
+  });
+  return () => {
+    stopPolling();
+    disconnect?.();
+  };
 }
 
 /**

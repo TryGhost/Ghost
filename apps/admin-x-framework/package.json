@@ -82,6 +82,12 @@
       "types": "./types/test/*.d.ts",
       "import": "./dist/test/*.js",
       "require": "./dist/test/*.cjs"
+    },
+    "./utils/admin-theme": {
+      "source": "./src/utils/admin-theme.ts",
+      "types": "./types/utils/admin-theme.d.ts",
+      "import": "./dist/utils/admin-theme.js",
+      "require": "./dist/utils/admin-theme.cjs"
     }
   },
   "scripts": {
