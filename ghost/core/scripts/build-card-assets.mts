@@ -16,9 +16,12 @@
  */
 
 import esbuild from 'esbuild';
-import path from 'path';
-import fs from 'fs';
+import path from 'node:path';
+import fs from 'node:fs';
 import logging from '@tryghost/logging';
+
+type CardType = 'css' | 'js';
+type CardChunks = Record<string, string>;
 
 const projectRoot =
   process.cwd().endsWith('ghost/core') || process.cwd().endsWith('ghost\\core')
@@ -31,14 +34,14 @@ const destFile = path.join(projectRoot, 'core/frontend/public/cards.manifest.jso
 const LOADERS = {
   css: { loader: 'css' },
   js: { loader: 'js', target: ['es2020'] },
-};
+} as const;
 
 // header_v2.css is a second stylesheet for the public `header` card, not a
 // separate configurable card. This exact path override is intentional — `_vN`
 // filename suffixes are not a convention for grouping card assets.
 const PUBLIC_CARD_ASSET_NAMES = new Map([['css/header_v2.css', 'header']]);
 
-export async function buildType(type, sourceDir = srcDir) {
+export async function buildType(type: CardType, sourceDir = srcDir): Promise<CardChunks> {
   const dir = path.join(sourceDir, type);
   const suffix = `.${type}`;
   const files = fs
@@ -46,7 +49,7 @@ export async function buildType(type, sourceDir = srcDir) {
     .filter((file) => file.endsWith(suffix))
     .sort();
 
-  const chunks = {};
+  const chunks: CardChunks = {};
   for (const file of files) {
     const contents = fs.readFileSync(path.join(dir, file), 'utf8');
     const { code } = await esbuild.transform(contents, { minify: true, ...LOADERS[type] });
@@ -68,11 +71,11 @@ export async function buildType(type, sourceDir = srcDir) {
   return chunks;
 }
 
-export async function buildCardAssets() {
-  const manifest = {};
-  for (const type of Object.keys(LOADERS)) {
-    manifest[type] = await buildType(type);
-  }
+export async function buildCardAssets(): Promise<void> {
+  const manifest: Record<CardType, CardChunks> = {
+    css: await buildType('css'),
+    js: await buildType('js'),
+  };
 
   fs.mkdirSync(path.dirname(destFile), { recursive: true });
   fs.writeFileSync(destFile, JSON.stringify(manifest));
