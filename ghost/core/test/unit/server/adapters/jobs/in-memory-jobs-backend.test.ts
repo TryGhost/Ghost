@@ -284,25 +284,28 @@ describe('InMemoryJobsBackend', function () {
     });
 
     it('does not cancel an active delivery when the deadline passes', async function () {
+      clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
       const backend = new InMemoryJobsBackend();
       const release = Promise.withResolvers<void>();
-      let completed = false;
+      const completed = Promise.withResolvers<void>();
+      let deliveryFinished = false;
       backend.start({
         processor: async () => {
           await release.promise;
-          completed = true;
+          deliveryFinished = true;
+          completed.resolve();
         },
       });
       backend.enqueue({ type: 'slow', payload: '{}' });
 
-      await backend.shutdown({ timeoutMs: 10 });
-      assert.equal(completed, false);
+      const stopping = backend.shutdown({ timeoutMs: 10 });
+      await clock.tickAsync(10);
+      await stopping;
+      assert.equal(deliveryFinished, false);
 
       release.resolve();
-      await new Promise((resolve) => {
-        setTimeout(resolve, 0);
-      });
-      assert.equal(completed, true, 'the delivery kept running after shutdown returned');
+      await completed.promise;
+      assert.equal(deliveryFinished, true, 'the delivery kept running after shutdown returned');
     });
 
     it('leaves its deadline timer pending when deliveries drain early', async function () {

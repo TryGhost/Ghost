@@ -1433,7 +1433,7 @@ services:
   jobs-service:
     kind: directory
     disposition: retain
-    status: auditing
+    status: audited
     entryPoints:
       - jobs-service/index.ts
       - jobs-service/register-job-handlers.ts
@@ -1486,6 +1486,37 @@ services:
           - test/unit/server/services/jobs-service/index.test.js
           - test/unit/server/services/jobs-service/jobs-service.test.ts
           - test/unit/server/services/jobs-service/retained-consumer.test.ts
+      consumers:
+        summary: >-
+          Source inspection establishes these callers: boot injects the instance into
+          retained mentions and email consumers and a fresh site importer. Members, content CSV imports, the media API and email analytics
+          resolve it when dispatching or scheduling. Gift/member cleanup, signing keys,
+          update checks and Tinybird schedule through boot-supplied references. The default
+          backend runs jobs in-process; registered handlers call initialized domain services.
+          The cited tests cover dispatch through a retained MentionController across restart
+          and handler registration. The other consumer wiring is source-only evidence here.
+        sources:
+          - core/boot.js
+          - core/server/adapters/jobs/InMemoryJobsBackend.ts
+          - core/server/services/jobs-service/register-job-handlers.ts
+          - core/server/services/mentions/mention-controller.js
+          - core/server/services/mentions/mention-sending-service.js
+          - core/server/services/email-service/batch-sending-service.js
+          - core/server/data/importer/import-manager.js
+          - core/server/data/importer/index.js
+          - core/server/services/members/service.js
+          - core/server/services/content-import/index.ts
+          - core/server/api/endpoints/db.js
+          - core/server/services/email-analytics/jobs/index.js
+          - core/server/services/email-analytics/jobs/email-analytics-job-scheduler.ts
+          - core/server/services/gifts/jobs/index.js
+          - core/server/services/members/jobs/index.js
+          - core/server/services/signing-keys/index.ts
+          - core/server/services/update-check/index.js
+          - core/server/services/tinybird-sync/tinybird-sync-service.ts
+        tests:
+          - test/unit/server/services/jobs-service/register-job-handlers.test.ts
+          - test/unit/server/services/jobs-service/retained-consumer.test.ts
       configuration:
         summary: >-
           The wrapper looks up the jobs adapter on first init; reinit reuses the same
@@ -1526,8 +1557,9 @@ services:
           - test/e2e-server/boot-readiness.isolated.test.ts
       failures:
         summary: >-
-          Invalid or duplicate handler and queue declarations fail. Dispatch and recurring
-          scheduling propagate payload serialization, validation and backend errors.
+          Invalid declarations, duplicate handler types and conflicting queue limits fail.
+          Dispatch and recurring scheduling propagate payload serialization, validation
+          and backend errors.
           Deliveries for unknown job types are logged and dropped. Handler errors are
           logged, reported and rethrown to the backend; the in-memory backend logs them and
           continues other deliveries without retrying. A recurring tick whose enqueue throws
@@ -1538,16 +1570,13 @@ services:
         tests:
           - test/unit/server/services/jobs-service/jobs-service.test.ts
           - test/unit/server/adapters/jobs/in-memory-jobs-backend.test.ts
-    unverified:
-      - consumers
+    unverified: []
     blockers:
       - >-
-        Audit consumers. Boot injects the instance into mentions and email consumers and a
-        fresh site importer; members, content CSV imports, the media API and email
-        analytics resolve it when dispatching or scheduling; gift/member cleanup, signing
-        keys, update checks and Tinybird schedule through boot-supplied references. Only
-        the retained MentionController and handler registration are tested. Custom jobs
-        adapters need their own evidence.
+        Before changing consumer wiring, add contract tests for the boot-injected email
+        and site-importer references, dispatch-time lookups and boot-supplied scheduling
+        references identified above. The cited consumer tests do not cover these paths.
+        Custom jobs adapters need their own evidence.
       - >-
         Recurring scheduling guards in gifts, members, signing keys, email analytics and
         Tinybird survive backend shutdown, which removes their timers. Recurrence after
