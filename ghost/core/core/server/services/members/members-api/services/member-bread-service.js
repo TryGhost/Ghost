@@ -651,11 +651,13 @@ module.exports = class MemberBREADService {
     }
 
     if (this.stripeService.configured) {
-      const hasCompedSubscription = !!model
+      // update() does not load the subscriptions, so fetch them before looking for a comp one
+      const subscriptions = await model
         .related('stripeSubscriptions')
-        .find(
-          (sub) => sub.get('plan_nickname') === 'Complimentary' && sub.get('status') === 'active',
-        );
+        .fetch({ transacting: options.transacting });
+      const hasCompedSubscription = !!subscriptions.find(
+        (sub) => sub.get('plan_nickname') === 'Complimentary' && sub.get('status') === 'active',
+      );
       // `comped` is derived from status and round-tripped on every edit, even for members
       // comped without a Stripe subscription (e.g. via the API or an import), so only create
       // a subscription on an actual transition. The model returned by update() still holds
