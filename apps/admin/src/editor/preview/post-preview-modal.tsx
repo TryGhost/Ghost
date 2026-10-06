@@ -226,6 +226,10 @@ export function PostPreviewModal({
     setWasOpen(open);
     preparePromise.current = null;
     setPrepareState(open && onBeforeOpen ? 'preparing' : 'ready');
+    // Each opening starts from the post's or the publish flow's newsletter, not an earlier pick.
+    if (open) {
+      setPickedNewsletterSlug(null);
+    }
   }
 
   useEffect(() => {
