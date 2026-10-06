@@ -126,7 +126,7 @@ catalog:
   chalk: 4.1.2
   cheerio: 1.2.0
   clsx: 2.1.1
-  concurrently: 10.0.4
+  concurrently: 10.0.5
   country-flag-icons: 1.6.20
   cross-fetch: 4.1.0
   dependency-cruiser: ^18.1.1
