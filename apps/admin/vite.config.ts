@@ -7,7 +7,6 @@ import { sentryVitePlugin } from '@sentry/vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 
 import { emberAssetsPlugin } from './vite-ember-assets';
-import { embedRendererPlugin } from './vite-embed-renderer';
 import { ghostBackendProxyPlugin } from './vite-backend-proxy';
 import { sharedDefine, sharedResolve } from './vite.shared';
 
@@ -73,7 +72,6 @@ export default defineConfig(({ command, mode }) => ({
       ? []
       : [
           emberAssetsPlugin(),
-          embedRendererPlugin(),
           ghostBackendProxyPlugin(),
           // Sentry's plugin goes after all others
           sentrySourcemapsPlugin(),

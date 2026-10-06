@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && pnpm assemble:assets",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "pnpm test:types && pnpm test:unit",
@@ -13,7 +13,8 @@
     "test:acceptance": "vitest run -c vitest.acceptance.config.ts",
     "test:acceptance:watch": "vitest -c vitest.acceptance.config.ts",
     "test:types": "tsc -b",
-    "typecheck": "tsc -b"
+    "typecheck": "tsc -b",
+    "assemble:assets": "node ../../scripts/assemble-admin-assets.ts"
   },
   "dependencies": {
     "@codemirror/lang-css": "catalog:",
@@ -165,7 +166,8 @@
       "playwright"
     ],
     "implicitDependencies": [
-      "ghost-admin"
+      "ghost-admin",
+      "@internal/scripts"
     ],
     "targets": {
       "test": {
@@ -346,6 +348,14 @@
             ],
             "target": "build"
           }
+        ]
+      },
+      "assemble:assets": {
+        "cache": false,
+        "outputs": [
+          "{projectRoot}/dist",
+          "{workspaceRoot}/ghost/core/core/built/admin",
+          "{workspaceRoot}/ghost/core/core/built/embed-renderer"
         ]
       }
     }

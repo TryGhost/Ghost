@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const camelCase = require('lodash/camelCase');
+const {prepareLegacyAdminAssets} = require('../../../../scripts/lib/admin-assets.ts');
 
 const adminXApps = ['activitypub'];
 
@@ -56,78 +57,13 @@ module.exports = {
     },
 
     postBuild: function (results) {
-        const fs = this.project.require('fs-extra');
-        const walkSync = this.project.require('walk-sync');
-
-        const assetsOut = path.join(path.dirname(require.resolve('ghost')), `core/built/admin`);
-        fs.removeSync(assetsOut);
-        fs.ensureDirSync(assetsOut);
-
-        // the dist folder contains more than just index.html and /assets, especially
-        // for development builds but for Ghost's purposes it only needs to serve
-        // index.html and /assets
-
-        // copy the index.html file
-        fs.copySync(`${results.directory}/index.html`, `${assetsOut}/index.html`, {overwrite: true, dereference: true});
-
-        // get all the `/assets` files, except the `icons` folder
-        const assets = walkSync(results.directory + '/assets', {
-            ignore: ['icons']
+        prepareLegacyAdminAssets({
+            emberDist: results.directory,
+            destination: path.join(path.dirname(require.resolve('ghost')), 'core/built/admin'),
+            activitypubDist: path.resolve('../../apps/activitypub/dist'),
+            koenigDist: path.dirname(require.resolve('@tryghost/koenig-lexical')),
+            environment: this.env,
+            editorUrl: process.env.EDITOR_URL
         });
-
-        // loop over any sourcemaps and remove `assets/` key from each one
-        assets.filter((file) => file.endsWith('.map')).forEach((file) => {
-            const mapFilePath = `${results.directory}/assets/${file}`;
-            const mapFile = JSON.parse(fs.readFileSync(mapFilePath, 'utf8'));
-            // loop over the sources and remove `assets/` from each one
-            mapFile.sources = mapFile.sources.map((source) => source.replace('assets/', ''));
-            fs.writeFileSync(mapFilePath, JSON.stringify(mapFile));
-        });
-
-        // copy the assets to assetsOut
-        assets.forEach(function (relativePath) {
-            if (relativePath.slice(-1) === '/') { return; }
-
-            fs.copySync(`${results.directory}/assets/${relativePath}`, `${assetsOut}/assets/${relativePath}`, {overwrite: true, dereference: true});
-        });
-
-        // copy assets for each admin-x app
-        for (const app of adminXApps) {
-            const adminXPath = `../../apps/${app}/dist`;
-            const assetsAdminXPath = `${assetsOut}/assets/${app}`;
-            if (fs.existsSync(adminXPath)) {
-                if (this.env === 'production') {
-                    fs.copySync(adminXPath, assetsAdminXPath, {overwrite: true, dereference: true});
-                } else {
-                    fs.ensureSymlinkSync(adminXPath, assetsAdminXPath);
-                }
-            } else if (this.env === 'production') {
-                // In dev the admin-x apps may not have finished their first
-                // build yet and Nx will trigger another Ember rebuild once
-                // they do. Only flag a missing dist for production where it
-                // indicates a real pipeline failure.
-                console.log(`${app} folder not found`);
-            }
-        }
-
-        // if we are passed a URL for Koenig-Lexical dev server, we don't need to copy the assets
-        if (!process.env.EDITOR_URL) {
-            // copy the @tryghost/koenig-lexical assets
-            const koenigLexicalPath = path.dirname(require.resolve('@tryghost/koenig-lexical'));
-            const assetsKoenigLexicalPath = `${assetsOut}/assets/koenig-lexical`;
-
-            if (fs.existsSync(koenigLexicalPath)) {
-                const embedRendererPath = path.join(koenigLexicalPath, 'embed-renderer');
-                fs.copySync(koenigLexicalPath, assetsKoenigLexicalPath, {
-                    overwrite: true,
-                    dereference: true,
-                    // The renderer executes arbitrary embed HTML and must only
-                    // ship in core/built/embed-renderer for separate-origin hosting.
-                    filter: source => path.resolve(source) !== embedRendererPath
-                });
-            } else {
-                console.log('Koenig-Lexical folder not found');
-            }
-        }
     }
 };

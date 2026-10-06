@@ -12,9 +12,12 @@ Uses an **Ember Bridge** system for smooth migration:
 
 The React application uses `admin-x-framework` for API hooks, routing, and the
 bridge to Ember. Shade provides its application wrapper and design system.
-Embedded React applications are built before Ember Admin; Ember's asset-delivery
-addon copies their production output and the Admin assets into
-`ghost/core/core/built/admin/` for Ghost Core to serve.
+Embedded React applications are built before Ember Admin. After Vite builds Admin,
+`pnpm assemble:assets` runs the standalone assembler in `scripts/` to merge React,
+Ember, ActivityPub and Koenig outputs into `dist/` and
+`ghost/core/core/built/admin/`. It ships Koenig’s embed renderer separately in
+`ghost/core/core/built/embed-renderer/`. Ember’s asset-delivery hook delegates
+legacy preparation to the same helper for its standalone builds and dev server.
 
 Ember is an Nx implicit dependency of this app so Ember source changes still
 invalidate the combined production build and mark Admin as affected. It is not
@@ -155,6 +158,10 @@ runtime code or shared configuration keep the full lane.
 # Build production bundle
 pnpm nx run @tryghost/admin:build
 ```
+
+The assembler reads the individual build outputs, so it can also be rerun with
+`pnpm nx run @tryghost/admin:assemble:assets` after those builds. It does not run
+compilers or upload sourcemaps.
 
 This outputs to `apps/admin/dist/` and updates the assets in `ghost/core/core/built/admin/`.
 
