@@ -27,6 +27,7 @@
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",
+    "@playwright/test": "catalog:",
     "@types/node": "catalog:",
     "eslint": "catalog:"
   },
