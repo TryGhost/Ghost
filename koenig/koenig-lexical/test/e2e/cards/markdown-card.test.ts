@@ -60,8 +60,8 @@ test.describe('Markdown card', async () => {
             await focusEditor(page);
             await insertCard(page, {cardName: 'markdown'});
             await focusMarkdownEditor(page);
-            await page.keyboard.type('Selected Markdown');
-            await page.keyboard.press('Shift+Home');
+            await page.keyboard.type('Selected Markdown\n**Bold text** and https://example.com');
+            await page.keyboard.press('ControlOrMeta+A');
 
             const separator = page.locator('.markdown-editor .editor-toolbar i.separator').first();
             await expect(separator).toHaveCSS('border-left-style', 'solid');
@@ -69,8 +69,24 @@ test.describe('Markdown card', async () => {
             await expect(separator).toHaveCSS('border-left-color', dark ? 'rgb(124, 139, 154)' : 'rgb(206, 212, 217)');
             const selectedText = page.locator('.markdown-editor .CodeMirror-selectedtext').first();
             await expect(selectedText).toBeVisible();
-            await expect(selectedText).toHaveCSS('background-color', dark ? 'rgb(35, 69, 83)' : 'rgb(185, 234, 255)');
-            await expect(selectedText).toHaveCSS('color', dark ? 'rgb(244, 245, 246)' : 'rgb(21, 23, 26)');
+            const selectionBackgrounds = page.locator('.markdown-editor .CodeMirror-selected');
+            await expect(selectionBackgrounds.first()).toBeVisible();
+            for (const background of await selectionBackgrounds.all()) {
+                await expect(background).toHaveCSS('background-color', dark ? 'rgb(35, 69, 83)' : 'rgb(185, 234, 255)');
+            }
+            // CodeMirror paints the full-height highlight behind the marked text.
+            // Painting a second highlight on the spans leaves the old layer visible
+            // around their edges, looking like a light underline in dark mode.
+            for (const text of await page.locator('.markdown-editor .CodeMirror-selectedtext').all()) {
+                await expect(text).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+                await expect(text).toHaveCSS('color', dark ? 'rgb(244, 245, 246)' : 'rgb(21, 23, 26)');
+                await expect(text).toHaveCSS('text-decoration-line', 'none');
+            }
+            await page.locator('.markdown-editor textarea').last().evaluate(element => element.blur());
+            await expect(page.locator('.markdown-editor .CodeMirror-focused')).toHaveCount(0);
+            for (const background of await selectionBackgrounds.all()) {
+                await expect(background).toHaveCSS('background-color', dark ? 'rgb(35, 69, 83)' : 'rgb(185, 234, 255)');
+            }
 
             await page.evaluate(() => {
                 for (const name of ['lightgrey', 'blue', 'yellow', 'orange']) {

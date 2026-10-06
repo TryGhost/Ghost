@@ -164,9 +164,14 @@
         text-decoration: underline;
     }
 
-    .CodeMirror-selectedtext {
-        color: var(--kg-markdown-selection-color) !important;
+    .CodeMirror .CodeMirror-selected {
         background: var(--kg-markdown-selection-background);
+    }
+
+    .CodeMirror .CodeMirror-selectedtext {
+        color: var(--kg-markdown-selection-color) !important;
+        background: transparent;
+        text-decoration: none;
     }
 }
 
