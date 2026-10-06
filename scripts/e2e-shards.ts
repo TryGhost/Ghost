@@ -9,8 +9,11 @@ import type { JSONReport, JSONReportSuite } from '@playwright/test/reporter';
 // folds each run's JSON reports into a timings file kept in the Actions cache;
 // `plan` runs in every shard and picks that shard's files.
 
-/** Recorded seconds per test file, keyed by path relative to e2e/. */
-export type Timings = Record<string, number>;
+/**
+ * Recorded seconds per test file, keyed by path relative to e2e/, with the
+ * test count they were measured over so a split or grown file rescales.
+ */
+export type Timings = Record<string, { seconds: number; tests: number }>;
 
 /**
  * Keyed by the test file Playwright loads. `definedIn` holds any other files
@@ -63,18 +66,24 @@ export function planShards(
 ): { files: string[][]; seconds: number[] } {
   let knownSeconds = 0;
   let knownTests = 0;
-  for (const [file, tests] of testsPerFile) {
+  for (const file of testsPerFile.keys()) {
     const recorded = timings[file];
     if (recorded !== undefined) {
-      knownSeconds += recorded;
-      knownTests += tests;
+      knownSeconds += recorded.seconds;
+      knownTests += recorded.tests;
     }
   }
   const secondsPerTest = knownTests > 0 ? knownSeconds / knownTests : DEFAULT_SECONDS_PER_TEST;
 
   const estimates = [...testsPerFile]
     .filter(([, tests]) => tests > 0)
-    .map(([file, tests]) => ({ file, seconds: timings[file] ?? tests * secondsPerTest }))
+    .map(([file, tests]) => {
+      const recorded = timings[file];
+      const seconds = recorded
+        ? (recorded.seconds * tests) / recorded.tests
+        : tests * secondsPerTest;
+      return { file, seconds };
+    })
     .sort((a, b) => b.seconds - a.seconds || a.file.localeCompare(b.file));
 
   const shards = Array.from({ length: total }, () => ({ files: [] as string[], seconds: 0 }));
@@ -93,9 +102,10 @@ export function planShards(
 }
 
 /**
- * Averages this run's durations into the previous timings to damp runner noise.
- * Files missing from an incomplete run keep their previous time; a complete run
- * drops files that no longer exist.
+ * Averages this run's durations into the previous timings to damp runner noise,
+ * rescaling the previous time first if the file's test count changed. Files
+ * missing from an incomplete run keep their previous time; a complete run drops
+ * files that no longer exist.
  */
 export function recordTimings(
   current: Map<string, FileSummary>,
@@ -103,18 +113,19 @@ export function recordTimings(
   complete: boolean,
 ): Timings {
   const merged: Timings = complete ? {} : { ...previous };
-  for (const [file, { seconds }] of current) {
+  for (const [file, { seconds, tests }] of current) {
     const before = previous[file];
-    const blended = before === undefined ? seconds : (before + seconds) / 2;
-    merged[file] = Math.round(blended * 10) / 10;
+    const blended =
+      before === undefined ? seconds : ((before.seconds * tests) / before.tests + seconds) / 2;
+    merged[file] = { seconds: Math.round(blended * 10) / 10, tests };
   }
   return Object.fromEntries(Object.entries(merged).sort(([a], [b]) => a.localeCompare(b)));
 }
 
 /**
- * Parses a timings file. Anything other than an object of finite numbers is
- * ignored with a warning, so a bad cache entry degrades to test-count
- * estimates instead of failing every shard's plan.
+ * Parses a timings file. Anything other than file entries with finite seconds
+ * and a positive test count is ignored with a warning, so a bad cache entry
+ * degrades to test-count estimates instead of failing every shard's plan.
  */
 export function parseTimings(content: string): Timings {
   if (!content.trim()) {
@@ -131,7 +142,14 @@ export function parseTimings(content: string): Timings {
     parsed !== null &&
     !Array.isArray(parsed) &&
     Object.values(parsed).every(
-      (seconds) => typeof seconds === 'number' && Number.isFinite(seconds),
+      (entry: unknown) =>
+        typeof entry === 'object' &&
+        entry !== null &&
+        'seconds' in entry &&
+        'tests' in entry &&
+        Number.isFinite(entry.seconds) &&
+        Number.isInteger(entry.tests) &&
+        (entry.tests as number) > 0,
     );
   if (!valid) {
     console.warn('::warning::Ignoring malformed e2e timings; estimating from test counts');

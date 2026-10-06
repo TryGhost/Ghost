@@ -61,10 +61,10 @@ describe('planShards', () => {
       ['fast-2.test.ts', 2],
     ]);
     const timings = {
-      'slow.test.ts': 90,
-      'medium.test.ts': 50,
-      'fast-1.test.ts': 20,
-      'fast-2.test.ts': 20,
+      'slow.test.ts': { seconds: 90, tests: 2 },
+      'medium.test.ts': { seconds: 50, tests: 2 },
+      'fast-1.test.ts': { seconds: 20, tests: 2 },
+      'fast-2.test.ts': { seconds: 20, tests: 2 },
     };
 
     assert.deepEqual(planShards(tests, timings, 2), {
@@ -79,7 +79,19 @@ describe('planShards', () => {
       ['new.test.ts', 2],
     ]);
 
-    assert.deepEqual(planShards(tests, { 'known.test.ts': 40 }, 2).seconds, [40, 20]);
+    assert.deepEqual(
+      planShards(tests, { 'known.test.ts': { seconds: 40, tests: 4 } }, 2).seconds,
+      [40, 20],
+    );
+  });
+
+  it('rescales a recorded time when the file has a different number of tests', () => {
+    const tests = new Map([['split.test.ts', 13]]);
+
+    assert.deepEqual(
+      planShards(tests, { 'split.test.ts': { seconds: 360, tests: 36 } }, 1).seconds,
+      [130],
+    );
   });
 
   it('falls back to a default rate without any timings', () => {
@@ -104,28 +116,37 @@ describe('recordTimings', () => {
   const current = new Map([
     ['kept.test.ts', { tests: 1, seconds: 30, definedIn: new Set<string>() }],
     ['new.test.ts', { tests: 1, seconds: 12.34, definedIn: new Set<string>() }],
+    ['split.test.ts', { tests: 13, seconds: 120, definedIn: new Set<string>() }],
   ]);
-  const previous = { 'kept.test.ts': 10, 'deleted.test.ts': 5 };
+  const previous = {
+    'kept.test.ts': { seconds: 10, tests: 1 },
+    'deleted.test.ts': { seconds: 5, tests: 1 },
+    'split.test.ts': { seconds: 360, tests: 36 },
+  };
 
   it('averages with previous timings and drops missing files on a complete run', () => {
     assert.deepEqual(recordTimings(current, previous, true), {
-      'kept.test.ts': 20,
-      'new.test.ts': 12.3,
+      'kept.test.ts': { seconds: 20, tests: 1 },
+      'new.test.ts': { seconds: 12.3, tests: 1 },
+      'split.test.ts': { seconds: 125, tests: 13 },
     });
   });
 
   it('keeps previous timings for files missing from an incomplete run', () => {
     assert.deepEqual(recordTimings(current, previous, false), {
-      'deleted.test.ts': 5,
-      'kept.test.ts': 20,
-      'new.test.ts': 12.3,
+      'deleted.test.ts': { seconds: 5, tests: 1 },
+      'kept.test.ts': { seconds: 20, tests: 1 },
+      'new.test.ts': { seconds: 12.3, tests: 1 },
+      'split.test.ts': { seconds: 125, tests: 13 },
     });
   });
 });
 
 describe('parseTimings', () => {
-  it('reads an object of seconds per file', () => {
-    assert.deepEqual(parseTimings('{"a.test.ts":12.5}'), { 'a.test.ts': 12.5 });
+  it('reads seconds and test counts per file', () => {
+    assert.deepEqual(parseTimings('{"a.test.ts":{"seconds":12.5,"tests":2}}'), {
+      'a.test.ts': { seconds: 12.5, tests: 2 },
+    });
   });
 
   it('treats an empty file as no timings', () => {
@@ -138,7 +159,10 @@ describe('parseTimings', () => {
       'null',
       '[]',
       '"text"',
-      '{"a.test.ts":"12"}',
+      '{"a.test.ts":12.5}',
+      '{"a.test.ts":{"seconds":"12","tests":2}}',
+      '{"a.test.ts":{"seconds":12,"tests":0}}',
+      '{"a.test.ts":{"seconds":12}}',
       '{"a.test.ts":null}',
       '{not json',
     ]) {
