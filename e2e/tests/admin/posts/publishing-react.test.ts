@@ -105,72 +105,76 @@ test.describe('Ghost Admin - Publishing (React)', () => {
     postFactory = createPostFactory(page.request);
   });
 
-  test('draft - schedules, lists as scheduled, and unschedules back to a draft', async ({
-    page,
-  }) => {
-    // A schedule, a trip through the list and a revert do not fit the default
-    // budget
-    test.setTimeout(90000);
+  test(
+    'draft - schedules, lists as scheduled, and unschedules back to a draft',
+    { tag: '@admin-smoke' },
+    async ({ page }) => {
+      // A schedule, a trip through the list and a revert do not fit the default
+      // budget
+      test.setTimeout(90000);
 
-    const title = `react-schedule-${Date.now()}`;
-    const body = 'This is my scheduled post body.';
+      const title = `react-schedule-${Date.now()}`;
+      const body = 'This is my scheduled post body.';
 
-    const { editor, postId, postsPage } = await startDraft(page, { title, body });
+      const { editor, postId, postsPage } = await startDraft(page, { title, body });
 
-    await editor.publishFlow.open();
-    await expect(editor.publishFlow.optionsStep).toBeVisible();
-    // No date or time: the default schedule is ten minutes out
-    await editor.publishFlow.schedule({});
-    await Promise.all([waitForPostSave(page, postId), editor.publishFlow.confirm()]);
-    await expect(page).toHaveURL('/ghost/#/posts');
+      await editor.publishFlow.open();
+      await expect(editor.publishFlow.optionsStep).toBeVisible();
+      // No date or time: the default schedule is ten minutes out
+      await editor.publishFlow.schedule({});
+      await Promise.all([waitForPostSave(page, postId), editor.publishFlow.confirm()]);
+      await expect(page).toHaveURL('/ghost/#/posts');
 
-    const scheduled = await readPost(page, postId);
-    expect(scheduled.status).toBe('scheduled');
+      const scheduled = await readPost(page, postId);
+      expect(scheduled.status).toBe('scheduled');
 
-    // The list consumes the handoff and opens its celebration over itself.
-    await expect(postsPage.publishCelebration).toBeVisible();
-    await postsPage.closePublishCelebration();
-    await postsPage.waitForPageToFullyLoad();
-    await expect(postsPage.getPostByTitle(title)).toContainText('Scheduled');
-    await postsPage.getPostByTitle(title).click();
-    await expect(editor.postStatus).toContainText('Scheduled');
+      // The list consumes the handoff and opens its celebration over itself.
+      await expect(postsPage.publishCelebration).toBeVisible();
+      await postsPage.closePublishCelebration();
+      await postsPage.waitForPageToFullyLoad();
+      await expect(postsPage.getPostByTitle(title)).toContainText('Scheduled');
+      await postsPage.getPostByTitle(title).click();
+      await expect(editor.postStatus).toContainText('Scheduled');
 
-    await editor.revertToDraft();
-    await expect(editor.postStatus).toContainText('Draft');
+      await editor.revertToDraft();
+      await expect(editor.postStatus).toContainText('Draft');
 
-    const reverted = await readPost(page, postId);
-    expect(reverted.status).toBe('draft');
-    expect(reverted.published_at).toBeNull();
-  });
+      const reverted = await readPost(page, postId);
+      expect(reverted.status).toBe('draft');
+      expect(reverted.published_at).toBeNull();
+    },
+  );
 
-  test('published - an edit reaches the server and the site when Update is clicked', async ({
-    page,
-  }) => {
-    const created = await postFactory.create({
-      title: `react-update-${Date.now()}`,
-      status: 'published',
-      // One paragraph: the site's `articleBody` locator matches each paragraph
-      lexical: buildLexicalParagraph('Published before the edit.'),
-    });
-    const addition = 'Edited after publishing.';
+  test(
+    'published - an edit reaches the server and the site when Update is clicked',
+    { tag: '@admin-smoke' },
+    async ({ page }) => {
+      const created = await postFactory.create({
+        title: `react-update-${Date.now()}`,
+        status: 'published',
+        // One paragraph: the site's `articleBody` locator matches each paragraph
+        lexical: buildLexicalParagraph('Published before the edit.'),
+      });
+      const addition = 'Edited after publishing.';
 
-    const editor = new PostEditorPage(page);
-    await editor.gotoPost(created.id);
-    await expect(editor.lexicalEditor).toBeVisible();
+      const editor = new PostEditorPage(page);
+      await editor.gotoPost(created.id);
+      await expect(editor.lexicalEditor).toBeVisible();
 
-    await editor.appendToBody(` ${addition}`);
-    // A published post never autosaves, so this click is the only save
-    await Promise.all([waitForPostSave(page, created.id), editor.publishSaveButton.click()]);
+      await editor.appendToBody(` ${addition}`);
+      // A published post never autosaves, so this click is the only save
+      await Promise.all([waitForPostSave(page, created.id), editor.publishSaveButton.click()]);
 
-    const updated = await readPost(page, created.id);
-    expect(updated.status).toBe('published');
-    expect(updated.lexical).toContain(addition);
+      const updated = await readPost(page, created.id);
+      expect(updated.status).toBe('published');
+      expect(updated.lexical).toContain(addition);
 
-    const frontendPage = await page.context().newPage();
-    const publicPage = new PostPage(frontendPage);
-    await publicPage.gotoPost(created.slug);
-    await expect(publicPage.articleBody).toContainText(addition);
-  });
+      const frontendPage = await page.context().newPage();
+      const publicPage = new PostPage(frontendPage);
+      await publicPage.gotoPost(created.slug);
+      await expect(publicPage.articleBody).toContainText(addition);
+    },
+  );
 
   test('published - unpublishing takes the post off the site', async ({ page }) => {
     const title = `react-unpublish-${Date.now()}`;

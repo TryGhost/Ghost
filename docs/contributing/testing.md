@@ -162,6 +162,13 @@ server with `pnpm dev`.
 
 ## Run Browser E2E Tests
 
+For a small Admin checkpoint against a prebuilt E2E image, use
+`pnpm test:e2e:smoke`. It selects existing editor, auth, and contributor journeys,
+forces build mode, disables Tinybird, and uses zero retries. Prepare the image
+and infrastructure as described in
+[Packaged Admin Smoke](../../e2e/README.md#packaged-admin-smoke). This scoped
+selection supplements the full browser suite and cutover validation.
+
 The browser suite needs its test infrastructure running. For the normal
 development flow, keep `pnpm dev` running in one terminal and run the suite from
 another:

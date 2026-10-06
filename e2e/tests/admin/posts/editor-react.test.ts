@@ -111,118 +111,131 @@ test.describe('Ghost Admin - Post editor (React)', () => {
     writes = recordPostWrites(page);
   });
 
-  test('new draft - creates the post, keeps what was typed, and persists it', async ({ page }) => {
-    // Create, a debounced autosave and a reload do not fit the default budget
-    test.setTimeout(60000);
+  test(
+    'new draft - creates the post, keeps what was typed, and persists it',
+    { tag: '@admin-smoke' },
+    async ({ page }) => {
+      // Create, a debounced autosave and a reload do not fit the default budget
+      test.setTimeout(60000);
 
-    const title = `react-new-draft-${Date.now()}`;
-    const body = 'Typed into the React editor before it had an id.';
+      const title = `react-new-draft-${Date.now()}`;
+      const body = 'Typed into the React editor before it had an id.';
 
-    const postsPage = new PostsPage(page);
-    await postsPage.goto();
-    await postsPage.newPostButton.click();
-    await editor.titleInput.waitFor({ state: 'visible' });
+      const postsPage = new PostsPage(page);
+      await postsPage.goto();
+      await postsPage.newPostButton.click();
+      await editor.titleInput.waitFor({ state: 'visible' });
 
-    // Held across the URL swap below: a remount would replace this element
-    const bodyBeforeCreate = await editor.lexicalEditor.elementHandle();
+      // Held across the URL swap below: a remount would replace this element
+      const bodyBeforeCreate = await editor.lexicalEditor.elementHandle();
 
-    const [createResponse] = await Promise.all([
-      page.waitForResponse(
-        (response) => response.request().method() === 'POST' && response.url().includes(POSTS_API),
-      ),
-      editor.createDraft({ title, body }),
-    ]);
-    expect(createResponse.ok()).toBeTruthy();
+      const [createResponse] = await Promise.all([
+        page.waitForResponse(
+          (response) =>
+            response.request().method() === 'POST' && response.url().includes(POSTS_API),
+        ),
+        editor.createDraft({ title, body }),
+      ]);
+      expect(createResponse.ok()).toBeTruthy();
 
-    // The acquired id replaces the URL in place; the editor must not remount
-    const postId = await editor.getPostId();
-    expect(await bodyBeforeCreate?.evaluate((node) => node.isConnected)).toBe(true);
-    await expect(editor.titleInput).toHaveValue(title);
-    await expect(editor.lexicalEditor).toContainText(body);
+      // The acquired id replaces the URL in place; the editor must not remount
+      const postId = await editor.getPostId();
+      expect(await bodyBeforeCreate?.evaluate((node) => node.isConnected)).toBe(true);
+      await expect(editor.titleInput).toHaveValue(title);
+      await expect(editor.lexicalEditor).toContainText(body);
 
-    // The create fires on the first keystroke, so the rest of the body rides a
-    // later autosave
-    await expect
-      .poll(() => writesCarrying(writes, body).length, { timeout: 20000 })
-      .toBeGreaterThan(0);
+      // The create fires on the first keystroke, so the rest of the body rides a
+      // later autosave
+      await expect
+        .poll(() => writesCarrying(writes, body).length, { timeout: 20000 })
+        .toBeGreaterThan(0);
 
-    await page.reload();
-    await expect(editor.titleInput).toHaveValue(title);
-    await expect(editor.lexicalEditor).toContainText(body);
+      await page.reload();
+      await expect(editor.titleInput).toHaveValue(title);
+      await expect(editor.lexicalEditor).toContainText(body);
 
-    const post = await readPost(page, postId);
-    expect(post.status).toBe('draft');
-    expect(post.title).toBe(title);
-    expect(post.lexical).toContain(body);
-  });
+      const post = await readPost(page, postId);
+      expect(post.status).toBe('draft');
+      expect(post.title).toBe(title);
+      expect(post.lexical).toContain(body);
+    },
+  );
 
-  test('existing draft - autosaves a body edit and survives a reload', async ({ page }) => {
-    test.setTimeout(60000);
+  test(
+    'existing draft - autosaves a body edit and survives a reload',
+    { tag: '@admin-smoke' },
+    async ({ page }) => {
+      test.setTimeout(60000);
 
-    const created = await postFactory.create({
-      title: `react-existing-draft-${Date.now()}`,
-      status: 'draft',
-      featured: false,
-    });
-    const addition = 'Appended in the React editor.';
+      const created = await postFactory.create({
+        title: `react-existing-draft-${Date.now()}`,
+        status: 'draft',
+        featured: false,
+      });
+      const addition = 'Appended in the React editor.';
 
-    await editor.gotoPost(created.id);
-    await expect(editor.lexicalEditor).toBeVisible();
-    await editor.appendToBody(` ${addition}`);
+      await editor.gotoPost(created.id);
+      await expect(editor.lexicalEditor).toBeVisible();
+      await editor.appendToBody(` ${addition}`);
 
-    await expect
-      .poll(() => writesCarrying(writes, addition).length, { timeout: 20000 })
-      .toBeGreaterThan(0);
-    // An existing draft is updated in place, never re-created
-    expect(writes.every((write) => write.method === 'PUT')).toBe(true);
+      await expect
+        .poll(() => writesCarrying(writes, addition).length, { timeout: 20000 })
+        .toBeGreaterThan(0);
+      // An existing draft is updated in place, never re-created
+      expect(writes.every((write) => write.method === 'PUT')).toBe(true);
 
-    await page.reload();
-    await expect(editor.lexicalEditor).toContainText(addition);
+      await page.reload();
+      await expect(editor.lexicalEditor).toContainText(addition);
 
-    const post = await readPost(page, created.id);
-    expect(post.status).toBe('draft');
-    expect(post.lexical).toContain(addition);
-  });
+      const post = await readPost(page, created.id);
+      expect(post.status).toBe('draft');
+      expect(post.lexical).toContain(addition);
+    },
+  );
 
-  test('explicit save - Cmd-S saves once, with a revision, and persists', async ({ page }) => {
-    test.setTimeout(60000);
+  test(
+    'explicit save - Cmd-S saves once, with a revision, and persists',
+    { tag: '@admin-smoke' },
+    async ({ page }) => {
+      test.setTimeout(60000);
 
-    const created = await postFactory.create({
-      title: `react-explicit-save-${Date.now()}`,
-      status: 'draft',
-      featured: false,
-    });
-    const addition = 'Saved explicitly.';
+      const created = await postFactory.create({
+        title: `react-explicit-save-${Date.now()}`,
+        status: 'draft',
+        featured: false,
+      });
+      const addition = 'Saved explicitly.';
 
-    await editor.gotoPost(created.id);
-    await expect(editor.lexicalEditor).toBeVisible();
-    const writeRequests = recordPostWriteRequests(page);
-    await editor.appendToBody(` ${addition}`);
-    // The edit is on screen, so the session holds it and the autosave is armed
-    await expect(editor.lexicalEditor).toContainText(addition);
+      await editor.gotoPost(created.id);
+      await expect(editor.lexicalEditor).toBeVisible();
+      const writeRequests = recordPostWriteRequests(page);
+      await editor.appendToBody(` ${addition}`);
+      // The edit is on screen, so the session holds it and the autosave is armed
+      await expect(editor.lexicalEditor).toContainText(addition);
 
-    await page.keyboard.press('ControlOrMeta+s');
+      await page.keyboard.press('ControlOrMeta+s');
 
-    // The explicit save cancels the armed autosave rather than following it,
-    // so the edit reaches the server once, carrying a revision
-    await expect.poll(() => writeRequests.length, { timeout: 20000 }).toBe(1);
-    expect(writeRequests[0].method).toBe('PUT');
-    expect(writeRequests[0].url).toContain('save_revision=true');
-    expect(writeRequests[0].body).toContain(addition);
+      // The explicit save cancels the armed autosave rather than following it,
+      // so the edit reaches the server once, carrying a revision
+      await expect.poll(() => writeRequests.length, { timeout: 20000 }).toBe(1);
+      expect(writeRequests[0].method).toBe('PUT');
+      expect(writeRequests[0].url).toContain('save_revision=true');
+      expect(writeRequests[0].body).toContain(addition);
 
-    await editor.waitForSaved();
-    await expectNoFurtherWrites(page);
-    expect(writeRequests).toHaveLength(1);
+      await editor.waitForSaved();
+      await expectNoFurtherWrites(page);
+      expect(writeRequests).toHaveLength(1);
 
-    await page.reload();
-    await expect(editor.titleInput).toHaveValue(created.title);
-    await expect(editor.lexicalEditor).toContainText(addition);
+      await page.reload();
+      await expect(editor.titleInput).toHaveValue(created.title);
+      await expect(editor.lexicalEditor).toContainText(addition);
 
-    const post = await readPost(page, created.id);
-    expect(post.status).toBe('draft');
-    expect(post.title).toBe(created.title);
-    expect(post.lexical).toContain(addition);
-  });
+      const post = await readPost(page, created.id);
+      expect(post.status).toBe('draft');
+      expect(post.title).toBe(created.title);
+      expect(post.lexical).toContain(addition);
+    },
+  );
 
   test('title rename - reaches the server and leaves the draft clean', async ({ page }) => {
     test.setTimeout(60000);

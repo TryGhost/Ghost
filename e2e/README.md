@@ -58,7 +58,8 @@ pnpm dev:analytics
 pnpm test:analytics
 ```
 
-E2E test scripts automatically sync Tinybird tokens when Tinybird is running.
+E2E test scripts automatically sync Tinybird tokens when Tinybird is running,
+unless `GHOST_E2E_ANALYTICS=false`.
 
 ### Build Mode (Prebuilt Image)
 
@@ -97,6 +98,54 @@ For a CI-like local preflight (pulls Playwright + gateway images and starts infr
 ```bash
 pnpm --filter @tryghost/e2e preflight:build
 ```
+
+### Packaged Admin Smoke
+
+`pnpm test:e2e:smoke` from the repository root (or `pnpm test:smoke` here)
+runs nine existing Admin journeys against a prebuilt E2E image. It forces build
+mode, disables analytics/Tinybird, and runs with zero retries. The selection
+covers draft creation and autosave across reloads, explicit save, publishing an
+edit to the public site, scheduling and unscheduling, session recovery, a React
+auth editor deep link, contributor navigation, and restoring a historical revision.
+React auth is enabled only for these isolated smoke environments; production
+rollout settings are not changed.
+
+Reuse the image from the branch's CI build or prepare one using the build-mode
+instructions above, then start the required infrastructure and run:
+
+```bash
+# From the repository root; set GHOST_E2E_IMAGE if the image has a different tag.
+GHOST_E2E_MODE=build GHOST_E2E_ANALYTICS=false pnpm --filter @tryghost/e2e preflight:build
+GHOST_E2E_IMAGE=ghost-e2e:local pnpm test:e2e:smoke
+
+# Inspect the selection without starting Ghost or using Docker.
+pnpm test:e2e:smoke --list
+```
+
+The `smoke` Playwright project selects tests tagged `@admin-smoke`. It shares
+`main`'s setup, teardown, viewport, and fixture isolation; those tests still run
+once in the normal `main` suite. Smoke uses MySQL, Redis, Mailpit, and per-file
+Ghost environments. It does not need Stripe or Mailgun test servers. Run only
+one E2E invocation at a time because global setup cleans shared test containers
+and databases.
+
+This is a scoped Admin checkpoint for hybrid and React-only builds. It does not
+prove that Ember is absent or cover Billing, isolated embed rendering, the full
+editor regression suite, or visual parity. Build mode uses compiled production
+assets while the existing E2E fixtures run Core with development configuration.
+Use the broader suites and the removal-branch checks before cutover.
+
+For a CI invocation with an already prepared E2E image, the existing container
+runner can select the same project without another frontend build:
+
+```bash
+E2E_PLAYWRIGHT_PROJECTS=smoke E2E_SHARD_INDEX=1 E2E_SHARD_TOTAL=1 E2E_RETRIES=0 \
+GHOST_E2E_MODE=build GHOST_E2E_ANALYTICS=false GHOST_E2E_IMAGE=ghost-e2e:local \
+bash e2e/scripts/run-playwright-container.sh
+```
+
+Set `E2E_RETRIES=0` explicitly: the container runner otherwise defaults to two
+retries, overriding the Playwright project configuration.
 
 ### Running Specific Tests
 
@@ -270,6 +319,9 @@ Within the e2e directory:
 ```bash
 # Run all tests
 pnpm test
+
+# Selected packaged Admin journeys (requires a prebuilt E2E image)
+pnpm test:smoke
 
 # Start/stop test infra (MySQL/Redis/Mailpit/Tinybird)
 pnpm infra:up

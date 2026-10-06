@@ -561,52 +561,60 @@ test.describe('Ghost Admin - Post editor settings (React)', () => {
     await expect.poll(async () => (await page.request.get(`/${created.slug}/`)).status()).toBe(404);
   });
 
-  test('draft - restoring an older version from Post history brings it back and saves it as the newest', async ({
-    page,
-  }) => {
-    const stamp = Date.now();
-    const firstTitle = `react-history-first-${stamp}`;
-    const firstBody = 'The paragraph the first version keeps.';
-    const secondTitle = `react-history-second-${stamp}`;
-    const secondBody = 'The paragraph the second version replaces it with.';
+  test(
+    'draft - restoring an older version from Post history brings it back and saves it as the newest',
+    { tag: '@admin-smoke' },
+    async ({ page }) => {
+      const stamp = Date.now();
+      const firstTitle = `react-history-first-${stamp}`;
+      const firstBody = 'The paragraph the first version keeps.';
+      const secondTitle = `react-history-second-${stamp}`;
+      const secondBody = 'The paragraph the second version replaces it with.';
 
-    const { editor, postId } = await startDraft(page, { title: firstTitle, body: firstBody });
+      const { editor, postId } = await startDraft(page, { title: firstTitle, body: firstBody });
 
-    // The history orders versions by the second written, so each save waits
-    // out the status hold before the next
-    await editor.waitForSaved();
-    await Promise.all([waitForRevisionSave(page, postId), page.keyboard.press('ControlOrMeta+s')]);
-    await editor.waitForSaved();
+      // The history orders versions by the second written, so each save waits
+      // out the status hold before the next
+      await editor.waitForSaved();
+      await Promise.all([
+        waitForRevisionSave(page, postId),
+        page.keyboard.press('ControlOrMeta+s'),
+      ]);
+      await editor.waitForSaved();
 
-    await editor.titleInput.fill(secondTitle);
-    await editor.replaceBody(secondBody);
-    await expect(editor.lexicalEditor).not.toContainText(firstBody);
-    await Promise.all([waitForRevisionSave(page, postId), page.keyboard.press('ControlOrMeta+s')]);
-    await editor.waitForSaved();
+      await editor.titleInput.fill(secondTitle);
+      await editor.replaceBody(secondBody);
+      await expect(editor.lexicalEditor).not.toContainText(firstBody);
+      await Promise.all([
+        waitForRevisionSave(page, postId),
+        page.keyboard.press('ControlOrMeta+s'),
+      ]);
+      await editor.waitForSaved();
 
-    const saved = await readPostHistory(page, postId);
-    expect(saved.revisions[0].title).toBe(secondTitle);
-    expect(saved.revisions[0].lexical).toContain(secondBody);
-    expect(saved.revisions[1].title).toBe(firstTitle);
-    expect(saved.revisions[1].lexical).toContain(firstBody);
+      const saved = await readPostHistory(page, postId);
+      expect(saved.revisions[0].title).toBe(secondTitle);
+      expect(saved.revisions[0].lexical).toContain(secondBody);
+      expect(saved.revisions[1].title).toBe(firstTitle);
+      expect(saved.revisions[1].lexical).toContain(firstBody);
 
-    const { history } = editor.settings.postHistory;
-    await editor.settings.openSection('post-history');
-    await expect(history.revisions).toHaveCount(saved.revisions.length);
-    await history.revision(1).select();
-    await expect(history.previewTitle).toHaveText(firstTitle);
-    await history.restore(1);
+      const { history } = editor.settings.postHistory;
+      await editor.settings.openSection('post-history');
+      await expect(history.revisions).toHaveCount(saved.revisions.length);
+      await history.revision(1).select();
+      await expect(history.previewTitle).toHaveText(firstTitle);
+      await history.restore(1);
 
-    // The restore is saved as a version of its own, ahead of the ones it chose from
-    const restored = await readPostHistory(page, postId);
-    expect(restored.title).toBe(firstTitle);
-    expect(restored.lexical).toContain(firstBody);
-    expect(restored.lexical).not.toContain(secondBody);
-    expect(restored.revisions).toHaveLength(saved.revisions.length + 1);
-    expect(restored.revisions[0].title).toBe(firstTitle);
+      // The restore is saved as a version of its own, ahead of the ones it chose from
+      const restored = await readPostHistory(page, postId);
+      expect(restored.title).toBe(firstTitle);
+      expect(restored.lexical).toContain(firstBody);
+      expect(restored.lexical).not.toContain(secondBody);
+      expect(restored.revisions).toHaveLength(saved.revisions.length + 1);
+      expect(restored.revisions[0].title).toBe(firstTitle);
 
-    await page.reload();
-    await expect(editor.titleInput).toHaveValue(firstTitle);
-    await expect(editor.lexicalEditor).toContainText(firstBody);
-  });
+      await page.reload();
+      await expect(editor.titleInput).toHaveValue(firstTitle);
+      await expect(editor.lexicalEditor).toContainText(firstBody);
+    },
+  );
 });

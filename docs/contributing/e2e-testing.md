@@ -49,6 +49,27 @@ Use factories for test data. Keep their defaults for data that does not affect
 the scenario, and only override the values needed for the behaviour and
 assertions in that test.
 
+## Packaged Admin Smoke Selection
+
+Tag an existing high-value Admin journey with `{tag: '@admin-smoke'}` to include
+it in the `smoke` Playwright project. Keep the same test and assertions in the
+normal `main` suite; do not copy a journey into a second smoke-only test file.
+For a test generated for both auth implementations, tag only its React case.
+The smoke project enables React auth, but a test's own `test.use({labs: ...})`
+can override that setting, so verify the selected case uses React.
+
+Keep this selection small and deterministic. Prefer assertions that content
+survives a save/reload, publishing reaches the API and public site, or a session
+recovers without losing edits. Adding every editor scenario would turn smoke
+into another full suite. Billing, asset isolation, and visual cutover validation
+remain separate checks.
+
+Run `pnpm test:e2e:smoke --list` from the root to inspect the selected journeys,
+and run the affected journey against the packaged image after changing it.
+See [Packaged Admin Smoke](../../e2e/README.md#packaged-admin-smoke) for build-mode
+infrastructure, image reuse, and the container-runner command. Neither the smoke
+entrypoint nor a passing selection changes rollout flags or proves cutover readiness.
+
 ## Page Object Pattern
 
 ### Core Principles

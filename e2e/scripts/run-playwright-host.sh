@@ -23,7 +23,7 @@ if [[ "$GHOST_E2E_MODE" == "dev" ]]; then
   pnpm --filter @tryghost/parse-email-address build >/dev/null
 fi
 
-if [[ "${CI:-}" != "true" ]]; then
+if [[ "${CI:-}" != "true" && "${GHOST_E2E_ANALYTICS:-true}" != "false" ]]; then
   node "$REPO_ROOT/e2e/scripts/sync-tinybird-state.mjs"
 fi
 

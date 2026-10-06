@@ -24,6 +24,7 @@
     "stripe:probe": "node --experimental-strip-types ./scripts/probe-stripe-constraints.ts",
     "preflight:build": "bash ./scripts/prepare-ci-e2e-build-mode.sh",
     "test": "bash ./scripts/run-playwright-host.sh playwright test --project=main",
+    "test:smoke": "GHOST_E2E_MODE=build GHOST_E2E_ANALYTICS=false bash ./scripts/run-playwright-host.sh playwright test --project=smoke --retries=0",
     "test:analytics": "bash ./scripts/run-playwright-host.sh playwright test --project=analytics",
     "test:all": "bash ./scripts/run-playwright-host.sh playwright test --project=main --project=analytics",
     "test:single": "bash ./scripts/run-playwright-host.sh playwright test --project=main -g",
@@ -66,6 +67,9 @@
           "build"
         ],
         "cache": true
+      },
+      "test:smoke": {
+        "cache": false
       }
     }
   }

@@ -28,23 +28,24 @@ test.describe('Ghost Admin - Signin Redirect', () => {
     await tagsPage.waitForPageToFullyLoad();
   });
 
-  test('deep-linking to the editor while logged out redirects back after signin', async ({
-    page,
-    ghostAccountOwner,
-  }) => {
-    await logout(page);
+  test(
+    'deep-linking to the editor while logged out redirects back after signin',
+    { tag: '@admin-smoke' },
+    async ({ page, ghostAccountOwner }) => {
+      await logout(page);
 
-    const editor = new PostEditorPage(page);
-    await editor.goto();
+      const editor = new PostEditorPage(page);
+      await editor.goto();
 
-    const loginPage = new LoginPage(page);
-    await expect(loginPage.signInButton).toBeVisible();
+      const loginPage = new LoginPage(page);
+      await expect(loginPage.signInButton).toBeVisible();
 
-    await loginPage.signIn(ghostAccountOwner.email, ghostAccountOwner.password);
+      await loginPage.signIn(ghostAccountOwner.email, ghostAccountOwner.password);
 
-    await expect(page).toHaveURL(/#\/editor\/post/);
-    await expect(editor.titleInput).toBeVisible();
-  });
+      await expect(page).toHaveURL(/#\/editor\/post/);
+      await expect(editor.titleInput).toBeVisible();
+    },
+  );
 
   test('query params on a deep link survive signin redirect', async ({
     page,

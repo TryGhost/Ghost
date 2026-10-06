@@ -15,6 +15,21 @@ const getWorkerCount = () => {
   return Math.floor(cpuCount / 3) || 1;
 };
 
+// Smoke selects existing Admin journeys and keeps the same infrastructure and isolation.
+const adminProject = {
+  testIgnore: [
+    '**/*.setup.ts',
+    '**/*.teardown.ts',
+    'analytics/**/*.test.ts',
+    'stripe-fixtures/**/*.test.ts',
+  ],
+  testDir: './tests',
+  use: {
+    viewport: { width: 1920, height: 1080 },
+  },
+  dependencies: ['global-setup'],
+};
+
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 const config = {
   // One budget for every environment. Splitting it lets a correct test fail on a
@@ -55,17 +70,17 @@ const config = {
     },
     {
       name: 'main',
-      testIgnore: [
-        '**/*.setup.ts',
-        '**/*.teardown.ts',
-        'analytics/**/*.test.ts',
-        'stripe-fixtures/**/*.test.ts',
-      ],
-      testDir: './tests',
+      ...adminProject,
+    },
+    {
+      name: 'smoke',
+      ...adminProject,
+      grep: /@admin-smoke/,
+      retries: 0,
       use: {
-        viewport: { width: 1920, height: 1080 },
+        ...adminProject.use,
+        labs: { authReact: true },
       },
-      dependencies: ['global-setup'],
     },
     {
       name: 'fixtures',

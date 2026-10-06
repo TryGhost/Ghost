@@ -114,26 +114,26 @@ for (const { screens, authReact } of [
       });
     });
 
-    test('contributor first login - lands on posts list with floating user menu instead of sidebar', async ({
-      browser,
-      baseURL,
-      ghostAccountContributor,
-    }) => {
-      await withIsolatedPage(browser, { baseURL }, async ({ page }) => {
-        await signInFirstTime(page, ghostAccountContributor);
+    test(
+      'contributor first login - lands on posts list with floating user menu instead of sidebar',
+      authReact ? { tag: '@admin-smoke' } : {},
+      async ({ browser, baseURL, ghostAccountContributor }) => {
+        await withIsolatedPage(browser, { baseURL }, async ({ page }) => {
+          await signInFirstTime(page, ghostAccountContributor);
 
-        const postsPage = new PostsPage(page);
-        await postsPage.waitForPageToFullyLoad();
+          const postsPage = new PostsPage(page);
+          await postsPage.waitForPageToFullyLoad();
 
-        const sidebarPage = new SidebarPage(page);
-        await expect(sidebarPage.adminSidebar).toHaveCount(0);
+          const sidebarPage = new SidebarPage(page);
+          await expect(sidebarPage.adminSidebar).toHaveCount(0);
 
-        const contributorMenu = new ContributorUserMenu(page);
-        await contributorMenu.open();
-        await expect(contributorMenu.postsMenuItem).toBeVisible();
-        await expect(contributorMenu.viewSiteMenuItem).toBeVisible();
-        await expect(contributorMenu.profileMenuItem).toBeVisible();
-      });
-    });
+          const contributorMenu = new ContributorUserMenu(page);
+          await contributorMenu.open();
+          await expect(contributorMenu.postsMenuItem).toBeVisible();
+          await expect(contributorMenu.viewSiteMenuItem).toBeVisible();
+          await expect(contributorMenu.profileMenuItem).toBeVisible();
+        });
+      },
+    );
   });
 }

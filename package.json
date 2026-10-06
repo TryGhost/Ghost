@@ -61,6 +61,7 @@
     "test:unit": "pnpm nx run-many -t test:unit",
     "test:watch": "vitest",
     "test:e2e": "pnpm --filter @tryghost/e2e test",
+    "test:e2e:smoke": "pnpm --filter @tryghost/e2e test:smoke",
     "test:e2e:analytics": "pnpm --filter @tryghost/e2e test:analytics",
     "test:e2e:all": "pnpm --filter @tryghost/e2e test:all",
     "test:e2e:debug": "DEBUG=@tryghost/e2e:* pnpm test:e2e",
