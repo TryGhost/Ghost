@@ -68,7 +68,6 @@ const boot = (tracking = true, redesigned = true) =>
       automations: true,
       automationRunAnalytics: redesigned,
       automationAnalytics: true,
-      automationsTinybirdSync: true,
     },
     boot: {
       ...performanceBoot,

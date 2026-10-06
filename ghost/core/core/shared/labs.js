@@ -52,7 +52,6 @@ const PRIVATE_FEATURES = [
   'automations',
   'automationsPerTier',
   'automationRunAnalytics',
-  'automationsTinybirdSync',
   'stripeAutomaticTax',
   'importMemberTier',
   'csvContentImporter',
