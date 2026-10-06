@@ -31,6 +31,7 @@ const messages = {
 // for older Admin builds during independent deployments.
 const GA_FEATURES = [
   'automationAnalytics',
+  'automationRunAnalytics',
   'admin7Pill',
   'globalSearchReact',
   'postsListReact',
@@ -51,7 +52,6 @@ const PUBLIC_BETA_FEATURES = [
 const PRIVATE_FEATURES = [
   'automations',
   'automationsPerTier',
-  'automationRunAnalytics',
   'stripeAutomaticTax',
   'importMemberTier',
   'csvContentImporter',
