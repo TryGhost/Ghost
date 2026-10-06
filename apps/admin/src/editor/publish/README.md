@@ -218,7 +218,7 @@ An audience that could not be counted is not an audience of none: the hook resol
 
 ## Update flow
 
-`UpdateFlowModal` is the counterpart for a post that is already published, scheduled or sent. It describes what happened and, for a published or scheduled post, offers the one action available at that point: reverting to a draft, dispatched as `toRevertDispatch()`. A sent post's email cannot be taken back, so its flow offers no action and is headed "Sent".
+`UpdateFlowModal` is the counterpart for a post that is already published, scheduled or sent. It describes what happened and offers the one action available at that point: reverting to a draft, dispatched as `toRevertDispatch()`. An email-only post that is not scheduled offers nothing, since its email cannot be taken back, and its flow is headed "Sent".
 
 It reads the newsletter from the post rather than from the options machine, because the machine only ever exposes a selectable newsletter: a post sent to a since-archived one would be described against the site's default instead.
 
