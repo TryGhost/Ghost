@@ -116,6 +116,12 @@ services:
       # Redis cache (optional)
       adapters__cache__Redis__host: redis
       adapters__cache__Redis__port: 6379
+      # Apps under development run on the host machine, where `localhost` is not this
+      # container: Ghost fetches their manifests through this alias instead
+      apps__localhostAlias: host.docker.internal
+    # Docker Desktop and OrbStack provide host.docker.internal; on Linux it needs this
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     depends_on:
       mysql:
         condition: service_healthy

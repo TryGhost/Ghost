@@ -228,6 +228,8 @@ export const getActionTitle = (action: Action) => {
     actionName = 'reset authentication';
   } else if (actionName === 'custom_fields_edited') {
     actionName = 'custom fields edited';
+  } else if (actionName === 'changes_approved') {
+    actionName = 'changes approved';
   }
 
   if (action.context?.count && (action.context?.count as number) > 1) {

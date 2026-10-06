@@ -19,3 +19,19 @@ export const AppInstallationRow = z.object({
 
 /** One site's approval of one app, as the Admin API returns it. */
 export type AppInstallation = z.output<typeof AppInstallationRow>;
+
+/**
+ * The current installation of an app, with the manifest it was approved with: what a
+ * newer manifest is compared against, and what approving one replaces.
+ */
+export const CurrentInstallationRow = z.object({
+  ...DbAppInstallation.pick({
+    id: true,
+    status: true,
+    manifest_id: true,
+    pending_manifest_id: true,
+  }).shape,
+  ...DbAppInstallationManifest.pick({ manifest_url: true, manifest: true, digest: true }).shape,
+});
+
+export type CurrentInstallation = z.output<typeof CurrentInstallationRow>;

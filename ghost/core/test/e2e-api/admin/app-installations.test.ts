@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import nock from 'nock';
 import { agentProvider, fixtureManager, mockManager } from '../../utils/e2e-framework';
 
 // Required, not imported, so this is the same module instance Ghost initialised at boot.
@@ -26,6 +27,7 @@ describe('App installations Admin API', function () {
   let agent: {
     get: (_url: string) => any;
     post: (_url: string) => any;
+    put: (_url: string) => any;
     delete: (_url: string) => any;
     loginAsOwner: () => Promise<void>;
     loginAsAdmin: () => Promise<void>;
@@ -39,6 +41,21 @@ describe('App installations Admin API', function () {
   const service = () => appInstallations.service!;
   const install = (overrides: Record<string, unknown> = {}) =>
     service().install(owner, { manifestUrl: MANIFEST_URL, manifest: manifest(overrides) });
+  const MANIFEST_HOST = 'https://podcast.example.com';
+  const MANIFEST_PATH = '/ghost-app.json';
+  const serve = (body: unknown, url = MANIFEST_HOST + MANIFEST_PATH) => {
+    const { origin, pathname } = new URL(url);
+    nock(origin)
+      .get(pathname)
+      .reply(200, body as Record<string, unknown>);
+  };
+  const preview = async (manifestUrl = MANIFEST_URL, status = 200) => {
+    const { body } = await agent
+      .post('apps/installations/preview/')
+      .body({ app_installation_previews: [{ manifest_url: manifestUrl }] })
+      .expectStatus(status);
+    return status === 200 ? body.app_installation_previews[0] : body.errors[0];
+  };
   const actions = () =>
     models.Base.knex('actions')
       .where('resource_type', 'app_installation')
@@ -55,7 +72,12 @@ describe('App installations Admin API', function () {
     await agent.loginAsOwner();
   });
 
+  beforeEach(function () {
+    mockManager.disableNetwork();
+  });
+
   afterEach(async function () {
+    nock.cleanAll();
     mockManager.restore();
     await configUtils.restore();
     await models.Base.knex('app_installation_manifests').del();
@@ -202,6 +224,219 @@ describe('App installations Admin API', function () {
         primary_name: 'Podcast',
         app_id: 'com.example.podcast',
       });
+    });
+  });
+
+  describe('POST /apps/installations/preview/', function () {
+    it('fetches and checks a manifest without storing anything', async function () {
+      serve(manifest());
+
+      const result = await preview();
+
+      assert.equal(result.manifest_url, MANIFEST_URL);
+      assert.equal(result.manifest.surfaces[0].url, `${MANIFEST_HOST}/admin`);
+      assert.match(result.digest, /^[a-f\d]{64}$/);
+      assert.equal(result.installation, null);
+      assert.equal((await service().browse()).length, 0);
+    });
+
+    it('shows what would change for an app that is already installed', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts', description: 'New words.' }));
+
+      const result = await preview();
+
+      assert.deepEqual(result.installation, {
+        id: installed.id,
+        status: 'active',
+        changes: [
+          { path: 'description', requires_approval: false },
+          { path: 'name', requires_approval: true },
+        ],
+      });
+    });
+
+    it('follows a redirect on the same host, and resolves URLs from where it ends', async function () {
+      nock(MANIFEST_HOST).get(MANIFEST_PATH).reply(302, '', { location: '/v2/ghost-app.json' });
+      serve(
+        manifest({ surfaces: [{ type: 'admin_page', url: 'admin' }] }),
+        `${MANIFEST_HOST}/v2/ghost-app.json`,
+      );
+
+      const result = await preview();
+
+      assert.equal(result.manifest_url, MANIFEST_URL);
+      assert.equal(result.manifest.surfaces[0].url, `${MANIFEST_HOST}/v2/admin`);
+    });
+
+    it('refuses a manifest that redirects to another host', async function () {
+      nock(MANIFEST_HOST)
+        .get(MANIFEST_PATH)
+        .reply(302, '', { location: 'https://elsewhere.example.net/ghost-app.json' });
+
+      const error = await preview(MANIFEST_URL, 422);
+      assert.equal(error.code, 'APP_MANIFEST_REDIRECTED');
+    });
+
+    it('explains when the app cannot be reached', async function () {
+      nock(MANIFEST_HOST).get(MANIFEST_PATH).reply(404);
+
+      const error = await preview(MANIFEST_URL, 422);
+      assert.equal(error.code, 'APP_MANIFEST_UNREACHABLE');
+    });
+
+    it('refuses a manifest that is not JSON', async function () {
+      nock(MANIFEST_HOST).get(MANIFEST_PATH).reply(200, '<html></html>');
+
+      const error = await preview(MANIFEST_URL, 422);
+      assert.equal(error.code, 'APP_MANIFEST_NOT_JSON');
+    });
+
+    it('refuses a manifest larger than it can store', async function () {
+      nock(MANIFEST_HOST)
+        .get(MANIFEST_PATH)
+        .reply(200, JSON.stringify({ ...manifest(), padding: 'a'.repeat(70 * 1024) }));
+
+      const error = await preview(MANIFEST_URL, 422);
+      assert.equal(error.code, 'APP_MANIFEST_TOO_LARGE');
+    });
+
+    it('lists what is wrong with a manifest that is not valid', async function () {
+      serve(manifest({ id: 'Podcast' }));
+
+      const error = await preview(MANIFEST_URL, 422);
+      assert.equal(error.code, 'APP_MANIFEST_INVALID');
+      assert.match(error.context, /id: /);
+    });
+  });
+
+  describe('POST /apps/installations/', function () {
+    const confirm = (digest: string, status: number) =>
+      agent
+        .post('apps/installations/')
+        .body({ app_installations: [{ manifest_url: MANIFEST_URL, digest }] })
+        .expectStatus(status);
+
+    it('installs the manifest that was reviewed', async function () {
+      serve(manifest());
+      const { digest } = await preview();
+      serve(manifest());
+
+      const { body } = await confirm(digest, 201);
+
+      assert.equal(body.app_installations[0].app_id, 'com.example.podcast');
+      assert.equal(body.app_installations[0].status, 'active');
+      assert.equal((await manifestRows())[0].digest, digest);
+      assert.equal((await actions())[0].event, 'installed');
+    });
+
+    it('asks for a new review when the app changed in between', async function () {
+      serve(manifest());
+      const { digest } = await preview();
+      serve(manifest({ name: 'Something else' }));
+
+      const { body } = await confirm(digest, 409);
+
+      assert.equal(body.errors[0].code, 'APP_MANIFEST_CHANGED');
+      assert.equal(body.errors[0].details.manifest.name, 'Something else');
+      assert.notEqual(body.errors[0].details.digest, digest);
+      assert.equal((await service().browse()).length, 0);
+    });
+
+    it('refuses to install an app that is already installed', async function () {
+      await install();
+      serve(manifest());
+      const { digest } = await preview();
+      serve(manifest());
+
+      const { body } = await confirm(digest, 409);
+      assert.equal(body.errors[0].code, 'APP_ALREADY_INSTALLED');
+    });
+
+    it('needs the reviewed digest', async function () {
+      await agent
+        .post('apps/installations/')
+        .body({ app_installations: [{ manifest_url: MANIFEST_URL }] })
+        .expectStatus(422);
+    });
+  });
+
+  describe('PUT /apps/installations/:id/', function () {
+    const NEW_URL = 'https://audio.example.org/ghost-app.json';
+    const approve = (id: string, manifestUrl: string, digest: string, status: number) =>
+      agent
+        .put(`apps/installations/${id}/`)
+        .body({ app_installations: [{ manifest_url: manifestUrl, digest }] })
+        .expectStatus(status);
+
+    it('moves an app to where it is served now, keeping the installation', async function () {
+      const installed = await install();
+      serve(manifest(), NEW_URL);
+      const reviewed = await preview(NEW_URL);
+      assert.deepEqual(reviewed.installation.changes, [
+        { path: 'manifest_url', requires_approval: true },
+        { path: 'surfaces[0].url', requires_approval: true },
+      ]);
+      serve(manifest(), NEW_URL);
+
+      const { body } = await approve(installed.id, NEW_URL, reviewed.digest, 200);
+
+      assert.equal(body.app_installations[0].id, installed.id);
+      assert.equal(body.app_installations[0].manifest_url, NEW_URL);
+      assert.equal(
+        body.app_installations[0].manifest.surfaces[0].url,
+        'https://audio.example.org/admin',
+      );
+
+      const [first, second] = await manifestRows();
+      const row = await installationRow(installed.id);
+      assert.equal(row.manifest_id, second.id);
+      assert.equal(row.revision, 1);
+      assert.equal(Boolean(second.requires_approval), true);
+
+      const [, action] = await actions();
+      assert.equal(action.event, 'changes_approved');
+      assert.equal(action.actor_id, owner.actor.id);
+      assert.deepEqual(JSON.parse(action.context), {
+        primary_name: 'Podcast',
+        app_id: 'com.example.podcast',
+        from_manifest_id: first.id,
+        to_manifest_id: second.id,
+      });
+    });
+
+    it('changes nothing when approving what is already approved', async function () {
+      const installed = await install();
+      serve(manifest());
+      const { digest } = await preview();
+      serve(manifest());
+
+      await approve(installed.id, MANIFEST_URL, digest, 200);
+
+      assert.equal((await installationRow(installed.id)).revision, 0);
+      assert.equal((await manifestRows()).length, 1);
+      assert.equal((await actions()).length, 1);
+    });
+
+    it('refuses a manifest for a different app', async function () {
+      const installed = await install();
+      serve(manifest({ id: 'com.example.other' }), NEW_URL);
+      const { digest } = await preview(NEW_URL);
+      serve(manifest({ id: 'com.example.other' }), NEW_URL);
+
+      const { body } = await approve(installed.id, NEW_URL, digest, 409);
+      assert.equal(body.errors[0].code, 'APP_INSTALLATION_CHANGED');
+    });
+
+    it('refuses an installation that has been uninstalled', async function () {
+      const installed = await install();
+      await service().uninstall(owner, installed.id);
+      serve(manifest());
+      const { digest } = await preview();
+      serve(manifest());
+
+      const { body } = await approve(installed.id, MANIFEST_URL, digest, 409);
+      assert.equal(body.errors[0].code, 'APP_INSTALLATION_CHANGED');
     });
   });
 
@@ -352,6 +587,18 @@ describe('App installations Admin API', function () {
     });
 
     const assertRefused = async function () {
+      await agent
+        .post('apps/installations/preview/')
+        .body({ app_installation_previews: [{ manifest_url: MANIFEST_URL }] })
+        .expectStatus(403);
+      await agent
+        .post('apps/installations/')
+        .body({ app_installations: [{ manifest_url: MANIFEST_URL, digest: 'a' }] })
+        .expectStatus(403);
+      await agent
+        .put(`apps/installations/${installationId}/`)
+        .body({ app_installations: [{ manifest_url: MANIFEST_URL, digest: 'a' }] })
+        .expectStatus(403);
       await agent.get('apps/installations/').expectStatus(403);
       await agent.get(`apps/installations/${installationId}/`).expectStatus(403);
       await agent.delete(`apps/installations/${installationId}/`).expectStatus(403);
