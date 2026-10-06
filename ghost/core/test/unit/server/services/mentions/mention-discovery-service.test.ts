@@ -127,6 +127,15 @@ describe('MentionDiscoveryService', function () {
       assert(endpoint instanceof URL);
       assert.equal(endpoint.href, 'http://webmentions.endpoint.io/');
     });
+
+    it('Resolves a relative endpoint in the Link header against the page URL', async function () {
+      const url = new URL('http://testpage.com/article/');
+      nock(url.origin).get(url.pathname).reply(200, {}, { Link: '<webmention>; rel="webmention"' });
+      const endpoint = await service.getEndpoint(url);
+
+      assert(endpoint instanceof URL);
+      assert.equal(endpoint.href, 'http://testpage.com/article/webmention');
+    });
   });
 
   describe('Can parse html', function () {
@@ -154,6 +163,21 @@ describe('MentionDiscoveryService', function () {
 
       assert(endpoint instanceof URL);
       assert.equal(endpoint.href, 'http://valid.site.org/');
+    });
+
+    it('Resolves a relative endpoint in the html against the page URL after redirects', async function () {
+      const url = new URL('http://redirector.io/');
+      const pageUrl = new URL('http://testpage.com/article/');
+      nock(url.href).get('/').reply(301, undefined, { location: pageUrl.href });
+      nock(pageUrl.origin)
+        .get(pageUrl.pathname)
+        .reply(200, '<link rel="webmention" href="webmention" />', {
+          'content-type': 'text/html',
+        });
+      const endpoint = await service.getEndpoint(url);
+
+      assert(endpoint instanceof URL);
+      assert.equal(endpoint.href, 'http://testpage.com/article/webmention');
     });
 
     it('Returns first endpoint for valid html site with multiple <a> tags in body', async function () {
