@@ -37,9 +37,7 @@ describe('Automation member search', () => {
     await expect
       .poll(() => requests.requests.some((r) => new URL(r.url).searchParams.get('search') === 'a'))
       .toBe(true);
-    await expect
-      .element(page.getByRole('region', { name: 'Total entries' }))
-      .not.toBeInTheDocument();
+    await expect.element(page.getByRole('region', { name: 'Total runs' })).not.toBeInTheDocument();
     await expect
       .element(page.getByRole('region', { name: 'Automation status counts' }))
       .not.toBeInTheDocument();
@@ -49,12 +47,12 @@ describe('Automation member search', () => {
     await expect
       .element(page.getByRole('button', { name: 'Clear date filter' }))
       .not.toBeInTheDocument();
-    await list().getByRole('button', { name: 'Entered', exact: true }).click();
+    await list().getByRole('button', { name: 'Started', exact: true }).click();
     await expect
       .poll(() => Object.fromEntries(new URL(requests.requests.at(-1)!.url).searchParams))
       .toEqual({ search: 'a', order: 'created_at asc' });
     await page.getByRole('button', { name: 'Close member search' }).click();
-    await expect.element(page.getByRole('region', { name: 'Total entries' })).toBeVisible();
+    await expect.element(page.getByRole('region', { name: 'Total runs' })).toBeVisible();
     await expect
       .element(page.getByRole('button', { name: 'Completed', exact: true }))
       .toHaveAttribute('aria-pressed', 'true');
@@ -90,7 +88,7 @@ describe('Automation member search', () => {
     await open();
     await page.getByRole('button', { name: 'Search members', exact: true }).click();
     await input().fill('anna');
-    await expect.element(list().getByText('Could not load entries')).toBeVisible();
+    await expect.element(list().getByText('Could not load runs')).toBeVisible();
     await expect.element(list().getByText('No members match')).not.toBeInTheDocument();
     await list().getByRole('button', { name: 'Retry' }).click();
     await expect.element(list().getByText('Anna', { exact: true })).toBeVisible();
@@ -170,7 +168,7 @@ describe('Automation member search', () => {
     await open();
     await page.getByRole('button', { name: 'Search members', exact: true }).click();
     await input().fill('anna');
-    await expect.element(list().getByText('Could not load entries')).toBeVisible();
+    await expect.element(list().getByText('Could not load runs')).toBeVisible();
     expect(cursors).toEqual([null, 'first', 'second']);
 
     repaired = true;
@@ -183,7 +181,7 @@ describe('Automation member search', () => {
       .poll(() => cursors)
       .toEqual([null, 'first', 'second', 'second', null, 'first', 'second']);
     await expect.element(list().getByText('No members match')).toBeVisible();
-    await expect.element(list().getByText('Could not load entries')).not.toBeInTheDocument();
+    await expect.element(list().getByText('Could not load runs')).not.toBeInTheDocument();
   });
 
   it.each([
@@ -219,7 +217,7 @@ describe('Automation member search', () => {
     await open();
     await page.getByRole('button', { name: 'Search members', exact: true }).click();
     await input().fill('ann');
-    await expect.element(list().getByText('Could not load entries')).toBeVisible();
+    await expect.element(list().getByText('Could not load runs')).toBeVisible();
     await expect.element(list()).toHaveAttribute('aria-busy', 'false');
     await expect.element(list().getByText('No members match')).not.toBeInTheDocument();
     if (!firstPage) {
@@ -232,7 +230,7 @@ describe('Automation member search', () => {
     repaired = true;
     await list().getByRole('button', { name: 'Retry' }).click();
     await expect.element(list().getByText('Annette', { exact: true })).toBeVisible();
-    await expect.element(list().getByText('Could not load entries')).not.toBeInTheDocument();
+    await expect.element(list().getByText('Could not load runs')).not.toBeInTheDocument();
     expect(searchRequests()).toHaveLength(firstPage ? 2 : 3);
     if (!firstPage) {
       expect(new URL(searchRequests().at(-1)!.url).searchParams.get('cursor')).toBe('next');
