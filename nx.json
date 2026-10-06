@@ -6,9 +6,7 @@
     "sharedGlobals": [
       "{workspaceRoot}/.npmrc",
       "{workspaceRoot}/ghost/tsconfig.json",
-      "{workspaceRoot}/package.json",
-      "{workspaceRoot}/pnpm-workspace.yaml",
-      "{workspaceRoot}/pnpm-lock.yaml"
+      { "runtime": "git hash-object pnpm-lock.yaml pnpm-workspace.yaml package.json" }
     ]
   },
   "parallel": 4,
@@ -58,5 +56,10 @@
   },
   "cacheDirectory": ".nxcache",
   "analytics": true,
-  "nxCloudId": "6a146249a88a39d9ffa5046c"
+  "nxCloudId": "6a146249a88a39d9ffa5046c",
+  "pluginsConfig": {
+    "@nx/js": {
+      "projectsAffectedByDependencyUpdates": []
+    }
+  }
 }
