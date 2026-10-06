@@ -169,7 +169,7 @@ const mapEnd = (
           kind: 'event',
           title,
           state: lastStep.status === 'failed' ? 'failed' : 'exited',
-          statusLabel: 'Exited early',
+          statusLabel: 'Stopped',
           timestamp: { label: 'Step stopped', value: finishedAt(lastStep) },
         },
       ];

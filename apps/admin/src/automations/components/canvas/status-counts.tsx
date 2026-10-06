@@ -22,7 +22,7 @@ export const StatusCounts: React.FC<{
         {isLoading
           ? 'Loading automation statuses'
           : data
-            ? `Statistics loaded. ${data.inProgress} in progress, ${data.completed} completed, ${data.exitedEarly} exited early.`
+            ? `Statistics loaded. ${data.inProgress} in progress, ${data.completed} completed, ${data.exitedEarly} stopped.`
             : ''}
       </Text>
     </Stack>

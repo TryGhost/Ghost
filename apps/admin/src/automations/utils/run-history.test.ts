@@ -212,6 +212,7 @@ describe('recorded run history presentation', () => {
       expect(cards[2]).toMatchObject({
         title,
         state,
+        statusLabel: 'Stopped',
         timestamp: { label: 'Step stopped', value: finished },
       });
     },

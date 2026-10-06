@@ -224,7 +224,7 @@ describe('Automation sidebar data and errors', () => {
     await expect.element(statusCard('Stopped')).toHaveTextContent('54');
     await expect
       .element(statuses().getByRole('status'))
-      .toHaveTextContent('Statistics loaded. 118 in progress, 1,260 completed, 54 exited early.');
+      .toHaveTextContent('Statistics loaded. 118 in progress, 1,260 completed, 54 stopped.');
     await expect(statuses().getByRole('button')).toHaveCount(3);
     await expect.element(entries()).toHaveTextContent('1,432');
     await expect
@@ -276,7 +276,7 @@ describe('Automation sidebar data and errors', () => {
     }
     await expect
       .element(statuses().getByRole('status'))
-      .toHaveTextContent('Statistics loaded. 0 in progress, 0 completed, 0 exited early.');
+      .toHaveTextContent('Statistics loaded. 0 in progress, 0 completed, 0 stopped.');
     await expect.element(entries().getByRole('status')).toHaveTextContent('Total runs loaded: 0.');
     expect(statuses().getByRole('status').element()).toBe(statusAnnouncement);
     expect(entries().getByRole('status').element()).toBe(entryAnnouncement);
