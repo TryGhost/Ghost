@@ -2,7 +2,7 @@
 # Minimal Development Dockerfile for Ghost Core
 # Source code is mounted at runtime for hot-reload support
 
-ARG NODE_VERSION=22.23.3
+ARG NODE_VERSION=26.10.0
 
 FROM node:$NODE_VERSION-bookworm-slim
 
@@ -68,7 +68,7 @@ COPY scripts/package.json scripts/enforce-package-manager.js scripts/
 COPY .github/hooks .github/hooks
 
 # Enable corepack so it can read packageManager from package.json and provide pnpm
-RUN corepack enable
+RUN npm install -g corepack@0.36.0 && corepack enable
 
 # Install ONLY ghost/core's workspace closure (its name is "ghost"; the trailing
 # "..." selects it plus every workspace dependency). Deps live in the shared

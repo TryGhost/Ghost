@@ -22,14 +22,19 @@
 # duplicated node_modules (~600MB) and the admin build (~80MB) and inflated every
 # image pull.
 
-ARG NODE_VERSION=22.23.3
+ARG NODE_VERSION=26.10.0
 
 # ---- deploy: build closure + self-contained app dir (build-only, not shipped) ----
 FROM node:$NODE_VERSION-bookworm-slim AS deploy
 
 WORKDIR /build
 
-RUN corepack enable
+# re2's Node 26 prebuild needs glibc 2.38 (bookworm has 2.36), so build it from
+# source in this build-only stage; the shipped core stage stays toolchain-free.
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends python3 make g++ && \
+    rm -rf /var/lib/apt/lists/* && \
+    npm install -g corepack@0.36.0 && corepack enable
 
 # Full workspace source is needed so pnpm can resolve the workspace graph for the
 # `ghost...` filter. .dockerignore prunes node_modules/build/dist/.git/.nx so the
@@ -103,6 +108,7 @@ ENV NODE_ENV=production
 RUN apt-get update && \
     apt-get install -y --no-install-recommends libjemalloc2 fontconfig && \
     rm -rf /var/lib/apt/lists/* && \
+    npm install -g corepack@0.36.0 && \
     groupmod -g 1001 node && \
     usermod -u 1001 node && \
     adduser --disabled-password --gecos "" -u 1000 ghost

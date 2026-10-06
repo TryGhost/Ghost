@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
-ARG NODE_VERSION=22.23.3
+ARG NODE_VERSION=26.10.0
 FROM node:$NODE_VERSION-bookworm-slim
 
 WORKDIR /home/ghost
@@ -11,7 +11,7 @@ COPY patches patches
 COPY --parents ghost/*/package.json apps/*/package.json koenig/*/package.json configs/*/package.json packages/**/package.json e2e/package.json scripts/package.json ./
 COPY scripts/enforce-package-manager.js scripts/
 COPY .github/hooks .github/hooks
-RUN corepack enable
+RUN npm install -g corepack@0.36.0 && corepack enable
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
     pnpm install --filter @tryghost/e2e --frozen-lockfile --prefer-offline
 
