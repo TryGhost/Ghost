@@ -6,8 +6,12 @@ import { FeatureImage } from './post-feature-image';
 import { Locator, Page } from '@playwright/test';
 import { PostSettingsSidebar } from './post-settings-sidebar';
 import {
+  conflictCancelReloadButton,
+  conflictDiscardAndReloadButton,
+  conflictReloadButton,
   editorBody,
   editorConflictBanner,
+  editorConflictReloadConfirm,
   editorReauthDialog,
   editorTitleInput,
   publishAtScheduleOption,
@@ -144,6 +148,10 @@ export class PostEditorPage extends AdminPage {
   readonly backButton: Locator;
   /** The update-collision banner. */
   readonly conflictBanner: Locator;
+  readonly conflictReloadButton: Locator;
+  readonly conflictReloadDialog: Locator;
+  readonly conflictCancelReloadButton: Locator;
+  readonly conflictDiscardAndReloadButton: Locator;
   readonly reauthenticateModal: ReAuthenticateModal;
   readonly header: EditorHeader;
   readonly settings: PostSettingsSidebar;
@@ -169,6 +177,19 @@ export class PostEditorPage extends AdminPage {
     this.revertToDraftButton = page.getByTestId(publishRevertToDraft);
     this.backButton = this.header.backLink;
     this.conflictBanner = page.getByTestId(editorConflictBanner);
+    this.conflictReloadButton = this.conflictBanner.getByRole('button', {
+      name: conflictReloadButton,
+      exact: true,
+    });
+    this.conflictReloadDialog = page.getByTestId(editorConflictReloadConfirm);
+    this.conflictCancelReloadButton = this.conflictReloadDialog.getByRole('button', {
+      name: conflictCancelReloadButton,
+      exact: true,
+    });
+    this.conflictDiscardAndReloadButton = this.conflictReloadDialog.getByRole('button', {
+      name: conflictDiscardAndReloadButton,
+      exact: true,
+    });
     this.reauthenticateModal = new ReAuthenticateModal(page);
 
     this.settings = new PostSettingsSidebar(page, this.settingsToggleButton);
