@@ -337,12 +337,12 @@ describe('Ghost(Pro) billing', () => {
     await fakeFrameOrigin(
       BILLING_ORIGIN,
       billingStandIn(
-        `${READY} parent.postMessage({ subscription: { status: 'past_due', isActiveTrial: false, trial_end: null } }, '*');`,
+        `${READY} parent.postMessage({ subscription: { status: 'active', isActiveTrial: false, trial_end: null }, exceededLimits: ['members'], checkoutRoute: '/plans' }, '*');`,
       ),
     );
     await renderBilling('/tags', { role: 'Editor' });
 
-    await expect.element(alertsScreen.alert(/Your billing details need updating/)).toBeVisible();
+    await expect.element(alertsScreen.alert(/Your audience has grown/)).toBeVisible();
     await expect.element(billingScreen.frame()).not.toBeVisible();
     await expect.element(tagsScreen.newTagLink()).toBeVisible();
   });
@@ -411,19 +411,18 @@ describe('Ghost(Pro) billing', () => {
     await expect.element(sidebarScreen.upgradeNowLink()).not.toBeInTheDocument();
   });
 
-  it('decides the overdue alert on the config refreshed for the report', async () => {
+  it('shows the dunning warnings from the config refreshed for the report', async () => {
     fakeTags([]);
     let hostSettings: Record<string, unknown> = {};
     await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
     const messages = standInMessages();
     await renderBilling('/tags', {
       hostSettings: () => hostSettings,
-      labs: { dunningWarnings: true },
     });
     await expect.element(tagsScreen.newTagLink()).toBeVisible();
 
-    // The refetch the report triggers brings the host's dunning block, which
-    // replaces the overdue alert with the dunning warnings
+    // The refetch the report triggers brings the host's dunning block; the
+    // dunning warnings are the only payment-failure surface
     hostSettings = { billing: { dunning: dunningWindow(2) } };
     await postFromBillingApp(messages, {
       subscription: { status: 'past_due', isActiveTrial: false, trial_end: null },

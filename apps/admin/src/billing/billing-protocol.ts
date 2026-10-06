@@ -143,26 +143,20 @@ export function markDunningPaymentSettled(paymentFailedAt: Date): void {
   }
 }
 
-export const OVERDUE_ALERT_KEY = 'billing.overdue';
 export const EXCEEDED_ALERT_KEY = 'billing.exceeded';
 
-export const OVERDUE_ALERT_HTML = `Your billing details need updating. The site owner must <a href="#${BILLING_ROUTE_ROOT}/update-card">update payment information</a> to avoid suspension.`;
 export const EXCEEDED_ALERT_HTML = `Your audience has grown! To continue publishing, the site owner must <a href="#${BILLING_ROUTE_ROOT}?action=checkout">confirm pricing for this number of members</a>.`;
 
 /**
- * Which billing alerts a subscription report calls for. The dunning warnings
- * replace the overdue alert, but only while they can use the host's dunning
- * config — otherwise the overdue alert must stay available.
+ * Which billing alerts a subscription report calls for. Payment failures are
+ * not among them: the dunning warnings, driven by the host's config, own those.
  */
-export function billingAlerts(
-  message: { subscription?: { status: string }; exceededLimits?: unknown; checkoutRoute?: unknown },
-  { dunningWarningsActive }: { dunningWarningsActive: boolean },
-): { overdue: boolean; exceeded: boolean } {
-  const status = message.subscription?.status;
+export function billingAlerts(message: { exceededLimits?: unknown; checkoutRoute?: unknown }): {
+  exceeded: boolean;
+} {
   const exceededLimits = Array.isArray(message.exceededLimits) ? message.exceededLimits : [];
 
   return {
-    overdue: (status === 'past_due' || status === 'unpaid') && !dunningWarningsActive,
     exceeded: exceededLimits.includes('members') && Boolean(message.checkoutRoute),
   };
 }

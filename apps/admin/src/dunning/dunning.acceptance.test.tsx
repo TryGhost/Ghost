@@ -26,13 +26,11 @@ function configWithDunning(dunning?: unknown) {
 
 describe('Dunning in the Admin layout', () => {
   it.each([
-    { label: 'an older backend without dunning config', enabled: true, dunning: undefined },
-    { label: 'malformed dunning config', enabled: true, dunning: { active: true } },
-    { label: 'the feature flag disabled', enabled: false, dunning: dunningWindow(22) },
-  ])('keeps normal navigation usable with $label', async ({ enabled, dunning }) => {
+    { label: 'an older backend without dunning config', dunning: undefined },
+    { label: 'malformed dunning config', dunning: { active: true } },
+  ])('keeps normal navigation usable with $label', async ({ dunning }) => {
     fakeTags([]);
     await renderAdminApp('/tags', {
-      labs: { dunningWarnings: enabled },
       boot: { browseConfig: { response: configWithDunning(dunning) } },
     });
 
@@ -46,7 +44,6 @@ describe('Dunning in the Admin layout', () => {
   it('shows the owner a warning and payment link before the takeover', async () => {
     fakeTags([]);
     await renderAdminApp('/tags', {
-      labs: { dunningWarnings: true },
       boot: { browseConfig: { response: configWithDunning(dunningWindow(2)) } },
     });
 
@@ -70,7 +67,6 @@ describe('Dunning in the Admin layout', () => {
     const me = currentUserResponse();
     me.users[0].roles = [staffRole({ name: 'Editor' })];
     await renderAdminApp('/tags', {
-      labs: { dunningWarnings: true },
       boot: {
         browseConfig: { response: configWithDunning(dunningWindow(22)) },
         browseMe: { response: me },

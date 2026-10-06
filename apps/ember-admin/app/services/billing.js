@@ -172,10 +172,6 @@ export default class BillingService extends Service {
     }
 
     _markDunningPaymentSettled() {
-        if (!this.feature.dunningWarnings) {
-            return;
-        }
-
         const dunning = parseDunningConfig(this.config.hostSettings?.billing?.dunning);
         if (!dunning) {
             return;
