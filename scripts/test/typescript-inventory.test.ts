@@ -9,7 +9,13 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
-import { category, inventory, parseSource, scoreFile } from '../typescript-inventory.ts';
+import {
+  category,
+  excludedSource,
+  inventory,
+  parseSource,
+  scoreFile,
+} from '../typescript-inventory.ts';
 import { buildFileTree, renderInventory } from '../lib/typescript-inventory-html.ts';
 
 test('parses real imports, re-exports and computed calls without matching comments or strings', () => {
@@ -66,7 +72,7 @@ test('inventories tracked files and resolves aliases, declarations, package expo
     `import {typed} from '@local/typed.js';\nimport './legacy.js';\nimport './declared.js';\nimport 'typed-package';\nimport 'untyped-package';\nimport 'missing-package';\n`,
   );
   put('test/main.test.js', "import '../src/main.js';\n");
-  put('fixtures/example.js', 'not real source');
+  put('vendor/example.js', 'not maintained source');
   put('dist/output.js', 'generated');
   git('add', '.');
   git(
@@ -151,6 +157,7 @@ test('escapes report data so paths cannot inject script markup', () => {
   };
   const report: Inventory = {
     schemaVersion: 2,
+    measurementVersion: 2,
     revision: 'a'.repeat(40),
     scope: '',
     files: [file],
@@ -234,4 +241,133 @@ test('folder tree rolls up nested JS and TS totals without mixing similarly name
     language: 'javascript',
   });
   assert.deepEqual(buildFileTree([]).children, []);
+});
+
+test('counts maintained fixture modules and classifies test support without hiding backend fixtures', (t) => {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'inventory-fixtures-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const included: [string, string][] = [
+    ['apps/admin/src/editor/engine/__fixtures__/after-load.test.tsx', 'tests'],
+    ['apps/admin/src/editor/engine/__fixtures__/index.ts', 'tests'],
+    ['apps/admin/test-utils/fixtures/query-client.tsx', 'tests'],
+    ['apps/ember-admin/mirage/fixtures/configs.js', 'tests'],
+    ['ghost/core/core/server/data/schema/fixtures/fixture-manager.js', 'backend'],
+    ['ghost/core/core/server/data/schema/fixtures/index.js', 'backend'],
+    ['ghost/core/test/unit/server/data/schema/fixtures/fixture-manager.test.js', 'tests'],
+    ['ghost/core/test/utils/fixtures/email-service/malformed-css.js', 'tests'],
+    ['packages/image-transform/test/integration/fixtures/index.ts', 'tests'],
+    ['packages/testing/test-data/src/fixtures/data/config.ts', 'tests'],
+    ['packages/testing/test-data/src/fixtures/index.ts', 'tests'],
+  ];
+  const excluded = [
+    'ghost/core/test/unit/frontend/services/assets-minification/fixtures/basic-cards/js/gallery.js',
+    'ghost/core/test/utils/fixtures/sloppy-config-writer.js',
+    'ghost/core/test/utils/fixtures/themes/casper/assets/built/casper.js',
+    'ghost/core/test/utils/fixtures/themes/source/assets/built/source.js',
+    'apps/ember-admin/vendor/keymaster/keymaster.js',
+    'ghost/core/core/frontend/public/admin-auth/admin-auth.min.js',
+    'koenig/kg-simplemde/debug/simplemde.debug.js',
+    'koenig/kg-simplemde/dist/simplemde.min.js',
+    'packages/_template/src/index.ts',
+  ];
+  for (const file of [...included.map(([entryPath]) => entryPath), ...excluded]) {
+    mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
+    writeFileSync(path.join(root, file), 'export const value = 1;\n');
+  }
+  execFileSync('git', ['init'], { cwd: root });
+  execFileSync('git', ['add', '.'], { cwd: root });
+  execFileSync(
+    'git',
+    [
+      '-c',
+      'user.name=Test',
+      '-c',
+      'user.email=test@example.com',
+      '-c',
+      'core.hooksPath=/dev/null',
+      'commit',
+      '-m',
+      'Fixture',
+    ],
+    { cwd: root },
+  );
+  const report = inventory(root);
+  assert.equal(report.measurementVersion, 2);
+  assert.equal(report.files.length, included.length);
+  assert.equal(report.summary.javascript, 5);
+  assert.equal(report.summary.typescript, 6);
+  assert.deepEqual(report.excluded.sort(), excluded.sort());
+  for (const [file, expected] of included) {
+    assert.equal(report.files.find((entry) => entry.path === file)?.category, expected, file);
+  }
+  assert.equal(excludedSource('ghost/core/test/utils/fixtures/themes/custom/index.ts'), false);
+  assert.equal(
+    excludedSource('ghost/core/test/utils/fixtures/sloppy-config-writer.test.ts'),
+    false,
+  );
+});
+
+test('separates developer tooling from runtime configuration', () => {
+  for (const file of [
+    '.lintstagedrc.cjs',
+    '.lintstagedrc.cts',
+    'lint-staged.config.ts',
+    'apps/ember-admin/lib/asset-delivery/index.js',
+    'apps/ember-admin/lib/check-node-version.js',
+    'apps/ember-admin/lib/ember-power-calendar-moment/index.js',
+    'apps/ember-admin/lib/ember-power-calendar-utils/index.js',
+    '.pnpmfile.mjs',
+    '.dependency-cruiser.cjs',
+    'configs/eslint/index.mjs',
+    'configs/eslint-react/index.mjs',
+    'configs/vitest/index.mjs',
+    'configs/vite-public-app/index.mjs',
+    'apps/ember-admin/.template-lintrc.js',
+    'apps/ember-admin/.lint-todorc.js',
+    'apps/ember-admin/ember-cli-build.js',
+    'apps/ember-admin/testem.js',
+    'apps/ember-admin/config/environment.js',
+    'apps/admin/vite.shared.ts',
+    'apps/admin/vite-backend-proxy.ts',
+    'apps/admin/vite-ember-assets.ts',
+    'apps/comments-ui/vite-plugin-strip-fingerprinting.ts',
+    'koenig/vitest.shared.ts',
+    'packages/i18n/generate-context.js',
+    'e2e/playwright.config.mjs',
+    'e2e/eslint.config.js',
+    'e2e/scripts/capture-stripe-fixtures.ts',
+    'ghost/core/vitest.config.db.ts',
+    'apps/admin/vitest.acceptance.config.ts',
+    'apps/shade/.storybook/main.ts',
+    'scripts/release.js',
+  ]) {
+    assert.equal(category(file), 'tooling', file);
+  }
+  for (const file of [
+    'apps/ember-admin/lib/ember-power-calendar-utils/addon/index.js',
+    'apps/admin/src/editor/card-config.ts',
+    'apps/admin/src/sentry/sentry-config.ts',
+    'apps/admin-toolbar/src/config.js',
+    'apps/ember-admin/app/services/config-manager.js',
+    'apps/admin-x-framework/src/api/config.ts',
+  ]) {
+    assert.equal(category(file), 'frontend', file);
+  }
+  for (const file of [
+    'ghost/core/core/shared/config/index.ts',
+    'ghost/core/core/frontend/services/theme-engine/config/index.js',
+    'ghost/core/core/server/services/mail/config.js',
+    'ghost/core/MigratorConfig.js',
+  ]) {
+    assert.equal(category(file), 'backend', file);
+  }
+  for (const file of [
+    'scripts/test/config.test.ts',
+    'configs/eslint/test/rules.test.ts',
+    'apps/ember-admin/mirage/config/settings.js',
+    'e2e/data-factory/setup.ts',
+    'packages/testing/test-data/src/fixtures/data/config.ts',
+  ]) {
+    assert.equal(category(file), 'tests', file);
+  }
 });
