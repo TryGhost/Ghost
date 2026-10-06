@@ -124,5 +124,34 @@ describe('Acceptance: editor React flag', function () {
             expect(router.currentRouteName, 'currentRouteName after aborting').to.equal('react-fallback');
             expect(router.currentRoute?.params?.path, 'fallback path after aborting').to.equal('editor/post/1');
         });
+
+        it('preserves a React billing redirect while parking the editor', async function () {
+            const router = this.owner.lookup('service:router');
+            await visitExpectingAbort('/tags');
+
+            const originalUrl = window.location.href;
+            const originalState = window.history.state;
+            const billingState = {usr: {from: 'editor'}, key: 'billing', idx: 2};
+            const redirectToBilling = (transition) => {
+                if (transition.to?.name === 'react-fallback' && transition.to.params?.path === 'editor/post/1') {
+                    // React's force-upgrade guard can redirect before Ember finishes parking.
+                    window.history.replaceState(billingState, '', '#/pro');
+                }
+            };
+
+            window.history.replaceState({key: 'editor', idx: 1}, '', '#/editor/post/1');
+            router.on('routeWillChange', redirectToBilling);
+
+            try {
+                await visitExpectingAbort('/editor/post/1');
+
+                expect(router.currentRouteName, 'Ember parked on the fallback').to.equal('react-fallback');
+                expect(window.location.hash, 'React billing URL preserved').to.equal('#/pro');
+                expect(window.history.state, 'React Router history state preserved').to.deep.equal(billingState);
+            } finally {
+                router.off('routeWillChange', redirectToBilling);
+                window.history.replaceState(originalState, '', originalUrl);
+            }
+        });
     });
 });
