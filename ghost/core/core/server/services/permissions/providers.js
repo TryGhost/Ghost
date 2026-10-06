@@ -48,14 +48,14 @@ module.exports = {
             return;
           }
 
-          allPerms.push(perm);
+          allPerms.push({
+            action_type: perm.get('action_type'),
+            object_type: perm.get('object_type'),
+          });
           seenPerms[key] = true;
         });
       });
 
-      // @TODO fix this!
-      // Permissions is an array of models
-      // Roles is a JSON array
       return { permissions: allPerms, roles: user.roles };
     });
   },
@@ -71,7 +71,13 @@ module.exports = {
 
         // api keys have a belongs_to relationship to a role and no individual permissions
         // so there's no need for permission deduplication
-        const permissions = foundApiKey.related('role').related('permissions').models;
+        const permissions = foundApiKey
+          .related('role')
+          .related('permissions')
+          .models.map((perm) => ({
+            action_type: perm.get('action_type'),
+            object_type: perm.get('object_type'),
+          }));
         const roles = [foundApiKey.toJSON().role];
 
         return { permissions, roles };

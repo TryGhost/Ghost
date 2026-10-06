@@ -20,9 +20,9 @@ module.exports = {
          'create': ['post', 'user', 'page']
          }
          */
-    _.each(perms.models, function (perm) {
-      const actionType = perm.get('action_type');
-      const objectType = perm.get('object_type');
+    _.each(perms, function (perm) {
+      const actionType = perm.action_type;
+      const objectType = perm.object_type;
 
       actionsMap[actionType] = actionsMap[actionType] || [];
       seenActions[actionType] = seenActions[actionType] || {};

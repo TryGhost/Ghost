@@ -69,17 +69,16 @@ describe('Permission Providers', function () {
       assert(Array.isArray(res.roles));
       assert.equal(res.roles.length, 1);
 
-      // @TODO fix this!
-      // Permissions is an array of models
-      // Roles is a JSON array
+      // Permissions are plain {action_type, object_type} objects; roles are JSON
       assert(res.permissions[0] && typeof res.permissions[0] === 'object');
-      assert('attributes' in res.permissions[0]);
-      assert('id' in res.permissions[0]);
+      assert(!('attributes' in res.permissions[0]));
+      assert(!('id' in res.permissions[0]));
+      assert.deepEqual(res.permissions[0], {action_type: 'browse', object_type: 'post'});
       assert(res.roles[0] && typeof res.roles[0] === 'object');
       assert('id' in res.roles[0]);
       assert('name' in res.roles[0]);
       assert('description' in res.roles[0]);
-      assert(res.permissions[0] instanceof models.Base.Model);
+      assert(!(res.permissions[0] instanceof models.Base.Model));
       assert(!(res.roles[0] instanceof models.Base.Model));
     });
 
@@ -125,17 +124,16 @@ describe('Permission Providers', function () {
       assert(Array.isArray(res.roles));
       assert.equal(res.roles.length, 1);
 
-      // @TODO fix this!
-      // Permissions is an array of models
-      // Roles is a JSON array
+      // Permissions are plain {action_type, object_type} objects; roles are JSON
       assert(res.permissions[0] && typeof res.permissions[0] === 'object');
-      assert('attributes' in res.permissions[0]);
-      assert('id' in res.permissions[0]);
+      assert(!('attributes' in res.permissions[0]));
+      assert(!('id' in res.permissions[0]));
+      assert.deepEqual(res.permissions[0], {action_type: 'browse', object_type: 'post'});
       assert(res.roles[0] && typeof res.roles[0] === 'object');
       assert('id' in res.roles[0]);
       assert('name' in res.roles[0]);
       assert('description' in res.roles[0]);
-      assert(res.permissions[0] instanceof models.Base.Model);
+      assert(!(res.permissions[0] instanceof models.Base.Model));
       assert(!(res.roles[0] instanceof models.Base.Model));
     });
 
@@ -182,17 +180,16 @@ describe('Permission Providers', function () {
       assert(Array.isArray(res.roles));
       assert.equal(res.roles.length, 1);
 
-      // @TODO fix this!
-      // Permissions is an array of models
-      // Roles is a JSON array
+      // Permissions are plain {action_type, object_type} objects; roles are JSON
       assert(res.permissions[0] && typeof res.permissions[0] === 'object');
-      assert('attributes' in res.permissions[0]);
-      assert('id' in res.permissions[0]);
+      assert(!('attributes' in res.permissions[0]));
+      assert(!('id' in res.permissions[0]));
+      assert.deepEqual(res.permissions[0], {action_type: 'browse', object_type: 'post'});
       assert(res.roles[0] && typeof res.roles[0] === 'object');
       assert('id' in res.roles[0]);
       assert('name' in res.roles[0]);
       assert('description' in res.roles[0]);
-      assert(res.permissions[0] instanceof models.Base.Model);
+      assert(!(res.permissions[0] instanceof models.Base.Model));
       assert(!(res.roles[0] instanceof models.Base.Model));
     });
 
@@ -258,13 +255,14 @@ describe('Permission Providers', function () {
       assert(Array.isArray(res.roles));
       assert.equal(res.roles.length, 1);
       assert(res.permissions[0] && typeof res.permissions[0] === 'object');
-      assert('attributes' in res.permissions[0]);
-      assert('id' in res.permissions[0]);
+      assert(!('attributes' in res.permissions[0]));
+      assert(!('id' in res.permissions[0]));
+      assert.deepEqual(res.permissions[0], {action_type: 'browse', object_type: 'post'});
       assert(res.roles[0] && typeof res.roles[0] === 'object');
       assert('id' in res.roles[0]);
       assert('name' in res.roles[0]);
       assert('description' in res.roles[0]);
-      assert(res.permissions[0] instanceof models.Base.Model);
+      assert(!(res.permissions[0] instanceof models.Base.Model));
       assert(!(res.roles[0] instanceof models.Base.Model));
     });
   });

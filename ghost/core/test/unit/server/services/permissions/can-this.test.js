@@ -240,8 +240,7 @@ describe('Permissions', function () {
         const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
           // Fake the response from providers.user, which contains permissions and roles
           return Promise.resolve({
-            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions)
-              .models,
+            permissions: _.cloneDeep(testUtils.DataGenerator.Content.permissions),
             roles: undefined,
           });
         });
@@ -258,8 +257,7 @@ describe('Permissions', function () {
         const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
           // Fake the response from providers.user, which contains permissions and roles
           return Promise.resolve({
-            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions)
-              .models,
+            permissions: _.cloneDeep(testUtils.DataGenerator.Content.permissions),
             roles: undefined,
           });
         });
@@ -300,8 +298,7 @@ describe('Permissions', function () {
         const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(() => {
           // Fake the response from providers.user, which contains permissions and roles
           return Promise.resolve({
-            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions)
-              .models,
+            permissions: _.cloneDeep(testUtils.DataGenerator.Content.permissions),
             // This should be JSON, so no need to run it through the model layer. 5 === admin api key
             roles: [testUtils.DataGenerator.Content.roles[5]],
           });
@@ -326,16 +323,14 @@ describe('Permissions', function () {
       it('Current behavior: User with permission + API key with permission (should pass with current logic)', async function () {
         const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
           return Promise.resolve({
-            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions)
-              .models,
+            permissions: _.cloneDeep(testUtils.DataGenerator.Content.permissions),
             roles: undefined,
           });
         });
 
         const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(() => {
           return Promise.resolve({
-            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions)
-              .models,
+            permissions: _.cloneDeep(testUtils.DataGenerator.Content.permissions),
             roles: [testUtils.DataGenerator.Content.roles[5]], // admin api key role
           });
         });
@@ -355,8 +350,7 @@ describe('Permissions', function () {
       it('Fixed behavior: User with permission + API key without permission (now uses USER permission and passes)', async function () {
         const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
           return Promise.resolve({
-            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions)
-              .models,
+            permissions: _.cloneDeep(testUtils.DataGenerator.Content.permissions),
             roles: undefined,
           });
         });
@@ -391,8 +385,7 @@ describe('Permissions', function () {
 
         const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(() => {
           return Promise.resolve({
-            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions)
-              .models,
+            permissions: _.cloneDeep(testUtils.DataGenerator.Content.permissions),
             roles: [testUtils.DataGenerator.Content.roles[5]],
           });
         });
@@ -477,8 +470,7 @@ describe('Permissions', function () {
         it('Expected: User with permission + API key without permission (should use USER permission and pass)', async function () {
           const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
             return Promise.resolve({
-              permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions)
-                .models,
+              permissions: _.cloneDeep(testUtils.DataGenerator.Content.permissions),
               roles: undefined,
             });
           });
@@ -512,8 +504,7 @@ describe('Permissions', function () {
 
           const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(() => {
             return Promise.resolve({
-              permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions)
-                .models,
+              permissions: _.cloneDeep(testUtils.DataGenerator.Content.permissions),
               roles: [testUtils.DataGenerator.Content.roles[5]],
             });
           });
@@ -564,16 +555,14 @@ describe('Permissions', function () {
         it('Expected: Author user + API key cannot update the visibility of their own post', async function () {
           const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
             return Promise.resolve({
-              permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions)
-                .models,
+              permissions: _.cloneDeep(testUtils.DataGenerator.Content.permissions),
               roles: [testUtils.DataGenerator.Content.roles[2]], // Author role
             });
           });
 
           const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(function () {
             return Promise.resolve({
-              permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions)
-                .models,
+              permissions: _.cloneDeep(testUtils.DataGenerator.Content.permissions),
               roles: [testUtils.DataGenerator.Content.roles[5]], // Admin Integration
             });
           });
@@ -604,7 +593,7 @@ describe('Permissions', function () {
       const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
         // Fake the response from providers.user, which contains permissions and roles
         return Promise.resolve({
-          permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
+          permissions: _.cloneDeep(testUtils.DataGenerator.Content.permissions),
           roles: undefined,
         });
       });
@@ -641,7 +630,7 @@ describe('Permissions', function () {
       const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
         // Fake the response from providers.user, which contains permissions and roles
         return Promise.resolve({
-          permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
+          permissions: _.cloneDeep(testUtils.DataGenerator.Content.permissions),
           roles: undefined,
         });
       });

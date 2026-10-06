@@ -66,7 +66,7 @@ class CanThisResult {
 
             const checkPermission = function (perm) {
               // Look for a matching action type and object type first
-              if (perm.get('action_type') !== actType || perm.get('object_type') !== objType) {
+              if (perm.action_type !== actType || perm.object_type !== objType) {
                 return false;
               }
 

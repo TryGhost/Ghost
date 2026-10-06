@@ -10,7 +10,11 @@ const init = function init(options) {
 
   // Load all the permissions
   return models.Permission.findAll(options).then(function (permissionsCollection) {
-    return actionsMap.init(permissionsCollection);
+    const permissions = permissionsCollection.models.map((perm) => ({
+      action_type: perm.get('action_type'),
+      object_type: perm.get('object_type'),
+    }));
+    return actionsMap.init(permissions);
   });
 };
 
