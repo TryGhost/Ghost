@@ -298,6 +298,7 @@ const pillLabelFields: FilterFieldConfig[] = [
       { value: 'is_not', label: 'is not' },
     ],
     defaultValue: 'true',
+    staticValue: true,
     customRenderer: () => <span>Featured</span>,
   },
 ];

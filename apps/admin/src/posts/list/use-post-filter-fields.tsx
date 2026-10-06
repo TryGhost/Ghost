@@ -98,6 +98,7 @@ export function buildPostFilterFields({
     operators: IS_OR_IS_NOT,
     defaultOperator: 'is',
     defaultValue: FEATURED_VALUE,
+    staticValue: true,
     customRenderer: () => <span>Featured</span>,
   };
 

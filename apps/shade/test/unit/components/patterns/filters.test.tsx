@@ -963,4 +963,48 @@ describe('Filters', () => {
       expect(screen.queryByText('Featured')).toBeNull();
     });
   });
+
+  // Neither segment can be clicked, so neither may show a hover state.
+  describe('static segments', () => {
+    function renderFlag(staticValue?: boolean) {
+      render(
+        <Filters
+          fields={[
+            {
+              key: 'featured',
+              label: 'Featured',
+              pillLabel: 'Post',
+              type: 'custom',
+              operators: [{ value: 'is', label: 'is' }],
+              staticValue,
+              customRenderer: () => <span>Featured value</span>,
+            },
+          ]}
+          filters={[createFilter('featured', 'is', ['true'])]}
+          onChange={vi.fn()}
+        />,
+      );
+    }
+
+    it('takes no pointer events on the field label', () => {
+      renderFlag();
+
+      expect(screen.getByText('Post').className).toContain('pointer-events-none');
+    });
+
+    it('takes no pointer events on a staticValue custom value', () => {
+      renderFlag(true);
+
+      const value = screen.getByText('Featured value').closest('[data-slot="filters-value"]');
+      expect(value?.className).toContain('pointer-events-none');
+      expect(value?.className).not.toContain('cursor-pointer');
+    });
+
+    it('keeps a custom value interactive by default', () => {
+      renderFlag();
+
+      const value = screen.getByText('Featured value').closest('[data-slot="filters-value"]');
+      expect(value?.className).not.toContain('pointer-events-none');
+    });
+  });
 });
