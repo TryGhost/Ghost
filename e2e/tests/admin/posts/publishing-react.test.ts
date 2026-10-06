@@ -10,10 +10,9 @@ import { PostPage } from '@/helpers/pages';
 import { expect, test, withIsolatedPage } from '@/helpers/playwright';
 
 /**
- * The publishing journeys through the React post editor, behind the
- * `editorReact` Labs flag. Each case pins the state the server ends up holding,
- * not the layout the editor reaches it through. The draft autosave journeys
- * stay in `editor-react.test.ts`.
+ * The publishing journeys through the React post editor. Each case pins the
+ * state the server ends up holding, not the layout the editor reaches it
+ * through. The draft autosave journeys stay in `editor-react.test.ts`.
  */
 
 const POSTS_API = '/ghost/api/admin/posts/';
@@ -60,7 +59,7 @@ async function openDraftPage(page: Page, title: string) {
     pages: [draft],
   } = await response.json();
 
-  const editor = new PostEditorPage(page, { implementation: 'react' });
+  const editor = new PostEditorPage(page);
   await page.goto(`/ghost/#/editor/page/${draft.id}`);
   await editor.titleInput.waitFor({ state: 'visible' });
 
@@ -85,7 +84,7 @@ async function startDraft(page: Page, { title, body }: { title: string; body: st
   await postsPage.goto();
   await postsPage.newPostButton.click();
 
-  const editor = new PostEditorPage(page, { implementation: 'react' });
+  const editor = new PostEditorPage(page);
   await Promise.all([
     page.waitForResponse(
       (response) =>
@@ -100,10 +99,6 @@ async function startDraft(page: Page, { title, body }: { title: string; body: st
 }
 
 test.describe('Ghost Admin - Publishing (React)', () => {
-  // Flag state belongs on the describe — `test.use` inside a test body has no
-  // effect on the fixtures that test already resolved.
-  test.use({ labs: { editorReact: true } });
-
   let postFactory: PostFactory;
 
   test.beforeEach(async ({ page }) => {
@@ -133,9 +128,8 @@ test.describe('Ghost Admin - Publishing (React)', () => {
     expect(scheduled.status).toBe('scheduled');
 
     // The list consumes the handoff and opens its celebration over itself.
-    const listFlow = new PostEditorPage(page, { implementation: 'ember' }).publishFlow;
-    await expect(listFlow.celebration).toBeVisible();
-    await listFlow.close();
+    await expect(postsPage.publishCelebration).toBeVisible();
+    await postsPage.closePublishCelebration();
     await postsPage.waitForPageToFullyLoad();
     await expect(postsPage.getPostByTitle(title)).toContainText('Scheduled');
     await postsPage.getPostByTitle(title).click();
@@ -160,7 +154,7 @@ test.describe('Ghost Admin - Publishing (React)', () => {
     });
     const addition = 'Edited after publishing.';
 
-    const editor = new PostEditorPage(page, { implementation: 'react' });
+    const editor = new PostEditorPage(page);
     await editor.gotoPost(created.id);
     await expect(editor.lexicalEditor).toBeVisible();
 
@@ -182,7 +176,7 @@ test.describe('Ghost Admin - Publishing (React)', () => {
     const title = `react-unpublish-${Date.now()}`;
     const created = await postFactory.create({ title, status: 'published' });
 
-    const editor = new PostEditorPage(page, { implementation: 'react' });
+    const editor = new PostEditorPage(page);
     await editor.gotoPost(created.id);
     await expect(editor.postStatus).toContainText('Published');
 
@@ -245,7 +239,7 @@ test.describe('Ghost Admin - Publishing (React)', () => {
     });
     const addition = 'Typed but not yet saved.';
 
-    const editor = new PostEditorPage(page, { implementation: 'react' });
+    const editor = new PostEditorPage(page);
     await editor.gotoPost(created.id);
     await expect(editor.lexicalEditor).toBeVisible();
 
@@ -295,7 +289,7 @@ test.describe('Ghost Admin - Publishing (React)', () => {
       const postsPage = new PostsPage(contributorPage);
       await postsPage.waitForPageToFullyLoad();
 
-      const editor = new PostEditorPage(contributorPage, { implementation: 'react' });
+      const editor = new PostEditorPage(contributorPage);
       await editor.gotoPost(draft.id);
       await expect(editor.lexicalEditor).toBeVisible();
 
@@ -446,9 +440,8 @@ test.describe('Ghost Admin - Publishing (React)', () => {
       expect((await page.request.get(`/${post.slug}/`)).status()).toBe(404);
 
       // The list consumes the handoff and opens its celebration over itself
-      const listFlow = new PostEditorPage(page, { implementation: 'ember' }).publishFlow;
-      await expect(listFlow.celebration).toBeVisible();
-      await listFlow.close();
+      await expect(postsPage.publishCelebration).toBeVisible();
+      await postsPage.closePublishCelebration();
       await postsPage.waitForPageToFullyLoad();
       const row = postsPage.getPostByTitle(title);
       await expect(row).toContainText('Scheduled');
