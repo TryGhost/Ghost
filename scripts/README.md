@@ -115,7 +115,14 @@ into frontend (`apps/`, Koenig's three editor UI packages, and Core's
 `core/frontend/public/` browser scripts) and backend (remaining server code and
 library packages, including libraries shared with the frontend). Core's
 `core/frontend/` routing and rendering code executes on the server and therefore
-belongs to backend. Tests and tooling take precedence over this split. Test support includes
+belongs to backend. Tests and tooling take precedence over this split.
+
+Tooling uses recognised tool config filenames (including dotfiles), explicit build
+helpers, the root `configs/` packages, scripts and CI configuration. Runtime
+configuration is not tooling merely because its name contains `config`. Runner
+configs such as `e2e/playwright.config.mjs` are tooling; actual tests remain tests.
+
+Test support includes
 `test-utils`, `__fixtures__`, Mirage modules and `packages/testing/`; backend
 schema fixtures remain backend code. JSON
 schema version 2 replaces the old `production` category with these two values.
