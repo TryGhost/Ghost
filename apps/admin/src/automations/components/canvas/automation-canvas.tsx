@@ -365,7 +365,7 @@ const buildGraph = ({
           canEditEmailBody: action.type === 'send_email',
           onDelete,
           onEditEmailBody,
-          onPreviewEmail,
+          onPreviewEmail: automation.id ? onPreviewEmail : undefined,
           onSelectStep,
           stepId: action.id,
         }),
@@ -726,7 +726,9 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   const automationAnalyticsEnabled = useFeatureFlag('automationAnalytics');
   const configQuery = useBrowseConfig();
   const isPerformanceEnabled =
-    automationRunAnalyticsEnabled && Boolean(configQuery.data?.config.stats);
+    Boolean(automation?.id) &&
+    automationRunAnalyticsEnabled &&
+    Boolean(configQuery.data?.config.stats);
   const isAutomationSidebarAvailable = isPerformanceEnabled || automationsPerTierEnabled;
   // Flow data arrives after mount. Use its status until the user chooses a panel state.
   const isAutomationSidebarOpen =
