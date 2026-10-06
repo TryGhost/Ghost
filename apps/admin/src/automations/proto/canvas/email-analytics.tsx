@@ -124,34 +124,60 @@ export const EmailStatsFooter: React.FC<StatsProps & { divider?: boolean }> = ({
 // beside the ⋯ (the edit canvas's analyticsAction) — the same always-visible
 // toggle the other lanes use to open their sheet. A hover-only chevron on the
 // metrics row was tried first and gave no visible way in at rest.
+// How long the card takes to grow or shrink. The canvas reads this too: while
+// it runs, the cards below follow the growing card frame by frame instead of
+// easing after it (see the edit canvas's `resizing`), and the canvas centres on
+// the card only once it has finished.
+export const ANALYTICS_EXPAND_MS = 300;
+
 export const EmailStatsExpandable: React.FC<
   StatsProps & { actionId: string; expanded: boolean }
 > = ({ stats, opensTracked = true, clicksTracked = true, actionId, expanded }) => (
-  <Stack gap="lg">
+  <div>
     <EmailStatsFooter
       clicksTracked={clicksTracked}
       divider={false}
       opensTracked={opensTracked}
       stats={stats}
     />
-    {expanded && (
-      <Stack gap="md">
-        <Inline justify="between">
-          <Text size="sm" tone="secondary" weight="medium">
-            Top clicked links
-          </Text>
-          <Text size="sm" tone="tertiary" weight="medium">
-            Members
-          </Text>
-        </Inline>
-        <TopClickedLinksContent
-          clickedCount={stats.email_clicked_count}
-          links={actionLinks(actionId, stats.email_clicked_count)}
-          sentCount={stats.email_sent_count}
-        />
-      </Stack>
-    )}
-  </Stack>
+    {/* Always mounted, collapsed to a zero-height grid row, so the card's height
+        animates rather than jumping — a jump let the next card sit over this
+        one for the moment it took to move out of the way. duration-300 is
+        ANALYTICS_EXPAND_MS; the easing is the one the cards settle with. Inert
+        while collapsed, so the hidden links can't be tabbed to. */}
+    <div
+      ref={(section) => {
+        if (section) {
+          section.inert = !expanded;
+        }
+      }}
+      aria-hidden={!expanded || undefined}
+      className={cn(
+        'grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.22,0.61,0.36,1)] motion-reduce:transition-none',
+        expanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+      )}
+    >
+      <div className="min-h-0 overflow-hidden">
+        {/* pt-5 inside the collapsing row (the lg gap the two sections had), so
+            the space collapses with it. */}
+        <Stack className="pt-5" gap="md">
+          <Inline justify="between">
+            <Text size="sm" tone="secondary" weight="medium">
+              Top clicked links
+            </Text>
+            <Text size="sm" tone="tertiary" weight="medium">
+              Members
+            </Text>
+          </Inline>
+          <TopClickedLinksContent
+            clickedCount={stats.email_clicked_count}
+            links={actionLinks(actionId, stats.email_clicked_count)}
+            sentCount={stats.email_sent_count}
+          />
+        </Stack>
+      </div>
+    </div>
+  </div>
 );
 
 // A metrics-as-a-field experiment lived here briefly (EmailStatsField): the

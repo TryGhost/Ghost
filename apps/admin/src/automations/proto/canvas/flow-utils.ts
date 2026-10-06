@@ -176,11 +176,32 @@ const UNMEASURED_NODE_HEIGHT = 200;
 // yields the same height and the loop settles on the second pass.
 export const useMeasuredColumn = () => {
   const [heights, setHeights] = useState<Record<string, number>>({});
+  // The same measurements, exact and with their width, for a canvas that hands
+  // them back to React Flow as each node's `measured` (see the edit canvas's
+  // flowNodes). Additive: a canvas that doesn't read `sizes` is unaffected.
+  const [sizes, setSizes] = useState<Record<string, { width: number; height: number }>>({});
 
   // The canvas owns positions; React Flow owns sizes. Every other kind of change
   // it offers here (position, selection, removal) is something we drive from the
   // draft instead, so dimensions are all we take.
   const onNodesChange = useCallback((changes: NodeChange[]) => {
+    setSizes((current) => {
+      let next = current;
+      for (const change of changes) {
+        if (change.type !== 'dimensions' || !change.dimensions) {
+          continue;
+        }
+        const { width, height } = change.dimensions;
+        if (current[change.id]?.width === width && current[change.id]?.height === height) {
+          continue;
+        }
+        if (next === current) {
+          next = { ...current };
+        }
+        next[change.id] = { width, height };
+      }
+      return next;
+    });
     setHeights((current) => {
       let next = current;
       for (const change of changes) {
@@ -220,7 +241,7 @@ export const useMeasuredColumn = () => {
     [heights],
   );
 
-  return { onNodesChange, layout };
+  return { onNodesChange, layout, sizes };
 };
 
 // The editable step kinds share one icon per kind across both canvases.

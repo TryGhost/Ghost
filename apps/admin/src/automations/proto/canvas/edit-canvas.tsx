@@ -109,7 +109,7 @@ import {
 import { UpdateMemberFields } from './update-member-fields';
 import { EmailAnalyticsSheet, type SheetEmail } from './email-analytics-sheet';
 import { EmailAnalyticsModal } from './email-analytics-modal';
-import { EmailStatsExpandable, EmailStatsFooter } from './email-analytics';
+import { ANALYTICS_EXPAND_MS, EmailStatsExpandable, EmailStatsFooter } from './email-analytics';
 import { NODE_BODY_PADDING, NODE_CARD_FRAME, NodeCard, NodeHeader } from './flow-node-shell';
 import { EmailPreview } from './email-preview';
 import { EMPTY_LEXICAL, SEEDED_LEXICAL } from '@/automations/proto/shared/mock';
@@ -417,9 +417,9 @@ const NEW_STEP_MS = 400;
 // settled around it. Doing both at once would be the card moving while it appears,
 // which is two things to follow.
 const STEP_CENTER_MS = 450;
-// How long a card that just changed height — an email expanding its analytics,
-// cards growing their error messages — is given to be measured and laid out
-// before the canvas centres on it.
+// How long a card that just changed height — an email that finished expanding
+// its analytics, cards growing their error messages — is given to be measured
+// and laid out before the canvas centres on it.
 const CARD_RESIZE_SETTLE_MS = 150;
 // Below this the canvas doesn't bother: a card that already sits near the middle
 // doesn't need correcting by a few pixels, and a move that small reads as the canvas
@@ -1226,6 +1226,20 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   // The card whose footer was just expanded, for the canvas to bring to the
   // middle. `n` so expanding the same card twice asks twice.
   const [expandCenter, setExpandCenter] = useState<{ id: string; n: number } | null>(null);
+  // Counts up on every expand or collapse, and holds `resizing` true for as long
+  // as the card's own height animation runs. While it is, the cards below drop
+  // their settle transition and track the growing card measurement by
+  // measurement — easing after it left them a beat behind, overlapping it.
+  const [resizeTick, setResizeTick] = useState(0);
+  const [resizing, setResizing] = useState(false);
+  useEffect(() => {
+    if (resizeTick === 0) {
+      return;
+    }
+    setResizing(true);
+    const timer = setTimeout(() => setResizing(false), ANALYTICS_EXPAND_MS + 50);
+    return () => clearTimeout(timer);
+  }, [resizeTick]);
   // Email-content dialog, opened from a card's inline "Edit email content" button.
   // Keyed by the action that opened it, because the dialog can now WRITE — its
   // simulate toggle fills or empties that email's lexical, so it has to know
@@ -1432,7 +1446,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
 
   // Card heights are read back from the render, so nothing here has to know what
   // a card contains — see useMeasuredColumn.
-  const { onNodesChange, layout } = useMeasuredColumn();
+  const { onNodesChange, layout, sizes } = useMeasuredColumn();
 
   const insert = (anchor: InsertActionAnchor, kind: 'email' | 'wait' | 'update_member') => {
     // The framework's helpers for the two it knows, ours for the third — see
@@ -1706,6 +1720,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
           onToggleAnalytics: () => {
             settleOthers(action.id);
             if (analyticsSurface === 'inline') {
+              setResizeTick((tick) => tick + 1);
               if (!expandedEmailIds.has(action.id)) {
                 setExpandCenter((current) => ({ id: action.id, n: (current?.n ?? 0) + 1 }));
               }
@@ -1833,6 +1848,20 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   // then, rather than captured when the press happened.
   const nodesRef = useRef(nodes);
   nodesRef.current = nodes;
+
+  // Inline analytics only: each node goes to React Flow carrying the size it
+  // was last measured at. React Flow hides a node it's handed without one until
+  // it has measured it again — normally a single unseen frame, but an expanding
+  // card changes height on every frame of its animation, each change rebuilds
+  // every node, and the rest of the column spent the animation hidden. The
+  // shipping canvas hands `measured` back for the same reason.
+  const flowNodes = useMemo(
+    () =>
+      analyticsSurface === 'inline'
+        ? nodes.map((node) => (sizes[node.id] ? { ...node, measured: sizes[node.id] } : node))
+        : nodes,
+    [analyticsSurface, nodes, sizes],
+  );
   const centerOnNode = useCallback(
     (id: string) => {
       const column = nodesRef.current;
@@ -1854,7 +1883,11 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     if (!expandCenter) {
       return;
     }
-    const timer = setTimeout(() => centerOnNode(expandCenter.id), CARD_RESIZE_SETTLE_MS);
+    // After the card has finished growing: its final height is what's centred.
+    const timer = setTimeout(
+      () => centerOnNode(expandCenter.id),
+      ANALYTICS_EXPAND_MS + CARD_RESIZE_SETTLE_MS,
+    );
     return () => clearTimeout(timer);
   }, [expandCenter, centerOnNode]);
 
@@ -1910,7 +1943,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
           // sequence the cards are being placed for the first time, and a transition
           // would animate them in from wherever React Flow started them — including
           // the exit card sliding in from the origin.
-          entranceOver && NODE_SETTLE_CLASS,
+          entranceOver && !resizing && NODE_SETTLE_CLASS,
         )}
       >
         <ReactFlow
@@ -1918,7 +1951,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
           edgeTypes={edgeTypes}
           maxZoom={CANVAS_ZOOM_CONFIG.maxZoom}
           minZoom={CANVAS_ZOOM_CONFIG.minZoom}
-          nodes={nodes}
+          nodes={flowNodes}
           nodesConnectable={false}
           nodesDraggable={false}
           nodeTypes={nodeTypes}
