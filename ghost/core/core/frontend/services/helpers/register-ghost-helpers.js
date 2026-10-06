@@ -6,7 +6,7 @@ exports.registerGhostHelpers = () => {
   registry.registerHelper('body_class', require('../../helpers/body_class'));
   registry.registerHelper('cancel_link', require('../../helpers/cancel_link'));
   registry.registerHelper('collection', require('../../helpers/collection'));
-  registry.registerHelper('color_to_rgba', require('../../helpers/color_to_rgba'));
+  registry.registerHelper('color_to_rgba', require('../../helpers/color_to_rgba').color_to_rgba);
   registry.registerHelper('comment_count', require('../../helpers/comment_count'));
   registry.registerHelper('comments', require('../../helpers/comments'));
   registry.registerHelper('concat', require('../../helpers/concat'));
