@@ -9,6 +9,7 @@
  * The format is unversioned while only Ghost builds apps.
  */
 
+export { compareManifests, type ManifestChange, type ManifestComparison } from './compare.ts';
 export { APP_ID_MAX_LENGTH, isValidAppId } from './id.ts';
 export type { AppIcon } from './icon.ts';
 export { URL_MAX_LENGTH } from './limits.ts';

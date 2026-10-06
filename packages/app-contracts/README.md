@@ -104,6 +104,23 @@ There is no list of allowed origins in the manifest. The only origin that may
 talk to Ghost from a surface is the origin of that surface's resolved `url`;
 derive it where it is used, with `new URL(surface.url).origin`.
 
+### Comparing manifests
+
+`compareManifests(approved, next)` lists every field that differs between two
+parsed manifests, and whether each change needs the publisher to approve it
+again. Only `description`, `accent_color` and `icon.name` change silently.
+Everything else says who the app is or is a URL Ghost loads or links to, so it
+needs approval, and so does any field added to the manifest later until it is
+listed as silent.
+
+```ts
+compareManifests(approved, next);
+// {
+//   changes: [{ path: 'surfaces[0].url', requiresApproval: true }],
+//   requiresApproval: true,
+// }
+```
+
 ## Develop
 
 This is a workspace package in the Ghost monorepo. From the package directory:
