@@ -28,6 +28,7 @@ services:
     environment:
       - PROXY_TARGET=http://tinybird-local:7181/v0/events
       - TINYBIRD_WAIT=true
+      - TINYBIRD_SYNC_AUTH=${TINYBIRD_SYNC_AUTH:-test-sync-auth}
     depends_on:
       tinybird-local:
         condition: service_healthy
@@ -98,6 +99,7 @@ services:
       tinybird__stats__endpointBrowser: http://localhost:7181
       tinybird__tracker__endpoint: http://localhost:2368/.ghost/analytics/api/v1/page_hit
       tinybird__tracker__datasource: analytics_events
+      tinybird__sync_auth_key: ${TINYBIRD_SYNC_AUTH:-test-sync-auth}
     depends_on:
       analytics:
         condition: service_healthy

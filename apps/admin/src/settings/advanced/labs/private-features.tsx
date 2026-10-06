@@ -119,12 +119,6 @@ const features: Feature[] = [
     flag: 'machinePayments',
   },
   {
-    title: 'Dunning warnings',
-    description:
-      'Show payment-failure warnings in Admin, driven by the hosting provider via hostSettings.billing.dunning',
-    flag: 'dunningWarnings',
-  },
-  {
     title: 'Navigation URL suggestions',
     description:
       'Suggest pages, posts, offers and Portal links when editing navigation URLs in settings',

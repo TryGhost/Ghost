@@ -227,6 +227,7 @@
     "Save": "저장",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "다음 {durationInMonths}번의 결제 주기 동안 {amountOff}을(를) 절약하세요. 이후에는 {cadence}당 {currency}{originalPrice}이에요.",
     "Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.": "다음 결제 주기에 {amountOff}을(를) 절약하세요. 이후에는 {cadence}당 {currency}{originalPrice}이에요.",
+    "Security verification": "",
     "Send the link below to share it with whoever you'd like.": "아래 링크를 보내 원하는 분과 공유하세요.",
     "Sending login link...": "로그인 링크 전송 중...",
     "Sending...": "전송 중...",

@@ -227,6 +227,7 @@
     "Save": "保存",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",
     "Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.": "",
+    "Security verification": "",
     "Send the link below to share it with whoever you'd like.": "",
     "Sending login link...": "ログイン先リンクを送信しています...",
     "Sending...": "送信しています...",

@@ -77,6 +77,8 @@ export interface EditorHeaderActionsProps {
   onOpenFlow: (flow: OpenFlow) => void;
   /** Whether the status line offers a failed send's retry, which needs the publish inputs. */
   offersEmailRetry: boolean;
+  /** Takes the writer to a field the save would refuse; true when there is one. */
+  revealInvalidField: () => boolean;
 }
 
 /**
@@ -93,6 +95,7 @@ export function EditorHeaderActions({
   openFlow,
   onOpenFlow,
   offersEmailRetry,
+  revealInvalidField,
 }: EditorHeaderActionsProps) {
   const { isAdmin7 } = useShade();
   const { persistedId } = session;
@@ -190,6 +193,7 @@ export function EditorHeaderActions({
           openFlow={openFlow}
           post={post}
           preview={preview}
+          revealInvalidField={revealInvalidField}
           session={session}
           tkCount={tkCount}
           onOpenFlow={onOpenFlow}
@@ -210,6 +214,7 @@ interface PublishActionsProps {
   offersEmailRetry: boolean;
   openFlow: OpenFlow;
   preview: HeaderPreviewProps;
+  revealInvalidField: () => boolean;
   onOpenFlow: (flow: OpenFlow) => void;
   onPreview: () => void;
 }
@@ -228,6 +233,7 @@ function PublishActions({
   offersEmailRetry,
   openFlow,
   preview,
+  revealInvalidField,
   onOpenFlow,
   onPreview,
 }: PublishActionsProps) {
@@ -271,10 +277,21 @@ function PublishActions({
     setOpenedFromPreview(false);
     onOpenFlow('none');
   }, [onOpenFlow]);
+  // Refused the way Cmd-S is: the save banner names the field's rule and nothing is sent.
+  const refuseInvalid = useCallback(() => {
+    if (!revealInvalidField()) {
+      return false;
+    }
+    void session.saveExplicit();
+    return true;
+  }, [revealInvalidField, session]);
   const openPublishFlow = useCallback(() => {
+    if (refuseInvalid()) {
+      return;
+    }
     setOpenedFromPreview(false);
     onOpenFlow('publish');
-  }, [onOpenFlow]);
+  }, [onOpenFlow, refuseInvalid]);
   const { onOpenChange: setPreviewOpen } = preview;
   const changePreviewOpen = useCallback(
     (open: boolean) => {
@@ -297,10 +314,11 @@ function PublishActions({
 
   // Ember routes a sent post to the update flow from its status line, not the header.
   const offersUpdateFlow = !isDraft && post.status !== 'sent';
+  const sentOpensUpdateFlow = post.status === 'sent' && post.email?.status !== 'failed';
 
-  // Publish, Unpublish, Unschedule and the status line's retry open nothing until these load.
+  // Publish, Unpublish, Unschedule and the status line's Sent and retry open nothing until these load.
   const inputsError =
-    (isDraft || offersUpdateFlow || offersEmailRetry) && inputs.error ? (
+    (isDraft || offersUpdateFlow || sentOpensUpdateFlow || offersEmailRetry) && inputs.error ? (
       <>
         <Text
           className="bg-background/80 text-destructive backdrop-blur-sm"
@@ -352,7 +370,11 @@ function PublishActions({
               fallbackSize="sm"
               fallbackVariant="ghost"
               label={post.status === 'scheduled' ? 'Unschedule' : 'Unpublish'}
-              onClick={() => onOpenFlow('update')}
+              onClick={() => {
+                if (!refuseInvalid()) {
+                  onOpenFlow('update');
+                }
+              }}
             >
               {post.status === 'scheduled' ? 'Unschedule' : 'Unpublish'}
             </PageHeader.Action>
@@ -362,7 +384,11 @@ function PublishActions({
             disabled={!session.isDirty() || isSaving}
             fallbackSize="sm"
             label={UPDATE_LABELS[update.phase]}
-            onClick={() => void update.run()}
+            onClick={() => {
+              // The save refuses an invalid field itself; this only takes the writer to it.
+              revealInvalidField();
+              void update.run();
+            }}
           >
             {UPDATE_LABELS[update.phase]}
           </PageHeader.Action>

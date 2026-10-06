@@ -228,6 +228,7 @@
     "Save": "Speichern",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "Sparen Sie {amountOff} in Ihren nächsten {durationInMonths} Abrechnungszyklen. Danach {currency}{originalPrice}/{cadence}.",
     "Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.": "Sparen Sie {amountOff} bei Ihrer nächsten Abrechnung. Danach {currency}{originalPrice}/{cadence}.",
+    "Security verification": "",
     "Send the link below to share it with whoever you'd like.": "Senden Sie den untenstehenden Link an die Person Ihrer Wahl.",
     "Sending login link...": "Anmelde-Link wird gesendet…",
     "Sending...": "Wird gesendet…",

@@ -2036,8 +2036,7 @@ describe('GiftService', function () {
 
       sinon.assert.calledOnceWithExactly(
         memberRepository.triggerMemberSignupAutomation,
-        'member_1',
-        'member@example.com',
+        await memberRepository.get.firstCall.returnValue,
         'paid',
         { transacting },
       );
@@ -2058,8 +2057,7 @@ describe('GiftService', function () {
 
       sinon.assert.calledOnceWithExactly(
         memberRepository.triggerMemberSignupAutomation,
-        'member_1',
-        'member@example.com',
+        await memberRepository.get.firstCall.returnValue,
         'paid',
         { transacting },
       );
@@ -2081,8 +2079,7 @@ describe('GiftService', function () {
 
       sinon.assert.calledOnceWithExactly(
         memberRepository.triggerMemberSignupAutomation,
-        'member_1',
-        'member@example.com',
+        await memberRepository.get.firstCall.returnValue,
         'paid',
         { transacting: externalTrx },
       );

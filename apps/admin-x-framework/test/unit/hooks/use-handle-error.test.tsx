@@ -9,14 +9,14 @@ import {
   ValidationError,
 } from '../../../src/utils/errors';
 
+const { sentryScope } = vi.hoisted(() => ({
+  sentryScope: { setTag: vi.fn(), setContext: vi.fn() },
+}));
+
 // Mock external dependencies
 vi.mock('@sentry/react', () => ({
-  withScope: vi.fn((callback: any) =>
-    callback({
-      setTag: vi.fn(),
-      setContext: vi.fn(),
-    }),
-  ),
+  getClient: vi.fn(),
+  withScope: vi.fn((callback: (scope: typeof sentryScope) => void) => callback(sentryScope)),
   captureException: vi.fn(),
   ErrorBoundary: ({ children }: { children: any }) => children,
 }));
@@ -36,12 +36,11 @@ vi.mock('sonner', () => ({
 import * as Sentry from '@sentry/react';
 import { toast } from 'sonner';
 
-const createWrapper = (sentryDSN?: string): React.FC<{ children: ReactNode }> => {
+const createWrapper = (): React.FC<{ children: ReactNode }> => {
   const TestWrapper: React.FC<{ children: ReactNode }> = ({ children }) => (
     <FrameworkProvider
       externalNavigate={() => {}}
       ghostVersion="5.x"
-      sentryDSN={sentryDSN || ''}
       unsplashConfig={{
         Authorization: '',
         'Accept-Version': '',
@@ -60,18 +59,15 @@ const createWrapper = (sentryDSN?: string): React.FC<{ children: ReactNode }> =>
   return TestWrapper;
 };
 
+const enableSentry = () =>
+  vi.mocked(Sentry.getClient).mockReturnValue({} as ReturnType<typeof Sentry.getClient>);
+
+const reportedTags = () => Object.fromEntries(sentryScope.setTag.mock.calls);
+
 describe('useHandleError', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-
-    // Setup mocks
-    (Sentry.withScope as any).mockImplementation((callback: any) => {
-      const scope = {
-        setTag: vi.fn(),
-        setContext: vi.fn(),
-      };
-      callback(scope);
-    });
+    vi.mocked(Sentry.getClient).mockReturnValue(undefined);
 
     // Reset console.error mock
     vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -99,51 +95,67 @@ describe('useHandleError', () => {
     expect(console.error).toHaveBeenCalledWith(error); // eslint-disable-line no-console
   });
 
-  it('sends error to Sentry when DSN is provided', () => {
-    const wrapper = createWrapper('https://sentry.dsn');
+  it('reports nothing to Sentry without a Sentry client', () => {
+    const wrapper = createWrapper();
+    const { result } = renderHook(() => useHandleError(), { wrapper });
+
+    result.current(new Error('Test error'));
+    result.current(new APIError(undefined, undefined, 'API Error occurred'));
+
+    expect(Sentry.captureException).not.toHaveBeenCalled();
+  });
+
+  it('reports an unexpected error to Sentry as not shown to the user', () => {
+    enableSentry();
+    const wrapper = createWrapper();
     const { result } = renderHook(() => useHandleError(), { wrapper });
     const error = new Error('Test error');
 
     result.current(error);
 
     expect(Sentry.captureException).toHaveBeenCalledWith(error);
+    expect(reportedTags()).toEqual({ source: 'useHandleError', shown_to_user: false });
   });
 
-  it('does not send to Sentry when no DSN is provided', () => {
-    const wrapper = createWrapper('');
-    const { result } = renderHook(() => useHandleError(), { wrapper });
-    const error = new Error('Test error');
-
-    result.current(error);
-
-    expect(Sentry.captureException).not.toHaveBeenCalled();
-  });
-
-  it('adds API error context to Sentry', () => {
-    const wrapper = createWrapper('https://sentry.dsn');
+  it('reports an API error to Sentry as shown to the user, with its request and message', () => {
+    enableSentry();
+    const wrapper = createWrapper();
     const { result } = renderHook(() => useHandleError(), { wrapper });
 
-    const mockResponse = new Response(null, { status: 404 });
+    const mockResponse = new Response(null, { status: 422 });
     Object.defineProperty(mockResponse, 'url', {
-      value: 'https://api.example.com/test',
+      value: 'https://example.com/ghost/api/admin/tags/',
       writable: false,
     });
-
-    const error = new APIError(mockResponse);
-
-    let scopeUsed: any;
-    (Sentry.withScope as any).mockImplementation((callback: any) => {
-      scopeUsed = {
-        setTag: vi.fn(),
-        setContext: vi.fn(),
-      };
-      callback(scopeUsed);
+    const error = new ValidationError(mockResponse, {
+      errors: [
+        {
+          message: 'Validation error, cannot save tag.',
+          context: 'Tag name cannot be blank.',
+          code: 'VALIDATION_ERROR',
+          id: 'error-id',
+          help: 'Help text',
+          type: 'ValidationError',
+          details: null,
+          ghostErrorCode: null,
+          property: 'name',
+        },
+      ],
     });
 
     result.current(error);
 
-    expect(scopeUsed.setTag).toHaveBeenCalledWith('api_url', 'https://api.example.com/test');
-    expect(scopeUsed.setTag).toHaveBeenCalledWith('api_response_status', 404);
+    expect(Sentry.captureException).toHaveBeenCalledWith(error);
+    expect(reportedTags()).toEqual({
+      source: 'useHandleError',
+      shown_to_user: true,
+      api_url: 'https://example.com/ghost/api/admin/tags/',
+      api_response_status: 422,
+    });
+    expect(sentryScope.setContext).toHaveBeenCalledWith('ghost', {
+      displayed_message: 'Tag name cannot be blank.',
+    });
+    expect(toast.error).toHaveBeenCalledWith('Tag name cannot be blank.');
   });
 
   it('removes existing toasts', () => {
@@ -190,14 +202,16 @@ describe('useHandleError', () => {
     expect(toast.dismiss).toHaveBeenCalled();
   });
 
-  it('does not send session expiry errors to Sentry', () => {
-    const wrapper = createWrapper('https://sentry.dsn');
+  it('never reports session expiry errors to Sentry', () => {
+    enableSentry();
+    const wrapper = createWrapper();
     const { result } = renderHook(() => useHandleError(), { wrapper });
 
     const mockResponse = new Response(null, { status: 401 });
     const error = new SessionExpiredError(mockResponse, '');
 
     result.current(error);
+    result.current(error, { withToast: false });
 
     expect(Sentry.captureException).not.toHaveBeenCalled();
   });

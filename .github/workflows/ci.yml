@@ -205,8 +205,8 @@ jobs:
             # affect a running Ghost instance. Test files, test config and
             # docs are excluded — a change confined to them cannot alter
             # product behaviour, so the build + E2E lane is skipped.
-            # ghost/core test paths are listed today; app test paths can be
-            # added here as their conventions are confirmed.
+            # React Admin tests still run through the affected unit, acceptance,
+            # lint and typecheck targets; only the build + E2E lane is skipped.
             e2e:
               - '!**/*.md'
               - '!**/*.mdx'
@@ -215,6 +215,11 @@ jobs:
               - '!ghost/core/test/**'
               - '!ghost/core/vitest.config.ts'
               - '!koenig/*/test/**'
+              - '!apps/admin/src/**/*.test.ts'
+              - '!apps/admin/src/**/*.test.tsx'
+              - '!apps/admin/src/**/*.screen.ts'
+              - '!apps/admin/test-utils/**'
+              - '!apps/admin/vitest.acceptance.config.ts'
               - *renovate_only
             # The Analytics E2E shards normally pull a prebuilt tb-cli image
             # from GHCR, which is only republished from main. Without this the

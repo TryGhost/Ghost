@@ -25,6 +25,8 @@ export interface FeatureImageProps {
   captionKey: number;
   cardConfig: PostCardConfig;
   darkMode: boolean;
+  /** Fades the image and what describes it, as on a page that leaves them out. */
+  faded?: boolean;
   onImageChange: (url: string) => void;
   onImageClear: () => void;
   onAltChange: (alt: string) => void;
@@ -45,6 +47,7 @@ export function FeatureImage({
   captionKey,
   cardConfig,
   darkMode,
+  faded = false,
   onImageChange,
   onImageClear,
   onAltChange,
@@ -112,6 +115,7 @@ export function FeatureImage({
     <ImageField
       alt={alt}
       className={image ? 'mb-8' : 'mb-4'}
+      faded={faded}
       src={image}
       subject={IMAGE_SUBJECT}
       testId={editorFeatureImage}
@@ -125,7 +129,10 @@ export function FeatureImage({
         {isEditingAlt ? (
           <input
             aria-label="Alt text for feature image"
-            className="flex-1 border-0 bg-transparent p-0 font-sans text-base leading-6 text-text-secondary outline-none placeholder:text-muted-foreground"
+            className={cn(
+              'flex-1 border-0 bg-transparent p-0 font-sans text-base leading-6 text-text-secondary outline-none placeholder:text-muted-foreground',
+              faded && 'opacity-50 focus:opacity-100',
+            )}
             maxLength={ALT_MAX_LENGTH}
             name="alt"
             placeholder="Add alt text to the feature image"
@@ -135,7 +142,10 @@ export function FeatureImage({
             onChange={(event) => onAltChange(event.target.value)}
           />
         ) : (
-          <div className="flex-1" data-testid={editorFeatureImageCaption}>
+          <div
+            className={cn('flex-1', faded && !captionFocused && 'opacity-50')}
+            data-testid={editorFeatureImageCaption}
+          >
             <FeatureImageCaption
               key={captionKey}
               darkMode={darkMode}

@@ -1,7 +1,7 @@
 import { type ComponentProps, type FormEvent, useState } from 'react';
 import { Navigate, useNavigate } from '@tryghost/admin-x-framework';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
-import { Field, FieldError, FieldLabel, GhostOrb, Input } from '@tryghost/shade/components';
+import { Field, FieldError, FieldLabel, Input } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
 import { toast } from 'sonner';
 import validator from 'validator';
@@ -14,6 +14,7 @@ import {
 import { AuthLayout, FlowMessage, SubmitButton, type SubmitState } from './auth-layout';
 import { passwordProblems } from './password-rules';
 import { reloadAdmin } from './reload';
+import ghostOrb from '@/assets/images/ghost-orb.png';
 
 type SetupField = 'blogTitle' | 'name' | 'email' | 'password';
 type SetupValues = Record<SetupField, string>;
@@ -174,15 +175,15 @@ function SetupForm({
         onChange={(event) => setValue(name, event.target.value)}
         {...input}
       />
-      <FieldError>{errors[name]}</FieldError>
+      <FieldError className="text-base">{errors[name]}</FieldError>
     </Field>
   );
 
   return (
     <AuthLayout>
       <header className="flex flex-col items-center gap-3 text-center">
-        <GhostOrb aria-label="Ghost" className="size-18" />
-        <h1 className="text-4xl leading-tight font-bold tracking-tight text-foreground">
+        <img alt="Ghost" className="size-15" src={ghostOrb} />
+        <h1 className="text-4xl leading-tight font-bold tracking-tighter text-foreground">
           Welcome to Ghost.
         </h1>
         <p className="text-lg text-muted-foreground">
