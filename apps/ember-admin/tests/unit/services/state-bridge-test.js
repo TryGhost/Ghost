@@ -117,8 +117,8 @@ describe('Unit: Service: state-bridge', function () {
 
     describe('#captureBillingAppLoadFailure', function () {
         const report = {
-            billingMonitor: {attempts: 2, document_visibility_state: 'visible', billing_shell: 'react'},
-            tags: {source: 'billing-app-load-monitor', route: 'pro.index'}
+            billingMonitor: {attempts: 2, document_visibility_state: 'visible'},
+            tags: {source: 'billing-app-load-monitor', billing_shell: 'react', route: 'pro.index'}
         };
 
         before(function () {
@@ -139,8 +139,7 @@ describe('Unit: Service: state-bridge', function () {
             expect(event.message).to.equal('Billing app failed to become ready');
             expect(event.level).to.equal('warning');
             expect(event.originalReport.fingerprint).to.deep.equal(['billing-app-load-failure', 'visible', '2']);
-            expect(event.originalReport.contexts.ghost.billing_monitor).to.deep.include({billing_shell: 'react'});
-            expect(event.tags).to.deep.include({source: 'billing-app-load-monitor', route: 'pro.index'});
+            expect(event.tags).to.deep.include({source: 'billing-app-load-monitor', billing_shell: 'react', route: 'pro.index'});
         });
 
         it('does not report when Sentry is not configured', function () {

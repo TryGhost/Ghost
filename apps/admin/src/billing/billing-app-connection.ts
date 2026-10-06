@@ -445,10 +445,10 @@ export class BillingAppConnection {
         bma_boot_has_mark_ready: bmaBootHasMarkReady,
         bma_boot_threw: bmaBootThrew,
         billing_window_open: this.visible,
-        billing_shell: 'react',
       },
       tags: {
         source: 'billing-app-load-monitor',
+        billing_shell: 'react',
         attempt_source: this.attemptSource,
         attempt_phase: 'shell_ready',
         route: routeName,

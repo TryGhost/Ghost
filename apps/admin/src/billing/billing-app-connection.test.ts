@@ -237,11 +237,11 @@ describe('BillingAppConnection', () => {
       has_preload_failure: false,
       ready_received: false,
       billing_window_open: true,
-      billing_shell: 'react',
       non_ready_message_count: 0,
     });
     expect(tags).toMatchObject({
       source: 'billing-app-load-monitor',
+      billing_shell: 'react',
       attempt_source: 'retry',
       route: 'pro.index',
     });
