@@ -1,6 +1,21 @@
-import React, { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useId,
+  useImperativeHandle,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { Button, FieldError, buttonVariants } from '@tryghost/shade/components';
+import {
+  Button,
+  FieldError,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  buttonVariants,
+} from '@tryghost/shade/components';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { useFocusContext } from '@tryghost/shade/app';
 import { focusKoenigEditorOnBottomClick } from '@tryghost/admin-x-framework';
@@ -8,7 +23,9 @@ import {
   editorExcerptInput,
   editorTitleInput,
   editorWordCount,
+  featureImageHiddenIndicator,
   postEditor,
+  titleHiddenIndicator,
   tkIndicator,
   tkIndicatorExcerpt,
 } from '@tryghost/test-data/selectors/editor';
@@ -29,6 +46,8 @@ export interface PostEditorProps {
   /** The rule the excerpt breaks, shown under it. */
   excerptError?: string | null;
   featureImage: FeatureImageBinding;
+  /** A page that leaves out its own title and feature image: the canvas fades both. */
+  titleAndFeatureImageHidden?: boolean;
   /** Initial body; the editor owns its own state after mount. */
   initialLexical: string | null;
   cardConfig: PostCardConfig;
@@ -42,10 +61,16 @@ export interface PostEditorProps {
   onSecondaryChange?: (lexical: unknown) => void;
   onSecondaryError?: () => void;
   registerEditorApi?: (api: KoenigInstance | null) => void;
-  registerSecondaryApi?: (api: KoenigInstance | null) => void;
   onTkCountChange?: (count: number) => void;
   /** Rendered in the footer after the word count. */
   wordCountAccessory?: React.ReactNode;
+  /** Lets the screen take the writer to the title or the excerpt. */
+  handleRef?: React.Ref<PostEditorHandle>;
+}
+
+export interface PostEditorHandle {
+  focusTitle: () => void;
+  focusExcerpt: () => void;
 }
 
 const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
@@ -84,10 +109,47 @@ function useAutosize(ref: React.RefObject<HTMLTextAreaElement | null>, value: st
   }, [ref, measure]);
 }
 
-function TkIndicator({ onClick, testId }: { onClick: () => void; testId: string }) {
+function HiddenIndicator({
+  className,
+  label,
+  testId,
+}: {
+  className: string;
+  label: string;
+  testId: string;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span
+          aria-label={label}
+          className={cn('absolute -left-15 text-muted-foreground', className)}
+          data-testid={testId}
+          role="img"
+        >
+          <LucideIcon.EyeOff />
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
+  );
+}
+
+function TkIndicator({
+  className,
+  onClick,
+  testId,
+}: {
+  className: string;
+  onClick: () => void;
+  testId: string;
+}) {
   return (
     <button
-      className="absolute top-1 -left-12 rounded-sm bg-state-warning px-1.5 py-0.5 text-2xs font-bold text-foreground"
+      className={cn(
+        'absolute rounded-sm bg-state-warning px-1.5 py-0.5 text-2xs font-bold text-foreground',
+        className,
+      )}
       data-testid={testId}
       type="button"
       onClick={onClick}
@@ -104,6 +166,7 @@ export function PostEditor({
   titleError = null,
   excerptError = null,
   featureImage,
+  titleAndFeatureImageHidden = false,
   initialLexical,
   cardConfig,
   showExcerpt,
@@ -116,9 +179,9 @@ export function PostEditor({
   onSecondaryChange,
   onSecondaryError,
   registerEditorApi,
-  registerSecondaryApi,
   onTkCountChange,
   wordCountAccessory,
+  handleRef,
 }: PostEditorProps) {
   const { darkMode, isAdmin7 } = useFocusContext();
   const isKeyboardOpen = useOnscreenKeyboard();
@@ -159,6 +222,7 @@ export function PostEditor({
     };
   }, []);
 
+  const hasFeatureImage = !!featureImage.featureImage;
   const titleHasTk = textHasTk(title);
   const excerptHasTk = showExcerpt && textHasTk(excerpt);
 
@@ -178,19 +242,14 @@ export function PostEditor({
     setTimeout(() => excerptRef.current?.setSelectionRange(-1, -1), 0);
   }, []);
 
+  useImperativeHandle(handleRef, () => ({ focusTitle, focusExcerpt }), [focusTitle, focusExcerpt]);
+
   const registerApi = useCallback(
     (api: KoenigInstance | null) => {
       editorApiRef.current = api;
       registerEditorApi?.(api);
     },
     [registerEditorApi],
-  );
-
-  const registerSecondary = useCallback(
-    (api: KoenigInstance | null) => {
-      registerSecondaryApi?.(api);
-    },
-    [registerSecondaryApi],
   );
 
   const moveIntoEditor = (key: string) => {
@@ -313,6 +372,7 @@ export function PostEditor({
               captionKey={featureImage.featureImageCaptionKey}
               cardConfig={cardConfig}
               darkMode={darkMode}
+              faded={titleAndFeatureImageHidden}
               image={featureImage.featureImage}
               onAltChange={featureImage.onFeatureImageAltChange}
               onCaptionBlur={featureImage.onFeatureImageCaptionBlur}
@@ -322,26 +382,49 @@ export function PostEditor({
               onImageClear={featureImage.onFeatureImageClear}
               onTkCountChange={setFeatureImageTkCount}
             />
-            {titleHasTk && <TkIndicator testId={tkIndicator} onClick={focusTitle} />}
-            <textarea
-              ref={titleRef}
-              aria-describedby={titleError ? titleErrorId : undefined}
-              aria-invalid={!!titleError}
-              aria-label={`${capitalize(postType)} title`}
-              autoFocus={autofocusTitle}
-              className={cn(
-                fieldClassName,
-                'heading-font-features mb-4 min-h-0 max-w-none min-w-0 pb-1 text-[4.8rem] leading-[1.1] font-bold tracking-[-0.017em] text-foreground placeholder:font-bold placeholder:text-muted-foreground max-[769px]:text-[3.6rem] max-[501px]:text-[2.8rem]',
+            {titleAndFeatureImageHidden && hasFeatureImage && (
+              <HiddenIndicator
+                className="-top-px"
+                label="Feature image and post title are hidden on page"
+                testId={featureImageHiddenIndicator}
+              />
+            )}
+            <div className="relative">
+              {titleAndFeatureImageHidden && !hasFeatureImage && (
+                <HiddenIndicator
+                  className="top-4.5"
+                  label="Post title is hidden on page"
+                  testId={titleHiddenIndicator}
+                />
               )}
-              data-testid={editorTitleInput}
-              placeholder={`${capitalize(postType)} title`}
-              rows={1}
-              value={title}
-              onBlur={onTitleBlur}
-              onChange={(event) => onTitleChange(event.target.value)}
-              onKeyDown={onTitleKeyDown}
-              onPaste={cleanPastedTitle}
-            />
+              {titleHasTk && (
+                <TkIndicator
+                  className="top-4.5 -right-14"
+                  testId={tkIndicator}
+                  onClick={focusTitle}
+                />
+              )}
+              <textarea
+                ref={titleRef}
+                aria-describedby={titleError ? titleErrorId : undefined}
+                aria-invalid={!!titleError}
+                aria-label={`${capitalize(postType)} title`}
+                autoFocus={autofocusTitle}
+                className={cn(
+                  fieldClassName,
+                  'heading-font-features mb-4 min-h-0 max-w-none min-w-0 pb-1 text-[4.8rem] leading-[1.1] font-bold tracking-[-0.017em] text-foreground placeholder:font-bold placeholder:text-muted-foreground max-[769px]:text-[3.6rem] max-[501px]:text-[2.8rem]',
+                  titleAndFeatureImageHidden && 'opacity-50 focus:opacity-100',
+                )}
+                data-testid={editorTitleInput}
+                placeholder={`${capitalize(postType)} title`}
+                rows={1}
+                value={title}
+                onBlur={onTitleBlur}
+                onChange={(event) => onTitleChange(event.target.value)}
+                onKeyDown={onTitleKeyDown}
+                onPaste={cleanPastedTitle}
+              />
+            </div>
             {titleError ? (
               <FieldError className="-mt-2 mb-4" id={titleErrorId}>
                 {titleError}
@@ -349,7 +432,13 @@ export function PostEditor({
             ) : null}
             {showExcerpt && (
               <div className="relative">
-                {excerptHasTk && <TkIndicator testId={tkIndicatorExcerpt} onClick={focusExcerpt} />}
+                {excerptHasTk && (
+                  <TkIndicator
+                    className="top-1 -left-12"
+                    testId={tkIndicatorExcerpt}
+                    onClick={focusExcerpt}
+                  />
+                )}
                 <textarea
                   ref={excerptRef}
                   aria-describedby={excerptError ? excerptErrorId : undefined}
@@ -388,7 +477,6 @@ export function PostEditor({
             initialLexical={initialLexical}
             placeholder={`Begin writing your ${postType}...`}
             registerAPI={registerApi}
-            registerSecondaryAPI={registerSecondary}
             onChange={onLexicalChange}
             onSecondaryChange={onSecondaryChange}
             onSecondaryError={onSecondaryError}

@@ -1,4 +1,5 @@
 import { page } from 'vitest/browser';
+import { getScrollParent } from '@tryghost/shade/utils';
 import {
   addFacebookImageLabel,
   addFeatureImageLabel,
@@ -22,6 +23,7 @@ import {
   editorHelpLink,
   editorLeaveDialog,
   editorLoadError,
+  editorNewerVersionNotice,
   editorNewsletterDetailsButton,
   editorPreviewButton,
   editorPublishButton,
@@ -35,6 +37,7 @@ import {
   editorScheduleCountdown,
   editorSaveErrorBanner,
   editorSecondaryInstance,
+  editorSentStatusButton,
   editorStatus,
   editorTitleInput,
   editorWordCount,
@@ -42,9 +45,11 @@ import {
   editorEmailSizeWarning,
   facebookImageUnsplashButton,
   featureImageAltLabel,
+  featureImageHiddenIndicator,
   featureImageTkIndicator,
   featureImageUnsplashButton,
   leaveEditorButton,
+  newerVersionReloadButton,
   pagesBackLink,
   postEditor,
   postHistoryModal,
@@ -111,6 +116,7 @@ import {
   settingsVisibilitySelect,
   showTitleLearnMoreLink,
   stayInEditorButton,
+  titleHiddenIndicator,
   tkIndicator,
   toggleFeatureImageAltButton,
   unsplashSearchHeading,
@@ -182,12 +188,22 @@ export const editorScreen = {
     page
       .getByTestId(editorConflictReloadConfirm)
       .getByRole('button', { name: conflictCancelReloadButton }),
+  newerVersionNotice: () => page.getByTestId(editorNewerVersionNotice),
+  reloadNewerVersion: () =>
+    page
+      .getByTestId(editorNewerVersionNotice)
+      .getByRole('button', { name: newerVersionReloadButton }),
   status: () => page.getByTestId(editorStatus),
   /** The status line's ways back into the publish flow once a newsletter failed. */
   retryNewsletter: () =>
     page.getByTestId(editorStatus).getByRole('button', { name: editorRetryNewsletterButton }),
   viewNewsletterDetails: () =>
     page.getByTestId(editorStatus).getByRole('button', { name: editorNewsletterDetailsButton }),
+  /** The status line's way into the update flow once a post was sent. */
+  sentStatusButton: () =>
+    page
+      .getByTestId(editorStatus)
+      .getByRole('button', { name: editorSentStatusButton, exact: true }),
   pendingSaveNotice: () =>
     page.getByRole('status').filter({ hasText: 'Changes are waiting to save.' }),
 
@@ -196,6 +212,11 @@ export const editorScreen = {
     page.getByTestId(editorHeaderActions).getByRole('button', { name: editorPreviewButton }),
   publishButton: () =>
     page.getByTestId(editorHeaderActions).getByRole('button', { name: editorPublishButton }),
+  /** Publish while an open dialog hides the header from role queries. */
+  publishButtonBehindDialog: () =>
+    page
+      .getByTestId(editorHeaderActions)
+      .getByRole('button', { name: editorPublishButton, includeHidden: true }),
   updateButton: () =>
     page.getByTestId(editorHeaderActions).getByRole('button', { name: editorUpdateButton }),
   saveButton: () =>
@@ -223,6 +244,11 @@ export const editorScreen = {
     page.getByTestId(editorLeaveDialog).getByRole('button', { name: leaveEditorButton }),
   notFound: () => page.getByRole('heading', { name: 'Page not found' }),
   titleTkIndicator: () => page.getByTestId(tkIndicator),
+  /** The marks a page that leaves out its title and feature image puts beside them. */
+  titleHiddenIndicator: () => page.getByTestId(titleHiddenIndicator),
+  featureImageHiddenIndicator: () => page.getByTestId(featureImageHiddenIndicator),
+  /** The tooltip a hovered control shows, by its text. */
+  tooltip: (text: string) => page.getByRole('tooltip', { name: text, exact: true }),
 
   settingsToggle: () => page.getByTestId(settingsMenuToggle),
   settingsSidebar: () => page.getByTestId(postSettingsSidebar),
@@ -262,6 +288,12 @@ export const editorScreen = {
   settingsTagsTokens: () => page.getByTestId(settingsTagsToken),
   settingsTagOption: (name: string | RegExp) =>
     page.getByTestId(settingsTagsList).getByRole('option', { name }),
+  settingsTagOptions: () => page.getByTestId(settingsTagsList).getByRole('option'),
+  /** Scrolls the open tag list to its last row. */
+  scrollSettingsTagListToEnd: (): void => {
+    const scroller = getScrollParent(page.getByTestId(settingsTagsList).element());
+    scroller?.scrollTo({ top: scroller.scrollHeight });
+  },
   removeSettingsTag: (name: string) =>
     page
       .getByTestId(settingsTagsField)

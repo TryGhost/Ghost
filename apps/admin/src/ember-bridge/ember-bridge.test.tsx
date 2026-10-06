@@ -605,31 +605,36 @@ describe('useSidebarVisibility', () => {
 });
 
 describe('theme bridge helpers', () => {
-  test('isEmberThemeManaged reflects bridge presence', async () => {
-    const { isEmberThemeManaged } = await import('./ember-bridge');
-    expect(isEmberThemeManaged()).toBe(false);
-    window.EmberBridge = { state: createMockStateBridge().stateBridge };
-    expect(isEmberThemeManaged()).toBe(true);
-  });
-
-  test('applyEmberAdminThemePreference calls Ember when the method exists and reports it', async () => {
-    const { applyEmberAdminThemePreference } = await import('./ember-bridge');
+  test('connects the theme adapter after Ember loads and disconnects on cleanup', async () => {
+    vi.useFakeTimers();
+    const { connectEmberAdminTheme } = await import('./ember-bridge');
     const mock = createMockStateBridge();
-    const apply = vi.fn();
-    mock.stateBridge.applyAdminThemePreference = apply;
+    const connection = {
+      preload: vi.fn().mockResolvedValue(undefined),
+      apply: vi.fn(),
+      disconnect: vi.fn(),
+    };
+    mock.stateBridge.connectAdminTheme = vi.fn(() => connection);
+    const onReady = vi.fn();
+    const stop = connectEmberAdminTheme(onReady);
     window.EmberBridge = { state: mock.stateBridge };
-
-    expect(applyEmberAdminThemePreference('dark')).toBe(true);
-    expect(apply).toHaveBeenCalledWith('dark');
+    await vi.advanceTimersByTimeAsync(100);
+    expect(onReady).toHaveBeenCalledExactlyOnceWith(connection);
+    stop();
+    expect(connection.disconnect).toHaveBeenCalledOnce();
   });
 
-  test('applyEmberAdminThemePreference returns false without a bridge or method', async () => {
-    const { applyEmberAdminThemePreference } = await import('./ember-bridge');
-    expect(applyEmberAdminThemePreference('dark')).toBe(false);
-
-    // Bridge present but from an older Ember without the method
-    window.EmberBridge = { state: createMockStateBridge().stateBridge };
-    expect(applyEmberAdminThemePreference('dark')).toBe(false);
+  test('does not take theme ownership if unmounted before Ember loads', async () => {
+    vi.useFakeTimers();
+    const { connectEmberAdminTheme } = await import('./ember-bridge');
+    const mock = createMockStateBridge();
+    mock.stateBridge.connectAdminTheme = vi.fn();
+    const onReady = vi.fn();
+    connectEmberAdminTheme(onReady)();
+    window.EmberBridge = { state: mock.stateBridge };
+    await vi.advanceTimersByTimeAsync(100);
+    expect(mock.stateBridge.connectAdminTheme).not.toHaveBeenCalled();
+    expect(onReady).not.toHaveBeenCalled();
   });
 
   test('navigateEmberBillingSubRoute hands the sub-route to Ember and reports it', async () => {
@@ -649,18 +654,6 @@ describe('theme bridge helpers', () => {
 
     window.EmberBridge = { state: createMockStateBridge().stateBridge };
     expect(navigateEmberBillingSubRoute('/plans')).toBe(false);
-  });
-
-  test('preloadEmberAdminThemeStylesheet resolves with and without the bridge', async () => {
-    const { preloadEmberAdminThemeStylesheet } = await import('./ember-bridge');
-    await expect(preloadEmberAdminThemeStylesheet()).resolves.toBeUndefined();
-
-    const mock = createMockStateBridge();
-    const preload = vi.fn().mockResolvedValue(undefined);
-    mock.stateBridge.preloadAdminThemeStylesheet = preload;
-    window.EmberBridge = { state: mock.stateBridge };
-    await preloadEmberAdminThemeStylesheet();
-    expect(preload).toHaveBeenCalledTimes(1);
   });
 });
 

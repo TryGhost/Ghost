@@ -49,13 +49,18 @@ function asContributor() {
   return { ...FLAG_ON, boot: { browseMe: { response: me } } };
 }
 
-/** The site default the select stands in until a post carries its own visibility. */
-function withDefaultVisibility(visibility: string) {
+/** The site default the select and tiers stand in until a post carries its own visibility. */
+function withDefaultVisibility(visibility: string, tierIds: string[] = []) {
   return {
     ...FLAG_ON,
     boot: {
       browseSettings: {
-        response: settingsResponse({ settings: { default_content_visibility: visibility } }),
+        response: settingsResponse({
+          settings: {
+            default_content_visibility: visibility,
+            default_content_visibility_tiers: JSON.stringify(tierIds),
+          },
+        }),
       },
     },
   };
@@ -79,6 +84,31 @@ function fakeSavablePost(overrides: Partial<SavedPost> = {}, tiers = SITE_TIERS)
     tags: [],
     ...overrides,
   });
+}
+
+/** A post the editor creates, answered with the access the server applied on create. */
+function fakeNewPost(applied: Partial<SavedPost>) {
+  editorChrome();
+  let created = post({
+    id: NEW_POST_ID,
+    title: '(Untitled)',
+    status: 'draft',
+    tags: [],
+    ...applied,
+  });
+  const createApi = fakeAdminEndpoint('POST', /^\/posts\/\?/, ({ body }) => {
+    const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
+    created = { ...created, ...submitted, id: NEW_POST_ID, updated_at: LOADED_AT };
+    return { posts: [created] };
+  });
+  fakeAdminEndpoint('GET', new RegExp(`^/posts/${NEW_POST_ID}/\\?`), () => ({
+    posts: [created],
+  }));
+  // The autosave that follows the create can land before the test ends.
+  fakeAdminEndpoint('PUT', new RegExp(`^/posts/${NEW_POST_ID}/\\?`), () => ({
+    posts: [created],
+  }));
+  return createApi;
 }
 
 async function openAccess() {
@@ -373,6 +403,52 @@ describe('Post settings access', () => {
     await expect.poll(() => createApi.requests.length, POLL).toBe(1);
     expect(submittedPost(createApi)).not.toHaveProperty('visibility');
     expect(submittedPost(createApi)).not.toHaveProperty('tiers');
+  });
+
+  it('ticks the site’s default tiers on a new post and leaves them to the server', async () => {
+    // The server applies its own copy of the default, which has since dropped Silver.
+    const createApi = fakeNewPost({ visibility: 'tiers', tiers: [GOLD] });
+    await renderAdminApp('/editor/post', withDefaultVisibility('tiers', [GOLD.id, SILVER.id]));
+    await openAccess();
+
+    await expect.element(editorScreen.settingsVisibility()).toHaveTextContent('Specific tier(s)');
+    await expect
+      .element(editorScreen.settingsTier('Gold'))
+      .toHaveAttribute('data-state', 'checked');
+    await expect
+      .element(editorScreen.settingsTier('Silver'))
+      .toHaveAttribute('data-state', 'checked');
+    await expect
+      .element(editorScreen.settingsTier('Bronze'))
+      .toHaveAttribute('data-state', 'unchecked');
+    await expect(editorScreen.settingsTiersError()).toHaveCount(0);
+
+    await typeIntoBody('First words');
+
+    // Untouched, so the create still leaves both fields to the server's default.
+    await expect.poll(() => createApi.requests.length, POLL).toBe(1);
+    expect(submittedPost(createApi)).not.toHaveProperty('visibility');
+    expect(submittedPost(createApi)).not.toHaveProperty('tiers');
+    // Created, the post shows the tiers it was given.
+    await expect
+      .element(editorScreen.settingsTier('Silver'))
+      .toHaveAttribute('data-state', 'unchecked');
+    await expect
+      .element(editorScreen.settingsTier('Gold'))
+      .toHaveAttribute('data-state', 'checked');
+  });
+
+  it('starts a tier change on a new post from the site’s default tiers', async () => {
+    const createApi = fakeNewPost({ visibility: 'tiers', tiers: [GOLD, SILVER] });
+    await renderAdminApp('/editor/post', withDefaultVisibility('tiers', [GOLD.id, SILVER.id]));
+    await openAccess();
+
+    await editorScreen.settingsTier('Silver').click();
+
+    await expect(createApi).toHaveSavedFields({ visibility: 'tiers', tiers: [{ id: GOLD.id }] });
+    await expect
+      .element(editorScreen.settingsTier('Silver'))
+      .toHaveAttribute('data-state', 'unchecked');
   });
 
   it('offers every paid tier, past the first page of the browse', async () => {

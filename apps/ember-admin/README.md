@@ -6,9 +6,12 @@ This is the home of the Ember.js-based Admin app that ships with [Ghost](https:/
 
 ### Running tests in the browser
 
-Run `pnpm dev` from the repository root, then visit
+Run `pnpm dev:ember` from the repository root, then visit
 [http://localhost:4200/tests](http://localhost:4200/tests). The code reloads on
 change and the browser runner can filter the tests.
+
+The standard `pnpm dev` command builds Ember once for the running Admin but
+does not start this live-reload server. Restart it after Ember source changes.
 
 Tip: You can use `this.timeout(0); await this.pauseTest();` in your tests to temporarily pause the execution of browser tests. Use the browser console to inspect and debug the DOM, then resume tests by running `resumeTest()` directly in the browser console ([docs](https://guides.emberjs.com/v3.28.0/testing/testing-application/#toc_debugging-your-tests))
 

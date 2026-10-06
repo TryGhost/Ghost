@@ -944,10 +944,19 @@ describe('Automations API', function () {
   });
 
   describe('edit', function () {
-    it('replaces automation actions and edges using frontend-generated ObjectIds', async function () {
+    it('replaces the graph and returns automation details', async function () {
       const { body: browseBody } = await agent.get('automations').expectStatus(200);
 
       const automationId = browseBody.automations[0].id;
+      const [tierId] = await models.Base.knex('products').pluck('id');
+      assert(tierId);
+      await models.Base.knex('automations').where({ id: automationId }).update({
+        trigger_tier_scope: 'selected_paid',
+      });
+      await models.Base.knex('automation_trigger_tiers').insert({
+        automation_id: automationId,
+        product_id: tierId,
+      });
       const waitActionId = ObjectId().toHexString();
       const emailActionId = ObjectId().toHexString();
       const { body: beforeBody } = await agent.get(`automations/${automationId}`).expectStatus(200);
@@ -1001,6 +1010,8 @@ describe('Automations API', function () {
       const automation = editBody.automations[0];
       assert.equal(automation.name, beforeBody.automations[0].name);
       assert.equal(automation.status, 'inactive');
+      assert.equal(automation.trigger_tier_scope, 'selected_paid');
+      assert.deepEqual(automation.trigger_tier_ids, [tierId]);
       assert.equal(automation.actions.length, 2);
       assert.equal(automation.edges.length, 1);
       assert.equal(automation.actions[0].id, waitActionId);

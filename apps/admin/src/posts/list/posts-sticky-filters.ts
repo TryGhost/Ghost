@@ -35,7 +35,7 @@ export function getPostListReturnUrl(resource: PostResource): string {
   return `/${resource}${search ? `?${search}` : ''}`;
 }
 
-/** Only the five params a view is made of; anything else isn't sticky. */
+/** Only the params a view is made of; anything else isn't sticky. */
 function toViewParams(search: string): Record<string, string> {
   const source = new URLSearchParams(search);
   const params: Record<string, string> = {};

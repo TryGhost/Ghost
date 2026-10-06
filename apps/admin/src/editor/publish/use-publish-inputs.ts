@@ -4,7 +4,7 @@ import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { useCallback, useEffect, useMemo } from 'react';
 import { z } from 'zod';
-import { NEWSLETTERS_SEARCH_PARAMS } from '@/editor/browse-params';
+import { newslettersSearchParams } from '@/editor/browse-params';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { useEditorSettings, useSiteTimezone } from '@/editor/use-editor-settings';
 import type { PublishSiteInput, PublishUserInput } from './publish-options';
@@ -26,9 +26,14 @@ const newsletterSchema = z
     status: z.string(),
     visibility: z.string(),
     sort_order: z.number().optional(),
+    count: z.looseObject({ active_members: z.number().optional() }).optional(),
   })
-  // The API's serialized field is intentionally snake_case at this boundary.
-  .transform(({ sort_order: sortOrder, ...newsletter }) => ({ ...newsletter, sortOrder }));
+  // The API's serialized fields are intentionally snake_case at this boundary.
+  .transform(({ sort_order: sortOrder, count, ...newsletter }) => ({
+    ...newsletter,
+    sortOrder,
+    activeMembers: count?.active_members,
+  }));
 
 const publishInputsBoundarySchema = z.object({
   settingsData: z.looseObject({ settings: z.array(settingSchema) }),
@@ -151,10 +156,14 @@ export function usePublishInputs(): PublishInputs {
     defaultErrorHandler: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
+  const currentUserQuery = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const currentUser = currentUserQuery.data;
   const newslettersQuery = useBrowseNewsletters({
     defaultErrorHandler: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
-    searchParams: NEWSLETTERS_SEARCH_PARAMS,
+    searchParams: newslettersSearchParams(currentUser),
+    // The params depend on the role, so the browse waits for the user.
+    enabled: currentUser !== undefined,
   });
   const {
     fetchNextPage: fetchNextNewsletterPage,
@@ -175,7 +184,6 @@ export function usePublishInputs(): PublishInputs {
     isFetchingNextNewsletterPage,
     newslettersError,
   ]);
-  const currentUserQuery = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
   // Site-wide total, the way Ember's publish options read it.
   const {
     count: memberCount,
@@ -187,7 +195,6 @@ export function usePublishInputs(): PublishInputs {
   const settingsData = settingsQuery.data;
   const configData = configQuery.data;
   const newslettersData = newslettersQuery.data;
-  const currentUser = currentUserQuery.data;
 
   const assembled = useMemo(
     () =>

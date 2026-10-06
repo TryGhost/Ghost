@@ -76,6 +76,16 @@ it('serves sign in from React with the Labs URL override', async () => {
   await expect.element(authScreen.signInButton()).toBeVisible();
 });
 
+it('paints the sign in button with the site accent colour', async () => {
+  fakeSetupStatus();
+  await renderAdminApp('/signin', signedOut({ authReact: true }));
+
+  // The site fixture's #FF1A75, not Shade's #ff0095 fallback.
+  await expect.element(authScreen.signInButton()).toHaveStyle({
+    backgroundColor: 'rgb(255, 26, 117)',
+  });
+});
+
 it('sends a signed-out visitor to sign in and remembers where they were going', async () => {
   fakeSetupStatus();
   await renderAdminApp('/settings/newsletters?verifyEmail=abc', signedOut({ authReact: true }));

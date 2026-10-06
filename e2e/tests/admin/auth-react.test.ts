@@ -77,6 +77,38 @@ test.describe('Ghost Admin - React auth screens', () => {
     await expect(page.getByText('Password updated')).toBeVisible();
   });
 
+  test('resets a forgotten password with 2FA required and lands signed in', async ({
+    page,
+    ghostAccountOwner,
+  }) => {
+    const settingsPage = new SettingsPage(page);
+    await settingsPage.staffSection.goto();
+    await settingsPage.staffSection.enableRequireTwoFa();
+
+    const loginPage = new LoginPage(page);
+    await loginPage.logout();
+
+    await loginPage.requestPasswordReset(ghostAccountOwner.email);
+    await expect(loginPage.body).toContainText(
+      'An email with password reset instructions has been sent.',
+    );
+
+    const messages = await emailClient.search({
+      subject: 'Reset Password',
+      to: ghostAccountOwner.email,
+    });
+    const resetUrl = extractPasswordResetLink(await emailClient.getMessageDetailed(messages[0]));
+    await loginPage.goto(resetUrl);
+
+    const newPassword = 'test@lginSecure@123';
+    await new PasswordResetPage(page).resetPassword(newPassword, newPassword);
+
+    // The emailed link already proves the address, so the reset signs in a
+    // verified session and no code is asked for
+    await expect(new AnalyticsOverviewPage(page).header).toBeVisible();
+    await expect(page.getByText('Password updated')).toBeVisible();
+  });
+
   test('a new staff member signs up from an invite link', async ({ page, browser, baseURL }) => {
     const testEmail = `test-invite-${Date.now()}@example.com`;
 

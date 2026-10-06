@@ -228,6 +228,7 @@
     "Save": "सेव करें",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",
     "Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.": "",
+    "Security verification": "",
     "Send the link below to share it with whoever you'd like.": "",
     "Sending login link...": "लॉगिन लिंक भेज रहा है...",
     "Sending...": "भेजा जा रहा है...",

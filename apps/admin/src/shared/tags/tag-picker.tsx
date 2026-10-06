@@ -67,7 +67,7 @@ export function TagPicker({
   const term = normalizeTagName(search);
   const [debouncedTerm] = useDebounce(term, SEARCH_DEBOUNCE_MS);
 
-  const { data, isFetching } = useBrowseTags({
+  const { data, isFetching, hasNextPage, fetchNextPage } = useBrowseTags({
     filter: {},
     enabled: deferSearch ? open : undefined,
     defaultErrorHandler,
@@ -140,6 +140,12 @@ export function TagPicker({
         chip: testIds?.chip,
       }}
       onAdd={(tag) => onAdd({ id: tag.id, name: tag.name, slug: tag.slug })}
+      onEndReached={() => {
+        // Paging cancels a read in flight, and before the term is searched it pages the wrong list.
+        if (hasNextPage && searchSettled) {
+          void fetchNextPage();
+        }
+      }}
       onOpenChange={setOpen}
       onRemove={onRemove}
       onReorder={onReorder}

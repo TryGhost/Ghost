@@ -203,6 +203,12 @@ context. The save-error banner shows a host limit's reason with its "please
 upgrade" phrase linked to the host's upgrade screen, `/pro` unless the host
 configures another, and keeps the content and the banner's retry.
 
+An `unknown` failure the API answered, or one the session describes itself,
+shows its own message. One thrown in the browser instead, such as a
+`TypeError`, reads as "Something went wrong while saving. Please try again." in
+the banner, the status line, the publish flow and the preview alike; the error
+keeps its own message and cause for reporting.
+
 ## Adopting the server's answer
 
 Query responses go to the tracker's saved document and save responses to its
@@ -224,7 +230,9 @@ save carries the token the writer's content was built on, together with a
 canvas — the writer's own, or the saved copy for a settings save — so where the
 newer version's canvas differs the server refuses it with a collision instead
 of letting it overwrite that version; reloading the document is the way onto
-it. A refused read is offered again
+it. While nothing is unsaved and no save is under way, a later version refused
+this way shows a notice offering that reload; it goes once a reload or save
+brings the session up to that version. A refused read is offered again
 whenever the engine moves on, so a read of a save that was in flight is adopted
 once that save's acknowledgement has landed and the session holds its token.
 

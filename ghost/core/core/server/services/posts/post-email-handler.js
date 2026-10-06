@@ -128,11 +128,29 @@ class PostEmailHandler {
     if (!postEmail) {
       email = await this.emailService.createEmail(model, { preflight });
     } else if (postEmail.get('status') === 'failed') {
-      email = await this.emailService.retryEmail(postEmail);
+      email = await this.#retryEmail(postEmail);
     }
 
     if (email) {
+      model.relations.email = email;
       model.set('email', email);
+    }
+  }
+
+  async #retryEmail(email) {
+    try {
+      return await this.emailService.retryEmail(email);
+    } catch (err) {
+      if (err.code !== 'BULK_EMAIL_RETRY_NOT_FAILED') {
+        throw err;
+      }
+      // Publishing is already committed. A concurrent retry that claimed the
+      // email satisfies this side effect; the direct retry API still rejects it.
+      await email.refresh();
+      if (!['pending', 'submitting', 'submitted'].includes(email.get('status'))) {
+        throw err;
+      }
+      return email;
     }
   }
 

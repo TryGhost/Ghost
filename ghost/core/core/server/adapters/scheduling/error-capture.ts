@@ -18,6 +18,13 @@ const sentry = require('../../../shared/sentry');
 export interface SchedulingAdapter extends SchedulerAdapter {
   rescheduleAll(opts?: RescheduleOpts): Promise<unknown>;
   rescheduleOnBoot?: boolean;
+  /**
+   * Set by an adapter whose queue outlives the process and treats a job
+   * scheduled again with an idempotency key it already holds as the same job,
+   * creating nothing. Consumers then rebuild their queue on boot by scheduling
+   * alone, instead of unscheduling each job first.
+   */
+  dedupesByIdempotencyKey?: boolean;
 }
 
 /**
@@ -60,6 +67,10 @@ export class ErrorCapturingSchedulingAdapter implements SchedulingAdapter {
 
   get rescheduleOnBoot(): boolean | undefined {
     return this.#adapter.rescheduleOnBoot;
+  }
+
+  get dedupesByIdempotencyKey(): boolean | undefined {
+    return this.#adapter.dedupesByIdempotencyKey;
   }
 
   run(): void | Promise<void> {

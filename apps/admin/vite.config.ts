@@ -2,11 +2,11 @@ import { createRequire } from 'node:module';
 import { configDefaults, defineConfig } from 'vitest/config';
 import type { PluginOption } from 'vite';
 import react from '@vitejs/plugin-react';
+import svgr from 'vite-plugin-svgr';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 
 import { emberAssetsPlugin } from './vite-ember-assets';
-import { embedRendererPlugin } from './vite-embed-renderer';
 import { ghostBackendProxyPlugin } from './vite-backend-proxy';
 import { sharedDefine, sharedResolve } from './vite.shared';
 
@@ -60,16 +60,22 @@ function sentrySourcemapsPlugin(): PluginOption {
 }
 
 // https://vite.dev/config/
-export default defineConfig(({ command }) => ({
+export default defineConfig(({ command, mode }) => ({
   base: getBase(command),
   plugins: [
     tailwindcss() as PluginOption,
+    svgr(),
     react(),
-    emberAssetsPlugin(),
-    embedRendererPlugin(),
-    ghostBackendProxyPlugin(),
-    // Sentry's plugin goes after all others
-    sentrySourcemapsPlugin(),
+    // Unit tests have no Ghost backend or Ember assets. Keep filesystem and
+    // shipping side effects out of this lane, including Sentry uploads.
+    ...(command === 'serve' && mode === 'test'
+      ? []
+      : [
+          emberAssetsPlugin(),
+          ghostBackendProxyPlugin(),
+          // Sentry's plugin goes after all others
+          sentrySourcemapsPlugin(),
+        ]),
   ],
   build: {
     sourcemap: 'hidden',

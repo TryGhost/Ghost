@@ -47,12 +47,12 @@ export interface ViewLocation {
 }
 
 /**
- * A view is active only when *every* one of the five params agrees, matching
+ * A view is active only when *every* view param agrees, matching
  * Ember's `activeView` (which compares the whole cleaned filter). So a view of
  * `{type: 'draft'}` is not active on `?type=draft&tag=news` — that is a
  * different view, or none.
  *
- * Params outside the five are ignored; they aren't part of a view's identity.
+ * Other params are ignored; they aren't part of a view's identity.
  */
 export function isPostViewActive(
   location: ViewLocation,

@@ -102,7 +102,8 @@ const tabsTriggerVariants = cva(
   {
     variants: {
       variant: {
-        segmented: 'h-7 rounded-control text-control font-medium data-[state=active]:shadow-md',
+        segmented:
+          'h-[calc(var(--control-height)-4px)] rounded-control text-control font-medium data-[state=active]:shadow-md',
         'segmented-sm':
           'h-[26px] rounded-control text-sm font-medium data-[state=active]:shadow-md',
         button:

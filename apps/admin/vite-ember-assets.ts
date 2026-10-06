@@ -18,19 +18,6 @@ function prefixUrl(url: string, base: string): string {
   return `${normalizedBase}/${url}`;
 }
 
-function normalizeBuildPermissions(directory: string): void {
-  fs.chmodSync(directory, 0o755);
-
-  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
-    const entryPath = path.join(directory, entry.name);
-    if (entry.isDirectory()) {
-      normalizeBuildPermissions(entryPath);
-    } else if (entry.isFile()) {
-      fs.chmodSync(entryPath, 0o644);
-    }
-  }
-}
-
 // Vite plugin to extract styles and scripts from Ghost admin index.html
 export function emberAssetsPlugin() {
   let config: ResolvedConfig;
@@ -44,7 +31,7 @@ export function emberAssetsPlugin() {
       order: 'post',
       handler() {
         // Read from Ember's own build output (not the combined output
-        // in built/admin which gets overwritten by closeBundle and would
+        // in built/admin which gets overwritten by asset assembly and would
         // accumulate duplicate path prefixes on repeated builds)
         const indexPath = path.resolve(GHOST_ADMIN_DIST, 'index.html');
         try {
@@ -124,45 +111,6 @@ export function emberAssetsPlugin() {
           next();
         }
       });
-    },
-    closeBundle() {
-      // Only copy assets during production builds
-      if (config.command === 'build') {
-        try {
-          // All legacy admin assets gets copied to the Ghost core
-          // admin assets folder by the Ember build
-          const ghostAssetsDir = path.resolve(GHOST_ADMIN_PATH, 'assets');
-
-          // React admin build output (apps/admin/dist/)
-          const reactAssetsDir = path.resolve(config.build.outDir, 'assets');
-          const reactIndexFile = path.resolve(config.build.outDir, 'index.html');
-
-          // Copy Ember assets to React build output to enable use of
-          // vite preview. This also prevents stale Ember assets from
-          // overwriting fresh ones in the next step.
-          fs.cpSync(ghostAssetsDir, reactAssetsDir, { recursive: true });
-
-          // Copy combined assets back to Ghost core admin assets folder
-          fs.cpSync(reactAssetsDir, ghostAssetsDir, {
-            recursive: true,
-            force: true,
-          });
-
-          // Copy React index.html, overwriting the existing index.html
-          const forwardIndexFile = path.resolve(GHOST_ADMIN_PATH, 'index.html');
-          fs.copyFileSync(reactIndexFile, forwardIndexFile);
-
-          // Nx preserves output modes in its local and remote caches. Normalize
-          // both declared outputs so a cache entry created with a restrictive
-          // umask remains readable when restored by another user or in Docker.
-          normalizeBuildPermissions(config.build.outDir);
-          normalizeBuildPermissions(GHOST_ADMIN_PATH);
-        } catch (error) {
-          throw new Error(
-            `Failed to copy admin assets: ${error instanceof Error ? error.message : String(error)}`,
-          );
-        }
-      }
     },
   } as const satisfies PluginOption;
 }

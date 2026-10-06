@@ -3,6 +3,9 @@
 } */
 
 .koenig-lexical .markdown-editor {
+    --kg-markdown-selection-background: #b9eaff;
+    --kg-markdown-selection-color: var(--black);
+
         position: static;
         z-index: 0;
         overflow: visible;
@@ -89,7 +92,7 @@
 
     .editor-toolbar i.separator {
         border-right: none;
-        border-left: color-mod(var(--lightgrey) l(-3%)) 1px solid;
+        border-left: 1px solid var(--grey-400);
     }
 
     .CodeMirror {
@@ -161,14 +164,21 @@
         text-decoration: underline;
     }
 
-    .CodeMirror-selectedtext {
-        color: #000 !important;
-        background: color-mod(var(--blue) lightness(+30%));
+    .CodeMirror .CodeMirror-selected {
+        background: var(--kg-markdown-selection-background);
+    }
+
+    .CodeMirror .CodeMirror-selectedtext {
+        color: var(--kg-markdown-selection-color) !important;
+        background: transparent;
+        text-decoration: none;
     }
 }
 
 /* TODO: we should add darkmode toolbar */
 .koenig-lexical.dark .markdown-editor {
+    --kg-markdown-selection-background: #234553;
+    --kg-markdown-selection-color: var(--grey-100);
     .CodeMirror pre {
         color: var(--grey-100);
     }
@@ -190,11 +200,11 @@
     }
 
     .editor-toolbar a.disabled {
-        color: var(--orange) !important;
+        color: var(--grey-600) !important;
     }
 
     .editor-toolbar i.separator {
         border-right: none;
-        border-left: color-mod(var(--yellow) l(-3%)) 1px solid;
+        border-left: 1px solid var(--grey-700);
     }
 }
