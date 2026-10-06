@@ -38,7 +38,7 @@ import {
   isOwnerUser,
 } from '@tryghost/admin-x-framework/api/users';
 
-import { NEWSLETTERS_SEARCH_PARAMS, PAID_TIERS_SEARCH_PARAMS } from '@/editor/browse-params';
+import { PAID_TIERS_SEARCH_PARAMS, newslettersSearchParams } from '@/editor/browse-params';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { postPreviewModal, postPreviewSaveFailed } from '@tryghost/test-data/selectors/editor';
 import { useEditorSettings } from '@/editor/use-editor-settings';
@@ -77,6 +77,8 @@ export interface PostPreviewModalProps {
   post?: PublishFlowPost;
   /** The post's own newsletter, preselected in the email preview. */
   newsletterSlug?: string;
+  /** Preselected when the post has no newsletter of its own, such as the publish flow's pick. */
+  fallbackNewsletterSlug?: string;
   /**
    * Awaited before the preview renders, so the caller can save the draft first.
    * A rejection's message is shown to the writer as the reason it could not.
@@ -98,6 +100,7 @@ export function PostPreviewModal({
   isPost = true,
   post,
   newsletterSlug,
+  fallbackNewsletterSlug,
   onBeforeOpen,
   onPublish,
   publishDisabled = false,
@@ -149,7 +152,7 @@ export function PostPreviewModal({
     isFetchingNextPage: isFetchingNextNewsletterPage,
     refetch: refetchActiveNewsletters,
   } = useBrowseNewsletters({
-    searchParams: NEWSLETTERS_SEARCH_PARAMS,
+    searchParams: newslettersSearchParams(currentUser),
     enabled: open && prepareState === 'ready' && emailAvailable,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
@@ -286,7 +289,8 @@ export function PostPreviewModal({
 
   // The post's own newsletter wins even when it is no longer on the active
   // list, because that is the newsletter its email would be rendered for.
-  const selectedNewsletterSlug = pickedNewsletterSlug ?? newsletterSlug ?? newsletters[0]?.slug;
+  const selectedNewsletterSlug =
+    pickedNewsletterSlug ?? newsletterSlug ?? fallbackNewsletterSlug ?? newsletters[0]?.slug;
 
   const retryPreparation = () => {
     preparePromise.current = null;

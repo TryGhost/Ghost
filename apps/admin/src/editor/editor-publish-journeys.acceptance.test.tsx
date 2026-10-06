@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
@@ -22,6 +22,7 @@ import {
   renderAdminApp,
   settingsResponse,
   settleTransitions,
+  staffRole,
   submittedPost,
   tier,
   type Newsletter,
@@ -197,6 +198,54 @@ describe('Editor publish journeys', () => {
     expect(params.get('email_segment')).toBe('tier:gold,label:vip');
   });
 
+  it.each([
+    ['Administrator', 'count.active_members', ['Weekly (1,200)', 'Monthly roundup (34)']],
+    ['Editor', null, ['Weekly', 'Monthly roundup']],
+  ] as const)(
+    'offers the newsletters with member counts for admins only (%s)',
+    async (role, include, options) => {
+      publishChrome([]);
+      fakeTiers([]);
+      fakeLabels([]);
+      // Core counts each newsletter's members only when the browse includes them.
+      const newslettersApi = fakeNewsletters(({ url }) => {
+        const counted = new URL(url).searchParams.get('include') === 'count.active_members';
+        return [
+          newsletter({
+            ...WEEKLY,
+            count: counted ? { posts: 0, active_members: 1200 } : undefined,
+          }),
+          newsletter({
+            ...MONTHLY,
+            sort_order: 1,
+            count: counted ? { posts: 0, active_members: 34 } : undefined,
+          }),
+        ];
+      });
+      fakeSavableDraft();
+      const me = currentUserResponse();
+      me.users[0].roles = [staffRole({ name: role })];
+      const site = emailSite();
+      await renderAdminApp(`/editor/post/${POST_ID}`, {
+        ...site,
+        boot: { ...site.boot, browseMe: { response: me } },
+      });
+
+      await expect.element(editorScreen.publishButton()).toBeEnabled();
+      await editorScreen.publishButton().click();
+      await publishScreen.setting('email-recipients').click();
+      await page.getByRole('combobox', { name: 'Newsletter' }).click();
+
+      for (const name of options) {
+        await expect.element(page.getByRole('option', { name, exact: true })).toBeVisible();
+      }
+      const includes = newslettersApi.requests.map(({ url }) =>
+        new URL(url).searchParams.get('include'),
+      );
+      expect([...new Set(includes)]).toEqual([include]);
+    },
+  );
+
   it('defaults the recipients to an access change whose save is still out', async () => {
     publishChrome([WEEKLY]);
     fakeTiers([]);
@@ -367,6 +416,39 @@ describe('Editor publish journeys', () => {
         newsletter: 'monthly-roundup',
         member_status: 'free',
       });
+  });
+
+  it('previews the email for the newsletter picked in the publish flow', async () => {
+    publishChrome([WEEKLY, MONTHLY]);
+    fakeTiers([]);
+    fakeLabels([]);
+    fakeSavableDraft();
+    const emailPreviewApi = fakeAdminEndpoint('GET', /^\/email_previews\/posts\/[^/]+\/\?/, {
+      email_previews: [
+        { subject: 'Hello from React', html: '<p>Email body</p>', plaintext: 'Email body' },
+      ],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, emailSite());
+
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.publishButton().click();
+    await publishScreen.setting('email-recipients').click();
+    await publishScreen.newsletterSelect().click();
+    await page.getByRole('option', { name: /^Monthly roundup/ }).click();
+    await publishScreen.previewButton().click();
+    await previewScreen.emailTab().click();
+
+    await expect.element(previewScreen.newsletterSelect()).toHaveTextContent('Monthly roundup');
+    await expect
+      .poll(() => emailPreviewApi.lastRequest?.url)
+      .toContain('newsletter=monthly-roundup');
+
+    // A preview opened from the header, outside the flow, keeps the site's first newsletter.
+    await previewScreen.closeButton().click();
+    await expect(publishScreen.root()).toHaveCount(0);
+    await editorScreen.previewButton().click();
+    await expect.element(previewScreen.newsletterSelect()).toHaveTextContent('Weekly');
+    await expect.poll(() => emailPreviewApi.lastRequest?.url).toContain('newsletter=weekly');
   });
 
   it.each([

@@ -82,16 +82,32 @@ const edgeSchema = z.object({
   target_action_id: objectIdSchema,
 });
 
-const editAutomationDataSchema = z.object({
-  name: z.string().trim().min(1).max(191).optional(),
-  description: z.string().trim().max(2000).optional(),
-  status: z.enum(['active', 'inactive']),
-  actions: z
-    .array(z.discriminatedUnion('type', [waitActionSchema, sendEmailActionSchema]))
-    .min(1)
-    .max(MAX_AUTOMATION_ACTIONS),
-  edges: z.array(edgeSchema),
-});
+const editAutomationDataSchema = z
+  .object({
+    name: z.string().trim().min(1).max(191).optional(),
+    description: z.string().trim().max(2000).optional(),
+    status: z.enum(['active', 'inactive']),
+    actions: z
+      .array(z.discriminatedUnion('type', [waitActionSchema, sendEmailActionSchema]))
+      .min(1)
+      .max(MAX_AUTOMATION_ACTIONS),
+    edges: z.array(edgeSchema),
+  })
+  .and(
+    z.discriminatedUnion('trigger_tier_scope', [
+      z.object({
+        trigger_tier_scope: z.enum(['free', 'all_paid']).nullable().optional(),
+        trigger_tier_ids: z.null().optional(),
+      }),
+      z.object({
+        trigger_tier_scope: z.literal('selected_paid'),
+        trigger_tier_ids: z
+          .array(objectIdSchema)
+          .min(1)
+          .transform((ids) => [...new Set(ids)]),
+      }),
+    ]),
+  );
 
 const repository = createDatabaseAutomationsRepository({
   knex,

@@ -154,6 +154,61 @@ describe('automations API', function () {
       assert.equal(repositoryEdit.mock.calls.length, 0);
     });
 
+    it.each([[null], ['free'], ['all_paid'], ['selected_paid']])(
+      'accepts %s trigger scope edits',
+      async function (scope) {
+        const data = {
+          status: 'inactive',
+          actions: [buildWaitAction()],
+          edges: [],
+          trigger_tier_scope: scope,
+          trigger_tier_ids: scope === 'selected_paid' ? [ObjectId().toHexString()] : null,
+        };
+        repositoryEdit.mockResolvedValue({ id: automationId });
+        await automationsApi.edit(automationId, data);
+        assert.deepEqual(repositoryEdit.mock.calls[0], [automationId, data]);
+      },
+    );
+
+    it.each([
+      ['invalid trigger tier scope', { trigger_tier_scope: 'invalid' }],
+      ['unexpected trigger tiers for no scope', { trigger_tier_ids: [ObjectId().toHexString()] }],
+      [
+        'unexpected trigger tiers for null scope',
+        { trigger_tier_scope: null, trigger_tier_ids: [ObjectId().toHexString()] },
+      ],
+      [
+        'unexpected trigger tiers for free scope',
+        { trigger_tier_scope: 'free', trigger_tier_ids: [ObjectId().toHexString()] },
+      ],
+      [
+        'unexpected trigger tiers for all_paid scope',
+        { trigger_tier_scope: 'all_paid', trigger_tier_ids: [ObjectId().toHexString()] },
+      ],
+      ['missing trigger_tier_ids for selected_paid scope', { trigger_tier_scope: 'selected_paid' }],
+      [
+        'invalid trigger_tier_ids for selected_paid scope',
+        { trigger_tier_scope: 'selected_paid', trigger_tier_ids: [123] },
+      ],
+      [
+        'empty trigger_tier_ids for selected_paid scope',
+        { trigger_tier_scope: 'selected_paid', trigger_tier_ids: [] },
+      ],
+    ])('rejects %s', async function (_, extras) {
+      await assert.rejects(
+        automationsApi.edit(automationId, {
+          name: 'My Automation',
+          description: '',
+          status: 'inactive',
+          actions: [buildWaitAction()],
+          edges: [],
+          ...extras,
+        }),
+        { errorType: 'ValidationError' },
+      );
+      assert.equal(repositoryEdit.mock.calls.length, 0);
+    });
+
     it('rejects activating an automation with an empty email subject', async function () {
       await assert.rejects(
         automationsApi.edit(automationId, {
@@ -254,6 +309,19 @@ describe('automations API', function () {
         }),
         /well-formed Lexical document/,
       );
+    });
+
+    it('rejects a wait action with invalid number of hours', async function () {
+      for (const waitHours of [undefined, '24', -24, 0, 24.5]) {
+        await assert.rejects(
+          automationsApi.edit(automationId, {
+            status: 'inactive',
+            actions: [{ ...buildWaitAction(), data: { wait_hours: waitHours } }],
+            edges: [],
+          }),
+          { errorType: 'ValidationError' },
+        );
+      }
     });
 
     it('rejects duplicate edges', async function () {

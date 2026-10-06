@@ -25,6 +25,21 @@ shared strict configuration. Note this
 package is _not_ part of the root Vitest watcher (`pnpm test:watch`), which only
 covers Vitest-based projects.
 
+Tests that inspect Admin's Nx configuration and CI path filters read files
+outside this workspace. The `adminTestContracts` input includes the Admin and
+Ember manifests and CI workflow in both `test` and `test:unit`. Changes to these
+files invalidate the tests' caches and select this workspace as affected,
+without introducing an Admin build prerequisite.
+
+## Admin asset assembly
+
+`assemble-admin-assets.ts` combines the built React and Ember Admin, ActivityPub,
+and Koenig assets. Admin’s build invokes it after Vite; its separate
+`assemble:assets` task can rerun assembly from existing build outputs. The helper
+in `lib/admin-assets.ts` also prepares legacy assets for Ember’s standalone
+builds and live-reload server. Production assembly keeps the Koenig embed renderer
+outside Admin’s assets and normalizes Admin output permissions for Nx caches.
+
 ## The `.cjs` files
 
 `.cjs` marks a script that predates the ESM default and hasn't been converted.

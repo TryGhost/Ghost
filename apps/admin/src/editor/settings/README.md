@@ -179,8 +179,8 @@ the save because that is the rule the server applies. Two tags can share a name
 and differ only by slug, so what makes them the same tag is the id whenever both
 sides have one.
 
-The list offers the first hundred tags matching what is typed, in name order.
-Narrowing the search is how the rest are reached. Enter takes the highlighted
+The list offers the tags matching what is typed, in name order, a hundred at a
+time: scrolling to its end reads the next hundred. Enter takes the highlighted
 row, and so does Tab once something is typed; Tab through an empty field moves
 on. Escape closes the list and leaves the term where it was typed. A chip is
 removed by clicking it, or with Backspace on an empty field. Dragging a chip
@@ -193,9 +193,11 @@ There is no keyboard reorder: Enter and Space on a chip remove it.
 Access is two coupled fields, `visibility` and `tiers`, and only an Owner,
 Administrator or Editor sees them. A post carries no visibility until its first
 save applies the site default, so the select shows `default_content_visibility`
-until then. Re-choosing the value already shown is not an edit and sends
-nothing. Choosing anything other than `Specific tier(s)` clears the tiers it
-granted. The tier list is every one of the site's paid
+until then. When that default is `Specific tier(s)`, the list ticks the tiers
+in `default_content_visibility_tiers` until then too, and ticking or unticking
+a tier starts from them. Re-choosing the value already shown is not an edit and
+sends nothing. Choosing anything other than `Specific tier(s)` clears the tiers
+it granted. The tier list is every one of the site's paid
 tiers, active ones before archived, and it loads only while `Specific tier(s)`
 is the choice. The browse is followed page by page, and the list shows once the
 last page has arrived. Reads carry tier relations for Public, Members and Paid posts;
@@ -294,8 +296,9 @@ disabled and names the template the URL picked.
 
 A page can render without its own title and feature image, and only a page: the
 field has no meaning for a post, so the section is left out there. Every role
-that can open the editor sees it, and the editor's cards read the live value
-rather than the saved one.
+that can open the editor sees it, and the editor's cards and canvas read the
+live value rather than the saved one: while the choice is off, the canvas fades
+the title and feature image and marks them with an eye-off icon.
 
 Honouring the choice is the theme's job. When the active theme's report says its
 page-builder helper is missing and the writer has turned the setting off, the

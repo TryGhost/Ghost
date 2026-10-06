@@ -228,6 +228,7 @@
     "Save": "Kaydet",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "Bir sonraki {durationInMonths} faturalandırma döngüsünde {amountOff} tasarruf edin. Sonrasında {currency}{originalPrice}/{cadence}.",
     "Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.": "Bir sonraki faturalandırma döngünüzde {amountOff} tasarruf edin. Sonrasında {currency}{originalPrice}/{cadence}.",
+    "Security verification": "",
     "Send the link below to share it with whoever you'd like.": "Aşağıdaki bağlantıyı, paylaşmak istediğiniz kişiye gönderebilirsiniz.",
     "Sending login link...": "Giriş bağlantısı gönderiliyor...",
     "Sending...": "Gönderiliyor...",

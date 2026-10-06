@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it } from 'vitest';
-import { page, userEvent } from 'vitest/browser';
+import { afterEach, describe, expect, it, onTestFinished } from 'vitest';
+import { page, userEvent, type Locator } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 import { publishTypeError } from '@tryghost/test-data/selectors/editor';
 
@@ -33,7 +33,12 @@ import { previewScreen } from '@/editor/preview/preview.screen';
 import { CONFLICT_MESSAGE } from '@/editor/publish/completion-message';
 import { publishScreen } from '@/editor/publish/publish.screen';
 import { POST_DELETED } from '@/editor/session/error-mapping';
-import { TITLE_MAX, TITLE_TOO_LONG } from '@/editor/session/settings-fields';
+import {
+  EXCERPT_MAX,
+  EXCERPT_TOO_LONG,
+  TITLE_MAX,
+  TITLE_TOO_LONG,
+} from '@/editor/session/settings-fields';
 
 const POST_ID = 'abc123';
 const POST_UUID = 'post-uuid';
@@ -44,6 +49,10 @@ const SITE_URL = 'http://test.com';
 const SAVE_POLL = { timeout: 10_000 };
 const CURRENT_USER_ID = String(currentUserResponse().users[0].id);
 const GENERIC_ERROR_TOAST = /something went wrong/i;
+const MAC_AGENT =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
+const WINDOWS_AGENT =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
 const MAILGUN_SETTINGS = {
   mailgun_domain: 'mail.test.com',
@@ -233,6 +242,14 @@ function asRole(name: StaffRoleName) {
   return { ...FLAG_ON, boot: { browseMe: { response: me } } };
 }
 
+/** The header reads the platform as it renders, so the agent has to be in place first. */
+function onPlatform(userAgent: string) {
+  Object.defineProperty(navigator, 'userAgent', { configurable: true, get: () => userAgent });
+  onTestFinished(() => {
+    Reflect.deleteProperty(navigator, 'userAgent');
+  });
+}
+
 async function typeIntoBody(text: string) {
   await editorScreen.body().click();
   await userEvent.keyboard(`{End}${text}`);
@@ -243,6 +260,30 @@ async function publishThroughFlow() {
   await expect.element(publishScreen.options()).toBeVisible();
   await publishScreen.continueButton().click();
   await publishScreen.confirmButton().click();
+}
+
+/** Clicks, tabs and typing aimed past an open flow must not reach the editor behind it. */
+async function expectEditorOutOfReach(dialog: Locator, blankSpot: Locator) {
+  await expect.element(dialog).toBeVisible();
+  const focusInside = () => dialog.element().contains(document.activeElement);
+  await expect.poll(focusInside).toBe(true);
+
+  const canvas = editorScreen.bodyBehindDialog().element().getBoundingClientRect();
+  const hit = document.elementFromPoint(canvas.x + canvas.width / 2, canvas.y + canvas.height / 2);
+  expect(dialog.element().contains(hit)).toBe(true);
+
+  // Blank space focuses the dialog itself, the one place Shift+Tab could step out from.
+  await blankSpot.click();
+  for (const key of ['{Shift>}{Tab}{/Shift}', '{Tab}']) {
+    for (let press = 0; press < 8; press += 1) {
+      await userEvent.keyboard(key);
+      expect(focusInside()).toBe(true);
+    }
+  }
+
+  await userEvent.keyboard('Sneaky');
+  await expect.element(dialog).toBeVisible();
+  expect(editorScreen.bodyBehindDialog().element().textContent).not.toContain('Sneaky');
 }
 
 afterEach(() => {
@@ -440,6 +481,36 @@ describe('Editor header actions', () => {
     expect(submittedPost(saveApi)).toMatchObject({ status: 'draft', published_at: null });
     await expect.element(editorScreen.saveToast('Post reverted to a draft.')).toBeVisible();
   });
+
+  it.each(['Owner', 'Author'] as const)(
+    'shows an %s what a sent post went out as from Sent in the status line',
+    async (role) => {
+      publishChrome();
+      fakeSavablePost({
+        status: 'sent',
+        email_only: true,
+        published_at: '2026-02-01T10:00:00.000Z',
+        email: { id: 'email-1', status: 'submitted', email_count: 20, opened_count: 0 },
+      });
+      await renderAdminApp(`/editor/post/${POST_ID}`, asRole(role));
+
+      await expect.element(editorScreen.status()).toHaveTextContent('Sent to 20 members');
+      await editorScreen.sentStatusButton().click();
+
+      await expect
+        .element(publishScreen.updateFlowTitle())
+        .toHaveTextContent('This post was sent by email');
+      await expect
+        .element(publishScreen.updateFlowConfirmation())
+        .toHaveTextContent('Your post was sent to 20 subscribers on 1 Feb 2026 at 10:00.');
+      await expect(publishScreen.revertToDraft()).toHaveCount(0);
+
+      await publishScreen.updateFlowCloseButton().click();
+
+      await expect(publishScreen.updateFlow()).toHaveCount(0);
+      await expect.element(editorScreen.sentStatusButton()).toHaveFocus();
+    },
+  );
 
   it('reverts a published page to a draft and says so', async () => {
     publishChrome();
@@ -880,6 +951,121 @@ describe('Editor header actions', () => {
     await expect(previewScreen.modal()).toHaveCount(0);
   });
 
+  it.each([
+    ['a Mac', MAC_AGENT, '⌘P', '⌘⇧P'],
+    ['other platforms', WINDOWS_AGENT, 'Ctrl+P', 'Ctrl+Shift+P'],
+  ])(
+    'names the preview and publish shortcuts in the tooltips on %s',
+    async (_platform, agent, previewKeys, publishKeys) => {
+      onPlatform(agent);
+      publishChrome();
+      fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await expect.element(editorScreen.publishButton()).toBeEnabled();
+
+      // Header tooltips open on focus and describe the focused button.
+      editorScreen.previewButton().element().focus();
+      await expect
+        .element(editorScreen.previewButton())
+        .toHaveAccessibleDescription(`Preview ${previewKeys}`);
+      editorScreen.publishButton().element().focus();
+      await expect
+        .element(editorScreen.publishButton())
+        .toHaveAccessibleDescription(`Publish ${publishKeys}`);
+    },
+  );
+
+  it.each([
+    { opener: 'Publish', open: () => editorScreen.publishButton().click() },
+    {
+      opener: 'its shortcut',
+      open: () => userEvent.keyboard('{Meta>}{Shift>}p{/Shift}{/Meta}'),
+    },
+  ])('focuses an over-long title instead of opening the flow from $opener', async ({ open }) => {
+    publishChrome();
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+
+    await editorScreen.titleInput().fill('a'.repeat(TITLE_MAX + 1));
+    await editorScreen.body().click();
+    await open();
+
+    await expect.element(editorScreen.titleInput()).toHaveFocus();
+    await expect.element(editorScreen.titleInput()).toHaveAccessibleDescription(TITLE_TOO_LONG);
+    await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(TITLE_TOO_LONG);
+    await expect(publishScreen.root()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
+
+    await editorScreen.titleInput().fill('A title the server keeps');
+    await open();
+    await expect.element(publishScreen.options()).toBeVisible();
+  });
+
+  it.each([
+    {
+      home: 'under the title',
+      options: { labs: { editorReact: true, editorExcerpt: true } },
+      excerpt: () => editorScreen.excerptInput(),
+      show: async () => {},
+      hide: async () => {},
+    },
+    {
+      home: 'in the closed settings panel',
+      options: FLAG_ON,
+      excerpt: () => editorScreen.settingsExcerpt(),
+      show: () => editorScreen.settingsToggle().click(),
+      hide: async () => {
+        await editorScreen.settingsToggle().click();
+        await expect(editorScreen.settingsSidebar()).toHaveCount(0);
+      },
+    },
+  ])(
+    'focuses an over-long excerpt $home instead of opening the flow',
+    async ({ options, excerpt, show, hide }) => {
+      publishChrome();
+      const saveApi = fakeSavablePost({ custom_excerpt: null });
+      await renderAdminApp(`/editor/post/${POST_ID}`, options);
+      await expect.element(editorScreen.publishButton()).toBeEnabled();
+
+      await show();
+      await excerpt().fill('a'.repeat(EXCERPT_MAX + 1));
+      await hide();
+      await editorScreen.publishButton().click();
+
+      await expect.element(excerpt()).toHaveFocus();
+      await expect.element(excerpt()).toHaveAccessibleDescription(EXCERPT_TOO_LONG);
+      await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(EXCERPT_TOO_LONG);
+      await expect(publishScreen.root()).toHaveCount(0);
+      expect(saveApi.requests).toHaveLength(0);
+
+      await excerpt().fill('An excerpt the server keeps');
+      await editorScreen.publishButton().click();
+      await expect.element(publishScreen.options()).toBeVisible();
+    },
+  );
+
+  it.each(['Unpublish', 'Update'])(
+    'focuses an over-long title when %s is pressed on a published post',
+    async (label) => {
+      publishChrome();
+      const saveApi = fakeSavablePost({
+        status: 'published',
+        published_at: '2026-02-01T10:00:00.000Z',
+      });
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await editorScreen.titleInput().fill('a'.repeat(TITLE_MAX + 1));
+      await editorScreen.body().click();
+      await editorScreen.headerButton(label).click();
+
+      await expect.element(editorScreen.titleInput()).toHaveFocus();
+      await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(TITLE_TOO_LONG);
+      await expect(publishScreen.updateFlow()).toHaveCount(0);
+      expect(saveApi.requests).toHaveLength(0);
+    },
+  );
+
   it('animates opening from the editor but switches fullscreen surfaces without animation', async () => {
     publishChrome();
     fakeSavablePost();
@@ -1014,6 +1200,27 @@ describe('Editor header actions', () => {
     await editorScreen.retryPublishInputs().click();
 
     await expect.element(editorScreen.viewNewsletterDetails()).toBeEnabled();
+    await expect(editorScreen.publishInputsError()).toHaveCount(0);
+  });
+
+  it('offers a retry when the publish inputs fail to load for a sent post', async () => {
+    publishChrome();
+    fakeSavablePost({
+      status: 'sent',
+      email_only: true,
+      published_at: '2026-02-01T10:00:00.000Z',
+      email: { id: 'email-1', status: 'submitted', email_count: 20, opened_count: 0 },
+    });
+    failNewsletters();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.publishInputsError()).toHaveTextContent('went wrong');
+    await expect.element(editorScreen.sentStatusButton()).toBeDisabled();
+
+    restoreNewsletters();
+    await editorScreen.retryPublishInputs().click();
+
+    await expect.element(editorScreen.sentStatusButton()).toBeEnabled();
     await expect(editorScreen.publishInputsError()).toHaveCount(0);
   });
 
@@ -1257,7 +1464,7 @@ describe('Editor header actions', () => {
       await editorScreen.publishButton().click();
       await expect.element(publishScreen.options()).toBeVisible();
       await expect.poll(() => settingsApi.requests.length).toBeGreaterThan(0);
-      await expect.element(editorScreen.publishButton()).toBeEnabled();
+      await expect.element(editorScreen.publishButtonBehindDialog()).toBeEnabled();
 
       await userEvent.keyboard('{Escape}');
       await expect(publishScreen.root()).toHaveCount(0);
@@ -1282,6 +1489,77 @@ describe('Editor header actions', () => {
 
     await expect(publishScreen.updateFlow()).toHaveCount(0);
     await expect.element(editorScreen.unpublishButton()).toHaveFocus();
+  });
+
+  describe('without an active newsletter', () => {
+    const NO_NEWSLETTER_NOTE = 'Email is unavailable because there are no active newsletters.';
+
+    /** Opens the publish types on a mail-configured site with every newsletter archived. */
+    async function openPublishTypes(role: StaffRoleName, labs: Record<string, boolean> = {}) {
+      publishChrome();
+      fakeNewsletters([newsletter({ slug: 'weekly', name: 'Weekly', status: 'archived' })]);
+      fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, {
+        labs: { ...FLAG_ON.labs, ...labs },
+        boot: { ...MAILGUN_ON.boot, ...asRole(role).boot },
+      });
+
+      await expect.element(editorScreen.publishButton()).toBeEnabled();
+      await editorScreen.publishButton().click();
+      await publishScreen.setting('publish-type').click();
+    }
+
+    it.each([
+      [false, '#/settings/newsletters'],
+      [true, '#/settings/emails'],
+    ])(
+      'tells an admin why email is off and links to the newsletters (automations: %s)',
+      async (automations, href) => {
+        await openPublishTypes('Administrator', { automations });
+
+        await expect.element(page.getByRole('radio', { name: 'Publish and email' })).toBeDisabled();
+        await expect
+          .element(page.getByTestId(publishTypeError))
+          .toHaveTextContent(NO_NEWSLETTER_NOTE);
+        await expect
+          .element(page.getByTestId(publishTypeError).getByRole('link', { name: 'newsletters' }))
+          .toHaveAttribute('href', href);
+      },
+    );
+
+    it('tells an editor why email is off without linking to Settings', async () => {
+      await openPublishTypes('Editor');
+
+      await expect.element(page.getByRole('radio', { name: 'Publish and email' })).toBeDisabled();
+      await expect
+        .element(page.getByTestId(publishTypeError))
+        .toHaveTextContent(NO_NEWSLETTER_NOTE);
+      await expect(page.getByTestId(publishTypeError).getByRole('link')).toHaveCount(0);
+    });
+  });
+
+  it('keeps focus and typing inside the publish flow', async () => {
+    publishChrome();
+    fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.publishButton().click();
+
+    await expectEditorOutOfReach(
+      publishScreen.root(),
+      publishScreen.options().getByRole('heading', { name: 'Ready, set, publish.' }),
+    );
+  });
+
+  it('keeps focus and typing inside the update flow', async () => {
+    publishChrome();
+    fakeSavablePost({ status: 'published', published_at: '2026-02-01T10:00:00.000Z' });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await editorScreen.unpublishButton().click();
+
+    await expectEditorOutOfReach(publishScreen.updateFlow(), publishScreen.updateFlowTitle());
   });
 
   describe('host limits', () => {
