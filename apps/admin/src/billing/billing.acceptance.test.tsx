@@ -192,7 +192,6 @@ describe('Ghost(Pro) billing', () => {
             name: currentUserResponse().users[0].name,
             email: currentUserResponse().users[0].email,
           },
-          dunningReturnEnabled: false,
         },
       });
   });

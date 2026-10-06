@@ -222,7 +222,6 @@ function BillingAppFrame({
         forceUpgrade: forceUpgrade === true,
         isOwner: isOwnerRef.current,
         ownerUser,
-        dunningReturnEnabled: dunningWarnings === true,
       },
     });
   };
