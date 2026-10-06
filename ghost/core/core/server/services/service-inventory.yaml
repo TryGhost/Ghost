@@ -754,9 +754,20 @@ services:
           - core/server/services/email-service/email-service-wrapper.js
           - core/boot.js
         tests: []
+      startup:
+        summary: >-
+          Boot initializes the wrapper, registers its send-email handler and starts jobs
+          before readiness. Outside test environments, interrupted-send recovery runs after
+          the app is mounted and readiness is signalled. Recovery is awaited within the
+          background sequence, but pending recovery does not delay the boot return or HTTP
+          availability; later background initialization continues after it settles.
+        sources:
+          - core/boot.js
+          - core/server/services/email-service/email-service-wrapper.js
+        tests:
+          - test/e2e-server/boot-background.isolated.test.ts
     unverified:
       - consumers
-      - startup
       - lifetime
       - configuration
       - resources
@@ -768,6 +779,10 @@ services:
       - >-
         Audit locale-listener disposal and retained batch-sender state across restart, plus
         the final status write after tracked batch work.
+      - >-
+        The boot test controls interrupted-send recovery and subsequent external effects.
+        It does not characterize recovery work, background failure handling, recurring
+        scheduling or background completion during shutdown.
   email-suppression-list:
     kind: directory
     disposition: retain
