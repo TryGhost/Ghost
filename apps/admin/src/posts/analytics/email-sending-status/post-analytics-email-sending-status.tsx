@@ -32,13 +32,8 @@ const failureDetail = (
 
 const PostAnalyticsEmailSendingStatus = () => {
   const { post } = usePostAnalytics();
-  const {
-    status,
-    isStatusLoading,
-    isNewsletterDataHidden,
-    isRetrying,
-    retrySending,
-  } = useEmailSendingStatusContext();
+  const { status, isStatusLoading, isNewsletterDataHidden, isRetrying, retrySending } =
+    useEmailSendingStatusContext();
   const sending = status?.sending;
   const estimate = useSendingEta(status);
   const isFailed = sending?.status === 'failed';
