@@ -1,3 +1,4 @@
+import { APIError } from '@tryghost/admin-x-framework/errors';
 import { splitUpgradeMessage } from './publish-options';
 import type { LimitMessagePart } from './publish-options';
 import type { SaveCompletion, SaveError } from '@/editor/engine/save-engine';
@@ -10,6 +11,7 @@ export const REAUTH_MESSAGE = 'Your session was restored. Confirm again to publi
 export const SESSION_ABANDONED_MESSAGE =
   'Your session expired. Confirm again to sign in and publish.';
 export const UNKNOWN_MESSAGE = 'Unknown Error';
+export const UNEXPECTED_MESSAGE = 'Something went wrong while saving. Please try again.';
 export const DROPPED_MESSAGE = 'This post can no longer be published from here. Reload the editor.';
 
 export interface CompletionFailure {
@@ -52,6 +54,19 @@ export function describeCompletionFailure(completion: SaveCompletion): Completio
   return describeSaveError(completion.error);
 }
 
+/** A failed save's message as the writer reads it. */
+export function writerMessage(error: SaveError): string {
+  // An exception's own text is for developers; an API error's message is written for people.
+  if (
+    error.kind === 'unknown' &&
+    error.cause instanceof Error &&
+    !(error.cause instanceof APIError)
+  ) {
+    return UNEXPECTED_MESSAGE;
+  }
+  return error.message;
+}
+
 /** Turns the error a save failed with into inline copy. */
 export function describeSaveError(error: SaveError): CompletionFailure {
   switch (error.kind) {
@@ -69,6 +84,6 @@ export function describeSaveError(error: SaveError): CompletionFailure {
         parts: splitUpgradeMessage(error.message || UNKNOWN_MESSAGE),
       };
     default:
-      return { message: error.message || UNKNOWN_MESSAGE };
+      return { message: writerMessage(error) || UNKNOWN_MESSAGE };
   }
 }

@@ -39,6 +39,7 @@ const CURRENT_USER = currentUserResponse().users[0];
 
 const WEEKLY = newsletter({ slug: 'weekly', name: 'Weekly', status: 'active' });
 const MONTHLY = newsletter({ slug: 'monthly-roundup', name: 'Monthly roundup', status: 'active' });
+const DAILY = newsletter({ slug: 'daily-brief', name: 'Daily brief', status: 'active' });
 
 const SESSION_GONE = {
   errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }],
@@ -416,6 +417,72 @@ describe('Editor publish journeys', () => {
         newsletter: 'monthly-roundup',
         member_status: 'free',
       });
+  });
+
+  it('previews the email for the newsletter picked in the publish flow', async () => {
+    publishChrome([WEEKLY, MONTHLY]);
+    fakeTiers([]);
+    fakeLabels([]);
+    fakeSavableDraft();
+    const emailPreviewApi = fakeAdminEndpoint('GET', /^\/email_previews\/posts\/[^/]+\/\?/, {
+      email_previews: [
+        { subject: 'Hello from React', html: '<p>Email body</p>', plaintext: 'Email body' },
+      ],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, emailSite());
+
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.publishButton().click();
+    await publishScreen.setting('email-recipients').click();
+    await publishScreen.newsletterSelect().click();
+    await page.getByRole('option', { name: /^Monthly roundup/ }).click();
+    await publishScreen.previewButton().click();
+    await previewScreen.emailTab().click();
+
+    await expect.element(previewScreen.newsletterSelect()).toHaveTextContent('Monthly roundup');
+    await expect
+      .poll(() => emailPreviewApi.lastRequest?.url)
+      .toContain('newsletter=monthly-roundup');
+
+    // A preview opened from the header, outside the flow, keeps the site's first newsletter.
+    await previewScreen.closeButton().click();
+    await expect(publishScreen.root()).toHaveCount(0);
+    await editorScreen.previewButton().click();
+    await expect.element(previewScreen.newsletterSelect()).toHaveTextContent('Weekly');
+    await expect.poll(() => emailPreviewApi.lastRequest?.url).toContain('newsletter=weekly');
+  });
+
+  it('previews the publish flow’s newsletter over one picked in an earlier preview', async () => {
+    publishChrome([WEEKLY, MONTHLY, DAILY]);
+    fakeTiers([]);
+    fakeLabels([]);
+    fakeSavableDraft();
+    const emailPreviewApi = fakeAdminEndpoint('GET', /^\/email_previews\/posts\/[^/]+\/\?/, {
+      email_previews: [
+        { subject: 'Hello from React', html: '<p>Email body</p>', plaintext: 'Email body' },
+      ],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, emailSite());
+
+    await editorScreen.previewButton().click();
+    await previewScreen.emailTab().click();
+    await previewScreen.newsletterSelect().click();
+    await previewScreen.option('Monthly roundup').click();
+    await expect
+      .poll(() => emailPreviewApi.lastRequest?.url)
+      .toContain('newsletter=monthly-roundup');
+    await previewScreen.closeButton().click();
+
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.publishButton().click();
+    await publishScreen.setting('email-recipients').click();
+    await publishScreen.newsletterSelect().click();
+    await page.getByRole('option', { name: /^Daily brief/ }).click();
+    await publishScreen.previewButton().click();
+    await previewScreen.emailTab().click();
+
+    await expect.element(previewScreen.newsletterSelect()).toHaveTextContent('Daily brief');
+    await expect.poll(() => emailPreviewApi.lastRequest?.url).toContain('newsletter=daily-brief');
   });
 
   it.each([

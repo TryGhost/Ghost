@@ -939,4 +939,72 @@ describe('Filters', () => {
       expect(document.activeElement?.getAttribute('data-slot')).not.toBe('filters-input');
     });
   });
+
+  describe('pillLabel', () => {
+    it('labels an applied pill with pillLabel instead of the menu label', () => {
+      render(
+        <Filters
+          fields={[
+            {
+              key: 'featured',
+              label: 'Featured',
+              pillLabel: 'Post',
+              type: 'custom',
+              operators: [{ value: 'is', label: 'is' }],
+              customRenderer: () => <span>Featured value</span>,
+            },
+          ]}
+          filters={[createFilter('featured', 'is', ['true'])]}
+          onChange={vi.fn()}
+        />,
+      );
+
+      expect(screen.getByText('Post')).toBeDefined();
+      expect(screen.queryByText('Featured')).toBeNull();
+    });
+  });
+
+  // Neither segment can be clicked, so neither may show a hover state.
+  describe('static segments', () => {
+    function renderFlag(staticValue?: boolean) {
+      render(
+        <Filters
+          fields={[
+            {
+              key: 'featured',
+              label: 'Featured',
+              pillLabel: 'Post',
+              type: 'custom',
+              operators: [{ value: 'is', label: 'is' }],
+              staticValue,
+              customRenderer: () => <span>Featured value</span>,
+            },
+          ]}
+          filters={[createFilter('featured', 'is', ['true'])]}
+          onChange={vi.fn()}
+        />,
+      );
+    }
+
+    it('takes no pointer events on the field label', () => {
+      renderFlag();
+
+      expect(screen.getByText('Post').className).toContain('pointer-events-none');
+    });
+
+    it('takes no pointer events on a staticValue custom value', () => {
+      renderFlag(true);
+
+      const value = screen.getByText('Featured value').closest('[data-slot="filters-value"]');
+      expect(value?.className).toContain('pointer-events-none');
+      expect(value?.className).not.toContain('cursor-pointer');
+    });
+
+    it('keeps a custom value interactive by default', () => {
+      renderFlag();
+
+      const value = screen.getByText('Featured value').closest('[data-slot="filters-value"]');
+      expect(value?.className).not.toContain('pointer-events-none');
+    });
+  });
 });

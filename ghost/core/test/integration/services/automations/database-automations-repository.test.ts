@@ -92,6 +92,66 @@ describe('database automations repository', function () {
     return memberEmail;
   }
 
+  describe('add', function () {
+    it('saves a new inactive automation without actions or edges', async function () {
+      const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
+      const data = {
+        name: `Creation test ${ObjectId().toHexString()}`,
+        description: 'Test description',
+        trigger_tier_scope: 'free' as const,
+        trigger_tier_ids: null,
+      };
+      const automation = await repo.add(data);
+
+      try {
+        assert(ObjectId.isValid(automation.id));
+        assert.deepEqual(automation, {
+          id: automation.id,
+          slug: null,
+          ...data,
+          status: 'inactive',
+          created_at: automation.created_at,
+          updated_at: automation.updated_at,
+          actions: [],
+          edges: [],
+        });
+        assert.deepEqual(await repo.getById(automation.id), automation);
+        const row = await knex('automations').where('id', automation.id).first();
+        assert(row);
+        assert(row.created_at);
+        assert.deepEqual(row.updated_at, row.created_at);
+      } finally {
+        await knex('automations').where('id', automation.id).del();
+      }
+    });
+
+    it('rejects duplicate names', async function () {
+      const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
+      const data = {
+        name: `Duplicate creation test ${ObjectId().toHexString()}`,
+        description: 'Test description',
+        trigger_tier_scope: 'free' as const,
+        trigger_tier_ids: null,
+      };
+      const automation = await repo.add(data);
+
+      try {
+        await assert.rejects(repo.add(data), (error: unknown) => {
+          assert(error instanceof errors.ValidationError);
+          assert.equal(error.statusCode, 422);
+          assert.equal(error.property, 'name');
+          assert.equal(error.message, 'An automation with this name already exists.');
+          return true;
+        });
+        const rows = await knex('automations').where({ name: data.name }).select('id');
+        assert.deepEqual(rows, [{ id: automation.id }]);
+        assert.deepEqual(await repo.getById(automation.id), automation);
+      } finally {
+        await knex('automations').where('id', automation.id).del();
+      }
+    });
+  });
+
   describe('edit', function () {
     it('rejects duplicate names', async function () {
       const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });

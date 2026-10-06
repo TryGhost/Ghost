@@ -1,8 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { editorConflictReloadConfirm } from '@tryghost/test-data/selectors/editor';
+import {
+  editorConflictReloadConfirm,
+  editorNewerVersionNotice,
+} from '@tryghost/test-data/selectors/editor';
 import { toast } from 'sonner';
 import type { PendingSave, SaveEngineState, SaveError } from '@/editor/engine/save-engine';
+import { UNEXPECTED_MESSAGE } from '@/editor/publish/completion-message';
 import { reportShownAlert } from '@/editor/report-error';
 import { SessionBanners } from './session-banners';
 import type { ReloadOutcome } from './use-editor-session';
@@ -18,6 +22,7 @@ const noop = () => undefined;
 
 interface BannerOverrides {
   pendingSave?: PendingSave;
+  newerVersionAvailable?: boolean;
   hasUnsavedContent?: () => boolean;
   contentText?: () => string;
   onReload?: () => Promise<ReloadOutcome>;
@@ -28,6 +33,7 @@ function renderBanners(state: SaveEngineState, overrides: BannerOverrides = {}) 
     <SessionBanners
       contentText={overrides.contentText ?? (() => '')}
       hasUnsavedContent={overrides.hasUnsavedContent ?? (() => false)}
+      newerVersionAvailable={overrides.newerVersionAvailable}
       pendingSave={overrides.pendingSave}
       state={state}
       onReload={overrides.onReload ?? (() => Promise.resolve('reloaded'))}
@@ -234,11 +240,56 @@ describe('SessionBanners', () => {
     await waitFor(() => expect(error).toHaveBeenCalledWith('Couldn’t copy your content'));
   });
 
+  it('says a newer version was saved elsewhere and reloads onto it', () => {
+    const onReload = vi.fn((): Promise<ReloadOutcome> => Promise.resolve('reloaded'));
+    renderBanners({ kind: 'idle' }, { newerVersionAvailable: true, onReload });
+
+    expect(screen.getByTestId(editorNewerVersionNotice)).toHaveTextContent(
+      'This post was updated elsewhere.',
+    );
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
+
+    expect(onReload).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId(editorConflictReloadConfirm)).not.toBeInTheDocument();
+  });
+
+  it('says so when the newer version could not be read, and keeps offering it', async () => {
+    const error = vi.spyOn(toast, 'error').mockReturnValue('');
+    renderBanners(
+      { kind: 'idle' },
+      { newerVersionAvailable: true, onReload: () => Promise.resolve('failed') },
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
+
+    await waitFor(() => expect(error).toHaveBeenCalledWith('Couldn’t reload this post'));
+    expect(screen.getByTestId(editorNewerVersionNotice)).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Reload' })).toBeEnabled();
+  });
+
+  it('gives way to a collision', () => {
+    renderBanners(CONFLICT, { newerVersionAvailable: true });
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Someone else is editing this post');
+    expect(screen.queryByTestId(editorNewerVersionNotice)).not.toBeInTheDocument();
+  });
+
   it('explains an unreachable server rather than repeating the transport error', () => {
     renderBanners(errored({ kind: 'transport', message: 'Failed to fetch' }));
 
     expect(screen.getByRole('alert')).toHaveTextContent('Couldn’t reach the server');
     expect(screen.getByRole('alert')).not.toHaveTextContent('Failed to fetch');
+  });
+
+  it('shows a generic reason rather than an exception thrown in the browser', () => {
+    const cause = new TypeError("Cannot read properties of undefined (reading 'x')");
+    renderBanners(errored({ kind: 'unknown', message: cause.message, cause }));
+
+    expect(screen.getByRole('alert')).toHaveTextContent(UNEXPECTED_MESSAGE);
+    expect(screen.getByRole('alert')).not.toHaveTextContent('Cannot read properties');
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeVisible();
   });
 
   it('repeats a session failure the writer already dismissed', () => {
@@ -284,6 +335,14 @@ describe('SessionBanners reporting', () => {
       'Couldn’t reach the server. Your changes are still here.',
       error,
     );
+  });
+
+  it('reports a generic banner with the exception behind it', () => {
+    const cause = new TypeError("Cannot read properties of undefined (reading 'x')");
+    const error: SaveError = { kind: 'unknown', message: cause.message, cause };
+    renderBanners(errored(error));
+
+    expect(reportShownAlert).toHaveBeenCalledWith(UNEXPECTED_MESSAGE, error);
   });
 
   it('reports a collision held on a pending save once across re-renders', () => {

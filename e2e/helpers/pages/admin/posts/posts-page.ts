@@ -21,6 +21,9 @@ export class PostsPage extends AdminPage {
 
   public readonly pageTitle: Locator;
 
+  /** Opened over the list when the editor hands off a publish or a schedule. */
+  public readonly publishCelebration: Locator;
+
   constructor(page: Page) {
     super(page);
     this.pageUrl = '/ghost/#/posts';
@@ -40,6 +43,8 @@ export class PostsPage extends AdminPage {
     this.editViewButton = manageViewTrigger.filter({ hasText: 'Edit view' });
 
     this.pageTitle = page.getByTestId(listPage('posts')).getByRole('heading', { level: 1 });
+
+    this.publishCelebration = page.getByRole('dialog').filter({ hasText: /published|All set/ });
   }
 
   getPostByTitle(title: string): Locator {
@@ -176,5 +181,14 @@ export class PostsPage extends AdminPage {
 
   async confirmDelete(): Promise<void> {
     await this.confirmAction('Delete');
+  }
+
+  async closePublishCelebration(): Promise<void> {
+    // First: an email-only celebration repeats "Close" in its footer.
+    await this.publishCelebration
+      .getByRole('button', { name: 'Close', exact: true })
+      .first()
+      .click();
+    await this.publishCelebration.waitFor({ state: 'hidden' });
   }
 }

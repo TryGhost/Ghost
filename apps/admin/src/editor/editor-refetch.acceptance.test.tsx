@@ -1,3 +1,4 @@
+import type { QueryClient } from '@tanstack/react-query';
 import { describe, expect, it, onTestFinished } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { postsDataType } from '@tryghost/admin-x-framework/api/posts';
@@ -368,6 +369,68 @@ describe('Post editor refetch', () => {
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and mine');
     // A conversion would be a second write.
     expect(shared.saveApi.requests).toHaveLength(1);
+  });
+});
+
+/** Another writer saves, and this tab's next background read brings their version. */
+async function theySaveAndTheReadLands(shared: SharedPost, queryClient: QueryClient) {
+  shared.theySave({ title: 'Their title', lexical: buildLexicalParagraph('Their words') });
+  await queryClient.invalidateQueries({ queryKey: [postsDataType] });
+  const theirs = shared.stored();
+  await editorReadLanded(queryClient, theirs);
+  return theirs;
+}
+
+/**
+ * A writer with nothing unsaved hears of another writer's version as soon as a read
+ * brings it, rather than at their first save's collision.
+ */
+describe('Post editor newer version notice', () => {
+  it('tells a clean writer, and Reload brings in the newer version', async () => {
+    const shared = fakeSharedPost();
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
+
+    const theirs = await theySaveAndTheReadLands(shared, queryClient);
+
+    await expect
+      .element(editorScreen.newerVersionNotice())
+      .toHaveTextContent('This post was updated elsewhere.');
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
+
+    await editorScreen.reloadNewerVersion().click();
+
+    await expect.element(editorScreen.titleInput()).toHaveValue('Their title');
+    await expect.element(editorScreen.body()).toHaveTextContent('Their words');
+    await expect(editorScreen.newerVersionNotice()).toHaveCount(0);
+
+    await appendToBody(' and mine');
+    await saveShortcut();
+
+    await expect.poll(() => shared.saveApi.requests.length).toBe(1);
+    expect(submittedPost(shared.saveApi)).toMatchObject({ updated_at: theirs.updated_at });
+    await expect.poll(unsavedChangesGuarded).toBe(false);
+    await expect(editorScreen.conflictBanner()).toHaveCount(0);
+  });
+
+  it('leaves a writer with unsaved work to the collision, without the notice', async () => {
+    const shared = fakeSharedPost();
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await appendToBody(' and mine');
+
+    await theySaveAndTheReadLands(shared, queryClient);
+
+    await expect(editorScreen.newerVersionNotice()).toHaveCount(0);
+    await saveShortcut();
+
+    await expect.poll(() => shared.saveApi.requests.length).toBe(1);
+    expect(submittedPost(shared.saveApi)).toMatchObject({ updated_at: LOADED_AT });
+    await expect
+      .element(editorScreen.conflictBanner())
+      .toHaveTextContent('Someone else is editing this post');
+    await expect(editorScreen.newerVersionNotice()).toHaveCount(0);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and mine');
   });
 });
 

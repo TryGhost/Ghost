@@ -52,7 +52,9 @@ export interface Counts {
 }
 export interface Inventory {
   schemaVersion: 2;
+  measurementVersion: 2;
   revision: string;
+  committedAt?: string;
   scope: string;
   summary: Counts;
   groups: { package: Record<string, Counts>; category: Record<string, Counts> };
@@ -61,16 +63,3 @@ export interface Inventory {
   warnings: string[];
   files: SourceFile[];
 }
-export interface FileNode {
-  name: string;
-  path: string;
-  language: Language;
-}
-export interface DirectoryNode {
-  name: string;
-  path: string;
-  javascript: number;
-  typescript: number;
-  children: TreeNode[];
-}
-export type TreeNode = FileNode | DirectoryNode;

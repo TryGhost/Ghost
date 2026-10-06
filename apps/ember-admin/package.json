@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "6.67.1-rc.0",
+  "version": "6.68.1-rc.0",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -176,7 +176,8 @@
       "reactAdminDependency": []
     },
     "implicitDependencies": [
-      "!ghost"
+      "!ghost",
+      "@internal/scripts"
     ],
     "targets": {
       "dev": {

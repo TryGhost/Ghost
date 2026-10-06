@@ -16,10 +16,12 @@ import { Inline, Text } from '@tryghost/shade/primitives';
 import {
   editorConflictBanner,
   editorConflictReloadConfirm,
+  editorNewerVersionNotice,
   editorSaveErrorBanner,
 } from '@tryghost/test-data/selectors/editor';
 import type { PendingSave, SaveError, SaveEngineState } from '@/editor/engine/save-engine';
 import { EDITOR_CONFIRM_DIALOG_LAYER } from '@/editor/layering';
+import { writerMessage } from '@/editor/publish/completion-message';
 import { LimitMessage } from '@/editor/publish/components/limit-message';
 import { splitUpgradeMessage } from '@/editor/publish/publish-options';
 import { reportShownAlert } from '@/editor/report-error';
@@ -29,10 +31,14 @@ import type { ReloadOutcome } from './use-editor-session';
 const SESSION_EXPIRED = 'Your session expired. Retry to sign in again and save.';
 const CONFLICT =
   'Someone else is editing this post. Reloading replaces what you have with their version, so copy your content first if you need it.';
+const NEWER_VERSION = 'This post was updated elsewhere.';
+const RELOAD_FAILED = 'Couldn’t reload this post';
 
 export interface SessionBannersProps {
   state: SaveEngineState;
   pendingSave?: PendingSave | null;
+  /** A later version was saved elsewhere, and a reload onto it would lose nothing. */
+  newerVersionAvailable?: boolean;
   hasUnsavedContent: () => boolean;
   contentText: () => string;
   onRetrySave: () => void;
@@ -46,7 +52,7 @@ function saveErrorMessage(error: SaveError): string {
     case 'transport':
       return 'Couldn’t reach the server. Your changes are still here.';
     default:
-      return error.message;
+      return writerMessage(error);
   }
 }
 
@@ -91,7 +97,7 @@ function ConflictBanner({
       setReloadFoundDeleted(true);
     }
     if (outcome === 'failed') {
-      toast.error('Couldn’t reload this post');
+      toast.error(RELOAD_FAILED);
     }
   };
 
@@ -167,9 +173,40 @@ function ConflictBanner({
   );
 }
 
+function NewerVersionNotice({ onReload }: Pick<SessionBannersProps, 'onReload'>) {
+  const [reloading, setReloading] = useState(false);
+
+  const reload = async () => {
+    setReloading(true);
+    const outcome = await onReload();
+    setReloading(false);
+    if (outcome !== 'reloaded') {
+      toast.error(RELOAD_FAILED);
+    }
+  };
+
+  return (
+    <Banner
+      className="mx-4 mb-2 shrink-0"
+      data-testid={editorNewerVersionNotice}
+      role="status"
+      size="sm"
+      variant="info"
+    >
+      <Inline align="center" gap="sm">
+        <Text>{NEWER_VERSION}</Text>
+        <Button disabled={reloading} size="sm" variant="outline" onClick={() => void reload()}>
+          Reload
+        </Button>
+      </Inline>
+    </Banner>
+  );
+}
+
 export function SessionBanners({
   state,
   pendingSave,
+  newerVersionAvailable = false,
   hasUnsavedContent,
   contentText,
   onRetrySave,
@@ -227,6 +264,10 @@ export function SessionBanners({
         <Text>Changes are waiting to save. {pendingSave.blockedBy.message}</Text>
       </Banner>
     );
+  }
+
+  if (newerVersionAvailable) {
+    return <NewerVersionNotice onReload={onReload} />;
   }
 
   return null;

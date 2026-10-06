@@ -42,12 +42,13 @@ import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { Box, Inline } from '@tryghost/shade/primitives';
 import { RunHistory } from './run-history';
 import { canvasBackground } from './canvas-background';
-import { PerformanceSidebar } from './performance-sidebar';
+import { AutomationSidebar } from './automation-sidebar';
 import { type StepPickerType } from './step-picker';
 import { StepSidebar } from './step-sidebar';
 import { EmailPerformanceSidebar } from './email-performance-sidebar';
 import { formatWait } from './format-wait';
 import { isEmptyEmailLexical } from '@/automations/utils';
+import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useLocation, useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
 import type { EmailModalMode } from '@/automations/components/types';
@@ -505,7 +506,9 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   onEmailDirtyChange,
   onKeepEditingAfterBlockedEmailNavigation,
 }) => {
-  const [isPerformanceOpen, setIsPerformanceOpen] = useState(false);
+  const [automationSidebarOpenOverride, setAutomationSidebarOpenOverride] = useState<
+    boolean | null
+  >(null);
   const layoutRef = useRef<HTMLElement>(null);
   const [nodeSizes, setNodeSizes] = useState<Record<string, { width: number; height: number }>>({});
   const handleNodesChange = useCallback((changes: NodeChange<AutomationFlowNode>[]) => {
@@ -536,6 +539,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   const [selectedStep, setSelectedStep] = useState<SelectedStep | null>(null);
   const [deleteConfirmationActionId, setDeleteConfirmationActionId] = useState<string | null>(null);
   const automationRunAnalyticsEnabled = useFeatureFlag('automationRunAnalytics');
+  const automationsPerTierEnabled = useFeatureFlag('automationsPerTier');
   const selectedStepId = selectedStep?.id ?? null;
   const emailModalStepId = searchParams.get(EMAIL_STEP_QUERY_PARAM);
   const isRouterOpenedEmailModal =
@@ -705,9 +709,21 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   const [selectedMember, setSelectedMember] = useState<{ runId: string; name: string } | null>(
     null,
   );
-  const initialViewport = useRef(getInitialViewport(window.innerWidth));
   const automationAnalyticsEnabled = useFeatureFlag('automationAnalytics');
   const automationsTinybirdSyncEnabled = useFeatureFlag('automationsTinybirdSync');
+  const configQuery = useBrowseConfig();
+  const isPerformanceEnabled =
+    automationRunAnalyticsEnabled &&
+    automationsTinybirdSyncEnabled &&
+    Boolean(configQuery.data?.config.stats);
+  const isAutomationSidebarAvailable = isPerformanceEnabled || automationsPerTierEnabled;
+  // Flow data arrives after mount. Use its status until the user chooses a panel state.
+  const isAutomationSidebarOpen =
+    isAutomationSidebarAvailable &&
+    (automationSidebarOpenOverride ?? (isPerformanceEnabled && automation?.status === 'active'));
+  const initialViewport = getInitialViewport(
+    window.innerWidth - (isAutomationSidebarOpen && window.innerWidth >= 960 ? 480 : 0),
+  );
   const isHistoryOpen = automationRunAnalyticsEnabled && selectedRunId !== null;
 
   useEffect(() => {
@@ -722,7 +738,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     onSelectRun(id);
     // Below the sidebar breakpoint, show either the member list or the canvas.
     if (layoutRef.current && layoutRef.current.clientWidth < 960) {
-      setIsPerformanceOpen(false);
+      setAutomationSidebarOpenOverride(false);
     }
   };
 
@@ -757,7 +773,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           automationRunAnalyticsEnabled && current?.id === id ? null : { id },
         );
         if (automationRunAnalyticsEnabled) {
-          setIsPerformanceOpen(false);
+          setAutomationSidebarOpenOverride(false);
         }
       },
       newStepId,
@@ -784,7 +800,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
 
   const viewport = useCanvasViewport<AutomationFlowNode, Edge>({
     contentBounds: graph?.contentBounds,
-    initialViewport: initialViewport.current,
+    initialViewport,
   });
 
   const clearDetail = useCallback(() => {
@@ -800,17 +816,17 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
 
   useEffect(() => {
     if (
-      !automationRunAnalyticsEnabled ||
+      (!automationRunAnalyticsEnabled && !isAutomationSidebarOpen) ||
       emailModalAction ||
       deleteConfirmationAction ||
-      (!isPerformanceOpen && !selectedStepId)
+      (!isAutomationSidebarOpen && !selectedStepId)
     ) {
       return;
     }
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        if (isPerformanceOpen) {
-          setIsPerformanceOpen(false);
+        if (isAutomationSidebarOpen) {
+          setAutomationSidebarOpenOverride(false);
         } else {
           handleCloseEmailPerformance();
         }
@@ -824,7 +840,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     handleCloseEmailPerformance,
     deleteConfirmationAction,
     emailModalAction,
-    isPerformanceOpen,
+    isAutomationSidebarOpen,
     selectedStepId,
   ]);
 
@@ -908,14 +924,19 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       data-testid="automation-canvas"
       gap="none"
     >
-      {automationRunAnalyticsEnabled && automationsTinybirdSyncEnabled && (
-        <PerformanceSidebar
+      {isAutomationSidebarAvailable && (
+        <AutomationSidebar
           automationId={automation.id}
-          isOpen={isPerformanceOpen}
+          description={automation.description}
+          isOpen={isAutomationSidebarOpen}
           isRunSelectionDisabled={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
+          metadata={!automationsPerTierEnabled ? 'hidden' : isHistoryOpen ? 'readonly' : 'editable'}
+          name={automation.name}
+          performanceEnabled={isPerformanceEnabled}
           selectedRunId={selectedRunId}
+          onDetailsChange={(details) => onChange({ ...automation, ...details })}
           onOpenChange={(open) => {
-            setIsPerformanceOpen(open);
+            setAutomationSidebarOpenOverride(open);
             if (open) {
               clearDetail();
             }
@@ -927,7 +948,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
         ref={viewport.measureCanvas}
         className={cn(
           'relative min-w-0 flex-1',
-          isPerformanceOpen && '@max-[960px]/automation:invisible',
+          isAutomationSidebarOpen && '@max-[960px]/automation:invisible',
         )}
       >
         <Box
@@ -945,7 +966,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
         >
           <ReactFlow
             className="[--xy-background-color:var(--preview-canvas)] [--xy-edge-stroke:var(--border-default)]"
-            defaultViewport={initialViewport.current}
+            defaultViewport={initialViewport}
             edges={graph.edges}
             edgesFocusable={false}
             edgeTypes={edgeTypes}
@@ -990,7 +1011,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
             key={selectedRunId}
             automationId={automation.id}
             automationSlug={automation.slug}
-            isPerformanceOpen={isPerformanceOpen}
+            isAutomationSidebarOpen={isAutomationSidebarOpen}
             memberName={selectedMember?.runId === selectedRunId ? selectedMember.name : undefined}
             runId={selectedRunId}
             onClose={handleCloseHistory}

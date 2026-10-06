@@ -12,6 +12,7 @@ import {
   systemAppearanceOption,
   themeErrorsBannerText,
   themeErrorsDialog,
+  upgradeNowLink,
   userMenuTrigger,
 } from '@tryghost/test-data/selectors/sidebar';
 
@@ -31,6 +32,8 @@ export const sidebarScreen = {
   // detail breadcrumb) repeats the same link names.
   navLink: (name: string) => sidebarScreen.shellNav().getByRole('link', { name, exact: true }),
   ghostProLink: () => sidebarScreen.navLink(ghostProLink),
+  /** The trial upgrade banner's call to action. */
+  upgradeNowLink: () => sidebarScreen.shellNav().getByRole('link', { name: upgradeNowLink }),
   /** A saved view's colour, from the dot beside its name; `undefined` when it has none. */
   viewColor: (name: string) =>
     sidebarScreen

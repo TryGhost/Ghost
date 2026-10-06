@@ -558,6 +558,7 @@ export default class BillingService extends Service {
             },
             tags: {
                 source: 'billing-app-load-monitor',
+                billing_shell: 'ember',
                 attempt_source: this.billingAppLoadAttemptSource,
                 attempt_phase: 'shell_ready',
                 route: this.router.currentRouteName,

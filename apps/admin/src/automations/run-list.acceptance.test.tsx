@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import {
-  openPerformanceSidebar,
+  openAutomationSidebar,
   flags,
   read,
   prepareStatuses,
@@ -13,8 +13,8 @@ import {
 const entries = () => page.getByRole('region', { name: 'Total entries' });
 const statuses = () => page.getByRole('region', { name: 'Automation status counts' });
 const statusCard = (name: string) => statuses().getByRole('button', { name, exact: true });
-const open = openPerformanceSidebar;
-const close = () => page.getByRole('button', { name: 'Hide performance' }).click();
+const open = openAutomationSidebar;
+const close = () => page.getByRole('button', { name: 'Hide automation sidebar' }).click();
 
 const runsRegion = () => page.getByRole('region', { name: 'Automation runs', exact: true });
 // Named cases make the member fallbacks and recorded statuses explicit.
@@ -40,13 +40,16 @@ const runsResponse = () => ({
 describe('Automation run list', () => {
   it('fetches on first opening and shows runs in server order with member and status fallbacks', async () => {
     prepareStatuses();
+    read('first', 'inactive');
     const request = fakeAdminEndpoint(
       'GET',
       /\/automations\/first\/runs\/\?timezone=[^&]+$/,
       runsResponse(),
     );
     await renderAdminApp('/automations/first', flags);
-    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    await expect
+      .element(page.getByRole('button', { name: 'Show automation sidebar' }))
+      .toBeVisible();
     expect(request.requests).toHaveLength(0);
     await open();
     await expect(
@@ -117,7 +120,7 @@ describe('Automation run list', () => {
 
   it('caches runs across closing, then fetches again on the next visit', async () => {
     prepareStatuses();
-    read('second');
+    read('second', 'inactive');
     const request = fakeAdminEndpoint(
       'GET',
       /\/automations\/first\/runs\/\?timezone=[^&]+$/,
@@ -133,10 +136,13 @@ describe('Automation run list', () => {
     expect(request.requests).toHaveLength(1);
     await expect(runsRegion().getByText('Noah Bennett', { exact: true })).toHaveCount(2);
     window.location.hash = '#/automations/second';
-    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    await expect
+      .element(page.getByRole('button', { name: 'Show automation sidebar' }))
+      .toBeVisible();
     window.location.hash = '#/automations/first';
-    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
-    expect(request.requests).toHaveLength(1);
+    await expect
+      .element(page.getByRole('button', { name: 'Hide automation sidebar' }))
+      .toBeVisible();
     await open();
     await expect.poll(() => request.requests.length).toBe(2);
   });

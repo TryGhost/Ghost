@@ -33,6 +33,8 @@ const BODY_REQUIRED_MESSAGE = 'Add an email body.';
 const SUBJECT_AND_BODY_REQUIRED_MESSAGE = 'Add a subject line and email body.';
 
 const editableSlice = (automation: AutomationDetail) => ({
+  name: automation.name,
+  description: automation.description,
   status: automation.status,
   actions: automation.actions,
   edges: automation.edges,
@@ -70,6 +72,7 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
 
   const editMutation = useEditAutomation();
   const automationRunAnalyticsEnabled = useFeatureFlag('automationRunAnalytics');
+  const automationsPerTierEnabled = useFeatureFlag('automationsPerTier');
   const [validationFeedback, setValidationFeedback] =
     React.useState<AutomationValidationAction | null>(null);
   const showValidationFeedback = (action: AutomationValidationAction) => {
@@ -156,6 +159,10 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
     action: AutomationValidationAction,
   ): boolean => {
     setValidationFeedback(null);
+    if (automationsPerTierEnabled && !automationToValidate.name.trim()) {
+      toast.error('Add an automation name.');
+      return false;
+    }
     const nextActionErrors = action === 'publish' ? getActionErrors(automationToValidate) : {};
     if (Object.keys(nextActionErrors).length > 0 || invalidWaitIds.size > 0) {
       setActionErrors(nextActionErrors);
@@ -221,6 +228,8 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
     editMutation.mutate(
       {
         id: draft.id,
+        name: draft.name,
+        description: draft.description,
         status: newStatus,
         actions: draft.actions,
         edges: draft.edges,

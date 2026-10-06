@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import {
-  openPerformanceSidebar,
+  openAutomationSidebar,
   flags,
   prepareStatuses,
   run,
@@ -28,7 +28,7 @@ const pageOfRuns = (start: number, length: number, next: string | null = null) =
 });
 const open = async () => {
   const { queryClient } = await renderAdminApp('/automations/first', flags);
-  await openPerformanceSidebar();
+  await openAutomationSidebar();
   return queryClient;
 };
 

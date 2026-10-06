@@ -31,6 +31,27 @@ Ember manifests and CI workflow in both `test` and `test:unit`. Changes to these
 files invalidate the tests' caches and select this workspace as affected,
 without introducing an Admin build prerequisite.
 
+## Admin asset assembly
+
+`assemble-admin-assets.ts` combines the built React and Ember Admin, ActivityPub,
+and Koenig assets. Admin’s build invokes it after Vite; its separate
+`assemble:assets` task can rerun assembly from existing build outputs. The helper
+in `lib/admin-assets.ts` also prepares legacy assets for Ember’s standalone
+builds and live-reload server. Production assembly keeps the Koenig embed renderer
+outside Admin’s assets and normalizes Admin output permissions for Nx caches.
+
+Hybrid assembly remains the default. After producing a fresh React build without
+`emberAssetsPlugin`, run `pnpm --filter @tryghost/admin assemble:assets --without-ember`
+to assemble React, ActivityPub and Koenig without requiring any Ember output.
+The helper also accepts `{ includeEmber: false }`. This is an assembly option:
+it does not change the build prerequisites, development server or runtime feature
+flags. The normal Admin build still prepares and ships Ember.
+
+Both modes keep preview and Core Admin assets identical, ship the embed renderer
+separately and honor `EDITOR_URL`. React-only assembly rejects HTML containing
+Ember's environment metadata; rebuild Vite's output before switching modes so
+previously merged legacy assets are not reused.
+
 ## The `.cjs` files
 
 `.cjs` marks a script that predates the ESM default and hasn't been converted.
@@ -59,17 +80,26 @@ See that directory's README before changing anything about how it's wired.
 ## TypeScript inventory
 
 Run `pnpm inventory:typescript --output /tmp/ghost-typescript` from the root to
-write a searchable HTML report and a JSON inventory. Open
-`/tmp/ghost-typescript.html` in a browser. Use `--scope ghost/core` (or another
-repository-relative directory) to focus the report. Resolution and dependent
-counts still consider the whole repository. The HTML folder tree expands down
-to individual files, with recursive JS/TS counts on each folder. Select a file
-to inspect its dependencies.
+write `/tmp/ghost-typescript.json`. Ghost-Benchmarks renders this JSON as the
+interactive dashboard. Use `--scope ghost/core` (or another repository-relative
+directory) to focus the data. Resolution and dependent counts still consider
+the whole repository.
 
 The inventory reads tracked working-tree JS/JSX/TS/TSX files, including `.mjs`,
-`.cjs`, `.mts`, and `.cts`. It excludes submodules, untracked files, fixture and
-snapshot directories, vendor directories, build/dist/coverage output, minified
+`.cjs`, `.mts`, and `.cts`. It includes maintained fixture modules and test
+helpers. It excludes submodules, untracked files, snapshot directories, vendor
+directories, build/dist/coverage output, minified
 JavaScript, the package template, and SimpleMDE's generated debug bundles.
+Explicit test-input exclusions cover Core's assets-minification fixture directory,
+the bundled Casper/Source theme assets under test fixtures, and
+`sloppy-config-writer.js`, which deliberately exercises non-strict JavaScript.
+Other files are not excluded merely because their directory is named `fixtures`.
+
+`measurementVersion: 2` identifies these counting rules separately from the JSON
+schema. Reports without this field used the earlier fixture exclusion and are
+not directly comparable. Ghost-Benchmarks recounts historical revisions with the current rules instead
+of combining different counting baselines.
+
 Declaration files are counted separately. Exclusion paths and declaration totals
 are repository-wide, even in scoped reports. Percentages compare implementation
 files and physical lines (including comments and blanks); they do not measure
@@ -81,7 +111,16 @@ into frontend (`apps/`, Koenig's three editor UI packages, and Core's
 `core/frontend/public/` browser scripts) and backend (remaining server code and
 library packages, including libraries shared with the frontend). Core's
 `core/frontend/` routing and rendering code executes on the server and therefore
-belongs to backend. Tests and tooling take precedence over this split. JSON
+belongs to backend. Tests and tooling take precedence over this split.
+
+Tooling uses recognised tool config filenames (including dotfiles), explicit build
+helpers, the root `configs/` packages, scripts and CI configuration. Runtime
+configuration is not tooling merely because its name contains `config`. Runner
+configs such as `e2e/playwright.config.mjs` are tooling; actual tests remain tests.
+
+Test support includes
+`test-utils`, `__fixtures__`, Mirage modules and `packages/testing/`; backend
+schema fixtures remain backend code. JSON
 schema version 2 replaces the old `production` category with these two values.
 
 Static imports, re-exports, literal dynamic imports, and `require()` calls are
@@ -119,7 +158,7 @@ Run its tests with
 
 The `TypeScript inventory` workflow runs independently on every push to `main`.
 It installs locked dependencies and builds workspace declarations before scanning,
-then retains the HTML and JSON as a `typescript-inventory` artifact for 30 days.
+then retains the JSON as a `typescript-inventory` artifact for 30 days.
 Runs do not cancel each other. Each push measures its head commit; commits batched
 into a single push do not each get a separate measurement.
 
@@ -131,3 +170,19 @@ It retains compact per-commit counts in `typescript/history.json`. Older runs
 can add history without replacing a newer report. Failed scans leave the last
 published report intact; rerun the failed workflow to retry. Publishing requires
 the receiver workflow to be installed on Ghost-Benchmarks main first.
+
+### Historical counts and PR comparisons
+
+`pnpm inventory:typescript --root /path/to/Ghost --revision <ref> --output /tmp/counts`
+reads committed Git blobs with the current collector and produces a counts-only
+JSON report (`mode: "counts-only"`). It does not check out or execute historical
+source, install dependencies, resolve imports or assign conversion difficulty.
+The output includes the full source SHA, commit timestamp, summary, package and
+kind totals. Submodules and symlinks are not traversed. The ordinary command
+continues to scan tracked working-tree source with dependency analysis.
+
+For a PR, collect its merge base and head with the same version of this command
+and subtract counts. This does not depend on a previously published report.
+Ghost-Benchmarks owns the HTML renderer, graph, history and local backfill command;
+see its `docs/dashboard.md`. Deploy its JSON-capable publisher before removing
+HTML output from Ghost. No PR comment job is introduced by this split.

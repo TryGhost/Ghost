@@ -1,7 +1,8 @@
+import { performanceBoot } from './run-list.test-utils';
 import { describe, expect, it } from 'vitest';
 import { automationsScreen } from './automations.screen';
 import { page, userEvent } from 'vitest/browser';
-import { openPerformanceSidebar } from './run-list.test-utils';
+import { openAutomationSidebar } from './run-list.test-utils';
 import { fakeAdminEndpoint, renderAdminApp, settleTransitions } from '@test-utils/acceptance';
 import { buildLexicalParagraph, settingsResponse } from '@tryghost/test-data';
 import type {
@@ -70,6 +71,7 @@ const boot = (tracking = true, redesigned = true) =>
       automationsTinybirdSync: true,
     },
     boot: {
+      ...performanceBoot,
       browseSettings: {
         response: {
           settings: [
@@ -118,7 +120,7 @@ describe('Email performance sidebar', () => {
     await boot();
     await show();
     const sidebar = panel().element();
-    await openPerformanceSidebar();
+    await openAutomationSidebar();
     await select();
     await expect.element(sidebar).not.toBeInTheDocument();
     await close();
@@ -127,7 +129,7 @@ describe('Email performance sidebar', () => {
   });
 
   it.each(['email', 'automation'])(
-    'dismisses the menu before the %s performance sidebar on Escape',
+    'dismisses the menu before the %s sidebar on Escape',
     async (sidebar) => {
       prepare([email('First')]);
       fakeAdminEndpoint('GET', linksPath(), { automation_action_links: [] });
@@ -136,7 +138,7 @@ describe('Email performance sidebar', () => {
         await show();
         await card().getByRole('button', { name: 'Email actions' }).click();
       } else {
-        await openPerformanceSidebar();
+        await openAutomationSidebar();
         await page.getByRole('button', { name: 'Filter performance' }).click();
       }
       await expect.element(page.getByRole('menu')).toBeVisible();
@@ -145,11 +147,11 @@ describe('Email performance sidebar', () => {
       if (sidebar === 'email') {
         await expect.element(panel()).toBeVisible();
       } else {
-        await expect.element(automationsScreen.hidePerformanceButton()).toBeVisible();
+        await expect.element(automationsScreen.hideAutomationSidebarButton()).toBeVisible();
       }
       await userEvent.keyboard('{Escape}');
       await expect.element(panel()).not.toBeInTheDocument();
-      await expect.element(automationsScreen.showPerformanceButton()).toBeVisible();
+      await expect.element(automationsScreen.showAutomationSidebarButton()).toBeVisible();
     },
   );
 
@@ -187,7 +189,7 @@ describe('Email performance sidebar', () => {
       if (sidebar === 'email') {
         await show();
       } else {
-        await openPerformanceSidebar();
+        await openAutomationSidebar();
       }
       await editingCanvas().getByRole('textbox', { name: 'Subject line' }).fill('Updated subject');
       await expect.element(card('Updated subject')).toBeVisible();
@@ -336,19 +338,19 @@ describe('Email performance sidebar', () => {
       .toBeVisible();
   });
 
-  it('shows only one performance sidebar at a time, including on wide screens', async () => {
+  it('shows only one automation sidebar at a time, including on wide screens', async () => {
     await page.viewport(1600, 900);
     try {
       prepare([email('First')]);
       fakeAdminEndpoint('GET', linksPath(), { automation_action_links: [] });
       await boot();
       await show();
-      await openPerformanceSidebar();
+      await openAutomationSidebar();
       await expect.element(panel()).not.toBeInTheDocument();
-      await expect.element(automationsScreen.hidePerformanceButton()).toBeVisible();
+      await expect.element(automationsScreen.hideAutomationSidebarButton()).toBeVisible();
       await show();
       await expect.element(panel()).toBeVisible();
-      await expect.element(automationsScreen.showPerformanceButton()).toBeVisible();
+      await expect.element(automationsScreen.showAutomationSidebarButton()).toBeVisible();
     } finally {
       await page.viewport(1280, 800);
     }

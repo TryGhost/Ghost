@@ -282,6 +282,12 @@ jobs:
             UNIT_TEST_PROJECTS_STR=$(printf '%s\n%s\n' "$UNIT_TEST_PROJECTS_STR" "ghost" | awk 'NF && !seen[$0]++' | paste -sd, -)
           fi
           echo "unit_test_projects_str=$UNIT_TEST_PROJECTS_STR" >> "$GITHUB_OUTPUT"
+          # Browser-only projects don't depend on the Node version; only the primary Node leg runs them.
+          UNIT_TEST_NODE_PROJECTS_STR=""
+          if [[ -n "$UNIT_TEST_PROJECTS_STR" ]]; then
+            UNIT_TEST_NODE_PROJECTS_STR=$(pnpm nx show projects --projects "$UNIT_TEST_PROJECTS_STR" --exclude 'apps/*,tag:playwright' --json | jq -r 'join(",")')
+          fi
+          echo "unit_test_node_projects_str=$UNIT_TEST_NODE_PROJECTS_STR" >> "$GITHUB_OUTPUT"
 
           # "i18n" tag = packages whose source is scanned by @tryghost/i18n's
           # translate:* scripts (not packages that merely import @tryghost/i18n).
@@ -295,9 +301,9 @@ jobs:
             --withTarget test:acceptance \
             --projects 'tag:playwright' \
             --json)
-          # Split Admin across two runners; every other app keeps a single shard.
+          # Split Admin across three runners; every other app keeps a single shard.
           PLAYWRIGHT_MATRIX=$(jq -c '[.[] | . as $app |
-            (if $app == "@tryghost/admin" then 2 else 1 end) as $total |
+            (if $app == "@tryghost/admin" then 3 else 1 end) as $total |
             range(1; $total + 1) | {app: $app, shardIndex: ., shardTotal: $total}
           ]' <<< "$PLAYWRIGHT_PROJECTS")
           echo "affected_playwright_matrix=$PLAYWRIGHT_MATRIX" >> "$GITHUB_OUTPUT"
@@ -319,11 +325,25 @@ jobs:
           PUBLISH_PUBLIC_APPS_MATRIX=$(node scripts/build-public-apps-matrix.js "$PUBLISH_PROJECTS")
           echo "publish_public_apps_matrix=$PUBLISH_PUBLIC_APPS_MATRIX" >> "$GITHUB_OUTPUT"
 
+      # Per-file e2e durations saved by job_e2e_timings on main. Read once here so
+      # every shard plans from the same timings, even if main saves newer ones mid-run.
+      - name: Restore e2e timings
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: e2e-timings.json
+          key: e2e-timings-${{ github.run_id }}
+          restore-keys: e2e-timings-
+
+      - name: Read e2e timings
+        id: e2e_timings
+        run: echo "json=$(jq -c . e2e-timings.json 2>/dev/null || echo '{}')" >> "$GITHUB_OUTPUT"
+
     outputs:
       affected_projects: ${{ steps.affected.outputs.affected_projects }}
       affected_projects_str: ${{ steps.affected.outputs.affected_projects_str }}
       typecheck_projects_str: ${{ steps.affected.outputs.typecheck_projects_str }}
       unit_test_projects_str: ${{ steps.affected.outputs.unit_test_projects_str }}
+      unit_test_node_projects_str: ${{ steps.affected.outputs.unit_test_node_projects_str }}
       affected_playwright_matrix: ${{ steps.affected.outputs.affected_playwright_matrix }}
       publish_public_apps_matrix: ${{ steps.affected.outputs.publish_public_apps_matrix }}
       changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
@@ -352,6 +372,7 @@ jobs:
       node_version: ${{ env.NODE_VERSION }}
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
       nx_base: ${{ env.NX_BASE }}
+      e2e_timings: ${{ steps.e2e_timings.outputs.json }}
 
   job_app_version_bump_check:
     name: Check app version bump
@@ -397,6 +418,9 @@ jobs:
           PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
         run: node scripts/change-check.js
+
+      - name: Check private packages are excluded from versioning
+        run: node scripts/check-versioning-ignore.js
 
   job_migration_integrity_check:
     name: Check migration integrity
@@ -764,8 +788,19 @@ jobs:
         # writes coverage-unit/cobertura-coverage.xml. It's an Nx output, so a
         # cache hit restores the report rather than skipping it. The other
         # projects run test:unit as usual.
+        #
+        # Non-primary Node legs skip browser-only projects (see
+        # unit_test_node_projects_str in job_setup).
         run: |
-          PROJECTS="${{ needs.job_setup.outputs.unit_test_projects_str }}"
+          if [ "${{ matrix.node }}" = "${{ needs.job_setup.outputs.node_version }}" ]; then
+            PROJECTS="${{ needs.job_setup.outputs.unit_test_projects_str }}"
+          else
+            PROJECTS="${{ needs.job_setup.outputs.unit_test_node_projects_str }}"
+          fi
+          if [ -z "$PROJECTS" ]; then
+            echo "No Node-dependent projects to test on this leg"
+            exit 0
+          fi
           GHOST_COVERAGE=false
           if [ "$COVERAGE_ENABLED" = "true" ] && [[ ",${PROJECTS}," == *",ghost,"* ]]; then
             GHOST_COVERAGE=true
@@ -1559,6 +1594,9 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+        with:
+          # Skip the post-job `docker buildx rm` (~40s); the runner is ephemeral.
+          cleanup: false
 
       - name: Log in to GitHub Container Registry
         if: steps.strategy.outputs.should-push == 'true'
@@ -2276,6 +2314,27 @@ jobs:
           GHOST_E2E_ANALYTICS: ${{ matrix.analytics }}
         run: bash ./e2e/scripts/prepare-ci-e2e-job.sh
 
+      # Splits the main project by recorded file duration rather than test count;
+      # falls back to an estimate from test counts until main has recorded timings.
+      - name: Plan shard test files
+        if: matrix.projects == 'main'
+        working-directory: e2e
+        env:
+          E2E_TIMINGS: ${{ needs.job_setup.outputs.e2e_timings }}
+          SHARD_INDEX: ${{ matrix.shardIndex }}
+          SHARD_TOTAL: ${{ matrix.shardTotal }}
+        run: |
+          printf '%s' "$E2E_TIMINGS" > "$RUNNER_TEMP/e2e-timings.json"
+          pnpm exec playwright test --list --project=main --reporter=json > "$RUNNER_TEMP/e2e-list.json"
+          mkdir -p shard-plan
+          node ../scripts/e2e-shards.ts plan \
+            --list "$RUNNER_TEMP/e2e-list.json" \
+            --timings "$RUNNER_TEMP/e2e-timings.json" \
+            --shard-index "$SHARD_INDEX" \
+            --shard-total "$SHARD_TOTAL" \
+            --out shard-plan/tests.txt
+          echo "E2E_TEST_LIST=shard-plan/tests.txt" >> "$GITHUB_ENV"
+
       - name: Run e2e tests in Playwright container
         env:
           TEST_WORKERS_COUNT: 1
@@ -2311,6 +2370,15 @@ jobs:
           name: test-results-${{ matrix.projectName }}-${{ matrix.shardIndex }}
           path: e2e/test-results
           retention-days: 7
+
+      - name: Upload JSON report for shard timings
+        if: success() && matrix.projects == 'main' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: e2e-json-report-main-${{ matrix.shardIndex }}
+          path: e2e/json-report/report.json
+          retention-days: 1
+          if-no-files-found: ignore
 
       - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -2402,6 +2470,49 @@ jobs:
           \`\`\`bash
           REPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n playwright-report -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR\"
           \`\`\`"
+
+  job_e2e_timings:
+    name: Record E2E timings
+    needs: [job_e2e_tests]
+    # Failed shards upload no report; recordTimings keeps their files' previous times.
+    if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main' && (needs.job_e2e_tests.result == 'success' || needs.job_e2e_tests.result == 'failure')
+    runs-on: ubuntu-slim
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: scripts/e2e-shards.ts
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: e2e-json-report-main-*
+          path: e2e-reports
+
+      - name: Restore previous e2e timings
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: e2e-timings.json
+          key: e2e-timings-${{ github.run_id }}
+          restore-keys: e2e-timings-
+
+      - name: Record e2e timings
+        run: |
+          mkdir -p e2e-reports
+          node scripts/e2e-shards.ts record \
+            --reports e2e-reports \
+            --timings e2e-timings.json \
+            --complete "${{ needs.job_e2e_tests.result == 'success' }}" \
+            --out e2e-timings.json
+
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: e2e-timings.json
+          key: e2e-timings-${{ github.run_id }}-${{ github.run_attempt }}
 
   job_coverage:
     name: Coverage

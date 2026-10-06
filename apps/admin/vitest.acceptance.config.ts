@@ -5,6 +5,7 @@ import type { BrowserCommand, BrowserCommandContext } from 'vitest/node';
 import { playwright } from '@vitest/browser-playwright';
 import type { PluginOption } from 'vite';
 import react from '@vitejs/plugin-react';
+import svgr from 'vite-plugin-svgr';
 import tailwindcss from '@tailwindcss/vite';
 
 import { sharedDefine, sharedResolve } from './vite.shared';
@@ -68,7 +69,7 @@ const resetFakeFrameOrigins: BrowserCommand<[]> = async ({ page }) => {
 };
 
 export default defineConfig({
-  plugins: [tailwindcss() as PluginOption, react()],
+  plugins: [tailwindcss() as PluginOption, svgr(), react()],
   server: {
     // Vitest owns console reporting; Vite forwarding bypasses silent below.
     forwardConsole: false,
