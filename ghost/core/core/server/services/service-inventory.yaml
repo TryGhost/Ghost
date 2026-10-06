@@ -760,11 +760,17 @@ services:
           before readiness. Outside test environments, interrupted-send recovery runs after
           the app is mounted and readiness is signalled. Recovery is awaited within the
           background sequence, but pending recovery does not delay the boot return or HTTP
-          availability; later background initialization continues after it settles.
+          availability; later background initialization continues after it resolves.
+          Unit orchestration tests cover initialization order, the test-environment gate
+          and sequencing after recovery. Handler-registration tests cover send-email
+          routing and its queue; real-boot HTTP tests cover jobs readiness and pending recovery.
         sources:
           - core/boot.js
           - core/server/services/email-service/email-service-wrapper.js
         tests:
+          - test/unit/boot-email-analytics.test.ts
+          - test/unit/server/services/jobs-service/register-job-handlers.test.ts
+          - test/e2e-server/boot-readiness.isolated.test.ts
           - test/e2e-server/boot-background.isolated.test.ts
     unverified:
       - consumers
