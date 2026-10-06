@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
-import { openPerformanceSidebar, flags, prepareStatuses, run } from './run-list.test-utils';
+import { openAutomationSidebar, flags, prepareStatuses, run } from './run-list.test-utils';
 
 const list = () => page.getByRole('region', { name: 'Automation runs', exact: true });
 const input = () => page.getByRole('textbox', { name: 'Search members' });
@@ -13,7 +13,7 @@ const result = (cursor: string | null = null, rows = [run()]) => ({
 });
 async function open() {
   await renderAdminApp('/automations/first', flags);
-  await openPerformanceSidebar();
+  await openAutomationSidebar();
 }
 
 describe('Automation member search', () => {
@@ -24,15 +24,15 @@ describe('Automation member search', () => {
     await page.getByRole('button', { name: 'Filter performance' }).click();
     await page.getByRole('menuitemradio', { name: 'Last 7 days' }).click();
     await page.getByRole('button', { name: 'Completed', exact: true }).click();
-    const headingLeft = page
-      .getByRole('heading', { name: 'Performance' })
+    const tabsLeft = page
+      .getByRole('tablist', { name: 'Automation sidebar' })
       .element()
       .getBoundingClientRect().left;
     await page.getByRole('button', { name: 'Search members', exact: true }).click();
     await expect.element(input()).toHaveFocus();
-    // Opening an empty search replaces the heading rather than squeezing beside it.
+    // Opening an empty search replaces the tabs rather than squeezing beside them.
     const field = input().element().closest('[data-slot="input-group"]')!;
-    expect(field.getBoundingClientRect().left).toBe(headingLeft);
+    expect(field.getBoundingClientRect().left).toBe(tabsLeft);
     await input().fill('  a  ');
     await expect
       .poll(() => requests.requests.some((r) => new URL(r.url).searchParams.get('search') === 'a'))

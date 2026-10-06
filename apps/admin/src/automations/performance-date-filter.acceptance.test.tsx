@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act } from 'react';
-import { flags, openPerformanceSidebar, run } from './run-list.test-utils';
+import { flags, openAutomationSidebar, run } from './run-list.test-utils';
 
 import { QueryCache } from '@tanstack/react-query';
 import { page } from 'vitest/browser';
@@ -72,7 +72,7 @@ const render = async (withRuns = false) => {
     ],
   });
   await renderAdminApp('/automations/dates', flags);
-  await openPerformanceSidebar();
+  await openAutomationSidebar();
 };
 const selectRange = async (label: string) => {
   await page.getByRole('button', { name: 'Filter performance' }).click();
@@ -223,8 +223,8 @@ describe('Automation performance date filter', () => {
     await expectCounts([10, 20, 30]);
     await selectRange('Last 7 days');
     await expectCounts([1, 2, 3]);
-    await page.getByRole('button', { name: 'Hide performance' }).click();
-    await openPerformanceSidebar();
+    await page.getByRole('button', { name: 'Hide automation sidebar' }).click();
+    await openAutomationSidebar();
     await expect
       .element(page.getByRole('button', { name: 'Clear date filter' }))
       .toHaveTextContent('Last 7 days');

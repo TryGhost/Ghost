@@ -1,6 +1,5 @@
 import { composeConfigBootOverrides } from '@test-utils/acceptance/boot';
 import { expect } from 'vitest';
-import { automationsScreen } from './automations.screen';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, settleTransitions } from '@test-utils/acceptance';
 import type {
@@ -15,7 +14,12 @@ export const performanceBoot = composeConfigBootOverrides({
 
 export const flags = {
   boot: performanceBoot,
-  labs: { automations: true, automationRunAnalytics: true, automationsTinybirdSync: true },
+  labs: {
+    automations: true,
+    automationRunAnalytics: true,
+    automationsTinybirdSync: true,
+    automationsPerTier: true,
+  },
 };
 const detail = (id: string): AutomationDetail => ({
   id,
@@ -100,13 +104,13 @@ export const scrollRunsToEnd = () => {
 };
 
 /** Ensures the panel is open and waits until its controls can be clicked. */
-export async function openPerformanceSidebar(): Promise<void> {
+export async function openAutomationSidebar(): Promise<void> {
   await settleTransitions();
-  const toggle = page.getByRole('button', { name: /^(Show|Hide) performance$/ });
+  const toggle = page.getByRole('button', { name: /^(Show|Hide) automation sidebar$/ });
   await expect.element(toggle).toBeVisible();
-  if (toggle.element().getAttribute('aria-label') === 'Show performance') {
+  if (toggle.element().getAttribute('aria-label') === 'Show automation sidebar') {
     await toggle.click();
   }
-  await expect.element(automationsScreen.performanceHeading()).toBeVisible();
+  await expect.element(toggle).toHaveAttribute('aria-expanded', 'true');
   await settleTransitions();
 }

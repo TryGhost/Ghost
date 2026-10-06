@@ -15,6 +15,55 @@ import {
 } from './run-history.test-utils';
 
 describe('Run history preserves editor drafts', () => {
+  it('makes metadata readonly during history and restores the unsaved draft after closing', async () => {
+    setup();
+    respond(history('a'));
+    await renderAdminApp('/automations/first', {
+      ...flags,
+      labs: { ...flags.labs, automationsPerTier: true },
+    });
+    await open();
+    await page.getByRole('tab', { name: 'Settings' }).click();
+    await page.getByRole('textbox', { name: 'Name', exact: true }).fill('Unsaved name');
+    await page.getByRole('tab', { name: 'Performance' }).click();
+    await select();
+    await expect.element(canvas()).toBeVisible();
+    await page.getByRole('tab', { name: 'Settings' }).click();
+    await expect.element(page.getByRole('textbox', { name: 'Name', exact: true })).toBeDisabled();
+    await expect
+      .element(page.getByRole('textbox', { name: 'Description', exact: true }))
+      .toBeDisabled();
+    await expect
+      .element(page.getByRole('textbox', { name: 'Name', exact: true }))
+      .toHaveValue('Unsaved name');
+    await close();
+    await expect.element(page.getByRole('textbox', { name: 'Name', exact: true })).toBeEnabled();
+    await expect
+      .element(page.getByRole('textbox', { name: 'Description', exact: true }))
+      .toBeEnabled();
+    await expect
+      .element(page.getByRole('textbox', { name: 'Name', exact: true }))
+      .toHaveValue('Unsaved name');
+  });
+
+  it('keeps metadata hidden during and after history when automationsPerTier is disabled', async () => {
+    setup();
+    respond(history('a'));
+    await renderAdminApp('/automations/first', {
+      ...flags,
+      labs: { ...flags.labs, automationsPerTier: false },
+    });
+    await open();
+    await select();
+    await expect.element(canvas()).toBeVisible();
+    await expect.element(page.getByRole('tab', { name: 'Settings' })).not.toBeInTheDocument();
+    await expect
+      .element(page.getByRole('textbox', { name: 'Name', exact: true }))
+      .not.toBeInTheDocument();
+    await close();
+    await expect.element(page.getByRole('tab', { name: 'Settings' })).not.toBeInTheDocument();
+  });
+
   it('contains history render errors and retries without remounting the editor', async () => {
     setup();
     respond({ ...history('a'), status: 'exited_early' });

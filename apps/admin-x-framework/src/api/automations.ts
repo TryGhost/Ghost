@@ -77,6 +77,8 @@ export type AutomationDetail = Automation & {
 
 export type EditAutomationPayload = {
   id: string;
+  name: string;
+  description: string;
   status: AutomationStatus;
   actions: AutomationAction[];
   edges: AutomationEdge[];
@@ -313,9 +315,11 @@ export const useEditAutomation = createMutation<
 >({
   method: 'PUT',
   path: ({ id }) => `/automations/${id}/`,
-  body: ({ status, actions, edges }) => ({
+  body: ({ name, description, status, actions, edges }) => ({
     automations: [
       {
+        name,
+        description,
         status,
         actions: actions.map(serializeEditableAction),
         edges,

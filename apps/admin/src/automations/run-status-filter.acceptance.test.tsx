@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import {
-  openPerformanceSidebar,
+  openAutomationSidebar,
   flags,
   response,
   prepareStatuses,
@@ -12,8 +12,8 @@ import {
 const entries = () => page.getByRole('region', { name: 'Total entries' });
 const statuses = () => page.getByRole('region', { name: 'Automation status counts' });
 const statusCard = (name: string) => statuses().getByRole('button', { name, exact: true });
-const open = openPerformanceSidebar;
-const close = () => page.getByRole('button', { name: 'Hide performance' }).click();
+const open = openAutomationSidebar;
+const close = () => page.getByRole('button', { name: 'Hide automation sidebar' }).click();
 
 const runsRegion = () => page.getByRole('region', { name: 'Automation runs', exact: true });
 const filteredRunsResponse = (
