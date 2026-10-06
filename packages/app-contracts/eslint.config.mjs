@@ -5,7 +5,7 @@ import { nodeLibConfig } from '@internal/cfg-eslint';
 // the modules it loads at runtime do not reach zod, and nothing in a bundler holds that,
 // so it is stated as a rule.
 const rootDependsOnNothing = {
-  files: ['src/index.ts', 'src/manifest/id.ts', 'src/manifest/limits.ts'],
+  files: ['src/index.ts', 'src/manifest/id.ts', 'src/manifest/limits.ts', 'src/manifest/localhost.ts'],
   rules: {
     'no-restricted-imports': [
       'error',

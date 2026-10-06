@@ -31,4 +31,4 @@ export {
   type AppSurface,
   type AppSurfaceType,
 } from './schema.ts';
-export { isLocalhost } from './url.ts';
+export { isLocalhost } from './localhost.ts';
