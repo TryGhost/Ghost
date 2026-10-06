@@ -282,6 +282,12 @@ jobs:
             UNIT_TEST_PROJECTS_STR=$(printf '%s\n%s\n' "$UNIT_TEST_PROJECTS_STR" "ghost" | awk 'NF && !seen[$0]++' | paste -sd, -)
           fi
           echo "unit_test_projects_str=$UNIT_TEST_PROJECTS_STR" >> "$GITHUB_OUTPUT"
+          # Browser-only projects don't depend on the Node version; only the primary Node leg runs them.
+          UNIT_TEST_NODE_PROJECTS_STR=""
+          if [[ -n "$UNIT_TEST_PROJECTS_STR" ]]; then
+            UNIT_TEST_NODE_PROJECTS_STR=$(pnpm nx show projects --projects "$UNIT_TEST_PROJECTS_STR" --exclude 'apps/*,tag:playwright' --json | jq -r 'join(",")')
+          fi
+          echo "unit_test_node_projects_str=$UNIT_TEST_NODE_PROJECTS_STR" >> "$GITHUB_OUTPUT"
 
           # "i18n" tag = packages whose source is scanned by @tryghost/i18n's
           # translate:* scripts (not packages that merely import @tryghost/i18n).
@@ -324,6 +330,7 @@ jobs:
       affected_projects_str: ${{ steps.affected.outputs.affected_projects_str }}
       typecheck_projects_str: ${{ steps.affected.outputs.typecheck_projects_str }}
       unit_test_projects_str: ${{ steps.affected.outputs.unit_test_projects_str }}
+      unit_test_node_projects_str: ${{ steps.affected.outputs.unit_test_node_projects_str }}
       affected_playwright_matrix: ${{ steps.affected.outputs.affected_playwright_matrix }}
       publish_public_apps_matrix: ${{ steps.affected.outputs.publish_public_apps_matrix }}
       changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
@@ -764,8 +771,19 @@ jobs:
         # writes coverage-unit/cobertura-coverage.xml. It's an Nx output, so a
         # cache hit restores the report rather than skipping it. The other
         # projects run test:unit as usual.
+        #
+        # Non-primary Node legs skip browser-only projects (see
+        # unit_test_node_projects_str in job_setup).
         run: |
-          PROJECTS="${{ needs.job_setup.outputs.unit_test_projects_str }}"
+          if [ "${{ matrix.node }}" = "${{ needs.job_setup.outputs.node_version }}" ]; then
+            PROJECTS="${{ needs.job_setup.outputs.unit_test_projects_str }}"
+          else
+            PROJECTS="${{ needs.job_setup.outputs.unit_test_node_projects_str }}"
+          fi
+          if [ -z "$PROJECTS" ]; then
+            echo "No Node-dependent projects to test on this leg"
+            exit 0
+          fi
           GHOST_COVERAGE=false
           if [ "$COVERAGE_ENABLED" = "true" ] && [[ ",${PROJECTS}," == *",ghost,"* ]]; then
             GHOST_COVERAGE=true
@@ -1559,6 +1577,9 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+        with:
+          # Skip the post-job `docker buildx rm` (~40s); the runner is ephemeral.
+          cleanup: false
 
       - name: Log in to GitHub Container Registry
         if: steps.strategy.outputs.should-push == 'true'
