@@ -30,6 +30,9 @@ import {
 
 type PublishType = 'publish' | 'publish+send' | 'send';
 
+// Both editors also mount a hidden Koenig instance; only the visible one takes input.
+const VISIBLE_LEXICAL_EDITOR = '[data-secondary-instance="false"] [data-lexical-editor="true"]';
+
 const PUBLISH_TYPE_OPTIONS: Record<PublishType, string> = {
   publish: publishTypePublishOnlyOption,
   'publish+send': publishTypePublishAndEmailOption,
@@ -191,15 +194,15 @@ export class PostEditorPage extends AdminPage {
   }
 
   async createDraft({ title = 'Hello world', body = 'This is my post body.' } = {}): Promise<void> {
-    const editor = this.page.locator('[data-lexical-editor="true"]').first();
+    const editor = this.page.locator(VISIBLE_LEXICAL_EDITOR).first();
 
     await this.titleInput.click();
     await this.titleInput.fill(title);
     await editor.waitFor({ state: 'visible' });
     await this.page.keyboard.press('Enter');
 
-    await this.page.waitForFunction(() => {
-      const element = document.querySelector('[data-lexical-editor="true"]');
+    await this.page.waitForFunction((selector) => {
+      const element = document.querySelector(selector);
       if (!element) {
         return false;
       }
@@ -209,7 +212,7 @@ export class PostEditorPage extends AdminPage {
       return Boolean(
         activeElement && (activeElement === element || element.contains(activeElement)),
       );
-    });
+    }, VISIBLE_LEXICAL_EDITOR);
 
     await this.page.keyboard.type(body);
   }
