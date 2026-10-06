@@ -1,0 +1,9 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ghost-canvas-relay-spike",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-04-01",
+  "durable_objects": { "bindings": [{ "name": "SESSIONS", "class_name": "CanvasSession" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["CanvasSession"] }],
+  // Set SERVICE_ORIGIN and TENANT_KEYS through deployment configuration/secrets.
+}

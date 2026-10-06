@@ -24,6 +24,11 @@ module.exports = function apiRoutes() {
   router.get('/config', mw.authAdminApi, http(api.config.read));
   router.get('/config/featurebase', mw.authAdminApi, http(api.config.featurebase));
 
+  // Canvas agent access is approved by a staff session in the mounted editor.
+  router.get('/canvas-relay', mw.authAdminApi, http(api.canvasRelay.read));
+  router.post('/canvas-relay/pair', mw.authAdminApi, http(api.canvasRelay.pair));
+  router.post('/canvas-relay/revoke', mw.authAdminApi, http(api.canvasRelay.revoke));
+
   // ## Posts
   router.get('/posts', mw.authAdminApi, http(api.posts.browse));
   router.get('/posts/export', mw.authAdminApi, http(api.posts.exportCSV));

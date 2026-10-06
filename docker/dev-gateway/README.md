@@ -53,3 +53,9 @@ The Caddyfile defines these routing rules:
 | Everything else                                                                               | Ghost backend                   | Main Ghost application                                                                      |
 
 **Note:** Port numbers listed for Admin and Lexical are the host ports where those dev servers run by default. Public apps have no dev-server port — Caddy reads their build output straight off disk.
+
+Admin HMR and the opt-in local canvas relay use this same dev prefix. Caddy's
+`reverse_proxy` handles WebSocket upgrades automatically; do not replace its
+Connection/Upgrade headers with legacy placeholders. The canvas relay proxy is
+enabled in Admin with `CANVAS_RELAY_DEV_TARGET` and forwards only its fixed path
+to local Wrangler. See [the relay README](../../apps/canvas-relay/README.md).

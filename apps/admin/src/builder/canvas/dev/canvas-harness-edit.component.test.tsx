@@ -106,7 +106,8 @@ it(
       try {
         for (const selection of ['iframe', 'header', 'empty']) {
           admission = undefined;
-          await page.getByRole('button', { name: 'Fit all', exact: true }).click();
+          page.getByRole('region', { name: 'Theme canvas' }).element().focus();
+          await userEvent.keyboard('f');
           const literal = frame('Home · Mobile').getByRole('link', { name: 'Ghost', exact: true });
           await literal.hover();
           await literal.dblClick();
@@ -152,7 +153,8 @@ it(
       }
       holdIncoming = true;
       try {
-        await page.getByRole('button', { name: 'Fit all', exact: true }).click();
+        page.getByRole('region', { name: 'Theme canvas' }).element().focus();
+        await userEvent.keyboard('f');
         await frame('Home · Mobile').getByRole('link', { name: 'Ghost', exact: true }).dblClick();
         await expect
           .poll(() =>
@@ -191,7 +193,8 @@ it(
       // Focus is delivered inside the opaque fixture, without generating a click.
       for (const olderIntent of ['selection', 'escape']) {
         olderIntents.length = 0;
-        await page.getByRole('button', { name: 'Fit all', exact: true }).click();
+        page.getByRole('region', { name: 'Theme canvas' }).element().focus();
+        await userEvent.keyboard('f');
         holdOlderIntent = true;
         await frame('Post · Mobile').getByRole('link', { name: 'Ghost', exact: true }).click();
         if (olderIntent === 'escape') {
@@ -301,7 +304,8 @@ it(
           }),
         );
       };
-      await page.getByRole('button', { name: 'Fit Post', exact: true }).click();
+      page.getByRole('region', { name: 'Theme canvas' }).element().focus();
+      await userEvent.keyboard('f');
       await bringToView('post-mobile');
       await frame('Post · Mobile').getByRole('link', { name: 'Ghost', exact: true }).dblClick();
       expect((await devices.get('post-mobile')!.measureLayout(signal)).localEdits.active).toBe(

@@ -38,8 +38,12 @@ allowBuilds:
   're2@1.26.1': true
   'sharp@0.35.5': true
   ssh2: false
+  # workerd resolves its platform binary from an optional dependency; do not run
+  # its install-time validation/copy script in this private relay spike.
+  workerd: false
 
 catalog:
+  '@cloudflare/workers-types': 4.20260702.1
   '@codemirror/autocomplete': 6.20.3
   '@codemirror/commands': 6.11.1
   '@codemirror/lang-css': 6.3.1
@@ -165,6 +169,7 @@ catalog:
   lucide-react: 1.23.0
   microdiff: 1.5.0
   mingo: 2.5.3
+  miniflare: 4.20260710.0
   moment: 2.31.0
   moment-timezone: 0.6.4
   msw: 2.14.6
@@ -208,6 +213,7 @@ catalog:
   vite-plugin-svgr: 4.5.0
   vitest: 4.1.11
   vitest-browser-react: 2.2.0
+  wrangler: 4.111.0
   zod: 4.4.3
   form-data: 4.0.6
   '@dnd-kit/core': 6.3.1
@@ -269,6 +275,7 @@ catalogs:
     eslint-plugin-tailwindcss: 3.18.3
 
 overrides:
+  'miniflare>sharp': 'catalog:'
   cron-validate: 1.4.5
   '@tryghost/errors': 'catalog:'
   '@tryghost/logging': 'catalog:'

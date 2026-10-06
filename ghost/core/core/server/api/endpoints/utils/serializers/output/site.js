@@ -22,6 +22,7 @@ module.exports = {
         'sentry_env',
         'site_uuid',
         'authReact',
+        'canvas_relay',
       ]),
     };
   },

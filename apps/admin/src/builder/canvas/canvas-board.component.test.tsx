@@ -67,6 +67,8 @@ it('keeps every tall-composition label attached to its preview and independently
       />
     </section>,
   );
+  page.getByRole('region', { name: 'Theme canvas' }).element().focus();
+  await userEvent.keyboard('f');
   const buttons = frames.map((frame) =>
     page.getByRole('button', { name: frame.label, exact: true }),
   );
@@ -105,6 +107,8 @@ it('keeps browser keyboard focus and scroll under the camera when a frame is fit
   );
   const host = page.getByRole('region', { name: 'Theme canvas' }).element() as HTMLElement;
   const world = page.getByTestId('canvas-world').element() as HTMLElement;
+  host.focus();
+  await userEvent.keyboard('f');
   const overview = world.style.transform;
   await page.getByRole('button', { name: 'Home · Mobile', exact: true }).dblClick();
   const opened = world.style.transform;
@@ -114,7 +118,8 @@ it('keeps browser keyboard focus and scroll under the camera when a frame is fit
     expect([host.scrollLeft, host.scrollTop]).toEqual([0, 0]);
     expect(world.style.transform).toBe(opened);
   }
-  await page.getByRole('button', { name: 'Fit all' }).click();
+  page.getByRole('region', { name: 'Theme canvas' }).element().focus();
+  await userEvent.keyboard('f');
   expect(world.style.transform).toBe(overview);
   expect([host.scrollLeft, host.scrollTop]).toEqual([0, 0]);
 });
@@ -191,6 +196,8 @@ it('lets every live frame receive a direct double-click without opening a mode',
     </section>,
   );
   const world = page.getByTestId('canvas-world').element() as HTMLElement;
+  page.getByRole('region', { name: 'Theme canvas' }).element().focus();
+  await userEvent.keyboard('f');
   const camera = world.style.transform;
   for (const descriptor of frames) {
     const target = page.frameLocator(page.getByTitle(`${descriptor.label} direct`));

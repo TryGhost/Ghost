@@ -47,3 +47,24 @@ export function fitCanvas(
     scale,
   };
 }
+
+/** Fit known widths at the top of the board; document heights never affect this camera. */
+export function fitCanvasWidth(
+  rects: readonly CanvasRect[],
+  size: CanvasSize,
+  padding = 48,
+): CanvasCamera {
+  if (!rects.length || size.width <= padding * 2) {
+    return { x: 0, y: 0, scale: 1 };
+  }
+  const left = Math.min(...rects.map((rect) => rect.x));
+  const right = Math.max(...rects.map((rect) => rect.x + rect.width));
+  const top = Math.min(...rects.map((rect) => rect.y));
+  const width = right - left;
+  const scale = Math.min(1, (size.width - padding * 2) / width);
+  return {
+    x: (size.width - width * scale) / 2 - left * scale,
+    y: padding - top * scale,
+    scale,
+  };
+}

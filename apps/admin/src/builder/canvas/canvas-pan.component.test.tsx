@@ -184,7 +184,8 @@ it('leaves Space as text inside theme controls and a retained inline draft', asy
           .inspectElement({ selector: '[role="textbox"]' }, new AbortController().signal)
       ).text,
     ).toBe('Retained text');
-    await page.getByRole('button', { name: 'Fit all', exact: true }).click();
+    page.getByRole('region', { name: 'Theme canvas' }).element().focus();
+    await userEvent.keyboard('f');
     await frame.getByText('Pan target', { exact: true }).click();
     await commands.canvasPointer([{ kind: 'space-down' }]);
     await expect.poll(() => document.querySelector('[data-canvas-pan-shield]')).not.toBeNull();

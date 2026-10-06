@@ -359,6 +359,12 @@ function uncompiledStylesheetFailure(draft: ThemeDraft, path: string): ToolFailu
 }
 
 /** Build guidance is available before an agent prepares a complete file write. */
+export function linkedThemeStylesheets(draft: ThemeDraft) {
+  return [...referencedStylesheets(draft)]
+    .sort()
+    .map((path) => ({ path, ...stylesheetEditing(draft, path) }));
+}
+
 function stylesheetEditing(draft: ThemeDraft, path: string) {
   if (!path.endsWith('.css')) {
     return undefined;

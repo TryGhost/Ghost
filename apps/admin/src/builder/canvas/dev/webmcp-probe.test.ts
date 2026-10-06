@@ -69,6 +69,37 @@ async function fixture() {
 }
 
 describe('addressed read-only canvas probe', () => {
+  it('inspects best-effort composition dimensions while retaining exact device checks', async () => {
+    const { probe } = await fixture();
+    const composition = surface();
+    vi.mocked(composition.measureLayout).mockResolvedValue({
+      ...layout,
+      viewport: { ...layout.viewport, width: 389, height: 2999 },
+    });
+    const connection = probe.attach(descriptor.id, composition, document, 'expanded');
+    await connection.ready();
+    vi.mocked(composition.inspectPage).mockResolvedValue({
+      ...(await composition.inspectPage(document.url, new AbortController().signal)),
+      viewport: { ...layout.viewport, width: 389, height: 2999 },
+    });
+    const address = {
+      ...target(probe),
+      representationHandle: probe.state().frames[0].expanded!.representationHandle,
+    };
+    expect(await tool(probe, 'inspect_frame').execute(address)).toMatchObject({
+      status: 'ok',
+      data: { viewport: { width: 389, height: 2999 } },
+    });
+    const device = surface();
+    vi.mocked(device.measureLayout).mockResolvedValue({
+      ...layout,
+      viewport: { ...layout.viewport, width: 389 },
+    });
+    const replacement = probe.attach(descriptor.id, device, document);
+    await expect(replacement.ready()).rejects.toMatchObject({ code: 'stale_document' });
+    probe.dispose();
+  });
+
   it('keeps a newer failure when an older readiness read completes', async () => {
     const { probe } = await fixture();
     const composition = surface();
@@ -132,7 +163,13 @@ describe('addressed read-only canvas probe', () => {
     try {
       await measureExpandedComposition(
         composition,
-        () => Promise.resolve(),
+        () => {
+          vi.mocked(composition.measureLayout).mockResolvedValue({
+            ...layout,
+            documentInstanceId: 'replacement-instance',
+          });
+          return Promise.resolve();
+        },
         descriptor.id,
         document.revision,
         new AbortController().signal,
@@ -147,7 +184,7 @@ describe('addressed read-only canvas probe', () => {
     expect(current.frames[0].expanded).toMatchObject({
       status: 'failed',
       failure: {
-        code: 'composition_viewport_changed',
+        code: 'composition_document_changed',
         details: {
           expected: { viewport: { width: 390, height: 3000 } },
           actual: { viewport: { width: 390, height: 844 } },
@@ -158,7 +195,7 @@ describe('addressed read-only canvas probe', () => {
     expect(failed).toMatchObject({
       status: 'error',
       code: 'surface_failed',
-      details: { failure: { code: 'composition_viewport_changed' } },
+      details: { failure: { code: 'composition_document_changed' } },
     });
     expect(composition.inspectPage).not.toHaveBeenCalled();
     expect(await tool(probe, 'inspect_frame').execute(target(probe))).toMatchObject({

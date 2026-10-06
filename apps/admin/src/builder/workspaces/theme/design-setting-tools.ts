@@ -13,9 +13,12 @@ export type DesignSettingDescriptor = {
   type: ThemeCustomSetting['type'];
   currentValue: SettingValue;
   stagedValue: SettingValue;
+  defaultValue?: SettingValue;
+  visible: boolean;
   writable: boolean;
   choices?: string[];
   description?: string;
+  visibility?: string;
 };
 
 const globalSettings: Array<{
@@ -52,32 +55,44 @@ function validColor(value: unknown): value is string {
 function customDescriptor(
   setting: ThemeCustomSetting,
   baseline?: ThemeCustomSetting,
+  visible = true,
 ): DesignSettingDescriptor {
   return {
     identifier: `theme.${setting.key}`,
     type: setting.type,
     currentValue: baseline ? baseline.value : setting.value,
     stagedValue: setting.value,
+    ...('default' in setting ? { defaultValue: setting.default } : {}),
+    visible,
     writable: setting.type !== 'image',
     ...('options' in setting ? { choices: [...setting.options] } : {}),
     ...(setting.description ? { description: setting.description } : {}),
+    ...(setting.visibility ? { visibility: setting.visibility } : {}),
   };
 }
 
 export function listDesignSettings(
   draft: ThemeDraft,
   baseline = draft,
+  options: { includeHidden?: boolean } = {},
 ): BuilderToolResult<{ settings: DesignSettingDescriptor[] }> {
   const settings: DesignSettingDescriptor[] = globalSettings.map((setting) => ({
     identifier: `global.${setting.key}`,
     type: setting.type,
     currentValue: baseline.globalSettings[setting.key],
     stagedValue: draft.globalSettings[setting.key],
+    visible: true,
     writable: setting.writable,
   }));
   const visible = visibleThemeCustomSettings(draft.customSettings);
-  for (const key of Object.keys(visible).sort()) {
-    settings.push(customDescriptor(visible[key], baseline.customSettings[key]));
+  for (const key of Object.keys(options.includeHidden ? draft.customSettings : visible).sort()) {
+    settings.push(
+      customDescriptor(
+        draft.customSettings[key],
+        baseline.customSettings[key],
+        Object.hasOwn(visible, key),
+      ),
+    );
   }
   return { ok: true, revision: draft.revision, data: { settings } };
 }

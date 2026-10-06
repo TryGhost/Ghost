@@ -79,6 +79,36 @@ function fixture(extent?: (height: number) => number) {
 afterEach(() => vi.useRealTimers());
 
 describe('ongoing composition observation', () => {
+  it('continues observing late content after best-effort sizing', async () => {
+    vi.useFakeTimers();
+    const value = fixture();
+    try {
+      const read = value.surface.measureLayout.getMockImplementation()!;
+      value.surface.measureLayout.mockImplementation(async () => {
+        const actual = await read();
+        return { ...actual, viewport: { ...actual.viewport, height: actual.viewport.height - 1 } };
+      });
+      await value.observation.ready;
+      value.change(2400);
+      await vi.advanceTimersByTimeAsync(500);
+      expect(value.onResult.mock.lastCall![0]).toMatchObject({
+        status: 'best-effort',
+        frameHeight: 2400,
+        viewport: { height: 2399 },
+      });
+      value.change(1000);
+      await vi.advanceTimersByTimeAsync(500);
+      expect(value.onResult.mock.lastCall![0]).toMatchObject({
+        status: 'best-effort',
+        frameHeight: 1000,
+        viewport: { height: 999 },
+      });
+      expect(value.onError).not.toHaveBeenCalled();
+    } finally {
+      value.observation.dispose();
+    }
+  });
+
   it('restores the settled viewport if admission begins after the clean preflight', async () => {
     vi.useFakeTimers();
     const value = fixture();

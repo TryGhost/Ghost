@@ -1,5 +1,5 @@
 import { expect, it, vi } from 'vitest';
-import { commands, page } from 'vitest/browser';
+import { commands, page, userEvent } from 'vitest/browser';
 import { Box } from '@tryghost/shade/primitives';
 import { renderInApp } from '@test-utils/acceptance/render-in-app';
 import { CanvasHarness } from './canvas-harness';
@@ -68,6 +68,8 @@ it.each(['expanded', 'device'] as const)(
           ),
         )
         .getByRole('link', { name: 'Ghost', exact: true });
+      page.getByRole('region', { name: 'Theme canvas' }).element().focus();
+      await userEvent.keyboard('f');
       await footer.hover();
       await footer.dblClick();
       await expect
@@ -133,7 +135,9 @@ it(
           timeout: 30_000,
         })
         .toBe(7);
-      await page.getByRole('button', { name: 'Fit all', exact: true }).click();
+      page.getByRole('region', { name: 'Theme canvas' }).element().focus();
+      await userEvent.keyboard('f');
+      await page.getByRole('button', { name: 'Home · Mobile', exact: true }).dblClick();
       await page
         .getByRole('button', { name: 'Use fixed viewport for Home · Mobile', exact: true })
         .click();
@@ -328,7 +332,8 @@ it(
         .element(page.getByText('Controlled failure before initial mode ack', { exact: true }))
         .toBeVisible();
       release();
-      await page.getByRole('button', { name: 'Fit all', exact: true }).click();
+      page.getByRole('region', { name: 'Theme canvas' }).element().focus();
+      await userEvent.keyboard('f');
       await composition!.measureLayout(new AbortController().signal);
       await expect
         .poll(() => iframe.dataset.previewStatus)

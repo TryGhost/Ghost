@@ -2,7 +2,6 @@ import { createPostFactory, createTagFactory } from '@/data-factory';
 import { expect, test } from '@/helpers/playwright';
 import { randomUUID } from 'node:crypto';
 import { usePerTestIsolation } from '@/helpers/playwright/isolation';
-import { writeFile } from 'node:fs/promises';
 import type { Page } from '@playwright/test';
 
 type NativeTesting = {
@@ -75,6 +74,63 @@ async function uploadCover(page: Page): Promise<string> {
   return images[0].url as string;
 }
 
+// These journeys build driver addresses and patches; translate them to the compact
+// public context. New catalog/batch/default-wait contracts have direct coverage.
+function siteInput(mode: string, input: Record<string, unknown>): Record<string, unknown> {
+  const { workspaceId, expectedRevision, expectedDataGeneration = 0, ...rest } = input;
+  const context = { workspaceId, revision: expectedRevision, generation: expectedDataGeneration };
+  if (mode === 'inspect') {
+    return { target: input };
+  }
+  if (mode === 'element') {
+    const { occurrence, ...target } = input;
+    return { target, occurrence };
+  }
+  if (mode === 'edit' || mode === 'dryRun') {
+    return { context, ...rest, ...(mode === 'dryRun' ? { dryRun: true } : { wait: false }) };
+  }
+  if (mode === 'reveal') {
+    return { context, frame: rest.frameId };
+  }
+  if (mode === 'review') {
+    return { context };
+  }
+  if (mode === 'history') {
+    const { checkpointId, ...other } = rest;
+    return {
+      context,
+      ...other,
+      ...(checkpointId !== undefined ? { checkpoint: checkpointId } : {}),
+    };
+  }
+  if (mode === 'read') {
+    const { operation, ...request } = rest;
+    return {
+      context,
+      requests: [
+        {
+          ...request,
+          operation:
+            operation === 'read_file'
+              ? 'source'
+              : operation === 'list_files'
+                ? 'files'
+                : operation === 'search_files'
+                  ? 'search'
+                  : operation,
+        },
+      ],
+    };
+  }
+  const { expectedTemplate, ...content } = rest;
+  return {
+    context,
+    ...content,
+    operation: mode === 'list' || mode === 'posts' ? 'list' : 'select',
+    ...(mode === 'posts' || mode === 'post' ? { kind: 'post' } : {}),
+    ...(expectedTemplate !== undefined ? { template: expectedTemplate } : {}),
+  };
+}
 async function nativeTool<T>(page: Page, name: string, input: Record<string, unknown>): Promise<T> {
   const result = await page.evaluate(
     async ({ name: toolName, input: toolInput }) => {
@@ -92,6 +148,11 @@ async function nativeTool<T>(page: Page, name: string, input: Record<string, unk
     { name, input },
   );
   expect(result, JSON.stringify(result)).toMatchObject({ status: 'ok' });
+  if (name === 'ghost_canvas_read') {
+    const batch = result.data as { results: { status: string; data: T }[] };
+    expect(batch.results[0]).toMatchObject({ status: 'ok' });
+    return batch.results[0].data;
+  }
   return result.data;
 }
 
@@ -105,13 +166,13 @@ async function errorTemplateSource(
   }
   const source = await nativeTool<{ content: string; truncated: boolean }>(
     page,
-    'ghost_canvas_read_theme',
-    {
+    'ghost_canvas_read',
+    siteInput('read', {
       workspaceId: current.workspaceId,
       expectedRevision: current.editor.sourceRevision,
       operation: 'read_file',
       path: 'error-404.hbs',
-    },
+    }),
   );
   expect(source.truncated).toBe(false);
   return source.content.replace(/^\d+: /gm, '');
@@ -233,21 +294,33 @@ test.describe('Ghost Admin - Live theme canvas', () => {
           `${group} · Desktop`,
           `${group} · Mobile`,
         ]);
-        const state = () =>
-          nativeTool<CanvasState>(page, 'ghost_canvas_probe_get_editor_state', {});
+        const state = () => nativeTool<CanvasState>(page, 'ghost_canvas_state', {});
         const ready = async () => {
           await expect.poll(async () => !(await state()).editor.busy).toBe(true);
           const current = await state();
-          for (const label of labels.filter(
-            (value) => !value.startsWith('404') || current.editor.render.errorPreview !== null,
-          )) {
-            for (const kind of ['composition', 'preview']) {
-              await expect(page.getByTitle(`${label} ${kind}`, { exact: true })).toHaveAttribute(
-                'data-preview-status',
-                'Ready',
-              );
-            }
-          }
+          const expectedTitles = labels
+            .filter(
+              (value) => !value.startsWith('404') || current.editor.render.errorPreview !== null,
+            )
+            .flatMap((label) => ['composition', 'preview'].map((kind) => `${label} ${kind}`));
+          await expect
+            .poll(() =>
+              page.getByTitle(/ · (Desktop|Mobile) (composition|preview)$/).evaluateAll(
+                (iframes, titles) =>
+                  titles.map((title) => {
+                    const matching = iframes.filter(
+                      (element) => element.getAttribute('title') === title,
+                    );
+                    return {
+                      title,
+                      count: matching.length,
+                      status: matching[0]?.getAttribute('data-preview-status') ?? null,
+                    };
+                  }),
+                expectedTitles,
+              ),
+            )
+            .toEqual(expectedTitles.map((title) => ({ title, count: 1, status: 'Ready' })));
         };
         const assertImages = async () => {
           for (const label of labels.filter(
@@ -278,19 +351,19 @@ test.describe('Ghost Admin - Live theme canvas', () => {
         await expect(page.getByText('This theme has no custom 404 template.').first()).toBeVisible({
           visible: theme === 'source',
         });
-        const initial = await nativeTool<CanvasState>(
+        const initial = await nativeTool<CanvasState>(page, 'ghost_canvas_state', {});
+        await nativeTool(
           page,
-          'ghost_canvas_probe_get_editor_state',
-          {},
+          'ghost_canvas_reveal',
+          siteInput('reveal', {
+            workspaceId: initial.workspaceId,
+            expectedRevision: initial.editor.sourceRevision,
+            frameId: 'home-mobile',
+          }),
         );
-        await nativeTool(page, 'ghost_canvas_reveal_frame', {
-          workspaceId: initial.workspaceId,
-          expectedRevision: initial.editor.sourceRevision,
-          frameId: 'home-mobile',
-        });
         const home = page.frameLocator('iframe[title="Home · Mobile composition"]');
         await expect(home.getByRole('heading', { name: 'Canvas published article' })).toBeVisible();
-        await page.getByRole('button', { name: 'Fit all', exact: true }).click();
+        await page.getByRole('region', { name: 'Theme canvas' }).press('f');
         await page.getByRole('button', { name: 'Post · Mobile', exact: true }).dblclick();
         const post = page.frameLocator('iframe[title="Post · Mobile composition"]');
         await expect(
@@ -309,20 +382,24 @@ test.describe('Ghost Admin - Live theme canvas', () => {
         const selection = selected.editor.selection!;
         const inspectedHeading = await nativeTool<{
           element: { source: { path: string; line: number }; attributes: { class: string } };
-        }>(page, 'ghost_canvas_probe_inspect_element', {
-          ...selection.target,
-          occurrence: selection.context.data.occurrence,
-        });
+        }>(
+          page,
+          'ghost_canvas_inspect',
+          siteInput('element', {
+            ...selection.target,
+            occurrence: selection.context.data.occurrence,
+          }),
+        );
         expect(inspectedHeading.element.source).toMatchObject(selection.context.data.source);
         const selectedSource = await nativeTool<{ content: string; truncated: boolean }>(
           page,
-          'ghost_canvas_read_theme',
-          {
+          'ghost_canvas_read',
+          siteInput('read', {
             workspaceId: selected.workspaceId,
             expectedRevision: selected.editor.sourceRevision,
             operation: 'read_file',
             path: inspectedHeading.element.source.path,
-          },
+          }),
         );
         expect(selectedSource.truncated).toBe(false);
         const titleLine = selectedSource.content.replace(/^\d+: /gm, '').split('\n')[
@@ -342,51 +419,51 @@ test.describe('Ghost Admin - Live theme canvas', () => {
             },
           ],
         };
-        await nativeTool(page, 'ghost_canvas_validate_theme_patch', headingPatch);
+        await nativeTool(page, 'ghost_canvas_edit', siteInput('dryRun', headingPatch));
         expect((await state()).editor.sourceRevision).toBe(selected.editor.sourceRevision);
-        await nativeTool(page, 'ghost_canvas_apply_theme_patch', headingPatch);
+        await nativeTool(page, 'ghost_canvas_edit', siteInput('edit', headingPatch));
         await ready();
         await expect(post.getByText('From the journal', { exact: true })).toBeVisible();
         const postTitleClass = inspectedHeading.element.attributes.class.split(' ')[0];
 
         // Installed Source translates its copyright link; edit source through native
         // WebMCP, then use the literal added by that edit for direct manual editing.
-        const beforeFooter = await nativeTool<CanvasState>(
-          page,
-          'ghost_canvas_probe_get_editor_state',
-          {},
-        );
+        const beforeFooter = await nativeTool<CanvasState>(page, 'ghost_canvas_state', {});
         const address = {
           workspaceId: beforeFooter.workspaceId,
           expectedRevision: beforeFooter.editor.sourceRevision,
         };
         const source = await nativeTool<{ content: string; truncated: boolean }>(
           page,
-          'ghost_canvas_read_theme',
-          {
+          'ghost_canvas_read',
+          siteInput('read', {
             ...address,
             operation: 'read_file',
             path,
-          },
+          }),
         );
         expect(source.truncated).toBe(false);
         expect(source.content).toContain('</footer>');
         const template = source.content.replace(/^\d+: /gm, '');
-        await nativeTool(page, 'ghost_canvas_apply_theme_patch', {
-          ...address,
-          expectedDataGeneration: beforeFooter.editor.render.dataGeneration,
-          files: [
-            {
-              operation: 'write',
-              path,
-              content: template.replace('</footer>', '<p>Canvas draft footer</p></footer>'),
-            },
-          ],
-        });
+        await nativeTool(
+          page,
+          'ghost_canvas_edit',
+          siteInput('edit', {
+            ...address,
+            expectedDataGeneration: beforeFooter.editor.render.dataGeneration,
+            files: [
+              {
+                operation: 'write',
+                path,
+                content: template.replace('</footer>', '<p>Canvas draft footer</p></footer>'),
+              },
+            ],
+          }),
+        );
         await expect(post.getByText('Canvas draft footer', { exact: true })).toBeVisible();
         await ready();
         await expect(page.getByRole('button', { name: 'Undo theme change' })).toBeEnabled();
-        await page.getByRole('button', { name: 'Fit all', exact: true }).click();
+        await page.getByRole('region', { name: 'Theme canvas' }).press('f');
         await revealCanvasText(page, 'Post · Mobile', 'Canvas draft footer');
         await post.getByText('Canvas draft footer', { exact: true }).dblclick();
         const text = post.getByRole('textbox', { name: /^Edit / });
@@ -396,24 +473,28 @@ test.describe('Ghost Admin - Live theme canvas', () => {
         const beforeDesign = await state();
         const stylesheetLinks = await nativeTool<{
           matches: Array<{ path: string; text: string }>;
-        }>(page, 'ghost_canvas_read_theme', {
-          workspaceId: beforeDesign.workspaceId,
-          expectedRevision: beforeDesign.editor.sourceRevision,
-          operation: 'search_files',
-          query: 'rel="stylesheet"',
-        });
+        }>(
+          page,
+          'ghost_canvas_read',
+          siteInput('read', {
+            workspaceId: beforeDesign.workspaceId,
+            expectedRevision: beforeDesign.editor.sourceRevision,
+            operation: 'search_files',
+            query: 'rel="stylesheet"',
+          }),
+        );
         const layoutPath = stylesheetLinks.matches.find(
           (match) => match.path.endsWith('.hbs') && match.text.includes('{{asset'),
         )!.path;
         const layout = await nativeTool<{ content: string; truncated: boolean }>(
           page,
-          'ghost_canvas_read_theme',
-          {
+          'ghost_canvas_read',
+          siteInput('read', {
             workspaceId: beforeDesign.workspaceId,
             expectedRevision: beforeDesign.editor.sourceRevision,
             operation: 'read_file',
             path: layoutPath,
-          },
+          }),
         );
         expect(layout.truncated).toBe(false);
         const design = `
@@ -442,13 +523,13 @@ test.describe('Ghost Admin - Live theme canvas', () => {
 
         const postTemplate = await nativeTool<{ content: string; truncated: boolean }>(
           page,
-          'ghost_canvas_read_theme',
-          {
+          'ghost_canvas_read',
+          siteInput('read', {
             workspaceId: beforeDesign.workspaceId,
             expectedRevision: beforeDesign.editor.sourceRevision,
             operation: 'read_file',
             path: 'post.hbs',
-          },
+          }),
         );
         expect(postTemplate.truncated).toBe(false);
         const variantSource = postTemplate.content.replace(/^\d+: /gm, '');
@@ -468,44 +549,52 @@ test.describe('Ghost Admin - Live theme canvas', () => {
           }
           await route.continue();
         });
-        changing = nativeTool(page, 'ghost_canvas_apply_theme_patch', {
-          workspaceId: beforeDesign.workspaceId,
-          expectedRevision: beforeDesign.editor.sourceRevision,
-          expectedDataGeneration: beforeDesign.editor.render.dataGeneration,
-          files: [
-            {
-              operation: 'replace',
-              path: layoutPath,
-              oldText: styleLink,
-              newText: `${styleLink}\n<link rel="stylesheet" href="{{asset "css/canvas-design.css"}}">`,
-            },
-            { operation: 'write', path: 'assets/css/canvas-design.css', content: design },
-            {
-              operation: 'write',
-              path: 'error-404.hbs',
-              content: `${errorSource}\n<p>Error canvas variation</p>`,
-            },
-            {
-              operation: 'write',
-              path: 'custom-canvas.hbs',
-              content: `${variantSource}\n<p>Custom canvas variation</p>`,
-            },
-            {
-              operation: 'write',
-              path: 'page-canvas-about.hbs',
-              content: `${variantSource}\n<p>Slug canvas variation</p>`,
-            },
-          ],
-        });
+        changing = nativeTool(
+          page,
+          'ghost_canvas_edit',
+          siteInput('edit', {
+            workspaceId: beforeDesign.workspaceId,
+            expectedRevision: beforeDesign.editor.sourceRevision,
+            expectedDataGeneration: beforeDesign.editor.render.dataGeneration,
+            files: [
+              {
+                operation: 'replace',
+                path: layoutPath,
+                oldText: styleLink,
+                newText: `${styleLink}\n<link rel="stylesheet" href="{{asset "css/canvas-design.css"}}">`,
+              },
+              { operation: 'write', path: 'assets/css/canvas-design.css', content: design },
+              {
+                operation: 'write',
+                path: 'error-404.hbs',
+                content: `${errorSource}\n<p>Error canvas variation</p>`,
+              },
+              {
+                operation: 'write',
+                path: 'custom-canvas.hbs',
+                content: `${variantSource}\n<p>Custom canvas variation</p>`,
+              },
+              {
+                operation: 'write',
+                path: 'page-canvas-about.hbs',
+                content: `${variantSource}\n<p>Slug canvas variation</p>`,
+              },
+            ],
+          }),
+        );
         void changing.catch(() => {});
         await expect.poll(() => heldCandidate).toBe(true);
         expect((await state()).editor.busy).toBe(true);
         await text.fill('Canvas footer');
-        await nativeTool(page, 'ghost_canvas_reveal_frame', {
-          workspaceId: beforeDesign.workspaceId,
-          expectedRevision: beforeDesign.editor.sourceRevision,
-          frameId: 'home-mobile',
-        });
+        await nativeTool(
+          page,
+          'ghost_canvas_reveal',
+          siteInput('reveal', {
+            workspaceId: beforeDesign.workspaceId,
+            expectedRevision: beforeDesign.editor.sourceRevision,
+            frameId: 'home-mobile',
+          }),
+        );
         expect((await state()).editor.manualDraft).toMatchObject({ text: 'Canvas footer' });
         holding = false;
         releaseCandidate();
@@ -576,25 +665,34 @@ test.describe('Ghost Admin - Live theme canvas', () => {
         const beforeVariant = await state();
         const variants = await nativeTool<{
           templates: Array<{ path: string; items: Array<{ id: string }> }>;
-        }>(page, 'ghost_canvas_list_preview_content', {
-          workspaceId: beforeVariant.workspaceId,
-          expectedRevision: beforeVariant.editor.sourceRevision,
-          kind: 'post',
-        });
+        }>(
+          page,
+          'ghost_canvas_content',
+          siteInput('list', {
+            workspaceId: beforeVariant.workspaceId,
+            expectedRevision: beforeVariant.editor.sourceRevision,
+            kind: 'post',
+          }),
+        );
         expect(
           variants.templates.find((choice) => choice.path === 'custom-canvas.hbs')?.items,
         ).toContainEqual(expect.objectContaining({ id: first.id }));
-        await nativeTool(page, 'ghost_canvas_select_preview_content', {
-          workspaceId: beforeVariant.workspaceId,
-          expectedRevision: beforeVariant.editor.sourceRevision,
-          expectedDataGeneration: beforeVariant.editor.render.dataGeneration,
-          kind: 'post',
-          id: first.id,
-          expectedTemplate: 'custom-canvas.hbs',
-        });
+        await nativeTool(
+          page,
+          'ghost_canvas_content',
+          siteInput('select', {
+            workspaceId: beforeVariant.workspaceId,
+            expectedRevision: beforeVariant.editor.sourceRevision,
+            expectedDataGeneration: beforeVariant.editor.render.dataGeneration,
+            kind: 'post',
+            id: first.id,
+            expectedTemplate: 'custom-canvas.hbs',
+          }),
+        );
         await ready();
         expect((await state()).editor.history).toEqual(beforeVariant.editor.history);
-        await page.getByRole('button', { name: 'Fit Page', exact: true }).click();
+        await page.getByRole('region', { name: 'Theme canvas' }).press('f');
+        await page.getByRole('button', { name: 'Page · Desktop', exact: true }).dblclick();
         await page
           .getByRole('button', { name: 'Choose preview Page', exact: true })
           .first()
@@ -625,39 +723,20 @@ test.describe('Ghost Admin - Live theme canvas', () => {
         await assertImages();
 
         const inspected = await state();
-        for (const frame of inspected.frames) {
-          const captured = await nativeTool<{
-            image: { dataUrl: string; width: number; height: number };
-            warnings: unknown[];
-          }>(page, 'ghost_canvas_probe_capture_frame', {
-            workspaceId: inspected.workspaceId,
-            frameHandle: frame.frameHandle,
-            representationHandle: frame.device.representationHandle,
-            expectedRevision: frame.device.revision,
-            expectedRenderKey: frame.device.renderKey,
-            kind: 'viewport',
-          });
-          expect(captured.image).toMatchObject({ width: frame.width, height: frame.height });
-          await writeFile(
-            testInfo.outputPath(`${theme}-${frame.id}-native.png`),
-            Buffer.from(captured.image.dataUrl.split(',')[1], 'base64'),
-          );
-          await testInfo.attach(`${theme}-${frame.id}-capture-warnings`, {
-            body: JSON.stringify(captured.warnings),
-            contentType: 'application/json',
-          });
-        }
         expect((await state()).view).toEqual(inspected.view);
 
-        // Native capture reports unreadable external pixels. Also inspect the real
-        // live device views, without changing image loading or sandbox policy.
+        // Capture the actual live device pixels through the browser. No snapshot iframe.
         await page.getByRole('button', { name: 'Device viewports', exact: true }).click();
         for (const frame of inspected.frames) {
-          await nativeTool(page, 'ghost_canvas_reveal_frame', {
-            workspaceId: inspected.workspaceId,
-            expectedRevision: inspected.editor.sourceRevision,
-            frameId: frame.id,
-          });
+          await nativeTool(
+            page,
+            'ghost_canvas_reveal',
+            siteInput('reveal', {
+              workspaceId: inspected.workspaceId,
+              expectedRevision: inspected.editor.sourceRevision,
+              frameId: frame.id,
+            }),
+          );
           const label = frame.label;
           const device = page.getByTitle(`${label} preview`, { exact: true });
           const bounds = await device.boundingBox();
@@ -665,7 +744,7 @@ test.describe('Ghost Admin - Live theme canvas', () => {
           await device.screenshot({ path: testInfo.outputPath(`${theme}-${frame.id}-live.png`) });
         }
         await page.getByRole('button', { name: 'Live compositions', exact: true }).click();
-        await page.getByRole('button', { name: 'Fit all', exact: true }).click();
+        await page.getByRole('region', { name: 'Theme canvas' }).press('f');
 
         await revealCanvasText(page, 'Post · Mobile', 'Canvas footer');
         await post.getByText('Canvas footer', { exact: true }).dblclick();
@@ -674,15 +753,15 @@ test.describe('Ghost Admin - Live theme canvas', () => {
         await expect(
           page.getByRole('button', { name: 'Publish changes', exact: true }),
         ).toBeEnabled();
-        const current = await nativeTool<CanvasState>(
+        const current = await nativeTool<CanvasState>(page, 'ghost_canvas_state', {});
+        await nativeTool(
           page,
-          'ghost_canvas_probe_get_editor_state',
-          {},
+          'ghost_canvas_review',
+          siteInput('review', {
+            workspaceId: current.workspaceId,
+            expectedRevision: current.editor.sourceRevision,
+          }),
         );
-        await nativeTool(page, 'ghost_canvas_open_publication_review', {
-          workspaceId: current.workspaceId,
-          expectedRevision: current.editor.sourceRevision,
-        });
         const review = page.getByRole('alertdialog');
         await expect(review.getByText(/changed file/)).toBeVisible();
         await expect(review.getByText(/changed setting/)).toBeVisible();
@@ -765,14 +844,14 @@ test.describe('Ghost Admin - Live theme canvas', () => {
             ).toHaveText('Canvas footer');
           }
         }
-        await page.getByRole('button', { name: 'Fit all', exact: true }).click();
+        await page.getByRole('region', { name: 'Theme canvas' }).press('f');
         await page.screenshot({ path: testInfo.outputPath(`${theme}-published-overview.png`) });
       } catch (error) {
         await testInfo.attach('canvas-failure-probe', {
           body: JSON.stringify(
-            await nativeTool<CanvasState>(page, 'ghost_canvas_probe_get_editor_state', {}).catch(
-              (failure) => ({ error: String(failure) }),
-            ),
+            await nativeTool<CanvasState>(page, 'ghost_canvas_state', {}).catch((failure) => ({
+              error: String(failure),
+            })),
           ),
           contentType: 'application/json',
         });

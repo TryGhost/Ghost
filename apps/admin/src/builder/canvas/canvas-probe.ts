@@ -1,5 +1,6 @@
 import { SCREENSHOT_LIMITS } from '@/builder/workspaces/theme/preview/screenshot';
 import { CompositionGeometryChange } from './measure-expanded-composition';
+import { canvasSiteTools } from './canvas-site-tools';
 import type { CanvasEditorTools } from './canvas-editor-tools';
 
 import type { CanvasView } from '@/builder/canvas/canvas-board';
@@ -283,8 +284,9 @@ export class CanvasProbe {
         const layout = await surface.measureLayout(signal);
         assertReady();
         if (
-          layout.viewport.width !== frame.descriptor.width ||
-          (entry.representation === 'device' && layout.viewport.height !== frame.descriptor.height)
+          entry.representation === 'device' &&
+          (layout.viewport.width !== frame.descriptor.width ||
+            layout.viewport.height !== frame.descriptor.height)
         ) {
           throw new ReadError(
             'stale_document',
@@ -484,6 +486,13 @@ export class CanvasProbe {
     ];
   }
 
+  /** Stable product capabilities; verbose experiment probes are fixture-only. */
+  siteTools(registrationSignal: AbortSignal) {
+    return this.fixture
+      ? this.tools(registrationSignal)
+      : canvasSiteTools(this, registrationSignal);
+  }
+
   private failure(error: unknown): ReadFailure {
     return {
       status: 'error',
@@ -571,8 +580,9 @@ export class CanvasProbe {
     if (
       layout.documentId !== entry.documentId ||
       layout.documentInstanceId !== entry.documentInstanceId ||
-      layout.viewport.width !== frame.descriptor.width ||
-      (entry.representation === 'device' && layout.viewport.height !== frame.descriptor.height)
+      (entry.representation === 'device' &&
+        (layout.viewport.width !== frame.descriptor.width ||
+          layout.viewport.height !== frame.descriptor.height))
     ) {
       throw new ReadError('stale_document', 'The addressed live document or viewport changed.');
     }
@@ -762,7 +772,7 @@ export function registerCanvasProbe(owner: Document, probe: CanvasProbe) {
       if (typeof context?.registerTool !== 'function') {
         return 'unsupported';
       }
-      for (const tool of probe.tools(lifetime.signal)) {
+      for (const tool of probe.siteTools(lifetime.signal)) {
         if (lifetime.signal.aborted) {
           return 'failed';
         }

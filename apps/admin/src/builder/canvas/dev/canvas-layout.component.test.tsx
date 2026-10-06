@@ -1,5 +1,5 @@
 import { expect, it, vi } from 'vitest';
-import { commands, page } from 'vitest/browser';
+import { commands, page, userEvent } from 'vitest/browser';
 import { Box } from '@tryghost/shade/primitives';
 import { renderInApp } from '@test-utils/acceptance/render-in-app';
 import { CanvasHarness } from './canvas-harness';
@@ -79,7 +79,8 @@ it.each(['source', 'casper'] as const)(
         .toBe(8);
       // Leave both pointer and keyboard focus in parent chrome before observing
       // unpaused late layout; hovering alone does not release iframe focus.
-      await page.getByRole('button', { name: 'Fit all', exact: true }).click();
+      page.getByRole('region', { name: 'Theme canvas' }).element().focus();
+      await userEvent.keyboard('f');
       const iframe = document.querySelector<HTMLIFrameElement>(
         'iframe[title="Home · Mobile composition"]',
       )!;
@@ -105,6 +106,9 @@ it.each(['source', 'casper'] as const)(
         })
         .toBe(true);
       const initial = baseline.current!;
+      // Leave the pointer outside live frames too: observation deliberately
+      // pauses a hovered composition to preserve interaction geometry.
+      await page.getByRole('button', { name: 'Refresh recorded content', exact: true }).hover();
       const renderCount = renderer.mock.calls.length;
       const identities = await Promise.all(
         [...compositions.values(), ...devices.values()].map(
@@ -129,7 +133,8 @@ it.each(['source', 'casper'] as const)(
       const mobile = page.frameLocator(
         page.getByTitle('Home · Mobile composition', { exact: true }),
       );
-      await page.getByRole('button', { name: 'Fit all', exact: true }).click();
+      page.getByRole('region', { name: 'Theme canvas' }).element().focus();
+      await userEvent.keyboard('f');
       const footer = mobile.getByRole('link', {
         name: fixtureId === 'casper' ? 'Powered by Ghost' : 'Ghost',
         exact: true,
@@ -152,7 +157,8 @@ it.each(['source', 'casper'] as const)(
         .poll(() => iframe.clientHeight, { timeout: 5000 })
         .toBeGreaterThan(initial.viewport.height + 500);
       await expect.poll(() => iframe.dataset.compositionStatus).toBe('settled');
-      await page.getByRole('button', { name: 'Fit all', exact: true }).click();
+      page.getByRole('region', { name: 'Theme canvas' }).element().focus();
+      await userEvent.keyboard('f');
       mutate(0);
       await expect.poll(() => iframe.clientHeight, { timeout: 5000 }).toBe(initial.viewport.height);
       await expect.poll(() => iframe.dataset.compositionStatus).toBe('settled');
@@ -221,7 +227,8 @@ it.each(['source', 'casper'] as const)(
       await expect
         .poll(() => iframe.dataset.compositionStatus, { timeout: 5000 })
         .toBe('height-limit');
-      await page.getByRole('button', { name: 'Fit all', exact: true }).click();
+      page.getByRole('region', { name: 'Theme canvas' }).element().focus();
+      await userEvent.keyboard('f');
       await page.getByRole('button', { name: 'Home · Mobile', exact: true }).dblClick();
       await page
         .getByRole('button', { name: 'Use fixed viewport for Home · Mobile', exact: true })
@@ -240,7 +247,8 @@ it.each(['source', 'casper'] as const)(
       expect([
         ...document.querySelectorAll('iframe[title$="composition"],iframe[title$="preview"]'),
       ]).toEqual(originalFrames);
-      await page.getByRole('button', { name: 'Fit all', exact: true }).click();
+      page.getByRole('region', { name: 'Theme canvas' }).element().focus();
+      await userEvent.keyboard('f');
       await page
         .frameLocator(page.getByTitle('Home · Mobile preview', { exact: true }))
         .getByRole('link', {

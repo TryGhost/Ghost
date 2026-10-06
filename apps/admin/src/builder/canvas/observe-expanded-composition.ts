@@ -95,7 +95,7 @@ export function observeExpandedComposition({
         return;
       }
       current = result;
-      limited = result.status !== 'settled';
+      limited = result.status === 'height-limit' || result.status === 'round-limit';
       onResult(result);
       resolveReady();
     } catch (error) {
@@ -109,7 +109,7 @@ export function observeExpandedComposition({
           try {
             // Admission may start after preflight. Restore the last usable
             // viewport immediately instead of leaving the editor at the floor.
-            await resize(current?.viewport.height ?? viewport.height, controller.signal);
+            await resize(current?.frameHeight ?? viewport.height, controller.signal);
           } catch (restoreError) {
             if (!stopped) {
               limited = true;

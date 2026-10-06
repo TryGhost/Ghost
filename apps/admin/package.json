@@ -37,6 +37,7 @@
     "@tanstack/react-virtual": "catalog:",
     "@tryghost/activitypub": "workspace:*",
     "@tryghost/admin-x-framework": "workspace:*",
+    "@tryghost/canvas-relay": "workspace:*",
     "@tryghost/checkout": "workspace:*",
     "@tryghost/color-utils": "catalog:",
     "@tryghost/custom-fonts": "catalog:",

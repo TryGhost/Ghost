@@ -34,6 +34,8 @@ it(
           timeout: 30_000,
         })
         .toBe(8);
+      page.getByRole('region', { name: 'Theme canvas' }).element().focus();
+      await userEvent.keyboard('f');
       await footer('Home · Mobile').hover();
       await footer('Home · Mobile').click();
       await source.click();
@@ -58,7 +60,18 @@ it(
             .inspectElement({ selector: '[role="textbox"]' }, new AbortController().signal)
         ).text,
       ).toBe('Source popover retained draft');
-      await page.getByRole('button', { name: 'Fit Post', exact: true }).click();
+      const board = page.getByRole('region', { name: 'Theme canvas' }).element();
+      const bounds = board.getBoundingClientRect();
+      const postBounds = document
+        .querySelector('[data-canvas-frame="post-desktop"]')!
+        .getBoundingClientRect();
+      board.dispatchEvent(
+        new WheelEvent('wheel', {
+          bubbles: true,
+          deltaX: postBounds.left - bounds.left - 48,
+          deltaY: postBounds.top - bounds.top - 48,
+        }),
+      );
       await source.click();
       await footer('Post · Desktop').hover();
       await footer('Post · Desktop').click();

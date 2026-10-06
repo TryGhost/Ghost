@@ -1,12 +1,144 @@
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import { commands } from 'vitest/browser';
 import { Box } from '@tryghost/shade/primitives';
 import { renderInApp } from '@test-utils/acceptance/render-in-app';
 import { CanvasHarness } from './canvas-harness';
 import { instance } from './fixture';
+import { FixtureClient } from './fixture-client';
 import type { FixturePatch, FixtureRender } from './fixture-client';
 import type { CanvasProbe } from './webmcp-probe';
-import type { IframePreviewDocumentSurface } from '@/builder/workspaces/theme/preview/preview-document';
+import { IframePreviewDocumentSurface } from '@/builder/workspaces/theme/preview/preview-document';
+
+it(
+  'retains measured frame bounds throughout replacement and commits a shorter height only after measurement',
+  { timeout: 60_000 },
+  async () => {
+    const observed: {
+      probe: CanvasProbe | null;
+      apply: ((patch: FixturePatch) => Promise<FixtureRender>) | null;
+    } = { probe: null, apply: null };
+    let initialRender = true;
+    let holdMeasurement = false;
+    let measurementHeld = false;
+    let failMeasurement = false;
+    let releaseMeasurement = () => {};
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    const render = FixtureClient.prototype.render;
+    vi.spyOn(FixtureClient.prototype, 'render').mockImplementation(
+      async function (this: FixtureClient, edit) {
+        const result = await render.call(this, edit);
+        return initialRender
+          ? {
+              ...result,
+              html: {
+                ...result.html,
+                home: result.html.home + '<div style="height:3500px"></div>',
+              },
+            }
+          : result;
+      },
+    );
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    const measure = IframePreviewDocumentSurface.prototype.measureLayout;
+    vi.spyOn(IframePreviewDocumentSurface.prototype, 'measureLayout').mockImplementation(
+      async function (this: IframePreviewDocumentSurface, signal) {
+        const element = (this as unknown as { iframe: HTMLIFrameElement }).iframe;
+        if (failMeasurement && element.title === 'Home · Mobile composition') {
+          failMeasurement = false;
+          throw new Error('Replacement sizing failed');
+        }
+        if (holdMeasurement && element.title === 'Home · Mobile composition') {
+          holdMeasurement = false;
+          measurementHeld = true;
+          await new Promise<void>((resolve) => {
+            releaseMeasurement = resolve;
+          });
+        }
+        return measure.call(this, signal);
+      },
+    );
+    const screen = await renderInApp(
+      <Box style={{ width: 1500, height: 1100 }}>
+        <CanvasHarness
+          fixtureId="source"
+          onApplyThemePatch={(apply) => {
+            observed.apply = apply;
+          }}
+          onProbe={(probe) => {
+            observed.probe = probe;
+          }}
+        />
+      </Box>,
+    );
+    let observer: MutationObserver | null = null;
+    try {
+      await expect
+        .poll(() => document.querySelectorAll('iframe[data-preview-status="Ready"]').length, {
+          timeout: 30_000,
+        })
+        .toBe(8);
+      const frame = document.querySelector<HTMLElement>('[data-canvas-frame="home-mobile"]')!;
+      const iframe = frame.querySelector<HTMLIFrameElement>('iframe[title$="composition"]')!;
+      const initialHeight = frame.clientHeight;
+      expect(initialHeight).toBeGreaterThan(3500);
+      const heights = new Set([initialHeight]);
+      observer = new MutationObserver(() => {
+        heights.add(frame.clientHeight);
+      });
+      observer.observe(frame, { attributes: true, attributeFilter: ['style'] });
+      const current = observed.probe!.state().frames[0].device!;
+      initialRender = false;
+      holdMeasurement = true;
+      const patch = observed.apply!({
+        expectedRevision: current.revision,
+        expectedDataGeneration: current.dataGeneration,
+        files: [
+          {
+            operation: 'write',
+            path: 'home.hbs',
+            content:
+              '<html><head>{{ghost_head}}</head><body><main style="height:1200px">Shorter replacement</main></body></html>',
+          },
+        ],
+      });
+      await expect.poll(() => measurementHeld, { timeout: 30_000 }).toBe(true);
+      expect(['pending', 'measuring']).toContain(iframe.dataset.compositionStatus);
+      expect(iframe.dataset.compositionRevision).toBeUndefined();
+      expect(frame.clientHeight).toBe(initialHeight);
+      expect(iframe.clientHeight).toBe(initialHeight);
+      releaseMeasurement();
+      await patch;
+      await expect.poll(() => iframe.dataset.previewStatus, { timeout: 30_000 }).toBe('Ready');
+      expect(frame.clientHeight).toBeLessThan(initialHeight);
+      expect(frame.clientHeight).toBe(iframe.clientHeight);
+      expect(heights).toEqual(new Set([initialHeight, frame.clientHeight]));
+      const measuredHeight = frame.clientHeight;
+      const accepted = observed.probe!.state().frames[0].device!;
+      failMeasurement = true;
+      await observed.apply!({
+        expectedRevision: accepted.revision,
+        expectedDataGeneration: accepted.dataGeneration,
+        files: [
+          {
+            operation: 'write',
+            path: 'home.hbs',
+            content:
+              '<html><head>{{ghost_head}}</head><body><main style="height:700px">Failed measurement</main></body></html>',
+          },
+        ],
+      });
+      await expect.poll(() => iframe.dataset.compositionStatus, { timeout: 30_000 }).toBe('failed');
+      expect(frame.clientHeight).toBe(measuredHeight);
+      expect(iframe.clientHeight).toBe(measuredHeight);
+      expect(heights).toEqual(new Set([initialHeight, measuredHeight]));
+    } finally {
+      releaseMeasurement();
+      observer?.disconnect();
+      await screen.unmount();
+      vi.restoreAllMocks();
+    }
+  },
+);
 
 it.each(['source', 'casper'] as const)(
   '%s delivers atomic patches to all eight live documents and retains them after rejection or no-op',

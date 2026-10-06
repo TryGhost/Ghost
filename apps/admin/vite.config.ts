@@ -1,5 +1,6 @@
 import { configDefaults, defineConfig } from 'vitest/config';
 import type { PluginOption } from 'vite';
+import { loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
@@ -36,7 +37,7 @@ function getBase(command: 'build' | 'serve'): string {
 }
 
 // https://vite.dev/config/
-export default defineConfig(({ command }) => ({
+export default defineConfig(({ command, mode }) => ({
   base: getBase(command),
   plugins: [
     tailwindcss() as PluginOption,
@@ -50,6 +51,19 @@ export default defineConfig(({ command }) => ({
     host: '0.0.0.0',
     port: 5174,
     allowedHosts: true,
+    // Local Wrangler ingress stays on the Admin origin, including its WebSocket.
+    proxy:
+      (process.env.CANVAS_RELAY_DEV_TARGET ??
+      loadEnv(mode, process.cwd(), 'CANVAS_').CANVAS_RELAY_DEV_TARGET)
+        ? {
+            '/__admin-dev__/canvas-relay/': {
+              target:
+                process.env.CANVAS_RELAY_DEV_TARGET ??
+                loadEnv(mode, process.cwd(), 'CANVAS_').CANVAS_RELAY_DEV_TARGET,
+              ws: true,
+            },
+          }
+        : undefined,
     // A public preview must not let development WebSocket fallbacks connect
     // to services on the viewer's own device. Keep normal dev unchanged.
     headers: process.env.ADMIN_DEV_TUNNEL_ORIGIN

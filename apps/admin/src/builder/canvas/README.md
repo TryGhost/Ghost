@@ -34,24 +34,40 @@ React effect reconnection, iframe delivery, camera changes and unrelated query
 cache updates do not create or dispose that shared source. The normal theme route
 has no embedded chat, provider configuration or model-runtime dependency.
 
+The optional first-party relay attaches GHST to this same mounted workspace.
+Opening the CLI pairing URL in the authenticated editor connects automatically,
+without connection controls. Temporary socket drops reconnect with fresh tickets;
+the pairing parameters stay in the URL so reloading resumes the approved session.
+Closing the tab ends its socket. Older or unconfigured backends omit this
+integration. Connection ownership stays at the mounted canvas root, outside the
+responsive header's action groups, so compact-toolbar transitions cannot retire
+the authorized session. The relay forwards the same eight actions without native WebMCP,
+navigation or draft replacement. Local
+Wrangler/GHST setup is documented in the [relay README](../../../../canvas-relay/README.md).
+
 Home, Post, Page, Tag and Author each have desktop/mobile live compositions and
-separate fixed-device representations. Template pairs form rows below the tallest
-accepted composition. Screen-space headers remain attached to their live frames when fitting tall pages.
+separate fixed-device representations. Template pairs form one horizontal row, with 48px between devices and 240px
+between template groups. Initial zoom fits only the known Home pair width, capped
+at 100%, with its top aligned to the board. It does not wait for composition
+measurements or change when page heights settle. Zoom controls live in the main header. Screen-space headers remain attached to their live frames when fitting tall pages.
+Each expanded frame retains its last successfully measured height while a new
+document loads and settles, and after a measurement failure. Its board bounds
+change only when a new measurement succeeds. This retained size is a visual hint,
+not readiness for the previous revision; a changed viewport width uses the device
+height until measured. Explicit fixed-device mode still uses its configured height.
 At low zoom they use compact template/mobile labels with full accessible names and
 titles. Source/content/device controls appear when the frame has enough screen
 width; double-clicking its header reveals the same canvas frame and full controls. Group navigation
 reveals a native-scale frame while a manual text draft is active. Empty sites render Home and explicitly mark each missing published context unavailable.
 Page, Tag and Author frames have bounded published-content pickers; template-group
-navigation keeps the wider board accessible. Native `ghost_canvas_list_preview_content`
-and `ghost_canvas_select_preview_content` expose the same choices with kind, resource
+navigation keeps the wider board accessible. Native `ghost_canvas_content` list/select operations expose the same choices with kind, resource
 ID and revision/data-generation checks. Resource selection reloads its published
 record and validates every bound route before acceptance; failures retain prior
 bindings, source and history. Initial discovery errors leave other groups usable
 and appear on the unavailable frame; explicit picker reload can retry discovery.
 Direct source-proven literal commits and atomic patches validate every bound page
 before source adoption. The compact Preview Post picker discovers published content
-on request with explicit bounded paging. Native `ghost_canvas_list_posts` and
-`ghost_canvas_select_post` use the same discovery and selection action. Selection
+on request with explicit bounded paging. Native `ghost_canvas_content` list/select operations for kind `post` use the same discovery and selection action. Selection
 reloads the published resource, validates all bound templates through the workspace mutation
 lane, and changes both Post sizes together. It preserves source revision, dirty
 state, checkpoints, camera, mounted frames and manual values; render-input generation
@@ -81,14 +97,14 @@ explicit. Dotted/Unicode root names remain valid, while paths outside the theme 
 are rejected. Choosing a variation selects real eligible content; it never forces
 a file onto a different route or changes publication content assignments.
 
-Native `list_posts`/`list_preview_content` return `templates` and `activeTemplate`.
+Native `ghost_canvas_content` list operations return `templates` and `activeTemplate`.
 Selection accepts optional `expectedTemplate`, rereads the resource and rejects a
 changed assignment before adoption. A same-ID resource whose slug/custom assignment
 changed re-renders with a new input generation. Theme source/history remain intact.
 These session bindings do not background-sync external content changes.
 
 The route uses the existing theme publication review/transport and built-in-theme
-copy flow. Manual Publish and native `ghost_canvas_open_publication_review` open
+copy flow. Manual Publish and native `ghost_canvas_review` open
 the same review, pinned to an explicit accepted source revision. The review lists
 changed files/settings since the initial or last published baseline, the target
 theme/copy and excluded pending text/settings. Summaries return at most 100 file
@@ -141,7 +157,7 @@ Double-click or Enter fits that frame on the board without resizing its document
 Headers stay in screen coordinates above their actual frames, using compact labels
 at low zoom. A cropped frame keeps its header within its own visible portion.
 
-Drag empty board space, Space-drag or scroll to pan. Ctrl/Command-scroll zooms at the pointer.
+Drag empty board space, Space-drag or scroll to pan. With the board focused, F fits all frames. Ctrl/Command-scroll zooms at the pointer.
 The authenticated `canvasNavigation` bridge relays zoom, Escape and inline draft
 activity. Its additional `canvasPanning` option relays ordinary wheel input from
 live compositions; fixed devices retain native page scrolling. Locally scrollable
@@ -238,7 +254,14 @@ Actual composition viewport dimensions
 can differ from configured device dimensions: viewport-height CSS, fixed/sticky
 behavior and lazy loading require separate device checks. Height caps, instability
 and failures flag the affected frame's fixed-viewport control without resizing the
-canvas. Screen-reader status describes the fallback. Opt-in authenticated-port notifications observe later image/font loads,
+canvas. A same-document viewport difference no longer fails an expanded frame:
+sizing makes a bounded best-effort attempt using the configured minimum and measured
+content extent. The applied outer iframe height is retained separately from the
+browser's observed inner viewport, preventing fractional-scale rounding from
+shrinking the board or accumulating height. Stable differences remain usable and
+continue observing later content changes. Native diagnostics record requested/observed
+geometry; no measurement data is added to the UI. Fixed device dimensions and
+replaced-document detection remain strict. Screen-reader status describes the fallback. Opt-in authenticated-port notifications observe later image/font loads,
 DOM/style changes and document/body resizing, including arbitrary theme attributes
 that control CSS selectors. Ordered samples fence obsolete notifications; identical
 attribute writes, identical DOM replacements and the runtime's own mode/tab-stop
@@ -327,61 +350,88 @@ the four fixed devices, four live compositions and all eight documents. Failed
 deliveries remain separate from readiness and permit a subsequent refresh retry. These are
 delivery observations rather than screenshot timings or performance benchmarks.
 
-Failed native frame entries retain their cause. Composition identity/viewport
-mismatches expose compact expected/observed geometry and the measurement phase;
-addressed reads return the same cause in `surface_failed` details. Healthy devices
+Failed native frame entries retain their cause. Composition identity mismatches
+expose compact expected/observed geometry and the measurement phase;
+addressed reads return the same cause in `surface_failed` details. Best-effort compositions expose applied frame height and viewport adjustments in
+native diagnostics while remaining available for inspection/editing. Healthy devices
 remain independently usable. Failed entries require document replacement; an older
 readiness read cannot clear their cause. Geometry details belong to native diagnostics, while the
 canvas displays a short failure message and its existing fallback control.
 
 The top-level editor feature-detects `document.modelContext.registerTool` and the
-older native `navigator.modelContext` location. It registers
-`ghost_canvas_probe_get_editor_state`, `ghost_canvas_probe_inspect_frame`,
-`ghost_canvas_probe_inspect_element` and `ghost_canvas_probe_capture_frame`, plus
-`ghost_canvas_read_theme` and
-`ghost_canvas_validate_theme_patch`, `ghost_canvas_apply_theme_patch`, `ghost_canvas_history`, `ghost_canvas_list_posts`,
-`ghost_canvas_select_post` and `ghost_canvas_open_publication_review` on the real editor.
-`ghost_canvas_reveal_frame` selects and reveals a discovered frame ID at readable
-scale through the board's existing action. It moves the shared camera and clears
-element context only on explicit request, retaining manual text and staged settings.
-It preserves source, responsive dimensions and the frame's current presentation;
-unavailable frames and stale workspace/source addresses reject without navigation.
-The result acknowledges the navigation request; read state for the resulting view.
-Ordinary inspection and captures continue to leave the person's view unchanged.
-Registrations belong to the
-owning same-origin page, once per editor, never individual sandboxed previews.
-Camera and presentation changes do not register again; unsupported APIs leave
-manual editing available.
+older native `navigator.modelContext` location. The real editor registers one
+stable catalog for its lifetime, with eight logical names:
 
-Theme reads require explicit workspace/current revision and expose bounded file
-list/read/literal search and supported settings. List/settings reads page via
-`offset`/`limit`; oversized loaded setting metadata reports `truncatedFields`.
-File reads return numbered `content`: each line starts with `N:` and a space for
-source reference. Remove those labels before writing a file, and read any remaining
-pages when `truncated` is true; an excerpt cannot replace the complete source.
-Literal search accepts an optional exact file `path`. CSS list/read metadata identifies
-generated stylesheets and authored sources that require a build. Theme builds are
-unavailable; prefer a directly linked authored override stylesheet and its template
-reference in one patch. Changed generated CSS loses source-map comment directives
-so it cannot point to stale mappings; its authored pipeline source is not rebuilt.
-Atomic patches accept write, delete or one exact text replacement per file. Missing
-or ambiguous originals reject the whole patch. `ghost_canvas_validate_theme_patch`
-uses the same final-candidate and required-page validation without source adoption,
-live delivery or history changes. Preflight does not reserve a revision; applying
-still checks current source and data generation.
-Preflight explicitly reports `validationScope: source-and-required-renderer-pages`
-and `runtimeReadiness: not-checked`. Its `valid` result proves source and required
-renderer output, not browser resource loading or expanded-composition readiness.
-The renderer does not mount browser documents. Image/font changes and expanded
-geometry are observed after adoption through the existing live delivery state;
-inspect both representations before concluding that a design works. A lazy image
-may change a composition after its first measurement. The retained layout observer
-continues bounded measurement without replacing its fixed-device counterpart.
+| Tool                   | Purpose                                                                            |
+| ---------------------- | ---------------------------------------------------------------------------------- |
+| `ghost_canvas_state`   | Read context, selection, preview targets and history; optionally wait for delivery |
+| `ghost_canvas_read`    | Batch files, clean source excerpts, literal search and settings reads              |
+| `ghost_canvas_edit`    | Apply an atomic patch and wait, or explicitly validate a dry run                   |
+| `ghost_canvas_inspect` | Inspect a page or an occurrence in its originating document                        |
+| `ghost_canvas_content` | List/select representative Post, Page, Tag or Author content                       |
+| `ghost_canvas_history` | List checkpoints or restore one                                                    |
+| `ghost_canvas_reveal`  | Explicitly move the shared view to a discovered frame                              |
+| `ghost_canvas_review`  | Open human publication review                                                      |
+
+Capabilities are feature-detected; unsupported APIs leave manual editing available.
+Registrations belong to the owning same-origin page, never individual sandboxed
+previews. Camera, selection and presentation changes do not register again. Native
+state uses `canvas-editor-tools-2`; verbose fixture probes retain their separate
+internal protocol and are not part of the product catalog.
+
+Copy the `context` object (`workspaceId`, `revision`, `generation`) returned by state
+into theme reads and actions. Mutations still check source revision and render-input
+generation; stale work is rejected rather than automatically rebased. Inspection
+uses a nested `target` copied from state/selection and optional `occurrence`, preserving
+its original workspace, render and document identity. It never retargets to selection.
+
+Read accepts up to eight operation-specific `requests`: `files`, `source`, `search`
+or `settings`. Each result retains its own status/error and revision. Source content
+is clean text, including trailing newlines, with character `offset`/`length` ranges
+(maximum 65,536 characters) and `nextOffset` for continuation. An excerpt cannot
+replace a complete file. List/settings use bounded offset/limit paging; truncated
+metadata is explicit. Settings include their visibility condition when declared;
+all settings in a patch must remain visible under the complete candidate values.
+CSS metadata identifies generated assets and authoring sources before editing.
+Theme builds are unavailable; prefer a directly linked authored override stylesheet
+and its template reference in one patch. Changed generated CSS loses source-map
+comment directives; its authoring source is not rebuilt.
+
+Edit validates source and every bound renderer page before acceptance and uses the
+existing shared mutation/history lane. Atomic file changes allow **one operation per
+file**: write, delete, or an exact unambiguous replacement. Combine multiple changes
+to one file into a single write. `dryRun: true` explicitly invokes the same candidate
+validation without adoption or history; there is no standalone preflight tool. Dry-run
+validity does not establish browser resource or composition readiness.
+
+Edit waits for delivery by default (30 seconds, configurable up to 60 seconds).
+`wait: false` returns immediately after acceptance. The response separates accepted
+revision/renderKey, source/renderer validation, and delivery status: `pending`,
+`ready`, `partially_ready`, `failed`, or `superseded`. Failed surfaces retain causes.
+A timeout or cancellation after adoption returns the accepted edit with incomplete
+observation; it never implies rollback. Continue observation with state `waitFor:
+{revision, renderKey}` rather than resubmitting the patch. Diagnostics are opt-in
+through state `diagnostics: true`, never normal UI or tool-catalog output.
+
+Delivery returns fixed-device titles and viewports for **native browser screenshots**.
+Appearance remains unchecked until the agent views desktop/mobile pixels. The
+experimental page capture tool is deliberately absent: snapshot capture creates and
+removes a temporary iframe, and the user reproduced tab-wide Codex registration alias
+rotation after these captures. Native browser screenshots avoid that reproduced
+trigger and preserve the browser's actual fonts/images. No native editor tool mounts capture
+documents. Theme delivery can still rotate host aliases when it replaces preview
+documents. Frame-scoped host invalidation, alias formatting and catalog notifications
+belong to the browser bridge. For an existing external WebMCP capability, the
+[live-call helper](../../../../../scripts/README.md#live-webmcp-calls) resolves the
+current alias before each sequential call, pins the owner origin/page URL and rejects
+changed definitions. It never retries failed or timed-out operations. This workaround
+requires explicit use by the browser agent; it is not installed by the editor.
+
 Patches additionally require the discovered data generation and share the UI
 validation/adoption/delivery action. Native writes allow at most 32 settings with
 string values up to 8,192 characters. Accepted patches return the actual source
-revision/render key and pending delivery; state reports busy until delivery
-completes. Invalid Home/Post output, stale source and work
+revision/render key and the delivery observation described above. State reports busy
+until delivery completes. Invalid Home/Post output, stale source and work
 cancelled before adoption preserve the accepted draft. Manual text stays retained
 through accepted agent changes, with explicit resume or conflict recovery. Pending
 admission and other source operations still fence concurrent writes. During an
@@ -402,18 +452,18 @@ frame readiness after acceptance before inspecting the restored output. Restorat
 after built-in-theme publication retains the custom copy's identity; it changes the
 editor draft and requires publication before customers see it.
 
-Protocols `canvas-fixture-probe-3` (fixtures) and `canvas-editor-probe-1` (the real
-workspace) address explicit immutable live workspace/frame/representation handles,
+Internal protocols `canvas-fixture-probe-3` (fixtures) and `canvas-editor-probe-1` (the real
+preview registry) address explicit immutable live workspace/frame/representation handles,
 expected source revision and expected render key. Each frame has separate expanded
 and fixed-device entries. State identifies an element selection's originating
 representation/render/document and exposes its explicit `target` address.
-`ghost_canvas_probe_inspect_element` takes that address plus the selected occurrence;
+`ghost_canvas_inspect` takes the nested target plus the selected occurrence;
 it inspects the clicked use through the existing surface without changing selection,
 scroll, focus or camera. A prepared read stays addressed when the person selects
 another frame. Occurrences cannot transfer between representations or counterparts.
 Ordinary board selection clears obsolete element/source context while retaining text.
-Page inspection can read either representation; responsive captures require a fixed
-device target. Same-source data refresh retires old evidence; the source revision
+Page inspection can read either representation; visual verification uses browser screenshots of fixed
+device previews. Same-source data refresh retires old evidence; the source revision
 alone cannot certify a current data snapshot. It never uses
 current selection to retarget a read. Current document/runtime instance and
 local-edit generations are checked before/after reads. Local drafts, modified DOM
@@ -421,21 +471,20 @@ and transient edit notices refuse certified reads without changing user view or
 text. Restoration creates a new runtime instance and retires prior callbacks.
 Ordinary raw preview inspection/screenshots remain uncertified raw reads.
 
-Explicit screenshots retain their bounded image, pixel and encoded-size budgets,
+Internal fixture screenshots retain their bounded image, pixel and encoded-size budgets,
 coverage metadata and omission warnings. Stable sequences use one scriptless
 snapshot with lifecycle cleanup; opt-in readable loaded-image freezing preserves
 supported intrinsic geometry. Inaccessible resources may be omitted, and capture
 failure does not remove live canvas imagery or disable editing. There is no image
 proxy, credentialed capture fetch, CORS bypass or sandbox relaxation.
 
-Probe captures admit one concurrent request and preserve device scroll/camera.
+Internal fixture probe captures admit one concurrent request and preserve device scroll/camera.
 PNG data URL results are experimental. Mocked API and host Chromium checks do not
 prove native Codex discovery or model-visible image delivery. Real-route Chromium
 acceptance tests exercise Admin embedding, native discovery, source reads, atomic
-patches and addressed desktop/mobile captures against a fake API. Run that native
+patches, delivery waiting and addressed inspection against a fake API. Run that native
 journey with `VITE_CANVAS_NATIVE_WEBMCP=1 pnpm --filter @tryghost/admin
-test:acceptance src/builder/builder.acceptance.test.tsx -t "drives the real editor
-through native WebMCP" --maxWorkers=1`; the browser config enables experimental
+test:acceptance src/builder/builder.acceptance.test.tsx -t "compact native catalog" --maxWorkers=1`; the browser config enables experimental
 WebMCP for this explicit lane. This proves native browser execution, not external
 Codex discovery in the built-in WebView or model-visible image consumption. The user has separately verified local desktop Codex discovery and shared-editor
 WebMCP usage. This acceptance remains browser-level evidence rather than a claim
@@ -445,6 +494,6 @@ The real-site journey in `e2e/tests/admin/theme-canvas.test.ts` exercises instal
 Source/Casper themes with real Home/Post/Page/Tag/Author contexts, uploaded
 cover/Post/Tag imagery, a shared template design change, continued manual text during candidate rendering, Post switching, settings,
 history and human-confirmed publication. It retains pending unpublished text and the
-new theme-copy identity after Undo. Native captures record their omission warnings;
-separate screenshots of live desktop/mobile devices show actual browser pixels.
+new theme-copy identity after Undo. Native browser screenshots of live desktop/mobile
+devices show actual browser pixels without temporary capture documents.
 These are local native Chromium and browser observations, not external Codex proof.

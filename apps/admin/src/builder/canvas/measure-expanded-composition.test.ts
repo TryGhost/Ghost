@@ -38,8 +38,6 @@ function measure(value: ReturnType<typeof preview>, signal = new AbortController
 
 describe('bounded expanded composition measurements', () => {
   it.each([
-    ['height', 'composition_viewport_changed'],
-    ['width', 'composition_viewport_changed'],
     ['document', 'composition_document_changed'],
     ['instance', 'composition_document_changed'],
   ] as const)(
@@ -54,8 +52,8 @@ describe('bounded expanded composition measurements', () => {
           field === 'instance' ? 'replacement-instance' : initial.documentInstanceId,
         viewport: {
           ...initial.viewport,
-          width: field === 'width' ? 391 : 390,
-          height: field === 'height' ? 844 : 4000,
+          width: 390,
+          height: 4000,
         },
       };
       value.resize.mockImplementation(() => {
@@ -80,6 +78,78 @@ describe('bounded expanded composition measurements', () => {
       });
     },
   );
+
+  it.each([-1, 1, -100])(
+    'keeps a stable height difference of %s usable at the requested content height',
+    async (offset) => {
+      const value = preview(() => 4000);
+      const read = value.surface.measureLayout.getMockImplementation()!;
+      const resize = value.resize.getMockImplementation()!;
+      value.resize.mockImplementation(async (height) => {
+        await resize(height);
+        const actual = await read();
+        value.surface.measureLayout.mockResolvedValue({
+          ...actual,
+          viewport: { ...actual.viewport, height: height + offset },
+        });
+      });
+      const result = await measure(value);
+      expect(result.status).toBe('best-effort');
+      expect(result.frameHeight).toBe(4000);
+      expect(result.viewport.height).toBe(4000 + offset);
+      expect(result.configuredViewport).toEqual({ width: 390, height: 844 });
+      expect(result.viewportAdjustments[0]).toMatchObject({
+        phase: 'expansion',
+        expected: { viewport: { width: 390, height: 4000 } },
+        actual: { viewport: { width: 390, height: 4000 + offset } },
+      });
+      expect(value.resize.mock.calls.length).toBeLessThan(EXPANDED_COMPOSITION_LIMITS.maxRounds);
+    },
+  );
+
+  it('does not report truncation for a positive viewport rounding floor at the height cap', async () => {
+    const value = preview(() => EXPANDED_COMPOSITION_LIMITS.maxHeight);
+    const read = value.surface.measureLayout.getMockImplementation()!;
+    const resize = value.resize.getMockImplementation()!;
+    value.resize.mockImplementation(async (height) => {
+      await resize(height);
+      const actual = await read();
+      value.surface.measureLayout.mockResolvedValue({
+        ...actual,
+        viewport: { ...actual.viewport, height: height + 1 },
+        document: { ...actual.document, height: Math.max(actual.document.height, height + 1) },
+      });
+    });
+    const result = await measure(value);
+    expect(result.status).toBe('best-effort');
+    expect(result.frameHeight).toBe(EXPANDED_COMPOSITION_LIMITS.maxHeight);
+    expect(result.viewport.height).toBe(EXPANDED_COMPOSITION_LIMITS.maxHeight + 1);
+    expect(result.warnings.join(' ')).not.toContain('truncated');
+    expect(
+      value.resize.mock.calls.every(([height]) => height <= EXPANDED_COMPOSITION_LIMITS.maxHeight),
+    ).toBe(true);
+  });
+
+  it('keeps the configured width while recording an observed width difference', async () => {
+    const value = preview(() => 4000);
+    const read = value.surface.measureLayout.getMockImplementation()!;
+    value.surface.measureLayout.mockImplementation(async () => {
+      const actual = await read();
+      return { ...actual, viewport: { ...actual.viewport, width: 389 } };
+    });
+    const result = await measureExpandedComposition(
+      value.surface,
+      value.resize,
+      'home-mobile',
+      'revision-1',
+      new AbortController().signal,
+      { width: 390, height: 844 },
+    );
+    expect(result.status).toBe('best-effort');
+    expect(result.configuredViewport.width).toBe(390);
+    expect(result.viewport.width).toBe(389);
+    expect(result.frameHeight).toBe(4000);
+  });
 
   it('allows finite responsive startup changes to settle instead of prematurely falling back', async () => {
     const value = preview(() => 1200);

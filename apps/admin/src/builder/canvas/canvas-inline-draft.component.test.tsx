@@ -124,7 +124,8 @@ it('preserves real uncommitted text through direct canvas editing, zoom, pan and
   await page.getByRole('region', { name: 'Theme canvas' }).click({ position: { x: 10, y: 500 } });
   await userEvent.keyboard('{ArrowRight}');
   await expectText(surface, '[role="textbox"]', 'A kept manual draft');
-  await page.getByRole('button', { name: 'Fit all' }).click();
+  page.getByRole('region', { name: 'Theme canvas' }).element().focus();
+  await userEvent.keyboard('f');
   expect(world.style.transform).toContain('scale(1)');
   const box = (await surface.inspectElement({ selector: '[role="textbox"]' }, signal)).box;
   const card = document.querySelector('[data-canvas-frame="home"]')!.getBoundingClientRect();
@@ -376,6 +377,8 @@ it('fits and commits a literal below 10000 CSS pixels in a live composition', as
   const { surface, frame } = await preview(
     document.querySelector('iframe[title="long draft preview"]')!,
   );
+  page.getByRole('region', { name: 'Theme canvas' }).element().focus();
+  await userEvent.keyboard('f');
   await frame.getByRole('heading', { name: 'Initial heading' }).dblClick();
   await expect
     .poll(() =>

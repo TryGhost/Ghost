@@ -38,5 +38,10 @@ module.exports = function getSiteProperties() {
     siteProperties.sentry_env = environment;
   }
 
+  const relay = config.get('canvasRelay');
+  if (relay) {
+    siteProperties.canvas_relay = { url: relay.url, tenant: relay.tenant };
+  }
+
   return siteProperties;
 };

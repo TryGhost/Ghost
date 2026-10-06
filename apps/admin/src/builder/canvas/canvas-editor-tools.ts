@@ -2,6 +2,7 @@ import {
   listThemeFiles,
   readThemeFile,
   searchThemeFiles,
+  linkedThemeStylesheets,
 } from '@/builder/workspaces/theme/theme-tools';
 import { listDesignSettings } from '@/builder/workspaces/theme/design-setting-tools';
 import { isCanvasTemplatePath } from './canvas-templates';
@@ -134,6 +135,7 @@ export class CanvasEditorTools {
         preferred: 'directly-linked-authored-stylesheet',
         generatedAssets: 'not-rebuilt-from-source',
         sourceMaps: 'remove-or-regenerate',
+        linkedStylesheets: linkedThemeStylesheets(draft),
       },
     };
   }
@@ -338,7 +340,7 @@ export class CanvasEditorTools {
           ...address,
           operation: {
             type: 'string',
-            enum: ['list_files', 'read_file', 'search_files', 'settings'],
+            enum: ['list_files', 'read_file', 'read_source', 'search_files', 'settings'],
           },
           path: { type: 'string', minLength: 1, maxLength: 1024 },
           startLine: { type: 'integer', minimum: 1 },
@@ -347,6 +349,7 @@ export class CanvasEditorTools {
           query: { type: 'string', minLength: 1, maxLength: 256 },
           offset: { type: 'integer', minimum: 0 },
           limit: { type: 'integer', minimum: 1, maximum: 100 },
+          length: { type: 'integer', minimum: 1, maximum: 65536 },
         },
         ['workspaceId', 'expectedRevision', 'operation'],
         true,
@@ -372,6 +375,38 @@ export class CanvasEditorTools {
               record(args, [...common, 'path', 'startLine', 'startColumn', 'endLine']);
               data = unwrap(readThemeFile(draft, args));
               break;
+            case 'read_source': {
+              record(args, [...common, 'path', 'offset', 'length']);
+              const resolved = unwrap(readThemeFile(draft, { path: args.path }));
+              const content = draft.files[resolved.path].content!;
+              const offset = args.offset ?? 0;
+              const length = args.length ?? 65536;
+              if (
+                !Number.isSafeInteger(offset) ||
+                Number(offset) < 0 ||
+                Number(offset) > content.length ||
+                !Number.isSafeInteger(length) ||
+                Number(length) < 1 ||
+                Number(length) > 65536
+              ) {
+                throw new ToolError(
+                  'invalid_arguments',
+                  'Use a source character offset within the file and length from 1 to 65536.',
+                  { path: resolved.path },
+                );
+              }
+              const end = Math.min(content.length, Number(offset) + Number(length));
+              data = {
+                path: resolved.path,
+                content: content.slice(Number(offset), end),
+                offset,
+                totalCharacters: content.length,
+                truncated: end < content.length,
+                nextOffset: end < content.length ? end : null,
+                ...('editing' in resolved ? { editing: resolved.editing } : {}),
+              };
+              break;
+            }
             case 'search_files':
               record(args, [...common, 'query', 'path']);
               data = unwrap(searchThemeFiles(draft, { query: args.query, path: args.path }));
@@ -379,7 +414,9 @@ export class CanvasEditorTools {
             case 'settings': {
               record(args, [...common, 'offset', 'limit']);
               const { offset, limit } = pageBounds(args);
-              const all = unwrap(listDesignSettings(draft)).settings;
+              const all = unwrap(
+                listDesignSettings(draft, draft, { includeHidden: true }),
+              ).settings;
               const settings: Record<string, unknown>[] = [];
               let pageLength = 0;
               for (const descriptor of all.slice(offset, offset + limit)) {

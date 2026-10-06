@@ -97,6 +97,8 @@ describe('design setting tools', () => {
           type: 'text',
           currentValue: 'Hello',
           stagedValue: 'Staged',
+          defaultValue: null,
+          visible: true,
           writable: true,
         }),
         expect.objectContaining({ identifier: 'theme.featured', type: 'boolean', writable: true }),
@@ -104,6 +106,7 @@ describe('design setting tools', () => {
           identifier: 'theme.layout',
           type: 'select',
           choices: ['List', 'Grid'],
+          defaultValue: 'List',
           writable: true,
         }),
         expect.objectContaining({ identifier: 'theme.brand', type: 'color', writable: true }),
@@ -111,6 +114,29 @@ describe('design setting tools', () => {
       ]),
     );
     expect(result.data.settings.some((setting) => setting.identifier === 'theme.secret')).toBe(
+      false,
+    );
+  });
+
+  it('exposes hidden setting constraints for agents without adding hidden controls to the UI', async () => {
+    const { baseline, draft } = await drafts();
+    const result = listDesignSettings(draft, baseline, { includeHidden: true });
+    if (!result.ok) {
+      throw new Error('Expected settings to list');
+    }
+    expect(
+      result.data.settings.find((setting) => setting.identifier === 'theme.secret'),
+    ).toMatchObject({
+      stagedValue: 'hidden',
+      defaultValue: null,
+      visible: false,
+      visibility: 'featured:false',
+    });
+    const visible = listDesignSettings(draft, baseline);
+    if (!visible.ok) {
+      throw new Error('Expected visible settings to list');
+    }
+    expect(visible.data.settings.some((setting) => setting.identifier === 'theme.secret')).toBe(
       false,
     );
   });

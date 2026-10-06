@@ -17,11 +17,14 @@ export type ExpandedComposition = {
   documentId: string;
   documentInstanceId: string;
   configuredViewport: { width: number; height: number };
+  /** Applied outer iframe height; browser innerHeight can differ after scaling. */
+  frameHeight: number;
+  viewportAdjustments: CompositionGeometryChange['details'][];
   viewport: PreviewLayout['viewport'];
   document: PreviewLayout['document'];
   measurements: PreviewLayout[];
   duration: number;
-  status: 'settled' | 'height-limit' | 'round-limit';
+  status: 'settled' | 'best-effort' | 'height-limit' | 'round-limit';
   warnings: string[];
 };
 
@@ -125,6 +128,23 @@ export async function measureExpandedComposition(
     }
     const measurements = [preflight];
     let initial = preflight;
+    let frameHeight = Math.min(
+      configuredViewport?.height ?? preflight.viewport.height,
+      EXPANDED_COMPOSITION_LIMITS.maxHeight,
+    );
+    const viewportAdjustments: CompositionGeometryChange['details'][] = [];
+    const recordViewport = (
+      expected: CompositionGeometry,
+      actual: CompositionGeometry,
+      phase: CompositionGeometryChange['details']['phase'],
+    ) => {
+      if (
+        expected.viewport.width !== actual.viewport.width ||
+        expected.viewport.height !== actual.viewport.height
+      ) {
+        viewportAdjustments.push(new CompositionGeometryChange(expected, actual, phase).details);
+      }
+    };
     if (configuredViewport) {
       if (
         !Number.isSafeInteger(configuredViewport.height) ||
@@ -151,13 +171,11 @@ export async function measureExpandedComposition(
         );
       }
     }
-    if (configuredViewport && initial.viewport.width !== configuredViewport.width) {
-      throw new CompositionGeometryChange(
-        { ...initial, viewport: configuredViewport },
-        initial,
-        'viewport-reset',
-      );
-    }
+    recordViewport(
+      { ...initial, viewport: configuredViewport ?? preflight.viewport },
+      initial,
+      'viewport-reset',
+    );
     if (
       initial.localEdits.generation !== preflight.localEdits.generation ||
       initial.localEdits.active ||
@@ -165,16 +183,13 @@ export async function measureExpandedComposition(
     ) {
       throw new CompositionEditInterruption();
     }
-    if (initial.viewport.height > EXPANDED_COMPOSITION_LIMITS.maxHeight) {
-      throw new Error('The starting composition viewport exceeds its height limit.');
-    }
     let current = initial;
     let resetForContent = false;
     let status: ExpandedComposition['status'] = 'round-limit';
     while (measurements.length < EXPANDED_COMPOSITION_LIMITS.maxRounds) {
       if (
-        current.viewport.height === EXPANDED_COMPOSITION_LIMITS.maxHeight &&
-        current.document.height > current.viewport.height
+        frameHeight === EXPANDED_COMPOSITION_LIMITS.maxHeight &&
+        current.document.height > Math.max(frameHeight, current.viewport.height)
       ) {
         status = 'height-limit';
         break;
@@ -182,11 +197,21 @@ export async function measureExpandedComposition(
       const height: number =
         resetForContent && configuredViewport
           ? configuredViewport.height
-          : Math.min(current.document.height, EXPANDED_COMPOSITION_LIMITS.maxHeight);
+          : Math.min(
+              Math.max(
+                configuredViewport?.height ?? initial.viewport.height,
+                // Avoid accumulating rounding when content already fits the observed viewport.
+                current.document.height <= current.viewport.height
+                  ? frameHeight
+                  : current.document.height,
+              ),
+              EXPANDED_COMPOSITION_LIMITS.maxHeight,
+            );
       resetForContent = false;
       assertActive();
       // Even an unchanged height waits for a second observation of the same geometry.
       await resize(height, controller.signal);
+      frameHeight = height;
       assertActive();
       const next = await surface.measureLayout(controller.signal);
       assertActive();
@@ -199,9 +224,7 @@ export async function measureExpandedComposition(
       }
       if (
         next.documentId !== initial.documentId ||
-        next.documentInstanceId !== initial.documentInstanceId ||
-        next.viewport.width !== initial.viewport.width ||
-        next.viewport.height !== height
+        next.documentInstanceId !== initial.documentInstanceId
       ) {
         throw new CompositionGeometryChange(
           { ...initial, viewport: { width: initial.viewport.width, height } },
@@ -209,6 +232,14 @@ export async function measureExpandedComposition(
           'expansion',
         );
       }
+      recordViewport(
+        {
+          ...initial,
+          viewport: { width: configuredViewport?.width ?? initial.viewport.width, height },
+        },
+        next,
+        'expansion',
+      );
       measurements.push(next);
       // A mutation while expanding can shrink content behind scrollHeight's
       // viewport floor. Re-read at the configured height within the same budget.
@@ -219,26 +250,36 @@ export async function measureExpandedComposition(
       if (
         !resetForContent &&
         next.viewport.height === current.viewport.height &&
+        next.viewport.width === current.viewport.width &&
         next.document.height === current.document.height &&
         next.document.width === current.document.width &&
         next.layoutGeneration === current.layoutGeneration &&
-        next.document.height === next.viewport.height
+        next.document.height <= Math.max(frameHeight, next.viewport.height)
       ) {
-        status = 'settled';
+        status =
+          next.viewport.height === frameHeight &&
+          next.viewport.width === (configuredViewport?.width ?? initial.viewport.width)
+            ? 'settled'
+            : 'best-effort';
         current = next;
         break;
       }
       current = next;
     }
     if (
-      current.viewport.height === EXPANDED_COMPOSITION_LIMITS.maxHeight &&
-      current.document.height > current.viewport.height
+      frameHeight === EXPANDED_COMPOSITION_LIMITS.maxHeight &&
+      current.document.height > Math.max(frameHeight, current.viewport.height)
     ) {
       status = 'height-limit';
     }
     const warnings = [
       'Expanded height changes viewport-dependent layout; fixed device previews remain authoritative.',
     ];
+    if (viewportAdjustments.length > 0) {
+      warnings.push(
+        'The browser reported different viewport dimensions; the composition uses best-effort frame sizing.',
+      );
+    }
     if (status === 'height-limit') {
       warnings.push(
         'The composition is truncated at its height limit; open the fixed device to inspect the remaining content.',
@@ -254,7 +295,12 @@ export async function measureExpandedComposition(
       revision,
       documentId: current.documentId,
       documentInstanceId: current.documentInstanceId,
-      configuredViewport: { width: initial.viewport.width, height: initial.viewport.height },
+      configuredViewport: configuredViewport ?? {
+        width: initial.viewport.width,
+        height: initial.viewport.height,
+      },
+      frameHeight,
+      viewportAdjustments,
       viewport: current.viewport,
       document: current.document,
       measurements,

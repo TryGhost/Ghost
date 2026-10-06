@@ -18,9 +18,75 @@ import { settingsScreen } from '@/settings/settings.screen';
 import { CanvasThemePreview } from '@/builder/canvas/canvas-theme-preview';
 import { IframePreviewDocumentSurface } from '@/builder/workspaces/theme/preview/preview-document';
 import defaultRoutes from '../../../../ghost/core/core/server/services/route-settings/default-routes.yaml?raw';
+import type { ExpandedComposition } from '@/builder/canvas/measure-expanded-composition';
 import type { CanvasProbe, ReadResult } from '@/builder/canvas/canvas-probe';
 import type { CustomThemeSetting } from '@tryghost/admin-x-framework/api/custom-theme-settings';
 
+// These journeys build driver addresses and patches; translate them to the compact
+// public context. New catalog/batch/default-wait contracts have direct coverage.
+function siteInput(mode: string, input: Record<string, unknown>): Record<string, unknown> {
+  const { workspaceId, expectedRevision, expectedDataGeneration = 0, ...rest } = input;
+  const context = { workspaceId, revision: expectedRevision, generation: expectedDataGeneration };
+  if (mode === 'inspect') {
+    return { target: input };
+  }
+  if (mode === 'element') {
+    const { occurrence, ...target } = input;
+    return { target, occurrence };
+  }
+  if (mode === 'edit' || mode === 'dryRun') {
+    return { context, ...rest, ...(mode === 'dryRun' ? { dryRun: true } : { wait: false }) };
+  }
+  if (mode === 'reveal') {
+    return { context, frame: rest.frameId };
+  }
+  if (mode === 'review') {
+    return { context };
+  }
+  if (mode === 'history') {
+    const { checkpointId, ...other } = rest;
+    return {
+      context,
+      ...other,
+      ...(checkpointId !== undefined ? { checkpoint: checkpointId } : {}),
+    };
+  }
+  if (mode === 'read') {
+    const { operation, ...request } = rest;
+    return {
+      context,
+      requests: [
+        {
+          ...request,
+          operation:
+            operation === 'read_file'
+              ? 'source'
+              : operation === 'list_files'
+                ? 'files'
+                : operation === 'search_files'
+                  ? 'search'
+                  : operation,
+        },
+      ],
+    };
+  }
+  const { expectedTemplate, ...content } = rest;
+  return {
+    context,
+    ...content,
+    operation: mode === 'list' || mode === 'posts' ? 'list' : 'select',
+    ...(mode === 'posts' || mode === 'post' ? { kind: 'post' } : {}),
+    ...(expectedTemplate !== undefined ? { template: expectedTemplate } : {}),
+  };
+}
+
+async function siteTool(name: string, input: Record<string, unknown>) {
+  const result = await commands.canvasNativeTool(name, input);
+  if (name === 'ghost_canvas_read' && result.status === 'ok') {
+    return (result.data as { results: Record<string, unknown>[] }).results[0];
+  }
+  return result;
+}
 const liveHtml =
   '<html><head><link rel="stylesheet" href="/assets/built/screen.css?v=abc123"><script defer src="/ghost/assets/portal.js" data-i18n="true" data-key="0123456789abcdef"></script><script defer src="/ghost/assets/search.js" data-key="0123456789abcdef" data-styles="/ghost/assets/search.css" data-sodo-search="true"></script></head><body>Live site</body></html>';
 
@@ -145,15 +211,15 @@ describe('Design Builder route', () => {
         await expect
           .poll(
             async () =>
-              !(
-                (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {}))
-                  .data as { editor: { busy: boolean } }
-              ).editor.busy,
+              !((await siteTool('ghost_canvas_state', {})).data as { editor: { busy: boolean } })
+                .editor.busy,
             { timeout: 30_000 },
           )
           .toBe(true);
         expect(document.querySelectorAll('iframe[data-preview-status="Ready"]')).toHaveLength(8);
-        await page.getByRole('button', { name: 'Fit Page', exact: true }).click();
+        page.getByRole('region', { name: 'Theme canvas' }).element().focus();
+        await userEvent.keyboard('f');
+        await page.getByRole('button', { name: 'Page · Desktop', exact: true }).dblClick();
         await expect
           .element(page.getByText('Could not load published pages. Try loading again.').first())
           .toBeVisible();
@@ -211,7 +277,7 @@ describe('Design Builder route', () => {
       });
       const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
       const state = async () =>
-        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {})).data as {
+        (await siteTool('ghost_canvas_state', {})).data as {
           workspaceId: string;
           frames: Array<{
             id: string;
@@ -251,12 +317,15 @@ describe('Design Builder route', () => {
         files: Array<{ operation: 'write' | 'delete'; path: string; content?: string }>,
       ) => {
         const current = await state();
-        return commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
-          workspaceId: current.workspaceId,
-          expectedRevision: current.editor.sourceRevision,
-          expectedDataGeneration: current.editor.render.dataGeneration,
-          files,
-        });
+        return siteTool(
+          'ghost_canvas_edit',
+          siteInput('edit', {
+            workspaceId: current.workspaceId,
+            expectedRevision: current.editor.sourceRevision,
+            expectedDataGeneration: current.editor.render.dataGeneration,
+            files,
+          }),
+        );
       };
       try {
         await ready();
@@ -275,7 +344,9 @@ describe('Design Builder route', () => {
               frame.srcdoc.includes('Specific missing page') && frame.srcdoc.includes('404'),
           ),
         ).toBe(true);
-        await page.getByRole('button', { name: 'Fit 404', exact: true }).click();
+        page.getByRole('region', { name: 'Theme canvas' }).element().focus();
+        await userEvent.keyboard('f');
+        await page.getByRole('button', { name: '404 · Mobile', exact: true }).dblClick();
         const frame = page.frameLocator(
           page.getByTitle('404 · Mobile composition', { exact: true }),
         );
@@ -402,7 +473,7 @@ describe('Design Builder route', () => {
       }
       const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
       const state = async () =>
-        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {})).data as {
+        (await siteTool('ghost_canvas_state', {})).data as {
           workspaceId: string;
           frames: Array<{ id: string; device?: { status: string }; expanded?: { status: string } }>;
           editor: {
@@ -443,8 +514,11 @@ describe('Design Builder route', () => {
       try {
         await ready();
         const initial = await state();
-        await page.getByRole('button', { name: 'Fit all', exact: true }).click();
+        page.getByRole('region', { name: 'Theme canvas' }).element().focus();
+        await userEvent.keyboard('f');
         for (const group of ['Home', 'Post', 'Page', 'Tag', 'Author']) {
+          page.getByRole('region', { name: 'Theme canvas' }).element().focus();
+          await userEvent.keyboard('f');
           expect(
             page
               .getByRole('button', { name: `${group} · Desktop`, exact: true })
@@ -452,6 +526,14 @@ describe('Design Builder route', () => {
               .closest('[inert]'),
           ).toBeNull();
           if (group !== 'Home' && group !== 'Post') {
+            await siteTool(
+              'ghost_canvas_reveal',
+              siteInput('reveal', {
+                workspaceId: initial.workspaceId,
+                expectedRevision: initial.editor.sourceRevision,
+                frameId: `${group.toLowerCase()}-desktop`,
+              }),
+            );
             expect(
               page
                 .getByRole('button', { name: `Choose preview ${group}`, exact: true })
@@ -477,6 +559,8 @@ describe('Design Builder route', () => {
           tag: { id: 'news' },
           author: { id: 'jo' },
         });
+        page.getByRole('region', { name: 'Theme canvas' }).element().focus();
+        await userEvent.keyboard('f');
         await page.getByRole('button', { name: 'Home · Mobile', exact: true }).dblClick();
         const home = page.frameLocator(
           page.getByTitle('Home · Mobile composition', { exact: true }),
@@ -485,7 +569,14 @@ describe('Design Builder route', () => {
         await home
           .getByRole('textbox', { name: /^Edit / })
           .fill('Manual draft across Page selection');
-        await page.getByRole('button', { name: 'Fit Page', exact: true }).click();
+        await siteTool(
+          'ghost_canvas_reveal',
+          siteInput('reveal', {
+            workspaceId: initial.workspaceId,
+            expectedRevision: initial.editor.sourceRevision,
+            frameId: 'page-desktop',
+          }),
+        );
         await page
           .getByRole('button', { name: 'Choose preview Page', exact: true })
           .first()
@@ -513,11 +604,14 @@ describe('Design Builder route', () => {
         expect(switched.editor.history).toEqual(initial.editor.history);
         expect(switched.editor.dirty).toBe(false);
         expect(switched.editor.manualDraft?.text).toBe('Manual draft across Page selection');
-        const listed = await commands.canvasNativeTool('ghost_canvas_list_preview_content', {
-          workspaceId: switched.workspaceId,
-          expectedRevision: switched.editor.sourceRevision,
-          kind: 'page',
-        });
+        const listed = await siteTool(
+          'ghost_canvas_content',
+          siteInput('list', {
+            workspaceId: switched.workspaceId,
+            expectedRevision: switched.editor.sourceRevision,
+            kind: 'page',
+          }),
+        );
         expect(listed.data).toMatchObject({
           kind: 'page',
           items: [{ id: 'about' }, { id: 'contact' }],
@@ -530,14 +624,17 @@ describe('Design Builder route', () => {
             { path: 'custom-unused.hbs', items: [] },
           ]),
         );
-        const selected = await commands.canvasNativeTool('ghost_canvas_select_preview_content', {
-          workspaceId: switched.workspaceId,
-          expectedRevision: switched.editor.sourceRevision,
-          expectedDataGeneration: switched.editor.render.dataGeneration,
-          kind: 'page',
-          id: 'about',
-          expectedTemplate: 'page-about.hbs',
-        });
+        const selected = await siteTool(
+          'ghost_canvas_content',
+          siteInput('select', {
+            workspaceId: switched.workspaceId,
+            expectedRevision: switched.editor.sourceRevision,
+            expectedDataGeneration: switched.editor.render.dataGeneration,
+            kind: 'page',
+            id: 'about',
+            expectedTemplate: 'page-about.hbs',
+          }),
+        );
         expect(selected.data).toMatchObject({ accepted: true });
         await ready();
         expect((await state()).editor.manualDraft?.text).toBe('Manual draft across Page selection');
@@ -554,14 +651,17 @@ describe('Design Builder route', () => {
           .element(page.getByText('Current template: page-about.hbs', { exact: true }))
           .toBeVisible();
         const openState = await state();
-        await commands.canvasNativeTool('ghost_canvas_select_preview_content', {
-          workspaceId: openState.workspaceId,
-          expectedRevision: openState.editor.sourceRevision,
-          expectedDataGeneration: openState.editor.render.dataGeneration,
-          kind: 'page',
-          id: 'contact',
-          expectedTemplate: 'custom-wide.layout.hbs',
-        });
+        await siteTool(
+          'ghost_canvas_content',
+          siteInput('select', {
+            workspaceId: openState.workspaceId,
+            expectedRevision: openState.editor.sourceRevision,
+            expectedDataGeneration: openState.editor.render.dataGeneration,
+            kind: 'page',
+            id: 'contact',
+            expectedTemplate: 'custom-wide.layout.hbs',
+          }),
+        );
         await ready();
         await expect
           .element(page.getByText('Current template: custom-wide.layout.hbs', { exact: true }))
@@ -579,19 +679,22 @@ describe('Design Builder route', () => {
         await page.getByRole('button', { name: 'Cancel text draft', exact: true }).click();
         await ready();
         const beforePatch = await state();
-        const patch = await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
-          workspaceId: beforePatch.workspaceId,
-          expectedRevision: beforePatch.editor.sourceRevision,
-          expectedDataGeneration: beforePatch.editor.render.dataGeneration,
-          files: [
-            {
-              operation: 'replace',
-              path: 'partials/footer.hbs',
-              oldText: 'Canvas footer',
-              newText: 'Shared template design',
-            },
-          ],
-        });
+        const patch = await siteTool(
+          'ghost_canvas_edit',
+          siteInput('edit', {
+            workspaceId: beforePatch.workspaceId,
+            expectedRevision: beforePatch.editor.sourceRevision,
+            expectedDataGeneration: beforePatch.editor.render.dataGeneration,
+            files: [
+              {
+                operation: 'replace',
+                path: 'partials/footer.hbs',
+                oldText: 'Canvas footer',
+                newText: 'Shared template design',
+              },
+            ],
+          }),
+        );
         expect(patch.data).toMatchObject({ accepted: true });
         await ready();
         expect(document.querySelectorAll('iframe[data-preview-status="Ready"]')).toHaveLength(20);
@@ -622,8 +725,7 @@ describe('Design Builder route', () => {
       await fakeBuilderWorld({ post: true, featureImage: imageUrl });
       const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
       const state = async () =>
-        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {}))
-          .data as ReturnType<CanvasProbe['state']>;
+        (await siteTool('ghost_canvas_state', {})).data as ReturnType<CanvasProbe['state']>;
       try {
         await expect
           .poll(async () => !(await state()).editor?.busy, { timeout: 30_000 })
@@ -643,10 +745,7 @@ describe('Design Builder route', () => {
             },
           ],
         };
-        const validated = await commands.canvasNativeTool(
-          'ghost_canvas_validate_theme_patch',
-          patch,
-        );
+        const validated = await siteTool('ghost_canvas_edit', siteInput('dryRun', patch));
         expect(validated).toMatchObject({
           status: 'ok',
           data: {
@@ -657,9 +756,9 @@ describe('Design Builder route', () => {
         });
         expect((await state()).editor!.sourceRevision).toBe(initial.editor!.sourceRevision);
         expect(await commands.getFrameImageRequests()).toEqual([]);
-        expect(
-          await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', patch),
-        ).toMatchObject({ status: 'ok' });
+        expect(await siteTool('ghost_canvas_edit', siteInput('edit', patch))).toMatchObject({
+          status: 'ok',
+        });
         await expect
           .poll(async () => (await commands.getFrameImageRequests()).length)
           .toBeGreaterThan(0);
@@ -724,7 +823,7 @@ describe('Design Builder route', () => {
   );
 
   it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1')(
-    'reports a Post composition mismatch through native tools and retires its cause after recovery',
+    'keeps Post editable through native tools after a transient composition viewport difference',
     { timeout: 60_000 },
     async () => {
       await commands.canvasPointerViewport(true);
@@ -750,8 +849,7 @@ describe('Design Builder route', () => {
       );
       const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
       const state = async () =>
-        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {}))
-          .data as ReturnType<CanvasProbe['state']>;
+        (await siteTool('ghost_canvas_state', {})).data as ReturnType<CanvasProbe['state']>;
       try {
         await expect
           .poll(
@@ -759,77 +857,104 @@ describe('Design Builder route', () => {
               (await state()).frames.find((frame) => frame.id === 'post-desktop')?.expanded?.status,
             { timeout: 30_000 },
           )
-          .toBe('failed');
-        const failed = await state();
-        const post = failed.frames.find((frame) => frame.id === 'post-desktop')!;
+          .toBe('current');
+        const readyState = await state();
+        const post = readyState.frames.find((frame) => frame.id === 'post-desktop')!;
         expect(post.device!.status).toBe('current');
-        expect(post.expanded).toMatchObject({
-          failure: {
-            code: 'composition_viewport_changed',
-            details: {
-              phase: 'expansion',
-              expected: { viewport: { width: 1440, height: 900 } },
-              actual: { viewport: { width: 1440, height: 901 } },
-            },
-          },
+        expect(post.expanded).not.toHaveProperty('failure');
+        const diagnosticState = await commands.canvasNativeTool('ghost_canvas_state', {
+          diagnostics: true,
+        });
+        const diagnostics = (diagnosticState.data as ReturnType<CanvasProbe['state']>)
+          .diagnostics as {
+          compositions: Pick<
+            ExpandedComposition,
+            'frameId' | 'frameHeight' | 'viewportAdjustments'
+          >[];
+        };
+        const measured = diagnostics.compositions.find(
+          (entry) => entry.frameId === 'post-desktop',
+        )!;
+        expect(measured.frameHeight).toBe(900);
+        expect(
+          measured.viewportAdjustments.find((entry) => entry.actual.viewport.height === 901),
+        ).toMatchObject({
+          phase: 'expansion',
+          expected: { viewport: { width: 1440, height: 900 } },
+          actual: { viewport: { width: 1440, height: 901 } },
         });
         const address = {
-          workspaceId: failed.workspaceId,
+          workspaceId: readyState.workspaceId,
           frameHandle: post.frameHandle,
           representationHandle: post.expanded!.representationHandle,
           expectedRevision: post.expanded!.revision,
           expectedRenderKey: post.expanded!.renderKey,
         };
+        expect(await siteTool('ghost_canvas_inspect', siteInput('inspect', address))).toMatchObject(
+          {
+            status: 'ok',
+          },
+        );
         expect(
-          await commands.canvasNativeTool('ghost_canvas_probe_inspect_frame', address),
-        ).toMatchObject({
-          status: 'error',
-          code: 'surface_failed',
-          details: { failure: { code: 'composition_viewport_changed' } },
-        });
-        expect(
-          await commands.canvasNativeTool('ghost_canvas_probe_inspect_frame', {
-            ...address,
-            representationHandle: post.device!.representationHandle,
-          }),
+          await siteTool(
+            'ghost_canvas_inspect',
+            siteInput('inspect', {
+              ...address,
+              representationHandle: post.device!.representationHandle,
+            }),
+          ),
         ).toMatchObject({ status: 'ok' });
         expect(document.body.textContent).not.toContain('composition_viewport_changed');
         expect(document.body.textContent).not.toContain('documentInstanceId');
-        await page
-          .getByRole('button', { name: 'Use fixed viewport for Post · Desktop', exact: true })
-          .click();
-        await page.getByRole('button', { name: 'Post · Desktop', exact: true }).dblClick();
+        await siteTool(
+          'ghost_canvas_reveal',
+          siteInput('reveal', {
+            workspaceId: readyState.workspaceId,
+            expectedRevision: readyState.editor!.sourceRevision,
+            frameId: 'post-desktop',
+          }),
+        );
         const footer = page
-          .frameLocator(page.getByTitle('Post · Desktop preview', { exact: true }))
+          .frameLocator(page.getByTitle('Post · Desktop composition', { exact: true }))
           .getByRole('link', { name: 'Canvas footer', exact: true });
         await footer.dblClick();
         await expect
           .element(page.getByRole('button', { name: 'Cancel text draft', exact: true }))
           .toBeVisible();
         await page.getByRole('button', { name: 'Cancel text draft', exact: true }).click();
-        const recovery = await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
-          workspaceId: failed.workspaceId,
-          expectedRevision: failed.editor!.sourceRevision,
-          expectedDataGeneration: (failed.editor!.render as { dataGeneration: number })
-            .dataGeneration,
-          files: [
-            {
-              operation: 'replace',
-              path: 'partials/footer.hbs',
-              oldText: 'Canvas footer',
-              newText: 'Recovered footer',
-            },
-          ],
-        });
-        expect(recovery.status).toBe('ok');
+        const delivery = await siteTool(
+          'ghost_canvas_edit',
+          siteInput('edit', {
+            workspaceId: readyState.workspaceId,
+            expectedRevision: readyState.editor!.sourceRevision,
+            expectedDataGeneration: (readyState.editor!.render as { dataGeneration: number })
+              .dataGeneration,
+            files: [
+              {
+                operation: 'replace',
+                path: 'partials/footer.hbs',
+                oldText: 'Canvas footer',
+                newText: 'Updated footer',
+              },
+            ],
+          }),
+        );
+        expect(delivery.status).toBe('ok');
         await expect
           .poll(() => document.querySelectorAll('iframe[data-preview-status="Ready"]').length, {
             timeout: 30_000,
           })
           .toBe(8);
-        const recovered = (await state()).frames.find((frame) => frame.id === 'post-desktop')!;
-        expect(recovered.expanded!.status).toBe('current');
-        expect(recovered.expanded).not.toHaveProperty('failure');
+        await expect
+          .poll(
+            async () =>
+              (await state()).frames.find((frame) => frame.id === 'post-desktop')?.expanded?.status,
+            { timeout: 30_000 },
+          )
+          .toBe('current');
+        const updated = (await state()).frames.find((frame) => frame.id === 'post-desktop')!;
+        expect(updated.expanded!.status).toBe('current');
+        expect(updated.expanded).not.toHaveProperty('failure');
       } finally {
         await screen.unmount();
         await commands.canvasPointerViewport(false);
@@ -846,8 +971,7 @@ describe('Design Builder route', () => {
       await fakeBuilderWorld({ post: true });
       const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
       const state = async () =>
-        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {}))
-          .data as ReturnType<CanvasProbe['state']>;
+        (await siteTool('ghost_canvas_state', {})).data as ReturnType<CanvasProbe['state']>;
       try {
         await expect
           .poll(async () => !(await state()).editor?.busy, { timeout: 30_000 })
@@ -858,11 +982,14 @@ describe('Design Builder route', () => {
           expectedRevision: initial.editor!.sourceRevision,
         };
         const reveal = async (frameId: string, expectedRevision = address.expectedRevision) => {
-          const result = await commands.canvasNativeTool('ghost_canvas_reveal_frame', {
-            ...address,
-            expectedRevision,
-            frameId,
-          });
+          const result = await siteTool(
+            'ghost_canvas_reveal',
+            siteInput('reveal', {
+              ...address,
+              expectedRevision,
+              frameId,
+            }),
+          );
           return result;
         };
         expect(await reveal('home-mobile', 'obsolete')).toMatchObject({ code: 'stale_revision' });
@@ -905,12 +1032,15 @@ describe('Design Builder route', () => {
         await expect.poll(async () => !(await state()).editor!.busy).toBe(true);
         const changed = await state();
         expect(changed.editor!.sourceRevision).not.toBe(address.expectedRevision);
-        const saved = await commands.canvasNativeTool('ghost_canvas_read_theme', {
-          workspaceId: changed.workspaceId,
-          expectedRevision: changed.editor!.sourceRevision,
-          operation: 'read_file',
-          path: 'partials/footer.hbs',
-        });
+        const saved = await siteTool(
+          'ghost_canvas_read',
+          siteInput('read', {
+            workspaceId: changed.workspaceId,
+            expectedRevision: changed.editor!.sourceRevision,
+            operation: 'read_file',
+            path: 'partials/footer.hbs',
+          }),
+        );
         expect(JSON.stringify(saved)).toContain('Retained during native navigation');
       } finally {
         await screen.unmount();
@@ -930,26 +1060,28 @@ describe('Design Builder route', () => {
       const preview = vi.spyOn(CanvasThemePreview.prototype, 'renderCandidate');
       const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
       const state = async () =>
-        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {}))
-          .data as ReturnType<CanvasProbe['state']>;
+        (await siteTool('ghost_canvas_state', {})).data as ReturnType<CanvasProbe['state']>;
       try {
         await expect
           .poll(async () => !(await state()).editor?.busy, { timeout: 30_000 })
           .toBe(true);
         const initial = await state();
         expect(
-          await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
-            workspaceId: initial.workspaceId,
-            expectedRevision: initial.editor!.sourceRevision,
-            expectedDataGeneration: 0,
-            files: [
-              {
-                operation: 'write',
-                path: 'partials/footer.hbs',
-                content: '<a href="/">Custom publication</a>',
-              },
-            ],
-          }),
+          await siteTool(
+            'ghost_canvas_edit',
+            siteInput('edit', {
+              workspaceId: initial.workspaceId,
+              expectedRevision: initial.editor!.sourceRevision,
+              expectedDataGeneration: 0,
+              files: [
+                {
+                  operation: 'write',
+                  path: 'partials/footer.hbs',
+                  content: '<a href="/">Custom publication</a>',
+                },
+              ],
+            }),
+          ),
         ).toMatchObject({ status: 'ok' });
         await expect
           .poll(async () => !(await state()).editor?.busy, { timeout: 30_000 })
@@ -979,10 +1111,13 @@ describe('Design Builder route', () => {
           busy: true,
         });
         expect(
-          await commands.canvasNativeTool('ghost_canvas_open_publication_review', {
-            workspaceId: (await state()).workspaceId,
-            expectedRevision: (await state()).editor!.sourceRevision,
-          }),
+          await siteTool(
+            'ghost_canvas_review',
+            siteInput('review', {
+              workspaceId: (await state()).workspaceId,
+              expectedRevision: (await state()).editor!.sourceRevision,
+            }),
+          ),
         ).toMatchObject({ status: 'error' });
       } finally {
         vi.restoreAllMocks();
@@ -1007,8 +1142,7 @@ describe('Design Builder route', () => {
       const settings = fakeAdminEndpoint('PUT', '/settings/', ({ body }) => body);
       const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
       const state = async () =>
-        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {}))
-          .data as ReturnType<CanvasProbe['state']>;
+        (await siteTool('ghost_canvas_state', {})).data as ReturnType<CanvasProbe['state']>;
       const ready = () =>
         expect.poll(async () => !(await state()).editor?.busy, { timeout: 30_000 }).toBe(true);
       const address = async () => {
@@ -1023,17 +1157,20 @@ describe('Design Builder route', () => {
       try {
         await ready();
         expect(
-          await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
-            ...(await address()),
-            files: [
-              {
-                operation: 'write',
-                path: 'partials/footer.hbs',
-                content: '<a href="/">Reviewed footer</a>',
-              },
-            ],
-            settings: { 'global.accent_color': '#123456' },
-          }),
+          await siteTool(
+            'ghost_canvas_edit',
+            siteInput('edit', {
+              ...(await address()),
+              files: [
+                {
+                  operation: 'write',
+                  path: 'partials/footer.hbs',
+                  content: '<a href="/">Reviewed footer</a>',
+                },
+              ],
+              settings: { 'global.accent_color': '#123456' },
+            }),
+          ),
         ).toMatchObject({ status: 'ok' });
         await ready();
         await page.getByRole('button', { name: /^Theme settings/ }).click();
@@ -1068,20 +1205,26 @@ describe('Design Builder route', () => {
           .toBeVisible();
         await page.getByRole('button', { name: 'Cancel', exact: true }).click();
         expect(
-          await commands.canvasNativeTool('ghost_canvas_open_publication_review', {
-            workspaceId: (await state()).workspaceId,
-            expectedRevision: (await state()).editor!.sourceRevision,
-          }),
+          await siteTool(
+            'ghost_canvas_review',
+            siteInput('review', {
+              workspaceId: (await state()).workspaceId,
+              expectedRevision: (await state()).editor!.sourceRevision,
+            }),
+          ),
         ).toMatchObject({
           status: 'ok',
           data: { opened: true, review: { pending: { text: true, settings: true } } },
         });
         expect(upload.requests).toHaveLength(0);
         expect(
-          await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
-            ...(await address()),
-            settings: { 'global.accent_color': '#654321' },
-          }),
+          await siteTool(
+            'ghost_canvas_edit',
+            siteInput('edit', {
+              ...(await address()),
+              settings: { 'global.accent_color': '#654321' },
+            }),
+          ),
         ).toMatchObject({ status: 'ok' });
         await ready();
         await expect
@@ -1138,7 +1281,7 @@ describe('Design Builder route', () => {
       await fakeBuilderWorld();
       const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
       const state = async () =>
-        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {})).data as {
+        (await siteTool('ghost_canvas_state', {})).data as {
           workspaceId: string;
           editor: {
             sourceRevision: string;
@@ -1214,7 +1357,7 @@ describe('Design Builder route', () => {
       await fakeBuilderWorld({ post: true });
       const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
       const state = async () =>
-        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {})).data as {
+        (await siteTool('ghost_canvas_state', {})).data as {
           editor: {
             sourceRevision: string;
             busy: boolean;
@@ -1332,7 +1475,7 @@ describe('Design Builder route', () => {
       }
       const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
       const state = async () =>
-        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {})).data as {
+        (await siteTool('ghost_canvas_state', {})).data as {
           workspaceId: string;
           editor: {
             sourceRevision: string;
@@ -1418,32 +1561,41 @@ describe('Design Builder route', () => {
             .every((iframe) => (iframe as HTMLIFrameElement).srcdoc.includes(second.title)),
         ).toBe(true);
         expect(
-          await commands.canvasNativeTool('ghost_canvas_probe_inspect_frame', staleTarget),
+          await siteTool('ghost_canvas_inspect', siteInput('inspect', staleTarget)),
         ).toMatchObject({ status: 'error' });
         expect(
-          await commands.canvasNativeTool('ghost_canvas_list_posts', {
-            workspaceId: current.workspaceId,
-            expectedRevision: current.editor.sourceRevision,
-          }),
+          await siteTool(
+            'ghost_canvas_content',
+            siteInput('posts', {
+              workspaceId: current.workspaceId,
+              expectedRevision: current.editor.sourceRevision,
+            }),
+          ),
         ).toMatchObject({
           status: 'ok',
-          data: { posts: [{ id: first.id }, { id: second.id }], nextPage: null },
+          data: { items: [{ id: first.id }, { id: second.id }], nextPage: null },
         });
         expect(
-          await commands.canvasNativeTool('ghost_canvas_select_post', {
-            workspaceId: current.workspaceId,
-            expectedRevision: current.editor.sourceRevision,
-            expectedDataGeneration: 0,
-            id: first.id,
-          }),
+          await siteTool(
+            'ghost_canvas_content',
+            siteInput('post', {
+              workspaceId: current.workspaceId,
+              expectedRevision: current.editor.sourceRevision,
+              expectedDataGeneration: 0,
+              id: first.id,
+            }),
+          ),
         ).toMatchObject({ status: 'error' });
         expect(
-          await commands.canvasNativeTool('ghost_canvas_select_post', {
-            workspaceId: current.workspaceId,
-            expectedRevision: current.editor.sourceRevision,
-            expectedDataGeneration: 1,
-            id: first.id,
-          }),
+          await siteTool(
+            'ghost_canvas_content',
+            siteInput('post', {
+              workspaceId: current.workspaceId,
+              expectedRevision: current.editor.sourceRevision,
+              expectedDataGeneration: 1,
+              id: first.id,
+            }),
+          ),
         ).toMatchObject({ status: 'ok', data: { accepted: true, dataGeneration: 2 } });
         await ready();
         current = await state();
@@ -1478,7 +1630,7 @@ describe('Design Builder route', () => {
       await fakeBuilderWorld({ post: true });
       const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
       const state = async () =>
-        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {})).data as {
+        (await siteTool('ghost_canvas_state', {})).data as {
           workspaceId: string;
           view: { selectedFrameId: string | null };
           editor: {
@@ -1511,10 +1663,13 @@ describe('Design Builder route', () => {
         expect(selected.target.documentId).toEqual(expect.any(String));
         expect(selected.target.documentInstanceId).toEqual(expect.any(String));
         const camera = page.getByTestId('canvas-world').element().getAttribute('style');
-        const inspect = await commands.canvasNativeTool('ghost_canvas_probe_inspect_element', {
-          ...selected.target,
-          occurrence: selected.context.data.occurrence,
-        });
+        const inspect = await siteTool(
+          'ghost_canvas_inspect',
+          siteInput('element', {
+            ...selected.target,
+            occurrence: selected.context.data.occurrence,
+          }),
+        );
         expect(inspect).toMatchObject({
           status: 'ok',
           data: { representation: 'expanded', element: { text: 'Canvas footer' } },
@@ -1524,13 +1679,17 @@ describe('Design Builder route', () => {
         const current = await state();
         const device = current.frames.find((item) => item.id === 'home-mobile')!;
         expect(
-          await commands.canvasNativeTool('ghost_canvas_probe_inspect_element', {
-            ...selected.target,
-            representationHandle: device.device.representationHandle,
-            occurrence: selected.context.data.occurrence,
-          }),
+          await siteTool(
+            'ghost_canvas_inspect',
+            siteInput('element', {
+              ...selected.target,
+              representationHandle: device.device.representationHandle,
+              occurrence: selected.context.data.occurrence,
+            }),
+          ),
         ).toMatchObject({ status: 'error' });
-        await page.getByRole('button', { name: 'Fit all', exact: true }).click();
+        page.getByRole('region', { name: 'Theme canvas' }).element().focus();
+        await userEvent.keyboard('f');
         await page.getByRole('button', { name: 'Home · Desktop', exact: true }).click();
         expect(await state()).toMatchObject({
           view: { selectedFrameId: 'home-desktop' },
@@ -1541,10 +1700,13 @@ describe('Design Builder route', () => {
           .toBeDisabled();
         // Explicit reads retain their addressed target even after the person selects another frame.
         expect(
-          await commands.canvasNativeTool('ghost_canvas_probe_inspect_element', {
-            ...selected.target,
-            occurrence: selected.context.data.occurrence,
-          }),
+          await siteTool(
+            'ghost_canvas_inspect',
+            siteInput('element', {
+              ...selected.target,
+              occurrence: selected.context.data.occurrence,
+            }),
+          ),
         ).toMatchObject({ status: 'ok', data: { element: { text: 'Canvas footer' } } });
         // The larger overview keeps text tiny; reveal its live frame before selecting text.
         await page.getByRole('button', { name: 'Home · Mobile', exact: true }).dblClick();
@@ -1573,7 +1735,7 @@ describe('Design Builder route', () => {
       await fakeBuilderWorld({ post: true });
       const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
       const state = async () =>
-        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {})).data as {
+        (await siteTool('ghost_canvas_state', {})).data as {
           workspaceId: string;
           editor: {
             sourceRevision: string;
@@ -1623,20 +1785,23 @@ describe('Design Builder route', () => {
             return original.call(this, draft, signal);
           },
         );
-        patching = commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
-          workspaceId: initial.workspaceId,
-          expectedRevision: initial.editor.sourceRevision,
-          expectedDataGeneration: 0,
-          files: [
-            {
-              operation: 'write',
-              path: accepted ? 'index.hbs' : 'post.hbs',
-              content: accepted
-                ? '<html><body><h1>Agent design</h1>{{> footer}}</body></html>'
-                : '{{> missing_canvas_partial}}',
-            },
-          ],
-        });
+        patching = siteTool(
+          'ghost_canvas_edit',
+          siteInput('edit', {
+            workspaceId: initial.workspaceId,
+            expectedRevision: initial.editor.sourceRevision,
+            expectedDataGeneration: 0,
+            files: [
+              {
+                operation: 'write',
+                path: accepted ? 'index.hbs' : 'post.hbs',
+                content: accepted
+                  ? '<html><body><h1>Agent design</h1>{{> footer}}</body></html>'
+                  : '{{> missing_canvas_partial}}',
+              },
+            ],
+          }),
+        );
         await expect.poll(() => entered).toBe(true);
         await frame.getByRole('link', { name: 'Canvas footer', exact: true }).click();
         await expect
@@ -1738,7 +1903,7 @@ describe('Design Builder route', () => {
         boot: { browseMe: { response: me } },
       });
       const state = async () =>
-        (await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {})).data as {
+        (await siteTool('ghost_canvas_state', {})).data as {
           workspaceId: string;
           editor: { sourceRevision: string; busy: boolean; dirty: boolean };
         };
@@ -1754,12 +1919,15 @@ describe('Design Builder route', () => {
       const patch = async (settings: Record<string, string>) => {
         const current = await state();
         expect(
-          await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
-            workspaceId: current.workspaceId,
-            expectedRevision: current.editor.sourceRevision,
-            expectedDataGeneration: 0,
-            settings,
-          }),
+          await siteTool(
+            'ghost_canvas_edit',
+            siteInput('edit', {
+              workspaceId: current.workspaceId,
+              expectedRevision: current.editor.sourceRevision,
+              expectedDataGeneration: 0,
+              settings,
+            }),
+          ),
         ).toMatchObject({ status: 'ok', data: { accepted: true } });
         await ready();
       };
@@ -1810,11 +1978,14 @@ describe('Design Builder route', () => {
           ),
         ).toBe(true);
         const current = await state();
-        const settings = await commands.canvasNativeTool('ghost_canvas_read_theme', {
-          workspaceId: current.workspaceId,
-          expectedRevision: current.editor.sourceRevision,
-          operation: 'settings',
-        });
+        const settings = await siteTool(
+          'ghost_canvas_read',
+          siteInput('read', {
+            workspaceId: current.workspaceId,
+            expectedRevision: current.editor.sourceRevision,
+            operation: 'settings',
+          }),
+        );
         expect(settings.status).toBe('ok');
         expect((settings.data as { settings: unknown[] }).settings).toEqual(
           expect.arrayContaining([
@@ -1869,9 +2040,7 @@ describe('Design Builder route', () => {
         expect((await state()).editor.dirty).toBe(false);
         await page.getByRole('button', { name: 'Theme settings', exact: true }).click();
         await page.getByRole('textbox', { name: 'Heading font', exact: true }).fill('Staged font');
-        expect(
-          await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {}),
-        ).toMatchObject({
+        expect(await siteTool('ghost_canvas_state', {})).toMatchObject({
           data: { editor: { settingsDraft: { identifiers: ['global.heading_font'] } } },
         });
         await page.viewport(width === 390 ? 1280 : 390, 844);
@@ -1914,10 +2083,7 @@ describe('Design Builder route', () => {
         await expect
           .poll(
             async () => {
-              const state = await commands.canvasNativeTool(
-                'ghost_canvas_probe_get_editor_state',
-                {},
-              );
+              const state = await siteTool('ghost_canvas_state', {});
               const editor = (state.data as { editor?: { busy?: boolean } } | undefined)?.editor;
               return (
                 editor?.busy === false &&
@@ -1929,15 +2095,18 @@ describe('Design Builder route', () => {
           .toBe(true);
       };
       const change = async (path: string, content: string) => {
-        const state = await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {});
+        const state = await siteTool('ghost_canvas_state', {});
         expect(state.status).toBe('ok');
         const data = state.data as { workspaceId: string; editor: { sourceRevision: string } };
-        const result = await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
-          workspaceId: data.workspaceId,
-          expectedRevision: data.editor.sourceRevision,
-          expectedDataGeneration: 0,
-          files: [{ operation: 'write', path, content }],
-        });
+        const result = await siteTool(
+          'ghost_canvas_edit',
+          siteInput('edit', {
+            workspaceId: data.workspaceId,
+            expectedRevision: data.editor.sourceRevision,
+            expectedDataGeneration: 0,
+            files: [{ operation: 'write', path, content }],
+          }),
+        );
         expect(result).toMatchObject({ status: 'ok', data: { accepted: true } });
         await ready();
       };
@@ -1986,25 +2155,26 @@ describe('Design Builder route', () => {
         await frame.getByRole('link', { name: 'Agent footer replacement', exact: true }).hover();
         await frame.getByRole('link', { name: 'Agent footer replacement', exact: true }).dblClick();
         await frame.getByRole('textbox', { name: /^Edit / }).fill('x'.repeat(65537));
-        const state = await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {});
+        const state = await siteTool('ghost_canvas_state', {});
         const data = state.data as { workspaceId: string; editor: { sourceRevision: string } };
         expect(
-          await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
-            workspaceId: data.workspaceId,
-            expectedRevision: data.editor.sourceRevision,
-            expectedDataGeneration: 0,
-            files: [
-              {
-                operation: 'write',
-                path: 'partials/footer.hbs',
-                content: '<a href="/">Accepted agent footer</a>',
-              },
-            ],
-          }),
+          await siteTool(
+            'ghost_canvas_edit',
+            siteInput('edit', {
+              workspaceId: data.workspaceId,
+              expectedRevision: data.editor.sourceRevision,
+              expectedDataGeneration: 0,
+              files: [
+                {
+                  operation: 'write',
+                  path: 'partials/footer.hbs',
+                  content: '<a href="/">Accepted agent footer</a>',
+                },
+              ],
+            }),
+          ),
         ).toMatchObject({ status: 'ok', data: { accepted: true } });
-        expect(
-          await commands.canvasNativeTool('ghost_canvas_probe_get_editor_state', {}),
-        ).toMatchObject({
+        expect(await siteTool('ghost_canvas_state', {})).toMatchObject({
           data: {
             editor: {
               busy: true,
@@ -2037,17 +2207,14 @@ describe('Design Builder route', () => {
     },
   );
   it.runIf(import.meta.env.VITE_CANVAS_NATIVE_WEBMCP === '1')(
-    'drives the real editor through native WebMCP reads, atomic patches and responsive captures',
+    'drives the compact native catalog through batch reads, atomic patches and delivery waiting',
     { timeout: 60_000 },
     async () => {
       await commands.canvasPointerViewport(true);
       await fakeBuilderWorld({ post: true });
       const screen = await renderAdminApp('/builder/theme', { labs: { designBuilder: true } });
       const state = async () => {
-        const result = (await commands.canvasNativeTool(
-          'ghost_canvas_probe_get_editor_state',
-          {},
-        )) as ReadResult;
+        const result = (await siteTool('ghost_canvas_state', {})) as ReadResult;
         expect(result.status).toBe('ok');
         if (result.status !== 'ok') {
           throw new Error(result.message);
@@ -2074,9 +2241,7 @@ describe('Design Builder route', () => {
           )
           .toBe(true);
       try {
-        await expect
-          .poll(() => commands.canvasNativeTools())
-          .toContain('ghost_canvas_apply_theme_patch');
+        await expect.poll(() => commands.canvasNativeTools()).toContain('ghost_canvas_edit');
         await ready();
         const iframeElements = [
           ...document.querySelectorAll('iframe[title$="composition"],iframe[title$="preview"]'),
@@ -2094,25 +2259,50 @@ describe('Design Builder route', () => {
           workspaceId: initial.workspaceId,
           expectedRevision: initial.editor!.sourceRevision,
         };
-        const source = await commands.canvasNativeTool('ghost_canvas_read_theme', {
-          ...address,
-          operation: 'read_file',
-          path: 'partials/footer.hbs',
+        const context = {
+          workspaceId: initial.workspaceId,
+          revision: initial.editor!.sourceRevision,
+          generation: 0,
+        };
+        const names = await commands.canvasNativeTools();
+        expect(names.sort()).toEqual(
+          ['state', 'read', 'edit', 'inspect', 'content', 'history', 'reveal', 'review']
+            .map((name) => `ghost_canvas_${name}`)
+            .sort(),
+        );
+        const source = await commands.canvasNativeTool('ghost_canvas_read', {
+          context,
+          requests: [
+            { operation: 'source', path: 'partials/footer.hbs' },
+            { operation: 'settings' },
+          ],
+        });
+        expect(source).toMatchObject({
+          status: 'ok',
+          data: {
+            results: [
+              { status: 'ok', data: { content: '<a href="/">Canvas footer</a>' } },
+              { status: 'ok' },
+            ],
+          },
         });
         expect(JSON.stringify(source)).toContain('Canvas footer');
         expect(JSON.stringify(source)).not.toContain('0123456789abcdef');
         const camera = page.getByTestId('canvas-world').element().getAttribute('style');
-        const rejected = await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
-          ...address,
-          expectedDataGeneration: 0,
-          files: [
-            {
-              operation: 'write',
-              path: 'post.hbs',
-              content: '{{#post}}{{unknown-canvas-helper title}}{{/post}}',
-            },
-          ],
-        });
+        const rejected = await siteTool(
+          'ghost_canvas_edit',
+          siteInput('edit', {
+            ...address,
+            expectedDataGeneration: 0,
+            files: [
+              {
+                operation: 'write',
+                path: 'post.hbs',
+                content: '{{#post}}{{unknown-canvas-helper title}}{{/post}}',
+              },
+            ],
+          }),
+        );
         expect(rejected.status).toBe('error');
         expect(rejected.details).toBeDefined();
         expect((await state()).editor!.sourceRevision).toBe(address.expectedRevision);
@@ -2130,10 +2320,7 @@ describe('Design Builder route', () => {
           settings: { 'global.accent_color': '#654321' },
         };
         const beforePreflight = await state();
-        const preflight = await commands.canvasNativeTool(
-          'ghost_canvas_validate_theme_patch',
-          patch,
-        );
+        const preflight = await siteTool('ghost_canvas_edit', siteInput('dryRun', patch));
         expect(preflight).toMatchObject({
           status: 'ok',
           data: { valid: true, revision: address.expectedRevision, unchanged: false },
@@ -2143,16 +2330,18 @@ describe('Design Builder route', () => {
         expect(afterPreflight.editor!.history).toEqual(beforePreflight.editor!.history);
         expect(afterPreflight.frames).toEqual(beforePreflight.frames);
         expect(page.getByTestId('canvas-world').element().getAttribute('style')).toBe(camera);
-        const result = await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', patch);
+        const result = await commands.canvasNativeTool('ghost_canvas_edit', {
+          context,
+          files: patch.files,
+          settings: patch.settings,
+        });
         expect(result).toMatchObject({
           status: 'ok',
-          data: { accepted: true, delivery: 'pending' },
+          data: {
+            accepted: true,
+            delivery: { status: 'ready', ready: 8, total: 8, failedSurfaces: [] },
+          },
         });
-        const pendingDelivery = await state();
-        if (pendingDelivery.frames.some((descriptor) => descriptor.device?.status !== 'current')) {
-          expect(pendingDelivery.editor?.busy).toBe(true);
-        }
-        await ready();
         await expect
           .poll(() => document.querySelectorAll('iframe[data-preview-status="Ready"]').length)
           .toBe(8);
@@ -2170,11 +2359,14 @@ describe('Design Builder route', () => {
           ].every((iframe) => iframe.srcdoc.includes('Agent canvas footer')),
         ).toBe(true);
         expect(
-          await commands.canvasNativeTool('ghost_canvas_apply_theme_patch', {
-            ...address,
-            expectedDataGeneration: 0,
-            settings: { 'global.accent_color': '#abcdef' },
-          }),
+          await siteTool(
+            'ghost_canvas_edit',
+            siteInput('edit', {
+              ...address,
+              expectedDataGeneration: 0,
+              settings: { 'global.accent_color': '#abcdef' },
+            }),
+          ),
         ).toMatchObject({ code: 'stale_revision' });
         for (const frameId of ['home-desktop', 'home-mobile']) {
           const descriptor = current.frames.find((frame) => frame.id === frameId)!;
@@ -2186,21 +2378,9 @@ describe('Design Builder route', () => {
             expectedRevision: device.revision,
             expectedRenderKey: device.renderKey,
           };
-          const inspected = await commands.canvasNativeTool(
-            'ghost_canvas_probe_inspect_frame',
-            target,
-          );
+          const inspected = await siteTool('ghost_canvas_inspect', siteInput('inspect', target));
           expect(inspected.status).toBe('ok');
           expect(JSON.stringify(inspected)).toContain('Agent canvas footer');
-          const captured = await commands.canvasNativeTool('ghost_canvas_probe_capture_frame', {
-            ...target,
-            kind: 'viewport',
-          });
-          expect(captured.status).toBe('ok');
-          expect(captured).toMatchObject({
-            data: { image: { width: descriptor.width, height: descriptor.height } },
-          });
-          expect(JSON.stringify(captured)).toContain('data:image/png;base64,');
         }
         expect(page.getByTestId('canvas-world').element().getAttribute('style')).toBe(camera);
         await expect.element(page.getByRole('button', { name: 'Publish changes' })).toBeEnabled();
@@ -2227,21 +2407,27 @@ describe('Design Builder route', () => {
         await expect
           .element(page.getByRole('button', { name: 'Redo theme change', exact: true }))
           .toBeEnabled();
-        const historyResult = await commands.canvasNativeTool('ghost_canvas_history', {
-          workspaceId: undone.workspaceId,
-          expectedRevision: undone.editor!.sourceRevision,
-          operation: 'list',
-        });
+        const historyResult = await siteTool(
+          'ghost_canvas_history',
+          siteInput('history', {
+            workspaceId: undone.workspaceId,
+            expectedRevision: undone.editor!.sourceRevision,
+            operation: 'list',
+          }),
+        );
         expect(historyResult.status).toBe('ok');
         expect(JSON.stringify(historyResult)).not.toContain('0123456789abcdef');
         const history = (historyResult.data as { history: { redoId: string } }).history;
-        const redone = await commands.canvasNativeTool('ghost_canvas_history', {
-          workspaceId: undone.workspaceId,
-          expectedRevision: undone.editor!.sourceRevision,
-          expectedDataGeneration: 0,
-          operation: 'restore',
-          checkpointId: history.redoId,
-        });
+        const redone = await siteTool(
+          'ghost_canvas_history',
+          siteInput('history', {
+            workspaceId: undone.workspaceId,
+            expectedRevision: undone.editor!.sourceRevision,
+            expectedDataGeneration: 0,
+            operation: 'restore',
+            checkpointId: history.redoId,
+          }),
+        );
         expect(redone).toMatchObject({
           status: 'ok',
           data: { accepted: true, revision: current.editor!.sourceRevision },
@@ -2258,9 +2444,7 @@ describe('Design Builder route', () => {
         await screen.unmount();
         await commands.canvasPointerViewport(false);
       }
-      await expect
-        .poll(() => commands.canvasNativeTools())
-        .not.toContain('ghost_canvas_apply_theme_patch');
+      await expect.poll(() => commands.canvasNativeTools()).not.toContain('ghost_canvas_edit');
     },
   );
   it(

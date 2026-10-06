@@ -109,6 +109,31 @@ it('exposes read-only preflight and exact replacements with useful operation arg
   });
 });
 
+it('reports template-linked authoring and generated stylesheets before editing', async () => {
+  const { draft, tools } = await fixture();
+  draft.files['default.hbs'] = {
+    path: 'default.hbs',
+    kind: 'text',
+    content:
+      '<link rel="stylesheet" href="{{asset "built/screen.css"}}"><link rel="stylesheet" href="{{asset "css/editorial.css"}}">',
+    binary: null,
+    unixPermissions: null,
+    dosPermissions: null,
+  };
+  expect(tools.state().cssEditing).toMatchObject({
+    themeBuilds: false,
+    linkedStylesheets: [
+      {
+        path: 'assets/built/screen.css',
+        mode: 'generated-stylesheet',
+        sourceMapPolicy: 'remove-or-regenerate',
+      },
+      { path: 'assets/css/editorial.css', mode: 'direct-edit' },
+    ],
+  });
+  tools.dispose();
+});
+
 it('reveals only a requested frame in the current workspace and never accepts arbitrary camera arguments', async () => {
   const { draft, apply, args } = await fixture();
   const reveal = vi.fn();

@@ -4,6 +4,9 @@
 // but that's not the problem the index.js max - line eslint "proxy" rule is there to solve.
 
 module.exports = {
+  get canvasRelay() {
+    return require('./canvas-relay');
+  },
   get all() {
     return require('./all');
   },

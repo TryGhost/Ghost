@@ -157,10 +157,9 @@
 	# (HMR client, module graph, refresh runtime) don't collide with the
 	# /ghost/* paths Ghost serves in production. Handles HMR WebSocket upgrade.
 	handle /__admin-dev__* {
-		reverse_proxy {env.ADMIN_DEV_SERVER} {
-			header_up Connection {>Connection}
-			header_up Upgrade {>Upgrade}
-		}
+		# Caddy negotiates WebSocket upgrades itself. Replacing its upgrade
+		# headers with legacy placeholders drops them before the Vite proxy.
+		reverse_proxy {env.ADMIN_DEV_SERVER}
 	}
 
 	# Admin HTML entry — proxy to Vite, which serves the dev index.html.

@@ -1,8 +1,28 @@
 import { describe, expect, it } from 'vitest';
 
-import { fitCanvas, panCanvas, screenToWorld, zoomCanvas } from './canvas-camera';
+import { fitCanvas, fitCanvasWidth, panCanvas, screenToWorld, zoomCanvas } from './canvas-camera';
 
 describe('canvas camera', () => {
+  it('fits Home desktop and mobile widths at the top without using page or host height', () => {
+    const pair = [
+      { x: 0, y: 0, width: 1440, height: 900 },
+      { x: 1488, y: 0, width: 390, height: 844 },
+    ];
+    const camera = fitCanvasWidth(pair, { width: 1200, height: 800 });
+    expect(camera.scale).toBeCloseTo(1104 / 1878);
+    expect(camera.y).toBe(48);
+    expect(camera.x).toBeCloseTo(48);
+    expect(
+      fitCanvasWidth(
+        pair.map((frame) => ({ ...frame, height: 16000 })),
+        {
+          width: 1200,
+          height: 200,
+        },
+      ),
+    ).toEqual(camera);
+    expect(fitCanvasWidth(pair, { width: 3000, height: 200 }).scale).toBe(1);
+  });
   it('fits every frame, including unequal page heights and negative world positions', () => {
     const frames = [
       { x: -120, y: 80, width: 1440, height: 900 },

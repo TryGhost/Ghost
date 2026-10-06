@@ -19,12 +19,17 @@ async function pixel(dataUrl: string) {
   return [...context.getImageData(180, 50, 1, 1).data];
 }
 
-async function pair(html: string) {
+async function pair(html: string, zoom?: string) {
+  const host = document.createElement('div');
+  if (zoom) {
+    host.style.zoom = zoom;
+  }
+  document.body.appendChild(host);
   const signal = new AbortController().signal;
   const iframes = [document.createElement('iframe'), document.createElement('iframe')];
   for (const iframe of iframes) {
     iframe.style.cssText = 'width:390px;height:844px;border:0';
-    document.body.appendChild(iframe);
+    host.appendChild(iframe);
   }
   const [device, composition] = iframes.map((iframe) => new IframePreviewDocumentSurface(iframe));
   await Promise.all(
@@ -55,11 +60,13 @@ async function pair(html: string) {
         'home-mobile',
         'comparison-1',
         signal,
+        { width: 390, height: 844 },
       ),
     dispose: () => {
       device.destroy();
       composition.destroy();
       iframes.forEach((iframe) => iframe.remove());
+      host.remove();
     },
   };
 }
@@ -209,3 +216,24 @@ it.each(['mobile', 'desktop'])(
     }
   },
 );
+
+it('keeps a fractionally scaled live composition usable without changing its device', async () => {
+  const value = await pair(
+    '<style>body{margin:0}.tail{height:2101px}</style><div class="tail">Story</div>',
+    '0.8',
+  );
+  try {
+    const before = await value.device.measureLayout(value.signal);
+    const compositionBefore = await value.composition.measureLayout(value.signal);
+    const result = await value.measure();
+    expect(result.frameHeight).toBeGreaterThanOrEqual(result.document.height);
+    expect(result.frameHeight).toBe(2101);
+    expect(['settled', 'best-effort']).toContain(result.status);
+    expect(value.iframes[1].style.height).toBe('2101px');
+    expect(await value.device.measureLayout(value.signal)).toEqual(before);
+    expect(result.documentId).toBe(compositionBefore.documentId);
+    expect(result.documentInstanceId).toBe(compositionBefore.documentInstanceId);
+  } finally {
+    value.dispose();
+  }
+});

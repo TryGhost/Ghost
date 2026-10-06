@@ -52,6 +52,24 @@ afterEach(() => {
 });
 
 describe('canvas board', () => {
+  it('starts with the known Home widths and keeps that camera while pages grow', () => {
+    const { rerender } = render(<CanvasBoard frames={frames} renderFrame={() => null} />);
+    const world = screen.getByTestId('canvas-world');
+    const initial = world.style.transform;
+    expect(initial).toContain('translate(48px, 48px)');
+    expect(screen.queryByRole('button', { name: /^Fit / })).toBeNull();
+    rerender(
+      <CanvasBoard
+        frames={frames.map((frame) => ({ ...frame, height: 16000 }))}
+        renderFrame={() => null}
+      />,
+    );
+    expect(world.style.transform).toBe(initial);
+    fireEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
+    const navigated = world.style.transform;
+    rerender(<CanvasBoard frames={frames} renderFrame={() => null} />);
+    expect(world.style.transform).toBe(navigated);
+  });
   it('keeps every template control inside a height-dominated overview', () => {
     const templates = ['Home', 'Post', 'Page', 'Tag', 'Author'];
     const tall = templates.flatMap((group, index) =>
@@ -72,7 +90,7 @@ describe('canvas board', () => {
         renderFrameActions={() => <button type="button">Content</button>}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Fit all' }));
+    fireEvent.keyDown(screen.getByRole('region', { name: 'Theme canvas' }), { key: 'f' });
     for (const frame of tall) {
       const header = screen.getByRole('button', { name: frame.label }).parentElement!;
       expect(parseFloat(header.style.left)).toBeGreaterThanOrEqual(0);
@@ -134,8 +152,8 @@ describe('canvas board', () => {
     fireEvent.doubleClick(header);
     expect(world.style.transform).not.toBe(overview);
     expect(document.querySelector('[data-canvas-frame][inert]')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Fit all' }));
-    expect(world.style.transform).toBe(overview);
+    fireEvent.keyDown(screen.getByRole('region', { name: 'Theme canvas' }), { key: 'f' });
+    expect(world.style.transform).not.toBe(overview);
   });
 
   it('zooms and pans over previews while keeping their mounted DOM and declared dimensions', () => {

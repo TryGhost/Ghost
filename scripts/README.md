@@ -34,6 +34,48 @@ extension. When the last one is gone, that config drops to a single block.
 
 Don't add new `.cjs` files.
 
+## Live WebMCP calls
+
+`lib/webmcp-live-call.js` is an optional client helper for a browser agent with an
+existing `tab.capabilities.get('webmcp')` handle. The Ghost editor registers stable
+logical names, but the browser bridge can replace their UUID aliases when preview
+documents change. The helper discovers the current alias immediately before each
+call; it does not modify the browser bridge or register additional editor tools.
+
+Import it from the absolute path of the checkout available to that browser session:
+
+```js
+const { createLiveWebMcpCaller } = await import(
+  '/home/jonatan/Code/Monorepo/scripts/lib/webmcp-live-call.js'
+);
+const webmcp = await tab.capabilities.get('webmcp');
+const call = createLiveWebMcpCaller(webmcp, {
+  origin: approvedOrigin,
+  pageUrl: approvedPageUrl,
+});
+const result = await call('ghost_canvas_state', {});
+```
+
+Set `approvedOrigin` and `approvedPageUrl` to the exact owner values from the
+reviewed tool descriptors for the intended tab. The descriptor page URL may omit
+the editor route hash. Tunnel origins are ephemeral: review the new origin before
+reconnecting. A remote checkout path is not automatically available to a browser
+agent running on another machine; make the helper available in that session first.
+
+Review tool definitions before first use. Calls must be awaited sequentially;
+overlapping calls are rejected. Subsequent calls reject changed definitions before
+dispatch, ignoring only the alias. Inputs, application revision guards and call
+options pass through unchanged. Errors and timeouts are never retried automatically,
+including edits that might already have been accepted. Inspect current editor state
+before deciding how to recover from an uncertain result.
+
+This is a workaround for the bridge's textual `fetchTools().description()` catalog.
+It does not suppress bridge notifications or prevent alias rotation. Origin and page
+URL pins do not identify a document lifetime: after an editor reload, reacquire
+application context. Navigation between discovery and dispatch can still reject a
+call as stale. The helper's tests cover alias resolution and rejection behavior with
+mock capabilities; they do not validate an installed browser bridge.
+
 ## Two things that don't live by these rules
 
 **`enforce-package-manager.js`** is the root `preinstall` hook, so it runs

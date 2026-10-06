@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { PageHeader } from '@tryghost/shade/patterns';
 import {
@@ -19,6 +20,8 @@ import { IframePreviewDocumentSurface } from '@/builder/workspaces/theme/preview
 import { CanvasProbe, registerCanvasProbe } from './canvas-probe';
 import { CanvasRejectedError } from './canvas-driver';
 import { CanvasEditorTools } from './canvas-editor-tools';
+import { startCanvasRelay } from './canvas-relay';
+import { CanvasAgentConnection } from './canvas-agent-connection';
 import { CanvasDesignSettings } from './canvas-design-settings';
 import { CanvasPostPicker } from './canvas-post-picker';
 import { canvasContentLabels } from './canvas-content';
@@ -70,6 +73,8 @@ type ExpandedState =
 type OverviewMode = 'expanded' | 'device';
 
 function templateFrames(kinds: CanvasTemplateKind[]): CanvasFrame[] {
+  // Keep devices close within a pair, with a wider 240px gap between template groups.
+  const groupStride = 1440 + 48 + 390 + 240;
   return kinds.flatMap((kind, index) => {
     const label = kind === 'home' ? 'Home' : kind === 'error' ? '404' : canvasContentLabels[kind];
     return [
@@ -77,8 +82,8 @@ function templateFrames(kinds: CanvasTemplateKind[]): CanvasFrame[] {
         id: `${kind}-desktop`,
         label: `${label} · Desktop`,
         group: label,
-        x: (index % 2) * 1974,
-        y: Math.floor(index / 2) * 1028,
+        x: index * groupStride,
+        y: 0,
         width: 1440,
         height: 900,
       },
@@ -86,8 +91,8 @@ function templateFrames(kinds: CanvasTemplateKind[]): CanvasFrame[] {
         id: `${kind}-mobile`,
         label: `${label} · Mobile`,
         group: label,
-        x: (index % 2) * 1974 + 1488,
-        y: Math.floor(index / 2) * 1028,
+        x: index * groupStride + 1488,
+        y: 0,
         width: 390,
         height: 844,
       },
@@ -142,6 +147,7 @@ function LivePreview({
   const lastMode = useRef<{ document: PreviewDocument; mode: 'edit' | 'select' } | null>(null);
   const [status, setStatus] = useState('Loading preview…');
   const [composition, setComposition] = useState<ExpandedComposition | null>(null);
+  const lastMeasuredSize = useRef<{ width: number; height: number } | null>(null);
   const [layoutStatus, setLayoutStatus] = useState('pending');
   const layoutPaused = useRef(false);
   const layoutReady = useRef(false);
@@ -219,13 +225,18 @@ function LivePreview({
     }
     const controller = new AbortController();
     setReady(null);
-    setComposition(null);
     setLayoutStatus('pending');
     layoutPaused.current = false;
     layoutReady.current = false;
     layoutFailed.current = false;
     setStatus('Loading preview…');
-    iframe.current!.style.height = `${height}px`;
+    // Retain geometry while replacing the document. Readiness still belongs to
+    // the new render; the previous measurement is only a visual size hint.
+    const retainedHeight =
+      kind === 'expanded' && lastMeasuredSize.current?.width === width
+        ? lastMeasuredSize.current.height
+        : height;
+    iframe.current!.style.height = `${retainedHeight}px`;
     const connection = probe.attach(frame.id, surface, document, kind);
     const removeEdit = surface.onInlineEdit((edit, signal) =>
       handlers.current.onEdit(edit, document, signal),
@@ -257,6 +268,7 @@ function LivePreview({
             onStart: () => setLayoutStatus('measuring'),
             onResult: (result) => {
               layoutReady.current = true;
+              lastMeasuredSize.current = { width, height: result.frameHeight };
               setComposition(result);
               setLayoutStatus(result.status);
               // Initial readiness also waits for the runtime's interaction mode.
@@ -276,8 +288,9 @@ function LivePreview({
               connection.fail(failure);
               layoutFailed.current = true;
               setReady(null);
-              setComposition(null);
-              iframe.current!.style.height = `${height}px`;
+              iframe.current!.style.height = `${
+                lastMeasuredSize.current?.width === width ? lastMeasuredSize.current.height : height
+              }px`;
               setLayoutStatus('failed');
               setStatus(message);
               handlers.current.onExpanded({ status: 'failed', message });
@@ -366,7 +379,10 @@ function LivePreview({
         data-preview-status={status}
         style={{
           width,
-          height: kind === 'expanded' && composition ? composition.viewport.height : height,
+          height:
+            kind === 'expanded' && composition?.configuredViewport.width === width
+              ? composition.frameHeight
+              : height,
         }}
         title={`${frame.label} ${kind === 'expanded' ? 'composition' : 'preview'}`}
         onPointerLeave={() => layoutObservation.current?.resume()}
@@ -460,7 +476,9 @@ export function ThemeCanvas({
   const [documents, setDocuments] = useState<Record<string, PreviewDocument>>({});
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Record<string, ExpandedState>>({});
+  const measuredFrameSizes = useRef(new Map<string, { width: number; height: number }>());
   const [mode, setMode] = useState<OverviewMode>('expanded');
+  const [zoomControlsHost, setZoomControlsHost] = useState<HTMLDivElement | null>(null);
   const [fallbacks, setFallbacks] = useState<ReadonlySet<string>>(() => new Set());
   const [probe, setProbe] = useState<CanvasProbe | null>(null);
   const [siteTools, setSiteTools] = useState<ProbeRegistrationStatus | 'pending'>('pending');
@@ -689,6 +707,17 @@ export function ThemeCanvas({
       /* Cross-origin hosting cannot use the parent document. */
     }
     const registration = registerCanvasProbe(toolOwner, current);
+    const disposeRelay =
+      !source.fixture &&
+      source.editor &&
+      import.meta.env.DEV &&
+      typeof import.meta.env.VITE_CANVAS_RELAY_URL === 'string'
+        ? startCanvasRelay(
+            toolOwner.defaultView ?? window,
+            current,
+            import.meta.env.VITE_CANVAS_RELAY_URL,
+          )
+        : () => {};
     let disposed = false;
     void registration.ready.then((status) => {
       if (!disposed) {
@@ -697,6 +726,7 @@ export function ThemeCanvas({
     });
     return () => {
       disposed = true;
+      disposeRelay();
       registration.dispose();
       probeObserver.current?.(null);
     };
@@ -704,36 +734,19 @@ export function ThemeCanvas({
   useEffect(() => {
     probe?.setView(view.current, mode);
   }, [probe, mode]);
-  const initialFitReady = availableFrames.every(
-    (frame) => expanded[frame.id]?.status === 'current' || expanded[frame.id]?.status === 'failed',
-  );
   const displayFrames = frames.map((frame) => {
     const displayedMode = mode === 'device' || fallbacks.has(frame.id) ? 'device' : 'expanded';
-    const state = expanded[frame.id];
-    const composition =
-      state?.status === 'current' && state.renderKey === documents[frame.id]?.renderKey
-        ? state.composition
-        : null;
+    const measured = measuredFrameSizes.current.get(frame.id);
     return {
       ...frame,
       viewport: { width: frame.width, height: frame.height },
       height:
-        displayedMode === 'expanded' && composition ? composition.viewport.height : frame.height,
+        displayedMode === 'expanded' && measured?.width === frame.width
+          ? measured.height
+          : frame.height,
       overviewLabel: displayedMode === 'expanded' ? 'Live composition' : 'Fixed viewport fallback',
     };
   });
-  // Keep a template pair together and place later rows below the tallest live page.
-  const rowBottoms: number[] = [];
-  for (const [index, frame] of displayFrames.entries()) {
-    const row = Math.floor(index / 4);
-    rowBottoms[row] = Math.max(rowBottoms[row] ?? 0, frame.height);
-  }
-  const rowOffsets = rowBottoms.map((_, row) =>
-    rowBottoms.slice(0, row).reduce((sum, height) => sum + height + 128, 0),
-  );
-  for (const [index, frame] of displayFrames.entries()) {
-    frame.y = rowOffsets[Math.floor(index / 4)];
-  }
   revealAction.current = (frameId) => {
     const kind = mode === 'device' || fallbacks.has(frameId) ? 'device' : 'expanded';
     const target = surfaces.current.get(`${frameId}:${kind}`);
@@ -880,7 +893,10 @@ export function ThemeCanvas({
     mode === 'expanded' &&
     frames.some((frame) => {
       const state = expanded[frame.id];
-      return state?.status === 'current' && state.composition.status !== 'settled';
+      return (
+        state?.status === 'current' &&
+        (state.composition.status === 'height-limit' || state.composition.status === 'round-limit')
+      );
     });
   useEffect(() => {
     const diagnostics = {
@@ -904,6 +920,9 @@ export function ThemeCanvas({
               renderKey: state.renderKey,
               surfaceId: state.surfaceId,
               documentId: state.composition.documentId,
+              configuredViewport: state.composition.configuredViewport,
+              frameHeight: state.composition.frameHeight,
+              viewportAdjustments: state.composition.viewportAdjustments,
               viewport: state.composition.viewport,
               extent: state.composition.document,
               layoutStatus: state.composition.status,
@@ -1342,19 +1361,24 @@ export function ThemeCanvas({
   };
   return (
     <Stack className="h-full overflow-hidden" gap="none">
+      {/* Responsive action groups unmount their desktop children at narrow widths. */}
+      {!source.fixture && source.editor && probe && <CanvasAgentConnection probe={probe} />}
       <Box className="shrink-0 border-b border-border-default bg-background px-4 py-2">
         <PageHeader blurredBackground={false} sticky={false}>
-          <PageHeader.Left>
-            {headerLeading}
-            <PageHeader.Title className="text-base">
-              Canvas
-              <span className="hidden sm:inline">
-                {' '}
-                · {source.editor?.readDraft().theme.name ?? source.label}
-              </span>
-            </PageHeader.Title>
+          <PageHeader.Left className="min-w-0 shrink-0">
+            <Inline align="center" gap="sm">
+              {headerLeading}
+              <PageHeader.Title className="truncate text-base">
+                Canvas
+                <span className="hidden sm:inline">
+                  {' '}
+                  · {source.editor?.readDraft().theme.name ?? source.label}
+                </span>
+              </PageHeader.Title>
+            </Inline>
           </PageHeader.Left>
-          <PageHeader.Actions>
+          <PageHeader.Actions className="min-w-0 shrink flex-wrap justify-end">
+            <Box ref={setZoomControlsHost} />
             <PageHeader.ActionGroup>
               <Popover
                 open={sourceOpen && !!selection}
@@ -1732,7 +1756,9 @@ export function ThemeCanvas({
       <Box className="min-h-0 flex-1">
         <CanvasBoard
           frames={displayFrames}
-          initialFitReady={initialFitReady}
+          renderControls={(controls) =>
+            zoomControlsHost ? createPortal(controls, zoomControlsHost) : null
+          }
           renderFrame={(frame, onInput, { reveal, select }) =>
             documents[frame.id] && probe ? (
               <>
@@ -1776,9 +1802,15 @@ export function ThemeCanvas({
                     }}
                     onDelivery={surfaceDelivered}
                     onEdit={(edit, document, signal) => editText(frame.id, edit, document, signal)}
-                    onExpanded={(state) =>
-                      setExpanded((current) => ({ ...current, [frame.id]: state }))
-                    }
+                    onExpanded={(state) => {
+                      if (state.status === 'current') {
+                        measuredFrameSizes.current.set(frame.id, {
+                          width: state.composition.configuredViewport.width,
+                          height: state.composition.frameHeight,
+                        });
+                      }
+                      setExpanded((current) => ({ ...current, [frame.id]: state }));
+                    }}
                     onInput={(input) => {
                       if (input.kind === 'escape') {
                         if (
@@ -1885,7 +1917,9 @@ export function ThemeCanvas({
             const warning =
               state?.status === 'failed'
                 ? 'Full page unavailable. Use fixed viewport.'
-                : state?.status === 'current' && state.composition.status !== 'settled'
+                : state?.status === 'current' &&
+                    (state.composition.status === 'height-limit' ||
+                      state.composition.status === 'round-limit')
                   ? 'Full page reached a layout limit. Use fixed viewport.'
                   : null;
             const kind = frameKind(frame);

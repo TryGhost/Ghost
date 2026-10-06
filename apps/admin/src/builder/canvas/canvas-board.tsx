@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@tryghost/shade/components';
+import { PageHeader } from '@tryghost/shade/patterns';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { formatNumber } from '@tryghost/shade/utils';
+import { formatNumber, LucideIcon } from '@tryghost/shade/utils';
 
-import { fitCanvas, panCanvas, screenToWorld, zoomCanvas } from './canvas-camera';
+import { fitCanvas, fitCanvasWidth, panCanvas, screenToWorld, zoomCanvas } from './canvas-camera';
 
 import type { ReactNode, SetStateAction } from 'react';
 import type { CanvasCamera, CanvasPoint, CanvasRect, CanvasSize } from './canvas-camera';
@@ -68,12 +69,14 @@ export function CanvasBoard({
   renderFrame,
   renderFrameActions,
   initialFitReady = true,
+  renderControls,
   onSelectionIntent,
   onViewChange,
 }: {
   frames: readonly CanvasFrame[];
   renderFrameActions?: (frame: CanvasFrame) => ReactNode;
   initialFitReady?: boolean;
+  renderControls?: (controls: ReactNode) => ReactNode;
   onSelectionIntent?: (frameId: string | null) => void;
   onViewChange?: (view: CanvasView) => void;
   renderFrame: (
@@ -231,15 +234,10 @@ export function CanvasBoard({
     const measure = () => {
       const next = { width: element.clientWidth, height: element.clientHeight };
       setSize(next);
-      if (
-        initialFitReady &&
-        !initialized.current &&
-        next.width > 96 &&
-        next.height > 96 &&
-        frames.length
-      ) {
+      if (initialFitReady && !initialized.current && next.width > 96 && frames.length) {
         initialized.current = true;
-        setCamera(fitCanvas(frames, next));
+        const home = frames.filter((frame) => frame.group === 'Home');
+        setCamera(fitCanvasWidth(home.length ? home : frames.slice(0, 1), next));
       }
     };
     measure();
@@ -283,18 +281,6 @@ export function CanvasBoard({
       scale: 1,
     });
   };
-  const fit = (group?: string) => {
-    if (group && drafts.current.size) {
-      const target = frames.find((frame) => frame.group === group);
-      if (target) {
-        // Text editing keeps native scale. Reveal a frame instead of centering
-        // a whole pair wider than the viewport and stranding its controls.
-        reveal(target);
-        return;
-      }
-    }
-    navigate(fitCanvas(group ? frames.filter((frame) => frame.group === group) : frames, size));
-  };
   const atPoint = (point: CanvasPoint) => {
     const world = screenToWorld(camera, point);
     return frames.find(
@@ -310,47 +296,33 @@ export function CanvasBoard({
     return { x: clientX - rect.left, y: clientY - rect.top };
   };
   const center = { x: size.width / 2, y: size.height / 2 };
+  const controls = (
+    <Inline align="center" aria-label="Canvas zoom" gap="xs" role="group">
+      <PageHeader.ActionGroup>
+        <PageHeader.Action
+          label="Zoom out"
+          iconOnly
+          onClick={() => navigate((current) => zoomCanvas(current, center, 0.8))}
+        >
+          <LucideIcon.Minus />
+        </PageHeader.Action>
+        <Text className="min-w-10 text-center tabular-nums" size="sm">
+          {formatNumber(Math.round(camera.scale * 100))}%
+        </Text>
+        <PageHeader.Action
+          label="Zoom in"
+          iconOnly
+          onClick={() => navigate((current) => zoomCanvas(current, center, 1.25))}
+        >
+          <LucideIcon.Plus />
+        </PageHeader.Action>
+      </PageHeader.ActionGroup>
+    </Inline>
+  );
 
   return (
     <Stack className="h-full min-h-0 bg-background" gap="none">
-      <Inline
-        aria-label="Canvas controls"
-        className="shrink-0 border-b border-border-default px-4 py-2"
-        gap="sm"
-        role="toolbar"
-        wrap
-      >
-        <Button size="sm" variant="outline" onClick={() => fit()}>
-          Fit all
-        </Button>
-        {[...new Set(frames.map((frame) => frame.group))].map((group) => (
-          <Button key={group} size="sm" variant="ghost" onClick={() => fit(group)}>
-            Fit {group}
-          </Button>
-        ))}
-        <Button
-          aria-label="Zoom out"
-          size="sm"
-          variant="ghost"
-          onClick={() => navigate((current) => zoomCanvas(current, center, 0.8))}
-        >
-          −
-        </Button>
-        <Text className="min-w-12 text-center tabular-nums" size="sm">
-          {formatNumber(Math.round(camera.scale * 100))}%
-        </Text>
-        <Button
-          aria-label="Zoom in"
-          size="sm"
-          variant="ghost"
-          onClick={() => navigate((current) => zoomCanvas(current, center, 1.25))}
-        >
-          +
-        </Button>
-        <Text size="sm" tone="secondary">
-          Scroll or Space-drag to pan · Ctrl/⌘ scroll to zoom · Double-click text to edit
-        </Text>
-      </Inline>
+      {renderControls ? renderControls(controls) : controls}
       {draftFrames.length > 0 && (
         <Text role="status" size="sm">
           Uncommitted text in{' '}
@@ -363,6 +335,7 @@ export function CanvasBoard({
       )}
       <Box
         ref={host}
+        aria-description="Scroll or Space-drag to pan. Ctrl/Command-scroll to zoom. Double-click text to edit. F to fit all."
         aria-label="Theme canvas"
         className="relative min-h-0 flex-1 overflow-clip bg-surface-elevated-2"
         role="region"
@@ -373,6 +346,15 @@ export function CanvasBoard({
           }
           if (event.target !== event.currentTarget) {
             return;
+          }
+          if (
+            event.key.toLowerCase() === 'f' &&
+            !event.ctrlKey &&
+            !event.metaKey &&
+            !event.altKey
+          ) {
+            event.preventDefault();
+            navigate(fitCanvas(frames, size));
           }
           const delta: Record<string, CanvasPoint> = {
             ArrowLeft: { x: 60, y: 0 },

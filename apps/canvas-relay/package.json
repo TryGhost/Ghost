@@ -1,0 +1,44 @@
+{
+  "name": "@tryghost/canvas-relay",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./client": {
+      "source": "./src/client.ts",
+      "types": "./build/client.d.ts",
+      "default": "./build/client.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc && esbuild src/worker.ts --bundle --format=esm --platform=browser --outfile=build/worker.js",
+    "dev": "tsx scripts/wrangler-dev.ts",
+    "dev:miniflare": "tsx scripts/dev.ts",
+    "setup:local": "tsx scripts/setup-local.ts",
+    "setup:ghst": "tsx scripts/install-ghst.ts",
+    "spike": "tsx scripts/cli.ts",
+    "lint": "eslint src test scripts --cache",
+    "test:unit": "vitest run",
+    "test:types": "tsc --noEmit -p test/tsconfig.json",
+    "test": "pnpm run '/^test:/'"
+  },
+  "dependencies": {
+    "jose": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "catalog:",
+    "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-typescript": "workspace:*",
+    "@internal/cfg-vitest": "workspace:*",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "esbuild": "catalog:",
+    "eslint": "catalog:",
+    "miniflare": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "wrangler": "catalog:"
+  }
+}
