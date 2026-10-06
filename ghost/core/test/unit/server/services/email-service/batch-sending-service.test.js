@@ -3,7 +3,6 @@ const BatchSendingService = require('../../../../../core/server/services/email-s
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
 const logging = require('@tryghost/logging');
-const nql = require('@tryghost/nql');
 const errors = require('@tryghost/errors');
 
 // We need a short sleep in some tests to simulate time passing
@@ -263,11 +262,7 @@ describe('Batch Sending Service', function () {
   });
 
   describe('sendEmail', function () {
-    it('always reconciles via createBatches, passing existing batches (idempotent resume)', async function () {
-      // Existing batches from a prior run are handed to createBatches, which is
-      // idempotent: it resumes any un-built tail rather than being skipped. The old
-      // behaviour skipped creation entirely when batches existed, silently abandoning
-      // the tail of a creation interrupted by a container restart.
+    it('always prepares through createBatches before submitting the returned batches', async function () {
       const existingBatches = [createModel({}), createModel({})];
       const EmailBatch = createModelClass({
         findAll: existingBatches,
@@ -293,9 +288,6 @@ describe('Batch Sending Service', function () {
       assert.equal(result, undefined);
       sinon.assert.calledOnce(sendBatches);
       sinon.assert.calledOnce(createBatches);
-
-      // createBatches receives the existing batches so it can resume from their watermark
-      assert.equal(createBatches.firstCall.args[0].existingBatches.length, 2);
 
       // sendBatches gets the reconciled set
       const argument = sendBatches.firstCall.args[0];
@@ -356,751 +348,245 @@ describe('Batch Sending Service', function () {
   });
 
   describe('createBatches', function () {
-    it('works even when new members are added', async function () {
-      const Member = createModelClass({});
-      const EmailBatch = createModelClass({});
-      const newsletter = createModel({});
-      const domainWarmingService = {
-        isEnabled: () => false,
-      };
-
-      // Create 16 members in single line
-      const members = new Array(16).fill(0).map((i) =>
-        createModel({
-          email: `example${i}@example.com`,
-          uuid: `member${i}`,
-          newsletters: [newsletter],
-        }),
-      );
-
-      const initialMembers = members.slice();
-
-      Member.getFilteredCollectionQuery = ({ filter }) => {
-        // Everytime we request the members, we also create a new member, to simulate that creating batches doesn't happen in a transaction
-        // These created members should be excluded
-        members.push(
-          createModel({
-            email: `example${members.length}@example.com`,
-            uuid: `member${members.length}`,
-            newsletters: [newsletter],
-          }),
-        );
-
-        const q = nql(filter);
-        // Check that the filter id:<${lastId} is a string
-        // In rare cases when the object ID is numeric, the query returns unexpected results
-        assert.equal(typeof q.toJSON().$and[1].id.$lt, 'string');
-
-        const all = members.filter((member) => {
-          return q.queryJSON(member.toJSON());
-        });
-
-        // Sort all by id desc (string)
-        all.sort((a, b) => {
-          return b.id.localeCompare(a.id);
-        });
-        return createDb({
-          all: all.map((member) => member.toJSON()),
-        });
-      };
-
-      const db = createDb({});
-      const insert = sinon.spy(db, 'insert');
-
-      const service = new BatchSendingService({
-        models: { Member, EmailBatch },
-        domainWarmingService,
-        emailRenderer: {
-          getSegments() {
-            return [null];
-          },
-        },
-        sendingService: {
-          getMaximumRecipients() {
-            return 5;
-          },
-        },
-        emailSegmenter: {
-          getMemberFilterForSegment(n) {
-            return `newsletters.id:'${n.id}'`;
-          },
-        },
-        db,
-      });
-
-      const email = createModel({});
-
-      // Check we don't include members created after the email model
-      members.push(
-        createModel({
-          email: `example${members.length}@example.com`,
-          uuid: `member${members.length}`,
-          newsletters: [newsletter],
-        }),
-      );
-
-      const batches = await service.createBatches({
-        email,
-        post: createModel({}),
-        newsletter,
-      });
-      assert.equal(batches.length, 4);
-
-      const calls = insert.getCalls();
-      assert.equal(calls.length, 4);
-
-      const insertedRecipients = calls.flatMap((call) => call.args[0]);
-      assert.equal(insertedRecipients.length, 16);
-
-      // Check all recipients match initialMembers
-      assert.deepEqual(
-        insertedRecipients.map((recipient) => recipient.member_id).sort(),
-        initialMembers.map((member) => member.id).sort(),
-      );
-
-      // Check email_count set
-      assert.equal(email.get('email_count'), 16);
-    });
-
-    it('Does log message to sentry if email_count is off by > 1%', async function () {
-      const Member = createModelClass({});
-      const EmailBatch = createModelClass({});
-      const newsletter = createModel({});
-      const domainWarmingService = {
-        isEnabled: () => false,
-      };
-
-      // Create 16 members in single line
-      const members = new Array(16).fill(0).map((i) =>
-        createModel({
-          email: `example${i}@example.com`,
-          uuid: `member${i}`,
-          newsletters: [newsletter],
-        }),
-      );
-
-      Member.getFilteredCollectionQuery = ({ filter }) => {
-        // Everytime we request the members, we also create a new member, to simulate that creating batches doesn't happen in a transaction
-        // These created members should be excluded
-        members.push(
-          createModel({
-            email: `example${members.length}@example.com`,
-            uuid: `member${members.length}`,
-            newsletters: [newsletter],
-          }),
-        );
-
-        const q = nql(filter);
-        // Check that the filter id:<${lastId} is a string
-        // In rare cases when the object ID is numeric, the query returns unexpected results
-        assert.equal(typeof q.toJSON().$and[1].id.$lt, 'string');
-
-        const all = members.filter((member) => {
-          return q.queryJSON(member.toJSON());
-        });
-
-        // Sort all by id desc (string)
-        all.sort((a, b) => {
-          return b.id.localeCompare(a.id);
-        });
-        return createDb({
-          all: all.map((member) => member.toJSON()),
-        });
-      };
-
-      const db = createDb({});
-      const captureMessage = sinon.stub();
-
-      const service = new BatchSendingService({
-        models: { Member, EmailBatch },
-        domainWarmingService,
-        sentry: {
-          captureMessage,
-        },
-        emailRenderer: {
-          getSegments() {
-            return [null];
-          },
-        },
-        sendingService: {
-          getMaximumRecipients() {
-            return 5;
-          },
-        },
-        emailSegmenter: {
-          getMemberFilterForSegment(n) {
-            return `newsletters.id:'${n.id}'`;
-          },
-        },
-        db,
-      });
-
-      const email = createModel({
-        email_count: 15,
-      });
-
-      await service.createBatches({
-        email,
-        post: createModel({}),
-        newsletter,
-      });
-
-      sinon.assert.calledOnce(captureMessage);
-    });
-
-    it('works with multiple batches', async function () {
-      const Member = createModelClass({});
-      const EmailBatch = createModelClass({});
-      const newsletter = createModel({});
-      const domainWarmingService = {
-        isEnabled: () => false,
-      };
-
-      // Create 16 members in single line
-      const members = [
-        ...new Array(2).fill(0).map((i) =>
-          createModel({
-            email: `example${i}@example.com`,
-            uuid: `member${i}`,
-            status: 'paid',
-            newsletters: [newsletter],
-          }),
-        ),
-        ...new Array(2).fill(0).map((i) =>
-          createModel({
-            email: `free${i}@example.com`,
-            uuid: `free${i}`,
-            status: 'free',
-            newsletters: [newsletter],
-          }),
-        ),
-      ];
-
-      const initialMembers = members.slice();
-
-      Member.getFilteredCollectionQuery = ({ filter }) => {
-        const q = nql(filter);
-        // Check that the filter id:<${lastId} is a string
-        // In rare cases when the object ID is numeric, the query returns unexpected results
-        assert.equal(typeof q.toJSON().$and[2].id.$lt, 'string');
-
-        const all = members.filter((member) => {
-          return q.queryJSON(member.toJSON());
-        });
-
-        // Sort all by id desc (string)
-        all.sort((a, b) => {
-          return b.id.localeCompare(a.id);
-        });
-        return createDb({
-          all: all.map((member) => member.toJSON()),
-        });
-      };
-
-      const db = createDb({});
-      const insert = sinon.spy(db, 'insert');
-
-      const service = new BatchSendingService({
-        models: { Member, EmailBatch },
-        domainWarmingService,
-        emailRenderer: {
-          getSegments() {
-            return ['status:free', 'status:-free'];
-          },
-        },
-        sendingService: {
-          getMaximumRecipients() {
-            return 5;
-          },
-        },
-        emailSegmenter: {
-          getMemberFilterForSegment(n, _, segment) {
-            return `newsletters.id:'${n.id}'+(${segment})`;
-          },
-        },
-        db,
-      });
-
-      const email = createModel({});
-
-      const batches = await service.createBatches({
-        email,
-        post: createModel({}),
-        newsletter,
-      });
-      assert.equal(batches.length, 2);
-
-      const calls = insert.getCalls();
-      assert.equal(calls.length, 2);
-
-      const insertedRecipients = calls.flatMap((call) => call.args[0]);
-      assert.equal(insertedRecipients.length, 4);
-
-      // Check all recipients match initialMembers
-      assert.deepEqual(
-        insertedRecipients.map((recipient) => recipient.member_id).sort(),
-        initialMembers.map((member) => member.id).sort(),
-      );
-
-      // Check email_count set
-      assert.equal(email.get('email_count'), 4);
-    });
-
-    // NOTE: we can't fully test this because javascript can't handle a large number (e.g. 650706040078550001536020) - it uses scientific notation
-    //  so we have to use a string
-    //  ref: https://ghost.slack.com/archives/CTH5NDJMS/p1699359241142969
-    it('sends expected emails if a batch ends on a numeric id', async function () {
-      const Member = createModelClass({});
-      const EmailBatch = createModelClass({});
-      const newsletter = createModel({});
-      const domainWarmingService = {
-        isEnabled: () => false,
-      };
-
-      const members = [
-        createModel({
-          id: '61a55008a9d68c003baec6df',
-          email: `test1@numericid.com`,
-          uuid: 'test1',
-          status: 'free',
-          newsletters: [newsletter],
-        }),
-        createModel({
-          id: '650706040078550001536020', // numeric object id
-          email: `test2@numericid.com`,
-          uuid: 'test2',
-          status: 'free',
-          newsletters: [newsletter],
-        }),
-        createModel({
-          id: '65070957007855000153605b',
-          email: `test3@numericid.com`,
-          uuid: 'test3',
-          status: 'free',
-          newsletters: [newsletter],
-        }),
-      ];
-
-      const initialMembers = members.slice();
-
-      Member.getFilteredCollectionQuery = ({ filter }) => {
-        const q = nql(filter);
-        // Check that the filter id:<${lastId} is a string
-        // In rare cases when the object ID is numeric, the query returns unexpected results
-        assert.equal(typeof q.toJSON().$and[2].id.$lt, 'string');
-
-        const all = members.filter((member) => {
-          return q.queryJSON(member.toJSON());
-        });
-
-        // Sort all by id desc (string) - this is how we keep the order of members consistent (object id is a proxy for created_at)
-        all.sort((a, b) => {
-          return b.id.localeCompare(a.id);
-        });
-
-        return createDb({
-          all: all.map((member) => member.toJSON()),
-        });
-      };
-
-      const db = createDb({});
-      const insert = sinon.spy(db, 'insert');
-
-      const service = new BatchSendingService({
-        models: { Member, EmailBatch },
-        domainWarmingService,
-        emailRenderer: {
-          getSegments() {
-            return ['status:free'];
-          },
-        },
-        sendingService: {
-          getMaximumRecipients() {
-            return 2; // pick a batch size that ends with a numeric member object id
-          },
-        },
-        emailSegmenter: {
-          getMemberFilterForSegment(n, _, segment) {
-            return `newsletters.id:'${n.id}'+(${segment})`;
-          },
-        },
-        db,
-      });
-
-      const email = createModel({});
-
-      const batches = await service.createBatches({
-        email,
-        post: createModel({}),
-        newsletter,
-      });
-      assert.equal(batches.length, 2);
-
-      const calls = insert.getCalls();
-      assert.equal(calls.length, 2);
-
-      const insertedRecipients = calls.flatMap((call) => call.args[0]);
-      assert.equal(insertedRecipients.length, 3);
-
-      // Check all recipients match initialMembers
-      assert.deepEqual(
-        insertedRecipients.map((recipient) => recipient.member_id).sort(),
-        initialMembers.map((member) => member.id).sort(),
-      );
-
-      // Check email_count set
-      assert.equal(email.get('email_count'), 3);
-    });
-
-    describe('resume (idempotent creation)', function () {
-      // Builds a setup where `builtCount` recipients (the highest member ids) were
-      // already created by a prior run, leaving `watermark` as the lowest built id.
-      // createBatches must resume below the watermark and build only the un-built tail.
-      function createResumeSetup({
-        builtCount,
-        watermark,
-        totalMembers,
-        email_count,
-        maxRecipients = 5,
-      }) {
-        const newsletter = createModel({});
-        const domainWarmingService = { isEnabled: () => false };
-
-        // Intended members id00..id{N-1}, all subscribed to the newsletter
-        const members = new Array(totalMembers).fill(0).map((_, i) => {
-          const idx = String(i).padStart(2, '0');
-          return createModel({
-            id: `id${idx}`,
-            email: `example${idx}@example.com`,
-            uuid: `member${idx}`,
-            name: `Member ${idx}`,
-            newsletters: [newsletter],
-          });
-        });
-
-        const seenFilters = [];
-        const Member = createModelClass({});
-        Member.getFilteredCollectionQuery = ({ filter }) => {
-          seenFilters.push(filter);
-          const q = nql(filter);
-          const all = members
-            .filter((m) => q.queryJSON(m.toJSON()))
-            .sort((a, b) => b.id.localeCompare(a.id));
-          return createDb({ all: all.map((m) => m.toJSON()) });
-        };
-
-        const EmailBatch = createModelClass({});
-
-        // The service #db resolves the existing coverage for #getExistingCoverage
-        const coverageRows =
-          builtCount > 0
-            ? [{ member_segment: null, count: builtCount, min_member_id: watermark }]
-            : [];
-        const db = createDb({ all: coverageRows });
-        const insert = sinon.spy(db, 'insert');
-
-        const service = new BatchSendingService({
-          models: { Member, EmailBatch },
-          domainWarmingService,
-          emailRenderer: {
-            getSegments() {
-              return [null];
+    function createAudienceService(rows = []) {
+      const getSegments = sinon.stub().resolves([null]);
+      const getFilteredCollectionQuery = sinon.stub().callsFake(() => createDb({ all: rows }));
+      const db = {
+        knex() {
+          let counted = false;
+          return {
+            clone() {
+              return this;
             },
-          },
-          sendingService: {
-            getMaximumRecipients() {
-              return maxRecipients;
+            join() {
+              return this;
             },
-          },
-          emailSegmenter: {
-            getMemberFilterForSegment(n) {
-              return `newsletters.id:'${n.id}'`;
+            where() {
+              return this;
             },
-          },
-          db,
-        });
-
-        // Email id sorts above every member id, so a fresh cursor includes them all
-        const email = createModel({ id: 'idZZ', email_count });
-        return { service, email, newsletter, insert, seenFilters };
-      }
-
-      it('resumes from the segment watermark and only builds the un-built tail', async function () {
-        // Top 10 (id10..id19) already built; watermark = id10, tail = id00..id09
-        const { service, email, newsletter, insert, seenFilters } = createResumeSetup({
-          builtCount: 10,
-          watermark: 'id10',
-          totalMembers: 20,
-          email_count: 20,
-        });
-
-        const batches = await service.createBatches({ email, post: createModel({}), newsletter });
-
-        // Only the tail is built: 10 members / 5 per batch = 2 new batches
-        assert.equal(batches.length, 2);
-        const inserted = insert.getCalls().flatMap((c) => c.args[0]);
-        assert.equal(inserted.length, 10);
-        assert.deepEqual(inserted.map((r) => r.member_id).sort(), [
-          'id00',
-          'id01',
-          'id02',
-          'id03',
-          'id04',
-          'id05',
-          'id06',
-          'id07',
-          'id08',
-          'id09',
-        ]);
-
-        // First member fetch started below the watermark, not the email id
-        assert.match(seenFilters[0], /id:<'id10'/);
-
-        // email_count reconciled to existing (10) + built (10)
-        assert.equal(email.get('email_count'), 20);
+            whereNot() {
+              return this;
+            },
+            groupBy() {
+              return this;
+            },
+            select() {
+              return this;
+            },
+            limit() {
+              return this;
+            },
+            count() {
+              counted = true;
+              return this;
+            },
+            first() {
+              return Promise.resolve(counted ? { count: 0 } : null);
+            },
+            then(resolve, reject) {
+              return Promise.resolve([]).then(resolve, reject);
+            },
+          };
+        },
+      };
+      const service = new BatchSendingService({
+        db,
+        models: {
+          EmailBatch: createModelClass({ findAll: [] }),
+          Member: { getFilteredCollectionQuery },
+        },
+        domainWarmingService: { isEnabled: () => false },
+        emailRenderer: { getSegments },
+        emailSegmenter: { getMemberFilterForSegment: () => '' },
+        sendingService: { getMaximumRecipients: () => 5 },
       });
+      return { service, getSegments, getFilteredCollectionQuery };
+    }
 
-      it('creates nothing when coverage is already complete (idempotent re-run)', async function () {
-        // All 20 built; watermark = id00 (lowest), nothing below it to build
-        const { service, email, newsletter, insert, seenFilters } = createResumeSetup({
-          builtCount: 20,
-          watermark: 'id00',
-          totalMembers: 20,
-          email_count: 20,
-        });
+    it('freezes an empty accounted audience and reuses it on retry', async function () {
+      const { service, getSegments, getFilteredCollectionQuery } = createAudienceService();
+      const email = createModel({ preflight_email_count: 0, email_count: 0 });
+      const args = { email, post: createModel({}), newsletter: createModel({}) };
 
-        const existingBatches = [createModel({}), createModel({})];
-        const batches = await service.createBatches({
+      assert.deepEqual(await service.createBatches(args), []);
+      assert.equal(email.get('candidate_count'), 0);
+      assert.equal(email.get('preparation_excluded_count'), 0);
+      assert.ok(email.get('prepared_at'));
+
+      assert.deepEqual(await service.createBatches(args), []);
+      sinon.assert.calledOnce(getSegments);
+      sinon.assert.calledOnce(getFilteredCollectionQuery);
+    });
+
+    it('opts an unsent legacy email into accounting before freezing its audience', async function () {
+      const { service } = createAudienceService();
+      const email = createModel({ email_count: 0 });
+
+      assert.deepEqual(
+        await service.createBatches({
           email,
           post: createModel({}),
-          newsletter,
-          existingBatches,
-        });
+          newsletter: createModel({}),
+        }),
+        [],
+      );
+      assert.equal(email.get('preflight_email_count'), 0);
+      assert.equal(email.get('candidate_count'), 0);
+      assert.ok(email.get('prepared_at'));
+    });
 
-        // No new recipients inserted; returned set is exactly the existing batches
-        assert.equal(insert.getCalls().length, 0);
-        assert.equal(batches.length, 2);
-        assert.match(seenFilters[0], /id:<'id00'/);
-        assert.equal(email.get('email_count'), 20);
+    it('reuses already-started legacy batches without inventing accounting metadata', async function () {
+      const EmailBatch = createModelClass({
+        findAll: [{ id: 'batch-id', status: 'submitted' }],
+      });
+      const service = new BatchSendingService({ models: { EmailBatch } });
+      const email = createModel({ email_count: 1 });
+
+      const batches = await service.createBatches({
+        email,
+        post: createModel({}),
+        newsletter: createModel({}),
       });
 
-      it('builds the full set on a fresh send (no coverage), starting from the email id', async function () {
-        const { service, email, newsletter, insert, seenFilters } = createResumeSetup({
-          builtCount: 0,
-          watermark: null,
-          totalMembers: 20,
-          email_count: 20,
-        });
+      assert.equal(batches.length, 1);
+      assert.equal(batches[0].get('status'), 'submitted');
+      assert.equal(email.get('preflight_email_count'), undefined);
+      assert.equal(email.get('prepared_at'), undefined);
+    });
 
-        const batches = await service.createBatches({ email, post: createModel({}), newsletter });
+    it('counts an invalid candidate as an explicit preparation exclusion', async function () {
+      const { service } = createAudienceService([{ id: 'member-id' }]);
+      const email = createModel({ preflight_email_count: 1, email_count: 1 });
 
-        assert.equal(batches.length, 4); // 20 / 5
-        assert.equal(insert.getCalls().flatMap((c) => c.args[0]).length, 20);
-        // Fresh send starts the cursor at the email id
-        assert.match(seenFilters[0], /id:<'idZZ'/);
-        assert.equal(email.get('email_count'), 20);
+      assert.deepEqual(
+        await service.createBatches({
+          email,
+          post: createModel({}),
+          newsletter: createModel({}),
+        }),
+        [],
+      );
+      assert.equal(email.get('candidate_count'), 1);
+      assert.equal(email.get('preparation_excluded_count'), 1);
+      assert.equal(email.get('email_count'), 0);
+    });
+
+    it('stores and verifies a batch for one eligible recipient', async function () {
+      const member = {
+        id: '000000000000000000000001',
+        uuid: 'member-uuid',
+        email: 'member@example.com',
+        name: 'Member',
+      };
+      const batches = [];
+      const recipients = [];
+      const EmailBatch = {
+        findAll: async () => ({ models: batches }),
+        transaction: async (callback) => callback({}),
+        add: async (attributes) => {
+          const batch = createModel(attributes);
+          batches.push(batch);
+          return batch;
+        },
+      };
+      const db = {
+        knex() {
+          let grouped = false;
+          let counted = false;
+          return {
+            clone() {
+              return this;
+            },
+            join() {
+              return this;
+            },
+            where() {
+              return this;
+            },
+            whereNot() {
+              return this;
+            },
+            groupBy() {
+              grouped = true;
+              return this;
+            },
+            select() {
+              return this;
+            },
+            limit() {
+              return this;
+            },
+            count() {
+              counted = true;
+              return this;
+            },
+            insert(rows) {
+              recipients.push(...rows);
+              return this;
+            },
+            transacting() {
+              return this;
+            },
+            first() {
+              return Promise.resolve(counted ? { count: recipients.length } : null);
+            },
+            then(resolve, reject) {
+              const result = grouped ? [{ batch_id: batches[0].id, count: recipients.length }] : [];
+              return Promise.resolve(result).then(resolve, reject);
+            },
+          };
+        },
+      };
+      const service = new BatchSendingService({
+        db,
+        models: {
+          EmailBatch,
+          Member: { getFilteredCollectionQuery: () => createDb({ all: [member] }) },
+        },
+        domainWarmingService: { isEnabled: () => false },
+        emailRenderer: { getSegments: async () => [null] },
+        emailSegmenter: { getMemberFilterForSegment: () => '' },
+        sendingService: { getMaximumRecipients: () => 5 },
       });
+      const email = createModel({
+        id: 'ffffffffffffffffffffffff',
+        preflight_email_count: 1,
+        email_count: 1,
+      });
+      const args = { email, post: createModel({}), newsletter: createModel({}) };
 
-      it('aborts at a batch boundary during shutdown (SHUTDOWN_CODE), leaving a resumable partial', async function () {
-        const newsletter = createModel({});
-        const members = new Array(20).fill(0).map((_, i) => {
-          const idx = String(i).padStart(2, '0');
-          return createModel({
-            id: `id${idx}`,
-            email: `example${idx}@example.com`,
-            uuid: `member${idx}`,
-            name: `Member ${idx}`,
-            newsletters: [newsletter],
-          });
-        });
+      const prepared = await service.createBatches(args);
+      assert.equal(prepared.length, 1);
+      assert.equal(prepared[0].get('recipient_count'), 1);
+      assert.equal(recipients[0].member_id, member.id);
+      assert.equal(email.get('candidate_count'), 1);
+      assert.equal(email.get('preparation_excluded_count'), 0);
+      assert.equal(email.get('email_count'), 1);
+      assert.ok(email.get('prepared_at'));
+      assert.equal((await service.createBatches(args))[0].id, prepared[0].id);
+    });
 
-        let fetchCount = 0;
-        const Member = createModelClass({});
-        Member.getFilteredCollectionQuery = ({ filter }) => {
-          fetchCount += 1;
-          // Signal shutdown after the first page is fetched and built, so the next
-          // loop iteration bails at the batch boundary rather than mid-batch.
-          if (fetchCount === 1) {
-            service.onPreStop();
-          }
-          const q = nql(filter);
-          const all = members
-            .filter((m) => q.queryJSON(m.toJSON()))
-            .sort((a, b) => b.id.localeCompare(a.id));
-          return createDb({ all: all.map((m) => m.toJSON()) });
-        };
+    it('rejects a frozen preparation when candidates no longer balance', async function () {
+      const { service } = createAudienceService();
+      const email = createModel({ preflight_email_count: 0, email_count: 0 });
+      const args = { email, post: createModel({}), newsletter: createModel({}) };
+      await service.createBatches(args);
+      await email.save({ candidate_count: 1 });
 
-        const db = createDb({ all: [] });
-        const insert = sinon.spy(db, 'insert');
-        const service = new BatchSendingService({
-          models: { Member, EmailBatch: createModelClass({}) },
-          domainWarmingService: { isEnabled: () => false },
-          emailRenderer: {
-            getSegments() {
-              return [null];
-            },
-          },
-          sendingService: {
-            getMaximumRecipients() {
-              return 5;
-            },
-          },
-          emailSegmenter: {
-            getMemberFilterForSegment(n) {
-              return `newsletters.id:'${n.id}'`;
-            },
-          },
-          db,
-        });
-        const email = createModel({ id: 'idZZ', email_count: 20 });
-
-        await assert.rejects(
-          service.createBatches({ email, post: createModel({}), newsletter }),
-          (err) => err.code === BatchSendingService.SHUTDOWN_CODE,
-        );
-
-        // Only the first batch (5 recipients) was committed before the abort; the
-        // remaining tail is left un-built for the next boot to resume.
-        const inserted = insert.getCalls().flatMap((c) => c.args[0]);
-        assert.equal(inserted.length, 5);
+      await assert.rejects(() => service.createBatches(args), {
+        code: 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
       });
     });
 
-    describe('Domain warming', function () {
-      // Helper function to create test setup with minimal boilerplate
-      function createDomainWarmingTestSetup({
-        memberCount = 10,
-        warmingEnabled = true,
-        maxRecipients = 5,
-      } = {}) {
-        const Member = createModelClass({});
-        const EmailBatch = createModelClass({});
-        const newsletter = createModel({});
+    it('rejects a frozen preparation when its stored email count changes', async function () {
+      const { service } = createAudienceService();
+      const email = createModel({ preflight_email_count: 0, email_count: 0 });
+      const args = { email, post: createModel({}), newsletter: createModel({}) };
+      await service.createBatches(args);
+      await email.save({ email_count: 1 });
 
-        const members = new Array(memberCount).fill(0).map((i) =>
-          createModel({
-            email: `example${i}@example.com`,
-            uuid: `member${i}`,
-            newsletters: [newsletter],
-          }),
-        );
-
-        Member.getFilteredCollectionQuery = ({ filter }) => {
-          const q = nql(filter);
-          const all = members.filter((member) => {
-            return q.queryJSON(member.toJSON());
-          });
-
-          all.sort((a, b) => {
-            return b.id.localeCompare(a.id);
-          });
-          return createDb({
-            all: all.map((member) => member.toJSON()),
-          });
-        };
-
-        const db = createDb({});
-        const insert = sinon.spy(db, 'insert');
-        const domainWarmingService = {
-          isEnabled: sinon.stub().returns(warmingEnabled),
-        };
-
-        const service = new BatchSendingService({
-          models: { Member, EmailBatch },
-          domainWarmingService,
-          emailRenderer: {
-            getSegments() {
-              return [null];
-            },
-          },
-          sendingService: {
-            getMaximumRecipients() {
-              return maxRecipients;
-            },
-          },
-          emailSegmenter: {
-            getMemberFilterForSegment(n) {
-              return `newsletters.id:'${n.id}'`;
-            },
-          },
-          db,
-        });
-
-        return { Member, EmailBatch, newsletter, members, service, db, insert };
-      }
-
-      it('creates batches with domain warming disabled', async function () {
-        const { service, newsletter } = createDomainWarmingTestSetup({ warmingEnabled: false });
-        const email = createModel({});
-
-        const batches = await service.createBatches({ email, post: createModel({}), newsletter });
-
-        assert.equal(batches.length, 2);
-        batches.forEach((batch) => {
-          assert.equal(batch.get('fallback_sending_domain'), false);
-        });
-      });
-
-      it('creates batches with domain warming enabled and limit below total count', async function () {
-        const { service, newsletter, insert } = createDomainWarmingTestSetup();
-        const email = createModel({ csd_email_count: 7 });
-
-        const batches = await service.createBatches({ email, post: createModel({}), newsletter });
-
-        assert.equal(batches.length, 3);
-        assert.equal(batches[0].get('fallback_sending_domain'), false);
-        assert.equal(batches[1].get('fallback_sending_domain'), false);
-        assert.equal(batches[2].get('fallback_sending_domain'), true);
-
-        // Verify recipient distribution
-        const calls = insert.getCalls();
-        assert.equal(calls[0].args[0].length, 5);
-        assert.equal(calls[1].args[0].length, 2);
-        assert.equal(calls[2].args[0].length, 3);
-      });
-
-      // Test multiple scenarios where all batches should use custom domain
-      [
-        {
-          name: 'limit equals total count',
-          csd_email_count: 10,
-          memberCount: 10,
-          expectedBatches: 2,
-        },
-        {
-          name: 'limit exceeds total count',
-          csd_email_count: 20,
-          memberCount: 10,
-          expectedBatches: 2,
-        },
-        {
-          name: 'limit is undefined',
-          csd_email_count: undefined,
-          memberCount: 5,
-          expectedBatches: 1,
-        },
-      ].forEach(({ name, csd_email_count, memberCount, expectedBatches }) => {
-        it(`creates batches when ${name}`, async function () {
-          const { service, newsletter } = createDomainWarmingTestSetup({ memberCount });
-          const email = createModel({ csd_email_count });
-
-          const batches = await service.createBatches({ email, post: createModel({}), newsletter });
-
-          assert.equal(batches.length, expectedBatches);
-          batches.forEach((batch) => {
-            assert.equal(batch.get('fallback_sending_domain'), false);
-          });
-        });
-      });
-
-      it('updates email_count and csd_email_count when actual count differs', async function () {
-        const { service, newsletter } = createDomainWarmingTestSetup();
-        const email = createModel({ email_count: 15, csd_email_count: 7 });
-
-        await service.createBatches({ email, post: createModel({}), newsletter });
-
-        assert.equal(email.get('email_count'), 10);
-        assert.equal(email.get('csd_email_count'), 7);
+      await assert.rejects(() => service.createBatches(args), {
+        code: 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
       });
     });
   });
@@ -2068,6 +1554,20 @@ describe('Batch Sending Service', function () {
   });
 
   describe('retryDb', function () {
+    it('does not retry an error marked non-retryable regardless of its code', async function () {
+      const service = new BatchSendingService({});
+      const error = Object.assign(new Error('Terminal failure'), {
+        code: 'ANOTHER_TERMINAL_ERROR',
+        retryable: false,
+      });
+      const action = sinon.stub().rejects(error);
+      await assert.rejects(
+        service.retryDb(action, { maxRetries: 2, sleep: 0, description: 'terminal failure' }),
+        (e) => e === error,
+      );
+      sinon.assert.calledOnce(action);
+    });
+
     it('Does retry', async function () {
       const service = new BatchSendingService({});
       let callCount = 0;
@@ -2636,6 +2136,26 @@ describe('Batch Sending Service', function () {
         'Email must stay submitting so the boot resume scan picks it up',
       );
       assert.equal(afterEmailModel.get('error'), undefined);
+    });
+
+    it('reports a verification failure once during shutdown and preserves the resumable status', async function () {
+      const Email = createModelClass({ findOne: { status: 'pending' } });
+      const sentry = { captureException: sinon.stub() };
+      const service = new BatchSendingService({ models: { Email }, sentry });
+      const {
+        recipientVerificationError,
+      } = require('../../../../../core/server/services/email-service/recipient-accounting');
+      const failure = recipientVerificationError('123', 'preparation_totals');
+      let interruptedEmail;
+      sinon.stub(service, 'sendEmail').callsFake(async (email) => {
+        interruptedEmail = email;
+        service.onPreStop();
+        throw failure;
+      });
+      await service.emailJob({ emailId: '123' });
+      sinon.assert.calledOnceWithExactly(sentry.captureException, failure);
+      assert.equal(interruptedEmail.get('status'), 'submitting');
+      assert.equal(interruptedEmail.get('error'), undefined);
     });
 
     it('onPreStop stops workers claiming new batches without waiting for in-flight ones', async function () {
