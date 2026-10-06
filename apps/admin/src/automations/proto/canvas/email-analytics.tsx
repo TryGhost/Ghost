@@ -58,28 +58,55 @@ interface StatsProps {
 
 // Tracked → the value; not tracked → a muted, inert "Off" that keeps the column
 // in place (distinct from formatRate's "—" = no data yet).
-const FooterMetric: React.FC<{ label: string; tracked: boolean; children: React.ReactNode }> = ({
-  label,
-  tracked,
-  children,
-}) => (
-  <div className="flex flex-col gap-1 text-left">
-    {/* Small muted label; value at 14px (text-md) foreground. */}
-    <span className="text-xs text-muted-foreground">{label}</span>
-    {tracked ? (
-      <span className="font-mono text-md text-foreground tabular-nums">{children}</span>
-    ) : (
-      <OffValue className="text-md" />
-    )}
-  </div>
-);
+//
+// hoverValue: the count behind a rate, swapped in while the metric is hovered or
+// focused — the two spans that trade places are the shipping sidebar's (email-
+// performance-section, Kpi). Only the number changes: the sidebar's muted fill
+// and padding were tried here and taken out, as three across on a card they
+// read as buttons. The focus stop stays, with the browser's own focus ring, so
+// the swap isn't hover-only. Without a hoverValue the metric is inert.
+const FooterMetric: React.FC<{
+  label: string;
+  tracked: boolean;
+  hoverValue?: string;
+  children: React.ReactNode;
+}> = ({ label, tracked, hoverValue, children }) => {
+  const swaps = tracked && hoverValue !== undefined;
+  return (
+    <div
+      className={cn('flex flex-col gap-1 text-left', swaps && 'group/kpi')}
+      tabIndex={swaps ? 0 : undefined}
+    >
+      {/* Small muted label; value at 14px (text-md) foreground. */}
+      <span className="text-xs text-muted-foreground">{label}</span>
+      {tracked ? (
+        <span className="font-mono text-md text-foreground tabular-nums">
+          {swaps ? (
+            <>
+              <span className="group-hover/kpi:hidden group-focus-visible/kpi:hidden">
+                {children}
+              </span>
+              <span className="hidden group-hover/kpi:inline group-focus-visible/kpi:inline">
+                {hoverValue}
+              </span>
+            </>
+          ) : (
+            children
+          )}
+        </span>
+      ) : (
+        <OffValue className="text-md" />
+      )}
+    </div>
+  );
+};
 
-export const EmailStatsFooter: React.FC<StatsProps & { divider?: boolean }> = ({
-  stats,
-  opensTracked = true,
-  clicksTracked = true,
-  divider = true,
-}) => (
+// hoverCounts: Opened and Clicked show their member counts on hover or focus.
+// Off by default; phase 2's expandable footer turns it on, now that the sheet
+// that used to carry those counts is gone there.
+export const EmailStatsFooter: React.FC<
+  StatsProps & { divider?: boolean; hoverCounts?: boolean }
+> = ({ stats, opensTracked = true, clicksTracked = true, divider = true, hoverCounts = false }) => (
   // divider (read canvas): border-t separating stats from the header above. Without
   // it (email preview) the border goes and the spacing belongs to the wrapping
   // analytics button instead — it pads evenly so its hover fill clears the stats
@@ -94,10 +121,18 @@ export const EmailStatsFooter: React.FC<StatsProps & { divider?: boolean }> = ({
     <FooterMetric label="Sent" tracked={true}>
       {formatNumber(stats.email_sent_count)}
     </FooterMetric>
-    <FooterMetric label="Opened" tracked={opensTracked}>
+    <FooterMetric
+      hoverValue={hoverCounts ? formatNumber(stats.email_opened_count) : undefined}
+      label="Opened"
+      tracked={opensTracked}
+    >
       {formatRate(stats.opened_rate)}
     </FooterMetric>
-    <FooterMetric label="Clicked" tracked={clicksTracked}>
+    <FooterMetric
+      hoverValue={hoverCounts ? formatNumber(stats.email_clicked_count) : undefined}
+      label="Clicked"
+      tracked={clicksTracked}
+    >
       {formatRate(stats.clicked_rate)}
     </FooterMetric>
   </div>
@@ -139,6 +174,7 @@ export const EmailStatsExpandable: React.FC<
       divider={false}
       opensTracked={opensTracked}
       stats={stats}
+      hoverCounts
     />
     {/* Always mounted, collapsed to a zero-height grid row, so the card's height
         animates rather than jumping — a jump let the next card sit over this
@@ -158,9 +194,9 @@ export const EmailStatsExpandable: React.FC<
       )}
     >
       <div className="min-h-0 overflow-hidden">
-        {/* pt-5 inside the collapsing row (the lg gap the two sections had), so
-            the space collapses with it. */}
-        <Stack className="pt-5" gap="md">
+        {/* pt-3 inside the collapsing row — the card's 12px between sections —
+            so the space collapses with it. */}
+        <Stack className="pt-3" gap="md">
           <Inline justify="between">
             <Text size="sm" tone="secondary" weight="medium">
               Top clicked links
