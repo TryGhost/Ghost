@@ -123,14 +123,26 @@ export class EnvironmentManager {
     const siteUuid = randomUUID();
     const instanceId = `ghost_e2e_${siteUuid.replace(/-/g, '_')}`;
 
+    const start = performance.now();
+
     // Setup database
     await this.mysql.setupTestDatabase(instanceId, siteUuid, {
       stripe: options.stripe,
     });
+    const databaseReady = performance.now();
 
     // Restart Ghost with new database
     await this.ghost.restartWithDatabase(instanceId, options.config);
+    const containerStarted = performance.now();
     await this.ghost.waitForReady();
+    const ghostReady = performance.now();
+
+    logging.info(
+      `Environment cycle ${Math.round(ghostReady - start)}ms ` +
+        `(database ${Math.round(databaseReady - start)}ms, ` +
+        `container ${Math.round(containerStarted - databaseReady)}ms, ` +
+        `ready ${Math.round(ghostReady - containerStarted)}ms)`,
+    );
 
     const port = this.ghost.getGatewayPort();
 
