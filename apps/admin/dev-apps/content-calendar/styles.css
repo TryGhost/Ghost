@@ -1,0 +1,18 @@
+@source "./**/*.{ts,tsx}";
+@source "../../../shade/src/**/*.{ts,tsx}";
+
+@import '@tryghost/shade/styles.css';
+@import '../../src/assets/fonts/inter-admin/fonts.css';
+
+/* Shade's type scale is in rem against Admin's 10px root; without this every
+   size renders 1.6x too big in the app's own document. */
+html {
+  font-size: 62.5%;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}

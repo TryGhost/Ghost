@@ -25,6 +25,7 @@ import { lazyRestoreScreen } from './editor/api';
 import { useFlagGatedRouteOwner } from './use-flag-gated-route-owner';
 import { type AccessRouteHandle } from './route-access';
 import { RouteAccessGuard } from './route-access-guard';
+import { canManageApps, lazyAppInstallScreen, lazyAppViewScreen, lazyAppsScreen } from './apps/api';
 import { lazyAutomationEditorScreen, lazyAutomationsScreen } from './automations/api';
 import { lazyCommentsScreen } from './comments/api';
 import { lazyMigrateScreen } from './migrate/api';
@@ -77,6 +78,24 @@ const appRoutes: RouteObject[] = [
     path: '/automations',
     handle: { requiresAccess: canManageAutomations } satisfies AccessRouteHandle,
     lazy: lazyComponent(lazyAutomationsScreen),
+  },
+  {
+    path: '/apps',
+    handle: { requiresAccess: canManageApps } satisfies AccessRouteHandle,
+    lazy: lazyComponent(lazyAppsScreen),
+  },
+  {
+    // The install link: `#/apps/install?manifest=<url>` opens the install flow.
+    // Unguarded so staff who can't install are told who can, not redirected.
+    path: '/apps/install',
+    lazy: lazyComponent(lazyAppInstallScreen),
+  },
+  {
+    // `*` is the app's own page, e.g. /apps/<id>/week; the iframe stays
+    // mounted while it changes, and the app is told over the bridge.
+    path: '/apps/:installationId/*',
+    handle: { requiresAccess: canManageApps } satisfies AccessRouteHandle,
+    lazy: lazyComponent(lazyAppViewScreen),
   },
   {
     // The automation editor hides the admin sidebar for a focused,

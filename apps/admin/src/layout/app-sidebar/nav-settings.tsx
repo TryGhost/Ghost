@@ -4,16 +4,23 @@ import { SidebarGroup, SidebarGroupContent, SidebarMenu } from '@tryghost/shade/
 import { LucideIcon } from '@tryghost/shade/utils';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { canAccessSettings } from '@tryghost/admin-x-framework/api/users';
+import { GhostProNavItem } from './nav-ghost-pro';
+import { useShowGhostPro } from './hooks/use-show-ghost-pro';
 import { NavMenuItem } from './nav-menu-item';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 
 function NavSettings({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   const { data: currentUser } = useCurrentUser();
   const showSettings = currentUser && canAccessSettings(currentUser);
+  // With Apps on, Ghost(Pro) moves here from its own group (see NavGhostPro).
+  const appsEnabled = useFeatureFlag('apps');
+  const showGhostPro = useShowGhostPro() && appsEnabled;
 
   return (
     <SidebarGroup {...props}>
       <SidebarGroupContent>
         <SidebarMenu>
+          {showGhostPro && <GhostProNavItem />}
           {showSettings && (
             <NavMenuItem>
               <NavMenuItem.Link to="settings">

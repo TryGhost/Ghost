@@ -3,6 +3,7 @@ import React from 'react';
 import {
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuBadge,
 } from '@tryghost/shade/components';
@@ -15,7 +16,7 @@ import {
   canManageMembers,
   canManageTags,
 } from '@tryghost/admin-x-framework/api/users';
-import { NavMenuItem } from './nav-menu-item';
+import { NAV_EYEBROW_CLASS, NavMenuItem } from './nav-menu-item';
 import { useNavigationExpanded } from './hooks/use-navigation-preferences';
 import { NavSavedViews } from './nav-saved-views';
 import { NavMemberViews } from './nav-member-views';
@@ -83,6 +84,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   const hasMemberViews = memberViews.length > 0;
   const memberCount = useMemberCount();
   const automationsEnabled = useFeatureFlag('automations');
+  const appsEnabled = useFeatureFlag('apps');
   const isMembersRouteActive = useIsActiveLink({ path: 'members', activeOnSubpath: true });
   const isMemberActivityActive = useIsActiveLink({ path: 'members-activity' });
 
@@ -101,91 +103,126 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     : isMemberActivityActive;
   const postsRoute = postNavigation.mainUrl;
   const postsNavActive = postNavigation.isMainActive || (!postsExpanded && hasActivePostChild);
+  const contentItems = (
+    <>
+      <NavMenuItem.Collapsible
+        expanded={postsExpanded}
+        id="posts-submenu"
+        onExpandedChange={setPostsExpanded}
+      >
+        <NavMenuItem.CollapsibleItem ariaLabel="Toggle post views">
+          <PostsNavItemContent isActive={postsNavActive} to={postsRoute} />
+        </NavMenuItem.CollapsibleItem>
+
+        <NavMenuItem.CollapsibleMenu>
+          <NavSavedViews views={postViews} />
+        </NavMenuItem.CollapsibleMenu>
+      </NavMenuItem.Collapsible>
+
+      <NavMenuItem>
+        <NavMenuItem.Link isActive={pageNavigation.isMainActive} to={pageNavigation.mainUrl}>
+          <LucideIcon.File />
+          <NavMenuItem.Label>Pages</NavMenuItem.Label>
+        </NavMenuItem.Link>
+      </NavMenuItem>
+
+      {showTags && (
+        <NavMenuItem>
+          <NavMenuItem.Link to="tags" activeOnSubpath>
+            <LucideIcon.Tag />
+            <NavMenuItem.Label>Tags</NavMenuItem.Label>
+          </NavMenuItem.Link>
+        </NavMenuItem>
+      )}
+    </>
+  );
+
+  const memberItems = (
+    <>
+      {showMembers && (
+        <>
+          {hasMemberViews ? (
+            <NavMenuItem.Collapsible
+              expanded={membersExpanded}
+              id="members-submenu"
+              onExpandedChange={setMembersExpanded}
+            >
+              <NavMenuItem.CollapsibleItem ariaLabel="Toggle member views">
+                <MembersNavItemContent
+                  collapsible={true}
+                  count={memberCount}
+                  isActive={membersNavActive}
+                  to="members"
+                />
+              </NavMenuItem.CollapsibleItem>
+
+              <NavMenuItem.CollapsibleMenu>
+                <NavMemberViews />
+              </NavMenuItem.CollapsibleMenu>
+            </NavMenuItem.Collapsible>
+          ) : (
+            <NavMenuItem>
+              <MembersNavItemContent
+                collapsible={false}
+                count={memberCount}
+                isActive={membersNavActive}
+                to="members"
+              />
+            </NavMenuItem>
+          )}
+        </>
+      )}
+
+      {showComments && (
+        <NavMenuItem>
+          <NavMenuItem.Link to="comments" activeOnSubpath>
+            <LucideIcon.MessagesSquare />
+            <NavMenuItem.Label>Comments</NavMenuItem.Label>
+          </NavMenuItem.Link>
+        </NavMenuItem>
+      )}
+
+      {showAutomations && automationsEnabled && (
+        <NavMenuItem>
+          <NavMenuItem.Link to="automations" activeOnSubpath>
+            <LucideIcon.Zap />
+            <NavMenuItem.Label>Automations</NavMenuItem.Label>
+          </NavMenuItem.Link>
+        </NavMenuItem>
+      )}
+    </>
+  );
+  const hasMemberItems = Boolean(showMembers) || Boolean(showAutomations && automationsEnabled);
+
+  // With Apps on, the nav is grouped under eyebrow labels, like Content and
+  // Audience here and Apps below.
+  if (appsEnabled) {
+    return (
+      <>
+        <SidebarGroup {...props}>
+          <SidebarGroupLabel className={NAV_EYEBROW_CLASS}>Content</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>{contentItems}</SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        {hasMemberItems && (
+          <SidebarGroup {...props}>
+            <SidebarGroupLabel className={NAV_EYEBROW_CLASS}>Audience</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>{memberItems}</SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+      </>
+    );
+  }
+
   return (
     <SidebarGroup {...props}>
       <SidebarGroupContent>
         <SidebarMenu>
-          <NavMenuItem.Collapsible
-            expanded={postsExpanded}
-            id="posts-submenu"
-            onExpandedChange={setPostsExpanded}
-          >
-            <NavMenuItem.CollapsibleItem ariaLabel="Toggle post views">
-              <PostsNavItemContent isActive={postsNavActive} to={postsRoute} />
-            </NavMenuItem.CollapsibleItem>
-
-            <NavMenuItem.CollapsibleMenu>
-              <NavSavedViews views={postViews} />
-            </NavMenuItem.CollapsibleMenu>
-          </NavMenuItem.Collapsible>
-
-          <NavMenuItem>
-            <NavMenuItem.Link isActive={pageNavigation.isMainActive} to={pageNavigation.mainUrl}>
-              <LucideIcon.File />
-              <NavMenuItem.Label>Pages</NavMenuItem.Label>
-            </NavMenuItem.Link>
-          </NavMenuItem>
-
-          {showTags && (
-            <NavMenuItem>
-              <NavMenuItem.Link to="tags" activeOnSubpath>
-                <LucideIcon.Tag />
-                <NavMenuItem.Label>Tags</NavMenuItem.Label>
-              </NavMenuItem.Link>
-            </NavMenuItem>
-          )}
-
-          {showMembers && (
-            <>
-              {hasMemberViews ? (
-                <NavMenuItem.Collapsible
-                  expanded={membersExpanded}
-                  id="members-submenu"
-                  onExpandedChange={setMembersExpanded}
-                >
-                  <NavMenuItem.CollapsibleItem ariaLabel="Toggle member views">
-                    <MembersNavItemContent
-                      collapsible={true}
-                      count={memberCount}
-                      isActive={membersNavActive}
-                      to="members"
-                    />
-                  </NavMenuItem.CollapsibleItem>
-
-                  <NavMenuItem.CollapsibleMenu>
-                    <NavMemberViews />
-                  </NavMenuItem.CollapsibleMenu>
-                </NavMenuItem.Collapsible>
-              ) : (
-                <NavMenuItem>
-                  <MembersNavItemContent
-                    collapsible={false}
-                    count={memberCount}
-                    isActive={membersNavActive}
-                    to="members"
-                  />
-                </NavMenuItem>
-              )}
-            </>
-          )}
-
-          {showComments && (
-            <NavMenuItem>
-              <NavMenuItem.Link to="comments" activeOnSubpath>
-                <LucideIcon.MessagesSquare />
-                <NavMenuItem.Label>Comments</NavMenuItem.Label>
-              </NavMenuItem.Link>
-            </NavMenuItem>
-          )}
-
-          {showAutomations && automationsEnabled && (
-            <NavMenuItem>
-              <NavMenuItem.Link to="automations" activeOnSubpath>
-                <LucideIcon.Zap />
-                <NavMenuItem.Label>Automations</NavMenuItem.Label>
-              </NavMenuItem.Link>
-            </NavMenuItem>
-          )}
+          {contentItems}
+          {memberItems}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>

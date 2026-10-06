@@ -16,8 +16,9 @@ import { cn } from '@tryghost/shade/utils';
 import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import { navigateEmberBillingSubRoute } from '@/ember-bridge';
 import { useEmberOwnedRouteMatcher } from '@/routes';
+import { AppIcon } from '@/apps/api';
 import { getSearchDestination } from './search-destination';
-import type { SearchResult } from './searchables';
+import { APPS_SEARCH_GROUP_KEY, type SearchResult } from './searchables';
 import { useGlobalSearch } from './use-global-search';
 
 function escapeRegExp(text: string) {
@@ -126,8 +127,13 @@ function GlobalSearchPanel({ onClose }: { onClose: () => void }) {
                   value={result.id}
                   onSelect={() => openResult(result)}
                 >
-                  <span className="truncate">
-                    <HighlightedText term={term} text={result.title} />
+                  <span className="flex min-w-0 items-center gap-2">
+                    {result.groupKey === APPS_SEARCH_GROUP_KEY && (
+                      <AppIcon icon={result.icon} size="sm" />
+                    )}
+                    <span className="truncate">
+                      <HighlightedText term={term} text={result.title} />
+                    </span>
                   </span>
                   <StatusBadge status={result.status} />
                 </CommandItem>

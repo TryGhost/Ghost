@@ -1,4 +1,4 @@
-import { BILLING_SEARCH_GROUP_KEY, type SearchResult } from './searchables';
+import { APPS_SEARCH_GROUP_KEY, BILLING_SEARCH_GROUP_KEY, type SearchResult } from './searchables';
 
 const BILLING_ROUTE_ROOT = '/pro';
 
@@ -16,6 +16,10 @@ export function getSearchDestination(result: SearchResult): SearchDestination | 
       path: subRoute === '/' ? BILLING_ROUTE_ROOT : `${BILLING_ROUTE_ROOT}${subRoute}`,
       billingSubRoute: subRoute,
     };
+  }
+
+  if (result.groupKey === APPS_SEARCH_GROUP_KEY) {
+    return result.path ? { path: result.path } : null;
   }
 
   const separator = result.id.indexOf('.');

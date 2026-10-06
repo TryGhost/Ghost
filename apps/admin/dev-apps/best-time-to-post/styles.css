@@ -1,0 +1,36 @@
+@source "./**/*.{ts,tsx}";
+@source "../../../shade/src/**/*.{ts,tsx}";
+
+@import '@tryghost/shade/styles.css';
+@import '../../src/assets/fonts/inter-admin/fonts.css';
+
+/* Shade's type scale is in rem against Admin's 10px root; without this every
+   size renders 1.6x too big in the app's own document. */
+html {
+  font-size: 62.5%;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+/* Bars rise into place once the data lands. */
+@keyframes rise {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+.bar {
+  transform-box: fill-box;
+  transform-origin: bottom;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bar {
+    animation: rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}

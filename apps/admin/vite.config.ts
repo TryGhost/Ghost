@@ -75,6 +75,12 @@ export default defineConfig(({ command, mode }) => ({
     host: '0.0.0.0',
     port: 5174,
     allowedHosts: true,
+    // Vite's default localhost allowlist, plus Tailscale hosts so an Admin
+    // served from a *.ts.net URL can fetch dev-apps/ manifests.
+    cors: {
+      origin:
+        /^https?:\/\/(?:(?:[^:]+\.)?localhost|127\.0\.0\.1|\[::1\]|[^:/]+\.ts\.net)(?::\d+)?$/,
+    },
     // Vite 8 already forwards browser console warn/error to the terminal
     // when it detects an AI agent is driving the dev server, and stays
     // quiet for humans. Uncomment to force it on for everyone (noisier):

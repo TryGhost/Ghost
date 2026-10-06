@@ -2,11 +2,20 @@ import { z } from 'zod';
 import type { SearchIndexItem } from '@/shared/search-index';
 
 export const BILLING_SEARCH_GROUP_KEY = 'billing';
+export const APPS_SEARCH_GROUP_KEY = 'apps';
 
-export type SearchableModel = 'user' | 'tag' | 'pro-page' | 'post' | 'page';
+export type SearchableModel = 'user' | 'tag' | 'pro-page' | 'post' | 'page' | 'app';
 
 /** A search-index entry, or a configured billing item. */
-export type SearchItem = SearchIndexItem & { path?: string; keywords?: string };
+export type SearchItem = SearchIndexItem & { path?: string; keywords?: string; icon?: string };
+
+/** An installed app, as the Apps group lists it. */
+export interface SearchableApp {
+  id: string;
+  title: string;
+  path: string;
+  icon?: string;
+}
 
 function parseEach<T>(schema: z.ZodType<T>, items: unknown[]): T[] {
   return items.flatMap((item) => {
@@ -33,6 +42,7 @@ export interface SearchResult {
   groupName: string;
   groupKey?: string;
   status?: string;
+  icon?: string;
 }
 
 export interface SearchResultGroup {
@@ -121,10 +131,37 @@ function getBillingSearchable(searchConfig: unknown): Searchable | null {
   };
 }
 
-export function getSearchables(hostSettings?: { billing?: { search?: unknown } }): Searchable[] {
-  const billing = getBillingSearchable(hostSettings?.billing?.search);
+function getAppsSearchable(apps: SearchableApp[]): Searchable | null {
+  if (apps.length === 0) {
+    return null;
+  }
 
-  return billing ? [STAFF, TAGS, billing, POSTS, PAGES] : [STAFF, TAGS, POSTS, PAGES];
+  return {
+    name: 'Apps',
+    key: APPS_SEARCH_GROUP_KEY,
+    model: 'app',
+    idField: 'id',
+    titleField: 'title',
+    index: ['title'],
+    staticItems: apps,
+  };
+}
+
+export function getSearchables(
+  hostSettings?: { billing?: { search?: unknown } },
+  apps: SearchableApp[] = [],
+): Searchable[] {
+  const billing = getBillingSearchable(hostSettings?.billing?.search);
+  const appsSearchable = getAppsSearchable(apps);
+
+  return [
+    STAFF,
+    TAGS,
+    ...(billing ? [billing] : []),
+    POSTS,
+    PAGES,
+    ...(appsSearchable ? [appsSearchable] : []),
+  ];
 }
 
 const STATUS_PRIORITY: Record<string, number> = {
@@ -155,5 +192,6 @@ export function createSearchResult(searchable: Searchable, item: SearchItem): Se
     groupName: searchable.name,
     groupKey: searchable.key,
     status: item.status,
+    icon: item.icon,
   };
 }

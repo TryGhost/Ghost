@@ -29,7 +29,12 @@ export function emberAssetsPlugin() {
     },
     transformIndexHtml: {
       order: 'post',
-      handler() {
+      handler(_html, ctx) {
+        // Sample apps under dev-apps/ are standalone pages, not Admin.
+        if (ctx.path.includes('/dev-apps/')) {
+          return;
+        }
+
         // Read from Ember's own build output (not the combined output
         // in built/admin which gets overwritten by asset assembly and would
         // accumulate duplicate path prefixes on repeated builds)

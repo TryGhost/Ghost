@@ -204,4 +204,7 @@ NavMenuItem.Collapsible = NavMenuCollapsible;
 NavMenuItem.CollapsibleItem = NavMenuCollapsibleItem;
 NavMenuItem.CollapsibleMenu = NavMenuCollapsibleMenu;
 
-export { NavMenuItem, NavMenuLink, NavMenuLabel, NavSubmenuItem, NavMenuButton };
+/** The eyebrow over a group of nav items (Content, Members, Apps): small caps, a little tracked out. */
+const NAV_EYEBROW_CLASS = 'h-6 text-xs font-semibold tracking-[0.08em] uppercase';
+
+export { NavMenuItem, NavMenuLink, NavMenuLabel, NavSubmenuItem, NavMenuButton, NAV_EYEBROW_CLASS };

@@ -1,0 +1,8 @@
+{
+  "name": "Content calendar",
+  "developer": "Priya Raman",
+  "description": "See every scheduled and published post on a month calendar, so you can spot quiet weeks and busy ones at a glance. Click any post to jump straight into the editor.",
+  "icon": "calendar-days",
+  "url": "./index.html",
+  "surfaces": ["page"]
+}

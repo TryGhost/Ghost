@@ -1,0 +1,9 @@
+{
+  "name": "Best time to send",
+  "developer": "Sendwell Labs",
+  "description": "Finds the time of day your newsletters get the most opens and clicks, based on everything you've sent.",
+  "icon": "clock",
+  "color": "#FA5D00",
+  "url": "./index.html",
+  "surfaces": ["page"]
+}

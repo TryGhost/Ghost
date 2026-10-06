@@ -7,6 +7,8 @@ import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/
 import { isOwnerUser } from '@tryghost/admin-x-framework/api/users';
 import { useFetchApi, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useForceUpgrade } from '@/billing/api';
+import { appRoute, canManageApps, useActiveInstallations } from '@/apps/api';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 // pulls in FlexSearch, so import this hook only from a lazily loaded module
 import { createSearchProvider } from './search-providers';
 import { type SearchIndexKey, searchIndexQueryOptions } from '@/shared/search-index';
@@ -67,6 +69,22 @@ export function useGlobalSearch(term: string): {
     (Boolean(hostSettings?.billing?.enabled) && Boolean(currentUser && isOwnerUser(currentUser)));
   const locale = getSettingValue<string>(settings?.settings, 'locale');
 
+  const appsEnabled = useFeatureFlag('apps');
+  const installations = useActiveInstallations();
+  const canSeeApps = appsEnabled && Boolean(currentUser && canManageApps(currentUser));
+  const apps = useMemo(
+    () =>
+      canSeeApps
+        ? installations.map((installation) => ({
+            id: installation.id,
+            title: installation.manifest.name,
+            path: appRoute(installation.id),
+            icon: installation.manifest.icon,
+          }))
+        : [],
+    [canSeeApps, installations],
+  );
+
   // billing access and the locale decide which results exist, so wait for them too
   const isContentLoading =
     posts.isLoading ||
@@ -78,8 +96,8 @@ export function useGlobalSearch(term: string): {
     isSettingsLoading;
 
   const searchables = useMemo(
-    () => getSearchables(canAccessBilling ? hostSettings : undefined),
-    [canAccessBilling, hostSettings],
+    () => getSearchables(canAccessBilling ? hostSettings : undefined, apps),
+    [canAccessBilling, hostSettings, apps],
   );
 
   const provider = useMemo(

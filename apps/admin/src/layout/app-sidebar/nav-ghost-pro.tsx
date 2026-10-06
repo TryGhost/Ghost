@@ -2,14 +2,28 @@ import React from 'react';
 import { SidebarGroup, SidebarGroupContent, SidebarMenu } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
-import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
-import { isContributorUser, isOwnerUser } from '@tryghost/admin-x-framework/api/users';
+import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
 import { useFeaturebase } from '@tryghost/admin-x-framework';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { NavMenuItem } from './nav-menu-item';
+import { useShowGhostPro } from './hooks/use-show-ghost-pro';
+
+export function GhostProNavItem() {
+  return (
+    <NavMenuItem>
+      <NavMenuItem.Link to="pro">
+        <LucideIcon.CreditCard />
+        <NavMenuItem.Label>Ghost(Pro)</NavMenuItem.Label>
+      </NavMenuItem.Link>
+    </NavMenuItem>
+  );
+}
 
 function NavGhostPro({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   const { data: currentUser } = useCurrentUser();
-  const { data: config } = useBrowseConfig();
+  // With Apps on, Ghost(Pro) sits with Settings and Help instead (see NavSettings).
+  const appsEnabled = useFeatureFlag('apps');
+  const canSeeGhostPro = useShowGhostPro();
   const {
     isAvailable: featurebaseAvailable,
     openFeedbackWidget,
@@ -20,8 +34,7 @@ function NavGhostPro({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     return null;
   }
 
-  const isProSite = config?.config.hostSettings?.billing?.enabled;
-  const showGhostPro = isProSite && isOwnerUser(currentUser);
+  const showGhostPro = canSeeGhostPro && !appsEnabled;
   const showFeedback = featurebaseAvailable && !isContributorUser(currentUser);
 
   if (!showGhostPro && !showFeedback) {
@@ -32,14 +45,7 @@ function NavGhostPro({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     <SidebarGroup {...props}>
       <SidebarGroupContent>
         <SidebarMenu>
-          {showGhostPro && (
-            <NavMenuItem>
-              <NavMenuItem.Link to="pro">
-                <LucideIcon.CreditCard />
-                <NavMenuItem.Label>Ghost(Pro)</NavMenuItem.Label>
-              </NavMenuItem.Link>
-            </NavMenuItem>
-          )}
+          {showGhostPro && <GhostProNavItem />}
           {showFeedback && (
             <NavMenuItem>
               <NavMenuItem.Button

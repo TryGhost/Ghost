@@ -131,6 +131,11 @@ const features: Feature[] = [
       'Install and manage third-party apps that run on their own servers. Early and incomplete.',
     flag: 'apps',
   },
+  {
+    title: 'Apps',
+    description: 'Install apps from an install link and open them inside Admin.',
+    flag: 'apps',
+  },
 ];
 
 const AlphaFeatures: React.FC = () => {

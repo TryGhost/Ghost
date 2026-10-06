@@ -53,7 +53,7 @@ export default tseslint.config(
   ...reactAppConfig({
     tailwindCssPath: `${import.meta.dirname}/src/index.css`,
     shadeRestricted: true,
-    ignores: ['dist/**/*', 'test-utils/acceptance/public/**/*'],
+    ignores: ['dist/**/*', 'test-utils/acceptance/public/**/*', 'dev-apps/**/*'],
     // One uniform block: src, test-utils, and the root vite/vitest configs
     // all get the same rules (matching this workspace's historical setup).
     srcGlobs: ['**/*.{ts,tsx}'],
