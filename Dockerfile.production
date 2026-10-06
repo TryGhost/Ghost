@@ -124,6 +124,9 @@ RUN mkdir -p default log && \
     chown nobody:nogroup default && \
     chown -R ghost:ghost content log
 
+COPY --chown=nobody:nogroup docker/perf/cppgc-keepalive.cjs /home/ghost/cppgc-keepalive.cjs
+ENV NODE_OPTIONS="--require /home/ghost/cppgc-keepalive.cjs"
+
 ARG GHOST_BUILD_VERSION=""
 ENV GHOST_BUILD_VERSION=${GHOST_BUILD_VERSION}
 
