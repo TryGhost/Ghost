@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/checkout",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "private": true,
   "description": "Measured Stripe Checkout constraints: the countries it ships to, the values it returns, and the custom field types those land in",
   "license": "MIT",
