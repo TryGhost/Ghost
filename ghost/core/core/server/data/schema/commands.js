@@ -100,6 +100,47 @@ function addTableColumn(
 }
 
 /**
+ * The CHECK constraint a column's `pattern` becomes on MySQL, named after the table and
+ * column, so the rule binds every writer rather than only the code that remembers it.
+ *
+ * MySQL only. SQLite is being removed and its driver here has no regular expression
+ * function, so a pattern on SQLite is held by the code that writes the column alone.
+ *
+ * @param {string} tableName
+ * @param {string} columnName
+ * @param {string} pattern - as schema.js states it, in JavaScript's syntax
+ * @returns {{name: string, sql: string, bindings: string[]}}
+ */
+function patternCheck(tableName, columnName, pattern) {
+  return {
+    name: `${tableName}_${columnName}_check`,
+    // 'c' matches case-sensitively: left to the collation, which is case-insensitive,
+    // [a-z] would admit capitals too.
+    sql: 'REGEXP_LIKE(??, ?, ?)',
+    // JavaScript's `$` is the end of the value. MySQL's also matches before a final line
+    // break, so a value ending in one would pass, and `\z` is the end of the value there.
+    bindings: [columnName, pattern.replace(/(?<!\\)\$$/, '\\z'), 'c'],
+  };
+}
+
+/**
+ * Its own statement: knex leaves out the bindings of a check added to an existing table.
+ *
+ * @param {import('knex').Knex} knex
+ * @param {string} tableName
+ * @param {string} columnName
+ * @param {string} pattern
+ */
+async function addPatternCheck(knex, tableName, columnName, pattern) {
+  const check = patternCheck(tableName, columnName, pattern);
+  await knex.raw(`ALTER TABLE ?? ADD CONSTRAINT ?? CHECK (${check.sql})`, [
+    tableName,
+    check.name,
+    ...check.bindings,
+  ]);
+}
+
+/**
  * @param {string} tableName
  * @param {string} column
  * @param {import('knex').Knex} [transaction]
@@ -186,6 +227,11 @@ async function addColumn(tableName, column, transaction = db.knex, columnSpec, o
     // default to copy if not specified
     await rawWithAlgorithm(transaction, sql, options?.algorithm || 'copy');
   }
+
+  const { pattern } = columnSpec ?? schema[tableName][column];
+  if (pattern && DatabaseInfo.isMySQL(transaction)) {
+    await addPatternCheck(transaction, tableName, column, pattern);
+  }
 }
 
 /**
@@ -240,14 +286,26 @@ async function dropColumn(tableName, column, transaction = db.knex, columnSpec =
  * @param {import('knex').Knex.Transaction} [transaction]
  * @param {object} [options]
  * @param {'instant'|'inplace'|'copy'|'auto'} [options.algorithm] - MySQL only
+ * @param {string} [options.pattern] - the column's pattern, if it has one. MySQL won't
+ *   rename a column a check uses, so the check is dropped and made again under the new name.
  */
 async function renameColumn(tableName, from, to, transaction = db.knex, options = {}) {
   logging.info(`Renaming column '${from}' to '${to}' in table '${tableName}'`);
 
   if (DatabaseInfo.isMySQL(transaction)) {
+    if (options.pattern) {
+      await transaction.raw('ALTER TABLE ?? DROP CHECK ??', [
+        tableName,
+        patternCheck(tableName, from, options.pattern).name,
+      ]);
+    }
     // The knex helper does a lot of interesting things with foreign keys that are slow on bigger MySQL clusters
     const sql = `ALTER TABLE \`${tableName}\` RENAME COLUMN \`${from}\` TO \`${to}\``;
-    return await rawWithAlgorithm(transaction, sql, options.algorithm);
+    const renamed = await rawWithAlgorithm(transaction, sql, options.algorithm);
+    if (options.pattern) {
+      await addPatternCheck(transaction, tableName, to, options.pattern);
+    }
+    return renamed;
   }
 
   return await transaction.schema.table(tableName, function (table) {
@@ -650,7 +708,14 @@ function createTable(table, transaction = db.knex, tableSpec = schema[table]) {
   return transaction.schema.createTable(table, function (t) {
     Object.keys(tableSpec)
       .filter((column) => !column.startsWith('@@'))
-      .forEach((column) => addTableColumn(table, t, column, tableSpec[column]));
+      .forEach((column) => {
+        const columnSpec = tableSpec[column];
+        addTableColumn(table, t, column, columnSpec);
+        if (columnSpec.pattern && DatabaseInfo.isMySQL(transaction)) {
+          const check = patternCheck(table, column, columnSpec.pattern);
+          t.check(check.sql, check.bindings, check.name);
+        }
+      });
 
     if (tableSpec['@@INDEXES@@']) {
       tableSpec['@@INDEXES@@'].forEach((index) => {
@@ -850,5 +915,6 @@ module.exports = {
   createColumnMigration,
   // NOTE: below are exposed for testing purposes only
   _hasForeignSQLite: hasForeignSQLite,
+  _patternCheck: patternCheck,
   _hasPrimaryKeySQLite: hasPrimaryKeySQLite,
 };

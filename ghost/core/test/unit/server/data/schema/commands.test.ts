@@ -139,6 +139,21 @@ describe('schema commands', function () {
     });
   });
 
+  // The database suites run on MySQL only, so this is what covers SQLite.
+  it('leaves a column pattern out on SQLite, which has no regular expression function', function () {
+    const knex = createKnex({ client: 'better-sqlite3', useNullAsDefault: true });
+    try {
+      const ddl = commands
+        .createTable('test_table', knex, {
+          slug: { type: 'string', maxlength: 191, nullable: false, pattern: '^[a-z_]+$' },
+        })
+        .toString();
+      assert.doesNotMatch(ddl, /check/i);
+    } finally {
+      knex.destroy();
+    }
+  });
+
   // The database suites run on MySQL only, so this is what covers SQLite, which can only
   // declare a foreign key while creating the table.
   describe('a foreign key over several columns, on SQLite', function () {

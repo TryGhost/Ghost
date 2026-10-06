@@ -36,6 +36,7 @@ type ColumnSpec = {
   cascadeDelete?: boolean;
   restrictDelete?: boolean;
   setNullDelete?: boolean;
+  pattern?: string;
 };
 
 type IndexSpec = string[] | { columns: string[] };
@@ -66,12 +67,20 @@ type NormalizedForeignKey = {
   onDelete: string;
 };
 
+// A column's `pattern`, as the check constraint the schema builder makes of it.
+type NormalizedCheck = {
+  constraintName: string;
+  column: string;
+  pattern: string;
+};
+
 type NormalizedTable = {
   columns: Record<string, NormalizedColumn>;
   primaryKey: string[];
   indexes: string[][];
   uniques: string[][];
   foreignKeys: NormalizedForeignKey[];
+  checks: NormalizedCheck[];
 };
 
 type NormalizedSchema = Record<string, NormalizedTable>;
@@ -101,6 +110,26 @@ type ForeignKeyRow = {
   REFERENCED_COLUMN_NAME: string;
   DELETE_RULE: string;
 };
+
+type CheckRow = {
+  TABLE_NAME: string;
+  CONSTRAINT_NAME: string;
+  CHECK_CLAUSE: string;
+};
+
+// How MySQL reports back the clause the schema builder writes for a pattern, such as
+// regexp_like(`slug`,_utf8mb4\'^[a-z]+\\\\z\',_utf8mb4\'c\'). The pattern arrives escaped
+// twice: once as a string literal in the clause, and again as the clause's own text.
+const PATTERN_CLAUSE = /^regexp_like\(`([^`]+)`,_\w+\\'(.*)\\',_\w+\\'c\\'\)$/;
+const unescape = (text: string) => text.replace(/\\(.)/g, '$1');
+
+function checkFromClause(row: CheckRow): NormalizedCheck {
+  const [, column, pattern] = PATTERN_CLAUSE.exec(row.CHECK_CLAUSE) ?? [];
+  if (column === undefined || pattern === undefined) {
+    return { constraintName: row.CONSTRAINT_NAME, column: '', pattern: row.CHECK_CLAUSE };
+  }
+  return { constraintName: row.CONSTRAINT_NAME, column, pattern: unescape(unescape(pattern)) };
+}
 
 function deleteRule(spec: DeleteRuleSpec): string {
   if (spec.cascadeDelete) {
@@ -186,6 +215,7 @@ function normalizeSchema(tables: SchemaTables): NormalizedSchema {
     const indexes: string[][] = [];
     const uniques: string[][] = [];
     const foreignKeys: NormalizedForeignKey[] = [];
+    const checks: NormalizedCheck[] = [];
     let primaryKey: string[] = [];
 
     for (const [columnName, value] of Object.entries(tableSpec)) {
@@ -218,6 +248,15 @@ function normalizeSchema(tables: SchemaTables): NormalizedSchema {
           references: { table, columns: [referencedColumn] },
           onDelete: deleteRule(spec),
         });
+      }
+
+      if (spec.pattern) {
+        const check: { name: string; bindings: string[] } = commands._patternCheck(
+          tableName,
+          columnName,
+          spec.pattern,
+        );
+        checks.push({ constraintName: check.name, column: columnName, pattern: check.bindings[1] });
       }
 
       if (spec.primary) {
@@ -258,6 +297,7 @@ function normalizeSchema(tables: SchemaTables): NormalizedSchema {
       indexes: sortIndexes(indexes),
       uniques: sortIndexes(uniques),
       foreignKeys: sortForeignKeys(foreignKeys),
+      checks: sortBy(checks, 'constraintName'),
     };
   }
 
@@ -319,6 +359,16 @@ async function readSchemaFromDatabase(knex: Knex): Promise<NormalizedSchema> {
       'r.DELETE_RULE',
     );
 
+  const checkRows: CheckRow[] = await knex('information_schema.TABLE_CONSTRAINTS as t')
+    .join('information_schema.CHECK_CONSTRAINTS as c', function () {
+      this.on('t.CONSTRAINT_SCHEMA', 'c.CONSTRAINT_SCHEMA').andOn(
+        't.CONSTRAINT_NAME',
+        'c.CONSTRAINT_NAME',
+      );
+    })
+    .where({ 't.TABLE_SCHEMA': database, 't.CONSTRAINT_TYPE': 'CHECK' })
+    .select('t.TABLE_NAME', 'c.CONSTRAINT_NAME', 'c.CHECK_CLAUSE');
+
   const result: NormalizedSchema = {};
 
   for (const row of columnRows) {
@@ -328,6 +378,7 @@ async function readSchemaFromDatabase(knex: Knex): Promise<NormalizedSchema> {
       indexes: [],
       uniques: [],
       foreignKeys: [],
+      checks: [],
     };
 
     const type =
@@ -367,8 +418,12 @@ async function readSchemaFromDatabase(knex: Knex): Promise<NormalizedSchema> {
       onDelete: first.DELETE_RULE,
     });
   }
+  for (const row of checkRows) {
+    result[row.TABLE_NAME].checks.push(checkFromClause(row));
+  }
   for (const table of Object.values(result)) {
     table.foreignKeys = sortForeignKeys(table.foreignKeys);
+    table.checks = sortBy(table.checks, 'constraintName');
   }
 
   // MySQL implicitly creates an index for a foreign key that no other index

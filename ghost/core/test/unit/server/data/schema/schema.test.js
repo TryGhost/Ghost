@@ -23,6 +23,7 @@ const VALID_KEYS = {
     'restrictDelete',
     'setNullDelete',
     'index',
+    'pattern',
   ],
   text: ['fieldtype', 'maxlength', 'nullable', 'validations'],
 };
@@ -57,6 +58,13 @@ describe('schema validations', function () {
           assert(
             typeof column.index === 'boolean',
             'Column index option, if present, should be valid',
+          );
+        }
+
+        if ('pattern' in column) {
+          assert.doesNotThrow(
+            () => new RegExp(column.pattern),
+            `${tableName}.${columnName}.pattern should be a regular expression`,
           );
         }
       });
@@ -116,6 +124,9 @@ describe('schema validations', function () {
         }
         if (column.index) {
           check(derived(tableName, columnName, 'index'), `${tableName} index column`);
+        }
+        if (column.pattern) {
+          check(derived(tableName, columnName, 'check'), `${tableName} column pattern`);
         }
         if (column.references) {
           check(
