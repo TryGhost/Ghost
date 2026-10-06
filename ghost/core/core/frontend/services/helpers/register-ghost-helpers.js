@@ -17,7 +17,7 @@ exports.registerGhostHelpers = () => {
   registry.registerHelper('date', require('../../helpers/date'));
   registry.registerHelper('encode', require('../../helpers/encode'));
   registry.registerHelper('excerpt', require('../../helpers/excerpt'));
-  registry.registerHelper('facebook_url', require('../../helpers/facebook_url'));
+  registry.registerHelper('facebook_url', require('../../helpers/facebook_url').facebook_url);
   registry.registerHelper('foreach', require('../../helpers/foreach'));
   registry.registerHelper('get', require('../../helpers/get'));
   registry.registerHelper('ghost_foot', require('../../helpers/ghost_foot'));
