@@ -94,6 +94,7 @@ function GlobalSearchPanel({ onClose }: { onClose: () => void }) {
     if (
       destination.billingSubRoute &&
       pathname === destination.path &&
+      isEmberOwned(destination.path) &&
       navigateEmberBillingSubRoute(destination.billingSubRoute)
     ) {
       return;

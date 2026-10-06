@@ -61,7 +61,6 @@ export interface PostEditorProps {
   onSecondaryChange?: (lexical: unknown) => void;
   onSecondaryError?: () => void;
   registerEditorApi?: (api: KoenigInstance | null) => void;
-  registerSecondaryApi?: (api: KoenigInstance | null) => void;
   onTkCountChange?: (count: number) => void;
   /** Rendered in the footer after the word count. */
   wordCountAccessory?: React.ReactNode;
@@ -136,10 +135,21 @@ function HiddenIndicator({
   );
 }
 
-function TkIndicator({ onClick, testId }: { onClick: () => void; testId: string }) {
+function TkIndicator({
+  className,
+  onClick,
+  testId,
+}: {
+  className: string;
+  onClick: () => void;
+  testId: string;
+}) {
   return (
     <button
-      className="absolute top-1 -left-12 rounded-sm bg-state-warning px-1.5 py-0.5 text-2xs font-bold text-foreground"
+      className={cn(
+        'absolute rounded-sm bg-state-warning px-1.5 py-0.5 text-2xs font-bold text-foreground',
+        className,
+      )}
       data-testid={testId}
       type="button"
       onClick={onClick}
@@ -169,7 +179,6 @@ export function PostEditor({
   onSecondaryChange,
   onSecondaryError,
   registerEditorApi,
-  registerSecondaryApi,
   onTkCountChange,
   wordCountAccessory,
   handleRef,
@@ -241,13 +250,6 @@ export function PostEditor({
       registerEditorApi?.(api);
     },
     [registerEditorApi],
-  );
-
-  const registerSecondary = useCallback(
-    (api: KoenigInstance | null) => {
-      registerSecondaryApi?.(api);
-    },
-    [registerSecondaryApi],
   );
 
   const moveIntoEditor = (key: string) => {
@@ -387,13 +389,19 @@ export function PostEditor({
                 testId={featureImageHiddenIndicator}
               />
             )}
-            {titleHasTk && <TkIndicator testId={tkIndicator} onClick={focusTitle} />}
             <div className="relative">
               {titleAndFeatureImageHidden && !hasFeatureImage && (
                 <HiddenIndicator
                   className="top-4.5"
                   label="Post title is hidden on page"
                   testId={titleHiddenIndicator}
+                />
+              )}
+              {titleHasTk && (
+                <TkIndicator
+                  className="top-4.5 -right-14"
+                  testId={tkIndicator}
+                  onClick={focusTitle}
                 />
               )}
               <textarea
@@ -424,7 +432,13 @@ export function PostEditor({
             ) : null}
             {showExcerpt && (
               <div className="relative">
-                {excerptHasTk && <TkIndicator testId={tkIndicatorExcerpt} onClick={focusExcerpt} />}
+                {excerptHasTk && (
+                  <TkIndicator
+                    className="top-1 -left-12"
+                    testId={tkIndicatorExcerpt}
+                    onClick={focusExcerpt}
+                  />
+                )}
                 <textarea
                   ref={excerptRef}
                   aria-describedby={excerptError ? excerptErrorId : undefined}
@@ -463,7 +477,6 @@ export function PostEditor({
             initialLexical={initialLexical}
             placeholder={`Begin writing your ${postType}...`}
             registerAPI={registerApi}
-            registerSecondaryAPI={registerSecondary}
             onChange={onLexicalChange}
             onSecondaryChange={onSecondaryChange}
             onSecondaryError={onSecondaryError}

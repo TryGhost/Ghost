@@ -17,6 +17,7 @@
     "@octokit/plugin-throttling": "catalog:",
     "@pnpm/releasing.versioning": "catalog:",
     "@pnpm/workspace.workspace-manifest-reader": "catalog:",
+    "@sentry/bundler-plugin-core": "catalog:",
     "camelcase-keys": "10.0.3",
     "execa": "catalog:",
     "js-yaml": "catalog:",
@@ -27,6 +28,7 @@
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",
+    "@playwright/test": "catalog:",
     "@types/node": "catalog:",
     "eslint": "catalog:"
   },
@@ -36,6 +38,14 @@
         "{workspaceRoot}/apps/admin/package.json",
         "{workspaceRoot}/apps/ember-admin/package.json",
         "{workspaceRoot}/.github/workflows/ci.yml"
+      ],
+      "adminSourceContracts": [
+        "{workspaceRoot}/apps/admin-x-framework/package.json",
+        "{workspaceRoot}/apps/shade/package.json",
+        "{workspaceRoot}/apps/admin/vite*.ts",
+        "{workspaceRoot}/apps/admin/vitest.acceptance.config.ts",
+        "{workspaceRoot}/apps/admin/tsconfig*.json",
+        "{workspaceRoot}/apps/shade/tsconfig.json"
       ]
     },
     "targets": {
@@ -44,6 +54,7 @@
           "default",
           "^default",
           "adminTestContracts",
+          "adminSourceContracts",
           {
             "runtime": "node -v"
           }
@@ -54,6 +65,7 @@
           "default",
           "^default",
           "adminTestContracts",
+          "adminSourceContracts",
           {
             "runtime": "node -v"
           }

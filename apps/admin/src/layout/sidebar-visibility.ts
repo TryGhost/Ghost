@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { type AdminRouteHandle, useMatches } from '@tryghost/admin-x-framework';
+import { type AdminRouteHandle, useLocation, useMatches } from '@tryghost/admin-x-framework';
+import { useIsEmberOwnedRoute } from '@/routes';
 import {
   syncEmberFullScreen,
   useSidebarVisibility as useEmberSidebarVisibility,
@@ -21,10 +22,14 @@ export function useRouteHidesAdminSidebar(): boolean {
 }
 
 export function useAdminSidebarVisibility(): boolean {
+  const { pathname } = useLocation();
+  const isEmberOwned = useIsEmberOwnedRoute(pathname);
   const emberSidebarVisible = useEmberSidebarVisibility();
   const routeHidesSidebar = useRouteHidesAdminSidebar();
 
-  return emberSidebarVisible && !routeHidesSidebar;
+  // Ember can retain fullscreen state after handing navigation to React.
+  // Only let that state govern a screen Ember is currently serving.
+  return !routeHidesSidebar && (!isEmberOwned || emberSidebarVisible);
 }
 
 /** Publishes whether the current route hides the admin sidebar. */

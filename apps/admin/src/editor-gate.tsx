@@ -2,7 +2,7 @@ import { Navigate } from '@tryghost/admin-x-framework';
 import { FlagGatedRoute } from './flag-gated-route';
 import { lazy } from 'react';
 import { lazyEditorScreen } from './editor/api';
-import { useForceUpgrade } from './ember-bridge';
+import { useForceUpgrade } from './billing/api';
 import { useFlagGatedRouteOwner } from './use-flag-gated-route-owner';
 
 /**
@@ -14,11 +14,13 @@ import { useFlagGatedRouteOwner } from './use-flag-gated-route-owner';
 const EditorReact = lazy(lazyEditorScreen);
 
 export function EditorGate() {
-  const owner = useFlagGatedRouteOwner('editorReact');
+  const editorOwner = useFlagGatedRouteOwner('editorReact');
+  const billingOwner = useFlagGatedRouteOwner('billingReact');
   const forceUpgrade = useForceUpgrade();
 
-  // The route skips the shell's force-upgrade guard because Ember enforces it on its own editor.
-  if (owner === 'react' && forceUpgrade !== false) {
+  // The route skips the shell's force-upgrade guard because Ember enforces it on
+  // its own editor — but only while Ember also owns billing.
+  if ((editorOwner === 'react' || billingOwner === 'react') && forceUpgrade !== false) {
     return forceUpgrade ? <Navigate to="/pro" replace /> : null;
   }
 

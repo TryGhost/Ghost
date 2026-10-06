@@ -20,6 +20,9 @@ import type { CSSProperties, KeyboardEvent, ReactNode, RefObject } from 'react';
 /** Trailing and leading space is never part of what is picked. */
 const trimTerm = (search: string) => search.trim();
 
+/** Within two rows of the end, so the next page is on its way before the last row shows. */
+const END_REACHED_PX = 64;
+
 /** The offer to commit what was typed as something the list does not hold yet. */
 export interface ChipPickerCreateRow<TOption> {
   /** Whether the term is worth offering, given the rows already on screen. */
@@ -61,6 +64,8 @@ export interface ChipPickerProps<TOption, TChip> {
   /** Reports what is typed, for a caller that must know there is work to lose. */
   onSearchChange?: (search: string) => void;
   onOpenChange?: (open: boolean) => void;
+  /** Asks for more rows once the list is scrolled near its end, for a list read a page at a time. */
+  onEndReached?: () => void;
   /** Opens the list again on the row a Backspace removal handed back. */
   reopenOnRemove?: boolean;
   /** Stands in for the rows, for a list with nothing it can offer. */
@@ -109,6 +114,7 @@ export function ChipPicker<TOption, TChip>({
   createRow,
   onSearchChange,
   onOpenChange,
+  onEndReached,
   reopenOnRemove = false,
   notice,
   inputRef,
@@ -129,6 +135,23 @@ export function ChipPicker<TOption, TChip>({
   const input = inputRef ?? ownInputRef;
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+
+  // Read at call time: with the handler in the end check's deps, every render
+  // would ask again for a page that failed.
+  const endReached = useRef(onEndReached);
+  endReached.current = onEndReached;
+
+  const reportEnd = useCallback(() => {
+    const scroller = scrollerRef.current;
+
+    if (
+      scroller &&
+      scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight <= END_REACHED_PX
+    ) {
+      endReached.current?.();
+    }
+  }, []);
 
   // One term behind the rows and the create offer, and behind whatever the
   // caller queries with: a caller that normalises differently hands its own in.
@@ -229,6 +252,13 @@ export function ChipPicker<TOption, TChip>({
   // A pick can shrink the list under the highlight, which leaves the stored
   // index past the end until the next arrow key moves it.
   const highlightedIndex = Math.min(highlighted, Math.max(rows.length - 1, 0));
+
+  // A list too short to scroll never fires a scroll, so it is checked as it opens and changes.
+  useEffect(() => {
+    if (open) {
+      reportEnd();
+    }
+  }, [open, reportEnd, rows.length]);
 
   // Keeps the highlighted row in view while arrowing through a long list.
   useEffect(() => {
@@ -387,7 +417,11 @@ export function ChipPicker<TOption, TChip>({
         <LucideIcon.ChevronDown className={tokenFieldClasses.chevron} />
       </div>
       {open && (
-        <div className="absolute top-full left-0 z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-md border border-border/60 bg-surface-elevated-2 p-1 text-popover-foreground shadow-md dark:border-border/30">
+        <div
+          ref={scrollerRef}
+          className="absolute top-full left-0 z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-md border border-border/60 bg-surface-elevated-2 p-1 text-popover-foreground shadow-md dark:border-border/30"
+          onScroll={onEndReached ? reportEnd : undefined}
+        >
           {notice}
           <div
             ref={listRef}

@@ -1,15 +1,19 @@
 import { HumanReadableError } from './errors';
+import { t } from './i18n';
 
 // Fastly Next-Gen WAF can answer a members API request with a client challenge (HTML
 // page) or a block instead of the API response. A fetch() can't solve a
-// HTML response, so when one comes back we embed the challenge in the page, wait for the
+// HTML response, so when one comes back we embed the challenge in a frame, wait for the
 // visitor's browser to solve it (which sets the challenge cookie) and retry the request once.
 // https://www.fastly.com/documentation/guides/security/bot-management/client-challenges/embedding-challenges-in-pages
 const CHALLENGE_PATH_PREFIX = '/_fs-ch-';
-// The interstitial names the challenge script it loads; this is the fallback if it can't be
-// read from there
-const DEFAULT_CHALLENGE_SCRIPT_PATH = '/_fs-ch-1T1wmsGaOgGaSxcX/challenge.js';
-const CHALLENGE_SCRIPT_PATTERN = /(\/_fs-ch-[A-Za-z0-9_-]+\/challenge\.js)/;
+// The interstitial loads script.js rather than challenge.js, but its assets share a directory
+// with challenge.js, so read that from the page and fall back to the documented one
+const CHALLENGE_DIRECTORY_PATTERN = /\/_fs-ch-[\w-]+\//;
+const DEFAULT_CHALLENGE_DIRECTORY = '/_fs-ch-1T1wmsGaOgGaSxcX/';
+const CHALLENGE_SCRIPT_NAME = 'challenge.js';
+// challenge.js reports progress here: started, processing, captcha_prompted, complete, error
+const CHALLENGE_STATUS_ATTRIBUTE = 'data-challenge-status';
 const CHALLENGE_TIMEOUT_MS = 60 * 1000;
 // A visitor solving a CAPTCHA gets longer, but the retried request carries an integrity token
 // fetched before the challenge, which Ghost only accepts for 5 minutes
@@ -41,8 +45,8 @@ function contentTypeOf(res) {
 }
 
 // Error pages (503, maintenance, etc) are HTML too, so only treat a response as a challenge
-// when it loads the challenge assets. Returns the challenge script to embed, or null.
-export async function readEdgeChallenge(res) {
+// when it loads the challenge assets. Returns the path to challenge.js, or null.
+async function challengeScriptPathOf(res) {
   if (!contentTypeOf(res).includes('text/html')) {
     return null;
   }
@@ -55,11 +59,12 @@ export async function readEdgeChallenge(res) {
   if (!body.includes(CHALLENGE_PATH_PREFIX)) {
     return null;
   }
-  return { scriptPath: body.match(CHALLENGE_SCRIPT_PATTERN)?.[1] ?? DEFAULT_CHALLENGE_SCRIPT_PATH };
+  const directory = body.match(CHALLENGE_DIRECTORY_PATTERN)?.[0] || DEFAULT_CHALLENGE_DIRECTORY;
+  return `${directory}${CHALLENGE_SCRIPT_NAME}`;
 }
 
 export async function isEdgeChallengeResponse(res) {
-  return (await readEdgeChallenge(res)) !== null;
+  return (await challengeScriptPathOf(res)) !== null;
 }
 
 export function isEdgeBlockResponse(res) {
@@ -76,54 +81,76 @@ function isSameOrigin(url) {
   }
 }
 
-// The docs list the challenge states (started, processing, captcha_prompted, complete,
-// error) but not the attribute that carries them, so match on the value.
-const WATCHED_STATES = ['complete', 'error', 'captcha_prompted'];
-
-function challengeStatus(container) {
-  return container
-    .getAttributeNames()
-    .map((name) => container.getAttribute(name))
-    .find((value) => WATCHED_STATES.includes(value));
-}
+// Only dynamic challenges can be embedded, and they normally solve without showing anything,
+// so the frame stays hidden. Fastly can still escalate to a CAPTCHA when it judges the traffic
+// suspicious, in which case the frame covers the page, above the Portal popup.
+// https://www.fastly.com/documentation/guides/security/bot-management/client-challenges/about-client-challenges/
+const HIDDEN_FRAME_STYLE = {
+  position: 'fixed',
+  top: '0',
+  left: '0',
+  width: '0',
+  height: '0',
+  border: '0',
+  zIndex: '4000000',
+};
+const INTERACTIVE_FRAME_STYLE = {
+  width: '100%',
+  height: '100%',
+  background: 'rgba(0, 0, 0, 0.4)',
+};
+const FRAME_DOCUMENT_STYLE =
+  'html,body{margin:0;height:100%;background:transparent}' +
+  'body{display:flex;align-items:center;justify-content:center}' +
+  '.fastly-challenge-close{position:fixed;top:16px;right:16px;width:40px;height:40px;' +
+  'border:0;border-radius:50%;background:#fff;color:#15212a;font:24px/1 sans-serif;cursor:pointer}';
 
 let pendingChallenge = null;
 
 /**
- * Embeds a Fastly challenge in the page and resolves once it has been solved.
- * @param {string} [scriptPath] the challenge script named by the interstitial
+ * Solves a Fastly challenge and resolves once the challenge cookie has been set. Rejects with
+ * EdgeChallengeError if it fails, times out or the visitor closes a CAPTCHA.
+ *
+ * challenge.js defines a non-configurable global `init`, so it can only run once per document:
+ * loading it into the page a second time (e.g. once the challenge cookie has expired) throws.
+ * Each challenge therefore runs in its own same-origin frame, which also keeps the script's
+ * globals out of the site's theme code. The frame shares the site's cookies.
+ *
+ * challenge.js resolves URLs against the frame's own location, so the frame has to load a real
+ * page on the site rather than stay on about:blank; it loads the challenge script itself, which
+ * is fetched anyway and always exists where a challenge is served.
+ * @param {string} [scriptPath] path to challenge.js on this site
  * @returns {Promise<void>}
  */
-export function solveEdgeChallenge(scriptPath = DEFAULT_CHALLENGE_SCRIPT_PATH) {
+export function solveEdgeChallenge(
+  scriptPath = `${DEFAULT_CHALLENGE_DIRECTORY}${CHALLENGE_SCRIPT_NAME}`,
+) {
   if (pendingChallenge) {
     return pendingChallenge;
   }
 
   pendingChallenge = new Promise((resolve, reject) => {
-    const container = document.createElement('div');
-    container.className = 'fastly-challenge';
-    // Sit above the Portal popup so an interactive challenge (CAPTCHA) is visible
-    Object.assign(container.style, {
-      position: 'fixed',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
-      zIndex: '4000000',
-    });
-
-    // A fresh script element each time so the challenge script picks up the new container
-    const script = document.createElement('script');
-    script.src = scriptPath;
+    const scriptUrl = new URL(scriptPath, window.location.origin).href;
+    const frame = document.createElement('iframe');
+    frame.setAttribute('aria-hidden', 'true');
+    frame.setAttribute('tabindex', '-1');
+    Object.assign(frame.style, HIDDEN_FRAME_STYLE);
+    frame.src = scriptUrl;
 
     const startedAt = Date.now();
     let observer = null;
     let timer = null;
     let interactive = false;
+    const cancelOnEscape = (event) => {
+      if (event.key === 'Escape') {
+        finish(new EdgeChallengeError());
+      }
+    };
     const finish = (error) => {
       observer?.disconnect();
       clearTimeout(timer);
-      container.remove();
-      script.remove();
+      document.removeEventListener('keydown', cancelOnEscape);
+      frame.remove();
       pendingChallenge = null;
       if (error) {
         reject(error);
@@ -132,27 +159,87 @@ export function solveEdgeChallenge(scriptPath = DEFAULT_CHALLENGE_SCRIPT_PATH) {
       }
     };
 
-    observer = new MutationObserver(() => {
-      const status = challengeStatus(container);
-      if (status === 'complete') {
-        finish();
-      } else if (status === 'error') {
-        finish(new EdgeChallengeError());
-      } else if (status === 'captcha_prompted' && !interactive) {
-        interactive = true;
-        clearTimeout(timer);
-        timer = setTimeout(
-          () => finish(new EdgeChallengeError()),
-          INTERACTIVE_CHALLENGE_TIMEOUT_MS - (Date.now() - startedAt),
-        );
-      }
-    });
-    observer.observe(container, { attributes: true });
-    timer = setTimeout(() => finish(new EdgeChallengeError()), CHALLENGE_TIMEOUT_MS);
-    script.addEventListener('error', () => finish(new EdgeChallengeError()));
+    // The CAPTCHA covers the page, so give the visitor a way back out of it
+    const showCaptcha = (frameDocument) => {
+      const close = frameDocument.createElement('button');
+      close.type = 'button';
+      close.className = 'fastly-challenge-close';
+      close.textContent = '\u00d7';
+      close.setAttribute('aria-label', t('Close'));
+      close.addEventListener('click', () => finish(new EdgeChallengeError()));
+      frameDocument.body.appendChild(close);
+      // Focus is inside the frame while the visitor solves the CAPTCHA, so listen in both
+      frameDocument.addEventListener('keydown', cancelOnEscape);
+      document.addEventListener('keydown', cancelOnEscape);
 
-    document.body.appendChild(container);
-    document.head.appendChild(script);
+      Object.assign(frame.style, INTERACTIVE_FRAME_STYLE);
+      frame.title = t('Security verification');
+      frame.removeAttribute('aria-hidden');
+      frame.removeAttribute('tabindex');
+      frame.focus();
+    };
+
+    const embedChallenge = () => {
+      // null when the frame failed to load and is showing the browser's error page
+      const frameDocument = frame.contentDocument;
+      if (!frameDocument?.head || !frameDocument.body) {
+        finish(new EdgeChallengeError());
+        return;
+      }
+
+      // The browser shows the challenge script it loaded as plain text, which would sit behind
+      // a CAPTCHA, so start from an empty document
+      frameDocument.head.replaceChildren();
+      frameDocument.body.replaceChildren();
+
+      const style = frameDocument.createElement('style');
+      style.textContent = FRAME_DOCUMENT_STYLE;
+      frameDocument.head.appendChild(style);
+
+      const container = frameDocument.createElement('div');
+      container.className = 'fastly-challenge';
+      frameDocument.body.appendChild(container);
+
+      observer = new MutationObserver(() => {
+        const status = container.getAttribute(CHALLENGE_STATUS_ATTRIBUTE);
+        if (status === 'complete') {
+          finish();
+        } else if (status === 'error') {
+          finish(new EdgeChallengeError());
+        } else if (status === 'captcha_prompted' && !interactive) {
+          interactive = true;
+          showCaptcha(frameDocument);
+          clearTimeout(timer);
+          timer = setTimeout(
+            () => finish(new EdgeChallengeError()),
+            INTERACTIVE_CHALLENGE_TIMEOUT_MS - (Date.now() - startedAt),
+          );
+        }
+      });
+      observer.observe(container, {
+        attributes: true,
+        attributeFilter: [CHALLENGE_STATUS_ATTRIBUTE],
+      });
+
+      const script = frameDocument.createElement('script');
+      script.src = scriptUrl;
+      script.addEventListener('error', () => finish(new EdgeChallengeError()));
+      frameDocument.head.appendChild(script);
+    };
+
+    const onFrameLoad = () => {
+      // Some browsers fire load for the initial about:blank document before navigating to src
+      if (frame.contentDocument?.URL === 'about:blank') {
+        return;
+      }
+      frame.removeEventListener('load', onFrameLoad);
+      embedChallenge();
+    };
+
+    // Covers the frame failing to load as well as a challenge that never finishes
+    timer = setTimeout(() => finish(new EdgeChallengeError()), CHALLENGE_TIMEOUT_MS);
+    frame.addEventListener('load', onFrameLoad);
+    document.body.appendChild(frame);
   });
 
   return pendingChallenge;
@@ -175,8 +262,8 @@ export async function fetchWithEdgeChallenge(url, options) {
   if (isEdgeBlockResponse(res)) {
     throw new EdgeChallengeError();
   }
-  const challenge = await readEdgeChallenge(res);
-  if (!challenge) {
+  const scriptPath = await challengeScriptPathOf(res);
+  if (!scriptPath) {
     return res;
   }
 
@@ -186,7 +273,7 @@ export async function fetchWithEdgeChallenge(url, options) {
     throw new EdgeChallengeError();
   }
 
-  await solveEdgeChallenge(challenge.scriptPath);
+  await solveEdgeChallenge(scriptPath);
 
   const retry = await fetch(url, options);
   if (isEdgeBlockResponse(retry) || (await isEdgeChallengeResponse(retry))) {

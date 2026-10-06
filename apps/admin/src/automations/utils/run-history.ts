@@ -29,7 +29,7 @@ const stepStates = {
   pending: { state: 'pending', label: 'Pending' },
   finished: { state: 'occurred', label: 'Completed' },
   failed: { state: 'exited', label: 'Step failed' },
-  'automation disabled': { state: 'exited', label: 'Ended by publisher' },
+  'automation disabled': { state: 'exited', label: 'Automation turned off' },
   'member changed status': { state: 'exited', label: 'Member changed subscription status' },
   // The server also uses this status for a missing member.
   'member unsubscribed': { state: 'exited', label: 'Unsubscribed' },
@@ -169,7 +169,7 @@ const mapEnd = (
           kind: 'event',
           title,
           state: lastStep.status === 'failed' ? 'failed' : 'exited',
-          statusLabel: 'Exited early',
+          statusLabel: 'Stopped',
           timestamp: { label: 'Step stopped', value: finishedAt(lastStep) },
         },
       ];

@@ -40,8 +40,8 @@ describe('automation run list mapping', () => {
   it.each([
     { status: 'in_progress', failed: false, label: 'In progress' },
     { status: 'completed', failed: false, label: 'Completed' },
-    { status: 'exited_early', failed: false, label: 'Exited early' },
-    { status: 'exited_early', failed: true, label: 'Exited early — Failed' },
+    { status: 'exited_early', failed: false, label: 'Stopped' },
+    { status: 'exited_early', failed: true, label: 'Stopped — Failed' },
   ] as const)('labels $status with failed=$failed', ({ status, failed, label }) => {
     expect(mapAutomationRun({ ...run, status, failed }).statusLabel).toBe(label);
   });

@@ -68,7 +68,9 @@ describe('Automation run selection and canvas transitions', () => {
       await expect(editingCanvas()).toHaveCount(0);
       await select();
       await expect.element(canvas()).toBeVisible();
-      await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+      await expect
+        .element(page.getByRole('button', { name: 'Show automation sidebar' }))
+        .toBeVisible();
       expect(canvas().element().getBoundingClientRect().width).toBeCloseTo(width, 0);
       await open();
       await expect(canvas()).toHaveCount(0);
@@ -119,7 +121,7 @@ describe('Automation run selection and canvas transitions', () => {
       .not.toBeVisible();
     await expect.poll(() => request.requests.length).toBe(1);
     await expect.poll(() => canvas().element().getBoundingClientRect().width).toBe(800);
-    await page.getByRole('button', { name: 'Hide performance' }).click();
+    await page.getByRole('button', { name: 'Hide automation sidebar' }).click();
     await expect.poll(() => canvas().element().getBoundingClientRect().width).toBe(1280);
     await expect.element(canvas()).toHaveTextContent('Alex');
     await open();
@@ -151,7 +153,7 @@ describe('Automation run selection and canvas transitions', () => {
       .not.toBeInTheDocument();
     await expect.element(canvas()).toHaveTextContent('Alex');
     expect(request.requests).toHaveLength(1);
-    await page.getByRole('button', { name: 'Hide performance' }).click();
+    await page.getByRole('button', { name: 'Hide automation sidebar' }).click();
     await close();
     await expect.element(editingCanvas()).toBeVisible();
   });
@@ -219,10 +221,14 @@ describe('Automation run selection and canvas transitions', () => {
     await select();
     await expect.element(canvas()).toHaveTextContent('Alex');
     window.location.hash = '#/automations/second';
-    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    await expect
+      .element(page.getByRole('button', { name: 'Show automation sidebar' }))
+      .toBeVisible();
     await expect.element(canvas()).not.toBeInTheDocument();
     window.location.hash = '#/automations/first';
-    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    await expect
+      .element(page.getByRole('button', { name: 'Show automation sidebar' }))
+      .toBeVisible();
     await expect.element(canvas()).not.toBeInTheDocument();
     await open();
     await select();

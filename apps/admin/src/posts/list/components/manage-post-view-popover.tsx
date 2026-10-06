@@ -199,7 +199,7 @@ function PopoverBody({
 /**
  * The save/edit-view affordance. Whether it shows at all is decided by
  * `canSavePostView` — admins only, posts only, not on a default view, and at
- * least one of the five view params set.
+ * least one of the view params set.
  *
  * Rendered in the filter bar beside Clear when there are filters, and in the
  * page header when there are not. Both placements exist because that last rule

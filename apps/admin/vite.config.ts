@@ -1,12 +1,11 @@
-import { createRequire } from 'node:module';
 import { configDefaults, defineConfig } from 'vitest/config';
 import type { PluginOption } from 'vite';
 import react from '@vitejs/plugin-react';
+import svgr from 'vite-plugin-svgr';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 
 import { emberAssetsPlugin } from './vite-ember-assets';
-import { embedRendererPlugin } from './vite-embed-renderer';
 import { ghostBackendProxyPlugin } from './vite-backend-proxy';
 import { sharedDefine, sharedResolve } from './vite.shared';
 
@@ -37,24 +36,15 @@ function getBase(command: 'build' | 'serve'): string {
   return `${getSubdir()}${DEV_BASE}`;
 }
 
-// Uploads the build's sourcemaps to Sentry; shipping builds only, as for Koenig
-function sentrySourcemapsPlugin(): PluginOption {
+// Injects Sentry debug IDs on shipping builds; CI uploads the maps afterwards
+function sentryDebugIdsPlugin(): PluginOption {
   if (!process.env.IS_SHIPPING) {
     return null;
   }
 
-  // Matches the release Admin's Sentry client reports once `/config/` has loaded
-  const require = createRequire(import.meta.url);
-  const { version } = require('../../ghost/core/package.json') as { version: string };
-
   return sentryVitePlugin({
-    org: 'ghost-foundation',
-    project: 'admin',
-    authToken: process.env.VITE_SENTRY_AUTH_TOKEN,
-    release: {
-      name: `ghost@${process.env.GHOST_BUILD_VERSION || version}`,
-      inject: false,
-    },
+    sourcemaps: { disable: 'disable-upload' },
+    release: { inject: false },
     telemetry: false,
   });
 }
@@ -64,6 +54,7 @@ export default defineConfig(({ command, mode }) => ({
   base: getBase(command),
   plugins: [
     tailwindcss() as PluginOption,
+    svgr(),
     react(),
     // Unit tests have no Ghost backend or Ember assets. Keep filesystem and
     // shipping side effects out of this lane, including Sentry uploads.
@@ -71,10 +62,9 @@ export default defineConfig(({ command, mode }) => ({
       ? []
       : [
           emberAssetsPlugin(),
-          embedRendererPlugin(),
           ghostBackendProxyPlugin(),
           // Sentry's plugin goes after all others
-          sentrySourcemapsPlugin(),
+          sentryDebugIdsPlugin(),
         ]),
   ],
   build: {

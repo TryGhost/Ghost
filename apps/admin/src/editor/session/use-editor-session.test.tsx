@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import { buildPostEditorReadParams } from '@tryghost/admin-x-framework/api/post-contract';
 import { postsDataType } from '@tryghost/admin-x-framework/api/posts';
@@ -263,6 +263,7 @@ describe('useEditorSession refetched record', () => {
 
     expect(result.current.loadedRecord).toBe(loaded);
     expect(result.current.isDirty()).toBe(false);
+    expect(result.current.newerVersionAvailable).toBe(true);
   });
 
   it('describes a read of its own save once that save has landed', async () => {
@@ -283,6 +284,7 @@ describe('useEditorSession refetched record', () => {
     postApi.read = { posts: [ownSave] };
     rerender();
     expect(result.current.loadedRecord).toBe(loaded);
+    expect(result.current.newerVersionAvailable).toBe(false);
 
     await act(async () => {
       answer.resolve({ posts: [ownSave] });
@@ -291,6 +293,7 @@ describe('useEditorSession refetched record', () => {
 
     expect(result.current.loadedRecord).toBe(ownSave);
     expect(result.current.isDirty()).toBe(false);
+    expect(result.current.newerVersionAvailable).toBe(false);
   });
 });
 
@@ -335,5 +338,39 @@ describe('useEditorSession saved record', () => {
     });
 
     expect(queryClient.getQueryData(screenRead)).toBe(theirs);
+  });
+});
+
+describe('useEditorSession reload', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('refuses a newer version when the writer edits while the reload waits', async () => {
+    const newer = record({ title: 'Their title', updated_at: '2026-01-02T00:00:00.000Z' });
+    stable.fetchApi.mockResolvedValueOnce({ posts: [newer] });
+    const cancelled = deferred<void>();
+    const cancelQueries = vi
+      .spyOn(queryClient, 'cancelQueries')
+      .mockReturnValueOnce(cancelled.promise);
+    const { result } = setup();
+    const loaded = result.current.loadedRecord;
+
+    let reloading!: Promise<string>;
+    act(() => {
+      reloading = result.current.reload();
+    });
+    await waitFor(() => expect(cancelQueries).toHaveBeenCalledTimes(1));
+    act(() => result.current.bind.onTitleChange('Typed while reloading'));
+
+    let outcome = '';
+    await act(async () => {
+      cancelled.resolve();
+      outcome = await reloading;
+    });
+
+    expect(outcome).toBe('failed');
+    expect(result.current.loadedRecord).toBe(loaded);
+    expect(result.current.bind.title).toBe('Typed while reloading');
   });
 });

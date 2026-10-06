@@ -287,6 +287,9 @@ catalogs:
     '@secretlint/secretlint-rule-preset-recommend':
       specifier: 13.0.4
       version: 13.0.4
+    '@sentry/bundler-plugin-core':
+      specifier: 5.3.0
+      version: 5.3.0
     '@sentry/react':
       specifier: 7.120.4
       version: 7.120.4
@@ -417,8 +420,8 @@ catalogs:
       specifier: npm:typescript@7.0.2
       version: 7.0.2
     '@uiw/codemirror-extensions-basic-setup':
-      specifier: 4.25.11
-      version: 4.25.11
+      specifier: 4.25.12
+      version: 4.25.12
     '@uiw/react-codemirror':
       specifier: 4.25.12
       version: 4.25.12
@@ -468,8 +471,8 @@ catalogs:
       specifier: 2.1.1
       version: 2.1.1
     concurrently:
-      specifier: 10.0.4
-      version: 10.0.4
+      specifier: 10.0.5
+      version: 10.0.5
     country-flag-icons:
       specifier: 1.6.20
       version: 1.6.20
@@ -507,8 +510,8 @@ catalogs:
       specifier: 5.2.0
       version: 5.2.0
     eslint-plugin-react-refresh:
-      specifier: 0.5.4
-      version: 0.5.4
+      specifier: 0.5.7
+      version: 0.5.7
     eslint-plugin-tailwindcss:
       specifier: 4.0.4
       version: 4.0.4
@@ -517,7 +520,7 @@ catalogs:
       version: 10.0.1
     fastq:
       specifier: ^1.20.1
-      version: 1.20.1
+      version: 1.20.3
     flexsearch:
       specifier: 0.7.43
       version: 0.7.43
@@ -537,8 +540,8 @@ catalogs:
       specifier: 16.0.0
       version: 16.0.0
     hono:
-      specifier: 4.13.8
-      version: 4.13.8
+      specifier: 4.13.12
+      version: 4.13.12
     ipaddr.js:
       specifier: 2.5.0
       version: 2.5.0
@@ -775,7 +778,7 @@ overrides:
 
 packageExtensionsChecksum: sha256-gFsvptlcVXY90ntXWh9ANUP1/LYyeqXjWoDGw6BCfOY=
 
-pnpmfileChecksum: sha256-fUIu4zcFUYGAp3jCvRqZ8zssQmWG4cCy4lRG7lA7cvQ=
+pnpmfileChecksum: sha256-BvMZoVcg2jC8HCh9KmyiWCFJm8gTXYABhZCDUfOd9n4=
 
 patchedDependencies:
   '@elastic/elasticsearch@8.19.2': 725142a9606e50dff3ed4c17fb9256d5457c7c75ce262898b87ef0ffff14dcc2
@@ -1190,6 +1193,9 @@ importers:
       vite:
         specifier: 'catalog:'
         version: 8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0)
+      vite-plugin-svgr:
+        specifier: 'catalog:'
+        version: 4.5.0(@typescript/typescript6@6.0.2)(rollup@4.62.2)(supports-color@10.2.2)(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
       vitest:
         specifier: 'catalog:'
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
@@ -2323,7 +2329,7 @@ importers:
         version: 5.2.0(eslint@9.39.4(jiti@2.7.0)(supports-color@10.2.2))
       eslint-plugin-react-refresh:
         specifier: 'catalog:'
-        version: 0.5.4(eslint@9.39.4(jiti@2.7.0)(supports-color@10.2.2))
+        version: 0.5.7(eslint@9.39.4(jiti@2.7.0)(supports-color@10.2.2))
       eslint-plugin-storybook:
         specifier: 10.4.6
         version: 10.4.6(@typescript/typescript6@6.0.2)(eslint@9.39.4(jiti@2.7.0)(supports-color@10.2.2))(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@18.3.31)(prettier@3.9.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@10.2.2)
@@ -2643,7 +2649,7 @@ importers:
         version: 2.27.0
       '@x402/hono':
         specifier: 'catalog:'
-        version: 2.27.0(hono@4.13.8)
+        version: 2.27.0(hono@4.13.12)
       archiver:
         specifier: 8.0.0
         version: 8.0.0
@@ -2681,8 +2687,8 @@ importers:
         specifier: 1.8.2
         version: 1.8.2
       compression:
-        specifier: 1.8.1
-        version: 1.8.1(supports-color@10.2.2)
+        specifier: 1.8.2
+        version: 1.8.2(supports-color@10.2.2)
       connect-slashes:
         specifier: 1.4.0
         version: 1.4.0
@@ -2690,8 +2696,8 @@ importers:
         specifier: 2.1.1
         version: 2.1.1(supports-color@10.2.2)
       cookies:
-        specifier: 0.9.1
-        version: 0.9.1
+        specifier: 0.9.2
+        version: 0.9.2
       cors:
         specifier: 2.8.6
         version: 2.8.6
@@ -2739,7 +2745,7 @@ importers:
         version: 1.19.0(supports-color@10.2.2)
       fastq:
         specifier: 'catalog:'
-        version: 1.20.1
+        version: 1.20.3
       file-type:
         specifier: 21.3.4
         version: 21.3.4(supports-color@10.2.2)
@@ -2769,7 +2775,7 @@ importers:
         version: 2.1.0
       hono:
         specifier: 'catalog:'
-        version: 4.13.8
+        version: 4.13.12
       html-to-text:
         specifier: 5.1.1
         version: 5.1.1
@@ -2874,7 +2880,7 @@ importers:
         version: 0.6.4
       mppx:
         specifier: 'catalog:'
-        version: 0.6.20(express@4.22.3(supports-color@10.2.2))(hono@4.13.8)(viem@2.55.11)
+        version: 0.6.20(express@4.22.3(supports-color@10.2.2))(hono@4.13.12)(viem@2.55.11)
       multer:
         specifier: 2.4.0
         version: 2.4.0
@@ -3636,7 +3642,7 @@ importers:
         version: 5.2.0(eslint@9.39.4(jiti@1.21.7)(supports-color@10.2.2))
       eslint-plugin-react-refresh:
         specifier: 'catalog:'
-        version: 0.5.4(eslint@9.39.4(jiti@1.21.7)(supports-color@10.2.2))
+        version: 0.5.7(eslint@9.39.4(jiti@1.21.7)(supports-color@10.2.2))
       eslint-plugin-tailwindcss:
         specifier: catalog:tailwind3
         version: 3.18.3(tailwindcss@3.4.19(tsx@4.23.12)(yaml@2.9.0))
@@ -3844,7 +3850,7 @@ importers:
         version: typescript@7.0.2
       '@uiw/codemirror-extensions-basic-setup':
         specifier: 'catalog:'
-        version: 4.25.11(@codemirror/autocomplete@6.20.3)(@codemirror/commands@6.11.1)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.2)(@codemirror/state@6.7.6)(@codemirror/view@6.43.13)
+        version: 4.25.12(@codemirror/autocomplete@6.20.3)(@codemirror/commands@6.11.1)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.2)(@codemirror/state@6.7.6)(@codemirror/view@6.43.13)
       '@uiw/react-codemirror':
         specifier: 'catalog:'
         version: 4.25.12(@babel/runtime@7.29.7)(@codemirror/autocomplete@6.20.3)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.2)(@codemirror/state@6.7.6)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.43.13)(codemirror@6.0.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -3865,7 +3871,7 @@ importers:
         version: 2.1.1
       concurrently:
         specifier: 'catalog:'
-        version: 10.0.4
+        version: 10.0.5
       dompurify:
         specifier: 'catalog:'
         version: 3.4.16
@@ -4319,6 +4325,40 @@ importers:
         specifier: 'catalog:'
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
 
+  packages/app-contracts:
+    dependencies:
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.5
+    devDependencies:
+      '@internal/cfg-eslint':
+        specifier: workspace:*
+        version: link:../../configs/eslint
+      '@internal/cfg-typescript':
+        specifier: workspace:*
+        version: link:../../configs/typescript
+      '@internal/cfg-vitest':
+        specifier: workspace:*
+        version: link:../../configs/vitest
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.1
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
+      '@vitest/coverage-v8':
+        specifier: 'catalog:'
+        version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.4(jiti@2.7.0)(supports-color@10.2.2)
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
+
   packages/checkout:
     dependencies:
       '@tryghost/metafield-types':
@@ -4666,6 +4706,9 @@ importers:
       '@pnpm/workspace.workspace-manifest-reader':
         specifier: 'catalog:'
         version: 1100.1.5
+      '@sentry/bundler-plugin-core':
+        specifier: 'catalog:'
+        version: 5.3.0(encoding@0.1.13)(supports-color@10.2.2)
       camelcase-keys:
         specifier: 10.0.3
         version: 10.0.3
@@ -4691,6 +4734,9 @@ importers:
       '@internal/cfg-typescript':
         specifier: workspace:*
         version: link:../configs/typescript
+      '@playwright/test':
+        specifier: 'catalog:'
+        version: 1.61.1
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.1
@@ -10426,17 +10472,6 @@ packages:
     resolution: {integrity: sha512-mbCddXd+jm7hfx7w2YU64/Av4/NqqeG3GoRZgxPcgoTxYjhrcfJRw9ULch71SS4G+Q3bOXFhRvPqjguN0Hyp5w==}
     hasBin: true
 
-  '@uiw/codemirror-extensions-basic-setup@4.25.11':
-    resolution: {integrity: sha512-otyFa+n9IOYtEjaKOxPedHkj15fTPUF21wdR9pv0GpZPfuGl27cvmcv6+tognbRu9VvEcsHKE+ESoszeo3KfTw==}
-    peerDependencies:
-      '@codemirror/autocomplete': '>=6.0.0'
-      '@codemirror/commands': '>=6.0.0'
-      '@codemirror/language': '>=6.0.0'
-      '@codemirror/lint': '>=6.0.0'
-      '@codemirror/search': '>=6.0.0'
-      '@codemirror/state': '>=6.0.0'
-      '@codemirror/view': '>=6.0.0'
-
   '@uiw/codemirror-extensions-basic-setup@4.25.12':
     resolution: {integrity: sha512-wR5lz7jbVcBGyiiLEObAmDikcc39KNqrrd4bdUhav85WZu48ttgnSf1YV+grHuMsj5l/WCw6u+r9ZuSfURJgiA==}
     peerDependencies:
@@ -12511,8 +12546,8 @@ packages:
     resolution: {integrity: sha512-AF3r7P5dWxL8MxyITRMlORQNaOA2IkAFaTr4k7BUumjPtRpGDTZpl0Pb1XCO6JeDCBdp126Cgs9sMxqSjgYyRg==}
     engines: {node: '>= 0.6'}
 
-  compression@1.8.1:
-    resolution: {integrity: sha512-9mAqGPHLakhCLeNyxPkK4xVo746zQ/czLH1Ky+vkitMnWfWZps8r0qXuwhwizagCRttsL4lfG4pIOvaWLpAP0w==}
+  compression@1.8.2:
+    resolution: {integrity: sha512-o8vI5RE5A6EVVOd9o41jKp41aJom+QTEO/Bx8MYNjexMo/Bv2WOjUfZr+aL0WnYSgymUy6zeguqLTsIhV0gMvQ==}
     engines: {node: '>= 0.8.0'}
 
   concat-map@0.0.1:
@@ -12524,8 +12559,8 @@ packages:
   concat-stream@2.0.0:
     resolution: {integrity: sha512-MWufYdFw53ccGjCA+Ol7XJYpAlW6/prSMzuPOTRnJGcGzuhLn4Scrz7qf6o8bROZ514ltazcIFJZevcfbo0x7A==}
 
-  concurrently@10.0.4:
-    resolution: {integrity: sha512-trZql+7l/0+WRAsAnEdctr4+iiOS6ZrViI6H8QWcCF9MFS/LT0dKpe8vluB1to6it+OxSI4VospFTIFMW8DJRw==}
+  concurrently@10.0.5:
+    resolution: {integrity: sha512-JaP/CoftUrCcAFW/g//RbgEGwlelnEae6cfBLgH6ZdO6s8jPkn6p9SB9u6pdVxYXoiSnFqseOlHfrEfF82TVOg==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -12618,6 +12653,10 @@ packages:
 
   cookies@0.9.1:
     resolution: {integrity: sha512-TG2hpqe4ELx54QER/S3HQ9SRVnQnGBtKUz5bLQWtYAQ+o6GpgMs6sYUvaiJjVxb+UXwhRhAEP3m7LbsIZ77Hmw==}
+    engines: {node: '>= 0.8'}
+
+  cookies@0.9.2:
+    resolution: {integrity: sha512-8BIbcC6tPZMv2/PD4PrB3CtKks7LmAWhA7FRZK/6/b/WJ2RUz00KCga7gq50S4/RhZ22kxefRFGgsuts0v3eoA==}
     engines: {node: '>= 0.8'}
 
   copy-concurrently@1.0.5:
@@ -14242,8 +14281,8 @@ packages:
     peerDependencies:
       eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0 || ^9.0.0
 
-  eslint-plugin-react-refresh@0.5.4:
-    resolution: {integrity: sha512-7bqTKz7T0r+HKWFarNXByDE9/5+73wI2ru+M3zuqGbR7s/b/5/pQJXZoufWlrngqGqoZto73ZkGumCdLxk+4rw==}
+  eslint-plugin-react-refresh@0.5.7:
+    resolution: {integrity: sha512-XhJSzLljuYD4UjNuFGJu2v7aD3sqNVK12w5/DCUfrNfHWegZo2+TsavNx8MuxMwEquuFAzNbNfXKU0WoZ+YUIg==}
     peerDependencies:
       eslint: ^9 || ^10
 
@@ -14634,8 +14673,8 @@ packages:
     resolution: {integrity: sha512-eRnCtTTtGZFpQCwhJiUOuxPQWRXVKYDn0b2PeHfXL6/Zi53SLAzAHfVhVWK2AryC/WH05kGfxhFIPvTF0SXQzg==}
     engines: {node: '>= 4.9.1'}
 
-  fastq@1.20.1:
-    resolution: {integrity: sha512-GGToxJ/w1x32s/D2EKND7kTil4n8OVk/9mycTc4VDza13lOvpUZTGX3mFSCtV9ksdGBVzvsyAVLM6mHFThxXxw==}
+  fastq@1.20.3:
+    resolution: {integrity: sha512-XKv5nnLs6nLF71NgiKJLIZFLkPyIEuOselLG7ujZnGrRfQK8HpvY+WqKhAJUAdLomwVHErVS4LfxFlPq0/FTAw==}
 
   faye-websocket@0.11.4:
     resolution: {integrity: sha512-CzbClwlXAuiRQAlUyfqPgvPoNKTckTPGfwZV4ZdAhVcP2lh9KUxJg2b5GkE7XbjKQ3YJnQ9z6D9ntLAlB+tP8g==}
@@ -15363,8 +15402,8 @@ packages:
     resolution: {integrity: sha512-eSmmWE5bZTK2Nou4g0AI3zZ9rswp7GRKoKXS1BLUkvPviOqs4YTN1djQIqrXy9k5gEtdLPy86JjRwsNM9tnDcA==}
     engines: {node: '>=0.10.0'}
 
-  hono@4.13.8:
-    resolution: {integrity: sha512-/Gng7NfoykZl2pjukW5Z6+8Yxm3BPRf86GTbQnt0SbySkvax4fyL4H3HhY1cCpBGmiW9XDRFzRV+CXK2W8QudQ==}
+  hono@4.13.12:
+    resolution: {integrity: sha512-6E2QDAc9Ick9Sq77ZrGS/dk2WUYni91aufTw6LJKpV7w8kW5/GxVUc650FOADOmlwg3K+f7Pun6XlV+pYmW6gw==}
     engines: {node: '>=16.9.0'}
 
   hookified@1.15.1:
@@ -25968,7 +26007,7 @@ snapshots:
   '@nodelib/fs.walk@1.2.8':
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
-      fastq: 1.20.1
+      fastq: 1.20.3
 
   '@npmcli/config@8.3.4(bluebird@3.7.2)':
     dependencies:
@@ -29651,16 +29690,6 @@ snapshots:
     dependencies:
       '@typescript/old': typescript@6.0.3
 
-  '@uiw/codemirror-extensions-basic-setup@4.25.11(@codemirror/autocomplete@6.20.3)(@codemirror/commands@6.11.1)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.2)(@codemirror/state@6.7.6)(@codemirror/view@6.43.13)':
-    dependencies:
-      '@codemirror/autocomplete': 6.20.3
-      '@codemirror/commands': 6.11.1
-      '@codemirror/language': 6.12.4
-      '@codemirror/lint': 6.9.7
-      '@codemirror/search': 6.7.2
-      '@codemirror/state': 6.7.6
-      '@codemirror/view': 6.43.13
-
   '@uiw/codemirror-extensions-basic-setup@4.25.12(@codemirror/autocomplete@6.20.3)(@codemirror/commands@6.11.1)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.2)(@codemirror/state@6.7.6)(@codemirror/view@6.43.13)':
     dependencies:
       '@codemirror/autocomplete': 6.20.3
@@ -30186,11 +30215,11 @@ snapshots:
       - ethers
       - utf-8-validate
 
-  '@x402/hono@2.27.0(hono@4.13.8)':
+  '@x402/hono@2.27.0(hono@4.13.12)':
     dependencies:
       '@x402/core': 2.27.0
       '@x402/extensions': 2.27.0
-      hono: 4.13.8
+      hono: 4.13.12
     transitivePeerDependencies:
       - bufferutil
       - ethers
@@ -32744,11 +32773,12 @@ snapshots:
     dependencies:
       mime-db: 1.54.0
 
-  compression@1.8.1(supports-color@10.2.2):
+  compression@1.8.2(supports-color@10.2.2):
     dependencies:
       bytes: 3.1.2
       compressible: 2.0.18
       debug: 2.6.9(supports-color@10.2.2)
+      destroy: 1.2.0
       negotiator: 0.6.4
       on-headers: 1.1.0
       safe-buffer: 5.2.1
@@ -32772,7 +32802,7 @@ snapshots:
       readable-stream: 3.6.2
       typedarray: 0.0.6
 
-  concurrently@10.0.4:
+  concurrently@10.0.5:
     dependencies:
       chalk: 5.6.2
       rxjs: 7.8.2
@@ -32865,6 +32895,11 @@ snapshots:
   cookiejar@2.1.4: {}
 
   cookies@0.9.1:
+    dependencies:
+      depd: 2.0.0
+      keygrip: 1.1.0
+
+  cookies@0.9.2:
     dependencies:
       depd: 2.0.0
       keygrip: 1.1.0
@@ -34467,7 +34502,7 @@ snapshots:
       chalk: 4.1.2
       ci-info: 2.0.0
       clean-base-url: 1.0.0
-      compression: 1.8.1(supports-color@10.2.2)
+      compression: 1.8.2(supports-color@10.2.2)
       configstore: 5.0.1
       console-ui: 3.1.2
       core-object: 3.1.5
@@ -35693,11 +35728,11 @@ snapshots:
     dependencies:
       eslint: 9.39.4(jiti@2.7.0)(supports-color@10.2.2)
 
-  eslint-plugin-react-refresh@0.5.4(eslint@9.39.4(jiti@1.21.7)(supports-color@10.2.2)):
+  eslint-plugin-react-refresh@0.5.7(eslint@9.39.4(jiti@1.21.7)(supports-color@10.2.2)):
     dependencies:
       eslint: 9.39.4(jiti@1.21.7)(supports-color@10.2.2)
 
-  eslint-plugin-react-refresh@0.5.4(eslint@9.39.4(jiti@2.7.0)(supports-color@10.2.2)):
+  eslint-plugin-react-refresh@0.5.7(eslint@9.39.4(jiti@2.7.0)(supports-color@10.2.2)):
     dependencies:
       eslint: 9.39.4(jiti@2.7.0)(supports-color@10.2.2)
 
@@ -36365,7 +36400,7 @@ snapshots:
 
   fastest-levenshtein@1.0.16: {}
 
-  fastq@1.20.1:
+  fastq@1.20.3:
     dependencies:
       reusify: 1.1.0
 
@@ -36928,7 +36963,7 @@ snapshots:
     dependencies:
       '@gulpjs/to-absolute-glob': 4.0.0
       anymatch: 3.1.3
-      fastq: 1.20.1
+      fastq: 1.20.3
       glob-parent: 6.0.2
       is-glob: 4.0.3
       is-negated-glob: 1.0.0
@@ -37338,7 +37373,7 @@ snapshots:
     dependencies:
       parse-passwd: 1.0.0
 
-  hono@4.13.8: {}
+  hono@4.13.12: {}
 
   hookified@1.15.1: {}
 
@@ -40505,7 +40540,7 @@ snapshots:
       rimraf: 2.7.1
       run-queue: 1.0.3
 
-  mppx@0.6.20(express@4.22.3(supports-color@10.2.2))(hono@4.13.8)(viem@2.55.11):
+  mppx@0.6.20(express@4.22.3(supports-color@10.2.2))(hono@4.13.12)(viem@2.55.11):
     dependencies:
       incur: 0.4.26
       ox: 0.14.20
@@ -40513,7 +40548,7 @@ snapshots:
       zod: 4.6.5
     optionalDependencies:
       express: 4.22.3(supports-color@10.2.2)
-      hono: 4.13.8
+      hono: 4.13.12
 
   mrmime@2.0.1: {}
 
@@ -44852,7 +44887,7 @@ snapshots:
       backbone: 1.6.1
       charm: 1.0.2
       commander: 2.20.3
-      compression: 1.8.1(supports-color@10.2.2)
+      compression: 1.8.2(supports-color@10.2.2)
       consolidate: 1.0.4
       execa: 9.6.1
       express: 4.22.3(supports-color@10.2.2)

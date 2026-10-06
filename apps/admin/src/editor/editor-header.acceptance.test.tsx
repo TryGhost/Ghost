@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, onTestFinished } from 'vitest';
 import { page, userEvent, type Locator } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 import { publishTypeError } from '@tryghost/test-data/selectors/editor';
@@ -30,7 +30,7 @@ import { editorScreen } from '@/editor/editor.screen';
 import type { EmberDataChangeEvent } from '@/ember-bridge';
 import { deferred } from '@/utils/deferred';
 import { previewScreen } from '@/editor/preview/preview.screen';
-import { CONFLICT_MESSAGE } from '@/editor/publish/completion-message';
+import { CONFLICT_MESSAGE, UNEXPECTED_MESSAGE } from '@/editor/publish/completion-message';
 import { publishScreen } from '@/editor/publish/publish.screen';
 import { POST_DELETED } from '@/editor/session/error-mapping';
 import {
@@ -49,6 +49,10 @@ const SITE_URL = 'http://test.com';
 const SAVE_POLL = { timeout: 10_000 };
 const CURRENT_USER_ID = String(currentUserResponse().users[0].id);
 const GENERIC_ERROR_TOAST = /something went wrong/i;
+const MAC_AGENT =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
+const WINDOWS_AGENT =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
 const MAILGUN_SETTINGS = {
   mailgun_domain: 'mail.test.com',
@@ -236,6 +240,14 @@ function asRole(name: StaffRoleName) {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name })];
   return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+}
+
+/** The header reads the platform as it renders, so the agent has to be in place first. */
+function onPlatform(userAgent: string) {
+  Object.defineProperty(navigator, 'userAgent', { configurable: true, get: () => userAgent });
+  onTestFinished(() => {
+    Reflect.deleteProperty(navigator, 'userAgent');
+  });
 }
 
 async function typeIntoBody(text: string) {
@@ -671,6 +683,19 @@ describe('Editor header actions', () => {
     await expect(previewScreen.toastWithText(GENERIC_ERROR_TOAST)).toHaveCount(0);
   });
 
+  it('shows a generic reason when the save before previewing fails in the browser', async () => {
+    publishChrome();
+    fakeSavablePost();
+    // An answer without the post throws in the editor, not as an API error.
+    fakeAdminEndpoint('PUT', new RegExp(`^/posts/${POST_ID}/\\?`), {});
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await typeIntoBody(' and more');
+    await editorScreen.previewButton().click();
+
+    await expect.element(previewScreen.saveFailed()).toHaveTextContent(UNEXPECTED_MESSAGE);
+  });
+
   it('toggles the preview with the keyboard shortcut', async () => {
     publishChrome();
     fakeSavablePost();
@@ -914,6 +939,19 @@ describe('Editor header actions', () => {
     await expect(publishScreen.complete()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(1);
   });
+
+  it('shows a generic reason when publishing fails in the browser', async () => {
+    publishChrome();
+    fakeSavablePost();
+    // An answer without the post throws in the editor, not as an API error.
+    fakeAdminEndpoint('PUT', new RegExp(`^/posts/${POST_ID}/\\?`), {});
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await publishThroughFlow();
+
+    await expect.element(publishScreen.confirmError()).toHaveTextContent(UNEXPECTED_MESSAGE);
+  });
   it('offers no preview once the post has been published', async () => {
     publishChrome();
     fakeSavablePost({ status: 'published', published_at: '2026-02-01T10:00:00.000Z' });
@@ -938,6 +976,30 @@ describe('Editor header actions', () => {
     await expect.element(publishScreen.options()).toBeVisible();
     await expect(previewScreen.modal()).toHaveCount(0);
   });
+
+  it.each([
+    ['a Mac', MAC_AGENT, '⌘P', '⌘⇧P'],
+    ['other platforms', WINDOWS_AGENT, 'Ctrl+P', 'Ctrl+Shift+P'],
+  ])(
+    'names the preview and publish shortcuts in the tooltips on %s',
+    async (_platform, agent, previewKeys, publishKeys) => {
+      onPlatform(agent);
+      publishChrome();
+      fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await expect.element(editorScreen.publishButton()).toBeEnabled();
+
+      // Header tooltips open on focus and describe the focused button.
+      editorScreen.previewButton().element().focus();
+      await expect
+        .element(editorScreen.previewButton())
+        .toHaveAccessibleDescription(`Preview ${previewKeys}`);
+      editorScreen.publishButton().element().focus();
+      await expect
+        .element(editorScreen.publishButton())
+        .toHaveAccessibleDescription(`Publish ${publishKeys}`);
+    },
+  );
 
   it.each([
     { opener: 'Publish', open: () => editorScreen.publishButton().click() },

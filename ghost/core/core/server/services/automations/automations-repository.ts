@@ -1,5 +1,6 @@
 import type { ReadonlyDeep } from 'type-fest';
 import type { Knex } from 'knex';
+import type { AddAutomationData } from './automations-api';
 
 export type Pagination = {
   page: number;
@@ -77,7 +78,16 @@ export type AutomationBrowseResult = AutomationSummary & {
 export type Automation = AutomationSummary & {
   actions: AutomationAction[];
   edges: AutomationEdge[];
-};
+} & (
+    | {
+        trigger_tier_scope: null | 'free' | 'all_paid';
+        trigger_tier_ids: null;
+      }
+    | {
+        trigger_tier_scope: 'selected_paid';
+        trigger_tier_ids: string[];
+      }
+  );
 
 export type EditAutomationData = {
   name?: string;
@@ -85,7 +95,16 @@ export type EditAutomationData = {
   status: string;
   actions: AutomationAction[];
   edges: AutomationEdge[];
-};
+} & (
+  | {
+      trigger_tier_scope?: null | 'free' | 'all_paid';
+      trigger_tier_ids?: null;
+    }
+  | {
+      trigger_tier_scope: 'selected_paid';
+      trigger_tier_ids: string[];
+    }
+);
 
 export type AutomatedEmailRecipientWithMailgunId = {
   id: string;
@@ -218,6 +237,7 @@ export type AutomationsRepository = {
     automationId: string,
     actionId: string,
   ): Promise<AutomationActionLink[] | null>;
+  add(data: AddAutomationData): Promise<Automation>;
   edit(id: string, data: EditAutomationData): Promise<Automation | null>;
   trigger(
     options: ReadonlyDeep<{

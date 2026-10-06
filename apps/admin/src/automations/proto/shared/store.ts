@@ -434,6 +434,10 @@ export const blankAutomation = (): ProtoAutomation => {
       // it edits on the ProtoAutomation wrapper (see `description` below), so
       // this is only here to satisfy the type.
       description: '',
+      // Likewise the API's trigger scope: the proto's trigger lives on the
+      // wrapper (`trigger`), and a blank automation hasn't chosen one.
+      trigger_tier_scope: null,
+      trigger_tier_ids: null,
       slug: `${slugify(name)}-${id.slice(5)}`,
       // Nothing with no steps should read as running.
       status: 'inactive',

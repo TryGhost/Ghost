@@ -198,8 +198,19 @@ vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
     useBrowseAutomationActionLinks: (...args: unknown[]) =>
       mockUseBrowseAutomationActionLinks(...args),
     useEditAutomation: () => mockEditMutation,
+    useReadAutomationPerformanceStats: () => ({ isFetching: true }),
   };
 });
+
+// The virtualized run list requires browser layout; its behavior is covered by acceptance tests.
+vi.mock('./components/canvas/run-list', () => ({ RunList: () => null }));
+
+const mockStats = vi.hoisted(
+  (): { current: { endpoint: string } | undefined; loaded: boolean } => ({
+    current: undefined,
+    loaded: true,
+  }),
+);
 
 const mockLabs = vi.hoisted((): { current: Record<string, boolean> } => ({ current: {} }));
 
@@ -209,7 +220,11 @@ vi.mock('@tryghost/admin-x-framework/api/config', async () => {
   );
   return {
     ...actual,
-    useBrowseConfig: () => ({ data: { config: { labs: mockLabs.current } } }),
+    useBrowseConfig: () => ({
+      data: mockStats.loaded
+        ? { config: { labs: mockLabs.current, stats: mockStats.current } }
+        : undefined,
+    }),
   };
 });
 
@@ -375,6 +390,8 @@ vi.mock('@xyflow/react', async () => {
 const automationDetail: AutomationDetail = {
   id: 'automation-id-1',
   slug: 'member-welcome-email-free',
+  trigger_tier_scope: 'free',
+  trigger_tier_ids: null,
   name: 'Free member welcome flow',
   description: 'Welcome new free members.',
   status: 'active',
@@ -505,6 +522,8 @@ describe('AutomationEditor', () => {
     mockEditMutation.variables = undefined;
     mockToastError.mockReset();
     mockLabs.current = {};
+    mockStats.current = { endpoint: 'https://api.tinybird.test' };
+    mockStats.loaded = true;
     mockEmailTracking.emailTrackOpens = true;
     mockEmailTracking.emailTrackClicks = true;
   });
@@ -1040,14 +1059,100 @@ describe('AutomationEditor', () => {
     expect(mockUseBrowseAutomationActionLinks).not.toHaveBeenCalled();
   });
 
-  it.each(['automationRunAnalytics', 'automationsTinybirdSync'])(
-    'hides the performance toggle and panel when %s is disabled',
-    (flag) => {
-      mockLabs.current = {
-        automationRunAnalytics: true,
-        automationsTinybirdSync: true,
-        [flag]: false,
-      };
+  it.each([
+    { status: 'inactive' as const, label: 'Save', nextStatus: 'inactive' },
+    { status: 'inactive' as const, label: 'Publish', nextStatus: 'active' },
+    { status: 'active' as const, label: 'Publish changes', nextStatus: 'active' },
+    { status: 'active' as const, label: 'Turn off', nextStatus: 'inactive' },
+  ])('saves settings only on explicit $label', async ({ status, label, nextStatus }) => {
+    mockLabs.current = { automationRunAnalytics: true, automationsPerTier: true };
+    mockUseReadAutomation.mockReturnValue({
+      data: { automations: [{ ...automationDetail, status }] },
+      isLoading: false,
+      isError: false,
+    });
+    mockStats.current = undefined;
+    renderEditor();
+    fireEvent.click(screen.getByRole('button', { name: 'Show automation sidebar' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Name' }), {
+      target: { value: 'New name' },
+    });
+    fireEvent.change(screen.getByRole('textbox', { name: 'Description' }), {
+      target: { value: 'New description' },
+    });
+    expect(mockEditMutation.mutate).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Hide automation sidebar' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Show automation sidebar' }));
+    expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('New name');
+    fireEvent.click(screen.getByRole('button', { name: label }));
+    if (label !== 'Save') {
+      const dialog = await screen.findByRole('alertdialog');
+      fireEvent.click(within(dialog).getByRole('button', { name: label }));
+    }
+    expect(mockEditMutation.mutate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'New name',
+        description: 'New description',
+        status: nextStatus,
+      }),
+      expect.any(Object),
+    );
+    const [payload, options] = mockEditMutation.mutate.mock.calls[0];
+    act(() => options.onSuccess?.({ automations: [{ ...automationDetail, ...payload }] }));
+    expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('New name');
+    if (nextStatus === 'inactive') {
+      expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+    } else {
+      expect(screen.getByRole('button', { name: 'Published' })).toBeDisabled();
+    }
+  });
+
+  it.each(['', '   '])('blocks saving blank name %j but allows empty description', (name) => {
+    mockLabs.current = { automationRunAnalytics: true, automationsPerTier: true };
+    mockUseReadAutomation.mockReturnValue({
+      data: { automations: [{ ...automationDetail, status: 'inactive' }] },
+      isLoading: false,
+      isError: false,
+    });
+    mockStats.current = undefined;
+    renderEditor();
+    fireEvent.click(screen.getByRole('button', { name: 'Show automation sidebar' }));
+    const input = screen.getByRole('textbox', { name: 'Name' });
+    fireEvent.change(input, { target: { value: name } });
+    fireEvent.change(screen.getByRole('textbox', { name: 'Description' }), {
+      target: { value: '' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(mockEditMutation.mutate).not.toHaveBeenCalled();
+    fireEvent.change(input, { target: { value: 'Valid name' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    expect(mockEditMutation.mutate).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'Valid name', description: '' }),
+      expect.any(Object),
+    );
+  });
+
+  it('hides the Performance tab when run analytics is disabled', () => {
+    mockLabs.current = { automationRunAnalytics: false, automationsPerTier: true };
+    mockUseReadAutomation.mockReturnValue({
+      data: { automations: [automationDetail] },
+      isLoading: false,
+      isError: false,
+    });
+
+    renderEditor();
+    fireEvent.click(screen.getByRole('button', { name: 'Show automation sidebar' }));
+
+    expect(screen.queryByRole('tab', { name: 'Performance' })).not.toBeInTheDocument();
+  });
+
+  it.each([false, true])(
+    'keeps editing without performance when stats are unavailable (config loaded: %s)',
+    (loaded) => {
+      mockLabs.current = { automationRunAnalytics: true };
+      mockStats.current = undefined;
+      mockStats.loaded = loaded;
       mockUseReadAutomation.mockReturnValue({
         data: { automations: [automationDetail] },
         isLoading: false,
@@ -1057,12 +1162,16 @@ describe('AutomationEditor', () => {
       renderEditor();
 
       expect(screen.queryByRole('button', { name: /performance/i })).not.toBeInTheDocument();
-      expect(screen.queryByText('Performance')).not.toBeInTheDocument();
+      expect(
+        loaded
+          ? screen.getByRole('textbox', { name: 'Wait for' })
+          : screen.getByRole('button', { name: 'Wait: 1 day' }),
+      ).toBeVisible();
     },
   );
 
-  it('renders the performance toggle and panel shell when both analytics flags are enabled', () => {
-    mockLabs.current = { automationRunAnalytics: true, automationsTinybirdSync: true };
+  it('opens performance for an active automation when run analytics is enabled', () => {
+    mockLabs.current = { automationRunAnalytics: true };
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [automationDetail] },
       isLoading: false,
@@ -1071,8 +1180,8 @@ describe('AutomationEditor', () => {
 
     renderEditor();
 
-    expect(screen.getByRole('button', { name: 'Show performance' })).toBeVisible();
-    expect(screen.getByText('Performance')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Hide automation sidebar' })).toBeVisible();
+    expect(screen.getByRole('tab', { name: 'Performance' })).toBeInTheDocument();
   });
 
   it('renders styled canvas zoom controls without the interaction toggle', () => {
@@ -1589,6 +1698,8 @@ describe('AutomationEditor', () => {
     expect(mockEditMutation.mutate).toHaveBeenCalledWith(
       expect.objectContaining({
         id: 'automation-id-1',
+        name: automationDetail.name,
+        description: automationDetail.description,
         status: 'active',
         actions: expect.arrayContaining([
           expect.objectContaining({
@@ -1764,7 +1875,7 @@ describe('AutomationEditor', () => {
     ).toBeDisabled();
   });
 
-  it('rejects non-decimal wait editor values', () => {
+  it('reduces wait editor values to digits and rejects out-of-range ones', () => {
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [automationDetail] },
       isLoading: false,
@@ -1777,7 +1888,19 @@ describe('AutomationEditor', () => {
     const sidebar = screen.getByRole('complementary', { name: 'Step details' });
     const waitInput = within(sidebar).getByDisplayValue('1');
 
-    for (const value of ['2e1', '+2']) {
+    for (const [typed, kept] of [
+      ['2e1', '21'],
+      ['+2', '2'],
+      ['1.5', '15'],
+      ['abc', ''],
+    ]) {
+      fireEvent.change(waitInput, { target: { value: typed } });
+      expect(waitInput).toHaveValue(kept);
+    }
+    // Back to the saved value, so the checks below start from an unchanged draft.
+    fireEvent.change(waitInput, { target: { value: '1' } });
+
+    for (const value of ['31', '99']) {
       fireEvent.focus(waitInput);
       fireEvent.change(waitInput, { target: { value } });
 
@@ -1880,10 +2003,8 @@ describe('AutomationEditor', () => {
 
     expect(mockEditMutation.mutate).toHaveBeenCalledWith(
       {
-        id: 'automation-id-1',
+        ...automationDetail,
         status: 'active',
-        actions: automationDetail.actions,
-        edges: automationDetail.edges,
       },
       expect.any(Object),
     );
@@ -2090,10 +2211,8 @@ describe('AutomationEditor', () => {
 
     expect(mockEditMutation.mutate).toHaveBeenCalledWith(
       {
-        id: 'automation-id-1',
+        ...automationDetail,
         status: 'inactive',
-        actions: automationDetail.actions,
-        edges: automationDetail.edges,
       },
       expect.any(Object),
     );
@@ -3073,7 +3192,7 @@ describe('AutomationEditor', () => {
 
     expect(mockEditMutation.mutate).toHaveBeenCalledWith(
       {
-        id: 'automation-id-1',
+        ...automationDetail,
         status: 'active',
         actions: expect.any(Array) as unknown,
         edges: expect.any(Array) as unknown,

@@ -17,7 +17,8 @@ import { AnalyticsProvider, analyticsRouteChildren } from './analytics/api';
 import MyProfileRedirect from './my-profile-redirect';
 
 // Ember
-import { EmberFallback, ForceUpgradeGuard, syncEmberRoutePattern } from './ember-bridge';
+import { syncEmberRoutePattern } from './ember-bridge';
+import { BillingRoute, ForceUpgradeGuard } from './billing/api';
 import HomeRedirect from './home-redirect';
 import { EditorGate } from './editor-gate';
 import { lazyRestoreScreen } from './editor/api';
@@ -61,18 +62,6 @@ import {
 
 import { NotFound } from './shared/not-found';
 import { type AuthRouteHandle, authRoutes, useAuthScreensOwner } from './auth/api';
-
-// Routes handled by the Ember admin app. React delegates these to Ember via
-// EmberFallback. When migrating a route to React, remove its entry from here.
-const EMBER_ROUTES: string[] = ['/pro/*'];
-
-const emberFallbackHandle = { allowInForceUpgrade: true } satisfies AdminRouteHandle;
-
-const emberFallbackRoutes: RouteObject[] = EMBER_ROUTES.map((path) => ({
-  path,
-  Component: EmberFallback,
-  handle: emberFallbackHandle,
-}));
 
 const appRoutes: RouteObject[] = [
   {
@@ -284,7 +273,8 @@ const appRoutes: RouteObject[] = [
     // both sides of the `editorReact` flag.
     path: '/editor/*',
     Component: EditorGate,
-    handle: { ...emberFallbackHandle, hideAdminSidebar: true } satisfies AdminRouteHandle,
+    // EditorGate enforces force upgrade unless Ember owns both the editor and billing
+    handle: { allowInForceUpgrade: true, hideAdminSidebar: true } satisfies AdminRouteHandle,
   },
   { path: '/site', lazy: lazyComponent(lazyViewSiteScreen) },
   { path: '/restore', lazy: lazyComponent(lazyRestoreScreen) },
@@ -296,8 +286,15 @@ const appRoutes: RouteObject[] = [
       requiresAccess: hasAdminAccess,
     } satisfies AdminRouteHandle & AccessRouteHandle,
   },
-  // Ember-handled routes
-  ...emberFallbackRoutes,
+  {
+    // Served by React or Ember depending on the `billingReact` Labs flag. The
+    // billing app itself stays mounted across routes (see BillingFrame), so
+    // this route only decides access. Reachable in force upgrade: it is the
+    // way out of it.
+    path: '/pro/*',
+    Component: BillingRoute,
+    handle: { allowInForceUpgrade: true } satisfies AdminRouteHandle,
+  },
   {
     // 404 catch-all for routes not handled by React or Ember
     path: '*',
@@ -327,11 +324,10 @@ export const routes: RouteObject[] = [
 // React router's pushState navigation does not fire, so links into Ember-owned
 // routes must stay native hash anchors. Everything else can be a router link
 // (and so gets router history state, which the unsaved-changes blockers need).
-const EMBER_ROUTE_COMPONENTS = new Set<unknown>([EmberFallback]);
-
 /** Decides for any path whether Ember owns it, for destinations only known at event time. */
 export function useEmberOwnedRouteMatcher(): (pathname: string) => boolean {
   const editorOwner = useFlagGatedRouteOwner('editorReact');
+  const billingOwner = useFlagGatedRouteOwner('billingReact');
   const authScreensOwner = useAuthScreensOwner();
 
   return useCallback(
@@ -343,12 +339,15 @@ export function useEmberOwnedRouteMatcher(): (pathname: string) => boolean {
       if (leaf.Component === EditorGate) {
         return editorOwner !== 'react';
       }
+      if (leaf.Component === BillingRoute) {
+        return billingOwner !== 'react';
+      }
       if ((leaf.handle as AuthRouteHandle | undefined)?.authScreen) {
         return authScreensOwner !== 'react';
       }
-      return EMBER_ROUTE_COMPONENTS.has(leaf.Component);
+      return false;
     },
-    [editorOwner, authScreensOwner],
+    [editorOwner, billingOwner, authScreensOwner],
   );
 }
 
