@@ -20,7 +20,7 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup-node-pnpm
         with:
-          node-version: '22.23.3'
+          node-version: '24.21.0'
       - name: Build workspace declarations
         run: pnpm nx run-many -t build:tsc
       - name: Generate inventory

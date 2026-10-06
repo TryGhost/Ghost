@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 env:
-  NODE_VERSION: 22.23.3
+  NODE_VERSION: 24.21.0
 
 concurrency:
   group: embed-renderer
