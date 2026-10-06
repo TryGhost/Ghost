@@ -195,9 +195,9 @@ Labs flags.
 This outputs to `apps/admin/dist/` and updates the assets in `ghost/core/core/built/admin/`.
 
 The build also writes hidden sourcemaps: `.map` files that no bundle references.
-With `IS_SHIPPING` set, as CI does for `main` and release tags, it uploads them
-to Sentry under the release Admin's Sentry client reports. Without
-`VITE_SENTRY_AUTH_TOKEN` the upload is skipped.
+With `IS_SHIPPING` set, as CI does for `main` and release tags, it injects Sentry
+debug IDs into the bundles. CI then uploads the maps with `sentry-cli` in a
+separate step, so a slow or unavailable Sentry can't block the build.
 
 ## Automation member search
 
