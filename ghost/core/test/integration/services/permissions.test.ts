@@ -9,6 +9,7 @@ const { knex } = require('../../../core/server/data/db');
 const permissions = require('../../../core/server/services/permissions');
 const providers: typeof import('../../../core/server/services/permissions/permission-providers').providers = require('../../../core/server/services/permissions/providers');
 const rolePermissions: typeof import('../../../core/server/services/permissions/role-permissions') = require('../../../core/server/services/permissions/role-permissions');
+const parity: typeof import('../../../core/server/services/permissions/parity-check') = require('../../../core/server/services/permissions/parity-check');
 
 const internal = { context: { internal: true } };
 
@@ -183,6 +184,78 @@ describe('Authoritative in-memory permission policy', function () {
     });
     await models.User.edit({ status: 'inactive' }, { ...internal, id: user.id });
     await assert.rejects(() => providers.user(user.id), { errorType: 'UnauthorizedError' });
+  });
+
+  it('observes user demotion, suspension and key deletion in combined staff checks', async function () {
+    const user = await createUser('Administrator');
+    const key = await models.ApiKey.add({ type: 'admin', user_id: user.id }, internal);
+    const context = { user: user.id, api_key: { id: key.id, type: 'admin' } };
+    try {
+      const { queries } = await captureQueries(() => permissions.canThis(context).edit.tag());
+      assert.equal(queries.length, 4);
+      assert(queries.every((sql) => !sql.includes('permissions')));
+      await models.User.edit({ roles: ['Contributor'] }, { ...internal, id: user.id });
+      await assert.rejects(() => permissions.canThis(context).edit.tag(), {
+        errorType: 'NoPermissionError',
+      });
+      await models.User.edit({ status: 'inactive' }, { ...internal, id: user.id });
+      await assert.rejects(() => permissions.canThis(context).edit.tag(), {
+        errorType: 'UnauthorizedError',
+      });
+      await models.User.edit({ status: 'active' }, { ...internal, id: user.id });
+    } finally {
+      await models.ApiKey.destroy({ ...internal, id: key.id });
+    }
+    await assert.rejects(() => permissions.canThis(context).read.tag(), {
+      errorType: 'NotFoundError',
+    });
+  });
+
+  it('audits Owner grants used by keys while preserving the Owner user bypass', async function () {
+    const user = await createUser('Contributor');
+    const originalRole = await knex('roles_users').where({ user_id: user.id }).first();
+    const owner = await models.Role.findOne({ name: 'Owner' });
+    const permission = await models.Permission.findOne({ action_type: 'edit', object_type: 'tag' });
+    const key = await models.ApiKey.add({ type: 'admin' }, internal);
+    try {
+      await knex('api_keys').where({ id: key.id }).update({ role_id: owner.id });
+      await knex('roles_users').where({ user_id: user.id }).update({ role_id: owner.id });
+      await knex('permissions_roles').insert({
+        id: models.Permission.generateId(),
+        role_id: owner.id,
+        permission_id: permission.id,
+      });
+      const legacyKey = await models.ApiKey.findOne(
+        { id: key.id },
+        { withRelated: ['role', 'role.permissions'] },
+      );
+      const legacyGrants = databaseGrants(legacyKey.related('role').related('permissions'));
+      const grant = { action_type: 'edit', object_type: 'tag' };
+      assert.deepEqual(legacyGrants, [grant]);
+      const config = require('../../../core/shared/config');
+      const policy = new rolePermissions.RolePermissions(require(config.get('paths').fixtures));
+      const report = parity.compare(policy, {
+        roles: [{ id: owner.id, name: 'Owner', permissions: legacyGrants }],
+        permissions: databaseGrants(await models.Permission.findAll()),
+        directUserGrants: 0,
+      });
+      assert.equal(report.matches, false);
+      assert.deepEqual(report.roles, [
+        { id: owner.id, name: 'Owner', wouldGrant: [], wouldRevoke: [grant] },
+      ]);
+      await permissions.init();
+      await permissions.canThis({ user: user.id }).edit.tag();
+      await assert.rejects(
+        () => permissions.canThis({ api_key: { id: key.id, type: 'admin' } }).edit.tag(),
+        { errorType: 'NoPermissionError' },
+      );
+    } finally {
+      await models.ApiKey.destroy({ ...internal, id: key.id });
+      await owner.permissions().detach(permission.id);
+      await knex('roles_users')
+        .where({ user_id: user.id })
+        .update({ role_id: originalRole.role_id });
+    }
   });
 
   it('ignores direct grants and extra role grants in the DB', async function () {

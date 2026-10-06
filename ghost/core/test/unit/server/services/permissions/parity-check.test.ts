@@ -54,10 +54,21 @@ describe('Permission parity audit', function () {
     assert.equal(report.directUserGrants, 2);
   });
 
-  it('does not compare Owner grants because Owner uses the existing bypass', function () {
+  it('matches an Owner role with no database grants', function () {
     const input = snapshot();
-    input.roles.push({ id: 'owner', name: 'Owner', permissions: [...policy.all()] });
+    input.roles.push({ id: 'owner', name: 'Owner', permissions: [] });
     assert.equal(compare(policy, input).matches, true);
+  });
+
+  it('reports Owner grant drift because API keys do not use the user bypass', function () {
+    const input = snapshot();
+    const permission = { action_type: 'edit', object_type: 'tag' };
+    input.roles.push({ id: 'owner', name: 'Owner', permissions: [permission] });
+    const report = compare(policy, input);
+    assert.equal(report.matches, false);
+    assert.deepEqual(report.roles, [
+      { id: 'owner', name: 'Owner', wouldGrant: [], wouldRevoke: [permission] },
+    ]);
   });
 
   it('logs success and mismatches with the policy version', async function () {

@@ -28,7 +28,6 @@ function difference(database: readonly Permission[], memory: readonly Permission
 export function compare(policy: RolePermissions, input: unknown) {
   const snapshot = snapshotSchema.parse(input);
   const roles = snapshot.roles
-    .filter((role) => role.name !== 'Owner')
     .map((role) => ({
       id: role.id,
       name: role.name,

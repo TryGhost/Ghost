@@ -27,8 +27,9 @@ existing tables, so their contents can differ from the effective policy.
 
 Each initialization awaits a diagnostic comparison with the database. It reports
 grants that memory adds or removes, catalog drift, unknown roles and the count of
-direct user grants. Logs contain a deterministic `policyVersion` fingerprint and
-one of these codes:
+direct user grants. Owner grant differences affect API keys assigned that role;
+Owner users retain their existing bypass. Logs contain a deterministic
+`policyVersion` fingerprint and one of these codes:
 
 - `PERMISSIONS_PARITY_MATCH`: the audit ran and found no drift.
 - `PERMISSIONS_PARITY_MISMATCH`: review the structured `errorDetails` report.
