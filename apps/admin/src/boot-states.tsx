@@ -15,7 +15,13 @@ export function BootLoader() {
       justify="center"
       role="status"
     >
+      {/* React sets only the muted property; Safari won't autoplay without the attribute. */}
       <video
+        ref={(video) => {
+          if (video) {
+            video.defaultMuted = true;
+          }
+        }}
         aria-hidden="true"
         className="size-[100px]"
         height={100}
