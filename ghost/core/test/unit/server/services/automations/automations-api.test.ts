@@ -10,7 +10,10 @@ import {
   NON_EMPTY_EMAIL_LEXICAL,
 } from '../../../../utils/automations-fixtures';
 
-const { repositoryEdit } = vi.hoisted(() => ({ repositoryEdit: vi.fn() }));
+const { repositoryAdd, repositoryEdit } = vi.hoisted(() => ({
+  repositoryAdd: vi.fn(),
+  repositoryEdit: vi.fn(),
+}));
 
 vi.mock(
   '../../../../../core/server/services/automations/database-automations-repository',
@@ -23,6 +26,7 @@ vi.mock(
       ...actual,
       createDatabaseAutomationsRepository: vi.fn((options) => ({
         ...actual.createDatabaseAutomationsRepository(options),
+        add: repositoryAdd,
         edit: repositoryEdit,
         getNumberOfAutomations: vi.fn().mockResolvedValue(20),
       })),
@@ -55,6 +59,7 @@ const buildEdge = (source: Readonly<{ id: string }>, target: Readonly<{ id: stri
 describe('automations API', function () {
   afterEach(function () {
     sinon.restore();
+    repositoryAdd.mockReset();
     repositoryEdit.mockReset();
   });
 
@@ -63,6 +68,61 @@ describe('automations API', function () {
       assert.equal(await automationsApi.getNumberOfAutomations(), 20);
       const repository = vi.mocked(createDatabaseAutomationsRepository).mock.results[0].value;
       expect(repository.getNumberOfAutomations).toHaveBeenCalledOnce();
+    });
+  });
+
+  describe('add', function () {
+    const valid = { name: 'New automation', description: '', trigger_tier_scope: 'free' };
+
+    it('adds automations', async function () {
+      const tierIds = [ObjectId().toHexString(), ObjectId().toHexString()];
+      const payload = {
+        ...valid,
+        description: 'Welcome selected paid members',
+        trigger_tier_scope: 'selected_paid',
+        trigger_tier_ids: [...tierIds, tierIds[0]],
+      };
+      const saved = { ...payload, id: ObjectId().toHexString(), trigger_tier_ids: tierIds };
+      repositoryAdd.mockResolvedValue(saved);
+
+      assert.strictEqual(await automationsApi.add(payload), saved);
+      expect(repositoryAdd).toHaveBeenCalledExactlyOnceWith({
+        ...payload,
+        trigger_tier_ids: tierIds,
+      });
+    });
+
+    it('rejects invalid inputs', async function () {
+      const invalidPayloads = [
+        undefined,
+        null,
+        [],
+        {},
+        { ...valid, name: '' },
+        { ...valid, name: '   ' },
+        { ...valid, name: 'x'.repeat(192) },
+        { ...valid, name: 42 },
+        { ...valid, description: null },
+        { ...valid, description: 'x'.repeat(2001) },
+        { ...valid, trigger_tier_scope: 'paid' },
+        { ...valid, trigger_tier_scope: 'selected_paid' },
+        { ...valid, trigger_tier_scope: 'selected_paid', trigger_tier_ids: [] },
+        { ...valid, trigger_tier_scope: 'selected_paid', trigger_tier_ids: ['invalid'] },
+        { ...valid, trigger_tier_ids: [ObjectId().toHexString()] },
+        { ...valid, trigger_tier_scope: 'all_paid', trigger_tier_ids: [ObjectId().toHexString()] },
+        { ...valid, status: 'active' },
+        { ...valid, slug: 'member-welcome-email-free' },
+        { ...valid, actions: [] },
+        { ...valid, id: ObjectId().toHexString() },
+      ];
+      await Promise.all(
+        invalidPayloads.map(async (payload) => {
+          await assert.rejects(automationsApi.add(payload), {
+            errorType: 'ValidationError',
+            statusCode: 422,
+          });
+        }),
+      );
     });
   });
 

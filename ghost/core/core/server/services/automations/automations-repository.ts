@@ -1,5 +1,6 @@
 import type { ReadonlyDeep } from 'type-fest';
 import type { Knex } from 'knex';
+import type { AddAutomationData } from './automations-api';
 
 export type Pagination = {
   page: number;
@@ -236,6 +237,7 @@ export type AutomationsRepository = {
     automationId: string,
     actionId: string,
   ): Promise<AutomationActionLink[] | null>;
+  add(data: AddAutomationData): Promise<Automation>;
   edit(id: string, data: EditAutomationData): Promise<Automation | null>;
   trigger(
     options: ReadonlyDeep<{
