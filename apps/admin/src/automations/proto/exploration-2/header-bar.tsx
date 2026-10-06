@@ -10,8 +10,11 @@ const StatusAction: React.FC<{
   status: 'active' | 'inactive';
   canGoLive: boolean;
   onChange: (next: boolean) => void;
+  // A refused Publish, for the screen to act on — it has the canvas show every
+  // warning it holds.
+  onBlocked?: () => void;
   floating: boolean;
-}> = ({ status, canGoLive, onChange, floating }) => {
+}> = ({ status, canGoLive, onChange, onBlocked, floating }) => {
   const on = status === 'active';
   // Never disabled — a blocked publish explains itself in a popover at the point
   // of the press, rather than greying out and leaving the why somewhere else on
@@ -34,6 +37,7 @@ const StatusAction: React.FC<{
           onClick={() => {
             if (!on && !canGoLive) {
               setBlockedOpen(true);
+              onBlocked?.();
               return;
             }
             onChange(!on);
@@ -62,13 +66,15 @@ export const HeaderActions: React.FC<{
   canGoLive: boolean;
   commit: React.ReactNode;
   onStatusChange: (next: boolean) => void;
+  onPublishBlocked?: () => void;
   floating: boolean;
-}> = ({ status, canGoLive, commit, onStatusChange, floating }) => {
+}> = ({ status, canGoLive, commit, onStatusChange, onPublishBlocked, floating }) => {
   const statusAction = (
     <StatusAction
       canGoLive={canGoLive}
       floating={floating}
       status={status}
+      onBlocked={onPublishBlocked}
       onChange={onStatusChange}
     />
   );

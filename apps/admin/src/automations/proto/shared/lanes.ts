@@ -24,41 +24,28 @@
 // flow mechanics. Mechanics are common; screens diverge.
 // ---------------------------------------------------------------------------
 
-export type LaneId = 'phase-1' | 'phase-2' | 'future' | 'exploration' | 'exploration-2';
+export type LaneId = 'phase-1' | 'phase-2' | 'exploration-2';
 
 export interface Lane {
   id: LaneId;
   label: string;
 }
 
-// The labels carry the lane's status AND its concept in a few words — "Ph"
-// lanes are scheduled work, "Sandbox" lanes are unscheduled thinking — which is
-// what let the switcher drop its per-lane sub-copy: one line that says both is
-// better than a title plus a caption saying them separately.
+// The labels say what the lane is and where it stands — "(done)" is shipped and
+// holding still, "(in progress)" is still moving. The ids, and so the URLs and
+// folders, keep their original names: only the words in the switcher changed,
+// so nobody's link moved.
+//
+// Two lanes were retired in Oct '26 and are in the branch history if wanted:
+// "Sandbox: Full canvas" (exploration), the disappearing-chrome concept, and
+// "Future: Next & Later" (future), the roadmap lane — its triggers, its Update
+// member step and its publish checks all live in GA now.
 export const LANES: Lane[] = [
-  { id: 'phase-1', label: 'Ph 1: Run analytics' },
-  { id: 'phase-2', label: 'Ph 2: Per-tier' },
-  // Everything after the current release — the roadmap's Next and Later columns,
-  // through to the end of Feb 2027: new triggers (a label being added, a paid
-  // subscription changing, a member entering a segment), actions that aren't an
-  // email, a template library, and the still-open autosave question.
-  //
-  // A scheduled lane rather than a sandbox, hence the third "Ph"-style slot in
-  // the list — this is work with a date on it, not thinking. It starts as a copy
-  // of PHASE 2, because phase 2 is what will have shipped by the time any of it
-  // is built: every card in those columns is a change to that screen, so basing
-  // it on phase 1 would mean re-deriving per-tier triggers and CRUD before
-  // anything new could start.
-  { id: 'future', label: 'Future: Next & Later' },
-  // "Full canvas": the disappearing-chrome concept — maximising takes the header
-  // with it and the flow is the only thing on screen.
-  { id: 'exploration', label: 'Sandbox: Full canvas' },
-  // A second exploration rather than edits to the first. The lanes exist so work can
-  // diverge without anything being lost, and that applies to two ideas about the same
-  // screen as much as it does to two phases — the first exploration is a state worth
-  // being able to go back and look at, not a draft of this one. "Right panel": the
-  // post editor's shape, a fixed header and the pane on the canvas's right.
-  { id: 'exploration-2', label: 'Sandbox: Right panel' },
+  { id: 'phase-1', label: 'Run analytics (done)' },
+  { id: 'phase-2', label: 'Tier-based signup (in progress)' },
+  // Formerly "Sandbox: Right panel": the post editor's shape, a fixed header and
+  // the pane on the canvas's right, carrying everything on the roadmap to GA.
+  { id: 'exploration-2', label: 'GA (in progress)' },
 ];
 
 export const lanePath = (lane: LaneId): string => `/automations-proto/${lane}`;

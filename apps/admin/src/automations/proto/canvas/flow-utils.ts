@@ -61,7 +61,7 @@ export const HIDDEN_HANDLE_STYLE: CSSProperties = {
 // lets the buttons match: they need the canvas fill too, and bg-[var(--canvas-fill)]
 // reads as "the canvas's fill" where bg-[var(--xy-background-color)] would read as
 // a library internal.
-export type CanvasRelease = 'phase-1' | 'exploration' | 'exploration-2';
+export type CanvasRelease = 'phase-1' | 'exploration-2';
 
 // review is optional, and neither release currently sets it — selecting a member
 // leaves the canvas exactly as it was. Repainting the largest surface on screen (and,
@@ -76,47 +76,26 @@ const CANVAS_THEMES: Record<CanvasRelease, { base: string; review?: string }> = 
   'phase-1': {
     base: '[--canvas-fill:var(--color-gray-50)] [--canvas-dots:var(--color-gray-500)] [--canvas-edge:var(--color-gray-500)] dark:[--canvas-fill:var(--background)] dark:[--canvas-dots:var(--color-gray-900)] dark:[--canvas-edge:var(--color-gray-800)]',
   },
-  // Exploration is free to diverge — its canvas is a detached window rather than a
-  // full-bleed surface, so it doesn't have to answer to the shipping editor.
+  // GA (formerly "Sandbox: Right panel") is free to diverge — it doesn't have to
+  // answer to the shipping editor. Light is gray-200, for separation between the
+  // canvas and its white nodes, with the dots a step darker (gray-600) so the
+  // grid holds on the deeper fill.
   //
-  // One step off phase 1 in each mode: grey-100 rather than grey-50 in light, and
-  // pure black rather than --background in dark. The window has to separate from
-  // the PAGE, not fill the screen, so both moves are away from the page's own fill.
-  //
-  // Dark goes DOWN, which is what makes it work. Lifting the canvas was tried first
-  // and there's no room above it: the ladder has no stop between --background
-  // (0.178) and --surface-elevated (0.204), so the only step available put the
-  // canvas on the same fill as the node cards and flattened them into it. Black is
-  // below the page instead, so the window reads against it AND the cards sit a full
-  // 0.204 above the canvas — a wider gap than they had to begin with.
+  // Dark goes DOWN to pure black, which is what makes it work. Lifting the canvas
+  // was tried first and there's no room above it: the ladder has no stop between
+  // --background (0.178) and --surface-elevated (0.204), so the only step
+  // available put the canvas on the same fill as the node cards and flattened
+  // them into it. Black is below the page instead, so the cards sit a full 0.204
+  // above the canvas.
   //
   // #000 is a literal, and it's deliberate: there is no token for it. Ghost's
-  // --color-black is oklch(20.38%), which is the same colour as the dark card
-  // surface (--color-sidebar-bg, 20.4%) — setting the canvas to it looks like
-  // nothing happened. And --background, the page, is 17.8%, DARKER than the
-  // system's own "black". So the palette has no stop below the page, and every
-  // token option lands either on the page fill or on the card fill.
+  // --color-black is oklch(20.38%), the same colour as the dark card surface, and
+  // --background, the page, is 17.8% — DARKER than the system's own "black". So
+  // the palette has no stop below the page. The one bespoke value in this table;
+  // if a true black ever gets a token, this is the line to replace.
   //
-  // The one bespoke value in this table, held to the one thing tokens can't
-  // express. If a true black ever gets a token, this is the line to replace.
-  //
-  // It also retires the old objection to a black canvas — that the shipping
-  // editor's insert buttons rendered as holes on it. Here the buttons take
-  // --canvas-fill like everything else, so they're the same black and read as
-  // slots by their dashed border, which is the intent.
-  //
-  // No review entry, deliberately. Repainting the whole canvas to say a member is
-  // selected was too big a move for what it reports — the surface is the largest
-  // thing on screen and recolouring it announced a change of mode when all that
-  // happened was a row being clicked. The inset frame and the member button carry
-  // it instead, both of which sit where the change actually is.
-  exploration: {
-    base: '[--canvas-fill:var(--color-gray-100)] [--canvas-dots:var(--color-gray-500)] [--canvas-edge:var(--color-gray-500)] dark:[--canvas-fill:#000] dark:[--canvas-dots:var(--color-gray-900)] dark:[--canvas-edge:var(--color-gray-800)]',
-  },
-  // Sandbox: Right panel. Exploration's theme with the light fill a step deeper —
-  // gray-200 — trying more separation between the canvas and its white light
-  // nodes. Dots a step darker (gray-600) so the grid holds on the deeper fill.
-  // Its own entry so Exploration 1 keeps gray-100. Dark is unchanged.
+  // (This theme was inherited from the retired full-canvas sandbox, which is
+  // where the reasoning above was worked out.)
   'exploration-2': {
     base: '[--canvas-fill:var(--color-gray-200)] [--canvas-dots:var(--color-gray-600)] [--canvas-edge:var(--color-gray-500)] dark:[--canvas-fill:#000] dark:[--canvas-dots:var(--color-gray-900)] dark:[--canvas-edge:var(--color-gray-800)]',
   },

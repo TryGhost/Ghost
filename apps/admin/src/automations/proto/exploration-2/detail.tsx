@@ -10,6 +10,9 @@ import {
   Button,
   EmptyIndicator,
   Indicator,
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
 } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { useShade } from '@tryghost/shade/app';
@@ -17,7 +20,11 @@ import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 
 import { useBlocker, useConfirmUnload, useNavigate, useParams } from '@tryghost/admin-x-framework';
-import type { ProtoAutomationDetail } from '@/automations/proto/shared/update-member';
+import {
+  type ProtoAutomationDetail,
+  isUpdateMemberAction,
+  updateMemberIncomplete,
+} from '@/automations/proto/shared/update-member';
 import { getRunData } from '@/automations/proto/shared/mock';
 import {
   type ProtoAutomation,
@@ -36,9 +43,21 @@ import { PROTO_EASE } from '@/automations/proto/shared/motion';
 import { HeaderActions } from './header-bar';
 import { HEADER_ACTION, HEADER_ICON_BUTTON, floatingControl } from './header-controls';
 import { LeftPanel } from './left-panel';
-import { type TriggerConfig, triggerConfigFor } from '@/automations/proto/shared/trigger-config';
+import {
+  type TriggerConfig,
+  changeUnanswered,
+  labelUnanswered,
+  needsStripe,
+  segmentUnanswered,
+  tiersUnanswered,
+  triggerConfigFor,
+} from '@/automations/proto/shared/trigger-config';
 import { NEW_AUTOMATION_ID } from './creation';
-import { CANVAS_SLOT_FILL, canvasTheme } from '@/automations/proto/canvas/flow-utils';
+import {
+  CANVAS_SLOT_FILL,
+  canvasTheme,
+  lexicalHasContent,
+} from '@/automations/proto/canvas/flow-utils';
 import { EditCanvas } from './canvas/edit-canvas';
 import { RunCanvas } from './canvas/run-canvas';
 import { useVersionLink } from '@/automations/proto/shared/use-version-link';
@@ -219,6 +238,13 @@ const AutomationFloat: React.FC = () => {
   // insert. null = untouched.
   const [newDetails, setNewDetails] = useState<{ name: string; description: string } | null>(null);
   const [publishOpen, setPublishOpen] = useState(false);
+  // A refused Publish or Update makes the canvas show every warning it holds,
+  // grace periods included — the moment someone asks "can this run?", every
+  // reason it can't has to be on screen. Bumped by revealWarnings, below.
+  const [revealSignal, setRevealSignal] = useState(0);
+  // Update's own refusal, while live. Publish's lives in the header's
+  // StatusAction; this is the same popover on the other primary.
+  const [updateBlocked, setUpdateBlocked] = useState(false);
   // Edits are held here until Save commits them to the store, which is also why
   // they're the one piece of state that ISN'T persisted: an unsaved draft is
   // defined as the thing you haven't committed, and restoring one a week later
@@ -382,10 +408,40 @@ const AutomationFloat: React.FC = () => {
   // one thing that genuinely wants a read-only view. Swapping between the two
   // canvases is what handles that.
   const showEditCanvas = !selectedRun;
-  // Nothing can go live without something to start it. This is the only gate the
-  // create flow adds: an automation with no trigger isn't half-configured, it's
-  // an automation that cannot run.
-  const canGoLive = triggerConfig !== null;
+  // What has to be true before this can go live. Validated on the DRAFT rather
+  // than on what the canvas is currently warning about: the canvas gives a
+  // just-added card a grace period before it wears its warning, and grace is a
+  // display nicety — it must never let something unfinished through a publish.
+  //
+  // Carried over from the roadmap lane when it was retired, which was the only
+  // other place the label, subscription-change and segment triggers and the
+  // Update member step were checked.
+  const stripeMissing = !stripeConnected && triggerConfig !== null && needsStripe(triggerConfig);
+  // No subject, or no message written.
+  const blankEmails = draftFlow.actions.some(
+    (action) =>
+      action.type === 'send_email' &&
+      (!action.data.email_subject.trim() || !lexicalHasContent(action.data.email_lexical)),
+  );
+  // An Update member step that hasn't said what to update.
+  const incompleteUpdates = draftFlow.actions.some(
+    (action) => isUpdateMemberAction(action) && updateMemberIncomplete(action),
+  );
+  // The trigger's own question left open: tiers, a label, a subscription change
+  // or a segment that nobody has named, so nobody could ever enter.
+  const triggerFieldOpen =
+    triggerConfig !== null &&
+    (tiersUnanswered(triggerConfig) ||
+      labelUnanswered(triggerConfig) ||
+      changeUnanswered(triggerConfig) ||
+      segmentUnanswered(triggerConfig));
+  const canGoLive =
+    triggerConfig !== null &&
+    !stripeMissing &&
+    !blankEmails &&
+    !incompleteUpdates &&
+    !triggerFieldOpen;
+  const revealWarnings = () => setRevealSignal((signal) => signal + 1);
   // What's running (read canvas) vs what's being edited (edit canvas).
 
   // No autosave tick. There used to be one — a save-state flag flipped for 700ms on
@@ -464,9 +520,17 @@ const AutomationFloat: React.FC = () => {
 
   // A stopped automation has nobody mid-flow, so there's nothing to confirm and
   // it publishes straight away. A live one confirms first.
+  //
+  // Save, while off, stays ungated — a draft is allowed to be unfinished.
+  // Update, while live, is where the edits take effect, so it has to hold up.
   const handlePublishClick = () => {
     if (liveStatus === 'inactive') {
       publishChanges();
+      return;
+    }
+    if (!canGoLive) {
+      revealWarnings();
+      setUpdateBlocked(true);
       return;
     }
     setPublishOpen(true);
@@ -541,14 +605,21 @@ const AutomationFloat: React.FC = () => {
                 anything, disabled means the thing exists and has nothing to do. */}
       {/* Primary once live, where pushing edits is the main job; ghost while
           off, where Publish beside it is the primary. See StatusAction. */}
-      <Button
-        className={cn(HEADER_ACTION, floatingControl(true, liveStatus === 'active'))}
-        disabled={!hasChanges}
-        variant={liveStatus === 'active' ? 'default' : 'ghost'}
-        onClick={handlePublishClick}
-      >
-        {liveStatus === 'active' ? 'Update' : 'Save'}
-      </Button>
+      <Popover open={updateBlocked && !canGoLive} onOpenChange={setUpdateBlocked}>
+        <PopoverAnchor asChild>
+          <Button
+            className={cn(HEADER_ACTION, floatingControl(true, liveStatus === 'active'))}
+            disabled={!hasChanges}
+            variant={liveStatus === 'active' ? 'default' : 'ghost'}
+            onClick={handlePublishClick}
+          >
+            {liveStatus === 'active' ? 'Update' : 'Save'}
+          </Button>
+        </PopoverAnchor>
+        <PopoverContent align="end" className="w-72">
+          <p className="text-md">Fix all issues to publish this automation.</p>
+        </PopoverContent>
+      </Popover>
     </>
   );
 
@@ -663,6 +734,7 @@ const AutomationFloat: React.FC = () => {
                 draft={draftFlow}
                 enterSignal={modeSwitch.count}
                 lane={LANE}
+                revealWarningsSignal={revealSignal}
                 rightInset={paneCollapsed ? 0 : 480}
                 triggerConfig={triggerConfig}
                 onChange={handleDraftChange}
@@ -868,6 +940,7 @@ const AutomationFloat: React.FC = () => {
               commit={chromeActions}
               status={liveStatus}
               floating
+              onPublishBlocked={revealWarnings}
               onStatusChange={handleStatusToggle}
             />
           )}

@@ -30,10 +30,6 @@ import {
   lazyAutomationsScreen,
   lazyProtoExploration2Detail,
   lazyProtoExploration2List,
-  lazyProtoExplorationDetail,
-  lazyProtoExplorationList,
-  lazyProtoFutureDetail,
-  lazyProtoFutureList,
   lazyProtoPhase1Detail,
   lazyProtoPhase1List,
   lazyProtoPhase2Detail,
@@ -141,32 +137,6 @@ const appRoutes: RouteObject[] = [
       requiresAccess: canManageAutomations,
     } satisfies AdminRouteHandle & AccessRouteHandle,
     lazy: lazyComponent(() => lazyProtoPhase2Detail()),
-  },
-  {
-    path: '/automations-proto/future',
-    handle: { requiresAccess: canManageAutomations } satisfies AccessRouteHandle,
-    lazy: lazyComponent(() => lazyProtoFutureList()),
-  },
-  {
-    path: '/automations-proto/future/:id',
-    handle: {
-      hideAdminSidebar: true,
-      requiresAccess: canManageAutomations,
-    } satisfies AdminRouteHandle & AccessRouteHandle,
-    lazy: lazyComponent(() => lazyProtoFutureDetail()),
-  },
-  {
-    path: '/automations-proto/exploration',
-    handle: { requiresAccess: canManageAutomations } satisfies AccessRouteHandle,
-    lazy: lazyComponent(() => lazyProtoExplorationList()),
-  },
-  {
-    path: '/automations-proto/exploration/:id',
-    handle: {
-      hideAdminSidebar: true,
-      requiresAccess: canManageAutomations,
-    } satisfies AdminRouteHandle & AccessRouteHandle,
-    lazy: lazyComponent(() => lazyProtoExplorationDetail()),
   },
   {
     path: '/automations-proto/exploration-2',

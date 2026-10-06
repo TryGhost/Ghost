@@ -50,34 +50,17 @@ export interface LaneCapabilities {
 export type ExtraStepKind = 'update_member';
 
 // The two membership triggers: what phase 1 and phase 2 both stand on, and the
-// baseline the sandboxes explore. Named rather than repeated, so "the shipping
+// baseline GA builds on. Named rather than repeated, so "the shipping
 // set" is one thing with one definition.
 const MEMBERSHIP_TRIGGERS: TriggerType[] = ['member_subscribes', 'paid_subscription_starts'];
 
 export const LANE_CAPABILITIES: Record<LaneId, LaneCapabilities> = {
   'phase-1': { triggers: MEMBERSHIP_TRIGGERS, extraSteps: [] },
   'phase-2': { triggers: MEMBERSHIP_TRIGGERS, extraSteps: [] },
-  // Roadmap: Next brought the label trigger (lead magnets) and the
-  // subscription-changed one (lifecycle); Later brought the segment one. Every
-  // card after them that adds a trigger adds it here.
-  future: {
-    triggers: [
-      ...MEMBERSHIP_TRIGGERS,
-      'label_added',
-      'paid_subscription_changed',
-      'segment_entered',
-    ],
-    // Roadmap: Later, "Automated list hygiene" — the first step that changes a
-    // member rather than sending to one.
-    extraSteps: ['update_member'],
-  },
-  // The full-canvas sandbox explores the SHAPE of the screen, not the feature
-  // set, so it stays on the shipping triggers — picking up a future trigger for
-  // free would muddy what it's actually asking about.
-  exploration: { triggers: MEMBERSHIP_TRIGGERS, extraSteps: [] },
-  // The right-panel sandbox is future-leaning — a shape for the screen the
-  // roadmap is heading to — so it carries the future lane's full vocabulary,
-  // and every node design here has to hold up against all of it.
+  // GA (formerly the right-panel sandbox) carries the whole roadmap: the label
+  // trigger (lead magnets), the subscription-changed one (lifecycle), the
+  // segment one, and Update member — the first step that changes a member rather
+  // than sending to one. Every card after them that adds a trigger adds it here.
   'exploration-2': {
     triggers: [
       ...MEMBERSHIP_TRIGGERS,

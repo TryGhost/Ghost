@@ -111,11 +111,10 @@ describe('update member step', () => {
     expect(next.edges.length).toBe(welcomeSeries.edges.length + 1);
   });
 
-  it('is offered in future only', () => {
-    expect(laneOffersStep('future', 'update_member')).toBe(true);
+  it('is offered in GA only', () => {
+    expect(laneOffersStep('exploration-2', 'update_member')).toBe(true);
     expect(laneOffersStep('phase-1', 'update_member')).toBe(false);
     expect(laneOffersStep('phase-2', 'update_member')).toBe(false);
-    expect(laneOffersStep('exploration', 'update_member')).toBe(false);
   });
 
   it('swaps its second field with the operation, and offers none for unsubscribe', () => {
