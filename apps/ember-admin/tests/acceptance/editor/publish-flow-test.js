@@ -34,11 +34,17 @@ function lexicalWithPublicPreview({before = 'Public preview content', after = 'F
 }
 
 describe('Acceptance: Publish flow', function () {
+    let nowStub;
     const hooks = setupApplicationTest();
     setupMirage(hooks);
 
     beforeEach(function () {
         this.server.loadFixtures();
+    });
+
+    afterEach(function () {
+        nowStub?.restore();
+        nowStub = undefined;
     });
 
     it('has minimal features for contributors', async function () {
@@ -438,6 +444,9 @@ describe('Acceptance: Publish flow', function () {
         });
 
         it('can schedule publish+send', async function () {
+            // Keep the expected and rendered default time on the same minute.
+            nowStub = sinon.stub(moment, 'now').returns(Date.now());
+
             await loginAsRole('Administrator', this.server);
             const post = this.server.create('post', {status: 'draft'});
             await visit(`/editor/post/${post.id}`);
@@ -452,7 +461,7 @@ describe('Acceptance: Publish flow', function () {
             await click('[data-test-setting="publish-at"] [data-test-setting-title]');
             await click('[data-test-radio="schedule"]');
 
-            // date + time inputs are shown, defaults to now+5 mins
+            // date + time inputs are shown, defaults to now+10 mins
             await waitFor('[data-test-setting="publish-at"] [data-test-date-time-picker-datepicker]');
             expect(find('[data-test-setting="publish-at"] [data-test-date-time-picker-datepicker]'), 'datepicker').to.exist;
             expect(find('[data-test-setting="publish-at"] [data-test-date-time-picker-date-input]'), 'initial datepicker value')
