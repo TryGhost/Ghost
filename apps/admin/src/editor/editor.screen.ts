@@ -23,6 +23,7 @@ import {
   editorHelpLink,
   editorLeaveDialog,
   editorLoadError,
+  editorNewerVersionNotice,
   editorNewsletterDetailsButton,
   editorPreviewButton,
   editorPublishButton,
@@ -48,6 +49,7 @@ import {
   featureImageTkIndicator,
   featureImageUnsplashButton,
   leaveEditorButton,
+  newerVersionReloadButton,
   pagesBackLink,
   postEditor,
   postHistoryModal,
@@ -186,6 +188,11 @@ export const editorScreen = {
     page
       .getByTestId(editorConflictReloadConfirm)
       .getByRole('button', { name: conflictCancelReloadButton }),
+  newerVersionNotice: () => page.getByTestId(editorNewerVersionNotice),
+  reloadNewerVersion: () =>
+    page
+      .getByTestId(editorNewerVersionNotice)
+      .getByRole('button', { name: newerVersionReloadButton }),
   status: () => page.getByTestId(editorStatus),
   /** The status line's ways back into the publish flow once a newsletter failed. */
   retryNewsletter: () =>

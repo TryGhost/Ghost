@@ -392,6 +392,7 @@ function EditorContent({
           <SessionBanners
             contentText={session.contentText}
             hasUnsavedContent={session.hasUnsavedContent}
+            newerVersionAvailable={session.newerVersionAvailable}
             pendingSave={session.pendingSave}
             state={session.state}
             onReload={session.reload}
