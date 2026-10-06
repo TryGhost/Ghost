@@ -1,4 +1,4 @@
-import { LoginPage, PostEditorPage, PostsPage } from '@/admin-pages';
+import { LoginPage, PostEditorPage, PostsPage, SitePage } from '@/admin-pages';
 import { expect, test, withIsolatedPage } from '@/helpers/playwright';
 import type { Browser, Page } from '@playwright/test';
 
@@ -43,7 +43,12 @@ async function expectWriterCanCreateAndSave({
       const login = new LoginPage(page);
       await login.goto();
       await login.signIn(writer.email, writer.password);
-      await expect(page).not.toHaveURL(/#\/signin/);
+      // Wait out the post-signin redirect so it can't override the navigation below.
+      if (role === 'Author') {
+        await new SitePage(page).waitForPageToFullyLoad();
+      } else {
+        await new PostsPage(page).waitForPageToFullyLoad();
+      }
 
       const meResponse = await page.request.get('/ghost/api/admin/users/me/?include=roles');
       expect(meResponse.status()).toBe(200);
