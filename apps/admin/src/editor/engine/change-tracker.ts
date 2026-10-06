@@ -297,6 +297,9 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
   let saved: EditablePostProjection | null = null;
   let live: EditablePostProjection | null = null;
   let baseline: Baseline = { status: 'pending' };
+  // The hidden instance holds the loaded document; once an acknowledged body
+  // has replaced the baseline, its later reports would move it back.
+  let baselineAcknowledged = false;
   let saveError = false;
   let disposed = false;
 
@@ -409,6 +412,7 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
       saved = pickProjection(post);
       live = pickProjection(post);
       baseline = { status: 'pending' };
+      baselineAcknowledged = false;
       saveError = false;
     },
 
@@ -454,6 +458,7 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
       // body. Keep that baseline when the persisted body has not changed.
       if (!sameField('lexical', saved.lexical, next.lexical)) {
         baseline = { status: 'ready', lexical: next.lexical };
+        baselineAcknowledged = true;
       }
       saved = next;
       live = { ...live, ...pick(next, rebasedKeys) };
@@ -461,14 +466,14 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
     },
 
     setBaseline(id, lexical) {
-      if (!isCurrentOrAlias(id)) {
+      if (!isCurrentOrAlias(id) || baselineAcknowledged) {
         return;
       }
       baseline = { status: 'ready', lexical: serializeLexical(lexical) };
     },
 
     baselineFailed(id) {
-      if (!isCurrentOrAlias(id)) {
+      if (!isCurrentOrAlias(id) || baselineAcknowledged) {
         return;
       }
       baseline = { status: 'failed' };
@@ -513,6 +518,7 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
       saved = { ...saved, ...adopted };
       live = { ...live, ...adopted };
       baseline = { status: 'pending' };
+      baselineAcknowledged = false;
       saveError = false;
     },
 
@@ -586,6 +592,7 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
       saved = null;
       live = null;
       baseline = { status: 'pending' };
+      baselineAcknowledged = false;
       saveError = false;
     },
   };

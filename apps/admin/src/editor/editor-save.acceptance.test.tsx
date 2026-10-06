@@ -179,6 +179,55 @@ describe('Post editor saving', () => {
     await expect.poll(() => saveApi.requests.length).toBe(1);
   });
 
+  it('leaves a post alone when its cards rewrite themselves on mount', async () => {
+    // A header card adopts the editor's accent colour as it mounts, in both instances.
+    const header = {
+      type: 'header',
+      version: 2,
+      size: 'small',
+      style: 'dark',
+      buttonEnabled: false,
+      buttonUrl: '',
+      buttonText: '',
+      header: '<span>Header card</span>',
+      subheader: '',
+      backgroundImageSrc: '',
+      accentColor: '#123456',
+      alignment: 'center',
+      backgroundColor: '#000000',
+      backgroundImageWidth: null,
+      backgroundImageHeight: null,
+      backgroundSize: 'cover',
+      textColor: '#FFFFFF',
+      buttonColor: '#ffffff',
+      buttonTextColor: '#000000',
+      layout: 'full',
+      swapped: false,
+    };
+    const lexical = JSON.parse(buildLexicalParagraph('Before the card')) as {
+      root: { children: unknown[] };
+    };
+    lexical.root.children.push(header);
+    const saveApi = fakeSavablePost({ lexical: JSON.stringify(lexical) });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.body().getByText('Header card')).toBeVisible();
+    await expect
+      .element(editorScreen.secondaryInstance().getByText('Header card'))
+      .toBeInTheDocument();
+    await editorScreen.titleInput().click();
+    await editorScreen.body().getByText('Before the card').click();
+    expect(saveApi.requests).toHaveLength(0);
+    await expect.poll(unsavedChangesGuarded).toBe(false);
+
+    await userEvent.keyboard(' edited');
+
+    await expect.poll(() => saveApi.requests.length).toBeGreaterThan(0);
+    const saved = submittedBody(saveApi);
+    expect(saved).toContain(' edited');
+    expect(saved).not.toContain('#123456');
+  });
+
   it('creates a new post on the first edit and swaps the URL without remounting', async () => {
     fakeEditorChrome();
     fakeAdminEndpoint('GET', /^\/slugs\/post\/untitled\//, { slugs: [{ slug: 'untitled' }] });

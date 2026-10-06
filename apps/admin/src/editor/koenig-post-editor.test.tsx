@@ -1,14 +1,17 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { editorBody, editorSecondaryInstance } from '@tryghost/test-data/selectors/editor';
 import type { ReactNode } from 'react';
 import type { PostCardConfig, PostType } from './card-config';
 import type { FeatureImageBinding } from './session/feature-image-binding';
+import { KoenigPostEditor } from './koenig-post-editor';
 import { PostEditor } from './post-editor';
 
 // Counted once per render of a composer subtree, which is how many times the
 // hidden and the visible instance rebuild between them.
 const composerRendered = vi.hoisted(() => vi.fn());
+const editorRendered = vi.hoisted(() => vi.fn());
 
 vi.mock('@/settings/components/koenig-loader', () => {
   const stub = {
@@ -16,12 +19,15 @@ vi.mock('@/settings/components/koenig-loader', () => {
       composerRendered();
       return <div>{children}</div>;
     },
-    KoenigEditor: () => null,
+    KoenigEditor: (props: { onChange?: unknown }) => {
+      editorRendered(props);
+      return null;
+    },
     WordCountPlugin: () => null,
     TKCountPlugin: () => null,
   };
   const resource = { read: () => stub };
-  return { loadKoenig: () => resource };
+  return { loadKoenig: () => resource, loadedKoenigVersion: () => 'test' };
 });
 
 vi.mock('@tryghost/shade/app', async (importOriginal) => ({
@@ -95,5 +101,41 @@ describe('KoenigPostEditor re-renders', () => {
     rerender(<Harness postType="page" />);
 
     expect(composerRendered).toHaveBeenCalledTimes(4);
+  });
+});
+
+describe('KoenigPostEditor hidden instance', () => {
+  it('loses only the baseline when the hidden instance crashes', () => {
+    const onSecondaryChange = vi.fn();
+    const onSecondaryError = vi.fn();
+    editorRendered.mockImplementation(({ onChange }: { onChange?: unknown }) => {
+      if (onChange === onSecondaryChange) {
+        throw new Error('hidden instance crashed');
+      }
+    });
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(NOOP);
+
+    render(
+      <KoenigPostEditor
+        cardConfig={CARD_CONFIG}
+        darkMode={false}
+        initialLexical={null}
+        placeholder="Begin writing your post..."
+        registerAPI={NOOP}
+        onChange={NOOP}
+        onSecondaryChange={onSecondaryChange}
+        onSecondaryError={onSecondaryError}
+        onTkCountChange={NOOP}
+        onWordCountChange={NOOP}
+      />,
+    );
+
+    expect(onSecondaryError).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId(editorBody)).toBeInTheDocument();
+    expect(screen.queryByTestId(editorSecondaryInstance)).not.toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+    editorRendered.mockReset();
+    consoleError.mockRestore();
   });
 });

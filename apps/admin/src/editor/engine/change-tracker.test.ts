@@ -305,6 +305,61 @@ describe('createChangeTracker', () => {
       expect(codes(tracker)).toEqual(['BASELINE_FAILED']);
     });
 
+    describe('once an acknowledged body has replaced the baseline', () => {
+      const edited = serialize(appendParagraph(SAVED_DOC, 'Edit'));
+
+      function savedEditTracker() {
+        const tracker = loadedTracker();
+        tracker.setLive(POST_ID, { lexical: edited });
+        const submitted = post({ lexical: edited });
+        tracker.saveAcknowledged(POST_ID, submitted, { ...submitted, updated_at: T1 });
+        return tracker;
+      }
+
+      it('ignores a late hidden-editor report of the loaded document', () => {
+        const tracker = savedEditTracker();
+        tracker.setBaseline(POST_ID, serialize(SAVED_DOC));
+        tracker.setLive(POST_ID, { lexical: serialize(SAVED_DOC) });
+
+        expect(codes(tracker)).toEqual(['SCRATCH_DIVERGED_FROM_SECONDARY']);
+      });
+
+      it('ignores a late hidden-editor failure', () => {
+        const tracker = savedEditTracker();
+        tracker.baselineFailed(POST_ID);
+        tracker.setLive(POST_ID, { lexical: serialize(SAVED_DOC) });
+
+        expect(codes(tracker)).toEqual(['SCRATCH_DIVERGED_FROM_SECONDARY']);
+      });
+
+      it('accepts the hidden editor again after a restore re-seeds it', () => {
+        const tracker = savedEditTracker();
+        const restored = serialize(appendParagraph(SAVED_DOC, 'Restored'));
+        tracker.revisionRestored(POST_ID, {
+          lexical: restored,
+          title: 'Title',
+          custom_excerpt: null,
+          feature_image: null,
+          feature_image_alt: null,
+          feature_image_caption: null,
+        });
+        const normalized = serialize(appendParagraph(SAVED_DOC, 'Restored normalized'));
+        tracker.setBaseline(POST_ID, normalized);
+        tracker.setLive(POST_ID, { lexical: normalized });
+
+        expect(tracker.verdict().dirty).toBe(false);
+      });
+
+      it('accepts the hidden editor again after a load', () => {
+        const tracker = savedEditTracker();
+        tracker.load(POST_ID, post({ lexical: edited, updated_at: T1 }));
+        tracker.setBaseline(POST_ID, serialize(SAVED_DOC));
+        tracker.setLive(POST_ID, { lexical: serialize(SAVED_DOC) });
+
+        expect(tracker.verdict().dirty).toBe(false);
+      });
+    });
+
     it('recovers once a late baseline report arrives after a failure', () => {
       const tracker = createChangeTracker();
       tracker.load(POST_ID, post());
@@ -890,21 +945,20 @@ describe('createChangeTracker', () => {
     });
 
     it('keeps accepting null-id editor events after the created id is adopted', () => {
+      const blank = serialize(BLANK_DOC);
       const tracker = createChangeTracker();
-      tracker.load(null, post({ lexical: null, updated_at: null }));
-      tracker.setBaseline(null, serialize(BLANK_DOC));
-      tracker.setLive(null, { lexical: serialize(BLANK_DOC) });
-      const submitted = post({ lexical: serialize(BLANK_DOC), updated_at: null });
+      tracker.load(null, post({ title: '', lexical: blank, updated_at: null }));
+      tracker.setLive(null, { title: 'Hi' });
+      const submitted = post({ title: 'Hi', lexical: blank, updated_at: null });
       tracker.saveAcknowledged('new1', submitted, { ...submitted, updated_at: T1 });
       expect(tracker.verdict().dirty).toBe(false);
 
       tracker.setLive(null, { lexical: serialize(doc([paragraph('Typed')])) });
-      expect(codes(tracker)).toEqual(['SCRATCH_DIVERGED_FROM_SECONDARY']);
+      expect(codes(tracker)).toEqual(['BASELINE_PENDING']);
 
-      tracker.setBaseline(null, serialize(doc([paragraph('Typed')])));
-      expect(tracker.verdict().dirty).toBe(false);
+      tracker.setBaseline(null, blank);
+      expect(codes(tracker)).toEqual(['SCRATCH_DIVERGED_FROM_SECONDARY']);
       tracker.baselineFailed(null);
-      tracker.setLive(null, { lexical: serialize(doc([paragraph('Typed more')])) });
       expect(codes(tracker)).toEqual(['BASELINE_FAILED']);
 
       tracker.setSaved(null, post({ title: 'Stale' }));

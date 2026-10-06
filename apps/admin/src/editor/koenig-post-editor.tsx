@@ -1,4 +1,4 @@
-import { memo, Suspense, useCallback } from 'react';
+import { type ErrorInfo, memo, Suspense, useCallback } from 'react';
 import { LoadingIndicator } from '@tryghost/shade/components';
 import { editorBody, editorSecondaryInstance } from '@tryghost/test-data/selectors/editor';
 import ErrorBoundary from '@/settings/components/error-boundary';
@@ -24,7 +24,6 @@ export interface KoenigPostEditorProps {
   /** The hidden instance failed, so its serialization cannot be a change baseline. */
   onSecondaryError?: () => void;
   registerAPI: (api: KoenigInstance | null) => void;
-  registerSecondaryAPI: (api: KoenigInstance | null) => void;
   onWordCountChange: (count: number) => void;
   onTkCountChange: (count: number) => void;
 }
@@ -49,7 +48,6 @@ function KoenigInstanceMount({
   onChange,
   onSecondaryChange,
   registerAPI,
-  registerSecondaryAPI,
   onWordCountChange,
   onTkCountChange,
 }: KoenigInstanceMountProps) {
@@ -73,7 +71,7 @@ function KoenigInstanceMount({
           cursorDidExitAtTop={isSecondary ? undefined : cursorDidExitAtTop}
           darkMode={isSecondary ? undefined : darkMode}
           placeholderText={isSecondary ? undefined : placeholder}
-          registerAPI={isSecondary ? registerSecondaryAPI : registerAPI}
+          registerAPI={isSecondary ? undefined : registerAPI}
           onChange={isSecondary ? onSecondaryChange : onChange}
         />
         <WordCountPlugin onChange={isSecondary ? NOOP : onWordCountChange} />
@@ -97,6 +95,14 @@ export const KoenigPostEditor = memo(function KoenigPostEditor(props: KoenigPost
     [onSecondaryError],
   );
 
+  const onSecondaryRenderError = useCallback(
+    (error: unknown, info: ErrorInfo) => {
+      reportKoenigRenderError(error, info);
+      onSecondaryError?.();
+    },
+    [onSecondaryError],
+  );
+
   return (
     <div className="koenig-react-editor koenig-lexical mx-auto w-full max-w-[740px]">
       <ErrorBoundary name="the editor" onError={reportKoenigRenderError}>
@@ -113,12 +119,15 @@ export const KoenigPostEditor = memo(function KoenigPostEditor(props: KoenigPost
             isSecondary={false}
             onError={reportKoenigError}
           />
-          <KoenigInstanceMount
-            {...props}
-            editor={editor}
-            isSecondary={true}
-            onError={onSecondaryInstanceError}
-          />
+          {/* A hidden-instance crash costs the baseline, never the visible editor. */}
+          <ErrorBoundary fallback={null} name="the editor" onError={onSecondaryRenderError}>
+            <KoenigInstanceMount
+              {...props}
+              editor={editor}
+              isSecondary={true}
+              onError={onSecondaryInstanceError}
+            />
+          </ErrorBoundary>
         </Suspense>
       </ErrorBoundary>
     </div>
