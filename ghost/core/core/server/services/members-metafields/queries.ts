@@ -1,5 +1,6 @@
 import type { Knex } from 'knex';
 import { readableLevels, type Audience } from './access';
+import type { MetafieldRef } from './models';
 import { FIELD_STATUS } from './schema';
 
 const FIELDS_TABLE = 'members_metafields';
@@ -57,7 +58,10 @@ export function definitions(
   scope: {
     audience: Audience;
     status: StatusScope;
-    key?: string;
+    /** One namespace's fields. Without it, every namespace's. */
+    namespace?: string;
+    /** One field. A key alone names none: each namespace has its own. */
+    field?: MetafieldRef;
     /** A publisher's NQL filter, applied under the two filters below rather than over them. */
     filter?: (query: Knex.QueryBuilder) => Knex.QueryBuilder;
     limit?: number;
@@ -68,8 +72,13 @@ export function definitions(
   if (scope.filter) {
     query = scope.filter(query);
   }
-  if (scope.key !== undefined) {
-    query = query.where(`${FIELDS_TABLE}.key`, scope.key);
+  if (scope.namespace !== undefined) {
+    query = query.where(`${FIELDS_TABLE}.namespace`, scope.namespace);
+  }
+  if (scope.field !== undefined) {
+    query = query
+      .where(`${FIELDS_TABLE}.namespace`, scope.field.namespace)
+      .where(`${FIELDS_TABLE}.key`, scope.field.key);
   }
   if (scope.status === ACTIVE_ONLY) {
     query = query.where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active);
@@ -85,11 +94,13 @@ export function definitions(
  * The publisher's order, applied to every read of the list. Here for the same reason the
  * status filter is: a read that forgets it comes back in whatever order the engine chose.
  *
- * `created_at` orders a site that has never reordered, where every row still holds the
- * default rank; `id` settles the rest so the order is total.
+ * Each namespace is its own list with its own ranks, so a read across several keeps each
+ * one together. `created_at` orders a site that has never reordered, where every row still
+ * holds the default rank; `id` settles the rest so the order is total.
  */
 export function inFieldOrder<T extends Knex.QueryBuilder>(query: T): T {
   query
+    .orderBy(`${FIELDS_TABLE}.namespace`, 'asc')
     .orderBy(`${FIELDS_TABLE}.sort_order`, 'asc')
     .orderBy(`${FIELDS_TABLE}.created_at`, 'asc')
     .orderBy(`${FIELDS_TABLE}.id`, 'asc');

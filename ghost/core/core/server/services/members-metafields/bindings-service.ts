@@ -2,18 +2,17 @@ import ObjectID from 'bson-objectid';
 import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
 import type { FieldType } from '@tryghost/metafield-types';
+import { formatIdentity } from '@tryghost/metafield-types/identity';
 import { INTERNAL } from './access';
+import type { MetafieldRef } from './models';
 import { DbBoundField, FIELD_STATUS, type WriteOrigin } from './schema';
 import type { MetafieldPlan, MetafieldValuesService } from './values-service';
 
 const FIELDS_TABLE = 'members_metafields';
-
-const { CUSTOM_NAMESPACE } = require('@tryghost/metafield-types/identity');
 const BINDINGS_TABLE = 'members_metafield_bindings';
 
-export interface BoundField {
+export interface BoundField extends MetafieldRef {
   bindingId: string;
-  key: string;
   type: FieldType;
 }
 
@@ -49,11 +48,11 @@ export class MetafieldBindingsService {
     db: Knex,
     productId: string,
     port: string,
-    metafieldKey: string,
+    field: MetafieldRef,
     now: Date,
   ): Promise<string> {
     const existing = await db(BINDINGS_TABLE).where({ product_id: productId, port }).first();
-    if (existing?.metafield_key === metafieldKey) {
+    if (existing?.metafield_namespace === field.namespace && existing.metafield_key === field.key) {
       await db(BINDINGS_TABLE).where('id', existing.id).update({ updated_at: now });
       return existing.id;
     }
@@ -66,7 +65,8 @@ export class MetafieldBindingsService {
       id: bindingId,
       product_id: productId,
       port,
-      metafield_key: metafieldKey,
+      metafield_namespace: field.namespace,
+      metafield_key: field.key,
       created_at: now,
       updated_at: now,
     });
@@ -147,7 +147,13 @@ export class MetafieldBindingsService {
         // looking. A port exists because a publisher pointed it at a field, and that
         // decision is what admits the value, whoever supplied it.
         const writes = await this.values.planWrite(
-          { [`${CUSTOM_NAMESPACE}.${destination.key}`]: value },
+          {
+            [formatIdentity({
+              namespace: destination.namespace,
+              key: destination.key,
+              partPath: null,
+            })]: value,
+          },
           INTERNAL,
         );
         plans.push({ writes, origin: attribute(destination) });
@@ -161,13 +167,23 @@ export class MetafieldBindingsService {
 
   private async resolve(productId: string, port: string): Promise<BoundField | null> {
     const row = await this.knex(BINDINGS_TABLE)
-      .join(FIELDS_TABLE, `${BINDINGS_TABLE}.metafield_key`, `${FIELDS_TABLE}.key`)
+      .join(FIELDS_TABLE, function () {
+        this.on(`${BINDINGS_TABLE}.metafield_namespace`, `${FIELDS_TABLE}.namespace`).andOn(
+          `${BINDINGS_TABLE}.metafield_key`,
+          `${FIELDS_TABLE}.key`,
+        );
+      })
       .where(`${BINDINGS_TABLE}.product_id`, productId)
       .where(`${BINDINGS_TABLE}.port`, port)
       // An archived destination is still where this goes, and still not somewhere a value
       // can land, so the write drops rather than waiting.
       .where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active)
-      .select(`${BINDINGS_TABLE}.id as binding_id`, `${FIELDS_TABLE}.key`, `${FIELDS_TABLE}.type`)
+      .select(
+        `${BINDINGS_TABLE}.id as binding_id`,
+        `${FIELDS_TABLE}.namespace`,
+        `${FIELDS_TABLE}.key`,
+        `${FIELDS_TABLE}.type`,
+      )
       .first();
 
     if (!row) {
@@ -192,6 +208,11 @@ export class MetafieldBindingsService {
       return null;
     }
 
-    return { bindingId: bound.data.binding_id, key: bound.data.key, type: bound.data.type };
+    return {
+      bindingId: bound.data.binding_id,
+      namespace: bound.data.namespace,
+      key: bound.data.key,
+      type: bound.data.type,
+    };
   }
 }

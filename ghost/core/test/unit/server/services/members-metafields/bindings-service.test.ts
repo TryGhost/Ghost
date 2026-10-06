@@ -4,7 +4,12 @@ import { MetafieldBindingsService } from '../../../../../core/server/services/me
 
 // What a port resolves to. Every port here resolves to the same field, because where a
 // value lands is not what any of these are about.
-const BOUND_ROW = { binding_id: 'binding_1', key: 'delivery_address', type: 'short_text' };
+const BOUND_ROW = {
+  binding_id: 'binding_1',
+  namespace: 'custom',
+  key: 'delivery_address',
+  type: 'short_text',
+};
 
 /**
  * A stand-in for the query that resolves a port to the field it was bound to.

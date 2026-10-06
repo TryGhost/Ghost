@@ -131,7 +131,7 @@ describe('Member Custom Fields Admin API', function () {
     });
 
     it('rejects a duplicate name, case-insensitively', async function () {
-      // The name is the human label and is globally unique; this 422 is what
+      // The name is the human label and is unique in its namespace; this 422 is what
       // the Settings UI surfaces as an inline error on the name field.
       await createField({ name: 'Company' });
       await agent
@@ -364,17 +364,21 @@ describe('Member Custom Fields Admin API', function () {
       assert.equal(refused.body.errors[0].property, 'namespace');
     });
 
-    it('rejects a namespace filter, naming the route as the way to scope', async function () {
-      // The table storing these fields has no namespace column, so a filter clause naming one
-      // would reach the database as a query against a missing column. It is refused at the edge
-      // instead, pointing at the URL as the way to choose a namespace.
-      const { body } = await agent
+    it('narrows by namespace like any other attribute, inside the one the route names', async function () {
+      const field = await createField({ name: 'Favourite topic' });
+
+      const { body: same } = await agent
         .get('members/metafields/custom/?filter=namespace:custom')
-        .expectStatus(400);
-      // Ghost's API error handler replaces `message` with a stock sentence for the error's type
-      // and moves the thrown wording into `context`, so that is where it has to be asserted.
-      assert.match(body.errors[0].context, /namespace/i);
-      assert.equal(body.errors[0].property, 'filter');
+        .expectStatus(200);
+      assert.deepEqual(
+        same.members_metafields.map(({ key }: { key: string }) => key),
+        [field.key],
+      );
+
+      const { body: other } = await agent
+        .get('members/metafields/custom/?filter=namespace:transistor')
+        .expectStatus(200);
+      assert.deepEqual(other.members_metafields, []);
     });
 
     it('rejects a malformed filter with a 400 rather than a 500', async function () {
@@ -2157,6 +2161,89 @@ describe('Member Custom Fields Admin API', function () {
 
       const { body } = await agent.get(`members/${memberId}/`).expectStatus(200);
       assert.equal(Object.hasOwn(body.members[0], 'metafields'), false);
+    });
+  });
+
+  // Written straight to the table: the database has to refuse these whoever writes them.
+  describe('What a field can be called', function () {
+    const insertField = (namespace: string, key: string) =>
+      models.Base.knex('members_metafields').insert({
+        id: '6600000000000000000000b1',
+        namespace,
+        key,
+        name: 'Company',
+        type: 'short_text',
+        created_at: new Date(),
+      });
+
+    it('refuses a namespace or key that an address cannot name', async function () {
+      await assert.rejects(insertField('Shop', 'company'), /members_metafields_namespace_check/);
+      await assert.rejects(insertField('sh.op', 'company'), /members_metafields_namespace_check/);
+      await assert.rejects(insertField('shop', 'Company'), /members_metafields_key_check/);
+      await assert.rejects(insertField('shop', 'com-pany'), /members_metafields_key_check/);
+      await assert.rejects(insertField('shop', 'company\n'), /members_metafields_key_check/);
+
+      await insertField('shop', 'company');
+    });
+  });
+
+  // The API defines fields only in `custom`, so the other namespace's field is written
+  // straight to the table, as an app's would be.
+  describe('Fields in another namespace', function () {
+    beforeEach(async function () {
+      await models.Base.knex('members_metafields').insert({
+        id: '6600000000000000000000a1',
+        namespace: 'shop',
+        key: 'company',
+        name: 'Company',
+        type: 'short_text',
+        created_at: new Date(),
+      });
+    });
+
+    it('leaves the publisher free to use the same key and name', async function () {
+      const created = await createField({ name: 'Company' });
+      assert.equal(created.key, 'company');
+
+      const { body } = await agent.get('members/metafields/custom/').expectStatus(200);
+      assert.deepEqual(
+        body.members_metafields.map(({ key }: { key: string }) => key),
+        ['company'],
+      );
+      const { body: shop } = await agent.get('members/metafields/shop/company/').expectStatus(200);
+      assert.equal(shop.members_metafields[0].namespace, 'shop');
+    });
+
+    it('keeps each namespace’s value apart on the member, in filters, and when one is deleted', async function () {
+      const publisherField = await createField({ name: 'Company' });
+      const memberId = await createMember();
+
+      const { body: written } = await agent
+        .put(`members/${memberId}/`)
+        .body({
+          members: [{ metafields: { custom: { company: 'Ghost' }, shop: { company: 'Acme' } } }],
+        })
+        .expectStatus(200);
+      assert.deepEqual(written.members[0].metafields, {
+        custom: { company: 'Ghost' },
+        shop: { company: 'Acme' },
+      });
+
+      const matching = async (key: string, value: string) => {
+        const filter = `(metafields.key:'${key}'+metafields.value:'${value}')`;
+        const { body } = await agent
+          .get(`members/?filter=${encodeURIComponent(filter)}`)
+          .expectStatus(200);
+        return body.members.map(({ id }: { id: string }) => id);
+      };
+      assert.deepEqual(await matching('shop.company', 'Acme'), [memberId]);
+      assert.deepEqual(await matching('custom.company', 'Acme'), []);
+
+      await setStatus(publisherField.key, 'archived');
+      await agent.delete(`members/metafields/custom/${publisherField.key}/`).expectStatus(204);
+
+      const { body: read } = await agent.get(`members/${memberId}/`).expectStatus(200);
+      assert.deepEqual(read.members[0].metafields, { shop: { company: 'Acme' } });
     });
   });
 

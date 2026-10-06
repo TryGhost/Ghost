@@ -9,12 +9,7 @@ import {
   type FieldType,
   type MetafieldChangeEventField,
 } from '@tryghost/metafield-types';
-import {
-  CUSTOM_NAMESPACE,
-  QUALIFIER,
-  formatIdentity,
-  parseIdentity,
-} from '@tryghost/metafield-types/identity';
+import { QUALIFIER, formatIdentity, parseIdentity } from '@tryghost/metafield-types/identity';
 import {
   DbMetafieldChangeEventWithMember,
   DbMetafieldLeaf,
@@ -28,6 +23,7 @@ import { toDatabaseDate } from '../../lib/db-types/date';
 import { ACTIVE_ONLY, definitions, knexify, readableBy } from './queries';
 import { canWrite, type Audience, type MemberAccess } from './access';
 import { leavesToWrite, valuesFromLeaves, type StoredLeaf } from './storage';
+import type { MetafieldRef } from './models';
 
 const FIELDS_TABLE = 'members_metafields';
 const VALUES_TABLE = 'members_metafield_values';
@@ -58,6 +54,11 @@ const MAX_IDENTITY_LENGTH = MAX_KEY_LENGTH * 2 + 1;
 const ValuesInput = z.record(z.string().max(MAX_IDENTITY_LENGTH), z.unknown());
 
 const wireProperty = (identity: string): string => [QUALIFIER, identity].join('.');
+
+/** The columns a value row names its field by. */
+function storedAs(field: MetafieldRef): Pick<DbLeafRow, 'metafield_namespace' | 'metafield_key'> {
+  return { metafield_namespace: field.namespace, metafield_key: field.key };
+}
 
 /** One value the site will not accept, against the name the write gave it. */
 interface Refusal {
@@ -128,25 +129,36 @@ export class MetafieldValuesService {
     identities: string[],
     audience: Audience,
   ): Promise<Map<string, AllowedField>> {
-    const keys = identities
-      .map((identity) => parseIdentity(identity))
-      .filter((parsed) => parsed !== null && parsed.namespace === CUSTOM_NAMESPACE)
-      .map((parsed) => (parsed as { key: string }).key);
-    if (keys.length === 0) {
+    const keysByNamespace = new Map<string, string[]>();
+    for (const identity of identities) {
+      const parsed = parseIdentity(identity);
+      if (parsed) {
+        const keys = keysByNamespace.get(parsed.namespace) ?? [];
+        keys.push(parsed.key);
+        keysByNamespace.set(parsed.namespace, keys);
+      }
+    }
+    if (keysByNamespace.size === 0) {
       return new Map();
     }
     const fields = await definitions(this.knex, { audience, status: ACTIVE_ONLY })
-      .whereIn('key', keys)
-      .select('id', 'key', 'name', 'type', 'member_access');
+      .where((query) => {
+        for (const [namespace, keys] of keysByNamespace) {
+          query.orWhere((inNamespace) =>
+            inNamespace.where('namespace', namespace).whereIn('key', keys),
+          );
+        }
+      })
+      .select('id', 'namespace', 'key', 'name', 'type', 'member_access');
     return new Map(
       fields.map((field) => [
-        formatIdentity({ namespace: CUSTOM_NAMESPACE, key: field.key, partPath: null }),
+        formatIdentity({ namespace: field.namespace, key: field.key, partPath: null }),
         {
           id: field.id,
+          namespace: field.namespace,
           key: field.key,
           name: field.name,
           type: field.type,
-          namespace: CUSTOM_NAMESPACE,
           memberAccess: field.member_access,
         },
       ]),
@@ -183,11 +195,12 @@ export class MetafieldValuesService {
     // cannot carry an order. `path` is ordered so composite parts assemble the same
     // way every time.
     const rows = await readableBy(
-      executor(VALUES_TABLE).join(
-        FIELDS_TABLE,
-        `${VALUES_TABLE}.metafield_key`,
-        `${FIELDS_TABLE}.key`,
-      ),
+      executor(VALUES_TABLE).join(FIELDS_TABLE, function () {
+        this.on(`${VALUES_TABLE}.metafield_namespace`, `${FIELDS_TABLE}.namespace`).andOn(
+          `${VALUES_TABLE}.metafield_key`,
+          `${FIELDS_TABLE}.key`,
+        );
+      }),
       audience,
     )
       .whereIn(`${VALUES_TABLE}.member_id`, memberIds)
@@ -195,6 +208,7 @@ export class MetafieldValuesService {
       .orderBy(`${VALUES_TABLE}.path`, 'asc')
       .select(
         `${VALUES_TABLE}.member_id`,
+        `${FIELDS_TABLE}.namespace`,
         `${FIELDS_TABLE}.key`,
         `${FIELDS_TABLE}.type`,
         `${VALUES_TABLE}.path`,
@@ -210,6 +224,7 @@ export class MetafieldValuesService {
           {
             event: { name: 'members.metafields.value_unreadable' },
             err,
+            metafieldNamespace: row.namespace,
             metafieldKey: row.key,
             path: row.path,
           },
@@ -218,12 +233,7 @@ export class MetafieldValuesService {
       }
     }
 
-    return new Map(
-      [...valuesFromLeaves(leaves)].map(([memberId, values]) => [
-        memberId,
-        { [CUSTOM_NAMESPACE]: values },
-      ]),
-    );
+    return valuesFromLeaves(leaves);
   }
 
   private parseValues(input: unknown): Record<string, unknown> {
@@ -377,27 +387,27 @@ export class MetafieldValuesService {
       // than one per part, under one timestamp, because a write happened once
       // however many rows record it.
       const now = new Date();
-      const clearedKeys: string[] = [];
-      const clearedPaths: Array<{ fieldKey: string; paths: string[] }> = [];
+      const clearedFields: MetafieldRef[] = [];
+      const clearedPaths: Array<{ field: MetafieldRef; paths: string[] }> = [];
       const rows: DbLeafRow[] = [];
 
       for (const { field, value } of writes) {
         if (value === undefined) {
-          clearedKeys.push(field.key);
+          clearedFields.push(field);
           continue;
         }
 
         const { set, cleared } = leavesToWrite(value);
         if (cleared.length > 0) {
-          clearedPaths.push({ fieldKey: field.key, paths: cleared });
+          clearedPaths.push({ field, paths: cleared });
         }
 
         rows.push(
           ...set.map((leaf) => ({
-            id: new ObjectID().toHexString(),
-            member_id: memberId,
+            metafield_namespace: field.namespace,
             metafield_key: field.key,
             path: leaf.path,
+            member_id: memberId,
             value_text: leaf.value_text,
             written_by_type: writtenBy.type,
             written_by_id: writtenBy.id,
@@ -407,22 +417,24 @@ export class MetafieldValuesService {
         );
       }
 
-      if (clearedKeys.length > 0) {
+      // One statement with a group per field, rather than a statement per field.
+      if (clearedFields.length > 0) {
         await trx(VALUES_TABLE)
           .where('member_id', memberId)
-          .whereIn('metafield_key', clearedKeys)
+          .where((builder) => {
+            for (const field of clearedFields) {
+              builder.orWhere((leaf) => leaf.where(storedAs(field)));
+            }
+          })
           .del();
       }
 
       if (clearedPaths.length > 0) {
-        // One statement with a group per field, rather than a statement per field.
         await trx(VALUES_TABLE)
           .where('member_id', memberId)
           .where((builder) => {
-            for (const { fieldKey, paths } of clearedPaths) {
-              builder.orWhere((pair) =>
-                pair.where('metafield_key', fieldKey).whereIn('path', paths),
-              );
+            for (const { field, paths } of clearedPaths) {
+              builder.orWhere((leaf) => leaf.where(storedAs(field)).whereIn('path', paths));
             }
           })
           .del();
@@ -436,7 +448,7 @@ export class MetafieldValuesService {
           .insert(rows.slice(from, from + UPSERT_CHUNK))
           // Naming the columns rather than giving values takes each from the row
           // that lost the conflict, so every part updates to its own value.
-          .onConflict(['member_id', 'metafield_key', 'path'])
+          .onConflict(['metafield_namespace', 'metafield_key', 'path', 'member_id'])
           // The writer is merged with the value, so a leaf names who wrote what
           // it currently holds rather than who wrote its first value.
           .merge(['value_text', 'written_by_type', 'written_by_id', 'updated_at']);

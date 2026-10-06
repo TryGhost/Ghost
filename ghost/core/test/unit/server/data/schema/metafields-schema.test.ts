@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { FIELD_TYPE_IDS } from '@tryghost/metafield-types';
+import { IDENTITY_SEGMENT } from '@tryghost/metafield-types/identity';
 import { FIELD_STATUS } from '../../../../../core/server/services/members-metafields/schema';
 // @ts-expect-error This module lacks type definitions.
 import schema from '../../../../../core/server/data/schema/schema';
@@ -11,6 +12,11 @@ import schema from '../../../../../core/server/data/schema/schema';
 describe('members_metafields schema mirrors the source of truth', function () {
   it('type validation matches FIELD_TYPE_IDS', function () {
     assert.deepEqual(schema.members_metafields.type.validations.isIn[0], [...FIELD_TYPE_IDS]);
+  });
+
+  it('namespace and key patterns match IDENTITY_SEGMENT', function () {
+    assert.equal(schema.members_metafields.namespace.pattern, IDENTITY_SEGMENT.source);
+    assert.equal(schema.members_metafields.key.pattern, IDENTITY_SEGMENT.source);
   });
 
   it('status validation matches FIELD_STATUS', function () {
