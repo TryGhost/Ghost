@@ -5,6 +5,7 @@ const _ = require('lodash');
 const models = require('../../../../../core/server/models');
 const permissions = require('../../../../../core/server/services/permissions');
 const providers = require('../../../../../core/server/services/permissions/providers');
+const rolePermissions = require('../../../../../core/server/services/permissions/role-permissions');
 
 describe('Permissions', function () {
   let fakePermissions = [];
@@ -12,8 +13,8 @@ describe('Permissions', function () {
   let findTagSpy;
 
   beforeEach(function () {
-    sinon.stub(models.Permission, 'findAll').callsFake(function () {
-      return Promise.resolve(models.Permissions.forge(fakePermissions));
+    sinon.stub(rolePermissions, 'all').callsFake(function () {
+      return fakePermissions;
     });
 
     findPostSpy = sinon.stub(models.Post, 'findOne').callsFake(function () {

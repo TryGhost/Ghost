@@ -6,6 +6,8 @@ import testUtils from '../../../../utils';
 import models from '../../../../../core/server/models';
 // @ts-expect-error This module lacks type definitions.
 import providers from '../../../../../core/server/services/permissions/providers';
+// @ts-expect-error This module lacks type definitions.
+import rolePermissions from '../../../../../core/server/services/permissions/role-permissions';
 
 describe('Permission Providers', function () {
   afterEach(function () {
@@ -29,181 +31,45 @@ describe('Permission Providers', function () {
       sinon.assert.calledOnce(findUserSpy);
     });
 
-    it('can load user with role, and permissions', async function () {
-      // This test requires quite a lot of unique setup work
+    it("loads permissions from the map for the user's role names", async function () {
       const findUserSpy = sinon.stub(models.User, 'findOne').callsFake(function () {
-        // Create a fake model
         const fakeUser = models.User.forge(testUtils.DataGenerator.Content.users[0]);
         fakeUser.set('status', 'active');
 
-        // Roles & Permissions need to be collections
-        const fakeAdminRole = models.Roles.forge(testUtils.DataGenerator.Content.roles[0]);
-
-        const fakeAdminRolePermissions = models.Permissions.forge(
-          testUtils.DataGenerator.Content.permissions,
-        );
-
-        // ## Fake the relations
-        // User is related to roles & permissions
-        fakeUser.relations = {
-          roles: fakeAdminRole,
-          permissions: fakeAdminRolePermissions,
-        };
-
-        // We use this inside toJSON.
-        fakeUser.withRelated = ['roles', 'permissions', 'roles.permissions'];
+        // roles[0] === Administrator
+        const fakeRoles = models.Roles.forge([testUtils.DataGenerator.Content.roles[0]]);
+        fakeUser.relations = {roles: fakeRoles};
+        fakeUser.withRelated = ['roles'];
 
         return Promise.resolve(fakeUser);
       });
 
-      // Get permissions for the user
       const res = await providers.user(1);
+
       sinon.assert.calledOnce(findUserSpy);
+      // Only roles are loaded from the database now
+      assert.deepEqual(findUserSpy.firstCall.args[1], {withRelated: ['roles']});
 
-      assert(res && typeof res === 'object');
-      assert('permissions' in res);
-      assert('roles' in res);
+      // Permissions come from the in-memory map, keyed by the user's role names
+      assert.deepEqual(res.permissions, rolePermissions.forRoles(['Administrator']));
+      assert(res.permissions.length > 0);
 
-      assert(Array.isArray(res.permissions));
-      assert.equal(res.permissions.length, 10);
+      // Roles are still returned as JSON (models/user.js reads roles[0].id)
       assert(Array.isArray(res.roles));
       assert.equal(res.roles.length, 1);
-
-      // Permissions are plain {action_type, object_type} objects; roles are JSON
-      assert(res.permissions[0] && typeof res.permissions[0] === 'object');
-      assert(!('attributes' in res.permissions[0]));
-      assert(!('id' in res.permissions[0]));
-      assert.deepEqual(res.permissions[0], {action_type: 'browse', object_type: 'post'});
-      assert(res.roles[0] && typeof res.roles[0] === 'object');
+      assert.equal(res.roles[0].name, 'Administrator');
       assert('id' in res.roles[0]);
-      assert('name' in res.roles[0]);
-      assert('description' in res.roles[0]);
-      assert(!(res.permissions[0] instanceof models.Base.Model));
-      assert(!(res.roles[0] instanceof models.Base.Model));
-    });
-
-    it('can load user with role, and role.permissions', async function () {
-      // This test requires quite a lot of unique setup work
-      const findUserSpy = sinon.stub(models.User, 'findOne').callsFake(function () {
-        // Create a fake model
-        const fakeUser = models.User.forge(testUtils.DataGenerator.Content.users[0]);
-        fakeUser.set('status', 'active');
-
-        // Roles & Permissions need to be collections
-        const fakeAdminRole = models.Roles.forge(testUtils.DataGenerator.Content.roles[0]);
-
-        const fakeAdminRolePermissions = models.Permissions.forge(
-          testUtils.DataGenerator.Content.permissions,
-        );
-
-        // ## Fake the relations
-        // Roles are related to permissions
-        fakeAdminRole.models[0].relations = {
-          permissions: fakeAdminRolePermissions,
-        };
-        // User is related to roles
-        fakeUser.relations = {
-          roles: fakeAdminRole,
-        };
-        // We use this inside toJSON.
-        fakeUser.withRelated = ['roles', 'permissions', 'roles.permissions'];
-
-        return Promise.resolve(fakeUser);
-      });
-
-      // Get permissions for the user
-      const res = await providers.user(1);
-      sinon.assert.calledOnce(findUserSpy);
-
-      assert(res && typeof res === 'object');
-      assert('permissions' in res);
-      assert('roles' in res);
-
-      assert(Array.isArray(res.permissions));
-      assert.equal(res.permissions.length, 10);
-      assert(Array.isArray(res.roles));
-      assert.equal(res.roles.length, 1);
-
-      // Permissions are plain {action_type, object_type} objects; roles are JSON
-      assert(res.permissions[0] && typeof res.permissions[0] === 'object');
-      assert(!('attributes' in res.permissions[0]));
-      assert(!('id' in res.permissions[0]));
-      assert.deepEqual(res.permissions[0], {action_type: 'browse', object_type: 'post'});
-      assert(res.roles[0] && typeof res.roles[0] === 'object');
-      assert('id' in res.roles[0]);
-      assert('name' in res.roles[0]);
-      assert('description' in res.roles[0]);
-      assert(!(res.permissions[0] instanceof models.Base.Model));
-      assert(!(res.roles[0] instanceof models.Base.Model));
-    });
-
-    it('can load user with role, permissions and role.permissions and deduplicate them', async function () {
-      // This test requires quite a lot of unique setup work
-      const findUserSpy = sinon.stub(models.User, 'findOne').callsFake(function () {
-        // Create a fake model
-        const fakeUser = models.User.forge(testUtils.DataGenerator.Content.users[0]);
-        fakeUser.set('status', 'active');
-
-        // Roles & Permissions need to be collections
-        const fakeAdminRole = models.Roles.forge(testUtils.DataGenerator.Content.roles[0]);
-
-        const fakeAdminRolePermissions = models.Permissions.forge(
-          testUtils.DataGenerator.Content.permissions,
-        );
-
-        // ## Fake the relations
-        // Roles are related to permissions
-        fakeAdminRole.models[0].relations = {
-          permissions: fakeAdminRolePermissions,
-        };
-        // User is related to roles and permissions
-        fakeUser.relations = {
-          roles: fakeAdminRole,
-          permissions: fakeAdminRolePermissions,
-        };
-        // We use this inside toJSON.
-        fakeUser.withRelated = ['roles', 'permissions', 'roles.permissions'];
-
-        return Promise.resolve(fakeUser);
-      });
-
-      // Get permissions for the user
-      const res = await providers.user(1);
-      sinon.assert.calledOnce(findUserSpy);
-
-      assert(res && typeof res === 'object');
-      assert('permissions' in res);
-      assert('roles' in res);
-
-      assert(Array.isArray(res.permissions));
-      assert.equal(res.permissions.length, 10);
-      assert(Array.isArray(res.roles));
-      assert.equal(res.roles.length, 1);
-
-      // Permissions are plain {action_type, object_type} objects; roles are JSON
-      assert(res.permissions[0] && typeof res.permissions[0] === 'object');
-      assert(!('attributes' in res.permissions[0]));
-      assert(!('id' in res.permissions[0]));
-      assert.deepEqual(res.permissions[0], {action_type: 'browse', object_type: 'post'});
-      assert(res.roles[0] && typeof res.roles[0] === 'object');
-      assert('id' in res.roles[0]);
-      assert('name' in res.roles[0]);
-      assert('description' in res.roles[0]);
-      assert(!(res.permissions[0] instanceof models.Base.Model));
       assert(!(res.roles[0] instanceof models.Base.Model));
     });
 
     it('throws when user with non-active status is loaded', async function () {
-      // This test requires quite a lot of unique setup work
       const findUserSpy = sinon.stub(models.User, 'findOne').callsFake(function () {
-        // Create a fake model
         const fakeUser = models.User.forge(testUtils.DataGenerator.Content.users[0]);
         fakeUser.set('status', 'locked');
 
         return Promise.resolve(fakeUser);
       });
 
-      // Get permissions for the user
       await assert.rejects(
         async () => {
           await providers.user(1);
@@ -231,39 +97,42 @@ describe('Permission Providers', function () {
       );
       sinon.assert.calledOnce(findApiKeySpy);
     });
-    it('can load api_key with role, and role.permissions', async function () {
+
+    it('loads permissions from the map for the api key role name', async function () {
       const findApiKeySpy = sinon.stub(models.ApiKey, 'findOne').callsFake(function () {
         const fakeApiKey = models.ApiKey.forge(testUtils.DataGenerator.Content.api_keys[0]);
-        const fakeAdminRole = models.Role.forge(testUtils.DataGenerator.Content.roles[0]);
-        const fakeAdminRolePermissions = models.Permissions.forge(
-          testUtils.DataGenerator.Content.permissions,
-        );
-        fakeAdminRole.relations = {
-          permissions: fakeAdminRolePermissions,
-        };
-        fakeApiKey.relations = {
-          role: fakeAdminRole,
-        };
-        fakeApiKey.withRelated = ['role', 'role.permissions'];
+        // roles[5] === Admin Integration
+        const fakeRole = models.Role.forge(testUtils.DataGenerator.Content.roles[5]);
+        fakeApiKey.relations = {role: fakeRole};
+        fakeApiKey.withRelated = ['role'];
         return Promise.resolve(fakeApiKey);
       });
+
       const res = await providers.apiKey(1);
+
       sinon.assert.calledOnce(findApiKeySpy);
-      assert(res && typeof res === 'object');
-      assert('permissions' in res);
-      assert('roles' in res);
+      assert.deepEqual(findApiKeySpy.firstCall.args[1], {withRelated: ['role']});
+      assert.deepEqual(res.permissions, rolePermissions.forRoles(['Admin Integration']));
+      assert(res.permissions.length > 0);
       assert(Array.isArray(res.roles));
       assert.equal(res.roles.length, 1);
-      assert(res.permissions[0] && typeof res.permissions[0] === 'object');
-      assert(!('attributes' in res.permissions[0]));
-      assert(!('id' in res.permissions[0]));
-      assert.deepEqual(res.permissions[0], {action_type: 'browse', object_type: 'post'});
-      assert(res.roles[0] && typeof res.roles[0] === 'object');
-      assert('id' in res.roles[0]);
-      assert('name' in res.roles[0]);
-      assert('description' in res.roles[0]);
-      assert(!(res.permissions[0] instanceof models.Base.Model));
-      assert(!(res.roles[0] instanceof models.Base.Model));
+      assert.equal(res.roles[0].name, 'Admin Integration');
+    });
+
+    it('returns no permissions when the api key has no role', async function () {
+      const findApiKeySpy = sinon.stub(models.ApiKey, 'findOne').callsFake(function () {
+        const fakeApiKey = models.ApiKey.forge(testUtils.DataGenerator.Content.api_keys[0]);
+        // No role relation
+        fakeApiKey.relations = {};
+        fakeApiKey.withRelated = ['role'];
+        return Promise.resolve(fakeApiKey);
+      });
+
+      const res = await providers.apiKey(1);
+
+      sinon.assert.calledOnce(findApiKeySpy);
+      assert.deepEqual(res.permissions, []);
+      assert.deepEqual(res.roles, [undefined]);
     });
   });
 });

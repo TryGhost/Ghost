@@ -1,7 +1,7 @@
-const _ = require('lodash');
 const models = require('../../models');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
+const rolePermissions = require('./role-permissions');
 
 const messages = {
   userNotFound: 'User not found',
@@ -10,10 +10,7 @@ const messages = {
 
 module.exports = {
   user: function (id) {
-    return models.User.findOne(
-      { id: id },
-      { withRelated: ['permissions', 'roles', 'roles.permissions'] },
-    ).then(function (foundUser) {
+    return models.User.findOne({ id: id }, { withRelated: ['roles'] }).then(function (foundUser) {
       // CASE: {context: {user: id}} where the id is not in our database
       if (!foundUser) {
         return Promise.reject(
@@ -27,61 +24,30 @@ module.exports = {
         return Promise.reject(new errors.UnauthorizedError());
       }
 
-      const seenPerms = {};
-
-      const rolePerms = _.map(foundUser.related('roles').models, function (role) {
-        return role.related('permissions').models;
-      });
-
-      const allPerms = [];
       const user = foundUser.toJSON();
+      const roleNames = user.roles.map((role) => role.name);
 
-      rolePerms.push(foundUser.related('permissions').models);
-
-      _.each(rolePerms, function (rolePermGroup) {
-        _.each(rolePermGroup, function (perm) {
-          const key =
-            perm.get('action_type') + '-' + perm.get('object_type') + '-' + perm.get('object_id');
-
-          // Only add perms once
-          if (seenPerms[key]) {
-            return;
-          }
-
-          allPerms.push({
-            action_type: perm.get('action_type'),
-            object_type: perm.get('object_type'),
-          });
-          seenPerms[key] = true;
-        });
-      });
-
-      return { permissions: allPerms, roles: user.roles };
+      // The role -> permission mapping is static, so permissions come from the
+      // in-memory map rather than the database. The role itself is real data
+      // and is still loaded above.
+      return { permissions: rolePermissions.forRoles(roleNames), roles: user.roles };
     });
   },
 
   apiKey(id) {
-    return models.ApiKey.findOne({ id }, { withRelated: ['role', 'role.permissions'] }).then(
-      (foundApiKey) => {
-        if (!foundApiKey) {
-          throw new errors.NotFoundError({
-            message: tpl(messages.apiKeyNotFound),
-          });
-        }
+    return models.ApiKey.findOne({ id }, { withRelated: ['role'] }).then((foundApiKey) => {
+      if (!foundApiKey) {
+        throw new errors.NotFoundError({
+          message: tpl(messages.apiKeyNotFound),
+        });
+      }
 
-        // api keys have a belongs_to relationship to a role and no individual permissions
-        // so there's no need for permission deduplication
-        const permissions = foundApiKey
-          .related('role')
-          .related('permissions')
-          .models.map((perm) => ({
-            action_type: perm.get('action_type'),
-            object_type: perm.get('object_type'),
-          }));
-        const roles = [foundApiKey.toJSON().role];
+      // api keys have a belongs_to relationship to a single role. A key with no
+      // role has no permissions (unchanged from loading role.permissions before).
+      const role = foundApiKey.toJSON().role;
+      const permissions = role ? rolePermissions.forRoles([role.name]) : [];
 
-        return { permissions, roles };
-      },
-    );
+      return { permissions, roles: [role] };
+    });
   },
 };

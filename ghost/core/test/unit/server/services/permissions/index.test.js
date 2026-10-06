@@ -5,14 +5,15 @@ const testUtils = require('../../../../utils');
 const _ = require('lodash');
 const models = require('../../../../../core/server/models');
 const actionsMap = require('../../../../../core/server/services/permissions/actions-map-cache');
+const rolePermissions = require('../../../../../core/server/services/permissions/role-permissions');
 const permissions = require('../../../../../core/server/services/permissions');
 
 describe('Permissions', function () {
   let fakePermissions = [];
 
   beforeEach(function () {
-    sinon.stub(models.Permission, 'findAll').callsFake(function () {
-      return Promise.resolve(models.Permissions.forge(fakePermissions));
+    sinon.stub(rolePermissions, 'all').callsFake(function () {
+      return fakePermissions;
     });
 
     sinon.stub(models.Post, 'findOne').callsFake(function () {

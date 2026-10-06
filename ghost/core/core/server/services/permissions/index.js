@@ -1,21 +1,13 @@
 // canThis(someUser).edit.posts([id]|[[ids]])
 // canThis(someUser).edit.post(somePost|somePostId)
 
-const models = require('../../models');
-
 const actionsMap = require('./actions-map-cache');
+const rolePermissions = require('./role-permissions');
 
-const init = function init(options) {
-  options = options || {};
-
-  // Load all the permissions
-  return models.Permission.findAll(options).then(function (permissionsCollection) {
-    const permissions = permissionsCollection.models.map((perm) => ({
-      action_type: perm.get('action_type'),
-      object_type: perm.get('object_type'),
-    }));
-    return actionsMap.init(permissions);
-  });
+const init = function init() {
+  // Build the actions map from the in-memory permission set rather than the
+  // database. Still returns a Promise so boot.js and test helpers are untouched.
+  return Promise.resolve(actionsMap.init(rolePermissions.all()));
 };
 
 module.exports = {
