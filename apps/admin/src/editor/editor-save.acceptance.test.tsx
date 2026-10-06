@@ -1,7 +1,7 @@
 import { toast } from 'sonner';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, onTestFinished } from 'vitest';
 import { userEvent } from 'vitest/browser';
-import { buildLexicalParagraph } from '@tryghost/test-data';
+import { buildLexical, buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
   currentRoute,
@@ -22,7 +22,7 @@ import {
   type EndpointCapture,
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
-import { editorBody } from '@tryghost/test-data/selectors/editor';
+import { editorBody, editorStatus } from '@tryghost/test-data/selectors/editor';
 import { editorScreen } from '@/editor/editor.screen';
 import { OLD_SCHEMA_CORPUS } from '@/editor/engine/__fixtures__';
 import {
@@ -105,6 +105,20 @@ async function appendToBody(text: string) {
   await body.fill(`${body.element().textContent ?? ''}${text}`);
 }
 
+/** Every distinct status line the editor commits, in order, from before it renders. */
+function recordStatuses(): string[] {
+  const statuses: string[] = [];
+  const observer = new MutationObserver(() => {
+    const status = document.querySelector(`[data-testid="${editorStatus}"]`)?.textContent ?? '';
+    if (status && status !== statuses.at(-1)) {
+      statuses.push(status);
+    }
+  });
+  observer.observe(document.body, { childList: true, characterData: true, subtree: true });
+  onTestFinished(() => observer.disconnect());
+  return statuses;
+}
+
 function bodyElement(): Element | null {
   return document.querySelector(`[data-testid="${editorBody}"]`);
 }
@@ -181,34 +195,10 @@ describe('Post editor saving', () => {
 
   it('leaves a post alone when its cards rewrite themselves on mount', async () => {
     // A header card adopts the editor's accent colour as it mounts, in both instances.
-    const header = {
-      type: 'header',
-      version: 2,
-      size: 'small',
-      style: 'dark',
-      buttonEnabled: false,
-      buttonUrl: '',
-      buttonText: '',
-      header: '<span>Header card</span>',
-      subheader: '',
-      backgroundImageSrc: '',
-      accentColor: '#123456',
-      alignment: 'center',
-      backgroundColor: '#000000',
-      backgroundImageWidth: null,
-      backgroundImageHeight: null,
-      backgroundSize: 'cover',
-      textColor: '#FFFFFF',
-      buttonColor: '#ffffff',
-      buttonTextColor: '#000000',
-      layout: 'full',
-      swapped: false,
-    };
-    const lexical = JSON.parse(buildLexicalParagraph('Before the card')) as {
-      root: { children: unknown[] };
-    };
-    lexical.root.children.push(header);
-    const saveApi = fakeSavablePost({ lexical: JSON.stringify(lexical) });
+    const saveApi = fakeSavablePost({
+      lexical: buildLexical({ header: { accentColor: '#123456' } }),
+    });
+    const statuses = recordStatuses();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
     await expect.element(editorScreen.body().getByText('Header card')).toBeVisible();
@@ -216,9 +206,10 @@ describe('Post editor saving', () => {
       .element(editorScreen.secondaryInstance().getByText('Header card'))
       .toBeInTheDocument();
     await editorScreen.titleInput().click();
-    await editorScreen.body().getByText('Before the card').click();
+    await editorScreen.body().getByText('Before header').click();
     expect(saveApi.requests).toHaveLength(0);
     await expect.poll(unsavedChangesGuarded).toBe(false);
+    expect(statuses).toEqual(['Draft - Saved']);
 
     await userEvent.keyboard(' edited');
 

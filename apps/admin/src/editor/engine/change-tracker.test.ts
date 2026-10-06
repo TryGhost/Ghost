@@ -305,6 +305,63 @@ describe('createChangeTracker', () => {
       expect(codes(tracker)).toEqual(['BASELINE_FAILED']);
     });
 
+    describe('when the visible editor trails the hidden one', () => {
+      const firstStep = serialize(appendParagraph(SAVED_DOC, 'Normalized once'));
+      const secondStep = serialize(appendParagraph(SAVED_DOC, 'Normalized twice'));
+
+      function trailingTracker() {
+        const tracker = createChangeTracker();
+        tracker.load(POST_ID, post());
+        tracker.setBaseline(POST_ID, firstStep);
+        tracker.setBaseline(POST_ID, secondStep);
+        return tracker;
+      }
+
+      it('is clean at any step the hidden editor has reported', () => {
+        const tracker = trailingTracker();
+        tracker.setLive(POST_ID, { lexical: firstStep });
+        expect(tracker.verdict().dirty).toBe(false);
+
+        tracker.setLive(POST_ID, { lexical: secondStep });
+        expect(tracker.verdict().dirty).toBe(false);
+      });
+
+      it('is dirty for a body the hidden editor never reported', () => {
+        const tracker = trailingTracker();
+        tracker.setLive(POST_ID, { lexical: serialize(appendParagraph(SAVED_DOC, 'Typed')) });
+
+        expect(codes(tracker)).toEqual(['SCRATCH_DIVERGED_FROM_SECONDARY']);
+      });
+
+      it('forgets the reported steps once an acknowledged body replaces them', () => {
+        const tracker = trailingTracker();
+        const typed = serialize(appendParagraph(SAVED_DOC, 'Typed'));
+        tracker.setLive(POST_ID, { lexical: typed });
+        const submitted = post({ lexical: typed });
+        tracker.saveAcknowledged(POST_ID, submitted, { ...submitted, updated_at: T1 });
+
+        tracker.setLive(POST_ID, { lexical: firstStep });
+        expect(codes(tracker)).toEqual(['SCRATCH_DIVERGED_FROM_SECONDARY']);
+      });
+
+      it('forgets the reported steps once a restore re-seeds the hidden editor', () => {
+        const tracker = trailingTracker();
+        const restored = serialize(appendParagraph(SAVED_DOC, 'Restored'));
+        tracker.revisionRestored(POST_ID, {
+          lexical: restored,
+          title: 'Title',
+          custom_excerpt: null,
+          feature_image: null,
+          feature_image_alt: null,
+          feature_image_caption: null,
+        });
+        tracker.setBaseline(POST_ID, restored);
+
+        tracker.setLive(POST_ID, { lexical: firstStep });
+        expect(codes(tracker)).toEqual(['SCRATCH_DIVERGED_FROM_SECONDARY']);
+      });
+    });
+
     describe('once an acknowledged body has replaced the baseline', () => {
       const edited = serialize(appendParagraph(SAVED_DOC, 'Edit'));
 

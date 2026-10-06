@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { editorBody, editorSecondaryInstance } from '@tryghost/test-data/selectors/editor';
@@ -15,9 +15,23 @@ const editorRendered = vi.hoisted(() => vi.fn());
 
 vi.mock('@/settings/components/koenig-loader', () => {
   const stub = {
-    KoenigComposer: ({ children }: { children: ReactNode }) => {
+    // The button stands in for Lexical reporting an update failure to the composer.
+    KoenigComposer: ({
+      children,
+      onError,
+    }: {
+      children: ReactNode;
+      onError: (error: unknown) => void;
+    }) => {
       composerRendered();
-      return <div>{children}</div>;
+      return (
+        <div>
+          <button type="button" onClick={() => onError(new Error('lexical failed'))}>
+            Fail
+          </button>
+          {children}
+        </div>
+      );
     },
     KoenigEditor: (props: { onChange?: unknown }) => {
       editorRendered(props);
@@ -136,6 +150,35 @@ describe('KoenigPostEditor hidden instance', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 
     editorRendered.mockReset();
+    consoleError.mockRestore();
+  });
+  it('loses only the baseline when Lexical fails in the hidden instance', () => {
+    const onSecondaryError = vi.fn();
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(NOOP);
+
+    render(
+      <KoenigPostEditor
+        cardConfig={CARD_CONFIG}
+        darkMode={false}
+        initialLexical={null}
+        placeholder="Begin writing your post..."
+        registerAPI={NOOP}
+        onChange={NOOP}
+        onSecondaryChange={NOOP}
+        onSecondaryError={onSecondaryError}
+        onTkCountChange={NOOP}
+        onWordCountChange={NOOP}
+      />,
+    );
+
+    fireEvent.click(within(screen.getByTestId(editorBody)).getByRole('button'));
+    expect(onSecondaryError).not.toHaveBeenCalled();
+
+    fireEvent.click(
+      within(screen.getByTestId(editorSecondaryInstance)).getByRole('button', { hidden: true }),
+    );
+    expect(onSecondaryError).toHaveBeenCalledTimes(1);
+
     consoleError.mockRestore();
   });
 });

@@ -176,9 +176,12 @@ const RELATION_KEYS: ReadonlySet<ProjectionKey> = new Set(['tiers', 'authors']);
 
 const RUNG_KEYS: ReadonlySet<ProjectionKey> = new Set(['title', 'lexical', 'tags', 'updated_at']);
 
+// `forms` holds the compare form of every document the hidden instance has
+// reported since it was seeded: it never takes input, so each one is load-time
+// normalization, and the visible instance can trail it through the same steps.
 type Baseline =
   | { status: 'pending' }
-  | { status: 'ready'; lexical: string | null }
+  | { status: 'ready'; lexical: string | null; forms: ReadonlySet<string> }
   | { status: 'failed' };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -307,6 +310,15 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
     return lexicalEquals(a, b, siteUrl);
   }
 
+  function readyBaseline(lexical: string | null, earlier: ReadonlySet<string>): Baseline {
+    try {
+      const form = normalizeLexicalForCompare(lexical, siteUrl);
+      return { status: 'ready', lexical, forms: new Set([...earlier, form]) };
+    } catch {
+      return { status: 'ready', lexical, forms: earlier };
+    }
+  }
+
   function sameField(key: ProjectionKey, a: unknown, b: unknown): boolean {
     if (key === 'lexical') {
       try {
@@ -348,7 +360,9 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
       if (baseline.status === 'failed') {
         return 'BASELINE_FAILED';
       }
-      return sameLexical(baseline.lexical, scratch) ? null : 'SCRATCH_DIVERGED_FROM_SECONDARY';
+      return baseline.forms.has(normalizeLexicalForCompare(scratch, siteUrl))
+        ? null
+        : 'SCRATCH_DIVERGED_FROM_SECONDARY';
     } catch {
       return 'LEXICAL_PARSE_FAILED';
     }
@@ -457,7 +471,7 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
       // A field save can finish while Koenig is still normalizing the loaded
       // body. Keep that baseline when the persisted body has not changed.
       if (!sameField('lexical', saved.lexical, next.lexical)) {
-        baseline = { status: 'ready', lexical: next.lexical };
+        baseline = readyBaseline(next.lexical, new Set());
         baselineAcknowledged = true;
       }
       saved = next;
@@ -469,7 +483,10 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
       if (!isCurrentOrAlias(id) || baselineAcknowledged) {
         return;
       }
-      baseline = { status: 'ready', lexical: serializeLexical(lexical) };
+      baseline = readyBaseline(
+        serializeLexical(lexical),
+        baseline.status === 'ready' ? baseline.forms : new Set(),
+      );
     },
 
     baselineFailed(id) {

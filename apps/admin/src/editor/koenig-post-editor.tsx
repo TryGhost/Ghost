@@ -113,13 +113,8 @@ export const KoenigPostEditor = memo(function KoenigPostEditor(props: KoenigPost
             </div>
           }
         >
-          <KoenigInstanceMount
-            {...props}
-            editor={editor}
-            isSecondary={false}
-            onError={reportKoenigError}
-          />
-          {/* A hidden-instance crash costs the baseline, never the visible editor. */}
+          {/* Mounted first so each load-time normalization reaches the baseline before
+              the visible instance reports it. A crash costs only the baseline. */}
           <ErrorBoundary fallback={null} name="the editor" onError={onSecondaryRenderError}>
             <KoenigInstanceMount
               {...props}
@@ -128,6 +123,12 @@ export const KoenigPostEditor = memo(function KoenigPostEditor(props: KoenigPost
               onError={onSecondaryInstanceError}
             />
           </ErrorBoundary>
+          <KoenigInstanceMount
+            {...props}
+            editor={editor}
+            isSecondary={false}
+            onError={reportKoenigError}
+          />
         </Suspense>
       </ErrorBoundary>
     </div>
