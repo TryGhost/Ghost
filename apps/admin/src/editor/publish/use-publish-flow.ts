@@ -166,6 +166,7 @@ export function usePublishFlow({
 
   // The email is created by the save, so its id is only knowable from a reload.
   const [emailId, setEmailId] = useState(post.email?.id ?? null);
+  const activeRef = useRef(true);
 
   const confirmation = useMemo(
     () =>
@@ -227,16 +228,16 @@ export function usePublishFlow({
     // re-enabling refetches, so every way a retry ends refreshes eligibility.
     enabled: step === 'email-error' && Boolean(emailId) && retryStatus !== 'running',
     staleTime: 0,
-    refetchOnMount: 'always',
     refetchOnWindowFocus: true,
     retry: false,
     defaultErrorHandler: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const sending = retryEligibility.data?.email_statuses[0]?.sending;
+  // A background read error keeps the last successful decision. Core still
+  // validates fresh state before accepting a retry.
   const canRetryEmail =
     retryEligibility.isFetchedAfterMount &&
-    !retryEligibility.isError &&
     sending?.status === 'failed' &&
     sending.retryable === true;
 
@@ -258,7 +259,6 @@ export function usePublishFlow({
       isScheduled: initialState.isScheduled,
     };
   });
-  const activeRef = useRef(true);
   const completedRef = useRef(false);
   const publishRunningRef = useRef(false);
   const retryRunningRef = useRef(false);

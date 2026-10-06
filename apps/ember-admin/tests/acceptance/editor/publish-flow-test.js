@@ -857,6 +857,44 @@ describe('Acceptance: Publish flow', function () {
             });
         }
 
+        it('lets a failed retry eligibility read be checked again without reopening', async function () {
+            await loginAsRole('Administrator', this.server);
+            const post = this.server.create('post', {status: 'draft'});
+            const email = this.server.create('email', {status: 'pending'});
+            this.server.put('/posts/:id/', function ({posts}, {params}) {
+                return posts.find(params.id).update({status: 'published', email});
+            });
+            this.server.get('/posts/:id/', function ({posts}, {params}) {
+                const savedPost = posts.find(params.id);
+                if (savedPost.status === 'published') {
+                    email.update({status: 'failed', error: 'Mailgun rejected the batch.'});
+                }
+                return savedPost;
+            });
+            let statusReads = 0;
+            this.server.get('/emails/:id/status/', () => {
+                statusReads += 1;
+                if (statusReads === 1) {
+                    return new Response(503, {}, {errors: [{message: 'Temporarily unavailable'}]});
+                }
+                return {email_statuses: [{id: email.id, sending: {
+                    status: 'failed', failed_during: 'submitting', retryable: true,
+                    progress: {completed: 0, total: 7, estimated_seconds_remaining: null}
+                }}]};
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+            await click('[data-test-button="continue"]');
+            await click('[data-test-button="confirm-publish"]');
+            await waitFor('[data-test-retry-eligibility-error]');
+            expect(find('.gh-publish-cta button')).not.to.exist;
+            await click('[data-test-check-retry-eligibility]');
+            await waitFor('.gh-publish-cta button');
+            expect(find('[data-test-retry-eligibility-error]')).not.to.exist;
+            expect(statusReads).to.equal(2);
+        });
+
         for (const retryableAfterRejection of [false, true]) {
             it(`refreshes API retry eligibility to ${retryableAfterRejection} when the retry is rejected`, async function () {
                 await loginAsRole('Administrator', this.server);

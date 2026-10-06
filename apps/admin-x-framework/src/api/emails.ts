@@ -13,13 +13,6 @@ export interface RetryEmailPayload {
   sessionExpiryRedirect?: boolean;
 }
 
-export const EmailBatchStatusSchema = z.enum(['pending', 'submitting', 'submitted', 'failed']);
-
-export const EmailBatchSchema = z.object({
-  id: z.string(),
-  status: EmailBatchStatusSchema,
-});
-
 export const EmailSendingPhaseSchema = z.enum(['preparing', 'submitting']);
 
 export const EmailSendingProgressSchema = z.object({
@@ -59,7 +52,6 @@ export type EmailSendingProgress = z.infer<typeof EmailSendingProgressSchema>;
 export type EmailSendingState = z.infer<typeof EmailSendingStateSchema>;
 export type EmailSendingStatus = z.infer<typeof EmailSendingStatusSchema>;
 export type EmailStatusesResponseType = z.infer<typeof EmailStatusesResponseSchema>;
-export type EmailBatch = z.infer<typeof EmailBatchSchema>;
 
 const emailStatusesDataType = 'EmailStatusesResponseType';
 
@@ -83,7 +75,9 @@ export const useRetryEmail = createMutation<EmailsResponseType, RetryEmailPayloa
   invalidateQueries: { dataType: postsDataType },
 });
 
-export interface EmailDebugBatch extends EmailBatch {
+export interface EmailDebugBatch {
+  id: string;
+  status: 'pending' | 'submitting' | 'submitted' | 'failed';
   created_at?: string | null;
   member_segment?: string | null;
   mailgun_message_id?: string | null;

@@ -16,6 +16,7 @@ export default class PublishFlowCompleteWithEmailError extends Component {
     @tracked canRetry = false;
     @tracked newEmailErrorMessage;
     @tracked retryErrorMessage;
+    @tracked retryEligibilityErrorMessage;
     @inject config;
     @service store;
 
@@ -26,16 +27,17 @@ export default class PublishFlowCompleteWithEmailError extends Component {
 
     @task({restartable: true})
     *fetchRetryEligibilityTask() {
-        this.canRetry = false;
+        this.retryEligibilityErrorMessage = null;
         const email = this.args.publishOptions.post.email;
         if (!email?.id) {
+            this.canRetry = false;
             return;
         }
         try {
             const sending = yield this.store.adapterFor('email').sendingStatus(email);
             this.canRetry = sending?.status === 'failed' && sending.retryable === true;
         } catch {
-            // Older Core versions or failed reads cannot establish retry eligibility.
+            this.retryEligibilityErrorMessage = 'Could not check whether this email can be retried. Please try checking again.';
         }
     }
 

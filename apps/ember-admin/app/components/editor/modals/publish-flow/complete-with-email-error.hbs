@@ -23,6 +23,21 @@
         </p>
     {{/if}}
 
+    {{#if this.retryEligibilityErrorMessage}}
+        <p class="error gh-box gh-box-error mt3 mb3" data-test-retry-eligibility-error>
+            {{this.retryEligibilityErrorMessage}}
+        </p>
+        <GhTaskButton
+            @task={{this.fetchRetryEligibilityTask}}
+            @unlinkedTask={{true}}
+            @buttonText="Check retry availability"
+            @runningText="Checking"
+            @class="gh-btn gh-btn-large gh-btn-red"
+            @showIcon={{false}}
+            data-test-check-retry-eligibility
+        />
+    {{/if}}
+
     {{#if this.canRetry}}
     <div class="gh-publish-cta">
         <GhTaskButton
