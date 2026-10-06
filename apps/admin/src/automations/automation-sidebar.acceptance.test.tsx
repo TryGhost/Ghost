@@ -393,29 +393,20 @@ describe('Automation sidebar request lifecycle', () => {
     await expect.poll(() => revisit.requests.length).toBe(1);
   });
 
-  it.each(['automationRunAnalytics', 'automationsTinybirdSync'])(
-    'hides performance and does not fetch stats with %s disabled',
-    async (flag) => {
-      const request = prepare();
-      await renderAdminApp('/automations/first', {
-        ...flags,
-        labs: { ...flags.labs, [flag]: false },
-      });
-      await expect
-        .element(
-          page.getByRole(flag === 'automationRunAnalytics' ? 'button' : 'article', {
-            name: 'Wait: 1 day',
-          }),
-        )
-        .toBeVisible();
-      expect(request.requests).toHaveLength(0);
-      await expect.element(page.getByRole('tab', { name: 'Performance' })).not.toBeInTheDocument();
-      await expect
-        .element(page.getByRole('button', { name: 'Show automation sidebar' }))
-        .toBeVisible();
-      await expect.element(statuses()).not.toBeInTheDocument();
-    },
-  );
+  it('hides performance and does not fetch stats when run analytics is disabled', async () => {
+    const request = prepare();
+    await renderAdminApp('/automations/first', {
+      ...flags,
+      labs: { ...flags.labs, automationRunAnalytics: false },
+    });
+    await expect.element(page.getByRole('button', { name: 'Wait: 1 day' })).toBeVisible();
+    expect(request.requests).toHaveLength(0);
+    await expect.element(page.getByRole('tab', { name: 'Performance' })).not.toBeInTheDocument();
+    await expect
+      .element(page.getByRole('button', { name: 'Show automation sidebar' }))
+      .toBeVisible();
+    await expect.element(statuses()).not.toBeInTheDocument();
+  });
 });
 
 describe('Automation sidebar layout', () => {

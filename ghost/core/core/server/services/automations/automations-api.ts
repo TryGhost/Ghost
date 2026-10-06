@@ -141,7 +141,7 @@ const repository = createDatabaseAutomationsRepository({
 });
 
 function getTinybirdClient() {
-  if (!labs.isSet('automationsTinybirdSync') || !config.get('tinybird:stats')) {
+  if (!config.get('tinybird:stats')) {
     return null;
   }
   try {

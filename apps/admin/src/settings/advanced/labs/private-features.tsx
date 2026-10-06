@@ -30,11 +30,6 @@ const features: Feature[] = [
     flag: 'automationRunAnalytics',
   },
   {
-    title: 'Automations Tinybird sync',
-    description: 'Sync automations data to Tinybird.',
-    flag: 'automationsTinybirdSync',
-  },
-  {
     title: 'Stripe Automatic Tax (private beta)',
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
     flag: 'stripeAutomaticTax',

@@ -43,7 +43,6 @@ describe('Automation member search API', () => {
       stats: { endpoint: 'https://api.tinybird.co', id: site },
     });
     TinybirdServiceWrapper.init();
-    mockManager.mockLabsEnabled('automationsTinybirdSync');
     await models.Base.knex('members').insert({
       id: id(1),
       uuid: randomUUID(),

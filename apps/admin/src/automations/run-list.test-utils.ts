@@ -17,7 +17,6 @@ export const flags = {
   labs: {
     automations: true,
     automationRunAnalytics: true,
-    automationsTinybirdSync: true,
     automationsPerTier: true,
   },
 };
