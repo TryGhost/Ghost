@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import errors from '@tryghost/errors';
 import { z } from 'zod';
+import { definitions } from './definitions';
 
 export const permissionSchema = z
   .object({
@@ -11,14 +12,12 @@ export const permissionSchema = z
 
 export type Permission = z.infer<typeof permissionSchema>;
 
-const fixturesSchema = z.object({
-  models: z.array(z.object({ name: z.string(), entries: z.array(z.unknown()) })),
-  relations: z.array(
-    z.object({
-      from: z.object({ model: z.string() }),
-      to: z.object({ model: z.string() }),
-      entries: z.unknown(),
-    }),
+const policySchema = z.object({
+  permissions: z.array(permissionSchema).min(1),
+  roles: z.array(z.string().min(1)).min(1),
+  grants: z.record(
+    z.string(),
+    z.record(z.string(), z.union([z.string().min(1), z.array(z.string().min(1))])),
   ),
 });
 
@@ -33,33 +32,11 @@ export class RolePermissions {
   readonly #byRole = new Map<string, readonly Permission[]>();
   readonly version: string;
 
-  constructor(input: unknown) {
-    const fixtures = fixturesSchema.parse(input);
-    const permissionFixtures = fixtures.models.find((model) => model.name === 'Permission');
-    const roleFixtures = fixtures.models.find((model) => model.name === 'Role');
-    const grantFixtures = fixtures.relations.find(
-      (relation) => relation.from.model === 'Role' && relation.to.model === 'Permission',
-    );
-    if (!permissionFixtures || !roleFixtures || !grantFixtures) {
-      throw new errors.InternalServerError({
-        message: 'Permission policy requires permission, role and role grant fixtures',
-      });
-    }
-
-    const permissions = z.array(permissionSchema).min(1).parse(permissionFixtures.entries);
+  constructor(input: unknown = definitions) {
+    const { permissions, roles, grants } = policySchema.parse(input);
     this.#all = Object.freeze([...new Map(permissions.map((p) => [permissionKey(p), p])).values()]);
-    const roles = z
-      .array(z.object({ name: z.string().min(1) }))
-      .min(1)
-      .parse(roleFixtures.entries);
-    const grants = z
-      .record(
-        z.string(),
-        z.record(z.string(), z.union([z.string().min(1), z.array(z.string().min(1))])),
-      )
-      .parse(grantFixtures.entries);
 
-    const roleNames = new Set(roles.map((role) => role.name));
+    const roleNames = new Set(roles);
     if (roleNames.size !== roles.length) {
       throw new errors.InternalServerError({
         message: 'Permission policy contains duplicate roles',
@@ -85,7 +62,7 @@ export class RolePermissions {
       }
     }
 
-    for (const { name } of roles) {
+    for (const name of roles) {
       const objects = grants[name] ?? {};
       this.#byRole.set(
         name,
@@ -138,8 +115,8 @@ export class RolePermissions {
 
 let policy: RolePermissions | undefined;
 
-export function init(fixtures: unknown): RolePermissions {
-  const next = new RolePermissions(fixtures);
+export function init(input: unknown = definitions): RolePermissions {
+  const next = new RolePermissions(input);
   policy = next;
   return next;
 }

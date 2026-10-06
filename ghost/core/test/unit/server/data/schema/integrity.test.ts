@@ -8,7 +8,8 @@ import { config } from '../../../../utils/config-utils';
 // @ts-expect-error This module lacks type definitions.
 import schema from '../../../../../core/server/data/schema/schema';
 import * as inDevelopment from '../../../../../core/server/data/schema/in-development';
-import fixtures from '../../../../../core/server/data/schema/fixtures/fixtures.json';
+import fixtureTemplate from '../../../../../core/server/data/schema/fixtures/fixtures.json';
+import { withPermissionFixtures } from '../../../../../core/server/data/schema/fixtures/permission-fixtures';
 import defaultSettings from '../../../../../core/server/data/schema/default-settings/default-settings.json';
 
 // Routes are yaml so we can require the file directly
@@ -73,7 +74,7 @@ describe('DB version integrity', function () {
       .digest('hex');
     const fixturesHash = crypto
       .createHash('md5')
-      .update(JSON.stringify(fixtures), 'binary')
+      .update(JSON.stringify(withPermissionFixtures(fixtureTemplate)), 'binary')
       .digest('hex');
     const settingsHash = crypto
       .createHash('md5')

@@ -2,7 +2,6 @@
 // canThis(someUser).edit.post(somePost|somePostId)
 
 const models = require('../../models');
-const config = require('../../../shared/config');
 const { knex } = require('../../data/db');
 
 const actionsMap = require('./actions-map-cache');
@@ -12,8 +11,7 @@ const parity = require('./parity-check');
 const init = async function init(options) {
   options = options || {};
 
-  // Read JSON directly: the fixture-manager module imports models and this service.
-  const policy = rolePermissions.init(require(config.get('paths').fixtures));
+  const policy = rolePermissions.init();
   const actions = actionsMap.init(rolePermissions.all());
   await parity.parityCheck.check(policy, async () => {
     const [roles, permissions, directGrants] = await Promise.all([

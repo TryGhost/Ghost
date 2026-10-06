@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
-const _ = require('lodash');
 const models = require('../../../../../core/server/models');
 const permissions = require('../../../../../core/server/services/permissions');
 const actionsMap = require('../../../../../core/server/services/permissions/actions-map-cache');
@@ -37,8 +36,7 @@ describe('Permissions', function () {
 
   afterEach(function () {
     sinon.restore();
-    const config = require('../../../../../core/shared/config');
-    rolePermissions.init(require(config.get('paths').fixtures));
+    rolePermissions.init();
     actionsMap.init(rolePermissions.all());
   });
 
@@ -57,7 +55,7 @@ describe('Permissions', function () {
   function loadFakePermissions(options) {
     options = options || {};
 
-    const fixturePermissions = _.cloneDeep(testUtils.DataGenerator.Content.permissions);
+    const fixturePermissions = structuredClone(testUtils.DataGenerator.Content.permissions);
     const extraPerm = {
       name: 'test',
       action_type: 'edit',
@@ -68,7 +66,7 @@ describe('Permissions', function () {
       fixturePermissions.push(extraPerm);
     }
 
-    return _.map(fixturePermissions, function (testPerm) {
+    return fixturePermissions.map(function (testPerm) {
       return testUtils.DataGenerator.forKnex.createPermission(testPerm);
     });
   }
@@ -83,21 +81,21 @@ describe('Permissions', function () {
     it('canThisResult gets build properly', function () {
       const canThisResult = permissions.canThis();
 
-      assert(_.isPlainObject(canThisResult.browse));
+      assert.equal(Object.getPrototypeOf(canThisResult.browse), Object.prototype);
       assert.equal(typeof canThisResult.browse.post, 'function');
 
-      assert(_.isPlainObject(canThisResult.edit));
+      assert.equal(Object.getPrototypeOf(canThisResult.edit), Object.prototype);
       assert.equal(typeof canThisResult.edit.post, 'function');
       assert.equal(typeof canThisResult.edit.tag, 'function');
       assert.equal(typeof canThisResult.edit.user, 'function');
       assert.equal(typeof canThisResult.edit.page, 'function');
 
-      assert(_.isPlainObject(canThisResult.add));
+      assert.equal(Object.getPrototypeOf(canThisResult.add), Object.prototype);
       assert.equal(typeof canThisResult.add.post, 'function');
       assert.equal(typeof canThisResult.add.user, 'function');
       assert.equal(typeof canThisResult.add.page, 'function');
 
-      assert(_.isPlainObject(canThisResult.destroy));
+      assert.equal(Object.getPrototypeOf(canThisResult.destroy), Object.prototype);
       assert.equal(typeof canThisResult.destroy.post, 'function');
       assert.equal(typeof canThisResult.destroy.user, 'function');
     });

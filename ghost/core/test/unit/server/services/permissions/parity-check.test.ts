@@ -9,8 +9,7 @@ const {
   check,
   compare,
 }: typeof import('../../../../../core/server/services/permissions/parity-check') = require('../../../../../core/server/services/permissions/parity-check');
-const config = require('../../../../../core/shared/config');
-const policy = new RolePermissions(require(config.get('paths').fixtures));
+const policy = new RolePermissions();
 
 function snapshot() {
   return {

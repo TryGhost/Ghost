@@ -6,7 +6,8 @@ const _ = require('lodash');
 const models = require('../../../../../../core/server/models');
 const baseUtils = require('../../../../../../core/server/models/base/utils');
 const {FixtureManager} = require('../../../../../../core/server/data/schema/fixtures');
-const fixtures = require('../../../../../utils/fixtures/fixtures.json');
+const { withPermissionFixtures } = require('../../../../../../core/server/data/schema/fixtures/permission-fixtures');
+const fixtures = withPermissionFixtures(require('../../../../../utils/fixtures/fixtures.json'));
 
 const fixtureManager = new FixtureManager(fixtures);
 

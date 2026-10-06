@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const models = require('../../models');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
@@ -26,109 +25,104 @@ class CanThisResult {
     };
 
     // Iterate through the object types, i.e. ['post', 'tag', 'user']
-    return _.reduce(
-      objTypes,
-      function (objTypeHandlers, objType) {
-        // Grab the TargetModel through the objectTypeModelMap
-        const TargetModel = objectTypeModelMap[objType];
+    return objTypes.reduce(function (objTypeHandlers, objType) {
+      // Grab the TargetModel through the objectTypeModelMap
+      const TargetModel = objectTypeModelMap[objType];
 
-        // Create the 'handler' for the object type;
-        // the '.post()' in canThis(user).edit.post()
-        objTypeHandlers[objType] = function (modelOrId, unsafeAttrs) {
-          let modelId;
-          unsafeAttrs = unsafeAttrs || {};
+      // Create the 'handler' for the object type;
+      // the '.post()' in canThis(user).edit.post()
+      objTypeHandlers[objType] = function (modelOrId, unsafeAttrs) {
+        let modelId;
+        unsafeAttrs = unsafeAttrs || {};
 
-          // If it's an internal request, resolve immediately
-          if (context.internal) {
-            return Promise.resolve();
+        // If it's an internal request, resolve immediately
+        if (context.internal) {
+          return Promise.resolve();
+        }
+
+        if (typeof modelOrId === 'number' || typeof modelOrId === 'string') {
+          // It's an id already, do nothing
+          modelId = modelOrId;
+        } else if (modelOrId) {
+          // It's a model, get the id
+          modelId = modelOrId.id;
+        }
+        // Wait for the user loading to finish
+        return permissionLoad.then(function (loadedPermissions) {
+          // Iterate through the user permissions looking for an affirmation
+          const userPermissions = loadedPermissions.user
+            ? loadedPermissions.user.permissions
+            : null;
+          const apiKeyPermissions = loadedPermissions.apiKey
+            ? loadedPermissions.apiKey.permissions
+            : null;
+
+          let hasUserPermission;
+          let hasApiKeyPermission;
+
+          const checkPermission = function (perm) {
+            // Look for a matching action type and object type first
+            if (perm.action_type !== actType || perm.object_type !== objType) {
+              return false;
+            }
+
+            return true;
+          };
+          const { isOwner } = setIsRoles(loadedPermissions);
+          if (isOwner) {
+            hasUserPermission = true;
+          } else if (userPermissions?.length) {
+            hasUserPermission = userPermissions.some(checkPermission);
           }
 
-          if (_.isNumber(modelOrId) || _.isString(modelOrId)) {
-            // It's an id already, do nothing
-            modelId = modelOrId;
-          } else if (modelOrId) {
-            // It's a model, get the id
-            modelId = modelOrId.id;
-          }
-          // Wait for the user loading to finish
-          return permissionLoad.then(function (loadedPermissions) {
-            // Iterate through the user permissions looking for an affirmation
-            const userPermissions = loadedPermissions.user
-              ? loadedPermissions.user.permissions
-              : null;
-            const apiKeyPermissions = loadedPermissions.apiKey
-              ? loadedPermissions.apiKey.permissions
-              : null;
-
-            let hasUserPermission;
-            let hasApiKeyPermission;
-
-            const checkPermission = function (perm) {
-              // Look for a matching action type and object type first
-              if (perm.action_type !== actType || perm.object_type !== objType) {
-                return false;
-              }
-
-              return true;
-            };
-            const { isOwner } = setIsRoles(loadedPermissions);
-            if (isOwner) {
+          // Check api key permissions if they were passed
+          hasApiKeyPermission = true;
+          if (apiKeyPermissions !== null) {
+            if (loadedPermissions.user) {
+              // Staff API key scenario: both user and API key present
+              // Use USER permissions and ignore API key permissions
+              hasApiKeyPermission = true; // Allow API key check to pass
+            } else {
+              // Traditional API key scenario: API key only, no user
+              // Use API key permissions as before
               hasUserPermission = true;
-            } else if (!_.isEmpty(userPermissions)) {
-              hasUserPermission = _.some(userPermissions, checkPermission);
+              hasApiKeyPermission = (apiKeyPermissions ?? []).some(checkPermission);
             }
+          }
 
-            // Check api key permissions if they were passed
-            hasApiKeyPermission = true;
-            if (!_.isNull(apiKeyPermissions)) {
-              if (loadedPermissions.user) {
-                // Staff API key scenario: both user and API key present
-                // Use USER permissions and ignore API key permissions
-                hasApiKeyPermission = true; // Allow API key check to pass
-              } else {
-                // Traditional API key scenario: API key only, no user
-                // Use API key permissions as before
-                hasUserPermission = true;
-                hasApiKeyPermission = _.some(apiKeyPermissions, checkPermission);
-              }
-            }
+          // Ensure permission decisions are based on the user's role if present, not their staff-token.
+          const permissionsForModel = loadedPermissions.user
+            ? { ...loadedPermissions, apiKey: null }
+            : loadedPermissions;
 
-            // Ensure permission decisions are based on the user's role if present, not their staff-token.
-            const permissionsForModel = loadedPermissions.user
-              ? { ...loadedPermissions, apiKey: null }
-              : loadedPermissions;
-
-            // Offer a chance for the TargetModel to override the results
-            if (TargetModel && _.isFunction(TargetModel.permissible)) {
-              return TargetModel.permissible(
-                modelId,
-                actType,
-                context,
-                unsafeAttrs,
-                permissionsForModel,
-                hasUserPermission,
-                hasApiKeyPermission,
-              );
-            }
-
-            if (hasUserPermission && hasApiKeyPermission) {
-              return;
-            }
-
-            return Promise.reject(
-              new errors.NoPermissionError({ message: tpl(messages.noPermissionToAction) }),
+          // Offer a chance for the TargetModel to override the results
+          if (TargetModel && typeof TargetModel.permissible === 'function') {
+            return TargetModel.permissible(
+              modelId,
+              actType,
+              context,
+              unsafeAttrs,
+              permissionsForModel,
+              hasUserPermission,
+              hasApiKeyPermission,
             );
-          });
-        };
+          }
 
-        return objTypeHandlers;
-      },
-      {},
-    );
+          if (hasUserPermission && hasApiKeyPermission) {
+            return;
+          }
+
+          return Promise.reject(
+            new errors.NoPermissionError({ message: tpl(messages.noPermissionToAction) }),
+          );
+        });
+      };
+
+      return objTypeHandlers;
+    }, {});
   }
 
   beginCheck(context) {
-    const self = this;
     let userPermissionLoad;
     let apiKeyPermissionLoad;
 
@@ -166,10 +160,10 @@ class CanThisResult {
     );
 
     // Iterate through the actions and their related object types
-    _.each(actionsMap.getAll(), function (objTypes, actType) {
+    for (const [actType, objTypes] of Object.entries(actionsMap.getAll())) {
       // Build up the object type handlers;
       // the '.post()' parts in canThis(user).edit.post()
-      const objTypeHandlers = self.buildObjectTypeHandlers(
+      const objTypeHandlers = this.buildObjectTypeHandlers(
         objTypes,
         actType,
         context,
@@ -178,13 +172,13 @@ class CanThisResult {
 
       // Define a property for the action on the result;
       // the '.edit' in canThis(user).edit.post()
-      Object.defineProperty(self, actType, {
+      Object.defineProperty(this, actType, {
         writable: false,
         enumerable: false,
         configurable: false,
         value: objTypeHandlers,
       });
-    });
+    }
 
     // Return this for chaining
     return this;

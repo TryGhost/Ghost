@@ -8,8 +8,11 @@ starts with.
 - `schema.js` is the final table and index structure expected after every
   migration has run.
 - `fixtures/fixtures.json` contains durable records and relationships required
-  by a new site, including roles, permissions, the owner, starter content,
+  by a new site, including roles, the owner, starter content,
   tiers, and a newsletter.
+- [`permissions/definitions.ts`](../../services/permissions/definitions.ts)
+  owns the permission catalog and role grants. The fixture loader fills the
+  permission placeholders from these definitions for database seeding.
 - `default-settings/default-settings.json` defines the settings a site starts
   with, grouped by responsibility.
 
@@ -34,7 +37,8 @@ development data belongs in the data generator, not in `fixtures.json`.
 
 When changing fixtures:
 
-1. Update `fixtures/fixtures.json`.
+1. Update `fixtures/fixtures.json`, or the shared TypeScript definitions for
+   permission catalog and role grant changes.
 2. Add a database migration when existing installations need the same change.
 3. Update affected models, exporter lists, and tests.
 4. Run the schema integrity test documented in the

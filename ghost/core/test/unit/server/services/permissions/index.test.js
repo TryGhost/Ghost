@@ -2,7 +2,6 @@ const assert = require('node:assert/strict');
 const { assertExists } = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
-const _ = require('lodash');
 const models = require('../../../../../core/server/models');
 const actionsMap = require('../../../../../core/server/services/permissions/actions-map-cache');
 const permissions = require('../../../../../core/server/services/permissions');
@@ -29,8 +28,7 @@ describe('Permissions', function () {
 
   afterEach(function () {
     sinon.restore();
-    const config = require('../../../../../core/shared/config');
-    rolePermissions.init(require(config.get('paths').fixtures));
+    rolePermissions.init();
     actionsMap.init(rolePermissions.all());
   });
 
@@ -49,7 +47,7 @@ describe('Permissions', function () {
   function loadFakePermissions(options) {
     options = options || {};
 
-    const fixturePermissions = _.cloneDeep(testUtils.DataGenerator.Content.permissions);
+    const fixturePermissions = structuredClone(testUtils.DataGenerator.Content.permissions);
 
     const extraPerm = {
       name: 'test',
@@ -61,7 +59,7 @@ describe('Permissions', function () {
       fixturePermissions.push(extraPerm);
     }
 
-    return _.map(fixturePermissions, function (testPerm) {
+    return fixturePermissions.map(function (testPerm) {
       return testUtils.DataGenerator.forKnex.createPermission(testPerm);
     });
   }
@@ -75,6 +73,18 @@ describe('Permissions', function () {
   });
 
   describe('Init (build actions map)', function () {
+    it('publishes an immutable action map and returns independent snapshots', async function () {
+      fakePermissions = loadFakePermissions();
+      const actions = await permissions.init();
+      assert(Object.isFrozen(actions));
+      assert(Object.isFrozen(actions.browse));
+      const copy = actionsMap.getAll();
+      copy.browse.push('tag');
+      delete copy.edit;
+      assert.deepEqual(actionsMap.getAll().browse, ['post']);
+      assert.deepEqual(actionsMap.getAll().edit, ['post', 'tag', 'user', 'page']);
+    });
+
     it('awaits the boot audit before completing initialization', async function () {
       fakePermissions = loadFakePermissions();
       let releaseAudit;
@@ -112,7 +122,7 @@ describe('Permissions', function () {
 
       assert.doesNotThrow(permissions.canThis);
 
-      assert.deepEqual(_.keys(actions), ['browse', 'edit', 'add', 'destroy']);
+      assert.deepEqual(Object.keys(actions), ['browse', 'edit', 'add', 'destroy']);
 
       assert.deepEqual(actions.browse, ['post']);
       assert.deepEqual(actions.edit, ['post', 'tag', 'user', 'page']);
@@ -129,7 +139,7 @@ describe('Permissions', function () {
 
       assert.doesNotThrow(permissions.canThis);
 
-      assert.deepEqual(_.keys(actions), ['browse', 'edit', 'add', 'destroy']);
+      assert.deepEqual(Object.keys(actions), ['browse', 'edit', 'add', 'destroy']);
 
       assert.deepEqual(actions.browse, ['post']);
       assert.deepEqual(actions.edit, ['post', 'tag', 'user', 'page']);

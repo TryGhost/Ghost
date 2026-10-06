@@ -5,11 +5,10 @@ const providers: typeof import('../../../../../core/server/services/permissions/
 const rolePermissions: typeof import('../../../../../core/server/services/permissions/role-permissions') = require('../../../../../core/server/services/permissions/role-permissions');
 const models = require('../../../../../core/server/models');
 const testUtils = require('../../../../utils');
-const config = require('../../../../../core/shared/config');
 
 describe('Permission Providers', function () {
   beforeEach(function () {
-    rolePermissions.init(require(config.get('paths').fixtures));
+    rolePermissions.init();
   });
   afterEach(function () {
     sinon.restore();

@@ -9,6 +9,9 @@ const { knex } = require('../../../core/server/data/db');
 const permissions = require('../../../core/server/services/permissions');
 const providers: typeof import('../../../core/server/services/permissions/permission-providers').providers = require('../../../core/server/services/permissions/providers');
 const rolePermissions: typeof import('../../../core/server/services/permissions/role-permissions') = require('../../../core/server/services/permissions/role-permissions');
+const {
+  definitions,
+}: typeof import('../../../core/server/services/permissions/definitions') = require('../../../core/server/services/permissions/definitions');
 const parity: typeof import('../../../core/server/services/permissions/parity-check') = require('../../../core/server/services/permissions/parity-check');
 
 const internal = { context: { internal: true } };
@@ -60,13 +63,7 @@ describe('Authoritative in-memory permission policy', function () {
   }
 
   it('matches legacy database grants and tag authorization for every built-in role', async function () {
-    const config = require('../../../core/shared/config');
-    const fixtures = require(config.get('paths').fixtures);
-    const builtInNames = new Set<string>(
-      fixtures.models
-        .find((model: { name: string }) => model.name === 'Role')
-        .entries.map((role: { name: string }) => role.name),
-    );
+    const builtInNames = new Set<string>(definitions.roles);
     const roles = await models.Role.findAll();
     const visited = new Set<string>();
     const user = await createUser('Contributor');
@@ -232,8 +229,7 @@ describe('Authoritative in-memory permission policy', function () {
       const legacyGrants = databaseGrants(legacyKey.related('role').related('permissions'));
       const grant = { action_type: 'edit', object_type: 'tag' };
       assert.deepEqual(legacyGrants, [grant]);
-      const config = require('../../../core/shared/config');
-      const policy = new rolePermissions.RolePermissions(require(config.get('paths').fixtures));
+      const policy = new rolePermissions.RolePermissions();
       const report = parity.compare(policy, {
         roles: [{ id: owner.id, name: 'Owner', permissions: legacyGrants }],
         permissions: databaseGrants(await models.Permission.findAll()),

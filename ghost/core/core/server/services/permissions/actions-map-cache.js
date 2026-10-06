@@ -1,16 +1,13 @@
-// Based heavily on the settings cache
-const _ = require('lodash');
-
-let actionsMap = {};
+let actionsMap = Object.freeze({});
 
 module.exports = {
   getAll: function getAll() {
-    return _.cloneDeep(actionsMap);
+    return Object.fromEntries(
+      Object.entries(actionsMap).map(([action, objects]) => [action, [...objects]]),
+    );
   },
   init: function init(perms) {
-    const seenActions = {};
-
-    actionsMap = {};
+    const objectsByAction = new Map();
 
     // Build a hash map of the actions on objects, i.e
     /*
@@ -20,25 +17,25 @@ module.exports = {
          'create': ['post', 'user', 'page']
          }
          */
-    _.each(perms, function (perm) {
+    for (const perm of perms) {
       const actionType = perm.action_type;
       const objectType = perm.object_type;
 
-      actionsMap[actionType] = actionsMap[actionType] || [];
-      seenActions[actionType] = seenActions[actionType] || {};
-
-      // Check if we've already seen this action -> object combo
-      if (seenActions[actionType][objectType]) {
-        return;
+      if (!objectsByAction.has(actionType)) {
+        objectsByAction.set(actionType, new Set());
       }
+      objectsByAction.get(actionType).add(objectType);
+    }
 
-      actionsMap[actionType].push(objectType);
-      seenActions[actionType][objectType] = true;
-    });
+    actionsMap = Object.freeze(
+      Object.fromEntries(
+        [...objectsByAction].map(([action, objects]) => [action, Object.freeze([...objects])]),
+      ),
+    );
 
     return actionsMap;
   },
   empty: function empty() {
-    return _.size(actionsMap) === 0;
+    return Object.keys(actionsMap).length === 0;
   },
 };
