@@ -84,23 +84,34 @@ const edgeSchema = z.object({
   target_action_id: objectIdSchema,
 });
 
-const addAutomationMetadataShape = {
+const automationShape = {
   name: z.string().trim().min(1).max(191),
   description: z.string().trim().max(2000),
+  status: z.enum(['active', 'inactive']),
+  actions: z
+    .array(z.discriminatedUnion('type', [waitActionSchema, sendEmailActionSchema]))
+    .min(1)
+    .max(MAX_AUTOMATION_ACTIONS),
+  edges: z.array(edgeSchema),
 };
+
+const defaultTriggerShape = {
+  trigger_tier_scope: z.enum(['free', 'all_paid']).nullable().optional(),
+  trigger_tier_ids: z.null().optional(),
+};
+const selectedPaidTriggerShape = {
+  trigger_tier_scope: z.literal('selected_paid'),
+  trigger_tier_ids: z
+    .array(objectIdSchema)
+    .min(1)
+    .transform((ids) => [...new Set(ids)]),
+};
+
 const addAutomationDataSchema = z.discriminatedUnion('trigger_tier_scope', [
+  z.strictObject({ ...automationShape, ...defaultTriggerShape }),
   z.strictObject({
-    ...addAutomationMetadataShape,
-    trigger_tier_scope: z.enum(['free', 'all_paid']).nullable().optional(),
-    trigger_tier_ids: z.null().optional(),
-  }),
-  z.strictObject({
-    ...addAutomationMetadataShape,
-    trigger_tier_scope: z.literal('selected_paid'),
-    trigger_tier_ids: z
-      .array(objectIdSchema)
-      .min(1)
-      .transform((ids) => [...new Set(ids)]),
+    ...automationShape,
+    ...selectedPaidTriggerShape,
   }),
 ]);
 
@@ -108,28 +119,14 @@ export type AddAutomationData = z.infer<typeof addAutomationDataSchema>;
 
 const editAutomationDataSchema = z
   .object({
-    name: z.string().trim().min(1).max(191).optional(),
-    description: z.string().trim().max(2000).optional(),
-    status: z.enum(['active', 'inactive']),
-    actions: z
-      .array(z.discriminatedUnion('type', [waitActionSchema, sendEmailActionSchema]))
-      .min(1)
-      .max(MAX_AUTOMATION_ACTIONS),
-    edges: z.array(edgeSchema),
+    ...automationShape,
+    name: automationShape.name.optional(),
+    description: automationShape.description.optional(),
   })
   .and(
     z.discriminatedUnion('trigger_tier_scope', [
-      z.object({
-        trigger_tier_scope: z.enum(['free', 'all_paid']).nullable().optional(),
-        trigger_tier_ids: z.null().optional(),
-      }),
-      z.object({
-        trigger_tier_scope: z.literal('selected_paid'),
-        trigger_tier_ids: z
-          .array(objectIdSchema)
-          .min(1)
-          .transform((ids) => [...new Set(ids)]),
-      }),
+      z.object(defaultTriggerShape),
+      z.object(selectedPaidTriggerShape),
     ]),
   );
 
@@ -362,6 +359,7 @@ export async function add(data: unknown) {
       String(issue.path[0] ?? 'automations'),
     );
   }
+  await validateAutomationData(result.data);
   return await repository.add(result.data);
 }
 
@@ -395,10 +393,14 @@ async function validateEditData(data: unknown): Promise<EditAutomationData> {
     );
   }
 
-  validateGraph(result.data.actions, result.data.edges);
-  await validateEmailLexical(result.data.actions);
-  validateActiveEmailSteps(result.data.status, result.data.actions);
+  await validateAutomationData(result.data);
   return result.data;
+}
+
+async function validateAutomationData(data: EditAutomationData) {
+  validateGraph(data.actions, data.edges);
+  await validateEmailLexical(data.actions);
+  validateActiveEmailSteps(data.status, data.actions);
 }
 
 async function validateEmailLexical(actions: EditAutomationData['actions']) {
