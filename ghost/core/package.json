@@ -46,7 +46,7 @@
     "archive": "node scripts/pack.mjs",
     "dev": "nodemon index.js",
     "build:assets": "pnpm run '/^build:assets:/'",
-    "build:assets:js": "node scripts/minify-assets.mjs",
+    "build:assets:js": "node scripts/minify-assets.mts",
     "build:assets:cards": "node scripts/build-card-assets.mts",
     "generate-golden-email": "node bin/generate-golden-email.js",
     "query-parameter-policy:export": "node --import=tsx scripts/export-query-parameter-policy.ts",

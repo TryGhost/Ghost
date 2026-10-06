@@ -11,13 +11,13 @@
  * in the production build and be able to utilize bundler benefits.
  */
 
-import esbuild from 'esbuild';
-import path from 'path';
-import fs from 'fs';
+import esbuild, { type BuildOptions } from 'esbuild';
+import path from 'node:path';
+import fs from 'node:fs';
 import logging from '@tryghost/logging';
 
 // Determine the root directory by checking for common project files
-function findProjectRoot() {
+function findProjectRoot(): string {
   let currentDir = process.cwd();
 
   // Check if we're already in ghost/core
@@ -38,12 +38,16 @@ const projectRoot = findProjectRoot();
 logging.debug(`Resolving paths from: ${projectRoot}`);
 
 // Helper to resolve paths relative to project root
-function resolvePath(filePath) {
+function resolvePath(filePath: string): string {
   return path.join(projectRoot, filePath);
 }
 
 // Define files to minify with their specific configuration
-const filesToMinify = [
+const filesToMinify: Array<{
+  src: string;
+  dest: string;
+  options: Pick<BuildOptions, 'bundle' | 'format' | 'target'>;
+}> = [
   {
     src: 'core/frontend/src/comment-counts/comment-counts.js',
     dest: 'core/frontend/public/comment-counts.min.js',
@@ -99,7 +103,7 @@ const promises = filesToMinify.map(async (file) => {
     }
 
     // Create build configuration by merging default options with file-specific options
-    const buildConfig = {
+    const buildConfig: BuildOptions = {
       entryPoints: [srcPath],
       outfile: destPath,
       minify: true,
