@@ -29,6 +29,13 @@ fi
 
 printf -v project_args_string '%q ' "${project_args[@]}"
 
+# A planned test list (scripts/e2e-shards.ts) replaces Playwright's count-based --shard.
+if [[ -n "${E2E_TEST_LIST:-}" ]]; then
+    printf -v selection_args '%q ' "--test-list=${E2E_TEST_LIST}" --pass-with-no-tests
+else
+    selection_args="--shard=${SHARD_INDEX}/${SHARD_TOTAL} "
+fi
+
 # Resolve $PLAYWRIGHT_IMAGE (runner image, or upstream fallback) before launching.
 # Idempotent with the prepare step: whichever image is already local wins, so both
 # steps converge on the same tag.
@@ -46,4 +53,4 @@ docker run --rm --network host --ipc host \
   -e GHOST_E2E_GATEWAY_IMAGE="${GHOST_E2E_GATEWAY_IMAGE:-caddy:2-alpine}" \
   -e GHOST_E2E_ANALYTICS="${GHOST_E2E_ANALYTICS:-true}" \
   "$PLAYWRIGHT_IMAGE" \
-  bash -c "corepack enable && bash ./scripts/run-playwright-host.sh pnpm exec playwright test ${project_args_string}--shard=${SHARD_INDEX}/${SHARD_TOTAL} --retries=${RETRIES}"
+  bash -c "corepack enable && bash ./scripts/run-playwright-host.sh pnpm exec playwright test ${project_args_string}${selection_args}--retries=${RETRIES}"
