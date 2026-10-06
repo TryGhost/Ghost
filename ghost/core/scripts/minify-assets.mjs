@@ -52,6 +52,17 @@ const filesToMinify = [
     },
   },
   {
+    // Inlined into `{{ghost_head}}` rather than served from public/, so that it
+    // runs before the first paint. See the source for why.
+    src: 'core/frontend/src/announcement-bar/announcement-bar.ts',
+    dest: 'core/frontend/public/announcement-bar.min.js',
+    options: {
+      bundle: true,
+      format: 'iife',
+      target: ['es2020'],
+    },
+  },
+  {
     src: 'core/frontend/src/ghost-stats/ghost-stats.js',
     dest: 'core/frontend/public/ghost-stats.min.js',
     options: {

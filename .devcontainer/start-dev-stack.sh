@@ -55,7 +55,7 @@ disown
 # Matches root `pnpm dev`'s default fan-out (Admin + Portal only) — most
 # devcontainer sessions never touch the public UMD apps, and those watchers
 # are the heaviest processes in the stack. To also start them, run e.g.:
-#   pnpm nx run-many -t dev --projects=@tryghost/comments-ui,@tryghost/signup-form,@tryghost/sodo-search,@tryghost/announcement-bar,@tryghost/admin-toolbar
+#   pnpm nx run-many -t dev --projects=@tryghost/comments-ui,@tryghost/signup-form,@tryghost/sodo-search,@tryghost/admin-toolbar
 nohup pnpm nx run-many -t dev \
     --projects=@tryghost/admin,@tryghost/portal \
     >> /tmp/ghost-frontends.log 2>&1 &
@@ -72,5 +72,5 @@ Give it ~30-60s, then open http://localhost:2368/ghost/ for admin.
 
 Only Admin + Portal dev watchers start by default. To add the public UMD
 apps (Comments, Signup Form, Sodo Search, Announcement Bar, Admin Toolbar):
-  pnpm nx run-many -t dev --projects=@tryghost/comments-ui,@tryghost/signup-form,@tryghost/sodo-search,@tryghost/announcement-bar,@tryghost/admin-toolbar
+  pnpm nx run-many -t dev --projects=@tryghost/comments-ui,@tryghost/signup-form,@tryghost/sodo-search,@tryghost/admin-toolbar
 MSG
