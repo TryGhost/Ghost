@@ -31,6 +31,49 @@ describe('Create Stripe Checkout Session for Donations', function () {
     mockManager.restore();
   });
 
+  // The design is the publisher's for every checkout Ghost creates, not only a tier's.
+  it('styles a donation checkout with the publisher design', async function () {
+    mockManager.mockLabsEnabled('stripeCheckoutCollection');
+    await adminAgent
+      .put('/stripe/checkout/config/')
+      .body({
+        checkout_config: [
+          {
+            design: {
+              customize: true,
+              button_color: '#ff5a1f',
+              background_color: '#ffffff',
+              border_style: 'rectangular',
+              font_family: 'default',
+            },
+          },
+        ],
+      })
+      .expectStatus(200);
+
+    try {
+      await membersAgent
+        .post('/api/create-stripe-checkout-session/')
+        .body({
+          customerEmail: 'paid@test.com',
+          type: 'donation',
+          successUrl: 'https://example.com/?type=success',
+          cancelUrl: 'https://example.com/?type=cancel',
+          metadata: {},
+        })
+        .expectStatus(200);
+
+      assert.deepEqual(stripeMocker.checkoutSessions.at(-1).branding_settings, {
+        button_color: '#ff5a1f',
+        background_color: '#ffffff',
+        border_style: 'rectangular',
+        font_family: 'default',
+      });
+    } finally {
+      await models.Base.knex('stripe_checkout_config').del();
+    }
+  });
+
   it('Can create an anonymous checkout session for a donation', async function () {
     // Fake a visit to a post
     const post = await getPost(fixtureManager.get('posts', 0).id);

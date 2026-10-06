@@ -3,7 +3,11 @@ const debug = require('@tryghost/debug')('stripe');
 const ghostConfig = require('../../../shared/config');
 const stripe = require('stripe');
 const i18n = require('../i18n');
-const { stripeCheckoutCollectionOptions } = require('./services/checkout/session-options');
+const logging = require('@tryghost/logging');
+const {
+  stripeCheckoutBrandingOptions,
+  stripeCheckoutCollectionOptions,
+} = require('./services/checkout/session-options');
 
 /* Stripe has the following rate limits:
  *  - For most APIs, 100 read requests per second in live mode, 25 read requests per second in test mode
@@ -69,12 +73,54 @@ module.exports = class StripeAPI {
    * @param {object} deps
    * @param {object} deps.labs
    * @param {(key: string) => boolean} deps.labs.isSet
+   * @param {() => Promise<import('../stripe-checkout-config').StripeCheckoutDesign | null>} [deps.checkoutDesign]
+   *   The publisher's Checkout design, read for every session.
    */
   constructor(deps) {
     /** @type {Stripe} */
     this._stripe = null;
     this._configured = false;
     this.labs = deps.labs;
+    this._checkoutDesign = deps.checkoutDesign;
+  }
+
+  /**
+   * The publisher's Checkout design as Stripe's `branding_settings`, on every kind of
+   * session Ghost creates, or nothing so Stripe uses the design from their dashboard.
+   *
+   * A design that cannot be read costs the design and nothing else: a checkout that looks
+   * like Stripe's default still takes the money, and one that fails to be created takes none.
+   *
+   * @private
+   */
+  async _checkoutBrandingOptions() {
+    if (!this.labs.isSet('stripeCheckoutCollection') || !this._checkoutDesign) {
+      return {};
+    }
+    try {
+      return stripeCheckoutBrandingOptions(await this._checkoutDesign());
+    } catch (err) {
+      logging.error(
+        { event: { name: 'stripe_checkout.design.read_failed' }, err },
+        'Failed to read the Stripe Checkout design',
+      );
+      return {};
+    }
+  }
+
+  /**
+   * Every Checkout Session Ghost creates goes through here, so each one carries the
+   * publisher's design, whatever kind of checkout it is.
+   *
+   * @private
+   * @param {object} params
+   * @param {object} [requestOptions]
+   */
+  async _createCheckoutSession(params, requestOptions) {
+    const branded = { ...(await this._checkoutBrandingOptions()), ...params };
+    return requestOptions
+      ? this._stripe.checkout.sessions.create(branded, requestOptions)
+      : this._stripe.checkout.sessions.create(branded);
   }
 
   /**
@@ -667,7 +713,7 @@ module.exports = class StripeAPI {
       };
     }
 
-    const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
+    const session = await this._createCheckoutSession(stripeSessionOptions);
 
     return session;
   }
@@ -746,7 +792,7 @@ module.exports = class StripeAPI {
 
     this._applyAutomaticTaxSessionOptions(stripeSessionOptions, { hasCustomer: Boolean(customer) });
 
-    const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
+    const session = await this._createCheckoutSession(stripeSessionOptions);
     return session;
   }
 
@@ -819,7 +865,7 @@ module.exports = class StripeAPI {
 
     this._applyAutomaticTaxSessionOptions(stripeSessionOptions, { hasCustomer: Boolean(customer) });
 
-    const session = await this._stripe.checkout.sessions.create(stripeSessionOptions, {
+    const session = await this._createCheckoutSession(stripeSessionOptions, {
       idempotencyKey,
     });
 
@@ -838,7 +884,7 @@ module.exports = class StripeAPI {
    */
   async createCheckoutSetupSession(customer, options) {
     await this._rateLimitBucket.throttle();
-    const session = await this._stripe.checkout.sessions.create({
+    const session = await this._createCheckoutSession({
       mode: 'setup',
       managed_payments: MANAGED_PAYMENTS_DISABLED,
       payment_method_types: this.PAYMENT_METHOD_TYPES,

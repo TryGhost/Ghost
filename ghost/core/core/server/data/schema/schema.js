@@ -1132,16 +1132,18 @@ module.exports = {
     updated_at: { type: 'dateTime', nullable: true },
     '@@INDEXES@@': [['metafield_key']],
   },
-  // What Stripe Checkout collects beyond the payment, for the whole site. One row, keyed by
-  // slug so a save can upsert it in one statement. Each section is its own column, holding
-  // JSON or null when it is switched off, so a save that names one section never rewrites
-  // another. Where a collected value lands is the binding above, not this row.
+  // How Stripe Checkout looks and what it collects beyond the payment, for the whole site.
+  // One row, keyed by slug so a save can upsert it in one statement. Each section is its own
+  // column, holding JSON or null when it is switched off, so a save that names one section
+  // never rewrites another. Where a collected value lands is the binding above, not this row.
   stripe_checkout_config: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     slug: { type: 'string', maxlength: 191, nullable: false, unique: true },
     shipping: { type: 'text', maxlength: 65535, nullable: true },
     phone: { type: 'text', maxlength: 65535, nullable: true },
     tax_number: { type: 'text', maxlength: 65535, nullable: true },
+    // Null keeps the design from the publisher's own Stripe dashboard.
+    design: { type: 'text', maxlength: 65535, nullable: true },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },

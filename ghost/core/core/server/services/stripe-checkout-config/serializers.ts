@@ -1,7 +1,12 @@
 import ObjectId from 'bson-objectid';
 import { z } from 'zod';
-import { STRIPE_ALLOWED_COUNTRIES, isStripeAllowedCountry } from '@tryghost/checkout';
-import { ResolvedCheckout, StripeCheckoutConfig, type TierIds } from './models';
+import {
+  STRIPE_ALLOWED_COUNTRIES,
+  STRIPE_CHECKOUT_BORDER_STYLES,
+  STRIPE_CHECKOUT_FONTS,
+  isStripeAllowedCountry,
+} from '@tryghost/checkout';
+import { HexColor, ResolvedCheckout, StripeCheckoutConfig, type TierIds } from './models';
 
 // Every country Stripe will take, sent at once, was measured as accepted — so the only
 // ceiling is the list itself, and a request naming more than there are countries is naming
@@ -49,6 +54,9 @@ const Destination = z.strictObject(
 
 const Off = z.strictObject({ collect: z.literal(false) });
 
+// Read in any case, kept in one.
+const HexColorInput = z.string().trim().toLowerCase().pipe(HexColor);
+
 export const CheckoutConfigInput = z.strictObject({
   shipping: z
     .discriminatedUnion('collect', [
@@ -88,6 +96,25 @@ export const CheckoutConfigInput = z.strictObject({
       z.strictObject({ collect: z.literal(true), tier_ids: TierIdsInput }),
     ])
     .optional(),
+
+  // Every part or none, because a design replaces the one in the publisher's Stripe
+  // dashboard outright. Customizing off goes back to that one.
+  design: z
+    .discriminatedUnion('customize', [
+      z.strictObject({ customize: z.literal(false) }),
+      z.strictObject({
+        customize: z.literal(true),
+        button_color: HexColorInput,
+        background_color: HexColorInput,
+        border_style: z.enum(STRIPE_CHECKOUT_BORDER_STYLES, {
+          error: 'Choose rounded, rectangular or pill corners.',
+        }),
+        font_family: z.enum(STRIPE_CHECKOUT_FONTS, {
+          error: 'Choose a font Stripe Checkout offers.',
+        }),
+      }),
+    ])
+    .optional(),
 });
 export type CheckoutConfigInput = z.infer<typeof CheckoutConfigInput>;
 
@@ -113,6 +140,15 @@ const CheckoutConfigResource = z.object({
     })
     .optional(),
   tax_number: z.object({ collect: z.literal(true), tier_ids: TierIdsResource }).optional(),
+  design: z
+    .object({
+      customize: z.literal(true),
+      button_color: z.string(),
+      background_color: z.string(),
+      border_style: z.string(),
+      font_family: z.string(),
+    })
+    .optional(),
 });
 
 const CheckoutConfigResponse = z.object({
@@ -123,8 +159,8 @@ const tierScope = (tierIds: TierIds) => (tierIds ? { tier_ids: tierIds } : {});
 
 /**
  * The site's one configuration, in the envelope every Admin API resource uses. A block
- * appears only when that thing is collected, so a client reads presence rather than a flag
- * it would have to check.
+ * appears only when that thing is collected, or the design customized, so a client reads
+ * presence rather than a flag it would have to check.
  */
 export const toCheckoutConfigResponse = StripeCheckoutConfig.transform(
   (config): z.input<typeof CheckoutConfigResponse> => ({
@@ -154,6 +190,17 @@ export const toCheckoutConfigResponse = StripeCheckoutConfig.transform(
           : {}),
         ...(config.taxNumber
           ? { tax_number: { collect: true as const, ...tierScope(config.taxNumber.tierIds) } }
+          : {}),
+        ...(config.design
+          ? {
+              design: {
+                customize: true as const,
+                button_color: config.design.buttonColor,
+                background_color: config.design.backgroundColor,
+                border_style: config.design.borderStyle,
+                font_family: config.design.fontFamily,
+              },
+            }
           : {}),
       },
     ],

@@ -1,5 +1,6 @@
 import ObjectID from 'bson-objectid';
 import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
 import { z } from 'zod';
 import type { Knex } from 'knex';
 import type { FieldType } from '@tryghost/metafield-types';
@@ -7,10 +8,14 @@ import { PORT_FIELD, STRIPE_PORT, type StripePort } from '@tryghost/checkout';
 import { FIELD_STATUS } from '../members-metafields/schema';
 import type { Metafield } from '../members-metafields';
 import {
+  ConfigColumns,
+  DesignColumn,
   SectionColumns,
   assemble,
   boundPorts,
+  fromDesign,
   selectedTiers,
+  toDesign,
   type ConfigParts,
   type TierScope,
 } from './codec';
@@ -19,6 +24,7 @@ import {
   CONFIG_TABLE,
   CONFIG_TIERS_TABLE,
   boundPortRows,
+  designColumn,
   sectionColumns,
   selectedTierRows,
   tierTypes,
@@ -29,6 +35,7 @@ import {
   type CheckoutTier,
   type ResolvedCheckout,
   type StripeCheckoutConfig,
+  type StripeCheckoutDesign,
   type TierIds,
 } from './models';
 import { CheckoutConfigInput } from './serializers';
@@ -70,8 +77,8 @@ export interface FieldFinder {
 }
 
 /**
- * What Stripe Checkout collects beyond the payment, for the whole site, and what that comes
- * to for any one tier.
+ * How Stripe Checkout looks and what it collects beyond the payment, for the whole site, and
+ * what that comes to for any one tier.
  */
 export class StripeCheckoutConfigService {
   private knex: Knex;
@@ -93,7 +100,27 @@ export class StripeCheckoutConfigService {
   }
 
   async read(): Promise<StripeCheckoutConfig> {
-    return (await this.parts()).config;
+    const [{ config }, design] = await Promise.all([this.parts(), this.design()]);
+    return { ...config, design };
+  }
+
+  /**
+   * The publisher's design, or null to keep the one in their Stripe dashboard.
+   *
+   * A stored design that no longer reads, such as one using a font Stripe has since
+   * dropped, is null too, so it costs the styling and nothing else: checkouts keep selling,
+   * and the publisher can still open and save the rest of their settings.
+   */
+  async design(): Promise<StripeCheckoutDesign | null> {
+    const decoded = z.safeDecode(DesignColumn, await designColumn(this.knex));
+    if (!decoded.success) {
+      logging.warn(
+        { event: { name: 'stripe_checkout.design.unreadable' }, err: decoded.error },
+        'Ignoring a Stripe Checkout design that can no longer be read',
+      );
+      return null;
+    }
+    return toDesign(decoded.data.design);
   }
 
   /**
@@ -138,7 +165,7 @@ export class StripeCheckoutConfigService {
     const now = new Date();
 
     await this.knex.transaction(async (trx) => {
-      await writeSections(trx, stated, now);
+      await writeColumns(trx, stated, now);
       await writeSelectedTiers(trx, stated);
 
       for (const port of plan.clear) {
@@ -295,18 +322,18 @@ function assertCollectableInto(
   }
 }
 
-async function writeSections(
+async function writeColumns(
   trx: Knex.Transaction,
   stated: CheckoutConfigInput,
   now: Date,
 ): Promise<void> {
-  const { shipping, phone, tax_number: taxNumber } = stated;
+  const { shipping, phone, tax_number: taxNumber, design } = stated;
   const tierScope = (block: { tier_ids?: string[] }): TierScope =>
     block.tier_ids ? 'selected_paid' : 'all_paid';
 
   // Only the columns this request spoke about are written, so two requests changing
   // different sections cannot undo each other.
-  const columns = z.encode(SectionColumns.partial(), {
+  const columns = z.encode(ConfigColumns.partial(), {
     ...(shipping
       ? {
           shipping: shipping.collect
@@ -320,6 +347,18 @@ async function writeSections(
     ...(phone ? { phone: phone.collect ? { tier_scope: tierScope(phone) } : null } : {}),
     ...(taxNumber
       ? { tax_number: taxNumber.collect ? { tier_scope: tierScope(taxNumber) } : null }
+      : {}),
+    ...(design
+      ? {
+          design: design.customize
+            ? fromDesign({
+                buttonColor: design.button_color,
+                backgroundColor: design.background_color,
+                borderStyle: design.border_style,
+                fontFamily: design.font_family,
+              })
+            : null,
+        }
       : {}),
   });
 

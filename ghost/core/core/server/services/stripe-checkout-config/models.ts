@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { STRIPE_CHECKOUT_BORDER_STYLES, STRIPE_CHECKOUT_FONTS } from '@tryghost/checkout';
 
 /**
  * The paid tiers a section applies to, or null for every paid tier.
@@ -42,10 +43,35 @@ export const TaxNumberCollection = z.object({
 export type TaxNumberCollection = z.infer<typeof TaxNumberCollection>;
 
 /** What Stripe Checkout collects beyond the payment, as the publisher set it for the site. */
-export const StripeCheckoutConfig = z.object({
+export const CheckoutCollection = z.object({
   shipping: ShippingCollection.nullable(),
   phone: PhoneCollection.nullable(),
   taxNumber: TaxNumberCollection.nullable(),
+});
+export type CheckoutCollection = z.infer<typeof CheckoutCollection>;
+
+/** A color as Stripe takes it: a 6-digit hex code, lowercase so one color is one value. */
+export const HexColor = z
+  .string()
+  .regex(/^#[0-9a-f]{6}$/, { error: 'Enter a color as a 6-digit hex code, like #15171a.' });
+
+/**
+ * The parts of the Checkout page a publisher can style, in Stripe's own vocabulary. All of
+ * them or none: a design replaces the one in the publisher's Stripe dashboard outright,
+ * rather than mixing with it.
+ */
+export const StripeCheckoutDesign = z.object({
+  buttonColor: HexColor,
+  backgroundColor: HexColor,
+  borderStyle: z.enum(STRIPE_CHECKOUT_BORDER_STYLES),
+  fontFamily: z.enum(STRIPE_CHECKOUT_FONTS),
+});
+export type StripeCheckoutDesign = z.infer<typeof StripeCheckoutDesign>;
+
+/** How Stripe Checkout looks and what it collects, as the publisher set it for the site. */
+export const StripeCheckoutConfig = CheckoutCollection.extend({
+  /** Null keeps the design from the publisher's own Stripe dashboard. */
+  design: StripeCheckoutDesign.nullable(),
 });
 export type StripeCheckoutConfig = z.infer<typeof StripeCheckoutConfig>;
 

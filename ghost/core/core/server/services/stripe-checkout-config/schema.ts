@@ -9,6 +9,7 @@ export const DbStripeCheckoutConfig = z.object({
   shipping: z.string().nullable(),
   phone: z.string().nullable(),
   tax_number: z.string().nullable(),
+  design: z.string().nullable(),
   created_at: DbDate,
   updated_at: DbDate.nullable(),
 });
@@ -33,12 +34,15 @@ export const DbCheckoutConfigTier = z.object({
 });
 export type DbCheckoutConfigTier = z.infer<typeof DbCheckoutConfigTier>;
 
+export const DbDesign = DbStripeCheckoutConfig.pick({ design: true });
+export type DbDesign = z.infer<typeof DbDesign>;
+
 declare module 'knex/types/tables' {
   interface Tables {
     stripe_checkout_config: Knex.CompositeTableType<
       StripeCheckoutConfigRow,
-      Omit<z.input<typeof DbStripeCheckoutConfig>, keyof DbSections> &
-        Partial<z.input<typeof DbSections>>,
+      Omit<z.input<typeof DbStripeCheckoutConfig>, keyof DbSections | keyof DbDesign> &
+        Partial<z.input<typeof DbSections> & z.input<typeof DbDesign>>,
       Partial<z.input<typeof DbStripeCheckoutConfig>>
     >;
     stripe_checkout_config_tiers: DbCheckoutConfigTier;

@@ -1,6 +1,12 @@
 import { z } from 'zod';
-import { STRIPE_PORT, STRIPE_PORTS, type StripePort } from '@tryghost/checkout';
-import type { StripeCheckoutConfig } from './models';
+import {
+  STRIPE_CHECKOUT_BORDER_STYLES,
+  STRIPE_CHECKOUT_FONTS,
+  STRIPE_PORT,
+  STRIPE_PORTS,
+  type StripePort,
+} from '@tryghost/checkout';
+import { HexColor, type CheckoutCollection, type StripeCheckoutDesign } from './models';
 import { DbCheckoutConfigTier, type CheckoutSection } from './schema';
 
 /** A column holding JSON, read and written as the shape it holds. */
@@ -56,6 +62,45 @@ export function selectedTiers(rows: DbCheckoutConfigTier[]): Map<CheckoutSection
   return bySection;
 }
 
+/**
+ * The design, checked again on the way out of the database as well as on the way in, so a
+ * value Stripe would refuse never reaches a session. Kept apart from the sections, so a
+ * design that cannot be read costs the design and not what the checkout collects.
+ */
+export const DesignColumn = z.object({
+  design: jsonColumn(
+    z.object({
+      button_color: HexColor,
+      background_color: HexColor,
+      border_style: z.enum(STRIPE_CHECKOUT_BORDER_STYLES),
+      font_family: z.enum(STRIPE_CHECKOUT_FONTS),
+    }),
+  ).nullable(),
+});
+type StoredDesign = NonNullable<z.output<typeof DesignColumn>['design']>;
+
+export const ConfigColumns = SectionColumns.extend(DesignColumn.shape);
+
+export function toDesign(stored: StoredDesign | null): StripeCheckoutDesign | null {
+  return stored
+    ? {
+        buttonColor: stored.button_color,
+        backgroundColor: stored.background_color,
+        borderStyle: stored.border_style,
+        fontFamily: stored.font_family,
+      }
+    : null;
+}
+
+export function fromDesign(design: StripeCheckoutDesign): StoredDesign {
+  return {
+    button_color: design.buttonColor,
+    background_color: design.backgroundColor,
+    border_style: design.borderStyle,
+    font_family: design.fontFamily,
+  };
+}
+
 /** A port's binding, and whether the field it points at can take a value right now. */
 export const BoundPortRow = z.object({
   port: z.enum(STRIPE_PORTS),
@@ -70,7 +115,7 @@ export interface BoundPort {
 }
 
 export interface ConfigParts {
-  config: StripeCheckoutConfig;
+  config: CheckoutCollection;
   /**
    * Whether a section has anywhere to put what it collects. A section whose fields are all
    * archived stays configured, and is not asked for until one of them is restored.

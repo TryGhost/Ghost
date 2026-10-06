@@ -2,6 +2,8 @@ import { describe, it, assert } from 'vitest';
 import {
   PORT_FIELD,
   STRIPE_ALLOWED_COUNTRIES,
+  STRIPE_CHECKOUT_BORDER_STYLES,
+  STRIPE_CHECKOUT_FONTS,
   STRIPE_PORT,
   STRIPE_PORTS,
   isStripeAllowedCountry,
@@ -46,5 +48,12 @@ describe('ports', function () {
     assert.equal(PORT_FIELD[STRIPE_PORT.shippingAddress].type, 'address');
     assert.equal(PORT_FIELD[STRIPE_PORT.shippingName].type, 'short_text');
     assert.equal(PORT_FIELD[STRIPE_PORT.phone].type, 'short_text');
+  });
+});
+
+describe('branding', function () {
+  it('carries no duplicates', function () {
+    assert.equal(new Set(STRIPE_CHECKOUT_FONTS).size, STRIPE_CHECKOUT_FONTS.length);
+    assert.equal(new Set(STRIPE_CHECKOUT_BORDER_STYLES).size, STRIPE_CHECKOUT_BORDER_STYLES.length);
   });
 });

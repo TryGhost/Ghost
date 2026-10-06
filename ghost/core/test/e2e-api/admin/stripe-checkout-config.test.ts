@@ -356,6 +356,13 @@ describe('Stripe Checkout Config Admin API', function () {
         ...shipping({ tier_ids: [SECOND_TIER_ID] }),
         phone: { collect: true, custom_field_key: 'phone_number' },
         tax_number: { collect: true, tier_ids: [paidTierId] },
+        design: {
+          customize: true,
+          button_color: '#ff5a1f',
+          background_color: '#ffffff',
+          border_style: 'rounded',
+          font_family: 'lora',
+        },
       });
 
       const read = await readCheckout();
@@ -497,6 +504,97 @@ describe('Stripe Checkout Config Admin API', function () {
       const config = await readCheckout();
       assert.deepEqual(config, { phone: { collect: true, custom_field_key: 'phone_number' } });
       await setCheckout(config);
+    });
+  });
+
+  describe('The design', function () {
+    const design = (over: Record<string, unknown> = {}) => ({
+      design: {
+        customize: true,
+        button_color: '#FF5A1F',
+        background_color: '#ffffff',
+        border_style: 'pill',
+        font_family: 'roboto_slab',
+        ...over,
+      },
+    });
+
+    // Every part is Stripe's own vocabulary, so what is saved is what Stripe is sent.
+    it('keeps a design and reads it back', async function () {
+      await setCheckout(design());
+
+      assert.deepEqual(await readCheckout(), {
+        design: {
+          customize: true,
+          // Lowercased on the way in, so one color is one value.
+          button_color: '#ff5a1f',
+          background_color: '#ffffff',
+          border_style: 'pill',
+          font_family: 'roboto_slab',
+        },
+      });
+    });
+
+    // Switching customizing off goes back to the design in the publisher's Stripe
+    // dashboard, which is what a site that never set one has.
+    it('goes back to the Stripe dashboard design', async function () {
+      await setCheckout(design());
+
+      await setCheckout({ design: { customize: false } });
+
+      assert.deepEqual(await readCheckout(), {});
+    });
+
+    // A design replaces the dashboard's outright, so half of one is refused rather than
+    // mixed with whatever the dashboard says.
+    it('refuses part of a design', async function () {
+      await setCheckout(design({ font_family: undefined }), 422);
+    });
+
+    it('refuses a color that is not a hex code', async function () {
+      const body = await setCheckout(design({ button_color: 'orange' }), 422);
+      assert.match(body.errors[0].context, /6-digit hex code/);
+    });
+
+    it('refuses a font or corner style Stripe does not offer', async function () {
+      const font = await setCheckout(design({ font_family: 'Comic Sans' }), 422);
+      assert.match(font.errors[0].context, /font Stripe Checkout offers/);
+
+      const corners = await setCheckout(design({ border_style: 'scalloped' }), 422);
+      assert.match(corners.errors[0].context, /rounded, rectangular or pill/);
+    });
+
+    // A design saved under rules that have since changed, such as a font Stripe no longer
+    // offers, must not lock the publisher out of the rest of their checkout settings. It
+    // reads as Stripe's own design until they choose another.
+    it('still reads and saves the rest when a stored design can no longer be read', async function () {
+      await setCheckout({ ...design(), tax_number: { collect: true } });
+      await models.Base.knex('stripe_checkout_config').update({
+        design: JSON.stringify({
+          button_color: '#ff5a1f',
+          background_color: '#ffffff',
+          border_style: 'pill',
+          font_family: 'a_font_stripe_dropped',
+        }),
+      });
+
+      assert.deepEqual(await readCheckout(), { tax_number: { collect: true } });
+      await setCheckout({ tax_number: { collect: true, tier_ids: [paidTierId] } });
+      assert.deepEqual(await readCheckout(), {
+        tax_number: { collect: true, tier_ids: [paidTierId] },
+      });
+    });
+
+    // The design and what the checkout collects are saved through one resource, and
+    // neither is touched by a request about the other.
+    it('is left alone by a request about collection, and leaves collection alone', async function () {
+      await setCheckout(design());
+      await setCheckout({ tax_number: { collect: true } });
+      await setCheckout(design({ border_style: 'rounded' }));
+
+      const config = await readCheckout();
+      assert.deepEqual(config.tax_number, { collect: true });
+      assert.equal(config.design.border_style, 'rounded');
     });
   });
 

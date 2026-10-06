@@ -1026,6 +1026,51 @@ describe('Create Stripe Checkout Session', function () {
       assert.equal(here['phone_number_collection[enabled]'], 'true');
     });
 
+    // The design is the publisher's for every checkout, so it rides on a tier's session
+    // whatever that tier collects. Until one is set, nothing is sent and Stripe uses the
+    // design from the publisher's own dashboard.
+    it('styles the checkout with the publisher design, and only once there is one', async function () {
+      const unstyled = await startCheckout();
+      assert.deepEqual(
+        Object.keys(unstyled).filter((key) => key.startsWith('branding_settings')),
+        [],
+      );
+
+      await adminAgent
+        .put('/stripe/checkout/config/')
+        .body({
+          checkout_config: [
+            {
+              design: {
+                customize: true,
+                button_color: '#ff5a1f',
+                background_color: '#ffffff',
+                border_style: 'pill',
+                font_family: 'roboto_slab',
+              },
+            },
+          ],
+        })
+        .expectStatus(200);
+
+      // Each checkout's Stripe mocks persist, so the first would answer the second.
+      nock.cleanAll();
+      const styled = await startCheckout();
+      assert.equal(styled['branding_settings[button_color]'], '#ff5a1f');
+      assert.equal(styled['branding_settings[background_color]'], '#ffffff');
+      assert.equal(styled['branding_settings[border_style]'], 'pill');
+      assert.equal(styled['branding_settings[font_family]'], 'roboto_slab');
+
+      nock.cleanAll();
+      mockManager.mockLabsDisabled('stripeCheckoutCollection');
+      const flagOff = await startCheckout();
+      assert.deepEqual(
+        Object.keys(flagOff).filter((key) => key.startsWith('branding_settings')),
+        [],
+        'nothing is sent with the flag off, however the design is set',
+      );
+    });
+
     // Each destination drops out on its own. Neither of the two behind the shipping
     // toggle is privileged: whichever is still active is why the step is worth asking
     // for, and the other simply goes unkept.

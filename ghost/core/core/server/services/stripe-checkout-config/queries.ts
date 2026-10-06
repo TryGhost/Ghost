@@ -2,7 +2,7 @@ import type { Knex } from 'knex';
 import { STRIPE_PORTS } from '@tryghost/checkout';
 import { FIELD_STATUS } from '../members-metafields/schema';
 import type { BoundPortRow } from './codec';
-import type { DbCheckoutConfigTier, DbSections } from './schema';
+import type { DbCheckoutConfigTier, DbDesign, DbSections } from './schema';
 
 export const CONFIG_TABLE = 'stripe_checkout_config';
 export const CONFIG_TIERS_TABLE = 'stripe_checkout_config_tiers';
@@ -28,6 +28,11 @@ export function selectedTierRows(db: Knex) {
   return db(CONFIG_TIERS_TABLE)
     .orderBy('product_id', 'asc')
     .select<DbCheckoutConfigTier[]>('section', 'product_id');
+}
+
+export async function designColumn(db: Knex): Promise<DbDesign> {
+  const row = await db(CONFIG_TABLE).where('slug', CONFIG_SLUG).select('design').first();
+  return row ?? { design: null };
 }
 
 /** Where each of Stripe's ports lands, and whether that field can take a value right now. */

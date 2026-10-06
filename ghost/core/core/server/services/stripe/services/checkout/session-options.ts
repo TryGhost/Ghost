@@ -1,6 +1,6 @@
 import logging from '@tryghost/logging';
 import { STRIPE_ALLOWED_COUNTRIES } from '@tryghost/checkout';
-import type { ResolvedCheckout } from '../../../stripe-checkout-config';
+import type { ResolvedCheckout, StripeCheckoutDesign } from '../../../stripe-checkout-config';
 
 /**
  * The Stripe session parameters a tier's checkout configuration asks for.
@@ -84,4 +84,35 @@ export function stripeCheckoutCollectionOptions(
   }
 
   return options;
+}
+
+export interface StripeCheckoutBrandingOptions {
+  branding_settings?: {
+    background_color: string;
+    button_color: string;
+    border_style: string;
+    font_family: string;
+  };
+}
+
+/**
+ * The publisher's design as Stripe's `branding_settings`, or nothing.
+ *
+ * Nothing when the publisher keeps the design from their Stripe dashboard, so an
+ * unconfigured site's session-create call stays exactly the one it made before this existed.
+ */
+export function stripeCheckoutBrandingOptions(
+  design: StripeCheckoutDesign | null | undefined,
+): StripeCheckoutBrandingOptions {
+  if (!design) {
+    return {};
+  }
+  return {
+    branding_settings: {
+      background_color: design.backgroundColor,
+      button_color: design.buttonColor,
+      border_style: design.borderStyle,
+      font_family: design.fontFamily,
+    },
+  };
 }

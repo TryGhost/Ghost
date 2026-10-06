@@ -64,7 +64,12 @@ module.exports = class StripeService {
     settingsCache,
     models,
   }) {
-    const api = new StripeAPI({ labs });
+    const api = new StripeAPI({
+      labs,
+      // A function because the checkout config service is built during boot.
+      checkoutDesign: async () =>
+        stripeCheckoutConfig.service ? stripeCheckoutConfig.service.design() : null,
+    });
     const migrations = new StripeMigrations({
       models,
       api,
