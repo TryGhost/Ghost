@@ -26,6 +26,8 @@ const baseDetail = (
 ): AutomationDetail => ({
   id: 'a1',
   slug: 'welcome',
+  trigger_tier_scope: 'free',
+  trigger_tier_ids: null,
   name: 'Welcome',
   description: 'Welcome new members.',
   status: 'active',

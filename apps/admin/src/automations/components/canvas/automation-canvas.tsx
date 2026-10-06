@@ -68,7 +68,7 @@ const EMAIL_NODE_WITH_STATS_HEIGHT = 133;
 const EDITABLE_NODE_WIDTH = 400;
 const EDITABLE_EMAIL_NODE_HEIGHT = 350;
 const EDITABLE_WAIT_NODE_HEIGHT = 144;
-const FIXED_TRIGGER_NODE_HEIGHT = 86;
+const FIXED_TRIGGER_NODE_HEIGHT = 156;
 const EXIT_NODE_HEIGHT = 55;
 const INITIAL_VIEWPORT_Y = 40;
 // Rendered height of the tail node (h-12) — used to derive the content's bottom edge for the pan bound.
@@ -210,6 +210,8 @@ const getInitialActionOrder = (automation: AutomationDetail): AutomationAction[]
 type BuildGraphParams = {
   actionErrors: Record<string, string>;
   automation: AutomationDetail;
+  savedTriggerTierIds: readonly string[];
+  onChange: (next: AutomationDetail) => void;
   automationAnalyticsEnabled: boolean;
   automationRunAnalyticsEnabled: boolean;
   nodeSizes: Record<string, { width: number; height: number }>;
@@ -231,6 +233,8 @@ type BuildGraphParams = {
 const buildGraph = ({
   actionErrors,
   automation,
+  savedTriggerTierIds,
+  onChange,
   automationAnalyticsEnabled,
   automationRunAnalyticsEnabled,
   nodeSizes,
@@ -283,7 +287,15 @@ const buildGraph = ({
         y: cursorY,
       },
       data: {
-        fixedTrigger: automationRunAnalyticsEnabled,
+        trigger: automationRunAnalyticsEnabled
+          ? {
+              scope: automation.trigger_tier_scope,
+              tierIds: automation.trigger_tier_ids ?? [],
+              savedTierIds: savedTriggerTierIds,
+              onUpdate: (trigger) => onChange({ ...automation, ...trigger }),
+            }
+          : undefined,
+        errorMessage: actionErrors[TRIGGER_CANVAS_ID],
         onInteract: () => onInteract(TRIGGER_CANVAS_ID),
         contextMenuItems: buildNodeContextMenuItems({
           onSelectStep,
@@ -466,6 +478,7 @@ type AutomationCanvasProps = {
   actionErrors?: Record<string, string>;
   onWaitValidityChange: (stepId: string, valid: boolean) => void;
   automation?: AutomationDetail;
+  savedTriggerTierIds?: readonly string[];
   isEmailNavigationBlocked?: boolean;
   isLoading: boolean;
   isError: boolean;
@@ -494,6 +507,7 @@ const hasAutomationEmailModalState = (state: unknown): state is { automationEmai
 
 const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   actionErrors = {},
+  savedTriggerTierIds = [],
   onWaitValidityChange,
   automation,
   isEmailNavigationBlocked = false,
@@ -754,6 +768,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     return buildGraph({
       actionErrors,
       automation,
+      savedTriggerTierIds,
+      onChange,
       automationAnalyticsEnabled,
       automationRunAnalyticsEnabled,
       nodeSizes,
@@ -781,6 +797,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     });
   }, [
     actionErrors,
+    savedTriggerTierIds,
+    onChange,
     automation,
     automationAnalyticsEnabled,
     automationRunAnalyticsEnabled,

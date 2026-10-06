@@ -26,6 +26,8 @@ const detail = (id: string): AutomationDetail => ({
   name: 'Welcome series',
   description: '',
   slug: 'member-welcome-email-free',
+  trigger_tier_scope: 'free',
+  trigger_tier_ids: null,
   status: 'active',
   created_at: '2026-01-01T00:00:00Z',
   updated_at: '2026-01-01T00:00:00Z',

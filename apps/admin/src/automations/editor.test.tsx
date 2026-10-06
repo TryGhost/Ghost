@@ -390,6 +390,8 @@ vi.mock('@xyflow/react', async () => {
 const automationDetail: AutomationDetail = {
   id: 'automation-id-1',
   slug: 'member-welcome-email-free',
+  trigger_tier_scope: 'free',
+  trigger_tier_ids: null,
   name: 'Free member welcome flow',
   description: 'Welcome new free members.',
   status: 'active',
@@ -1991,12 +1993,8 @@ describe('AutomationEditor', () => {
 
     expect(mockEditMutation.mutate).toHaveBeenCalledWith(
       {
-        id: 'automation-id-1',
-        name: automationDetail.name,
-        description: automationDetail.description,
+        ...automationDetail,
         status: 'active',
-        actions: automationDetail.actions,
-        edges: automationDetail.edges,
       },
       expect.any(Object),
     );
@@ -2203,12 +2201,8 @@ describe('AutomationEditor', () => {
 
     expect(mockEditMutation.mutate).toHaveBeenCalledWith(
       {
-        id: 'automation-id-1',
-        name: automationDetail.name,
-        description: automationDetail.description,
+        ...automationDetail,
         status: 'inactive',
-        actions: automationDetail.actions,
-        edges: automationDetail.edges,
       },
       expect.any(Object),
     );
@@ -3188,9 +3182,7 @@ describe('AutomationEditor', () => {
 
     expect(mockEditMutation.mutate).toHaveBeenCalledWith(
       {
-        id: 'automation-id-1',
-        name: automationDetail.name,
-        description: automationDetail.description,
+        ...automationDetail,
         status: 'active',
         actions: expect.any(Array) as unknown,
         edges: expect.any(Array) as unknown,
