@@ -249,6 +249,8 @@ describe('App installations Admin API', function () {
       assert.deepEqual(result.installation, {
         id: installed.id,
         status: 'active',
+        manifest_url: MANIFEST_URL,
+        manifest: installed.manifest,
         changes: [
           { path: 'description', requires_approval: false },
           { path: 'name', requires_approval: true },

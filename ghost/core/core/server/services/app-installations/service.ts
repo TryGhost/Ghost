@@ -39,10 +39,15 @@ export interface AppInstallationPreview {
   manifest: AppManifest;
   /** Confirming sends this back, so only the manifest that was reviewed gets installed. */
   digest: string;
-  /** The installation of the same app, if the site already has one, and what would change. */
+  /**
+   * The installation of the same app, if the site already has one: the manifest it was
+   * approved with and where that was read from, and what would change.
+   */
   installation: {
     id: string;
     status: AppInstallationStatus;
+    manifest_url: string;
+    manifest: AppManifest;
     changes: AppManifestChange[];
   } | null;
 }
@@ -214,8 +219,16 @@ export class AppInstallationsService {
       manifest_url: loaded.manifestUrl,
       manifest: loaded.manifest,
       digest: loaded.digest,
+      // The approved side comes from the same row the changes were worked out from, so the
+      // publisher sees exactly the difference Ghost found.
       installation: current
-        ? { id: current.id, status: current.status, changes: this.changesFrom(current, loaded) }
+        ? {
+            id: current.id,
+            status: current.status,
+            manifest_url: current.manifest_url,
+            manifest: current.manifest,
+            changes: this.changesFrom(current, loaded),
+          }
         : null,
     };
   }
