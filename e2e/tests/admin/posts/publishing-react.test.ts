@@ -1,6 +1,11 @@
 import { APIRequestContext, Page } from '@playwright/test';
 import { LoginPage, PostEditorPage, PostsPage } from '@/admin-pages';
-import { PostFactory, createMemberFactory, createPostFactory } from '@/data-factory';
+import {
+  PostFactory,
+  buildLexicalParagraph,
+  createMemberFactory,
+  createPostFactory,
+} from '@/data-factory';
 import { PostPage } from '@/helpers/pages';
 import { expect, test, withIsolatedPage } from '@/helpers/playwright';
 
@@ -144,10 +149,14 @@ test.describe('Ghost Admin - Publishing (React)', () => {
     expect(reverted.published_at).toBeNull();
   });
 
-  test('published - an edit reaches the server when Update is clicked', async ({ page }) => {
+  test('published - an edit reaches the server and the site when Update is clicked', async ({
+    page,
+  }) => {
     const created = await postFactory.create({
       title: `react-update-${Date.now()}`,
       status: 'published',
+      // One paragraph: the site's `articleBody` locator matches each paragraph
+      lexical: buildLexicalParagraph('Published before the edit.'),
     });
     const addition = 'Edited after publishing.';
 
@@ -162,6 +171,11 @@ test.describe('Ghost Admin - Publishing (React)', () => {
     const updated = await readPost(page, created.id);
     expect(updated.status).toBe('published');
     expect(updated.lexical).toContain(addition);
+
+    const frontendPage = await page.context().newPage();
+    const publicPage = new PostPage(frontendPage);
+    await publicPage.gotoPost(created.slug);
+    await expect(publicPage.articleBody).toContainText(addition);
   });
 
   test('published - unpublishing takes the post off the site', async ({ page }) => {
