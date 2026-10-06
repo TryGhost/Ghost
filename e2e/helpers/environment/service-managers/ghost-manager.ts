@@ -270,6 +270,12 @@ export class GhostManager {
       env.push('pnpm_config_verify_deps_before_run=false');
     }
 
+    // EXPERIMENT: run the built image as production (view cache on) with quieter logging.
+    if (this.config.mode === 'build') {
+      env.splice(env.indexOf('NODE_ENV=development'), 1);
+      env.push('NODE_ENV=production', 'logging__level=warn', 'logging__transports=["stdout"]');
+    }
+
     // Add Tinybird config if available
     // Static endpoints are set here; tokens are loaded from a host-generated
     // e2e/data/state/tinybird.json file when present.
