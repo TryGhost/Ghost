@@ -25,7 +25,7 @@ The completed and total recipient counts for the current sending phase.
 _Avoid_: Delivery progress, expected count
 
 **Submitted**:
-Every batch of a newsletter email has been accepted by the configured email provider. Submission does not mean that recipients have received the email.
+Every batch of a newsletter email has completed submission: the provider accepted its valid recipients, or validation explicitly excluded every recipient without a provider call. Submission does not mean that recipients have received the email.
 _Avoid_: Sent, delivered
 
 **Failed**:
@@ -40,8 +40,12 @@ _Avoid_: Failure step
 A member selected for a newsletter email's audience before preparation exclusions. Selection does not mean the member has been prepared or submitted.
 _Avoid_: Subscriber count, delivered recipient
 
+**Prepared recipient**:
+A candidate whose address and personalization data have been recorded for a newsletter email. Preparation does not mean submission or delivery.
+_Avoid_: Candidate recipient, delivered recipient
+
 **Preparation exclusion**:
-A candidate explicitly omitted from a newsletter email's prepared audience because required recipient data is unavailable.
+A candidate omitted from preparation because the member can no longer be found or required recipient data is missing. Candidates equal prepared recipients plus preparation exclusions.
 _Avoid_: Failed delivery, silently skipped recipient
 
 **Accounted email**:

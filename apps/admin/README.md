@@ -53,6 +53,16 @@ Shade's Tailwind imports are unlayered because Ember's legacy CSS is also
 unlayered. This lets source order resolve overlapping utilities. Do not move
 Shade's imports into a CSS layer without accounting for the legacy cascade.
 
+### Appearance
+
+React's shared ThemeProvider owns the appearance preference and the Admin theme
+controller. The controller applies the root dark class, follows system appearance
+and suppresses transitions during a switch. Ember connects an adapter that loads
+and toggles its legacy dark stylesheet and updates its editor's resolved
+`nightShift` value. Ember uses the same controller before React connects and in
+standalone development/tests; connecting removes its system appearance listener.
+Removing Ember leaves the controller and preference persistence intact.
+
 ### Deploy compatibility
 
 Ghost Admin and Ghost Core can deploy at different times. New Admin UI that
