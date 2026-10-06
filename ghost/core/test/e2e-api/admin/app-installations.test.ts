@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { agentProvider, fixtureManager, mockManager } from '../../utils/e2e-framework';
 
 // Required, not imported, so this is the same module instance Ghost initialised at boot.
@@ -43,6 +44,9 @@ describe('App installations Admin API', function () {
       .where('resource_type', 'app_installation')
       .orderBy('created_at', 'asc')
       .orderBy('id', 'asc');
+  const installationRow = (id: string) =>
+    models.Base.knex('app_installations').where({ id }).first();
+  const manifestRows = () => models.Base.knex('app_installation_manifests').orderBy('id', 'asc');
 
   beforeAll(async function () {
     agent = await agentProvider.getAdminAPIAgent();
@@ -54,6 +58,7 @@ describe('App installations Admin API', function () {
   afterEach(async function () {
     mockManager.restore();
     await configUtils.restore();
+    await models.Base.knex('app_installation_manifests').del();
     await models.Base.knex('app_installations').del();
     await models.Base.knex('actions').where('resource_type', 'app_installation').del();
   });
@@ -70,6 +75,22 @@ describe('App installations Admin API', function () {
         { type: 'admin_page', url: 'https://podcast.example.com/admin' },
       ]);
       assert.ok(installation.created_at instanceof Date);
+    });
+
+    it('keeps the manifest as the approved one, with its digest', async function () {
+      const installation = await install();
+
+      const [stored] = await manifestRows();
+      assert.equal(stored.installation_id, installation.id);
+      assert.equal(stored.manifest_url, MANIFEST_URL);
+      assert.deepEqual(JSON.parse(stored.manifest), installation.manifest);
+      assert.equal(stored.digest, createHash('sha256').update(stored.manifest).digest('hex'));
+      assert.equal(Boolean(stored.requires_approval), false);
+
+      const installed = await installationRow(installation.id);
+      assert.equal(installed.manifest_id, stored.id);
+      assert.equal(installed.pending_manifest_id, null);
+      assert.equal(installed.revision, 0);
     });
 
     it('refuses a manifest that is not valid, and stores nothing', async function () {
@@ -101,6 +122,20 @@ describe('App installations Admin API', function () {
       await install();
       await assert.rejects(install(), { errorType: 'ConflictError' });
       assert.equal((await service().browse()).length, 1);
+      assert.equal((await manifestRows()).length, 1);
+    });
+
+    it('refuses a second installation of an app that is suspended', async function () {
+      const suspended = await install();
+      await models.Base.knex('app_installations')
+        .where({ id: suspended.id })
+        .update({ status: 'suspended' });
+
+      await assert.rejects(install(), { errorType: 'ConflictError' });
+      assert.deepEqual(
+        (await service().browse()).map((installation) => installation.status),
+        ['suspended'],
+      );
     });
 
     it('lets only one of two simultaneous confirmations install the app', async function () {
@@ -113,6 +148,7 @@ describe('App installations Admin API', function () {
         }
       }
       assert.equal((await service().browse()).length, 1);
+      assert.equal((await manifestRows()).length, 1);
       assert.equal((await actions()).length, 1);
     });
 
@@ -214,6 +250,18 @@ describe('App installations Admin API', function () {
       const kept = await service().read(installation.id);
       assert.equal(kept.status, 'uninstalled');
       assert.deepEqual(kept.manifest, installation.manifest);
+      assert.equal((await manifestRows()).length, 1);
+    });
+
+    it('ends any open app sessions, by moving the revision on', async function () {
+      const installation = await install();
+
+      await agent.delete(`apps/installations/${installation.id}/`).expectStatus(204);
+      await agent.delete(`apps/installations/${installation.id}/`).expectStatus(204);
+
+      const ended = await installationRow(installation.id);
+      assert.equal(ended.revision, 1);
+      assert.equal(ended.current_app_id, null);
     });
 
     it('records who uninstalled the app in the staff history', async function () {

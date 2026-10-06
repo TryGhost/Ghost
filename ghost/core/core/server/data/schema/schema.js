@@ -2654,17 +2654,49 @@ module.exports = {
   // uninstalled an app, and when, is in `actions`.
   app_installations: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
-    // The ID from the app's manifest. Kept on every row, active or not.
+    // The ID from the app's manifest. Kept on every row, installed or not.
     app_id: { type: 'string', maxlength: 191, nullable: false, index: true },
-    // The same ID while the installation is active, and null once it is uninstalled. This
-    // is what says whether an installation is active. Being unique, it is also what lets a
-    // site have only one active installation per app however two installs race, while any
-    // number of ended ones share the null.
-    active_app_id: { type: 'string', maxlength: 191, nullable: true, unique: true },
-    manifest_url: { type: 'string', maxlength: 2000, nullable: false },
-    // The validated manifest this installation runs with, as JSON.
-    manifest: { type: 'text', maxlength: 65535, nullable: false },
+    // The same ID until the installation is uninstalled, suspended included, then null.
+    // Being unique, it is what lets a site have only one installation per app however two
+    // installs race, while any number of ended ones share the null.
+    current_app_id: { type: 'string', maxlength: 191, nullable: true, unique: true },
+    status: {
+      type: 'string',
+      maxlength: 50,
+      nullable: false,
+      validations: { isIn: [['active', 'suspended', 'uninstalled']] },
+    },
+    // The approved manifest, which is what runs, and a newer one waiting for approval.
+    // Both point into app_installation_manifests. They are plain columns rather than
+    // foreign keys, as those rows point back here, and are set in the same transaction.
+    manifest_id: { type: 'string', maxlength: 24, nullable: false },
+    pending_manifest_id: { type: 'string', maxlength: 24, nullable: true },
+    // Goes up on every change to the installation. Open app sessions are pinned to it, so
+    // any change ends them.
+    revision: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
+  },
+  // Every manifest an installation has run or been asked to approve. Still in development:
+  // see ./in-development.ts.
+  //
+  // Append-only: a row is added when a manifest becomes an installation's approved or
+  // pending one, and never changed, so the site can always tell exactly what was approved.
+  app_installation_manifests: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    installation_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      references: 'app_installations.id',
+    },
+    manifest_url: { type: 'string', maxlength: 2000, nullable: false },
+    // The validated manifest, with its URLs resolved, as JSON.
+    manifest: { type: 'text', maxlength: 65535, nullable: false },
+    // SHA-256 of `manifest`, in hex: what a publisher reviews and confirms.
+    digest: { type: 'string', maxlength: 64, nullable: false },
+    // Whether this manifest had changes that needed approval when it was added.
+    requires_approval: { type: 'boolean', nullable: false, defaultTo: false },
+    created_at: { type: 'dateTime', nullable: false },
   },
 };

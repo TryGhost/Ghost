@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import errors from '@tryghost/errors';
 import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
@@ -5,14 +6,18 @@ import { parseManifest, type AppManifest } from '@tryghost/app-contracts/manifes
 import { fromDatabaseDate, toDatabaseDate, type DatabaseDate } from '../../lib/db-types/date';
 import type { RecordAppInstallationAction, RequestContext } from './actions';
 
-const TABLE = 'app_installations';
+const INSTALLATIONS = 'app_installations';
+const MANIFESTS = 'app_installation_manifests';
 // The width of the manifest_url column.
 const MANIFEST_URL_MAX_LENGTH = 2000;
 
+export type AppInstallationStatus = 'active' | 'suspended' | 'uninstalled';
+
+/** An installation, joined with the approved manifest it runs. */
 interface AppInstallationRow {
   id: string;
   app_id: string;
-  active_app_id: string | null;
+  status: AppInstallationStatus;
   manifest_url: string;
   manifest: string;
   created_at: DatabaseDate;
@@ -23,7 +28,7 @@ interface AppInstallationRow {
 export interface AppInstallation {
   id: string;
   app_id: string;
-  status: 'active' | 'uninstalled';
+  status: AppInstallationStatus;
   manifest_url: string;
   manifest: AppManifest;
   created_at: Date;
@@ -34,12 +39,20 @@ function toInstallation(row: AppInstallationRow): AppInstallation {
   return {
     id: row.id,
     app_id: row.app_id,
-    status: row.active_app_id === null ? 'uninstalled' : 'active',
+    status: row.status,
     manifest_url: row.manifest_url,
     manifest: JSON.parse(row.manifest) as AppManifest,
     created_at: fromDatabaseDate(row.created_at),
     updated_at: row.updated_at === null ? null : fromDatabaseDate(row.updated_at),
   };
+}
+
+/**
+ * What a publisher reviews and confirms. The same manifest always serialises the same way,
+ * as parsing builds it in the schema's key order.
+ */
+function digestOf(serialisedManifest: string): string {
+  return createHash('sha256').update(serialisedManifest).digest('hex');
 }
 
 function isUniqueViolation(err: unknown): boolean {
@@ -74,18 +87,33 @@ export class AppInstallationsService {
     this.getManifestRules = getManifestRules;
   }
 
-  /** The apps installed on this site now. Ended installations are not listed. */
+  /** Installations with the approved manifest each one runs. */
+  private withApprovedManifest() {
+    return this.knex(`${INSTALLATIONS} as installation`)
+      .join(`${MANIFESTS} as approved`, 'approved.id', 'installation.manifest_id')
+      .select<AppInstallationRow[]>(
+        'installation.id',
+        'installation.app_id',
+        'installation.status',
+        'approved.manifest_url',
+        'approved.manifest',
+        'installation.created_at',
+        'installation.updated_at',
+      );
+  }
+
+  /** The apps installed on this site now, suspended ones included. Ended ones are not listed. */
   async browse(): Promise<AppInstallation[]> {
-    const rows = await this.knex<AppInstallationRow>(TABLE)
-      .whereNotNull('active_app_id')
-      .orderBy('created_at', 'asc')
-      .orderBy('id', 'asc');
+    const rows = await this.withApprovedManifest()
+      .whereNot('installation.status', 'uninstalled')
+      .orderBy('installation.created_at', 'asc')
+      .orderBy('installation.id', 'asc');
     return rows.map(toInstallation);
   }
 
-  /** One installation by ID, whether it is still active or not. */
+  /** One installation by ID, whether it has ended or not. */
   async read(id: string): Promise<AppInstallation> {
-    const row = await this.knex<AppInstallationRow>(TABLE).where({ id }).first();
+    const [row] = await this.withApprovedManifest().where('installation.id', id);
     if (!row) {
       throw new errors.NotFoundError({ message: 'App installation not found.' });
     }
@@ -96,9 +124,9 @@ export class AppInstallationsService {
    * Installs an app from a manifest Ghost itself fetched from `manifestUrl`.
    *
    * Every install is a new installation with a new ID, including a reinstall: an ended
-   * installation is never brought back. The unique `active_app_id` is what refuses a
-   * second active installation of the same app, so two confirmations racing each other
-   * end with exactly one installed and the other told so.
+   * installation is never brought back. The unique `current_app_id` is what refuses a
+   * second installation of the same app, so two confirmations racing each other end with
+   * exactly one installed and the other told so.
    */
   async install(
     context: RequestContext,
@@ -118,16 +146,29 @@ export class AppInstallationsService {
     }
 
     const id = new ObjectId().toHexString();
+    const manifestId = new ObjectId().toHexString();
+    const serialisedManifest = JSON.stringify(parsed.manifest);
     const now = toDatabaseDate(new Date());
     try {
-      await this.knex(TABLE).insert({
-        id,
-        app_id: parsed.manifest.id,
-        active_app_id: parsed.manifest.id,
-        manifest_url: manifestUrl,
-        manifest: JSON.stringify(parsed.manifest),
-        created_at: now,
-        updated_at: now,
+      await this.knex.transaction(async (trx) => {
+        await trx(INSTALLATIONS).insert({
+          id,
+          app_id: parsed.manifest.id,
+          current_app_id: parsed.manifest.id,
+          status: 'active',
+          manifest_id: manifestId,
+          created_at: now,
+          updated_at: now,
+        });
+        await trx(MANIFESTS).insert({
+          id: manifestId,
+          installation_id: id,
+          manifest_url: manifestUrl,
+          manifest: serialisedManifest,
+          digest: digestOf(serialisedManifest),
+          requires_approval: false,
+          created_at: now,
+        });
       });
     } catch (err) {
       if (isUniqueViolation(err)) {
@@ -156,10 +197,15 @@ export class AppInstallationsService {
   async uninstall(context: RequestContext, id: string): Promise<void> {
     const installation = await this.read(id);
 
-    const ended = await this.knex(TABLE)
+    const ended = await this.knex(INSTALLATIONS)
       .where({ id })
-      .whereNotNull('active_app_id')
-      .update({ active_app_id: null, updated_at: toDatabaseDate(new Date()) });
+      .whereNot('status', 'uninstalled')
+      .update({
+        current_app_id: null,
+        status: 'uninstalled',
+        revision: this.knex.raw('?? + 1', ['revision']),
+        updated_at: toDatabaseDate(new Date()),
+      });
     if (ended === 0) {
       return;
     }
