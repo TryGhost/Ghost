@@ -40,6 +40,18 @@ describe('createManifestFetcher', function () {
     assert.deepEqual(result.body, MANIFEST);
   });
 
+  it('treats any localhost name the manifest rules accept as localhost', async function () {
+    nock('http://host.docker.internal:8787', { reqheaders: { host: 'podcast.localhost:8787' } })
+      .get('/ghost-app.json')
+      .reply(200, MANIFEST);
+
+    const result = await fetcher('host.docker.internal')(
+      'http://podcast.localhost:8787/ghost-app.json',
+    );
+
+    assert.equal(result.url, 'http://podcast.localhost:8787/ghost-app.json');
+  });
+
   it('follows a redirect on localhost through the alias too', async function () {
     nock('http://host.docker.internal:8787')
       .get('/ghost-app.json')

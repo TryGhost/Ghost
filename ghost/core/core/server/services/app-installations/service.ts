@@ -3,8 +3,8 @@ import errors from '@tryghost/errors';
 import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
 import { z } from 'zod';
-import { URL_MAX_LENGTH } from '@tryghost/app-contracts';
 import {
+  checkManifestUrl,
   compareManifests,
   parseManifest,
   type AppManifest,
@@ -61,23 +61,6 @@ interface LoadedManifest {
  */
 function digestOf(serialisedManifest: string): string {
   return createHash('sha256').update(serialisedManifest).digest('hex');
-}
-
-/**
- * The address an install link pointed at, as the URL parser reads it, so one spelling of
- * an address is one address: what is stored, and what a later manifest is compared with.
- */
-function storableUrl(manifestUrl: string): string {
-  let url: URL;
-  try {
-    url = new URL(manifestUrl);
-  } catch {
-    throw new errors.ValidationError({ message: 'Expected the manifest at a URL.' });
-  }
-  if (url.href.length > URL_MAX_LENGTH) {
-    throw new errors.ValidationError({ message: 'The app manifest URL is too long.' });
-  }
-  return url.href;
 }
 
 function isUniqueViolation(err: unknown): boolean {
@@ -147,12 +130,31 @@ export class AppInstallationsService {
   }
 
   /**
+   * Checks the address a manifest is read from before anything is fetched from it, so
+   * Ghost never requests an address it would refuse, and what it stores obeys the same
+   * rules as the URLs inside a manifest, the length the column allows included.
+   *
+   * Returns the address as the URL parser reads it, so one spelling of an address is one
+   * address: that is what gets stored, and what a later manifest is compared with.
+   */
+  private checkManifestUrl(manifestUrl: string): string {
+    const problem = checkManifestUrl(manifestUrl, this.getManifestRules().allowLocalhost);
+    if (problem) {
+      throw new errors.ValidationError({
+        message: 'The app manifest URL is not valid.',
+        code: 'APP_MANIFEST_URL_INVALID',
+        context: problem,
+      });
+    }
+    return new URL(manifestUrl).href;
+  }
+
+  /**
    * Validates a manifest and resolves its URLs against `baseUrl`, where it was read from.
-   * `manifestUrl` is what gets stored: the address the install link pointed at, which
-   * later checks fetch again.
+   * `manifestUrl` is what gets stored: the address the install link pointed at, already
+   * checked, which later checks fetch again.
    */
   private load(manifestUrl: string, body: unknown, baseUrl = manifestUrl): LoadedManifest {
-    const stored = storableUrl(manifestUrl);
     const parsed = parseManifest(body, { manifestUrl: baseUrl, ...this.getManifestRules() });
     if (!parsed.success) {
       throw new errors.ValidationError({
@@ -164,13 +166,13 @@ export class AppInstallationsService {
       });
     }
     const serialised = z.encode(StoredManifest, parsed.manifest);
-    return { manifestUrl: stored, manifest: parsed.manifest, serialised, digest: digestOf(serialised) };
+    return { manifestUrl, manifest: parsed.manifest, serialised, digest: digestOf(serialised) };
   }
 
   private async fetchAndLoad(manifestUrl: string): Promise<LoadedManifest> {
-    storableUrl(manifestUrl);
-    const fetched = await this.fetchManifest(manifestUrl);
-    return this.load(manifestUrl, fetched.body, fetched.url);
+    const checked = this.checkManifestUrl(manifestUrl);
+    const fetched = await this.fetchManifest(checked);
+    return this.load(checked, fetched.body, fetched.url);
   }
 
   private async currentInstallation(
@@ -255,7 +257,7 @@ export class AppInstallationsService {
     context: RequestContext,
     { manifestUrl, manifest }: { manifestUrl: string; manifest: unknown },
   ): Promise<AppInstallation> {
-    return this.insert(context, this.load(manifestUrl, manifest));
+    return this.insert(context, this.load(this.checkManifestUrl(manifestUrl), manifest));
   }
 
   /**

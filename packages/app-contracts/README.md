@@ -104,6 +104,9 @@ There is no list of allowed origins in the manifest. The only origin that may
 talk to Ghost from a surface is the origin of that surface's resolved `url`;
 derive it where it is used, with `new URL(surface.url).origin`.
 
+`checkManifestUrl(url, allowLocalhost)` applies the same rules to the address a
+manifest is read from, so it can run before anything is fetched.
+
 ### Comparing manifests
 
 `compareManifests(approved, next)` lists every field that differs between two

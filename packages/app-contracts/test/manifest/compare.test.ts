@@ -69,6 +69,15 @@ describe('compareManifests', function () {
     assert.equal(compareManifests(approved, withoutSurfaces).requiresApproval, true);
   });
 
+  it('counts an empty list appearing as a change', function () {
+    // A field added later starts out empty more often than not.
+    const withCards = { ...approved, cards: [] } as unknown as typeof approved;
+
+    assert.deepEqual(compareManifests(approved, withCards).changes, [
+      { path: 'cards', requiresApproval: true },
+    ]);
+  });
+
   it('needs approval when a built-in icon is swapped for one the app serves', function () {
     const before = manifestOf(manifest({ icon: { name: 'mic' } }));
 

@@ -278,11 +278,24 @@ describe('App installations Admin API', function () {
       assert.equal(error.code, 'APP_MANIFEST_REDIRECTED');
     });
 
-    it('explains when the app cannot be reached', async function () {
+    it('explains when the app cannot be reached, without saying more than its answer', async function () {
       nock(MANIFEST_HOST).get(MANIFEST_PATH).reply(404);
 
       const error = await preview(MANIFEST_URL, 422);
       assert.equal(error.code, 'APP_MANIFEST_UNREACHABLE');
+      assert.match(error.context, /ghost-app\.json answered with HTTP 404$/);
+    });
+
+    it('checks the manifest URL before fetching anything', async function () {
+      for (const manifestUrl of [
+        'podcast.example.com/ghost-app.json',
+        'http://podcast.example.com/ghost-app.json',
+        Object.assign(new URL(MANIFEST_URL), { username: 'user', password: 'example' }).href,
+      ]) {
+        // Nothing is served for these, so a fetch would fail as unreachable instead.
+        const error = await preview(manifestUrl, 422);
+        assert.equal(error.code, 'APP_MANIFEST_URL_INVALID', manifestUrl);
+      }
     });
 
     it('refuses a manifest that is not JSON', async function () {
@@ -416,6 +429,36 @@ describe('App installations Admin API', function () {
       assert.equal((await installationRow(installed.id)).revision, 0);
       assert.equal((await manifestRows()).length, 1);
       assert.equal((await actions()).length, 1);
+    });
+
+    it('asks for a new review when the app changed in between', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      const { digest } = await preview();
+      serve(manifest({ name: 'Something else' }));
+
+      const { body } = await approve(installed.id, MANIFEST_URL, digest, 409);
+
+      assert.equal(body.errors[0].code, 'APP_MANIFEST_CHANGED');
+      assert.equal(body.errors[0].details.installation.id, installed.id);
+      assert.equal((await service().read(installed.id)).manifest.name, 'Podcast');
+      assert.equal((await manifestRows()).length, 1);
+    });
+
+    it('runs a suspended app again once its changes are approved', async function () {
+      const installed = await install();
+      await models.Base.knex('app_installations')
+        .where({ id: installed.id })
+        .update({ status: 'suspended' });
+      serve(manifest({ name: 'Podcasts' }));
+      const { digest } = await preview();
+      serve(manifest({ name: 'Podcasts' }));
+
+      const { body } = await approve(installed.id, MANIFEST_URL, digest, 200);
+
+      assert.equal(body.app_installations[0].status, 'active');
+      assert.equal(body.app_installations[0].manifest.name, 'Podcasts');
+      assert.equal((await installationRow(installed.id)).pending_manifest_id, null);
     });
 
     it('refuses a manifest for a different app', async function () {

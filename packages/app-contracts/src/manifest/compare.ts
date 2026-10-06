@@ -21,24 +21,32 @@ export interface ManifestComparison {
   requiresApproval: boolean;
 }
 
-type Leaf = string | number | boolean | null;
-
-function collectLeaves(value: unknown, path: string, leaves: Map<string, Leaf>): void {
+function entriesOf(value: unknown, path: string): Array<[string, unknown]> {
   if (Array.isArray(value)) {
-    value.forEach((item, index) => collectLeaves(item, `${path}[${index}]`, leaves));
-    return;
+    return value.map((item, index) => [`${path}[${index}]`, item]);
   }
   if (value !== null && typeof value === 'object') {
-    for (const [key, item] of Object.entries(value)) {
-      collectLeaves(item, path ? `${path}.${key}` : key, leaves);
-    }
-    return;
+    return Object.entries(value).map(([key, item]) => [path ? `${path}.${key}` : key, item]);
   }
-  leaves.set(path, value as Leaf);
+  return [];
 }
 
-function leavesOf(manifest: AppManifest): Map<string, Leaf> {
-  const leaves = new Map<string, Leaf>();
+// Each leaf is kept as JSON, so values of different types never compare equal. An empty
+// list or object is a leaf too: otherwise a field that arrives as `[]` would not count as
+// a change.
+function collectLeaves(value: unknown, path: string, leaves: Map<string, string>): void {
+  const entries = entriesOf(value, path);
+  if (entries.length === 0) {
+    leaves.set(path, JSON.stringify(value));
+    return;
+  }
+  for (const [itemPath, item] of entries) {
+    collectLeaves(item, itemPath, leaves);
+  }
+}
+
+function leavesOf(manifest: AppManifest): Map<string, string> {
+  const leaves = new Map<string, string>();
   collectLeaves(manifest, '', leaves);
   return leaves;
 }
@@ -56,7 +64,7 @@ export function compareManifests(approved: AppManifest, next: AppManifest): Mani
   const paths = [...new Set([...before.keys(), ...after.keys()])].sort();
 
   const changes = paths
-    .filter((path) => before.get(path) !== after.get(path) || before.has(path) !== after.has(path))
+    .filter((path) => before.get(path) !== after.get(path))
     .map((path) => ({ path, requiresApproval: !SILENT_PATHS.has(path) }));
 
   return { changes, requiresApproval: changes.some((change) => change.requiresApproval) };

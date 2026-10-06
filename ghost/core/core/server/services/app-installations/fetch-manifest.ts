@@ -1,12 +1,11 @@
 import errors from '@tryghost/errors';
+import { isLocalhost } from '@tryghost/app-contracts/manifest';
 import type { Got } from 'got';
 
 // The manifest is stored in a TEXT column, so anything larger could not be kept anyway.
 export const MANIFEST_MAX_BYTES = 64 * 1024;
 const TIMEOUT_MS = 5000;
 const MAX_REDIRECTS = 3;
-
-const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '[::1]']);
 
 export interface FetchedManifest {
   /**
@@ -19,12 +18,14 @@ export interface FetchedManifest {
 
 export type FetchManifest = (manifestUrl: string) => Promise<FetchedManifest>;
 
+// Says only that the app answered with an error, never why a request failed otherwise, so
+// the preview cannot be used to map the network Ghost runs in.
 function unreachable(manifestUrl: string, err: unknown) {
+  const status = (err as { response?: { statusCode?: number } } | null)?.response?.statusCode;
   return new errors.ValidationError({
     message: 'Could not load the app’s manifest.',
     code: 'APP_MANIFEST_UNREACHABLE',
-    // Passing the error as `err` would replace this error's code with its own.
-    context: `${manifestUrl}: ${err instanceof Error ? err.message : String(err)}`,
+    context: status ? `${manifestUrl} answered with HTTP ${status}` : manifestUrl,
   });
 }
 
@@ -50,8 +51,8 @@ function staysOnHost(from: URL, to: URL): boolean {
  * install link points, and the manifest must come from there.
  *
  * `getLocalhostAlias` is for Ghost running in a container in development. There `localhost`
- * is the container, not the developer's machine where the app runs, so a loopback
- * address is fetched through the alias (e.g. `host.docker.internal`) with the original
+ * is the container, not the developer's machine where the app runs, so a localhost
+ * address (by the same rule the manifest uses) is fetched through the alias (e.g. `host.docker.internal`) with the original
  * Host header. The manifest keeps its own URLs, which the browser still uses as they are.
  */
 export function createManifestFetcher({
@@ -67,7 +68,7 @@ export function createManifestFetcher({
     let current = requested;
 
     const fetchUrl = (url: URL) => {
-      if (!alias || !LOOPBACK_HOSTNAMES.has(url.hostname)) {
+      if (!alias || !isLocalhost(url.hostname)) {
         return url;
       }
       const aliased = new URL(url.href);
