@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { promisify } from 'node:util';
 import sinon from 'sinon';
 import supertest from 'supertest';
 import type { GhostServer } from '../../core/server/ghost-server';
@@ -9,6 +10,7 @@ const {
 } = require('../../core/server/services/jobs-service/jobs-service');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
+const express = require('express');
 const configUtils = require('../utils/config-utils');
 const notify = require('../../core/server/notify');
 const sentry = require('../../core/shared/sentry');
@@ -32,12 +34,14 @@ describe('Required startup failure', function () {
     configUtils.set('sentry:disabled', true);
     sandbox.stub(sentry, 'captureException');
     sandbox.stub(sentry, 'captureMessage');
-    sandbox.stub(logging, 'error');
+    const logError = sandbox.stub(logging, 'error');
     sandbox.stub(console, 'error');
     const exit = sandbox.stub(process, 'exit');
     notify.resetNotifications();
     const ready = sandbox.spy(notify, 'notifyServerReady');
     const serverStart = sandbox.spy(GhostServerClass.prototype, 'start');
+    // Retain the real listener even after GhostServer clears its own reference.
+    const listen = sandbox.spy(express.application, 'listen');
     const shutdown = sandbox.spy(GhostServerClass.prototype, 'shutdown');
     sandbox.stub(JobsServiceClass.prototype, 'start').callsFake(() => {
       jobsStart = (async () => {
@@ -62,6 +66,8 @@ describe('Required startup failure', function () {
 
       const ghostServer = serverStart.firstCall?.thisValue as GhostServer | undefined;
       assert.ok(ghostServer?.rootApp);
+      const httpServer = listen.firstCall?.returnValue;
+      assert.ok(httpServer?.listening);
       const maintenance = await supertest(configUtils.getServerUrl())
         .get('/ghost/api/admin/site/')
         .expect(503);
@@ -76,8 +82,10 @@ describe('Required startup failure', function () {
       // Boot initiates shutdown without awaiting it. Observe the real shutdown
       // separately so the assertions include cleanup and the requested exit.
       await shutdown.firstCall.returnValue;
+      sinon.assert.calledOnceWithExactly(logError, startupError);
       sinon.assert.calledOnceWithExactly(exit, 2);
-      assert.equal(ghostServer.__testOnlyAddress(), null);
+      assert.equal(httpServer.listening, false, 'Startup failure left the HTTP listener open');
+      assert.equal(httpServer.address(), null);
     } finally {
       release.resolve();
       try {
@@ -89,15 +97,23 @@ describe('Required startup failure', function () {
           await ghostServer?.stop();
         }
       } finally {
-        sandbox.restore();
-        notify.resetNotifications();
-        for (const [event, originalListeners] of listeners) {
-          process.removeAllListeners(event);
-          for (const listener of originalListeners) {
-            process.on(event, listener as (...args: unknown[]) => void);
+        try {
+          // A broken shutdown must still leave the test runner without a listener.
+          const httpServer = listen.firstCall?.returnValue;
+          if (httpServer?.listening) {
+            await promisify(httpServer.close).call(httpServer);
           }
+        } finally {
+          sandbox.restore();
+          notify.resetNotifications();
+          for (const [event, originalListeners] of listeners) {
+            process.removeAllListeners(event);
+            for (const listener of originalListeners) {
+              process.on(event, listener as (...args: unknown[]) => void);
+            }
+          }
+          await configUtils.restore();
         }
-        await configUtils.restore();
       }
     }
   });

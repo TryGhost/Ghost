@@ -27,42 +27,24 @@ describe('Notify', function () {
     ['notifyServerReady', 'ready'],
   ]) {
     describe(method, function () {
-      it('resolves a promise', async function () {
-        await notify[method]();
-      });
+      for (const error of [null, new Error('startup failed')]) {
+        it(`publishes only the first ${error ? 'failure' : 'success'} IPC message`, async function () {
+          await notify[method](error);
+          await notify[method](error ? null : new Error('later failure'));
+          await notify[method](error);
 
-      it('communicates with IPC correctly on success', async function () {
-        await notify[method]();
-
-        sinon.assert.calledOnce(process.send);
-
-        const message = process.send.firstCall.args[0];
-        assert(message && typeof message === 'object');
-        assert('debug' in message);
-        assert(!('error' in message));
-        assert.equal(message[field], true);
-      });
-
-      it('communicates with IPC correctly on failure', async function () {
-        const error = new Error('something went wrong');
-        await notify[method](error);
-
-        sinon.assert.calledOnce(process.send);
-
-        const message = process.send.firstCall.args[0];
-        assert(message && typeof message === 'object');
-        assert('debug' in message);
-        assert.equal(message[field], false);
-        assert.equal(message.error, error);
-      });
-
-      it('can be called multiple times, but only communicates once', async function () {
-        await notify[method]();
-        await notify[method](new Error('something went wrong'));
-        await notify[method]();
-
-        sinon.assert.calledOnce(process.send);
-      });
+          sinon.assert.calledOnce(process.send);
+          const message = process.send.firstCall.args[0];
+          assert(message && typeof message === 'object');
+          assert('debug' in message);
+          assert.equal(message[field], !error);
+          if (error) {
+            assert.equal(message.error, error);
+          } else {
+            assert(!('error' in message));
+          }
+        });
+      }
     });
   }
 
