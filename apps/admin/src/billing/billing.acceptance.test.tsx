@@ -482,6 +482,7 @@ describe('Ghost(Pro) billing', () => {
     await expect.element(billingScreen.frame()).toBeVisible();
     const shown = frame.getBoundingClientRect();
     expect(shown.width).toBe(hidden.width);
+    expect(shown.height).toBe(hidden.height);
   });
 
   it('shows billing full size to contributors held by a force upgrade', async () => {
