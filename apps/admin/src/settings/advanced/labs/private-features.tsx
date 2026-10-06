@@ -118,6 +118,12 @@ const features: Feature[] = [
       'Let AI agents pay for access to paid-members markdown (.md) URLs via Stripe Machine Payments Protocol',
     flag: 'machinePayments',
   },
+  {
+    title: 'Navigation URL suggestions',
+    description:
+      'Suggest pages, posts, offers and Portal links when editing navigation URLs in settings',
+    flag: 'navigationUrlSuggestions',
+  },
 ];
 
 const AlphaFeatures: React.FC = () => {

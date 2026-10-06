@@ -68,6 +68,7 @@ const PRIVATE_FEATURES = [
   'machinePayments',
   'editorReact',
   'authReact',
+  'navigationUrlSuggestions',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
