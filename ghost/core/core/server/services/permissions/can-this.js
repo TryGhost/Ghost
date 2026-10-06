@@ -1,17 +1,108 @@
 const _ = require('lodash');
 const models = require('../../models');
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const providers = require('./providers');
 const parseContext = require('./parse-context');
 const actionsMap = require('./actions-map-cache');
+const rolePermissions = require('./role-permissions');
 const { setIsRoles } = require('../../models/role-utils');
 
 const messages = {
   noPermissionToAction: 'You do not have permission to perform this action',
   noActionsMapFoundError:
     'No actions map found, ensure you have loaded permissions into database and then call permissions.init() before use.',
+  parityMismatch: 'Permission check would decide differently with in-memory role permissions',
+  parityCheckFailed: 'Permissions parity check could not run',
 };
+
+// Every check is also decided from the in-memory role permissions, and the
+// two outcomes are compared, so we know the switch away from the database
+// would not change any decision. Each distinct difference is logged once per
+// process. This is temporary and goes with the switch.
+
+const roleNamesOf = (actor) => (actor?.roles ?? []).map((role) => role.name);
+
+/**
+ * The same actors, with their permissions taken from the in-memory role map
+ * instead of the database.
+ */
+function withInMemoryPermissions(loaded) {
+  const swap = (actor) =>
+    actor ? { ...actor, permissions: rolePermissions.forRoles(roleNamesOf(actor)) } : actor;
+
+  return { ...loaded, user: swap(loaded.user), apiKey: swap(loaded.apiKey) };
+}
+
+/**
+ * @param {Promise<unknown>} decision
+ * @returns {Promise<'allowed'|'denied'|'error'>}
+ */
+async function outcomeOf(decision) {
+  try {
+    await decision;
+    return 'allowed';
+  } catch (err) {
+    return err?.errorType === 'NoPermissionError' ? 'denied' : 'error';
+  }
+}
+
+const reportedParityMismatches = new Set();
+
+/**
+ * Compares a decision with the same decision made from the in-memory role
+ * permissions, and logs when they differ. Never changes or delays the real
+ * decision, and never throws.
+ *
+ * @param {Promise<unknown>} decision the real decision, from database permissions
+ * @param {() => unknown} decideInMemory makes the same decision from the in-memory permissions
+ * @param {{actType: string, objType: string, context: object, permissionsLoad: Promise<object>}} check
+ * @returns {Promise<void>}
+ */
+function compareWithInMemoryPermissions(decision, decideInMemory, check) {
+  return Promise.resolve()
+    .then(async () => {
+      const [database, inMemory] = await Promise.all([
+        outcomeOf(decision),
+        outcomeOf(Promise.resolve().then(decideInMemory)),
+      ]);
+
+      if (database === inMemory) {
+        return;
+      }
+
+      const loaded = await check.permissionsLoad;
+      const userRoles = roleNamesOf(loaded.user);
+      const apiKeyRoles = roleNamesOf(loaded.apiKey);
+      const key = [check.actType, check.objType, userRoles, apiKeyRoles, database, inMemory].join(
+        '|',
+      );
+
+      if (reportedParityMismatches.has(key)) {
+        return;
+      }
+
+      reportedParityMismatches.add(key);
+
+      logging.error(
+        new errors.InternalServerError({
+          message: tpl(messages.parityMismatch),
+          code: 'PERMISSIONS_PARITY_MISMATCH',
+          errorDetails: {
+            action: check.actType,
+            object: check.objType,
+            user: loaded.user ? { id: check.context.user, roles: userRoles } : null,
+            apiKey: loaded.apiKey ? { id: check.context.api_key?.id, roles: apiKeyRoles } : null,
+            outcome: { database, inMemory },
+          },
+        }),
+      );
+    })
+    .catch((err) => {
+      logging.error({ err, message: tpl(messages.parityCheckFailed) });
+    });
+}
 
 class CanThisResult {
   buildObjectTypeHandlers(objTypes, actType, context, permissionLoad) {
@@ -166,16 +257,38 @@ class CanThisResult {
       },
     );
 
+    const inMemoryPermissionsLoad = permissionsLoad.then(withInMemoryPermissions);
+
     // Iterate through the actions and their related object types
     _.each(actionsMap.getAll(), function (objTypes, actType) {
       // Build up the object type handlers;
       // the '.post()' parts in canThis(user).edit.post()
-      const objTypeHandlers = self.buildObjectTypeHandlers(
+      const databaseHandlers = self.buildObjectTypeHandlers(
         objTypes,
         actType,
         context,
         permissionsLoad,
       );
+      const inMemoryHandlers = self.buildObjectTypeHandlers(
+        objTypes,
+        actType,
+        context,
+        inMemoryPermissionsLoad,
+      );
+
+      const objTypeHandlers = _.mapValues(databaseHandlers, function (handler, objType) {
+        return function (modelOrId, unsafeAttrs) {
+          const decision = handler(modelOrId, unsafeAttrs);
+
+          compareWithInMemoryPermissions(
+            decision,
+            () => inMemoryHandlers[objType](modelOrId, unsafeAttrs),
+            { actType, objType, context, permissionsLoad },
+          );
+
+          return decision;
+        };
+      });
 
       // Define a property for the action on the result;
       // the '.edit' in canThis(user).edit.post()
