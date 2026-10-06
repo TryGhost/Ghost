@@ -537,8 +537,8 @@ catalogs:
       specifier: 16.0.0
       version: 16.0.0
     hono:
-      specifier: 4.13.8
-      version: 4.13.8
+      specifier: 4.13.12
+      version: 4.13.12
     ipaddr.js:
       specifier: 2.5.0
       version: 2.5.0
@@ -2643,7 +2643,7 @@ importers:
         version: 2.27.0
       '@x402/hono':
         specifier: 'catalog:'
-        version: 2.27.0(hono@4.13.8)
+        version: 2.27.0(hono@4.13.12)
       archiver:
         specifier: 8.0.0
         version: 8.0.0
@@ -2769,7 +2769,7 @@ importers:
         version: 2.1.0
       hono:
         specifier: 'catalog:'
-        version: 4.13.8
+        version: 4.13.12
       html-to-text:
         specifier: 5.1.1
         version: 5.1.1
@@ -2874,7 +2874,7 @@ importers:
         version: 0.6.4
       mppx:
         specifier: 'catalog:'
-        version: 0.6.20(express@4.22.3(supports-color@10.2.2))(hono@4.13.8)(viem@2.55.11)
+        version: 0.6.20(express@4.22.3(supports-color@10.2.2))(hono@4.13.12)(viem@2.55.11)
       multer:
         specifier: 2.4.0
         version: 2.4.0
@@ -15356,8 +15356,8 @@ packages:
     resolution: {integrity: sha512-eSmmWE5bZTK2Nou4g0AI3zZ9rswp7GRKoKXS1BLUkvPviOqs4YTN1djQIqrXy9k5gEtdLPy86JjRwsNM9tnDcA==}
     engines: {node: '>=0.10.0'}
 
-  hono@4.13.8:
-    resolution: {integrity: sha512-/Gng7NfoykZl2pjukW5Z6+8Yxm3BPRf86GTbQnt0SbySkvax4fyL4H3HhY1cCpBGmiW9XDRFzRV+CXK2W8QudQ==}
+  hono@4.13.12:
+    resolution: {integrity: sha512-6E2QDAc9Ick9Sq77ZrGS/dk2WUYni91aufTw6LJKpV7w8kW5/GxVUc650FOADOmlwg3K+f7Pun6XlV+pYmW6gw==}
     engines: {node: '>=16.9.0'}
 
   hookified@1.15.1:
@@ -30168,11 +30168,11 @@ snapshots:
       - ethers
       - utf-8-validate
 
-  '@x402/hono@2.27.0(hono@4.13.8)':
+  '@x402/hono@2.27.0(hono@4.13.12)':
     dependencies:
       '@x402/core': 2.27.0
       '@x402/extensions': 2.27.0
-      hono: 4.13.8
+      hono: 4.13.12
     transitivePeerDependencies:
       - bufferutil
       - ethers
@@ -37326,7 +37326,7 @@ snapshots:
     dependencies:
       parse-passwd: 1.0.0
 
-  hono@4.13.8: {}
+  hono@4.13.12: {}
 
   hookified@1.15.1: {}
 
@@ -40493,7 +40493,7 @@ snapshots:
       rimraf: 2.7.1
       run-queue: 1.0.3
 
-  mppx@0.6.20(express@4.22.3(supports-color@10.2.2))(hono@4.13.8)(viem@2.55.11):
+  mppx@0.6.20(express@4.22.3(supports-color@10.2.2))(hono@4.13.12)(viem@2.55.11):
     dependencies:
       incur: 0.4.26
       ox: 0.14.20
@@ -40501,7 +40501,7 @@ snapshots:
       zod: 4.6.5
     optionalDependencies:
       express: 4.22.3(supports-color@10.2.2)
-      hono: 4.13.8
+      hono: 4.13.12
 
   mrmime@2.0.1: {}
 
