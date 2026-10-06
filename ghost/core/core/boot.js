@@ -677,6 +677,10 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
       logging.error('Unhandled rejection:', error);
     });
     debug('End: Add unhandled rejection handler');
+
+    debug('Begin: Start memory reducer keepalive');
+    require('./server/lib/memory-reducer-keepalive').startMemoryReducerKeepalive();
+    debug('End: Start memory reducer keepalive');
   } catch (error) {
     console.error(error); // eslint-disable-line no-console
     process.exit(1);
@@ -714,6 +718,10 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
           prometheusClient.stop();
         }
       }, 'Prometheus client');
+
+      ghostServer.registerCleanupTask(async () => {
+        require('./server/lib/memory-reducer-keepalive').stopMemoryReducerKeepalive();
+      }, 'Memory reducer keepalive');
       debug('End: load server + minimal app');
     }
 
