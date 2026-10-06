@@ -68,14 +68,25 @@ export type AutomationEdge = {
   target_action_id: string;
 };
 
-export type AutomationDetail = Automation & {
-  created_at: string;
-  updated_at: string;
-  actions: AutomationAction[];
-  edges: AutomationEdge[];
-};
+export type AutomationTrigger =
+  | {
+      trigger_tier_scope: 'free' | 'all_paid' | null;
+      trigger_tier_ids: null;
+    }
+  | {
+      trigger_tier_scope: 'selected_paid';
+      trigger_tier_ids: readonly string[];
+    };
 
-export type EditAutomationPayload = {
+export type AutomationDetail = Automation &
+  AutomationTrigger & {
+    created_at: string;
+    updated_at: string;
+    actions: AutomationAction[];
+    edges: AutomationEdge[];
+  };
+
+export type EditAutomationPayload = AutomationTrigger & {
   id: string;
   name: string;
   description: string;
@@ -315,12 +326,22 @@ export const useEditAutomation = createMutation<
 >({
   method: 'PUT',
   path: ({ id }) => `/automations/${id}/`,
-  body: ({ name, description, status, actions, edges }) => ({
+  body: ({
+    name,
+    description,
+    status,
+    actions,
+    edges,
+    trigger_tier_scope: triggerTierScope,
+    trigger_tier_ids: triggerTierIds,
+  }) => ({
     automations: [
       {
         name,
         description,
         status,
+        trigger_tier_scope: triggerTierScope,
+        trigger_tier_ids: triggerTierIds,
         actions: actions.map(serializeEditableAction),
         edges,
       },
