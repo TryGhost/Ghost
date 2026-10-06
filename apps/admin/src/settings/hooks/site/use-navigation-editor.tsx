@@ -25,8 +25,6 @@ export type NavigationItemErrors = { [key in keyof NavigationItem]?: string };
 export type EditableItem = NavigationItem & { id: string; errors: NavigationItemErrors };
 
 const hasTextValue = (value?: string) => Boolean(value && !value.match(/^\s*$/));
-const hasNewItem = (newItem: NavigationItem) =>
-  Boolean(hasTextValue(newItem.label) || newItem.url || hasTextValue(newItem.icon));
 
 export type NavigationEditor = {
   items: EditableItem[];
@@ -57,10 +55,20 @@ const serializeItem = ({ url, label, icon, visibility }: NavigationItem): Naviga
 const useNavigationEditor = ({
   items,
   setItems,
+  blankUrl = '/',
 }: {
   items: NavigationItem[];
   setItems: (newItems: NavigationItem[]) => void;
+  blankUrl?: string;
 }): NavigationEditor => {
+  const hasNewItem = useCallback(
+    (newItem: NavigationItem) =>
+      Boolean(
+        hasTextValue(newItem.label) || newItem.url !== blankUrl || hasTextValue(newItem.icon),
+      ),
+    [blankUrl],
+  );
+
   const editableItems = useMemo(() => items.map(normalizeItem), [items]);
   const setNavigationItems = useCallback(
     (newItems: Omit<EditableItem, 'id'>[]) => {
@@ -72,9 +80,7 @@ const useNavigationEditor = ({
   const list = useSortableIndexedList<Omit<EditableItem, 'id'>>({
     items: editableItems,
     setItems: setNavigationItems,
-    // Empty rather than '/', so a new item starts with the suggestions
-    // instead of the site root
-    blank: { url: '', label: '', icon: '', visibility: 'public', errors: {} },
+    blank: { url: blankUrl, label: '', icon: '', visibility: 'public', errors: {} },
     canAddNewItem: hasNewItem,
   });
 

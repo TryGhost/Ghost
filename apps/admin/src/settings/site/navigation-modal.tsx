@@ -51,18 +51,23 @@ function NavigationModal() {
     [updateSetting],
   );
 
+  // One for both tabs, so each search index is only downloaded once
+  const { enabled: suggestionsEnabled, loadSuggestions } = useNavigationLinkSuggestions();
+
+  // Empty rather than the site root, so a new item starts with the suggestions
+  const blankUrl = suggestionsEnabled ? '' : '/';
+
   const navigation = useNavigationEditor({
     items: navigationItems,
     setItems: setNavigationItems,
+    blankUrl,
   });
 
   const secondaryNavigation = useNavigationEditor({
     items: secondaryNavigationItems,
     setItems: setSecondaryNavigationItems,
+    blankUrl,
   });
-
-  // One for both tabs, so each search index is only downloaded once
-  const { loadSuggestions } = useNavigationLinkSuggestions();
 
   const [selectedTab, setSelectedTab] = useState('primary-nav');
 
@@ -114,6 +119,7 @@ function NavigationModal() {
               showIcon={showIcon}
               showPaidVisibility={showPaidVisibility}
               showVisibility={showVisibility}
+              suggestionsEnabled={suggestionsEnabled}
               uploadIcon={uploadIcon}
             />
           </TabsContent>
@@ -126,6 +132,7 @@ function NavigationModal() {
               showIcon={showIcon}
               showPaidVisibility={showPaidVisibility}
               showVisibility={showVisibility}
+              suggestionsEnabled={suggestionsEnabled}
               uploadIcon={uploadIcon}
             />
           </TabsContent>

@@ -3,7 +3,7 @@ import { getHomepageUrl } from '@tryghost/admin-x-framework/api/site';
 import { useBrowseOffers } from '@tryghost/admin-x-framework/api/offers';
 import { useCallback, useMemo, useRef } from 'react';
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
-import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
+import { useFeatureFlag, useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { buildAutocompleteLinks, buildOfferLinks } from '@/shared/autocomplete-links';
 import {
@@ -45,6 +45,7 @@ const matches = (suggestion: Suggestion, term: string) => {
 };
 
 const useNavigationLinkSuggestions = () => {
+  const enabled = useFeatureFlag('navigationUrlSuggestions');
   const { config, settings, siteData } = useGlobalData();
 
   const [paidMembersEnabled = false, donationsEnabled = false, recommendationsEnabled = false] =
@@ -63,7 +64,9 @@ const useNavigationLinkSuggestions = () => {
   const stripeEnabled = checkStripeEnabled(settings, config);
 
   // Offers need paid membership with Stripe, so there's nothing to fetch otherwise
-  const { data: offersData } = useBrowseOffers({ enabled: paidMembersEnabled && stripeEnabled });
+  const { data: offersData } = useBrowseOffers({
+    enabled: enabled && paidMembersEnabled && stripeEnabled,
+  });
 
   const fetchApi = useFetchApi();
   const searchIndex = useRef<Partial<Record<SearchIndexKey, Promise<SearchIndexPost[]>>>>({});
@@ -132,6 +135,10 @@ const useNavigationLinkSuggestions = () => {
 
   const loadSuggestions = useCallback(
     async (term: string): Promise<SuggestionGroup[]> => {
+      if (!enabled) {
+        return [];
+      }
+
       // A failed download only leaves out its own group
       const [pages, posts] = await Promise.all([
         loadIndex('pages').catch(() => []),
@@ -174,10 +181,10 @@ const useNavigationLinkSuggestions = () => {
 
       return [...filteredStaticGroups, ...contentGroups].filter((group) => group.items.length > 0);
     },
-    [loadIndex, staticGroups],
+    [enabled, loadIndex, staticGroups],
   );
 
-  return { loadSuggestions };
+  return { enabled, loadSuggestions };
 };
 
 export default useNavigationLinkSuggestions;

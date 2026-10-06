@@ -21,6 +21,7 @@ const NavigationEditForm: React.FC<{
   showIcon: boolean;
   showPaidVisibility: boolean;
   showVisibility: boolean;
+  suggestionsEnabled: boolean;
   uploadIcon?: (file: File) => Promise<string | undefined>;
 }> = ({
   baseUrl,
@@ -30,6 +31,7 @@ const NavigationEditForm: React.FC<{
   showIcon,
   showPaidVisibility,
   showVisibility,
+  suggestionsEnabled,
   uploadIcon,
 }) => {
   return (
@@ -78,6 +80,7 @@ const NavigationEditForm: React.FC<{
             showIcon={showIcon}
             showPaidVisibility={showPaidVisibility}
             showVisibility={showVisibility}
+            suggestionsEnabled={suggestionsEnabled}
             updateItem={(updates) => navigation.updateItem(item.id, updates)}
             uploadIcon={uploadIcon}
           />
@@ -116,6 +119,7 @@ const NavigationEditForm: React.FC<{
           showIcon={showIcon}
           showPaidVisibility={showPaidVisibility}
           showVisibility={showVisibility}
+          suggestionsEnabled={suggestionsEnabled}
           updateItem={navigation.setNewItem}
           uploadIcon={uploadIcon}
         />

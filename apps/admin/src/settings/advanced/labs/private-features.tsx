@@ -124,6 +124,12 @@ const features: Feature[] = [
       'Show payment-failure warnings in Admin, driven by the hosting provider via hostSettings.billing.dunning',
     flag: 'dunningWarnings',
   },
+  {
+    title: 'Navigation URL suggestions',
+    description:
+      'Suggest pages, posts, offers and Portal links when editing navigation URLs in settings',
+    flag: 'navigationUrlSuggestions',
+  },
 ];
 
 const AlphaFeatures: React.FC = () => {
