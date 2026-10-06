@@ -30,7 +30,7 @@ import { editorScreen } from '@/editor/editor.screen';
 import type { EmberDataChangeEvent } from '@/ember-bridge';
 import { deferred } from '@/utils/deferred';
 import { previewScreen } from '@/editor/preview/preview.screen';
-import { CONFLICT_MESSAGE } from '@/editor/publish/completion-message';
+import { CONFLICT_MESSAGE, UNEXPECTED_MESSAGE } from '@/editor/publish/completion-message';
 import { publishScreen } from '@/editor/publish/publish.screen';
 import { POST_DELETED } from '@/editor/session/error-mapping';
 import {
@@ -683,6 +683,19 @@ describe('Editor header actions', () => {
     await expect(previewScreen.toastWithText(GENERIC_ERROR_TOAST)).toHaveCount(0);
   });
 
+  it('shows a generic reason when the save before previewing fails in the browser', async () => {
+    publishChrome();
+    fakeSavablePost();
+    // An answer without the post throws in the editor, not as an API error.
+    fakeAdminEndpoint('PUT', new RegExp(`^/posts/${POST_ID}/\\?`), {});
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await typeIntoBody(' and more');
+    await editorScreen.previewButton().click();
+
+    await expect.element(previewScreen.saveFailed()).toHaveTextContent(UNEXPECTED_MESSAGE);
+  });
+
   it('toggles the preview with the keyboard shortcut', async () => {
     publishChrome();
     fakeSavablePost();
@@ -925,6 +938,19 @@ describe('Editor header actions', () => {
     await expect.element(publishScreen.confirmError()).toHaveTextContent('Validation failed');
     await expect(publishScreen.complete()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(1);
+  });
+
+  it('shows a generic reason when publishing fails in the browser', async () => {
+    publishChrome();
+    fakeSavablePost();
+    // An answer without the post throws in the editor, not as an API error.
+    fakeAdminEndpoint('PUT', new RegExp(`^/posts/${POST_ID}/\\?`), {});
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await publishThroughFlow();
+
+    await expect.element(publishScreen.confirmError()).toHaveTextContent(UNEXPECTED_MESSAGE);
   });
   it('offers no preview once the post has been published', async () => {
     publishChrome();
