@@ -61,6 +61,14 @@ describe('MentionDiscoveryService', function () {
       assert.equal(endpoint, null);
     });
 
+    it('Returns null when the endpoint in the Link header is not a valid URL', async function () {
+      const url = new URL('http://testpage.com/');
+      nock(url.href).get('/').reply(200, {}, { Link: '<http://[invalid>; rel="webmention"' });
+      const endpoint = await service.getEndpoint(url);
+
+      assert.equal(endpoint, null);
+    });
+
     it('Returns an endpoint from a site with a webmentions Link in the header', async function () {
       const url = new URL('http://testpage.com/');
       nock(url.href)
