@@ -27,6 +27,7 @@ describe('database automations repository', function () {
     id,
     name: `Test automation ${id}`,
     status: 'active',
+    trigger_type: 'membership_started',
     trigger_tier_scope: 'free',
     created_at: now,
   });

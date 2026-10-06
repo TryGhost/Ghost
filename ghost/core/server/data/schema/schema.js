@@ -2173,6 +2173,12 @@ module.exports = {
       validations: { isIn: [['active', 'inactive', 'archived']] },
     },
     name: { type: 'string', maxlength: 191, nullable: false },
+    trigger_type: {
+      type: 'string',
+      maxlength: 50,
+      nullable: false,
+      validations: { isIn: [['membership_started']] },
+    },
     description: { type: 'string', maxlength: 2000, nullable: false, defaultTo: '' },
     slug: { type: 'string', maxlength: 191, nullable: true, unique: true },
     trigger_tier_scope: {

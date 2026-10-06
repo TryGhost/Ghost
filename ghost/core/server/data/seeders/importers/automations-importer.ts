@@ -14,6 +14,7 @@ type Automation = {
   name: string;
   slug: string;
   description: string;
+  trigger_type: 'membership_started';
   trigger_tier_scope: 'free' | 'all_paid';
   created_at: string;
   updated_at: string;
@@ -62,6 +63,7 @@ export class AutomationsImporter extends TableImporter<Automation> {
       name,
       description: defaultAutomation?.description ?? '',
       slug,
+      trigger_type: 'membership_started',
       trigger_tier_scope: defaultAutomation?.trigger_tier_scope ?? 'all_paid',
       created_at: toDatabaseDate(createdAt),
       updated_at: toDatabaseDate(createdAt),
