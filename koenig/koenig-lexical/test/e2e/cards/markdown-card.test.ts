@@ -47,6 +47,39 @@ test.describe('Markdown card', async () => {
         await page.close();
     });
 
+    for (const dark of [false, true]) {
+        test(`owns Markdown toolbar and selection colours in ${dark ? 'dark' : 'light'} mode`, async function () {
+            await initialize({page, uri: `/#/?content=false&darkMode=${dark}`});
+            // No Ember stylesheet is loaded by the standalone demo. Poison the
+            // old inherited variables to catch an accidental dependency on them.
+            await page.evaluate(() => {
+                for (const name of ['lightgrey', 'blue', 'yellow', 'orange']) {
+                    document.documentElement.style.setProperty(`--${name}`, '#ff00ff');
+                }
+            });
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'markdown'});
+            await focusMarkdownEditor(page);
+            await page.keyboard.type('Selected Markdown');
+            await page.keyboard.press('Shift+Home');
+
+            const separator = page.locator('.markdown-editor .editor-toolbar i.separator').first();
+            await expect(separator).toHaveCSS('border-left-style', 'solid');
+            await expect(separator).toHaveCSS('border-left-width', '1px');
+            await expect(separator).toHaveCSS('border-left-color', dark ? 'rgb(124, 139, 154)' : 'rgb(206, 212, 217)');
+            const selectedText = page.locator('.markdown-editor .CodeMirror-selectedtext').first();
+            await expect(selectedText).toBeVisible();
+            await expect(selectedText).toHaveCSS('background-color', dark ? 'rgb(35, 69, 83)' : 'rgb(185, 234, 255)');
+            await expect(selectedText).toHaveCSS('color', dark ? 'rgb(244, 245, 246)' : 'rgb(21, 23, 26)');
+
+            await page.evaluate(() => {
+                for (const name of ['lightgrey', 'blue', 'yellow', 'orange']) {
+                    document.documentElement.style.removeProperty(`--${name}`);
+                }
+            });
+        });
+    }
+
     test('can import serialized markdown card node', async function () {
         await page.evaluate(() => {
             const serializedState = JSON.stringify({
