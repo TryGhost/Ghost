@@ -1,3 +1,4 @@
+import { composeConfigBootOverrides } from '@test-utils/acceptance/boot';
 import { expect } from 'vitest';
 import { automationsScreen } from './automations.screen';
 import { page } from 'vitest/browser';
@@ -8,7 +9,12 @@ import type {
   AutomationRun,
 } from '@tryghost/admin-x-framework/api/automations';
 
+export const performanceBoot = composeConfigBootOverrides({
+  stats: { endpoint: 'https://api.tinybird.test', id: 'test-site' },
+});
+
 export const flags = {
+  boot: performanceBoot,
   labs: { automations: true, automationRunAnalytics: true, automationsTinybirdSync: true },
 };
 const detail = (id: string): AutomationDetail => ({

@@ -1,15 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act } from 'react';
-import { openPerformanceSidebar, run } from './run-list.test-utils';
+import { flags, openPerformanceSidebar, run } from './run-list.test-utils';
 
 import { QueryCache } from '@tanstack/react-query';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import type { AutomationPerformanceStats } from '@tryghost/admin-x-framework/api/automations';
 
-const flags = {
-  labs: { automations: true, automationRunAnalytics: true, automationsTinybirdSync: true },
-};
 const endpoint = /\/automations\/dates\/performance-stats\/\?/;
 const timezone = 'America/New_York';
 const presets = [
