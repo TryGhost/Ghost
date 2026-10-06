@@ -1,8 +1,4 @@
-import type {
-  Inventory,
-  SourceFile,
-  ResolvedDependency,
-} from '../lib/typescript-inventory-types.ts';
+import type { ResolvedDependency } from '../lib/typescript-inventory-types.ts';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
@@ -13,10 +9,10 @@ import {
   category,
   excludedSource,
   inventory,
+  inventoryAtRevision,
   parseSource,
   scoreFile,
 } from '../typescript-inventory.ts';
-import { buildFileTree, renderInventory } from '../lib/typescript-inventory-html.ts';
 
 test('parses real imports, re-exports and computed calls without matching comments or strings', () => {
   const result = parseSource(
@@ -95,6 +91,21 @@ test('inventories tracked files and resolves aliases, declarations, package expo
   put('node_modules/untyped-package/package.json', '{"name":"untyped-package","main":"index.js"}');
   put('node_modules/untyped-package/index.js', 'module.exports = 1;');
   const report = inventory(root);
+  const historical = inventoryAtRevision(root, 'HEAD');
+  assert.deepEqual(historical.summary, report.summary);
+  assert.deepEqual(historical.groups, report.groups);
+  assert.equal(historical.declarations, report.declarations);
+  assert.deepEqual(historical.excluded, report.excluded);
+  assert.equal(historical.revision, report.revision);
+  assert.equal(historical.mode, 'counts-only');
+  assert.equal('files' in historical, false);
+  assert.deepEqual(
+    inventoryAtRevision(root, 'HEAD', 'src').summary,
+    inventory(root, { scope: 'src' }).summary,
+  );
+  assert.throws(() => inventoryAtRevision(root, 'HEAD', 'missing'), /No tracked source/);
+  assert.throws(() => inventoryAtRevision(root, '--help'));
+
   assert.equal(report.schemaVersion, 2);
   assert.equal(report.groups.category.backend!.javascript, 2);
   assert.equal(report.groups.category.production, undefined);
@@ -120,6 +131,8 @@ test('inventories tracked files and resolves aliases, declarations, package expo
     'test/main.test.js',
   ]);
   assert.throws(() => inventory(root, { scope: 'missing' }), /No tracked source/);
+  put('src/legacy.js', 'uncommitted\nextra\nlines');
+  assert.deepEqual(inventoryAtRevision(root, 'HEAD').summary, report.summary);
 });
 
 test('unknown and dynamic dependencies make a candidate harder', () => {
@@ -142,43 +155,6 @@ test('unknown and dynamic dependencies make a candidate harder', () => {
   };
   assert.equal(scoreFile(risky).difficulty, 'harder');
   assert.ok(scoreFile(risky).score > scoreFile(base).score);
-});
-
-test('escapes report data so paths cannot inject script markup', () => {
-  const file: SourceFile = {
-    path: '</script><script>alert(1)</script>',
-    package: 'test',
-    category: 'tooling',
-    language: 'javascript',
-    dependents: [],
-    ...parseSource('a.js', ''),
-    imports: [],
-    ...scoreFile({ ...parseSource('a.js', ''), imports: [] }),
-  };
-  const report: Inventory = {
-    schemaVersion: 2,
-    measurementVersion: 2,
-    revision: 'a'.repeat(40),
-    scope: '',
-    files: [file],
-    summary: {
-      javascript: 1,
-      typescript: 0,
-      javascriptLines: 0,
-      typescriptLines: 0,
-      typescriptPercent: 0,
-      typescriptLinePercent: 0,
-    },
-    groups: { category: {}, package: {} },
-    declarations: 0,
-    excluded: [],
-    warnings: [],
-  };
-  const html = renderInventory(report);
-  assert.ok(!html.includes('</script><script>alert(1)'));
-  assert.ok(html.includes('\\u003c/script>'));
-  assert.ok(!html.includes('Object.defineProperty(exports'));
-  assert.ok(!html.includes('export {};'));
 });
 
 test('splits production by codebase area while preserving tests and tooling', () => {
@@ -206,41 +182,6 @@ test('splits production by codebase area while preserving tests and tooling', ()
   assert.equal(category('ghost/core/test/unit/frontend/public/private.test.js'), 'tests');
   assert.equal(category('apps/portal/vite.config.js'), 'tooling');
   assert.equal(category('koenig/koenig-lexical/scripts/build.js'), 'tooling');
-});
-
-test('folder tree rolls up nested JS and TS totals without mixing similarly named folders', () => {
-  const tree = buildFileTree([
-    { path: 'root.js', language: 'javascript' },
-    { path: 'apps/admin/app.tsx', language: 'typescript' },
-    { path: 'apps/admin/helpers/a.js', language: 'javascript' },
-    { path: 'apps/admin/helpers/b.ts', language: 'typescript' },
-    { path: 'apps/admin-x/index.ts', language: 'typescript' },
-    { path: 'ghost/core/index.cjs', language: 'javascript' },
-  ]);
-  assert.equal(tree.javascript, 3);
-  assert.equal(tree.typescript, 3);
-  assert.deepEqual(
-    tree.children.map((node) => node.name),
-    ['apps', 'ghost', 'root.js'],
-  );
-  const apps = tree.children[0]!;
-  assert.ok('children' in apps);
-  assert.equal(apps.javascript, 1);
-  assert.equal(apps.typescript, 3);
-  const admin = apps.children.find((node) => node.name === 'admin');
-  assert.ok(admin && 'children' in admin);
-  assert.equal(admin.javascript, 1);
-  assert.equal(admin.typescript, 2);
-  assert.deepEqual(
-    admin.children.map((node) => node.name),
-    ['helpers', 'app.tsx'],
-  );
-  assert.deepEqual('children' in admin.children[0]! ? admin.children[0].children[0] : undefined, {
-    name: 'a.js',
-    path: 'apps/admin/helpers/a.js',
-    language: 'javascript',
-  });
-  assert.deepEqual(buildFileTree([]).children, []);
 });
 
 test('counts maintained fixture modules and classifies test support without hiding backend fixtures', (t) => {

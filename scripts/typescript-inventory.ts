@@ -14,7 +14,6 @@ import { isBuiltin } from 'node:module';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import ts from 'typescript';
-import { renderInventory } from './lib/typescript-inventory-html.ts';
 
 const sourcePattern = /\.[cm]?[jt]sx?$/;
 const declarationPattern = /\.d\.[cm]?ts$/;
@@ -386,6 +385,9 @@ export function inventory(root: string, { scope = '' } = {}): Inventory {
   return {
     schemaVersion: 2,
     measurementVersion: 2,
+    committedAt: execFileSync('git', ['show', '-s', '--format=%cI', 'HEAD'], { cwd: root })
+      .toString()
+      .trim(),
     revision: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root }).toString().trim(),
     scope,
     summary: summarize(selected),
@@ -397,22 +399,146 @@ export function inventory(root: string, { scope = '' } = {}): Inventory {
   };
 }
 
+export type RevisionInventory = Omit<Inventory, 'files'> & {
+  mode: 'counts-only';
+  committedAt: string;
+};
+
+/** Count committed blobs with today's rules, without checking out or executing historical code. */
+export function inventoryAtRevision(root: string, ref: string, scope = ''): RevisionInventory {
+  const git = (args: string[], input?: string) =>
+    execFileSync('git', args, {
+      cwd: root,
+      input,
+      maxBuffer: 512 * 1024 * 1024,
+    });
+  const revision = git(['rev-parse', '--verify', '--end-of-options', `${ref}^{commit}`])
+    .toString()
+    .trim();
+  const committedAt = git(['show', '-s', '--format=%cI', revision]).toString().trim();
+  const entries = git(['ls-tree', '-rz', revision])
+    .toString()
+    .split('\0')
+    .filter(Boolean)
+    .map((entry) => {
+      const tab = entry.indexOf('\t');
+      const [mode, type, oid] = entry.slice(0, tab).split(' ');
+      return { mode, type, oid: oid!, path: entry.slice(tab + 1) };
+    })
+    .filter((entry) => entry.type === 'blob' && entry.mode !== '120000');
+  const excluded = entries
+    .filter((entry) => sourcePattern.test(entry.path) && excludedSource(entry.path))
+    .map((entry) => entry.path);
+  const declarations = entries.filter(
+    (entry) => !excludedSource(entry.path) && declarationPattern.test(entry.path),
+  ).length;
+  const selected = entries.filter(
+    (entry) =>
+      !excludedSource(entry.path) &&
+      (path.posix.basename(entry.path) === 'package.json' ||
+        (sourcePattern.test(entry.path) && !declarationPattern.test(entry.path))),
+  );
+  const contents = new Map<string, string>();
+  // Batch by object id: filenames cannot affect the batch protocol or shell.
+  if (selected.length) {
+    const buffer = git(
+      ['cat-file', '--batch'],
+      selected.map((entry) => entry.oid).join('\n') + '\n',
+    );
+    let offset = 0;
+    for (const entry of selected) {
+      const end = buffer.indexOf(10, offset);
+      const header = buffer.subarray(offset, end).toString().split(' ');
+      const size = Number(header[2]);
+      if (
+        end < 0 ||
+        header[0] !== entry.oid ||
+        header[1] !== 'blob' ||
+        !Number.isSafeInteger(size) ||
+        size < 0 ||
+        end + 1 + size >= buffer.length
+      ) {
+        throw new Error('Invalid Git blob response');
+      }
+      contents.set(entry.path, buffer.subarray(end + 1, end + 1 + size).toString());
+      offset = end + 2 + size;
+    }
+  }
+  const packages = new Map<string, string>();
+  for (const [file, source] of contents) {
+    if (path.posix.basename(file) === 'package.json') {
+      const manifest = JSON.parse(source);
+      packages.set(path.posix.dirname(file), manifest.name || path.posix.dirname(file));
+    }
+  }
+  const files = selected
+    .filter(
+      (entry) =>
+        sourcePattern.test(entry.path) &&
+        (!scope || entry.path === scope || entry.path.startsWith(`${scope}/`)),
+    )
+    .map((entry) => {
+      const source = contents.get(entry.path)!;
+      let dir = path.posix.dirname(entry.path);
+      while (dir !== '.' && !packages.has(dir)) {
+        dir = path.posix.dirname(dir);
+      }
+      return {
+        language: typedPattern.test(entry.path) ? ('typescript' as const) : ('javascript' as const),
+        lines: source ? source.replace(/\r\n/g, '\n').replace(/\n$/, '').split('\n').length : 0,
+        category: category(entry.path),
+        package: packages.get(dir) || '(root)',
+      };
+    });
+  if (scope && !files.length) {
+    throw new Error(`No tracked source files match scope: ${scope}`);
+  }
+  const groups: Inventory['groups'] = { package: {}, category: {} };
+  for (const field of ['package', 'category'] as const) {
+    groups[field] = Object.fromEntries(
+      [...new Set(files.map((file) => file[field]))]
+        .sort()
+        .map((key) => [key, summarize(files.filter((file) => file[field] === key))]),
+    );
+  }
+  return {
+    schemaVersion: 2,
+    measurementVersion: 2,
+    mode: 'counts-only',
+    revision,
+    committedAt,
+    scope,
+    summary: summarize(files),
+    groups,
+    declarations,
+    excluded,
+    warnings: [],
+  };
+}
+
 if (import.meta.main) {
   try {
     const { values } = parseArgs({
       options: {
         scope: { type: 'string', default: '' },
         output: { type: 'string' },
+        root: { type: 'string' },
+        revision: { type: 'string' },
         help: { type: 'boolean' },
       },
     });
     if (values.help) {
       console.log(
-        'Usage: pnpm inventory:typescript [--scope ghost/core] [--output /tmp/ghost-typescript]\nWrites .json and .html reports when --output is supplied. Counts tracked working-tree files, excluding preserved test inputs, vendored code and build output; submodules are not included.',
+        'Usage: pnpm inventory:typescript [--root /path/to/Ghost] [--revision SHA] [--scope ghost/core] [--output /tmp/ghost-typescript]\nWrites a .json report when --output is supplied. Counts tracked working-tree files, excluding preserved test inputs, vendored code and build output; submodules are not included.',
       );
     } else {
-      const root = path.resolve(import.meta.dirname, '..');
-      const report = inventory(root, { scope: values.scope.replace(/\/$/, '') });
+      const root = values.root
+        ? path.resolve(values.root)
+        : path.resolve(import.meta.dirname, '..');
+      const scope = values.scope.replace(/\/$/, '');
+      const report = values.revision
+        ? inventoryAtRevision(root, values.revision, scope)
+        : inventory(root, { scope });
       console.table(report.groups.package);
       console.log(
         `${report.summary.javascript} JavaScript files remain (${report.summary.javascriptLines} physical lines). ${report.summary.typescriptPercent}% TypeScript by files, ${report.summary.typescriptLinePercent}% by lines.`,
@@ -427,8 +553,7 @@ if (import.meta.main) {
         const prefix = path.resolve(values.output);
         mkdirSync(path.dirname(prefix), { recursive: true });
         writeFileSync(`${prefix}.json`, `${JSON.stringify(report, null, 2)}\n`);
-        writeFileSync(`${prefix}.html`, renderInventory(report));
-        console.log(`Reports: ${prefix}.html and ${prefix}.json`);
+        console.log(`Report: ${prefix}.json`);
       }
     }
   } catch (error) {
