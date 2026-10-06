@@ -37,7 +37,8 @@ for (const { shell, billingReact } of [
 ] as const) {
   test.describe(`Ghost Admin - Force Upgrade Mode (${shell} billing)`, () => {
     test.use({
-      labs: { billingReact },
+      // Setting any labs flag reloads the page first, which races Ember's boot-time redirect
+      ...(billingReact ? { labs: { billingReact } } : {}),
       config: {
         hostSettings__forceUpgrade: 'true',
         hostSettings__billing__enabled: 'true',
