@@ -26,7 +26,13 @@ import { useEditorSettings } from './use-editor-settings';
 import { stateSaveError } from './session/error-mapping';
 import type { EditorSessionHandle } from './session/use-editor-session';
 import type { SaveCompletion } from './engine/save-engine';
-import { usePreviewShortcut, usePublishShortcut, useSaveShortcut } from './use-editor-shortcuts';
+import {
+  previewShortcutLabel,
+  publishShortcutLabel,
+  usePreviewShortcut,
+  usePublishShortcut,
+  useSaveShortcut,
+} from './use-editor-shortcuts';
 import { useSaveButtonPhase, useSaveFeedback, type SaveButtonPhase } from './use-save-feedback';
 
 export type OpenFlow = 'none' | 'publish' | 'update';
@@ -168,6 +174,7 @@ export function EditorHeaderActions({
           className="bg-background/80 backdrop-blur-sm"
           fallbackSize="sm"
           label="Preview"
+          shortcut={previewShortcutLabel()}
           onClick={openPreview}
         >
           Preview
@@ -349,6 +356,7 @@ function PublishActions({
             disabled={!inputs.isReady}
             fallbackSize="sm"
             label="Publish"
+            shortcut={publishShortcutLabel()}
             onClick={openPublishFlow}
           >
             Publish
