@@ -12,6 +12,7 @@ const Automation = ghostBookshelf.Model.extend(
       return {
         status: 'inactive',
         description: '',
+        trigger_type: 'member_sign_up',
       };
     },
 
