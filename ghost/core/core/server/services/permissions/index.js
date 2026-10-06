@@ -2,16 +2,32 @@
 // canThis(someUser).edit.post(somePost|somePostId)
 
 const models = require('../../models');
+const config = require('../../../shared/config');
+const { knex } = require('../../data/db');
 
 const actionsMap = require('./actions-map-cache');
+const rolePermissions = require('./role-permissions');
+const parity = require('./parity-check');
 
-const init = function init(options) {
+const init = async function init(options) {
   options = options || {};
 
-  // Load all the permissions
-  return models.Permission.findAll(options).then(function (permissionsCollection) {
-    return actionsMap.init(permissionsCollection);
+  // Read JSON directly: the fixture-manager module imports models and this service.
+  const policy = rolePermissions.init(require(config.get('paths').fixtures));
+  const actions = actionsMap.init(rolePermissions.all());
+  await parity.parityCheck.check(policy, async () => {
+    const [roles, permissions, directGrants] = await Promise.all([
+      models.Role.findAll({ ...options, withRelated: ['permissions'] }),
+      models.Permission.findAll(options),
+      knex('permissions_users').count({ count: '*' }).first(),
+    ]);
+    return {
+      roles: roles.toJSON(),
+      permissions: permissions.toJSON(),
+      directUserGrants: directGrants.count,
+    };
   });
+  return actions;
 };
 
 module.exports = {

@@ -2346,8 +2346,8 @@ services:
     entryPoints:
       - permissions/index.js
     notes: >-
-      Preserve the boot-loaded actions cache and public context helpers; verify readiness and
-      refresh across repeated boots.
+      Preserve the boot-loaded static policy, actions cache and public context helpers;
+      verify readiness and refresh across repeated boots.
     contracts:
       exports:
         summary: >-
@@ -2361,14 +2361,21 @@ services:
       construction:
         summary: >-
           Import loads authorization helpers and the shared actions-map module. Each async
-          init queries all permissions and rebuilds the map; boot awaits it in the main
-          service group. This is shared module state rather than a service-class instance.
+          init validates and publishes an immutable fixture policy and rebuilds the actions map.
+          Boot awaits a diagnostic database parity audit in the main service group; providers
+          read live principals and role assignments, then use the static grants.
         sources:
           - core/server/services/permissions/index.js
           - core/server/services/permissions/actions-map-cache.js
+          - core/server/services/permissions/role-permissions.ts
+          - core/server/services/permissions/permission-providers.ts
+          - core/server/services/permissions/parity-check.ts
           - core/boot.js
         tests:
           - test/unit/server/services/permissions/index.test.js
+          - test/unit/server/services/permissions/role-permissions.test.ts
+          - test/unit/server/services/permissions/parity-check.test.ts
+          - test/integration/services/permissions.test.ts
     unverified:
       - consumers
       - startup
@@ -2378,8 +2385,8 @@ services:
       - failures
     blockers:
       - >-
-        Existing tests prove initial map loading and the pre-init error, but do not establish
-        repeated-boot refresh or every early authorization caller.
+        Tests prove map loading, pre-init errors, policy replacement and dynamic identity checks,
+        but do not establish readiness for every early authorization caller.
   post-scheduling:
     kind: directory
     disposition: retain

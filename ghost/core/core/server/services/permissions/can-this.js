@@ -9,8 +9,7 @@ const { setIsRoles } = require('../../models/role-utils');
 
 const messages = {
   noPermissionToAction: 'You do not have permission to perform this action',
-  noActionsMapFoundError:
-    'No actions map found, ensure you have loaded permissions into database and then call permissions.init() before use.',
+  noActionsMapFoundError: 'No actions map found, call permissions.init() during boot before use.',
 };
 
 class CanThisResult {
@@ -66,7 +65,7 @@ class CanThisResult {
 
             const checkPermission = function (perm) {
               // Look for a matching action type and object type first
-              if (perm.get('action_type') !== actType || perm.get('object_type') !== objType) {
+              if (perm.action_type !== actType || perm.object_type !== objType) {
                 return false;
               }
 
