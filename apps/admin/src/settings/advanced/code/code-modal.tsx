@@ -81,7 +81,7 @@ const CodeModal: React.FC<CodeModalProps> = ({ onClose }) => {
           </Inline>
         </div>
         <Tabs
-          className="mb-16 flex flex-auto flex-col"
+          className="mb-16 flex min-h-0 flex-auto flex-col"
           value={selectedTab}
           variant="underline"
           onValueChange={(value) => setSelectedTab(value as typeof selectedTab)}
@@ -90,7 +90,7 @@ const CodeModal: React.FC<CodeModalProps> = ({ onClose }) => {
             <TabsTrigger value="header">Site header</TabsTrigger>
             <TabsTrigger value="footer">Site footer</TabsTrigger>
           </TabsList>
-          <TabsContent className="h-full flex-auto" value="header">
+          <TabsContent className="h-full min-h-0 flex-auto" value="header">
             <CodeEditor
               ref={headerEditorRef}
               className="mt-2"
@@ -100,7 +100,7 @@ const CodeModal: React.FC<CodeModalProps> = ({ onClose }) => {
               {...headerProps}
             />
           </TabsContent>
-          <TabsContent className="h-full flex-auto" value="footer">
+          <TabsContent className="h-full min-h-0 flex-auto" value="footer">
             <CodeEditor
               ref={footerEditorRef}
               className="mt-2"
