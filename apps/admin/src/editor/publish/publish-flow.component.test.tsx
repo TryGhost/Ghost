@@ -1395,6 +1395,31 @@ describe('Update flow', () => {
     expect(window.location.pathname).toBe(pathname);
   });
 
+  it.each([
+    ['sent', 'Sent'],
+    ['published', 'Unpublish'],
+    ['scheduled', 'Unschedule'],
+  ] as const)('heads a %s post’s update flow “%s”', async (status, heading) => {
+    await render(
+      <InAppProviders>
+        <UpdateFlowModal
+          dispatch={completesWith(saved('draft'))}
+          post={draft({ status, publishedAt: '2026-09-10T09:00:00.000Z' })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={() => {}}
+        />
+      </InAppProviders>,
+    );
+
+    await expect.element(publishScreen.updateFlow()).toHaveAccessibleName(heading);
+    // The on-screen heading is aria-hidden, so a role query would find only the dialog's title.
+    expect(
+      publishScreen.updateFlow().element().querySelector('h2[aria-hidden="true"]'),
+    ).toHaveTextContent(heading);
+  });
+
   it('reverts a published post to a draft', async () => {
     const dispatch = completesWith(saved('draft'));
     const onClose = vi.fn();
