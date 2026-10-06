@@ -191,7 +191,7 @@ describe('recorded run history presentation', () => {
 
   it.each([
     ['failed', 'Wait step failed', 'failed'],
-    ['automation disabled', 'Ended by publisher', 'exited'],
+    ['automation disabled', 'Removed manually', 'exited'],
     ['member changed status', 'Member changed subscription status', 'exited'],
     ['member unsubscribed', 'Unsubscribed', 'exited'],
   ] as const)(
