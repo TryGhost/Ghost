@@ -153,7 +153,7 @@ module.exports = function apiRoutes() {
   // A sub-resource rather than a key on the tier, because the tier payload is a public
   // projection: `tiers-public` shares this docName's serializer, so anything on a tier is
   // rendered by themes. This is admin-only configuration that no client renders, since
-  // the questions are drawn by Stripe's own checkout page rather than by Portal.
+  // what it collects is asked for by Stripe's own checkout page rather than by Portal.
   //
   // Named for the configuration rather than the checkout, so it cannot be mistaken for
   // the session that `create-stripe-checkout-session` creates from it.

@@ -3,7 +3,7 @@
  *
  * A domain of its own rather than part of the Tier aggregate: a tier is loaded into memory
  * once at boot, and these rows are read live because deleting a custom field cascades a
- * question away without that repository ever seeing it.
+ * binding away without that repository ever seeing it.
  *
  * Constructed by the tiers service wrapper at boot, which already holds the collaborators
  * this needs, rather than by an init() here — the custom field services are built before
@@ -12,11 +12,9 @@
 export { TierCheckoutConfigService } from './service';
 
 export {
-  CheckoutQuestion,
   emptyCheckoutConfig,
   PhoneCollection,
   ResolvedCheckout,
-  ResolvedQuestion,
   ShippingCollection,
   TierCheckoutConfig,
 } from './models';

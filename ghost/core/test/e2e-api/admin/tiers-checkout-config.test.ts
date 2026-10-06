@@ -67,7 +67,6 @@ describe('Tier Checkout Admin API', function () {
 
   afterEach(async function () {
     mockManager.restore();
-    await models.Base.knex('products_checkout_fields').del();
     await models.Base.knex('products_checkout_config').del();
     await models.Base.knex('members_metafield_bindings').del();
     await models.Base.knex('members_metafields').del();
@@ -75,113 +74,6 @@ describe('Tier Checkout Admin API', function () {
     // tests in one file it would leave each one reading the ones before.
     await models.Base.knex('actions').where('resource_type', 'member_custom_field').del();
     await models.Base.knex('products').where('id', 'ffffffffffffffffffffffff').del();
-  });
-
-  describe('Questions the checkout asks', function () {
-    it('starts with nothing configured', async function () {
-      assert.deepEqual(await readCheckout(), { tier_id: tierId, custom_fields: [] });
-    });
-
-    it('keeps the questions in the order they were given', async function () {
-      const size = await createField({ name: 'T-shirt size' });
-      const diet = await createField({ name: 'Dietary requirements' });
-
-      await setCheckout({ custom_fields: [{ key: diet.key }, { key: size.key }] });
-
-      const { custom_fields: questions } = await readCheckout();
-      assert.deepEqual(
-        questions.map((question: { key: string }) => question.key),
-        ['dietary_requirements', 't_shirt_size'],
-      );
-    });
-
-    // A question is optional unless a publisher chooses otherwise: a required question
-    // at the payment step costs conversion.
-    it("asks optionally, and under the field's own name, unless told otherwise", async function () {
-      const size = await createField({ name: 'T-shirt size' });
-
-      await setCheckout({ custom_fields: [{ key: size.key }] });
-      assert.deepEqual(await readCheckout(), {
-        tier_id: tierId,
-        custom_fields: [{ key: 't_shirt_size', label: null, optional: true }],
-      });
-
-      await setCheckout({
-        custom_fields: [{ key: size.key, label: 'Which size?', optional: false }],
-      });
-      assert.deepEqual((await readCheckout()).custom_fields, [
-        { key: 't_shirt_size', label: 'Which size?', optional: false },
-      ]);
-    });
-
-    it('states the whole list, so a question left out is no longer asked', async function () {
-      const size = await createField({ name: 'T-shirt size' });
-      const diet = await createField({ name: 'Dietary requirements' });
-      await setCheckout({ custom_fields: [{ key: size.key }, { key: diet.key }] });
-
-      await setCheckout({ custom_fields: [{ key: diet.key }] });
-      assert.deepEqual(
-        (await readCheckout()).custom_fields.map((question: { key: string }) => question.key),
-        ['dietary_requirements'],
-      );
-    });
-
-    it('refuses more questions than the processor will render', async function () {
-      const keys = [];
-      for (const name of ['One', 'Two', 'Three', 'Four']) {
-        keys.push((await createField({ name })).key);
-      }
-
-      const body = await setCheckout({ custom_fields: keys.map((key) => ({ key })) }, 422);
-      assert.match(body.errors[0].context, /at most 3 questions/);
-    });
-
-    // A publisher can name a field something no processor will render as a label, so
-    // the label exists to be shorter than the name.
-    it('refuses a question the processor could not label', async function () {
-      const long = await createField({ name: `Tell us ${'x'.repeat(60)}` });
-
-      const body = await setCheckout({ custom_fields: [{ key: long.key }] }, 422);
-      assert.match(body.errors[0].context, /at most 50 characters/);
-
-      await setCheckout({ custom_fields: [{ key: long.key, label: 'Tell us more' }] });
-      assert.equal((await readCheckout()).custom_fields[0].label, 'Tell us more');
-    });
-
-    it('refuses a field type the processor cannot ask for', async function () {
-      // Named so its key is not one of the things this checkout collects for itself,
-      // which is refused earlier and for a different reason.
-      const address = await createField({ name: 'Postal address', type: 'address' });
-
-      const body = await setCheckout({ custom_fields: [{ key: address.key }] }, 422);
-      assert.match(body.errors[0].context, /cannot be asked for at checkout/);
-    });
-
-    it('refuses the same field twice', async function () {
-      const size = await createField({ name: 'T-shirt size' });
-
-      const body = await setCheckout(
-        { custom_fields: [{ key: size.key }, { key: size.key }] },
-        422,
-      );
-      assert.match(body.errors[0].context, /already asks/);
-    });
-
-    it('refuses a field the site does not have', async function () {
-      const body = await setCheckout({ custom_fields: [{ key: 'no_such_field' }] }, 422);
-      assert.match(body.errors[0].context, /Unknown custom field/);
-    });
-
-    // A question's port is the field's own key, so a field keyed like something this
-    // checkout already collects would want a port that is taken. Refused in its own
-    // words, rather than left to the unique index to report unreadably.
-    it('refuses a field keyed like something the checkout collects itself', async function () {
-      const phone = await createField({ name: 'Phone' });
-      assert.equal(phone.key, 'phone', 'the name mints the key the phone port uses');
-
-      const body = await setCheckout({ custom_fields: [{ key: phone.key }] }, 422);
-      assert.match(body.errors[0].context, /cannot be asked at checkout/);
-    });
   });
 
   describe('What the checkout collects for itself', function () {
@@ -603,29 +495,7 @@ describe('Tier Checkout Admin API', function () {
     });
   });
 
-  describe('Naming one list and not the other', function () {
-    // A client that knows about the questions must not erase the collection by staying
-    // silent about it.
-    it('leaves a list the request does not name alone', async function () {
-      const size = await createField({ name: 'T-shirt size' });
-      await createField({ name: 'Delivery address', type: 'address' });
-
-      await setCheckout({ custom_fields: [{ key: size.key }] });
-      await setCheckout(shipping());
-
-      const config = await readCheckout();
-      assert.deepEqual(
-        config.custom_fields.map((question: { key: string }) => question.key),
-        ['t_shirt_size'],
-      );
-      assert.deepEqual(config.shipping, {
-        collect: true,
-        allowed_countries: ['GB'],
-        name: { custom_field_key: 'shipping_name' },
-        address: { custom_field_key: 'delivery_address' },
-      });
-    });
-
+  describe('Naming one thing and not the other', function () {
     // Every collectable thing shares one row, so leaving one alone is a property of
     // the write rather than of the storage.
     it('leaves a collectable thing the request does not name alone', async function () {
@@ -684,50 +554,13 @@ describe('Tier Checkout Admin API', function () {
     });
   });
 
-  describe('When a field stops being usable', function () {
-    // Refused at write, tolerated at read. Archiving is reversible, so the question
-    // waits for the field to come back rather than being torn out.
-    it('keeps a question whose field was archived', async function () {
-      const size = await createField({ name: 'T-shirt size' });
-      await setCheckout({ custom_fields: [{ key: size.key }] });
-
-      await setStatus(size.key, 'archived');
-      assert.deepEqual(
-        (await readCheckout()).custom_fields.map((question: { key: string }) => question.key),
-        ['t_shirt_size'],
-      );
-
-      await setStatus(size.key, 'active');
-      assert.deepEqual(
-        (await readCheckout()).custom_fields.map((question: { key: string }) => question.key),
-        ['t_shirt_size'],
-      );
-    });
-
-    // Deleting is irreversible and already gated behind archiving, so the question goes
-    // with the field rather than pointing at nothing.
-    it('drops a question whose field was permanently deleted', async function () {
-      const size = await createField({ name: 'T-shirt size' });
-      await setCheckout({ custom_fields: [{ key: size.key }] });
-
-      await setStatus(size.key, 'archived');
-      await agent.delete(`members/metafields/custom/${size.key}/`).expectStatus(204);
-
-      assert.deepEqual((await readCheckout()).custom_fields, []);
-    });
-  });
-
   describe('Browsing every tier', function () {
     it('returns the tiers that ask for something, so a list needs one request', async function () {
-      const size = await createField({ name: 'T-shirt size' });
-      await setCheckout({ custom_fields: [{ key: size.key }] });
+      await setCheckout({ tax_number: { collect: true } });
 
       const { body } = await agent.get('tiers/checkout_config/').expectStatus(200);
       assert.deepEqual(body.tiers_checkout_config, [
-        {
-          tier_id: tierId,
-          custom_fields: [{ key: 't_shirt_size', label: null, optional: true }],
-        },
+        { tier_id: tierId, tax_number: { collect: true } },
       ]);
     });
 
@@ -737,7 +570,7 @@ describe('Tier Checkout Admin API', function () {
       await setCheckout({ shipping: { collect: false } });
 
       const { body } = await agent.get('tiers/checkout_config/').expectStatus(200);
-      assert.deepEqual(body.tiers_checkout_config, [{ tier_id: tierId, custom_fields: [] }]);
+      assert.deepEqual(body.tiers_checkout_config, [{ tier_id: tierId }]);
     });
   });
 
@@ -758,7 +591,7 @@ describe('Tier Checkout Admin API', function () {
 
       const [options] = await models.Base.knex('products_checkout_config').select();
       assert.ok(options, 'the options row outlived the collection');
-      assert.deepEqual(await readCheckout(), { tier_id: tierId, custom_fields: [] });
+      assert.deepEqual(await readCheckout(), { tier_id: tierId });
     });
 
     it('takes the binding with the field when a definition is deleted', async function () {
@@ -794,29 +627,6 @@ describe('Tier Checkout Admin API', function () {
 
       await setStatus('delivery_address', 'active');
       assert.equal((await readCheckout()).shipping.address.custom_field_key, 'delivery_address');
-    });
-  });
-
-  // Asking for a field and collecting into it are two writers aimed at one destination:
-  // the checkout shows the question and the widget together, and whichever the webhook
-  // writes second is what the field holds. Allowed rather than refused, because a
-  // destination is not exclusive — another tier can already be writing into the same
-  // field — so refusing it here would only forbid the one arrangement Ghost can see.
-  describe('One field, asked for and collected into', function () {
-    it('accepts both, in one statement or in two', async function () {
-      const field = await createField({ name: 'Contact' });
-
-      await setCheckout({
-        custom_fields: [{ key: field.key }],
-        phone: { collect: true, custom_field_key: field.key },
-      });
-
-      const config = await readCheckout();
-      assert.deepEqual(
-        config.custom_fields.map((question: { key: string }) => question.key),
-        [field.key],
-      );
-      assert.equal(config.phone.custom_field_key, field.key);
     });
   });
 
@@ -887,7 +697,7 @@ describe('Tier Checkout Admin API', function () {
       await setCheckout({ shipping: { collect: false } });
 
       assert.deepEqual(await models.Base.knex('members_metafield_bindings').select(), []);
-      assert.deepEqual(await readCheckout(), { tier_id: tierId, custom_fields: [] });
+      assert.deepEqual(await readCheckout(), { tier_id: tierId });
     });
 
     // Nothing is left pointing at it, so the same request that made it once makes it again.
@@ -1043,7 +853,7 @@ describe('Tier Checkout Admin API', function () {
 
       // Off, so the tier reports nothing and the checkout asks for nothing.
       assert.deepEqual(await models.Base.knex('members_metafield_bindings').select(), []);
-      assert.deepEqual(await readCheckout(), { tier_id: tierId, custom_fields: [] });
+      assert.deepEqual(await readCheckout(), { tier_id: tierId });
 
       const { body } = await agent.get('members/metafields/custom/').expectStatus(200);
       assert.deepEqual(
@@ -1083,14 +893,14 @@ describe('Tier Checkout Admin API', function () {
     it('still reads with the flag off', async function () {
       mockManager.mockLabsDisabled('stripeCheckoutCollection');
       const { body } = await agent.get(`tiers/${tierId}/checkout_config/`).expectStatus(200);
-      assert.deepEqual(body.tiers_checkout_config[0].custom_fields, []);
+      assert.deepEqual(body.tiers_checkout_config[0], { tier_id: tierId });
     });
 
     it('cannot be configured with the flag off', async function () {
       mockManager.mockLabsDisabled('stripeCheckoutCollection');
       await agent
         .put(`tiers/${tierId}/checkout_config/`)
-        .body({ tiers_checkout_config: [{ custom_fields: [] }] })
+        .body({ tiers_checkout_config: [{ tax_number: { collect: true } }] })
         .expectStatus(404);
     });
 

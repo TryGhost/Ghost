@@ -1,22 +1,11 @@
 import { z } from 'zod';
-import {
-  MAX_CHECKOUT_CUSTOM_FIELDS,
-  STRIPE_ALLOWED_COUNTRIES,
-  isStripeAllowedCountry,
-} from '@tryghost/checkout';
+import { STRIPE_ALLOWED_COUNTRIES, isStripeAllowedCountry } from '@tryghost/checkout';
 import { TierCheckoutConfig } from './models';
 
 // Every country Stripe will take, sent at once, was measured as accepted — so the only
 // ceiling is the list itself, and a request naming more than there are countries is naming
 // something twice. A request that means all of them omits the list instead.
 const MAX_ALLOWED_COUNTRIES = STRIPE_ALLOWED_COUNTRIES.length;
-
-const QuestionInput = z.object({
-  key: z.string().min(1, { error: 'Every checkout question needs a custom field key.' }),
-  label: z.string().trim().min(1).nullish(),
-  optional: z.boolean().optional(),
-});
-export type QuestionInput = z.infer<typeof QuestionInput>;
 
 // Not checked against a list of countries: membership of that list is contested, and Ghost
 // is not its arbiter.
@@ -44,17 +33,6 @@ const Destination = z.strictObject(
 );
 
 export const CheckoutConfigInput = z.strictObject({
-  custom_fields: z
-    .array(QuestionInput)
-    .max(MAX_CHECKOUT_CUSTOM_FIELDS, {
-      error: `A checkout can ask at most ${MAX_CHECKOUT_CUSTOM_FIELDS} questions.`,
-    })
-    .refine(
-      (questions) => new Set(questions.map((question) => question.key)).size === questions.length,
-      { error: 'This checkout already asks for that field.' },
-    )
-    .optional(),
-
   shipping: z
     .discriminatedUnion('collect', [
       z.strictObject({ collect: z.literal(false) }),
@@ -85,12 +63,6 @@ export const CheckoutConfigInput = z.strictObject({
 });
 export type CheckoutConfigInput = z.infer<typeof CheckoutConfigInput>;
 
-const QuestionResource = z.object({
-  key: z.string(),
-  label: z.string().nullable(),
-  optional: z.boolean(),
-});
-
 const CollectionResource = z.object({
   collect: z.literal(true),
   custom_field_key: z.string(),
@@ -106,7 +78,6 @@ const ShippingResource = z.object({
 
 const CheckoutConfigResource = z.object({
   tier_id: z.string(),
-  custom_fields: z.array(QuestionResource),
   shipping: ShippingResource.optional(),
   tax_number: z.object({ collect: z.literal(true) }).optional(),
   phone: CollectionResource.optional(),
@@ -122,7 +93,6 @@ export const toCheckoutConfigResponse = z
   .transform((configs): z.input<typeof CheckoutConfigResponse> => ({
     tiers_checkout_config: configs.map((config) => ({
       tier_id: config.tierId,
-      custom_fields: config.customFields,
       // A block appears only when the tier collects that thing, so a client reads
       // presence rather than a flag it would have to check.
       ...(config.shipping
@@ -157,8 +127,7 @@ export const toCheckoutConfigResponse = z
  * lands. A member supplies a delivery address rather than a value for a named field, and
  * which field holds it is the publisher's business; naming it here would invite a client
  * to write there directly. The tax number goes too, because the processor keeps one
- * against the customer it invoices and Ghost never stores it. So do the checkout
- * questions, which a tier change does not draw.
+ * against the customer it invoices and Ghost never stores it.
  *
  * Not named for the collection, deliberately: a collection in this domain is a collected
  * thing together with the field it lands in, and that second half is exactly the part

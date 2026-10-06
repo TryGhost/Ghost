@@ -20,16 +20,6 @@ const Collected = z
 
 export const CompletedSession = z
   .object({
-    custom_fields: z
-      .array(
-        z
-          .object({
-            key: z.string().nullish(),
-            text: z.object({ value: Collected }).nullish(),
-          })
-          .nullable(),
-      )
-      .nullish(),
     shipping: z
       .object({
         name: Collected,
@@ -69,21 +59,10 @@ const PORT_VALUES: Record<StripePort, (session: z.output<typeof CompletedSession
 
 /**
  * Everything a completed checkout gives back, as a list of pairs: the name Stripe used for
- * a value, and the value itself. Answers to questions and values Stripe collected on its
- * own both come back this way, because both are saved by the same route afterwards.
- *
- * Order matters. The values Stripe collected come last, so that if a question's answer and
- * a collected value are both saved into the same custom field, the collected value is the
- * one the field ends up holding.
+ * a value, and the value itself, so each can be saved through the binding for its port.
  */
-export const collectedByPort = CompletedSession.transform((session): CollectedByPort[] => {
-  const answers: CollectedByPort[] = (session.custom_fields ?? [])
-    .filter((field) => Boolean(field?.key && field.text?.value))
-    .map((field) => ({ port: field!.key!, value: field!.text!.value }));
-
-  const ports = STRIPE_PORTS.map((port) => ({ port, value: PORT_VALUES[port](session) })).filter(
+export const collectedByPort = CompletedSession.transform((session): CollectedByPort[] =>
+  STRIPE_PORTS.map((port) => ({ port, value: PORT_VALUES[port](session) })).filter(
     (entry) => entry.value !== undefined,
-  );
-
-  return [...answers, ...ports];
-});
+  ),
+);

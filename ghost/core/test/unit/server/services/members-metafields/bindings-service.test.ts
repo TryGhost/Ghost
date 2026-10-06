@@ -61,12 +61,12 @@ describe('MetafieldBindingsService', function () {
 
     it('plans every value it can while reporting a refused one', async function () {
       const { plans, failure } = await serviceResolving().planCollected('tier_1', [
-        { port: 'question', value: 'refuse:the answer' },
+        { port: 'phone', value: 'refuse:the number' },
         ADDRESS,
       ]);
 
       // The values have nothing to do with each other, so the good one is still planned.
-      assert.match(String(failure), /refused refuse:the answer/);
+      assert.match(String(failure), /refused refuse:the number/);
       assert.deepEqual(
         plans.map((plan) => plan.writes),
         [[{ value: '1 High Street' }]],
@@ -92,7 +92,7 @@ describe('MetafieldBindingsService', function () {
       // Finding where a value goes is a database query, and it can fail the way checking
       // one can. Neither is a reason to give up on the values either side of it.
       const { plans, failure } = await service.planCollected('tier_1', [
-        { port: 'question', value: 'x' },
+        { port: 'phone', value: 'x' },
         ADDRESS,
       ]);
 
@@ -104,7 +104,7 @@ describe('MetafieldBindingsService', function () {
       // Two refusals, so this says which one is kept. The first is the one that has
       // any chance of explaining the rest, and the later ones are often its echo.
       const { failure } = await serviceResolving().planCollected('tier_1', [
-        { port: 'question', value: 'refuse:the first' },
+        { port: 'phone', value: 'refuse:the first' },
         { port: 'shipping_name', value: 'refuse:the second' },
       ]);
 

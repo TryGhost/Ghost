@@ -1402,7 +1402,7 @@ describe('Members API', function () {
               customer: customer.id,
               subscription: subscription.id,
               // The tier the session was created for, which is how the write
-              // finds the configuration that produced these questions.
+              // finds the configuration that decided what it collected.
               metadata: { ghostTierId: (await getPaidProduct()).id },
               ...sessionExtras,
             },
@@ -1434,7 +1434,6 @@ describe('Members API', function () {
       beforeEach(async function () {
         mockManager.mockLabsEnabled('membersCustomFields');
         fieldKeys = {
-          question: await createField('T-shirt size', 'short_text'),
           address: await createField('Delivery address', 'address'),
           vat: await createField('VAT number', 'short_text'),
           recipient: await createField('Recipient name', 'short_text'),
@@ -1446,10 +1445,6 @@ describe('Members API', function () {
         await adminAgent.put(`/tiers/${product.id}/checkout_config/`).body({
           tiers_checkout_config: [
             {
-              // The question has to be configured too: an answer lands because the
-              // tier asked for it, and asking is what creates the binding it lands
-              // through. An answer to a question a tier never asked is not ours.
-              custom_fields: [{ key: fieldKeys.question }],
               shipping: {
                 collect: true,
                 allowed_countries: ['GB'],
@@ -1465,7 +1460,6 @@ describe('Members API', function () {
       afterEach(async function () {
         await models.Base.knex('members_metafield_values').del();
         await models.Base.knex('members_metafield_bindings').del();
-        await models.Base.knex('products_checkout_fields').del();
         await models.Base.knex('products_checkout_config').del();
         await models.Base.knex('members_metafields').del();
         // The second tier one test adds is a paid product, and `getPaidProduct` asks for
@@ -1474,9 +1468,8 @@ describe('Members API', function () {
         await models.Base.knex('products').where('id', SECOND_TIER_ID).del();
       });
 
-      it('saves the answers and the collected data onto the member', async function () {
+      it('saves the collected data onto the member', async function () {
         const member = await sendCheckoutWebhook('checkout-collected-fields@email.com', {
-          custom_fields: [{ key: fieldKeys.question, type: 'text', text: { value: 'Large' } }],
           shipping: {
             name: 'Bex Jones, c/o Acme Ltd',
             address: {
@@ -1491,7 +1484,6 @@ describe('Members API', function () {
           customer_details: { tax_ids: [{ type: 'gb_vat', value: 'GB123456789' }] },
         });
 
-        assert.equal(member.metafields.custom[fieldKeys.question], 'Large');
         // Stripe returns the recipient beside the address and Ghost keeps them
         // apart, so each lands in the field the publisher chose for it.
         assert.equal(member.metafields.custom[fieldKeys.recipient], 'Bex Jones, c/o Acme Ltd');
@@ -1525,7 +1517,6 @@ describe('Members API', function () {
           [
             { field: 'Delivery address', source: 'checkout', writer: 'binding' },
             { field: 'Recipient name', source: 'checkout', writer: 'binding' },
-            { field: 'T-shirt size', source: 'checkout', writer: 'binding' },
           ],
         );
       });
@@ -1564,7 +1555,6 @@ describe('Members API', function () {
 
         try {
           const member = await sendCheckoutWebhook('checkout-collected-webhook@email.com', {
-            custom_fields: [{ key: fieldKeys.question, type: 'text', text: { value: 'Large' } }],
             shipping: {
               name: 'Bex Jones',
               address: { line1: '1 High Street', city: 'London', country: 'GB' },
@@ -1578,8 +1568,12 @@ describe('Members API', function () {
           });
           assert.equal(withValues.current.id, member.id);
           // One edit carrying every collected value, however many bindings routed them.
-          assert.equal(withValues.current.metafields.custom[fieldKeys.question], 'Large');
           assert.equal(withValues.current.metafields.custom[fieldKeys.recipient], 'Bex Jones');
+          assert.deepEqual(withValues.current.metafields.custom[fieldKeys.address], {
+            line1: '1 High Street',
+            city: 'London',
+            country: 'GB',
+          });
           assert.equal(
             delivered.filter((edit) => edit.previous.metafields).length,
             1,
@@ -1624,20 +1618,27 @@ describe('Members API', function () {
 
       // The values a session carries have nothing to do with each other beyond arriving
       // together, so one the catalog refuses must not cost the publisher the rest. A
-      // shipping address is the case that matters: a courier needs it, and a t-shirt size
-      // typed too long is no reason to lose it.
+      // shipping address is the case that matters: a courier needs it, and a phone number
+      // too long to store is no reason to lose it.
       it('keeps the values it can when one of them is refused', async function () {
+        const phone = await createField('Contact number', 'short_text');
+        const product = await getPaidProduct();
+        await adminAgent
+          .put(`/tiers/${product.id}/checkout_config/`)
+          .body({
+            tiers_checkout_config: [{ phone: { collect: true, custom_field_key: phone } }],
+          })
+          .expectStatus(200);
+
         const member = await sendCheckoutWebhook('checkout-partly-refused@email.com', {
-          custom_fields: [
-            { key: fieldKeys.question, type: 'text', text: { value: 'X'.repeat(300) } },
-          ],
           shipping: { name: 'Bex Jones', address: { line1: '1 High Street', country: 'GB' } },
+          customer_details: { phone: '1'.repeat(300) },
         });
 
         assert.equal(
-          member.metafields.custom[fieldKeys.question],
+          member.metafields.custom[phone],
           undefined,
-          'the answer too long to store was not stored',
+          'the phone number too long to store was not stored',
         );
         assert.equal(member.metafields.custom[fieldKeys.recipient], 'Bex Jones');
         assert.deepEqual(member.metafields.custom[fieldKeys.address], {
@@ -1722,7 +1723,6 @@ describe('Members API', function () {
       // write can record that.
       it('records the binding that wrote every value it collected', async function () {
         const member = await sendCheckoutWebhook('checkout-collected-source@email.com', {
-          custom_fields: [{ key: fieldKeys.question, type: 'text', text: { value: 'Large' } }],
           shipping: { name: 'Bex Jones', address: { line1: '1 High Street', country: 'GB' } },
         });
 
@@ -1744,53 +1744,13 @@ describe('Members API', function () {
           .where('members_metafield_values.member_id', member.id)
           .distinct('members_metafield_bindings.port')
           .pluck('port');
-        assert.deepEqual(
-          resolved.sort(),
-          ['shipping_address', 'shipping_name', fieldKeys.question].sort(),
-        );
-      });
-
-      // Several writers may land in one field: a binding says where a value goes, and
-      // nothing says a field may only be written into once. So what matters is not that it
-      // cannot happen but that it settles the same way every time, rather than on whichever
-      // value the payload happened to carry first. What the processor collected under its
-      // own name is written after the answers the member typed, so it is what remains.
-      it('settles a field two writers share the same way every time', async function () {
-        const product = await getPaidProduct();
-        await adminAgent
-          .put(`/tiers/${product.id}/checkout_config/`)
-          .body({
-            tiers_checkout_config: [
-              {
-                // Asked for as a question and collected into as the recipient's name, so
-                // two bindings of this tier point at one field.
-                custom_fields: [{ key: fieldKeys.recipient }],
-                shipping: {
-                  collect: true,
-                  allowed_countries: ['GB'],
-                  name: { custom_field_key: fieldKeys.recipient },
-                  address: { custom_field_key: fieldKeys.address },
-                },
-              },
-            ],
-          })
-          .expectStatus(200);
-
-        const member = await sendCheckoutWebhook('checkout-collected-shared@email.com', {
-          custom_fields: [
-            { key: fieldKeys.recipient, type: 'text', text: { value: 'Typed by the member' } },
-          ],
-          shipping: { name: 'Collected by Stripe', address: { country: 'GB' } },
-        });
-
-        assert.equal(member.metafields.custom[fieldKeys.recipient], 'Collected by Stripe');
+        assert.deepEqual(resolved.sort(), ['shipping_address', 'shipping_name']);
       });
 
       // A value the member gave us for free must never fail the webhook: a throw makes
       // Stripe retry the event and risks doing the payment work twice.
       it('still creates the member when a collected value cannot be saved', async function () {
         const member = await sendCheckoutWebhook('checkout-collected-invalid@email.com', {
-          custom_fields: [{ key: fieldKeys.question, type: 'text', text: { value: 'Large' } }],
           // Longer than any postcode our address type will take. The recipient's name
           // arrives on the same Stripe parameter and routes through its own binding.
           shipping: {
@@ -1801,14 +1761,9 @@ describe('Members API', function () {
 
         assert.equal(member.status, 'paid');
         assert.equal(
-          member.metafields.custom[fieldKeys.question],
-          'Large',
-          'the answer beside it was kept',
-        );
-        assert.equal(
           member.metafields.custom[fieldKeys.recipient],
           'Ada Lovelace',
-          'and so was the other half of what Stripe returned together',
+          'the other half of what Stripe returned together was kept',
         );
         assert.equal(member.metafields.custom[fieldKeys.address], undefined);
       });
@@ -1833,11 +1788,10 @@ describe('Members API', function () {
           .expectStatus(201);
         await adminAgent
           .put(`/members/${created.members[0].id}/`)
-          .body({ members: [{ metafields: { custom: { [fieldKeys.question]: 'Small' } } }] })
+          .body({ members: [{ metafields: { custom: { [fieldKeys.recipient]: 'The Owner' } } }] })
           .expectStatus(200);
 
         const member = await sendCheckoutWebhook(email, {
-          custom_fields: [{ key: fieldKeys.question, type: 'text', text: { value: 'Large' } }],
           shipping: {
             name: 'Someone Else',
             address: { line1: '1 High Street', country: 'GB' },
@@ -1846,11 +1800,10 @@ describe('Members API', function () {
 
         assert.equal(member.status, 'paid', 'the payment work still happened');
         assert.equal(
-          member.metafields.custom[fieldKeys.question],
-          'Small',
-          'the stored answer was not overwritten',
+          member.metafields.custom[fieldKeys.recipient],
+          'The Owner',
+          'the stored name was not overwritten',
         );
-        assert.equal(member.metafields.custom[fieldKeys.recipient], undefined);
         assert.equal(member.metafields.custom[fieldKeys.address], undefined);
       });
 
@@ -1866,10 +1819,10 @@ describe('Members API', function () {
             ghostTierId: (await getPaidProduct()).id,
             ghostSignupContext: 'already_authenticated',
           },
-          custom_fields: [{ key: fieldKeys.question, type: 'text', text: { value: 'Large' } }],
+          shipping: { name: 'Bex Jones', address: { line1: '1 High Street', country: 'GB' } },
         });
 
-        assert.equal(member.metafields.custom[fieldKeys.question], 'Large');
+        assert.equal(member.metafields.custom[fieldKeys.recipient], 'Bex Jones');
       });
     });
 

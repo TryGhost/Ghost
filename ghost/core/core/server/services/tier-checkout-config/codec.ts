@@ -1,7 +1,6 @@
 import { z } from 'zod';
-import { FieldTypeSchema } from '@tryghost/metafield-types';
 import { DbBoolean } from '../../lib/db-types/boolean';
-import { DbCheckoutOptions, DbCheckoutQuestion } from './schema';
+import { DbCheckoutOptions } from './schema';
 import { CheckoutOptions } from './models';
 
 const SEPARATOR = ',';
@@ -72,30 +71,6 @@ export const collectionRowCodec = CollectionRow.transform((row) => {
   };
 });
 export type CollectionParts = z.infer<typeof collectionRowCodec>;
-
-export const QuestionRow = z.object({
-  product_id: z.string(),
-  port: z.string(),
-  label: DbCheckoutQuestion.shape.label,
-  optional: DbCheckoutQuestion.shape.optional,
-  question_name: z.string().nullable(),
-  question_type: FieldTypeSchema.nullable(),
-});
-export type QuestionRow = z.input<typeof QuestionRow>;
-
-export const questionRowCodec = QuestionRow.transform((row) => ({
-  tierId: row.product_id,
-  question: {
-    key: row.port,
-    label: row.label,
-    optional: row.optional,
-  },
-  askable:
-    row.question_type === null
-      ? null
-      : { prompt: row.label ?? row.question_name ?? row.port, type: row.question_type },
-}));
-export type QuestionParts = z.infer<typeof questionRowCodec>;
 
 function collectedInto(row: z.output<typeof CollectionRow>) {
   const { shippingAllowedCountries, taxNumber } = z.decode(optionsCodec, {

@@ -859,20 +859,12 @@ describe('Create Stripe Checkout Session', function () {
 
     afterEach(async function () {
       nock.cleanAll();
-      await models.Base.knex('products_checkout_fields').del();
       await models.Base.knex('products_checkout_config').del();
       await models.Base.knex('members_metafield_bindings').del();
       await models.Base.knex('members_metafields').del();
     });
 
-    it('asks Stripe for the questions and the collection a tier configured', async function () {
-      const {
-        body: {
-          members_metafields: [question],
-        },
-      } = await adminAgent
-        .post('/members/metafields/custom/')
-        .body({ members_metafields: [{ name: 'T-shirt size', type: 'short_text' }] });
+    it('asks Stripe for the collection a tier configured', async function () {
       const {
         body: {
           members_metafields: [address],
@@ -884,7 +876,6 @@ describe('Create Stripe Checkout Session', function () {
       await adminAgent.put(`/tiers/${paidTier.id}/checkout_config/`).body({
         tiers_checkout_config: [
           {
-            custom_fields: [{ key: question.key }],
             shipping: {
               collect: true,
               allowed_countries: ['GB', 'IE'],
@@ -897,11 +888,7 @@ describe('Create Stripe Checkout Session', function () {
 
       const sessionBody = await startCheckout();
 
-      // Form-encoded, so Stripe's nested parameters arrive as bracketed keys. Our own
-      // field key is what goes out, which is what makes reading the answer a lookup.
-      assert.equal(sessionBody['custom_fields[0][key]'], 't_shirt_size');
-      assert.equal(sessionBody['custom_fields[0][label][custom]'], 'T-shirt size');
-      assert.equal(sessionBody['custom_fields[0][type]'], 'text');
+      // Form-encoded, so Stripe's nested parameters arrive as bracketed keys.
       assert.equal(sessionBody['shipping_address_collection[allowed_countries][0]'], 'GB');
       assert.equal(sessionBody['shipping_address_collection[allowed_countries][1]'], 'IE');
     });
@@ -987,83 +974,6 @@ describe('Create Stripe Checkout Session', function () {
 
       assert.equal(sessionBody['tax_id_collection[enabled]'], 'true');
       assert.equal(sessionBody['phone_number_collection[enabled]'], 'true');
-    });
-
-    // Every limit is applied again at session-build time rather than trusted from the
-    // settings screen. A configuration written while the rules were laxer, or a field
-    // renamed longer since, must cost that one question rather than the whole checkout:
-    // a rejected session create is a publisher who cannot sell.
-    it('drops a question renamed longer than a checkout will render, and still sells', async function () {
-      const {
-        body: {
-          members_metafields: [asked],
-        },
-      } = await adminAgent
-        .post('/members/metafields/custom/')
-        .body({ members_metafields: [{ name: 'T-shirt size', type: 'short_text' }] });
-      const {
-        body: {
-          members_metafields: [kept],
-        },
-      } = await adminAgent
-        .post('/members/metafields/custom/')
-        .body({ members_metafields: [{ name: 'Nickname', type: 'short_text' }] });
-
-      await adminAgent.put(`/tiers/${paidTier.id}/checkout_config/`).body({
-        tiers_checkout_config: [{ custom_fields: [{ key: asked.key }, { key: kept.key }] }],
-      });
-
-      // Renaming a field does not revisit the checkouts that ask for it, which is how
-      // an unaskable question comes to exist without anyone writing one.
-      await adminAgent
-        .put(`/members/metafields/custom/${asked.key}/`)
-        .body({
-          members_metafields: [
-            {
-              name: `A question far longer than a payment page will ever render ${'x'.repeat(20)}`,
-            },
-          ],
-        })
-        .expectStatus(200);
-
-      const sessionBody = await startCheckout();
-
-      assert.equal(sessionBody['custom_fields[0][key]'], 'nickname');
-      assert.equal(sessionBody['custom_fields[1][key]'], undefined);
-    });
-
-    // Archiving is reversible, so the configuration stays and stops being acted on.
-    // Whether a field is still active is decided by the join that reads it, so these
-    // pin what that join is for.
-    it('stops asking a question whose field was archived, and keeps the rest', async function () {
-      const {
-        body: {
-          members_metafields: [archived],
-        },
-      } = await adminAgent
-        .post('/members/metafields/custom/')
-        .body({ members_metafields: [{ name: 'T-shirt size', type: 'short_text' }] });
-      const {
-        body: {
-          members_metafields: [kept],
-        },
-      } = await adminAgent
-        .post('/members/metafields/custom/')
-        .body({ members_metafields: [{ name: 'Nickname', type: 'short_text' }] });
-
-      await adminAgent.put(`/tiers/${paidTier.id}/checkout_config/`).body({
-        tiers_checkout_config: [{ custom_fields: [{ key: archived.key }, { key: kept.key }] }],
-      });
-
-      await adminAgent
-        .put(`/members/metafields/custom/${archived.key}/`)
-        .body({ members_metafields: [{ status: 'archived' }] })
-        .expectStatus(200);
-
-      const sessionBody = await startCheckout();
-
-      assert.equal(sessionBody['custom_fields[0][key]'], 'nickname');
-      assert.equal(sessionBody['custom_fields[1][key]'], undefined);
     });
 
     // Each destination drops out on its own. Neither of the two behind the shipping
@@ -1320,20 +1230,23 @@ describe('Create Stripe Checkout Session', function () {
     it('asks for nothing with the flag off, however the tier is configured', async function () {
       const {
         body: {
-          members_metafields: [question],
+          members_metafields: [phone],
         },
       } = await adminAgent
         .post('/members/metafields/custom/')
-        .body({ members_metafields: [{ name: 'T-shirt size', type: 'short_text' }] });
+        .body({ members_metafields: [{ name: 'Phone', type: 'short_text' }] });
       await adminAgent
         .put(`/tiers/${paidTier.id}/checkout_config/`)
-        .body({ tiers_checkout_config: [{ custom_fields: [{ key: question.key }] }] });
+        .body({
+          tiers_checkout_config: [{ phone: { collect: true, custom_field_key: phone.key } }],
+        })
+        .expectStatus(200);
 
       mockManager.mockLabsDisabled('stripeCheckoutCollection');
       const sessionBody = await startCheckout();
 
       assert.deepEqual(
-        Object.keys(sessionBody).filter((key) => key.startsWith('custom_fields')),
+        Object.keys(sessionBody).filter((key) => key.startsWith('phone_number_collection')),
         [],
       );
     });

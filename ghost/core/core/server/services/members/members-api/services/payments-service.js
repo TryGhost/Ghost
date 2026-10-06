@@ -121,7 +121,7 @@ class PaymentsService {
 
     const data = {
       // The tier being bought, recorded on the session so the completed event can find
-      // the configuration that produced its questions. Nothing else carries it: a
+      // the configuration that decided what it collected. Nothing else carries it: a
       // completed session names prices and products, and mapping those back is a
       // lookup that can fail where this cannot.
       metadata: { ...metadata, ghostTierId: tier.id.toHexString() },
@@ -131,7 +131,7 @@ class PaymentsService {
       coupon: coupon?.id,
       // Resolved here rather than cached with the tier, so a field archived a minute
       // ago stops being asked on the next checkout. A failure to resolve must not
-      // stop a member paying, so it costs the questions and nothing else.
+      // stop a member paying, so it costs the collection and nothing else.
       checkout: await this.getCheckoutConfigForTier(tier),
     };
 
@@ -167,7 +167,7 @@ class PaymentsService {
     try {
       return await checkoutConfig.resolve(tier.id.toHexString());
     } catch (err) {
-      // A checkout that asks one fewer question still takes the money; one that fails
+      // A checkout that collects less still takes the money; one that fails
       // to be created takes none. This is the whole reason it is caught.
       logging.error(
         {

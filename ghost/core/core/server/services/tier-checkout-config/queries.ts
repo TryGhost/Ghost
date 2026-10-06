@@ -2,9 +2,8 @@ import type { Knex } from 'knex';
 import { FIELD_STATUS } from '../members-metafields/schema';
 import { STRIPE_PORT } from '@tryghost/checkout';
 import { DbCheckoutOptions } from './schema';
-import type { CollectionRow, QuestionRow } from './codec';
+import type { CollectionRow } from './codec';
 
-export const QUESTIONS_TABLE = 'products_checkout_fields';
 export const CONFIG_TABLE = 'products_checkout_config';
 export const BINDINGS_TABLE = 'members_metafield_bindings';
 export const FIELDS_TABLE = 'members_metafields';
@@ -69,30 +68,4 @@ export function collectionRowsForTier(db: Knex, productId: string) {
  */
 export function configuredCollectionRows(db: Knex) {
   return collectionQuery(db).whereNotNull(`${CONFIG_TABLE}.id`);
-}
-
-export function questionRows(db: Knex, productId?: string) {
-  const query = db(QUESTIONS_TABLE)
-    .join(BINDINGS_TABLE, `${BINDINGS_TABLE}.id`, `${QUESTIONS_TABLE}.binding_id`)
-    .leftJoin({ question_field: FIELDS_TABLE }, function () {
-      this.on('question_field.key', `${BINDINGS_TABLE}.metafield_key`).andOn(
-        db.raw('question_field.status = ?', [ACTIVE]),
-      );
-    })
-    .orderBy(`${BINDINGS_TABLE}.product_id`, 'asc')
-    .orderBy(`${QUESTIONS_TABLE}.sort_order`, 'asc')
-    .orderBy(`${QUESTIONS_TABLE}.id`, 'asc')
-    .select<QuestionRow[]>([
-      `${BINDINGS_TABLE}.product_id`,
-      `${BINDINGS_TABLE}.port`,
-      `${QUESTIONS_TABLE}.label`,
-      `${QUESTIONS_TABLE}.optional`,
-      'question_field.name as question_name',
-      'question_field.type as question_type',
-    ]);
-
-  if (productId) {
-    return query.where(`${BINDINGS_TABLE}.product_id`, productId);
-  }
-  return query;
 }

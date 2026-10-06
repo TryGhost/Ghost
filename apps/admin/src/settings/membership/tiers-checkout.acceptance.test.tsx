@@ -60,7 +60,6 @@ const flagOn = {
 
 const supporterConfig = {
   tier_id: supporterTier.id,
-  custom_fields: [],
   shipping: {
     collect: true as const,
     allowed_countries: ['FI', 'SE'],
@@ -77,7 +76,7 @@ function checkoutWorld(configs: object[] = []) {
   fakeMemberCustomFields([addressField, nameField]);
   fakeAdminEndpoint('GET', '/tiers/checkout_config/', { tiers_checkout_config: configs });
   return fakeAdminEndpoint('PUT', `/tiers/${supporterTier.id}/checkout_config/`, ({ body }) => ({
-    tiers_checkout_config: [{ tier_id: supporterTier.id, custom_fields: [], ...(body as object) }],
+    tiers_checkout_config: [{ tier_id: supporterTier.id, ...(body as object) }],
   }));
 }
 
@@ -336,9 +335,7 @@ describe('Tier checkout collection', () => {
       'PUT',
       `/tiers/${createdTier.id}/checkout_config/`,
       ({ body }) => ({
-        tiers_checkout_config: [
-          { tier_id: createdTier.id, custom_fields: [], ...(body as object) },
-        ],
+        tiers_checkout_config: [{ tier_id: createdTier.id, ...(body as object) }],
       }),
     );
     await renderAdminApp('/settings', flagOn);

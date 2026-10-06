@@ -9,12 +9,6 @@ import { Meta, createMutation, createQuery } from '../utils/api/hooks';
  * change; an unnamed block is left alone.
  */
 
-export type TierCheckoutQuestion = {
-  key: string;
-  label: string | null;
-  optional: boolean;
-};
-
 export type TierCheckoutCollection = {
   collect: true;
   custom_field_key: string;
@@ -22,7 +16,6 @@ export type TierCheckoutCollection = {
 
 export type TierCheckoutConfig = {
   tier_id: string;
-  custom_fields: TierCheckoutQuestion[];
   /**
    * One toggle for the shipping step, two destinations: the processor collects the
    * recipient name and the address together, and each lands in its own field.
@@ -44,7 +37,6 @@ export type TierCheckoutConfig = {
 
 /** The blocks a write may state. `collect: false` turns a collection off. */
 export type TierCheckoutConfigInput = {
-  custom_fields?: Array<{ key: string; label?: string | null; optional?: boolean }>;
   shipping?:
     | { collect: false }
     | {

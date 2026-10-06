@@ -3,43 +3,19 @@ import errors from '@tryghost/errors';
 import { z } from 'zod';
 import type { Knex } from 'knex';
 import type { FieldType } from '@tryghost/metafield-types';
-import { DbMetafield, FIELD_STATUS } from '../members-metafields/schema';
+import { FIELD_STATUS } from '../members-metafields/schema';
 import { MEMBER_ACCESS, type MemberAccess } from '../members-metafields';
 import type { Metafield, RequestContext } from '../members-metafields';
-import {
-  MAX_CHECKOUT_LABEL_LENGTH,
-  PORT_FIELD,
-  STRIPE_PORT,
-  isCheckoutEligible,
-  isStripePort,
-  type StripePort,
-} from '@tryghost/checkout';
+import { PORT_FIELD, STRIPE_PORT, type StripePort } from '@tryghost/checkout';
 import {
   collectionRowCodec,
   optionsCodec,
-  questionRowCodec,
   type CollectionParts,
   type CollectionRow,
-  type QuestionParts,
 } from './codec';
-import {
-  BINDINGS_TABLE,
-  CONFIG_TABLE,
-  FIELDS_TABLE,
-  QUESTIONS_TABLE,
-  collectionRowsForTier,
-  configuredCollectionRows,
-  questionRows,
-} from './queries';
-import {
-  emptyCollection,
-  type ResolvedCheckout,
-  type ResolvedQuestion,
-  type TierCheckoutConfig,
-} from './models';
+import { CONFIG_TABLE, collectionRowsForTier, configuredCollectionRows } from './queries';
+import { emptyCollection, type ResolvedCheckout, type TierCheckoutConfig } from './models';
 import { CheckoutConfigInput } from './serializers';
-
-type FieldRow = Pick<z.infer<typeof DbMetafield>, 'key' | 'name' | 'type' | 'status'>;
 
 type NewField = { key: string; name: string; type: FieldType; access: { member: MemberAccess } };
 
@@ -118,8 +94,7 @@ export class TierCheckoutConfigService {
       return [];
     }
 
-    const asked = await this.questions();
-    return rows.map((row) => assemble(row, asked.get(row.tierId) ?? []));
+    return rows.map(assemble);
   }
 
   async read(productId: string): Promise<TierCheckoutConfig | null> {
@@ -131,21 +106,12 @@ export class TierCheckoutConfigService {
       return null;
     }
 
-    const asked = await this.questions(productId);
-    return assemble(row, asked.get(productId) ?? []);
+    return assemble(row);
   }
 
   async resolve(productId: string): Promise<ResolvedCheckout> {
     const [row] = decodeCollection(await collectionRowsForTier(this.knex, productId));
-    if (!row?.configured) {
-      return { customFields: [], ...emptyCollection() };
-    }
-
-    const asked = await this.questions(productId);
-    const customFields: ResolvedQuestion[] = (asked.get(productId) ?? []).flatMap((entry) =>
-      entry.askable ? [{ ...entry.question, ...entry.askable }] : [],
-    );
-    return { customFields, ...row.collecting };
+    return row?.configured ? row.collecting : emptyCollection();
   }
 
   /**
@@ -153,16 +119,13 @@ export class TierCheckoutConfigService {
    *
    * A request only has to include the sections it wants to change. Say nothing about
    * shipping and the shipping settings stay exactly as they were, so a client that only
-   * knows how to edit the questions cannot wipe out the shipping settings by omitting
+   * knows how to edit the phone number cannot wipe out the shipping settings by omitting
    * them.
    */
   async edit(context: RequestContext, productId: string, input: unknown): Promise<void> {
     const stated = parseInput(input);
     const now = new Date();
 
-    if (stated.custom_fields) {
-      await assertQuestionsAskable(this.knex, stated.custom_fields);
-    }
     const plan = await this.planCollection(stated);
 
     const created = await this.knex.transaction(async (trx) => {
@@ -180,26 +143,10 @@ export class TierCheckoutConfigService {
       for (const { port, key } of plan.bind) {
         await this.bindings.bind(trx, productId, port, key, now);
       }
-
-      if (stated.custom_fields) {
-        await this.writeQuestions(trx, productId, stated.custom_fields, now);
-      }
       return made;
     });
 
     await this.fields.recordCreated(context, created);
-  }
-
-  private async questions(productId?: string): Promise<Map<string, QuestionParts[]>> {
-    const rows = await questionRows(this.knex, productId);
-    const byTier = new Map<string, QuestionParts[]>();
-    for (const row of rows) {
-      const parts = z.decode(questionRowCodec, row);
-      const forTier = byTier.get(parts.tierId) ?? [];
-      forTier.push(parts);
-      byTier.set(parts.tierId, forTier);
-    }
-    return byTier;
   }
 
   private async planCollection(stated: CheckoutConfigInput): Promise<CollectionPlan> {
@@ -251,47 +198,6 @@ export class TierCheckoutConfigService {
 
     return { clear, create: [...create.values()], bind: wanted };
   }
-
-  /**
-   * Saves the questions this tier asks its buyers during checkout.
-   *
-   * A binding records that one value coming back from Stripe belongs in one custom field,
-   * and it identifies the value by the name Stripe uses for it. For a question that name
-   * is the custom field's own key: Ghost sends the key to Stripe as the question's
-   * identifier, and Stripe returns the buyer's answer labelled with that same key. That is
-   * why the key is passed twice below — once as the name Stripe will answer under, and
-   * once as the field the answer is stored in.
-   */
-  private async writeQuestions(
-    trx: Knex.Transaction,
-    productId: string,
-    questions: NonNullable<CheckoutConfigInput['custom_fields']>,
-    now: Date,
-  ): Promise<void> {
-    const asked = new Set(questions.map((question) => question.key));
-    const alreadyAsked: Array<{ port: string }> = await trx(QUESTIONS_TABLE)
-      .join(BINDINGS_TABLE, `${BINDINGS_TABLE}.id`, `${QUESTIONS_TABLE}.binding_id`)
-      .where(`${BINDINGS_TABLE}.product_id`, productId)
-      .select(`${BINDINGS_TABLE}.port`);
-    for (const { port } of alreadyAsked) {
-      if (!asked.has(port)) {
-        await this.bindings.remove(trx, productId, port);
-      }
-    }
-
-    for (const [index, question] of questions.entries()) {
-      const bindingId = await this.bindings.bind(trx, productId, question.key, question.key, now);
-      await trx(QUESTIONS_TABLE).where('binding_id', bindingId).del();
-      await trx(QUESTIONS_TABLE).insert({
-        id: new ObjectID().toHexString(),
-        binding_id: bindingId,
-        sort_order: index,
-        label: question.label ?? null,
-        optional: question.optional ?? true,
-        created_at: now,
-      });
-    }
-  }
 }
 
 function parseInput(input: unknown): CheckoutConfigInput {
@@ -310,12 +216,8 @@ function decodeCollection(rows: CollectionRow[]): CollectionParts[] {
   return rows.map((row) => z.decode(collectionRowCodec, row));
 }
 
-function assemble(row: CollectionParts, asked: QuestionParts[]): TierCheckoutConfig {
-  return {
-    tierId: row.tierId,
-    customFields: asked.map((entry) => entry.question),
-    ...row.collection,
-  };
+function assemble(row: CollectionParts): TierCheckoutConfig {
+  return { tierId: row.tierId, ...row.collection };
 }
 
 async function assertTierExists(db: Knex, productId: string): Promise<void> {
@@ -384,56 +286,4 @@ async function writeOptions(
     })
     .onConflict('product_id')
     .merge({ ...columns, updated_at: now });
-}
-
-async function assertQuestionsAskable(
-  db: Knex,
-  questions: NonNullable<CheckoutConfigInput['custom_fields']>,
-): Promise<void> {
-  const collides = questions.find((question) => isStripePort(question.key));
-  if (collides) {
-    throw new errors.ValidationError({
-      message: `A field keyed ${collides.key} cannot be asked at checkout, because that is what this checkout calls something it collects for itself.`,
-      property: 'checkout.custom_fields',
-    });
-  }
-
-  const keys = questions.map((question) => question.key);
-  if (keys.length === 0) {
-    return;
-  }
-
-  const rows: FieldRow[] = await db(FIELDS_TABLE)
-    .whereIn(`${FIELDS_TABLE}.key`, keys)
-    .where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active)
-    .select(
-      `${FIELDS_TABLE}.key`,
-      `${FIELDS_TABLE}.name`,
-      `${FIELDS_TABLE}.type`,
-      `${FIELDS_TABLE}.status`,
-    );
-  const byKey = new Map(rows.map((row) => [row.key, row]));
-
-  for (const question of questions) {
-    const field = byKey.get(question.key);
-    if (!field) {
-      throw new errors.ValidationError({
-        message: `Unknown custom field: ${question.key}`,
-        property: 'checkout.custom_fields',
-      });
-    }
-    if (!isCheckoutEligible(field.type)) {
-      throw new errors.ValidationError({
-        message: `A ${field.type} field cannot be asked for at checkout.`,
-        property: 'checkout.custom_fields',
-      });
-    }
-    const prompt = question.label ?? field.name;
-    if (prompt.length > MAX_CHECKOUT_LABEL_LENGTH) {
-      throw new errors.ValidationError({
-        message: `A checkout question can be at most ${MAX_CHECKOUT_LABEL_LENGTH} characters. Give this one a shorter label.`,
-        property: 'checkout.custom_fields',
-      });
-    }
-  }
 }

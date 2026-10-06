@@ -1,12 +1,6 @@
 import logging from '@tryghost/logging';
-import {
-  MAX_CHECKOUT_CUSTOM_FIELDS,
-  MAX_CHECKOUT_LABEL_LENGTH,
-  STRIPE_ALLOWED_COUNTRIES,
-  isCheckoutEligible,
-  type CheckoutEligibleFieldType,
-} from '@tryghost/checkout';
-import type { ResolvedCheckout, ResolvedQuestion } from '../../../tier-checkout-config';
+import { STRIPE_ALLOWED_COUNTRIES } from '@tryghost/checkout';
+import type { ResolvedCheckout } from '../../../tier-checkout-config';
 
 /**
  * The Stripe session parameters a tier's checkout configuration asks for.
@@ -22,7 +16,7 @@ import type { ResolvedCheckout, ResolvedQuestion } from '../../../tier-checkout-
  * **Every limit is applied again here, not just at the settings screen.** A configuration
  * written when the rules were laxer, or a field renamed longer since, must not be able to
  * fail a session create years later. Anything that would be refused is dropped and logged
- * instead — a missing question costs one answer, and a rejected session costs the sale.
+ * instead — a missing collection costs one value, and a rejected session costs the sale.
  *
  * `customer_update` is never set *here*, because nothing here knows whether the session has
  * a customer, and setting it without one is the exact reproduction of the incident that took
@@ -32,50 +26,9 @@ import type { ResolvedCheckout, ResolvedQuestion } from '../../../tier-checkout-
  */
 
 export interface StripeCheckoutCollectionOptions {
-  custom_fields?: Array<{
-    key: string;
-    label: { type: 'custom'; custom: string };
-    type: 'text';
-    optional: boolean;
-  }>;
   shipping_address_collection?: { allowed_countries: string[] };
   tax_id_collection?: { enabled: true };
   phone_number_collection?: { enabled: true };
-}
-
-/** Keyed on the eligible types, so this and the configure-time rule cannot drift apart. */
-const QUESTION_TYPES = {
-  short_text: 'text',
-} as const satisfies Record<CheckoutEligibleFieldType, 'text'>;
-
-type AskableQuestion = ResolvedQuestion & { type: CheckoutEligibleFieldType };
-
-function askable(question: ResolvedQuestion): question is AskableQuestion {
-  if (!isCheckoutEligible(question.type)) {
-    logging.warn(
-      {
-        event: { name: 'stripe.checkout.question_skipped' },
-        customFieldKey: question.key,
-        fieldType: question.type,
-        reason: 'unsupported_type',
-      },
-      'Skipping a Stripe checkout question',
-    );
-    return false;
-  }
-  if (question.prompt.length > MAX_CHECKOUT_LABEL_LENGTH) {
-    logging.warn(
-      {
-        event: { name: 'stripe.checkout.question_skipped' },
-        customFieldKey: question.key,
-        promptLength: question.prompt.length,
-        reason: 'label_too_long',
-      },
-      'Skipping a Stripe checkout question',
-    );
-    return false;
-  }
-  return true;
 }
 
 /**
@@ -90,32 +43,6 @@ export function stripeCheckoutCollectionOptions(
   const options: StripeCheckoutCollectionOptions = {};
   if (!checkout) {
     return options;
-  }
-
-  const eligible = checkout.customFields.filter(askable);
-  const questions = eligible.slice(0, MAX_CHECKOUT_CUSTOM_FIELDS);
-  if (questions.length < eligible.length) {
-    logging.warn(
-      {
-        event: { name: 'stripe.checkout.questions_trimmed' },
-        asked: questions.length,
-        configured: eligible.length,
-      },
-      'Some Stripe checkout questions were not asked',
-    );
-  }
-
-  if (questions.length > 0) {
-    options.custom_fields = questions.map((question) => ({
-      // Ghost sends the custom field's own key as the question's identifier, and Stripe
-      // returns the buyer's answer labelled with that same key. Using it in both places
-      // means reading an answer is a direct lookup of the field it belongs to, with
-      // nothing in between that could map it to the wrong one.
-      key: question.key,
-      label: { type: 'custom' as const, custom: question.prompt },
-      type: QUESTION_TYPES[question.type],
-      optional: question.optional,
-    }));
   }
 
   if (checkout.shipping) {

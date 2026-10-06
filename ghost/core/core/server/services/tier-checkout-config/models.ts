@@ -1,12 +1,4 @@
 import { z } from 'zod';
-import { FieldTypeSchema } from '@tryghost/metafield-types';
-
-export const CheckoutQuestion = z.object({
-  key: z.string(),
-  label: z.string().nullable(),
-  optional: z.boolean(),
-});
-export type CheckoutQuestion = z.infer<typeof CheckoutQuestion>;
 
 /**
  * One toggle and two destinations: a processor returns the recipient and the address
@@ -33,7 +25,6 @@ export type PhoneCollection = z.infer<typeof PhoneCollection>;
 
 export const TierCheckoutConfig = z.object({
   tierId: z.string(),
-  customFields: z.array(CheckoutQuestion),
   shipping: ShippingCollection.nullable(),
   /** Stripe keeps a tax number against the customer it invoices; Ghost never stores one. */
   taxNumber: z.boolean(),
@@ -52,7 +43,6 @@ export const emptyCollection = (): Pick<
 
 export const emptyCheckoutConfig = (tierId: string): TierCheckoutConfig => ({
   tierId,
-  customFields: [],
   ...emptyCollection(),
 });
 
@@ -62,14 +52,7 @@ export const CheckoutOptions = z.object({
 });
 export type CheckoutOptions = z.infer<typeof CheckoutOptions>;
 
-export const ResolvedQuestion = CheckoutQuestion.extend({
-  prompt: z.string(),
-  type: FieldTypeSchema,
-});
-export type ResolvedQuestion = z.infer<typeof ResolvedQuestion>;
-
 export const ResolvedCheckout = z.object({
-  customFields: z.array(ResolvedQuestion),
   shipping: ShippingCollection.nullable(),
   taxNumber: z.boolean(),
   phone: PhoneCollection.nullable(),

@@ -33,7 +33,7 @@ class TiersServiceWrapper {
 
     // What a tier's checkout asks, kept beside the tier rather than inside it: these
     // rows are read live on every request, because deleting a metafield cascades a
-    // question away without the repository above ever seeing it, and a cached copy
+    // binding away without the repository above ever seeing it, and a cached copy
     // would go on naming a field the site no longer has.
     //
     // Boot builds the metafields services before this one, so both collaborators

@@ -123,7 +123,6 @@ describe('Tier requirements Content API', function () {
   });
 
   afterEach(async function () {
-    await models.Base.knex('products_checkout_fields').del();
     await models.Base.knex('products_checkout_config').del();
     await models.Base.knex('members_metafield_bindings').del();
     await models.Base.knex('members_metafields').del();

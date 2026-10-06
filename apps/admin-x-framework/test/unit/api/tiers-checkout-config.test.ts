@@ -74,7 +74,6 @@ const phoneWithoutDestination: TierCheckoutConfigInput = {
 // block carries its destinations as definite strings, never null.
 const response: TierCheckoutConfig = {
   tier_id: 'abc',
-  custom_fields: [{ key: 'company', label: null, optional: true }],
   shipping: {
     collect: true,
     allowed_countries: ['US'],
@@ -88,7 +87,6 @@ const response: TierCheckoutConfig = {
 // And the same absence comes back, so a client reads everywhere the way it wrote it.
 const responseEverywhere: TierCheckoutConfig = {
   tier_id: 'abc',
-  custom_fields: [],
   shipping: {
     collect: true,
     name: { custom_field_key: 'recipient_name' },
@@ -98,7 +96,6 @@ const responseEverywhere: TierCheckoutConfig = {
 
 const responseWithNullDestination: TierCheckoutConfig = {
   tier_id: 'abc',
-  custom_fields: [],
   shipping: {
     collect: true,
     allowed_countries: ['US'],
