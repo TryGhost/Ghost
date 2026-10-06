@@ -2176,6 +2176,12 @@ module.exports = {
       defaultTo: 'inactive',
       validations: { isIn: [['active', 'inactive']] },
     },
+    trigger_type: {
+      type: 'string',
+      maxlength: 50,
+      nullable: false,
+      validations: { isIn: [['member_sign_up']] },
+    },
     name: { type: 'string', maxlength: 191, nullable: false, unique: true },
     description: { type: 'string', maxlength: 2000, nullable: false, defaultTo: '' },
     slug: { type: 'string', maxlength: 191, nullable: true, unique: true },
