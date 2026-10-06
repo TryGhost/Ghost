@@ -58,24 +58,23 @@ import { toAreaData } from '@/automations/proto/shared/chart';
 // - All time by default. Coming in pre-filtered to 30 days meant the totals here
 //   silently disagreed with the automations list, which is the first thing anyone
 //   checks. The timeframe is still there, it just isn't applied for you.
-// - Three statuses instead of four. "Exited early" absorbs every early ending —
+// - Three statuses instead of four. "Stopped" absorbs every early ending —
 //   unsubscribed, upgraded, failed — because from the flow's point of view they
 //   are one outcome: the member stopped before the end. Why they left is a
 //   property of that member, not a column in this table. The three match the
 //   shared run vocabulary in shared/member-runs, so the pane and anything else
 //   describing a run agree.
-// - "Entered" rather than "Started", which was ambiguous about whether it meant
-//   the run or the member.
+// - "Started", the same word as the list's "Last started": the column dates the run.
 
 const CHART_HEIGHT = 'h-44';
 
-type StatusKey = 'In progress' | 'Completed' | 'Exited early';
+type StatusKey = 'In progress' | 'Completed' | 'Stopped';
 
 const statusOf = (run: AutomationRun): StatusKey => {
   if (run.status === 'in_progress') {
     return 'In progress';
   }
-  return run.status === 'completed' ? 'Completed' : 'Exited early';
+  return run.status === 'completed' ? 'Completed' : 'Stopped';
 };
 
 // Each status carries one mark, used identically by the count cards, the filter
@@ -89,7 +88,7 @@ const statusOf = (run: AutomationRun): StatusKey => {
 const STATUS_FACETS: { key: StatusKey; color: string; glyph: React.ReactNode }[] = [
   { key: 'In progress', color: 'text-blue-600 dark:text-blue', glyph: <InProgressGlyph /> },
   { key: 'Completed', color: 'text-green-600 dark:text-green', glyph: <CompletedGlyph /> },
-  { key: 'Exited early', color: 'text-muted-foreground', glyph: <ExitedGlyph /> },
+  { key: 'Stopped', color: 'text-muted-foreground', glyph: <ExitedGlyph /> },
 ];
 
 const facetColor = (status: StatusKey): string =>
@@ -97,7 +96,7 @@ const facetColor = (status: StatusKey): string =>
 const facetGlyph = (status: StatusKey): React.ReactNode =>
   STATUS_FACETS.find((facet) => facet.key === status)?.glyph ?? null;
 
-// A run that ended on a system fault keeps the Exited early glyph and takes a red dot in
+// A run that ended on a system fault keeps the Stopped glyph and takes a red dot in
 // its corner — failure is a reason for exiting, not a fourth status. A corner badge
 // rather than a dot beside the glyph, so every row's icon stays on the same centre
 // line. Phase 1's mark, carried over with the glyphs.
@@ -180,9 +179,9 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
   // Why someone left, filtered separately from the status. Deliberately not a
   // fourth status card: the three statuses are mutually exclusive outcomes, and
   // a failure is a REASON for exiting rather than a different kind of exit.
-  // Selecting one implies Exited early, so it doesn't need the card as well.
+  // Selecting one implies Stopped, so it doesn't need the card as well.
   const [exitFilter, setExitFilter] = useState<ExitReason | null>(null);
-  // The summary (Total entries + chart) answers "how many are entering, over
+  // The summary (Total runs + chart) answers "how many are entering, over
   // time", and only the timeframe changes that. Searching or filtering by exit
   // reason narrows the list beneath it and leaves it untouched — so while either
   // is active it would sit there contradicting the controls above it. It rolls
@@ -196,7 +195,7 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
 
   const chartData = toAreaData(metrics.enrollments_by_day, {
     range: range === 'all' ? undefined : Number(range),
-    label: 'Entries',
+    label: 'Runs',
   });
   const chartMax = Math.max(...chartData.map((point) => point.value), 1);
 
@@ -289,7 +288,7 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Entries</DropdownMenuLabel>
+        <DropdownMenuLabel>Runs</DropdownMenuLabel>
         {RANGE_OPTIONS.map((option) => (
           <DropdownMenuItem key={option.value} onSelect={() => setRange(option.value)}>
             {option.label}
@@ -311,12 +310,12 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
           </DropdownMenuItem>
         ))}
         {/* The reasons run straight on from the statuses, in one list. They were a
-                    section of their own under "Exited early, because", which was accurate and
+                    section of their own under "Stopped, because", which was accurate and
                     read as a second question — you had to notice a heading to understand that
                     picking from it also set the status above.
                     
                     As one list it's what it always was: what happened to this run, in
-                    descending specificity. "Exited early" is the general answer and each
+                    descending specificity. "Stopped" is the general answer and each
                     reason is a more particular one, so choosing a reason sets the status with
                     it and the list never offers a combination with no runs in it. */}
         {EXIT_REASONS.map((reason) => (
@@ -324,7 +323,7 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
             key={reason.id}
             onSelect={() => {
               const on = exitFilter === reason.id;
-              setStatusFilter(on ? null : 'Exited early');
+              setStatusFilter(on ? null : 'Stopped');
               setExitFilter(on ? null : reason.id);
             }}
           >
@@ -403,8 +402,8 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
                               (posts/analytics/growth labels "Free members" with the same
                               icon and weight). Zap was the trigger's icon, not this
                               metric's — what's counted here is people, not firings. */}
-                          <LucideIcon.User size={16} strokeWidth={1.5} />
-                          Total entries
+                          <LucideIcon.Zap size={16} strokeWidth={1.5} />
+                          Total runs
                         </KpiCardHeaderLabel>
                         <KpiCardHeaderValue value={formatNumber(totalEntries)} />
                       </Stack>
@@ -538,7 +537,7 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
               </FilterBar>
             )}
           </div>
-          {/* Member table. table-fixed keeps the Entered/Status widths steady. */}
+          {/* Member table. table-fixed keeps the Started/Status widths steady. */}
           <div className={cn('pb-6', gutter)}>
             <Table className="table-fixed" data-testid="float-entries-table">
               {/* No header row. Three columns, and not one of them needed naming:

@@ -49,25 +49,24 @@ import { useStickyList } from '@/automations/proto/shared/use-sticky-list';
 // - All time by default. Coming in pre-filtered to 30 days meant the totals here
 //   silently disagreed with the automations list, which is the first thing anyone
 //   checks. The timeframe is still there, it just isn't applied for you.
-// - Three statuses instead of four. "Exited early" absorbs every early ending —
+// - Three statuses instead of four. "Stopped" absorbs every early ending —
 //   unsubscribed, upgraded, failed — because from the flow's point of view they
 //   are one outcome: the member stopped before the end. Why they left is a
 //   property of that member, not a column in this table. The three match the
 //   shared run vocabulary in shared/member-runs, so the pane and anything else
 //   describing a run agree.
-// - "Entered" rather than "Started", which was ambiguous about whether it meant
-//   the run or the member.
+// - "Started", the same word as the list's "Last started": the column dates the run.
 
 const CHART_HEIGHT = 'h-44';
 
-type StatusKey = 'In progress' | 'Completed' | 'Exited early';
+type StatusKey = 'In progress' | 'Completed' | 'Stopped';
 type SortKey = 'member' | 'entered' | 'status';
 
 const statusOf = (run: AutomationRun): StatusKey => {
   if (run.status === 'in_progress') {
     return 'In progress';
   }
-  return run.status === 'completed' ? 'Completed' : 'Exited early';
+  return run.status === 'completed' ? 'Completed' : 'Stopped';
 };
 
 // Each status carries one glyph + colour, used identically by the count cards,
@@ -76,7 +75,7 @@ const statusOf = (run: AutomationRun): StatusKey => {
 const STATUS_FACETS: { key: StatusKey; color: string; glyph: React.ReactNode }[] = [
   { key: 'In progress', color: 'text-blue-600 dark:text-blue', glyph: <InProgressGlyph /> },
   { key: 'Completed', color: 'text-green-600 dark:text-green', glyph: <CompletedGlyph /> },
-  { key: 'Exited early', color: 'text-muted-foreground', glyph: <ExitedGlyph /> },
+  { key: 'Stopped', color: 'text-muted-foreground', glyph: <ExitedGlyph /> },
 ];
 
 const facetColor = (status: StatusKey): string =>
@@ -84,12 +83,12 @@ const facetColor = (status: StatusKey): string =>
 const facetGlyph = (status: StatusKey): React.ReactNode =>
   STATUS_FACETS.find((facet) => facet.key === status)?.glyph ?? null;
 
-// A run that ended on a system fault keeps the Exited early glyph and takes a red
+// A run that ended on a system fault keeps the Stopped glyph and takes a red
 // dot in its corner. Swapping the glyph outright was wrong: failure is a REASON
 // for exiting, not a different status, and a row whose icon disagreed with the
 // column it sits in reads as a fourth state that can't be counted or filtered.
 // The dot marks the one list state that's the publisher's to fix without
-// claiming the row is something other than Exited early.
+// claiming the row is something other than Stopped.
 //
 // A corner badge rather than a dot beside the glyph, because every row's icon
 // then stays on the same centre line — an inline dot would nudge only the failed
@@ -134,9 +133,9 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
   // Why someone left, filtered separately from the status. Deliberately not a
   // fourth status card: the three statuses are mutually exclusive outcomes, and
   // a failure is a REASON for exiting rather than a different kind of exit.
-  // Selecting one implies Exited early, so it doesn't need the card as well.
+  // Selecting one implies Stopped, so it doesn't need the card as well.
   const [exitFilter, setExitFilter] = useState<ExitReason | null>(null);
-  // The summary (Total entries + chart) answers "how many are entering, over
+  // The summary (Total runs + chart) answers "how many are entering, over
   // time", and only the timeframe changes that. Searching or filtering by exit
   // reason narrows the list beneath it and leaves it untouched — so while either
   // is active it would sit there contradicting the controls above it. It rolls
@@ -149,7 +148,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
 
   const chartData = toAreaData(metrics.enrollments_by_day, {
     range: range === 'all' ? undefined : Number(range),
-    label: 'Entries',
+    label: 'Runs',
   });
   const chartMax = Math.max(...chartData.map((point) => point.value), 1);
   const rangeLabel = RANGE_OPTIONS.find((option) => option.value === range)?.label ?? 'All time';
@@ -200,7 +199,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
     const rows = exitFilter
       ? byStatus.filter((row) => row.run.exit_reason === exitFilter)
       : byStatus;
-    const order: StatusKey[] = ['In progress', 'Completed', 'Exited early'];
+    const order: StatusKey[] = ['In progress', 'Completed', 'Stopped'];
     rows.sort((a, b) => {
       // enrolled_at is ISO 8601, so a lexical compare is chronological.
       const cmp =
@@ -349,7 +348,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Entries</DropdownMenuLabel>
+              <DropdownMenuLabel>Runs</DropdownMenuLabel>
               {/* Trailing check, not the radio bullet: Shade's active-option
                               convention (the Filters pattern's option rows, SelectItem) puts
                               a check at the end of the row. Opacity rather than conditional
@@ -475,8 +474,8 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
                             (posts/analytics/growth labels "Free members" with the same
                             icon and weight). Zap was the trigger's icon, not this
                             metric's — what's counted here is people, not firings. */}
-                        <LucideIcon.User size={16} strokeWidth={1.5} />
-                        Total entries
+                        <LucideIcon.Zap size={16} strokeWidth={1.5} />
+                        Total runs
                       </KpiCardHeaderLabel>
                       <KpiCardHeaderValue value={formatNumber(totalEntries)} />
                     </Stack>
@@ -618,7 +617,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
             </div>
           </div>
 
-          {/* Member table. table-fixed keeps the Entered/Status widths steady. */}
+          {/* Member table. table-fixed keeps the Started/Status widths steady. */}
           <div className={cn('pb-6', gutter)}>
             <Table className="table-fixed" data-testid="float-entries-table">
               {/* border-b-0 on both: Shade gives thead and its row a bottom
@@ -630,7 +629,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
                   <SortHead label="Member" sort={sort} sortKey="member" onSort={onSort} />
                   <SortHead
                     className="w-28"
-                    label="Entered"
+                    label="Started"
                     sort={sort}
                     sortKey="entered"
                     onSort={onSort}
@@ -717,7 +716,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
             {sorted.length === 0 && (
               <div className="py-12">
                 {noData ? (
-                  <EmptyIndicator title="No member entries">
+                  <EmptyIndicator title="No member runs">
                     <LucideIcon.Users />
                   </EmptyIndicator>
                 ) : (

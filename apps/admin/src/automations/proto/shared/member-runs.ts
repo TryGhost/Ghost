@@ -32,7 +32,7 @@ export const runStatusMeta: Record<
     className: 'text-green-800 dark:text-green',
   },
   exited_early: {
-    label: 'Exited early',
+    label: 'Stopped',
     variant: 'warning',
     className: 'text-yellow-800 dark:text-yellow-600',
   },
@@ -52,7 +52,7 @@ export const EXIT_REASONS: { id: ExitReason; label: string }[] = [
 ];
 
 export const exitReasonLabel = (reason: ExitReason): string =>
-  EXIT_REASONS.find((entry) => entry.id === reason)?.label ?? 'Exited early';
+  EXIT_REASONS.find((entry) => entry.id === reason)?.label ?? 'Stopped';
 
 // A run the system ended, rather than the member. The only exit the UI escalates,
 // because it's the one a publisher can act on. Read from the run's own reason
@@ -83,7 +83,7 @@ export const latestActivity = (
   actions: ReadonlyArray<{ id: string; type: string }>,
 ): string => {
   if (run.status === 'exited_early') {
-    return run.exit_reason ?? 'Exited early';
+    return run.exit_reason ?? 'Stopped';
   }
 
   // 1-based position of each send_email action → "email 1", "email 2", ...

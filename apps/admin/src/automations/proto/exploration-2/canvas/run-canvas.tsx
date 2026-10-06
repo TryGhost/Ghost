@@ -414,7 +414,7 @@ export const RunCanvas: React.FC<RunCanvasProps> = ({
               ? (step?.detail ?? exitReasonLabel('failed'))
               : run.exit_reason
                 ? exitReasonLabel(run.exit_reason)
-                : 'Exited early',
+                : 'Stopped',
             at: step?.occurred_at ? fmtDateTime(step.occurred_at, siteTimezone) : null,
           },
         };

@@ -30,7 +30,7 @@ import { useVersionLink } from './use-version-link';
 // metrics (via getRunData), same row shape. Only the link destination
 // differs per concept, via `basePath`.
 
-// Last entry, worded by Shade's formatTimestamp like every other timestamp in
+// Last started, worded by Shade's formatTimestamp like every other timestamp in
 // Ghost — "4 hr ago", "Yesterday", then a short date.
 //
 // This was a hand-rolled ladder with its own vocabulary ("4 hours ago", "2
@@ -232,7 +232,7 @@ const AutomationRow: React.FC<{
       >
         {relRunDate(metrics?.last_enrolled_at ?? null)}
       </TableCell>
-      {/* Total entries is the number the detail page leads with, so the list
+      {/* Total runs is the number the detail page leads with, so the list
                 and the automation agree on the headline figure — that's the one people
                 cross-check. Completed dropped out to make room: how many are still
                 moving matters more at a glance than how many have finished. */}
@@ -345,11 +345,11 @@ export const AutomationsTable: React.FC<AutomationsTableProps> = ({
       <TableRow
         className={cn('w-full items-center gap-x-4 border-b hover:bg-transparent', gridCols)}
       >
-        <TableHead className="lg:px-4">Name</TableHead>
-        <TableHead className="lg:px-4">Last entry</TableHead>
+        <TableHead className="lg:px-4">Automation</TableHead>
+        <TableHead className="lg:px-4">Last started</TableHead>
         {/* Right-aligned to sit over the right-aligned figures below, the
                     same pairing the analytics tables use. */}
-        <TableHead className="text-right lg:px-4">Total entries</TableHead>
+        <TableHead className="text-right lg:px-4">Total runs</TableHead>
         <TableHead className="text-right lg:px-4">In progress</TableHead>
         <TableHead className="lg:px-4">Status</TableHead>
         <TableHead className="lg:px-4" />

@@ -479,7 +479,7 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({
               ? (step?.detail ?? exitReasonLabel('failed'))
               : selectedRun.exit_reason
                 ? exitReasonLabel(selectedRun.exit_reason)
-                : 'Exited early',
+                : 'Stopped',
             subtitle: '',
             focused,
             // 'done' so the edge INTO this card reads as path travelled.
@@ -497,7 +497,7 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({
     // isn't being looked at.
     //
     // In focus it's "Completed", and that's the only thing it ever says. It used
-    // to read "Exited early" for a run that ended — which the event card directly
+    // to read "Stopped" for a run that ended — which the event card directly
     // above it had already said, in more detail and by name ("Unsubscribed"). The
     // terminal is simply the card the run didn't reach, dimmed like every other
     // card the run didn't reach, and the event card owns the outcome.

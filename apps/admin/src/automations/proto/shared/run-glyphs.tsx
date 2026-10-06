@@ -72,7 +72,7 @@ export const CompletedGlyph: React.FC<{ className?: string }> = ({ className }) 
   </svg>
 );
 
-// Exited early: the circle broken open on the right, with an arrow leaving
+// Stopped: the circle broken open on the right, with an arrow leaving
 // through the gap.
 export const ExitedGlyph: React.FC<{ className?: string }> = ({ className }) => (
   <svg
