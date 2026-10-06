@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { useState } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { editorBody, editorSecondaryInstance } from '@tryghost/test-data/selectors/editor';
 import type { ReactNode } from 'react';
 import type { PostCardConfig, PostType } from './card-config';
@@ -119,6 +119,11 @@ describe('KoenigPostEditor re-renders', () => {
 });
 
 describe('KoenigPostEditor hidden instance', () => {
+  afterEach(() => {
+    editorRendered.mockReset();
+    vi.restoreAllMocks();
+  });
+
   it('loses only the baseline when the hidden instance crashes', () => {
     const onSecondaryChange = vi.fn();
     const onSecondaryError = vi.fn();
@@ -127,7 +132,7 @@ describe('KoenigPostEditor hidden instance', () => {
         throw new Error('hidden instance crashed');
       }
     });
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(NOOP);
+    vi.spyOn(console, 'error').mockImplementation(NOOP);
 
     render(
       <KoenigPostEditor
@@ -148,13 +153,10 @@ describe('KoenigPostEditor hidden instance', () => {
     expect(screen.getByTestId(editorBody)).toBeInTheDocument();
     expect(screen.queryByTestId(editorSecondaryInstance)).not.toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-
-    editorRendered.mockReset();
-    consoleError.mockRestore();
   });
   it('loses only the baseline when Lexical fails in the hidden instance', () => {
     const onSecondaryError = vi.fn();
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(NOOP);
+    vi.spyOn(console, 'error').mockImplementation(NOOP);
 
     render(
       <KoenigPostEditor
@@ -178,7 +180,5 @@ describe('KoenigPostEditor hidden instance', () => {
       within(screen.getByTestId(editorSecondaryInstance)).getByRole('button', { hidden: true }),
     );
     expect(onSecondaryError).toHaveBeenCalledTimes(1);
-
-    consoleError.mockRestore();
   });
 });
