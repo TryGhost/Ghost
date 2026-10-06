@@ -21,9 +21,11 @@ import {
   type SaveResult,
 } from '@/editor/engine/save-engine';
 import type {
+  BodyDivergence,
   ChangeReasonCode,
   EditablePostPatch,
   EditablePostProjection,
+  ProjectionKey,
   RestoredRevision,
   RevisionProjection,
 } from '@/editor/engine/change-tracker';
@@ -75,6 +77,8 @@ export interface EditorLeaveConfirmation {
   readonly status: PostStatus;
   readonly engineState: SaveEngineState['kind'];
   readonly reasons: ChangeReasonCode[];
+  readonly dirtyFields: ProjectionKey[];
+  readonly bodyDiff: BodyDivergence | null;
 }
 
 /** Fields the engine writes onto the request rather than reading from the live post. */
@@ -152,6 +156,8 @@ export interface EditorSessionView {
   /** The feature image's alt text and caption, another writer's once adopted. */
   readonly featureImageAlt: string | null;
   readonly featureImageCaption: string | null;
+  /** A refused read carried a later version; only while nothing is unsaved and no save is under way. */
+  readonly newerVersionAvailable: boolean;
 }
 
 export interface EditorSession {
@@ -295,6 +301,15 @@ function isHeldToken(candidate: string | null | undefined, held: string | null):
   );
 }
 
+/** Whether a collision token names a version later than another. */
+function isLaterToken(candidate: string | null, than: string | null): boolean {
+  return (
+    isCollisionToken(candidate) &&
+    isCollisionToken(than) &&
+    Date.parse(candidate) > Date.parse(than)
+  );
+}
+
 /**
  * Composes the change tracker, slug machine and save engine into one editing
  * session: one per opened post, never shared between two new posts.
@@ -342,6 +357,8 @@ export function createEditorSession({
   let flushedConflictError: unknown = null;
   // The engine is holding an error a settings save met.
   let refusedSettings = false;
+  // The latest version a refused read carried; stale once the held token reaches it.
+  let newerVersion: string | null = null;
 
   function livePublishedAt(): string | null {
     return stagedPublishedAt ?? publishedAt;
@@ -393,6 +410,11 @@ export function createEditorSession({
       view.publishTime.publishedAt === currentPublishedAt
         ? view.publishTime
         : { status, publishedAt: currentPublishedAt };
+    // While a save is under way, the later version may be its own read before its answer.
+    const newerVersionAvailable =
+      (state.kind === 'idle' || state.kind === 'debouncing') &&
+      !isDirty &&
+      isLaterToken(newerVersion, identity.updatedAt);
 
     // Body edits need no new React snapshot while the rendered values stay the
     // same. Keep nested settings and time references stable across engine events.
@@ -406,7 +428,8 @@ export function createEditorSession({
       view.settings === settings &&
       view.publishTime === publishTime &&
       view.featureImageAlt === live.feature_image_alt &&
-      view.featureImageCaption === live.feature_image_caption
+      view.featureImageCaption === live.feature_image_caption &&
+      view.newerVersionAvailable === newerVersionAvailable
     ) {
       return;
     }
@@ -420,6 +443,7 @@ export function createEditorSession({
       publishTime,
       featureImageAlt: live.feature_image_alt,
       featureImageCaption: live.feature_image_caption,
+      newerVersionAvailable,
     };
     for (const listener of changeListeners) {
       try {
@@ -1059,13 +1083,17 @@ export function createEditorSession({
     getLiveLexical: () => live.lexical,
 
     recordRefetched: (next) => {
+      if (disposed || identity.id !== next.id) {
+        return false;
+      }
       // Another version's content is not in this document: holding its token
       // would let the next save overwrite it instead of colliding.
-      if (
-        disposed ||
-        identity.id !== next.id ||
-        !isHeldToken(next.updated_at, identity.updatedAt)
-      ) {
+      if (!isHeldToken(next.updated_at, identity.updatedAt)) {
+        const token = next.updated_at ?? null;
+        if (isLaterToken(token, identity.updatedAt) && !isLaterToken(newerVersion, token)) {
+          newerVersion = token;
+          notifyChanged();
+        }
         return false;
       }
       // Decide against the old saved copy before the refetch replaces it.
@@ -1131,6 +1159,8 @@ export function createEditorSession({
             status,
             engineState: engine.getState().kind,
             reasons: tracker.verdict().reasons.map((reason) => reason.code),
+            dirtyFields: tracker.dirtyFields(),
+            bodyDiff: tracker.bodyDivergence(),
           });
         } catch (error) {
           onError(error);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
+import { fakeAdminEndpoint, renderAdminApp, settingsResponse } from '@test-utils/acceptance';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import {
   detail,
@@ -200,6 +200,44 @@ describe('Editable email cards', () => {
     await expect.element(emailCards().nth(0).getByRole('textbox')).toHaveValue('Welcome');
     expect(save.requests).toHaveLength(0);
   });
+
+  it.each([false, true])(
+    'shows Unsplash in the content editor slash menu only when Unsplash enabled is %s',
+    async (enabled) => {
+      serve();
+      fakeAdminEndpoint('GET', '/automated_emails/', { automated_emails: [] });
+      fakeAdminEndpoint('GET', '/newsletters/?filter=status%3Aactive&limit=1', { newsletters: [] });
+      fakeAdminEndpoint('GET', '/offers/', { offers: [] });
+      fakeAdminEndpoint(
+        'GET',
+        '/posts/?filter=status%3Apublished&fields=id%2Curl%2Ctitle%2Cvisibility%2Cpublished_at&order=published_at+desc&limit=5',
+        { posts: [] },
+      );
+      await renderAdminApp('/automations/first', {
+        ...flags,
+        boot: {
+          browseSettings: { response: settingsResponse({ settings: { unsplash: enabled } }) },
+        },
+      });
+      await emailCards().nth(0).getByRole('button', { name: 'Edit email content' }).click();
+      const editor = page
+        .getByRole('dialog', { name: 'Edit email', exact: true })
+        .getByRole('textbox');
+      await editor.fill('');
+      await editor.click();
+      await userEvent.keyboard('/');
+      await expect
+        .element(page.getByRole('menuitem', { name: 'Image', exact: true }))
+        .toBeVisible();
+
+      const unsplash = page.getByRole('menuitem', { name: 'Unsplash', exact: true });
+      if (enabled) {
+        await expect.element(unsplash).toBeVisible();
+      } else {
+        await expect(unsplash).toHaveCount(0);
+      }
+    },
+  );
 
   it('retains publish validation and spaces following steps below a taller email card', async () => {
     serve();

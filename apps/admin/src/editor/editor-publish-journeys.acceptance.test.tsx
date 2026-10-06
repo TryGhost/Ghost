@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
@@ -21,6 +21,8 @@ import {
   post,
   renderAdminApp,
   settingsResponse,
+  settleTransitions,
+  staffRole,
   submittedPost,
   tier,
   type Newsletter,
@@ -40,6 +42,9 @@ const MONTHLY = newsletter({ slug: 'monthly-roundup', name: 'Monthly roundup', s
 
 const SESSION_GONE = {
   errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }],
+};
+const SAVE_FAILED = {
+  errors: [{ type: 'InternalServerError', message: 'The post could not be saved.' }],
 };
 const PASSWORD = 'hunter22';
 
@@ -86,7 +91,13 @@ function publishChrome(newsletters: Newsletter[]) {
  * A draft that answers saves the way Ghost does: a send creates the email
  * pending, and the flow's email confirmation reads it back as submitted.
  */
-function fakeSavableDraft(overrides: Record<string, unknown> = {}) {
+function fakeSavableDraft(
+  overrides: Record<string, unknown> = {},
+  {
+    holdFirstSave,
+    failFirstSave = false,
+  }: { holdFirstSave?: Promise<void>; failFirstSave?: boolean } = {},
+) {
   let current: Record<string, unknown> = {
     ...post({
       id: POST_ID,
@@ -103,6 +114,7 @@ function fakeSavableDraft(overrides: Record<string, unknown> = {}) {
     }),
     ...overrides,
   };
+  let attempts = 0;
   let saves = 0;
 
   fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), ({ url }) => {
@@ -113,7 +125,14 @@ function fakeSavableDraft(overrides: Record<string, unknown> = {}) {
     return { posts: [current] };
   });
 
-  return fakeAdminEndpoint('PUT', new RegExp(`^/posts/${POST_ID}/\\?`), ({ body, url }) => {
+  return fakeAdminEndpoint('PUT', new RegExp(`^/posts/${POST_ID}/\\?`), async ({ body, url }) => {
+    attempts += 1;
+    if (attempts === 1) {
+      await holdFirstSave;
+      if (failFirstSave) {
+        return Response.json(SAVE_FAILED, { status: 500 });
+      }
+    }
     saves += 1;
     const submitted = (body as { posts: Record<string, unknown>[] }).posts[0];
     current = { ...current, ...submitted, updated_at: `2026-01-01T00:00:0${saves}.000Z` };
@@ -122,6 +141,15 @@ function fakeSavableDraft(overrides: Record<string, unknown> = {}) {
     }
     return { posts: [current] };
   });
+}
+
+/** Changes the post's access in the settings sidebar, which saves a draft at once. */
+async function chooseAccess(label: string) {
+  await editorScreen.settingsToggle().click();
+  await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  await settleTransitions();
+  await editorScreen.settingsVisibility().click();
+  await editorScreen.settingsVisibilityOption(label).click();
 }
 
 /** Opens the preview's email and sends a test to the current user. */
@@ -168,6 +196,139 @@ describe('Editor publish journeys', () => {
     const params = new URL(saveApi.lastRequest?.url ?? '').searchParams;
     expect(params.get('newsletter')).toBe('weekly');
     expect(params.get('email_segment')).toBe('tier:gold,label:vip');
+  });
+
+  it.each([
+    ['Administrator', 'count.active_members', ['Weekly (1,200)', 'Monthly roundup (34)']],
+    ['Editor', null, ['Weekly', 'Monthly roundup']],
+  ] as const)(
+    'offers the newsletters with member counts for admins only (%s)',
+    async (role, include, options) => {
+      publishChrome([]);
+      fakeTiers([]);
+      fakeLabels([]);
+      // Core counts each newsletter's members only when the browse includes them.
+      const newslettersApi = fakeNewsletters(({ url }) => {
+        const counted = new URL(url).searchParams.get('include') === 'count.active_members';
+        return [
+          newsletter({
+            ...WEEKLY,
+            count: counted ? { posts: 0, active_members: 1200 } : undefined,
+          }),
+          newsletter({
+            ...MONTHLY,
+            sort_order: 1,
+            count: counted ? { posts: 0, active_members: 34 } : undefined,
+          }),
+        ];
+      });
+      fakeSavableDraft();
+      const me = currentUserResponse();
+      me.users[0].roles = [staffRole({ name: role })];
+      const site = emailSite();
+      await renderAdminApp(`/editor/post/${POST_ID}`, {
+        ...site,
+        boot: { ...site.boot, browseMe: { response: me } },
+      });
+
+      await expect.element(editorScreen.publishButton()).toBeEnabled();
+      await editorScreen.publishButton().click();
+      await publishScreen.setting('email-recipients').click();
+      await page.getByRole('combobox', { name: 'Newsletter' }).click();
+
+      for (const name of options) {
+        await expect.element(page.getByRole('option', { name, exact: true })).toBeVisible();
+      }
+      const includes = newslettersApi.requests.map(({ url }) =>
+        new URL(url).searchParams.get('include'),
+      );
+      expect([...new Set(includes)]).toEqual([include]);
+    },
+  );
+
+  it('defaults the recipients to an access change whose save is still out', async () => {
+    publishChrome([WEEKLY]);
+    fakeTiers([]);
+    const accessSaved = deferred<void>();
+    const saveApi = fakeSavableDraft(
+      { visibility: 'public' },
+      { holdFirstSave: accessSaved.promise },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, emailSite());
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+
+    await chooseAccess('Paid-members only');
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    await userEvent.keyboard('{Meta>}{Shift>}p{/Shift}{/Meta}');
+
+    await expect
+      .element(publishScreen.setting('email-recipients'))
+      .toHaveTextContent('20 paid subscribers');
+
+    accessSaved.resolve();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
+    expect(submittedPost(saveApi, 0)).toMatchObject({ visibility: 'paid' });
+    expect(submittedPost(saveApi)).toMatchObject({ status: 'published' });
+    const params = new URL(saveApi.lastRequest?.url ?? '').searchParams;
+    expect(params.get('email_segment')).toBe('status:-free');
+  });
+
+  it('defaults the recipients to a tier picked while its save is still out', async () => {
+    publishChrome([WEEKLY]);
+    const silver = tier({ slug: 'silver', name: 'Silver', active: true });
+    fakeTiers([tier({ slug: 'gold', name: 'Gold', active: true }), silver]);
+    const accessSaved = deferred<void>();
+    const saveApi = fakeSavableDraft(
+      { visibility: 'tiers', tiers: [silver] },
+      { holdFirstSave: accessSaved.promise },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, emailSite());
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+
+    await editorScreen.settingsToggle().click();
+    await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+    await settleTransitions();
+    await editorScreen.settingsTier('Gold').click();
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    await userEvent.keyboard('{Meta>}{Shift>}p{/Shift}{/Meta}');
+    await expect.element(publishScreen.continueButton()).toBeVisible();
+
+    accessSaved.resolve();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
+    const params = new URL(saveApi.lastRequest?.url ?? '').searchParams;
+    expect(params.get('email_segment')?.split(',').sort()).toEqual(['tier:gold', 'tier:silver']);
+  });
+
+  it('defaults the recipients to an access change a failed save left, saving it first', async () => {
+    publishChrome([WEEKLY]);
+    fakeTiers([]);
+    const saveApi = fakeSavableDraft({ visibility: 'public' }, { failFirstSave: true });
+    await renderAdminApp(`/editor/post/${POST_ID}`, emailSite());
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+
+    await chooseAccess('Paid-members only');
+    await expect.element(editorScreen.saveErrorBanner()).toBeVisible();
+    await userEvent.keyboard('{Meta>}{Shift>}p{/Shift}{/Meta}');
+
+    await expect
+      .element(publishScreen.setting('email-recipients'))
+      .toHaveTextContent('20 paid subscribers');
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
+    expect(saveApi.requests).toHaveLength(3);
+    expect(submittedPost(saveApi, 1)).toMatchObject({ status: 'draft', visibility: 'paid' });
+    expect(submittedPost(saveApi)).toMatchObject({ status: 'published' });
+    const params = new URL(saveApi.lastRequest?.url ?? '').searchParams;
+    expect(params.get('email_segment')).toBe('status:-free');
   });
 
   it('offers no email options while member signup is off', async () => {
@@ -255,6 +416,39 @@ describe('Editor publish journeys', () => {
         newsletter: 'monthly-roundup',
         member_status: 'free',
       });
+  });
+
+  it('previews the email for the newsletter picked in the publish flow', async () => {
+    publishChrome([WEEKLY, MONTHLY]);
+    fakeTiers([]);
+    fakeLabels([]);
+    fakeSavableDraft();
+    const emailPreviewApi = fakeAdminEndpoint('GET', /^\/email_previews\/posts\/[^/]+\/\?/, {
+      email_previews: [
+        { subject: 'Hello from React', html: '<p>Email body</p>', plaintext: 'Email body' },
+      ],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, emailSite());
+
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.publishButton().click();
+    await publishScreen.setting('email-recipients').click();
+    await publishScreen.newsletterSelect().click();
+    await page.getByRole('option', { name: /^Monthly roundup/ }).click();
+    await publishScreen.previewButton().click();
+    await previewScreen.emailTab().click();
+
+    await expect.element(previewScreen.newsletterSelect()).toHaveTextContent('Monthly roundup');
+    await expect
+      .poll(() => emailPreviewApi.lastRequest?.url)
+      .toContain('newsletter=monthly-roundup');
+
+    // A preview opened from the header, outside the flow, keeps the site's first newsletter.
+    await previewScreen.closeButton().click();
+    await expect(publishScreen.root()).toHaveCount(0);
+    await editorScreen.previewButton().click();
+    await expect.element(previewScreen.newsletterSelect()).toHaveTextContent('Weekly');
+    await expect.poll(() => emailPreviewApi.lastRequest?.url).toContain('newsletter=weekly');
   });
 
   it.each([

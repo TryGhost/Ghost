@@ -182,7 +182,7 @@ const fetchWithXhr = (
   });
 
 export const useFetchApi = () => {
-  const { ghostVersion, sentryDSN } = useFramework();
+  const { ghostVersion } = useFramework();
 
   // Memoized so hooks that depend on fetchApi can cache
   /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -231,11 +231,13 @@ export const useFetchApi = () => {
       const retryPeriods = [500, 1000];
       const retryableErrors = [ServerUnreachableError, MaintenanceError, TypeError];
 
-      const getErrorData = (error?: APIError, response?: Response) => {
+      const getErrorData = (response?: Response, error?: unknown) => {
         const data: Record<string, unknown> = {
-          errorName: error?.name,
+          error: error === undefined ? undefined : String(error),
+          status: response?.status,
+          method,
           attempts,
-          totalSeconds: retryingMs / 1000,
+          totalSeconds: (Date.now() - startTime) / 1000,
           endpoint: endpoint.toString(),
         };
         if (endpoint.toString().includes('/ghost/api/')) {
@@ -259,6 +261,11 @@ export const useFetchApi = () => {
             if (CURRENT_USER_REQUEST.test(endpoint.toString())) {
               sessionConfirmed = true;
             }
+            if (attempts !== 0 && Sentry.getClient()) {
+              Sentry.captureMessage('Request took multiple attempts', {
+                extra: getErrorData(response),
+              });
+            }
             return data;
           } catch (error) {
             retryingMs = Date.now() - startTime;
@@ -279,9 +286,9 @@ export const useFetchApi = () => {
               continue;
             }
 
-            if (attempts !== 0 && sentryDSN) {
+            if (attempts !== 0 && Sentry.getClient()) {
               Sentry.captureMessage('Request failed after multiple attempts', {
-                extra: getErrorData(),
+                extra: getErrorData(error instanceof APIError ? error.response : undefined, error),
               });
             }
 
@@ -323,7 +330,7 @@ export const useFetchApi = () => {
       // because of retry + attempts usage combination
       return undefined as never;
     },
-    [ghostVersion, sentryDSN],
+    [ghostVersion],
   );
 };
 

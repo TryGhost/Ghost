@@ -1,0 +1,33 @@
+name: TypeScript inventory
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# No shared concurrency group: every main push gets a report, even if a newer
+# push arrives while dependency installation or declaration generation is running.
+jobs:
+  inventory:
+    if: github.repository == 'TryGhost/Ghost'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: '22.23.3'
+      - name: Build workspace declarations
+        run: pnpm nx run-many -t build:tsc
+      - name: Generate inventory
+        run: pnpm inventory:typescript --output typescript-report/inventory
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: typescript-inventory
+          path: typescript-report/
+          if-no-files-found: error
+          retention-days: 30

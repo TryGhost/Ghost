@@ -138,6 +138,11 @@ export function reportLeaveConfirmation(leave: EditorLeaveConfirmation, postType
       engine_state: leave.engineState,
       leave_reasons: leave.reasons.join(','),
     },
-    extra: { post_id: leave.postId, reasons: leave.reasons },
+    extra: {
+      post_id: leave.postId,
+      reasons: leave.reasons,
+      dirty_fields: leave.dirtyFields,
+      body_diff: leave.bodyDiff,
+    },
   });
 }

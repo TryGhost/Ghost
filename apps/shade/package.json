@@ -19,41 +19,49 @@
   "types": "types/index.d.ts",
   "exports": {
     ".": {
+      "source": "./src/index.ts",
       "types": "./types/index.d.ts",
       "import": "./es/index.js",
       "default": "./es/index.js"
     },
     "./tokens": {
+      "source": "./src/tokens.ts",
       "types": "./types/tokens.d.ts",
       "import": "./es/tokens.js",
       "default": "./es/tokens.js"
     },
     "./primitives": {
+      "source": "./src/primitives.ts",
       "types": "./types/primitives.d.ts",
       "import": "./es/primitives.js",
       "default": "./es/primitives.js"
     },
     "./components": {
+      "source": "./src/components.ts",
       "types": "./types/components.d.ts",
       "import": "./es/components.js",
       "default": "./es/components.js"
     },
     "./patterns": {
+      "source": "./src/patterns.ts",
       "types": "./types/patterns.d.ts",
       "import": "./es/patterns.js",
       "default": "./es/patterns.js"
     },
     "./page-templates": {
+      "source": "./src/page-templates.ts",
       "types": "./types/page-templates.d.ts",
       "import": "./es/page-templates.js",
       "default": "./es/page-templates.js"
     },
     "./app": {
+      "source": "./src/app.ts",
       "types": "./types/app.d.ts",
       "import": "./es/app.js",
       "default": "./es/app.js"
     },
     "./utils": {
+      "source": "./src/utils.ts",
       "types": "./types/utils.d.ts",
       "import": "./es/utils.js",
       "default": "./es/utils.js"

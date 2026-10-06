@@ -102,7 +102,7 @@ export default function Signin() {
     return (
       <AuthLayout>
         <AuthHeader title="Update your password.">
-          <p className="text-muted-foreground">
+          <p className="text-lg text-muted-foreground">
             For security, you need to create a new password. An email has been sent to you with
             instructions.
           </p>

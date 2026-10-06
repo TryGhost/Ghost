@@ -12,9 +12,18 @@ Uses an **Ember Bridge** system for smooth migration:
 
 The React application uses `admin-x-framework` for API hooks, routing, and the
 bridge to Ember. Shade provides its application wrapper and design system.
-Embedded React applications are built before Ember Admin; Ember's asset-delivery
-addon copies their production output and the Admin assets into
-`ghost/core/core/built/admin/` for Ghost Core to serve.
+Embedded React applications are built before Ember Admin. After Vite builds Admin,
+`pnpm assemble:assets` runs the standalone assembler in `scripts/` to merge React,
+Ember, ActivityPub and Koenig outputs into `dist/` and
+`ghost/core/core/built/admin/`. It ships Koenig’s embed renderer separately in
+`ghost/core/core/built/embed-renderer/`. Ember’s asset-delivery hook delegates
+legacy preparation to the same helper for its standalone builds and dev server.
+
+Ember is an Nx implicit dependency of this app so Ember source changes still
+invalidate the combined production build and mark Admin as affected. It is not
+a package dependency: a filtered `@tryghost/admin...` install contains the React
+test dependencies, while development and production builds need the full
+workspace install to include Ember's toolchain.
 
 ### CSS
 
@@ -77,10 +86,33 @@ acceptance tests cover selection, drafts, retries, responsive layouts, and cards
 pnpm dev
 ```
 
+This builds Ember's development assets once before starting Vite. React,
+Admin Framework, Shade and Portal continue watching for changes. Ember still
+boots in the browser for the bridge, flag-off editor/auth screens and `/pro/*`;
+its source edits take effect after restarting the command. Use `pnpm dev:ember`
+when you need Ember's live-reload server and continuous rebuilds.
+
+Development commands do not change Labs settings. To preview the React editor
+and auth screens in one browser tab, open
+`http://localhost:2368/ghost/#/signin?labs=editorReact,authReact`. These
+[session overrides](../../docs/practices/feature-flags.md#admin-session-overrides)
+survive navigation and reloads in that tab; use `?labs=` to clear them.
+
 Build new Admin features in this React app. Use `admin-x-framework` for API
 access and Shade for UI rather than adding new `admin-x-design-system`
 components. Product copy belongs in the `ghost` namespace; follow the
 [internationalization guide](../../docs/practices/internationalization.md).
+
+`pnpm nx run @tryghost/admin:build:dev` prepares library outputs and Ember's
+development assets. Its prerequisites select `ghost-admin:build:dev` once;
+they do not also compile Ember's production bundle. The normal `pnpm dev`
+command uses this preparation before starting the React watchers.
+
+Vite resolves Admin Framework and Shade through their `source` exports in
+development, production and tests. It tracks each package’s source and path aliases
+directly, and transforms Shade’s SVG icons with SVGR. The shared CSS lane stays
+in this app. Compiled library builds and watchers remain available for Ember and
+other consumers, and typechecks still use the library declarations.
 
 The post editor is the largest area with documentation of its own — start at
 [src/editor/README.md](src/editor/README.md) before changing anything under
@@ -90,7 +122,35 @@ The post editor is the largest area with documentation of its own — start at
 
 - **Unit tests** (`pnpm test:unit`): Vitest + jsdom, colocated `*.test.ts(x)` files.
 - **Acceptance tests** (`pnpm test:acceptance`): the real app in real Chromium against a fake admin API served through MSW — see [test-utils/acceptance/README.md](test-utils/acceptance/README.md).
+- **Typechecks** (`pnpm test:types`): TypeScript checks app code, test code and Vite configuration without bundling Admin.
 - **Browser e2e** against a real Ghost instance lives in the top-level [`e2e/`](../../e2e) workspace.
+
+From the monorepo root, use `pnpm nx run @tryghost/admin:test:unit` or
+`pnpm nx run @tryghost/admin:test:acceptance`, or
+`pnpm nx run @tryghost/admin:test:types` to build the required React
+libraries first. These targets do not compile Ember or boot Ghost. Their
+`dependsOn` lists, and the React library prerequisites of `build:dev`, explicitly
+name the React dependencies with a `build` target; update all four when adding
+one. Using `^build` here would also select the implicit Ember dependency.
+
+Nx caches unit, acceptance and typecheck results. The global
+`reactAdminDependency` input retains every transitive dependency's default
+inputs; Ember overrides it with an empty input because these targets do not
+execute Ember. The production build still uses `^default`, including Ember.
+Test inputs also include Core's aliased card assets, the lockfile and runtime
+settings such as Node version, platform, timezone and CI mode. A digest of
+local `.env` and `.env.*` files covers Vite's mode-specific configuration without
+printing their values. Shard and other
+CLI arguments get separate cache keys. Use `--skip-nx-cache` to force a fresh run.
+
+`pnpm test` and `pnpm check` at the root select Admin's aggregate `test` target.
+It schedules the same `test:unit` and `test:types` tasks and their prerequisites.
+Only those tasks are cached, so an outer cache cannot skip their input checks.
+
+CI changes confined to Admin's `*.test.ts(x)`, `*.screen.ts`, `test-utils/` or
+`vitest.acceptance.config.ts` skip the build, packaging and browser E2E lane.
+Affected unit, app acceptance, lint and typecheck checks still run. Changes to
+runtime code or shared configuration keep the full lane.
 
 ## Building for Production
 
@@ -99,7 +159,16 @@ The post editor is the largest area with documentation of its own — start at
 pnpm nx run @tryghost/admin:build
 ```
 
+The assembler reads the individual build outputs, so it can also be rerun with
+`pnpm nx run @tryghost/admin:assemble:assets` after those builds. It does not run
+compilers or upload sourcemaps.
+
 This outputs to `apps/admin/dist/` and updates the assets in `ghost/core/core/built/admin/`.
+
+The build also writes hidden sourcemaps: `.map` files that no bundle references.
+With `IS_SHIPPING` set, as CI does for `main` and release tags, it uploads them
+to Sentry under the release Admin's Sentry client reports. Without
+`VITE_SENTRY_AUTH_TOKEN` the upload is skipped.
 
 ## Automation member search
 

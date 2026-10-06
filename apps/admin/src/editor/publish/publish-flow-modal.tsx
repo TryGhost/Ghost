@@ -2,7 +2,7 @@ import { Button } from '@tryghost/shade/components';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { PageHeader } from '@tryghost/shade/patterns';
 import { formatNumber } from '@tryghost/shade/utils';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   publicPreviewWarningDialog,
   publishFlowModal,
@@ -44,6 +44,8 @@ export interface PublishFlowModalProps {
   dispatch: PublishDispatcher;
   onBeforePublish?: () => Promise<void>;
   onClose: () => void;
+  /** Hears the flow's selected newsletter while it is open, and `undefined` once it closes. */
+  onNewsletterChange?: (slug: string | undefined) => void;
   onPreview?: () => void;
   onRevertToDraft?: () => void;
   onCompleted?: (info: { postId: string; isScheduled: boolean; hasEmail: boolean }) => void;
@@ -70,6 +72,7 @@ function KeyedPublishFlowModal({
   dispatch,
   onBeforePublish,
   onClose,
+  onNewsletterChange,
   onPreview,
   onRevertToDraft,
   onCompleted,
@@ -125,6 +128,7 @@ function KeyedPublishFlowModal({
       onBeforePublish={onBeforePublish}
       onClose={onClose}
       onCompleted={onCompleted}
+      onNewsletterChange={onNewsletterChange}
       onPreview={onPreview}
       onRevertToDraft={onRevertToDraft}
     />
@@ -147,6 +151,7 @@ function PublishFlowDialog({
   dispatch,
   onBeforePublish,
   onClose,
+  onNewsletterChange,
   onPreview,
   onRevertToDraft,
   onCompleted,
@@ -164,6 +169,13 @@ function PublishFlowDialog({
     onCompleted,
   });
   const { state, step } = flow;
+  const newsletterSlug = state.newsletter?.slug;
+
+  useEffect(() => {
+    onNewsletterChange?.(newsletterSlug);
+    return () => onNewsletterChange?.(undefined);
+  }, [newsletterSlug, onNewsletterChange]);
+
   const close = () => {
     flow.cancel();
     onClose();
@@ -173,7 +185,6 @@ function PublishFlowDialog({
     <FullscreenDialog
       animate={animate}
       data-testid={publishFlowModal}
-      modal={false}
       title="Publish"
       open
       onOpenChange={(open) => !open && close()}

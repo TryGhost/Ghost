@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { flushSync } from 'react-dom';
 import { AdminLink } from '@/shared/admin-link';
 import { getPostListReturnUrl } from '@/posts/api';
 import { reloadAdmin } from '@/auth/api';
@@ -23,6 +24,7 @@ import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useEditPage, useEditorPage } from '@tryghost/admin-x-framework/api/pages';
 import { useEditPost, useEditorPost } from '@tryghost/admin-x-framework/api/posts';
+import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import {
   type User,
   isAdminUser,
@@ -46,12 +48,17 @@ import { EditorHeaderActions, type OpenFlow } from './editor-header-actions';
 import { readEditorReturn } from './editor-return';
 import { EditorStatus } from './editor-status';
 import { EmailSizeWarning } from './email-size-warning';
-import { PostEditor } from './post-editor';
+import { PostEditor, type PostEditorHandle } from './post-editor';
 import type { EditorStatusRecord } from './post-status';
 import { buildPublishFlowPost } from './publish/flow-post';
+import { PAID_TIERS_SEARCH_PARAMS } from './browse-params';
 import { initialEmailError } from './publish/use-publish-flow';
 import { SessionBanners } from './session/session-banners';
-import { settingsFieldErrorFor, titleError } from './session/settings-fields';
+import {
+  VALIDATED_SETTINGS_FIELD_KEYS,
+  settingsFieldErrorFor,
+  titleError,
+} from './session/settings-fields';
 import { ReauthDialog } from './session/reauth-dialog';
 import { PostSettingsSidebar } from './settings/post-settings-sidebar';
 import { useFeatureImageBinding } from './session/feature-image-binding';
@@ -185,6 +192,14 @@ function EditorContent({
   const [tkCount, setTkCount] = useState(0);
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
   const openPublishFlow = useCallback(() => setOpenFlow('publish'), []);
+  const openUpdateFlow = useCallback(() => setOpenFlow('update'), []);
+  // Only reads what the sidebar's tier picker loaded, which names a tier picked before its save lands.
+  const { data: tiersData } = useBrowseTiers({
+    defaultErrorHandler: false,
+    enabled: false,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+    searchParams: PAID_TIERS_SEARCH_PARAMS,
+  });
   const publishPost = buildPublishFlowPost({
     snapshot: {
       id: session.persistedId,
@@ -193,12 +208,16 @@ function EditorContent({
       title: session.title,
     },
     record: session.loadedRecord,
+    access: session.settings,
+    knownTiers: tiersData?.tiers,
     displayName: postType,
     lexical: session.getLiveLexical(),
   });
   // Core refuses an email retry to Authors and Contributors.
   const offersEmailRetry =
     !!currentUser && !isAuthorOrContributor(currentUser) && !!initialEmailError(publishPost);
+  // The update flow is mounted with the publish controls, which Contributors never get.
+  const canPublish = !!currentUser && !isContributorUser(currentUser);
   const location = useLocation();
   const analyticsReturn = record ? readEditorReturn(location.state) : undefined;
   const statusRecord = statusRecordOf(session.loadedRecord ?? record, createdId);
@@ -265,6 +284,29 @@ function EditorContent({
     setSettingsPresent(true);
     setSettingsOpen((open) => !open);
   }, []);
+  const postEditorRef = useRef<PostEditorHandle>(null);
+  const settingsExcerptRef = useRef<HTMLTextAreaElement>(null);
+  /** Takes the writer to the first field a save would refuse; true when there is one. */
+  const revealInvalidField = useCallback((): boolean => {
+    const field = titleError(session.bind.title)
+      ? 'title'
+      : VALIDATED_SETTINGS_FIELD_KEYS.find((key) => settingsFieldErrorFor(key, session.settings));
+    if (field === 'title') {
+      postEditorRef.current?.focusTitle();
+    } else if (field === 'custom_excerpt' && showExcerpt) {
+      postEditorRef.current?.focusExcerpt();
+    } else if (field && field !== 'email_subject') {
+      // Rendered at once, so the excerpt is there to take focus.
+      flushSync(() => {
+        setSettingsPresent(true);
+        setSettingsOpen(true);
+      });
+      if (field === 'custom_excerpt') {
+        settingsExcerptRef.current?.focus();
+      }
+    }
+    return field !== undefined;
+  }, [session.bind.title, session.settings, showExcerpt]);
   const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
   const leaveGuard = useEditorLeaveGuard(session, postType);
   const liveVisibility = session.settings.visibility;
@@ -323,6 +365,7 @@ function EditorContent({
                 record={statusRecord}
                 state={session.state}
                 onOpenPublishFlow={offersEmailRetry ? openPublishFlow : undefined}
+                onOpenUpdateFlow={canPublish ? openUpdateFlow : undefined}
               />
             ) : null}
             <PageHeader.ActionGroup className="ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] max-sm:col-start-2 max-sm:row-start-1 sm:col-start-3">
@@ -332,6 +375,7 @@ function EditorContent({
                 openFlow={openFlow}
                 post={publishPost}
                 postType={postType}
+                revealInvalidField={revealInvalidField}
                 session={session}
                 siteUrl={cardConfig.siteUrl}
                 tkCount={tkCount}
@@ -348,6 +392,7 @@ function EditorContent({
           <SessionBanners
             contentText={session.contentText}
             hasUnsavedContent={session.hasUnsavedContent}
+            newerVersionAvailable={session.newerVersionAvailable}
             pendingSave={session.pendingSave}
             state={session.state}
             onReload={session.reload}
@@ -370,8 +415,12 @@ function EditorContent({
               cardConfig={currentCardConfig}
               excerptError={settingsFieldErrorFor('custom_excerpt', session.settings)}
               featureImage={featureImage}
+              handleRef={postEditorRef}
               postType={postType}
               showExcerpt={showExcerpt}
+              titleAndFeatureImageHidden={
+                postType === 'page' && liveShowTitleAndFeatureImage === false
+              }
               titleError={titleError(session.bind.title)}
               wordCountAccessory={<EmailSizeWarning post={publishPost} />}
               onExcerptBlur={session.commitField}
@@ -387,6 +436,7 @@ function EditorContent({
         <PostSettingsSidebar
           cardConfig={currentCardConfig}
           currentUser={currentUser}
+          excerptRef={settingsExcerptRef}
           featureImage={featureImage.featureImage}
           hasInlineExcerpt={showExcerpt}
           postType={postType}

@@ -224,7 +224,9 @@ save carries the token the writer's content was built on, together with a
 canvas — the writer's own, or the saved copy for a settings save — so where the
 newer version's canvas differs the server refuses it with a collision instead
 of letting it overwrite that version; reloading the document is the way onto
-it. A refused read is offered again
+it. While nothing is unsaved and no save is under way, a later version refused
+this way shows a notice offering that reload; it goes once a reload or save
+brings the session up to that version. A refused read is offered again
 whenever the engine moves on, so a read of a save that was in flight is adopted
 once that save's acknowledgement has landed and the session holds its token.
 

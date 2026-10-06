@@ -78,6 +78,35 @@ function settingsTransition() {
     );
 }
 
+/** Newsletters answer 500, which fails the header's publish inputs. */
+function failPublishInputs() {
+  fakeAdminEndpoint(
+    'GET',
+    /^\/newsletters\//,
+    { errors: [{ type: 'InternalServerError', message: 'Newsletters are unavailable.' }] },
+    { status: 500 },
+  );
+}
+
+/** Every header action lies wholly on screen and clear of the floating settings toggle. */
+function expectHeaderActionsOnScreen(buttons: number) {
+  const toggle = editorScreen.settingsToggle().element();
+  const actions = editorScreen.headerActions().getByRole('button').elements();
+  expect(actions).toHaveLength(buttons);
+  for (const action of [editorScreen.backLink('post').element(), ...actions, toggle]) {
+    const { left, top, right, bottom } = action.getBoundingClientRect();
+    expect(left).toBeGreaterThanOrEqual(0);
+    expect(top).toBeGreaterThanOrEqual(0);
+    expect(right).toBeLessThanOrEqual(window.innerWidth);
+    expect(bottom).toBeLessThanOrEqual(window.innerHeight);
+  }
+  const toggleBounds = toggle.getBoundingClientRect();
+  for (const action of actions) {
+    const { right, top } = action.getBoundingClientRect();
+    expect(right <= toggleBounds.left || top >= toggleBounds.bottom).toBe(true);
+  }
+}
+
 function expectTranslucentSurface(element: Element) {
   const style = getComputedStyle(element);
   expect(style.backgroundColor).toMatch(/(?:,\s*0\.8|\/\s*0\.8)\)$/);
@@ -256,6 +285,32 @@ describe('Floating editor shell', () => {
       ).toBeLessThanOrEqual(window.innerHeight);
       expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
       expect(document.documentElement.scrollHeight).toBeLessThanOrEqual(window.innerHeight);
+    },
+  );
+
+  it.each([
+    { status: 'published', inputs: 'loaded' },
+    { status: 'scheduled', inputs: 'loaded' },
+    { status: 'published', inputs: 'failed' },
+    { status: 'scheduled', inputs: 'failed' },
+  ] as const)(
+    'keeps a $status post’s actions on a narrow screen with publish inputs $inputs',
+    async ({ status, inputs }) => {
+      await page.viewport(390, 844);
+      fakeLongDocument('post', status);
+      if (inputs === 'failed') {
+        failPublishInputs();
+      }
+      await renderAdminApp('/editor/post/abc123', FLAG_ON);
+      await expect.element(editorScreen.body()).toBeVisible();
+      await expect.element(editorScreen.updateButton()).toBeVisible();
+      if (inputs === 'failed') {
+        await expect.element(editorScreen.publishInputsError()).toBeVisible();
+      }
+
+      // Unpublish or Unschedule and Update, plus Retry when the load failed.
+      expectHeaderActionsOnScreen(inputs === 'failed' ? 3 : 2);
+      expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
     },
   );
 

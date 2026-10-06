@@ -228,6 +228,7 @@
     "Save": "Yadda saxla",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "Növbəti {durationInMonths} ödəniş dövründə {amountOff} qənaət edin. Sonra {currency}{originalPrice}/{cadence}.",
     "Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.": "Növbəti ödəniş dövründə {amountOff} qənaət edin. Sonra {currency}{originalPrice}/{cadence}.",
+    "Security verification": "",
     "Send the link below to share it with whoever you'd like.": "Paylaşmaq istədiyiniz şəxsə aşağıdakı keçidi göndərin.",
     "Sending login link...": "Giriş keçidi göndərilir...",
     "Sending...": "Göndərilir...",

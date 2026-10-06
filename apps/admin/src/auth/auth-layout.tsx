@@ -1,4 +1,4 @@
-import { type CSSProperties, type ReactNode } from 'react';
+import { type ReactNode, useLayoutEffect } from 'react';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
@@ -7,19 +7,40 @@ import { cn } from '@tryghost/shade/utils';
 const GHOST_ORB = 'https://static.ghost.org/v4.0.0/images/ghost-orb-2.png';
 
 /**
- * Full-page frame for the auth screens. Settings are unreadable before sign
- * in, so the site's accent colour comes from the public site payload here.
+ * Settings are unreadable before sign in, so the site's accent colour comes
+ * from the public site payload. Shade's `ghostaccent` token resolves
+ * `--accent-color` on :root, so it has to be published there.
  */
-export function AuthLayout({ children }: { children: ReactNode }) {
+function useSiteAccentColor() {
   const { data } = useBrowseSite({ defaultErrorHandler: false });
   const accentColor = data?.site.accent_color;
 
+  useLayoutEffect(() => {
+    if (!accentColor) {
+      return;
+    }
+
+    const { style } = document.documentElement;
+    const previous = style.getPropertyValue('--accent-color');
+    style.setProperty('--accent-color', accentColor);
+
+    return () => {
+      if (previous) {
+        style.setProperty('--accent-color', previous);
+      } else {
+        style.removeProperty('--accent-color');
+      }
+    };
+  }, [accentColor]);
+}
+
+/** Full-page frame for the auth screens, with larger controls than the rest of Admin. */
+export function AuthLayout({ children }: { children: ReactNode }) {
+  useSiteAccentColor();
+
   return (
-    <div
-      className="flex min-h-screen w-full justify-center overflow-y-auto bg-background px-6 [--control-height:calc(var(--spacing)*12)]"
-      style={accentColor ? ({ '--accent-color': accentColor } as CSSProperties) : undefined}
-    >
-      <Stack className="w-full max-w-lg py-12 sm:py-20" gap="xl">
+    <div className="flex min-h-screen w-full flex-col items-center overflow-y-auto bg-sidebar px-6 [--control-height:var(--control-height-lg)] [&_input]:text-control-lg">
+      <Stack className="my-auto w-full max-w-[400px] py-12" gap="xl">
         {children}
       </Stack>
     </div>
@@ -31,8 +52,8 @@ export function AuthHeader({ title, children }: { title: ReactNode; children?: R
 
   return (
     <header className="mb-4 flex flex-col items-center gap-5 text-center">
-      <img alt="" className="size-18 rounded-sm" src={data?.site.icon || GHOST_ORB} />
-      <h1 className="text-4xl leading-tight font-bold tracking-tight text-foreground">{title}</h1>
+      <img alt="" className="size-15 rounded-sm" src={data?.site.icon || GHOST_ORB} />
+      <h1 className="text-4xl leading-tight font-bold tracking-tighter text-foreground">{title}</h1>
       {children}
     </header>
   );
@@ -43,7 +64,7 @@ export function FlowMessage({ error, children }: { error?: boolean; children?: R
   return (
     <p
       className={cn(
-        'min-h-5 text-center text-sm',
+        'min-h-5 text-center text-base',
         error ? 'text-destructive' : 'text-muted-foreground',
       )}
     >

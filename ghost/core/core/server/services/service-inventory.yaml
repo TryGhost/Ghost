@@ -632,17 +632,29 @@ services:
         sources:
           - core/server/services/email-address/email-address-service-wrapper.js
           - core/server/services/email-address/email-address-service.ts
-        tests: []
+        tests:
+          - test/unit/server/services/email-address/wrapper.test.ts
+      lifetime:
+        summary: >-
+          Repeated init keeps the same service instance. Missing managed-email config produces
+          false enablement and null domains and fallback address; the service keeps reading
+          current config and settings through callbacks.
+        sources:
+          - core/server/services/email-address/email-address-service-wrapper.js
+          - core/server/services/email-address/email-address-service.ts
+        tests:
+          - test/unit/server/services/email-address/wrapper.test.ts
     unverified:
       - consumers
       - startup
-      - lifetime
       - resources
       - failures
     blockers:
       - >-
-        Add same-loaded-wrapper identity and configuration-change tests; implementation tests
-        alone do not cover the composition callbacks.
+        Complete the consumer audit, including EmailServiceWrapper dependency injection,
+        members and newsletters, including whether consumers derive and keep values from
+        the service. Wrapper tests do not prove full boot, restart or delivery through the
+        HTTP and background-job boundaries.
   email-analytics:
     kind: directory
     disposition: retain
@@ -2483,19 +2495,37 @@ services:
           - core/server/services/posts-public/index.js
           - core/server/services/posts-public/service.js
           - core/server/api/endpoints/posts-public.js
-        tests: []
+        tests:
+          - test/unit/server/services/public-response-caches.test.ts
+          - test/e2e-server/public-response-caches.isolated.test.ts
       construction:
         summary: >-
           Import constructs the wrapper. First init checks
           hostSettings:postsPublicCache:enabled, optionally obtains the cache:postsPublic
           adapter and attaches a site.changed reset listener, then assigns api. Later init
-          calls return even when the cache was disabled.
+          calls preserve the adapter and cached entries, and return even when caching was
+          disabled.
         sources:
           - core/server/services/posts-public/service.js
           - core/boot.js
-        tests: []
+        tests:
+          - test/unit/server/services/public-response-caches.test.ts
+          - test/e2e-server/public-response-caches.isolated.test.ts
+      consumers:
+        summary: >-
+          Posts browse and read capture the initialized root cache when their endpoint module
+          loads. The API pipeline reuses cached responses for identical requests, separates
+          changed options and refreshes after site.changed. With caching disabled, neither
+          endpoint binds a cache. Pages remain uncached.
+        sources:
+          - core/boot.js
+          - core/server/api/endpoints/index.js
+          - core/server/api/endpoints/posts-public.js
+          - core/server/api/endpoints/pages-public.js
+        tests:
+          - test/unit/server/services/public-response-caches.test.ts
+          - test/e2e-server/public-response-caches.isolated.test.ts
     unverified:
-      - consumers
       - startup
       - lifetime
       - configuration
@@ -2592,6 +2622,19 @@ services:
           - core/server/services/remote-flags/index.ts
         tests:
           - test/unit/server/services/remote-flags/index.test.js
+      lifetime:
+        summary: >-
+          The same loaded root supports disabled/enabled/stop/reconfigure cycles. A running
+          instance ignores config changes, including disabling. After stop, init rereads
+          config and site UUID and creates a new instance. Accepted manifest responses update
+          shared overrides; stop retains the last applied overrides.
+        sources:
+          - core/server/services/remote-flags/index.ts
+          - core/server/services/remote-flags/remote-flags-service.ts
+          - core/shared/labs-flag-overrides.ts
+        tests:
+          - test/unit/server/services/remote-flags/index.test.js
+          - test/unit/server/services/remote-flags/remote-flags-service.test.js
       resources:
         summary: >-
           The implementation owns an unrefed timeout chain and coalesces concurrent refresh
@@ -2604,13 +2647,14 @@ services:
     unverified:
       - consumers
       - startup
-      - lifetime
       - failures
     blockers:
       - >-
-        No production call to stop or boot cleanup registration was found under core. Add
-        deferred-fetch tests for non-blocking boot and stop during refresh; current index
-        tests stub start to an already resolved promise.
+        No production call to stop or boot cleanup registration was found under core. Root
+        tests prove init returns before the first refresh settles through the real start, not
+        full boot readiness.
+        An in-flight fetch can apply overrides after stop; establish shutdown/drain ownership
+        rather than treating the missing drain as behavior the migration must preserve.
   route-settings:
     kind: directory
     disposition: retain
@@ -2697,18 +2741,36 @@ services:
         sources:
           - core/server/services/settings/settings-service.js
           - core/boot.js
-        tests: []
+        tests:
+          - test/unit/server/services/settings/repeated-init.test.ts
+          - test/unit/server/services/settings/settings-service.test.js
+          - test/e2e-api/admin/settings.test.js
+          - test/e2e-api/content/settings.test.js
+      configuration:
+        summary: >-
+          Each init refreshes database values, host overrides and calculated fields through
+          the retained cache and settings helpers. Changing host overrides alone does not
+          update cached values; removing overrides exposes current database values. Repeated
+          init does not add cache listeners. A database-read rejection preserves the previous
+          cache, and a later init can refresh it.
+        sources:
+          - core/server/services/settings/settings-service.js
+          - core/shared/settings-cache/index.js
+          - core/shared/settings-cache/cache-manager.js
+          - core/server/services/settings-helpers/settings-helpers.js
+        tests:
+          - test/unit/server/services/settings/repeated-init.test.ts
+          - test/e2e-api/admin/settings.test.js
     unverified:
       - consumers
       - lifetime
-      - configuration
       - resources
       - failures
     blockers:
       - >-
-        Add same-module refresh and listener/resource ownership tests for settings-cache.
-        Preserve the independent BREAD instances and pre-boot utility imports until their
-        contracts are characterized.
+        Characterize BREAD instance ownership, pre-boot utility imports, full restart and
+        boot modes. Same-module cache refresh/listener tests and database-read retry do not
+        cover adapter disposal or failures after cache publication, including UUID validation.
   settings-helpers:
     kind: directory
     disposition: retain
@@ -3069,23 +3131,42 @@ services:
         sources:
           - core/server/services/tags-public/index.js
           - core/server/services/tags-public/service.js
-        tests: []
+        tests:
+          - test/unit/server/services/public-response-caches.test.ts
+          - test/e2e-server/public-response-caches.isolated.test.ts
       construction:
         summary: >-
           First init optionally obtains the cache:tagsPublic adapter and publishes an api
-          object; subsequent calls return when api exists.
+          object; subsequent calls return when api exists, preserving the adapter and cached
+          entries.
         sources:
           - core/server/services/tags-public/service.js
-        tests: []
+        tests:
+          - test/unit/server/services/public-response-caches.test.ts
+          - test/e2e-server/public-response-caches.isolated.test.ts
       resources:
         summary: >-
           When caching is enabled, init installs an anonymous site.changed listener that
           resets the captured adapter. No disposal method is exposed.
         sources:
           - core/server/services/tags-public/service.js
-        tests: []
+        tests:
+          - test/unit/server/services/public-response-caches.test.ts
+          - test/e2e-server/public-response-caches.isolated.test.ts
+      consumers:
+        summary: >-
+          Tags browse captures the initialized root cache when its endpoint module loads.
+          The API pipeline reuses cached responses for identical requests, separates changed
+          options and refreshes after site.changed. With caching disabled, browse binds no
+          cache. Tags read remains uncached.
+        sources:
+          - core/boot.js
+          - core/server/api/endpoints/index.js
+          - core/server/api/endpoints/tags-public.js
+        tests:
+          - test/unit/server/services/public-response-caches.test.ts
+          - test/e2e-server/public-response-caches.isolated.test.ts
     unverified:
-      - consumers
       - startup
       - lifetime
       - configuration
@@ -3256,21 +3337,38 @@ services:
         summary: >-
           init rereads configuration and site UUID. TinybirdService captures capability flags
           and site ID at construction, retains the configuration object, and caches generated
-          tokens.
+          tokens. The retained token endpoint supports disabled, credential A, credential B
+          and disabled transitions; missing site UUID clears the instance and can recover.
         sources:
           - core/server/services/tinybird/tinybird-service-wrapper.js
           - core/server/services/tinybird/tinybird-service.js
-        tests: []
+          - core/server/api/endpoints/tinybird.js
+        tests:
+          - test/unit/server/services/tinybird/tinybird-service.test.js
+          - test/unit/server/services/tinybird/consumer-configuration.test.ts
+          - test/e2e-api/admin/tinybird.test.js
+      lifetime:
+        summary: >-
+          Configured init replaces the root instance. A StatsService consumer retains its
+          original token service while rereading endpoint and site UUID for each request;
+          a newly constructed consumer uses the new token. This mixed lifetime is current
+          behavior, not a recommendation for the new lifecycle.
+        sources:
+          - core/server/services/tinybird/tinybird-service-wrapper.js
+          - core/server/services/stats/stats-service.js
+          - core/server/services/stats/utils/tinybird.js
+        tests:
+          - test/unit/server/services/tinybird/consumer-configuration.test.ts
     unverified:
       - consumers
       - startup
-      - lifetime
       - resources
       - failures
     blockers:
       - >-
-        Characterize disabled/enabled/key-change transitions on the same loaded wrapper and
-        consumers retaining a previous instance.
+        Decide how migration handles existing stats consumers combining a captured token
+        with live endpoint/site configuration. Complete the automation-consumer and boot-mode
+        audits, including disabled analytics, token failure and stop/start behavior.
   tinybird-sync:
     kind: directory
     disposition: retain

@@ -82,6 +82,7 @@ describe('Automation run history from the execution', function () {
       memberId: member.id,
       memberEmail: member.email,
       memberStatus: 'free',
+      memberTierIds: [],
     });
     const automation = await db('automations')
       .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)

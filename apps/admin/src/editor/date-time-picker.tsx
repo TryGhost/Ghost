@@ -275,6 +275,15 @@ export function DateTimePicker({
             onOpenAutoFocus={(event) => {
               if (calendarFrom === 'field') {
                 event.preventDefault();
+                return;
+              }
+              // A containing modal's focus trap undoes the calendar's own autofocus, which runs first.
+              const day = (event.currentTarget as HTMLElement).querySelector<HTMLElement>(
+                '[role="grid"] [tabindex="0"]',
+              );
+              if (day) {
+                event.preventDefault();
+                day.focus();
               }
             }}
           >

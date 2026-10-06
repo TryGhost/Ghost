@@ -173,6 +173,90 @@ describe('remote-flags service index (gating)', function () {
 
     assert.deepEqual(flagOverrides.getAll(), { flagA: true });
   });
+
+  it('returns the running instance before the initial fetch settles', async function () {
+    configUtils.set('remoteFlags', { enabled: true, url: URL_STRING });
+    // Run the real start() against a fetch that has not settled yet.
+    startStub.restore();
+    const start = sinon.spy(RemoteFlagsService.prototype, 'start');
+    let finishRefresh;
+    const refresh = sinon.stub(RemoteFlagsService.prototype, 'refresh').returns(
+      new Promise((settle) => {
+        finishRefresh = settle;
+      }),
+    );
+
+    const instance = remoteFlags.init(config);
+
+    assert.ok(instance instanceof RemoteFlagsService);
+    assert.equal(remoteFlags.getInstance(), instance);
+    assert.equal(remoteFlags.init(config), instance);
+    sinon.assert.calledOnce(start);
+    sinon.assert.calledOnce(refresh);
+
+    finishRefresh();
+    await start.firstCall.returnValue;
+  });
+
+  it('keeps the running instance and its captured config when config changes', function () {
+    configUtils.set('remoteFlags', { enabled: true, url: URL_STRING, pollInterval: 60 * 1000 });
+    const instance = remoteFlags.init(config);
+
+    configUtils.set('remoteFlags', {
+      enabled: true,
+      url: 'https://assets.example.com/other.json',
+      pollInterval: 120 * 1000,
+    });
+    settingsCache.get.withArgs('site_uuid').returns('other-site');
+    assert.equal(remoteFlags.init(config), instance);
+
+    configUtils.set('remoteFlags', { enabled: false, url: URL_STRING });
+    assert.equal(remoteFlags.init(config), instance);
+
+    assert.equal(remoteFlags.getInstance(), instance);
+    assert.equal(instance.url.href, URL_STRING);
+    assert.equal(instance.pollInterval, 60 * 1000);
+    assert.equal(instance.siteUuid, SITE_UUID);
+    assert.equal(startStub.calledOnce, true);
+  });
+
+  it('rereads config and the site UUID on each init while not running', function () {
+    configUtils.set('remoteFlags', { enabled: false, url: URL_STRING });
+    assert.equal(remoteFlags.init(config), null);
+
+    configUtils.set('remoteFlags', { enabled: true, url: URL_STRING, pollInterval: 60 * 1000 });
+    const first = remoteFlags.init(config);
+    assert.equal(first.url.href, URL_STRING);
+    remoteFlags.stop();
+
+    const otherUrl = 'https://assets.example.com/other.json';
+    configUtils.set('remoteFlags', { enabled: true, url: otherUrl, pollInterval: 120 * 1000 });
+    settingsCache.get.withArgs('site_uuid').returns('other-site');
+    const second = remoteFlags.init(config);
+
+    assert.notEqual(second, first);
+    assert.equal(second.url.href, otherUrl);
+    assert.equal(second.pollInterval, 120 * 1000);
+    assert.equal(second.siteUuid, 'other-site');
+    assert.equal(startStub.calledTwice, true);
+
+    remoteFlags.stop();
+    configUtils.set('remoteFlags', { enabled: false, url: otherUrl });
+    assert.equal(remoteFlags.init(config), null);
+    assert.equal(remoteFlags.getInstance(), null);
+    assert.equal(startStub.calledTwice, true);
+  });
+
+  it('keeps the last applied overrides after stop', function () {
+    configUtils.set('remoteFlags', { enabled: true, url: URL_STRING });
+    const instance = remoteFlags.init(config);
+    instance.applyOverrides({ flagA: true });
+
+    remoteFlags.stop();
+
+    assert.equal(remoteFlags.getInstance(), null);
+    assert.deepEqual(flagOverrides.getAll(), { flagA: true });
+  });
 });
 
 describe('remote-flags integration: kill-switch through the real labs flag set', function () {

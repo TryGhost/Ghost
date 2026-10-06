@@ -172,8 +172,12 @@
     "webpack": "5.105.4"
   },
   "nx": {
+    "namedInputs": {
+      "reactAdminDependency": []
+    },
     "implicitDependencies": [
-      "!ghost"
+      "!ghost",
+      "@internal/scripts"
     ],
     "targets": {
       "dev": {

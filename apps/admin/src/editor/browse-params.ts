@@ -1,3 +1,5 @@
+import { hasAdminAccess, type User } from '@tryghost/admin-x-framework/api/users';
+
 /**
  * Browse search params the editor reads from more than one place. A query's
  * cache key is the serialized URL, so key order here is what shares the entry.
@@ -9,5 +11,10 @@ export const PAID_TIERS_SEARCH_PARAMS = { filter: 'type:paid', limit: 'all' } as
 /**
  * Every newsletter, archived ones included. The preview narrows to active ones
  * in the client rather than asking for a second, differently filtered list.
+ * Only admins are shown member counts, so only their browse includes them.
  */
-export const NEWSLETTERS_SEARCH_PARAMS = { limit: 'all' } as const;
+export function newslettersSearchParams(user: User | undefined): Record<string, string> {
+  return user && hasAdminAccess(user)
+    ? { limit: 'all', include: 'count.active_members' }
+    : { limit: 'all' };
+}
