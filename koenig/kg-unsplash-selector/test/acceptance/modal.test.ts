@@ -33,8 +33,9 @@ test.describe('Acceptance test - Unsplash Selector', async () => {
     const searchInput = await modal.$('[data-kg-unsplash-search="true"]');
     await searchInput?.fill('train station');
     await modal.waitForSelector('[data-kg-unsplash-gallery-item="true"]');
-    const searchResults = await modal.$$('[data-kg-unsplash-gallery-item="true"]');
-    expect(searchResults.length).toBe(1);
+    await expect
+      .poll(async () => (await modal.$$('[data-kg-unsplash-gallery-item="true"]')).length)
+      .toBe(1);
   });
 
   test('Can select and zoom on an image', async ({ page }) => {

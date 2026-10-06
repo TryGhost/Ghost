@@ -108,11 +108,11 @@ test.describe('Bookmark card', async () => {
 
     test.describe('Valid URL handling', async () => {
         test('shows loading wheel', async function ({page: loadingPage}) {
+            await loadingPage.clock.install({time: new Date('2025-01-01T00:00:00Z')});
             await initialize({page: loadingPage, uri: '/#/?content=false&searchLinks=false'});
             await focusEditor(loadingPage);
             await insertCard(loadingPage, {cardName: 'bookmark'});
-            await loadingPage.clock.install();
-            await loadingPage.clock.pauseAt(new Date());
+            await loadingPage.clock.pauseAt(new Date('2025-01-01T01:00:00Z'));
 
             const urlInput = loadingPage.getByTestId('bookmark-url');
             await urlInput.fill('https://ghost.org/');
