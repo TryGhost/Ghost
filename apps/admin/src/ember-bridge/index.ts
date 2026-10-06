@@ -12,14 +12,12 @@ export {
   useSidebarVisibility,
   useSubscriptionStatus,
   useForceUpgrade,
-  isEmberThemeManaged,
-  preloadEmberAdminThemeStylesheet,
-  applyEmberAdminThemePreference,
+  connectEmberAdminTheme,
   navigateEmberBillingSubRoute,
   syncEmberPostListQueryParams,
   syncEmberFullScreen,
   syncEmberRoutePattern,
   emberMutationHandlers,
 } from './ember-bridge';
-export type { AdminThemeMode, EmberDataChangeEvent, StateBridge } from './ember-bridge';
+export type { EmberDataChangeEvent, StateBridge } from './ember-bridge';
 export type { EmberNotificationsHost } from './ember-notifications-host';

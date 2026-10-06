@@ -23,6 +23,14 @@ without waiting for the library build. Consumers without that condition keep
 using the compiled exports; TypeScript continues using the generated declarations.
 The library build remains required for those consumers, including Ember.
 
+### Admin theme controller
+
+`utils/admin-theme` provides the framework-independent appearance controller used
+by React Admin and standalone Ember Admin. It owns the root dark class, system
+appearance listener and transition suppression. An optional adapter can prepare
+legacy styles and receive the resolved theme. Destroy a controller before handing
+ownership to another shell; pending stylesheet work cannot apply after destruction.
+
 ## Test
 
 - `pnpm lint` - run just eslint

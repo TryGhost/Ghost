@@ -332,6 +332,33 @@ describe('Integration: Service: feature', function () {
         expect(document.documentElement.classList.contains('dark')).to.be.true;
     });
 
+    it('hands theme ownership to React and keeps the editor resolved value', async function () {
+        stubSettings(server, {});
+        stubUser(server, {nightShift: 'system'});
+        const session = this.owner.lookup('service:session');
+        await session.populateUser();
+        const service = this.owner.lookup('service:feature');
+        sinon.stub(service.lazyLoader, 'loadStyle').resolves();
+        const removeEventListener = sinon.stub();
+        stubMatchMedia({matches: true, addEventListener: sinon.stub(), removeEventListener});
+        await service.fetch();
+        expect(service.nightShift).to.be.true;
+
+        const connection = service.connectAdminTheme();
+        expect(removeEventListener).to.have.been.calledOnce;
+        connection.apply('light');
+        document.documentElement.classList.remove('dark');
+        await service._setAdminTheme('dark');
+        expect(service.nightShift).to.be.false;
+        expect(document.documentElement.classList.contains('dark')).to.be.false;
+
+        connection.apply('dark');
+        expect(service.nightShift).to.be.true;
+        connection.disconnect();
+        await service._setAdminTheme('light');
+        expect(service.nightShift).to.be.false;
+    });
+
     it('saves labs setting correctly', async function () {
         stubSettings(server, {testFlag: false});
         stubUser(server, {testUserFlag: false});
