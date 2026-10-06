@@ -13,8 +13,10 @@ import ExternalMediaInliner from '../media-inliner/external-media-inliner';
 import ExternalMediaInlinerJob from '../media-inliner/external-media-inliner-job';
 import ContentCSVImportJob from '../content-import/jobs/content-csv-import-job';
 import * as contentImport from '../content-import';
+import ContentImportJob from '../../data/importer/jobs/content-import-job';
 import MembersImportJob from '../members/jobs/members-import-job';
 import UpdateCheckJob from '../update-check/jobs/update-check-job';
+import TinybirdSyncJob from '../tinybird-sync/jobs/tinybird-sync-job';
 import type MentionController from '../mentions/mention-controller';
 import type MentionSendingService from '../mentions/mention-sending-service';
 import ProcessWebmentionJob from '../mentions/process-webmention-job';
@@ -56,6 +58,12 @@ interface RegisterJobHandlersDependencies {
     handleImportJob(job: MembersImportJob): Promise<void>;
   };
   emailService: EmailService;
+  siteImporter: {
+    executeImport(job: ContentImportJob): Promise<unknown>;
+  };
+  tinybirdSync: {
+    sync(): Promise<void>;
+  };
 }
 
 export default function registerJobHandlers({
@@ -70,6 +78,8 @@ export default function registerJobHandlers({
   mentionsSendingService,
   membersService,
   emailService,
+  siteImporter,
+  tinybirdSync,
 }: RegisterJobHandlersDependencies): void {
   // Each email analytics pipeline fetches on its own five-minute tick and the
   // wrapper skips a tick while its previous fetch is still running. The second
@@ -110,6 +120,10 @@ export default function registerJobHandlers({
     await contentImport.handleJob(job);
   });
 
+  jobsService.handle(ContentImportJob, async (job) => {
+    await siteImporter.executeImport(job);
+  });
+
   jobsService.handle(MembersImportJob, async (job) => {
     await membersService.handleImportJob(job);
   });
@@ -144,5 +158,13 @@ export default function registerJobHandlers({
       await emailService.handleSendEmailJob(job);
     },
     EMAIL_QUEUE,
+  );
+
+  jobsService.handle(
+    TinybirdSyncJob,
+    async () => {
+      await tinybirdSync.sync();
+    },
+    { queue: TinybirdSyncJob.type, concurrency: 1 },
   );
 }

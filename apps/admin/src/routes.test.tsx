@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { matchRoutes } from '@tryghost/admin-x-framework';
-import { useRouteHidesAdminSidebar } from '@/layout/sidebar-visibility';
+import { useAdminSidebarVisibility, useRouteHidesAdminSidebar } from '@/layout/sidebar-visibility';
 import { routes, useSyncEmberRoutePattern } from './routes';
 
 const useMatchesMock = vi.fn<() => Array<{ handle: unknown }>>();
@@ -18,6 +18,7 @@ vi.mock('@tryghost/admin-x-framework', async (importOriginal) => ({
 vi.mock('./ember-bridge', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./ember-bridge')>()),
   syncEmberRoutePattern: (routePattern: string | null) => syncEmberRoutePatternMock(routePattern),
+  useSidebarVisibility: () => false,
 }));
 
 vi.mock('./use-flag-gated-route-owner', () => ({
@@ -52,6 +53,31 @@ describe('routes', () => {
 
   it('shows the admin sidebar on /posts', () => {
     expect(routeHidesAdminSidebar('/posts')).toBe(false);
+  });
+});
+
+describe('sidebar route ownership with stale Ember fullscreen state', () => {
+  it.each([
+    ['/posts', 'ember', true],
+    ['/tags', 'pending', true],
+    ['/pro', 'react', false],
+    ['/pro/plans', 'react', false],
+    ['/editor/post/abc123', 'react', false],
+    ['/editor/post/abc123', 'ember', false],
+    ['/editor/post/abc123', 'pending', false],
+    ['/settings', 'react', false],
+  ] as const)('shows sidebar %s with owner %s: %s', (pathname, owner, visible) => {
+    pathnameMock.mockReturnValue(pathname);
+    routeOwnerMock.mockReturnValue(owner);
+    useMatchesMock.mockReturnValue(
+      (matchRoutes(routes, pathname) ?? []).map((match) => ({
+        handle: match.route.handle as unknown,
+      })),
+    );
+
+    const { result } = renderHook(() => useAdminSidebarVisibility());
+
+    expect(result.current).toBe(visible);
   });
 });
 

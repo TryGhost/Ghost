@@ -8,10 +8,13 @@ export interface FeatureImagePatch {
   feature_image_caption?: string | null;
 }
 
-/** The session calls the feature image needs; the rest of the handle is irrelevant to it. */
+/** The session calls and values the feature image needs; the rest of the handle is irrelevant to it. */
 export interface FeatureImagePort {
+  /** The alt text and caption the session holds, which a read or a save may move. */
+  featureImageAlt: string | null;
+  featureImageCaption: string | null;
   patchFeatureImage: (patch: FeatureImagePatch) => void;
-  commitSettings: () => void;
+  commitField: () => void;
 }
 
 export interface FeatureImageBinding {
@@ -19,10 +22,13 @@ export interface FeatureImageBinding {
   featureImageAlt: string | null;
   /** Wrapped in a paragraph, the shape the caption editor loads. */
   featureImageCaption: string | null;
+  /** Moves when the caption editor has to load a caption the writer did not type. */
+  featureImageCaptionKey: number;
   onFeatureImageChange: (url: string) => void;
   onFeatureImageClear: () => void;
   onFeatureImageAltChange: (alt: string) => void;
   onFeatureImageCaptionChange: (html: string) => void;
+  onFeatureImageCaptionFocus: () => void;
   onFeatureImageCaptionBlur: () => void;
 }
 
@@ -78,7 +84,8 @@ export function normalizeCaptionHtml(html: string | null | undefined): string {
 /**
  * Feature image, alt text and caption as the editor holds them. Setting,
  * clearing and alt edits commit immediately; the caption commits on blur. Each
- * commit enters the save engine, which retains work until it can be saved.
+ * commit enters the save engine, which retains work until it can be saved. The
+ * alt text and caption follow what the session holds, another writer's included.
  */
 export function useFeatureImageBinding(
   port: FeatureImagePort,
@@ -90,8 +97,10 @@ export function useFeatureImageBinding(
   session.current = port;
 
   const [featureImage, setFeatureImage] = useState(record?.feature_image ?? null);
-  const [featureImageAlt, setFeatureImageAlt] = useState(record?.feature_image_alt ?? null);
+  // What the caption editor shows: it reads its HTML only when it mounts.
   const [caption, setCaption] = useState(record?.feature_image_caption ?? null);
+  const [captionKey, setCaptionKey] = useState(0);
+  const [captionFocused, setCaptionFocused] = useState(false);
   const [loadedKey, setLoadedKey] = useState(contentKey);
   const captionRef = useRef(caption);
   captionRef.current = caption;
@@ -99,32 +108,37 @@ export function useFeatureImageBinding(
   if (loadedKey !== contentKey) {
     setLoadedKey(contentKey);
     setFeatureImage(record?.feature_image ?? null);
-    setFeatureImageAlt(record?.feature_image_alt ?? null);
     setCaption(record?.feature_image_caption ?? null);
+    setCaptionFocused(false);
+  } else if (!captionFocused && port.featureImageCaption !== caption) {
+    // Reloading under the writer's cursor would drop it, so a focused caption
+    // catches up with one the session adopted once it blurs.
+    if (normalizeCaptionHtml(port.featureImageCaption) !== normalizeCaptionHtml(caption)) {
+      setCaptionKey((key) => key + 1);
+    }
+    setCaption(port.featureImageCaption);
   }
 
   const onFeatureImageChange = useCallback((url: string) => {
     setFeatureImage(url);
     session.current.patchFeatureImage({ feature_image: url });
-    session.current.commitSettings();
+    session.current.commitField();
   }, []);
 
   const onFeatureImageClear = useCallback(() => {
     setFeatureImage(null);
-    setFeatureImageAlt(null);
     setCaption(null);
     session.current.patchFeatureImage({
       feature_image: null,
       feature_image_alt: null,
       feature_image_caption: null,
     });
-    session.current.commitSettings();
+    session.current.commitField();
   }, []);
 
   const onFeatureImageAltChange = useCallback((alt: string) => {
-    setFeatureImageAlt(alt);
     session.current.patchFeatureImage({ feature_image_alt: alt });
-    session.current.commitSettings();
+    session.current.commitField();
   }, []);
 
   const onFeatureImageCaptionChange = useCallback((html: string) => {
@@ -136,16 +150,23 @@ export function useFeatureImageBinding(
     session.current.patchFeatureImage({ feature_image_caption: cleaned });
   }, []);
 
-  const onFeatureImageCaptionBlur = useCallback(() => session.current.commitSettings(), []);
+  const onFeatureImageCaptionFocus = useCallback(() => setCaptionFocused(true), []);
+
+  const onFeatureImageCaptionBlur = useCallback(() => {
+    setCaptionFocused(false);
+    session.current.commitField();
+  }, []);
 
   return {
     featureImage,
-    featureImageAlt,
+    featureImageAlt: port.featureImageAlt,
     featureImageCaption: withCaptionParagraph(caption),
+    featureImageCaptionKey: captionKey,
     onFeatureImageChange,
     onFeatureImageClear,
     onFeatureImageAltChange,
     onFeatureImageCaptionChange,
+    onFeatureImageCaptionFocus,
     onFeatureImageCaptionBlur,
   };
 }

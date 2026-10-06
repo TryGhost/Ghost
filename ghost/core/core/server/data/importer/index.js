@@ -2,8 +2,8 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils').default;
-const { GhostMailer } = require('../../services/mail');
-const jobManager = require('../../services/jobs');
+const { GhostMailer } = require('../../lib/mail');
+const adapterManager = require('../../services/adapter-manager').default;
 const ImportManager = require('./import-manager');
 const RevueHandler = require('./handlers/revue');
 const JSONHandler = require('./handlers/json');
@@ -15,12 +15,13 @@ const { createContentFileHandlers, createContentFileImporters } = require('./con
 let instance;
 
 module.exports = {
-  init() {
+  init({ jobsService }) {
     // Every boot builds its own importer: the handlers and importers hold storage
     // adapters resolved from the configuration of the boot that built them, and an
     // in-process restart (test harness) points that configuration elsewhere.
     instance = new ImportManager({
-      jobManager,
+      jobsService,
+      importsStorage: adapterManager.getAdapter('storage:imports'),
       handlers: [...createContentFileHandlers(), RevueHandler, JSONHandler, MarkdownHandler],
       importers: [...createContentFileImporters(), RevueImporter, DataImporter],
       mailer: new GhostMailer(),

@@ -11,7 +11,9 @@ import {
 } from '@tryghost/shade/patterns';
 import { Inline, Stack } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
+import { usePinturaEditor } from '@/hooks/use-pintura-editor';
 import { ACCEPTED_IMAGE_TYPES, UNSUPPORTED_IMAGE_MESSAGE } from '@/shared/images/image-upload';
+import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { UnsplashPicker, type UnsplashSelection } from './unsplash-picker';
 import type { ImageFieldUpload } from './use-image-field-upload';
 
@@ -19,11 +21,12 @@ import type { ImageFieldUpload } from './use-image-field-upload';
 const VARIANTS = {
   bar: {
     empty: 'h-14',
-    dropzone: 'group/dropzone w-auto border-0 bg-transparent px-0 shadow-none hover:bg-transparent',
+    dropzone:
+      'group/dropzone -ml-3 h-(--control-height) w-auto rounded-full border-0 bg-transparent px-3 py-2 shadow-none hover:bg-accent active:bg-accent active:shadow-control-pressed',
     prompt: 'transition-colors group-hover/dropzone:text-foreground',
     icon: LucideIcon.Plus,
     iconClassName: 'size-4',
-    label: 'text-base',
+    label: 'text-base font-medium',
     unsplash: 'static',
   },
   panel: {
@@ -53,6 +56,8 @@ export interface ImageFieldProps {
   testId?: string;
   /** A field with no alt text leaves its preview presentational. */
   alt?: string | null;
+  /** Fades the preview of an image the post leaves out. */
+  faded?: boolean;
   /** Takes the uploaded or picked src, and `null` when the writer removes it. */
   onChange: (src: string | null) => void;
   /** Takes the photographer credit too. Defaults to `onChange` with the picked src. */
@@ -63,7 +68,8 @@ export interface ImageFieldProps {
 
 /**
  * An image the writer gives the post: uploaded from the file picker or a drop,
- * picked from Unsplash, previewed, and removed again.
+ * picked from Unsplash, previewed, edited in Pintura when the site has it, and
+ * removed again.
  */
 export function ImageField({
   src,
@@ -74,11 +80,14 @@ export function ImageField({
   className,
   testId,
   alt = null,
+  faded = false,
   onChange,
   onUnsplashSelect,
   children,
 }: ImageFieldProps) {
   const { isUploading, onUpload } = upload;
+  const editor = usePinturaEditor({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const busy = isUploading || editor.isOpen;
   const styles = VARIANTS[variant];
   const EmptyContainer = variant === 'bar' ? Inline : ImageUpload;
   const PromptContainer = variant === 'bar' ? Inline : Stack;
@@ -90,7 +99,7 @@ export function ImageField({
       <EmptyContainer
         className={cn(styles.empty, className)}
         data-testid={testId}
-        {...(variant === 'bar' ? { gap: 'lg' as const } : {})}
+        {...(variant === 'bar' ? { gap: 'sm' as const } : {})}
       >
         <ImageUploadDropzone
           accept={ACCEPTED_IMAGE_TYPES}
@@ -130,10 +139,33 @@ export function ImageField({
   }
 
   const preview = (
-    <ImageUploadPreview>
-      <ImageUploadImage alt={alt ?? ''} role={alt ? 'img' : 'presentation'} src={src} />
+    <ImageUploadPreview className={variant === 'bar' ? 'rounded-none' : undefined}>
+      <ImageUploadImage
+        alt={alt ?? ''}
+        className={faded ? 'opacity-50' : undefined}
+        role={alt ? 'img' : 'presentation'}
+        src={src}
+      />
+      {isUploading ? (
+        <Inline align="center" className="absolute inset-0 bg-background/60" justify="center">
+          <LoadingIndicator size="sm" />
+        </Inline>
+      ) : null}
       <ImageUploadActions>
-        <ImageUploadAction aria-label={`Remove ${subject}`} onClick={() => onChange(null)}>
+        {editor.isEnabled && (
+          <ImageUploadAction
+            aria-label={`Edit ${subject}`}
+            disabled={busy}
+            onClick={() => editor.openEditor({ image: src, handleSave: onUpload })}
+          >
+            <LucideIcon.Pencil />
+          </ImageUploadAction>
+        )}
+        <ImageUploadAction
+          aria-label={`Remove ${subject}`}
+          disabled={busy}
+          onClick={() => onChange(null)}
+        >
           <LucideIcon.Trash2 />
         </ImageUploadAction>
       </ImageUploadActions>
@@ -143,7 +175,7 @@ export function ImageField({
   if (!children) {
     return (
       <ImageUpload
-        className={cn(variant === 'panel' && 'max-h-[480px]', className)}
+        className={cn(variant === 'panel' ? 'max-h-[480px]' : 'rounded-none', className)}
         data-testid={testId}
       >
         {preview}
@@ -153,7 +185,9 @@ export function ImageField({
 
   return (
     <Stack className={className} data-testid={testId} gap="sm">
-      <ImageUpload className={cn(variant === 'panel' && 'max-h-[480px]')}>{preview}</ImageUpload>
+      <ImageUpload className={variant === 'panel' ? 'max-h-[480px]' : 'rounded-none'}>
+        {preview}
+      </ImageUpload>
       {children}
     </Stack>
   );

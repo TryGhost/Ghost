@@ -31,6 +31,7 @@ import { SectionLoadError } from './section-load-error';
 import { SettingsSection } from './settings-section';
 import {
   VISIBILITY_OPTIONS,
+  defaultTierIds,
   postTiers,
   selectedTierIds,
   selectedVisibility,
@@ -108,9 +109,21 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
     settingsData?.settings ?? null,
     'default_content_visibility',
   );
+  const defaultContentVisibilityTiers = getSettingValue<string>(
+    settingsData?.settings ?? null,
+    'default_content_visibility_tiers',
+  );
 
   const visibility = selectedVisibility(session.settings.visibility, defaultContentVisibility);
-  const selected = new Set(selectedTierIds(session.settings.tiers));
+  // Core grants a new post the default's tiers on create, so they stand in until
+  // the post has a visibility of its own, and a tier pick starts from them.
+  const followsDefaultTiers =
+    isNewPost(session) && !session.settings.visibility && visibility === 'tiers';
+  const selected = new Set(
+    followsDefaultTiers
+      ? defaultTierIds(defaultContentVisibilityTiers)
+      : selectedTierIds(session.settings.tiers),
+  );
   const tiersMissing = tiersIncomplete(session.settings);
 
   const {
@@ -158,7 +171,14 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
     if (!next.delete(id)) {
       next.add(id);
     }
-    editAccess({ visibility: 'tiers', tiers: tiersFromSelection(options, next) });
+    const patch = { visibility: 'tiers', tiers: tiersFromSelection(options, next) };
+    // Each save of a published post writes a revision; as in Ember, a tier pick
+    // outside a draft waits for the next settings save or Update.
+    if (session.publishTime.status !== 'draft') {
+      session.stageSettings(patch);
+      return;
+    }
+    editAccess(patch);
   };
 
   return (

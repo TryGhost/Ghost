@@ -1,8 +1,9 @@
 # Alerts
 
 Full-width bars at the top of Admin for messages that must stay visible until
-someone closes them. Today they come from server notices and from the Ember
-host in `ember-bridge`; the store is only reachable from `App`. Short-lived
+someone closes them. Today they come from server notices, from failed API
+requests, and from the Ember host in `ember-bridge`; the store is only reachable
+from `App`. Short-lived
 feedback belongs in a toast (`toast` from `sonner`) instead.
 
 ## Pieces
@@ -21,6 +22,11 @@ feedback belongs in a toast (`toast` from `sonner`) instead.
   them and shows custom notices, one per location: the one the server lists
   last. Each shows once per page load. Closing a notice deletes it, which
   marks it seen for that user; programmatic removal does not.
+- `useUpgradeStatusAlerts()` shows an error alert when a Ghost API request fails
+  because Ghost was upgraded since the page loaded, or is still under
+  maintenance after the request's retries. Each shows at most once per page
+  load. The alerts use Ember's keys, so an alert from either side replaces the
+  other's instead of stacking.
 
 ## Message text
 

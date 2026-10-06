@@ -1,34 +1,18 @@
 const assert = require('node:assert/strict');
 const { assertExists } = require('../../../utils/assertions');
 const supertest = require('supertest');
-const jwt = require('jsonwebtoken');
-const jwksClient = require('jwks-rsa');
+const { createRemoteJWKSet, jwtVerify } = require('jose');
 const testUtils = require('../../../utils');
 const localUtils = require('./utils');
 const config = require('../../../../core/shared/config');
 
 let request;
 
-const verifyJWKS = (endpoint, token) => {
-  return new Promise((resolve, reject) => {
-    const client = jwksClient({
-      jwksUri: endpoint,
-    });
-
-    async function getKey(header, callback) {
-      const key = await client.getSigningKey(header.kid);
-      const signingKey = key.publicKey || key.rsaPublicKey;
-      callback(null, signingKey);
-    }
-
-    jwt.verify(token, getKey, {}, (err, decoded) => {
-      if (err) {
-        reject(err);
-      }
-
-      resolve(decoded);
-    });
+const verifyJWKS = async (endpoint, token) => {
+  const { payload } = await jwtVerify(token, createRemoteJWKSet(new URL(endpoint)), {
+    algorithms: ['RS256'],
   });
+  return payload;
 };
 
 describe('Identities API', function () {

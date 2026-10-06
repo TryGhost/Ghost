@@ -53,6 +53,7 @@
   --state-danger: var(--color-red-500);
   --state-danger-foreground: var(--color-black);
   --control-height: 32px;
+  --control-height-lg: 40px;
   --input-group-radius: 9px;
   --chart-1: hsl(201 100% 50%);
   --chart-2: hsl(201 88% 70%);

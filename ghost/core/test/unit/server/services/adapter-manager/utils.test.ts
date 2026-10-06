@@ -1,26 +1,18 @@
 import assert from 'node:assert/strict';
-import { Provider } from 'nconf';
 import {
   resolveAdapterOptions,
   normalizeAdapterConfig,
   getConfiguredFeatures,
 } from '../../../../../core/server/services/adapter-manager/utils';
-import { bindAll as bindUrlHelpers } from '@tryghost/config-url-helpers';
-import { bindAll as bindHelpers } from '../../../../../core/shared/config/helpers';
+import { createConfig } from '../../../../../core/shared/config/validated';
+import { configSources } from '../../../../utils/config-sources';
 import type { ConfigInstance } from '../../../../../core/shared/config/loader';
 
 describe('Adapter Manager: utils', function () {
   describe('normalizeAdapterConfig', function () {
-    // mini nconf loader to mock the config for testing
+    // minimal stand-in for the loaded config
     function loadNconf(): ConfigInstance {
-      const nconf = new Provider();
-      nconf.use('memory');
-      nconf.set('paths:contentPath', '/some/path');
-
-      bindUrlHelpers(nconf);
-      bindHelpers(nconf);
-
-      return nconf;
+      return createConfig(configSources({ paths: { contentPath: '/some/path' } }));
     }
 
     it('uses top-level storage config path if adapter storage not specified', () => {

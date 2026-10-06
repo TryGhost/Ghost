@@ -125,6 +125,41 @@ describe('SessionService', function () {
     });
   });
 
+  it('Throws an error when creating a session from a non-admin origin', async function () {
+    const getSession = createGetSession();
+    const getOriginOfRequest = sinon.stub().returns('https://evil.com');
+
+    const sessionService = SessionService({
+      getSession,
+      getOriginOfRequest,
+      urlUtils,
+    });
+
+    const req = Object.create(express.request, {
+      ip: {
+        value: '0.0.0.0',
+      },
+      headers: {
+        value: {
+          cookie: 'thing',
+        },
+      },
+      get: {
+        value: () => 'https://evil.com',
+      },
+    });
+    const res = Object.create(express.response);
+    const user = { id: 'egg' };
+
+    // A cross-origin request (e.g. a login-CSRF form post) must not be able to
+    // create or bind a session, even though it carries a valid Origin header.
+    await assert.rejects(sessionService.createSessionForUser(req, res, user), {
+      message: `Request made from incorrect origin. Expected 'https://admin.example.com' received 'https://evil.com'.`,
+    });
+    assert.equal(req.session.user_id, undefined);
+    assert.equal(req.session.origin, undefined);
+  });
+
   it("Doesn't throw an error when the csrf verification fails when bypassed", async function () {
     const getSession = async (req) => {
       if (req.session) {

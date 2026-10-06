@@ -11,6 +11,7 @@ import {
   staffRole,
 } from '@test-utils/acceptance';
 import { sidebarScreen } from '@/layout/sidebar.screen';
+import { tagsScreen } from '@/tags/tags.screen';
 import { alertsScreen } from './alerts.screen';
 
 function serverNotification(overrides: Partial<ServerNotification>): ServerNotification {
@@ -33,8 +34,8 @@ async function renderWithNotifications(notifications: ServerNotification[]) {
   });
 }
 
-/** Stands in for Ember's state bridge; resolves to the host that is still connected once React settles. */
-async function renderWithEmber(notifications: ServerNotification[] = []) {
+/** Stands in for Ember's state bridge; returns the host that is currently connected. */
+function stubEmberBridge() {
   let current: EmberNotificationsHost | undefined;
   window.EmberBridge = {
     state: {
@@ -56,9 +57,40 @@ async function renderWithEmber(notifications: ServerNotification[] = []) {
     } satisfies StateBridge,
   };
 
+  return () => current;
+}
+
+/** Resolves to the host that is still connected once React settles. */
+async function renderWithEmber(notifications: ServerNotification[] = []) {
+  const emberHost = stubEmberBridge();
   await renderWithNotifications(notifications);
-  await expect.poll(() => current).toBeDefined();
-  return current!;
+  // The host connects a render before Sonner's toaster subscribes, which drops
+  // toasts shown in between; the screen renders well after both.
+  await expect.element(tagsScreen.emptyStateHeading()).toBeVisible();
+  await expect.poll(emberHost).toBeDefined();
+  return emberHost()!;
+}
+
+const upgradeRequiredText =
+  'Ghost has been upgraded, please copy any unsaved data and refresh the page to continue.';
+
+const versionMismatchBody = {
+  errors: [
+    { type: 'VersionMismatchError', message: 'Client request for v5 does not match server v6' },
+  ],
+};
+
+/** Holds the tags request until `respond()`, then answers with a version mismatch. */
+function fakeTagsVersionMismatchOnCue() {
+  let respond!: () => void;
+  const cue = new Promise<void>((resolve) => {
+    respond = resolve;
+  });
+  fakeAdminEndpoint('GET', /^\/tags\//, async () => {
+    await cue;
+    return Response.json(versionMismatchBody, { status: 400 });
+  });
+  return { respond };
 }
 
 afterEach(() => {
@@ -173,5 +205,43 @@ describe('Ember notifications', () => {
     host.clearAll();
 
     await expect.element(toast).not.toBeInTheDocument();
+  });
+});
+
+describe('Upgrade status alerts', () => {
+  it('shows the upgrade alert once per page load when React requests reach an upgraded Ghost', async () => {
+    const tagsApi = fakeTagsVersionMismatchOnCue();
+    await renderAdminApp('/tags', {
+      boot: { browseNotifications: { response: versionMismatchBody, responseStatus: 400 } },
+    });
+
+    await expect.element(alertsScreen.alert(upgradeRequiredText)).toBeVisible();
+    await alertsScreen.closeButton(upgradeRequiredText).click();
+    await expect.element(alertsScreen.alert(upgradeRequiredText)).not.toBeInTheDocument();
+
+    tagsApi.respond();
+
+    await expect.element(tagsScreen.errorHeading()).toBeVisible();
+    await expect(alertsScreen.alerts()).toHaveCount(0);
+  });
+
+  it('does not stack on the same alert raised by Ember', async () => {
+    const emberHost = stubEmberBridge();
+    const tagsApi = fakeTagsVersionMismatchOnCue();
+    await renderAdminApp('/tags');
+    await expect.poll(emberHost).toBeDefined();
+
+    emberHost()!.show({
+      status: 'alert',
+      type: 'error',
+      key: 'api-error.upgrade-required',
+      message: upgradeRequiredText,
+    });
+    await expect.element(alertsScreen.alert(upgradeRequiredText)).toBeVisible();
+
+    tagsApi.respond();
+
+    await expect.element(tagsScreen.errorHeading()).toBeVisible();
+    await expect(alertsScreen.alerts()).toHaveCount(1);
   });
 });

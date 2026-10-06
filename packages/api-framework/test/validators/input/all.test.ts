@@ -217,7 +217,7 @@ describe('validators/input/all', function () {
     });
 
     it('allows supported id values', async function () {
-      const ids = ['a'.repeat(24), '1', 'me', 'ME'];
+      const ids = ['a'.repeat(24), 'me', 'ME'];
 
       for (const id of ids) {
         const frame = {
@@ -228,6 +228,23 @@ describe('validators/input/all', function () {
         };
 
         await shared.validators.input.all.all({}, frame);
+      }
+    });
+
+    it('rejects legacy numeric id values', async function () {
+      for (const id of ['1', 1]) {
+        const frame = {
+          options: {
+            context: {},
+            id,
+          },
+        };
+
+        await assert.rejects(shared.validators.input.all.all({}, frame), (err) => {
+          assert.ok(err instanceof Error);
+          assert.equal(err.message, 'Validation (matches) failed for id');
+          return true;
+        });
       }
     });
 

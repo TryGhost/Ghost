@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import { vi } from 'vitest';
+import { Frame } from '@tryghost/api-framework';
 
 // @ts-expect-error @tryghost/domain-events currently lacks type declarations.
 import domainEvents from '@tryghost/domain-events';
@@ -12,11 +13,11 @@ import labs from '../../../../core/shared/labs';
 
 vi.mock('../../../../core/server/services/automations/automations-api', async (importOriginal) => {
   const actual = await importOriginal<typeof automationsApi>();
-  return { ...actual, browse: vi.fn(), getNumberOfAutomations: vi.fn() };
+  return { ...actual, browse: vi.fn(), read: vi.fn(), getNumberOfAutomations: vi.fn() };
 });
 
 describe('Automations controller', function () {
-  // Read and edit endpoints are tested in E2E tests.
+  // The edit endpoint is tested in E2E tests.
 
   let dispatchStub: sinon.SinonStub;
 
@@ -67,7 +68,50 @@ describe('Automations controller', function () {
     });
   });
 
+  describe('read', function () {
+    it('returns the automation trigger tier scope and IDs', async function () {
+      const automation = {
+        id: '64b6f7b7c8f1a2b3c4d5e6f7',
+        slug: null,
+        name: 'Selected tier automation',
+        description: '',
+        status: 'inactive',
+        created_at: '2026-10-01T00:00:00.000Z',
+        updated_at: '2026-10-01T00:00:00.000Z',
+        trigger_tier_scope: 'selected_paid' as const,
+        trigger_tier_ids: ['64b6f7b7c8f1a2b3c4d5e6f8'],
+        actions: [],
+        edges: [],
+      };
+      vi.mocked(automationsApi.read).mockResolvedValue(automation);
+      const frame = new Frame<{ data: { id: string } }>({ params: { id: automation.id } });
+      frame.configure(automationsController.read);
+
+      const result = await automationsController.read.query(frame);
+
+      expect(automationsApi.read).toHaveBeenCalledExactlyOnceWith(automation.id);
+      assert.strictEqual(result, automation);
+    });
+  });
+
   describe('add', function () {
+    let labsIsSetStub: sinon.SinonStub;
+
+    beforeEach(function () {
+      labsIsSetStub = sinon.stub(labs, 'isSet').returns(true);
+    });
+
+    for (const flag of ['automations', 'automationsPerTier']) {
+      it(`returns 404 when ${flag} labs flag is disabled`, async function () {
+        labsIsSetStub.withArgs(flag).returns(false);
+
+        await assert.rejects(automationsController.add.query(), {
+          errorType: 'NotFoundError',
+          statusCode: 404,
+        });
+      });
+    }
+
     for (const count of [0, 19]) {
       it(`returns NOT_IMPLEMENTED with ${count} automations`, async function () {
         vi.mocked(automationsApi.getNumberOfAutomations).mockResolvedValue(count);

@@ -7,15 +7,16 @@ import {
   fakeMembers,
   member,
   renderAdminApp,
+  settleAnimations,
 } from '@test-utils/acceptance';
 import { importMembersScreen } from './import-members.screen';
 import { membersScreen } from './members.screen';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
-// Both flags: the redesigned dialog is what this file exercises, and custom fields are what it
-// exercises it for. They are separate switches — the redesign ships without custom fields.
-const FLAGS = { labs: { membersImportRedesign: true, membersCustomFields: true } };
-const WITHOUT_CUSTOM_FIELDS = { labs: { membersImportRedesign: true } };
+// The import dialog is served to everyone now, so custom fields are the only switch left, and
+// the dialog has to hold up on either side of it.
+const FLAGS = { labs: { membersCustomFields: true } };
+const WITHOUT_CUSTOM_FIELDS = { labs: {} };
 
 // A `nickname` column no defined field matches, alongside the columns auto-detection claims.
 // `name` is present deliberately: it takes the /name/i heuristic, which would otherwise map
@@ -100,6 +101,11 @@ async function openMappingStep(csv: string = CSV) {
   await importMembersScreen
     .fileInput()
     .upload(new File([csv], 'members.csv', { type: 'text/csv' }));
+
+  // File selection starts an asynchronous parse and widens the dialog. Wait
+  // for the mapping controls, then settle their motion before the first click.
+  await expect.element(importMembersScreen.fieldSelect('email')).toBeVisible();
+  await settleAnimations(importMembersScreen.dialog().element());
 }
 
 const fieldSelect = importMembersScreen.fieldSelect;
@@ -108,6 +114,7 @@ const importToggle = importMembersScreen.importToggle;
 
 async function openCreateForm(column: string) {
   await importToggle(column).click();
+  await expect.element(importToggle(column)).toBeChecked();
   await fieldSelect(column).click();
   await importMembersScreen.addCustomFieldOption().click();
 }
@@ -397,6 +404,7 @@ describe('Import members custom fields', () => {
     // `name` is auto-detected, so this deselects a column that has a field; the three
     // undetected columns are already out, having nothing to import them as.
     await importToggle('name').click();
+    await expect.element(importToggle('name')).not.toBeChecked();
     await importMembersScreen.importButton(1).click();
 
     await expect

@@ -3,7 +3,7 @@ import sentryTestkit from 'sentry-testkit/browser';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
-import {getSentryTestConfig} from 'ghost-admin/utils/sentry';
+import {getSentryTestConfig} from '../../helpers/sentry';
 import {run} from '@ember/runloop';
 import {setupTest} from 'ember-mocha';
 import {waitUntil} from '@ember/test-helpers';
@@ -93,7 +93,7 @@ describe('Unit: Route: lexical-editor.new', function () {
                 expect(testkit.reports()).to.have.length(1);
                 const report = testkit.reports()[0];
                 expect(report.message).to.equal('New post route transitioned with post.isNew=false');
-                expect(report.tags).to.deep.equal({shown_to_user: false, grammarly: false, savePostTask: true});
+                expect(report.tags).to.deep.equal({savePostTask: true});
                 expect(report.extra).to.deep.equal({recreatedPostIsGood: true});
             });
         });

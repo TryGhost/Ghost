@@ -50,16 +50,6 @@ const features: Feature[] = [
     flag: 'csvContentImporter',
   },
   {
-    title: 'Admin UI Refresh',
-    description: 'Enable Admin UI refresh (exploration)',
-    flag: 'adminUIRefresh',
-  },
-  {
-    title: 'Tags X',
-    description: 'Enables the new Tags UI',
-    flag: 'tagsX',
-  },
-  {
     title: 'Email Unique ID',
     description:
       'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
@@ -88,12 +78,6 @@ const features: Feature[] = [
     flag: 'getHelperDeduplication',
   },
   {
-    title: 'Member location maps',
-    description:
-      'Show a location map and profile header on member pages, with state pins for US members.',
-    flag: 'memberLocationMap',
-  },
-  {
     title: 'Member custom fields',
     description:
       'Let admins create and manage custom field definitions for members, and choose which field each Stripe checkout answer is stored in',
@@ -104,12 +88,6 @@ const features: Feature[] = [
     description:
       'Let admins turn on shipping address, phone number and tax number collection for a tier, asked by Stripe checkout and stored against the member',
     flag: 'stripeCheckoutCollection',
-  },
-  {
-    title: 'Members import redesign',
-    description:
-      'Serves the redesigned members CSV import dialog, which shows every column in the file and lets each one be mapped to a member field',
-    flag: 'membersImportRedesign',
   },
   {
     title: 'Paywall improvements',
@@ -139,12 +117,6 @@ const features: Feature[] = [
     description:
       'Let AI agents pay for access to paid-members markdown (.md) URLs via Stripe Machine Payments Protocol',
     flag: 'machinePayments',
-  },
-  {
-    title: 'Dunning warnings',
-    description:
-      'Show payment-failure warnings in Admin, driven by the hosting provider via hostSettings.billing.dunning',
-    flag: 'dunningWarnings',
   },
 ];
 

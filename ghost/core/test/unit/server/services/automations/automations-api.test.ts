@@ -4,6 +4,14 @@ import sinon from 'sinon';
 import { vi } from 'vitest';
 import { createDatabaseAutomationsRepository } from '../../../../../core/server/services/automations/database-automations-repository';
 
+import * as automationsApi from '../../../../../core/server/services/automations/automations-api';
+import {
+  EMPTY_EMAIL_LEXICAL,
+  NON_EMPTY_EMAIL_LEXICAL,
+} from '../../../../utils/automations-fixtures';
+
+const { repositoryEdit } = vi.hoisted(() => ({ repositoryEdit: vi.fn() }));
+
 vi.mock(
   '../../../../../core/server/services/automations/database-automations-repository',
   async (importOriginal) => {
@@ -15,17 +23,12 @@ vi.mock(
       ...actual,
       createDatabaseAutomationsRepository: vi.fn((options) => ({
         ...actual.createDatabaseAutomationsRepository(options),
+        edit: repositoryEdit,
         getNumberOfAutomations: vi.fn().mockResolvedValue(20),
       })),
     };
   },
 );
-
-import * as automationsApi from '../../../../../core/server/services/automations/automations-api';
-import {
-  EMPTY_EMAIL_LEXICAL,
-  NON_EMPTY_EMAIL_LEXICAL,
-} from '../../../../utils/automations-fixtures';
 
 const buildWaitAction = () => ({
   id: ObjectId().toHexString(),
@@ -52,6 +55,7 @@ const buildEdge = (source: Readonly<{ id: string }>, target: Readonly<{ id: stri
 describe('automations API', function () {
   afterEach(function () {
     sinon.restore();
+    repositoryEdit.mockReset();
   });
 
   describe('getNumberOfAutomations', function () {
@@ -64,6 +68,146 @@ describe('automations API', function () {
 
   describe('edit', function () {
     const automationId = ObjectId().toHexString();
+
+    it('trims optional name and description before saving', async function () {
+      const actions = [buildWaitAction()];
+      repositoryEdit.mockResolvedValue({ id: automationId });
+
+      await automationsApi.edit(automationId, {
+        status: 'inactive',
+        actions,
+        edges: [],
+        name: '  Renamed flow\n',
+        description: '\tUpdated description  ',
+      });
+
+      assert.deepEqual(repositoryEdit.mock.calls[0], [
+        automationId,
+        {
+          status: 'inactive',
+          actions,
+          edges: [],
+          name: 'Renamed flow',
+          description: 'Updated description',
+        },
+      ]);
+    });
+
+    it('allows omitted metadata and whitespace-only descriptions', async function () {
+      const graph = { status: 'inactive', actions: [buildWaitAction()], edges: [] };
+      repositoryEdit.mockResolvedValue({ id: automationId });
+      await automationsApi.edit(automationId, graph);
+      assert.deepEqual(repositoryEdit.mock.calls[0], [automationId, graph]);
+
+      await automationsApi.edit(automationId, { ...graph, description: ' \t\n ' });
+      assert.deepEqual(repositoryEdit.mock.calls[1], [
+        automationId,
+        {
+          ...graph,
+          description: '',
+        },
+      ]);
+    });
+
+    for (const [field, values] of [
+      ['name', ['', ' \t\n ', 'x'.repeat(192), null, 123]],
+      ['description', ['x'.repeat(2001), null, 123]],
+    ] as const) {
+      for (const value of values) {
+        it(`rejects invalid ${field}: ${JSON.stringify(value).slice(0, 40)}`, async function () {
+          repositoryEdit.mockResolvedValue({ id: automationId });
+          await assert.rejects(
+            automationsApi.edit(automationId, {
+              status: 'inactive',
+              actions: [buildWaitAction()],
+              edges: [],
+              [field]: value,
+            }),
+            { errorType: 'ValidationError' },
+          );
+          assert.equal(repositoryEdit.mock.calls.length, 0);
+        });
+      }
+    }
+
+    it('validates metadata length after trimming, not before', async function () {
+      repositoryEdit.mockResolvedValue({ id: automationId });
+      await automationsApi.edit(automationId, {
+        status: 'inactive',
+        actions: [buildWaitAction()],
+        edges: [],
+        name: ` ${'x'.repeat(191)} `,
+        description: ` ${'x'.repeat(2000)} `,
+      });
+      assert.equal(repositoryEdit.mock.calls[0][1].name.length, 191);
+      assert.equal(repositoryEdit.mock.calls[0][1].description.length, 2000);
+    });
+
+    it('rejects metadata-only edits', async function () {
+      await assert.rejects(
+        automationsApi.edit(automationId, {
+          name: 'Renamed flow',
+          description: 'Updated description',
+        }),
+        { errorType: 'ValidationError' },
+      );
+      assert.equal(repositoryEdit.mock.calls.length, 0);
+    });
+
+    it.each([[null], ['free'], ['all_paid'], ['selected_paid']])(
+      'accepts %s trigger scope edits',
+      async function (scope) {
+        const data = {
+          status: 'inactive',
+          actions: [buildWaitAction()],
+          edges: [],
+          trigger_tier_scope: scope,
+          trigger_tier_ids: scope === 'selected_paid' ? [ObjectId().toHexString()] : null,
+        };
+        repositoryEdit.mockResolvedValue({ id: automationId });
+        await automationsApi.edit(automationId, data);
+        assert.deepEqual(repositoryEdit.mock.calls[0], [automationId, data]);
+      },
+    );
+
+    it.each([
+      ['invalid trigger tier scope', { trigger_tier_scope: 'invalid' }],
+      ['unexpected trigger tiers for no scope', { trigger_tier_ids: [ObjectId().toHexString()] }],
+      [
+        'unexpected trigger tiers for null scope',
+        { trigger_tier_scope: null, trigger_tier_ids: [ObjectId().toHexString()] },
+      ],
+      [
+        'unexpected trigger tiers for free scope',
+        { trigger_tier_scope: 'free', trigger_tier_ids: [ObjectId().toHexString()] },
+      ],
+      [
+        'unexpected trigger tiers for all_paid scope',
+        { trigger_tier_scope: 'all_paid', trigger_tier_ids: [ObjectId().toHexString()] },
+      ],
+      ['missing trigger_tier_ids for selected_paid scope', { trigger_tier_scope: 'selected_paid' }],
+      [
+        'invalid trigger_tier_ids for selected_paid scope',
+        { trigger_tier_scope: 'selected_paid', trigger_tier_ids: [123] },
+      ],
+      [
+        'empty trigger_tier_ids for selected_paid scope',
+        { trigger_tier_scope: 'selected_paid', trigger_tier_ids: [] },
+      ],
+    ])('rejects %s', async function (_, extras) {
+      await assert.rejects(
+        automationsApi.edit(automationId, {
+          name: 'My Automation',
+          description: '',
+          status: 'inactive',
+          actions: [buildWaitAction()],
+          edges: [],
+          ...extras,
+        }),
+        { errorType: 'ValidationError' },
+      );
+      assert.equal(repositoryEdit.mock.calls.length, 0);
+    });
 
     it('rejects activating an automation with an empty email subject', async function () {
       await assert.rejects(
@@ -165,6 +309,19 @@ describe('automations API', function () {
         }),
         /well-formed Lexical document/,
       );
+    });
+
+    it('rejects a wait action with invalid number of hours', async function () {
+      for (const waitHours of [undefined, '24', -24, 0, 24.5]) {
+        await assert.rejects(
+          automationsApi.edit(automationId, {
+            status: 'inactive',
+            actions: [{ ...buildWaitAction(), data: { wait_hours: waitHours } }],
+            edges: [],
+          }),
+          { errorType: 'ValidationError' },
+        );
+      }
     });
 
     it('rejects duplicate edges', async function () {

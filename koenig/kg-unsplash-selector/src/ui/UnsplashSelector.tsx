@@ -21,12 +21,14 @@ const UnsplashSelector: FunctionComponent<UnsplashSelectorProps> = ({
         className="not-kg-prose bg-surface-panel fixed inset-8 z-50 overflow-hidden rounded shadow-xl"
         data-kg-modal="unsplash"
       >
-        <button className="absolute right-6 top-6 cursor-pointer" type="button">
-          <CloseIcon
-            className="text-muted-foreground size-4 stroke-2"
-            data-kg-modal-close-button
-            onClick={() => closeModal()}
-          />
+        <button
+          aria-label="Close"
+          className="absolute right-6 top-6 cursor-pointer"
+          type="button"
+          data-kg-modal-close-button
+          onClick={() => closeModal()}
+        >
+          <CloseIcon className="text-muted-foreground size-4 stroke-2" />
         </button>
         <div className="flex h-full flex-col">
           <header className="flex shrink-0 items-center justify-between px-20 py-10">
@@ -37,6 +39,7 @@ const UnsplashSelector: FunctionComponent<UnsplashSelectorProps> = ({
             <div className="relative w-full max-w-sm">
               <SearchIcon className="text-muted-foreground absolute left-4 top-1/2 size-4 -translate-y-2" />
               <input
+                aria-label="Search Unsplash"
                 className="border-border focus:border-muted-foreground placeholder:text-muted-foreground text-foreground h-10 w-full rounded-full border border-solid bg-transparent pl-10 pr-8 font-sans text-[1.4rem] font-normal focus-visible:outline-none"
                 placeholder="Search free high-resolution photos"
                 autoFocus

@@ -13,6 +13,7 @@
     "build:clean": "nx reset && rimraf -g 'ghost/*/build' && rimraf -g 'ghost/*/tsconfig.tsbuildinfo'",
     "clean:hard": "node ./scripts/clean.js",
     "dev": "pnpm nx run ghost-monorepo:docker:dev",
+    "dev:ember": "pnpm nx run ghost-monorepo:docker:dev:ember",
     "dev:sqlite": "DEV_COMPOSE_FILES='-f compose.dev.sqlite.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:mailgun": "DEV_COMPOSE_FILES='-f compose.dev.mailgun.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:fake-mailgun": "DEV_COMPOSE_FILES='-f compose.dev.fake-mailgun.yaml' pnpm nx run ghost-monorepo:docker:dev",
@@ -73,7 +74,8 @@
     "tb:test": "pnpm tb test run",
     "data:analytics:generate": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js generate",
     "data:analytics:clear": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js clear",
-    "release": "node scripts/release.js"
+    "release": "node scripts/release.js",
+    "inventory:typescript": "node scripts/typescript-inventory.ts"
   },
   "devDependencies": {
     "@playwright/test": "catalog:",
@@ -108,7 +110,7 @@
   "engines": {
     "node": "^22.23.1 || ^24.20.0"
   },
-  "packageManager": "pnpm@12.7.0+sha512.9c56477e360068d6e9dca6a92efb4e46b3dc5a52fcebf3d84d78b9736c0ded589a561621a52f68219a7a39facc63cdc079c3226ef9c9d5f02b79f74e69a807b6",
+  "packageManager": "pnpm@12.8.2+sha512.a5941679663d952c5f0ecc38ba98af98b4dc01b95780354f6894f2f873973cef2f7e2989d7db3ee5393938ae21f62fe06bcdf685d475ddad829a62095d2b8b11",
   "monorepo": {
     "public": false,
     "internalPackages": true,
@@ -171,6 +173,34 @@
             "target": "dev",
             "projects": [
               "@tryghost/admin",
+              "@tryghost/portal"
+            ]
+          }
+        ]
+      },
+      "docker:dev:ember": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "trap 'docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down' EXIT; docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} logs -f"
+        },
+        "dependsOn": [
+          "docker:up",
+          {
+            "target": "build:assets",
+            "projects": [
+              "ghost"
+            ]
+          },
+          {
+            "target": "dev:ember",
+            "projects": [
+              "@tryghost/admin"
+            ]
+          },
+          {
+            "target": "dev",
+            "projects": [
               "@tryghost/portal"
             ]
           }

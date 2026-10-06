@@ -16,7 +16,7 @@ import { expect, test, withIsolatedPage } from '@/helpers/playwright';
 import { signInAsMember } from '@/helpers/playwright/flows/sign-in';
 import type { Browser, Page } from '@playwright/test';
 
-// Smoke round trips through the React post editor's settings sidebar, behind the `editorReact` Labs flag
+// Smoke round trips through the React post editor's settings sidebar
 
 const POSTS_API = '/ghost/api/admin/posts/';
 const IMAGES_API = '/ghost/api/admin/images/upload/';
@@ -270,7 +270,7 @@ async function startDraft(page: Page, { title, body }: { title: string; body: st
   await postsPage.goto();
   await postsPage.newPostButton.click();
 
-  const editor = new PostEditorPage(page, { implementation: 'react' });
+  const editor = new PostEditorPage(page);
   await Promise.all([
     page.waitForResponse(
       (response) =>
@@ -324,9 +324,6 @@ async function readPostAsMember(
 }
 
 test.describe('Ghost Admin - Post editor settings (React)', () => {
-  // `test.use` only takes effect on the describe.
-  test.use({ labs: { editorReact: true } });
-
   let memberFactory: MemberFactory;
   let postFactory: PostFactory;
   let tagFactory: TagFactory;
@@ -486,7 +483,7 @@ test.describe('Ghost Admin - Post editor settings (React)', () => {
     expect(escaped).toEqual([]);
   });
 
-  test('published post - Access, meta and X card changes land on Update, gate the site, and Delete removes the post', async ({
+  test('published post - Access, meta and X card changes save as they are made, gate the site, and Delete removes the post', async ({
     browser,
     baseURL,
     page,
@@ -515,7 +512,7 @@ test.describe('Ghost Admin - Post editor settings (React)', () => {
     ]);
     await updatePost(page, created.id, { twitter_image: xImage, og_image: facebookImage });
 
-    const editor = new PostEditorPage(page, { implementation: 'react' });
+    const editor = new PostEditorPage(page);
     await editor.gotoPost(created.id);
     const { settings } = editor;
 
@@ -528,18 +525,19 @@ test.describe('Ghost Admin - Post editor settings (React)', () => {
     await settings.xCard.removeImageButton.click();
     await expect(settings.xCard.removeImageButton).toBeHidden();
     await settings.closeSection('x-card');
-    // A published post stages every settings edit until Update, so this click
-    // is the only save
-    await Promise.all([waitForPostSave(page, created.id), editor.header.updateButton.click()]);
 
+    // A published post saves each settings edit as it is made, leaving nothing for Update.
+    await expect
+      .poll(() => readPost(page, created.id), { timeout: 15000 })
+      .toMatchObject({
+        visibility: 'members',
+        meta_title: metaTitle,
+        twitter_title: xTitle,
+        twitter_image: null,
+      });
     const updated = await readPost(page, created.id);
-    expect(updated).toMatchObject({
-      visibility: 'members',
-      meta_title: metaTitle,
-      twitter_title: xTitle,
-      twitter_image: null,
-    });
     expect(updated.og_image).toMatch(storedAs(facebookImageName));
+    await expect(editor.header.updateButton).toBeDisabled();
 
     await withIsolatedPage(browser, { baseURL }, async ({ page: visitorPage }) => {
       const sitePost = new PostPage(visitorPage);

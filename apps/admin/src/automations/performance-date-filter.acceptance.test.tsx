@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act } from 'react';
-import { run } from './run-list.test-utils';
+import { openPerformanceSidebar, run } from './run-list.test-utils';
+
 import { QueryCache } from '@tanstack/react-query';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
@@ -56,7 +57,10 @@ const response = (start: string, counts: readonly [number, number, number]) => {
 const allTime = () => response('2023-12-01', [10, 20, 30]);
 const render = async (withRuns = false) => {
   if (!withRuns) {
-    fakeAdminEndpoint('GET', /\/automations\/dates\/runs\/\?/, { automation_runs: [] });
+    fakeAdminEndpoint('GET', /\/automations\/dates\/runs\/\?/, {
+      meta: { pagination: { limit: 50, next_cursor: null } },
+      automation_runs: [],
+    });
   }
   fakeAdminEndpoint('GET', '/automations/dates/', {
     automations: [
@@ -71,7 +75,7 @@ const render = async (withRuns = false) => {
     ],
   });
   await renderAdminApp('/automations/dates', flags);
-  await page.getByRole('button', { name: 'Show performance' }).click();
+  await openPerformanceSidebar();
 };
 const selectRange = async (label: string) => {
   await page.getByRole('button', { name: 'Filter performance' }).click();
@@ -140,6 +144,7 @@ describe('Automation performance date filter', () => {
       const selected = params(url);
       const name = `${selected.date_from ?? 'all'} ${selected.status ?? 'any'}`;
       return {
+        meta: { pagination: { limit: 50, next_cursor: null } },
         automation_runs: [
           run({
             created_at: '2024-03-10T12:00:00.000Z',
@@ -185,9 +190,12 @@ describe('Automation performance date filter', () => {
     fakeAdminEndpoint('GET', /\/automations\/dates\/runs\/\?/, async ({ url }) => {
       if (params(url).date_from) {
         await pending;
-        return { automation_runs: [] };
+        return { meta: { pagination: { limit: 50, next_cursor: null } }, automation_runs: [] };
       }
-      return { automation_runs: [run({ created_at: '2024-03-10T12:00:00.000Z' })] };
+      return {
+        meta: { pagination: { limit: 50, next_cursor: null } },
+        automation_runs: [run({ created_at: '2024-03-10T12:00:00.000Z' })],
+      };
     });
     await render(true);
     const runs = () => page.getByRole('region', { name: 'Automation runs', exact: true });
@@ -207,7 +215,7 @@ describe('Automation performance date filter', () => {
       finish();
     }
     await expectCounts([0, 0, 0]);
-    await expect.element(runs().getByRole('status')).toHaveTextContent('No entries in this period');
+    await expect.element(runs().getByRole('status')).toHaveTextContent('No members match');
   });
 
   it('retains the selected period on reopening and clears back to all time', async () => {
@@ -219,7 +227,7 @@ describe('Automation performance date filter', () => {
     await selectRange('Last 7 days');
     await expectCounts([1, 2, 3]);
     await page.getByRole('button', { name: 'Hide performance' }).click();
-    await page.getByRole('button', { name: 'Show performance' }).click();
+    await openPerformanceSidebar();
     await expect
       .element(page.getByRole('button', { name: 'Clear date filter' }))
       .toHaveTextContent('Last 7 days');
@@ -294,16 +302,16 @@ describe('Automation performance date filter', () => {
     const expectEmpty = async (message: string) => {
       await expect.element(runs().getByRole('status')).toHaveTextContent(message);
       await expect(page.getByText(message, { exact: true })).toHaveCount(1);
-      await expect.element(entries()).not.toHaveTextContent('No entries');
+      await expect.element(entries()).not.toHaveTextContent('No members match');
       await expectCounts([0, 0, 0]);
     };
-    await expectEmpty('No entries yet');
+    await expectEmpty('No members match');
     await selectRange('Last 7 days');
-    await expectEmpty('No entries in this period');
+    await expectEmpty('No members match');
     await card('Completed').click();
-    await expectEmpty('No matching entries');
+    await expectEmpty('No members match');
     await card('Completed').click();
-    await expectEmpty('No entries in this period');
+    await expectEmpty('No members match');
   });
 
   it('rejects a backend that ignores the date range and retries the selected range', async () => {

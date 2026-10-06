@@ -69,8 +69,7 @@ the web analytics 1,000-day fetch window.
 
 The chart and cards share the request and cache, populated on first sidebar open
 and kept until navigation. Closing, reopening, focus, and reconnect do not refresh
-it. Failed requests, including a missing endpoint, replace the performance content
-with one error and retry button, without guessing whether the backend is older.
+it. Failed requests replace the performance content with one error and retry button.
 
 ## Run list
 
@@ -124,7 +123,7 @@ history. When continuing with a cursor and no `date_to`, the first page's end da
 is retained even across local midnight. An explicit `date_to` must still match
 the cursor's end date.
 Entry-date filters select runs before classification, keeping the list and summary
-counts on the same cohort. There is no member search in this slice. An empty history or no matches
+counts on the same cohort. An empty history or no matches
 returns `automation_runs: []`. It requires automation read permission, returns 404
 for unknown automations, and uses the same Tinybird availability checks as summaries.
 
@@ -138,16 +137,57 @@ reads, not a snapshot: status changes can affect later pages.
 In Admin, the list loads on first sidebar open and stays cached through closing
 and reopening. Selecting a status card filters only the list; selecting it again
 clears the status filter. Each selection fetches fresh rows while the chart and
-counts stay unchanged. Previous rows remain visible during status requests, with
+counts stay unchanged. The Entered heading switches between newest and oldest
+first. Scrolling loads additional fifty-run pages; changing status, direction,
+or dates starts from the first page. A failed next page retains the loaded rows
+and retries only that page. Previous rows remain visible during status and sort requests, with
 a delayed loading indicator. Date changes clear previous rows and load both the
-summary and list for the selected period. Initial list loading uses one compact
-placeholder row rather than filling the panel with skeleton rows.
+summary and list for the selected period. Loading without existing rows shows ten
+skeleton rows, with a loading announcement for screen readers. The list scrolls
+within the panel; on short windows the panel can also scroll so the chart and
+cards never squeeze the list out of view.
 
 Empty-state messages appear only in the list: "No entries yet" for all time,
 "No entries in this period" for a date filter, and "No matching entries" for a
 status filter. Empty histories and periods keep the zero chart visible; status
 filters do not change it. A failed list request shows its own retry action without
 replacing a successful chart or status counts.
+
+## Member search
+
+The run list accepts `search`, matching a literal
+substring of a current member name or email. Outer whitespace is trimmed; a blank
+value uses ordinary browsing. `%`, `_`, and the escape character are literal,
+not wildcards. Matching follows MySQL's member-column collation. There is no
+minimum length; input is limited to 4,096 UTF-8 bytes before trimming.
+
+Deleted members and missing Core runs do not match. Repeated entries remain
+separate runs. Historical email addresses are never searched or substituted.
+Member details stay in MySQL; only run IDs are sent to Tinybird in POST bodies.
+
+Member search spans all time, regardless of the selected entry-date range.
+It preserves ordering on `runs/` and searches all statuses; date/status options apply only
+to ordinary browsing. Search does not change performance statistics.
+Its pagination metadata adds `state`:
+
+- `more`: another matching run was found after this page.
+- `scanning`: the request reached its work budget; continue even if this page is empty.
+- `exhausted`: the search finished and `next_cursor` is null.
+
+Search uses the ordinary list cursor format with additional fields binding the normalized
+query, site, automation, and direction. Start a new search when those
+change. Reads are live, so later membership/status changes can affect subsequent
+pages; cursors do not create a snapshot.
+
+MySQL probes for up to 2,001 matching run IDs. Up to 2,000 matches use a complete
+ID set; larger searches scan Tinybird candidates in batches of at most 5,000,
+then match them in MySQL. Each request returns at most 50 runs, scans at most
+four batches, and checks a 1.5-second soft budget between batches. Database and
+Tinybird queries also have execution/request timeouts. Failures remain errors,
+not empty results or partial success. A conclusively empty MySQL match set
+returns immediately without querying the search pipes. Invalid candidate histories
+only fail the list request after their current member matches the search; they
+follow the same cursor ordering as other candidates.
 
 ## Availability
 
@@ -187,3 +227,28 @@ analytics. Hourly entry dates are UTC ISO timestamps; `entry_window.bucket`
 is `hour`. Window boundaries remain local calendar dates in the requested
 timezone, with an exclusive end. Today includes buckets through the current
 hour; historical days include every hour, including 23/25-hour DST days.
+
+## Run history
+
+`GET /ghost/api/admin/automations/:id/runs/:run_id/` returns one record in
+`automation_run_history`, with the run's identity, current member (or null),
+status, failure flag, and recorded steps. It requires automation read permission
+and reads the database independently of Tinybird. Missing or differently owned
+runs return 404; malformed records return an error.
+
+Steps are ordered by creation time, then ID. They include UTC timestamps and
+content from their referenced action revision, including soft-deleted actions.
+They never substitute the current graph or add unrecorded future steps. A run
+can include revisions from multiple edits because each next step is queued when
+the preceding step finishes.
+
+- Status follows the run-list rules: `in_progress` if a step is pending,
+  `exited_early` if a step exited, otherwise `completed`. Unknown statuses, missing
+  required revision data, missing terminal timestamps, and runs without steps
+  are errors.
+- `email_sent_at` and `email_delivered_at` are the earliest recipient timestamps
+  for that step and revision. Sending does not establish delivery. Recipient
+  identity and stored historical member email are not returned.
+- Trigger/end nodes are not stored steps, and there is no stored run-end
+  timestamp. `ready_at` is eligibility to execute, not a guaranteed send time;
+  `updated_at` is not a completion time.

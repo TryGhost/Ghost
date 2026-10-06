@@ -1,10 +1,9 @@
-import { AnalyticsOverviewPage, PostEditorPage, PostsPage } from '@/admin-pages';
 import { PostFactory, createPostFactory } from '@/data-factory';
+import { PostsPage } from '@/admin-pages';
 import { expect, test } from '@/helpers/playwright';
 import { usePerTestIsolation } from '@/helpers/playwright/isolation';
 
-// Per-field cases live in the Admin acceptance tests. The editor is still Ember,
-// so the list <-> editor handoff regressions below cross both routers.
+// Per-field cases live in the Admin acceptance tests.
 
 usePerTestIsolation();
 
@@ -84,54 +83,6 @@ test.describe('Ghost Admin - Posts List', () => {
     // A draft has no public link to copy, so it offers the preview one.
     await expect(postsPage.contextMenuItem('Copy preview link')).toBeVisible();
     await expect(postsPage.contextMenuItem('Add a tag')).toBeVisible();
-  });
-
-  /**
-   * Regression: aborting the Ember posts transition used to leave Ember's
-   * router believing it was still on the editor. Re-opening the *same*
-   * post was then a no-op transition and rendered nothing — an empty
-   * screen — while opening any other post masked it.
-   */
-  test('reopening the same post after going back still opens the editor', async ({ page }) => {
-    await postFactory.create({ title: 'Reopened post', status: 'draft', featured: false });
-    const editor = new PostEditorPage(page);
-
-    await postsPage.goto();
-    await postsPage.waitForList();
-    await postsPage.getPostByTitle('Reopened post').click();
-    await expect(editor.titleInput).toBeVisible();
-
-    await page.goBack();
-    await postsPage.waitForList();
-    await postsPage.getPostByTitle('Reopened post').click();
-
-    await expect(editor.titleInput).toBeVisible();
-  });
-
-  /**
-   * Regression: the editor labels its back button from the route Ember
-   * thinks it came from. Parking Ember on the catch-all only once left
-   * that stuck at whatever the admin booted on — usually /analytics — so
-   * a post opened from the list offered to send you to Analytics.
-   */
-  test('the editor offers to go back to the list, not wherever you were before', async ({
-    page,
-  }) => {
-    await postFactory.create({ title: 'Breadcrumb post', status: 'draft', featured: false });
-    const editor = new PostEditorPage(page);
-    const analytics = new AnalyticsOverviewPage(page);
-
-    // Waiting on the screen, not the URL: the URL matches before Ember
-    // has parked, and an unparked router is the bug's precondition.
-    await analytics.goto();
-    await expect(analytics.header).toBeVisible();
-
-    await postsPage.goto();
-    await postsPage.waitForList();
-    await postsPage.getPostByTitle('Breadcrumb post').click();
-    await expect(editor.titleInput).toBeVisible();
-
-    await expect(editor.backButton).toContainText('Posts');
   });
 
   test('deleting a post from the menu removes it from the list', async () => {

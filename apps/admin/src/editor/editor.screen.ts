@@ -1,12 +1,18 @@
 import { page } from 'vitest/browser';
+import { getScrollParent } from '@tryghost/shade/utils';
 import {
   addFacebookImageLabel,
   addFeatureImageLabel,
   addXImageLabel,
+  analyticsBackLink,
+  chooseDateButton,
   conflictCancelReloadButton,
   conflictCopyContentButton,
   conflictDiscardAndReloadButton,
   conflictReloadButton,
+  editFacebookImageButton,
+  editFeatureImageButton,
+  editXImageButton,
   editorBody,
   editorConflictBanner,
   editorConflictReloadConfirm,
@@ -17,6 +23,7 @@ import {
   editorHelpLink,
   editorLeaveDialog,
   editorLoadError,
+  editorNewerVersionNotice,
   editorNewsletterDetailsButton,
   editorPreviewButton,
   editorPublishButton,
@@ -30,14 +37,19 @@ import {
   editorScheduleCountdown,
   editorSaveErrorBanner,
   editorSecondaryInstance,
+  editorSentStatusButton,
   editorStatus,
   editorTitleInput,
   editorWordCount,
+  editorEmailSizeDetails,
+  editorEmailSizeWarning,
   facebookImageUnsplashButton,
   featureImageAltLabel,
+  featureImageHiddenIndicator,
   featureImageTkIndicator,
   featureImageUnsplashButton,
   leaveEditorButton,
+  newerVersionReloadButton,
   pagesBackLink,
   postEditor,
   postHistoryModal,
@@ -57,6 +69,7 @@ import {
   settingsAuthorsError,
   settingsAuthorsList,
   settingsAuthorsPicker,
+  settingsCanonicalUrlInput,
   settingsDeleteButton,
   settingsDeleteCancelButton,
   settingsDeleteConfirmButton,
@@ -103,6 +116,7 @@ import {
   settingsVisibilitySelect,
   showTitleLearnMoreLink,
   stayInEditorButton,
+  titleHiddenIndicator,
   tkIndicator,
   toggleFeatureImageAltButton,
   unsplashSearchHeading,
@@ -127,6 +141,9 @@ export const editorScreen = {
   /** An item in Koenig's `/` card menu, by its label. */
   cardMenuItem: (label: string) => page.getByRole('menuitem', { name: label }),
   wordCount: () => page.getByTestId(editorWordCount),
+  /** The footer's clipping flag, and the details hovering it reveals. */
+  emailSizeWarning: () => page.getByTestId(editorEmailSizeWarning),
+  emailSizeDetails: () => page.getByTestId(editorEmailSizeDetails),
   helpLink: () => page.getByRole('link', { name: editorHelpLink }),
   /** The document's own scroll surface, independent of the editor shell. */
   scrollPane: (): HTMLElement => {
@@ -148,6 +165,13 @@ export const editorScreen = {
   reauthSignIn: () => page.getByTestId(editorReauthDialog).getByRole('button', { name: 'Sign in' }),
   reauthCode: () => page.getByTestId(editorReauthDialog).getByLabelText('Verification code'),
   reauthVerify: () => page.getByTestId(editorReauthDialog).getByRole('button', { name: 'Verify' }),
+  /** The code step's Resend by the label it reads, which is Sent while it holds. */
+  reauthResend: (label: 'Resend' | 'Sent' = 'Resend') =>
+    page.getByTestId(editorReauthDialog).getByRole('button', { name: label, exact: true }),
+  codeSentToast: () =>
+    page
+      .getByRole('listitem')
+      .filter({ hasText: 'A new verification code has been sent to your email.' }),
   reauthError: () => page.getByTestId(editorReauthDialog).getByRole('alert'),
   cancelReauth: () => page.getByTestId(editorReauthDialog).getByRole('button', { name: 'Cancel' }),
   conflictBanner: () => page.getByTestId(editorConflictBanner),
@@ -164,12 +188,22 @@ export const editorScreen = {
     page
       .getByTestId(editorConflictReloadConfirm)
       .getByRole('button', { name: conflictCancelReloadButton }),
+  newerVersionNotice: () => page.getByTestId(editorNewerVersionNotice),
+  reloadNewerVersion: () =>
+    page
+      .getByTestId(editorNewerVersionNotice)
+      .getByRole('button', { name: newerVersionReloadButton }),
   status: () => page.getByTestId(editorStatus),
   /** The status line's ways back into the publish flow once a newsletter failed. */
   retryNewsletter: () =>
     page.getByTestId(editorStatus).getByRole('button', { name: editorRetryNewsletterButton }),
   viewNewsletterDetails: () =>
     page.getByTestId(editorStatus).getByRole('button', { name: editorNewsletterDetailsButton }),
+  /** The status line's way into the update flow once a post was sent. */
+  sentStatusButton: () =>
+    page
+      .getByTestId(editorStatus)
+      .getByRole('button', { name: editorSentStatusButton, exact: true }),
   pendingSaveNotice: () =>
     page.getByRole('status').filter({ hasText: 'Changes are waiting to save.' }),
 
@@ -178,6 +212,11 @@ export const editorScreen = {
     page.getByTestId(editorHeaderActions).getByRole('button', { name: editorPreviewButton }),
   publishButton: () =>
     page.getByTestId(editorHeaderActions).getByRole('button', { name: editorPublishButton }),
+  /** Publish while an open dialog hides the header from role queries. */
+  publishButtonBehindDialog: () =>
+    page
+      .getByTestId(editorHeaderActions)
+      .getByRole('button', { name: editorPublishButton, includeHidden: true }),
   updateButton: () =>
     page.getByTestId(editorHeaderActions).getByRole('button', { name: editorUpdateButton }),
   saveButton: () =>
@@ -186,6 +225,10 @@ export const editorScreen = {
     page.getByTestId(editorHeaderActions).getByRole('button', { name: editorUnpublishButton }),
   unscheduleButton: () =>
     page.getByTestId(editorHeaderActions).getByRole('button', { name: editorUnscheduleButton }),
+  /** A header button by its whole label, for a save button whose label tracks its save. */
+  headerButton: (label: string) =>
+    page.getByTestId(editorHeaderActions).getByRole('button', { name: label, exact: true }),
+  saveToast: (title: string) => page.getByRole('listitem').filter({ hasText: title }),
   publishInputsError: () => page.getByTestId(editorPublishInputsError),
   retryPublishInputs: () =>
     page.getByTestId(editorHeaderActions).getByRole('button', { name: 'Retry' }),
@@ -201,9 +244,25 @@ export const editorScreen = {
     page.getByTestId(editorLeaveDialog).getByRole('button', { name: leaveEditorButton }),
   notFound: () => page.getByRole('heading', { name: 'Page not found' }),
   titleTkIndicator: () => page.getByTestId(tkIndicator),
+  /** The marks a page that leaves out its title and feature image puts beside them. */
+  titleHiddenIndicator: () => page.getByTestId(titleHiddenIndicator),
+  featureImageHiddenIndicator: () => page.getByTestId(featureImageHiddenIndicator),
+  /** The tooltip a hovered control shows, by its text. */
+  tooltip: (text: string) => page.getByRole('tooltip', { name: text, exact: true }),
 
   settingsToggle: () => page.getByTestId(settingsMenuToggle),
   settingsSidebar: () => page.getByTestId(postSettingsSidebar),
+  /** The settings fields scroll independently of their fixed heading. */
+  settingsScrollPane: (): HTMLElement => {
+    const sidebar = page.getByTestId(postSettingsSidebar).element();
+    const pane = Array.from(sidebar.querySelectorAll('div')).find((element) =>
+      ['auto', 'scroll'].includes(getComputedStyle(element).overflowY),
+    );
+    if (!pane) {
+      throw new Error('The editor settings have no scroll surface');
+    }
+    return pane;
+  },
   settingsExcerpt: () => page.getByTestId(settingsExcerptInput),
   /** A section's failed-browse notice, wherever the sidebar shows one. */
   settingsLoadError: () => page.getByTestId(settingsLoadError),
@@ -229,6 +288,12 @@ export const editorScreen = {
   settingsTagsTokens: () => page.getByTestId(settingsTagsToken),
   settingsTagOption: (name: string | RegExp) =>
     page.getByTestId(settingsTagsList).getByRole('option', { name }),
+  settingsTagOptions: () => page.getByTestId(settingsTagsList).getByRole('option'),
+  /** Scrolls the open tag list to its last row. */
+  scrollSettingsTagListToEnd: (): void => {
+    const scroller = getScrollParent(page.getByTestId(settingsTagsList).element());
+    scroller?.scrollTo({ top: scroller.scrollHeight });
+  },
   removeSettingsTag: (name: string) =>
     page
       .getByTestId(settingsTagsField)
@@ -238,6 +303,10 @@ export const editorScreen = {
     page.getByRole('listbox').getByRole('option', { name: label, exact: true }),
   settingsTemplateSlugMatch: () => page.getByTestId(settingsTemplateSlugMatch),
   settingsPublishDate: () => page.getByTestId(settingsPublishDate),
+  settingsPublishDateCalendarButton: () =>
+    page
+      .getByTestId(postSettingsSidebar)
+      .getByRole('button', { name: chooseDateButton, exact: true }),
   settingsPublishTime: () => page.getByTestId(settingsPublishTime),
   settingsPublishDateError: () => page.getByTestId(settingsPublishDateError),
   settingsPublishDateNote: () => page.getByTestId(settingsPublishDateNote),
@@ -275,6 +344,7 @@ export const editorScreen = {
   settingsSubviewBack: (label: string) => page.getByRole('button', { name: label, exact: true }),
   settingsMetaTitle: () => page.getByTestId(settingsMetaTitleInput),
   settingsMetaDescription: () => page.getByTestId(settingsMetaDescriptionInput),
+  settingsCanonicalUrl: () => page.getByTestId(settingsCanonicalUrlInput),
   settingsSerpPreview: () => page.getByTestId(settingsSerpPreview),
   /** CodeMirror exposes its content as a textbox named by the editor's label. */
   settingsCodeInjection: (label: string) =>
@@ -289,6 +359,7 @@ export const editorScreen = {
   settingsXImageInput: () => page.getByLabelText(addXImageLabel),
   settingsXImageUnsplashButton: () => page.getByRole('button', { name: xImageUnsplashButton }),
   removeSettingsXImage: () => page.getByRole('button', { name: removeXImageButton }),
+  editSettingsXImage: () => page.getByRole('button', { name: editXImageButton }),
   settingsXTitle: () => page.getByTestId(settingsXTitleInput),
   settingsXDescription: () => page.getByTestId(settingsXDescriptionInput),
   settingsXPreview: () => page.getByTestId(settingsXPreview),
@@ -301,6 +372,7 @@ export const editorScreen = {
   settingsFacebookImageUnsplashButton: () =>
     page.getByRole('button', { name: facebookImageUnsplashButton }),
   removeSettingsFacebookImage: () => page.getByRole('button', { name: removeFacebookImageButton }),
+  editSettingsFacebookImage: () => page.getByRole('button', { name: editFacebookImageButton }),
 
   settingsPostHistory: () => page.getByTestId(settingsPostHistoryButton),
   postHistoryModal: () => page.getByTestId(postHistoryModal),
@@ -319,6 +391,11 @@ export const editorScreen = {
   postHistoryPreviewFeatureImage: () => page.getByTestId(postHistoryPreviewFeatureImage),
   /** The read-only Koenig rendering of the selected version. */
   postHistoryPreviewBody: () => page.getByTestId(postHistoryPreviewBody),
+  /** A card Koenig has selected in the preview, if any. */
+  postHistoryPreviewSelectedCard: () =>
+    document.querySelector(
+      `[data-testid="${postHistoryPreviewBody}"] [data-kg-card-selected="true"]`,
+    ),
   restoreConfirm: () => page.getByTestId(postHistoryRestoreConfirm),
   confirmRestore: () =>
     page
@@ -334,6 +411,7 @@ export const editorScreen = {
   unsplashSearchInput: () => page.getByPlaceholder('Search free high-resolution photos'),
   unsplashInsertImage: () => page.getByTestId(unsplashSearchModal).getByText('Insert image'),
   removeFeatureImage: () => page.getByRole('button', { name: removeFeatureImageButton }),
+  editFeatureImage: () => page.getByRole('button', { name: editFeatureImageButton }),
   featureImageAltToggle: () => page.getByRole('button', { name: toggleFeatureImageAltButton }),
   featureImageAltInput: () => page.getByLabelText(featureImageAltLabel),
   /** The caption's Koenig content editable. */
@@ -344,6 +422,7 @@ export const editorScreen = {
       name: postType === 'page' ? pagesBackLink : postsBackLink,
       exact: true,
     }),
+  analyticsBackLink: () => page.getByRole('link', { name: analyticsBackLink, exact: true }),
   /** Whether keyboard focus is inside the primary Koenig body. */
   bodyHasFocus: (): boolean =>
     document.querySelector(`[data-testid="${editorBody}"]`)?.contains(document.activeElement) ??

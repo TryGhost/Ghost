@@ -137,11 +137,14 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
   const embedPreviewUrl = config.security?.embedPreviewUrl || undefined;
   const { darkMode } = useFocusContext();
   const editorResource = useMemo(() => loadKoenig(), []);
-  const [transistorEnabled] = getSettingValues<boolean>(settings, ['transistor']);
+  const [transistorEnabled, unsplashEnabled] = getSettingValues<boolean>(settings, [
+    'transistor',
+    'unsplash',
+  ]);
 
   const cardConfig = useMemo(
     () => ({
-      unsplash: unsplashConfig,
+      unsplash: unsplashEnabled ? unsplashConfig : null,
       pinturaConfig,
       klipy: klipyConfig,
       embedPreviewUrl,
@@ -154,6 +157,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
       visibilitySettings: 'none',
     }),
     [
+      unsplashEnabled,
       unsplashConfig,
       pinturaConfig,
       klipyConfig,

@@ -2,6 +2,9 @@ const knex = require('knex').default;
 const assert = require('node:assert/strict');
 const moment = require('moment-timezone');
 const PostsStatsService = require('../../../../../core/server/services/stats/posts-stats-service');
+const {
+  applyBetterSqlite3Patches,
+} = require('../../../../../core/server/data/db/better-sqlite3-patches');
 
 /**
  * @typedef {object} TestPost
@@ -253,6 +256,11 @@ describe('PostsStatsService', function () {
   }
 
   beforeAll(async function () {
+    // getTopPostsViews binds an array into a raw `IN (?)`, which only works on
+    // better-sqlite3 with Ghost's dialect patches. Ghost's db connection applies
+    // them at boot; this knex instance is built outside of it.
+    applyBetterSqlite3Patches();
+
     db = knex({
       client: 'better-sqlite3',
       useNullAsDefault: true,

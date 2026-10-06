@@ -58,4 +58,56 @@ describe('loadKoenig', () => {
     expect(retried.read()).toBe(koenig);
     expect(fetchKoenigLexical).toHaveBeenCalledTimes(2);
   });
+
+  it('reads the version of the Koenig an editor loaded, and none before', async () => {
+    fetchKoenigLexical.mockResolvedValue({ KoenigComposer: () => null, version: '1.2.3' });
+
+    const { loadKoenig, loadedKoenigVersion } = await importLoader();
+    const resource = loadKoenig();
+
+    expect(loadedKoenigVersion()).toBeUndefined();
+    await settle(resource);
+    expect(loadedKoenigVersion()).toBe('1.2.3');
+  });
+});
+
+describe('preloadKoenig', () => {
+  beforeEach(() => {
+    vi.resetModules();
+    fetchKoenigLexical.mockReset();
+  });
+
+  it('hands the preloaded Koenig to the next editor without suspending or fetching again', async () => {
+    const koenig = { KoenigComposer: () => null };
+    fetchKoenigLexical.mockResolvedValue(koenig);
+
+    const { loadKoenig, preloadKoenig } = await importLoader();
+    await preloadKoenig();
+
+    expect(loadKoenig().read()).toBe(koenig);
+    expect(fetchKoenigLexical).toHaveBeenCalledTimes(1);
+  });
+
+  it('reads the version of the Koenig it preloaded', async () => {
+    fetchKoenigLexical.mockResolvedValue({ KoenigComposer: () => null, version: '1.2.3' });
+
+    const { loadedKoenigVersion, preloadKoenig } = await importLoader();
+    await preloadKoenig();
+
+    expect(loadedKoenigVersion()).toBe('1.2.3');
+  });
+
+  it('leaves a failed preload for the editor to load again', async () => {
+    const koenig = { KoenigComposer: () => null };
+    fetchKoenigLexical.mockRejectedValueOnce(new Error('offline'));
+    fetchKoenigLexical.mockResolvedValueOnce(koenig);
+
+    const { loadKoenig, preloadKoenig } = await importLoader();
+    await preloadKoenig().catch(() => undefined);
+
+    const resource = loadKoenig();
+    await settle(resource);
+    expect(resource.read()).toBe(koenig);
+    expect(fetchKoenigLexical).toHaveBeenCalledTimes(2);
+  });
 });

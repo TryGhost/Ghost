@@ -35,6 +35,7 @@ const GA_FEATURES = [
   'globalSearchReact',
   'postsListReact',
   'membersActivityReact',
+  'dunningWarnings',
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -55,23 +56,18 @@ const PRIVATE_FEATURES = [
   'stripeAutomaticTax',
   'importMemberTier',
   'csvContentImporter',
-  'adminUIRefresh',
-  'tagsX',
   'emailUniqueid',
   'improveSendingUI',
   'themeTranslation',
   'pictureImageFormats',
   'getHelperDeduplication',
   'membersCustomFields',
-  'memberLocationMap',
   'stripeCheckoutCollection',
-  'membersImportRedesign',
   'paywallImprovements',
   'selfServeArchives',
   'machinePayments',
   'editorReact',
   'authReact',
-  'dunningWarnings',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

@@ -2,19 +2,17 @@ import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import {
+  openPerformanceSidebar,
   flags,
   response,
   prepareStatuses,
   run,
-  setupEmbeddedRootFontSize,
 } from './run-list.test-utils';
-
-setupEmbeddedRootFontSize();
 
 const entries = () => page.getByRole('region', { name: 'Total entries' });
 const statuses = () => page.getByRole('region', { name: 'Automation status counts' });
 const statusCard = (name: string) => statuses().getByRole('button', { name, exact: true });
-const open = () => page.getByRole('button', { name: 'Show performance' }).click();
+const open = openPerformanceSidebar;
 const close = () => page.getByRole('button', { name: 'Hide performance' }).click();
 
 const runsRegion = () => page.getByRole('region', { name: 'Automation runs', exact: true });
@@ -22,6 +20,7 @@ const filteredRunsResponse = (
   status: 'in_progress' | 'completed' | 'exited_early',
   name: string,
 ) => ({
+  meta: { pagination: { limit: 50, next_cursor: null } },
   automation_runs: [
     {
       ...run(),
@@ -46,6 +45,7 @@ describe('Automation run status filtering', () => {
       return stats;
     });
     const all = fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?timezone=[^&]+$/, {
+      meta: { pagination: { limit: 50, next_cursor: null } },
       automation_runs: [run()],
     });
     const filteredRequests = (['in_progress', 'completed', 'exited_early'] as const).map((status) =>
@@ -89,6 +89,7 @@ describe('Automation run status filtering', () => {
   it('retains rows and summary while a status filter loads without growing the list', async () => {
     const summary = prepareStatuses();
     fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?timezone=[^&]+$/, {
+      meta: { pagination: { limit: 50, next_cursor: null } },
       automation_runs: [run()],
     });
     let finish!: () => void;
@@ -132,6 +133,7 @@ describe('Automation run status filtering', () => {
   it('supports Tab, Space and Enter on status cards', async () => {
     prepareStatuses();
     fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?timezone=[^&]+$/, {
+      meta: { pagination: { limit: 50, next_cursor: null } },
       automation_runs: [],
     });
     fakeAdminEndpoint(
@@ -149,12 +151,13 @@ describe('Automation run status filtering', () => {
     await expect.element(runsRegion()).toHaveTextContent('Keyboard member');
     await userEvent.keyboard('{Enter}');
     await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'false');
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
   });
 
   it('allows zero-count cards to show no matches and clear the filter', async () => {
     prepareStatuses();
     fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?timezone=[^&]+$/, {
+      meta: { pagination: { limit: 50, next_cursor: null } },
       automation_runs: [],
     });
     fakeAdminEndpoint(
@@ -163,21 +166,23 @@ describe('Automation run status filtering', () => {
       response('first', { inProgress: 118, completed: 0, exitedEarly: 54 }),
     );
     fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?timezone=[^&]+&status=completed$/, {
+      meta: { pagination: { limit: 50, next_cursor: null } },
       automation_runs: [],
     });
     await renderAdminApp('/automations/first', flags);
     await open();
     await expect.element(statusCard('Completed')).toHaveTextContent('0');
     await statusCard('Completed').click();
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No matching entries');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
     await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'true');
     await statusCard('Completed').click();
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
   });
 
   it('refetches a failed filter on reselection and supports explicit retry while idle', async () => {
     prepareStatuses();
     fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?timezone=[^&]+$/, {
+      meta: { pagination: { limit: 50, next_cursor: null } },
       automation_runs: [],
     });
     const request = fakeAdminEndpoint(
@@ -191,9 +196,9 @@ describe('Automation run status filtering', () => {
     await statusCard('Completed').click();
     await expect
       .element(runsRegion().getByRole('alert'))
-      .toHaveTextContent('Could not load automation runs');
+      .toHaveTextContent('Could not load entries');
     await statusCard('Completed').click();
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
     await statusCard('Completed').click();
     await expect.element(runsRegion().getByRole('alert')).toBeVisible();
     expect(request.requests).toHaveLength(2);

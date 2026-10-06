@@ -11,7 +11,7 @@ function subject(env = 'production') {
   const deps = {
     handlers: [],
     importers: [],
-    jobManager: { addJob: sinon.stub().resolves() },
+    jobsService: { dispatch: sinon.stub().resolves() },
     mailer: { send: sinon.stub().resolves() },
     config: { get: sinon.stub().returns(env) },
     urlUtils: {
@@ -62,7 +62,7 @@ describe('Site import execution', function () {
       events.push('email');
     });
     assert.deepEqual(
-      await manager.processImport({ data, cleanupDirectory: '/tmp/owned' }, options),
+      await manager.processImport(() => ({ data, cleanupDirectory: '/tmp/owned' }), options),
       { images: {}, data: {} },
     );
     assert.deepEqual(events, [
@@ -85,7 +85,7 @@ describe('Site import execution', function () {
     const { manager, deps } = subject();
     const error = new Error('import failed');
     sinon.stub(manager, 'preProcess').rejects(error);
-    assert.equal(await manager.processImport({ data: {} }, options), undefined);
+    assert.equal(await manager.processImport(() => ({ data: {} }), options), undefined);
     sinon.assert.calledWith(
       deps.logging.error,
       error,
@@ -95,6 +95,22 @@ describe('Site import execution', function () {
       deps.mailer.send,
       sinon.match({ subject: 'Your content import was unsuccessful' }),
     );
+  });
+
+  it('reports a failure to load the content like any other import failure', async function () {
+    const { manager, deps } = subject();
+    const error = new Error('load failed');
+    const imported = sinon.stub(manager, 'doImport');
+    assert.equal(await manager.processImport(() => Promise.reject(error), options), undefined);
+    sinon.assert.notCalled(imported);
+    sinon.assert.calledOnceWithExactly(
+      deps.logging.error,
+      error,
+      '[Background Job] site-content-import error',
+    );
+    sinon.assert.calledOnceWithMatch(deps.mailer.send, {
+      subject: 'Your content import was unsuccessful',
+    });
   });
 
   for (const stage of ['send', 'generateCompletionEmail']) {
@@ -107,7 +123,10 @@ describe('Site import execution', function () {
       } else {
         sinon.stub(manager, stage).throws(error);
       }
-      await assert.rejects(manager.processImport({ data: {} }, options), error);
+      await assert.rejects(
+        manager.processImport(() => ({ data: {} }), options),
+        error,
+      );
       sinon.assert.calledOnce(cleanup);
     });
   }
@@ -131,8 +150,8 @@ describe('Site import execution', function () {
       .onSecondCall()
       .resolves({});
     try {
-      const first = manager.processImport({ data: {}, cleanupDirectory: dirs[0] }, options);
-      await manager.processImport({ data: {}, cleanupDirectory: dirs[1] }, options);
+      const first = manager.processImport(() => ({ data: {}, cleanupDirectory: dirs[0] }), options);
+      await manager.processImport(() => ({ data: {}, cleanupDirectory: dirs[1] }), options);
       assert.equal(await fs.pathExists(dirs[0]), true);
       assert.equal(await fs.pathExists(dirs[1]), false);
       assert.equal(deps.mailer.send.callCount, 1);
@@ -150,7 +169,7 @@ describe('Site import execution', function () {
     const { manager, deps } = subject();
     sinon.stub(fs, 'remove').rejects(new Error('cleanup failed'));
     assert.deepEqual(
-      await manager.processImport({ data: {}, cleanupDirectory: '/tmp/owned' }, options),
+      await manager.processImport(() => ({ data: {}, cleanupDirectory: '/tmp/owned' }), options),
       {},
     );
     sinon.assert.calledOnce(deps.logging.error);
@@ -158,43 +177,47 @@ describe('Site import execution', function () {
   });
 
   it('logs when a queued import starts and how it ends', async function () {
+    const job = {
+      uploadKey: 'upload-key',
+      fileName: 'export.json',
+      emailRecipient: options.user.email,
+    };
     const started = '[Background Job] site-content-import started';
     const completed = /^\[Background Job\] site-content-import completed in \d+ms$/;
     const failed = /^\[Background Job\] site-content-import failed after \d+ms$/;
 
     const succeeds = subject();
-    sinon.stub(succeeds.manager, 'processImport').resolves({});
-    assert.deepEqual(await succeeds.manager.executeImport({ data: {} }, options), {});
+    sinon.stub(succeeds.manager, 'processImport').resolves({ images: {}, data: {} });
+    assert.deepEqual(await succeeds.manager.executeImport(job), { images: {}, data: {} });
     sinon.assert.calledWith(succeeds.deps.logging.info.firstCall, started);
-    sinon.assert.calledWith(succeeds.deps.logging.info.secondCall, sinon.match(completed));
+    sinon.assert.calledWith(
+      succeeds.deps.logging.info.secondCall,
+      {
+        system: {
+          event: 'site_content_import.completed',
+          import_groups: 2,
+          duration_ms: sinon.match.number,
+        },
+      },
+      sinon.match(completed),
+    );
 
     // A failed import is swallowed by processImport, which resolves undefined
     const fails = subject();
     sinon.stub(fails.manager, 'processImport').resolves(undefined);
-    assert.equal(await fails.manager.executeImport({ data: {} }, options), undefined);
+    assert.equal(await fails.manager.executeImport(job), undefined);
     sinon.assert.calledWith(fails.deps.logging.info.firstCall, started);
     sinon.assert.calledWith(fails.deps.logging.info.secondCall, sinon.match(failed));
+    sinon.assert.neverCalledWith(
+      fails.deps.logging.info,
+      sinon.match({ system: { event: 'site_content_import.completed' } }),
+    );
 
     const throws = subject();
     const error = new Error('email failed');
     sinon.stub(throws.manager, 'processImport').rejects(error);
-    await assert.rejects(throws.manager.executeImport({ data: {} }, options), error);
+    await assert.rejects(throws.manager.executeImport(job), error);
     sinon.assert.calledWith(throws.deps.logging.error, error, sinon.match(failed));
-  });
-
-  it('queues the loaded import outside testing and runs it when the job executes', async function () {
-    const { manager, deps } = subject();
-    const loaded = { data: { data: { posts: [] } }, cleanupDirectory: '/tmp/owned' };
-    sinon.stub(manager, 'loadFile').resolves(loaded);
-    const execute = sinon.stub(manager, 'executeImport').resolves({});
-
-    await manager.importFromFile({ name: 'export.json' }, options);
-
-    sinon.assert.calledWith(deps.logging.info, '[Background Job] site-content-import queued');
-    sinon.assert.calledOnceWithMatch(deps.jobManager.addJob, { offloaded: false });
-    sinon.assert.notCalled(execute);
-    await deps.jobManager.addJob.firstCall.args[0].job();
-    sinon.assert.calledOnceWithExactly(execute, loaded, options);
   });
 
   it('keeps testing calls inline without email and explicit direct calls inline with email', async function () {
@@ -202,7 +225,7 @@ describe('Site import execution', function () {
       const { manager, deps } = subject(env);
       const direct = env === 'production' ? { runningInJob: true } : {};
       await manager.importFromFile(null, { ...options, ...direct, data: {} });
-      sinon.assert.notCalled(deps.jobManager.addJob);
+      sinon.assert.notCalled(deps.jobsService.dispatch);
       assert.equal(deps.mailer.send.callCount, env === 'production' ? 1 : 0);
     }
   });
@@ -212,7 +235,7 @@ describe('Site import execution', function () {
     const error = new Error('invalid upload');
     sinon.stub(manager, 'loadFile').rejects(error);
     await assert.rejects(manager.importFromFile({ name: 'bad.json' }, options), error);
-    sinon.assert.notCalled(deps.jobManager.addJob);
+    sinon.assert.notCalled(deps.jobsService.dispatch);
     sinon.assert.notCalled(deps.mailer.send);
   });
 });

@@ -77,13 +77,33 @@ export type AutomationBrowseResult = AutomationSummary & {
 export type Automation = AutomationSummary & {
   actions: AutomationAction[];
   edges: AutomationEdge[];
-};
+} & (
+    | {
+        trigger_tier_scope: null | 'free' | 'all_paid';
+        trigger_tier_ids: null;
+      }
+    | {
+        trigger_tier_scope: 'selected_paid';
+        trigger_tier_ids: string[];
+      }
+  );
 
 export type EditAutomationData = {
+  name?: string;
+  description?: string;
   status: string;
   actions: AutomationAction[];
   edges: AutomationEdge[];
-};
+} & (
+  | {
+      trigger_tier_scope?: null | 'free' | 'all_paid';
+      trigger_tier_ids?: null;
+    }
+  | {
+      trigger_tier_scope: 'selected_paid';
+      trigger_tier_ids: string[];
+    }
+);
 
 export type AutomatedEmailRecipientWithMailgunId = {
   id: string;
@@ -117,6 +137,7 @@ type AutomationStepBase = {
   automation_run_id: string;
   automation_id: string;
   automation_trigger_tier_scope: null | AutomationTriggerTierScope;
+  automation_trigger_tier_ids: string[];
   automation_status: 'inactive' | 'active';
   member_id: string | null;
   member_email: string;
@@ -142,12 +163,46 @@ export type AutomationStepToRun = ReadonlyDeep<
     )
 >;
 
-export type AutomationStepTerminalStatus =
-  | 'automation disabled'
-  | 'failed'
-  | 'finished'
-  | 'member changed status'
-  | 'member unsubscribed';
+export const AUTOMATION_STEP_TERMINAL_STATUSES = [
+  'automation disabled',
+  'failed',
+  'finished',
+  'member changed status',
+  'member unsubscribed',
+] as const;
+
+export type AutomationStepTerminalStatus = (typeof AUTOMATION_STEP_TERMINAL_STATUSES)[number];
+export type AutomationStepStatus = 'pending' | AutomationStepTerminalStatus;
+
+export type AutomationRunHistoryAction =
+  | WaitAction
+  | (Pick<SendEmailAction, 'id' | 'type'> & {
+      data: Pick<SendEmailAction['data'], 'email_subject' | 'email_lexical'>;
+    });
+
+export type AutomationRunHistoryStep = {
+  id: string;
+  automation_action_revision_id: string;
+  created_at: string;
+  updated_at: string;
+  ready_at: string;
+  started_at: string | null;
+  finished_at: string | null;
+  email_sent_at: string | null;
+  email_delivered_at: string | null;
+  status: AutomationStepStatus;
+  action: AutomationRunHistoryAction;
+};
+
+export type AutomationRunHistory = {
+  id: string;
+  automation_id: string;
+  created_at: string;
+  member: AutomationRunMember | null;
+  status: 'in_progress' | 'completed' | 'exited_early';
+  failed: boolean;
+  steps: AutomationRunHistoryStep[];
+};
 
 export type AutomationRunMember = {
   id: string;
@@ -169,20 +224,27 @@ export type AutomationsRepository = {
   getNumberOfAutomations(): Promise<number>;
   exists(id: string): Promise<boolean>;
   getById(id: string): Promise<Automation | null>;
+  getRunHistory(automationId: string, runId: string): Promise<AutomationRunHistory | null>;
   getRunMembers(
     automationId: string,
     runIds: string[],
+    search?: string,
   ): Promise<Map<string, AutomationRunMember | null>>;
+  // Null requests candidate scanning; an empty array means no matches.
+  probeMemberSearch(automationId: string, query: string): Promise<string[] | null>;
   getAutomationActionLinks(
     automationId: string,
     actionId: string,
   ): Promise<AutomationActionLink[] | null>;
   edit(id: string, data: EditAutomationData): Promise<Automation | null>;
-  trigger(options: {
-    memberEmail: string;
-    memberId: string;
-    memberStatus: 'free' | 'paid';
-  }): Promise<void>;
+  trigger(
+    options: ReadonlyDeep<{
+      memberEmail: string;
+      memberId: string;
+      memberStatus: 'free' | 'paid';
+      memberTierIds: string[];
+    }>,
+  ): Promise<void>;
   /**
    * Select the steps we want to run and return the next time any remaining
    * pending step should be polled, if any.

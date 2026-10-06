@@ -125,16 +125,20 @@ export function useUnsavedChangesGuard({
     }
     return shouldBlock;
   });
-  const anchorGuard = useHashLinkNavigationGuard(when, () => {
-    blockedNavigationRef.current = true;
-  });
-  const popGuard = useHistoryPopNavigationGuard(when && guardHistoryPops, () => {
+  // Only the first exit is held; anchors and pops that follow it are dropped.
+  const claimExit = () => {
     if (blockedNavigationRef.current) {
       return false;
     }
     blockedNavigationRef.current = true;
     return true;
-  });
+  };
+  const anchorGuard = useHashLinkNavigationGuard(when, claimExit);
+  const popGuard = useHistoryPopNavigationGuard(
+    when && guardHistoryPops,
+    claimExit,
+    () => blockedNavigationRef.current,
+  );
 
   const isBlockedByIntercept = blocker.state === 'blocked' && blockedByInterceptRef.current;
   const isBlocked =

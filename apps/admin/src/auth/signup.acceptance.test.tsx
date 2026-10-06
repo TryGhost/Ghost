@@ -62,10 +62,8 @@ it('checks each field as it is left, and the whole form on submit', async () => 
     .toBeVisible();
 
   await authScreen.createAccountButton().click();
-  await expect.element(authScreen.text('Please enter a name.')).toBeVisible();
-  await expect
-    .element(authScreen.text('Please fill out the form to complete your signup'))
-    .toBeVisible();
+  await expect.element(authScreen.text('Enter a name.')).toBeVisible();
+  await expect.element(authScreen.text('Fill out the form to complete your signup')).toBeVisible();
 });
 
 it('creates the account, signs in and reloads', async () => {

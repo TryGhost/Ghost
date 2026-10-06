@@ -8,18 +8,17 @@ const statusLabels = {
   exited_early: 'Exited early',
 } as const;
 
-export const mapAutomationRuns = (runs: AutomationRun[]) =>
-  runs.map((run) => ({
-    id: run.id,
-    memberName: run.member ? formatMemberName(run.member) : 'Deleted member',
-    memberEmail: run.member?.name?.trim() ? run.member.email : undefined,
-    enteredAt: run.created_at,
-    enteredLabel: formatTimestamp(run.created_at),
-    enteredDescription: new Date(run.created_at).toLocaleString(undefined, {
-      dateStyle: 'full',
-      timeStyle: 'long',
-    }),
-    status: run.status,
-    failed: run.failed,
-    statusLabel: run.failed ? 'Exited early — Failed' : statusLabels[run.status],
-  }));
+export const mapAutomationRun = (run: AutomationRun) => ({
+  id: run.id,
+  memberName: run.member ? formatMemberName(run.member) : 'Deleted member',
+  memberEmail: run.member?.name?.trim() ? run.member.email : undefined,
+  enteredAt: run.created_at,
+  enteredLabel: formatTimestamp(run.created_at),
+  enteredDescription: new Date(run.created_at).toLocaleString(undefined, {
+    dateStyle: 'full',
+    timeStyle: 'long',
+  }),
+  status: run.status,
+  failed: run.failed,
+  statusLabel: run.failed ? 'Exited early — Failed' : statusLabels[run.status],
+});

@@ -7,7 +7,7 @@ const moment = require('moment');
 const models = require('../../models');
 const ghostBookshelf = require('../../models/base');
 const urlUtils = require('../../../shared/url-utils').default;
-const mail = require('../mail');
+const mail = require('../../lib/mail');
 
 const messages = {
   userNotFound: 'User not found.',

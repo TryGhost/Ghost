@@ -1,6 +1,8 @@
+import type { Controller, Frame } from '@tryghost/api-framework';
 import * as automationsApi from '../../services/automations/automations-api';
 
-/** @type {import('@tryghost/api-framework').Controller} */
+type ReadFrame = Frame<{ data: { id: string } }>;
+
 const controller = {
   docName: 'automation_performance_stats',
   read: {
@@ -8,10 +10,10 @@ const controller = {
     data: ['id'],
     options: ['date_from', 'date_to', 'timezone'],
     permissions: { docName: 'automations', method: 'read' },
-    async query(frame: { data: { id: string }; options: Record<string, unknown> }) {
+    async query(frame: ReadFrame) {
       return await automationsApi.readPerformanceStats(frame.data.id, frame.options);
     },
   },
-};
+} satisfies Controller<{ read: ReadFrame }>;
 
 module.exports = controller;

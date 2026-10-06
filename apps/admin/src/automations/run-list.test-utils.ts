@@ -1,23 +1,12 @@
-import { afterAll, beforeAll } from 'vitest';
-import { fakeAdminEndpoint } from '@test-utils/acceptance';
+import { expect } from 'vitest';
+import { automationsScreen } from './automations.screen';
+import { page } from 'vitest/browser';
+import { fakeAdminEndpoint, settleTransitions } from '@test-utils/acceptance';
 import type {
   AutomationDetail,
   AutomationPerformanceStats,
   AutomationRun,
 } from '@tryghost/admin-x-framework/api/automations';
-
-// Production inherits this root sizing from Ember's patterns/global.css.
-// This full-app test host does not load Ember's stylesheet.
-export function setupEmbeddedRootFontSize() {
-  let originalRootFontSize: string;
-  beforeAll(() => {
-    originalRootFontSize = document.documentElement.style.fontSize;
-    document.documentElement.style.fontSize = '62.5%';
-  });
-  afterAll(() => {
-    document.documentElement.style.fontSize = originalRootFontSize;
-  });
-}
 
 export const flags = {
   labs: { automations: true, automationRunAnalytics: true, automationsTinybirdSync: true },
@@ -65,7 +54,25 @@ export const prepareStatuses = (id = 'first') => {
   return fakeAdminEndpoint(
     'GET',
     new RegExp(`/automations/${id}/performance-stats/\\?`),
-    response(id),
+    ({ url }) => {
+      const body = response(id);
+      const stats = body.automation_performance_stats[0];
+      const params = new URL(url).searchParams;
+      const start = params.get('date_from');
+      const end = params.get('date_to');
+      if (start && end) {
+        // Requests use inclusive calendar dates; response windows end exclusively.
+        const dayMs = 86400000;
+        const days = (Date.parse(end) - Date.parse(start)) / dayMs + 1;
+        stats.entry_window.date_from = start;
+        stats.entry_window.date_to = new Date(Date.parse(end) + dayMs).toISOString().slice(0, 10);
+        stats.entries = Array.from({ length: days }, (_, day) => ({
+          date: new Date(Date.parse(start) + day * dayMs).toISOString().slice(0, 10),
+          count: day === days - 1 ? stats.total_run_count : 0,
+        }));
+      }
+      return body;
+    },
   );
 };
 
@@ -77,3 +84,19 @@ export const run = (overrides: Partial<AutomationRun> = {}): AutomationRun => ({
   member: { id: 'member', name: 'Noah Bennett', email: 'noah@example.com' },
   ...overrides,
 });
+
+export const runsScroller = () => page.getByTestId('automation-runs-scroll').element();
+
+export const scrollRunsToEnd = () => {
+  const scroller = runsScroller();
+  scroller.scrollTop = scroller.scrollHeight;
+  scroller.dispatchEvent(new Event('scroll'));
+};
+
+/** Opens the moving panel and waits until its controls can be clicked. */
+export async function openPerformanceSidebar(): Promise<void> {
+  await settleTransitions();
+  await automationsScreen.showPerformanceButton().click();
+  await expect.element(automationsScreen.performanceHeading()).toBeVisible();
+  await settleTransitions();
+}

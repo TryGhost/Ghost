@@ -10,7 +10,7 @@ const { agentProvider, fixtureManager } = require('../../../utils/e2e-framework'
 const { knex }: { knex: Knex } = require('../../../utils');
 const emailAnalytics = require('../../../../core/server/services/email-analytics');
 const jobsService = require('../../../../core/server/services/jobs-service');
-const MailgunClient = require('../../../../core/server/services/lib/mailgun-client');
+const MailgunClient = require('../../../../core/server/lib/mailgun/mailgun-client');
 const logging = require('@tryghost/logging');
 const EmailAnalyticsFetchLatestJob =
   require('../../../../core/server/services/email-analytics/jobs/email-analytics-fetch-latest-job').default;

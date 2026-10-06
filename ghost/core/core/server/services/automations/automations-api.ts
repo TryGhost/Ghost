@@ -1,3 +1,8 @@
+import {
+  normalizeMemberSearch,
+  searchCursorScope,
+  browseMemberSearch,
+} from './automation-member-search';
 import { decodeRunCursor, encodeRunCursor, type RunCursorScope } from './automation-run-cursor';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
@@ -37,6 +42,7 @@ const messages = {
   tinybirdPerformanceStatsFailed: 'Could not load Tinybird automation performance stats.',
 
   automationNotFound: 'Automation not found.',
+  runNotFound: 'Automation run not found.',
   automationActionNotFound: 'Automation action not found.',
   invalidAutomationPayload: 'Automation edit payload must include status, actions, and edges.',
   invalidAutomationStatus: 'Automation status must be one of: active, inactive.',
@@ -76,14 +82,32 @@ const edgeSchema = z.object({
   target_action_id: objectIdSchema,
 });
 
-const editAutomationDataSchema = z.object({
-  status: z.enum(['active', 'inactive']),
-  actions: z
-    .array(z.discriminatedUnion('type', [waitActionSchema, sendEmailActionSchema]))
-    .min(1)
-    .max(MAX_AUTOMATION_ACTIONS),
-  edges: z.array(edgeSchema),
-});
+const editAutomationDataSchema = z
+  .object({
+    name: z.string().trim().min(1).max(191).optional(),
+    description: z.string().trim().max(2000).optional(),
+    status: z.enum(['active', 'inactive']),
+    actions: z
+      .array(z.discriminatedUnion('type', [waitActionSchema, sendEmailActionSchema]))
+      .min(1)
+      .max(MAX_AUTOMATION_ACTIONS),
+    edges: z.array(edgeSchema),
+  })
+  .and(
+    z.discriminatedUnion('trigger_tier_scope', [
+      z.object({
+        trigger_tier_scope: z.enum(['free', 'all_paid']).nullable().optional(),
+        trigger_tier_ids: z.null().optional(),
+      }),
+      z.object({
+        trigger_tier_scope: z.literal('selected_paid'),
+        trigger_tier_ids: z
+          .array(objectIdSchema)
+          .min(1)
+          .transform((ids) => [...new Set(ids)]),
+      }),
+    ]),
+  );
 
 const repository = createDatabaseAutomationsRepository({
   knex,
@@ -198,11 +222,13 @@ export async function readPerformanceStats(automationId: string, options: unknow
 
 export async function browseRuns(automationId: string, options: Record<string, unknown> = {}) {
   const { status, order, cursor } = options;
-  const { window: entryWindow, timezone } = parseEntryStatsOptions(options);
+  const query = normalizeMemberSearch(options.search);
+  // Initial member search spans all time and statuses; browse filters stay independent.
+  const { window: entryWindow, timezone } = parseEntryStatsOptions(query ? {} : options);
   const parsedStatus = z
     .enum(['in_progress', 'completed', 'exited_early'])
     .optional()
-    .safeParse(status);
+    .safeParse(query ? undefined : status);
   if (!parsedStatus.success) {
     throw new errors.ValidationError({
       message: tpl(messages.invalidRunStatus),
@@ -222,10 +248,19 @@ export async function browseRuns(automationId: string, options: Record<string, u
     status: parsedStatus.data ?? null,
     direction: parsedOrder.data === 'created_at asc' ? 'asc' : 'desc',
   };
+  const searchScope = query
+    ? searchCursorScope(
+        requestedScope,
+        config.get('tinybird:stats:id') || settingsCache.get('site_uuid'),
+        query,
+      )
+    : undefined;
   const continuation =
     cursor === undefined
       ? undefined
-      : decodeRunCursor(cursor, requestedScope, { preserveEndDate: options.date_to === undefined });
+      : decodeRunCursor(cursor, searchScope ?? requestedScope, {
+          preserveEndDate: !query && options.date_to === undefined,
+        });
   const scope = continuation?.scope ?? requestedScope;
   const exists = await repository.exists(automationId);
   if (!exists) {
@@ -234,6 +269,10 @@ export async function browseRuns(automationId: string, options: Record<string, u
   const client = getTinybirdClient();
   if (!client) {
     throw new errors.InternalServerError({ message: tpl(messages.tinybirdRunsFailed) });
+  }
+
+  if (searchScope) {
+    return browseMemberSearch(repository, client, searchScope, query, continuation?.position);
   }
 
   // One extra row tells us whether a next page exists without a separate count.
@@ -261,6 +300,18 @@ export async function browseRuns(automationId: string, options: Record<string, u
     data: runs.map((run) => ({ ...run, member: members.get(run.id) ?? null })),
     meta: { pagination: { limit: RUN_PAGE_SIZE, next_cursor: nextCursor } },
   };
+}
+
+export async function readRunHistory(automationId: string, runId: string) {
+  const exists = await repository.exists(automationId);
+  if (!exists) {
+    throw new errors.NotFoundError({ message: tpl(messages.automationNotFound) });
+  }
+  const history = await repository.getRunHistory(automationId, runId);
+  if (!history) {
+    throw new errors.NotFoundError({ message: tpl(messages.runNotFound) });
+  }
+  return history;
 }
 
 export async function browseActionLinks(automationId: string, actionId: string) {

@@ -13,7 +13,7 @@ describe('hasUnsavedWork', () => {
     const states: SaveEngineState[] = [
       { kind: 'idle' },
       { kind: 'debouncing' },
-      { kind: 'halted' },
+      { kind: 'halted', error: { kind: 'not-found', message: 'Post not found.' } },
       { kind: 'crashed' },
       { kind: 'disposed' },
     ];

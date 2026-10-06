@@ -24,7 +24,7 @@ const messages = {
 };
 
 const GLOBAL_VALIDATORS: Record<string, false | Dictionary> = {
-  id: { matches: /^(?:[a-f\d]{24}|1|me)$/i },
+  id: { matches: /^(?:[a-f\d]{24}|me)$/i },
   page: { matches: /^\d+$/ },
   limit: { matches: /^(?:\d+|all)$/ },
   from: { isDate: true },

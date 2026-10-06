@@ -1,6 +1,15 @@
+import type { InfiniteData } from '@tanstack/react-query';
 import ObjectId from 'bson-objectid';
+import { useMemo } from 'react';
 import { z } from 'zod';
-import { Meta, createMutation, createQuery, createQueryWithId } from '../utils/api/hooks';
+import { apiUrl } from '../utils/api/fetch-api';
+import {
+  Meta,
+  createInfiniteQuery,
+  createMutation,
+  createQuery,
+  createQueryWithId,
+} from '../utils/api/hooks';
 import type { ReadonlyDeep } from 'type-fest';
 
 export type AutomationStatus = 'active' | 'inactive';
@@ -198,25 +207,80 @@ export const AutomationRunsResponseSchema = z.object({
       (runs) => new Set(runs.map((run) => run.id)).size === runs.length,
       'Run IDs must be unique',
     ),
+  meta: z.object({
+    pagination: z
+      .object({
+        state: z.enum(['scanning', 'more', 'exhausted']).optional(),
+        limit: z.number().int().positive(),
+        next_cursor: z.string().min(1).nullable(),
+      })
+      .refine((pagination) => pagination.state !== 'scanning' || pagination.next_cursor !== null, {
+        message: 'Scanning requires a continuation cursor',
+      }),
+  }),
 });
 
 export type AutomationRun = z.infer<typeof AutomationRunSchema>;
 export type AutomationRunStatusFilter = AutomationRun['status'];
+export type AutomationRunsResponseType = z.infer<typeof AutomationRunsResponseSchema>;
+
+type AutomationRunsResult = { runs: AutomationRun[]; scanning: boolean };
 
 export const useBrowseAutomationRuns = (
   id: string,
   queryScope: string,
   options: Parameters<
-    ReturnType<typeof createQueryWithId<z.infer<typeof AutomationRunsResponseSchema>>>
-  >[1],
+    ReturnType<typeof createInfiniteQuery<AutomationRunsResult, AutomationRunsResponseType>>
+  >[0],
 ) => {
-  // Keep results from different sidebar visits and filter selections in separate cache entries.
-  const useQuery = createQueryWithId<z.infer<typeof AutomationRunsResponseSchema>>({
+  const path = `/automations/${id}/runs/`;
+  const url = apiUrl(path, options?.searchParams);
+  const seenCursors = useMemo(() => new Set<string>(), [queryScope, url]);
+  // A new list interaction fetches fresh data even if an earlier request is still pending.
+  const useQuery = createInfiniteQuery<AutomationRunsResult, AutomationRunsResponseType>({
     dataType: `AutomationRunsResponseType:${queryScope}`,
-    path: (automationId) => `/automations/${automationId}/runs/`,
-    parseResponse: (data) => AutomationRunsResponseSchema.parse(data),
+    path,
+    parseResponse: (data, params) => {
+      const response = AutomationRunsResponseSchema.parse(data);
+      // Refetch starts a new traversal; retrying a failed later page keeps its history.
+      if (!params.cursor) {
+        seenCursors.clear();
+      } else {
+        seenCursors.add(params.cursor);
+      }
+      const cursor = response.meta.pagination.next_cursor;
+      if (cursor) {
+        if (seenCursors.has(cursor)) {
+          throw new Error('Automation run pagination repeated a cursor');
+        }
+        seenCursors.add(cursor);
+      }
+      return response;
+    },
+    returnData: (originalData) => {
+      const { pages } = originalData as InfiniteData<AutomationRunsResponseType>;
+      // Pages are live reads, not a snapshot; show a run once if a later page repeats it.
+      const seen = new Set<string>();
+      const runs = pages
+        .flatMap((page) => page.automation_runs)
+        .filter((run) => {
+          if (seen.has(run.id)) {
+            return false;
+          }
+          seen.add(run.id);
+          return true;
+        });
+      return {
+        runs,
+        scanning: pages.at(-1)?.meta.pagination.state === 'scanning',
+      };
+    },
+    defaultNextPageParams: (page, params) => {
+      const cursor = page.meta.pagination.next_cursor;
+      return cursor ? { ...params, cursor } : undefined;
+    },
   });
-  return useQuery(id, options);
+  return useQuery(options);
 };
 
 const useBrowseAutomationActionLinksQuery = createQueryWithId<AutomationActionLinksResponseType>({

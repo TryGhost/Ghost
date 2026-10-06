@@ -1,8 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as Sentry from '@sentry/react';
 import { APIError, ServerUnreachableError } from '@tryghost/admin-x-framework/errors';
+import { buildLexicalParagraph } from '@tryghost/test-data';
 import type { SaveCommand, SaveError } from '@/editor/engine/save-engine';
 import type { EditorSaveFailure } from '@/editor/session/editor-session';
+import { body, record, sessionHarness } from '@/editor/session/__test-utils__/session-harness';
+import { preloadKoenig } from '@/settings/components/koenig-loader';
 import {
   reportEditorError,
   reportKoenigError,
@@ -13,6 +16,10 @@ import {
 } from './report-error';
 
 vi.mock('@sentry/react', () => ({ captureException: vi.fn(), captureMessage: vi.fn() }));
+
+vi.mock('@/utils/fetch-koenig-lexical', () => ({
+  fetchKoenigLexical: () => Promise.resolve({ version: '1.2.3' }),
+}));
 
 const FIELD: SaveCommand = {
   kind: 'field',
@@ -73,8 +80,8 @@ describe('reportEditorError', () => {
     expect(Sentry.captureException).toHaveBeenCalledWith(error, undefined);
   });
 
-  it('tags Koenig failures with the Lexical version', () => {
-    window['@tryghost/koenig-lexical'] = { version: '1.2.3' };
+  it('tags Koenig failures with the Lexical version', async () => {
+    await preloadKoenig();
     const error = new Error('lexical exploded');
 
     reportKoenigError(error);
@@ -87,8 +94,8 @@ describe('reportEditorError', () => {
 });
 
 describe('reportKoenigRenderError', () => {
-  it('tags a boundary crash as Lexical and keeps where in the tree it happened', () => {
-    window['@tryghost/koenig-lexical'] = { version: '1.2.3' };
+  it('tags a boundary crash as Lexical and keeps where in the tree it happened', async () => {
+    await preloadKoenig();
     const error = new Error('render exploded');
 
     reportKoenigRenderError(error, { componentStack: '\n    at KoenigComposer' });
@@ -217,6 +224,7 @@ describe('reportSaveFailure', () => {
   it.each<[string, SaveError]>([
     ['a validation failure', { kind: 'validation', message: 'Title is too long' }],
     ['a host limit', { kind: 'host-limit', message: 'Upgrade required' }],
+    ['a writer who lost access', { kind: 'forbidden', message: 'Permission error' }],
     [
       'an unreachable server',
       { kind: 'transport', message: 'Unreachable', cause: new ServerUnreachableError() },
@@ -336,12 +344,15 @@ describe('reportShownAlert', () => {
 
 describe('reportLeaveConfirmation', () => {
   it('reports the leave prompt with why the post counted as unsaved', () => {
+    const difference = { at: 104, before: '"text":"Hello', live: ' and more",', other: '",' };
     reportLeaveConfirmation(
       {
         postId: 'post-1',
         status: 'draft',
         engineState: 'error',
         reasons: ['POST_HAS_ERROR', 'SCRATCH_DIVERGED_FROM_SECONDARY'],
+        dirtyFields: ['lexical', 'custom_excerpt'],
+        bodyDiff: { saved: difference, baseline: difference },
       },
       'post',
     );
@@ -354,7 +365,40 @@ describe('reportLeaveConfirmation', () => {
         engine_state: 'error',
         leave_reasons: 'POST_HAS_ERROR,SCRATCH_DIVERGED_FROM_SECONDARY',
       },
-      extra: { post_id: 'post-1', reasons: ['POST_HAS_ERROR', 'SCRATCH_DIVERGED_FROM_SECONDARY'] },
+      extra: {
+        post_id: 'post-1',
+        reasons: ['POST_HAS_ERROR', 'SCRATCH_DIVERGED_FROM_SECONDARY'],
+        dirty_fields: ['lexical', 'custom_excerpt'],
+        body_diff: { saved: difference, baseline: difference },
+      },
     });
+  });
+
+  it('sends where a long body diverged as short excerpts, never the documents', async () => {
+    const words = Array.from({ length: 2000 }, (_, index) => `word${index}`);
+    const loaded = buildLexicalParagraph(words.join(' '));
+    const { session } = sessionHarness({
+      record: record({ status: 'published', lexical: loaded }),
+      baseline: loaded,
+      onLeaveConfirmed: (leave) => reportLeaveConfirmation(leave, 'post'),
+    });
+    words[1000] = 'edited';
+    session.patchLexical(body(words.join(' ')));
+    session.patchExcerpt('A new excerpt');
+
+    expect(await session.leaveRequested()).toBe('confirm');
+
+    const [, context] = vi.mocked(Sentry.captureMessage).mock.calls[0];
+    const { extra } = context as { extra: Record<string, unknown> };
+    expect(extra.dirty_fields).toEqual(['lexical', 'custom_excerpt']);
+    const edit = {
+      live: expect.stringMatching(/^edited word1001 /) as unknown,
+      other: expect.stringMatching(/^word1000 word1001 /) as unknown,
+    };
+    expect(extra.body_diff).toMatchObject({ saved: edit, baseline: edit });
+    const sent = JSON.stringify(extra);
+    expect(sent.length).toBeLessThan(2048);
+    expect(sent).not.toContain('word0 ');
+    expect(sent).not.toContain('word1999');
   });
 });

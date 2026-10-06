@@ -2,6 +2,20 @@
 
 Full-app tests: the **real admin app** (the same provider stack as `src/main.tsx`) booted in a **real Chromium** instance via Vitest Browser Mode, against a **fake Ghost Admin API** — a simplified working implementation served in-browser through MSW, the same test-double family as e2e's fake-stripe-server and fake-mailgun-server. The shell's boot chrome (settings/config/site/me, sidebar members count, active theme, the ghost.org changelog feed) is handled by default — specs never mention it.
 
+CI uploads `admin-acceptance-results-<shard>` artifacts containing Vitest's JSON
+report at `apps/admin/test-results/acceptance.json`, for both passing and failing
+runs. Each shard's GitHub Actions summary shows test counts, elapsed suite time,
+failed tests, and the slowest files and tests. Use the JSON report's suite
+start/end times and assertion durations to compare shard work, identify slow
+journeys, and investigate timeouts. A failure alone does not prove flakiness;
+compare repeated runs of the same commit. Console output stays minimal;
+failure screenshots remain separate artifacts.
+
+Local runs also write the JSON report. A successful Nx cache hit restores
+`test-results/acceptance.json` for the requested shard, so CI summaries and
+artifacts remain available when the browser suite is reused. Report timings
+describe the original execution; use `--skip-nx-cache` when measuring a new run.
+
 ## Anatomy of a spec
 
 Use [`src/tags/tags.acceptance.test.tsx`](../../src/tags/tags.acceptance.test.tsx) as the happy-path template, and [`src/whats-new/whats-new.acceptance.test.tsx`](../../src/whats-new/whats-new.acceptance.test.tsx) as the worked example for the escape hatches (boot override, external feed, non-browse admin endpoint).
@@ -61,6 +75,10 @@ await renderAdminApp("/tags", {labs: {someFlag: true}});
 // save that lands proves it was sent without waiting (`withoutAutosave()`), or
 // autosave fires at once (`withFastAutosave()`):
 await renderAdminApp("/editor/post/abc123", withoutAutosave({labs: {editorReact: true}}));
+
+// Router state the screen would have been navigated to with, e.g. the editor
+// opened from an analytics screen:
+await renderAdminApp("/editor/post/abc123", {labs: {editorReact: true}, locationState: {editorReturn: "/analytics"}});
 
 // Persisted user state, e.g. what's-new preferences:
 const me = currentUserResponse();

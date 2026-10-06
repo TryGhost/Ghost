@@ -13,4 +13,15 @@ export const automationsScreen = {
     page.getByTestId(automationsList).getByRole('columnheader', { name }),
   rows: () => page.getByTestId(automationListRow),
   link: (name: string) => page.getByRole('link', { name, exact: true }),
+  showPerformanceButton: () => page.getByRole('button', { name: 'Show performance', exact: true }),
+  hidePerformanceButton: () => page.getByRole('button', { name: 'Hide performance', exact: true }),
+  performanceHeading: () => page.getByRole('heading', { name: 'Performance', exact: true }),
+  emailPerformancePanel: () =>
+    page.getByRole('complementary', { name: 'Email performance', exact: true }),
+  emailCard: (name = 'First') =>
+    page
+      .getByRole('region', { name: 'Editing canvas' })
+      .getByRole('article', { name: `Send email: ${name}` }),
+  viewEmailAnalyticsButton: (name = 'First') =>
+    automationsScreen.emailCard(name).getByRole('button', { name: 'View email analytics' }),
 };
