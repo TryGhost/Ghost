@@ -4,18 +4,11 @@ import { expect, test } from '@/helpers/playwright';
 import type { Page } from '@playwright/test';
 
 /**
- * The data-loss-critical draft journey through the **React** post editor,
- * behind the `editorReact` Labs flag.
+ * The data-loss-critical draft journey through the **React** post editor.
  *
  * Every assertion here is about content surviving: the create that gives a new
  * draft its id, the autosaves that follow, and what the server actually holds
- * afterwards. Nothing asserts layout — the two editors are not intended to
- * look alike yet.
- *
- * The Ember editor keeps its own coverage in `lexical-editor.test.ts` and
- * `editor-session-expiry.test.ts`; the flag-off case (Ember serving
- * `/editor/post` with its hidden secondary instance) is already asserted
- * there, so it is not repeated.
+ * afterwards. Nothing asserts layout.
  *
  * Autosaves are observed through the network: the chip says a save landed, not
  * which edit it carried. Only the explicit save is asserted on the chip.
@@ -108,17 +101,13 @@ async function expectNoFurtherWrites(page: Page): Promise<void> {
 }
 
 test.describe('Ghost Admin - Post editor (React)', () => {
-  // Flag state belongs on the describe — `test.use` inside a test body has no
-  // effect on the fixtures that test already resolved.
-  test.use({ labs: { editorReact: true } });
-
   let postFactory: PostFactory;
   let editor: PostEditorPage;
   let writes: PostWrite[];
 
   test.beforeEach(async ({ page }) => {
     postFactory = createPostFactory(page.request);
-    editor = new PostEditorPage(page, { implementation: 'react' });
+    editor = new PostEditorPage(page);
     writes = recordPostWrites(page);
   });
 

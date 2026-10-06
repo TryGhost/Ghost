@@ -214,6 +214,10 @@ flag defaults off in production. Add explicit flag-off coverage where the old
 path matters. Flags in `GA_FEATURES` default to on in every runtime, including
 tests, until they are removed or overridden by configuration.
 
+The top-level Playwright suite pins `editorReact` on with `labs__editorReact=true`
+in `BASE_GHOST_ENV`. Configuration outranks the stored setting, so
+`test.use({labs: ...})` cannot turn that flag off.
+
 When adding, promoting, or removing a flag, update the affected snapshots from
 `ghost/core/`:
 

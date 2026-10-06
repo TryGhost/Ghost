@@ -28,7 +28,7 @@ test.describe('Ghost Admin - Signin Redirect', () => {
     await tagsPage.waitForPageToFullyLoad();
   });
 
-  test('deep-linking to an Ember route while logged out redirects back after signin', async ({
+  test('deep-linking to the editor while logged out redirects back after signin', async ({
     page,
     ghostAccountOwner,
   }) => {
