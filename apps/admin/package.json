@@ -104,6 +104,7 @@
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vite": "catalog:",
+    "vite-plugin-svgr": "catalog:",
     "vitest": "catalog:",
     "vitest-browser-react": "catalog:"
   },

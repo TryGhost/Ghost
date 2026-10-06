@@ -105,6 +105,12 @@ development assets. Its prerequisites select `ghost-admin:build:dev` once;
 they do not also compile Ember's production bundle. The normal `pnpm dev`
 command uses this preparation before starting the React watchers.
 
+Vite resolves Admin Framework and Shade through their `source` exports in
+development, production and tests. It tracks each package’s source and path aliases
+directly, and transforms Shade’s SVG icons with SVGR. The shared CSS lane stays
+in this app. Compiled library builds and watchers remain available for Ember and
+other consumers, and typechecks still use the library declarations.
+
 The post editor is the largest area with documentation of its own — start at
 [src/editor/README.md](src/editor/README.md) before changing anything under
 `src/editor/`.
