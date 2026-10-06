@@ -21,9 +21,11 @@ import {
   type SaveResult,
 } from '@/editor/engine/save-engine';
 import type {
+  BodyDivergence,
   ChangeReasonCode,
   EditablePostPatch,
   EditablePostProjection,
+  ProjectionKey,
   RestoredRevision,
   RevisionProjection,
 } from '@/editor/engine/change-tracker';
@@ -75,6 +77,8 @@ export interface EditorLeaveConfirmation {
   readonly status: PostStatus;
   readonly engineState: SaveEngineState['kind'];
   readonly reasons: ChangeReasonCode[];
+  readonly dirtyFields: ProjectionKey[];
+  readonly bodyDiff: BodyDivergence | null;
 }
 
 /** Fields the engine writes onto the request rather than reading from the live post. */
@@ -128,6 +132,8 @@ export interface EditorSessionOptions {
   transport: EditorSessionTransport;
   /** Called once the create acknowledges; the caller replaces the URL. */
   onIdAcquired: (id: string) => void;
+  /** Called with the record the server answered each acknowledged save with. */
+  onSaveAcknowledged?: (saved: EditorRecord) => void;
   onError: (error: unknown, context?: EditorErrorContext) => void;
   /** Called once per request that settled as failed. */
   onSaveFailed?: (failure: EditorSaveFailure) => void;
@@ -147,6 +153,11 @@ export interface EditorSessionView {
   readonly slug: string;
   readonly settings: EditorSettingsFields;
   readonly publishTime: { status: PostStatus; publishedAt: string | null };
+  /** The feature image's alt text and caption, another writer's once adopted. */
+  readonly featureImageAlt: string | null;
+  readonly featureImageCaption: string | null;
+  /** A refused read carried a later version; only while nothing is unsaved and no save is under way. */
+  readonly newerVersionAvailable: boolean;
 }
 
 export interface EditorSession {
@@ -217,6 +228,16 @@ const BODY_WORK_REASONS: ReadonlySet<ChangeReasonCode> = new Set([
   'LEXICAL_PARSE_FAILED',
 ]);
 
+// Core stores the alt text and caption beside the post, so a read at the held
+// token can carry another writer's edit to them, as it can to the settings.
+const ADOPTED_KEYS = [
+  ...SETTINGS_FIELD_KEYS,
+  'feature_image_alt',
+  'feature_image_caption',
+] as const;
+
+type AdoptedKey = (typeof ADOPTED_KEYS)[number];
+
 /** What a local copy carries besides the body. */
 const COPIED_FIELD_KEYS = [
   'title',
@@ -280,6 +301,15 @@ function isHeldToken(candidate: string | null | undefined, held: string | null):
   );
 }
 
+/** Whether a collision token names a version later than another. */
+function isLaterToken(candidate: string | null, than: string | null): boolean {
+  return (
+    isCollisionToken(candidate) &&
+    isCollisionToken(than) &&
+    Date.parse(candidate) > Date.parse(than)
+  );
+}
+
 /**
  * Composes the change tracker, slug machine and save engine into one editing
  * session: one per opened post, never shared between two new posts.
@@ -292,6 +322,7 @@ export function createEditorSession({
   autosaveDebounceMs,
   transport,
   onIdAcquired,
+  onSaveAcknowledged,
   onError,
   onSaveFailed,
   onLeaveConfirmed,
@@ -313,9 +344,9 @@ export function createEditorSession({
   let disposed = false;
   // A proposal is unsaved work before it becomes a sanitized document field.
   const pendingSlugEdits = new Set<symbol>();
-  // The version each settings field was last edited at by the writer. Adopting
+  // The version each adoptable field was last edited at by the writer. Adopting
   // is not an edit, so a snapshot of the live values could not answer this.
-  const writerEdits = new Map<SettingsFieldKey, number>();
+  const writerEdits = new Map<AdoptedKey, number>();
   // The version the in-flight request was built at, or null when none is.
   let inFlightSince: number | null = null;
   // The excerpt under the title is canvas content: a settings save leaves it for Update.
@@ -326,6 +357,8 @@ export function createEditorSession({
   let flushedConflictError: unknown = null;
   // The engine is holding an error a settings save met.
   let refusedSettings = false;
+  // The latest version a refused read carried; stale once the held token reaches it.
+  let newerVersion: string | null = null;
 
   function livePublishedAt(): string | null {
     return stagedPublishedAt ?? publishedAt;
@@ -377,6 +410,11 @@ export function createEditorSession({
       view.publishTime.publishedAt === currentPublishedAt
         ? view.publishTime
         : { status, publishedAt: currentPublishedAt };
+    // While a save is under way, the later version may be its own read before its answer.
+    const newerVersionAvailable =
+      (state.kind === 'idle' || state.kind === 'debouncing') &&
+      !isDirty &&
+      isLaterToken(newerVersion, identity.updatedAt);
 
     // Body edits need no new React snapshot while the rendered values stay the
     // same. Keep nested settings and time references stable across engine events.
@@ -388,7 +426,10 @@ export function createEditorSession({
       view.title === live.title &&
       view.slug === currentSlug &&
       view.settings === settings &&
-      view.publishTime === publishTime
+      view.publishTime === publishTime &&
+      view.featureImageAlt === live.feature_image_alt &&
+      view.featureImageCaption === live.feature_image_caption &&
+      view.newerVersionAvailable === newerVersionAvailable
     ) {
       return;
     }
@@ -400,6 +441,9 @@ export function createEditorSession({
       slug: currentSlug,
       settings,
       publishTime,
+      featureImageAlt: live.feature_image_alt,
+      featureImageCaption: live.feature_image_caption,
+      newerVersionAvailable,
     };
     for (const listener of changeListeners) {
       try {
@@ -414,7 +458,7 @@ export function createEditorSession({
     const before = live;
     live = { ...live, ...patch };
     version += 1;
-    for (const key of SETTINGS_FIELD_KEYS) {
+    for (const key of ADOPTED_KEYS) {
       // Re-emitting a value the field already holds is not an edit, and a
       // relation re-emitted as a fresh array holds the same value.
       if (patch[key] !== undefined && !sameFieldValue(key, before[key], patch[key])) {
@@ -454,22 +498,22 @@ export function createEditorSession({
 
   // The one rule both adoption paths ask, so a refetch and an acknowledgement
   // cannot disagree about who owns a field.
-  function isAdoptable(key: SettingsFieldKey): boolean {
+  function isAdoptable(key: AdoptedKey): boolean {
     if (tracker.isFieldDirty(key)) {
       return false;
     }
     return inFlightSince === null || (writerEdits.get(key) ?? 0) <= inFlightSince;
   }
 
-  // The server's copy of a settings field the writer has not moved past wins,
+  // The server's copy of an adoptable field the writer has not moved past wins,
   // the same rule the authored fields use: without it a value the server
   // normalized or someone else changed reads as a local edit for good.
-  function adoptSettings(
+  function adoptFields(
     next: EditablePostProjection,
-    adoptable: (key: SettingsFieldKey) => boolean,
+    adoptable: (key: AdoptedKey) => boolean,
   ): void {
     const patch: Record<string, unknown> = {};
-    for (const key of SETTINGS_FIELD_KEYS) {
+    for (const key of ADOPTED_KEYS) {
       if (adoptable(key) && live[key] !== next[key]) {
         patch[key] = next[key];
       }
@@ -772,7 +816,7 @@ export function createEditorSession({
     // those edits through the rebase, whose fallback base is the latest saved
     // copy. Submitted fields already have a stable base in the request.
     const unsubmittedEdits: EditablePostPatch = Object.fromEntries(
-      SETTINGS_FIELD_KEYS.filter(
+      ADOPTED_KEYS.filter(
         (key) =>
           prepared.projection[key] === undefined &&
           (writerEdits.get(key) ?? 0) > prepared.builtAtVersion,
@@ -792,7 +836,7 @@ export function createEditorSession({
     // The tracker now holds the retained edits as well as the rebase, so its
     // compare can decide adoption after the request's window closes.
     inFlightSince = null;
-    adoptSettings(acknowledged, isAdoptable);
+    adoptFields(acknowledged, isAdoptable);
     machine.saveAcknowledged({ ...answered, ...submitted }, answered);
 
     const created = identity.id === null;
@@ -809,6 +853,12 @@ export function createEditorSession({
     if (created) {
       withLocalRevisions((writer) => writer.created());
       onIdAcquired(result.id);
+    }
+    // The save has landed whatever the caller does with its answer.
+    try {
+      onSaveAcknowledged?.(result.post);
+    } catch (error) {
+      onError(error);
     }
     // A waiting copy is stale once nothing is unsaved or the post left draft; a new
     // post's unsaved work is written again under the id it now has.
@@ -1033,20 +1083,24 @@ export function createEditorSession({
     getLiveLexical: () => live.lexical,
 
     recordRefetched: (next) => {
+      if (disposed || identity.id !== next.id) {
+        return false;
+      }
       // Another version's content is not in this document: holding its token
       // would let the next save overwrite it instead of colliding.
-      if (
-        disposed ||
-        identity.id !== next.id ||
-        !isHeldToken(next.updated_at, identity.updatedAt)
-      ) {
+      if (!isHeldToken(next.updated_at, identity.updatedAt)) {
+        const token = next.updated_at ?? null;
+        if (isLaterToken(token, identity.updatedAt) && !isLaterToken(newerVersion, token)) {
+          newerVersion = token;
+          notifyChanged();
+        }
         return false;
       }
       // Decide against the old saved copy before the refetch replaces it.
-      const adoptable = new Set(SETTINGS_FIELD_KEYS.filter(isAdoptable));
+      const adoptable = new Set(ADOPTED_KEYS.filter(isAdoptable));
       const projection = projectionOf(next);
       tracker.setSaved(next.id, projection);
-      adoptSettings(projection, (key) => adoptable.has(key));
+      adoptFields(projection, (key) => adoptable.has(key));
       status = next.status ?? status;
       publishedAt = next.published_at ?? null;
       releaseSavedPublishTime();
@@ -1105,6 +1159,8 @@ export function createEditorSession({
             status,
             engineState: engine.getState().kind,
             reasons: tracker.verdict().reasons.map((reason) => reason.code),
+            dirtyFields: tracker.dirtyFields(),
+            bodyDiff: tracker.bodyDivergence(),
           });
         } catch (error) {
           onError(error);

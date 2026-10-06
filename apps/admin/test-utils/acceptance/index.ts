@@ -7,6 +7,7 @@ export {
   fakeEditorChrome,
   fakeEditorPost,
   fakePintura,
+  fakeEmailPreview,
   fakeUnsplashPhotos,
   submittedPost,
   withFastAutosave,
@@ -78,7 +79,7 @@ export type { TinybirdPipeCapture, TinybirdPipeQuery } from './tinybird';
 export { fakeAdminStats } from './stats';
 export { fakeFrameOrigin } from './frames';
 export { unsavedChangesGuarded } from './unsaved-changes-guard';
-export { dragByPointer } from './pointer';
+export { dragByPointer, settleTransitions, settleAnimations } from './pointer';
 
 // Test-data re-exports, so a spec needs a single import surface.
 export {

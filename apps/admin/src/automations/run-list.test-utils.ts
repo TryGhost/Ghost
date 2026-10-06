@@ -1,24 +1,12 @@
-import { afterAll, beforeAll } from 'vitest';
+import { expect } from 'vitest';
+import { automationsScreen } from './automations.screen';
 import { page } from 'vitest/browser';
-import { fakeAdminEndpoint } from '@test-utils/acceptance';
+import { fakeAdminEndpoint, settleTransitions } from '@test-utils/acceptance';
 import type {
   AutomationDetail,
   AutomationPerformanceStats,
   AutomationRun,
 } from '@tryghost/admin-x-framework/api/automations';
-
-// Production inherits this root sizing from Ember's patterns/global.css.
-// This full-app test host does not load Ember's stylesheet.
-export function setupEmbeddedRootFontSize() {
-  let originalRootFontSize: string;
-  beforeAll(() => {
-    originalRootFontSize = document.documentElement.style.fontSize;
-    document.documentElement.style.fontSize = '62.5%';
-  });
-  afterAll(() => {
-    document.documentElement.style.fontSize = originalRootFontSize;
-  });
-}
 
 export const flags = {
   labs: { automations: true, automationRunAnalytics: true, automationsTinybirdSync: true },
@@ -104,3 +92,11 @@ export const scrollRunsToEnd = () => {
   scroller.scrollTop = scroller.scrollHeight;
   scroller.dispatchEvent(new Event('scroll'));
 };
+
+/** Opens the moving panel and waits until its controls can be clicked. */
+export async function openPerformanceSidebar(): Promise<void> {
+  await settleTransitions();
+  await automationsScreen.showPerformanceButton().click();
+  await expect.element(automationsScreen.performanceHeading()).toBeVisible();
+  await settleTransitions();
+}

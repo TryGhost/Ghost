@@ -129,7 +129,7 @@ export default class SetupController extends Controller.extend(ValidationEngine)
                 this._handleSaveError(error);
             });
         }).catch(() => {
-            this.set('flowErrors', 'Please fill out every field correctly to set up your site.');
+            this.set('flowErrors', 'Fill out every field correctly to set up your site.');
         });
     }
 

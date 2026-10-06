@@ -123,11 +123,14 @@ const EmailEditor: React.FC<EmailEditorProps> = ({ value, placeholder, className
   const fetchEmbed = useKoenigFetchEmbed();
   const klipyConfig = config?.klipy?.apiKey ? config.klipy : null;
   const embedPreviewUrl = config?.security?.embedPreviewUrl || undefined;
-  const [transistorEnabled] = getSettingValues<boolean>(settings, ['transistor']);
+  const [transistorEnabled, unsplashEnabled] = getSettingValues<boolean>(settings, [
+    'transistor',
+    'unsplash',
+  ]);
 
   const cardConfig = useMemo(
     () => ({
-      unsplash: unsplashConfig,
+      unsplash: unsplashEnabled ? unsplashConfig : null,
       pinturaConfig,
       klipy: klipyConfig,
       embedPreviewUrl,
@@ -140,6 +143,7 @@ const EmailEditor: React.FC<EmailEditorProps> = ({ value, placeholder, className
       visibilitySettings: 'none',
     }),
     [
+      unsplashEnabled,
       unsplashConfig,
       pinturaConfig,
       klipyConfig,

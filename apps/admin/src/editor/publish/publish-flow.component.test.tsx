@@ -2,7 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
-import { InAppProviders, fakeAdminEndpoint, fakeLabels, fakeTiers } from '@test-utils/acceptance';
+import {
+  InAppProviders,
+  fakeAdminEndpoint,
+  fakeEmailPreview,
+  fakeLabels,
+  fakeTiers,
+} from '@test-utils/acceptance';
 import {
   publishRecipientFree,
   publishRecipientSegments,
@@ -319,6 +325,32 @@ describe('Publish flow', () => {
 
     await expect.element(publishScreen.complete()).toBeInTheDocument();
     expect(dispatch).toHaveBeenCalledWith({ kind: 'publish', options: {} });
+  });
+
+  it('warns that an email over 100kB may be clipped while the flow will send it', async () => {
+    fakeEmailPreview(150 * 1024);
+    await renderPublishFlow({ post: draft({ updatedAt: '2026-09-02T09:00:00.000Z' }) });
+
+    await expect.element(publishScreen.emailSizeWarning()).toHaveTextContent('This email is 150kB');
+    await expect
+      .element(publishScreen.emailSizeWarning())
+      .toHaveTextContent(
+        'Email newsletters may get clipped in the inbox behind a “View entire message” link when they’re over 100kB.',
+      );
+
+    await publishScreen.setting('publish-type').click();
+    await page.getByLabelText('Publish only').click();
+
+    await expect(publishScreen.emailSizeWarning()).toHaveCount(0);
+  });
+
+  it('does not warn about an email that fits', async () => {
+    const previewApi = fakeEmailPreview(99 * 1024);
+    await renderPublishFlow({ post: draft({ updatedAt: '2026-09-02T09:00:00.000Z' }) });
+
+    await expect.poll(() => previewApi.requests.length).toBe(1);
+    await expect.element(publishScreen.options()).toBeInTheDocument();
+    await expect(publishScreen.emailSizeWarning()).toHaveCount(0);
   });
 
   it('schedules a draft and hands over the scheduled celebration key', async () => {

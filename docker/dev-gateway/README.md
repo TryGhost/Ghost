@@ -20,6 +20,7 @@ Caddy uses environment variables (set in `compose.dev.yaml`) to configure proxy 
 - `GHOST_BACKEND` - Ghost container hostname (e.g., `ghost-dev:2368`)
 - `ADMIN_DEV_SERVER` - React admin dev server (e.g., `host.docker.internal:5174`)
 - `ADMIN_LIVE_RELOAD_SERVER` - Ember live reload WebSocket (e.g., `host.docker.internal:4200`)
+  - Started by `pnpm dev:ember`; standard `pnpm dev` serves a one-time Ember development build without live reload
 - `LEXICAL_DEV_SERVER` - _Optional:_ Koenig Lexical editor preview server (e.g., `host.docker.internal:4173`)
   - Started by `pnpm dev:lexical` at the repo root, which runs `koenig/koenig-lexical`'s `dev:integrated` target (editor rebuild watcher + `vite preview` on port 4173) and sets Admin's `EDITOR_URL` to point at it
   - Automatically falls back to Ghost backend (built package) if dev server is not running

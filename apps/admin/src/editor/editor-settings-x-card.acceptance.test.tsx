@@ -13,6 +13,7 @@ import {
   fakeUnsplashPhotos,
   post,
   renderAdminApp,
+  settleTransitions,
   staffRole,
   submittedPost,
   unsavedChangesGuarded,
@@ -78,6 +79,7 @@ function fakeImageUpload() {
 async function openXCard() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  await settleTransitions();
   await editorScreen.settingsSubviewRow(settingsXCardRow).click();
   await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
 }

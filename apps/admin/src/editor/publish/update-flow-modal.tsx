@@ -166,7 +166,6 @@ function KeyedUpdateFlowModal({
   return (
     <FullscreenDialog
       data-testid={updateFlowModal}
-      modal={false}
       title={isScheduled ? 'Unschedule' : 'Unpublish'}
       open
       onOpenChange={(open) => !open && close()}
@@ -177,11 +176,9 @@ function KeyedUpdateFlowModal({
             {isScheduled ? 'Unschedule' : 'Unpublish'}
           </Text>
           <PageHeader.ActionGroup>
-            {isSent ? null : (
-              <Button variant="outline" onClick={close}>
-                Close
-              </Button>
-            )}
+            <Button variant="outline" onClick={close}>
+              Close
+            </Button>
           </PageHeader.ActionGroup>
         </Inline>
 

@@ -24,24 +24,40 @@ describe('Unit: Service: session', function () {
     });
 
     describe('#postAuthPreparation', function () {
-        it('notifies React when the initial feature fetch completes', async function () {
+        beforeEach(function () {
             service.postAuthPreparation.restore();
             service.user = {role: {name: 'Administrator'}};
-            const stateBridge = this.owner.lookup('service:state-bridge');
-            const featureFlagsChange = sinon.spy();
-            stateBridge.on('featureFlagsChange', featureFlagsChange);
 
             sinon.stub(service.configManager, 'fetchAuthenticated').resolves();
             sinon.stub(service.feature, 'fetch').resolves();
             sinon.stub(service.settings, 'fetch').resolves();
             sinon.stub(service.membersUtils, 'fetch').resolves();
-            sinon.stub(service.frontend, 'loginIfNeeded').resolves();
             sinon.stub(service.themeManagement, 'fetch').resolves();
             sinon.stub(service.koenig, 'fetch');
+        });
+
+        it('notifies React when the initial feature fetch completes', async function () {
+            const stateBridge = this.owner.lookup('service:state-bridge');
+            const featureFlagsChange = sinon.spy();
+            stateBridge.on('featureFlagsChange', featureFlagsChange);
 
             await service.postAuthPreparation();
 
             expect(featureFlagsChange.calledOnce).to.be.true;
+        });
+
+        it('preloads Koenig for the Ember editor', async function () {
+            await service.postAuthPreparation();
+
+            expect(service.koenig.fetch.calledOnce, 'koenig.fetch').to.be.true;
+        });
+
+        it('skips the Koenig preload when React serves the editor', async function () {
+            sinon.stub(service.feature, 'editorReact').get(() => true);
+
+            await service.postAuthPreparation();
+
+            expect(service.koenig.fetch.called, 'koenig.fetch').to.be.false;
         });
     });
 

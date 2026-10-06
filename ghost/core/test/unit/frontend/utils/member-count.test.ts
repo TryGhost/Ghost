@@ -35,12 +35,9 @@ const getMemberStatsMock = [
 
 describe('Member Count', function () {
   it('should return total members', async function () {
-    const meta = {
-      data: {
-        meta: { totals: { paid: 1000, free: 500, comped: 500, gift: 100 } },
-      },
-    };
-    const members = await getMemberStats.call(meta);
+    const members = await getMemberStats({
+      meta: { totals: { paid: 1000, free: 500, comped: 500, gift: 100 } },
+    });
     assert.equal(members.total, 2100);
   });
 

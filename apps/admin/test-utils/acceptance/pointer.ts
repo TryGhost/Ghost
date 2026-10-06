@@ -40,6 +40,32 @@ const nextFrame = () =>
   });
 
 /**
+ * Resolves once the CSS transitions running now have finished. A panel still
+ * sliding in moves what is inside it, so a gesture aimed there can miss.
+ */
+export async function settleTransitions(): Promise<void> {
+  await Promise.allSettled(
+    document
+      .getAnimations()
+      .filter((animation) => animation instanceof CSSTransition)
+      .map((animation) => animation.finished),
+  );
+}
+
+/**
+ * Resolves finite motion in a dialog before interacting with its contents.
+ * Repeating decorative animations have no completion to wait for.
+ */
+export async function settleAnimations(element: Element): Promise<void> {
+  await Promise.allSettled(
+    element
+      .getAnimations({ subtree: true })
+      .filter((animation) => Number.isFinite(animation.effect?.getComputedTiming().endTime))
+      .map((animation) => animation.finished),
+  );
+}
+
+/**
  * A mouse press on `source` that travels to `to` and lets go, as the pointer
  * and mouse events a browser dispatches — the closing `click` included, in the
  * same task as the release. `userEvent.dragAndDrop` drives HTML5 drag and drop
@@ -49,12 +75,7 @@ const nextFrame = () =>
  */
 export async function dragByPointer(source: Locator, to: Locator | Point): Promise<void> {
   // A transition still running (a panel sliding in) moves the targets after they are measured.
-  await Promise.allSettled(
-    document
-      .getAnimations()
-      .filter((animation) => animation instanceof CSSTransition)
-      .map((animation) => animation.finished),
-  );
+  await settleTransitions();
   const element = source.element();
   // Off screen, or by an edge, the drag would scroll its container under the pointer.
   element.scrollIntoView({ block: 'center' });

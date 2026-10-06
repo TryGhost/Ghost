@@ -20,30 +20,33 @@ interface Cache {
   set(key: string, value: unknown): AsyncResult;
 }
 
-interface PermissionConfiguration extends Dictionary {
-  before?: (frame: Frame) => AsyncResult;
+interface PermissionConfiguration<TFrame extends Frame = Frame> extends Dictionary {
+  before?: (frame: TFrame) => AsyncResult;
 }
 
-export interface ControllerMethod {
+export interface ControllerMethod<TFrame extends Frame = Frame> {
   cache?: Cache;
   data?: FrameConfiguration['data'];
-  generateCacheKeyData?: (frame: Frame) => AsyncResult;
+  generateCacheKeyData?: (frame: TFrame) => AsyncResult;
   headers?: Dictionary;
   options?: FrameConfiguration['options'];
-  permissions?: boolean | PermissionConfiguration | ((frame: Frame) => AsyncResult);
-  query?: (frame: Frame) => AsyncResult;
+  permissions?: boolean | PermissionConfiguration<TFrame> | ((frame: TFrame) => AsyncResult);
+  query?: (frame: TFrame) => AsyncResult;
   response?: { format: string | (() => string | PromiseLike<string>) };
   statusCode?: number | ((result: unknown) => number);
-  validation?: Dictionary | ((frame: Frame) => AsyncResult);
+  validation?: Dictionary | ((frame: TFrame) => AsyncResult);
 }
 
 type ControllerHandler = ControllerMethod &
   ((dataOrOptions?: Dictionary | Frame, options?: Dictionary | Frame) => Promise<unknown>);
 
-export type Controller = { docName?: string } & Record<
-  string,
-  ControllerMethod | string | undefined
->;
+export type ControllerFrameMap = Record<string, Frame>;
+
+export type Controller<TFrames extends ControllerFrameMap = ControllerFrameMap> = {
+  docName?: string;
+} & (string extends keyof TFrames
+  ? Record<string, ControllerMethod | string | undefined>
+  : { [TMethod in keyof TFrames]: ControllerMethod<TFrames[TMethod]> });
 interface ApiUtils {
   permissions?: { handle(config: Dictionary, frame: Frame): AsyncResult };
   serializers?: { input?: Dictionary; output?: Dictionary };

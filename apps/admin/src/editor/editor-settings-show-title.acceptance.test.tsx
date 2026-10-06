@@ -4,16 +4,18 @@ import { buildLexicalParagraph } from '@tryghost/test-data';
 import {
   activeThemeResponse,
   currentUserResponse,
+  type EndpointCapture,
   fakeAdminEndpoint,
+  fakeEmailPreview,
   fakeNewsletters,
   fakePages,
   fakePosts,
   fakeSnippets,
   post,
   renderAdminApp,
+  settleTransitions,
   staffRole,
   withoutAutosave,
-  type EndpointCapture,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 
@@ -27,6 +29,10 @@ const PAGE_ROUTE = new RegExp(`^/pages/${PAGE_ID}/\\?`);
 const POST_ROUTE = new RegExp(`^/posts/${POST_ID}/\\?`);
 
 const POLL = { timeout: 10_000 };
+
+const FEATURE_IMAGE = 'https://example.com/content/images/2026/09/coast.png';
+const FEATURE_IMAGE_HIDDEN = 'Feature image and post title are hidden on page';
+const TITLE_HIDDEN = 'Post title is hidden on page';
 
 type SavedPage = ReturnType<typeof post>;
 
@@ -86,6 +92,7 @@ function submittedPage(capture: EndpointCapture): Record<string, unknown> {
 
 function editorChrome() {
   fakeSnippets([]);
+  fakeEmailPreview();
   fakePosts([]);
   fakePages([]);
   // The header's publish inputs read the newsletter list.
@@ -125,9 +132,30 @@ function fakeSavablePage(overrides: Partial<SavedPage> = {}) {
   });
 }
 
+function opacityOf(element: Element | null): string | undefined {
+  return element ? getComputedStyle(element).opacity : undefined;
+}
+
+function featureImagePreview(): HTMLImageElement | null {
+  return editorScreen.featureImage().element().querySelector('img');
+}
+
+/** Whether `mark` sits in the gutter left of `target`, level with some of it. */
+function sitsBeside(mark: Element, target: Element): boolean {
+  const markBox = mark.getBoundingClientRect();
+  const targetBox = target.getBoundingClientRect();
+  return (
+    markBox.right <= targetBox.left &&
+    markBox.bottom > targetBox.top &&
+    markBox.top < targetBox.bottom
+  );
+}
+
 async function openSettings() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  // Visible from its first frame; a click while it still slides in can be lost.
+  await settleTransitions();
 }
 
 /**
@@ -339,5 +367,77 @@ describe('Post settings show title and feature image', () => {
       .element(editorScreen.settingsShowTitle())
       .toHaveAttribute('data-state', 'unchecked');
     await expect(editorScreen.settingsShowTitleWarning()).toHaveCount(0);
+  });
+});
+
+/**
+ * What the canvas makes of a page that leaves out its title and feature image:
+ * both fade, and an eye-off mark beside them says why.
+ */
+describe('Page canvas with its title and feature image hidden', () => {
+  it('fades both and marks the feature image until the choice is back on', async () => {
+    const saveApi = fakeSavablePage({
+      feature_image: FEATURE_IMAGE,
+      show_title_and_feature_image: false,
+    });
+    await renderAdminApp(`/editor/page/${PAGE_ID}`, FLAG_ON);
+
+    const mark = editorScreen.featureImageHiddenIndicator();
+    await expect.element(mark).toHaveAccessibleName(FEATURE_IMAGE_HIDDEN);
+    await expect(editorScreen.titleHiddenIndicator()).toHaveCount(0);
+    await expect.poll(() => sitsBeside(mark.element(), featureImagePreview()!)).toBe(true);
+    await expect.poll(() => opacityOf(featureImagePreview())).toBe('0.5');
+    await expect.poll(() => opacityOf(editorScreen.titleInput().element())).toBe('0.5');
+
+    await mark.hover();
+    await expect.element(editorScreen.tooltip(FEATURE_IMAGE_HIDDEN)).toBeVisible();
+
+    await openSettings();
+    await editorScreen.settingsShowTitle().click();
+
+    await expect(saveApi).toHaveSavedFields({ show_title_and_feature_image: true });
+    await expect(editorScreen.featureImageHiddenIndicator()).toHaveCount(0);
+    await expect.poll(() => opacityOf(featureImagePreview())).toBe('1');
+    await expect.poll(() => opacityOf(editorScreen.titleInput().element())).toBe('1');
+  });
+
+  it('marks the title when there is no feature image, and shows it while it is edited', async () => {
+    fakeSavablePage({ show_title_and_feature_image: false });
+    await renderAdminApp(`/editor/page/${PAGE_ID}`, FLAG_ON);
+
+    const mark = editorScreen.titleHiddenIndicator();
+    const title = editorScreen.titleInput();
+    await expect.element(mark).toHaveAccessibleName(TITLE_HIDDEN);
+    await expect(editorScreen.featureImageHiddenIndicator()).toHaveCount(0);
+    await expect.poll(() => sitsBeside(mark.element(), title.element())).toBe(true);
+    await expect.poll(() => opacityOf(title.element())).toBe('0.5');
+
+    await title.click();
+
+    await expect.poll(() => opacityOf(title.element())).toBe('1');
+  });
+
+  it('never marks a post', async () => {
+    editorChrome();
+    fakeAdminEndpoint('GET', POST_ROUTE, () => ({
+      posts: [
+        post({
+          id: POST_ID,
+          status: 'draft',
+          published_at: null,
+          tags: [],
+          tiers: [],
+          feature_image: FEATURE_IMAGE,
+          show_title_and_feature_image: false,
+        }),
+      ],
+    }));
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.removeFeatureImage()).toBeInTheDocument();
+    await expect(editorScreen.featureImageHiddenIndicator()).toHaveCount(0);
+    await expect(editorScreen.titleHiddenIndicator()).toHaveCount(0);
+    await expect.poll(() => opacityOf(featureImagePreview())).toBe('1');
+    await expect.poll(() => opacityOf(editorScreen.titleInput().element())).toBe('1');
   });
 });

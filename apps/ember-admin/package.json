@@ -44,8 +44,6 @@
     "@html-next/vertical-collection": "3.0.0",
     "@internal/cfg-eslint": "workspace:*",
     "@sentry/ember": "7.120.3",
-    "@sentry/integrations": "7.114.0",
-    "@sentry/replay": "7.116.0",
     "@tryghost/admin-x-framework": "workspace:*",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "catalog:",
@@ -132,7 +130,7 @@
     "loader.js": "4.7.0",
     "microdiff": "1.5.0",
     "miragejs": "0.1.48",
-    "moment-timezone": "0.5.45",
+    "moment-timezone": "catalog:",
     "normalize.css": "3.0.3",
     "postcss-color-mod-function": "3.0.3",
     "postcss-custom-media": "7.0.8",
@@ -173,8 +171,12 @@
     "webpack": "5.105.4"
   },
   "nx": {
+    "namedInputs": {
+      "reactAdminDependency": []
+    },
     "implicitDependencies": [
-      "!ghost"
+      "!ghost",
+      "@internal/scripts"
     ],
     "targets": {
       "dev": {

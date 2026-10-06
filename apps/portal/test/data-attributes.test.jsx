@@ -1210,6 +1210,35 @@ describe('Portal Data attributes:', () => {
       expect(window.fetch).toHaveBeenCalledTimes(1);
     });
 
+    test('lets the form be submitted again after a network error', async () => {
+      const { event, form, errorEl, siteUrl, submitHandler } = getMockData();
+
+      window.fetch.mockImplementationOnce(() => Promise.reject(new Error('Network error')));
+
+      await formSubmitHandler({ event, form, errorEl, siteUrl, submitHandler });
+
+      expect(form.addEventListener).toHaveBeenCalledWith('submit', submitHandler);
+      expect(form.classList.remove).toHaveBeenCalledWith('loading');
+    });
+
+    test('lets the form be submitted again after a bot challenge block', async () => {
+      const { event, form, errorEl, siteUrl, submitHandler } = getMockData();
+      document.cookie = 'waf_challenge=1; Path=/';
+
+      window.fetch.mockResolvedValueOnce(new Response('', { status: 449 }));
+
+      try {
+        await formSubmitHandler({ event, form, errorEl, siteUrl, submitHandler });
+      } finally {
+        document.cookie = 'waf_challenge=; Max-Age=0; Path=/';
+      }
+
+      expect(errorEl.innerText).toBe('Unable to verify your request, please try again');
+      expect(form.classList.add).toHaveBeenCalledWith('error');
+      expect(form.addEventListener).toHaveBeenCalledWith('submit', submitHandler);
+      expect(form.classList.remove).toHaveBeenCalledWith('loading');
+    });
+
     test('handles error gracefully when errorEl is null', async () => {
       const { event, form, siteUrl, submitHandler } = getMockData();
 

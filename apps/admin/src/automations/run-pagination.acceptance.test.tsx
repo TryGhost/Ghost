@@ -2,15 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import {
+  openPerformanceSidebar,
   flags,
   prepareStatuses,
   run,
   runsScroller,
   scrollRunsToEnd,
-  setupEmbeddedRootFontSize,
 } from './run-list.test-utils';
 
-setupEmbeddedRootFontSize();
 const endpoint = /\/automations\/first\/runs\/\?/;
 const region = () => page.getByRole('region', { name: 'Automation runs', exact: true });
 const pageOfRuns = (start: number, length: number, next: string | null = null) => ({
@@ -29,7 +28,7 @@ const pageOfRuns = (start: number, length: number, next: string | null = null) =
 });
 const open = async () => {
   const { queryClient } = await renderAdminApp('/automations/first', flags);
-  await page.getByRole('button', { name: 'Show performance' }).click();
+  await openPerformanceSidebar();
   return queryClient;
 };
 
@@ -56,7 +55,7 @@ describe('Automation run pagination', () => {
       Math.ceil(51 * rowHeight + headerHeight + 2),
     );
     scrollRunsToEnd();
-    await expect.element(region().getByRole('alert')).toHaveTextContent('Could not load more runs');
+    await expect.element(region().getByRole('alert')).toHaveTextContent('Could not load entries');
     expect(requests.requests).toHaveLength(2);
     expect(new URL(requests.requests[1].url).searchParams.get('cursor')).toBe('next');
     const retry = fakeAdminEndpoint('GET', endpoint, pageOfRuns(50, 3));
@@ -98,7 +97,7 @@ describe('Automation run pagination', () => {
     scrollRunsToEnd();
     await expect.poll(() => requests.requests.length).toBe(2);
     try {
-      await region().getByRole('button', { name: 'Entered' }).click();
+      await region().getByRole('button', { name: 'Entered', exact: true }).click();
       await expect
         .element(region().getByRole('status'))
         .toHaveTextContent('Updating automation runs');
@@ -111,13 +110,13 @@ describe('Automation run pagination', () => {
       await expect.poll(() => client.isFetching()).toBe(0);
       await expect.element(region()).not.toHaveTextContent('Member 50');
       await expect
-        .element(region().getByRole('columnheader', { name: 'Entered' }))
+        .element(region().getByRole('columnheader', { name: 'Entered', exact: true }))
         .toHaveAttribute('aria-sort', 'ascending');
       expect(runsScroller().scrollTop).toBe(0);
-      await region().getByRole('button', { name: 'Entered' }).click();
+      await region().getByRole('button', { name: 'Entered', exact: true }).click();
       await expect.element(region().getByText('Member 0', { exact: true })).toBeVisible();
       await expect
-        .element(region().getByRole('columnheader', { name: 'Entered' }))
+        .element(region().getByRole('columnheader', { name: 'Entered', exact: true }))
         .toHaveAttribute('aria-sort', 'descending');
       expect(requests.requests).toHaveLength(4);
       expect(Object.fromEntries(new URL(requests.requests[3].url).searchParams)).toEqual(

@@ -60,6 +60,14 @@ const WELCOME_EMAIL_SOURCES = ['member'];
 const MEMBER_STATUSES = ['free', 'paid', 'comped', 'gift'];
 
 /**
+ * @internal
+ * @typedef {object} MemberModel
+ * @prop {string} id
+ * @prop {(get: 'email') => string} get
+ * @prop {(related: 'products') => {fetch: (options: {transacting: unknown}) => Promise<null | {models: {id: string}[]}>}} related
+ */
+
+/**
  * @typedef {object} ITokenService
  * @prop {(token: string) => Promise<import('jsonwebtoken').JwtPayload>} decodeToken
  */
@@ -96,6 +104,34 @@ function attributionColumns(table, attribution) {
     utm_content: fitted('utm_content', attribution?.utmContent),
   };
 }
+
+/**
+ * @param {MemberModel} member
+ * @param {'free' | 'paid'} memberStatus
+ * @param {object} bookshelfOptions
+ * @param {Knex.Transaction} [bookshelfOptions.transacting]
+ * @returns {Promise<string[]>}
+ */
+const getMemberTierIds = async (member, memberStatus, bookshelfOptions) => {
+  switch (memberStatus) {
+    case 'free':
+      return [];
+    case 'paid': {
+      const productCollection = await member
+        .related('products')
+        .fetch({ transacting: bookshelfOptions?.transacting });
+      const products = productCollection?.models ?? [];
+      return products.map((product) => product.id);
+    }
+    default: {
+      /** @type {never} */
+      const _exhaustive = memberStatus;
+      throw new errors.InternalServerError({
+        message: `Invalid member status ${_exhaustive}`,
+      });
+    }
+  }
+};
 
 module.exports = class MemberRepository {
   /**
@@ -259,20 +295,24 @@ module.exports = class MemberRepository {
   }
 
   /**
-   * @param {string} memberId
-   * @param {string} memberEmail
+   * @param {MemberModel} member
    * @param {'free' | 'paid'} memberStatus
    * @param {object} bookshelfOptions
    * @param {Knex.Transaction} [bookshelfOptions.transacting]
    * @returns {Promise<void>}
    */
-  async #triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions) {
+  async #triggerMemberSignupAutomation(member, memberStatus, bookshelfOptions) {
+    const memberId = member.id;
+    const memberEmail = member.get('email');
+    const memberTierIds = await getMemberTierIds(member, memberStatus, bookshelfOptions);
+
     const trigger = async () => {
       await this._automationsApi.trigger({
         event: 'member_sign_up',
         memberId,
         memberEmail,
         memberStatus,
+        memberTierIds,
       });
     };
 
@@ -342,16 +382,15 @@ module.exports = class MemberRepository {
    * Callers are responsible for any eligibility gating (member status, source, etc.)
    * before calling this.
    *
-   * @param {string} memberId
-   * @param {string} memberEmail
+   * @param {MemberModel} member
    * @param {'free' | 'paid'} memberStatus
    * @param {object} bookshelfOptions
    * @returns {Promise<void>}
    */
-  async triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions) {
+  async triggerMemberSignupAutomation(member, memberStatus, bookshelfOptions) {
     await Promise.all([
-      this.#triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions),
-      this.#triggerMemberSignupLegacyAutomation(memberId, memberStatus, bookshelfOptions),
+      this.#triggerMemberSignupAutomation(member, memberStatus, bookshelfOptions),
+      this.#triggerMemberSignupLegacyAutomation(member.id, memberStatus, bookshelfOptions),
     ]);
   }
 
@@ -601,7 +640,7 @@ module.exports = class MemberRepository {
           { ...memberAddOptions, transacting },
         );
 
-        await this.triggerMemberSignupAutomation(newMember.id, newMember.get('email'), 'free', {
+        await this.triggerMemberSignupAutomation(newMember, 'free', {
           transacting,
         });
 
@@ -2098,12 +2137,7 @@ module.exports = class MemberRepository {
         updatedMember.get('status') === 'paid' &&
         updatedMember._previousAttributes.status !== 'gift'
       ) {
-        await this.triggerMemberSignupAutomation(
-          memberModel.id,
-          memberModel.get('email'),
-          'paid',
-          options,
-        );
+        await this.triggerMemberSignupAutomation(memberModel, 'paid', options);
       }
     }
 

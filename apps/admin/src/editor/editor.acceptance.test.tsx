@@ -3,6 +3,7 @@ import { userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
+  configResponse,
   currentRoute,
   fakeAdminEndpoint,
   fakeEditorChrome,
@@ -83,6 +84,41 @@ describe('Editor flag', () => {
 
     await expect.poll(emberShellShown).toBe(true);
     await expect(editorScreen.root()).toHaveCount(0);
+  });
+});
+
+/**
+ * A force upgrade sends the React editor to billing, as it does every other
+ * React screen. Ember enforces it on its own editor.
+ */
+describe('Editor force upgrade', () => {
+  function duringForceUpgrade({ labs }: { labs: Record<string, boolean> }) {
+    const config = configResponse();
+    config.config.hostSettings = { forceUpgrade: true };
+    return { labs, boot: { browseConfig: { response: config } } };
+  }
+
+  // Until the current user loads, the shell shows Ember outside the layout's `main`.
+  function emberRouteShown(): boolean {
+    return emberShellShown() && Boolean(document.getElementById('ember-app')?.closest('main'));
+  }
+
+  it('sends the React editor to billing', async () => {
+    fakeEditorChrome();
+    const postRead = fakeAdminEndpoint('GET', /^\/posts\/abc123\/\?/, {
+      posts: [post({ id: 'abc123' })],
+    });
+    await renderAdminApp('/editor/post/abc123', duringForceUpgrade(FLAG_ON));
+
+    await expect.poll(currentRoute).toBe('/pro');
+    expect(postRead.requests).toHaveLength(0);
+  });
+
+  it('leaves the redirect to Ember while Ember serves the editor', async () => {
+    await renderAdminApp('/editor/post/abc123', duringForceUpgrade(FLAG_OFF));
+
+    await expect.poll(emberRouteShown).toBe(true);
+    expect(currentRoute()).toBe('/editor/post/abc123');
   });
 });
 
@@ -213,7 +249,7 @@ describe('Editor list breadcrumb', () => {
     { postType: 'post', returnWith: 'back' },
     { postType: 'page', returnWith: 'back' },
   ] as const)(
-    'returns a $postType to its filtered list with the same sort order using $returnWith',
+    'returns a $postType to its filtered list with the same sort order using $returnWith and reopens it',
     async ({ postType, returnWith }) => {
       const resource = postType === 'post' ? 'posts' : 'pages';
       const entry = post({ id: 'abc123', title: 'Engineering update', status: 'draft' });
@@ -244,6 +280,11 @@ describe('Editor list breadcrumb', () => {
           (request) => request.filter?.includes('tag:engineering') && request.order === 'title asc',
         ),
       ).toBe(true);
+
+      // Reopening the same row after returning still mounts the editor.
+      await expect(editorScreen.root()).toHaveCount(0);
+      await postsListScreen.listItems().first().click();
+      await expect.element(editorScreen.root()).toBeVisible();
     },
   );
 });

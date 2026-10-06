@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { editorConflictReloadConfirm } from '@tryghost/test-data/selectors/editor';
+import {
+  editorConflictReloadConfirm,
+  editorNewerVersionNotice,
+} from '@tryghost/test-data/selectors/editor';
 import { toast } from 'sonner';
 import type { PendingSave, SaveEngineState, SaveError } from '@/editor/engine/save-engine';
 import { reportShownAlert } from '@/editor/report-error';
@@ -9,10 +12,16 @@ import type { ReloadOutcome } from './use-editor-session';
 
 vi.mock('@/editor/report-error', () => ({ reportShownAlert: vi.fn() }));
 
+vi.mock('@tryghost/admin-x-framework/api/config', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@tryghost/admin-x-framework/api/config')>()),
+  useBrowseConfig: () => ({ data: undefined }),
+}));
+
 const noop = () => undefined;
 
 interface BannerOverrides {
   pendingSave?: PendingSave;
+  newerVersionAvailable?: boolean;
   hasUnsavedContent?: () => boolean;
   contentText?: () => string;
   onReload?: () => Promise<ReloadOutcome>;
@@ -23,6 +32,7 @@ function renderBanners(state: SaveEngineState, overrides: BannerOverrides = {}) 
     <SessionBanners
       contentText={overrides.contentText ?? (() => '')}
       hasUnsavedContent={overrides.hasUnsavedContent ?? (() => false)}
+      newerVersionAvailable={overrides.newerVersionAvailable}
       pendingSave={overrides.pendingSave}
       state={state}
       onReload={overrides.onReload ?? (() => Promise.resolve('reloaded'))}
@@ -33,6 +43,14 @@ function renderBanners(state: SaveEngineState, overrides: BannerOverrides = {}) 
 
 const CONFLICT_ERROR: SaveError = { kind: 'conflict', message: 'Someone else got there first.' };
 const CONFLICT: SaveEngineState = { kind: 'conflict', intent: 'autosave', error: CONFLICT_ERROR };
+const DELETED: SaveEngineState = {
+  kind: 'halted',
+  error: { kind: 'not-found', message: 'Post not found.' },
+};
+const ACCESS_LOST: SaveEngineState = {
+  kind: 'halted',
+  error: { kind: 'forbidden', message: 'You do not have permission to perform this action' },
+};
 
 function errored(error: Partial<SaveError>): SaveEngineState {
   return {
@@ -170,10 +188,31 @@ describe('SessionBanners', () => {
   });
 
   it('keeps the deleted-post copy escape visible after saving halts', () => {
-    renderBanners({ kind: 'halted' });
+    renderBanners(DELETED);
 
     expect(screen.getByRole('alert')).toHaveTextContent('This post has been deleted');
     expect(screen.getByRole('button', { name: 'Copy content' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Reload' })).not.toBeInTheDocument();
+  });
+
+  it('says the editor has crashed when a create finds nothing, and leaves only the copy', () => {
+    renderBanners({ kind: 'crashed' });
+
+    expect(screen.getByRole('alert')).toHaveTextContent('The editor has crashed');
+    expect(screen.getByRole('button', { name: 'Copy content' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Reload' })).not.toBeInTheDocument();
+  });
+
+  it('tells a writer who lost access that they can no longer edit, and leaves only the copy', () => {
+    renderBanners(ACCESS_LOST);
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'You no longer have permission to edit this post',
+    );
+    expect(screen.getByRole('alert')).not.toHaveTextContent('You do not have permission');
+    expect(screen.getByRole('button', { name: 'Copy content' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Reload' })).not.toBeInTheDocument();
   });
 
@@ -198,6 +237,42 @@ describe('SessionBanners', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Copy content' }));
 
     await waitFor(() => expect(error).toHaveBeenCalledWith('Couldn’t copy your content'));
+  });
+
+  it('says a newer version was saved elsewhere and reloads onto it', () => {
+    const onReload = vi.fn((): Promise<ReloadOutcome> => Promise.resolve('reloaded'));
+    renderBanners({ kind: 'idle' }, { newerVersionAvailable: true, onReload });
+
+    expect(screen.getByTestId(editorNewerVersionNotice)).toHaveTextContent(
+      'This post was updated elsewhere.',
+    );
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
+
+    expect(onReload).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId(editorConflictReloadConfirm)).not.toBeInTheDocument();
+  });
+
+  it('says so when the newer version could not be read, and keeps offering it', async () => {
+    const error = vi.spyOn(toast, 'error').mockReturnValue('');
+    renderBanners(
+      { kind: 'idle' },
+      { newerVersionAvailable: true, onReload: () => Promise.resolve('failed') },
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
+
+    await waitFor(() => expect(error).toHaveBeenCalledWith('Couldn’t reload this post'));
+    expect(screen.getByTestId(editorNewerVersionNotice)).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Reload' })).toBeEnabled();
+  });
+
+  it('gives way to a collision', () => {
+    renderBanners(CONFLICT, { newerVersionAvailable: true });
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Someone else is editing this post');
+    expect(screen.queryByTestId(editorNewerVersionNotice)).not.toBeInTheDocument();
   });
 
   it('explains an unreachable server rather than repeating the transport error', () => {
@@ -282,12 +357,32 @@ describe('SessionBanners reporting', () => {
   });
 
   it('reports a deleted-post banner as a not-found', () => {
-    renderBanners({ kind: 'halted' });
+    renderBanners(DELETED);
 
     expect(reportShownAlert).toHaveBeenCalledTimes(1);
     expect(reportShownAlert).toHaveBeenCalledWith(
       expect.stringContaining('This post has been deleted'),
       expect.objectContaining({ kind: 'not-found' }),
+    );
+  });
+
+  it('reports a crash banner by the text shown', () => {
+    renderBanners({ kind: 'crashed' });
+
+    expect(reportShownAlert).toHaveBeenCalledTimes(1);
+    expect(reportShownAlert).toHaveBeenCalledWith(
+      expect.stringContaining('The editor has crashed'),
+      expect.objectContaining({ kind: 'not-found' }),
+    );
+  });
+
+  it('reports a lost-access banner by the text shown', () => {
+    renderBanners(ACCESS_LOST);
+
+    expect(reportShownAlert).toHaveBeenCalledTimes(1);
+    expect(reportShownAlert).toHaveBeenCalledWith(
+      expect.stringContaining('You no longer have permission to edit this post'),
+      expect.objectContaining({ kind: 'forbidden' }),
     );
   });
 

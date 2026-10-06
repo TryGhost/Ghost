@@ -2,20 +2,18 @@ import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import {
+  openPerformanceSidebar,
   flags,
   read,
   prepareStatuses,
   run,
-  setupEmbeddedRootFontSize,
   runsScroller,
 } from './run-list.test-utils';
-
-setupEmbeddedRootFontSize();
 
 const entries = () => page.getByRole('region', { name: 'Total entries' });
 const statuses = () => page.getByRole('region', { name: 'Automation status counts' });
 const statusCard = (name: string) => statuses().getByRole('button', { name, exact: true });
-const open = () => page.getByRole('button', { name: 'Show performance' }).click();
+const open = openPerformanceSidebar;
 const close = () => page.getByRole('button', { name: 'Hide performance' }).click();
 
 const runsRegion = () => page.getByRole('region', { name: 'Automation runs', exact: true });
@@ -74,7 +72,7 @@ describe('Automation run list', () => {
       .element(runsRegion().getByRole('img', { name: 'Exited early — Failed', exact: true }))
       .toHaveAttribute('title', 'Exited early — Failed');
     await expect(runsRegion().getByRole('link')).toHaveCount(0);
-    await expect(runsRegion().getByRole('button')).toHaveCount(1);
+    await expect(runsRegion().getByRole('button', { name: /^View run history/ })).toHaveCount(10);
     expect(request.requests).toHaveLength(1);
   });
 
@@ -98,7 +96,7 @@ describe('Automation run list', () => {
       await expect
         .element(runsRegion().getByRole('status'))
         .toHaveTextContent('Loading automation runs');
-      await expect.element(runsRegion()).not.toHaveTextContent('No entries yet');
+      await expect.element(runsRegion()).not.toHaveTextContent('No members match');
       await expect.element(runsRegion().getByRole('status')).toHaveClass('sr-only');
       expect(
         runsRegion().element().querySelectorAll('tbody tr[aria-hidden="true"][data-index]'),
@@ -110,7 +108,7 @@ describe('Automation run list', () => {
       finish();
     }
     await open();
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
     expect(
       runsRegion().element().querySelectorAll('tbody tr[aria-hidden="true"][data-index]'),
     ).toHaveLength(0);
@@ -157,7 +155,7 @@ describe('Automation run list', () => {
       await open();
       await expect
         .element(runsRegion().getByRole('alert'))
-        .toHaveTextContent('Could not load automation runs');
+        .toHaveTextContent('Could not load entries');
       await expect.element(entries()).toHaveTextContent('1,432');
       await expect.element(statusCard('Completed')).toHaveTextContent('1,260');
       await close();
@@ -180,23 +178,23 @@ describe('Automation run list', () => {
     });
     const { queryClient } = await renderAdminApp('/automations/first', flags);
     await open();
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
 
     const refresh = fakeAdminEndpoint('GET', endpoint, {}, { status: 500 });
     // The app's authentication bridge can invalidate a previously successful query.
     await queryClient.invalidateQueries();
     await expect
       .element(runsRegion().getByRole('alert'))
-      .toHaveTextContent('Could not load automation runs');
+      .toHaveTextContent('Could not load entries');
     expect(refresh.requests).toHaveLength(1);
-    await expect.element(runsRegion()).not.toHaveTextContent('No entries yet');
+    await expect.element(runsRegion()).not.toHaveTextContent('No members match');
 
     fakeAdminEndpoint('GET', endpoint, {
       meta: { pagination: { limit: 50, next_cursor: null } },
       automation_runs: [],
     });
     await runsRegion().getByRole('button', { name: 'Retry' }).click();
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
     await expect.element(runsRegion().getByRole('alert')).not.toBeInTheDocument();
   });
 
@@ -207,8 +205,8 @@ describe('Automation run list', () => {
     await open();
     await expect
       .element(runsRegion().getByRole('alert'))
-      .toHaveTextContent('Could not load automation runs');
-    await expect.element(runsRegion()).not.toHaveTextContent('No entries yet');
+      .toHaveTextContent('Could not load entries');
+    await expect.element(runsRegion()).not.toHaveTextContent('No members match');
   });
 
   it('fits long member names and emails inside a narrow sidebar', async () => {
@@ -231,7 +229,7 @@ describe('Automation run list', () => {
         .element(runsRegion().getByRole('img', { name: 'Completed' }).first())
         .toBeVisible();
       const panel = document.querySelector('aside')!;
-      const expectedWidth = Math.min(480, panel.parentElement!.getBoundingClientRect().width - 60);
+      const expectedWidth = panel.parentElement!.getBoundingClientRect().width;
       await expect.poll(() => panel.getBoundingClientRect().width).toBeCloseTo(expectedWidth, 0);
       expect(panel.scrollWidth).toBe(panel.clientWidth);
       const table = runsRegion().getByRole('table').element();

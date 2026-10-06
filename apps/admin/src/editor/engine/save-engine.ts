@@ -138,6 +138,7 @@ export interface SaveResult {
 export type SaveErrorKind =
   | 'session-invalid'
   | 'not-found'
+  | 'forbidden'
   | 'conflict'
   | 'host-limit'
   | 'transport'
@@ -195,7 +196,8 @@ export type SaveEngineState =
   | { kind: 'error'; intent: SaveIntent; error: SaveError }
   /** The server rejected a stale updated_at; automatic saves halt until the baseline changes. */
   | { kind: 'conflict'; intent: SaveIntent; error: SaveError }
-  | { kind: 'halted' }
+  /** No later save runs: the post was deleted elsewhere, or the writer may no longer edit it. */
+  | { kind: 'halted'; error: SaveError }
   | { kind: 'crashed' }
   | { kind: 'disposed' };
 
@@ -441,6 +443,8 @@ export function createSaveEngine<
   } | null = null;
   // A failed retry cannot prove a rejected collision token safe.
   let conflict: { updatedAt: string | null; error: SaveError; intent: SaveIntent } | null = null;
+  // Set while a reload's adoption runs: a clean post would otherwise accept a nested reload.
+  let adopting = false;
   let leaveInProgress: Promise<LeaveDecision> | null = null;
   let disposed = false;
 
@@ -881,7 +885,7 @@ export function createSaveEngine<
       return;
     }
 
-    if (error.kind === 'not-found') {
+    if (error.kind === 'not-found' || error.kind === 'forbidden') {
       const dropWaiters: Waiter[] = [];
       clearTimers(dropWaiters);
       if (pending) {
@@ -890,7 +894,11 @@ export function createSaveEngine<
       }
       settle(dropWaiters, dropped('halted'));
       settle(slot.waiters, failed(error, intent));
-      setState({ kind: snapshot.id ? 'halted' : 'crashed' });
+      setState(
+        error.kind === 'not-found' && !snapshot.id
+          ? { kind: 'crashed' }
+          : { kind: 'halted', error },
+      );
       reportFailure(slot, error, snapshot, durationMs);
       return;
     }
@@ -1091,20 +1099,23 @@ export function createSaveEngine<
   function contentReloaded(updatedAt?: string, adopt?: () => void): boolean {
     const candidate = updatedAt ?? readSnapshot()?.updatedAt;
     if (
+      adopting ||
       disposed ||
       isTerminal() ||
-      !conflict ||
       inFlight ||
       frozen ||
       !isCollisionToken(candidate) ||
-      candidate === conflict.updatedAt
+      // Without a collision to recover from, only a post with nothing unsaved is replaced.
+      (conflict ? candidate === conflict.updatedAt : readSnapshot()?.isDirty !== false)
     ) {
       return false;
     }
     // Consume recovery before adoption can notify its own subscribers and reenter.
     conflict = null;
     hold = null;
+    adopting = true;
     adopt?.();
+    adopting = false;
     if (disposed) {
       return false;
     }

@@ -16,24 +16,28 @@ import { Inline, Text } from '@tryghost/shade/primitives';
 import {
   editorConflictBanner,
   editorConflictReloadConfirm,
+  editorNewerVersionNotice,
   editorSaveErrorBanner,
 } from '@tryghost/test-data/selectors/editor';
 import type { PendingSave, SaveError, SaveEngineState } from '@/editor/engine/save-engine';
 import { EDITOR_CONFIRM_DIALOG_LAYER } from '@/editor/layering';
+import { LimitMessage } from '@/editor/publish/components/limit-message';
+import { splitUpgradeMessage } from '@/editor/publish/publish-options';
 import { reportShownAlert } from '@/editor/report-error';
+import { POST_DELETED, terminalSaveError } from './error-mapping';
 import type { ReloadOutcome } from './use-editor-session';
 
 const SESSION_EXPIRED = 'Your session expired. Retry to sign in again and save.';
 const CONFLICT =
   'Someone else is editing this post. Reloading replaces what you have with their version, so copy your content first if you need it.';
-const GONE =
-  'This post has been deleted. Copy your content and paste it into a new post to keep it.';
-// A halt carries no error of its own; the banner reports it as the not-found it is.
-const NOT_FOUND: SaveError = { kind: 'not-found', message: GONE };
+const NEWER_VERSION = 'This post was updated elsewhere.';
+const RELOAD_FAILED = 'Couldn’t reload this post';
 
 export interface SessionBannersProps {
   state: SaveEngineState;
   pendingSave?: PendingSave | null;
+  /** A later version was saved elsewhere, and a reload onto it would lose nothing. */
+  newerVersionAvailable?: boolean;
   hasUnsavedContent: () => boolean;
   contentText: () => string;
   onRetrySave: () => void;
@@ -65,7 +69,8 @@ type ConflictBannerProps = Pick<
   'hasUnsavedContent' | 'contentText' | 'onReload'
 > & {
   error: SaveError;
-  deleted?: boolean;
+  /** Saving has stopped for good: the error says why, and copying is the only way out. */
+  stopped?: boolean;
 };
 
 function ConflictBanner({
@@ -73,13 +78,14 @@ function ConflictBanner({
   contentText,
   onReload,
   error,
-  deleted = false,
+  stopped = false,
 }: ConflictBannerProps) {
   const [confirming, setConfirming] = useState(false);
   const [reloading, setReloading] = useState(false);
   const [reloadFoundDeleted, setReloadFoundDeleted] = useState(false);
-  const gone = deleted || reloadFoundDeleted;
-  useShownAlert(gone ? GONE : CONFLICT, gone ? NOT_FOUND : error);
+  const halt = stopped ? error : reloadFoundDeleted ? POST_DELETED : null;
+  const message = halt ? halt.message : CONFLICT;
+  useShownAlert(message, halt ?? error);
 
   const reload = async () => {
     setConfirming(false);
@@ -90,7 +96,7 @@ function ConflictBanner({
       setReloadFoundDeleted(true);
     }
     if (outcome === 'failed') {
-      toast.error('Couldn’t reload this post');
+      toast.error(RELOAD_FAILED);
     }
   };
 
@@ -113,9 +119,9 @@ function ConflictBanner({
         variant="destructive"
       >
         <Inline align="center" gap="sm" justify="center" wrap>
-          <Text className="text-center text-inherit">{gone ? GONE : CONFLICT}</Text>
+          <Text className="text-center text-inherit">{message}</Text>
           <Inline align="center" gap="sm" justify="center">
-            {!gone && (
+            {!halt && (
               <Button
                 className="border-destructive-foreground/40 text-destructive-foreground hover:bg-destructive-foreground/10 hover:text-destructive-foreground"
                 disabled={reloading}
@@ -166,9 +172,40 @@ function ConflictBanner({
   );
 }
 
+function NewerVersionNotice({ onReload }: Pick<SessionBannersProps, 'onReload'>) {
+  const [reloading, setReloading] = useState(false);
+
+  const reload = async () => {
+    setReloading(true);
+    const outcome = await onReload();
+    setReloading(false);
+    if (outcome !== 'reloaded') {
+      toast.error(RELOAD_FAILED);
+    }
+  };
+
+  return (
+    <Banner
+      className="mx-4 mb-2 shrink-0"
+      data-testid={editorNewerVersionNotice}
+      role="status"
+      size="sm"
+      variant="info"
+    >
+      <Inline align="center" gap="sm">
+        <Text>{NEWER_VERSION}</Text>
+        <Button disabled={reloading} size="sm" variant="outline" onClick={() => void reload()}>
+          Reload
+        </Button>
+      </Inline>
+    </Banner>
+  );
+}
+
 export function SessionBanners({
   state,
   pendingSave,
+  newerVersionAvailable = false,
   hasUnsavedContent,
   contentText,
   onRetrySave,
@@ -177,21 +214,18 @@ export function SessionBanners({
   const saveError = state.kind === 'error' ? state.error : null;
   useShownAlert(saveError && saveErrorMessage(saveError), saveError);
 
+  const halt = terminalSaveError(state);
   const conflict =
     state.kind === 'conflict'
       ? state.error
-      : state.kind === 'halted'
-        ? NOT_FOUND
-        : pendingSave?.blockedBy?.kind === 'conflict'
-          ? pendingSave.blockedBy
-          : null;
+      : (halt ?? (pendingSave?.blockedBy?.kind === 'conflict' ? pendingSave.blockedBy : null));
   if (conflict) {
     return (
       <ConflictBanner
         contentText={contentText}
-        deleted={state.kind === 'halted'}
         error={conflict}
         hasUnsavedContent={hasUnsavedContent}
+        stopped={halt !== null}
         onReload={onReload}
       />
     );
@@ -208,7 +242,13 @@ export function SessionBanners({
         variant="destructive"
       >
         <Inline align="center" gap="sm">
-          <Text>{saveErrorMessage(state.error)}</Text>
+          <Text>
+            {state.error.kind === 'host-limit' ? (
+              <LimitMessage parts={splitUpgradeMessage(state.error.message)} />
+            ) : (
+              saveErrorMessage(state.error)
+            )}
+          </Text>
           <Button size="sm" variant="outline" onClick={onRetrySave}>
             Retry
           </Button>
@@ -223,6 +263,10 @@ export function SessionBanners({
         <Text>Changes are waiting to save. {pendingSave.blockedBy.message}</Text>
       </Banner>
     );
+  }
+
+  if (newerVersionAvailable) {
+    return <NewerVersionNotice onReload={onReload} />;
   }
 
   return null;

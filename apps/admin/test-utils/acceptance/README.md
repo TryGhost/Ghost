@@ -4,9 +4,17 @@ Full-app tests: the **real admin app** (the same provider stack as `src/main.tsx
 
 CI uploads `admin-acceptance-results-<shard>` artifacts containing Vitest's JSON
 report at `apps/admin/test-results/acceptance.json`, for both passing and failing
-runs. Use the suite start/end times and assertion durations to compare shard
-work, identify slow journeys, and investigate timeouts. Console output stays
-minimal; failure screenshots remain separate artifacts.
+runs. Each shard's GitHub Actions summary shows test counts, elapsed suite time,
+failed tests, and the slowest files and tests. Use the JSON report's suite
+start/end times and assertion durations to compare shard work, identify slow
+journeys, and investigate timeouts. A failure alone does not prove flakiness;
+compare repeated runs of the same commit. Console output stays minimal;
+failure screenshots remain separate artifacts.
+
+Local runs also write the JSON report. A successful Nx cache hit restores
+`test-results/acceptance.json` for the requested shard, so CI summaries and
+artifacts remain available when the browser suite is reused. Report timings
+describe the original execution; use `--skip-nx-cache` when measuring a new run.
 
 ## Anatomy of a spec
 

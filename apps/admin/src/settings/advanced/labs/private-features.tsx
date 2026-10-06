@@ -50,16 +50,6 @@ const features: Feature[] = [
     flag: 'csvContentImporter',
   },
   {
-    title: 'Admin UI Refresh',
-    description: 'Enable Admin UI refresh (exploration)',
-    flag: 'adminUIRefresh',
-  },
-  {
-    title: 'Tags X',
-    description: 'Enables the new Tags UI',
-    flag: 'tagsX',
-  },
-  {
     title: 'Email Unique ID',
     description:
       'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
@@ -100,12 +90,6 @@ const features: Feature[] = [
     flag: 'stripeCheckoutCollection',
   },
   {
-    title: 'Members import redesign',
-    description:
-      'Serves the redesigned members CSV import dialog, which shows every column in the file and lets each one be mapped to a member field',
-    flag: 'membersImportRedesign',
-  },
-  {
     title: 'Paywall improvements',
     description: 'Enables paywall usability, discoverability and email customization improvements',
     flag: 'paywallImprovements',
@@ -133,12 +117,6 @@ const features: Feature[] = [
     description:
       'Let AI agents pay for access to paid-members markdown (.md) URLs via Stripe Machine Payments Protocol',
     flag: 'machinePayments',
-  },
-  {
-    title: 'Dunning warnings',
-    description:
-      'Show payment-failure warnings in Admin, driven by the hosting provider via hostSettings.billing.dunning',
-    flag: 'dunningWarnings',
   },
 ];
 
