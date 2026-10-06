@@ -203,6 +203,12 @@ context. The save-error banner shows a host limit's reason with its "please
 upgrade" phrase linked to the host's upgrade screen, `/pro` unless the host
 configures another, and keeps the content and the banner's retry.
 
+An `unknown` failure the API answered, or one the session describes itself,
+shows its own message. One thrown in the browser instead, such as a
+`TypeError`, reads as "Something went wrong while saving. Please try again." in
+the banner, the status line, the publish flow and the preview alike; the error
+keeps its own message and cause for reporting.
+
 ## Adopting the server's answer
 
 Query responses go to the tracker's saved document and save responses to its
