@@ -41,6 +41,7 @@ export const WaitDurationField: React.FC<{
   const fieldId = useId();
   const inputId = inline ? fieldId : 'automation-wait-days';
   const errorId = `${inputId}-error`;
+  const unitId = `${inputId}-unit`;
   if (waitHours % 24 !== 0) {
     throw new Error(
       `WaitDurationField: wait_hours must be a multiple of 24, received ${waitHours}`,
@@ -100,12 +101,12 @@ export const WaitDurationField: React.FC<{
           className={inline ? 'sr-only' : 'text-sm font-medium text-text-secondary'}
           htmlFor={inputId}
         >
-          {inline ? 'Wait for (days)' : 'Wait for'}
+          Wait for
         </FieldLabel>
         {inline ? (
           <InputGroup>
             <InputGroupInput
-              aria-describedby={isInlineErrorVisible ? errorId : undefined}
+              aria-describedby={isInlineErrorVisible ? `${unitId} ${errorId}` : unitId}
               aria-invalid={isInlineErrorVisible}
               id={inputId}
               inputMode="numeric"
@@ -114,7 +115,7 @@ export const WaitDurationField: React.FC<{
               onChange={handleChange}
             />
             <InputGroupAddon align="inline-end">
-              <InputGroupText>{days === 1 ? 'Day' : 'Days'}</InputGroupText>
+              <InputGroupText id={unitId}>{days === 1 ? 'Day' : 'Days'}</InputGroupText>
             </InputGroupAddon>
           </InputGroup>
         ) : (

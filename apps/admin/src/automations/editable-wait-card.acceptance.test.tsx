@@ -85,11 +85,12 @@ describe('Inline wait editing', () => {
     const card = waits().nth(0);
     const first = card.getByRole('textbox', { name: 'Wait for' });
     await expect.element(first).toHaveValue('1');
-    await expect.element(first).toHaveAccessibleName('Wait for (days)');
+    await expect.element(first).toHaveAccessibleDescription('Day');
     await expect.element(card.getByText('Day', { exact: true })).toBeVisible();
     await expect.element(card.getByRole('combobox')).not.toBeInTheDocument();
     await first.fill('2');
     await expect.element(card.getByText('Days', { exact: true })).toBeVisible();
+    await expect.element(first).toHaveAccessibleDescription('Days');
     await first.fill('0');
     await expect.element(first).toHaveValue('');
     await first.fill('05');
