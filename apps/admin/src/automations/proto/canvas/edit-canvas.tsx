@@ -417,6 +417,10 @@ const NEW_STEP_MS = 400;
 // settled around it. Doing both at once would be the card moving while it appears,
 // which is two things to follow.
 const STEP_CENTER_MS = 450;
+// How long a card that just changed height — an email expanding its analytics,
+// cards growing their error messages — is given to be measured and laid out
+// before the canvas centres on it.
+const CARD_RESIZE_SETTLE_MS = 150;
 // Below this the canvas doesn't bother: a card that already sits near the middle
 // doesn't need correcting by a few pixels, and a move that small reads as the canvas
 // slipping rather than as anything being done.
@@ -1151,6 +1155,9 @@ interface EditCanvasProps {
   // whole hand — every warning, grace periods included. A counter rather than a
   // boolean so consecutive blocked presses each land; the canvas never resets it.
   revealWarningsSignal?: number;
+  // With the signal above: also bring the top-most faulty card into view when
+  // it isn't already fully on screen. Off by default; phase 2 turns it on.
+  revealPansToFirstFault?: boolean;
   // Keep every connector's + on screen instead of revealing on hover. The
   // screen passes this while the automation is OFF: building is when adding
   // steps is the point, and hover-only inserts made the moment after choosing
@@ -1198,6 +1205,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   triggerLocked = false,
   simpleTriggerNames = false,
   revealWarningsSignal,
+  revealPansToFirstFault = false,
   alwaysShowInserts = false,
   analyticsSurface = 'sheet',
   exitsOnTriggerCard = true,
@@ -1213,6 +1221,9 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   // not one id like the sheet's — expanding a card doesn't take the screen from
   // any other, so two can be open side by side for comparing.
   const [expandedEmailIds, setExpandedEmailIds] = useState<ReadonlySet<string>>(() => new Set());
+  // The card whose footer was just expanded, for the canvas to bring to the
+  // middle. `n` so expanding the same card twice asks twice.
+  const [expandCenter, setExpandCenter] = useState<{ id: string; n: number } | null>(null);
   // Email-content dialog, opened from a card's inline "Edit email content" button.
   // Keyed by the action that opened it, because the dialog can now WRITE — its
   // simulate toggle fills or empties that email's lexical, so it has to know
@@ -1693,6 +1704,9 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
           onToggleAnalytics: () => {
             settleOthers(action.id);
             if (analyticsSurface === 'inline') {
+              if (!expandedEmailIds.has(action.id)) {
+                setExpandCenter((current) => ({ id: action.id, n: (current?.n ?? 0) + 1 }));
+              }
               setExpandedEmailIds((current) => {
                 const next = new Set(current);
                 if (!next.delete(action.id)) {
@@ -1810,6 +1824,69 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   // Handed to the viewport hook rather than passed in, because it comes out of the
   // layout below — which needs the hook to have run first.
   contentHeightRef.current = contentBottom;
+
+  // Centring a card by id, on the layout as it stands when called. A card that
+  // just changed height only reaches it once React Flow has measured it, so the
+  // callers below wait a beat and the centre is read off the laid-out nodes
+  // then, rather than captured when the press happened.
+  const nodesRef = useRef(nodes);
+  nodesRef.current = nodes;
+  const centerOnNode = useCallback(
+    (id: string) => {
+      const column = nodesRef.current;
+      const index = column.findIndex((node) => node.id === id);
+      if (index < 0) {
+        return;
+      }
+      const top = column[index].position.y;
+      const nextTop = column[index + 1]?.position.y;
+      const cardBottom =
+        nextTop === undefined ? contentHeightRef.current : nextTop - NODE_VISUAL_GAP;
+      centerOn(top + (cardBottom - top) / 2, STEP_CENTER_MS, STEP_CENTER_MIN_SHIFT);
+    },
+    [centerOn, contentHeightRef],
+  );
+
+  // An expanded email card comes to the middle, the way a new step does.
+  useEffect(() => {
+    if (!expandCenter) {
+      return;
+    }
+    const timer = setTimeout(() => centerOnNode(expandCenter.id), CARD_RESIZE_SETTLE_MS);
+    return () => clearTimeout(timer);
+  }, [expandCenter, centerOnNode]);
+
+  // A refused Publish reveals every fault (see revealWarningsSignal); this takes
+  // the reader to the first of them, top to bottom, trigger included. Only when
+  // that card isn't already fully on screen — a fault in plain view needs no
+  // help being found, and moving the canvas then would just be a jolt. Focus
+  // stays where it is, so the Publish button's popover isn't dismissed.
+  const panSignal = useRef(revealWarningsSignal);
+  useEffect(() => {
+    if (!revealPansToFirstFault || revealWarningsSignal === panSignal.current) {
+      return;
+    }
+    panSignal.current = revealWarningsSignal;
+    const timer = setTimeout(() => {
+      const faulty = nodesRef.current.find((node) =>
+        Boolean((node.data as { warning?: unknown }).warning),
+      );
+      const canvas = canvasRef.current;
+      if (!faulty || !canvas) {
+        return;
+      }
+      const card = canvas.querySelector(`.react-flow__node[data-id="${faulty.id}"]`);
+      if (card) {
+        const view = canvas.getBoundingClientRect();
+        const box = card.getBoundingClientRect();
+        if (box.top >= view.top && box.bottom <= view.bottom) {
+          return;
+        }
+      }
+      centerOnNode(faulty.id);
+    }, CARD_RESIZE_SETTLE_MS);
+    return () => clearTimeout(timer);
+  }, [revealWarningsSignal, revealPansToFirstFault, centerOnNode, canvasRef]);
 
   const translateExtent = useMemo(
     () => panTranslateExtent(contentBottom, size),

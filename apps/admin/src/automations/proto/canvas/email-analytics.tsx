@@ -122,29 +122,32 @@ export const EmailStatsFooter: React.FC<StatsProps & { divider?: boolean }> = ({
 // already prints, so on the card they'd be a second, larger copy of it.
 //
 // The chevron only shows while the card is hovered (group/node, from NodeCard)
-// or once it's open — opacity, not display, so its slot is always reserved and
-// the numbers never shift when it appears. focus-visible too, so keyboard users
-// aren't relying on a hover they can't produce.
+// or once it's open. It's laid OVER the row's right end rather than given a
+// column: a reserved slot squeezed the three metrics left and, with the chevron
+// hidden, read as a hole in the card's bottom-right corner. The third metric
+// never fills its column, so the overlay lands on empty space and the numbers
+// sit exactly where the plain footer puts them. focus-visible too, so keyboard
+// users aren't relying on a hover they can't produce.
 export const EmailStatsExpandable: React.FC<
   StatsProps & { actionId: string; expanded: boolean; onToggle: () => void }
 > = ({ stats, opensTracked = true, clicksTracked = true, actionId, expanded, onToggle }) => (
   <Stack gap="lg">
-    <div className="flex items-center gap-3">
-      <div className="min-w-0 flex-1">
-        <EmailStatsFooter
-          clicksTracked={clicksTracked}
-          divider={false}
-          opensTracked={opensTracked}
-          stats={stats}
-        />
-      </div>
+    <div className="relative">
+      <EmailStatsFooter
+        clicksTracked={clicksTracked}
+        divider={false}
+        opensTracked={opensTracked}
+        stats={stats}
+      />
       {/* type="button": Shade's Button defaults to submit, which jumps the
           Ember-embedded admin's scroll on click. */}
       <Button
         aria-expanded={expanded}
         aria-label={expanded ? 'Hide clicked links' : 'Show clicked links'}
         className={cn(
-          'shrink-0 opacity-0 transition-opacity group-hover/node:opacity-100 focus-visible:opacity-100',
+          // right-0: flush with the card's padding, the same box the header's ⋯
+          // sits in, so the two glyphs share a vertical line.
+          'absolute top-1/2 right-0 -translate-y-1/2 opacity-0 transition-opacity group-hover/node:opacity-100 focus-visible:opacity-100',
           expanded && 'opacity-100',
         )}
         size="icon"

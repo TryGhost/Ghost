@@ -9,8 +9,11 @@ import {
   AlertDialogTitle,
   Button,
   EmptyIndicator,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from '@tryghost/shade/components';
-import { Inline } from '@tryghost/shade/primitives';
+import { Inline, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 
@@ -172,6 +175,27 @@ const AutomationFloat: React.FC = () => {
   // The Publish button's blocked popover — the answer to pressing Publish while
   // the automation can't go live. One piece of state serves both lifecycle
   // states' primaries; only one of them is ever rendered.
+  const [publishBlocked, setPublishBlocked] = useState(false);
+  // Closing it on a press anywhere else has to be done by hand for the canvas.
+  // Radix dismisses on a bubble-phase pointerdown at the document, and React
+  // Flow's pan handler (d3-zoom) stops that event before it gets there — so a
+  // press on the canvas, which is most of the screen, never reached it. Capture
+  // runs ahead of the canvas. The popover's own content and the button that
+  // raised it are left alone: the button decides for itself on its click.
+  useEffect(() => {
+    if (!publishBlocked) {
+      return;
+    }
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Element | null;
+      if (target?.closest?.('[data-publish-blocked]')) {
+        return;
+      }
+      setPublishBlocked(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown, true);
+    return () => document.removeEventListener('pointerdown', onPointerDown, true);
+  }, [publishBlocked]);
   // Set when the screen is deliberately navigating away — Delete, and the first
   // Save of a new automation, which swaps /new for a real id.
   //
@@ -543,13 +567,15 @@ const AutomationFloat: React.FC = () => {
 
   // Publish, while off: take the automation live. It confirms first (the
   // "Publish automation?" dialog), and a draft that fails validation is blocked
-  // at the press — an error toast, and the canvas showing every warning it holds.
+  // at the press — a popover on the button, and the canvas showing every warning
+  // it holds.
   const handlePublishAttempt = () => {
     if (!canGoLive) {
-      // The refusal is an error toast, the spec's one non-success toast — and
-      // the canvas reveals every highlight it holds, grace periods included.
+      // The refusal is a popover on the button that was pressed — an error
+      // toast was tried and sat too far away, bottom-left — and the canvas
+      // reveals every highlight it holds, grace periods included.
       revealWarnings();
-      toast.error('Fix highlighted issues to publish.');
+      setPublishBlocked(true);
       return;
     }
     setStartOpen(true);
@@ -561,10 +587,11 @@ const AutomationFloat: React.FC = () => {
   // has to hold up.)
   const handlePublishChangesClick = () => {
     if (!canGoLive) {
-      // The refusal is an error toast, the spec's one non-success toast — and
-      // the canvas reveals every highlight it holds, grace periods included.
+      // The refusal is a popover on the button that was pressed — an error
+      // toast was tried and sat too far away, bottom-left — and the canvas
+      // reveals every highlight it holds, grace periods included.
       revealWarnings();
-      toast.error('Fix highlighted issues to publish.');
+      setPublishBlocked(true);
       return;
     }
     setPublishOpen(true);
@@ -675,11 +702,41 @@ const AutomationFloat: React.FC = () => {
   // disabled for validity. Phase 2 has states phase 1 can't reach — no trigger
   // chosen, tiers unanswered — and a greyed-out Publish is a dead end: it says
   // no without saying why. Pressing it while blocked answers at the point of
-  // the press — the error toast names the deal, and the canvas shows every warning
-  // it holds, grace periods included.
+  // the press — a popover on the button says why, and the canvas shows every
+  // warning it holds, grace periods included.
   //
   // No save indicator. Flickering "Saving…" on every keystroke draws the eye to
   // plumbing rather than to anything the publisher can act on.
+
+  // The shipping header's validation popover (components/automation-header,
+  // withValidationFeedback), markup and message verbatim: opened by a refused
+  // press rather than by the trigger, dismissed by Escape or an outside click,
+  // and gone on its own once the automation can go live.
+  const withPublishBlocked = (button: React.ReactElement) => (
+    <Popover
+      open={publishBlocked && !canGoLive}
+      onOpenChange={(open) => {
+        if (!open) {
+          setPublishBlocked(false);
+        }
+      }}
+    >
+      <PopoverTrigger asChild data-publish-blocked>
+        {button}
+      </PopoverTrigger>
+      <PopoverContent
+        align="end"
+        className="w-72"
+        data-publish-blocked
+        onCloseAutoFocus={(event) => event.preventDefault()}
+        onOpenAutoFocus={(event) => event.preventDefault()}
+      >
+        <Text role="status" size="md">
+          Fix all issues to publish this automation.
+        </Text>
+      </PopoverContent>
+    </Popover>
+  );
 
   const chromeActions =
     liveStatus === 'inactive' ? (
@@ -690,7 +747,7 @@ const AutomationFloat: React.FC = () => {
         <Button disabled={!hasChanges} variant="outline" onClick={handleSave}>
           Save
         </Button>
-        <Button onClick={handlePublishAttempt}>Publish</Button>
+        {withPublishBlocked(<Button onClick={handlePublishAttempt}>Publish</Button>)}
       </>
     ) : (
       <>
@@ -699,9 +756,11 @@ const AutomationFloat: React.FC = () => {
         </Button>
         {/* "Update", the post editor's word for pushing edits to something
             that's already live — and the right-panel concept's. */}
-        <Button disabled={!hasChanges} onClick={handlePublishChangesClick}>
-          Update
-        </Button>
+        {withPublishBlocked(
+          <Button disabled={!hasChanges} onClick={handlePublishChangesClick}>
+            Update
+          </Button>,
+        )}
       </>
     );
 
@@ -858,8 +917,8 @@ const AutomationFloat: React.FC = () => {
                 // The exit sentence lives in Settings now, under Exit conditions.
                 exitsOnTriggerCard={false}
                 // Faults show on the fields that have them, in Shade's own
-                // invalid state, with the card's border in the same red —
-                // rather than a gold alert in the card's header.
+                // invalid state, with the card's border in a muted version of
+                // the same red — rather than a gold alert in the card's header.
                 faultDisplay="field"
                 // Which triggers this screen may offer — see shared/capabilities.
                 lane={LANE}
@@ -882,6 +941,9 @@ const AutomationFloat: React.FC = () => {
                     ? { message: 'Connect Stripe to publish automations for paid members.' }
                     : undefined
                 }
+                // A refused Publish also brings the first fault into view when
+                // it's off screen.
+                revealPansToFirstFault
                 onChange={handleDraftChange}
                 onTriggerConfigChange={handleTriggerConfigChange}
               />

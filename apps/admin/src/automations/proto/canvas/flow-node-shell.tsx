@@ -42,9 +42,11 @@ const NODE_BORDER: Record<NodeBorder, string> = {
   // read as one signal.
   warning: 'border-state-warning',
   // A card with a field in Shade's invalid state (the canvas's field fault
-  // display): the same destructive red the field wears, so the two read as one
-  // signal — the card says where, the field says what.
-  error: 'border-destructive',
+  // display): the field's own destructive red, at 40% — the same token, eased
+  // the way Shade eases it for the invalid ring (ring-destructive/20). At full
+  // strength the card outshouted the field it contains; muted, the field says
+  // what and the card only says where.
+  error: 'border-destructive/40',
   done: 'border-green',
   // Where a member left the flow. Grey rather than a colour of its own — exiting
   // isn't a failure to flag, it just isn't a completion, and green here read as
