@@ -1,7 +1,6 @@
 import React from 'react';
 import type { AutomationEmailStats } from '@tryghost/admin-x-framework/api/automations';
 import {
-  Button,
   type ChartConfig,
   ChartContainer,
   DataList,
@@ -18,7 +17,7 @@ import {
   TooltipTrigger,
 } from '@tryghost/shade/components';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { LucideIcon, Recharts, cn, formatNumber, formatPercentage } from '@tryghost/shade/utils';
+import { Recharts, cn, formatNumber, formatPercentage } from '@tryghost/shade/utils';
 import { type ProtoActionLink, actionLinks } from '@/automations/proto/shared/email-links';
 import { OffValue } from '@/automations/components/canvas/off-value';
 
@@ -114,52 +113,27 @@ export const EmailStatsFooter: React.FC<StatsProps & { divider?: boolean }> = ({
 
 // On-card analytics, back as the note above asked: the same card growing the
 // section, not a second card. The footer's three numbers stay exactly as they
-// are, with a chevron after them that opens the clicked links underneath — so
-// the deeper read happens where the numbers already are, with no sheet or modal
-// taking over the screen.
+// are, and expanding opens the clicked links underneath — so the deeper read
+// happens where the numbers already are, with no sheet or modal taking over the
+// screen.
 //
 // No donut. The rings plotted the same Sent / Opened / Clicked the footer
 // already prints, so on the card they'd be a second, larger copy of it.
 //
-// The chevron only shows while the card is hovered (group/node, from NodeCard)
-// or once it's open. It's laid OVER the row's right end rather than given a
-// column: a reserved slot squeezed the three metrics left and, with the chevron
-// hidden, read as a hole in the card's bottom-right corner. The third metric
-// never fills its column, so the overlay lands on empty space and the numbers
-// sit exactly where the plain footer puts them. focus-visible too, so keyboard
-// users aren't relying on a hover they can't produce.
+// The control that expands it is the analytics button in the card's header,
+// beside the ⋯ (the edit canvas's analyticsAction) — the same always-visible
+// toggle the other lanes use to open their sheet. A hover-only chevron on the
+// metrics row was tried first and gave no visible way in at rest.
 export const EmailStatsExpandable: React.FC<
-  StatsProps & { actionId: string; expanded: boolean; onToggle: () => void }
-> = ({ stats, opensTracked = true, clicksTracked = true, actionId, expanded, onToggle }) => (
+  StatsProps & { actionId: string; expanded: boolean }
+> = ({ stats, opensTracked = true, clicksTracked = true, actionId, expanded }) => (
   <Stack gap="lg">
-    <div className="relative">
-      <EmailStatsFooter
-        clicksTracked={clicksTracked}
-        divider={false}
-        opensTracked={opensTracked}
-        stats={stats}
-      />
-      {/* type="button": Shade's Button defaults to submit, which jumps the
-          Ember-embedded admin's scroll on click. */}
-      <Button
-        aria-expanded={expanded}
-        aria-label={expanded ? 'Hide clicked links' : 'Show clicked links'}
-        className={cn(
-          // right-0: flush with the card's padding, the same box the header's ⋯
-          // sits in, so the two glyphs share a vertical line.
-          'absolute top-1/2 right-0 -translate-y-1/2 opacity-0 transition-opacity group-hover/node:opacity-100 focus-visible:opacity-100',
-          expanded && 'opacity-100',
-        )}
-        size="icon"
-        type="button"
-        variant="ghost"
-        onClick={onToggle}
-      >
-        <LucideIcon.ChevronDown
-          className={cn('transition-transform duration-200', expanded && 'rotate-180')}
-        />
-      </Button>
-    </div>
+    <EmailStatsFooter
+      clicksTracked={clicksTracked}
+      divider={false}
+      opensTracked={opensTracked}
+      stats={stats}
+    />
     {expanded && (
       <Stack gap="md">
         <Inline justify="between">

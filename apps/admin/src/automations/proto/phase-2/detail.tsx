@@ -905,8 +905,8 @@ const AutomationFloat: React.FC = () => {
                 // from the moment it exists, zeros included; see the canvas's
                 // ZERO_EMAIL_STATS.)
                 alwaysShowInserts={liveStatus === 'inactive'}
-                // An email's report expands in place on its card: the footer's
-                // chevron opens the clicked links under the numbers. (It was a
+                // An email's report expands in place on its card: the header's
+                // analytics button opens the clicked links under the numbers. (It was a
                 // modal before — the side panel owns the right edge, where the
                 // other lanes' sheet slides in — and the modal didn't land.)
                 analyticsSurface="inline"

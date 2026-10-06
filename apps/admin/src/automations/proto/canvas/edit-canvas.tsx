@@ -658,8 +658,11 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
   // again closes the sheet. The pressed fill is the same bg-muted every other
   // open-state control in the proto takes (the lane switcher, an open menu's
   // trigger), so "this button's panel is open" reads the same everywhere.
+  //
+  // Inline (phase 2), the same button is the toggle for the card's own
+  // expanded analytics: pressed while the card is expanded, nothing else opens.
   const analyticsAction =
-    isEmail && d.stats && !d.analyticsInline ? (
+    isEmail && d.stats ? (
       <Button
         aria-label={d.analyticsOpen ? 'Hide email analytics' : 'View email analytics'}
         aria-pressed={d.analyticsOpen}
@@ -857,7 +860,6 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
                       actionId={d.actionId}
                       expanded={Boolean(d.analyticsOpen)}
                       stats={d.stats}
-                      onToggle={() => d.onToggleAnalytics?.()}
                     />
                   ) : (
                     <EmailStatsFooter divider={false} stats={d.stats} />
