@@ -1090,6 +1090,17 @@ describe('automations repository', function () {
     });
   });
 
+  describe('exists', function () {
+    it('resolves to false for automations that do not exist', async function () {
+      assert.equal(await repo.exists('missing'), false);
+    });
+
+    it('resolves to true for automations that exist', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      assert.equal(await repo.exists(automation.id), true);
+    });
+  });
+
   describe('getNumberOfAutomations', function () {
     it('counts active and inactive automations without creating defaults', async function () {
       const rows = await knex('automations').select('id');
