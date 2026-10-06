@@ -994,6 +994,9 @@ importers:
       '@tryghost/admin-x-framework':
         specifier: workspace:*
         version: link:../admin-x-framework
+      '@tryghost/app-contracts':
+        specifier: workspace:*
+        version: link:../../packages/app-contracts
       '@tryghost/checkout':
         specifier: workspace:*
         version: link:../../packages/checkout
