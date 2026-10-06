@@ -342,6 +342,33 @@ versioning:
     - '@tryghost/portal'
     - '@tryghost/signup-form'
     - '@tryghost/sodo-search'
+    # ignore private packages, which are never published. pnpm bumps them
+    # otherwise; `pnpm lint:versioning` enforces this list
+    - '@internal/cfg-eslint'
+    - '@internal/cfg-eslint-react'
+    - '@internal/cfg-typescript'
+    - '@internal/cfg-vite-public-app'
+    - '@internal/cfg-vitest'
+    - '@internal/scripts'
+    - '@tryghost/activitypub'
+    - '@tryghost/adapter-base-jobs'
+    - '@tryghost/adapter-base-redirects'
+    - '@tryghost/adapter-base-route-settings'
+    - '@tryghost/admin'
+    - '@tryghost/admin-api-schema'
+    - '@tryghost/admin-x-framework'
+    - '@tryghost/api-framework'
+    - '@tryghost/app-contracts'
+    - '@tryghost/checkout'
+    - '@tryghost/e2e'
+    - '@tryghost/i18n'
+    - '@tryghost/image-transform'
+    - '@tryghost/limit-service'
+    - '@tryghost/metafield-csv'
+    - '@tryghost/nql-string'
+    - '@tryghost/parse-email-address'
+    - '@tryghost/shade'
+    - '@tryghost/test-data'
 patchedDependencies:
   # The 8.x Elasticsearch client eagerly requires apache-arrow for two ES|QL
   # helpers Ghost never calls; the patch defers that require, as 9.x does. The
