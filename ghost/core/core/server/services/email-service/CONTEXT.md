@@ -35,3 +35,23 @@ _Avoid_: Bounced, rejected
 **Failed during**:
 The sending phase a failed newsletter email was in when sending stopped.
 _Avoid_: Failure step
+
+**Candidate recipient**:
+A member selected for a newsletter email's audience before preparation exclusions. Selection does not mean the member has been prepared or submitted.
+_Avoid_: Subscriber count, delivered recipient
+
+**Preparation exclusion**:
+A candidate explicitly omitted from a newsletter email's prepared audience because required recipient data is unavailable.
+_Avoid_: Failed delivery, silently skipped recipient
+
+**Accounted email**:
+A newsletter email whose candidate audience, prepared recipients, and exclusions are verified against one another.
+_Avoid_: Delivered email, reconciled delivery
+
+**Frozen preparation**:
+The verified recipient membership retained for subsequent attempts to submit the same newsletter email.
+_Avoid_: Live audience, refreshed audience
+
+**Recovered batch**:
+A previously committed batch identified and verified after the outcome of its creation was uncertain.
+_Avoid_: Rebuilt batch, resent batch
