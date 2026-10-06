@@ -12,7 +12,8 @@ import {
   PopoverTrigger,
 } from '@tryghost/shade/components';
 import { Grid, Stack, Inline, Text } from '@tryghost/shade/primitives';
-import { AutomationCard, AutomationCardHeader } from './automation-card';
+import { AutomationCard } from './automation-card';
+import { TriggerCard } from './trigger-card';
 import { Handle, Position } from '@xyflow/react';
 import type { Node, NodeProps } from '@xyflow/react';
 import type { AutomationEmailStats } from '@tryghost/admin-x-framework/api/automations';
@@ -267,18 +268,9 @@ const EmailStepStatsFooter: React.FC<{
 
 const TriggerNode = React.memo<NodeProps<StepFlowNode>>(({ data }) =>
   data.fixedTrigger ? (
-    <AutomationCard
-      aria-label="Member signs up"
-      className="w-[400px]"
-      onPointerDownCapture={data.onInteract}
-    >
-      <AutomationCardHeader
-        icon={<LucideIcon.UserPlus className="size-4" />}
-        iconClassName="p-2.5 text-foreground"
-        title="Member signs up"
-      />
+    <TriggerCard onInteract={data.onInteract}>
       <HiddenHandle position={Position.Bottom} type="source" />
-    </AutomationCard>
+    </TriggerCard>
   ) : (
     <NodeShell data={data}>
       <StepNodeContent data={data} />

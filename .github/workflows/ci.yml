@@ -405,6 +405,9 @@ jobs:
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
         run: node scripts/change-check.js
 
+      - name: Check private packages are excluded from versioning
+        run: node scripts/check-versioning-ignore.js
+
   job_migration_integrity_check:
     name: Check migration integrity
     runs-on: ubuntu-latest

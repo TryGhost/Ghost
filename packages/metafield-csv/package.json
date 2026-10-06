@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/metafield-csv",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "private": true,
   "description": "How Ghost's members CSV import and export lay member custom field values out in columns",
   "license": "MIT",
