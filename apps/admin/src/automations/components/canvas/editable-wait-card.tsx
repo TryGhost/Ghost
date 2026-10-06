@@ -23,8 +23,8 @@ export const EditableWaitCard: React.FC<
     menuItems: NodeContextMenuEntry[];
   }>
 > = ({ wait, isNew, errorMessage, menuItems, children }) => {
-  const [isValid, setIsValid] = useState(true);
-  const warning = !isValid ? WAIT_VALIDATION_MESSAGE : errorMessage;
+  const [isInvalidShown, setIsInvalidShown] = useState(false);
+  const warning = isInvalidShown ? WAIT_VALIDATION_MESSAGE : errorMessage;
   return (
     <AutomationCard
       aria-label={`Wait: ${formatWait(wait.hours)}`}
@@ -54,11 +54,9 @@ export const EditableWaitCard: React.FC<
       <WaitDurationField
         waitHours={wait.hours}
         inline
+        onErrorVisibilityChange={setIsInvalidShown}
         onUpdate={wait.onUpdate}
-        onValidityChange={(valid) => {
-          setIsValid(valid);
-          wait.onValidityChange(valid);
-        }}
+        onValidityChange={wait.onValidityChange}
       />
     </AutomationCard>
   );

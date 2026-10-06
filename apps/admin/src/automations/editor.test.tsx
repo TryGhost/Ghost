@@ -1872,7 +1872,7 @@ describe('AutomationEditor', () => {
     ).toBeDisabled();
   });
 
-  it('rejects non-decimal wait editor values', () => {
+  it('reduces wait editor values to digits and rejects out-of-range ones', () => {
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [automationDetail] },
       isLoading: false,
@@ -1885,7 +1885,19 @@ describe('AutomationEditor', () => {
     const sidebar = screen.getByRole('complementary', { name: 'Step details' });
     const waitInput = within(sidebar).getByDisplayValue('1');
 
-    for (const value of ['2e1', '+2']) {
+    for (const [typed, kept] of [
+      ['2e1', '21'],
+      ['+2', '2'],
+      ['1.5', '15'],
+      ['abc', ''],
+    ]) {
+      fireEvent.change(waitInput, { target: { value: typed } });
+      expect(waitInput).toHaveValue(kept);
+    }
+    // Back to the saved value, so the checks below start from an unchanged draft.
+    fireEvent.change(waitInput, { target: { value: '1' } });
+
+    for (const value of ['31', '99']) {
       fireEvent.focus(waitInput);
       fireEvent.change(waitInput, { target: { value } });
 

@@ -127,7 +127,7 @@ describe('Run history preserves editor drafts', () => {
     await input.fill('3');
     await expect.element(page.getByRole('button', { name: 'Save', exact: true })).toBeEnabled();
     // Invalid field text lives in the input, outside the saved editor draft.
-    await input.fill('0');
+    await input.fill('31');
     await open();
     await select();
     await expect.element(canvas()).toHaveTextContent('Alex');
@@ -136,7 +136,7 @@ describe('Run history preserves editor drafts', () => {
       .not.toBeVisible();
     await expect.element(page.getByRole('button', { name: 'Save', exact: true })).toBeDisabled();
     await close();
-    await expect.element(input).toHaveValue('0');
+    await expect.element(input).toHaveValue('31');
     await expect.element(page.getByRole('article', { name: 'Wait: 3 days' })).toBeVisible();
     await expect.element(page.getByRole('button', { name: 'Save', exact: true })).toBeEnabled();
     expect(save.requests).toHaveLength(0);
