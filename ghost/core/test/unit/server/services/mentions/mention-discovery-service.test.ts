@@ -74,6 +74,16 @@ describe('MentionDiscoveryService', function () {
       assert.equal(endpoint, null);
     });
 
+    it('Returns null for a site without a content type', async function () {
+      const warnStub = sinon.stub(logging, 'warn');
+      const url = new URL('http://testpage.com/');
+      nock(url.href).get('/').reply(200, 'Some content');
+      const endpoint = await service.getEndpoint(url);
+
+      assert.equal(endpoint, null);
+      sinon.assert.notCalled(warnStub);
+    });
+
     it('Returns null when the endpoint in the Link header is not a valid URL', async function () {
       const url = new URL('http://testpage.com/');
       nock(url.href).get('/').reply(200, {}, { Link: '<http://[invalid>; rel="webmention"' });

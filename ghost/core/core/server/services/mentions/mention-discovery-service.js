@@ -59,7 +59,7 @@ module.exports = class MentionDiscoveryService {
     }
 
     // must be html to find links/tags
-    if (!response.headers['content-type'].includes('text/html')) {
+    if (!response.headers['content-type']?.includes('text/html')) {
       return null;
     }
 
