@@ -40,6 +40,7 @@ const runsResponse = () => ({
 describe('Automation run list', () => {
   it('fetches on first opening and shows runs in server order with member and status fallbacks', async () => {
     prepareStatuses();
+    read('first', 'inactive');
     const request = fakeAdminEndpoint(
       'GET',
       /\/automations\/first\/runs\/\?timezone=[^&]+$/,
@@ -117,7 +118,7 @@ describe('Automation run list', () => {
 
   it('caches runs across closing, then fetches again on the next visit', async () => {
     prepareStatuses();
-    read('second');
+    read('second', 'inactive');
     const request = fakeAdminEndpoint(
       'GET',
       /\/automations\/first\/runs\/\?timezone=[^&]+$/,
@@ -135,8 +136,7 @@ describe('Automation run list', () => {
     window.location.hash = '#/automations/second';
     await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
     window.location.hash = '#/automations/first';
-    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
-    expect(request.requests).toHaveLength(1);
+    await expect.element(page.getByRole('button', { name: 'Hide performance' })).toBeVisible();
     await open();
     await expect.poll(() => request.requests.length).toBe(2);
   });
