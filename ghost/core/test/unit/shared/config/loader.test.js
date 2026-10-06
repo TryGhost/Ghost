@@ -5,6 +5,11 @@ const path = require('path');
 const _ = require('lodash');
 const configUtils = require('../../../utils/config-utils');
 const sinon = require('sinon');
+
+// Captured before any test changes the environment.
+const envAtLoad = process.env;
+const envValuesAtLoad = { ...process.env };
+
 describe('Config Loader', function () {
   beforeAll(async function () {
     await configUtils.restore();
@@ -15,15 +20,6 @@ describe('Config Loader', function () {
   });
 
   describe('hierarchy of config channels', function () {
-    const envKeys = [
-      'NODE_ENV',
-      'paths__contentPath',
-      'logging__level',
-      'database__client',
-      'logging__level_FILE',
-      'database__connection__password_FILE',
-      'paths__corePath',
-    ];
     let originalEnv;
     let originalArgv;
     let customConfig;
@@ -37,7 +33,7 @@ describe('Config Loader', function () {
     }
 
     beforeEach(function () {
-      originalEnv = new Map(envKeys.map((key) => [key, process.env[key]]));
+      originalEnv = { ...process.env };
       originalArgv = _.clone(process.argv);
       tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-loader-'));
       loader = require('../../../../core/shared/config/loader');
@@ -52,15 +48,14 @@ describe('Config Loader', function () {
     });
 
     afterEach(function () {
-      // Vitest retains the original env object for vi.stubEnv cleanup. Replacing
-      // it leaves later tests unable to remove their own environment overrides.
-      for (const [key, value] of originalEnv) {
-        if (value === undefined) {
+      // Restore in place: Vitest retains the original env object for
+      // vi.stubEnv cleanup, so replacing it would break later tests.
+      for (const key of Object.keys(process.env)) {
+        if (!(key in originalEnv)) {
           delete process.env[key];
-        } else {
-          process.env[key] = value;
         }
       }
+      Object.assign(process.env, originalEnv);
       process.argv = originalArgv;
       fs.rmSync(tmpDir, { recursive: true, force: true });
       sinon.restore();
@@ -172,6 +167,14 @@ describe('Config Loader', function () {
 
       assert.equal(customConfig.get('site_uuid'), 'a58fe20c-0af0-4fc6-9b1a-20873d5b7d03');
       assert.equal(customConfig.get('commented'), undefined);
+    });
+  });
+
+  // Runs after the hierarchy tests above, which set, change and delete keys.
+  describe('hierarchy fixture cleanup', function () {
+    it('keeps the same process.env object and restores its keys and values', function () {
+      assert.equal(process.env, envAtLoad);
+      assert.deepEqual({ ...process.env }, envValuesAtLoad);
     });
   });
 

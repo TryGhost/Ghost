@@ -37,21 +37,34 @@ describe('Internal CLI entrypoints', function () {
     fs.writeFileSync(
       preload,
       `
+        // Exit rather than throw: commands catch and log errors (generate-data
+        // reports a failed import and still exits 0), which would hide a throw.
+        const forbid = (message) => {
+          process.stderr.write('CLI fixture: ' + message + '\\n');
+          process.exit(97);
+        };
         require(${JSON.stringify(require.resolve('nock'))}).disableNetConnect();
         const net = require('node:net');
-        const noNetwork = () => { throw new Error('CLI fixture must not use network sockets'); };
-        net.Socket.prototype.connect = noNetwork;
-        net.Server.prototype.listen = noNetwork;
+        // tsx's loader connects to a local IPC socket; only TCP is network.
+        const connect = net.Socket.prototype.connect;
+        net.Socket.prototype.connect = function (...args) {
+          const options = Array.isArray(args[0]) ? args[0][0] : args[0];
+          if (typeof options === 'string' || options?.path) {
+            return connect.apply(this, args);
+          }
+          forbid('must not open network connections');
+        };
+        net.Server.prototype.listen = () => forbid('must not listen for connections');
 
         // A command must be dispatched without entering the normal server boot.
         const Module = require('node:module');
         const load = Module._load;
         Module._load = function (request, parent, isMain) {
           if (request === 'better-sqlite3') {
-            return function () { throw new Error('CLI fixture must not open a database'); };
+            return function () { forbid('must not open a database'); };
           }
           if (parent?.filename === ${JSON.stringify(entrypoint)} && request === './core/boot') {
-            throw new Error('Internal CLI command entered server boot');
+            forbid('entered server boot');
           }
           return load.call(this, request, parent, isMain);
         };
@@ -96,7 +109,7 @@ describe('Internal CLI entrypoints', function () {
     });
   }
 
-  it('prints the data generator dependencies without importing or booting', function () {
+  it('prints the data generator dependencies and exits before importing or booting', function () {
     const output = run('generate-data', ['--print-dependencies', '--tables', 'posts_tags']);
     assert.match(output, /Table dependencies:/);
     const tables = [...output.matchAll(/^info\s+(\w+):([^\n]*)$/gm)].map(

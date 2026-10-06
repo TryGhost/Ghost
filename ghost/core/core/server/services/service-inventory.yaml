@@ -1433,7 +1433,7 @@ services:
   jobs-service:
     kind: directory
     disposition: retain
-    status: audited
+    status: auditing
     entryPoints:
       - jobs-service/index.ts
       - jobs-service/register-job-handlers.ts
@@ -1462,6 +1462,7 @@ services:
           - core/server/services/jobs-service/jobs-service.ts
         tests:
           - test/unit/server/services/jobs-service/index.test.js
+          - test/unit/server/services/jobs-service/jobs-service.test.ts
       startup:
         summary: >-
           Boot registers handlers after asynchronous service prerequisites settle, awaits
@@ -1482,42 +1483,16 @@ services:
           - core/server/services/jobs-service/jobs-service.ts
           - core/server/services/mentions/mention-controller.js
         tests:
-          - test/unit/server/services/jobs-service/retained-consumer.test.ts
-      consumers:
-        summary: >-
-          Boot injects the instance into retained mentions and email consumers and a fresh
-          site importer. Members, content CSV imports, the media API and email analytics
-          resolve it when dispatching or scheduling. Gift/member cleanup, signing keys,
-          update checks and Tinybird schedule through boot-supplied references. The default
-          backend runs jobs in-process; registered handlers call initialized domain services.
-        sources:
-          - core/boot.js
-          - core/server/services/jobs-service/register-job-handlers.ts
-          - core/server/services/mentions/mention-controller.js
-          - core/server/services/mentions/mention-sending-service.js
-          - core/server/services/email-service/batch-sending-service.js
-          - core/server/data/importer/import-manager.js
-          - core/server/data/importer/index.js
-          - core/server/services/members/service.js
-          - core/server/services/content-import/index.ts
-          - core/server/api/endpoints/db.js
-          - core/server/services/email-analytics/jobs/index.js
-          - core/server/services/email-analytics/jobs/email-analytics-job-scheduler.ts
-          - core/server/services/gifts/jobs/index.js
-          - core/server/services/members/jobs/index.js
-          - core/server/services/signing-keys/index.ts
-          - core/server/services/update-check/index.js
-          - core/server/services/tinybird-sync/tinybird-sync-service.ts
-        tests:
-          - test/unit/server/services/jobs-service/register-job-handlers.test.ts
+          - test/unit/server/services/jobs-service/index.test.js
+          - test/unit/server/services/jobs-service/jobs-service.test.ts
           - test/unit/server/services/jobs-service/retained-consumer.test.ts
       configuration:
         summary: >-
-          The wrapper captures its adapter and options on first init; reinit keeps them.
-          Checked-in defaults select InMemoryJobsBackend with concurrency 3. Registration
-          declares separate queue limits. Boot reads server:shutdownTimeout for cleanup;
-          the backend otherwise defaults to 10 seconds. Custom adapter behavior requires
-          separate evidence.
+          The wrapper looks up the jobs adapter on first init; reinit reuses the same
+          service and backend. Checked-in defaults select InMemoryJobsBackend with
+          concurrency 3. Registration declares separate queue limits. Boot passes
+          server:shutdownTimeout to jobs shutdown when its cleanup task runs; the in-memory
+          backend otherwise waits 10 seconds.
         sources:
           - core/server/services/jobs-service/index.ts
           - core/server/services/jobs-service/register-job-handlers.ts
@@ -1528,15 +1503,17 @@ services:
           - test/unit/server/services/jobs-service/index.test.js
           - test/unit/server/services/jobs-service/register-job-handlers.test.ts
           - test/unit/server/adapters/jobs/in-memory-jobs-backend.test.ts
+          - test/e2e-server/boot-readiness.isolated.test.ts
       resources:
         summary: >-
-          The in-memory backend owns queues, a processor and recurring timers. Schedules
-          use local time and keep the first registration per job type. Shutdown stops
-          accepting work, clears timers, drops queued work and bounds the wait for active
-          deliveries, then resets queues and processor. Pre-start enqueue/schedule throws;
-          after shutdown both are dropped. A timeout does not cancel active handlers, and
-          an early drain does not clear its deadline timer. GhostServer drains HTTP before
-          starting its concurrent cleanup tasks; the jobs wrapper has no pre-stop hook.
+          The in-memory backend reads recurring schedules in local time and keeps the first
+          registration per job type. Shutdown stops accepting work, clears recurring timers,
+          drops queued work and bounds the wait for active deliveries, then discards its
+          queues so a re-boot starts with empty lanes. Enqueue or schedule before start
+          throws; after shutdown both are dropped. A passed deadline does not cancel active
+          deliveries, and an early drain leaves its deadline timer pending. GhostServer
+          drains HTTP before starting its concurrent cleanup tasks, and jobs shut down in a
+          cleanup task after the HTTP drain.
         sources:
           - core/server/adapters/jobs/InMemoryJobsBackend.ts
           - core/server/services/jobs-service/jobs-service.ts
@@ -1546,29 +1523,31 @@ services:
           - test/unit/server/adapters/jobs/in-memory-jobs-backend.test.ts
           - test/unit/server/services/jobs-service/jobs-service.test.ts
           - test/unit/server/ghost-server.test.ts
+          - test/e2e-server/boot-readiness.isolated.test.ts
       failures:
         summary: >-
-          Invalid/duplicate handler and queue declarations fail. Dispatch and recurring
-          scheduling propagate serialization, validation and backend acceptance errors.
-          Missing handlers are logged and dropped. Handler errors are logged, reported and
-          rethrown to the backend; the in-memory backend logs and drops them without retry,
-          continuing other deliveries. Recurring enqueue errors are caught and logged.
-          Domain handlers may absorb their own failures, so completion means settlement,
-          not necessarily successful domain work.
+          Invalid or duplicate handler and queue declarations fail. Dispatch and recurring
+          scheduling propagate payload serialization, validation and backend errors.
+          Deliveries for unknown job types are logged and dropped. Handler errors are
+          logged, reported and rethrown to the backend; the in-memory backend logs them and
+          continues other deliveries without retrying. A recurring tick whose enqueue throws
+          is logged and the schedule keeps running.
         sources:
           - core/server/services/jobs-service/jobs-service.ts
           - core/server/adapters/jobs/InMemoryJobsBackend.ts
-          - core/server/services/jobs-service/register-job-handlers.ts
-          - core/server/data/importer/import-manager.js
         tests:
           - test/unit/server/services/jobs-service/jobs-service.test.ts
           - test/unit/server/adapters/jobs/in-memory-jobs-backend.test.ts
-          - test/unit/server/services/jobs-service/register-job-handlers.test.ts
-    unverified: []
+    unverified:
+      - consumers
     blockers:
       - >-
-        Retained-controller dispatch across restart and required jobs startup are tested;
-        other retained consumers and custom adapters still need migration acceptance.
+        Audit consumers. Boot injects the instance into mentions and email consumers and a
+        fresh site importer; members, content CSV imports, the media API and email
+        analytics resolve it when dispatching or scheduling; gift/member cleanup, signing
+        keys, update checks and Tinybird schedule through boot-supplied references. Only
+        the retained MentionController and handler registration are tested. Custom jobs
+        adapters need their own evidence.
       - >-
         Recurring scheduling guards in gifts, members, signing keys, email analytics and
         Tinybird survive backend shutdown, which removes their timers. Recurrence after
@@ -1576,7 +1555,9 @@ services:
       - >-
         Timed-out handlers can outlive cleanup, and an early drain leaves its deadline
         timer pending. Do not claim cancellation or safe dependency disposal from bounded
-        shutdown alone. Cross-service drain ordering and full-boot failure remain open.
+        shutdown alone. Domain handlers such as the site importer may absorb their own
+        failures, so settlement is not proof of successful domain work. Cross-service drain
+        ordering and full-boot failure remain open.
   limits.ts:
     kind: file
     disposition: retain
