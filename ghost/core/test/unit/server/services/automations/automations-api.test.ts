@@ -372,7 +372,7 @@ describe('automations API', function () {
     });
 
     it('rejects a wait action with invalid number of hours', async function () {
-      for (const waitHours of [undefined, '24', -24, 0, 24.5]) {
+      for (const waitHours of [undefined, '24', -24, 0, 24.5, 721]) {
         await assert.rejects(
           automationsApi.edit(automationId, {
             status: 'inactive',
