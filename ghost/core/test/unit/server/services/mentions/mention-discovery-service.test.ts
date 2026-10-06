@@ -2,6 +2,7 @@ import sinon from 'sinon';
 
 import assert from 'node:assert/strict';
 import nock from 'nock';
+import logging from '@tryghost/logging';
 
 // non-standard to use externalRequest here, but this is required for the overrides in the library, which we want to test for security reasons in combination with the package
 // @ts-expect-error This module lacks type definitions.
@@ -33,6 +34,18 @@ describe('MentionDiscoveryService', function () {
     const endpoint = await service.getEndpoint(url);
 
     assert.equal(endpoint, null);
+  });
+
+  it('Logs a warning, not an error, when the page cannot be fetched', async function () {
+    const warnStub = sinon.stub(logging, 'warn');
+    const errorStub = sinon.stub(logging, 'error');
+    const url = new URL('http://www.notarealsite.com/');
+    nock(url.href).get('/').reply(404);
+
+    await service.getEndpoint(url);
+
+    sinon.assert.calledOnce(warnStub);
+    sinon.assert.notCalled(errorStub);
   });
 
   it('Follows redirects', async function () {

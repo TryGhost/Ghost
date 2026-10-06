@@ -28,7 +28,7 @@ module.exports = class MentionDiscoveryService {
       });
       return await this.getEndpointFromResponse(response);
     } catch (error) {
-      logging.error(`Error fetching ${url.href} to discover webmention endpoint`, error);
+      logging.warn(`Error fetching ${url.href} to discover webmention endpoint`, error);
       return null;
     }
   }
