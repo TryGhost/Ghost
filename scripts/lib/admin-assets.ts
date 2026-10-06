@@ -31,7 +31,7 @@ function files(directory: string): string[] {
 
 /** Compatibility preparation for Ember's standalone build and live-reload server. */
 export function prepareLegacyAdminAssets(options: LegacyAdminAssetsOptions): void {
-  const { emberDist, destination, activitypubDist, koenigDist, environment, editorUrl } = options;
+  const { emberDist, destination } = options;
   const assets = join(emberDist, 'assets');
   // Keep Ember's sourcemap paths consistent with its standalone development server.
   for (const path of files(assets)) {
@@ -52,6 +52,17 @@ export function prepareLegacyAdminAssets(options: LegacyAdminAssetsOptions): voi
     filter: (source) => relative(assets, source).split(/[\\/]/)[0] !== 'icons',
   });
 
+  prepareEmbeddedAdminAssets(options);
+}
+
+type EmbeddedAdminAssetsOptions = Pick<
+  LegacyAdminAssetsOptions,
+  'destination' | 'activitypubDist' | 'koenigDist' | 'environment' | 'editorUrl'
+>;
+
+/** Embedded bundles are shared by both Admin hosts. */
+function prepareEmbeddedAdminAssets(options: EmbeddedAdminAssetsOptions): void {
+  const { destination, activitypubDist, koenigDist, environment, editorUrl } = options;
   const activitypubDestination = join(destination, 'assets/activitypub');
   if (existsSync(activitypubDist)) {
     if (environment === 'production') {
@@ -94,8 +105,15 @@ function normalizePermissions(directory: string): void {
   }
 }
 
-/** Assemble the hybrid Admin and isolated embed renderer from their build outputs. */
-export function assembleAdminAssets(root: string, options: { editorUrl?: string } = {}): void {
+export interface AdminAssetsOptions {
+  editorUrl?: string;
+  /** Keep the hybrid build until all Ember routes have been retired. */
+  includeEmber?: boolean;
+}
+
+/** Assemble Admin and its isolated embed renderer from their build outputs. */
+export function assembleAdminAssets(root: string, options: AdminAssetsOptions = {}): void {
+  const includeEmber = options.includeEmber ?? true;
   const emberDist = join(root, 'apps/ember-admin/dist');
   const reactDist = join(root, 'apps/admin/dist');
   const activitypubDist = join(root, 'apps/activitypub/dist');
@@ -105,7 +123,7 @@ export function assembleAdminAssets(root: string, options: { editorUrl?: string 
   const destination = join(built, 'admin');
 
   for (const path of [
-    join(emberDist, 'index.html'),
+    ...(includeEmber ? [join(emberDist, 'index.html')] : []),
     join(reactDist, 'index.html'),
     activitypubDist,
     renderer,
@@ -115,21 +133,35 @@ export function assembleAdminAssets(root: string, options: { editorUrl?: string 
     }
   }
 
+  if (
+    !includeEmber &&
+    readFileSync(join(reactDist, 'index.html'), 'utf8').includes('ghost-admin/config/environment')
+  ) {
+    throw new Error(
+      'React-only assembly requires a fresh React build without the Ember assets plugin.',
+    );
+  }
+
   mkdirSync(built, { recursive: true });
   const staging = mkdtempSync(join(built, '.admin-assets-'));
   try {
     const stagedAdmin = join(staging, 'admin');
-    prepareLegacyAdminAssets({
-      emberDist,
+    const embeddedOptions = {
       destination: stagedAdmin,
       activitypubDist,
       koenigDist,
       environment: 'production',
       editorUrl: options.editorUrl,
-    });
+    };
+    if (includeEmber) {
+      prepareLegacyAdminAssets({ ...embeddedOptions, emberDist });
+    } else {
+      mkdirSync(stagedAdmin, { recursive: true });
+      prepareEmbeddedAdminAssets(embeddedOptions);
+    }
 
     // Preserve the preview bundle and Core's output with the same merged assets.
-    // Read Ember's own dist rather than any previous combined Core output.
+    // Shared bundles come from their own builds, never previous Core output.
     const reactAssets = join(reactDist, 'assets');
     cpSync(join(stagedAdmin, 'assets'), reactAssets, { recursive: true, dereference: true });
     cpSync(reactAssets, join(stagedAdmin, 'assets'), { recursive: true, dereference: true });

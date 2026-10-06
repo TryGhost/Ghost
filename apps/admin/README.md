@@ -184,7 +184,13 @@ pnpm nx run @tryghost/admin:build
 
 The assembler reads the individual build outputs, so it can also be rerun with
 `pnpm nx run @tryghost/admin:assemble:assets` after those builds. It does not run
-compilers or upload sourcemaps.
+compilers or upload sourcemaps. The hybrid build remains the default. A fresh
+React build without `emberAssetsPlugin` can use
+`pnpm --filter @tryghost/admin assemble:assets --without-ember` to assemble the
+same embedded bundles without Ember output. See
+[Admin asset assembly](../../scripts/README.md#admin-asset-assembly) for the input
+requirements and cutover usage. This option does not change route ownership or
+Labs flags.
 
 This outputs to `apps/admin/dist/` and updates the assets in `ghost/core/core/built/admin/`.
 
