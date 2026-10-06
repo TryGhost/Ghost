@@ -64,7 +64,7 @@ describe('Inline card insertion', () => {
         await expect(cards).toHaveCount(2);
         const card = position === 'append' ? cards.last() : cards.first();
         const input = card.getByRole('textbox', {
-          name: type === 'Email' ? 'Subject line' : 'Wait for',
+          name: type === 'Email' ? 'Subject line' : 'Wait for (days)',
           exact: true,
         });
         await input.fill(type === 'Email' ? 'New email draft' : '2');

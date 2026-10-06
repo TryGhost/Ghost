@@ -100,13 +100,13 @@ export const WaitDurationField: React.FC<{
           className={inline ? 'sr-only' : 'text-sm font-medium text-text-secondary'}
           htmlFor={inputId}
         >
-          Wait for
+          {inline ? 'Wait for (days)' : 'Wait for'}
         </FieldLabel>
         {inline ? (
           <InputGroup>
             <InputGroupInput
-              // No aria-invalid: the card carries the warning, as on the email card.
               aria-describedby={isInlineErrorVisible ? errorId : undefined}
+              aria-invalid={isInlineErrorVisible}
               id={inputId}
               inputMode="numeric"
               value={daysText}

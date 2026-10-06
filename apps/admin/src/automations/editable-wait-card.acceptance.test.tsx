@@ -85,6 +85,7 @@ describe('Inline wait editing', () => {
     const card = waits().nth(0);
     const first = card.getByRole('textbox', { name: 'Wait for' });
     await expect.element(first).toHaveValue('1');
+    await expect.element(first).toHaveAccessibleName('Wait for (days)');
     await expect.element(card.getByText('Day', { exact: true })).toBeVisible();
     await expect.element(card.getByRole('combobox')).not.toBeInTheDocument();
     await first.fill('2');
@@ -118,10 +119,10 @@ describe('Inline wait editing', () => {
     await first.fill('');
     await expect.element(first).toHaveFocus();
     await expect.element(warning).not.toBeInTheDocument();
+    await expect.element(first).not.toHaveAttribute('aria-invalid', 'true');
     await userEvent.tab();
     await expect.element(warning).toBeVisible();
-    // The card carries the warning; the field itself is never marked invalid.
-    await expect.element(first).not.toHaveAttribute('aria-invalid', 'true');
+    await expect.element(first).toHaveAttribute('aria-invalid', 'true');
     await first.click();
     await expect.element(warning).toBeVisible();
     await first.fill('31');
