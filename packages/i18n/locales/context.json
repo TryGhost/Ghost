@@ -295,6 +295,7 @@
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "Retention offer message in Portal for a multi-cycle discount during subscription cancellation",
     "Search posts, tags and authors": "Search placeholder text",
     "Secure sign in link for {siteTitle}": "Magic link email",
+    "Security verification": "Accessible title for the CAPTCHA shown when a sign-up or sign-in request needs a bot protection check",
     "See full discussion": "Link in the focused comment thread view that returns the user to the main list of comments",
     "See you soon!": "A sign-off/ending to a signup email",
     "Send the gift link manually so it can still be redeemed.": "Preheader for the email notifying a gift buyer that recipient delivery failed",

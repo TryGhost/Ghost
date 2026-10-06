@@ -102,6 +102,7 @@ type AutomationRow = {
   status: string;
   created_at: DatabaseDate;
   updated_at: DatabaseDate;
+  trigger_tier_scope: AutomationTriggerTierScope | null;
 };
 
 type AutomationBrowseRow = AutomationRow & {
@@ -380,13 +381,45 @@ export function createDatabaseAutomationsRepository({
 
         const now = new Date();
 
+        if (data.trigger_tier_scope === 'selected_paid') {
+          // Lock the products so they aren't deleted while we're editing.
+          const tiers = await trx('products')
+            .select('id')
+            .whereIn('id', data.trigger_tier_ids)
+            .where('type', 'paid')
+            .orderBy('id')
+            .forUpdate();
+          if (tiers.length !== new Set(data.trigger_tier_ids).size) {
+            throw new errors.ValidationError({
+              message: 'Trigger tiers must all be paid tiers.',
+              property: 'trigger_tier_ids',
+            });
+          }
+        }
+
         const updatedAutomation = await updateAutomation(trx, {
           ...automation,
           name: data.name ?? automation.name,
           description: data.description ?? automation.description,
           status: data.status,
+          trigger_tier_scope:
+            data.trigger_tier_scope === undefined
+              ? automation.trigger_tier_scope
+              : data.trigger_tier_scope,
           updated_at: toDatabaseDate(now),
         });
+
+        if (data.trigger_tier_scope !== undefined) {
+          await trx('automation_trigger_tiers').where('automation_id', id).delete();
+          if (data.trigger_tier_scope === 'selected_paid') {
+            await trx('automation_trigger_tiers').insert(
+              [...new Set(data.trigger_tier_ids)].map((productId) => ({
+                automation_id: id,
+                product_id: productId,
+              })),
+            );
+          }
+        }
 
         await replaceAutomationGraph(trx, updatedAutomation.id, data.actions, data.edges);
 
@@ -680,10 +713,12 @@ function buildRunHistoryStep(
         },
       };
       break;
+    /* v8 ignore start -- @preserve */
     default: {
       const _exhaustive: never = row.action_type;
       throw new errors.InternalServerError({ message: `Unhandled action type: ${_exhaustive}` });
     }
+    /* v8 ignore stop -- @preserve */
   }
   return {
     id: row.id,
@@ -717,10 +752,12 @@ function getRunHistoryStatus(steps: AutomationRunHistoryStep[]): AutomationRunHi
           status = 'exited_early';
         }
         break;
+      /* v8 ignore start -- @preserve */
       default: {
         const _exhaustive: never = step.status;
         throw new errors.InternalServerError({ message: `Unhandled step status: ${_exhaustive}` });
       }
+      /* v8 ignore stop -- @preserve */
     }
   }
   return status;
@@ -1367,12 +1404,14 @@ function getReadyAtForAction(
     }
     case 'send_email':
       return now;
+    /* v8 ignore start -- @preserve */
     default: {
       const _exhaustive: never = action.type;
       throw new errors.IncorrectUsageError({
         message: `Unexpected action type ${_exhaustive}`,
       });
     }
+    /* v8 ignore stop -- @preserve */
   }
 }
 
@@ -1477,7 +1516,16 @@ async function loadAutomation(
   automationId: string,
 ): Promise<AutomationRow | null> {
   const row = await trx('automations')
-    .select('id', 'slug', 'name', 'description', 'status', 'created_at', 'updated_at')
+    .select(
+      'id',
+      'slug',
+      'name',
+      'description',
+      'status',
+      'trigger_tier_scope',
+      'created_at',
+      'updated_at',
+    )
     .where('id', automationId)
     .first();
   return row ?? null;
@@ -1529,6 +1577,7 @@ async function updateAutomation(
         name: automation.name,
         description: automation.description,
         status: automation.status,
+        trigger_tier_scope: automation.trigger_tier_scope,
         updated_at: automation.updated_at,
       })
       .where('id', automation.id);
@@ -1744,12 +1793,14 @@ function buildRevisionActionData(
         email_lexical: revision.email_lexical,
         email_design_setting_id: revision.email_design_setting_id,
       };
+    /* v8 ignore start -- @preserve */
     default: {
       const _exhaustive: never = action;
       throw new errors.InternalServerError({
         message: `Unhandled action type: ${_exhaustive}`,
       });
     }
+    /* v8 ignore stop -- @preserve */
   }
 }
 
@@ -1855,12 +1906,14 @@ function buildActionRevision(actionId: string, action: AutomationAction, created
         email_lexical: action.data.email_lexical,
         email_design_setting_id: action.data.email_design_setting_id,
       };
+    /* v8 ignore start -- @preserve */
     default: {
       const _exhaustive: never = action;
       throw new errors.InternalServerError({
         message: `Unexpected action type ${_exhaustive}`,
       });
     }
+    /* v8 ignore stop -- @preserve */
   }
 }
 
@@ -1908,8 +1961,32 @@ async function buildAutomation(
     actionRows.map((row) => row.id),
   );
   const edgeRows = await loadEdgeRows(trx, automation.id);
+
+  let triggerData;
+  switch (automation.trigger_tier_scope) {
+    case null:
+    case 'free':
+    case 'all_paid':
+      triggerData = { trigger_tier_scope: automation.trigger_tier_scope, trigger_tier_ids: null };
+      break;
+    case 'selected_paid':
+      triggerData = {
+        trigger_tier_scope: automation.trigger_tier_scope,
+        trigger_tier_ids: await trx('automation_trigger_tiers')
+          .where('automation_id', automation.id)
+          .orderBy('product_id')
+          .pluck<string[]>('product_id'),
+      };
+      break;
+    default:
+      throw new errors.InternalServerError({
+        message: `Unexpected trigger_tier_scope value from database: ${automation.trigger_tier_scope}`,
+      });
+  }
+
   return {
     ...buildAutomationSummary(automation),
+    ...triggerData,
     actions: actionRows.map((row) => buildActionPayload(row, actionStats.get(row.id) ?? null)),
     edges: edgeRows.map((row) => buildEdgePayload(row)),
   };

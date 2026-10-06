@@ -77,7 +77,16 @@ export type AutomationBrowseResult = AutomationSummary & {
 export type Automation = AutomationSummary & {
   actions: AutomationAction[];
   edges: AutomationEdge[];
-};
+} & (
+    | {
+        trigger_tier_scope: null | 'free' | 'all_paid';
+        trigger_tier_ids: null;
+      }
+    | {
+        trigger_tier_scope: 'selected_paid';
+        trigger_tier_ids: string[];
+      }
+  );
 
 export type EditAutomationData = {
   name?: string;
@@ -85,7 +94,16 @@ export type EditAutomationData = {
   status: string;
   actions: AutomationAction[];
   edges: AutomationEdge[];
-};
+} & (
+  | {
+      trigger_tier_scope?: null | 'free' | 'all_paid';
+      trigger_tier_ids?: null;
+    }
+  | {
+      trigger_tier_scope: 'selected_paid';
+      trigger_tier_ids: string[];
+    }
+);
 
 export type AutomatedEmailRecipientWithMailgunId = {
   id: string;

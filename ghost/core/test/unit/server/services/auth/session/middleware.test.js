@@ -4,8 +4,13 @@ const SessionMiddlware = require('../../../../../../core/server/services/auth/se
 const models = require('../../../../../../core/server/models');
 const sinon = require('sinon');
 const labs = require('../../../../../../core/shared/labs');
+const urlUtils = require('../../../../../../core/shared/url-utils').default;
 
 describe('Session Service', function () {
+  // A session can only be created for the admin panel's own origin, so these
+  // tests must present that origin or session creation fails.
+  const adminOrigin = new URL(urlUtils.getAdminUrl() || urlUtils.getSiteUrl()).origin;
+
   afterEach(function () {
     sinon.restore();
   });
@@ -47,13 +52,13 @@ describe('Session Service', function () {
         .withArgs('origin')
         .returns('')
         .withArgs('referrer')
-        .returns('http://ghost.org/path');
+        .returns(`${adminOrigin}/path`);
 
       req.ip = '127.0.0.1';
       req.user = models.User.forge({ id: 23 });
 
       sinon.stub(res, 'sendStatus').callsFake(function () {
-        assert.equal(req.session.origin, 'http://ghost.org');
+        assert.equal(req.session.origin, adminOrigin);
         resolve();
       });
 
@@ -69,7 +74,7 @@ describe('Session Service', function () {
       sinon
         .stub(req, 'get')
         .withArgs('origin')
-        .returns('http://host.tld')
+        .returns(adminOrigin)
         .withArgs('user-agent')
         .returns('bububang');
 
@@ -78,7 +83,7 @@ describe('Session Service', function () {
 
       sinon.stub(res, 'sendStatus').callsFake(function (statusCode) {
         assert.equal(req.session.user_id, 23);
-        assert.equal(req.session.origin, 'http://host.tld');
+        assert.equal(req.session.origin, adminOrigin);
         assert.equal(req.session.user_agent, 'bububang');
         assert.equal(req.session.ip, '127.0.0.1');
         assert.equal(statusCode, 201);
