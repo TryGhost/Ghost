@@ -271,7 +271,8 @@ export class GhostManager {
     }
 
     // EXPERIMENT: run the built image as production (view cache on) with quieter logging.
-    if (this.config.mode === 'build') {
+    // Stripe-backed tests stay in development: members fails to boot against the fake Stripe in production.
+    if (this.config.mode === 'build' && !(extraConfig && 'STRIPE_API_HOST' in extraConfig)) {
       env.splice(env.indexOf('NODE_ENV=development'), 1);
       env.push('NODE_ENV=production', 'logging__level=warn', 'logging__transports=["stdout"]');
     }

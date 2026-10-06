@@ -24,7 +24,7 @@ const config = {
     timeout: 10 * 1000,
   },
   retries: 0, // Retries open the door to flaky tests. If the test needs retries, it's not a good test or the app is broken.
-  maxFailures: process.argv.includes('--ui') ? 0 : 1,
+  maxFailures: 0, // EXPERIMENT: run every test so shard timings are complete
   workers: parseInt(process.env.TEST_WORKERS_COUNT, 10) || getWorkerCount(),
   fullyParallel: false,
   reporter: process.env.CI
