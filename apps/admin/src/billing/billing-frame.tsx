@@ -9,7 +9,7 @@ import { JSONError } from '@tryghost/admin-x-framework/errors';
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { useFeatureFlag, useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import type { AlertsStore } from '@/alerts';
 import {
   type SubscriptionState,
@@ -344,11 +344,18 @@ function BillingAppFrame({
   }, []);
 
   return (
-    <div className="relative size-full bg-background" hidden={!visible}>
+    // Hidden, the frame keeps the content area's size: Safari can leave the
+    // billing app laid out for an iframe that loaded under display: none
+    <div
+      className={cn(
+        'size-full bg-background',
+        visible ? 'relative' : 'pointer-events-none invisible absolute inset-0 -z-10',
+      )}
+    >
       <iframe
         ref={frameRef}
         allow="clipboard-write"
-        className="absolute inset-0 size-full border-0"
+        className="absolute inset-0 size-full [transform:translate3d(0,0,0)] border-0"
         title="Billing"
       />
       {visible && !loaded && !failed && (

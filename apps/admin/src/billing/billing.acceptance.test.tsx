@@ -466,6 +466,25 @@ describe('Ghost(Pro) billing', () => {
     await expect.poll(currentRoute).toBe('/pro');
   });
 
+  it('loads the hidden billing app at the size it will show at', async () => {
+    fakeTags([]);
+    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+    await renderBilling('/tags');
+    await expect.element(tagsScreen.newTagLink()).toBeVisible();
+
+    const frame = billingScreen.frame().element();
+    await expect.element(billingScreen.frame()).not.toBeVisible();
+    const hidden = frame.getBoundingClientRect();
+    expect(hidden.width).toBeGreaterThan(200);
+    expect(hidden.height).toBeGreaterThan(200);
+
+    window.location.hash = '#/pro';
+    await expect.element(billingScreen.frame()).toBeVisible();
+    const shown = frame.getBoundingClientRect();
+    expect(shown.width).toBe(hidden.width);
+    expect(shown.height).toBe(hidden.height);
+  });
+
   it('shows billing full size to contributors held by a force upgrade', async () => {
     await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
     await renderBilling('/pro', { role: 'Contributor', hostSettings: { forceUpgrade: true } });
