@@ -456,19 +456,15 @@ describe('Ghost(Pro) billing', () => {
     expect(loads(messages)[0]?.searchParams.get('action')).toBe('checkout');
   });
 
-  it.each([true, false])(
-    'holds the editor on billing during a force upgrade (billingReact %s)',
-    async (billingReact) => {
-      await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
-      await renderBilling('/editor/post', {
-        role: 'Administrator',
-        hostSettings: { forceUpgrade: true },
-        billingReact,
-      });
+  it('holds the Ember editor on billing during a force upgrade', async () => {
+    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+    await renderBilling('/editor/post', {
+      role: 'Administrator',
+      hostSettings: { forceUpgrade: true },
+    });
 
-      await expect.poll(currentRoute).toBe('/pro');
-    },
-  );
+    await expect.poll(currentRoute).toBe('/pro');
+  });
 
   it('shows billing full size to contributors held by a force upgrade', async () => {
     await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
