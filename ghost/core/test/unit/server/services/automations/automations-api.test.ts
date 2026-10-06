@@ -311,6 +311,19 @@ describe('automations API', function () {
       );
     });
 
+    it('rejects a wait action with invalid number of hours', async function () {
+      for (const waitHours of [undefined, '24', -24, 0, 24.5]) {
+        await assert.rejects(
+          automationsApi.edit(automationId, {
+            status: 'inactive',
+            actions: [{ ...buildWaitAction(), data: { wait_hours: waitHours } }],
+            edges: [],
+          }),
+          { errorType: 'ValidationError' },
+        );
+      }
+    });
+
     it('rejects duplicate edges', async function () {
       const first = buildWaitAction();
       const second = buildWaitAction();
