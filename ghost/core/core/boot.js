@@ -441,6 +441,10 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     machinePaymentsService.init(),
   ]);
 
+  // Fire-and-forget: log any drift between the database permissions and the
+  // in-memory role permissions map. Never throws, so it cannot delay boot.
+  permissions.checkParity();
+
   debug('Begin: Register job handlers');
   const registerJobHandlers =
     require('./server/services/jobs-service/register-job-handlers').default;

@@ -21,6 +21,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   const jobsService = { start };
   const genericService = {
     init: async () => {},
+    checkParity() {},
     listen() {},
     api: { members: {} },
     handleImportJob() {},
