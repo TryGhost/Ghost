@@ -75,25 +75,23 @@ describe('Integration: Component: gh-billing-iframe', function () {
         })).to.be.true;
     });
 
-    [
-        {label: 'missing flag', flag: undefined, enabled: false},
-        {label: 'disabled flag', flag: false, enabled: false},
-        {label: 'enabled flag', flag: true, enabled: true},
-        {label: 'non-boolean flag', flag: 'true', enabled: false}
-    ].forEach(({label, flag, enabled}) => {
-        it(`advertises dunning return support for ${label}`, async function () {
-            const feature = this.owner.lookup('service:feature');
-            // The accessor is introduced with the dunning UI and return handler.
-            // Older Admin versions do not define it at all.
-            Object.defineProperty(feature, 'dunningWarnings', {configurable: true, value: flag});
-            const postMessage = sinon.stub(GhBillingIframe.prototype, '_postMessageToBillingIframe');
+    it('responds with force upgrade and owner information', async function () {
+        const postMessage = sinon.stub(GhBillingIframe.prototype, '_postMessageToBillingIframe');
+        const config = this.owner.lookup('config:main');
+        config.hostSettings = {...config.hostSettings, forceUpgrade: true};
+        billing.ownerUser = {name: 'Site Owner', email: 'owner@example.com'};
 
-            await render(hbs`<GhBillingIframe />`);
-            await postBillingMessage({request: 'forceUpgradeInfo'});
+        await render(hbs`<GhBillingIframe />`);
+        await postBillingMessage({request: 'forceUpgradeInfo'});
 
-            expect(postMessage.calledOnce).to.be.true;
-            expect(postMessage.firstCall.args[0].response.dunningReturnEnabled).to.equal(enabled);
-        });
+        expect(postMessage.calledOnceWithExactly({
+            request: 'forceUpgradeInfo',
+            response: {
+                forceUpgrade: true,
+                isOwner: null,
+                ownerUser: {name: 'Site Owner', email: 'owner@example.com'}
+            }
+        })).to.be.true;
     });
 
     it('handles valid route messages without marking the billing app loaded', async function () {

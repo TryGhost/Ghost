@@ -124,6 +124,12 @@ const features: Feature[] = [
       'Suggest pages, posts, offers and Portal links when editing navigation URLs in settings',
     flag: 'navigationUrlSuggestions',
   },
+  {
+    title: 'React Ghost(Pro) billing',
+    description:
+      'Serves the Ghost(Pro) billing screen (/pro) and its background billing app connection from the React app instead of Ember.',
+    flag: 'billingReact',
+  },
 ];
 
 const AlphaFeatures: React.FC = () => {

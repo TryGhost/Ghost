@@ -69,6 +69,7 @@ const PRIVATE_FEATURES = [
   'editorReact',
   'authReact',
   'navigationUrlSuggestions',
+  'billingReact',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
