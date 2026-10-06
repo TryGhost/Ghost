@@ -315,6 +315,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     const scheduleEmail = sinon.stub();
     const retryService = new EmailService({
       models,
+      sendingStatusService: new SendingStatusService({ knex: db.knex }),
       batchSendingService: {
         updateStatusLock: BatchSendingService.prototype.updateStatusLock.bind(service),
         scheduleEmail,
@@ -389,6 +390,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     });
     const retryService = new EmailService({
       models,
+      sendingStatusService: new SendingStatusService({ knex: db.knex }),
       batchSendingService: {
         updateStatusLock: BatchSendingService.prototype.updateStatusLock.bind(service),
         scheduleEmail,

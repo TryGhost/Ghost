@@ -353,6 +353,10 @@ retry, for both the retry endpoint and post saves. Admin requires an explicit
 `retryable: true`; older Core responses without the field hide Retry without
 requiring access to the batch-browsing endpoint.
 
+Orphaned `submitting` batches have no automatic recovery path: an operator must
+inspect the batch's Mailgun message ID, provider delivery records, and Ghost's
+submission logs to reconcile its outcome before a retry can be considered safe.
+
 Eligibility never blocks a post save. Republishing a post whose failed email is
 not retryable saves the post and leaves the email failed, without queuing a
 retry; the retry endpoint rejects the same email with a 400.

@@ -40,6 +40,7 @@ const DEFAULT_RESUME_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 const RESUMABLE_EMAIL_STATUSES = ['pending', 'submitting'];
 
 const RETRY_UNKNOWN_OUTCOME_CODE = 'EMAIL_RETRY_UNKNOWN_OUTCOME';
+const RETRY_NOT_FAILED_CODE = 'BULK_EMAIL_RETRY_NOT_FAILED';
 
 class EmailService {
   #batchSendingService;
@@ -406,7 +407,7 @@ class EmailService {
     if (!pendingEmail) {
       throw new errors.BadRequestError({
         message: tpl(messages.retryEmailNotFailed),
-        code: 'BULK_EMAIL_RETRY_NOT_FAILED',
+        code: RETRY_NOT_FAILED_CODE,
       });
     }
 
@@ -430,7 +431,7 @@ class EmailService {
     if (eligibility === 'not-failed') {
       throw new errors.BadRequestError({
         message: tpl(messages.retryEmailNotFailed),
-        code: 'BULK_EMAIL_RETRY_NOT_FAILED',
+        code: RETRY_NOT_FAILED_CODE,
       });
     }
     if (eligibility === 'unknown-outcome') {
@@ -611,3 +612,5 @@ class EmailService {
 }
 
 module.exports = EmailService;
+module.exports.RETRY_UNKNOWN_OUTCOME_CODE = RETRY_UNKNOWN_OUTCOME_CODE;
+module.exports.RETRY_NOT_FAILED_CODE = RETRY_NOT_FAILED_CODE;

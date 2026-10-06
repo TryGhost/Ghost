@@ -1,13 +1,16 @@
 const { BadRequestError } = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
+const {
+  RETRY_UNKNOWN_OUTCOME_CODE,
+  RETRY_NOT_FAILED_CODE,
+} = require('../email-service/email-service');
 
 const messages = {
   invalidEmailSegment: "The email segment parameter doesn't contain a valid filter",
 };
 
 const EMAIL_SENDING_STATUSES = ['published', 'sent'];
-const RETRY_UNKNOWN_OUTCOME_CODE = 'EMAIL_RETRY_UNKNOWN_OUTCOME';
 
 class PostEmailHandler {
   /**
@@ -151,7 +154,7 @@ class PostEmailHandler {
         );
         return;
       }
-      if (err.code !== 'BULK_EMAIL_RETRY_NOT_FAILED') {
+      if (err.code !== RETRY_NOT_FAILED_CODE) {
         throw err;
       }
       // Publishing is already committed. A concurrent retry that claimed the
