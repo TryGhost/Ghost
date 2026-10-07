@@ -47,6 +47,36 @@ function createSettingsMock({ setDirect, setConnect }) {
 describe('Settings Helpers', function () {
   let limitService = {};
 
+  describe('getMembersSupportAddress', function () {
+    it('uses the current default email when the support setting is missing', function () {
+      const getSetting = sinon.stub();
+      getSetting.withArgs('members_support_address').returns('support@custom.example.com');
+      const getConfig = sinon.stub();
+      getConfig.withArgs('mail:from').returns('"First" <noreply@first.example.com>');
+      const settingsHelpers = new SettingsHelpers({
+        settingsCache: { get: getSetting },
+        config: { get: getConfig },
+        urlUtils: {},
+        labs: {},
+        limitService,
+      });
+
+      assert.equal(settingsHelpers.getMembersSupportAddress(), 'support@custom.example.com');
+
+      getSetting.withArgs('members_support_address').returns(null);
+      assert.equal(
+        settingsHelpers.getMembersSupportAddress(),
+        '"First" <noreply@first.example.com>',
+      );
+
+      getConfig.withArgs('mail:from').returns('"Second" <noreply@second.example.com>');
+      assert.equal(
+        settingsHelpers.getMembersSupportAddress(),
+        '"Second" <noreply@second.example.com>',
+      );
+    });
+  });
+
   describe('getActiveStripeKeys', function () {
     beforeEach(function () {
       configUtils.set({

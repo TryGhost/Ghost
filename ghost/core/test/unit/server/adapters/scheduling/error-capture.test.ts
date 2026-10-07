@@ -22,6 +22,7 @@ describe('Scheduling Adapter Error Capture', function () {
   beforeEach(function () {
     adapter = {
       rescheduleOnBoot: true,
+      dedupesByIdempotencyKey: true,
       run: sinon.stub(),
       schedule: sinon.stub(),
       unschedule: sinon.stub(),
@@ -116,6 +117,7 @@ describe('Scheduling Adapter Error Capture', function () {
     const result = await wrapped.rescheduleAll({ previousKey: { id: 'k', secret: 's' } });
 
     assert.equal(wrapped.rescheduleOnBoot, true);
+    assert.equal(wrapped.dedupesByIdempotencyKey, true);
     sinon.assert.calledOnce(adapter.run);
     sinon.assert.calledOnceWithExactly(adapter.register, rescheduler);
     sinon.assert.calledOnceWithExactly(adapter.rescheduleAll, {

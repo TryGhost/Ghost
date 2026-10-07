@@ -13,7 +13,7 @@ export default BaseValidator.extend(PasswordValidatorMixin, {
         const name = model.name;
 
         if (!validator.isLength(name || '', {min: 1})) {
-            model.errors.add('name', 'Please enter a name.');
+            model.errors.add('name', 'Enter a name.');
             model.hasValidated.addObject('email');
             this.invalidate();
         }
@@ -23,7 +23,7 @@ export default BaseValidator.extend(PasswordValidatorMixin, {
         const email = model.email;
 
         if (isBlank(email)) {
-            model.errors.add('email', 'Please enter an email.');
+            model.errors.add('email', 'Enter an email.');
             this.invalidate();
         } else if (!validator.isEmail(email)) {
             model.errors.add('email', 'Invalid Email.');

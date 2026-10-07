@@ -1,5 +1,5 @@
 import { Banner, Button } from '@tryghost/shade/components';
-import { Stack, Text } from '@tryghost/shade/primitives';
+import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { isPartialEmailFailure } from '@/editor/publish/email-confirmation';
 import {
   publishEmailErrorStep,
@@ -32,14 +32,14 @@ export function CompleteWithEmailErrorStep({
 
   return (
     <Stack data-testid={publishEmailErrorStep} gap="xl">
-      <Text as="h2" size="3xl" weight="bold">
-        <span className="text-state-error">Uh-oh.</span>{' '}
+      <Text as="h2" className="text-5xl leading-tighter tracking-tight" weight="bold">
+        <span className="text-state-error block">Uh-oh.</span>{' '}
         {willOnlyEmail
           ? 'Your post has been created but the email failed to send.'
           : `Your ${post.displayName} has been published but the email failed to send.`}
       </Text>
 
-      <Text>
+      <Text className="text-pretty" size="lg">
         {emailErrorMessage}
         {mailgunConfigured ? null : (
           <>
@@ -56,8 +56,9 @@ export function CompleteWithEmailErrorStep({
         </Banner>
       ) : null}
 
-      <div>
+      <Inline>
         <Button
+          className="h-auto min-h-11 max-w-full px-5 py-2 whitespace-normal"
           data-testid={publishRetryEmail}
           disabled={status === 'running'}
           size="lg"
@@ -70,7 +71,7 @@ export function CompleteWithEmailErrorStep({
               ? 'Send remaining emails'
               : 'Retry sending email'}
         </Button>
-      </div>
+      </Inline>
     </Stack>
   );
 }

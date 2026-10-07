@@ -57,7 +57,6 @@ export default class SetupRoute extends Route {
 
     buildRouteInfoMetadata() {
         return {
-            titleToken: 'Setup',
             bodyClasses: ['unauthenticated-route'],
             mainClasses: ['gh-main-white']
         };

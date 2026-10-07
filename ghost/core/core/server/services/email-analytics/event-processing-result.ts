@@ -1,4 +1,4 @@
-type EventProcessingResultInput = Partial<Omit<EventProcessingResult, 'merge'>>;
+type EventProcessingResultInput = Partial<Omit<EventProcessingResult, 'merge' | 'reset'>>;
 
 export class EventProcessingResult {
   // counts
@@ -19,9 +19,13 @@ export class EventProcessingResult {
   // processing failures are counted separately in addition to event type counts
   processingFailures: number = 0;
 
-  // ids seen whilst processing ready for passing to stats aggregator
+  // ids seen whilst processing ready for passing to stats aggregator.
+  // Only write these through merge() and reset() so they stay in step with the sets below.
   emailIds: string[] = [];
   memberIds: string[] = [];
+
+  #emailIdSet = new Set<string>();
+  #memberIdSet = new Set<string>();
 
   constructor(result: EventProcessingResultInput = {}) {
     this.merge(result);
@@ -42,6 +46,8 @@ export class EventProcessingResult {
     this.processingFailures = 0;
     this.emailIds = [];
     this.memberIds = [];
+    this.#emailIdSet.clear();
+    this.#memberIdSet.clear();
   }
 
   merge(other: EventProcessingResultInput = {}): void {
@@ -60,12 +66,17 @@ export class EventProcessingResult {
 
     this.processingFailures += other.processingFailures || 0;
 
-    // TODO: come up with a cleaner way to merge these without churning through Array and Set
-    this.emailIds = Array.from(new Set([...this.emailIds, ...(other.emailIds || [])])).filter(
-      Boolean,
-    );
-    this.memberIds = Array.from(new Set([...this.memberIds, ...(other.memberIds || [])])).filter(
-      Boolean,
-    );
+    EventProcessingResult.#collect(this.#emailIdSet, this.emailIds, other.emailIds);
+    EventProcessingResult.#collect(this.#memberIdSet, this.memberIds, other.memberIds);
+  }
+
+  // Only visit incoming IDs; rebuilding the accumulated arrays per event is quadratic.
+  static #collect(seen: Set<string>, ordered: string[], ids?: readonly string[] | null): void {
+    for (const id of ids ?? []) {
+      if (id && !seen.has(id)) {
+        seen.add(id);
+        ordered.push(id);
+      }
+    }
   }
 }

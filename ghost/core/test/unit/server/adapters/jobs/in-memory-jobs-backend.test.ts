@@ -257,6 +257,75 @@ describe('InMemoryJobsBackend', function () {
     assert.deepEqual(received, ['fresh'], 'a re-boot starts new work despite prior hung handlers');
   });
 
+  describe('shutdown deadline', function () {
+    let clock: ReturnType<typeof sinon.useFakeTimers> | undefined;
+
+    afterEach(function () {
+      clock?.restore();
+      clock = undefined;
+    });
+
+    it('waits 10 seconds for active deliveries when no timeout is given', async function () {
+      clock = sinon.useFakeTimers();
+      const backend = new InMemoryJobsBackend();
+      backend.start({ processor: () => new Promise<void>(() => {}) });
+      backend.enqueue({ type: 'hung', payload: '{}' });
+
+      let finished = false;
+      const stopping = backend.shutdown().then(() => {
+        finished = true;
+      });
+      await clock.tickAsync(9999);
+      assert.equal(finished, false);
+
+      await clock.tickAsync(1);
+      await stopping;
+      assert.equal(finished, true);
+    });
+
+    it('does not cancel an active delivery when the deadline passes', async function () {
+      clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      const backend = new InMemoryJobsBackend();
+      const release = Promise.withResolvers<void>();
+      const completed = Promise.withResolvers<void>();
+      let deliveryFinished = false;
+      backend.start({
+        processor: async () => {
+          await release.promise;
+          deliveryFinished = true;
+          completed.resolve();
+        },
+      });
+      backend.enqueue({ type: 'slow', payload: '{}' });
+
+      const stopping = backend.shutdown({ timeoutMs: 10 });
+      await clock.tickAsync(10);
+      await stopping;
+      assert.equal(deliveryFinished, false);
+
+      release.resolve();
+      await completed.promise;
+      assert.equal(deliveryFinished, true, 'the delivery kept running after shutdown returned');
+    });
+
+    it('leaves its deadline timer pending when deliveries drain early', async function () {
+      // Only the deadline is faked; the queue's own drain scheduling stays real.
+      clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      const backend = new InMemoryJobsBackend();
+      const release = Promise.withResolvers<void>();
+      backend.start({ processor: () => release.promise });
+      backend.enqueue({ type: 'quick', payload: '{}' });
+
+      const stopping = backend.shutdown({ timeoutMs: 5000 });
+      release.resolve();
+      await stopping;
+      assert.equal(clock.countTimers(), 1, 'the unused deadline timer is still scheduled');
+
+      await clock.tickAsync(5000);
+      assert.equal(clock.countTimers(), 0);
+    });
+  });
+
   describe('queue routing', function () {
     // Tracks per-lane concurrency by tagging each envelope with its lane.
     function makeLaneTracker() {
@@ -382,16 +451,44 @@ describe('InMemoryJobsBackend', function () {
       );
     });
 
+    it('logs a tick whose enqueue throws and keeps the schedule running', async function () {
+      clock = sinon.useFakeTimers({ now: Date.UTC(2020, 0, 1) });
+      const errorStub = sinon.stub(logging, 'error');
+      try {
+        const backend = new InMemoryJobsBackend();
+        backend.start({ processor: async () => {} });
+        const failure = new Error('enqueue failed');
+        const enqueue = sinon.stub(backend, 'enqueue').throws(failure);
+
+        backend.scheduleRecurring({ type: 'tick', payload: '{}' }, { cron: '*/1 * * * * *' });
+        await clock!.tickAsync(2500);
+
+        assert.ok(enqueue.callCount >= 2, `expected repeated ticks, got ${enqueue.callCount}`);
+        assert.equal(errorStub.callCount, enqueue.callCount);
+        assert.match(
+          String(errorStub.firstCall.args[0]),
+          /Recurring job "tick" tick failed to enqueue/,
+        );
+        assert.equal(errorStub.firstCall.args[1], failure);
+        await backend.shutdown({ timeoutMs: 100 });
+      } finally {
+        errorStub.restore();
+      }
+    });
+
+    it('reads cron schedules in the server local time', function () {
+      assert.equal(later.date.isUTC, false);
+    });
+
     it('schedules a day-of-week cron on the correct day (0 = Sunday)', async function () {
       clock = sinon.useFakeTimers({ now: Date.UTC(2026, 7, 17) });
       const fireDays: number[] = [];
       const backend = new InMemoryJobsBackend();
       backend.start({
         processor: async () => {
-          // Bree configures the shared scheduler to use local time when loaded.
-          // Assert the cron weekday in the calendar the scheduler actually uses.
-          const now = new Date();
-          fireDays.push(later.date.isUTC ? now.getUTCDay() : now.getDay());
+          // The backend reads schedules in local time, so that is the calendar
+          // the weekday is asserted in.
+          fireDays.push(new Date().getDay());
         },
       });
 

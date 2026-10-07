@@ -25,51 +25,51 @@ const location = JSON.stringify({
   region: 'New Mexico',
 });
 
-describe('Member location maps Labs flag', () => {
-  it.each(['disabled', 'missing'] as const)(
-    'preserves the original header and sidebar when the flag is %s',
+describe('Member location maps', () => {
+  it('shows a Réunion map for an existing member', async () => {
+    const m = fakeMemberLocation(JSON.stringify({ country_code: 'RE', country: 'Réunion' }));
+    await renderAdminApp(`/members/${m.id}`);
+    await expect
+      .element(page.getByRole('img', { name: 'Reunion — approximate country location' }))
+      .toBeVisible();
+    await expect.element(page.getByTestId('member-detail-location')).toHaveTextContent('Réunion');
+    await expect
+      .element(page.getByTestId('member-location-map-header'))
+      .toHaveAttribute('data-member-map-location', 'known');
+  });
+
+  it.each(['default', 'disabled', 'missing'] as const)(
+    'shows the map and profile header when the retired flag is %s',
     async (state) => {
       const m = fakeMemberLocation(location);
       const config = configResponse();
       delete config.config.labs?.memberLocationMap;
-      // Old spike query parameters must not bypass the Labs flag.
       await renderAdminApp(
-        `/members/${m.id}?variant=A&mapCountry=GB`,
+        `/members/${m.id}`,
         state === 'disabled'
           ? { labs: { memberLocationMap: false } }
-          : { boot: { browseConfig: { response: config } } },
+          : state === 'missing'
+            ? { boot: { browseConfig: { response: config } } }
+            : undefined,
       );
 
       await expect
-        .element(page.getByRole('heading', { name: 'Ada Lovelace', level: 2 }))
+        .element(page.getByRole('img', { name: 'New Mexico, US — approximate state location' }))
         .toBeVisible();
-      await expect.element(page.getByRole('link', { name: 'ada@example.com' })).toBeVisible();
+      await expect
+        .element(page.getByRole('heading', { name: 'Ada Lovelace', level: 1 }))
+        .toBeVisible();
       await expect
         .element(page.getByTestId('member-detail-title'))
         .toHaveTextContent('Ada Lovelace');
-      await expect(page.getByTestId('member-location-map-header')).toHaveCount(0);
-      await expect(page.getByRole('heading', { name: 'Ada Lovelace', level: 1 })).toHaveCount(0);
+      await expect(page.getByRole('heading', { name: 'Ada Lovelace', level: 2 })).toHaveCount(0);
+      await expect(page.getByRole('link', { name: 'ada@example.com' })).toHaveCount(0);
     },
   );
 
-  it('enables the map and the complete profile-header layout together', async () => {
-    const m = fakeMemberLocation(location);
-    await renderAdminApp(`/members/${m.id}`, { labs: { memberLocationMap: true } });
-
-    await expect
-      .element(page.getByRole('img', { name: 'New Mexico, US — approximate state location' }))
-      .toBeVisible();
-    await expect
-      .element(page.getByRole('heading', { name: 'Ada Lovelace', level: 1 }))
-      .toBeVisible();
-    await expect.element(page.getByTestId('member-detail-title')).toHaveTextContent('Ada Lovelace');
-    await expect(page.getByRole('heading', { name: 'Ada Lovelace', level: 2 })).toHaveCount(0);
-    await expect(page.getByRole('link', { name: 'ada@example.com' })).toHaveCount(0);
-  });
-
-  it('keeps the enabled profile header without a map for unknown locations', async () => {
+  it('keeps the profile header without a map for unknown locations', async () => {
     const m = fakeMemberLocation(null);
-    await renderAdminApp(`/members/${m.id}`, { labs: { memberLocationMap: true } });
+    await renderAdminApp(`/members/${m.id}`);
 
     await expect
       .element(page.getByRole('heading', { name: 'Ada Lovelace', level: 1 }))
@@ -80,9 +80,9 @@ describe('Member location maps Labs flag', () => {
     await expect(page.getByTestId('member-location-map')).toHaveCount(0);
   });
 
-  it('keeps the new-member form unchanged when enabled', async () => {
+  it('keeps the new-member form without a map', async () => {
     fakeMembers([]);
-    await renderAdminApp('/members/new', { labs: { memberLocationMap: true } });
+    await renderAdminApp('/members/new');
     await expect.element(page.getByTestId('member-detail-title')).toHaveTextContent('New member');
     await expect.element(page.getByLabelText('Name')).toBeVisible();
     await expect(page.getByTestId('member-location-map-header')).toHaveCount(0);

@@ -19,6 +19,9 @@ vi.mock('@tryghost/admin-x-framework/api/session', async (importOriginal) => ({
   useVerifySession: () => ({ mutateAsync: verifySession }),
 }));
 
+// Resend needs the app's providers; the acceptance specs exercise it.
+vi.mock('@/auth/api', () => ({ ResendCodeButton: () => null }));
+
 const EMAIL = 'owner@example.com';
 
 function errorResponse(code: string, type: string, message: string): ErrorResponse {

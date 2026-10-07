@@ -1,21 +1,35 @@
+import type { Controller, Frame } from '@tryghost/api-framework';
 import errors from '@tryghost/errors';
 import * as automationsApi from '../../services/automations/automations-api';
 // @ts-expect-error This module lacks type definitions.
 import labs from '../../../shared/labs';
 
-type ReadFrame = {
-  data: {
-    id: string;
-  };
+const MAX_AUTOMATIONS = 20;
+
+type ReadFrame = Frame<{ data: { id: string } }>;
+type AddFrame = Frame<{ data: { automations?: unknown[] } }>;
+type EditFrame = Frame<{
+  options: { id: string };
+  data: { automations?: unknown[] };
+}>;
+
+const assertCanAddAutomations = (): void => {
+  if (!labs.isSet('automations') || !labs.isSet('automationsPerTier')) {
+    throw new errors.NotFoundError({ message: 'Creating automations is not enabled.' });
+  }
 };
 
-type EditFrame = {
-  options: {
-    id: string;
-  };
-  data?: {
-    automations?: unknown[];
-  };
+const assertNotAddingTooManyAutomations = async (): Promise<void> => {
+  // There's a race condition here: publishers COULD create multiple
+  // automations if they hammer this endpoint. This is acceptable because
+  // this is a soft limit.
+  const numberOfAutomations = await automationsApi.getNumberOfAutomations();
+  if (numberOfAutomations >= MAX_AUTOMATIONS) {
+    throw new errors.HostLimitError({
+      code: 'AUTOMATION_LIMIT_REACHED',
+      message: `Cannot create more than ${MAX_AUTOMATIONS} automations.`,
+    });
+  }
 };
 
 export const controller = {
@@ -48,6 +62,19 @@ export const controller = {
     },
   },
 
+  add: {
+    statusCode: 201,
+    headers: {
+      cacheInvalidate: false,
+    },
+    permissions: true,
+    async query(frame: AddFrame) {
+      assertCanAddAutomations();
+      await assertNotAddingTooManyAutomations();
+      return await automationsApi.add(frame.data.automations?.[0]);
+    },
+  },
+
   edit: {
     headers: {
       cacheInvalidate: false,
@@ -72,4 +99,10 @@ export const controller = {
       automationsApi.requestPoll();
     },
   },
-};
+} satisfies Controller<{
+  browse: Frame;
+  read: ReadFrame;
+  add: AddFrame;
+  edit: EditFrame;
+  poll: Frame;
+}>;

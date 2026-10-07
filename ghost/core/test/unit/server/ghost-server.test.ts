@@ -5,10 +5,19 @@ import logging from '@tryghost/logging';
 import express from 'express';
 import { once } from 'node:events';
 import { promisify } from 'node:util';
+import { setImmediate } from 'node:timers/promises';
 import { GhostServer } from '../../../core/server/ghost-server';
 
 describe('GhostServer', function () {
+  let signalListeners: Map<NodeJS.Signals, NodeJS.SignalsListener[]>;
+
   beforeEach(function () {
+    signalListeners = new Map(
+      (['SIGINT', 'SIGTERM'] as const).map((signal) => [
+        signal,
+        process.rawListeners(signal) as NodeJS.SignalsListener[],
+      ]),
+    );
     sinon.stub(logging, 'info');
     sinon.stub(logging, 'warn');
     sinon.stub(logging, 'error');
@@ -16,6 +25,12 @@ describe('GhostServer', function () {
 
   afterEach(function () {
     sinon.restore();
+    for (const [signal, listeners] of signalListeners) {
+      process.removeAllListeners(signal);
+      for (const listener of listeners) {
+        process.on(signal, listener);
+      }
+    }
   });
 
   describe('start', function () {
@@ -139,6 +154,98 @@ describe('GhostServer', function () {
 
       sinon.assert.calledOnce(cleanup1);
       sinon.assert.calledOnce(cleanup2);
+    });
+
+    it('signals pre-stop before draining HTTP and keeps dependencies until the request finishes', async function () {
+      const requestStarted = Promise.withResolvers<void>();
+      const releaseRequest = Promise.withResolvers<void>();
+      let dependencyAvailable = true;
+      const preStop = sinon.stub();
+      const cleanup = sinon.stub().callsFake(async () => {
+        dependencyAvailable = false;
+      });
+      ghostServer = new GhostServer({
+        url: 'http://localhost',
+        env: 'testing',
+        serverConfig: { host: '127.0.0.1', port: 0, shutdownTimeout: 1000 },
+      });
+      const stopHTTP = sinon.spy(ghostServer, '_stopServer');
+      ghostServer.registerPreStopTask(() => {
+        throw new Error('pre-stop failure');
+      }, 'failed pre-stop');
+      ghostServer.registerPreStopTask(preStop, 'stop claiming');
+      ghostServer.registerCleanupTask(cleanup, 'dependency');
+      const app = express();
+      app.get('/', async (_req, res) => {
+        requestStarted.resolve();
+        await releaseRequest.promise;
+        res.status(dependencyAvailable ? 200 : 503).send('request finished');
+      });
+
+      await ghostServer.start(app);
+      const address = ghostServer.__testOnlyAddress();
+      assert(address);
+      const response = fetch(`http://127.0.0.1:${address.port}/`);
+      let stopping: Promise<void> | undefined;
+      try {
+        await requestStarted.promise;
+        stopping = ghostServer.stop();
+        // A failed pre-stop task must not prevent its siblings or HTTP drain.
+        sinon.assert.calledOnce(preStop);
+        sinon.assert.callOrder(preStop, stopHTTP);
+        sinon.assert.notCalled(cleanup);
+        releaseRequest.resolve();
+        const result = await response;
+        assert.equal(result.status, 200);
+        assert.equal(await result.text(), 'request finished');
+        await stopping;
+        sinon.assert.calledOnce(cleanup);
+        assert.equal(ghostServer.__testOnlyAddress(), null);
+      } finally {
+        releaseRequest.resolve();
+        await Promise.allSettled([response, stopping ?? ghostServer.stop()]);
+      }
+    });
+
+    it('starts cleanup concurrently and waits for every sibling before reporting failures', async function () {
+      const drain = Promise.withResolvers<void>();
+      const order: string[] = [];
+      ghostServer.registerCleanupTask(async () => {
+        order.push('draining');
+        await drain.promise;
+        order.push('drained');
+      }, 'slow dependency');
+      ghostServer.registerCleanupTask(async () => {
+        order.push('failed');
+        throw new Error('cleanup failure');
+      }, 'failed dependency');
+      ghostServer.registerCleanupTask(async () => {
+        order.push('finished');
+      }, 'healthy dependency');
+
+      // Observe rejection immediately so a broken fail-fast implementation does
+      // not produce an unhandled rejection while the other task is deferred.
+      const stopped = ghostServer.stop().then(
+        () => ({ error: undefined }),
+        (error: unknown) => ({ error }),
+      );
+      let settled = false;
+      void stopped.then(() => {
+        settled = true;
+      });
+      try {
+        await setImmediate();
+        assert.deepEqual(order, ['draining', 'failed', 'finished']);
+        assert.equal(settled, false);
+        drain.resolve();
+        const { error } = await stopped;
+        assert(error instanceof Error);
+        assert.match(error.message, /1 cleanup task\(s\) failed: failed dependency/);
+        assert.deepEqual(order, ['draining', 'failed', 'finished', 'drained']);
+      } finally {
+        drain.resolve();
+        await stopped;
+      }
     });
   });
 

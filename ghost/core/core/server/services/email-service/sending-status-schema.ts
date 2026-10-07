@@ -11,6 +11,7 @@ export const DbEmailSendingRow = z.object({
   id: z.string(),
   status: StoredSendingStatus,
   email_count: DbCount,
+  preflight_email_count: DbCount.nullable(),
   updated_at: DbDate.nullable(),
 });
 export type DbEmailSendingRow = z.output<typeof DbEmailSendingRow>;
@@ -19,6 +20,7 @@ export const DbBatchSendingRow = z.object({
   status: StoredSendingStatus,
   created_at: DbDate,
   updated_at: DbDate,
-  recipient_count: DbCount,
+  recipient_count: DbCount.nullable(),
+  accounted_recipient_count: DbCount.optional(),
 });
 export type DbBatchSendingRow = z.output<typeof DbBatchSendingRow>;

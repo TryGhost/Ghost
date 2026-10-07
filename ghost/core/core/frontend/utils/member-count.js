@@ -2,6 +2,8 @@ const humanNumber = require('human-number');
 const { api } = require('../services/proxy');
 
 /**
+ * @param {{meta: {totals: {free: number, paid: number, comped: number, gift: number}}}} [memberStats]
+ *   A memberCountHistory response to read instead of querying the API.
  * @returns {Promise<{
  *     free: number;
  *     paid: number;
@@ -10,8 +12,8 @@ const { api } = require('../services/proxy');
  *     total: number;
  * }>}
  */
-async function getMemberStats() {
-  const memberStats = this.data || (await api.stats.memberCountHistory.query());
+async function getMemberStats(memberStats) {
+  memberStats = memberStats || (await api.stats.memberCountHistory.query());
   const { free, paid, comped, gift } = memberStats.meta.totals;
   const total = free + paid + comped + gift;
   return { free, paid, comped, gift, total };

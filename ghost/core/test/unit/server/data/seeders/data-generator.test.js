@@ -525,6 +525,7 @@ describe('Importer', function () {
       table.string('name').unique();
       table.string('slug').unique();
       table.string('description', 2000);
+      table.string('trigger_tier_scope');
       table.dateTime('created_at');
       table.dateTime('updated_at');
     });
@@ -567,7 +568,7 @@ describe('Importer', function () {
     await transaction.commit();
 
     const automations = await db
-      .select('id', 'status', 'name', 'slug', 'description')
+      .select('id', 'status', 'name', 'description', 'slug', 'trigger_tier_scope')
       .from('automations');
 
     assert.equal(automations.length, 3);
@@ -589,6 +590,10 @@ describe('Importer', function () {
     assert.equal(new Set(automations.map((automation) => automation.name)).size, 3);
     assert.equal(new Set(automations.map((automation) => automation.slug)).size, 3);
     assert.equal(automations[2].description, '');
+    assert.deepEqual(
+      automations.map((automation) => automation.trigger_tier_scope),
+      ['free', 'all_paid', 'all_paid'],
+    );
     assert.ok(
       automations.every((automation) => ['active', 'inactive'].includes(automation.status)),
     );

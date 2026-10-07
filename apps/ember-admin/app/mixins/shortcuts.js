@@ -47,6 +47,10 @@ key.setScope('default');
  */
 export default Mixin.create({
 
+    shouldHandleShortcuts() {
+        return true;
+    },
+
     registerShortcuts() {
         const shortcuts = this.shortcuts;
 
@@ -63,6 +67,10 @@ export default Mixin.create({
             shortcutsCache.register(shortcut);
 
             key(shortcut, scope, (event) => {
+                if (!this.shouldHandleShortcuts()) {
+                    return;
+                }
+
                 // stop things like ctrl+s from actually opening a save dialog
                 event.preventDefault();
                 run(this, function () {

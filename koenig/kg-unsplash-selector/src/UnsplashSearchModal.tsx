@@ -51,7 +51,12 @@ export const UnsplashSearchModal: React.FC<UnsplashModalProps> = ({
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key !== 'Escape') {
+        return;
+      }
+      if (zoomedImg) {
+        setZoomedImg(null);
+      } else {
         onClose();
       }
     };
@@ -59,23 +64,17 @@ export const UnsplashSearchModal: React.FC<UnsplashModalProps> = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [onClose]);
+  }, [onClose, zoomedImg]);
 
   React.useEffect(() => {
     const ref = galleryRef.current;
-    if (!zoomedImg) {
-      if (ref) {
-        ref.addEventListener('scroll', () => {
-          setScrollPos(ref.scrollTop);
-        });
-      }
-      // unmount
+    if (!zoomedImg && ref) {
+      const handleScroll = () => {
+        setScrollPos(ref.scrollTop);
+      };
+      ref.addEventListener('scroll', handleScroll);
       return () => {
-        if (ref) {
-          ref.removeEventListener('scroll', () => {
-            setScrollPos(ref.scrollTop);
-          });
-        }
+        ref.removeEventListener('scroll', handleScroll);
       };
     }
   }, [galleryRef, zoomedImg]);

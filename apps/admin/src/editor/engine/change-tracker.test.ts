@@ -54,6 +54,9 @@ function withLtrEverywhere(value: unknown): unknown {
 }
 
 const SAVED_DOC = doc([paragraph('Hello')]);
+const LONG_DOC = doc([
+  paragraph(Array.from({ length: 300 }, (_, index) => `word${index}`).join(' ')),
+]);
 const BLANK_DOC = doc([{ ...paragraph(''), children: [] }]);
 const POST_ID = 'post-1';
 const T0 = '2026-09-01T10:00:00.000Z';
@@ -302,6 +305,118 @@ describe('createChangeTracker', () => {
       expect(codes(tracker)).toEqual(['BASELINE_FAILED']);
     });
 
+    describe('when the visible editor trails the hidden one', () => {
+      const firstStep = serialize(appendParagraph(SAVED_DOC, 'Normalized once'));
+      const secondStep = serialize(appendParagraph(SAVED_DOC, 'Normalized twice'));
+
+      function trailingTracker() {
+        const tracker = createChangeTracker();
+        tracker.load(POST_ID, post());
+        tracker.setBaseline(POST_ID, firstStep);
+        tracker.setBaseline(POST_ID, secondStep);
+        return tracker;
+      }
+
+      it('is clean at any step the hidden editor has reported', () => {
+        const tracker = trailingTracker();
+        tracker.setLive(POST_ID, { lexical: firstStep });
+        expect(tracker.verdict().dirty).toBe(false);
+
+        tracker.setLive(POST_ID, { lexical: secondStep });
+        expect(tracker.verdict().dirty).toBe(false);
+      });
+
+      it('is dirty for a body the hidden editor never reported', () => {
+        const tracker = trailingTracker();
+        tracker.setLive(POST_ID, { lexical: serialize(appendParagraph(SAVED_DOC, 'Typed')) });
+
+        expect(codes(tracker)).toEqual(['SCRATCH_DIVERGED_FROM_SECONDARY']);
+      });
+
+      it('forgets the reported steps once an acknowledged body replaces them', () => {
+        const tracker = trailingTracker();
+        const typed = serialize(appendParagraph(SAVED_DOC, 'Typed'));
+        tracker.setLive(POST_ID, { lexical: typed });
+        const submitted = post({ lexical: typed });
+        tracker.saveAcknowledged(POST_ID, submitted, { ...submitted, updated_at: T1 });
+
+        tracker.setLive(POST_ID, { lexical: firstStep });
+        expect(codes(tracker)).toEqual(['SCRATCH_DIVERGED_FROM_SECONDARY']);
+      });
+
+      it('forgets the reported steps once a restore re-seeds the hidden editor', () => {
+        const tracker = trailingTracker();
+        const restored = serialize(appendParagraph(SAVED_DOC, 'Restored'));
+        tracker.revisionRestored(POST_ID, {
+          lexical: restored,
+          title: 'Title',
+          custom_excerpt: null,
+          feature_image: null,
+          feature_image_alt: null,
+          feature_image_caption: null,
+        });
+        tracker.setBaseline(POST_ID, restored);
+
+        tracker.setLive(POST_ID, { lexical: firstStep });
+        expect(codes(tracker)).toEqual(['SCRATCH_DIVERGED_FROM_SECONDARY']);
+      });
+    });
+
+    describe('once an acknowledged body has replaced the baseline', () => {
+      const edited = serialize(appendParagraph(SAVED_DOC, 'Edit'));
+
+      function savedEditTracker() {
+        const tracker = loadedTracker();
+        tracker.setLive(POST_ID, { lexical: edited });
+        const submitted = post({ lexical: edited });
+        tracker.saveAcknowledged(POST_ID, submitted, { ...submitted, updated_at: T1 });
+        return tracker;
+      }
+
+      it('ignores a late hidden-editor report of the loaded document', () => {
+        const tracker = savedEditTracker();
+        tracker.setBaseline(POST_ID, serialize(SAVED_DOC));
+        tracker.setLive(POST_ID, { lexical: serialize(SAVED_DOC) });
+
+        expect(codes(tracker)).toEqual(['SCRATCH_DIVERGED_FROM_SECONDARY']);
+      });
+
+      it('ignores a late hidden-editor failure', () => {
+        const tracker = savedEditTracker();
+        tracker.baselineFailed(POST_ID);
+        tracker.setLive(POST_ID, { lexical: serialize(SAVED_DOC) });
+
+        expect(codes(tracker)).toEqual(['SCRATCH_DIVERGED_FROM_SECONDARY']);
+      });
+
+      it('accepts the hidden editor again after a restore re-seeds it', () => {
+        const tracker = savedEditTracker();
+        const restored = serialize(appendParagraph(SAVED_DOC, 'Restored'));
+        tracker.revisionRestored(POST_ID, {
+          lexical: restored,
+          title: 'Title',
+          custom_excerpt: null,
+          feature_image: null,
+          feature_image_alt: null,
+          feature_image_caption: null,
+        });
+        const normalized = serialize(appendParagraph(SAVED_DOC, 'Restored normalized'));
+        tracker.setBaseline(POST_ID, normalized);
+        tracker.setLive(POST_ID, { lexical: normalized });
+
+        expect(tracker.verdict().dirty).toBe(false);
+      });
+
+      it('accepts the hidden editor again after a load', () => {
+        const tracker = savedEditTracker();
+        tracker.load(POST_ID, post({ lexical: edited, updated_at: T1 }));
+        tracker.setBaseline(POST_ID, serialize(SAVED_DOC));
+        tracker.setLive(POST_ID, { lexical: serialize(SAVED_DOC) });
+
+        expect(tracker.verdict().dirty).toBe(false);
+      });
+    });
+
     it('recovers once a late baseline report arrives after a failure', () => {
       const tracker = createChangeTracker();
       tracker.load(POST_ID, post());
@@ -546,6 +661,87 @@ describe('createChangeTracker', () => {
       );
 
       expect(tracker.isFieldDirty('visibility')).toBe(false);
+    });
+  });
+
+  describe('savedValue', () => {
+    it('reads the saved copy rather than the live edit, and nothing once disposed', () => {
+      const tracker = loadedTracker(post({ title: 'Saved title', updated_at: T0 }));
+      tracker.setLive(POST_ID, { title: 'Live title' });
+
+      expect(tracker.savedValue('title')).toBe('Saved title');
+
+      tracker.saveAcknowledged(POST_ID, {}, post({ title: 'Acknowledged title', updated_at: T1 }));
+
+      expect(tracker.savedValue('title')).toBe('Acknowledged title');
+      expect(tracker.savedValue('lexical')).toBe(serialize(SAVED_DOC));
+
+      tracker.dispose();
+
+      expect(tracker.savedValue('title')).toBeUndefined();
+    });
+  });
+
+  describe('dirtyFields', () => {
+    it('names the fields behind the verdict, the body only once it departs from the baseline too', () => {
+      const tracker = createChangeTracker();
+      tracker.load(POST_ID, post());
+      const transformedOnLoad = serialize(appendParagraph(SAVED_DOC, ''));
+      tracker.setBaseline(POST_ID, transformedOnLoad);
+      tracker.setLive(POST_ID, {
+        lexical: transformedOnLoad,
+        title: 'Edited',
+        custom_excerpt: 'Excerpt',
+      });
+
+      expect(tracker.dirtyFields()).toEqual(['title', 'custom_excerpt']);
+
+      tracker.setLive(POST_ID, { lexical: serialize(appendParagraph(SAVED_DOC, 'Edit')) });
+
+      expect(tracker.dirtyFields()).toEqual(['title', 'lexical', 'custom_excerpt']);
+    });
+  });
+
+  describe('bodyDivergence', () => {
+    it('excerpts where the live body departs from saved and, once reported, the baseline', () => {
+      const tracker = createChangeTracker();
+      tracker.load(POST_ID, post({ lexical: serialize(LONG_DOC) }));
+
+      expect(tracker.bodyDivergence()).toBeNull();
+
+      tracker.setLive(POST_ID, { lexical: serialize(appendParagraph(LONG_DOC, 'Edit')) });
+      const appended: unknown = expect.objectContaining({
+        before: expect.stringContaining('word299') as unknown,
+        live: expect.stringContaining('"text":"Edit"') as unknown,
+        other: ']',
+      });
+
+      expect(tracker.bodyDivergence()).toEqual({ saved: appended, baseline: null });
+
+      tracker.setBaseline(POST_ID, serialize(LONG_DOC));
+
+      expect(tracker.bodyDivergence()).toEqual({ saved: appended, baseline: appended });
+
+      tracker.setLive(POST_ID, { lexical: serialize(LONG_DOC) });
+
+      expect(tracker.bodyDivergence()).toBeNull();
+    });
+
+    it('keeps only the offset for a body short enough to piece together from excerpts', () => {
+      const tracker = loadedTracker();
+      tracker.setLive(POST_ID, { lexical: serialize(appendParagraph(SAVED_DOC, 'Edit')) });
+      const offsetOnly: unknown = expect.objectContaining({ before: '', live: '', other: '' });
+
+      expect(tracker.bodyDivergence()).toEqual({ saved: offsetOnly, baseline: offsetOnly });
+      expect(JSON.stringify(tracker.bodyDivergence())).not.toContain('Hello');
+    });
+
+    it('compares a body that cannot be parsed as written', () => {
+      const tracker = loadedTracker();
+      tracker.setLive(POST_ID, { lexical: '{"root":' });
+      const written = { at: 8, before: '', live: '', other: '' };
+
+      expect(tracker.bodyDivergence()).toEqual({ saved: written, baseline: written });
     });
   });
 
@@ -806,21 +1002,20 @@ describe('createChangeTracker', () => {
     });
 
     it('keeps accepting null-id editor events after the created id is adopted', () => {
+      const blank = serialize(BLANK_DOC);
       const tracker = createChangeTracker();
-      tracker.load(null, post({ lexical: null, updated_at: null }));
-      tracker.setBaseline(null, serialize(BLANK_DOC));
-      tracker.setLive(null, { lexical: serialize(BLANK_DOC) });
-      const submitted = post({ lexical: serialize(BLANK_DOC), updated_at: null });
+      tracker.load(null, post({ title: '', lexical: blank, updated_at: null }));
+      tracker.setLive(null, { title: 'Hi' });
+      const submitted = post({ title: 'Hi', lexical: blank, updated_at: null });
       tracker.saveAcknowledged('new1', submitted, { ...submitted, updated_at: T1 });
       expect(tracker.verdict().dirty).toBe(false);
 
       tracker.setLive(null, { lexical: serialize(doc([paragraph('Typed')])) });
-      expect(codes(tracker)).toEqual(['SCRATCH_DIVERGED_FROM_SECONDARY']);
+      expect(codes(tracker)).toEqual(['BASELINE_PENDING']);
 
-      tracker.setBaseline(null, serialize(doc([paragraph('Typed')])));
-      expect(tracker.verdict().dirty).toBe(false);
+      tracker.setBaseline(null, blank);
+      expect(codes(tracker)).toEqual(['SCRATCH_DIVERGED_FROM_SECONDARY']);
       tracker.baselineFailed(null);
-      tracker.setLive(null, { lexical: serialize(doc([paragraph('Typed more')])) });
       expect(codes(tracker)).toEqual(['BASELINE_FAILED']);
 
       tracker.setSaved(null, post({ title: 'Stale' }));

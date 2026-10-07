@@ -1,21 +1,18 @@
-import { type FormEvent, useEffect, useState } from 'react';
+import { type FormEvent, useState } from 'react';
 import { useLocation } from '@tryghost/admin-x-framework';
 import {
   Field,
   FieldLabel,
   InputGroup,
   InputGroupAddon,
-  InputGroupButton,
   InputGroupInput,
-  LoadingIndicator,
 } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
 import { describeUnexpectedError, useAuthClient } from './client/auth-client';
 import { AuthHeader, AuthLayout, FlowMessage, SubmitButton, type SubmitState } from './auth-layout';
 import { reloadAdmin } from './reload';
+import { ResendCodeButton } from './resend-code-button';
 import { takeSigninRedirect } from './signin-redirect';
-
-const RESEND_COOLDOWN_MS = 15_000;
 
 export default function SigninVerify() {
   const authClient = useAuthClient();
@@ -26,15 +23,6 @@ export default function SigninVerify() {
   const [codeError, setCodeError] = useState('');
   const [flowError, setFlowError] = useState('');
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
-  const [resendState, setResendState] = useState<'idle' | 'sending' | 'sent'>('idle');
-
-  useEffect(() => {
-    if (resendState !== 'sent') {
-      return;
-    }
-    const timeout = setTimeout(() => setResendState('idle'), RESEND_COOLDOWN_MS);
-    return () => clearTimeout(timeout);
-  }, [resendState]);
 
   const failWith = (message: string, setMessage: (message: string) => void) => {
     setMessage(message);
@@ -72,33 +60,25 @@ export default function SigninVerify() {
     }
   };
 
-  const resend = async () => {
-    setResendState('sending');
-    try {
-      const { error } = await authClient.twoFactor.sendOtp();
-      if (error) {
-        setFlowError(error.message ?? '');
-        setResendState('idle');
-      } else {
-        setResendState('sent');
-      }
-    } catch (error) {
-      setFlowError(
-        describeUnexpectedError(error, 'There was a problem resending the verification token.'),
-      );
-      setResendState('idle');
-    }
-  };
-
   return (
     <AuthLayout>
       <form noValidate onSubmit={(event) => void verify(event)}>
         <Stack gap="lg">
           <AuthHeader title={twoFactorRequired ? '2FA confirmation' : "Verify it's really you"}>
-            <p className="text-muted-foreground">
-              {twoFactorRequired
-                ? 'Enter the sign-in verification code sent to your email.'
-                : "It looks like you're signing in from a new device. A 6-digit sign-in verification code has been sent to your email to keep your account safe."}
+            <p className="text-lg text-muted-foreground">
+              {twoFactorRequired ? (
+                <>
+                  Enter the <span className="whitespace-nowrap">sign-in</span> verification code
+                  sent to your email.
+                </>
+              ) : (
+                <>
+                  It looks like you&apos;re signing in from a new device. A{' '}
+                  <span className="whitespace-nowrap">6-digit</span>{' '}
+                  <span className="whitespace-nowrap">sign-in</span> verification code has been sent
+                  to your email to keep your account safe.
+                </>
+              )}
             </p>
           </AuthHeader>
           <Field>
@@ -124,12 +104,7 @@ export default function SigninVerify() {
                 }}
               />
               <InputGroupAddon align="inline-end">
-                <InputGroupButton disabled={resendState !== 'idle'} onClick={() => void resend()}>
-                  {resendState === 'sending' && <LoadingIndicator size="sm" />}
-                  {resendState === 'idle' && 'Resend'}
-                  {resendState === 'sending' && 'Sending'}
-                  {resendState === 'sent' && 'Sent'}
-                </InputGroupButton>
+                <ResendCodeButton onError={setFlowError} />
               </InputGroupAddon>
             </InputGroup>
           </Field>

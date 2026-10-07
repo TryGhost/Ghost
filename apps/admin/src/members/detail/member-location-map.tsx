@@ -1,15 +1,24 @@
 // Country and US state backdrop for member detail pages.
 // Countries and US states share one Natural Earth projection; no member data leaves this app.
-import React, { useId, useLayoutEffect, useRef, useState } from 'react';
-import atlas from './map-data/world-states.json';
+import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { Box } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { parseMemberGeolocation } from './member-detail-format';
 import { MemberMapContext } from './member-map-context';
+import type atlasData from './map-data/world-states.json';
 
-type MapLocation = (typeof atlas.countries)[number];
+type MapAtlas = typeof atlasData;
+type MapLocation = MapAtlas['countries'][number];
 
-function LocationMap({ country, region }: { country: MapLocation; region?: string }) {
+function LocationMap({
+  atlas,
+  country,
+  region,
+}: {
+  atlas: MapAtlas;
+  country: MapLocation;
+  region?: string;
+}) {
   const isUS = country.id === 'us';
   const normalizedRegion =
     typeof region === 'string' ? region.trim().toLowerCase().replace(/^us-/, '') : '';
@@ -115,7 +124,30 @@ export default function MemberLocationMap({
   const geo = parseMemberGeolocation(geolocation);
   const countryCode =
     typeof geo?.country_code === 'string' ? geo.country_code.trim().toLowerCase() : '';
-  const country = atlas.countries.find((item) => item.id === countryCode);
+  const [atlas, setAtlas] = useState<MapAtlas | null>(null);
+
+  // Keep the header mounted while loading geometry. Swapping a Suspense
+  // fallback for the map would reset open menus and dialogs in the header.
+  useEffect(() => {
+    if (!countryCode) {
+      return;
+    }
+    let active = true;
+    void import('./map-data/world-states.json').then(
+      (module) => {
+        if (active) {
+          setAtlas(module.default);
+        }
+      },
+      () => {
+        // Geometry is decorative: keep the member header usable on failure.
+      },
+    );
+    return () => {
+      active = false;
+    };
+  }, [countryCode]);
+  const country = atlas?.countries.find((item) => item.id === countryCode);
 
   return (
     <Box
@@ -135,9 +167,9 @@ export default function MemberLocationMap({
       data-member-map-location={country ? 'known' : 'unknown'}
       data-testid="member-location-map-header"
     >
-      {country && (
+      {atlas && country && (
         <Box className="pointer-events-none absolute inset-0 -z-10 overflow-hidden [mask-image:linear-gradient(to_bottom,black_70%,transparent)]">
-          <LocationMap country={country} region={geo?.region} />
+          <LocationMap atlas={atlas} country={country} region={geo?.region} />
         </Box>
       )}
       <MemberMapContext.Provider value={!!country}>{children}</MemberMapContext.Provider>

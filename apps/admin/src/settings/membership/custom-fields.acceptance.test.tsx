@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { page, userEvent } from 'vitest/browser';
+import { type Locator, page, userEvent } from 'vitest/browser';
 
 import {
   configResponse,
@@ -7,6 +7,7 @@ import {
   fakeMemberCustomFields,
   fakeSettingsScreens,
   renderAdminApp,
+  settleRequests,
 } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
@@ -34,6 +35,25 @@ const archivedField: MemberCustomField = {
 };
 
 const flagOn = { labs: { membersCustomFields: true } };
+
+/**
+ * Drags a field by its handle onto `target`, travelling there as a hand does: dnd-kit
+ * works out the row under the pointer as it moves, so a drag that jumps straight there
+ * in one move can be released before the list has registered where it is.
+ *
+ * Settings loads every section at once, and the list can be on screen while sections
+ * above it are still loading. One that lands mid-drag grows and carries the list down
+ * the page, out from under the pointer, so the drop misses and nothing is reordered.
+ * The drag starts once every section has its data.
+ */
+async function dragField(name: string, target: Locator) {
+  await settleRequests();
+  await userEvent.dragAndDrop(
+    settingsScreen.customFields().getByLabelText(`Reorder ${name}`),
+    target,
+    { steps: 10 },
+  );
+}
 
 type CustomField = typeof companyField;
 
@@ -511,9 +531,7 @@ describe('Custom fields', () => {
     // listens for. Note this cannot be driven from the keyboard: the sortable list
     // does not wire dnd-kit's sortable coordinate getter, so arrow keys move a
     // lifted item by a flat 25px and it never reaches the next row.
-    const handle = settingsScreen.customFields().getByLabelText('Reorder Nickname');
-    await expect.element(handle).toBeVisible();
-    await userEvent.dragAndDrop(handle, rows.first());
+    await dragField('Nickname', rows.first());
 
     // The whole list goes up, in the order the drag left it, keys only — order is a
     // property of the list, so a field never carries a rank. Nickname was dropped on
@@ -558,10 +576,7 @@ describe('Custom fields', () => {
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(2);
 
-    await userEvent.dragAndDrop(
-      settingsScreen.customFields().getByLabelText('Reorder Nickname'),
-      rows.first(),
-    );
+    await dragField('Nickname', rows.first());
 
     await expect.element(rows.first()).toHaveTextContent('Nickname');
 
@@ -606,10 +621,7 @@ describe('Custom fields', () => {
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(2);
 
-    await userEvent.dragAndDrop(
-      settingsScreen.customFields().getByLabelText('Reorder Nickname'),
-      rows.first(),
-    );
+    await dragField('Nickname', rows.first());
 
     // The server's own words reach the publisher, not a generic failure: they name
     // the field and say what to do about it. And the list goes back to the order the
@@ -635,10 +647,7 @@ describe('Custom fields', () => {
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(2);
 
-    await userEvent.dragAndDrop(
-      settingsScreen.customFields().getByLabelText('Reorder Shirt size'),
-      rows.first(),
-    );
+    await dragField('Shirt size', rows.first());
 
     // The archived field is named even though it was never on screen: an order states
     // the whole list, and the API refuses one that leaves a field out.
@@ -667,10 +676,7 @@ describe('Custom fields', () => {
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(5);
 
-    await userEvent.dragAndDrop(
-      settingsScreen.customFields().getByLabelText('Reorder Field 2'),
-      rows.first(),
-    );
+    await dragField('Field 2', rows.first());
 
     // The two fields the publisher cannot see are still named, and still last.
     await expect

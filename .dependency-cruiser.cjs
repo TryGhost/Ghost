@@ -96,6 +96,18 @@ module.exports = {
     },
 
     // ============================================================
+    // Core loads sharp only through @tryghost/image-transform
+    // ============================================================
+    {
+      name: 'core-sharp-via-image-transform',
+      comment:
+        'Invalid import of sharp from ghost/core. Use getSharp() from @tryghost/image-transform, which restricts the image decoders before anything is decoded.',
+      severity: 'error',
+      from: { path: '^ghost/core/core/' },
+      to: { path: '(^|/)node_modules/sharp/', dependencyTypesNot: ['type-only'] },
+    },
+
+    // ============================================================
     // apps/ — shade/ is the foundation; must not depend on higher layers
     // ============================================================
     {
@@ -219,6 +231,8 @@ module.exports = {
   ],
   options: {
     doNotFollow: { path: 'node_modules' },
-    exclude: { path: '(^|/)(node_modules|coverage|coverage-next|test|built|dist)/' },
+    // Keeps edges into node_modules so rules can see npm packages, but skips
+    // our own tests and build output
+    exclude: { path: '^(apps|ghost|packages)/.*/(coverage|coverage-next|test|built|dist)/' },
   },
 };

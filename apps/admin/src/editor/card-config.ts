@@ -6,7 +6,8 @@ import {
 } from '@tryghost/admin-x-framework/api/settings';
 import { type SiteData, getHomepageUrl } from '@tryghost/admin-x-framework/api/site';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
-import type { AutocompleteLink, LinkSearchGroup } from './link-suggestions';
+import type { AutocompleteLink } from '@/shared/autocomplete-links';
+import type { LinkSearchGroup } from './link-suggestions';
 
 export type PostType = 'post' | 'page';
 

@@ -49,8 +49,6 @@ function createMockStateBridge(sidebarVisible = true) {
     on,
     off,
     sidebarVisible,
-    getRouteUrl: vi.fn(),
-    isRouteActive: vi.fn(),
   };
 
   return {
@@ -66,11 +64,44 @@ declare global {
   }
 }
 
+describe('connectEmberNotificationsHost', () => {
+  const host = { show: vi.fn(), remove: vi.fn(), clearAll: vi.fn() };
+
+  baseTest('connects once Ember loads after React and disconnects on cleanup', async () => {
+    vi.useFakeTimers();
+    const { connectEmberNotificationsHost } = await import('./ember-bridge');
+    const disconnectEmber = vi.fn();
+    const mock = createMockStateBridge();
+    mock.stateBridge.connectNotificationsHost = vi.fn(() => disconnectEmber);
+
+    const disconnect = connectEmberNotificationsHost(host);
+    window.EmberBridge = { state: mock.stateBridge };
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(mock.stateBridge.connectNotificationsHost).toHaveBeenCalledExactlyOnceWith(host);
+
+    disconnect();
+    expect(disconnectEmber).toHaveBeenCalledOnce();
+  });
+
+  baseTest('never connects when cleaned up before Ember loads', async () => {
+    vi.useFakeTimers();
+    const { connectEmberNotificationsHost } = await import('./ember-bridge');
+    const mock = createMockStateBridge();
+    mock.stateBridge.connectNotificationsHost = vi.fn();
+
+    connectEmberNotificationsHost(host)();
+    window.EmberBridge = { state: mock.stateBridge };
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(mock.stateBridge.connectNotificationsHost).not.toHaveBeenCalled();
+  });
+});
+
 let useEmberDataSync: typeof import('./ember-bridge').useEmberDataSync;
 let useEmberAuthSync: typeof import('./ember-bridge').useEmberAuthSync;
 let useEmberFeatureFlag: typeof import('./ember-bridge').useEmberFeatureFlag;
 let useSidebarVisibility: typeof import('./ember-bridge').useSidebarVisibility;
-let useEmberRouting: typeof import('./ember-bridge').useEmberRouting;
 
 describe('syncEmberPostListQueryParams', () => {
   baseTest('delivers filters when Ember loads after the React list', async () => {
@@ -109,16 +140,45 @@ describe('syncEmberPostListQueryParams', () => {
   });
 });
 
+describe('syncEmberFullScreen', () => {
+  baseTest('applies the value once Ember loads after React', async () => {
+    vi.useFakeTimers();
+    const { syncEmberFullScreen } = await import('./ember-bridge');
+    const stop = syncEmberFullScreen(true);
+    const mock = createMockStateBridge();
+    const setReactFullScreen = vi.fn();
+    mock.stateBridge.setReactFullScreen = setReactFullScreen;
+    window.EmberBridge = { state: mock.stateBridge };
+
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(setReactFullScreen).toHaveBeenCalledExactlyOnceWith(true);
+    stop();
+  });
+
+  baseTest('applies only the latest value when the route changes before Ember loads', async () => {
+    vi.useFakeTimers();
+    const { syncEmberFullScreen } = await import('./ember-bridge');
+    const stop = syncEmberFullScreen(true);
+    stop();
+    const stopCurrent = syncEmberFullScreen(false);
+    const mock = createMockStateBridge();
+    const setReactFullScreen = vi.fn();
+    mock.stateBridge.setReactFullScreen = setReactFullScreen;
+    window.EmberBridge = { state: mock.stateBridge };
+
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(setReactFullScreen).toHaveBeenCalledExactlyOnceWith(false);
+    stopCurrent();
+  });
+});
+
 beforeEach(async () => {
   vi.resetModules();
   vi.useRealTimers();
-  ({
-    useEmberDataSync,
-    useEmberAuthSync,
-    useEmberFeatureFlag,
-    useSidebarVisibility,
-    useEmberRouting,
-  } = await import('./ember-bridge'));
+  ({ useEmberDataSync, useEmberAuthSync, useEmberFeatureFlag, useSidebarVisibility } =
+    await import('./ember-bridge'));
   delete window.EmberBridge;
 });
 
@@ -135,7 +195,7 @@ describe('useEmberFeatureFlag', () => {
     mock.stateBridge.isFeatureEnabled = vi.fn(() => enabled);
     window.EmberBridge = { state: mock.stateBridge };
 
-    const { result } = renderHook(() => useEmberFeatureFlag('postsListReact'));
+    const { result } = renderHook(() => useEmberFeatureFlag('editorReact'));
     expect(result.current).toBe(false);
 
     enabled = true;
@@ -149,7 +209,7 @@ describe('useEmberFeatureFlag', () => {
     const mock = createMockStateBridge();
     mock.stateBridge.isFeatureEnabled = vi.fn(() => true);
 
-    const { result } = renderHook(() => useEmberFeatureFlag('postsListReact'));
+    const { result } = renderHook(() => useEmberFeatureFlag('editorReact'));
     expect(result.current).toBeUndefined();
 
     window.EmberBridge = { state: mock.stateBridge };
@@ -166,7 +226,7 @@ describe('useEmberFeatureFlag', () => {
     mock.stateBridge.isFeatureEnabled = vi.fn(() => undefined);
     window.EmberBridge = { state: mock.stateBridge };
 
-    const { result } = renderHook(() => useEmberFeatureFlag('postsListReact'));
+    const { result } = renderHook(() => useEmberFeatureFlag('editorReact'));
 
     expect(result.current).toBeNull();
   });
@@ -544,122 +604,37 @@ describe('useSidebarVisibility', () => {
   });
 });
 
-describe('useEmberRouting', () => {
-  baseTest('returns default no-op routing when EmberBridge is not available', () => {
-    const { result } = renderHook(() => useEmberRouting());
-
-    // Should return default routing with no-op functions
-    expect(result.current).toHaveProperty('getRouteUrl');
-    expect(result.current).toHaveProperty('isRouteActive');
-
-    // Default getRouteUrl just returns the route name
-    expect(result.current.getRouteUrl('posts')).toBe('posts');
-
-    // Default isRouteActive always returns false
-    expect(result.current.isRouteActive('posts')).toBe(false);
-  });
-
-  baseTest('returns bridge routing methods when bridge is available', () => {
-    const mock = createMockStateBridge();
-    mock.stateBridge.isRouteActive = vi.fn(() => true);
-    window.EmberBridge = { state: mock.stateBridge };
-
-    const { result } = renderHook(() => useEmberRouting());
-
-    expect(result.current).toHaveProperty('getRouteUrl');
-    expect(result.current).toHaveProperty('isRouteActive');
-
-    // Should be using bridge methods, not defaults. The active-state method is
-    // wrapped so the app can ignore stale Ember state on React-owned routes.
-    expect(result.current.getRouteUrl).toBe(mock.stateBridge.getRouteUrl);
-    expect(result.current.isRouteActive('posts')).toBe(true);
-    expect(mock.stateBridge.isRouteActive).toHaveBeenCalledWith('posts');
-  });
-
-  baseTest('switches to bridge methods when bridge becomes available', async () => {
-    vi.useFakeTimers();
-
-    const { result } = renderHook(() => useEmberRouting());
-
-    // Initially using default routing
-    expect(result.current.getRouteUrl('posts')).toBe('posts');
-    expect(result.current.isRouteActive('posts')).toBe(false);
-
-    // Bridge becomes available
-    const mock = createMockStateBridge();
-    mock.stateBridge.isRouteActive = vi.fn(() => true);
-    window.EmberBridge = { state: mock.stateBridge };
-
-    // Wait for the subscription interval to fire
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(150);
-    });
-
-    // Now should be using bridge methods
-    expect(result.current.getRouteUrl).toBe(mock.stateBridge.getRouteUrl);
-    expect(result.current.isRouteActive('posts')).toBe(true);
-    expect(mock.stateBridge.isRouteActive).toHaveBeenCalledWith('posts');
-  });
-
-  baseTest('re-renders when route changes', async () => {
-    const mock = createMockStateBridge();
-    window.EmberBridge = { state: mock.stateBridge };
-
-    let renderCount = 0;
-    const { result } = renderHook(() => {
-      renderCount += 1;
-      return useEmberRouting();
-    });
-
-    // Initial render
-    expect(renderCount).toBe(1);
-    expect(result.current.getRouteUrl).toBe(mock.stateBridge.getRouteUrl);
-
-    await waitFor(() => {
-      expect(mock.onSpy).toHaveBeenCalledWith('routeChange', expect.any(Function));
-    });
-
-    // Trigger route change
-    act(() => {
-      mock.emit('routeChange', {
-        routeName: 'posts',
-        queryParams: {},
-      });
-    });
-
-    // Should have re-rendered
-    await waitFor(() => {
-      expect(renderCount).toBe(2);
-    });
-  });
-});
-
 describe('theme bridge helpers', () => {
-  test('isEmberThemeManaged reflects bridge presence', async () => {
-    const { isEmberThemeManaged } = await import('./ember-bridge');
-    expect(isEmberThemeManaged()).toBe(false);
-    window.EmberBridge = { state: createMockStateBridge().stateBridge };
-    expect(isEmberThemeManaged()).toBe(true);
-  });
-
-  test('applyEmberAdminThemePreference calls Ember when the method exists and reports it', async () => {
-    const { applyEmberAdminThemePreference } = await import('./ember-bridge');
+  test('connects the theme adapter after Ember loads and disconnects on cleanup', async () => {
+    vi.useFakeTimers();
+    const { connectEmberAdminTheme } = await import('./ember-bridge');
     const mock = createMockStateBridge();
-    const apply = vi.fn();
-    mock.stateBridge.applyAdminThemePreference = apply;
+    const connection = {
+      preload: vi.fn().mockResolvedValue(undefined),
+      apply: vi.fn(),
+      disconnect: vi.fn(),
+    };
+    mock.stateBridge.connectAdminTheme = vi.fn(() => connection);
+    const onReady = vi.fn();
+    const stop = connectEmberAdminTheme(onReady);
     window.EmberBridge = { state: mock.stateBridge };
-
-    expect(applyEmberAdminThemePreference('dark')).toBe(true);
-    expect(apply).toHaveBeenCalledWith('dark');
+    await vi.advanceTimersByTimeAsync(100);
+    expect(onReady).toHaveBeenCalledExactlyOnceWith(connection);
+    stop();
+    expect(connection.disconnect).toHaveBeenCalledOnce();
   });
 
-  test('applyEmberAdminThemePreference returns false without a bridge or method', async () => {
-    const { applyEmberAdminThemePreference } = await import('./ember-bridge');
-    expect(applyEmberAdminThemePreference('dark')).toBe(false);
-
-    // Bridge present but from an older Ember without the method
-    window.EmberBridge = { state: createMockStateBridge().stateBridge };
-    expect(applyEmberAdminThemePreference('dark')).toBe(false);
+  test('does not take theme ownership if unmounted before Ember loads', async () => {
+    vi.useFakeTimers();
+    const { connectEmberAdminTheme } = await import('./ember-bridge');
+    const mock = createMockStateBridge();
+    mock.stateBridge.connectAdminTheme = vi.fn();
+    const onReady = vi.fn();
+    connectEmberAdminTheme(onReady)();
+    window.EmberBridge = { state: mock.stateBridge };
+    await vi.advanceTimersByTimeAsync(100);
+    expect(mock.stateBridge.connectAdminTheme).not.toHaveBeenCalled();
+    expect(onReady).not.toHaveBeenCalled();
   });
 
   test('navigateEmberBillingSubRoute hands the sub-route to Ember and reports it', async () => {
@@ -679,18 +654,6 @@ describe('theme bridge helpers', () => {
 
     window.EmberBridge = { state: createMockStateBridge().stateBridge };
     expect(navigateEmberBillingSubRoute('/plans')).toBe(false);
-  });
-
-  test('preloadEmberAdminThemeStylesheet resolves with and without the bridge', async () => {
-    const { preloadEmberAdminThemeStylesheet } = await import('./ember-bridge');
-    await expect(preloadEmberAdminThemeStylesheet()).resolves.toBeUndefined();
-
-    const mock = createMockStateBridge();
-    const preload = vi.fn().mockResolvedValue(undefined);
-    mock.stateBridge.preloadAdminThemeStylesheet = preload;
-    window.EmberBridge = { state: mock.stateBridge };
-    await preloadEmberAdminThemeStylesheet();
-    expect(preload).toHaveBeenCalledTimes(1);
   });
 });
 

@@ -3,7 +3,7 @@ import sentryTestKit from 'sentry-testkit/browser';
 import sinon from 'sinon';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
-import {getSentryTestConfig} from 'ghost-admin/utils/sentry';
+import {getSentryTestConfig} from '../../helpers/sentry';
 import {settled, waitUntil} from '@ember/test-helpers';
 import {setupTest} from 'ember-mocha';
 
@@ -287,7 +287,7 @@ describe('Unit: Service: billing', function () {
             document.visibilityState,
             '2'
         ]);
-        expect(report.tags).to.deep.include({source: 'billing-app-load-monitor'});
+        expect(report.tags).to.deep.include({source: 'billing-app-load-monitor', billing_shell: 'ember'});
 
         const billingMonitor = report.originalReport.contexts.ghost.billing_monitor;
         expect(billingMonitor).to.deep.include({

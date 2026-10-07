@@ -50,16 +50,6 @@ const features: Feature[] = [
     flag: 'csvContentImporter',
   },
   {
-    title: 'Admin UI Refresh',
-    description: 'Enable Admin UI refresh (exploration)',
-    flag: 'adminUIRefresh',
-  },
-  {
-    title: 'Tags X',
-    description: 'Enables the new Tags UI',
-    flag: 'tagsX',
-  },
-  {
     title: 'Email Unique ID',
     description:
       'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
@@ -88,12 +78,6 @@ const features: Feature[] = [
     flag: 'getHelperDeduplication',
   },
   {
-    title: 'Member location maps',
-    description:
-      'Show a location map and profile header on member pages, with state pins for US members.',
-    flag: 'memberLocationMap',
-  },
-  {
     title: 'Member custom fields',
     description:
       'Let admins create and manage custom field definitions for members, and choose which field each Stripe checkout answer is stored in',
@@ -106,38 +90,15 @@ const features: Feature[] = [
     flag: 'stripeCheckoutCollection',
   },
   {
-    title: 'Members import redesign',
-    description:
-      'Serves the redesigned members CSV import dialog, which shows every column in the file and lets each one be mapped to a member field',
-    flag: 'membersImportRedesign',
-  },
-  {
     title: 'Paywall improvements',
     description: 'Enables paywall usability, discoverability and email customization improvements',
     flag: 'paywallImprovements',
-  },
-  {
-    title: 'React posts & pages lists',
-    description:
-      'Renders the posts (/posts) and pages (/pages) list screens from the React app instead of the Ember screens. Gates the migration behind a runtime toggle so we can compare both implementations.',
-    flag: 'postsListReact',
   },
   {
     title: 'React editor',
     description:
       'Serves the editor (/editor) from the React app instead of the Ember editor. Gates the migration behind a runtime toggle; the React side is an early placeholder.',
     flag: 'editorReact',
-  },
-  {
-    title: 'React global search',
-    description:
-      'Serves the Cmd/Ctrl+K search modal from the React app instead of the Ember modal. Gates the migration behind a runtime toggle so we can compare both implementations.',
-    flag: 'globalSearchReact',
-  },
-  {
-    title: 'React member activity',
-    description: 'Preview the new member activity screen.',
-    flag: 'membersActivityReact',
   },
   {
     title: 'React sign-in screens',
@@ -158,10 +119,22 @@ const features: Feature[] = [
     flag: 'machinePayments',
   },
   {
-    title: 'Dunning warnings',
+    title: 'Navigation URL suggestions',
     description:
-      'Show payment-failure warnings in Admin, driven by the hosting provider via hostSettings.billing.dunning',
-    flag: 'dunningWarnings',
+      'Suggest pages, posts, offers and Portal links when editing navigation URLs in settings',
+    flag: 'navigationUrlSuggestions',
+  },
+  {
+    title: 'React Ghost(Pro) billing',
+    description:
+      'Serves the Ghost(Pro) billing screen (/pro) and its background billing app connection from the React app instead of Ember.',
+    flag: 'billingReact',
+  },
+  {
+    title: 'Apps',
+    description:
+      'Install and manage third-party apps that run on their own servers. Early and incomplete.',
+    flag: 'apps',
   },
 ];
 

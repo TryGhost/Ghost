@@ -262,7 +262,7 @@ describe('createSaveEngine', () => {
       const adopt = vi.fn();
       expect(h.engine.contentReloaded(FUTURE, adopt)).toBe(false);
       expect(adopt).not.toHaveBeenCalled();
-      expect(h.engine.getState()).toEqual({ kind: 'halted' });
+      expect(h.engine.getState()).toEqual({ kind: 'halted', error: notFound });
     });
 
     it('adopts the replacement before recovery subscribers edit or dispatch', async () => {
@@ -318,6 +318,31 @@ describe('createSaveEngine', () => {
           expect(h.maxConcurrent()).toBe(1);
         }
       }
+    });
+
+    it('replaces a clean post without a collision, but never one holding unsaved work', () => {
+      const h = setup({ isDirty: true });
+      const adopt = vi.fn();
+
+      expect(h.engine.contentReloaded(FUTURE, adopt)).toBe(false);
+      expect(adopt).not.toHaveBeenCalled();
+
+      h.patch({ isDirty: false });
+      expect(h.engine.contentReloaded(FUTURE, adopt)).toBe(true);
+      expect(adopt).toHaveBeenCalledTimes(1);
+      expect(h.engine.getState()).toEqual({ kind: 'idle' });
+    });
+
+    it('waits for a save in flight before replacing a clean post without a collision', async () => {
+      const h = setup();
+      const save = h.engine.dispatch('explicit');
+      await flush();
+      h.patch({ isDirty: false });
+
+      expect(h.engine.contentReloaded(FUTURE)).toBe(false);
+      await h.succeed();
+      await expect(save).resolves.toMatchObject({ kind: 'saved' });
+      expect(h.engine.contentReloaded(FUTURE)).toBe(true);
     });
 
     it('drops queued background work on a conflict and keeps the content dirty', async () => {

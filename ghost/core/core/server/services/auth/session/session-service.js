@@ -56,7 +56,7 @@ const AUTH_CODE_CHALLENGE_BYTES = 16;
  * @param {(req: Req) => string} deps.getOriginOfRequest
  * @param {((key: 'require_email_mfa') => boolean) & ((key: 'admin_session_secret' | 'title') => string)} deps.getSettingsCache
  * @param {() => string} deps.getBlogLogo
- * @param {import('../../mail').GhostMailer} deps.mailer
+ * @param {import('../../../lib/mail').GhostMailer} deps.mailer
  * @param {import('../../i18n').t} deps.t
  * @param {import('../../../../shared/url-utils').default} deps.urlUtils
  * @param {() => boolean} deps.isStaffDeviceVerificationDisabled
@@ -117,6 +117,19 @@ module.exports = function createSessionService({
     return verified;
   }
 
+  // Reject any request whose origin isn't the admin site. This check is
+  // used to prevent cross-origin logins (login CSRF).
+  function assertRequestFromAdminOrigin(origin) {
+    const adminUrl = urlUtils.getAdminUrl() || urlUtils.getSiteUrl();
+    const adminOrigin = new URL(adminUrl).origin;
+
+    if (origin !== adminOrigin) {
+      throw new BadRequestError({
+        message: `Request made from incorrect origin. Expected '${adminOrigin}' received '${origin}'.`,
+      });
+    }
+  }
+
   /**
    * cookieCsrfProtection
    *
@@ -129,14 +142,7 @@ module.exports = function createSessionService({
 
     // Check that the origin matches the admin URL to prevent cross-origin
     // requests (e.g. no-cors form submissions from phishing sites)
-    const adminUrl = urlUtils.getAdminUrl() || urlUtils.getSiteUrl();
-    const adminOrigin = new URL(adminUrl).origin;
-
-    if (origin !== adminOrigin) {
-      throw new BadRequestError({
-        message: `Request made from incorrect origin. Expected '${adminOrigin}' received '${origin}'.`,
-      });
-    }
+    assertRequestFromAdminOrigin(origin);
 
     // If there is no origin on the session object it means this is a *new*
     // session, that hasn't been initialised yet. So we don't need CSRF protection
@@ -167,6 +173,10 @@ module.exports = function createSessionService({
           'Could not determine origin of request. Please ensure an Origin or Referrer header is present.',
       });
     }
+
+    // A session may only ever be created for the admin panel's own origin, so a
+    // cross-origin request (e.g. a login-CSRF form post) can't create a session.
+    assertRequestFromAdminOrigin(origin);
 
     if (session.user_id && session.user_id !== user.id) {
       invalidateAuthCodeChallenge(session);

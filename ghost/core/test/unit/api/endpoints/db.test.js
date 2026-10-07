@@ -14,13 +14,15 @@ describe('DB controller', function () {
   beforeEach(function () {
     jobsServiceInitialised = false;
     settingsCache = require('../../../../core/shared/settings-cache');
-    importer = require('../../../../core/server/data/importer');
+    importer = {
+      importFromFile: sinon.stub().resolves({
+        db: [{ data: {} }],
+        problems: [],
+      }),
+    };
 
     sinon.stub(settingsCache, 'get').withArgs('timezone').returns('UTC');
-    sinon.stub(importer, 'importFromFile').resolves({
-      db: [{ data: {} }],
-      problems: [],
-    });
+    sinon.stub(require('../../../../core/server/data/importer'), 'getInstance').returns(importer);
   });
 
   afterEach(async function () {

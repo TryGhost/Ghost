@@ -3,7 +3,7 @@ const createSessionService = require('./session-service');
 const { sessionFromToken } = require('./session-from-token');
 const createSessionMiddleware = require('./middleware');
 const settingsCache = require('../../../../shared/settings-cache');
-const { GhostMailer } = require('../../mail');
+const { GhostMailer } = require('../../../lib/mail');
 const { t } = require('../../i18n');
 
 const expressSession = require('./express-session');
@@ -88,11 +88,13 @@ module.exports.createSessionFromToken = () => {
   ssoAdapter.setUserRepository({
     async getByEmail(email) {
       const user = await models.User.findOne({ email });
-      return user ? { id: user.id, email: user.get('email') } : null;
+      return user ? { id: user.id, email: user.get('email'), status: user.get('status') } : null;
     },
     async getOwner() {
       const owner = await models.User.findOne({ role: 'Owner', status: 'all' });
-      return owner ? { id: owner.id, email: owner.get('email') } : null;
+      return owner
+        ? { id: owner.id, email: owner.get('email'), status: owner.get('status') }
+        : null;
     },
   });
 

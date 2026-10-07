@@ -4,6 +4,7 @@ import {
   DEFAULT_TITLE,
   createSaveEngine,
   isCollisionToken,
+  isSettingsOnly,
   zeroMilliseconds,
   type LeaveDecision,
   type PersistedIdentity,
@@ -20,14 +21,17 @@ import {
   type SaveResult,
 } from '@/editor/engine/save-engine';
 import type {
+  BodyDivergence,
   ChangeReasonCode,
   EditablePostPatch,
   EditablePostProjection,
+  ProjectionKey,
   RestoredRevision,
   RevisionProjection,
 } from '@/editor/engine/change-tracker';
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
 import { pick } from '@/editor/engine/pick';
+import type { LocalRevisionDraft, LocalRevisionWriter } from '@/editor/local-revisions';
 import type { PostWriteOptions } from '@tryghost/admin-x-framework/api/post-contract';
 import type { EditorErrorContext } from '@/editor/report-error';
 import { toSaveError } from './error-mapping';
@@ -38,16 +42,18 @@ import {
   AUTHORS_REQUIRED,
   PUBLISHED_AT_MUST_BE_PAST,
   SETTINGS_FIELD_KEYS,
+  VALIDATED_SETTINGS_FIELD_KEYS,
   identityFor,
   publishedAtInFuture,
   settingsFieldError,
   tiersIncomplete,
+  titleError,
   validatedFieldsOf,
   type EditorSettingsPatch,
   type EditorSettingsFields,
   type SettingsFieldKey,
 } from './settings-fields';
-import type { EditorCreatePayload, EditorEditPayload } from './write-payload';
+import type { EditorCreatePayload, EditorEditPayload, EditorWritableData } from './write-payload';
 
 export type { EditorCreatePayload, EditorEditPayload } from './write-payload';
 
@@ -71,6 +77,8 @@ export interface EditorLeaveConfirmation {
   readonly status: PostStatus;
   readonly engineState: SaveEngineState['kind'];
   readonly reasons: ChangeReasonCode[];
+  readonly dirtyFields: ProjectionKey[];
+  readonly bodyDiff: BodyDivergence | null;
 }
 
 /** Fields the engine writes onto the request rather than reading from the live post. */
@@ -124,11 +132,15 @@ export interface EditorSessionOptions {
   transport: EditorSessionTransport;
   /** Called once the create acknowledges; the caller replaces the URL. */
   onIdAcquired: (id: string) => void;
+  /** Called with the record the server answered each acknowledged save with. */
+  onSaveAcknowledged?: (saved: EditorRecord) => void;
   onError: (error: unknown, context?: EditorErrorContext) => void;
   /** Called once per request that settled as failed. */
   onSaveFailed?: (failure: EditorSaveFailure) => void;
   /** Called when a leave request answers `confirm`. */
   onLeaveConfirmed?: (leave: EditorLeaveConfirmation) => void;
+  /** Keeps local copies of a draft that holds unsaved work. */
+  localRevisions?: LocalRevisionWriter;
 }
 
 /** The state React renders, published together after a session change. */
@@ -141,6 +153,11 @@ export interface EditorSessionView {
   readonly slug: string;
   readonly settings: EditorSettingsFields;
   readonly publishTime: { status: PostStatus; publishedAt: string | null };
+  /** The feature image's alt text and caption, another writer's once adopted. */
+  readonly featureImageAlt: string | null;
+  readonly featureImageCaption: string | null;
+  /** A refused read carried a later version; only while nothing is unsaved and no save is under way. */
+  readonly newerVersionAvailable: boolean;
 }
 
 export interface EditorSession {
@@ -160,7 +177,7 @@ export interface EditorSession {
       Pick<EditablePostProjection, 'feature_image' | 'feature_image_alt' | 'feature_image_caption'>
     >,
   ) => void;
-  /** Stages settings-sidebar fields; outstanding changes enter the next save payload. */
+  /** Stages settings-panel fields; outstanding changes enter the next save payload. */
   patchFields: (patch: EditorSettingsPatch) => void;
   /** The live value of every settings field, for the sidebar's inputs. */
   getFields: () => EditablePostProjection;
@@ -171,8 +188,10 @@ export interface EditorSession {
   editPublishedAt: (publishedAt: string) => void;
   /** The publish time the writer is looking at, staged edit included. */
   getPublishedAt: () => string | null;
-  /** Requests a field save; the engine owns eligibility and pending work. */
+  /** Requests a field save for a canvas edit: a draft saves it, any other status keeps it for Update. */
   commitField: () => void;
+  /** Requests a settings save: a draft saves the whole document, any other status the changed settings alone. */
+  commitSettings: () => void;
   /** The slug the machine holds, which a title commit moves without a field patch. */
   getSlug: () => string;
   /** Routes a manual slug edit through the slug machine, then the same save policy. */
@@ -185,6 +204,8 @@ export interface EditorSession {
   commitTitle: (title: string) => void;
   dispatchAutosave: () => void;
   dispatchExplicit: () => Promise<SaveCompletion>;
+  /** Retries a failed save: a settings save on a post that is not a draft as one, else explicitly. */
+  retrySave: () => Promise<SaveCompletion>;
   dispatchPublish: (options?: PublishOptions) => Promise<SaveCompletion>;
   dispatchSchedule: (options: ScheduleOptions) => Promise<SaveCompletion>;
   dispatchRevert: () => Promise<SaveCompletion>;
@@ -195,15 +216,54 @@ export interface EditorSession {
   reauthSucceeded: () => void;
   reauthAbandoned: () => void;
   leaveRequested: () => Promise<LeaveDecision>;
+  /** Writes the draft's local copy now if it holds unsaved work, for a page that is going away. */
+  flushLocalRevision: () => void;
   dispose: () => void;
 }
+
+/** Body reasons that stand for the writer's edits; a pending baseline is load-time normalization. */
+const BODY_WORK_REASONS: ReadonlySet<ChangeReasonCode> = new Set([
+  'SCRATCH_DIVERGED_FROM_SECONDARY',
+  'BASELINE_FAILED',
+  'LEXICAL_PARSE_FAILED',
+]);
+
+// Core stores the alt text and caption beside the post, so a read at the held
+// token can carry another writer's edit to them, as it can to the settings.
+const ADOPTED_KEYS = [
+  ...SETTINGS_FIELD_KEYS,
+  'feature_image_alt',
+  'feature_image_caption',
+] as const;
+
+type AdoptedKey = (typeof ADOPTED_KEYS)[number];
+
+/** What a local copy carries besides the body. */
+const COPIED_FIELD_KEYS = [
+  'title',
+  'slug',
+  'tags',
+  'custom_excerpt',
+  'feature_image',
+  'feature_image_alt',
+  'feature_image_caption',
+  'authors',
+] as const;
+
+/** States a save stays stuck in until the writer acts. `error` is re-entered by every retry. */
+const STUCK_ENGINE_STATES: ReadonlySet<SaveEngineState['kind']> = new Set([
+  'reauth-pending',
+  'conflict',
+  'halted',
+  'crashed',
+]);
 
 /** Stages one dirty settings field into both the submitted projection and the payload. */
 function stageSettingsField<Key extends SettingsFieldKey>(
   key: Key,
   fields: EditorSettingsFields,
   projection: EditablePostPatch,
-  payload: EditorCreatePayload,
+  payload: EditorWritableData,
 ): void {
   projection[key] = fields[key];
   payload[key] = identityFor(key, fields);
@@ -232,6 +292,24 @@ export function isOlderToken(candidate: string, held: string | null): boolean {
   return !Number.isNaN(candidateTime) && !Number.isNaN(heldTime) && candidateTime < heldTime;
 }
 
+/** Whether a record's collision token names the version already held. */
+function isHeldToken(candidate: string | null | undefined, held: string | null): boolean {
+  return (
+    isCollisionToken(candidate) &&
+    isCollisionToken(held) &&
+    Date.parse(candidate) === Date.parse(held)
+  );
+}
+
+/** Whether a collision token names a version later than another. */
+function isLaterToken(candidate: string | null, than: string | null): boolean {
+  return (
+    isCollisionToken(candidate) &&
+    isCollisionToken(than) &&
+    Date.parse(candidate) > Date.parse(than)
+  );
+}
+
 /**
  * Composes the change tracker, slug machine and save engine into one editing
  * session: one per opened post, never shared between two new posts.
@@ -244,9 +322,11 @@ export function createEditorSession({
   autosaveDebounceMs,
   transport,
   onIdAcquired,
+  onSaveAcknowledged,
   onError,
   onSaveFailed,
   onLeaveConfirmed,
+  localRevisions,
 }: EditorSessionOptions): EditorSession {
   let identity: PersistedIdentity = record
     ? { id: record.id, updatedAt: record.updated_at ?? '' }
@@ -264,11 +344,21 @@ export function createEditorSession({
   let disposed = false;
   // A proposal is unsaved work before it becomes a sanitized document field.
   const pendingSlugEdits = new Set<symbol>();
-  // The version each settings field was last edited at by the writer. Adopting
+  // The version each adoptable field was last edited at by the writer. Adopting
   // is not an edit, so a snapshot of the live values could not answer this.
-  const writerEdits = new Map<SettingsFieldKey, number>();
+  const writerEdits = new Map<AdoptedKey, number>();
   // The version the in-flight request was built at, or null when none is.
   let inFlightSince: number | null = null;
+  // The excerpt under the title is canvas content: a settings save leaves it for Update.
+  let excerptOnCanvas = false;
+  // A restore's own save holds the revision, not the writer's work.
+  let restoringRevision = false;
+  // A failing save re-enters a held conflict; one copy per conflict is enough.
+  let flushedConflictError: unknown = null;
+  // The engine is holding an error a settings save met.
+  let refusedSettings = false;
+  // The latest version a refused read carried; stale once the held token reaches it.
+  let newerVersion: string | null = null;
 
   function livePublishedAt(): string | null {
     return stagedPublishedAt ?? publishedAt;
@@ -320,6 +410,11 @@ export function createEditorSession({
       view.publishTime.publishedAt === currentPublishedAt
         ? view.publishTime
         : { status, publishedAt: currentPublishedAt };
+    // While a save is under way, the later version may be its own read before its answer.
+    const newerVersionAvailable =
+      (state.kind === 'idle' || state.kind === 'debouncing') &&
+      !isDirty &&
+      isLaterToken(newerVersion, identity.updatedAt);
 
     // Body edits need no new React snapshot while the rendered values stay the
     // same. Keep nested settings and time references stable across engine events.
@@ -331,7 +426,10 @@ export function createEditorSession({
       view.title === live.title &&
       view.slug === currentSlug &&
       view.settings === settings &&
-      view.publishTime === publishTime
+      view.publishTime === publishTime &&
+      view.featureImageAlt === live.feature_image_alt &&
+      view.featureImageCaption === live.feature_image_caption &&
+      view.newerVersionAvailable === newerVersionAvailable
     ) {
       return;
     }
@@ -343,6 +441,9 @@ export function createEditorSession({
       slug: currentSlug,
       settings,
       publishTime,
+      featureImageAlt: live.feature_image_alt,
+      featureImageCaption: live.feature_image_caption,
+      newerVersionAvailable,
     };
     for (const listener of changeListeners) {
       try {
@@ -357,7 +458,7 @@ export function createEditorSession({
     const before = live;
     live = { ...live, ...patch };
     version += 1;
-    for (const key of SETTINGS_FIELD_KEYS) {
+    for (const key of ADOPTED_KEYS) {
       // Re-emitting a value the field already holds is not an edit, and a
       // relation re-emitted as a fresh array holds the same value.
       if (patch[key] !== undefined && !sameFieldValue(key, before[key], patch[key])) {
@@ -366,6 +467,7 @@ export function createEditorSession({
     }
     tracker.setLive(identity.id, patch);
     notifyChanged();
+    recordLocalRevision();
   }
 
   // A save writes a title and slug the writer never typed: the request's own
@@ -374,13 +476,18 @@ export function createEditorSession({
   // value forever -- but only where the writer has not moved past them, which is
   // the same rule the rebase applies. Adopting is not an edit, so the version the
   // request was built against must not move.
-  function adoptWhereUnchanged(before: AuthoredFields, next: Partial<AuthoredFields>): void {
+  function adoptWhereUnchanged(
+    before: Partial<AuthoredFields>,
+    next: Partial<AuthoredFields>,
+  ): void {
     for (const key of AUTHORED_KEYS) {
       const value = next[key];
+      const was = before[key];
       if (
         value === undefined ||
-        value === before[key] ||
-        !sameFieldValue(key, live[key], before[key])
+        was === undefined ||
+        value === was ||
+        !sameFieldValue(key, live[key], was)
       ) {
         continue;
       }
@@ -391,22 +498,22 @@ export function createEditorSession({
 
   // The one rule both adoption paths ask, so a refetch and an acknowledgement
   // cannot disagree about who owns a field.
-  function isAdoptable(key: SettingsFieldKey): boolean {
+  function isAdoptable(key: AdoptedKey): boolean {
     if (tracker.isFieldDirty(key)) {
       return false;
     }
     return inFlightSince === null || (writerEdits.get(key) ?? 0) <= inFlightSince;
   }
 
-  // The server's copy of a settings field the writer has not moved past wins,
+  // The server's copy of an adoptable field the writer has not moved past wins,
   // the same rule the authored fields use: without it a value the server
   // normalized or someone else changed reads as a local edit for good.
-  function adoptSettings(
+  function adoptFields(
     next: EditablePostProjection,
-    adoptable: (key: SettingsFieldKey) => boolean,
+    adoptable: (key: AdoptedKey) => boolean,
   ): void {
     const patch: Record<string, unknown> = {};
-    for (const key of SETTINGS_FIELD_KEYS) {
+    for (const key of ADOPTED_KEYS) {
       if (adoptable(key) && live[key] !== next[key]) {
         patch[key] = next[key];
       }
@@ -418,6 +525,20 @@ export function createEditorSession({
     tracker.setLive(identity.id, patch);
   }
 
+  function heldForUpdate(key: SettingsFieldKey): boolean {
+    return key === 'custom_excerpt' && excerptOnCanvas;
+  }
+
+  // What a settings save on a post that is not a draft would carry.
+  function settingsDirty(): boolean {
+    return (
+      stagedPublishedAt !== null ||
+      pendingSlugEdits.size > 0 ||
+      tracker.isFieldDirty('slug') ||
+      SETTINGS_FIELD_KEYS.some((key) => !heldForUpdate(key) && tracker.isFieldDirty(key))
+    );
+  }
+
   function getSnapshot(): EditorSaveSnapshot {
     const verdict = tracker.verdict();
     return buildSaveSnapshot({
@@ -425,6 +546,7 @@ export function createEditorSession({
       status,
       publishedAt: livePublishedAt(),
       publishedAtDirty: stagedPublishedAt !== null,
+      settingsDirty: settingsDirty(),
       title: live.title,
       slug: machine.getState().slug,
       slugIsCustom: machine.getState().mode === 'custom',
@@ -432,6 +554,64 @@ export function createEditorSession({
       changedSinceLastRevision: tracker.hasChangedSinceRevision(latestRevision),
       version,
     });
+  }
+
+  // The body counts by the baseline-aware verdict, so Koenig's load-time normalization never does.
+  function holdsUnsavedWork(): boolean {
+    return (
+      COPIED_FIELD_KEYS.some((key) => tracker.isFieldDirty(key)) ||
+      tracker.verdict().reasons.some((reason) => BODY_WORK_REASONS.has(reason.code))
+    );
+  }
+
+  function localRevisionDraft(): LocalRevisionDraft {
+    return {
+      id: identity.id,
+      status,
+      title: live.title,
+      slug: machine.getState().slug,
+      lexical: live.lexical,
+      custom_excerpt: live.custom_excerpt,
+      feature_image: live.feature_image,
+      feature_image_alt: live.feature_image_alt,
+      feature_image_caption: live.feature_image_caption,
+      authors: live.authors.map(({ id }) => ({ id })),
+      tags: live.tags.map(({ id, name, slug: tagSlug }) => ({ id, name, slug: tagSlug })),
+    };
+  }
+
+  function withLocalRevisions(act: (writer: LocalRevisionWriter) => void): void {
+    if (!localRevisions) {
+      return;
+    }
+    try {
+      act(localRevisions);
+    } catch (error) {
+      onError(error);
+    }
+  }
+
+  // True when the draft held work and was handed to the writer.
+  function keepLocalRevision(write: (writer: LocalRevisionWriter) => void): boolean {
+    if (disposed || restoringRevision || status !== 'draft') {
+      return false;
+    }
+    let kept = false;
+    withLocalRevisions((writer) => {
+      if (holdsUnsavedWork()) {
+        write(writer);
+        kept = true;
+      }
+    });
+    return kept;
+  }
+
+  function recordLocalRevision(): void {
+    keepLocalRevision((writer) => writer.record(localRevisionDraft()));
+  }
+
+  function flushLocalRevision(): boolean {
+    return keepLocalRevision((writer) => writer.flush(localRevisionDraft()));
   }
 
   // A title commit and a load move the machine's slug without a field patch, so
@@ -443,9 +623,17 @@ export function createEditorSession({
   function requestInvalid(
     request: SaveRequest<EditorSaveSnapshot>,
     projection: EditablePostPatch,
+    settingsOnly: boolean,
   ): string | null {
     const creatingDraft = request.snapshot.id === null && request.target.status === 'draft';
-    const invalid = settingsFieldError(validatedFieldsOf(live), creatingDraft);
+    // The canvas fields a settings save leaves for Update are checked by Update.
+    const invalid =
+      (settingsOnly ? null : titleError(request.title)) ??
+      settingsFieldError(
+        validatedFieldsOf(live),
+        creatingDraft,
+        settingsOnly ? VALIDATED_SETTINGS_FIELD_KEYS.filter(heldForUpdate) : [],
+      );
     if (invalid) {
       return invalid;
     }
@@ -466,26 +654,50 @@ export function createEditorSession({
     request: SaveRequest<EditorSaveSnapshot>,
   ): Promise<PrepareOutcome<PreparedSave>> {
     const id = request.snapshot.id;
-    const projection: EditablePostPatch = {
-      title: request.title,
-      slug: request.slug,
-      lexical: live.lexical,
-      feature_image: live.feature_image,
-      feature_image_alt: live.feature_image_alt,
-      feature_image_caption: live.feature_image_caption,
-      updated_at: request.snapshot.updatedAt,
-    };
+    const settingsOnly = isSettingsOnly(request.command, request.snapshot);
+    let projection: EditablePostPatch;
+    let payload: EditorWritableData;
 
-    const payload: EditorCreatePayload = {
-      title: request.title,
-      slug: request.slug,
-      lexical: projection.lexical,
-      feature_image: projection.feature_image,
-      feature_image_alt: projection.feature_image_alt,
-      feature_image_caption: projection.feature_image_caption,
-      status: request.target.status,
-      published_at: request.target.publishedAt,
-    };
+    if (settingsOnly) {
+      // Core skips its token check for writes to fields stored beside the post, so the
+      // saved canvas makes another writer's newer canvas collide and is a no-op otherwise.
+      projection = { updated_at: request.snapshot.updatedAt };
+      payload = {
+        title: tracker.savedValue('title'),
+        slug: request.slug,
+        lexical: tracker.savedValue('lexical'),
+        feature_image: tracker.savedValue('feature_image'),
+      };
+      if (heldForUpdate('custom_excerpt')) {
+        payload.custom_excerpt = tracker.savedValue('custom_excerpt');
+      }
+      if (tracker.isFieldDirty('slug')) {
+        projection.slug = request.slug;
+      }
+      if (stagedPublishedAt !== null) {
+        payload.published_at = request.target.publishedAt;
+      }
+    } else {
+      projection = {
+        title: request.title,
+        slug: request.slug,
+        lexical: live.lexical,
+        feature_image: live.feature_image,
+        feature_image_alt: live.feature_image_alt,
+        feature_image_caption: live.feature_image_caption,
+        updated_at: request.snapshot.updatedAt,
+      };
+      payload = {
+        title: request.title,
+        slug: request.slug,
+        lexical: projection.lexical,
+        feature_image: projection.feature_image,
+        feature_image_alt: projection.feature_image_alt,
+        feature_image_caption: projection.feature_image_caption,
+        status: request.target.status,
+        published_at: request.target.publishedAt,
+      };
+    }
     // An Author's or Contributor's create is refused unless `authors` names them
     // (core/server/models/relations/authors.js). Updates never resend it.
     if (id === null && currentUserId) {
@@ -493,7 +705,7 @@ export function createEditorSession({
     }
 
     for (const key of SETTINGS_FIELD_KEYS) {
-      if (tracker.isFieldDirty(key)) {
+      if (tracker.isFieldDirty(key) && !(settingsOnly && heldForUpdate(key))) {
         stageSettingsField(key, live, projection, payload);
       }
     }
@@ -528,10 +740,15 @@ export function createEditorSession({
         emailSegment: request.target.emailSegment,
       },
     };
-    const invalid = requestInvalid(request, projection);
+    const invalid = requestInvalid(request, projection, settingsOnly);
 
     if (id === null) {
-      return Promise.resolve(preparedOrInvalid({ ...prepared, isCreate: true, payload }, invalid));
+      return Promise.resolve(
+        preparedOrInvalid(
+          { ...prepared, isCreate: true, payload: { ...payload, title: request.title } },
+          invalid,
+        ),
+      );
     }
     if (!projection.updated_at) {
       // Without the token the server skips its collision check entirely and the
@@ -585,17 +802,21 @@ export function createEditorSession({
   }
 
   function reconcile(prepared: PreparedSave, result: EditorSaveResult): void {
-    const submitted: AuthoredFields = {
-      title: prepared.projection.title ?? prepared.authoredFrom.title,
-      slug: prepared.projection.slug ?? prepared.authoredFrom.slug,
-    };
+    // A settings save carries no title, and the slug only once the writer moved
+    // it; the answer settles only what the request carried.
+    const submitted: Partial<AuthoredFields> = {};
+    for (const key of AUTHORED_KEYS) {
+      if (prepared.projection[key] !== undefined) {
+        submitted[key] = prepared.projection[key];
+      }
+    }
     adoptWhereUnchanged(prepared.authoredFrom, submitted);
 
     // A matching refetch can make an unsubmitted edit look saved. Preserve
     // those edits through the rebase, whose fallback base is the latest saved
     // copy. Submitted fields already have a stable base in the request.
     const unsubmittedEdits: EditablePostPatch = Object.fromEntries(
-      SETTINGS_FIELD_KEYS.filter(
+      ADOPTED_KEYS.filter(
         (key) =>
           prepared.projection[key] === undefined &&
           (writerEdits.get(key) ?? 0) > prepared.builtAtVersion,
@@ -608,17 +829,15 @@ export function createEditorSession({
       unsubmittedEdits.tiers = live.tiers;
     }
     const acknowledged = projectionOf(result.post);
+    const answered: AuthoredFields = { title: acknowledged.title, slug: acknowledged.slug };
     tracker.saveAcknowledged(result.id, prepared.projection, acknowledged);
     tracker.setLive(result.id, unsubmittedEdits);
-    adoptWhereUnchanged(submitted, { title: acknowledged.title, slug: acknowledged.slug });
+    adoptWhereUnchanged(submitted, answered);
     // The tracker now holds the retained edits as well as the rebase, so its
     // compare can decide adoption after the request's window closes.
     inFlightSince = null;
-    adoptSettings(acknowledged, isAdoptable);
-    machine.saveAcknowledged(submitted, {
-      title: acknowledged.title,
-      slug: acknowledged.slug,
-    });
+    adoptFields(acknowledged, isAdoptable);
+    machine.saveAcknowledged({ ...answered, ...submitted }, answered);
 
     const created = identity.id === null;
     identity = { id: result.id, updatedAt: result.updatedAt };
@@ -632,8 +851,24 @@ export function createEditorSession({
     live = { ...live, updated_at: result.updatedAt };
 
     if (created) {
+      withLocalRevisions((writer) => writer.created());
       onIdAcquired(result.id);
     }
+    // The save has landed whatever the caller does with its answer.
+    try {
+      onSaveAcknowledged?.(result.post);
+    } catch (error) {
+      onError(error);
+    }
+    // A waiting copy is stale once nothing is unsaved or the post left draft; a new
+    // post's unsaved work is written again under the id it now has.
+    withLocalRevisions((writer) => {
+      if (status !== 'draft' || !holdsUnsavedWork()) {
+        writer.discard();
+      } else if (created) {
+        writer.flush(localRevisionDraft());
+      }
+    });
     notifyChanged();
   }
 
@@ -647,6 +882,19 @@ export function createEditorSession({
     onStateChange: (next) => {
       if (next.kind === 'error' || next.kind === 'conflict') {
         tracker.markSaveError();
+      } else if (refusedSettings && next.kind === 'idle') {
+        // The engine only goes from a settings error to idle once those settings are back to saved.
+        tracker.clearSaveError();
+      }
+      refusedSettings = next.kind === 'error' && next.intent === 'settings';
+      if (STUCK_ENGINE_STATES.has(next.kind)) {
+        const heldConflict = next.kind === 'conflict' ? next.error : null;
+        if (heldConflict === null) {
+          flushedConflictError = null;
+          flushLocalRevision();
+        } else if (heldConflict !== flushedConflictError && flushLocalRevision()) {
+          flushedConflictError = heldConflict;
+        }
       }
       // A save error also moves dirtiness without going through a field patch.
       notifyChanged();
@@ -658,9 +906,15 @@ export function createEditorSession({
   // Seed the external-store snapshot before the session is handed to React.
   notifyChanged();
 
-  // Every field commit enters the engine; it owns eligibility and pending work.
+  // Every commit enters the engine; it owns eligibility and pending work.
   function commitField(): void {
     void engine.dispatch('field');
+  }
+
+  function commitSettings(): void {
+    void engine.dispatch('settings');
+    // The attempt can release a warning without moving the engine's state.
+    notifyChanged();
   }
 
   // An `unchanged` proposal means the machine kept the slug it already had. A
@@ -690,7 +944,7 @@ export function createEditorSession({
         return 'unchanged';
       }
       patchLive({ slug: proposal.slug });
-      commitField();
+      commitSettings();
       return 'applied';
     } finally {
       pendingSlugEdits.delete(edit);
@@ -719,13 +973,22 @@ export function createEditorSession({
     // A blank title persists as the default, so the live projection carries it
     // even while the input stays empty.
     patchTitle: (title) => patchLive({ title: title.trim() ? title : DEFAULT_TITLE }),
-    patchExcerpt: (excerpt) => patchLive({ custom_excerpt: excerpt === '' ? null : excerpt }),
+    patchExcerpt: (excerpt) => {
+      excerptOnCanvas = true;
+      patchLive({ custom_excerpt: excerpt === '' ? null : excerpt });
+    },
     patchFeatureImage: (patch) => patchLive(patch),
 
-    patchFields: patchLive,
+    patchFields: (patch) => {
+      if ('custom_excerpt' in patch) {
+        excerptOnCanvas = false;
+      }
+      patchLive(patch);
+    },
     getFields: () => live,
 
     commitField,
+    commitSettings,
     getSlug: () => machine.getState().slug,
     editSlug,
 
@@ -755,6 +1018,8 @@ export function createEditorSession({
         ...restored,
         title: restored.title.trim() ? restored.title : DEFAULT_TITLE,
       };
+      // The revision replaces whatever copy was waiting, so the unsaved draft is kept first.
+      flushLocalRevision();
       const previous: RestoredRevision = {
         lexical: live.lexical,
         title: live.title,
@@ -764,30 +1029,37 @@ export function createEditorSession({
         feature_image_caption: live.feature_image_caption,
       };
 
-      patchLive(revision);
-      // Ember's slug task bails once the post carries the revision's title, so a
-      // restore leaves the URL alone.
-      slug.titleReplaced(revision.title);
+      restoringRevision = true;
+      try {
+        patchLive(revision);
+        // Ember's slug task bails once the post carries the revision's title, so a
+        // restore leaves the URL alone.
+        slug.titleReplaced(revision.title);
 
-      const completion = await engine.dispatch('explicit');
-      if (completion.kind !== 'saved') {
-        // The editor surface never adopted the revision, so nothing may keep it.
-        patchLive(previous);
-        slug.titleReplaced(previous.title);
-        return false;
+        const completion = await engine.dispatch('explicit');
+        if (completion.kind !== 'saved') {
+          // The editor surface never adopted the revision, so nothing may keep it.
+          patchLive(previous);
+          slug.titleReplaced(previous.title);
+          return false;
+        }
+        tracker.revisionRestored(identity.id, revision);
+        notifyChanged();
+        return true;
+      } finally {
+        restoringRevision = false;
       }
-      tracker.revisionRestored(identity.id, revision);
-      notifyChanged();
-      return true;
     },
 
     setBaseline: (lexical) => {
       tracker.setBaseline(identity.id, lexical);
       notifyChanged();
+      recordLocalRevision();
     },
     baselineFailed: () => {
       tracker.baselineFailed(identity.id);
       notifyChanged();
+      recordLocalRevision();
     },
 
     // Only a draft's title drives the slug; a published URL must not move.
@@ -798,27 +1070,37 @@ export function createEditorSession({
     },
     dispatchAutosave: () => void engine.dispatch('autosave'),
     dispatchExplicit: () => engine.dispatch('explicit'),
+    // An explicit retry would also send the canvas edits a settings save left for Update.
+    retrySave: () => {
+      const state = engine.getState();
+      return state.kind === 'error' && state.intent === 'settings' && status !== 'draft'
+        ? engine.dispatch('settings', { retry: true })
+        : engine.dispatch('explicit');
+    },
     dispatchPublish: (options) => engine.dispatch('publish', options),
     dispatchSchedule: (options) => engine.dispatch('schedule', options),
     dispatchRevert: () => engine.dispatch('revert'),
     getLiveLexical: () => live.lexical,
 
     recordRefetched: (next) => {
-      const updatedAt = next.updated_at ?? '';
-      if (
-        disposed ||
-        identity.id !== next.id ||
-        !isCollisionToken(updatedAt) ||
-        isOlderToken(updatedAt, identity.updatedAt)
-      ) {
+      if (disposed || identity.id !== next.id) {
+        return false;
+      }
+      // Another version's content is not in this document: holding its token
+      // would let the next save overwrite it instead of colliding.
+      if (!isHeldToken(next.updated_at, identity.updatedAt)) {
+        const token = next.updated_at ?? null;
+        if (isLaterToken(token, identity.updatedAt) && !isLaterToken(newerVersion, token)) {
+          newerVersion = token;
+          notifyChanged();
+        }
         return false;
       }
       // Decide against the old saved copy before the refetch replaces it.
-      const adoptable = new Set(SETTINGS_FIELD_KEYS.filter(isAdoptable));
+      const adoptable = new Set(ADOPTED_KEYS.filter(isAdoptable));
       const projection = projectionOf(next);
       tracker.setSaved(next.id, projection);
-      adoptSettings(projection, (key) => adoptable.has(key));
-      identity = { id: next.id, updatedAt };
+      adoptFields(projection, (key) => adoptable.has(key));
       status = next.status ?? status;
       publishedAt = next.published_at ?? null;
       releaseSavedPublishTime();
@@ -877,6 +1159,8 @@ export function createEditorSession({
             status,
             engineState: engine.getState().kind,
             reasons: tracker.verdict().reasons.map((reason) => reason.code),
+            dirtyFields: tracker.dirtyFields(),
+            bodyDiff: tracker.bodyDivergence(),
           });
         } catch (error) {
           onError(error);
@@ -885,10 +1169,15 @@ export function createEditorSession({
       return decision;
     },
 
+    flushLocalRevision,
+
     dispose: () => {
       if (disposed) {
         return;
       }
+      // Whatever still holds unsaved work leaves a copy behind before the engine drops it.
+      flushLocalRevision();
+      withLocalRevisions((writer) => writer.discard());
       // A draft leaving with a title but a slug still derived from the default title.
       if (
         status === 'draft' &&

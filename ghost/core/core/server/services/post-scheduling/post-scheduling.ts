@@ -1,8 +1,9 @@
 import moment from 'moment';
 import logging from '@tryghost/logging';
-import type { SchedulerAdapter, SchedulerJob } from '@tryghost/adapter-base-scheduling';
+import type { SchedulerJob } from '@tryghost/adapter-base-scheduling';
 import type { InternalApiKey, InternalKeys } from '../internal-keys';
 import { buildSignedJob } from '../../adapters/scheduling/build-signed-job';
+import type { SchedulingAdapter } from '../../adapters/scheduling/error-capture';
 import { getSchedulerIdempotencyKey } from '../../adapters/scheduling/get-scheduler-idempotency-key';
 
 // CJS-only modules — typed loosely below. models is the Bookshelf registry
@@ -16,7 +17,7 @@ interface PostSchedulingDeps {
   // through without TS complaining at the JS/TS boundary. The class field
   // below is non-optional; the constructor's adapter.register(this) call
   // throws if undefined is passed through in practice.
-  adapter?: SchedulerAdapter;
+  adapter?: SchedulingAdapter;
   internalKeys: InternalKeys;
 }
 
@@ -27,7 +28,7 @@ type ScheduledResource = (typeof SCHEDULED_RESOURCES)[number];
 
 export default class PostScheduling {
   readonly #apiUrl: string;
-  readonly #adapter: SchedulerAdapter;
+  readonly #adapter: SchedulingAdapter;
   readonly #internalKeys: InternalKeys;
 
   constructor({ apiUrl, adapter, internalKeys }: PostSchedulingDeps) {
@@ -99,30 +100,44 @@ export default class PostScheduling {
   }
 
   /**
-   * Re-issue every queued schedule under the current internal-keys cache.
-   * On boot the previous key is the same as the current key. For key
-   * rotation, the caller passes `previousKey` so unschedule URLs match
-   * the entries the adapter already holds (signed under the previous
-   * secret); schedule URLs are reissued under the current secret.
+   * Registers every scheduled post and page with the scheduler again.
+   *
+   * This runs in two situations:
+   *
+   * 1. On boot (no `previousKey`). Each job is identical to the one the
+   *    scheduler may already hold: same URL, same idempotency key.
+   *
+   *    - If the adapter sets `dedupesByIdempotencyKey`, we only schedule.
+   *      The adapter spots the matching key and keeps the job it has.
+   *    - Otherwise we unschedule first, then schedule. Without the
+   *      unschedule, a queue that outlives the process would collect one
+   *      more copy of each job on every boot. We pass `bootstrap: true` so
+   *      Ghost's built-in adapter, whose queue is in memory, doesn't cancel
+   *      the job we're about to add.
+   *
+   *    Skipping the unschedule is the safer path when the adapter supports
+   *    it. The two calls aren't awaited, so they can arrive out of order. If
+   *    the unschedule lands after the schedule, it removes the new job and
+   *    the post never publishes.
+   *
+   * 2. After the scheduler key is rotated (`previousKey` is set). Jobs
+   *    signed with the old key have different URLs, so we always unschedule
+   *    those and schedule new ones signed with the current key.
    */
   async rescheduleAll({ previousKey }: { previousKey?: InternalApiKey } = {}): Promise<void> {
     const scheduledResources = await this.#loadScheduledResources();
     const currentKey = await this.#internalKeys.get('ghost-scheduler');
     const unscheduleKey = previousKey ?? currentKey;
-
-    // Same-key rebuild (no previousKey, boot path) → URL signature is
-    // identical to the about-to-be-scheduled job. The default adapter
-    // implements unschedule via tombstones keyed by URL+time, so a same-URL
-    // unschedule poisons the scheduled job. Bootstrap mode skips the
-    // tombstone write. Rotation (previousKey provided) → URLs differ, so
-    // the tombstone correctly targets the old queued entry.
     const bootstrap = !previousKey;
+    const skipUnschedule = bootstrap && this.#adapter.dedupesByIdempotencyKey === true;
 
     for (const resourceType of Object.keys(scheduledResources) as ScheduledResource[]) {
       for (const model of scheduledResources[resourceType]) {
-        this.#adapter.unschedule(this.#normalize({ model, key: unscheduleKey, resourceType }), {
-          bootstrap,
-        });
+        if (!skipUnschedule) {
+          this.#adapter.unschedule(this.#normalize({ model, key: unscheduleKey, resourceType }), {
+            bootstrap,
+          });
+        }
         this.#adapter.schedule(this.#normalize({ model, key: currentKey, resourceType }));
       }
     }

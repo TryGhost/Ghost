@@ -77,6 +77,38 @@ test.describe('Ghost Admin - React auth screens', () => {
     await expect(page.getByText('Password updated')).toBeVisible();
   });
 
+  test('resets a forgotten password with 2FA required and lands signed in', async ({
+    page,
+    ghostAccountOwner,
+  }) => {
+    const settingsPage = new SettingsPage(page);
+    await settingsPage.staffSection.goto();
+    await settingsPage.staffSection.enableRequireTwoFa();
+
+    const loginPage = new LoginPage(page);
+    await loginPage.logout();
+
+    await loginPage.requestPasswordReset(ghostAccountOwner.email);
+    await expect(loginPage.body).toContainText(
+      'An email with password reset instructions has been sent.',
+    );
+
+    const messages = await emailClient.search({
+      subject: 'Reset Password',
+      to: ghostAccountOwner.email,
+    });
+    const resetUrl = extractPasswordResetLink(await emailClient.getMessageDetailed(messages[0]));
+    await loginPage.goto(resetUrl);
+
+    const newPassword = 'test@lginSecure@123';
+    await new PasswordResetPage(page).resetPassword(newPassword, newPassword);
+
+    // The emailed link already proves the address, so the reset signs in a
+    // verified session and no code is asked for
+    await expect(new AnalyticsOverviewPage(page).header).toBeVisible();
+    await expect(page.getByText('Password updated')).toBeVisible();
+  });
+
   test('a new staff member signs up from an invite link', async ({ page, browser, baseURL }) => {
     const testEmail = `test-invite-${Date.now()}@example.com`;
 
@@ -104,7 +136,7 @@ test.describe('Ghost Admin - React auth screens', () => {
 
 // The same round trip with either implementation of the auth screens: a
 // cold load of a deep link while signed out, sign in, and back to the link
-// (an Ember-owned screen, with its query string).
+// with its query string.
 for (const { screens, authReact } of [
   { screens: 'Ember', authReact: false },
   { screens: 'React', authReact: true },
@@ -123,7 +155,8 @@ for (const { screens, authReact } of [
       await expect(loginPage.signInButton).toBeVisible();
       await loginPage.signIn(ghostAccountOwner.email, ghostAccountOwner.password);
 
-      await new PostsPage(page).waitForList();
+      // No drafts exist, so the screen shows its empty state rather than the list.
+      await expect(new PostsPage(page).pageTitle).toBeVisible();
       await expect(page).toHaveURL(/#\/posts\/?\?type=draft$/);
     });
   });

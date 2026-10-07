@@ -3,6 +3,7 @@
  * arrives as internal read context from the frontend entry lookup — it has no
  * HTTP surface, so a `?gift` param on the Content API is ignored.
  */
+import type { Frame } from '@tryghost/api-framework';
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import { service as giftLinksService } from '../../../services/gift-links';
@@ -14,14 +15,14 @@ const messages = {
     "applyGiftAccess requires generateGiftKeyData in the endpoint's generateCacheKeyData, so a response cache can never serve unlocked content under an anonymous key.",
 };
 
-interface Frame {
+type GiftAccessFrame = Frame & {
   // frame.original.context, not frame.options.context: the permissions
   // stage replaces the latter with a parsed copy that drops unknown keys.
-  original: { context?: { member?: unknown; giftToken?: unknown } };
+  original: Frame['original'] & { context?: { member?: unknown; giftToken?: unknown } };
   giftLinkPostId?: string | null;
-}
+};
 
-function giftTokenFromFrame(frame: Frame): string | null {
+function giftTokenFromFrame(frame: GiftAccessFrame): string | null {
   const token = frame.original.context?.giftToken;
   return typeof token === 'string' && token !== '' ? token : null;
 }
@@ -34,7 +35,7 @@ function giftTokenFromFrame(frame: Frame): string | null {
  * cached gated 200 where a miss 403s.
  */
 export async function generateGiftKeyData(
-  frame: Frame,
+  frame: GiftAccessFrame,
 ): Promise<{ present: true; postId: string | null } | undefined> {
   const token = giftTokenFromFrame(frame);
   if (!token) {
@@ -61,7 +62,10 @@ export async function generateGiftKeyData(
  * catch (the response cache is disabled there) but which poisons the
  * anonymous cache key with unlocked content in production.
  */
-export async function applyGiftAccess(frame: Frame, model: { id: string }): Promise<void> {
+export async function applyGiftAccess(
+  frame: GiftAccessFrame,
+  model: { id: string },
+): Promise<void> {
   const token = giftTokenFromFrame(frame);
   if (!token) {
     return;

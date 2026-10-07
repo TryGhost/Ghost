@@ -1,7 +1,7 @@
 const EmailProviderBase = require('./EmailProviderBase');
 const MailgunEmailProvider = require('../../services/email-service/mailgun-email-provider');
 const { fetchMailgunEvents } = require('../../services/email-analytics/fetch-mailgun-events');
-const MailgunClient = require('../../services/lib/mailgun-client');
+const MailgunClient = require('../../lib/mailgun/mailgun-client');
 const errors = require('@tryghost/errors');
 
 /**

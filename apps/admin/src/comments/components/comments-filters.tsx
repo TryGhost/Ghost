@@ -1,4 +1,3 @@
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { Button } from '@tryghost/shade/components';
 import React from 'react';
 import { type Filter, FilterBar, Filters } from '@tryghost/shade/patterns';
@@ -19,7 +18,6 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
   onFiltersChange,
 }) => {
   const { isAdmin7 } = useShade();
-  const useConsolidatedFilterUI = useFeatureFlag('postsListReact');
   const postValueSource = usePostResourceValueSource();
   const memberValueSource = useMemberValueSource();
   const filterFields = useCommentFilterFields({
@@ -36,7 +34,7 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
         Clear
       </FilterBar.Action>
     </FilterBar.Actions>
-  ) : useConsolidatedFilterUI ? (
+  ) : (
     <Button
       className="sm:absolute sm:top-0 sm:right-0"
       type="button"
@@ -45,11 +43,11 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
     >
       Clear
     </Button>
-  ) : undefined;
+  );
 
   return (
     <Filters
-      addButton={<Filters.Trigger fallbackStyle={useConsolidatedFilterUI ? 'list' : 'funnel'} />}
+      addButton={<Filters.Trigger />}
       allowMultiple={false}
       className={cn('[&>button]:order-last', !hasFilters && 'w-auto')}
       clearButton={filterBarActions}

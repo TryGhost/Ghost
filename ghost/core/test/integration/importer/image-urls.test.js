@@ -1,13 +1,9 @@
 const assert = require('node:assert/strict');
-const importer = require('../../../core/server/data/importer');
+const dataImporter = require('../../../core/server/data/importer/importers/data');
 const db = require('../../../core/server/data/db');
 const urlUtils = require('../../../core/shared/url-utils').default;
 const testUtils = require('../../utils');
 const { exportedBodyV5 } = require('../../utils/fixtures/export/body-generator');
-
-const dataImporter = importer.importers.find((instance) => {
-  return instance.type === 'data';
-});
 
 const importOptions = {
   returnImportedData: true,

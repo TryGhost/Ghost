@@ -8,7 +8,7 @@ const sinon = require('sinon');
 const { extract } = require('@tryghost/zip');
 const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
-const { GhostMailer } = require('../../../core/server/services/mail');
+const { GhostMailer } = require('../../../core/server/lib/mail');
 const localUtils = require('./utils');
 
 // These tests make real HTTP requests (like the theme download tests) instead

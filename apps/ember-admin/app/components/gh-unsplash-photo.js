@@ -43,6 +43,17 @@ export default class GhUnsplashPhoto extends Component {
         return url;
     }
 
+    // the API's download URL already carries its own query string
+    get downloadUrl() {
+        const url = new URL(this.args.photo.links.download);
+        url.searchParams.set('utm_source', 'ghost');
+        url.searchParams.set('utm_medium', 'referral');
+        url.searchParams.set('utm_campaign', 'api-credit');
+        url.searchParams.set('force', 'true');
+
+        return url.href;
+    }
+
     constructor() {
         super(...arguments);
         this.height = this.width * this.args.photo.ratio;

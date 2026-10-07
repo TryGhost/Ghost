@@ -114,9 +114,7 @@ describe('Admin Routing', function () {
 
   describe('built template', function () {
     beforeEach(function () {
-      const configPaths = configUtils.config.get('paths');
-      configPaths.adminAssets = path.resolve('test/utils/fixtures/admin-build');
-      configUtils.set('paths', configPaths);
+      configUtils.set('paths:adminAssets', path.resolve('test/utils/fixtures/admin-build'));
     });
 
     afterEach(async function () {

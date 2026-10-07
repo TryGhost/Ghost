@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { getSharp } = require('@tryghost/image-transform');
 
 const CACHE_MAX_SIZE = 100;
 const GIFT_CARD_NOISE_PATH = path.join(__dirname, 'gift-card-noise.png');
@@ -45,7 +46,7 @@ async function getGiftCardNoiseTile() {
     return giftCardNoiseTile;
   }
 
-  const sharp = require('sharp');
+  const sharp = getSharp();
 
   giftCardNoiseTile = await sharp(GIFT_CARD_NOISE_PATH)
     .resize(192, 192, { kernel: 'nearest' })
@@ -219,7 +220,7 @@ function generateGiftPreviewImage({ accentColor = '#15171A', siteTitle, tierLabe
 }
 
 async function renderGiftPreviewImage({ accentColor, siteTitle, tierLabel, cadenceLabel }) {
-  const sharp = require('sharp');
+  const sharp = getSharp();
 
   const svg = buildSvg({ accentColor });
   const noiseTile = await getGiftCardNoiseTile();

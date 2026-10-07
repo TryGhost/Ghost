@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { MEMBERS } from '../members-metafields';
-import type { MetafieldValuesService } from '../members-metafields/values-service';
+import type { MetafieldPlan, MetafieldValuesService } from '../members-metafields/values-service';
 
 /**
  * A member's own account: what they are shown about themselves, and what they may
@@ -44,6 +44,11 @@ interface MemberBreadService {
     data: { id: string },
     options?: Record<string, unknown>,
   ): Promise<Record<string, unknown> | null>;
+  updateWithMetafields(
+    data: Record<string, unknown>,
+    options: Record<string, unknown>,
+    plans: MetafieldPlan[],
+  ): Promise<unknown>;
 }
 
 interface MemberRepository {
@@ -55,7 +60,7 @@ interface EmailSuppressionList {
   removeEmail(email: string): Promise<unknown>;
 }
 
-type MetafieldValues = Pick<MetafieldValuesService, 'unwrapWire' | 'planWrite' | 'applyWrite'>;
+type MetafieldValues = Pick<MetafieldValuesService, 'unwrapWire' | 'planWrite'>;
 
 export interface MemberAccountServiceDeps {
   memberBREADService: MemberBreadService;
@@ -95,27 +100,20 @@ export class MemberAccountService {
     // the whole request rather than leaving a member renamed with their answers
     // rejected. The write below reconciles subscriptions with Stripe and sends
     // events, none of which giving up halfway could undo.
-    const plannedMetafields =
+    const writes =
       data.metafields === undefined
-        ? null
+        ? []
         : await this.#metafieldValues.planWrite(
             this.#metafieldValues.unwrapWire(data.metafields),
             MEMBERS,
           );
 
-    await this.#members.update(_.pick(data, WRITABLE_FIELDS), {
-      id: memberId,
-      withRelated: WRITE_RELATIONS,
-    });
-
-    if (plannedMetafields) {
-      // A member is recorded as the author of their own answers, made from their
-      // account, which is Portal's.
-      await this.#metafieldValues.applyWrite(memberId, plannedMetafields, {
-        writtenBy: { type: 'member', id: memberId },
-        source: 'portal',
-      });
-    }
+    // Saved through the members service, like a staff edit, so the change reaches webhooks.
+    await this.#memberBREADService.updateWithMetafields(
+      _.pick(data, WRITABLE_FIELDS),
+      { id: memberId, withRelated: WRITE_RELATIONS },
+      [{ writes, origin: { writtenBy: { type: 'member', id: memberId }, source: 'portal' } }],
+    );
 
     // Read back rather than returning what was written: a member is told what
     // Ghost now holds, which is not always what they sent. Setting the older

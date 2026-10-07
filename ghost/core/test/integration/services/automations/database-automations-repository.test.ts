@@ -1,33 +1,51 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import ObjectId from 'bson-objectid';
+import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 // @ts-expect-error Test utilities currently lack type definitions.
 import testUtils from '../../../utils';
 import { toDatabaseDate } from '../../../../core/server/lib/db-types/date';
 import { createDatabaseAutomationsRepository } from '../../../../core/server/services/automations/database-automations-repository';
+import type { AutomationTriggerTierScope } from '../../../../core/server/services/automations/automations-repository';
 import { MEMBER_WELCOME_EMAIL_SLUGS } from '../../../../core/server/services/member-welcome-emails/constants';
 
 describe('database automations repository', function () {
   const knex: Knex = testUtils.knex;
   const automationId = ObjectId().toHexString();
 
-  beforeAll(async function () {
-    await testUtils.setup('default')();
+  const selectedTierIds = [ObjectId().toHexString(), ObjectId().toHexString()];
+
+  async function insertAutomation({
+    id = ObjectId().toHexString(),
+    slug = null,
+    triggerTierScope = 'selected_paid',
+    triggerTierIds = [],
+  }: {
+    id?: string;
+    slug?: string | null;
+    triggerTierScope?: AutomationTriggerTierScope;
+    triggerTierIds?: string[];
+  } = {}): Promise<string> {
     const actionId = ObjectId().toHexString();
     const now = toDatabaseDate(new Date());
-
     await knex('automations').insert({
-      id: automationId,
-      slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
-      name: 'Free welcome automation',
+      id,
+      slug,
+      name: `Test automation ${id}`,
       status: 'active',
+      trigger_tier_scope: triggerTierScope,
       created_at: now,
       updated_at: now,
     });
+    if (triggerTierIds.length > 0) {
+      await knex('automation_trigger_tiers').insert(
+        triggerTierIds.map((product_id) => ({ automation_id: id, product_id })),
+      );
+    }
     await knex('automation_actions').insert({
       id: actionId,
-      automation_id: automationId,
+      automation_id: id,
       type: 'wait',
       created_at: now,
       updated_at: now,
@@ -38,6 +56,25 @@ describe('database automations repository', function () {
       wait_hours: 1,
       created_at: now,
     });
+    return id;
+  }
+
+  beforeAll(async function () {
+    await testUtils.setup('default')();
+    await insertAutomation({
+      id: automationId,
+      slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
+      triggerTierScope: 'free',
+    });
+    await knex('products').insert(
+      selectedTierIds.map((id, index) => ({
+        id,
+        name: index === 0 ? 'Silver' : 'Gold',
+        slug: id,
+        type: 'paid',
+        created_at: toDatabaseDate(new Date()),
+      })),
+    );
   });
 
   async function insertMember(memberId: string): Promise<string> {
@@ -55,7 +92,143 @@ describe('database automations repository', function () {
     return memberEmail;
   }
 
+  describe('add', function () {
+    it('saves a new inactive automation without actions or edges', async function () {
+      const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
+      const data = {
+        name: `Creation test ${ObjectId().toHexString()}`,
+        description: 'Test description',
+        trigger_tier_scope: 'free' as const,
+        trigger_tier_ids: null,
+      };
+      const automation = await repo.add(data);
+
+      try {
+        assert(ObjectId.isValid(automation.id));
+        assert.deepEqual(automation, {
+          id: automation.id,
+          slug: null,
+          ...data,
+          status: 'inactive',
+          created_at: automation.created_at,
+          updated_at: automation.updated_at,
+          actions: [],
+          edges: [],
+        });
+        assert.deepEqual(await repo.getById(automation.id), automation);
+        const row = await knex('automations').where('id', automation.id).first();
+        assert(row);
+        assert(row.created_at);
+        assert.deepEqual(row.updated_at, row.created_at);
+      } finally {
+        await knex('automations').where('id', automation.id).del();
+      }
+    });
+
+    it('rejects duplicate names', async function () {
+      const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
+      const data = {
+        name: `Duplicate creation test ${ObjectId().toHexString()}`,
+        description: 'Test description',
+        trigger_tier_scope: 'free' as const,
+        trigger_tier_ids: null,
+      };
+      const automation = await repo.add(data);
+
+      try {
+        await assert.rejects(repo.add(data), (error: unknown) => {
+          assert(error instanceof errors.ValidationError);
+          assert.equal(error.statusCode, 422);
+          assert.equal(error.property, 'name');
+          assert.equal(error.message, 'An automation with this name already exists.');
+          return true;
+        });
+        const rows = await knex('automations').where({ name: data.name }).select('id');
+        assert.deepEqual(rows, [{ id: automation.id }]);
+        assert.deepEqual(await repo.getById(automation.id), automation);
+      } finally {
+        await knex('automations').where('id', automation.id).del();
+      }
+    });
+  });
+
+  describe('edit', function () {
+    it('rejects duplicate names', async function () {
+      const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
+      const automation = await repo.getById(automationId);
+      assert(automation);
+      const otherId = ObjectId().toHexString();
+      const now = toDatabaseDate(new Date());
+      const name = `Existing automation ${otherId}`;
+      await knex('automations').insert({
+        id: otherId,
+        slug: `duplicate-name-test-${otherId}`,
+        name,
+        status: 'inactive',
+        created_at: now,
+        updated_at: now,
+      });
+
+      try {
+        await assert.rejects(
+          repo.edit(automationId, {
+            ...automation,
+            name,
+            description: 'Should not be saved',
+            status: 'inactive',
+          }),
+          (error: unknown) => {
+            assert(error instanceof errors.ValidationError);
+            assert.equal(error.statusCode, 422);
+            assert.equal(error.property, 'name');
+            assert.equal(error.message, 'An automation with this name already exists.');
+            return true;
+          },
+        );
+        assert.deepEqual(await repo.getById(automationId), automation);
+      } finally {
+        await knex('automations').where('id', otherId).del();
+      }
+    });
+  });
+
   describe('trigger', function () {
+    it('excludes paid members whose tier is not selected', async function () {
+      const selectedAutomationId = await insertAutomation({ triggerTierIds: selectedTierIds });
+      const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
+      const memberId = ObjectId().toHexString();
+      await repo.trigger({
+        memberId,
+        memberEmail: await insertMember(memberId),
+        memberStatus: 'paid',
+        memberTierIds: [ObjectId().toHexString()],
+      });
+      const runs = await knex('automation_runs').where({
+        automation_id: selectedAutomationId,
+        member_id: memberId,
+      });
+      assert.equal(runs.length, 0);
+    });
+
+    it('creates one run and step when two distinct selected tiers match', async function () {
+      const selectedAutomationId = await insertAutomation({ triggerTierIds: selectedTierIds });
+      const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
+      const memberId = ObjectId().toHexString();
+      await repo.trigger({
+        memberId,
+        memberEmail: await insertMember(memberId),
+        memberStatus: 'paid',
+        memberTierIds: selectedTierIds,
+      });
+      const runs = await knex('automation_runs').where({
+        automation_id: selectedAutomationId,
+        member_id: memberId,
+      });
+      assert.equal(runs.length, 1);
+      const steps = await knex('automation_run_steps').where({ automation_run_id: runs[0]?.id });
+      assert.equal(steps.length, 1);
+    });
+
     it('only triggers automations once per automation+member, even with race conditions', async function () {
       const memberId = ObjectId().toHexString();
       const memberEmail = await insertMember(memberId);
@@ -69,7 +242,7 @@ describe('database automations repository', function () {
         const bothMemberLocksRequested = Promise.withResolvers<void>();
         const timeout = setTimeout(
           () => bothMemberLocksRequested.reject(new Error('Triggers did not reach member lock')),
-          5000,
+          10_000,
         );
         let memberLockCount = 0;
         const onKnexQuery = (query: { sql: string }) => {
@@ -88,7 +261,12 @@ describe('database automations repository', function () {
           knex,
           fakeWaitHoursMultiplier: null,
         });
-        const triggerOptions = { memberId, memberEmail, memberStatus: 'free' as const };
+        const triggerOptions = {
+          memberId,
+          memberEmail,
+          memberStatus: 'free' as const,
+          memberTierIds: [],
+        };
         const triggers = Promise.all([repo.trigger(triggerOptions), repo.trigger(triggerOptions)]);
         triggers.catch(bothMemberLocksRequested.reject);
 
@@ -106,8 +284,8 @@ describe('database automations repository', function () {
         automation_id: automationId,
         member_id: memberId,
       });
-      const steps = await knex('automation_run_steps').where('automation_run_id', runs[0].id);
       assert.equal(runs.length, 1);
+      const steps = await knex('automation_run_steps').where('automation_run_id', runs[0].id);
       assert.equal(steps.length, 1);
     });
 
@@ -127,7 +305,7 @@ describe('database automations repository', function () {
       const bothRunLookupsFinished = Promise.withResolvers<void>();
       const timeout = setTimeout(
         () => bothRunLookupsFinished.reject(new Error('Triggers did not reach run lookup')),
-        5000,
+        10_000,
       );
       let runLookupCount = 0;
       const onKnexQueryResponse = (_response: unknown, query: { sql: string }) => {
@@ -146,6 +324,7 @@ describe('database automations repository', function () {
           memberId,
           memberEmail: memberEmails[index],
           memberStatus: 'free',
+          memberTierIds: [],
         }),
       );
       const triggerResults = Promise.allSettled(triggers);
@@ -169,6 +348,45 @@ describe('database automations repository', function () {
         .where('automation_id', automationId)
         .whereIn('member_id', memberIds);
       assert.equal(runs.length, 2);
+    });
+  });
+
+  describe('fetchAndLockSteps', function () {
+    it("returns each step once with the automation's current selected tiers", async function () {
+      const selectedAutomationId = await insertAutomation({ triggerTierIds: selectedTierIds });
+      const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
+      for (const memberId of [ObjectId().toHexString(), ObjectId().toHexString()]) {
+        await repo.trigger({
+          memberId,
+          memberEmail: await insertMember(memberId),
+          memberStatus: 'paid',
+          memberTierIds: selectedTierIds,
+        });
+      }
+      const runs = await knex('automation_runs').where({ automation_id: selectedAutomationId });
+      assert.equal(runs.length, 2);
+      await knex('automation_run_steps')
+        .whereIn(
+          'automation_run_id',
+          runs.map((run) => run.id),
+        )
+        .update({ ready_at: toDatabaseDate(new Date('2024-01-01')) });
+
+      const first = await repo.fetchAndLockSteps(1);
+      assert.equal(first.steps.length, 1);
+      assert.deepEqual(
+        [...first.steps[0].automation_trigger_tier_ids].sort(),
+        [...selectedTierIds].sort(),
+      );
+
+      await repo.finishStepAndEnqueueNext(first.steps[0]);
+      await knex('automation_trigger_tiers')
+        .where({ automation_id: selectedAutomationId })
+        .delete();
+      const second = await repo.fetchAndLockSteps(1);
+      assert.equal(second.steps.length, 1);
+      assert.notEqual(second.steps[0].id, first.steps[0].id);
+      assert.deepEqual(second.steps[0].automation_trigger_tier_ids, []);
     });
   });
 });

@@ -91,6 +91,10 @@ export const BASE_GHOST_ENV = [
   // 2FA settings UI / sign-in flow render regardless of the dev default.
   'security__staffDeviceVerification=true',
 
+  // Serve the React post editor, as production will. config.labs outranks the
+  // stored Labs setting, so a spec's `labs` option cannot switch it off.
+  'labs__editorReact=true',
+
   // Disable IndexNow pings (tests run with real network access)
   'privacy__useIndexNow=false',
 

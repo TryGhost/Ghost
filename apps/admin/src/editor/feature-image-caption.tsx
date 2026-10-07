@@ -56,7 +56,7 @@ function CaptionMount({
         inheritStyles={true}
         isSnippetsEnabled={false}
         markdownTransformers={MINIMAL_TRANSFORMERS}
-        placeholderClassName="koenig-lexical-editor-input-placeholder font-sans! text-base! leading-6"
+        placeholderClassName="koenig-lexical-editor-input-placeholder font-sans! text-base! leading-6 text-muted-foreground!"
         placeholderText={placeholder}
         registerAPI={registerAPI}
         singleParagraph={true}
