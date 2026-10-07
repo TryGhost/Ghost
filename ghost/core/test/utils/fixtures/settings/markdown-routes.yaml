@@ -2,6 +2,12 @@ routes:
   /:
     data: page.about
     template: index
+  /start/:
+    data: post.welcome
+    template: index
+  /members-corner/:
+    data: page.markdown-members-page
+    template: index
 
 collections:
   /rubrique/:
