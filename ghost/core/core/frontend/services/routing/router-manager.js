@@ -9,7 +9,7 @@ const EmailRouter = require('./email-router');
 const UnsubscribeRouter = require('./unsubscribe-router');
 
 // Frontend-internal routing domain events (RouteRegistered / RoutesReset)
-const routingEvents = require('./events');
+const { routingEvents } = require('./events');
 
 class RouterManager {
   constructor({ registry }) {
