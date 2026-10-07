@@ -13,7 +13,6 @@ export interface BillingAppMessage {
   request?: unknown;
   route?: unknown;
   destination?: unknown;
-  checkoutRoute?: unknown;
   exceededLimits?: unknown;
 }
 
@@ -57,17 +56,13 @@ export function billingAdminPath(subRoute: string): string {
 /**
  * The billing app route the iframe loads for an Admin URL, as Ember's pro
  * routes queue it before the iframe exists: a child route loads without its
- * query, the overview keeps `?action=…`, and non-billing pages load the root.
+ * query, and non-billing pages load the root.
  */
-export function initialBillingSubRoute(pathname: string, search: string): string | null {
+export function initialBillingSubRoute(pathname: string): string | null {
   if (!isBillingPath(pathname)) {
     return null;
   }
-  const subRoute = billingSubRoute(pathname);
-  if (subRoute) {
-    return subRoute;
-  }
-  return new URLSearchParams(search).has('action') ? search : '/';
+  return billingSubRoute(pathname) ?? '/';
 }
 
 /**
@@ -145,14 +140,14 @@ export function markDunningPaymentSettled(paymentFailedAt: Date): void {
 
 export const EXCEEDED_ALERT_KEY = 'billing.exceeded';
 
-export const EXCEEDED_ALERT_HTML = `Your audience has grown! To continue publishing, the site owner must <a href="#${BILLING_ROUTE_ROOT}?action=checkout">confirm pricing for this number of members</a>.`;
+export const EXCEEDED_ALERT_HTML = `Your audience has grown! To continue publishing, the site owner must <a href="#${BILLING_ROUTE_ROOT}/plans">confirm pricing for this number of members</a>.`;
 
-export function billingAlerts(message: { exceededLimits?: unknown; checkoutRoute?: unknown }): {
+export function billingAlerts(message: { exceededLimits?: unknown }): {
   exceeded: boolean;
 } {
   const exceededLimits = Array.isArray(message.exceededLimits) ? message.exceededLimits : [];
 
   return {
-    exceeded: exceededLimits.includes('members') && Boolean(message.checkoutRoute),
+    exceeded: exceededLimits.includes('members'),
   };
 }

@@ -146,6 +146,28 @@ describe('Integration: Component: gh-billing-iframe', function () {
         expect(billing.billingAppLoaded).to.be.false;
     });
 
+    it('links exceeded member limits to plans without a checkout route and clears the alert on recovery', async function () {
+        sinon.stub(this.owner.lookup('service:config-manager'), 'fetch').resolves();
+        sinon.stub(this.owner.lookup('service:limit'), 'reload');
+        const notifications = this.owner.lookup('service:notifications');
+        const showAlert = sinon.stub(notifications, 'showAlert');
+        const closeAlerts = sinon.stub(notifications, 'closeAlerts');
+        const subscription = {status: 'active'};
+
+        await render(hbs`<GhBillingIframe />`);
+        await postBillingMessage({subscription, exceededLimits: ['members']});
+
+        expect(showAlert.calledOnce).to.be.true;
+        expect(showAlert.firstCall.args[0].toString()).to.equal('Your audience has grown! To continue publishing, the site owner must <a href="#/pro/plans">confirm pricing for this number of members</a>.');
+        expect(showAlert.firstCall.args[1]).to.deep.equal({type: 'warn', key: 'billing.exceeded'});
+        expect(closeAlerts.called).to.be.false;
+
+        await postBillingMessage({subscription, exceededLimits: []});
+
+        expect(showAlert.calledOnce).to.be.true;
+        expect(closeAlerts.calledOnceWithExactly('billing.exceeded')).to.be.true;
+    });
+
     const approvedDestinations = {
         theme: '/settings/design/change-theme',
         analytics: '/settings/analytics',

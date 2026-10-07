@@ -8,13 +8,7 @@ export default class ProIndexRoute extends Route {
     // for child routes — eg. browser Back from /pro/domain, or selecting a
     // billing search result with path '/'; otherwise the iframe keeps showing
     // the previous sub-page under the /pro URL
-    beforeModel(transition) {
-        if (transition.to?.queryParams?.action) {
-            // action-driven opens (eg. ?action=checkout) already navigate the
-            // billing app via sendRouteUpdate — don't override the destination
-            return;
-        }
-
+    beforeModel() {
         this.billing.navigateToSubRoute('/');
     }
 }

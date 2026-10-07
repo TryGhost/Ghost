@@ -293,7 +293,6 @@ export default class StateBridgeService extends Service.extend(Evented) {
         this.triggerSubscriptionChange(data);
 
         this.billing.subscription = data.subscription;
-        this.billing.checkoutRoute = data.checkoutRoute ?? '/plans';
 
         if (data.subscription?.status === 'active' && this.config.hostSettings?.forceUpgrade) {
             this.config.hostSettings.forceUpgrade = false;

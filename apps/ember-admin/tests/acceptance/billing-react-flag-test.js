@@ -96,13 +96,13 @@ describe('Acceptance: billing React flag', function () {
             expect(navigate.firstCall.args[0], 'target url').to.equal('/pro');
         });
 
-        it('keeps the checkout action on a named billing transition', async function () {
+        it('opens plans on a named billing transition', async function () {
             const route = this.owner.lookup('route:pro');
             const navigate = sinon.stub(route, '_navigateToReactRoute');
 
             await visit('/tags');
             try {
-                await this.owner.lookup('service:router').transitionTo('pro', {queryParams: {action: 'checkout'}});
+                await this.owner.lookup('service:router').transitionTo('pro.pro-sub', 'plans');
             } catch (error) {
                 if (error?.name !== 'TransitionAborted') {
                     throw error;
@@ -110,7 +110,7 @@ describe('Acceptance: billing React flag', function () {
             }
             await settled();
 
-            expect(navigate.firstCall?.args[0], 'target url').to.equal('/pro?action=checkout');
+            expect(navigate.firstCall?.args[0], 'target url').to.equal('/pro/plans');
         });
 
         it('leaves the force upgrade redirect to React', async function () {
