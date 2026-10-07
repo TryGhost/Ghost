@@ -1140,47 +1140,6 @@ module.exports = {
     ],
     '@@INDEXES@@': [['metafield_key']],
   },
-  // How a tier's checkout question is asked. Where the answer lands is the binding it
-  // hangs off.
-  products_checkout_fields: {
-    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
-    binding_id: {
-      type: 'string',
-      maxlength: 24,
-      nullable: false,
-      unique: true,
-      references: 'members_metafield_bindings.id',
-      cascadeDelete: true,
-    },
-    sort_order: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
-    // Processors cap a label far shorter than a field name may be. Null asks under the
-    // field's own name.
-    label: { type: 'string', maxlength: 191, nullable: true },
-    optional: { type: 'boolean', nullable: false, defaultTo: true },
-    created_at: { type: 'dateTime', nullable: false },
-    updated_at: { type: 'dateTime', nullable: true },
-  },
-  // The options a tier's collection needs, and the one thing it collects without keeping.
-  // Whether it collects anything it *does* keep is the binding above.
-  products_checkout_config: {
-    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
-    product_id: {
-      type: 'string',
-      maxlength: 24,
-      nullable: false,
-      unique: true,
-      references: 'products.id',
-      cascadeDelete: true,
-    },
-    // ISO 3166-1 alpha-2, comma-joined. A processor will not render an address form
-    // without them, and a wrong code fails the session create.
-    shipping_allowed_countries: { type: 'string', maxlength: 2000, nullable: true },
-    // Stripe keeps a tax number against the customer it invoices, so there is no
-    // destination to bind and nothing to record but whether to ask.
-    tax_number_collect: { type: 'boolean', nullable: false, defaultTo: false },
-    created_at: { type: 'dateTime', nullable: false },
-    updated_at: { type: 'dateTime', nullable: true },
-  },
   members_metafield_values: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     // The field's stable key, not its id: a value is addressed by key everywhere it

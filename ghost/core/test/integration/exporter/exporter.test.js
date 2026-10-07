@@ -102,8 +102,6 @@ describe('Exporter', function () {
       'posts_tags',
       'products',
       'products_benefits',
-      'products_checkout_config',
-      'products_checkout_fields',
       'recommendation_click_events',
       'recommendation_subscribe_events',
       'recommendations',

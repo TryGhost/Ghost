@@ -3402,42 +3402,6 @@ services:
       - >-
         Audit all file-operation cleanup, shared theme state and unawaited inactive-theme
         loading; a repeated init is not proof of a fully refreshed cache.
-  tier-checkout-config:
-    kind: directory
-    disposition: review
-    status: auditing
-    entryPoints:
-      - tier-checkout-config/index.ts
-    notes: >-
-      Tiers owns the checkout service instance; API callers also use the root models and
-      serializers. Its eventual home remains under review.
-    contracts:
-      exports:
-        summary: >-
-          Named TypeScript exports provide TierCheckoutConfigService, checkout models and
-          serializers; the root has no init or singleton export.
-        sources:
-          - core/server/services/tier-checkout-config/index.ts
-        tests: []
-      construction:
-        summary: >-
-          tiers.init creates TierCheckoutConfigService with knex and member-metafield
-          bindings/definitions and publishes it as tiers.checkout.
-        sources:
-          - core/server/services/tier-checkout-config/index.ts
-          - core/server/services/tiers/service.js
-        tests: []
-    unverified:
-      - consumers
-      - startup
-      - lifetime
-      - configuration
-      - resources
-      - failures
-    blockers:
-      - >-
-        Keep checkout business rules outside HTTP support; audit the live database reads and
-        shared models before choosing a new owner.
   tiers:
     kind: directory
     disposition: retain
@@ -3446,13 +3410,13 @@ services:
       - tiers/index.js
       - tiers/service.js
     notes: >-
-      Boot publishes a cached tier repository, API and checkout service; members middleware
-      imports the wrapper directly.
+      Boot publishes a cached tier repository and API; members middleware imports the wrapper
+      directly.
     contracts:
       exports:
         summary: >-
           CommonJS index and the deep service module expose the same wrapper. init publishes
-          repository, api and checkout.
+          repository and api.
         sources:
           - core/server/services/tiers/index.js
           - core/server/services/tiers/service.js
@@ -3460,8 +3424,8 @@ services:
         tests: []
       construction:
         summary: >-
-          init constructs TierRepository, awaits its database load, then constructs TiersAPI
-          and TierCheckoutConfigService. An existing api makes later calls return.
+          init constructs TierRepository, awaits its database load, then constructs TiersAPI.
+          An existing api makes later calls return.
         sources:
           - core/server/services/tiers/service.js
           - core/server/services/tiers/tier-repository.js
@@ -3476,8 +3440,7 @@ services:
     blockers:
       - >-
         The guard is set after awaited repository loading; characterize concurrent init and
-        partial initialization before changing it. Audit cached tiers separately from live
-        checkout configuration.
+        partial initialization before changing it.
   tinybird:
     kind: directory
     disposition: retain
