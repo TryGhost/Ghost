@@ -274,8 +274,9 @@ function BillingAppFrame({
     setBillingSubscriptionState({ subscription });
     checkoutRouteRef.current = checkoutRoute;
 
+    // Decided by the report alone. Shown to every user: only the owner can
+    // act, but everyone is affected
     const { exceeded } = billingAlerts(message);
-
     if (exceeded) {
       showAlert(alerts, EXCEEDED_ALERT_KEY, 'warn', EXCEEDED_ALERT_HTML);
     } else {

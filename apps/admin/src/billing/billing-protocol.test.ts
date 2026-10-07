@@ -53,7 +53,17 @@ describe('billing routes', () => {
 
 describe('adminDestinationRoute', () => {
   it('resolves approved destinations', () => {
+    expect(adminDestinationRoute('theme', { automations: false })).toBe(
+      '/settings/design/change-theme',
+    );
+    expect(adminDestinationRoute('analytics', { automations: false })).toBe('/settings/analytics');
     expect(adminDestinationRoute('staff', { automations: false })).toBe('/settings/staff');
+    expect(adminDestinationRoute('stripe', { automations: false })).toBe(
+      '/settings/stripe-connect',
+    );
+    expect(adminDestinationRoute('integrations', { automations: false })).toBe(
+      '/settings/integrations',
+    );
     expect(adminDestinationRoute('newsletters', { automations: false })).toBe(
       '/settings/newsletters',
     );
@@ -61,7 +71,16 @@ describe('adminDestinationRoute', () => {
   });
 
   it('ignores anything else', () => {
-    for (const destination of ['__proto__', 'constructor', '/settings/staff', 42, null]) {
+    for (const destination of [
+      'dashboard',
+      '__proto__',
+      'constructor',
+      '/settings/staff',
+      42,
+      null,
+      undefined,
+      { destination: 'analytics' },
+    ]) {
       expect(adminDestinationRoute(destination, { automations: false })).toBeNull();
     }
   });

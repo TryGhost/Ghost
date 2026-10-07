@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, onTestFinished } from 'vitest';
+import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import {
   allowUnhandledRequests,
   configResponse,
@@ -13,7 +13,10 @@ import {
   staffUser,
   type StaffRoleName,
 } from '@test-utils/acceptance';
-import { DUNNING_PAY_RETURN_ROUTE_STORAGE_KEY } from '@tryghost/admin-x-framework/api/dunning';
+import {
+  DUNNING_PAYMENT_SETTLED_STORAGE_KEY,
+  DUNNING_PAY_RETURN_ROUTE_STORAGE_KEY,
+} from '@tryghost/admin-x-framework/api/dunning';
 import { page } from 'vitest/browser';
 import { dunningWindow } from '@test-utils/fixtures/dunning';
 import { alertsScreen } from '@/alerts/alerts.screen';
@@ -323,6 +326,100 @@ describe('Ghost(Pro) billing', () => {
     await expect.element(tagsScreen.newTagLink()).toBeVisible();
   });
 
+  it.each([
+    { automations: true, route: '/settings/emails' },
+    { automations: false, route: '/settings/newsletters' },
+  ])(
+    'opens the newsletters destination at $route with automations $automations',
+    async ({ automations, route }) => {
+      // The settings app owns its request graph; this spec asserts the handoff.
+      allowUnhandledRequests();
+      await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+      const messages = standInMessages();
+      await renderBilling('/pro', { labs: { automations } });
+      await expect.element(billingScreen.frame()).toBeVisible();
+
+      await postFromBillingApp(messages, {
+        request: 'navigateToAdmin',
+        destination: 'newsletters',
+      });
+
+      await expect.poll(currentRoute).toBe(route);
+    },
+  );
+
+  describe('returning from a payment', () => {
+    // Before the app teardown, which waits on real timers
+    afterEach(() => vi.useRealTimers());
+
+    const settledDunning = {
+      active: true,
+      paymentFailedAt: '2026-09-01T04:00:00+04:00',
+      suspendsAt: '2026-09-29T00:00:00Z',
+    };
+
+    async function returnFromPayment(hostSettings: Record<string, unknown> = {}) {
+      allowUnhandledRequests();
+      await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+      const messages = standInMessages();
+      await renderBilling('/pro/update-card/return', { hostSettings });
+      await expect.element(billingScreen.frame()).toBeVisible();
+
+      await postFromBillingApp(messages, {
+        request: 'navigateToAdmin',
+        destination: 'previousPage',
+      });
+    }
+
+    it.each(['2026-07-01T00:00:00Z', '2026-11-01T00:00:00Z'])(
+      'records the settled failure with the client clock at %s',
+      async (now) => {
+        // Freeze only Date so network, polling, and UI timers still run normally
+        vi.useFakeTimers({ toFake: ['Date'] });
+        vi.setSystemTime(new Date(now));
+
+        await returnFromPayment({ billing: { dunning: settledDunning } });
+
+        // Identified by the host's timestamp, never the browser clock
+        await expect
+          .poll(() => window.sessionStorage.getItem(DUNNING_PAYMENT_SETTLED_STORAGE_KEY))
+          .toBe('2026-09-01T00:00:00.000Z');
+      },
+    );
+
+    it.each([
+      { label: 'missing config', dunning: undefined },
+      {
+        label: 'malformed config',
+        dunning: { active: true, paymentFailedAt: 'invalid', suspendsAt: '2026-09-29' },
+      },
+    ])('does not record a settled failure with $label', async ({ dunning }) => {
+      await returnFromPayment({ billing: { dunning } });
+
+      await expect.poll(currentRoute).toBe('/pro');
+      expect(window.sessionStorage.getItem(DUNNING_PAYMENT_SETTLED_STORAGE_KEY)).toBeNull();
+    });
+
+    it('falls back to the billing overview without a recorded return route', async () => {
+      await returnFromPayment();
+
+      await expect.poll(currentRoute).toBe('/pro');
+    });
+
+    it.each([
+      { label: 'not an absolute path', route: 'https://evil.example' },
+      // '//host' passes a bare startsWith('/') check but is a URL, not a route
+      { label: 'protocol-relative', route: '//evil.example' },
+    ])('ignores a recorded return route that is $label', async ({ route }) => {
+      window.sessionStorage.setItem(DUNNING_PAY_RETURN_ROUTE_STORAGE_KEY, route);
+
+      await returnFromPayment();
+
+      await expect.poll(currentRoute).toBe('/pro');
+      expect(window.sessionStorage.getItem(DUNNING_PAY_RETURN_ROUTE_STORAGE_KEY)).toBeNull();
+    });
+  });
+
   it('sends staff who cannot manage billing home', async () => {
     allowUnhandledRequests();
     await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
@@ -345,6 +442,24 @@ describe('Ghost(Pro) billing', () => {
     await expect.element(alertsScreen.alert(/Your audience has grown/)).toBeVisible();
     await expect.element(billingScreen.frame()).not.toBeVisible();
     await expect.element(tagsScreen.newTagLink()).toBeVisible();
+  });
+
+  it('clears the exceeded alert once a report no longer exceeds the member limit', async () => {
+    fakeTags([]);
+    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+    const messages = standInMessages();
+    await renderBilling('/tags', { role: 'Editor' });
+    const subscription = { status: 'active', isActiveTrial: false, trial_end: null };
+
+    await postFromBillingApp(messages, {
+      subscription,
+      exceededLimits: ['members'],
+      checkoutRoute: '/plans',
+    });
+    await expect.element(alertsScreen.alert(/Your audience has grown/)).toBeVisible();
+
+    await postFromBillingApp(messages, { subscription, exceededLimits: [] });
+    await expect.element(alertsScreen.alert(/Your audience has grown/)).not.toBeInTheDocument();
   });
 
   it('holds every page on billing during a force upgrade, for any staff role', async () => {
@@ -430,7 +545,8 @@ describe('Ghost(Pro) billing', () => {
 
     await expect.element(page.getByTestId('dunning-banner')).toBeVisible();
     await billingAppSettled(messages);
-    await expect(alertsScreen.alert(/Your billing details need updating/)).toHaveCount(0);
+    // The report itself raises no alert of any kind
+    await expect(alertsScreen.alerts()).toHaveCount(0);
   });
 
   it('loads a deep-linked billing route once, without its query', async () => {
