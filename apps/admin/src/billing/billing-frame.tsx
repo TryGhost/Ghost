@@ -16,6 +16,7 @@ import {
   applyEmberBillingSubscriptionUpdate,
   reportEmberBillingLoadFailure,
 } from '@/ember-bridge';
+import { useThemeContext } from '@/providers/theme-context';
 import { useFlagGatedRouteOwner } from '@/use-flag-gated-route-owner';
 import { BillingAppConnection } from './billing-app-connection';
 import { useBillingScreenOpen } from './billing-screen';
@@ -88,6 +89,7 @@ function BillingAppFrame({
   // rendered the next location — the path keeps that render from counting as open
   const visible = useBillingScreenOpen() && isBillingPath(location.pathname);
   const automations = useFeatureFlag('automations');
+  const { resolvedTheme } = useThemeContext();
 
   const locationRef = useRef(location);
   locationRef.current = location;
@@ -128,6 +130,16 @@ function BillingAppFrame({
   );
 
   useEffect(() => connection.setVisible(visible), [connection, visible]);
+
+  // The billing app asks for its first theme; only later changes are pushed
+  const sentThemeRef = useRef(resolvedTheme);
+  useEffect(() => {
+    if (!loaded || sentThemeRef.current === resolvedTheme) {
+      return;
+    }
+    sentThemeRef.current = resolvedTheme;
+    connection.post({ query: 'themeUpdate', response: resolvedTheme });
+  }, [connection, loaded, resolvedTheme]);
 
   // Another owner (or none) after this frame leaves must not inherit its reports
   useEffect(() => {
@@ -303,6 +315,10 @@ function BillingAppFrame({
     }
     if (message.request === 'forceUpgradeInfo') {
       void sendForceUpgradeInfo();
+    }
+    if (message.request === 'theme') {
+      sentThemeRef.current = resolvedTheme;
+      connection.post({ request: 'theme', response: resolvedTheme });
     }
     if (message.request === 'navigateToAdmin') {
       navigateToAdmin(message.destination);
