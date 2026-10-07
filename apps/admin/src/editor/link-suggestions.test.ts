@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  buildAutocompleteLinks,
+  type LinkSearchResultGroup,
   buildLatestPostsGroup,
-  buildOfferLinks,
   decoratePostSearchResult,
   filterLinkSearchResults,
   formatPublishedDate,
@@ -11,60 +10,6 @@ import {
 } from './link-suggestions';
 
 const decoration = { timezone: 'Etc/UTC', membersEnabled: true };
-
-describe('buildAutocompleteLinks', () => {
-  const settings = {
-    postType: 'post' as const,
-    homepageUrl: 'https://example.com/',
-    paidMembersEnabled: true,
-    donationsEnabled: true,
-    recommendationsEnabled: true,
-  };
-
-  it('lists every portal link in display order', () => {
-    const offerLinks = buildOfferLinks(
-      [{ name: 'Spring sale', code: 'spring' }],
-      settings.homepageUrl,
-    );
-
-    expect(buildAutocompleteLinks(settings, offerLinks)).toEqual([
-      { label: 'Homepage', value: 'https://example.com/' },
-      { label: 'Free signup', value: '#/portal/signup/free' },
-      { label: 'Paid signup', value: '#/portal/signup' },
-      { label: 'Upgrade or change plan', value: '#/portal/account/plans' },
-      { label: 'Tips and donations', value: '#/portal/support' },
-      { label: 'Gift subscriptions', value: '#/portal/gift' },
-      { label: 'Share post', value: '#/share' },
-      { label: 'Recommendations', value: '#/portal/recommendations' },
-      { label: 'Offer — Spring sale', value: 'https://example.com/spring' },
-    ]);
-  });
-
-  it('drops paid, donation and recommendation links when those features are off', () => {
-    const links = buildAutocompleteLinks(
-      {
-        ...settings,
-        postType: 'page',
-        paidMembersEnabled: false,
-        donationsEnabled: false,
-        recommendationsEnabled: false,
-      },
-      [],
-    );
-
-    expect(links).toEqual([
-      { label: 'Homepage', value: 'https://example.com/' },
-      { label: 'Free signup', value: '#/portal/signup/free' },
-      { label: 'Share page', value: '#/share' },
-    ]);
-  });
-
-  it('resolves offer codes against a subdirectory homepage', () => {
-    expect(buildOfferLinks([{ name: 'Sale', code: '/sale' }], 'https://example.com/blog/')).toEqual(
-      [{ label: 'Offer — Sale', value: 'https://example.com/blog/sale' }],
-    );
-  });
-});
 
 describe('formatPublishedDate', () => {
   it('formats in the site timezone as day, short month, year', () => {
@@ -195,7 +140,10 @@ describe('search index groups', () => {
   const posts = [
     { id: '1', title: 'Getting started', url: '/start/', status: 'published' },
     { id: '2', title: 'Other', url: '/other/', status: 'published' },
+    { id: '3', title: 'Weekly news', url: '/weekly-news/', status: 'published' },
+    { id: '4', title: 'News of the week', url: '/news-of-the-week/', status: 'published' },
   ];
+  const ids = (group: LinkSearchResultGroup) => group.options.map((option) => option.id);
 
   it('matches post titles case-insensitively', () => {
     expect(searchIndexPostsGroup('Posts', posts, 'STARTED').options).toEqual([
@@ -216,5 +164,31 @@ describe('search index groups', () => {
 
   it('matches nothing for a blank term', () => {
     expect(searchIndexPostsGroup('Pages', posts, '  ').options).toEqual([]);
+  });
+
+  it('matches post titles containing every word in any order', () => {
+    expect(ids(searchIndexPostsGroup('Posts', posts, 'news weekly'))).toEqual(['post.3']);
+    expect(ids(searchIndexPostsGroup('Pages', posts, 'WEEK news'))).toEqual(['page.3', 'page.4']);
+  });
+
+  it('matches staff and tag names containing every word in any order', () => {
+    const staff = [{ id: 'u1', name: 'Ann Author', url: '/ann/' }];
+    const tags = [{ id: 't1', name: 'Product updates', url: '/tag/product-updates/' }];
+
+    expect(ids(searchIndexEntitiesGroup('Staff', staff, 'author ann'))).toEqual(['user.u1']);
+    expect(ids(searchIndexEntitiesGroup('Tags', tags, 'updates product'))).toEqual(['tag.t1']);
+  });
+
+  it('ignores extra whitespace around and between words', () => {
+    expect(ids(searchIndexPostsGroup('Posts', posts, '  weekly \t  news  '))).toEqual(['post.3']);
+  });
+
+  it('excludes entries missing any word', () => {
+    expect(ids(searchIndexPostsGroup('Posts', posts, 'weekly sports'))).toEqual([]);
+  });
+
+  it('matches a single word anywhere in the text', () => {
+    expect(ids(searchIndexPostsGroup('Posts', posts, 'eekl'))).toEqual(['post.3']);
+    expect(ids(searchIndexPostsGroup('Posts', posts, 'week'))).toEqual(['post.3', 'post.4']);
   });
 });

@@ -158,28 +158,30 @@ describe('createEditorSession', () => {
 
       expect(session.getSlug()).toBe('a-new-slug');
       expect(session.getSaveSnapshot().slugIsCustom).toBe(true);
-      expect(dispatchedIntents).toEqual(['field']);
+      expect(dispatchedIntents).toEqual(['settings']);
       expect(state.updates).toHaveLength(1);
       expect(state.updates[0].payload).toMatchObject({ slug: 'a-new-slug' });
       expect(session.isDirty()).toBe(false);
     });
 
-    it('stages a published post’s manual edit until an explicit save', async () => {
-      const { session, state } = sessionHarness({
-        record: record({ status: 'published', published_at: PUBLISHED_AT }),
-      });
+    it('saves a published post’s manual edit on its own, over the saved canvas', async () => {
+      const published = record({ status: 'published', published_at: PUBLISHED_AT });
+      const { session, state } = sessionHarness({ record: published, acknowledged: published });
 
       await session.editSlug('A New Slug');
       await settle();
 
-      expect(dispatchedIntents).toEqual([]);
-      expect(state.updates).toHaveLength(0);
+      expect(state.updates).toHaveLength(1);
+      expect(state.updates[0].payload).toEqual({
+        id: 'abc123',
+        updated_at: '2026-01-01T00:00:00.000Z',
+        title: 'Hello',
+        slug: 'a-new-slug',
+        lexical: buildLexicalParagraph('Hello'),
+        feature_image: null,
+      });
       expect(session.getSlug()).toBe('a-new-slug');
-      expect(session.isDirty()).toBe(true);
-
-      await session.dispatchExplicit();
-
-      expect(state.updates[0].payload).toMatchObject({ slug: 'a-new-slug', status: 'published' });
+      expect(session.getSaveSnapshot().status).toBe('published');
       expect(session.isDirty()).toBe(false);
     });
 

@@ -3,6 +3,7 @@ import { getScrollParent } from '@tryghost/shade/utils';
 import {
   createNewTagLink,
   emptyStateText,
+  errorStateText,
   internalTab,
   newTagLink,
   publicTab,
@@ -20,6 +21,7 @@ export const tagsScreen = {
   // exact: "New tag" is a substring of the empty state's "Create a new tag".
   newTagLink: () => page.getByRole('link', { name: newTagLink, exact: true }),
   emptyStateHeading: () => page.getByRole('heading', { name: emptyStateText }),
+  errorHeading: () => page.getByRole('heading', { name: errorStateText }),
   createNewTagLink: () => page.getByRole('link', { name: createNewTagLink }),
 
   /** Scroll the list's scroll container to its end — same resolution the virtualizer uses. */

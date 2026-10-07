@@ -127,6 +127,34 @@ describe('Revue Importer', function () {
       ]);
     });
 
+    it('does not import script-capable markup from issues or items', function () {
+      const items = JSON.stringify([
+        {
+          issue_id: 123456,
+          item_type: 'video',
+          url: 'https://127.0.0.1/youtube.com/" srcdoc="" onload="alert(1)" data-x="',
+          description: '',
+          order: 0,
+        },
+        {
+          issue_id: 123456,
+          item_type: 'text',
+          description:
+            '<!--kg-card-begin: html--><img src=x onerror=alert(2)><!--kg-card-end: html-->',
+          order: 1,
+        },
+      ]);
+
+      const [post] = RevueImporter.importPosts({
+        items,
+        issues:
+          'id,description,sent_at,subject,preheader\n123456,"<p>Hi</p><!--kg-card-begin: html--><svg onload=alert(3)><!--kg-card-end: html-->",2022-12-01 01:01:30 UTC,Hello World,',
+      });
+
+      assert.match(post.html, /^<p>Hi<\/p>/);
+      assert.doesNotMatch(post.html, /<iframe|<svg|<!--|onload|onerror|srcdoc/);
+    });
+
     it('can process a draft post with items', function () {
       sinon.stub(JSONToHTML, 'getPostDate').returns('2022-12-01T01:02:03.123Z');
 
@@ -460,6 +488,171 @@ describe('Revue Importer', function () {
           result,
           '<figure class="kg-card kg-embed-card kg-card-hascaption"><iframe src="https://player.vimeo.com/video/789123" width="200" height="113" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe><figcaption>Hello world</figcaption></figure>',
         );
+      });
+
+      it('only uses the video ID from youtube URLs with extra params', function () {
+        const result = JSONToHTML.itemsToHtml([
+          {
+            item_type: 'video',
+            url: 'https://www.youtube.com/watch?v=ABCDEF&t=10s',
+            description: '',
+          },
+        ]);
+
+        assert.match(result, /src="https:\/\/www\.youtube\.com\/embed\/ABCDEF\?feature=oembed"/);
+      });
+
+      [
+        'https://127.0.0.1/youtube.com/" srcdoc="" onload="alert(1)" data-x="',
+        'https://127.0.0.1/youtu.be/" srcdoc="" onload="alert(1)" data-x="',
+        'https://127.0.0.1/vimeo.com/" srcdoc="" onload="alert(1)" data-x="',
+        'https://www.youtube.com/watch?v=" onload="alert(1)',
+        'https://youtu.be/" onload="alert(1)',
+        'https://vimeo.com/1" onload="alert(1)',
+        'https://youtube.com.example.com/watch?v=ABCDEF',
+        'javascript:alert(1)//youtube.com/watch?v=ABCDEF',
+      ].forEach((url) => {
+        it(`does not embed unrecognised video URL ${url}`, function () {
+          const result = JSONToHTML.itemsToHtml([
+            {
+              item_type: 'video',
+              url,
+              description: '',
+            },
+          ]);
+
+          assert.doesNotMatch(result, /<iframe/);
+          assert.doesNotMatch(result, /onload/);
+        });
+      });
+
+      it('skips tweet items with unsafe URLs', function () {
+        const result = JSONToHTML.itemsToHtml([
+          {
+            item_type: 'tweet',
+            url: 'javascript:alert(1)',
+          },
+        ]);
+
+        assert.equal(result, '');
+      });
+
+      describe('sanitizes imported HTML', function () {
+        const payload =
+          '<p>Safe <b>text</b></p>' +
+          '<!--kg-card-begin: html--><img src=x onerror=alert(1)><!--kg-card-end: html-->' +
+          '<figure class="kg-card kg-embed-card"><iframe srcdoc="<script>alert(2)</script>"></iframe></figure>' +
+          '<svg onload=alert(3)></svg><b onmouseover=alert(4)>hover</b>' +
+          '<a href="javascript:alert(5)">link</a><script>alert(6)</script>';
+
+        const assertSanitized = (result) => {
+          assert.match(result, /Safe <b>text<\/b>/);
+          assert.doesNotMatch(result, /kg-card-begin|<!--/);
+          assert.doesNotMatch(result, /<svg|<iframe|<script|srcdoc/);
+          assert.doesNotMatch(result, /onerror|onload|onmouseover/);
+          assert.doesNotMatch(result, /javascript:/);
+        };
+
+        it('in header items', function () {
+          assertSanitized(JSONToHTML.itemsToHtml([{ item_type: 'header', title: payload }]));
+        });
+
+        it('in text items', function () {
+          assertSanitized(JSONToHTML.itemsToHtml([{ item_type: 'text', description: payload }]));
+        });
+
+        it('in image captions', function () {
+          assertSanitized(
+            JSONToHTML.itemsToHtml([
+              { item_type: 'image', image: 'https://example.com/a.png', description: payload },
+            ]),
+          );
+        });
+
+        it('in link titles and descriptions', function () {
+          assertSanitized(
+            JSONToHTML.itemsToHtml([
+              {
+                item_type: 'link',
+                url: 'https://example.com/',
+                image: 'https://example.com/a.png',
+                title: payload,
+                description: payload,
+              },
+            ]),
+          );
+        });
+
+        it('in video captions', function () {
+          const result = JSONToHTML.itemsToHtml([
+            { item_type: 'video', url: 'https://youtu.be/ABCDEF', description: payload },
+          ]);
+
+          assert.equal(result.match(/<iframe/g).length, 1);
+          assert.match(result, /src="https:\/\/www\.youtube\.com\/embed\/ABCDEF\?feature=oembed"/);
+          assertSanitized(result.replace(/<iframe[^>]*><\/iframe>/, ''));
+        });
+
+        it('removes protocol-relative URLs', function () {
+          const result = JSONToHTML.itemsToHtml([
+            {
+              item_type: 'text',
+              description:
+                '<p><a href="//evil.example/">link</a><img src="//evil.example/a.png"></p>',
+            },
+          ]);
+
+          assert.doesNotMatch(result, /evil\.example/);
+          assert.match(result, /<a>link<\/a>/);
+        });
+
+        it('in issue descriptions', function () {
+          assertSanitized(JSONToHTML.cleanCsvHTML(payload));
+        });
+      });
+
+      describe('keeps titles and captions inline', function () {
+        const blockPayload =
+          '<h2>Heading</h2><p>Para <a href="https://example.com/">link</a></p><ul><li>item</li></ul>';
+
+        it('in header items', function () {
+          const result = JSONToHTML.itemsToHtml([{ item_type: 'header', title: blockPayload }]);
+
+          assert.equal(result, '<h3>HeadingPara <a href="https://example.com/">link</a>item</h3>');
+        });
+
+        it('in image and video captions', function () {
+          const result = JSONToHTML.itemsToHtml([
+            { item_type: 'image', image: 'https://example.com/a.png', description: blockPayload },
+            { item_type: 'video', url: 'https://youtu.be/ABCDEF', description: blockPayload },
+          ]);
+
+          assert.equal(
+            result.match(
+              /<figcaption>HeadingPara <a href="https:\/\/example\.com\/">link<\/a>item<\/figcaption>/g,
+            ).length,
+            2,
+          );
+          assert.doesNotMatch(result, /<h2|<p>|<ul|<li/);
+        });
+
+        it('without nested links in link titles', function () {
+          const result = JSONToHTML.itemsToHtml([
+            {
+              item_type: 'link',
+              url: 'https://example.com/',
+              image: 'https://example.com/a.png',
+              title: blockPayload,
+              description: '<p>Description</p>',
+            },
+          ]);
+
+          assert.match(result, /<figcaption>HeadingPara linkitem<\/figcaption>/);
+          assert.match(
+            result,
+            /<h4><a href="https:\/\/example\.com\/">HeadingPara linkitem<\/a><\/h4><p>Description<\/p>$/,
+          );
+        });
       });
     });
 

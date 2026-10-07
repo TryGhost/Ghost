@@ -10,17 +10,17 @@ function getLabs(response: ReturnType<typeof settingsResponse>): Record<string, 
 }
 
 describe('boot fixtures', () => {
-  it('defaults labs flags to off in settings and config', () => {
-    expect(getLabs(settingsResponse())).toEqual({
+  it('defaults labs flags to off, and GA flags to on, in settings and config', () => {
+    const expected = {
+      postsListReact: true,
+      membersActivityReact: true,
       superEditors: false,
       editorExcerpt: false,
       additionalPaymentMethods: false,
-    });
-    expect(configResponse().config.labs).toEqual({
-      superEditors: false,
-      editorExcerpt: false,
-      additionalPaymentMethods: false,
-    });
+    };
+
+    expect(getLabs(settingsResponse())).toEqual(expected);
+    expect(configResponse().config.labs).toEqual(expected);
   });
 
   it('merges labs overrides without mutating the canned data', () => {

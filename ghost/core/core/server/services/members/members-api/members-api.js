@@ -18,12 +18,12 @@ const MemberController = require('./controllers/member-controller');
 const WellKnownController = require('./controllers/well-known-controller');
 
 const { EmailSuppressedEvent } = require('../../email-suppression-list/email-suppression-list');
-const MagicLink = require('../../lib/magic-link/magic-link');
+const MagicLink = require('../../../lib/magic-link/magic-link');
 const DomainEvents = require('@tryghost/domain-events');
 const automationsApi = require('../../automations/automations-api');
 
 module.exports = function MembersAPI({
-  tokenConfig: { issuer, privateKey, publicKey },
+  tokenConfig: { issuer, signingKeys },
   auth: { allowSelfSignup = () => true, getSigninURL, tokenProvider },
   mail: { transporter, getText, getHTML, getSubject },
   models: {
@@ -42,6 +42,7 @@ module.exports = function MembersAPI({
     MemberProductEvent,
     MemberEmailChangeEvent,
     MemberCreatedEvent,
+    SubscriptionCreatedEvent,
     MemberLinkClickEvent,
     EmailSpamComplaintEvent,
     Offer,
@@ -72,11 +73,9 @@ module.exports = function MembersAPI({
   emailAddressService,
   giftService,
   metafieldValues,
-  metafieldDefinitions,
 }) {
   const tokenService = new TokenService({
-    privateKey,
-    publicKey,
+    signingKeys,
     issuer,
   });
 
@@ -104,10 +103,13 @@ module.exports = function MembersAPI({
     MemberEmailChangeEvent,
     MemberStatusEvent,
     MemberProductEvent,
+    MemberCreatedEvent,
+    SubscriptionCreatedEvent,
     OfferRedemption,
     StripeCustomer,
     StripeCustomerSubscription,
     offersAPI,
+    metafieldValues,
   });
 
   const eventRepository = new EventRepository({
@@ -156,7 +158,7 @@ module.exports = function MembersAPI({
     commentsService,
     giftService,
     metafieldValues,
-    metafieldDefinitions,
+    transaction: (fn) => Member.transaction(fn),
   });
 
   const geolocationService = new GeolocationService();
@@ -495,7 +497,7 @@ module.exports = function MembersAPI({
 
   const getPublicConfig = function () {
     return Promise.resolve({
-      publicKey,
+      getVerificationKey: (kid) => signingKeys.getVerificationKey(kid),
       issuer,
     });
   };

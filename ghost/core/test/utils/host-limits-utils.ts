@@ -1,16 +1,12 @@
-// Both of these are CommonJS with no types of their own, so the shape this file relies on
-// is stated here rather than inferred as `any`.
+import * as limits from '../../core/server/services/limits';
+
+// Config utils is CommonJS with no types of its own, so state its shape here.
 interface ConfigUtils {
   set(config: Record<string, unknown>): void;
   restore(): Promise<void>;
 }
 
-interface LimitService {
-  init(): void;
-}
-
 const configUtils = require('./config-utils') as ConfigUtils;
-const limits = require('../../core/server/services/limits') as LimitService;
 
 /** One limit as a host configures it: a value, never a function. */
 export interface HostLimitConfig {

@@ -12,7 +12,7 @@ class ProductsBenefitsImporter extends TableImporter {
     const products = await this.transaction.select('id', 'name').from('products');
     this.benefits = await this.transaction.select('id').from('benefits');
 
-    await this.importForEach(products, quantity ? quantity / products.length : 5);
+    await this.importForEach(products, quantity !== undefined ? quantity / products.length : 5);
   }
 
   setReferencedModel(model) {

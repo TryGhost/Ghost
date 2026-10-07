@@ -1,4 +1,3 @@
-const labsService = require('../../../shared/labs');
 const DomainEvents = require('@tryghost/domain-events');
 const events = require('../../lib/common/events');
 const settingsCache = require('../../../shared/settings-cache');
@@ -7,25 +6,14 @@ const config = require('../../../shared/config');
 
 class MembersEventsServiceWrapper {
   init() {
-    if (this.eventStorage) {
+    if (this.lastSeenAtUpdater) {
       // Prevent creating duplicate DomainEvents subscribers
       return;
     }
 
     // Wire up all the dependencies
-    const EventStorage = require('./event-storage');
     const LastSeenAtUpdater = require('./last-seen-at-updater');
     const LastSeenAtCache = require('./last-seen-at-cache');
-    const models = require('../../models');
-
-    // Listen for events and store them in the database
-    this.eventStorage = new EventStorage({
-      models: {
-        MemberCreatedEvent: models.MemberCreatedEvent,
-        SubscriptionCreatedEvent: models.SubscriptionCreatedEvent,
-      },
-      labsService,
-    });
 
     const db = require('../../data/db');
 
@@ -51,7 +39,6 @@ class MembersEventsServiceWrapper {
     });
 
     // Subscribe to domain events
-    this.eventStorage.subscribe(DomainEvents);
     this.lastSeenAtUpdater.subscribe(DomainEvents);
   }
 

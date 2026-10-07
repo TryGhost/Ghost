@@ -368,14 +368,12 @@ class PostsService {
       });
     }
 
-    const postRows = await this.#getFilteredBulkPostQuery(options)
-      .leftJoin('emails', 'posts.id', 'emails.post_id')
-      .select('posts.id', 'posts.status', 'emails.id as email_id');
+    const postRows = await this.#getFilteredBulkPostQuery(options).select(
+      'posts.id',
+      'posts.status',
+    );
     const deleteIds = postRows.map((row) => row.id);
     const allDraft = postRows.length > 0 && postRows.every((row) => row.status === 'draft');
-
-    // We also need to collect the email ids because the email relation doesn't have cascase, and we need to delete the related relations of the post
-    const deleteEmailIds = postRows.map((row) => row.email_id).filter((id) => !!id);
 
     const postTablesToDelete = [
       'posts_authors',
@@ -385,36 +383,9 @@ class PostsService {
       'post_revisions',
       'posts_products',
     ];
-    const emailTablesToDelete = [
-      'email_recipient_failures',
-      'email_recipients',
-      'email_batches',
-      'email_spam_complaint_events',
-    ];
-
-    // Don't clear, but set relation to null
-    const emailTablesToSetNull = ['suppressions'];
-
     for (const table of postTablesToDelete) {
       await this.models.Post.bulkDestroy(deleteIds, table, {
         column: 'post_id',
-        transacting: options.transacting,
-        throwErrors: true,
-      });
-    }
-
-    for (const table of emailTablesToDelete) {
-      await this.models.Post.bulkDestroy(deleteEmailIds, table, {
-        column: 'email_id',
-        transacting: options.transacting,
-        throwErrors: true,
-      });
-    }
-
-    for (const table of emailTablesToSetNull) {
-      await this.models.Post.bulkEdit(deleteEmailIds, table, {
-        data: { email_id: null },
-        column: 'email_id',
         transacting: options.transacting,
         throwErrors: true,
       });
@@ -431,11 +402,8 @@ class PostsService {
       throwErrors: true,
     });
 
-    // Posts and emails
-    await this.models.Post.bulkDestroy(deleteEmailIds, 'emails', {
-      transacting: options.transacting,
-      throwErrors: true,
-    });
+    // A sent post's email and recipients are kept, as when a single post is deleted,
+    // because host email limits count sends from them
     const result = await this.models.Post.bulkDestroy(deleteIds, 'posts', {
       ...options,
       throwErrors: true,

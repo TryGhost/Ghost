@@ -101,6 +101,29 @@ async function initCore({ ghostServer, config }) {
   adapterManager.init();
   debug('End: adapters');
 
+  // Limit image processing to the configured image formats before anything
+  // can process an image
+  debug('Begin: image upload config');
+  const { restrictImageDecoders } = require('./server/lib/image/image-decoders');
+  const {
+    IMAGE_UPLOAD_TYPES,
+    getIgnoredImageContentTypes,
+  } = require('./server/lib/image/image-content');
+  const uploads = config.get('uploads');
+  restrictImageDecoders(IMAGE_UPLOAD_TYPES.flatMap((type) => uploads[type]?.extensions ?? []));
+
+  // Image uploads can only be stored as image types, so point out any
+  // configured types that will be ignored
+  for (const type of IMAGE_UPLOAD_TYPES) {
+    const ignored = getIgnoredImageContentTypes(uploads[type]?.contentTypes ?? []);
+    if (ignored.length > 0) {
+      require('@tryghost/logging').warn(
+        `Ignoring uploads.${type}.contentTypes that are not image types: ${ignored.join(', ')}`,
+      );
+    }
+  }
+  debug('End: image upload config');
+
   // URL Utils is a bit slow, put it here so the timing is visible separate from models
   debug('Begin: Load urlUtils');
   require('./shared/url-utils');
@@ -118,6 +141,12 @@ async function initCore({ ghostServer, config }) {
   await settings.init();
   await settings.syncEmailSettings(config.get('hostSettings:emailVerification:verified'));
   debug('End: settings');
+
+  // Signing keys come from settings and must be ready before anything signs or serves a JWKS
+  debug('Begin: signing keys');
+  const signingKeys = require('./server/services/signing-keys');
+  await signingKeys.init();
+  debug('End: signing keys');
 
   debug('Begin: i18n');
   const i18n = require('./server/services/i18n');
@@ -137,24 +166,7 @@ async function initCore({ ghostServer, config }) {
   debug('End: Member Metafields Service');
 
   if (ghostServer) {
-    // Job Service allows parts of Ghost to run in the background
-    debug('Begin: Job Service');
-    const jobService = require('./server/services/jobs');
-
-    ghostServer.registerCleanupTask(async () => {
-      await jobService.shutdown();
-    }, 'Job Service');
-    debug('End: Job Service');
-
-    // Mentions Job Service allows mentions to be processed in the background
-    debug('Begin: Mentions Job Service');
-    const mentionsJobService = require('./server/services/mentions-jobs');
-
-    ghostServer.registerCleanupTask(async () => {
-      await mentionsJobService.shutdown();
-    }, 'Mentions Job Service');
-    debug('End: Mentions Job Service');
-
+    // Jobs Service allows parts of Ghost to run in the background
     debug('Begin: Jobs Service');
     const jobsService = require('./server/services/jobs-service');
 
@@ -427,14 +439,46 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     statsService.init(),
     explorePingService.init(),
     machinePaymentsService.init(),
-    automationsService.init({
-      domainEvents,
-      apiUrl,
-      schedulerAdapter,
-      internalKeys,
-      siteUuid: settingsCache.get('site_uuid'),
-    }),
   ]);
+
+  debug('Begin: Register job handlers');
+  const registerJobHandlers =
+    require('./server/services/jobs-service/register-job-handlers').default;
+  const memberJobs = require('./server/services/members/jobs');
+  const membersService = require('./server/services/members');
+  const tinybirdSync = require('./server/services/tinybird-sync');
+  memberJobs.init();
+  const siteImporter = require('./server/data/importer').init({ jobsService });
+  assert(giftService.service, 'Gift service should be initialized');
+  assert(mentionsService.controller, 'Mentions controller should be initialized');
+  assert(mentionsService.sendingService, 'Mentions sending service should be initialized');
+  assert(membersService.handleImportJob, 'Members service should be initialized');
+  assert(emailService.service, 'Email service should be initialized');
+  registerJobHandlers({
+    gifts: emailAnalytics.getGifts(),
+    automations: emailAnalytics.getAutomations(),
+    newsletters: emailAnalytics.getNewsletters(),
+    jobsService,
+    memberJobs,
+    giftService: giftService.service,
+    mediaInliner: mediaInliner.getInstance(),
+    mentionsController: mentionsService.controller,
+    mentionsSendingService: mentionsService.sendingService,
+    membersService,
+    emailService: emailService.service,
+    siteImporter,
+    tinybirdSync,
+  });
+  await jobsService.start();
+  debug('End: Register job handlers');
+
+  await automationsService.init({
+    domainEvents,
+    apiUrl,
+    schedulerAdapter,
+    internalKeys,
+    siteUuid: settingsCache.get('site_uuid'),
+  });
 
   if (schedulerAdapter.rescheduleOnBoot) {
     await postScheduling.rescheduleAll();
@@ -524,20 +568,43 @@ async function initBackgroundServices({ config }) {
     logging.error(err);
   }
 
-  const activitypub = require('./server/services/activitypub');
-  await activitypub.init();
-  // Load email analytics recurring jobs
+  try {
+    const signingKeys = require('./server/services/signing-keys');
+    await signingKeys.scheduleCheckJob(jobsService);
+  } catch (err) {
+    const logging = require('@tryghost/logging');
+    logging.error(err);
+  }
+
+  // Load email analytics recurring jobs. Runs before activitypub.init for the
+  // same reason as the schedules above. Each failure is logged rather than
+  // thrown so one failed registration cannot hide a sibling's or stop the
+  // remaining background services from starting.
   if (config.get('backgroundJobs:emailAnalytics')) {
     const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');
-    await Promise.all([
+    const results = await Promise.allSettled([
       emailAnalyticsJobs.scheduleRecurringNewslettersJob(),
       emailAnalyticsJobs.scheduleRecurringAutomationsJob(),
       emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob(),
     ]);
+    const logging = require('@tryghost/logging');
+    for (const result of results) {
+      if (result.status === 'rejected') {
+        logging.error(result.reason);
+      }
+    }
   }
 
-  const tinybirdSync = require('./server/services/tinybird-sync');
-  tinybirdSync.start();
+  const activitypub = require('./server/services/activitypub');
+  await activitypub.init();
+
+  try {
+    const tinybirdSync = require('./server/services/tinybird-sync');
+    await tinybirdSync.scheduleJob(jobsService);
+  } catch (err) {
+    const logging = require('@tryghost/logging');
+    logging.error(err);
+  }
 
   try {
     const updateCheck = require('./server/services/update-check');
@@ -685,34 +752,6 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
 
     await initServices({ ghostServer, config, prometheusClient, jobsService });
 
-    debug('Begin: Register job handlers');
-    const assert = require('node:assert/strict');
-    const registerJobHandlers =
-      require('./server/services/jobs-service/register-job-handlers').default;
-    const mediaInliner = require('./server/services/media-inliner');
-    const gifts = require('./server/services/gifts');
-    const memberJobs = require('./server/services/members/jobs');
-    const mentionsService = require('./server/services/mentions');
-    const membersService = require('./server/services/members');
-    const emailService = require('./server/services/email-service');
-    memberJobs.init();
-    assert(gifts.service, 'Gift service should be initialized');
-    assert(mentionsService.controller, 'Mentions controller should be initialized');
-    assert(mentionsService.sendingService, 'Mentions sending service should be initialized');
-    assert(membersService.handleImportJob, 'Members service should be initialized');
-    assert(emailService.service, 'Email service should be initialized');
-    registerJobHandlers({
-      jobsService,
-      memberJobs,
-      giftService: gifts.service,
-      mediaInliner: mediaInliner.getInstance(),
-      mentionsController: mentionsService.controller,
-      mentionsSendingService: mentionsService.sendingService,
-      membersService,
-      emailService: emailService.service,
-    });
-    await jobsService.start();
-    debug('End: Register job handlers');
     debug('End: Load Ghost Services & Apps');
 
     // Step 5 - Mount the full Ghost app onto the minimal root app & disable maintenance mode

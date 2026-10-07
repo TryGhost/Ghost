@@ -10,6 +10,11 @@ import {
 
 const { compress } = require('@tryghost/zip');
 
+// Imported images must have image contents, not just an image extension
+const imageBytes = fs.readFileSync(
+  path.join(__dirname, '../../utils/fixtures/images/ghosticon.jpg'),
+);
+
 describe('content import source', function () {
   let directory: string;
 
@@ -21,7 +26,10 @@ describe('content import source', function () {
     await fs.remove(directory);
   });
 
-  async function archive(files: Record<string, string>, name = 'posts.zip'): Promise<string> {
+  async function archive(
+    files: Record<string, string | Buffer>,
+    name = 'posts.zip',
+  ): Promise<string> {
     const contents = path.join(directory, 'contents');
     await fs.ensureDir(contents);
     for (const [fileName, value] of Object.entries(files)) {
@@ -101,7 +109,7 @@ describe('content import source', function () {
   it('extracts a wrapped CSV and prepares wrapped image, media, and file assets', async function () {
     const zipPath = await archive({
       'export/posts.csv': 'title\nWrapped',
-      'export/content/images/photo.jpg': 'image',
+      'export/content/images/photo.jpg': imageBytes,
       'export/content/media/movie.mp4': 'media',
       'export/content/files/attachment.csv': 'download,only',
       'export/content/files/attachment.json': '{"download":true}',
@@ -132,7 +140,7 @@ describe('content import source', function () {
   it('prepares assets from the existing top-level directory form', async function () {
     const zipPath = await archive({
       'posts.csv': 'title\nTop level',
-      'images/photo.jpg': 'image',
+      'images/photo.jpg': imageBytes,
       'media/movie.mp4': 'media',
       'files/guide.pdf': 'file',
     });

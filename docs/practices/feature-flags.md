@@ -113,6 +113,13 @@ Test the flag boundary and preserve existing behavioral coverage. Styling-only
 changes need visual review, not tests that assert appearance. Keep permanent
 permission and backend capability checks independent of the temporary flag.
 
+The pill-controls milestone is generally available on React Admin routes. Admin
+no longer reads `admin7Pill`; route ownership alone determines Shade's
+`isAdmin7` value. Ember-owned routes retain the legacy appearance, and standalone
+ActivityPub uses Shade's current default. Core temporarily retains `admin7Pill`
+in `GA_FEATURES` so older Admin builds receive an enabled value during independent
+deployments. Remove that GA entry once those older builds are no longer supported.
+
 ## How values are resolved
 
 For normal Labs flags, later sources in this list override earlier ones:
@@ -144,9 +151,9 @@ or parse failure keeps the last known good overrides.
 ## Admin session overrides
 
 To preview a flagged Admin feature, add `labs` to the query string inside the
-Admin hash route, for example `/ghost/#/posts?labs=postsListReact`. Use
-comma-separated names (`?labs=postsListReact,editorReact`) or repeated parameters
-(`?labs=postsListReact&labs=editorReact`) to enable multiple flags.
+Admin hash route, for example `/ghost/#/editor/post?labs=editorReact`. Use
+comma-separated names (`?labs=editorReact,globalSearchReact`) or repeated
+parameters (`?labs=editorReact&labs=globalSearchReact`) to enable multiple flags.
 
 Admin stores the list in `sessionStorage` under `ghost-admin:labs-overrides`.
 It persists across navigation and reloads in the same tab for that browser
@@ -190,7 +197,7 @@ The different test systems do not use the same Labs defaults:
 | Ghost Core unit tests                                                               | No flags are forced on; stub the value needed by the test                                      |
 | Ghost Core `integration` and `legacy` tests using `testUtils.setup()`               | Every registered private and public beta flag is forced on                                     |
 | Ghost Core `e2e`, `e2e-api`, and `e2e-isolated` tests using `fixtureManager.init()` | Every registered private and public beta flag is forced on                                     |
-| React Admin unit and acceptance tests using the shared test-data fixtures           | Keys in `labsDefaults` default off; pass a `labs` override for the case under test             |
+| React Admin unit and acceptance tests using the shared test-data fixtures           | `labsDefaults` flags off, `GA_FEATURES` on; pass a `labs` override for the case under test     |
 | Ember Admin tests using Mirage                                                      | Labs defaults to an empty object; use `enableLabsFlag` or `disableLabsFlag`                    |
 | Top-level Playwright tests in `e2e/`                                                | Labs uses the new site's values; only flags passed through `test.use({labs: ...})` are changed |
 
@@ -206,6 +213,10 @@ tests, but it also means adding a flag can change API snapshots even though the
 flag defaults off in production. Add explicit flag-off coverage where the old
 path matters. Flags in `GA_FEATURES` default to on in every runtime, including
 tests, until they are removed or overridden by configuration.
+
+The top-level Playwright suite pins `editorReact` on with `labs__editorReact=true`
+in `BASE_GHOST_ENV`. Configuration outranks the stored setting, so
+`test.use({labs: ...})` cannot turn that flag off.
 
 When adding, promoting, or removing a flag, update the affected snapshots from
 `ghost/core/`:

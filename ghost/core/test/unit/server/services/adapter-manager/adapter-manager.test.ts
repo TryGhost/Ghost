@@ -3,14 +3,13 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import sinon from 'sinon';
-import { Provider } from 'nconf';
 import {
   AdapterManager,
   type AdapterManagerOptions,
 } from '../../../../../core/server/services/adapter-manager/adapter-manager';
 import { resolveAdapterEntryPoint } from '../../../../../core/server/services/adapter-manager/utils';
-import { bindAll as bindUrlHelpers } from '@tryghost/config-url-helpers';
-import { bindAll as bindHelpers } from '../../../../../core/shared/config/helpers';
+import { createConfig } from '../../../../../core/shared/config/validated';
+import { configSources } from '../../../../utils/config-sources';
 import type { ConfigInstance } from '../../../../../core/shared/config/loader';
 import type { Adapter } from '../../../../../core/server/services/adapter-manager/types';
 
@@ -32,18 +31,11 @@ class DefaultMailAdapter extends BaseMailAdapter {
   someMethod() {}
 }
 
-// A minimal nconf-backed config instance, seeded with `adapters` config, that
-// drives which adapter class name and options getAdapter resolves.
+// A minimal config instance, seeded with `adapters` config, that drives which
+// adapter class name and options getAdapter resolves. `url` and `env` are what
+// the schema requires of any config, as the loader always provides them.
 function makeConfig(adapters: object = {}): ConfigInstance {
-  const nconf = new Provider();
-  nconf.use('memory');
-  nconf.set('paths:contentPath', '/some/path');
-  nconf.set('adapters', adapters);
-
-  bindUrlHelpers(nconf);
-  bindHelpers(nconf);
-
-  return nconf;
+  return createConfig(configSources({ paths: { contentPath: '/some/path' }, adapters }));
 }
 
 describe('AdapterManager', function () {

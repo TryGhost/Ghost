@@ -1,24 +1,16 @@
 const _ = require('lodash');
 const fs = require('fs-extra');
 const path = require('path');
-const config = require('../../../shared/config');
+const os = require('node:os');
+const { randomUUID } = require('node:crypto');
+const { pipeline } = require('node:stream/promises');
 const tpl = require('@tryghost/tpl');
 const debug = require('@tryghost/debug')('import-manager');
-const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const RevueHandler = require('./handlers/revue');
-const JSONHandler = require('./handlers/json');
-const MarkdownHandler = require('./handlers/markdown');
-const RevueImporter = require('./importers/importer-revue');
-const DataImporter = require('./importers/data');
-const urlUtils = require('../../../shared/url-utils').default;
-const { GhostMailer } = require('../../services/mail');
-const jobManager = require('../../services/jobs');
 const ImportArchive = require('./import-archive').default;
-const { createContentFileHandlers, createContentFileImporters } = require('./content-files');
+const ContentImportJob = require('./jobs/content-import-job').default;
 
 const { emailTemplate } = require('./email-template');
-const ghostMailer = new GhostMailer();
 
 const messages = {
   couldNotCleanUpFile: {
@@ -36,30 +28,40 @@ const defaults = {
 };
 
 class ImportManager {
-  constructor() {
-    const contentFileHandlers = createContentFileHandlers();
-    const contentFileImporters = createContentFileImporters();
+  constructor({
+    jobsService,
+    importsStorage,
+    handlers,
+    importers,
+    mailer,
+    config,
+    urlUtils,
+    logging,
+  }) {
+    this.jobsService = jobsService;
 
-    /**
-     * @type {Importer[]} importers
-     */
-    this.importers = [...contentFileImporters, RevueImporter, DataImporter];
+    /** @type {Pick<import('../../adapters/storage/LocalStorageBase').default | import('../../adapters/storage/S3Storage').default, 'save' | 'readStream' | 'delete' | 'urlToPath' | 'storagePath'>} */
+    this.importsStorage = importsStorage;
 
     /**
      * @type {Handler[]}
      */
-    this.handlers = [...contentFileHandlers, RevueHandler, JSONHandler, MarkdownHandler];
+    this.handlers = handlers;
+
+    /**
+     * @type {Importer[]} importers
+     */
+    this.importers = importers;
+
+    this.mailer = mailer;
+    this.config = config;
+    this.urlUtils = urlUtils;
+    this.logging = logging;
 
     this.archive = new ImportArchive({
       extensions: this.getExtensions(),
       directories: this.getDirectories(),
     });
-
-    // Keep track of file to cleanup at the end
-    /**
-     * @type {?string}
-     */
-    this.fileToDelete = null;
   }
 
   /**
@@ -140,9 +142,7 @@ class ImportManager {
    * @returns {Promise<string>} full path to the extracted folder
    */
   async extractZip(filePath) {
-    const tmpDir = await this.archive.extract(filePath);
-    this.fileToDelete = tmpDir;
-    return tmpDir;
+    return this.archive.extract(filePath);
   }
 
   /**
@@ -167,16 +167,36 @@ class ImportManager {
 
   /**
    * Process Zip
-   * Takes a reference to a zip file, extracts it, sends any relevant files from inside to the right handler, and
-   * returns an object in the importData format: {data: {}, images: []}
+   * Takes a reference to a zip file, extracts it and reads it, returning the content to import
+   * alongside the extracted directory, which the caller owns from here on
+   * @param {File} file
+   * @param {boolean} [validateOnly] true to skip the work only an actual import needs
+   * @returns {Promise<LoadedImport>}
+   */
+  async processZip(file, validateOnly = false) {
+    const cleanupDirectory = await this.extractZip(file.path);
+
+    try {
+      return {
+        data: await this.readExtractedZip(cleanupDirectory, validateOnly),
+        cleanupDirectory,
+      };
+    } catch (err) {
+      await this.cleanUp(cleanupDirectory);
+      throw err;
+    }
+  }
+
+  /**
+   * Send any relevant files from an extracted zip to the right handler, and return an object in
+   * the importData format: {data: {}, images: []}
    * The data key contains JSON representing any data that should be imported
    * The image key contains references to images that will be stored (and where they will be stored)
-   * @param {File} file
+   * @param {string} zipDirectory
+   * @param {boolean} [validateOnly] true to skip the work only an actual import needs
    * @returns {Promise<ImportData>}
    */
-  async processZip(file) {
-    const zipDirectory = await this.extractZip(file.path);
-
+  async readExtractedZip(zipDirectory, validateOnly = false) {
     /**
      * @type {ImportData}
      */
@@ -198,7 +218,12 @@ class ImportManager {
           });
         }
 
-        const data = await handler.loadFile(files, baseDir);
+        // Asset destination preparation belongs to execution. Validation still
+        // extracts the archive and parses content to preserve request errors.
+        const data =
+          validateOnly && handler.directories.length
+            ? undefined
+            : await handler.loadFile(files, baseDir);
         importData[handler.type] = data;
       }
     }
@@ -250,13 +275,28 @@ class ImportManager {
    * Import Step 1:
    * Load the given file into usable importData in the format: {data: {}, images: []}, regardless of
    * whether the file is a single importable file like a JSON file, or a zip file containing loads of files.
+   * A zip also yields the extracted directory, which the caller owns from here on.
    * @param {File} file
-   * @returns {Promise<ImportData>}
+   * @param {boolean} [validateOnly] true to skip the work only an actual import needs
+   * @returns {Promise<LoadedImport>}
    */
-  loadFile(file) {
-    const self = this;
+  async loadFile(file, validateOnly = false) {
     const ext = path.extname(file.name).toLowerCase();
-    return this.isZip(ext) ? self.processZip(file) : self.processFile(file, ext);
+
+    return this.isZip(ext)
+      ? this.processZip(file, validateOnly)
+      : { data: await this.processFile(file, ext) };
+  }
+
+  /**
+   * Read an upload the way execution will read it, so that a malformed upload still fails the
+   * request that uploaded it. The parsed content is of no use here and is dropped with its files.
+   * @param {File} file
+   * @returns {Promise<void>}
+   */
+  async validateFile(file) {
+    const { cleanupDirectory } = await this.loadFile(file, true);
+    await this.cleanUp(cleanupDirectory);
   }
 
   /**
@@ -313,18 +353,19 @@ class ImportManager {
 
   /**
    * Step 5:
-   * Remove files after we're done (abstracted into a function for easier testing)
+   * Remove the files an import owns, once it is done with them
+   * @param {string} [cleanupDirectory]
    * @returns {Promise<void>}
    */
-  async cleanUp() {
-    if (this.fileToDelete === null) {
+  async cleanUp(cleanupDirectory) {
+    if (!cleanupDirectory) {
       return;
     }
 
     try {
-      await fs.remove(this.fileToDelete);
+      await fs.remove(cleanupDirectory);
     } catch (err) {
-      logging.error(
+      this.logging.error(
         new errors.InternalServerError({
           err: err,
           context: tpl(messages.couldNotCleanUpFile.error),
@@ -332,8 +373,6 @@ class ImportManager {
         }),
       );
     }
-
-    this.fileToDelete = null;
   }
 
   /**
@@ -346,8 +385,8 @@ class ImportManager {
    * @returns {string}
    */
   generateCompletionEmail(result, { emailRecipient, importTag }) {
-    const siteUrl = new URL(urlUtils.urlFor('home', null, true));
-    const postsUrl = new URL('posts', urlUtils.urlFor('admin', null, true));
+    const siteUrl = new URL(this.urlUtils.urlFor('home', null, true));
+    const postsUrl = new URL('posts', this.urlUtils.urlFor('admin', null, true));
     if (importTag && result?.data?.tags) {
       const tag = result.data.tags.find((t) => t.name === importTag);
       postsUrl.searchParams.set('tag', tag.slug);
@@ -369,60 +408,182 @@ class ImportManager {
    * @returns {Promise<Object.<string, ImportResult>>}
    */
   async importFromFile(file, importOptions = {}) {
-    let importData;
-    if (importOptions.data) {
-      importData = importOptions.data;
-    } else {
-      // Step 1: Handle converting the file to usable data
-      // Has to be completed outside of job to ensure file is processed before being deleted
-      importData = await this.loadFile(file);
+    const env = this.config.get('env');
+    if (!env?.startsWith('testing') && !importOptions.runningInJob) {
+      // The job loads the upload, so check it here to fail the request when it is malformed
+      await this.validateFile(file);
+
+      const job = new ContentImportJob({
+        uploadKey: await this.storeUpload(file),
+        fileName: file.name,
+        emailRecipient: importOptions.user.email,
+        importTag: importOptions.importTag,
+        returnImportedData: importOptions.returnImportedData,
+        importPersistUser: importOptions.importPersistUser,
+      });
+
+      try {
+        this.logging.info('[Background Job] site-content-import queued');
+        return await this.jobsService.dispatch(job);
+      } catch (err) {
+        await this.cleanUpUpload(job.uploadKey);
+        throw err;
+      }
     }
 
-    debug('importFromFile completed file load', importData);
+    let loaded;
+    if (importOptions.data) {
+      loaded = { data: importOptions.data };
+    } else {
+      // Step 1: Handle converting the file to usable data
+      loaded = await this.loadFile(file);
+    }
 
-    const env = config.get('env');
-    if (!env?.startsWith('testing') && !importOptions.runningInJob) {
-      logging.info('[Background Job] site-content-import queued');
-      return jobManager.addJob({
-        job: async () => {
-          const startedAt = Date.now();
-          logging.info('[Background Job] site-content-import started');
-          try {
-            const result = await this.importFromFile(
-              file,
-              Object.assign({}, importOptions, {
-                runningInJob: true,
-                data: importData,
-              }),
-            );
-            // importFromFile swallows its own failures and returns undefined,
-            // so an absent result is the only signal that the import failed.
-            if (result === undefined) {
-              logging.info(
-                `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
-              );
-            } else {
-              logging.info(
-                `[Background Job] site-content-import completed in ${Date.now() - startedAt}ms`,
-              );
-            }
-            return result;
-          } catch (err) {
-            logging.error(
-              err,
-              `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
-            );
-            throw err;
-          }
-        },
-        offloaded: false,
+    debug('importFromFile completed file load', loaded.data);
+
+    return this.processImport(() => loaded, importOptions);
+  }
+
+  /**
+   * Store the upload so that execution can read it back once the request, and the file it
+   * uploaded, are gone. It is stored under a key of our own rather than its file name.
+   * @param {File} file
+   * @returns {Promise<string>} the key the adapter stored the upload under
+   */
+  async storeUpload(file) {
+    // Streaming reads deliberately belong to the concrete adapters until the next
+    // major release can extend the third-party storage base contract, so an adapter
+    // without one fails the import that needs it rather than the boot before it.
+    if (typeof this.importsStorage?.readStream !== 'function') {
+      throw new errors.IncorrectUsageError({
+        message: 'The configured imports storage adapter cannot do streaming reads',
+        context: `Site content imports need a storage:imports adapter with a readStream method, and ${this.importsStorage?.constructor?.name || 'the configured adapter'} has none.`,
       });
     }
 
+    const attemptedKey = randomUUID();
+
+    try {
+      const url = await this.importsStorage.save(
+        { name: attemptedKey, path: file.path },
+        this.importsStorage.storagePath,
+      );
+
+      return this.importsStorage.urlToPath(url);
+    } catch (err) {
+      // The adapter may have stored bytes before it failed, and the key we attempted
+      // is the only name we have for them.
+      await this.cleanUpUpload(attemptedKey);
+      throw err;
+    }
+  }
+
+  /**
+   * Read a stored upload back and load it, as the file it was uploaded as. The stored upload
+   * and the local copy of it are removed once it is loaded, or has failed to load, so nothing
+   * of it outlives this call but the extracted directory a loaded archive owns.
+   * @param {string} uploadKey
+   * @param {string} fileName the name the file was uploaded with, which decides how it is read
+   * @returns {Promise<LoadedImport>}
+   */
+  async loadStoredUpload(uploadKey, fileName) {
+    let downloadDirectory;
+    try {
+      downloadDirectory = await fs.mkdtemp(path.join(os.tmpdir(), 'site-content-import-'));
+      const downloadPath = path.join(downloadDirectory, 'upload');
+      await pipeline(
+        await this.importsStorage.readStream({ path: uploadKey }),
+        fs.createWriteStream(downloadPath),
+      );
+      return await this.loadFile({ name: fileName, path: downloadPath });
+    } finally {
+      await this.cleanUp(downloadDirectory);
+      await this.cleanUpUpload(uploadKey);
+    }
+  }
+
+  /**
+   * Remove a stored upload once nothing needs it. A failure here never replaces the
+   * outcome of the import itself.
+   * @param {string} uploadKey
+   * @returns {Promise<void>}
+   */
+  async cleanUpUpload(uploadKey) {
+    try {
+      await this.importsStorage.delete(uploadKey);
+    } catch (err) {
+      this.logging.error(err, '[Background Job] site-content-import upload cleanup failed');
+    }
+  }
+
+  /**
+   * Run a queued import: read the stored upload back and import it, logging when it starts
+   * and how it ends
+   * @param {ContentImportJob} job
+   * @returns {Promise<Object.<string, ImportResult>|undefined>}
+   */
+  async executeImport(job) {
+    const importOptions = {
+      user: { email: job.emailRecipient },
+      importTag: job.importTag,
+      returnImportedData: job.returnImportedData,
+      importPersistUser: job.importPersistUser,
+    };
+    const startedAt = Date.now();
+    this.logging.info('[Background Job] site-content-import started');
+    try {
+      const result = await this.processImport(
+        () => this.loadStoredUpload(job.uploadKey, job.fileName),
+        importOptions,
+      );
+      // processImport swallows import failures and resolves undefined,
+      // so an absent result is the only signal that the import failed.
+      if (result === undefined) {
+        this.logging.info(
+          `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
+        );
+      } else {
+        const durationMs = Date.now() - startedAt;
+        this.logging.info(
+          {
+            system: {
+              event: 'site_content_import.completed',
+              import_groups: Object.keys(result).length,
+              duration_ms: durationMs,
+            },
+          },
+          `[Background Job] site-content-import completed in ${durationMs}ms`,
+        );
+      }
+      return result;
+    } catch (err) {
+      this.logging.error(
+        err,
+        `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
+      );
+      throw err;
+    }
+  }
+
+  /**
+   * Load content and import it, report on it, release the files it owns, and email the user
+   * how it went. A failed import is reported in that email and resolves undefined.
+   * @param {() => LoadedImport|Promise<LoadedImport>} loadImport reads the content to import.
+   * It runs as the first step of the import, so failing to read is reported like any other
+   * import failure.
+   * @param {ImportOptions} importOptions
+   * @returns {Promise<Object.<string, ImportResult>|undefined>}
+   */
+  async processImport(loadImport, importOptions) {
+    const env = this.config.get('env');
+    let loaded;
     let importResult;
     try {
+      // Step 1: Load the content to import
+      loaded = await loadImport();
+
       // Step 2: Let the importers pre-process the data
-      importData = await this.preProcess(importData);
+      const importData = await this.preProcess(loaded.data);
 
       // Step 3: Actually do the import
       // @TODO: It would be cool to have some sort of dry run flag here
@@ -433,12 +594,12 @@ class ImportManager {
 
       return importResult;
     } catch (err) {
-      logging.error(err, '[Background Job] site-content-import error');
+      this.logging.error(err, '[Background Job] site-content-import error');
       const errorDetails = err.errorDetails || [err];
       importResult = { data: { errors: errorDetails } };
     } finally {
-      // Step 5: Cleanup any files
-      await this.cleanUp();
+      // Step 5: Cleanup the files this import owns
+      await this.cleanUp(loaded?.cleanupDirectory);
 
       if (!env?.startsWith('testing')) {
         // Step 6: Send email
@@ -446,7 +607,7 @@ class ImportManager {
           emailRecipient: importOptions.user.email,
           importTag: importOptions.importTag,
         });
-        await ghostMailer.send({
+        await this.mailer.send({
           to: importOptions.user.email,
           subject: importResult?.data?.errors
             ? 'Your content import was unsuccessful'
@@ -521,4 +682,11 @@ class ImportManager {
 /**
  * @typedef {Object} ImportResult
  */
-module.exports = new ImportManager();
+
+/**
+ * Content ready to import, with the directory its owner has to remove afterwards
+ * @typedef {Object} LoadedImport
+ * @property {ImportData} data
+ * @property {string} [cleanupDirectory]
+ */
+module.exports = ImportManager;

@@ -2,15 +2,11 @@ import { POST_VIEW_PARAMS } from '@/posts/list/post-view-params';
 import type { PostResource } from '@/posts/list/post-resource';
 
 /**
- * "Sticky filters": clicking Posts in the sidebar returns you to the filters
- * you last had, rather than a bare list.
+ * Remember the last list's filters for editor breadcrumbs and the Pages
+ * sidebar link. The Posts sidebar link always opens the full list.
  *
- * Ported from `state-bridge.js` `getRouteUrl`, which reads Ember's live
- * controller query params. React has no equivalent long-lived controller, so
- * the list screen reports its params here as they change.
- *
- * Module scope, deliberately not `sessionStorage`: Ember's is in-memory and
- * per-tab, so persisting it would be a behaviour change rather than a port.
+ * The list screen reports its params here as they change. Module scope keeps
+ * them in memory and per tab.
  */
 
 type ViewFilter = Record<string, string | null>;
@@ -33,7 +29,13 @@ export function clearStickyPostFilters(): void {
   lastSeen.clear();
 }
 
-/** Only the five params a view is made of; anything else isn't sticky. */
+/** Editor breadcrumbs return to the last list, including saved views. */
+export function getPostListReturnUrl(resource: PostResource): string {
+  const search = lastSeen.get(resource);
+  return `/${resource}${search ? `?${search}` : ''}`;
+}
+
+/** Only the params a view is made of; anything else isn't sticky. */
 function toViewParams(search: string): Record<string, string> {
   const source = new URLSearchParams(search);
   const params: Record<string, string> = {};

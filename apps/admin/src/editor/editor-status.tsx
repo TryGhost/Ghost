@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Inline, Text } from '@tryghost/shade/primitives';
+import { Text } from '@tryghost/shade/primitives';
+import { Button, buttonVariants } from '@tryghost/shade/components';
+import { useShade } from '@tryghost/shade/app';
 import { formatNumber } from '@tryghost/shade/utils';
 import { membersCountString, useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { editorScheduleCountdown, editorStatus } from '@tryghost/test-data/selectors/editor';
 import { formatPostTime } from '@/posts/list/post-time';
+import { usePublishInputs } from './publish/use-publish-inputs';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { useSiteTimezone } from './use-editor-settings';
 import type { SaveEngineState } from './engine/save-engine';
@@ -56,33 +59,78 @@ function ScheduleCountdown({
   );
 }
 
+/** Opens the publish flow, which starts at its email-failure step for a failed send. */
+function EmailFailureAction({ label, onOpen }: { label: string; onOpen: () => void }) {
+  // The flow is built from the publish inputs, so it cannot open before they load.
+  const { isReady } = usePublishInputs();
+
+  return (
+    <>
+      {' '}
+      <Button
+        className="h-auto p-0 text-destructive"
+        disabled={!isReady}
+        variant="link"
+        onClick={onOpen}
+      >
+        {label}
+      </Button>
+    </>
+  );
+}
+
+/** Opens the update flow, which describes what was sent. */
+function SentAction({ onOpen }: { onOpen: () => void }) {
+  // The flow is built from the publish inputs, so it cannot open before they load.
+  const { isReady } = usePublishInputs();
+
+  return (
+    <Button className="h-auto p-0" disabled={!isReady} variant="link" onClick={onOpen}>
+      Sent
+    </Button>
+  );
+}
+
 function StatusBody({
   view,
   timezone,
   isHovered,
+  onOpenPublishFlow,
+  onOpenUpdateFlow,
 }: {
   view: EditorStatusView;
   timezone: string;
   isHovered: boolean;
+  onOpenPublishFlow?: () => void;
+  onOpenUpdateFlow?: () => void;
 }) {
   switch (view.kind) {
     case 'problem':
-      return <Text className="text-destructive">{view.message}</Text>;
+      return <span className="text-destructive">{view.message}</span>;
     case 'saving':
-      return <Text tone="secondary">Saving…</Text>;
+      return <>Saving…</>;
     case 'new':
-      return <Text tone="secondary">New</Text>;
+      return <>New</>;
     case 'draft':
-      return <Text tone="secondary">{view.saved ? 'Draft - Saved' : 'Draft'}</Text>;
+      return <>{view.saved ? 'Draft - Saved' : 'Draft'}</>;
     case 'sent':
       return view.failed ? (
-        <Text tone="secondary">Failed to send newsletter.</Text>
+        <>
+          Failed to send newsletter.
+          {onOpenPublishFlow ? (
+            <EmailFailureAction label="Retry now" onOpen={onOpenPublishFlow} />
+          ) : null}
+        </>
+      ) : onOpenUpdateFlow ? (
+        <>
+          <SentAction onOpen={onOpenUpdateFlow} /> to {members(view.count)}
+        </>
       ) : (
-        <Text tone="secondary">Sent to {members(view.count)}</Text>
+        <>Sent to {members(view.count)}</>
       );
     case 'scheduled':
       return (
-        <Text tone="secondary">
+        <>
           Scheduled
           {isHovered && (
             <>
@@ -96,11 +144,11 @@ function StatusBody({
               />
             </>
           )}
-        </Text>
+        </>
       );
     default:
       return (
-        <Text tone="secondary">
+        <>
           {view.url ? (
             <a
               className="hover:text-foreground"
@@ -116,7 +164,10 @@ function StatusBody({
           {view.email === 'sending' && ` and sending to ${members(view.count)}`}
           {view.email === 'sent' && ` and sent to ${members(view.count)}`}
           {view.email === 'failed' && ' but failed to send newsletter.'}
-        </Text>
+          {view.email === 'failed' && onOpenPublishFlow ? (
+            <EmailFailureAction label="View details" onOpen={onOpenPublishFlow} />
+          ) : null}
+        </>
       );
   }
 }
@@ -125,10 +176,21 @@ export interface EditorStatusProps {
   state: SaveEngineState;
   record?: EditorStatusRecord;
   isDirty: boolean;
+  /** Opens the publish flow at a failed send; omitted unless the role may retry it. */
+  onOpenPublishFlow?: () => void;
+  /** Opens the update flow from a sent post's "Sent"; omitted unless the role may publish. */
+  onOpenUpdateFlow?: () => void;
 }
 
 /** Where the post stands: its status, the newsletter, and the last save. */
-export function EditorStatus({ state, record, isDirty }: EditorStatusProps) {
+export function EditorStatus({
+  state,
+  record,
+  isDirty,
+  onOpenPublishFlow,
+  onOpenUpdateFlow,
+}: EditorStatusProps) {
+  const { isAdmin7 } = useShade();
   const timezone = useSiteTimezone();
   const isSaving = useSavingHold(state.kind === 'saving' || state.kind === 'pending-coalesced');
   const [isHovered, setIsHovered] = useState(false);
@@ -149,19 +211,30 @@ export function EditorStatus({ state, record, isDirty }: EditorStatusProps) {
   }, [isHovered]);
 
   return (
-    <Inline
-      align="center"
-      className="text-sm"
+    <Text
+      as="span"
+      className={buttonVariants({
+        variant: null,
+        size: isAdmin7 ? 'default' : 'sm',
+        shape: 'pill',
+        isAdmin7,
+        className: `pointer-events-auto h-auto max-w-full min-w-0 justify-self-start bg-background/80 px-3 py-1 text-(length:--text-control) whitespace-normal text-text-secondary backdrop-blur-sm max-sm:col-span-2 max-sm:row-start-2 ${isAdmin7 ? 'min-h-(--control-height)' : 'min-h-7'}`,
+      })}
       data-testid={editorStatus}
-      gap="xs"
+      tone="secondary"
+      weight="medium"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <StatusBody
-        isHovered={isHovered}
-        timezone={timezone}
-        view={deriveEditorStatus({ state, record, isDirty, isSaving })}
-      />
-    </Inline>
+      <span className="min-w-0 break-words">
+        <StatusBody
+          isHovered={isHovered}
+          timezone={timezone}
+          view={deriveEditorStatus({ state, record, isDirty, isSaving })}
+          onOpenPublishFlow={onOpenPublishFlow}
+          onOpenUpdateFlow={onOpenUpdateFlow}
+        />
+      </span>
+    </Text>
   );
 }

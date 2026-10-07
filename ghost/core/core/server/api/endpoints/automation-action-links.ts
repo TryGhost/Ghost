@@ -1,11 +1,12 @@
+import type { Controller, Frame } from '@tryghost/api-framework';
 import * as automationsApi from '../../services/automations/automations-api';
 
-type BrowseFrame = {
+type BrowseFrame = Frame<{
   options: {
     automation_id: string;
     action_id: string;
   };
-};
+}>;
 
 const controller = {
   docName: 'automation_action_links',
@@ -38,6 +39,6 @@ const controller = {
       };
     },
   },
-};
+} satisfies Controller<{ browse: BrowseFrame }>;
 
 module.exports = controller;

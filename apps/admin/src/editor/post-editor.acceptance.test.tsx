@@ -2,23 +2,40 @@ import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
+import type { Snippet } from '@tryghost/admin-x-framework/api/snippets';
+
 import {
+  browseResponse,
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
+  fakeEditorPost as fakeSavablePost,
+  fakeEmailPreview,
   fakeNewsletters,
+  fakePages,
   fakePosts,
   fakeSnippets,
   post,
   renderAdminApp,
+  settingsResponse,
+  siteResponse,
   staffRole,
+  withoutAutosave,
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
+import { EMAIL_SIZE_REFETCH_DEBOUNCE_MS } from '@/editor/use-email-size';
+import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
 const FLAG_ON = { labs: { editorReact: true } };
 const CURRENT_USER_ID = '1';
+
+const OVER_EMAIL_LIMIT = 150 * 1024;
+
+const FEATURE_IMAGE = `data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800"/>',
+)}`;
 
 const MOBILEDOC =
   '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"Legacy"]]]]}';
@@ -29,6 +46,7 @@ function fakeEditorChrome() {
   fakeSnippets([]);
   // The header's publish inputs read the newsletter list.
   fakeNewsletters([]);
+  fakeEmailPreview();
   return fakePosts([]);
 }
 
@@ -47,10 +65,32 @@ function fakeEditorPost(overrides: Partial<ReturnType<typeof post>> = {}) {
   });
 }
 
+function snippet(name: string): Snippet {
+  return {
+    id: `snippet-${name}`,
+    name,
+    mobiledoc: '{}',
+    lexical: buildLexicalParagraph(name),
+    created_at: '2026-01-01T00:00:00.000Z',
+    updated_at: null,
+  };
+}
+
 function bootAs(role: 'Author' | 'Contributor'): RenderAdminAppOptions {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name: role })];
   return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+}
+
+/** Whether `marker` sits right of `target`, level with some of it. */
+function sitsRightOf(marker: Element, target: Element): boolean {
+  const markerBox = marker.getBoundingClientRect();
+  const targetBox = target.getBoundingClientRect();
+  return (
+    markerBox.left >= targetBox.right &&
+    markerBox.bottom > targetBox.top &&
+    markerBox.top < targetBox.bottom
+  );
 }
 
 function pasteText(content: string) {
@@ -68,6 +108,37 @@ function pasteText(content: string) {
  * editor-save.acceptance.test.tsx.
  */
 describe('Post editor', () => {
+  it('grows and shrinks the title with its text under the Ember host constraints', async () => {
+    // The acceptance host omits Ember's global form CSS, which still surrounds
+    // the React editor in production.
+    const hostStyles = document.createElement('style');
+    hostStyles.textContent = 'textarea { min-height: 10rem; max-width: 500px; }';
+    document.head.appendChild(hostStyles);
+
+    try {
+      fakeEditorPost({ title: 'Short title' });
+      await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
+
+      const title = editorScreen.titleInput();
+      await expect.element(title).toHaveValue('Short title');
+      const height = () => title.element().getBoundingClientRect().height;
+      const singleLineHeight = height();
+      const lineHeight = parseFloat(getComputedStyle(title.element()).lineHeight);
+      expect(singleLineHeight).toBeLessThan(lineHeight * 2);
+      expect(title.element().getBoundingClientRect().width).toBeGreaterThan(500);
+
+      await title.fill(
+        'A long post title that wraps across several lines in the writing area '.repeat(3),
+      );
+      await expect.poll(height).toBeGreaterThan(singleLineHeight * 2);
+
+      await title.fill('Short title');
+      await expect.poll(height).toBe(singleLineHeight);
+    } finally {
+      hostStyles.remove();
+    }
+  });
+
   it('loads the post into the title and body', async () => {
     const postsApi = fakeEditorPost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
@@ -108,6 +179,60 @@ describe('Post editor', () => {
     await expect.element(editorScreen.wordCount()).toHaveTextContent('5 words');
   });
 
+  it('offers every snippet in the card menu, past the first page of the browse', async () => {
+    fakeEditorPost();
+    // `limit=all` is capped by Core, so the site's snippets can span several pages.
+    const snippetsApi = fakeAdminEndpoint('GET', /^\/snippets\/\?/, ({ url }) => {
+      const pageNumber = Number(new URL(url).searchParams.get('page') ?? '1');
+      return browseResponse('snippets', [snippet('Alpha'), snippet('Zulu')], {
+        page: pageNumber,
+        limit: 1,
+      });
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.poll(() => snippetsApi.requests.length).toBe(2);
+    const secondPageParams = new URL(snippetsApi.requests[1].url).searchParams;
+    expect(secondPageParams.get('page')).toBe('2');
+    expect(secondPageParams.get('formats')).toBe('mobiledoc,lexical');
+
+    await editorScreen.body().click();
+    await userEvent.keyboard('{End}{Enter}/');
+
+    await expect.element(editorScreen.cardMenuItem('Zulu')).toBeVisible();
+    await expect.element(editorScreen.cardMenuItem('Alpha')).toBeVisible();
+  });
+
+  it('offers no snippets in the card menu until the last page of the browse arrives', async () => {
+    fakeEditorPost();
+    const secondPage = deferred<void>();
+    const snippetsApi = fakeAdminEndpoint('GET', /^\/snippets\/\?/, async ({ url }) => {
+      const pageNumber = Number(new URL(url).searchParams.get('page') ?? '1');
+      if (pageNumber === 2) {
+        await secondPage.promise;
+      }
+      return browseResponse('snippets', [snippet('Alpha'), snippet('Zulu')], {
+        page: pageNumber,
+        limit: 1,
+      });
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.poll(() => snippetsApi.requests.length).toBe(2);
+
+    await editorScreen.body().click();
+    await userEvent.keyboard('{End}{Enter}/');
+
+    await expect.element(editorScreen.cardMenuItem('Image')).toBeVisible();
+    await expect.element(editorScreen.cardMenuItem('Alpha')).not.toBeInTheDocument();
+
+    secondPage.resolve();
+
+    await expect.element(editorScreen.cardMenuItem('Alpha')).toBeVisible();
+    await expect.element(editorScreen.cardMenuItem('Zulu')).toBeVisible();
+  });
+
   it('keeps title edits in memory', async () => {
     fakeEditorPost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
@@ -118,6 +243,17 @@ describe('Post editor', () => {
 
     await expect.element(title).toHaveValue('Changed title TK');
     await expect.element(editorScreen.titleTkIndicator()).toBeVisible();
+  });
+
+  it('marks a TK in the title to the right of the title, below a feature image', async () => {
+    fakeEditorPost({ title: 'Hello TK', feature_image: FEATURE_IMAGE });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    const marker = editorScreen.titleTkIndicator();
+    await expect.element(marker).toBeVisible();
+    await expect
+      .poll(() => sitsRightOf(marker.element(), editorScreen.titleInput().element()))
+      .toBe(true);
   });
 
   it('moves from the title into the body on Enter and cleans pasted titles', async () => {
@@ -218,6 +354,52 @@ describe('Post editor', () => {
     await expect(editorScreen.body()).toHaveCount(0);
   });
 
+  it('shows the load error when the post cannot be read, and opens it on retry', async () => {
+    fakeEditorChrome();
+    fakeAdminEndpoint(
+      'GET',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      { errors: [{ type: 'InternalServerError', message: 'Boom' }] },
+      { status: 500 },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.loadError()).toHaveTextContent('Couldn’t load this post.');
+    await expect(editorScreen.body()).toHaveCount(0);
+
+    // A later handler for the same route wins: the retried read finds the post.
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
+      posts: [post({ id: POST_ID, lexical: buildLexicalParagraph('Hello from React') })],
+    });
+    await editorScreen.retryLoad().click();
+
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect(editorScreen.loadError()).toHaveCount(0);
+  });
+
+  it('shows the load error when the site cannot be read, and opens the editor on retry', async () => {
+    fakeEditorChrome();
+    await renderAdminApp('/editor/post', {
+      ...FLAG_ON,
+      boot: {
+        browseSite: {
+          response: { errors: [{ type: 'NotFoundError', message: 'Not found.' }] },
+          responseStatus: 404,
+        },
+      },
+    });
+
+    await expect.element(editorScreen.loadError()).toHaveTextContent('Couldn’t load the editor.');
+    await expect(editorScreen.titleInput()).toHaveCount(0);
+
+    // A later handler for the same route wins: the retried read finds the site.
+    fakeAdminEndpoint('GET', '/site/', siteResponse());
+    await editorScreen.retryLoad().click();
+
+    await expect.element(editorScreen.titleInput()).toBeVisible();
+    await expect(editorScreen.loadError()).toHaveCount(0);
+  });
+
   it('shows a 404 for a post that does not exist', async () => {
     fakeEditorChrome();
     fakeAdminEndpoint(
@@ -248,6 +430,8 @@ describe('Post editor', () => {
     'returns a %s to the list for a %s %s they cannot edit',
     async (_role, role, type, status, authorId, listPath) => {
       fakeEditorChrome();
+      // The list the redirect lands on.
+      fakePages([]);
       fakeAdminEndpoint('GET', new RegExp(`^/${type}s/${POST_ID}/\\?`), {
         [`${type}s`]: [
           post({
@@ -303,5 +487,121 @@ describe('Post editor', () => {
 
     await expect.poll(currentRoute).toBe('/editor/post');
     await expect.element(editorScreen.titleInput()).toHaveAttribute('placeholder', 'Post title');
+  });
+});
+
+describe('Post editor email size warning', () => {
+  /** Waits past the email size check's debounce, so a check the editor should not make has gone out. */
+  async function editorSettled() {
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await new Promise((resolve) => {
+      setTimeout(resolve, EMAIL_SIZE_REFETCH_DEBOUNCE_MS + 100);
+    });
+  }
+
+  it('flags a post whose email would be clipped, with its size on click', async () => {
+    fakeEditorPost();
+    const previewApi = fakeEmailPreview(OVER_EMAIL_LIMIT);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.emailSizeWarning()).toBeVisible();
+    expect(new URL(previewApi.lastRequest?.url ?? '').search).toBe('');
+
+    await expect
+      .element(editorScreen.emailSizeWarning())
+      .toHaveAccessibleName('Looks like this is a long post: 150kB');
+    await editorScreen.emailSizeWarning().click();
+    await expect.element(editorScreen.emailSizeDetails()).toBeVisible();
+    await expect
+      .element(editorScreen.emailSizeDetails())
+      .toHaveTextContent('Looks like this is a long post');
+    await expect
+      .element(editorScreen.emailSizeDetails())
+      .toHaveTextContent(
+        'Emails may get clipped in the inbox behind a "View entire message" link when they\'re over 100kB.',
+      );
+    await expect.element(editorScreen.emailSizeDetails()).toHaveTextContent("You've used: 150kB");
+  });
+
+  it('leaves a post whose email fits unflagged', async () => {
+    fakeEditorPost();
+    const previewApi = fakeEmailPreview(99 * 1024);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await editorSettled();
+    await expect.poll(() => previewApi.requests.length).toBe(1);
+    await expect(editorScreen.emailSizeWarning()).toHaveCount(0);
+  });
+
+  it.each<[string, Partial<ReturnType<typeof post>>]>([
+    ['a published post', { status: 'published', published_at: '2026-01-01T00:00:00.000Z' }],
+    [
+      'a post that has been emailed',
+      { email: { id: 'email-1', status: 'submitted', email_count: 20, opened_count: 0 } },
+    ],
+    ['an email-only post', { status: 'scheduled', email_only: true }],
+  ])('does not check %s', async (_case, overrides) => {
+    fakeEditorPost(overrides);
+    const previewApi = fakeEmailPreview(OVER_EMAIL_LIMIT);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await editorSettled();
+    await expect(editorScreen.emailSizeWarning()).toHaveCount(0);
+    expect(previewApi.requests).toHaveLength(0);
+  });
+
+  it('does not check a page', async () => {
+    fakeEditorChrome();
+    fakeAdminEndpoint('GET', new RegExp(`^/pages/${POST_ID}/\\?`), {
+      pages: [post({ id: POST_ID, lexical: buildLexicalParagraph('Hello from React') })],
+    });
+    const previewApi = fakeEmailPreview(OVER_EMAIL_LIMIT);
+    await renderAdminApp(`/editor/page/${POST_ID}`, FLAG_ON);
+
+    await editorSettled();
+    await expect(editorScreen.emailSizeWarning()).toHaveCount(0);
+    expect(previewApi.requests).toHaveLength(0);
+  });
+
+  it('does not check a post when newsletters are disabled', async () => {
+    fakeEditorPost();
+    const previewApi = fakeEmailPreview(OVER_EMAIL_LIMIT);
+    await renderAdminApp(`/editor/post/${POST_ID}`, {
+      ...FLAG_ON,
+      boot: {
+        browseSettings: {
+          response: settingsResponse({
+            settings: { editor_default_email_recipients: 'disabled' },
+          }),
+        },
+      },
+    });
+
+    await editorSettled();
+    await expect(editorScreen.emailSizeWarning()).toHaveCount(0);
+    expect(previewApi.requests).toHaveLength(0);
+  });
+
+  it('checks the email again once a new version is saved', async () => {
+    fakeEditorChrome();
+    const saveApi = fakeSavablePost({
+      lexical: buildLexicalParagraph('Hello from React'),
+    });
+    const firstCheck = fakeEmailPreview();
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
+
+    // The preview needs the loaded post; starting its poll during boot uses up
+    // the assertion window before the editor can issue the request under load.
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.poll(() => firstCheck.requests.length).toBe(1);
+    const secondCheck = fakeEmailPreview(OVER_EMAIL_LIMIT);
+    await editorScreen.body().click();
+    await userEvent.keyboard('{End} and more');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    await expect.element(editorScreen.emailSizeWarning()).toBeVisible();
+    expect(secondCheck.requests).toHaveLength(1);
+    expect(firstCheck.requests).toHaveLength(1);
   });
 });

@@ -7,12 +7,16 @@ import { useAdminSidebarVisibility } from '@/layout/sidebar-visibility';
 import { cn } from '@tryghost/shade/utils';
 import AppSidebar from './app-sidebar';
 import { MobileNavBar } from './app-sidebar/mobile-nav-bar';
+import { SkipLink } from './skip-link';
 import { ContributorUserMenu } from './app-sidebar/user-menu';
 import { DunningBanner, DunningOverlay, useDunningLockTakeover } from '@/dunning';
+import { GlobalSearchProvider } from '@/global-search/global-search-provider';
 
 const networkPageChrome = {
-  contentClassName: 'max-w-(--content-width)',
+  contentClassName: 'max-w-[1920px]',
   contentGutter: 'var(--page-gutter)',
+  // The floating sidebar already provides the cover's 8px left gap.
+  profileContentClassName: 'sidebar:pl-0',
 };
 
 const pageChromeClassName = [
@@ -27,7 +31,6 @@ const pageChromeClassName = [
   '[&_[data-page-header=main]]:flex-wrap',
   '[&_[data-page-header=left]]:h-auto',
   '[&_[data-page-header=left]]:max-w-full',
-  '[&_.admin-x-container-error]:bg-background',
   '[&_.gh-canvas]:max-w-(--content-width)',
   '[&_.gh-canvas]:px-(--page-gutter)',
   '[&_.gh-main-width]:max-w-(--content-width)',
@@ -90,9 +93,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   if (isContributor) {
     return (
       <div className="relative h-full bg-background">
-        <main ref={mainRef} className="flex h-full flex-col overflow-y-auto">
+        {!dunningLocked && <SkipLink target={mainRef} />}
+        <main ref={mainRef} className="flex h-full flex-col overflow-y-auto focus:outline-hidden">
           <DunningBanner />
-          <div className="flex-1">{children}</div>
+          <div className="min-h-0 flex-1">{children}</div>
         </main>
         <div
           ref={contributorMenuRef}
@@ -106,41 +110,50 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   return (
-    <SidebarProvider
-      className={cn(
-        sidebarVisible &&
-          'overflow-hidden [--content-width:1080px] [--page-gutter:20px] sidebar:[--page-gutter:40px] min-[1380px]:[--content-width:1280px] [&_[data-sidebar=sidebar]]:rounded-xl [&_[data-sidebar=sidebar]]:border-border [&_[data-sidebar=sidebar]]:shadow-none [&>main]:min-w-0',
-      )}
-      open={!!currentUser && sidebarVisible}
-      style={sidebarVisible ? ({ '--sidebar-width': '316px' } as React.CSSProperties) : undefined}
-    >
-      {sidebarVisible && (
-        <AppSidebar
-          ref={sidebarRef}
-          className={cn(dunningLocked && 'opacity-40')}
-          variant="floating"
-        />
-      )}
-      <SidebarInset
-        ref={insetRef}
+    <GlobalSearchProvider>
+      {!dunningLocked && <SkipLink target={mainRef} />}
+      <SidebarProvider
         className={cn(
-          'relative bg-background sidebar:max-h-full',
-          dunningLocked ? 'overflow-hidden' : 'overflow-y-auto',
-          sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full',
+          sidebarVisible &&
+            'overflow-hidden [--content-width:1080px] [--page-gutter:20px] sidebar:[--page-gutter:40px] min-[1380px]:[--content-width:1280px] [&_[data-sidebar=sidebar]]:rounded-xl [&_[data-sidebar=sidebar]]:border-border [&_[data-sidebar=sidebar]]:shadow-none [&>main]:min-w-0',
         )}
+        open={!!currentUser && sidebarVisible}
+        style={sidebarVisible ? ({ '--sidebar-width': '316px' } as React.CSSProperties) : undefined}
       >
-        <DunningBanner />
-        <main ref={mainRef} className={cn('flex-1', sidebarVisible && pageChromeClassName)}>
-          <ActivityPubHostLayoutProvider value={sidebarVisible ? networkPageChrome : undefined}>
-            {children}
-          </ActivityPubHostLayoutProvider>
-        </main>
-        {/* The mobile nav sits outside the takeover's cover (fixed, above the
+        {sidebarVisible && (
+          <AppSidebar
+            ref={sidebarRef}
+            className={cn(dunningLocked && 'opacity-40')}
+            variant="floating"
+          />
+        )}
+        <SidebarInset
+          ref={insetRef}
+          className={cn(
+            'relative bg-background sidebar:max-h-full',
+            dunningLocked ? 'overflow-hidden' : 'overflow-y-auto',
+            sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full',
+          )}
+        >
+          <DunningBanner />
+          <main
+            ref={mainRef}
+            className={cn(
+              'flex-1 focus:outline-hidden',
+              sidebarVisible ? pageChromeClassName : 'min-h-0',
+            )}
+          >
+            <ActivityPubHostLayoutProvider value={sidebarVisible ? networkPageChrome : undefined}>
+              {children}
+            </ActivityPubHostLayoutProvider>
+          </main>
+          {/* The mobile nav sits outside the takeover's cover (fixed, above the
             inset) and its sheet opens in a portal, so it unmounts entirely
             rather than relying on inert */}
-        {!dunningLocked && <MobileNavBar />}
-        <DunningOverlay />
-      </SidebarInset>
-    </SidebarProvider>
+          {!dunningLocked && <MobileNavBar />}
+          <DunningOverlay />
+        </SidebarInset>
+      </SidebarProvider>
+    </GlobalSearchProvider>
   );
 }

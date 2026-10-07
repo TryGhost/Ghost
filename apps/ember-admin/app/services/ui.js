@@ -1,11 +1,5 @@
 import Service, {inject as service} from '@ember/service';
-import {
-    Color,
-    darkenToContrastThreshold,
-    lightenToContrastThreshold
-} from '@tryghost/color-utils';
 import {action, get} from '@ember/object';
-import {inject} from 'ghost-admin/decorators/inject';
 import {tracked} from '@glimmer/tracking';
 
 function collectMetadataClasses(transition, prop) {
@@ -40,12 +34,8 @@ function updateBodyClasses(transition) {
 
 export default class UiService extends Service {
     @service dropdown;
-    @service feature;
     @service router;
-    @service settings;
     @service('state-bridge') stateBridge;
-
-    @inject config;
 
     @tracked _isFullScreen = false;
     @tracked mainClass = '';
@@ -59,41 +49,11 @@ export default class UiService extends Service {
         this.stateBridge.setSidebarVisible(!value);
     }
 
-    get backgroundColor() {
-        // hardcoded background colors because
-        // grabbing color from .gh-main with getComputedStyle always returns #ffffff
-        return this.feature.nightShift ? '#151719' : '#ffffff';
-    }
-
-    get adjustedAccentColor() {
-        const accentColor = Color(this.settings.accentColor);
-        const backgroundColor = Color(this.backgroundColor);
-
-        // WCAG contrast. 1 = lowest contrast, 21 = highest contrast
-        const accentContrast = accentColor.contrast(backgroundColor);
-
-        if (accentContrast > 2) {
-            return accentColor.hex();
-        }
-
-        let adjustedAccentColor = accentColor;
-
-        if (this.feature.nightShift) {
-            adjustedAccentColor = lightenToContrastThreshold(accentColor, backgroundColor, 2);
-        } else {
-            adjustedAccentColor = darkenToContrastThreshold(accentColor, backgroundColor, 2);
-        }
-
-        return adjustedAccentColor.hex();
-    }
-
     constructor() {
         super(...arguments);
 
         this.router.on('routeDidChange', (transition) => {
             updateBodyClasses(transition);
-
-            this.updateDocumentTitle();
 
             const {newClasses: mainClasses} = collectMetadataClasses(transition, 'mainClasses');
             this.mainClass = mainClasses.join(' ');
@@ -108,30 +68,6 @@ export default class UiService extends Service {
     @action
     setMainClass(mainClass) {
         this.mainClass = mainClass;
-    }
-
-    @action
-    updateDocumentTitle() {
-        let {currentRoute} = this.router;
-        const tokens = [];
-
-        while (currentRoute) {
-            let titleToken = get(currentRoute, 'metadata.titleToken');
-
-            if (typeof titleToken === 'function') {
-                titleToken = titleToken();
-            }
-
-            if (titleToken) {
-                tokens.unshift(titleToken);
-            }
-
-            currentRoute = currentRoute.parent;
-        }
-
-        const blogTitle = this.config.blogTitle;
-
-        window.document.title = `Ghost Admin - ${blogTitle}`;
     }
 
     @action

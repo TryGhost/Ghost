@@ -430,6 +430,38 @@ describe('PostEmailHandler', function () {
       sinon.assert.notCalled(mockEmailService.createEmail);
       sinon.assert.calledOnceWithExactly(mockEmailService.retryEmail, failedEmail);
       sinon.assert.calledOnceWithExactly(model.set, 'email', retriedEmail);
+      assert.equal(model.relations.email, retriedEmail);
+    });
+
+    for (const status of ['pending', 'submitting', 'submitted', 'failed']) {
+      it(`handles a lost retry claim with persisted status ${status}`, async function () {
+        const email = createMockEmail('failed');
+        email.refresh = sinon.stub().callsFake(async () => {
+          email.get.withArgs('status').returns(status);
+          return email;
+        });
+        const model = createMockModel({ email });
+        const error = Object.assign(new Error('Already claimed'), {
+          code: 'BULK_EMAIL_RETRY_NOT_FAILED',
+        });
+        mockEmailService.retryEmail.rejects(error);
+
+        if (status === 'failed') {
+          await assert.rejects(postEmailHandler.createOrRetryEmail(model), error);
+          sinon.assert.notCalled(model.set);
+        } else {
+          await postEmailHandler.createOrRetryEmail(model);
+          assert.equal(model.relations.email.get('status'), status);
+        }
+      });
+    }
+
+    it('propagates retry failures other than a lost claim', async function () {
+      const model = createMockModel({ email: createMockEmail('failed') });
+      const error = new Error('Database unavailable');
+      mockEmailService.retryEmail.rejects(error);
+      await assert.rejects(postEmailHandler.createOrRetryEmail(model), error);
+      sinon.assert.notCalled(model.set);
     });
 
     it('does not set email on model when existing email is not failed', async function () {

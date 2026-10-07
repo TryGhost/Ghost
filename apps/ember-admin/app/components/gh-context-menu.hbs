@@ -1,6 +1,0 @@
-<div role="menu" class="gh-context-menu-container" {{did-insert this.setup}} data-open={{this.isOpen}} {{on "click" this.stopClicks}}>
-    <div class="gh-context-menu {{this.class}}" style={{this.style}}>
-        {{yield this this.selectionList}}
-    </div>
-    <div role="none" class="gh-context-menu-overlay" {{on "click" this.close}} {{on "contextmenu" this.onContextMenuOutside}}></div>
-</div>

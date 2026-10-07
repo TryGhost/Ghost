@@ -3,7 +3,7 @@
 import type { Response } from 'express';
 import config from '../../../shared/config';
 import urlUtils from '../../../shared/url-utils';
-import { getStorageContentType } from '../../services/files/file-type-utils';
+import { getStorageContentType } from '../../lib/file-types';
 import LocalStorageBase from './LocalStorageBase';
 
 const messages = {

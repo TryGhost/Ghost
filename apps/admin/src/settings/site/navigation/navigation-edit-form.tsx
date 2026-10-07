@@ -4,6 +4,7 @@ import { Button, SortableList } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { type NavigationEditor } from '@/settings/hooks/site/use-navigation-editor';
+import { type SuggestionGroup } from './url-suggestion-input';
 import {
   navigationColumnClasses,
   navigationDragHandleSpacerClasses,
@@ -16,17 +17,21 @@ const NavigationEditForm: React.FC<{
   baseUrl: string;
   idPrefix: string;
   navigation: NavigationEditor;
+  loadSuggestions: (term: string) => Promise<SuggestionGroup[]>;
   showIcon: boolean;
   showPaidVisibility: boolean;
   showVisibility: boolean;
+  suggestionsEnabled: boolean;
   uploadIcon?: (file: File) => Promise<string | undefined>;
 }> = ({
   baseUrl,
   idPrefix,
   navigation,
+  loadSuggestions,
   showIcon,
   showPaidVisibility,
   showVisibility,
+  suggestionsEnabled,
   uploadIcon,
 }) => {
   return (
@@ -71,9 +76,11 @@ const NavigationEditForm: React.FC<{
             clearError={(key) => navigation.clearError(item.id, key)}
             idPrefix={idPrefix}
             item={item}
+            loadSuggestions={loadSuggestions}
             showIcon={showIcon}
             showPaidVisibility={showPaidVisibility}
             showVisibility={showVisibility}
+            suggestionsEnabled={suggestionsEnabled}
             updateItem={(updates) => navigation.updateItem(item.id, updates)}
             uploadIcon={uploadIcon}
           />
@@ -95,7 +102,7 @@ const NavigationEditForm: React.FC<{
               size="icon"
               type="button"
               variant="ghost"
-              onClick={navigation.addItem}
+              onClick={() => navigation.addItem()}
             >
               <LucideIcon.Plus />
             </Button>
@@ -108,9 +115,11 @@ const NavigationEditForm: React.FC<{
           idPrefix={idPrefix}
           item={navigation.newItem}
           labelPlaceholder="New item label"
+          loadSuggestions={loadSuggestions}
           showIcon={showIcon}
           showPaidVisibility={showPaidVisibility}
           showVisibility={showVisibility}
+          suggestionsEnabled={suggestionsEnabled}
           updateItem={navigation.setNewItem}
           uploadIcon={uploadIcon}
         />

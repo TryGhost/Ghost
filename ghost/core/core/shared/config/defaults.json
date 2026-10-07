@@ -27,7 +27,8 @@
   "privacy": false,
   "security": {
     "allowWebhookInternalIPs": false,
-    "staffDeviceVerification": true
+    "staffDeviceVerification": true,
+    "embedPreviewUrl": "https://public.ghostembeds.com/"
   },
   "useMinFiles": true,
   "verifyRequestIntegrity": true,
@@ -367,10 +368,12 @@
   },
   "bulkEmail": {
     "batchSize": 1000,
+    "batchCreationConcurrency": 2,
     "captureLinkClickBadMemberUuid": false,
     "perRecipientMessageId": false
   },
   "disableJSBackups": false,
   "disableMigrationBackups": false,
+  "createInDevelopmentTables": false,
   "usingLoopbackReverseProxy": false
 }

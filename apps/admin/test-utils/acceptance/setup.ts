@@ -1,10 +1,21 @@
 import { afterEach, beforeAll } from 'vitest';
 import { cleanup } from 'vitest-browser-react';
+import { toast } from 'sonner';
 
 import './matchers';
 import { defaultBootResolver, defaultBootRoutes } from './boot';
-import { resetFakeApi, settleRequests, startFakeApi, verifyNoUnhandledRequests } from './worker';
+import {
+  resetFakeApi,
+  settleRequests,
+  startFakeApi,
+  trackIssuedRequests,
+  verifyNoUnhandledRequests,
+} from './worker';
 import { resetDeclaredResources } from './resources';
+import { guardFrameNavigations, resetFakeFrameOrigins } from './frames';
+
+// At import, before the spec module (and the app) loads.
+trackIssuedRequests();
 
 beforeAll(async () => {
   // Playwright waits for an element to stop moving before it acts on it, so every
@@ -21,6 +32,7 @@ beforeAll(async () => {
   document.head.appendChild(style);
 
   await startFakeApi({ resolver: defaultBootResolver, routes: defaultBootRoutes() });
+  await guardFrameNavigations();
 });
 
 afterEach(async () => {
@@ -33,10 +45,36 @@ afterEach(async () => {
   try {
     await settleRequests();
   } finally {
-    resetFakeApi();
-    resetDeclaredResources();
-    sessionStorage.clear();
-    window.location.hash = '';
-    verifyNoUnhandledRequests();
+    try {
+      const activeToasts = toast.getToasts();
+      for (const activeToast of activeToasts) {
+        // A save can emit a toast while requests drain after unmount. Dismiss
+        // each id to mark it dismissed in Sonner's module-level store too.
+        toast.dismiss(activeToast.id);
+      }
+      if (activeToasts.length > 0) {
+        // Drain Sonner's queued publications before the next test mounts a
+        // subscriber or reuses an id.
+        await new Promise<void>((resolve) => {
+          requestAnimationFrame(() => resolve());
+        });
+      }
+    } finally {
+      resetFakeApi();
+      resetDeclaredResources();
+      sessionStorage.clear();
+      // The editor keeps local copies of drafts here, and the restore screen lists them all.
+      for (const key of Object.keys(localStorage)) {
+        if (key.startsWith('post-revision-')) {
+          localStorage.removeItem(key);
+        }
+      }
+      window.location.hash = '';
+      try {
+        await resetFakeFrameOrigins();
+      } finally {
+        verifyNoUnhandledRequests();
+      }
+    }
   }
 });

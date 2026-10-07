@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const lexicalLib = require('../../../../../core/server/lib/lexical');
 const config = require('../../../../../core/shared/config');
-const emailDesign = require('../../../../../core/server/services/email-rendering/email-design');
+const emailDesign = require('../../../../../core/server/lib/email-rendering/email-design');
 const linkTracking = require('../../../../../core/server/services/link-tracking');
 const MemberWelcomeEmailRenderer = require('../../../../../core/server/services/member-welcome-emails/member-welcome-email-renderer');
 const { malformedCssCases } = require('../../../../utils/fixtures/email-service/malformed-css');
@@ -18,6 +18,14 @@ describe('MemberWelcomeEmailRenderer', function () {
     accentColor: '#ff0000',
     iconUrl: 'https://example.com/content/images/icon.png',
   };
+
+  // The first real lexicalLib.render lazily loads the Koenig renderer, jsdom and
+  // the posts service, which can take longer than the default test timeout on a
+  // busy CI runner. Pay that cost once here so tests using the real renderer
+  // only measure the render itself.
+  beforeAll(async function () {
+    await lexicalLib.render(JSON.stringify(lexicalLib.blankDocument), { target: 'email' });
+  }, 30000);
 
   beforeEach(function () {
     lexicalRenderStub = sinon.stub(lexicalLib, 'render').resolves('<p>Hello World</p>');

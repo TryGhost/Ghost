@@ -30,6 +30,12 @@ const printState = ({ state }) => {
   }
 };
 
+const createMissingInDevelopmentTables = async () => {
+  const { inDevelopment } = require('../schema');
+  const db = require('./index');
+  await inDevelopment.createMissingInDevelopmentTables(db.knex);
+};
+
 class DatabaseStateManager {
   constructor({ knexMigratorFilePath }) {
     this.knexMigrator = new KnexMigrator({
@@ -83,6 +89,7 @@ class DatabaseStateManager {
       printState({ state });
 
       if (state === states.READY) {
+        await createMissingInDevelopmentTables();
         return;
       }
 
@@ -111,6 +118,8 @@ class DatabaseStateManager {
       state = await this.getState();
 
       printState({ state });
+
+      await createMissingInDevelopmentTables();
     } catch (error) {
       let errorToThrow = error;
       if (!errors.utils.isGhostError(error)) {

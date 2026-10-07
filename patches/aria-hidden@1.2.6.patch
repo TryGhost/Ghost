@@ -1,0 +1,96 @@
+diff --git a/dist/es2015/index.js b/dist/es2015/index.js
+index 00aa2ea9da07e8e1d5978a4abe6ce1c2e9ac8041..1d95949b8bbb7efc67ee928b76b2e4d276917718 100644
+--- a/dist/es2015/index.js
++++ b/dist/es2015/index.js
+@@ -131,7 +131,26 @@ export var hideOthers = function (originalTarget, parentNode, markerName) {
+     // we should not hide aria-live elements - https://github.com/theKashey/aria-hidden/issues/10
+     // and script elements, as they have no impact on accessibility.
+     targets.push.apply(targets, Array.from(activeParentNode.querySelectorAll('[aria-live], script')));
+-    return applyAttributeToOthers(targets, activeParentNode, markerName, 'aria-hidden');
++    var undo = applyAttributeToOthers(targets, activeParentNode, markerName, 'aria-hidden');
++    // React StrictMode replays effects by undoing and re-applying in the same task with the target still
++    // mounted. Defer that undo so the page isn't un-hidden and re-hidden at once, which stalls WebKit.
++    var sameTask = true;
++    var undone = false;
++    queueMicrotask(function () {
++        sameTask = false;
++    });
++    return function () {
++        if (undone) {
++            return;
++        }
++        undone = true;
++        if (sameTask && targets[0].isConnected) {
++            queueMicrotask(undo);
++        }
++        else {
++            undo();
++        }
++    };
+ };
+ /**
+  * Marks everything except given node(or nodes) as inert
+diff --git a/dist/es2019/index.js b/dist/es2019/index.js
+index 17404dae4afb4660e14921347404b6c0ca40cca3..72fdbb3981192d012888a70b4ae0ee3e4ffe109b 100644
+--- a/dist/es2019/index.js
++++ b/dist/es2019/index.js
+@@ -126,7 +126,26 @@ export const hideOthers = (originalTarget, parentNode, markerName = 'data-aria-h
+     // we should not hide aria-live elements - https://github.com/theKashey/aria-hidden/issues/10
+     // and script elements, as they have no impact on accessibility.
+     targets.push(...Array.from(activeParentNode.querySelectorAll('[aria-live], script')));
+-    return applyAttributeToOthers(targets, activeParentNode, markerName, 'aria-hidden');
++    var undo = applyAttributeToOthers(targets, activeParentNode, markerName, 'aria-hidden');
++    // React StrictMode replays effects by undoing and re-applying in the same task with the target still
++    // mounted. Defer that undo so the page isn't un-hidden and re-hidden at once, which stalls WebKit.
++    var sameTask = true;
++    var undone = false;
++    queueMicrotask(function () {
++        sameTask = false;
++    });
++    return function () {
++        if (undone) {
++            return;
++        }
++        undone = true;
++        if (sameTask && targets[0].isConnected) {
++            queueMicrotask(undo);
++        }
++        else {
++            undo();
++        }
++    };
+ };
+ /**
+  * Marks everything except given node(or nodes) as inert
+diff --git a/dist/es5/index.js b/dist/es5/index.js
+index 1b86f56de25fb82f0627a2c5c087c4211f591a2a..be8a924836963ebf3c5556e8bb3bef61a23acd9f 100644
+--- a/dist/es5/index.js
++++ b/dist/es5/index.js
+@@ -134,7 +134,26 @@ var hideOthers = function (originalTarget, parentNode, markerName) {
+     // we should not hide aria-live elements - https://github.com/theKashey/aria-hidden/issues/10
+     // and script elements, as they have no impact on accessibility.
+     targets.push.apply(targets, Array.from(activeParentNode.querySelectorAll('[aria-live], script')));
+-    return applyAttributeToOthers(targets, activeParentNode, markerName, 'aria-hidden');
++    var undo = applyAttributeToOthers(targets, activeParentNode, markerName, 'aria-hidden');
++    // React StrictMode replays effects by undoing and re-applying in the same task with the target still
++    // mounted. Defer that undo so the page isn't un-hidden and re-hidden at once, which stalls WebKit.
++    var sameTask = true;
++    var undone = false;
++    queueMicrotask(function () {
++        sameTask = false;
++    });
++    return function () {
++        if (undone) {
++            return;
++        }
++        undone = true;
++        if (sameTask && targets[0].isConnected) {
++            queueMicrotask(undo);
++        }
++        else {
++            undo();
++        }
++    };
+ };
+ exports.hideOthers = hideOthers;
+ /**

@@ -360,6 +360,68 @@ describe('Members API - member attribution', function () {
     mockManager.restore();
   });
 
+  it('Records where a member came from in the transaction that creates them', async function () {
+    const id = fixtureManager.get('posts', 0).id;
+
+    // Read back before the transaction commits: a record saved by anything that runs
+    // after the commit isn't there yet.
+    const { member, recorded } = await models.Base.transaction(async (transacting) => {
+      const created = await membersService.api.members.create(
+        {
+          email: 'member-attributed-in-transaction@test.com',
+          attribution: memberAttributionService.attributionBuilder.build({
+            id,
+            url: '/out-of-date/',
+            type: 'post',
+          }),
+        },
+        { transacting },
+      );
+      return {
+        member: created,
+        recorded: await models.MemberCreatedEvent.findOne(
+          { member_id: created.id },
+          { transacting },
+        ),
+      };
+    });
+    // The activity feed test below expects only the members it names.
+    await agent.delete(`/members/${member.id}/`).expectStatus(204);
+
+    assert.equal(recorded?.get('attribution_id'), id);
+  });
+
+  it('Shortens attribution too long to store rather than failing the signup', async function () {
+    const campaign = 'x'.repeat(250);
+
+    // Strict, as MySQL is by default, so a value too long for its column is refused
+    // rather than silently cut by the database.
+    const { member, recorded } = await models.Base.transaction(async (transacting) => {
+      await transacting.raw("SET SESSION sql_mode = 'STRICT_TRANS_TABLES'");
+      try {
+        const created = await membersService.api.members.create(
+          {
+            email: 'member-with-long-utm@test.com',
+            attribution: { id: null, url: '/', type: 'url', utmCampaign: campaign },
+          },
+          { transacting },
+        );
+        return {
+          member: created,
+          recorded: await models.MemberCreatedEvent.findOne(
+            { member_id: created.id },
+            { transacting },
+          ),
+        };
+      } finally {
+        await transacting.raw('SET SESSION sql_mode = DEFAULT');
+      }
+    });
+    await agent.delete(`/members/${member.id}/`).expectStatus(204);
+
+    assert.equal(recorded?.get('utm_campaign'), campaign.slice(0, 191));
+  });
+
   it('Can read member attributed to a post', async function () {
     const id = fixtureManager.get('posts', 0).id;
     const post = await models.Post.where('id', id).fetch({ require: true });
@@ -4290,6 +4352,99 @@ describe('Members API', function () {
       await agent.delete(`/members/${passVerificationMember.id}`);
       await agent.delete(`/members/${triggerVerificationMember.id}`);
       await agent.delete(`/members/${recoveryMember.id}`);
+    });
+
+    it('Blocks newsletters once enough recent recipients are no longer members', async function () {
+      const { receivedWebhookRequests } = await setupEmailVerificationUtils({
+        adminThreshold: 1000,
+        removedRecipientsThreshold: 2,
+      });
+
+      const recipients = [];
+      for (const n of [1, 2, 3, 4]) {
+        const { body } = await agent
+          .post('/members/')
+          .body({ members: [{ email: `removed-recipient-${n}@example.com` }] })
+          .expectStatus(201);
+        recipients.push(body.members[0]);
+      }
+
+      const { body: sentPostBody } = await agent
+        .post('/posts/')
+        .body({ posts: [{ title: 'Already sent', status: 'draft' }] })
+        .expectStatus(201);
+      const email = await models.Email.add(
+        {
+          post_id: sentPostBody.posts[0].id,
+          uuid: crypto.randomUUID(),
+          status: 'submitted',
+          email_count: recipients.length,
+          recipient_filter: 'all',
+          subject: 'Already sent',
+          html: '<p>Already sent</p>',
+          plaintext: 'Already sent',
+          track_opens: false,
+          submitted_at: new Date(),
+          newsletter_id: newsletters[0].id,
+        },
+        { context: { internal: true } },
+      );
+      const batch = await models.EmailBatch.add(
+        { email_id: email.id, status: 'submitted' },
+        { context: { internal: true } },
+      );
+      for (const member of recipients) {
+        await models.EmailRecipient.add(
+          {
+            email_id: email.id,
+            batch_id: batch.id,
+            member_id: member.id,
+            member_uuid: member.uuid,
+            member_email: member.email,
+            processed_at: new Date(),
+          },
+          { context: { internal: true } },
+        );
+      }
+
+      await agent.delete(`/members/${recipients[0].id}`).expectStatus(204);
+      await agent.delete(`/members/${recipients[1].id}`).expectStatus(204);
+
+      assert.equal(
+        await membersService.verificationTrigger.checkVerificationRequired({
+          newsletterSend: true,
+        }),
+        false,
+        'Two removed recipients should be within the threshold',
+      );
+
+      // Changing a member's address removes the old one just as deleting the member does
+      await agent
+        .put(`/members/${recipients[2].id}/`)
+        .body({ members: [{ email: 'removed-recipient-3-changed@example.com' }] })
+        .expectStatus(200);
+
+      const { body: nextPostBody } = await agent
+        .post('/posts/')
+        .body({ posts: [{ title: 'Next send', status: 'draft' }] })
+        .expectStatus(201);
+      const nextPost = nextPostBody.posts[0];
+
+      const { body } = await agent
+        .put(`/posts/${nextPost.id}/?newsletter=${newsletters[0].get('slug')}`)
+        .body({ posts: [{ ...nextPost, status: 'published' }] })
+        .expectStatus(403);
+
+      assert.equal(body.errors[0].code, 'EMAIL_VERIFICATION_NEEDED');
+      assert.equal(settingsCache.get('email_verification_required'), true);
+      assert.deepEqual(
+        receivedWebhookRequests.map(({ body: webhookBody }) => ({
+          method: webhookBody.method,
+          amountTriggered: webhookBody.amountTriggered,
+          threshold: webhookBody.threshold,
+        })),
+        [{ method: 'removed_recipients', amountTriggered: 3, threshold: 2 }],
+      );
     });
   });
 });

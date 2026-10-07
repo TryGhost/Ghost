@@ -15,7 +15,7 @@ on:
 env:
   FORCE_COLOR: 1
   HEAD_COMMIT: ${{ github.sha }}
-  NODE_VERSION: 22.23.1
+  NODE_VERSION: 22.23.3
   # Disable v8-compile-cache to prevent intermittent V8 deserializer crashes
   # when multiple parallel Nx workers race to read/write shared bytecode cache
   # files. The cache lives in /tmp and is discarded after each run anyway,
@@ -65,7 +65,7 @@ jobs:
       pull-requests: read
     steps:
       - name: Checkout current commit
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ env.HEAD_COMMIT }}
           fetch-depth: 0
@@ -84,7 +84,7 @@ jobs:
       # entries (~7s, and ~670MB of registry metadata pulled into the cache
       # dir) and the post-step saves the new verdict.
       - name: Restore pnpm lockfile verification cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/pnpm/lockfile-verified.jsonl
           key: pnpm-lockfile-verified-${{ hashFiles('pnpm-lock.yaml', 'pnpm-workspace.yaml') }}
@@ -115,7 +115,7 @@ jobs:
 
       - name: Determine changed packages
         if: env.IS_TAG != 'true'
-        uses: AurorNZ/paths-filter@c9dd42e99db87803313ff6f4b1150cc9f6c836af # v5.0.0
+        uses: AurorNZ/paths-filter@ead37777b84ca4c3301a92f453c4040b85287e76 # v5.1.0
         id: changed
         with:
           base: ${{ env.NX_BASE }}
@@ -205,8 +205,8 @@ jobs:
             # affect a running Ghost instance. Test files, test config and
             # docs are excluded — a change confined to them cannot alter
             # product behaviour, so the build + E2E lane is skipped.
-            # ghost/core test paths are listed today; app test paths can be
-            # added here as their conventions are confirmed.
+            # React Admin tests still run through the affected unit, acceptance,
+            # lint and typecheck targets; only the build + E2E lane is skipped.
             e2e:
               - '!**/*.md'
               - '!**/*.mdx'
@@ -215,6 +215,11 @@ jobs:
               - '!ghost/core/test/**'
               - '!ghost/core/vitest.config.ts'
               - '!koenig/*/test/**'
+              - '!apps/admin/src/**/*.test.ts'
+              - '!apps/admin/src/**/*.test.tsx'
+              - '!apps/admin/src/**/*.screen.ts'
+              - '!apps/admin/test-utils/**'
+              - '!apps/admin/vitest.acceptance.config.ts'
               - *renovate_only
             # The Analytics E2E shards normally pull a prebuilt tb-cli image
             # from GHCR, which is only republished from main. Without this the
@@ -222,13 +227,16 @@ jobs:
             # it — the break lands on main and surfaces in someone else's PR.
             tb-cli:
               - 'docker/tb-cli/**'
+            tinybird-slim:
+              - 'docker/tinybird-local-slim/**'
+              - 'compose.dev.analytics.yaml'
 
       - name: Define Node test matrix
         # Node lines the unit / legacy / acceptance suites must keep passing on.
         # test:unit's Nx cache is keyed on `node -v` (nx.json) so each leg runs.
         id: node_matrix
         run: |
-          echo 'matrix=["22.23.1", "24.20.0"]' >> $GITHUB_OUTPUT
+          echo "matrix=[\"${NODE_VERSION}\", \"24.20.0\"]" >> $GITHUB_OUTPUT
 
       - name: Start Nx Cloud CI run
         run: pnpm nx start-ci-run
@@ -244,7 +252,7 @@ jobs:
             echo 'typecheck_projects_str=' >> "$GITHUB_OUTPUT"
             echo 'unit_test_projects_str=' >> "$GITHUB_OUTPUT"
             echo 'affected_i18n_projects=' >> "$GITHUB_OUTPUT"
-            echo 'affected_playwright_projects=[]' >> "$GITHUB_OUTPUT"
+            echo 'affected_playwright_matrix=[]' >> "$GITHUB_OUTPUT"
             echo 'publish_public_apps_matrix=[]' >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -274,6 +282,12 @@ jobs:
             UNIT_TEST_PROJECTS_STR=$(printf '%s\n%s\n' "$UNIT_TEST_PROJECTS_STR" "ghost" | awk 'NF && !seen[$0]++' | paste -sd, -)
           fi
           echo "unit_test_projects_str=$UNIT_TEST_PROJECTS_STR" >> "$GITHUB_OUTPUT"
+          # Browser-only projects don't depend on the Node version; only the primary Node leg runs them.
+          UNIT_TEST_NODE_PROJECTS_STR=""
+          if [[ -n "$UNIT_TEST_PROJECTS_STR" ]]; then
+            UNIT_TEST_NODE_PROJECTS_STR=$(pnpm nx show projects --projects "$UNIT_TEST_PROJECTS_STR" --exclude 'apps/*,tag:playwright' --json | jq -r 'join(",")')
+          fi
+          echo "unit_test_node_projects_str=$UNIT_TEST_NODE_PROJECTS_STR" >> "$GITHUB_OUTPUT"
 
           # "i18n" tag = packages whose source is scanned by @tryghost/i18n's
           # translate:* scripts (not packages that merely import @tryghost/i18n).
@@ -287,22 +301,50 @@ jobs:
             --withTarget test:acceptance \
             --projects 'tag:playwright' \
             --json)
-          echo "affected_playwright_projects=$PLAYWRIGHT_PROJECTS" >> "$GITHUB_OUTPUT"
+          # Split Admin across three runners; every other app keeps a single shard.
+          PLAYWRIGHT_MATRIX=$(jq -c '[.[] | . as $app |
+            (if $app == "@tryghost/admin" then 3 else 1 end) as $total |
+            range(1; $total + 1) | {app: $app, shardIndex: ., shardTotal: $total}
+          ]' <<< "$PLAYWRIGHT_PROJECTS")
+          echo "affected_playwright_matrix=$PLAYWRIGHT_MATRIX" >> "$GITHUB_OUTPUT"
 
           # Build the publish matrix for affected public apps. Matrix context
           # isn't available in a job-level `if:`, so the publish job can't filter
           # itself per-app — instead we emit the matrix here and it skips when
           # the result is `[]`. The publish job's own is_main / event gates keep
           # tags and PRs from publishing regardless of what this lists.
-          PUBLISH_PUBLIC_APPS_MATRIX=$(node scripts/build-public-apps-matrix.js "$AFFECTED_PROJECTS")
+          # Publishing always uses real affected-ness, even when a CI file change
+          # widened the test lanes above to every project.
+          PUBLISH_PROJECTS="$AFFECTED_PROJECTS"
+          if [[ -z "$AFFECTED_ARG" ]]; then
+            PUBLISH_PROJECTS='[]'
+            if [[ "${{ env.IS_TAG }}" != 'true' ]]; then
+              PUBLISH_PROJECTS=$(pnpm nx show projects --affected --json)
+            fi
+          fi
+          PUBLISH_PUBLIC_APPS_MATRIX=$(node scripts/build-public-apps-matrix.js "$PUBLISH_PROJECTS")
           echo "publish_public_apps_matrix=$PUBLISH_PUBLIC_APPS_MATRIX" >> "$GITHUB_OUTPUT"
+
+      # Per-file e2e durations saved by job_e2e_timings on main. Read once here so
+      # every shard plans from the same timings, even if main saves newer ones mid-run.
+      - name: Restore e2e timings
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: e2e-timings.json
+          key: e2e-timings-${{ github.run_id }}
+          restore-keys: e2e-timings-
+
+      - name: Read e2e timings
+        id: e2e_timings
+        run: echo "json=$(jq -c . e2e-timings.json 2>/dev/null || echo '{}')" >> "$GITHUB_OUTPUT"
 
     outputs:
       affected_projects: ${{ steps.affected.outputs.affected_projects }}
       affected_projects_str: ${{ steps.affected.outputs.affected_projects_str }}
       typecheck_projects_str: ${{ steps.affected.outputs.typecheck_projects_str }}
       unit_test_projects_str: ${{ steps.affected.outputs.unit_test_projects_str }}
-      affected_playwright_projects: ${{ steps.affected.outputs.affected_playwright_projects }}
+      unit_test_node_projects_str: ${{ steps.affected.outputs.unit_test_node_projects_str }}
+      affected_playwright_matrix: ${{ steps.affected.outputs.affected_playwright_matrix }}
       publish_public_apps_matrix: ${{ steps.affected.outputs.publish_public_apps_matrix }}
       changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
       changed_core: ${{ steps.changed.outputs.core }}
@@ -310,6 +352,7 @@ jobs:
       changed_docs: ${{ steps.changed.outputs.docs }}
       changed_package_standards: ${{ steps.changed.outputs.package-standards }}
       changed_tb_cli: ${{ steps.changed.outputs.tb-cli }}
+      changed_tinybird_slim: ${{ steps.changed.outputs.tinybird-slim }}
       # Single gate for the build + browser-E2E lane. True for tags, or when a
       # changed file could affect a running Ghost instance (see the `e2e` path
       # filter above). A test-only / docs-only change keeps this false.
@@ -329,6 +372,7 @@ jobs:
       node_version: ${{ env.NODE_VERSION }}
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
       nx_base: ${{ env.NX_BASE }}
+      e2e_timings: ${{ steps.e2e_timings.outputs.json }}
 
   job_app_version_bump_check:
     name: Check app version bump
@@ -337,7 +381,7 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Checkout PR head commit
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
@@ -375,6 +419,9 @@ jobs:
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
         run: node scripts/change-check.js
 
+      - name: Check private packages are excluded from versioning
+        run: node scripts/check-versioning-ignore.js
+
   job_migration_integrity_check:
     name: Check migration integrity
     runs-on: ubuntu-latest
@@ -382,7 +429,7 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Checkout PR head commit
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
@@ -408,7 +455,7 @@ jobs:
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
     name: Lint
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1000
       - uses: ./.github/actions/setup-node-pnpm
@@ -416,7 +463,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           trust-lockfile: 'true'
 
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ghost/**/.eslintcache
           key: eslint-cache
@@ -433,7 +480,7 @@ jobs:
       - name: Check formatting
         run: pnpm format:check
 
-      - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
+      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -446,9 +493,9 @@ jobs:
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_docs == 'true'
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -464,7 +511,7 @@ jobs:
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_package_standards == 'true'
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - uses: ./.github/actions/setup-node-pnpm
         with:
@@ -487,7 +534,7 @@ jobs:
       needs.job_setup.outputs.is_tag == 'true'
       || needs.job_setup.outputs.changed_i18n_apps == 'true'
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -510,7 +557,7 @@ jobs:
       CI: true
       COVERAGE: ${{ needs.job_setup.outputs.coverage_enabled }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -525,13 +572,13 @@ jobs:
         if: needs.job_setup.outputs.coverage_enabled == 'true'
         run: pnpm ember coverage-merge
         working-directory: apps/ember-admin
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: needs.job_setup.outputs.coverage_enabled == 'true'
         with:
           name: admin-coverage
           path: apps/*/coverage/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
+      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -550,7 +597,7 @@ jobs:
     if: (needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_development == 'true') || needs.job_setup.outputs.has_perf_tests_label == 'true'
     name: Performance tests
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # Boot activates the default theme, which is a submodule
           submodules: true
@@ -576,6 +623,12 @@ jobs:
       - name: Run hyperfine on boot
         working-directory: ghost/core
         run: hyperfine --show-output --warmup 3 'GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node index.js' --export-json boot-perf.json
+
+      # Native modules like sharp cost memory in every process, so they should
+      # load on first use. The list lives in scripts/lib/boot-modules.js
+      - name: Check boot skips lazy-loaded modules
+        working-directory: ghost/core
+        run: GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node --import ../../scripts/assert-boot-skips-modules.js index.js
 
       - name: Report result
         uses: ./.github/actions/report-boot-benchmark
@@ -607,7 +660,7 @@ jobs:
       packages: read
     steps:
       # Only for .github/actions/load-docker-image; nothing is built from source here.
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
@@ -690,9 +743,14 @@ jobs:
       fail-fast: false
       matrix:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
+    env:
+      # Only the primary Node leg is instrumented, as in the acceptance job —
+      # the other leg covers the same code, and would collide on the
+      # unit-coverage artifact name.
+      COVERAGE_ENABLED: ${{ needs.job_setup.outputs.coverage_enabled == 'true' && matrix.node == needs.job_setup.outputs.node_version }}
     name: Unit tests (Node ${{ matrix.node }})
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1000
       - uses: ./.github/actions/setup-node-pnpm
@@ -700,8 +758,11 @@ jobs:
           node-version: ${{ matrix.node }}
           trust-lockfile: 'true'
           # Without --no-runtime, pnpm links the devEngines Node and every
-          # leg of this matrix runs that same version.
-          install-args: --no-runtime
+          # leg of this matrix runs that same version. With it, pnpm still keys
+          # cached native builds by the devEngines Node major, so a build from
+          # another leg can be reused against the wrong ABI; disable the
+          # side-effects cache so native modules build for the running Node.
+          install-args: --no-runtime --config.side-effects-cache=false
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
@@ -722,9 +783,37 @@ jobs:
         # its suites but never exits (lingering worker/handle) would otherwise
         # wedge the job until the 6h runner limit. Killing it turns the hang
         # into a retriable failure. A full cold (uncached) run takes ~10min.
+        #
+        # On the instrumented leg, ghost/core runs test:ci:unit instead, which
+        # writes coverage-unit/cobertura-coverage.xml. It's an Nx output, so a
+        # cache hit restores the report rather than skipping it. The other
+        # projects run test:unit as usual.
+        #
+        # Non-primary Node legs skip browser-only projects (see
+        # unit_test_node_projects_str in job_setup).
         run: |
+          if [ "${{ matrix.node }}" = "${{ needs.job_setup.outputs.node_version }}" ]; then
+            PROJECTS="${{ needs.job_setup.outputs.unit_test_projects_str }}"
+          else
+            PROJECTS="${{ needs.job_setup.outputs.unit_test_node_projects_str }}"
+          fi
+          if [ -z "$PROJECTS" ]; then
+            echo "No Node-dependent projects to test on this leg"
+            exit 0
+          fi
+          GHOST_COVERAGE=false
+          if [ "$COVERAGE_ENABLED" = "true" ] && [[ ",${PROJECTS}," == *",ghost,"* ]]; then
+            GHOST_COVERAGE=true
+          fi
+
           for attempt in 1 2 3; do
-            timeout 25m pnpm nx run-many -t test:unit -p "${{ needs.job_setup.outputs.unit_test_projects_str }}" && exit 0
+            if [ "$GHOST_COVERAGE" = "true" ]; then
+              timeout 25m pnpm nx run-many -t test:unit -p "$PROJECTS" --exclude ghost \
+                && timeout 25m pnpm nx run ghost:test:ci:unit \
+                && exit 0
+            else
+              timeout 25m pnpm nx run-many -t test:unit -p "$PROJECTS" && exit 0
+            fi
             if [ "${attempt}" -lt 3 ]; then
               echo "::warning::Unit tests attempt ${attempt} failed — retrying"
             else
@@ -746,7 +835,15 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
+      # Absent when ghost/core wasn't among the affected projects; Codecov
+      # carries the unit-tests flag forward from the last report instead.
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: env.COVERAGE_ENABLED == 'true' && hashFiles('ghost/core/coverage-unit/cobertura-coverage.xml') != ''
+        with:
+          name: unit-coverage
+          path: ghost/core/coverage-unit/cobertura-coverage.xml
+
+      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -759,7 +856,7 @@ jobs:
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.typecheck_projects_str != ''
     name: Typecheck
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1000
       - uses: ./.github/actions/setup-node-pnpm
@@ -773,7 +870,7 @@ jobs:
           FORCE_COLOR: 0
           NX_SKIP_LOG_GROUPING: true
 
-      - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
+      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -788,7 +885,7 @@ jobs:
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     services:
       mysql:
-        image: mysql:8.0
+        image: mysql:8.0@sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b
         env:
           MYSQL_DATABASE: ghost_testing
           MYSQL_ROOT_PASSWORD: root
@@ -804,7 +901,7 @@ jobs:
           --health-timeout=5s
           --health-retries=60
       redis:
-        image: redis:7.4@sha256:71da9275c5f3fcb97d0fa0c8c5b36cc995327265420f17a04bfd544f458059f7
+        image: redis:7.4@sha256:c6eabf748fc7a61dbb5a705c78bcf3d6377b1127a97d0ce965c11c44ba46896f
         ports:
           - 6379:6379
         options: >-
@@ -822,14 +919,17 @@ jobs:
       COVERAGE_ENABLED: ${{ needs.job_setup.outputs.coverage_enabled == 'true' && matrix.node == needs.job_setup.outputs.node_version }}
     name: Acceptance tests (Node ${{ matrix.node }}, mysql8)
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ matrix.node }}
           trust-lockfile: 'true'
           # Without --no-runtime, pnpm links the devEngines Node and every
-          # leg of this matrix runs that same version.
-          install-args: --no-runtime
+          # leg of this matrix runs that same version. With it, pnpm still keys
+          # cached native builds by the devEngines Node major, so a build from
+          # another leg can be reused against the wrong ABI; disable the
+          # side-effects cache so native modules build for the running Node.
+          install-args: --no-runtime --config.side-effects-cache=false
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
@@ -891,7 +991,7 @@ jobs:
             exit 1
           fi
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: env.COVERAGE_ENABLED == 'true'
         with:
           name: e2e-coverage
@@ -899,7 +999,7 @@ jobs:
             ghost/*/coverage-e2e/cobertura-coverage.xml
             ghost/*/coverage-integration/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
+      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -912,7 +1012,7 @@ jobs:
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     services:
       mysql:
-        image: mysql:8.0
+        image: mysql:8.0@sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b
         env:
           MYSQL_DATABASE: ghost_testing
           MYSQL_ROOT_PASSWORD: root
@@ -930,7 +1030,7 @@ jobs:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
     name: Legacy tests (Node ${{ matrix.node }}, mysql8)
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: true
       - uses: ./.github/actions/setup-node-pnpm
@@ -938,8 +1038,11 @@ jobs:
           node-version: ${{ matrix.node }}
           trust-lockfile: 'true'
           # Without --no-runtime, pnpm links the devEngines Node and every
-          # leg of this matrix runs that same version.
-          install-args: --no-runtime
+          # leg of this matrix runs that same version. With it, pnpm still keys
+          # cached native builds by the devEngines Node major, so a build from
+          # another leg can be reused against the wrong ABI; disable the
+          # side-effects cache so native modules build for the running Node.
+          install-args: --no-runtime --config.side-effects-cache=false
 
       - name: Set env vars (MySQL)
         run: |
@@ -963,7 +1066,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
+      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -975,16 +1078,16 @@ jobs:
     # are not starved on the default runner. See job_acceptance-tests above.
     runs-on: ${{ (github.repository_owner == 'TryGhost' && github.repository != 'TryGhost/Ghost' && matrix.app == '@tryghost/admin') && 'ubuntu-latest-4-cores' || 'ubuntu-latest' }}
     needs: [job_setup]
-    if: needs.job_setup.outputs.affected_playwright_projects != '[]'
-    name: App Playwright Acceptance Tests
+    if: needs.job_setup.outputs.affected_playwright_matrix != '[]'
+    name: App Playwright Acceptance Tests (${{ matrix.app }} ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     strategy:
       fail-fast: false
       matrix:
-        app: ${{ fromJSON(needs.job_setup.outputs.affected_playwright_projects) }}
+        include: ${{ fromJSON(needs.job_setup.outputs.affected_playwright_matrix) }}
     env:
       CI: true
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -997,6 +1100,8 @@ jobs:
 
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
+        with:
+          browsers: ${{ matrix.app == '@tryghost/admin' && 'chromium' || 'chromium firefox webkit' }}
 
       # Cache the msttcorefonts .ttf files so only a cache miss hits the
       # SourceForge download that regularly hangs the koenig-lexical job. Save
@@ -1005,7 +1110,7 @@ jobs:
       - name: Restore MS core fonts cache
         if: matrix.app == '@tryghost/koenig-lexical'
         id: mscorefonts-cache
-        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/msttcorefonts
           key: msttcorefonts-ttf-v1
@@ -1043,7 +1148,7 @@ jobs:
           sudo fc-cache -f
       - name: Save MS core fonts cache
         if: matrix.app == '@tryghost/koenig-lexical' && steps.mscorefonts-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/msttcorefonts
           key: msttcorefonts-ttf-v1
@@ -1053,7 +1158,7 @@ jobs:
         run: pnpm exec playwright install-deps firefox
 
       - name: Run Playwright tests
-        run: pnpm nx run ${{ matrix.app }}:test:acceptance
+        run: pnpm nx run ${{ matrix.app }}:test:acceptance --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
       - name: Get App Name
         if: always()
@@ -1075,9 +1180,9 @@ jobs:
 
       - name: Upload test results
         if: always() && steps.app_name.outputs.has_report == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: ${{ steps.app_name.outputs.name }}-playwright-report
+          name: ${{ steps.app_name.outputs.name }}-playwright-report-${{ matrix.shardIndex }}
           path: ${{ steps.app_name.outputs.root }}/playwright-report
           retention-days: 30
 
@@ -1086,14 +1191,32 @@ jobs:
       # playwright-report; upload them so failures are debuggable from CI.
       - name: Upload failure screenshots
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: ${{ steps.app_name.outputs.name }}-failure-screenshots
+          name: ${{ steps.app_name.outputs.name }}-failure-screenshots-${{ matrix.shardIndex }}
           path: ${{ steps.app_name.outputs.root }}/**/__screenshots__/**
           if-no-files-found: ignore
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
+      - name: Summarize Admin acceptance results
+        if: always() && matrix.app == '@tryghost/admin'
+        # Reporting must not change the test step's result if the report is incomplete.
+        continue-on-error: true
+        run: |
+          node scripts/summarize-admin-acceptance.js \
+            --report=apps/admin/test-results/acceptance.json \
+            --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Admin acceptance results
+        if: always() && matrix.app == '@tryghost/admin'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: admin-acceptance-results-${{ matrix.shardIndex }}
+          path: apps/admin/test-results/acceptance.json
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1123,7 +1246,7 @@ jobs:
           - scenario: latest-release
             node: ${{ needs.job_setup.outputs.node_version }}
     steps:
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         env:
           FORCE_COLOR: 0
         with:
@@ -1136,7 +1259,7 @@ jobs:
       # Ghost-CLI still requires the package/ prefix; switch this to
       # ghost-release-tarball once it accepts a prefix-free archive too.
       - name: Download npm tarball
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: ghost-npm-tarball
 
@@ -1147,7 +1270,7 @@ jobs:
 
       - name: Save Ghost CLI Debug Logs
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ghost-cli-debug-logs-${{ matrix.scenario }}-${{ matrix.node }}
           path: /home/runner/.ghost/logs/
@@ -1185,7 +1308,7 @@ jobs:
         run: |
           [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
 
-      - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
+      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1198,7 +1321,7 @@ jobs:
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
     name: Stripe fixture checks
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -1210,7 +1333,7 @@ jobs:
       - name: Check Stripe fixtures
         run: pnpm nx run @tryghost/e2e:test:fixtures
 
-      - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
+      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1223,9 +1346,11 @@ jobs:
     # Root of the build + browser-E2E lane (see run_e2e in job_setup).
     if: needs.job_setup.outputs.run_e2e == 'true'
     runs-on: ubuntu-latest
+    env:
+      IS_SHIPPING: ${{ github.repository == 'TryGhost/Ghost' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag') && 'true' || '' }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
@@ -1238,39 +1363,29 @@ jobs:
           # deps, so a filtered install would miss pieces — install the full workspace.
 
       - name: Build admin
-        # IS_SHIPPING enables the Sentry vite plugin in koenig-lexical: it
-        # injects debug IDs into the built editor bundles and uploads their
-        # sourcemaps. Only shippable builds (main + tags in the canonical
-        # repo) get it — debug-ID artifact bundles are release-agnostic, so
-        # per-merge uploads are deduplicated by content and create no
-        # release noise in Sentry.
-        env:
-          IS_SHIPPING: ${{ github.repository == 'TryGhost/Ghost' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag') && 'true' || '' }}
-          VITE_SENTRY_AUTH_TOKEN: ${{ secrets.VITE_SENTRY_AUTH_TOKEN }}
-        run: |
-          # The Sentry plugin only warns when the token is missing, which
-          # would silently skip the upload AND poison the Nx cache with a
-          # never-uploaded debug ID — fail loudly instead.
-          if [ -n "$IS_SHIPPING" ] && [ -z "$VITE_SENTRY_AUTH_TOKEN" ]; then
-            echo "::error::IS_SHIPPING is set but VITE_SENTRY_AUTH_TOKEN is empty — Koenig sourcemaps would not reach Sentry"
-            exit 1
-          fi
-          # Builds apps/admin/dist AND ghost/core/core/built/admin (asset-delivery).
-          pnpm nx run @tryghost/admin:build
+        # IS_SHIPPING enables the Sentry vite plugins in apps/admin and
+        # koenig-lexical, which inject debug IDs into the built bundles. Only
+        # shippable builds (main + tags in the canonical repo) get it. The maps
+        # are uploaded by job_upload_sourcemaps so Sentry can't block the build.
+        # Builds apps/admin/dist, ghost/core/core/built/admin (asset-delivery),
+        # and ghost/core/core/built/embed-renderer (separate-origin previews).
+        run: pnpm nx run @tryghost/admin:build
 
-      # The built admin (ghost/core/core/built/admin) is consumed by both job_pack
-      # (packed into the Ghost-CLI archive) and job_docker (COPYed into the full
-      # image). Ship it as a tarball to preserve file modes and speed transfer.
+      # The built admin and embed renderer are consumed by both job_pack (packed
+      # into the Ghost-CLI archive) and job_docker (COPYed into the full image).
+      # Ship them as a tarball to preserve file modes and speed transfer.
       #
-      # --exclude '*.map': admin sourcemaps (~60MB) are uploaded to Sentry during
-      # the build (IS_SHIPPING), not shipped in the image. ghost/core's `files`
-      # field strips them from the Ghost-CLI archive (!core/built/**/*.map), so
-      # excluding them here matches that for the Docker image too.
+      # --exclude '*.map': sourcemaps are not shipped in the image. Shipping
+      # builds (IS_SHIPPING) upload the React Admin and Koenig maps to Sentry
+      # in job_upload_sourcemaps; the Ember admin's maps are not uploaded. ghost/core's
+      # `files` field strips them from the Ghost-CLI archive
+      # (!core/built/**/*.map), so excluding them here matches that for the
+      # Docker image too.
       - name: Pack admin build
-        run: tar --exclude='*.map' -czf admin-build.tar.gz -C ghost/core/core/built admin
+        run: tar --exclude='*.map' -czf admin-build.tar.gz -C ghost/core/core/built admin embed-renderer
 
       - name: Upload admin build artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: admin-build
           path: admin-build.tar.gz
@@ -1279,14 +1394,25 @@ jobs:
 
       - name: Upload admin artifact for CD
         id: upload-admin
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: admin-build-cd
           path: apps/admin/dist
           retention-days: 7
           if-no-files-found: error
 
-      - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
+      # job_upload_sourcemaps uploads these with the React Admin maps in
+      # admin-build-cd.
+      - name: Upload Koenig build for Sentry
+        if: env.IS_SHIPPING == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: koenig-build-sentry
+          path: koenig/koenig-lexical/dist
+          retention-days: 1
+          if-no-files-found: error
+
+      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1295,6 +1421,57 @@ jobs:
 
     outputs:
       admin-artifact-id: ${{ steps.upload-admin.outputs.artifact-id }}
+
+  # Its own job so nothing downstream of job_build_admin waits on Sentry. Not
+  # required: a failed upload only costs symbolication. Debug-ID bundles dedupe
+  # by content, so re-uploading Nx-cached output is cheap and retries any
+  # earlier failed upload.
+  job_upload_sourcemaps:
+    name: Upload sourcemaps to Sentry
+    needs: [job_build_admin]
+    if: github.repository == 'TryGhost/Ghost' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag')
+    runs-on: ubuntu-slim
+    timeout-minutes: 10
+    continue-on-error: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          trust-lockfile: 'true'
+          install-args: --filter @internal/scripts
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: admin-build-cd
+          path: apps/admin/dist
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: koenig-build-sentry
+          path: koenig/koenig-lexical/dist
+
+      - name: Upload sourcemaps to Sentry
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.VITE_SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ghost-foundation
+          SENTRY_PROJECT: admin
+        run: |
+          if [ -z "$SENTRY_AUTH_TOKEN" ]; then
+            echo "::error::VITE_SENTRY_AUTH_TOKEN is empty — Admin and Koenig sourcemaps were not uploaded to Sentry"
+            exit 1
+          fi
+          # Admin's Sentry client reports the server version job_docker bakes
+          # into the image.
+          VERSION=$(jq -r .version ghost/core/package.json)
+          if [ "$GITHUB_REF_TYPE" != "tag" ]; then
+            VERSION="${VERSION}+${GITHUB_SHA:0:7}"
+          fi
+          node scripts/upload-sentry-sourcemaps.ts --release "ghost@${VERSION}" apps/admin/dist koenig/koenig-lexical/dist
 
   job_pack:
     name: Build Ghost-CLI archive
@@ -1305,7 +1482,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           # Themes (content/themes/casper|source) are submodules packed into the
@@ -1341,12 +1518,13 @@ jobs:
           pnpm --filter ghost run build:assets
 
       - name: Download admin build
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: admin-build
 
       - name: Extract admin build
-        # The archive includes core/built/admin via ghost/core's files allowlist.
+        # The archive includes core/built/admin and core/built/embed-renderer via
+        # ghost/core's files allowlist.
         run: |
           mkdir -p ghost/core/core/built
           tar -xzf admin-build.tar.gz -C ghost/core/core/built
@@ -1360,7 +1538,7 @@ jobs:
       # the release asset; the -npm one carries the package/ prefix npm and
       # today's Ghost-CLI need, and goes away with the npm publish in 7.0.
       - name: Upload release tarball
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ghost-release-tarball
           path: |
@@ -1370,14 +1548,14 @@ jobs:
           if-no-files-found: error
 
       - name: Upload npm tarball
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ghost-npm-tarball
           path: ghost/core/ghost-*-npm.tgz
           retention-days: 7
           if-no-files-found: error
 
-      - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
+      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1400,7 +1578,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           # The deploy stage packs content/themes/casper|source (submodules).
@@ -1461,11 +1639,14 @@ jobs:
         uses: ./.github/actions/setup-docker-registry-mirrors
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+        with:
+          # Skip the post-job `docker buildx rm` (~40s); the runner is ephemeral.
+          cleanup: false
 
       - name: Log in to GitHub Container Registry
         if: steps.strategy.outputs.should-push == 'true'
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -1473,7 +1654,10 @@ jobs:
 
       - name: Docker meta (core)
         id: meta-core
-        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        env:
+          # Tag PR builds `sha-<short>` with the PR head, not the synthetic merge commit
+          DOCKER_METADATA_PR_HEAD_SHA: 'true'
         with:
           images: ${{ steps.strategy.outputs.image-core-name }}
           tags: |
@@ -1491,7 +1675,9 @@ jobs:
 
       - name: Docker meta (full)
         id: meta-full
-        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        env:
+          DOCKER_METADATA_PR_HEAD_SHA: 'true'
         with:
           images: ${{ steps.strategy.outputs.image-full-name }}
           tags: |
@@ -1508,7 +1694,7 @@ jobs:
             org.opencontainers.image.vendor=TryGhost
 
       - name: Build & push core image
-        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         env:
           BUILDKIT_PROGRESS: plain
         with:
@@ -1548,7 +1734,7 @@ jobs:
 
       - name: Upload core image artifact
         if: steps.strategy.outputs.use-artifact == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: docker-image-core
           path: ${{ runner.temp }}/docker-image-core.tar.gz
@@ -1566,7 +1752,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download admin build
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: admin-build
           # Outside the build context: a stray admin-build.tar.gz in the repo root
@@ -1575,20 +1761,21 @@ jobs:
           path: ${{ runner.temp }}/admin-artifact
 
       - name: Extract admin build into context
-        # The full stage COPYs ghost/core/core/built/admin from the context; the
-        # deploy stage excludes core/built entirely, so admin never leaks into core
-        # and adding it is the only context change between the core and full builds.
+        # The full stage COPYs the admin and embed renderer from the context; the
+        # deploy stage excludes core/built entirely, so neither leaks into core and
+        # adding them is the only context change between the core and full builds.
         run: |
           mkdir -p ghost/core/core/built
           tar -xzf "${RUNNER_TEMP}/admin-artifact/admin-build.tar.gz" -C ghost/core/core/built
 
       - name: Build & push full image
-        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        id: build-full
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         env:
           BUILDKIT_PROGRESS: plain
         with:
-          # Same repo-root context as core (admin now present at
-          # ghost/core/core/built/admin, excluded by the deploy stage) so the
+          # Same repo-root context as core (admin and embed renderer now present
+          # under ghost/core/core/built, excluded by the deploy stage) so the
           # deploy/install/build layers cache-hit from the core build above.
           context: .
           file: Dockerfile.production
@@ -1619,7 +1806,7 @@ jobs:
 
       - name: Upload image artifact
         if: steps.strategy.outputs.use-artifact == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: docker-image-production
           path: docker-image-production.tar.gz
@@ -1712,7 +1899,7 @@ jobs:
       # and let stray build:production files under apps/*/umd leak into the image.
       - name: Download public app artifacts (e2e)
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: e2e-public-apps
           path: ${{ runner.temp }}/e2e-context
@@ -1733,7 +1920,7 @@ jobs:
       - name: Set up Docker Buildx (e2e host driver)
         if: steps.strategy.outputs.use-artifact == 'true'
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
         id: buildx-e2e-host
         with:
           driver: docker
@@ -1741,7 +1928,9 @@ jobs:
       - name: Docker meta (e2e)
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
         id: meta-e2e
-        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        env:
+          DOCKER_METADATA_PR_HEAD_SHA: 'true'
         with:
           images: ${{ steps.strategy.outputs.image-e2e-name }}
           tags: |
@@ -1756,7 +1945,7 @@ jobs:
 
       - name: Build & push E2E image
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         env:
           BUILDKIT_PROGRESS: plain
         with:
@@ -1794,7 +1983,7 @@ jobs:
       - name: Upload E2E image artifact
         if: steps.strategy.outputs.use-artifact == 'true'
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: docker-image-e2e
           path: docker-image-e2e.tar.gz
@@ -1889,7 +2078,7 @@ jobs:
       - name: Build dependency size report
         if: steps.strategy.outputs.should-push == 'true'
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
           file: Dockerfile.production
@@ -1902,7 +2091,7 @@ jobs:
       - name: Upload dependency size report
         if: steps.strategy.outputs.should-push == 'true'
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: image-report
           path: ${{ runner.temp }}/image-report/image-report.json
@@ -1913,7 +2102,7 @@ jobs:
       - name: Set up Node.js
         if: steps.strategy.outputs.should-push == 'true'
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -1947,6 +2136,7 @@ jobs:
 
     outputs:
       use-artifact: ${{ steps.strategy.outputs.use-artifact }}
+      image-digest: ${{ steps.build-full.outputs.digest }}
       image-core-tags: ${{ steps.meta-core.outputs.tags }}
       image-e2e-name: ${{ steps.strategy.outputs.image-e2e-name }}
       image-e2e-tags: ${{ steps.meta-e2e.outputs.tags }}
@@ -1966,7 +2156,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - uses: ./.github/actions/setup-node-pnpm
         with:
@@ -1988,7 +2178,7 @@ jobs:
           ls -lh e2e-public-apps.tar.gz
 
       - name: Upload public app artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: e2e-public-apps
           path: e2e-public-apps.tar.gz
@@ -2011,10 +2201,12 @@ jobs:
       #
       # Its GHCR package is internal (the upstream licence only permits
       # distribution within our own organization), so it is unreadable from a
-      # cross-repo PR's scoped token — those runs stay on the upstream image.
+      # cross-repo PR's scoped token — those runs stay on the upstream image
+      # unless they change the slim image and build it locally below.
       # infra-up.sh falls back on a failed pull regardless, so an unexpected
       # permission gap degrades rather than breaks.
-      GHOST_E2E_TINYBIRD_SLIM: ${{ github.repository_owner == 'TryGhost' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+      GHOST_E2E_TINYBIRD_SLIM: ${{ needs.job_setup.outputs.changed_tinybird_slim == 'true' || (github.repository_owner == 'TryGhost' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)) }}
+      GHOST_E2E_TINYBIRD_SLIM_IMAGE: ${{ needs.job_setup.outputs.changed_tinybird_slim == 'true' && 'tinybird-local-slim:e2e' || 'ghcr.io/tryghost/tinybird-local-slim:latest' }}
     strategy:
       fail-fast: true
       matrix:
@@ -2081,15 +2273,15 @@ jobs:
             shardTotal: 2
     steps:
       - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Docker Registry Mirrors
         uses: ./.github/actions/setup-docker-registry-mirrors
 
       - name: Log in to GitHub Container Registry
         # Needed to read the internal tinybird-local-slim package.
-        if: matrix.analytics == 'true' && env.GHOST_E2E_TINYBIRD_SLIM == 'true'
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        if: matrix.analytics == 'true' && env.GHOST_E2E_TINYBIRD_SLIM == 'true' && needs.job_setup.outputs.changed_tinybird_slim != 'true'
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         continue-on-error: true
         with:
           registry: ghcr.io
@@ -2124,6 +2316,20 @@ jobs:
           docker build --tag "$COMPOSE_IMAGE" --file docker/tb-cli/Dockerfile .
           docker builder prune --all --force
 
+      - name: Build changed Tinybird slim image
+        if: matrix.analytics == 'true' && needs.job_setup.outputs.changed_tinybird_slim == 'true'
+        # Build before loading the Ghost image or installing dependencies: the
+        # upstream layers need several GB that can be reclaimed after flattening.
+        # This image stays on the runner; only the main publish workflow pushes it.
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup
+          upstream_ref=$(grep -oE 'tinybirdco/tinybird-local:[^ ]+' compose.dev.analytics.yaml)
+          docker build --platform linux/amd64 \
+            --build-arg "TINYBIRD_LOCAL_REF=$upstream_ref" \
+            --file docker/tinybird-local-slim/Dockerfile \
+            --tag "$GHOST_E2E_TINYBIRD_SLIM_IMAGE" .
+          docker builder prune --all --force
+
       - name: Load Image
         uses: ./.github/actions/load-docker-image
         id: load
@@ -2154,6 +2360,27 @@ jobs:
           GHOST_E2E_ANALYTICS: ${{ matrix.analytics }}
         run: bash ./e2e/scripts/prepare-ci-e2e-job.sh
 
+      # Splits the main project by recorded file duration rather than test count;
+      # falls back to an estimate from test counts until main has recorded timings.
+      - name: Plan shard test files
+        if: matrix.projects == 'main'
+        working-directory: e2e
+        env:
+          E2E_TIMINGS: ${{ needs.job_setup.outputs.e2e_timings }}
+          SHARD_INDEX: ${{ matrix.shardIndex }}
+          SHARD_TOTAL: ${{ matrix.shardTotal }}
+        run: |
+          printf '%s' "$E2E_TIMINGS" > "$RUNNER_TEMP/e2e-timings.json"
+          pnpm exec playwright test --list --project=main --reporter=json > "$RUNNER_TEMP/e2e-list.json"
+          mkdir -p shard-plan
+          node ../scripts/e2e-shards.ts plan \
+            --list "$RUNNER_TEMP/e2e-list.json" \
+            --timings "$RUNNER_TEMP/e2e-timings.json" \
+            --shard-index "$SHARD_INDEX" \
+            --shard-total "$SHARD_TOTAL" \
+            --out shard-plan/tests.txt
+          echo "E2E_TEST_LIST=shard-plan/tests.txt" >> "$GITHUB_ENV"
+
       - name: Run e2e tests in Playwright container
         env:
           TEST_WORKERS_COUNT: 1
@@ -2176,7 +2403,7 @@ jobs:
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: blob-report-${{ matrix.projectName }}-${{ matrix.shardIndex }}
           path: e2e/blob-report
@@ -2184,13 +2411,22 @@ jobs:
 
       - name: Upload test results artifacts
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: test-results-${{ matrix.projectName }}-${{ matrix.shardIndex }}
           path: e2e/test-results
           retention-days: 7
 
-      - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
+      - name: Upload JSON report for shard timings
+        if: success() && matrix.projects == 'main' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: e2e-json-report-main-${{ matrix.shardIndex }}
+          path: e2e/json-report/report.json
+          retention-days: 1
+          if-no-files-found: ignore
+
+      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -2210,7 +2446,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - uses: ./.github/actions/setup-node-pnpm
         with:
@@ -2218,7 +2454,7 @@ jobs:
           trust-lockfile: 'true'
 
       - name: Download blob reports from GitHub Actions Artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         continue-on-error: true
         with:
           path: e2e/all-blob-reports
@@ -2236,7 +2472,7 @@ jobs:
 
       - name: Download test results from GitHub Actions Artifacts
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           path: e2e/all-test-results
           pattern: test-results-*
@@ -2249,7 +2485,7 @@ jobs:
 
       - name: Upload HTML report
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: playwright-report
           path: e2e/playwright-report
@@ -2257,7 +2493,7 @@ jobs:
 
       - name: Upload merged test results
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: test-results
           path: e2e/all-test-results
@@ -2281,17 +2517,60 @@ jobs:
           REPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n playwright-report -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR\"
           \`\`\`"
 
+  job_e2e_timings:
+    name: Record E2E timings
+    needs: [job_e2e_tests]
+    # Failed shards upload no report; recordTimings keeps their files' previous times.
+    if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main' && (needs.job_e2e_tests.result == 'success' || needs.job_e2e_tests.result == 'failure')
+    runs-on: ubuntu-slim
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: scripts/e2e-shards.ts
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: e2e-json-report-main-*
+          path: e2e-reports
+
+      - name: Restore previous e2e timings
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: e2e-timings.json
+          key: e2e-timings-${{ github.run_id }}
+          restore-keys: e2e-timings-
+
+      - name: Record e2e timings
+        run: |
+          mkdir -p e2e-reports
+          node scripts/e2e-shards.ts record \
+            --reports e2e-reports \
+            --timings e2e-timings.json \
+            --complete "${{ needs.job_e2e_tests.result == 'success' }}" \
+            --out e2e-timings.json
+
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: e2e-timings.json
+          key: e2e-timings-${{ github.run_id }}-${{ github.run_attempt }}
+
   job_coverage:
     name: Coverage
     needs: [job_setup, job_admin-tests, job_acceptance-tests, job_unit-tests]
     if: always() && needs.job_setup.outputs.coverage_enabled == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Restore Admin coverage
         if: contains(needs.job_admin-tests.result, 'success')
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: admin-coverage
 
@@ -2302,7 +2581,7 @@ jobs:
 
       - name: Upload Admin test coverage
         if: contains(needs.job_admin-tests.result, 'success')
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           flags: admin-tests
           files: apps/ember-admin/coverage/cobertura-coverage.xml
@@ -2310,7 +2589,7 @@ jobs:
 
       - name: Restore E2E coverage
         if: contains(needs.job_acceptance-tests.result, 'success')
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: e2e-coverage
 
@@ -2321,10 +2600,28 @@ jobs:
 
       - name: Upload E2E test coverage
         if: contains(needs.job_acceptance-tests.result, 'success')
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           flags: e2e-tests
           files: ghost/core/coverage-e2e/cobertura-coverage.xml,ghost/core/coverage-integration/cobertura-coverage.xml
+          disable_search: true
+
+      # The unit job only uploads this artifact when ghost/core was among the
+      # affected projects, so a missing artifact is expected, not an error.
+      - name: Restore Unit coverage
+        if: contains(needs.job_unit-tests.result, 'success')
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: unit-coverage
+          path: ghost/core/coverage-unit
+
+      - name: Upload Unit test coverage
+        if: contains(needs.job_unit-tests.result, 'success') && hashFiles('ghost/core/coverage-unit/cobertura-coverage.xml') != ''
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          flags: unit-tests
+          files: ghost/core/coverage-unit/cobertura-coverage.xml
           disable_search: true
 
   job_required_tests:
@@ -2357,7 +2654,9 @@ jobs:
     runs-on: ubuntu-slim
     steps:
       - name: Output needs
-        run: echo "${{ toJson(needs) }}"
+        env:
+          NEEDS_JSON: ${{ toJson(needs) }}
+        run: printf '%s\n' "$NEEDS_JSON"
 
       - name: Check if any required jobs failed or been cancelled
         if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
@@ -2397,14 +2696,46 @@ jobs:
         include: ${{ fromJSON(needs.job_setup.outputs.publish_public_apps_matrix) }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
           trust-lockfile: 'true'
 
+      # nx marks an app affected for dependency changes that may not reach its
+      # bundle (dev tooling, dedupes), so compare against what's live first.
+      # Built with the live version so portal's baked-in version can't differ.
+      - name: Check for bundle changes
+        id: bundle
+        working-directory: ${{ matrix.package_path }}
+        env:
+          PACKAGE_NAME: ${{ matrix.package_name }}
+        run: |
+          LATEST=$(node "$GITHUB_WORKSPACE/scripts/compute-next-app-version.cjs" --latest .)
+          if [ -z "$LATEST" ]; then
+            echo "No release in this major.minor line yet"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          npm pkg set version="$LATEST"
+          pnpm nx build "$PACKAGE_NAME"
+
+          PUBLISHED_DIR="$RUNNER_TEMP/published"
+          mkdir -p "$PUBLISHED_DIR"
+          npm pack "${PACKAGE_NAME}@${LATEST}" --pack-destination "$PUBLISHED_DIR"
+          tar -xzf "$PUBLISHED_DIR"/*.tgz -C "$PUBLISHED_DIR"
+
+          if diff -rq "$PUBLISHED_DIR/package/umd" umd; then
+            echo "Bundle matches ${PACKAGE_NAME}@${LATEST}, skipping publish"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Determine release version
+        if: steps.bundle.outputs.changed == 'true'
         id: release
         working-directory: ${{ matrix.package_path }}
         run: |
@@ -2425,20 +2756,24 @@ jobs:
           echo "current_major=$(echo "$NEXT_VERSION" | awk -F. '{print $1}')" >> $GITHUB_OUTPUT
 
       - name: Build the package
+        if: steps.bundle.outputs.changed == 'true'
         run: pnpm nx build ${{ matrix.package_name }}
 
       - name: Configure .npmrc
+        if: steps.bundle.outputs.changed == 'true'
         run: |
           echo "@tryghost:registry=https://registry.npmjs.org/" >> ~/.npmrc
 
       # --provenance is explicit rather than relying on pnpm's auto-detection,
       # which degrades to a warning if it can't confirm visibility.
       - name: Publish to npm
+        if: steps.bundle.outputs.changed == 'true'
         working-directory: ${{ matrix.package_path }}
         run: |
           pnpm publish --access public --provenance --no-git-checks
 
       - name: Replace version placeholders in cdn-paths
+        if: steps.bundle.outputs.changed == 'true'
         id: cdn_paths
         run: |
           cdn_paths="${{ matrix.cdn_paths }}"
@@ -2447,10 +2782,12 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Print cdn_paths
+        if: steps.bundle.outputs.changed == 'true'
         run: echo "${{ steps.cdn_paths.outputs.cdn_paths }}"
 
       - name: Purge jsDelivr cache
-        uses: gacts/purge-jsdelivr-cache@8d92aea944f1a3e8ad70505379e1a8ac72d56b73 # v1
+        if: steps.bundle.outputs.changed == 'true'
+        uses: gacts/purge-jsdelivr-cache@8d92aea944f1a3e8ad70505379e1a8ac72d56b73 # v1.1.2
         with:
           url: ${{ steps.cdn_paths.outputs.cdn_paths }}
 
@@ -2468,9 +2805,15 @@ jobs:
       && needs.job_build_admin.result == 'success'
       && needs.job_docker.result == 'success'
       && needs.job_docker.outputs.use-artifact != 'true'
+    permissions:
+      pull-requests: read
     steps:
       - name: Determine dispatch parameters
         id: params
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPOSITORY: ${{ github.repository }}
         run: |
           if [ "${{ needs.job_setup.outputs.is_main }}" = "true" ]; then
             echo "pr_number=" >> $GITHUB_OUTPUT
@@ -2480,6 +2823,12 @@ jobs:
             echo "deploy=" >> $GITHUB_OUTPUT
           elif [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+
+            # Read live: labels can change during the build. Ghost-Moya refreshes
+            # the preview only when this is set, and re-checks before deploying.
+            PREVIEW=$(gh api "repos/${REPOSITORY}/pulls/${PR_NUMBER}" \
+              --jq '.state == "open" and any(.labels[].name; . == "preview" or startswith("preview:"))')
+            echo "preview=${PREVIEW}" >> "$GITHUB_OUTPUT"
 
             # DISABLED: deploy-to-staging label detection is disabled.
             # The label workflow has fundamental problems — admin deploys are global
@@ -2494,19 +2843,22 @@ jobs:
 
       - name: Dispatch to Ghost-Moya cd.yml
         if: steps.params.outputs.skip != 'true'
-        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4
+        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
         with:
           token: ${{ secrets.CANARY_DOCKER_BUILD }}
           repository: TryGhost/Ghost-Moya
           event-type: ghost-artifacts-ready
+          # PR ref is the head SHA to match the `sha-<short>` image tag, not the merge commit
           client-payload: >-
             {
-              "ref": "${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || github.sha }}",
+              "ref": "${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || github.event.pull_request.head.sha || github.sha }}",
               "source_repo": "${{ github.repository }}",
               "pr_number": "${{ steps.params.outputs.pr_number }}",
               "deploy": "${{ steps.params.outputs.deploy }}",
               "admin_artifact_id": "${{ needs.job_build_admin.outputs.admin-artifact-id }}",
-              "admin_artifact_run_id": "${{ github.run_id }}"
+              "admin_artifact_run_id": "${{ github.run_id }}",
+              "image_digest": "${{ needs.job_docker.outputs.image-digest }}",
+              "preview": "${{ steps.params.outputs.preview }}"
             }
 
   # --------------------------------------------------------------------------- #
@@ -2524,12 +2876,12 @@ jobs:
       id-token: write
     steps:
       - name: Download npm tarball
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: ghost-npm-tarball
 
       - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           package-manager-cache: false
@@ -2567,7 +2919,7 @@ jobs:
       && github.repository == 'TryGhost/Ghost'
     steps:
       - name: Dispatch to TryGhost/docker-library-ghost
-        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4
+        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
         with:
           token: ${{ secrets.CANARY_DOCKER_BUILD }}
           repository: TryGhost/docker-library-ghost
@@ -2586,7 +2938,7 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.CANARY_DOCKER_BUILD }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
@@ -2617,7 +2969,7 @@ jobs:
       # npm client. Same build tree as the npm package, just without the
       # package/ wrapper dir.
       - name: Download release tarball
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: ghost-release-tarball
           path: release-assets

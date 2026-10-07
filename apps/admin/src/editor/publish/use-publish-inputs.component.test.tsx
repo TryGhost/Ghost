@@ -4,6 +4,7 @@ import { renderHook } from 'vitest-browser-react';
 import { InAppProviders, fakeAdminEndpoint, newsletter } from '@test-utils/acceptance';
 
 import { usePublishInputs } from '@/editor/publish/use-publish-inputs';
+import { useEditorSettings } from '@/editor/use-editor-settings';
 
 const pagination = (pageNumber = 1, pages = 1) => ({
   page: pageNumber,
@@ -62,6 +63,76 @@ function fakeMemberCount(total: number, status = 200) {
 }
 
 describe('usePublishInputs', () => {
+  it('keeps valid inputs ready while settings refresh in the background', async () => {
+    fakeBoundaryInputs();
+    fakeNewsletters();
+    fakeMemberCount(20);
+    const hook = await renderHook(
+      () => ({
+        ...usePublishInputs(),
+        refetchSettings: useEditorSettings().refetch,
+      }),
+      { wrapper: InAppProviders },
+    );
+    await expect.poll(() => hook.result.current.isReady).toBe(true);
+
+    let releaseSettings: () => void = () => {};
+    const settingsHeld = new Promise<void>((resolve) => {
+      releaseSettings = resolve;
+    });
+    const refreshedSettings = fakeAdminEndpoint('GET', /^\/settings\/\?/, async () => {
+      await settingsHeld;
+      return {
+        settings: [
+          { key: 'members_signup_access', value: 'none' },
+          { key: 'editor_default_email_recipients', value: 'visibility' },
+          { key: 'timezone', value: 'Etc/UTC' },
+        ],
+      };
+    });
+
+    try {
+      await hook.act(() => {
+        void hook.result.current.refetchSettings();
+      });
+      await expect.poll(() => refreshedSettings.requests.length).toBe(1);
+
+      expect(hook.result.current.isReady).toBe(true);
+      expect(hook.result.current.site.membersEnabled).toBe(true);
+      expect(hook.result.current.error).toBeNull();
+    } finally {
+      releaseSettings();
+    }
+
+    await expect.poll(() => hook.result.current.site.membersEnabled).toBe(false);
+    expect(hook.result.current.isReady).toBe(true);
+  });
+
+  it.each(['failed', 'invalid'] as const)(
+    'blocks previously ready inputs after a %s settings refresh',
+    async (response) => {
+      fakeBoundaryInputs();
+      fakeNewsletters();
+      fakeMemberCount(20);
+      const hook = await renderHook(() => usePublishInputs(), { wrapper: InAppProviders });
+      await expect.poll(() => hook.result.current.isReady).toBe(true);
+
+      const refreshedSettings = fakeAdminEndpoint(
+        'GET',
+        /^\/settings\/\?/,
+        response === 'failed'
+          ? { errors: [{ message: 'Settings are offline' }] }
+          : { settings: [{ key: 'editor_default_email_recipients', value: 'invalid' }] },
+        { status: response === 'failed' ? 500 : 200 },
+      );
+      await hook.act(() => hook.result.current.retry());
+
+      await expect.poll(() => refreshedSettings.requests.length).toBe(1);
+      await expect.poll(() => hook.result.current.error !== null).toBe(true);
+      expect(hook.result.current.isReady).toBe(false);
+    },
+  );
+
   it('blocks on a member-count error and becomes ready after retry', async () => {
     const inputs = fakeBoundaryInputs();
     fakeNewsletters();

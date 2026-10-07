@@ -6,8 +6,8 @@ const { mockManager } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
 const config = require('../../../core/shared/config');
-const MailgunClient = require('../../../core/server/services/lib/mailgun-client');
-const mailService = require('../../../core/server/services/mail');
+const MailgunClient = require('../../../core/server/lib/mailgun/mailgun-client');
+const mailService = require('../../../core/server/lib/mail');
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
 const {
   MEMBER_WELCOME_EMAIL_SLUGS,
@@ -34,6 +34,8 @@ describe('Member Welcome Emails Integration', function () {
 
   beforeAll(async function () {
     await testUtils.setup('default')();
+    // Boot initialises signing keys before members; this suite skips boot
+    await require('../../../core/server/services/signing-keys').init();
     membersService = require('../../../core/server/services/members');
     await membersService.init();
     defaultEmailDesignSettingId = await db
@@ -81,6 +83,7 @@ describe('Member Welcome Emails Integration', function () {
       id: freeAutomationId,
       status: 'active',
       name: 'Free Member Welcome Email',
+      description: 'Welcome new free members after they sign up.',
       slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
       created_at: new Date(),
     });
@@ -99,6 +102,7 @@ describe('Member Welcome Emails Integration', function () {
       id: paidAutomationId,
       status: 'active',
       name: 'Paid Member Welcome Email',
+      description: 'Welcome new paid members after they start their subscription.',
       slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
       created_at: new Date(),
     });

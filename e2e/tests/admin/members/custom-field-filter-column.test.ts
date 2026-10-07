@@ -12,13 +12,12 @@ import { usePerTestIsolation } from '@/helpers/playwright/isolation';
  * them back under the name the publisher gave the field. A unit test can pin the column
  * derivation but cannot prove the values ever arrive.
  *
- * React member detail (the value editor is React-only) plus the membersCustomFields flag,
- * which is what lets the test define a field in Settings.
+ * The membersCustomFields flag is what lets the test define a field in Settings.
  */
 usePerTestIsolation();
 
 test.describe('Ghost Admin - Custom field filter columns', () => {
-  test.use({ labs: { membersCustomFields: true, memberDetailsReact: true } });
+  test.use({ labs: { membersCustomFields: true } });
 
   test("a filtered custom field earns a column showing each member's value", async ({ page }) => {
     test.slow();

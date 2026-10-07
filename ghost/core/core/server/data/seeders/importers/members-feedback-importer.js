@@ -17,7 +17,10 @@ class MembersFeedbackImporter extends TableImporter {
       .from('email_recipients');
     this.emails = await this.transaction.select('id', 'post_id').from('emails');
 
-    await this.importForEach(emailRecipients, quantity ? quantity / emailRecipients.length : 1);
+    await this.importForEach(
+      emailRecipients,
+      quantity !== undefined ? quantity / emailRecipients.length : 1,
+    );
   }
 
   generate() {

@@ -75,25 +75,23 @@ describe('Integration: Component: gh-billing-iframe', function () {
         })).to.be.true;
     });
 
-    [
-        {label: 'missing flag', flag: undefined, enabled: false},
-        {label: 'disabled flag', flag: false, enabled: false},
-        {label: 'enabled flag', flag: true, enabled: true},
-        {label: 'non-boolean flag', flag: 'true', enabled: false}
-    ].forEach(({label, flag, enabled}) => {
-        it(`advertises dunning return support for ${label}`, async function () {
-            const feature = this.owner.lookup('service:feature');
-            // The accessor is introduced with the dunning UI and return handler.
-            // Older Admin versions do not define it at all.
-            Object.defineProperty(feature, 'dunningWarnings', {configurable: true, value: flag});
-            const postMessage = sinon.stub(GhBillingIframe.prototype, '_postMessageToBillingIframe');
+    it('responds with force upgrade and owner information', async function () {
+        const postMessage = sinon.stub(GhBillingIframe.prototype, '_postMessageToBillingIframe');
+        const config = this.owner.lookup('config:main');
+        config.hostSettings = {...config.hostSettings, forceUpgrade: true};
+        billing.ownerUser = {name: 'Site Owner', email: 'owner@example.com'};
 
-            await render(hbs`<GhBillingIframe />`);
-            await postBillingMessage({request: 'forceUpgradeInfo'});
+        await render(hbs`<GhBillingIframe />`);
+        await postBillingMessage({request: 'forceUpgradeInfo'});
 
-            expect(postMessage.calledOnce).to.be.true;
-            expect(postMessage.firstCall.args[0].response.dunningReturnEnabled).to.equal(enabled);
-        });
+        expect(postMessage.calledOnceWithExactly({
+            request: 'forceUpgradeInfo',
+            response: {
+                forceUpgrade: true,
+                isOwner: null,
+                ownerUser: {name: 'Site Owner', email: 'owner@example.com'}
+            }
+        })).to.be.true;
     });
 
     it('handles valid route messages without marking the billing app loaded', async function () {
@@ -194,77 +192,6 @@ describe('Integration: Component: gh-billing-iframe', function () {
 
         expect(transitionTo.calledOnceWithExactly('/settings/newsletters')).to.be.true;
     });
-
-    it('shows the overdue billing alert for a delinquent subscription', async function () {
-        const notifications = this.owner.lookup('service:notifications');
-        const showAlert = sinon.stub(notifications, 'showAlert');
-        sinon.stub(this.owner.lookup('service:config-manager'), 'fetch').resolves();
-        sinon.stub(this.owner.lookup('service:limit'), 'reload');
-
-        await render(hbs`<GhBillingIframe />`);
-
-        await postBillingMessage({subscription: {status: 'past_due'}});
-
-        expect(showAlert.calledOnce).to.be.true;
-        expect(showAlert.firstCall.args[1]).to.include({type: 'error', key: 'billing.overdue'});
-    });
-
-    it('stands the overdue alert down when the dunningWarnings flag is enabled', async function () {
-        const notifications = this.owner.lookup('service:notifications');
-        const showAlert = sinon.stub(notifications, 'showAlert');
-        const closeAlerts = sinon.stub(notifications, 'closeAlerts');
-        sinon.stub(this.owner.lookup('service:config-manager'), 'fetch').resolves();
-        sinon.stub(this.owner.lookup('service:limit'), 'reload');
-        const feature = this.owner.lookup('service:feature');
-        sinon.stub(feature, 'dunningWarnings').get(() => true);
-        const config = this.owner.lookup('config:main');
-        config.hostSettings = {
-            ...config.hostSettings,
-            billing: {
-                ...config.hostSettings?.billing,
-                dunning: {active: true, paymentFailedAt: '2026-08-26', suspendsAt: '2026-09-23'}
-            }
-        };
-
-        await render(hbs`<GhBillingIframe />`);
-
-        await postBillingMessage({subscription: {status: 'past_due'}});
-
-        expect(showAlert.called).to.be.false;
-        expect(closeAlerts.calledWith('billing.overdue')).to.be.true;
-    });
-
-    for (const [label, dunning] of [
-        ['missing config', undefined],
-        ['missing dates', {active: true}],
-        ['invalid dates', {active: true, paymentFailedAt: 'invalid', suspendsAt: '2026-09-29'}],
-        ['non-string dates', {active: true, paymentFailedAt: 1, suspendsAt: '2026-09-29'}],
-        ['an inverted window', {active: true, paymentFailedAt: '2026-09-29', suspendsAt: '2026-09-01'}],
-        ['an empty window', {active: true, paymentFailedAt: '2026-09-01', suspendsAt: '2026-09-01'}]
-    ]) {
-        for (const status of ['past_due', 'unpaid']) {
-            it(`keeps the overdue alert for ${status} with ${label}`, async function () {
-                const notifications = this.owner.lookup('service:notifications');
-                const showAlert = sinon.stub(notifications, 'showAlert');
-                const closeAlerts = sinon.stub(notifications, 'closeAlerts');
-                sinon.stub(this.owner.lookup('service:config-manager'), 'fetch').resolves();
-                sinon.stub(this.owner.lookup('service:limit'), 'reload');
-                sinon.stub(this.owner.lookup('service:feature'), 'dunningWarnings').get(() => true);
-                const config = this.owner.lookup('config:main');
-                config.hostSettings = {
-                    ...config.hostSettings,
-                    billing: {...config.hostSettings?.billing, dunning}
-                };
-
-                await render(hbs`<GhBillingIframe />`);
-                await postBillingMessage({subscription: {status}});
-
-                expect(showAlert.calledOnce).to.be.true;
-                expect(showAlert.firstCall.args[1]).to.include({type: 'error', key: 'billing.overdue'});
-                expect(closeAlerts.calledWith('billing.overdue')).to.be.false;
-            });
-        }
-    }
 
     it('ignores a navigateToAdmin message with an unknown destination', async function () {
         const router = this.owner.lookup('service:router');

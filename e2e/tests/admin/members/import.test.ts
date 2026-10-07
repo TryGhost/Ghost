@@ -56,8 +56,8 @@ test.describe('Ghost Admin - Members Import', () => {
 
     await expect(page.getByRole('dialog', { name: 'Import members' })).toBeVisible();
 
-    // Regression guard: the bug surfaced as an Ember alert like
-    // "Validation (matches) failed for id undefined.id" via #ember-alerts-wormhole
+    // Regression guard: the bug surfaced as an Admin alert like
+    // "Validation (matches) failed for id undefined.id"
     await expect(page.getByText(/Validation.*failed for id/i)).toHaveCount(0);
   });
 });

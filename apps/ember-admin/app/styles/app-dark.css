@@ -53,7 +53,6 @@
 @import "layouts/editor.css";
 @import "layouts/tags.css";
 @import "layouts/members.css";
-@import "layouts/member-activity.css";
 @import "layouts/error.css";
 @import "layouts/preview-email.css";
 @import "layouts/billing.css";
@@ -161,11 +160,6 @@ input,
 
 .settings-menu-container .settings-menu-pane {
     background: var(--dark-main-bg-color);
-}
-
-.gh-nav-search .ember-power-select-trigger {
-    border-color: color-mod(var(--lightgrey));
-    background: color-mod(var(--lightgrey));
 }
 
 .ember-power-select-multiple-trigger {

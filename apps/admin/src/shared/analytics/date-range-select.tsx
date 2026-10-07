@@ -46,7 +46,7 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
         onRangeChange(Number(value));
       }}
     >
-      <PageHeader.SelectTrigger label="Date range">
+      <PageHeader.SelectTrigger label="Date range" tooltip={false}>
         <LucideIcon.Calendar className="mr-2" size={16} strokeWidth={1.5} />
         <SelectValue placeholder="Select a period" />
       </PageHeader.SelectTrigger>
