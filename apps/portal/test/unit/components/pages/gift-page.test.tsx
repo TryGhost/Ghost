@@ -47,6 +47,31 @@ describe('GiftPage', () => {
     window.history.replaceState(null, '', '/');
   });
 
+  test.each([
+    { locale: 'de-CH', value: 'CHF6.90', threeMonthValue: 'CHF20.70' },
+    { locale: 'de-DE', value: 'CHF6,90', threeMonthValue: 'CHF20,70' },
+  ])('formats gift prices using the $locale site locale', ({ locale, value, threeMonthValue }) => {
+    const product = getProductData({
+      monthlyPrice: getPriceData({ amount: 690, currency: 'CHF', interval: 'month' }),
+      yearlyPrice: getPriceData({ amount: 6900, currency: 'CHF', interval: 'year' }),
+    });
+    const site = {
+      ...buildSite({ products: [product], portalProducts: [product.id] }),
+      locale,
+    };
+    const { container, getByRole, getByTestId } = setup(site);
+
+    expect(container.querySelector('.gh-portal-gift-checkout-tier-price')).toHaveTextContent(value);
+    expect(getByTestId('gift-card-value')).toHaveTextContent(value);
+
+    fireEvent.click(getByRole('radio', { name: '3 months' }));
+
+    expect(container.querySelector('.gh-portal-gift-checkout-tier-price')).toHaveTextContent(
+      threeMonthValue,
+    );
+    expect(getByTestId('gift-card-value')).toHaveTextContent(threeMonthValue);
+  });
+
   test('preserves focus on the checkout action when moving to delivery', () => {
     const site = buildSite();
     const { getByLabelText, getByRole } = setup(site);
