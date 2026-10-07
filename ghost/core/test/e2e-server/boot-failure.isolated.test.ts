@@ -17,7 +17,7 @@ const sentry = require('../../core/shared/sentry');
 const { startGhost } = require('../utils/e2e-framework');
 
 describe('Required startup failure', function () {
-  it('reports the startup error and closes the listener without becoming ready', async function () {
+  it('reports the Ghost startup error and closes the listener before exit without becoming ready', async function () {
     const sandbox = sinon.createSandbox();
     const listeners = new Map(
       (['SIGINT', 'SIGTERM', 'unhandledRejection'] as const).map((event) => [
@@ -30,18 +30,22 @@ describe('Required startup failure', function () {
     const startupError = new errors.IncorrectUsageError({ message: 'Required startup failed' });
     let boot: Promise<unknown> | undefined;
     let jobsStart: Promise<void> | undefined;
+    let listeningAtExit: boolean | undefined;
 
     configUtils.set('sentry:disabled', true);
     sandbox.stub(sentry, 'captureException');
     sandbox.stub(sentry, 'captureMessage');
     const logError = sandbox.stub(logging, 'error');
     sandbox.stub(console, 'error');
-    const exit = sandbox.stub(process, 'exit');
+    // Retain the real listener even after GhostServer clears its own reference.
+    const listen = sandbox.spy(express.application, 'listen');
+    const exit = sandbox.stub(process, 'exit').callsFake(() => {
+      listeningAtExit = listen.firstCall?.returnValue?.listening;
+      return undefined as never;
+    });
     notify.resetNotifications();
     const ready = sandbox.spy(notify, 'notifyServerReady');
     const serverStart = sandbox.spy(GhostServerClass.prototype, 'start');
-    // Retain the real listener even after GhostServer clears its own reference.
-    const listen = sandbox.spy(express.application, 'listen');
     const shutdown = sandbox.spy(GhostServerClass.prototype, 'shutdown');
     sandbox.stub(JobsServiceClass.prototype, 'start').callsFake(() => {
       jobsStart = (async () => {
@@ -80,10 +84,11 @@ describe('Required startup failure', function () {
       sinon.assert.calledOnceWithExactly(ready, startupError);
       sinon.assert.calledOnceWithExactly(shutdown, 2);
       // Boot initiates shutdown without awaiting it. Observe the real shutdown
-      // separately so the assertions include cleanup and the requested exit.
+      // separately, then check the listener state captured at the requested exit.
       await shutdown.firstCall.returnValue;
       sinon.assert.calledOnceWithExactly(logError, startupError);
       sinon.assert.calledOnceWithExactly(exit, 2);
+      assert.equal(listeningAtExit, false, 'Process exited before the HTTP listener closed');
       assert.equal(httpServer.listening, false, 'Startup failure left the HTTP listener open');
       assert.equal(httpServer.address(), null);
     } finally {

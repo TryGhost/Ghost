@@ -2804,10 +2804,13 @@ services:
           tests cover configured post/tag URLs without a frontend, routes upload refreshing
           URLs through the same Content API consumer, and frontend rendering with the
           configured canonical URL. These exercise FileStore and normal boot wiring.
+          Unit orchestration tests separately assert that initDynamicRouting waits for
+          route-settings start and propagates its original error in both frontend modes.
         sources:
           - core/boot.js
           - core/server/services/route-settings/dynamic-routing-service.js
         tests:
+          - test/unit/boot-dynamic-routing.test.ts
           - test/e2e-server/boot-backend-only.isolated.test.ts
           - test/e2e-server/boot-frontend-only.isolated.test.ts
     unverified:
@@ -3627,14 +3630,17 @@ services:
         tests: []
       startup:
         summary: >-
-          initDynamicRouting gives the shared URL service to RouterManager even without a
-          frontend, then awaits route-settings start. The HTTP tests cover configured
-          post/tag URLs in backend-only mode, URLs after upload through the same Content
-          API consumer, and canonical URLs rendered by the frontend.
+          Unit orchestration tests assert that initDynamicRouting gives the shared URL
+          service to RouterManager without a frontend, passes the same router and URL
+          instances to route-settings start, and waits for it in both frontend modes.
+          They also assert propagation of the original startup error. The HTTP tests cover
+          configured post/tag URLs in backend-only mode, URLs after upload through the same
+          Content API consumer, and canonical URLs rendered by the frontend.
         sources:
           - core/boot.js
           - core/server/services/route-settings/dynamic-routing-service.js
         tests:
+          - test/unit/boot-dynamic-routing.test.ts
           - test/e2e-server/boot-backend-only.isolated.test.ts
           - test/e2e-server/boot-frontend-only.isolated.test.ts
     unverified:
