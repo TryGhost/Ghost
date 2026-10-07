@@ -1,10 +1,8 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const models = require('../../../../core/server/models');
-const dbControllerPath = require.resolve('../../../../core/server/api/endpoints/db');
-const jobsServicePath = require.resolve('../../../../core/server/services/jobs-service');
-const dbController = require(dbControllerPath);
-const jobsService = require(jobsServicePath);
+const dbController = require('../../../../core/server/api/endpoints/db');
+const jobsService = require('../../../../core/server/services/jobs-service');
 const ExternalMediaInlinerJob =
   require('../../../../core/server/services/media-inliner/external-media-inliner-job').default;
 
@@ -31,11 +29,6 @@ describe('DB controller', function () {
       jobsServiceInitialised = false;
     }
     sinon.restore();
-  });
-
-  afterAll(function () {
-    delete require.cache[dbControllerPath];
-    delete require.cache[jobsServicePath];
   });
 
   describe('importContent', function () {
