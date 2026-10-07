@@ -695,11 +695,15 @@ describe('App installations Admin API', function () {
     it('lists every manifest the installation has run, newest first', async function () {
       const installed = await install();
       serve(manifest({ name: 'Podcasts' }));
-      const { digest } = await preview();
+      const { digest, installation } = await preview();
       serve(manifest({ name: 'Podcasts' }));
       await agent
         .put(`apps/installations/${installed.id}/`)
-        .body({ app_installations: [{ manifest_url: MANIFEST_URL, digest }] })
+        .body({
+          app_installations: [
+            { manifest_url: MANIFEST_URL, digest, revision: installation.revision },
+          ],
+        })
         .expectStatus(200);
 
       const { body } = await agent
