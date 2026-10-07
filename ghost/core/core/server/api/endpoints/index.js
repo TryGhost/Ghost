@@ -128,6 +128,10 @@ module.exports = {
     return apiFramework.pipeline(require('./member-metafields'), localUtils);
   },
 
+  get stripeCheckoutConfig() {
+    return apiFramework.pipeline(require('./stripe-checkout-config'), localUtils);
+  },
+
   get memberCommenting() {
     return apiFramework.pipeline(require('./member-commenting'), localUtils);
   },

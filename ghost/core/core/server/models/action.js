@@ -17,6 +17,11 @@ const GiftLinkResource = ghostBookshelf.Model.extend({
   tableName: 'posts',
 });
 
+// And the site-wide Stripe Checkout config.
+const StripeCheckoutConfigResource = ghostBookshelf.Model.extend({
+  tableName: 'stripe_checkout_config',
+});
+
 const Action = ghostBookshelf.Model.extend(
   {
     tableName: 'actions',
@@ -39,6 +44,7 @@ const Action = ghostBookshelf.Model.extend(
       candidates.push([MemberMetafieldResource, 'member_custom_field']);
       candidates.push([AppInstallationResource, 'app_installation']);
       candidates.push([GiftLinkResource, 'gift_link']);
+      candidates.push([StripeCheckoutConfigResource, 'stripe_checkout_config']);
 
       return candidates;
     },

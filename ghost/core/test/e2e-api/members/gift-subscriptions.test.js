@@ -170,6 +170,49 @@ describe('Gift Subscriptions', function () {
   });
 
   describe('Purchase a gift', function () {
+    it('styles a gift checkout with the publisher design', async function () {
+      mockManager.mockLabsEnabled('stripeCheckoutDesign');
+      await adminAgent
+        .put('/stripe/checkout/config/')
+        .body({
+          checkout_config: [
+            {
+              design: {
+                customize: true,
+                button_color: '#ff5a1f',
+                background_color: '#ffffff',
+                border_style: 'pill',
+                font_family: 'roboto',
+              },
+            },
+          ],
+        })
+        .expectStatus(200);
+
+      try {
+        const paidTier = await getPaidTier();
+        await membersAgent
+          .post('/api/create-stripe-checkout-session/')
+          .body({
+            type: 'gift',
+            tierId: paidTier.id,
+            cadence: 'month',
+            customerEmail: 'gift-styled@example.com',
+            metadata: {},
+          })
+          .expectStatus(200);
+
+        assert.deepEqual(getLatestCheckoutSession().branding_settings, {
+          button_color: '#ff5a1f',
+          background_color: '#ffffff',
+          border_style: 'pill',
+          font_family: 'roboto',
+        });
+      } finally {
+        await models.Base.knex('stripe_checkout_config').del();
+      }
+    });
+
     it('Can purchase a gift as an anonymous visitor', async function () {
       const paidTier = await getPaidTier();
 

@@ -90,6 +90,12 @@ const features: Feature[] = [
     flag: 'stripeCheckoutCollection',
   },
   {
+    title: 'Stripe checkout design',
+    description:
+      'Let admins style the Stripe checkout page with their own button color, background color, corners and font',
+    flag: 'stripeCheckoutDesign',
+  },
+  {
     title: 'Paywall improvements',
     description: 'Enables paywall usability, discoverability and email customization improvements',
     flag: 'paywallImprovements',

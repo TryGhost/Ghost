@@ -4142,7 +4142,8 @@ services:
         summary: >-
           Import constructs StripeService and its API, webhook, billing and event
           collaborators. Deferred getters resolve members, donations, gifts and staff when
-          handlers use them.
+          handlers use them, and the API reads the checkout config through that service's
+          module on every session.
         sources:
           - core/server/services/stripe/service.js
           - core/server/services/stripe/stripe-service.js
@@ -4180,6 +4181,39 @@ services:
       - >-
         Test that pending Stripe initialization blocks gifts and the remaining service
         group.
+  stripe-checkout-config:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - stripe-checkout-config/index.ts
+    notes: >-
+      Site-wide Stripe Checkout config, read live by the Stripe API for every checkout it
+      creates.
+    contracts:
+      exports:
+        summary: >-
+          Named exports include init, the mutable service binding, StripeCheckoutConfigService,
+          the wire serializer and actingContext. The service binding is undefined before init.
+        sources:
+          - core/server/services/stripe-checkout-config/index.ts
+        tests: []
+      construction:
+        summary: >-
+          Boot calls synchronous init in initCore, which builds the service with knex and its
+          history recorder. An existing service makes later calls return.
+        sources:
+          - core/server/services/stripe-checkout-config/index.ts
+          - core/boot.js
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers: []
   tags-public:
     kind: directory
     disposition: retain
