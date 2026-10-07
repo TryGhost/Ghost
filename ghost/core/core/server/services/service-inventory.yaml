@@ -125,12 +125,14 @@ services:
           announcement_background.
           The deep class exports mutable static VisibilityValues used by settings validation;
           neither root nor class provides init, reset or shutdown.
+          Controller tests exercise synchronous results through the real root and its private-field method.
         sources:
           - core/server/services/announcement-bar-service/index.js
           - core/server/services/announcement-bar-service/announcement-bar-settings.js
           - core/server/services/announcement-bar-service/announcement-visibility-values.js
         tests:
           - test/unit/server/services/announcement-bar/announcement-bar-settings.test.js
+          - test/unit/api/endpoints/announcements.test.ts
       construction:
         summary: >-
           Root import eagerly constructs the only production instance found with a callback
@@ -150,6 +152,8 @@ services:
           private cache headers. Settings validation consumes the class constants separately.
           ghost_head reads settings directly to inject the frontend app, which consumes this
           HTTP endpoint; it does not import the instance. No CLI/job consumer was found.
+          HTTP tests alternate anonymous, free, paid and comped sessions and assert private,
+          no-store responses. Caller enumeration and ghost_head ownership are source-only.
         sources:
           - core/server/api/endpoints/announcements.js
           - core/server/web/members/app.js
@@ -163,8 +167,8 @@ services:
         summary: >-
           There is no explicit boot initialization or readiness guard. Imports can construct
           before settings are ready because reads are deferred to calls. The supported HTTP
-          path follows Ghost boot and member-session loading. Existing HTTP tests boot Ghost
-          and assert anonymous empty/present results; direct pre-boot behavior is not tested.
+          path follows Ghost boot and member-session loading. HTTP tests boot Ghost and
+          exercise anonymous and authenticated announcements; pre-boot availability is source-only.
         sources:
           - core/boot.js
           - core/server/services/announcement-bar-service/index.js
@@ -175,14 +179,15 @@ services:
         summary: >-
           The cached instance and callback persist for the module lifetime. Each call keeps
           member-dependent decisions local and creates its own result object; no per-member
-          result or settings value is cached. The HTTP suite edits the cache after boot and
-          observes the updated anonymous announcement, but does not establish alternating
-          member contexts, retained result independence or same-process restart behavior.
+          result or settings value is cached. HTTP tests alternate member contexts and change
+          settings after boot; controller tests retain the same consumer and assert fresh,
+          independent results. Same-process restart behavior is not tested.
         sources:
           - core/server/services/announcement-bar-service/index.js
           - core/server/services/announcement-bar-service/announcement-bar-settings.js
         tests:
           - test/e2e-api/members/announcement.test.js
+          - test/unit/api/endpoints/announcements.test.ts
       configuration:
         summary: >-
           Every call reads content, background and visibility from settings. Falsy content or
@@ -190,12 +195,16 @@ services:
           free; paid visibility accepts any truthy member whose status is not free, including
           comped. Matching calls return raw content/background without rendering. Unit cases
           cover visitors, free, paid and comped, plus representative suppressed combinations.
+          Controller and HTTP tests exercise live content, background and visibility through
+          the real root, including empty-visibility suppression; the controller also checks empty content.
         sources:
           - core/server/services/announcement-bar-service/index.js
           - core/server/services/announcement-bar-service/announcement-bar-settings.js
           - core/server/services/announcement-bar-service/announcement-visibility-values.js
         tests:
           - test/unit/server/services/announcement-bar/announcement-bar-settings.test.js
+          - test/unit/api/endpoints/announcements.test.ts
+          - test/e2e-api/members/announcement.test.js
       resources:
         summary: >-
           The instance owns only a callback reference and borrows the settings cache. It
@@ -216,27 +225,27 @@ services:
           through API validation, with HTTP 422 tests, but those tests do not characterize
           corrupt cache contents or unbound service calls. The surrounding member-session
           middleware swallows lookup errors and passes no member, selecting visitor visibility.
+          A controller test asserts synchronous propagation of the original settings error;
+          corrupt-cache and session-lookup failure behavior remain source-only.
         sources:
           - core/server/services/announcement-bar-service/announcement-bar-settings.js
           - core/server/api/endpoints/utils/validators/input/settings.js
           - core/server/services/members/middleware.js
         tests:
           - test/e2e-api/admin/settings.test.js
+          - test/unit/api/endpoints/announcements.test.ts
     unverified: []
     blockers:
       - >-
-        Add same-root alternating visitor/free/paid/comped HTTP cases and changed visibility,
-        content and background assertions. Preserve private response caching and undefined
-        suppression; current HTTP tests only exercise anonymous empty and present responses.
-      - >-
-        Characterize root export/receiver behavior and retained callback/result identity before
-        boot composition. Preserve the separate static visibility import used by validation: mutating
+        Boot-owned composition still needs initialization/teardown and same-process restart tests.
+        Preserve the separate static visibility import used by validation: mutating
         shared constant fields affects both consumers, but reassigning the static class property
-        changes validator reads without changing the implementation's imported constants.
+        changes validator reads without changing the implementation's imported constants;
+        this mutation behavior is source-only.
       - >-
-        Decide supported pre-init and malformed-settings behavior explicitly. Source shows
-        native synchronous failure, but no existing test establishes the error contract or
-        confirms that the initialization change leaves successful member decisions unchanged.
+        Specify and test pre-init behavior when adding boot ownership. Corrupt-cache values
+        and unbound calls remain untested; the controller tests cover settings-read failure
+        and successful bound calls.
   app-installations:
     kind: directory
     disposition: retain
