@@ -163,7 +163,11 @@ const fetchWithXhr = (
     };
 
     xhr.onload = () => {
-      resolve(xhrToFetchResponse(xhr));
+      try {
+        resolve(xhrToFetchResponse(xhr));
+      } catch (error) {
+        reject(error);
+      }
     };
 
     xhr.onerror = () => {
