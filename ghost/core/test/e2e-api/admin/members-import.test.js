@@ -341,6 +341,31 @@ describe('Members import', function () {
     assert.equal(member.note, 'Original note');
   });
 
+  // Re-importing an existing member adds the file's labels to the ones the member
+  // already carries, rather than replacing them.
+  it("keeps an existing member's labels when re-importing with new ones", async function () {
+    await request
+      .post(localUtils.API.getApiQuery('members/'))
+      .send({
+        members: [{ email: 'member+relabel@example.com', labels: [{ name: 'existing-label' }] }],
+      })
+      .set('Origin', config.get('url'))
+      .expect(201);
+
+    const res = await upload('members-update-labels.csv');
+    assert.equal(res.status, 201);
+    assert.equal(res.body.meta.stats.imported, 1);
+
+    const member = await findMember('member+relabel@example.com');
+    assertExists(member);
+    const names = member.labels.map((l) => l.name);
+    assert.ok(
+      names.includes('existing-label'),
+      `existing label kept, got ${JSON.stringify(names)}`,
+    );
+    assert.ok(names.includes('new-label'), `new label added, got ${JSON.stringify(names)}`);
+  });
+
   // Re-importing changes subscription state by the rules: a subscribed member turned
   // off is unsubscribed; a member with no newsletters is never re-subscribed by a
   // later true; a still-subscribed member keeps them.
