@@ -4,6 +4,7 @@ import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
   currentRoute,
+  editorReadLanded,
   fakeAdminEndpoint,
   fakeEditorChrome,
   post,
@@ -376,7 +377,7 @@ describe('Post editor update collision', () => {
 
   it('accepts a newer detail read that finishes before an older reload', async () => {
     const { saveApi } = fakeCollidingPost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await collide(saveApi);
 
     await editorScreen.reloadAfterConflict().click();
@@ -421,9 +422,7 @@ describe('Post editor update collision', () => {
       updated_at: '2026-01-01T11:00:00.000Z',
     });
     pendingDetailRead.resolve({ posts: [newest] });
-    await new Promise<void>((resolve) => {
-      setTimeout(resolve, 0);
-    });
+    await editorReadLanded(queryClient, newest);
     pendingReload.resolve({
       posts: [
         theirs({
@@ -682,14 +681,16 @@ describe('Post editor update collision', () => {
     await editorScreen.confirmConflictReload().click();
 
     await expect.element(editorScreen.status()).toHaveTextContent('Published');
-    await expect.element(editorScreen.body()).not.toHaveTextContent('and more');
+    await expect.element(editorScreen.body()).toHaveTextContent(/^Hello from React$/);
     await expect(editorScreen.conflictBanner()).toHaveCount(0);
+    await expect.element(editorScreen.updateButton()).toBeDisabled();
 
     // An Update that still said `scheduled` would be refused again.
     const nextSave = fakeAdminEndpoint('PUT', READ_ROUTE, () => ({
       posts: [scheduled({ status: 'published', updated_at: AFTER_SAVE_AT })],
     }));
     await appendToBody(' after publishing');
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
     await editorScreen.updateButton().click();
 
     await expect.poll(() => nextSave.requests.length).toBe(1);

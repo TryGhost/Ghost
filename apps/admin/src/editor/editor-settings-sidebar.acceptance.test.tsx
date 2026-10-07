@@ -9,6 +9,7 @@ import {
   fakeEditorPost,
   post,
   renderAdminApp,
+  settleTransitions,
   staffRole,
   submittedPost,
   withoutAutosave,
@@ -132,6 +133,7 @@ function fakeAdoptingPost(acknowledged: Partial<SavedPost>) {
 async function openSidebar() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  await settleTransitions();
 }
 
 function editorWidthPx(): number {

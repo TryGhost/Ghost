@@ -18,6 +18,7 @@ import {
   post,
   renderAdminApp,
   settingsResponse,
+  siteResponse,
   staffRole,
   withoutAutosave,
   type RenderAdminAppOptions,
@@ -31,6 +32,10 @@ const FLAG_ON = { labs: { editorReact: true } };
 const CURRENT_USER_ID = '1';
 
 const OVER_EMAIL_LIMIT = 150 * 1024;
+
+const FEATURE_IMAGE = `data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800"/>',
+)}`;
 
 const MOBILEDOC =
   '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"Legacy"]]]]}';
@@ -75,6 +80,17 @@ function bootAs(role: 'Author' | 'Contributor'): RenderAdminAppOptions {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name: role })];
   return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+}
+
+/** Whether `marker` sits right of `target`, level with some of it. */
+function sitsRightOf(marker: Element, target: Element): boolean {
+  const markerBox = marker.getBoundingClientRect();
+  const targetBox = target.getBoundingClientRect();
+  return (
+    markerBox.left >= targetBox.right &&
+    markerBox.bottom > targetBox.top &&
+    markerBox.top < targetBox.bottom
+  );
 }
 
 function pasteText(content: string) {
@@ -175,6 +191,7 @@ describe('Post editor', () => {
     });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await expect.poll(() => snippetsApi.requests.length).toBe(2);
     const secondPageParams = new URL(snippetsApi.requests[1].url).searchParams;
     expect(secondPageParams.get('page')).toBe('2');
@@ -201,6 +218,7 @@ describe('Post editor', () => {
       });
     });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await expect.poll(() => snippetsApi.requests.length).toBe(2);
 
     await editorScreen.body().click();
@@ -225,6 +243,17 @@ describe('Post editor', () => {
 
     await expect.element(title).toHaveValue('Changed title TK');
     await expect.element(editorScreen.titleTkIndicator()).toBeVisible();
+  });
+
+  it('marks a TK in the title to the right of the title, below a feature image', async () => {
+    fakeEditorPost({ title: 'Hello TK', feature_image: FEATURE_IMAGE });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    const marker = editorScreen.titleTkIndicator();
+    await expect.element(marker).toBeVisible();
+    await expect
+      .poll(() => sitsRightOf(marker.element(), editorScreen.titleInput().element()))
+      .toBe(true);
   });
 
   it('moves from the title into the body on Enter and cleans pasted titles', async () => {
@@ -345,6 +374,29 @@ describe('Post editor', () => {
     await editorScreen.retryLoad().click();
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect(editorScreen.loadError()).toHaveCount(0);
+  });
+
+  it('shows the load error when the site cannot be read, and opens the editor on retry', async () => {
+    fakeEditorChrome();
+    await renderAdminApp('/editor/post', {
+      ...FLAG_ON,
+      boot: {
+        browseSite: {
+          response: { errors: [{ type: 'NotFoundError', message: 'Not found.' }] },
+          responseStatus: 404,
+        },
+      },
+    });
+
+    await expect.element(editorScreen.loadError()).toHaveTextContent('Couldn’t load the editor.');
+    await expect(editorScreen.titleInput()).toHaveCount(0);
+
+    // A later handler for the same route wins: the retried read finds the site.
+    fakeAdminEndpoint('GET', '/site/', siteResponse());
+    await editorScreen.retryLoad().click();
+
+    await expect.element(editorScreen.titleInput()).toBeVisible();
     await expect(editorScreen.loadError()).toHaveCount(0);
   });
 
@@ -476,8 +528,8 @@ describe('Post editor email size warning', () => {
     const previewApi = fakeEmailPreview(99 * 1024);
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-    await expect.poll(() => previewApi.requests.length).toBe(1);
     await editorSettled();
+    await expect.poll(() => previewApi.requests.length).toBe(1);
     await expect(editorScreen.emailSizeWarning()).toHaveCount(0);
   });
 
@@ -538,6 +590,9 @@ describe('Post editor email size warning', () => {
     const firstCheck = fakeEmailPreview();
     await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
 
+    // The preview needs the loaded post; starting its poll during boot uses up
+    // the assertion window before the editor can issue the request under load.
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await expect.poll(() => firstCheck.requests.length).toBe(1);
     const secondCheck = fakeEmailPreview(OVER_EMAIL_LIMIT);
     await editorScreen.body().click();

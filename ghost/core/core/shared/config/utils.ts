@@ -28,6 +28,10 @@ function makePathsAbsolute(nconf: Provider, obj: Record<string, unknown>, parent
   });
 }
 
+/**
+ * Unlike checkUrlProtocol, this is not duplicated by the schema: it touches the
+ * filesystem, so it stays whatever happens to the strictness flag.
+ */
 function doesContentPathExist(contentPath: string): void {
   if (!fs.existsSync(contentPath)) {
     // new Error is allowed here, as we do not want config to depend on @tryghost/error
@@ -41,6 +45,10 @@ function doesContentPathExist(contentPath: string): void {
 
 /**
  * Check if the URL in config has a protocol and sanitise it if not including a warning that it should be changed
+ *
+ * @TODO: remove once GHOST_CONFIG_SCHEMA_STRICT is gone. This duplicates the
+ * `url` rule in ./schema.ts, and has to stay while the flag exists at all,
+ * since a deploy can still set it false - see isStrict() in ./validated.ts.
  */
 function checkUrlProtocol(url: string): void {
   if (!url.match(/^https?:\/\//i)) {

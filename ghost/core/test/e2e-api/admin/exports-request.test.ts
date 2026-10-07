@@ -53,6 +53,7 @@ describe('Exports API: export requests', function () {
     get: (_url: string) => any;
     post: (_url: string) => any;
     loginAsOwner: () => Promise<void>;
+    loginAsAdmin: () => Promise<void>;
     loginAsEditor: () => Promise<void>;
     loginAsAuthor: () => Promise<void>;
     useZapierAdminAPIKey: () => Promise<void>;
@@ -103,6 +104,7 @@ describe('Exports API: export requests', function () {
           routes: false,
           media: true,
         },
+        requestedByUserId: fixtureManager.get('users', 0).id,
       });
 
       assert.ok(captured.headers, 'Expected the outbound request headers to be captured');
@@ -136,6 +138,19 @@ describe('Exports API: export requests', function () {
 
       assert.ok(captured.body, 'Expected an outbound request to the export host');
       assert.equal(captured.body.requestedBy, undefined);
+    });
+
+    it('Sends the signed-in user as the requester, ignoring one supplied in the request body', async function () {
+      configureExportHost();
+      const captured = mockExportHost();
+
+      await agent
+        .post('/exports/')
+        .body({ components: { content: true }, requestedByUserId: 'someone-else' })
+        .expectStatus(202);
+
+      assert.ok(captured.body, 'Expected an outbound request to the export host');
+      assert.equal(captured.body.requestedByUserId, fixtureManager.get('users', 0).id);
     });
 
     it('Returns 404 when no export host is configured', async function () {
@@ -222,6 +237,22 @@ describe('Exports API: export requests', function () {
         .post('/exports/')
         .body({ components: { content: false, members: false } })
         .expectStatus(400);
+    });
+  });
+
+  describe('As Administrator', function () {
+    beforeAll(async function () {
+      await agent.loginAsAdmin();
+    });
+
+    it('Can request an export and is sent as the requester', async function () {
+      configureExportHost();
+      const captured = mockExportHost();
+
+      await agent.post('/exports/').body({ components: ALL_COMPONENTS }).expectStatus(202);
+
+      assert.ok(captured.body, 'Expected an outbound request to the export host');
+      assert.equal(captured.body.requestedByUserId, fixtureManager.get('users', 1).id);
     });
   });
 

@@ -68,6 +68,7 @@ let totalBoots = 0;
  * @returns {Promise<Express.Application>} ghost
  */
 const startGhost = async (options = {}) => {
+  await require('../../core/server/services/jobs-service').shutdown();
   await DomainEvents.allSettled();
 
   /**

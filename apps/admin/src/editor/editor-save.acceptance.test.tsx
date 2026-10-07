@@ -1,7 +1,7 @@
 import { toast } from 'sonner';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, onTestFinished } from 'vitest';
 import { userEvent } from 'vitest/browser';
-import { buildLexicalParagraph } from '@tryghost/test-data';
+import { buildLexical, buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
   currentRoute,
@@ -22,7 +22,7 @@ import {
   type EndpointCapture,
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
-import { editorBody } from '@tryghost/test-data/selectors/editor';
+import { editorBody, editorStatus } from '@tryghost/test-data/selectors/editor';
 import { editorScreen } from '@/editor/editor.screen';
 import { OLD_SCHEMA_CORPUS } from '@/editor/engine/__fixtures__';
 import {
@@ -100,8 +100,23 @@ function bootAs(role: 'Author' | 'Contributor'): RenderAdminAppOptions {
 
 async function appendToBody(text: string) {
   const body = editorScreen.body();
+  await expect.element(body).toBeVisible();
   // One input event: a fast autosave must not split a keyboard sequence into several saves.
   await body.fill(`${body.element().textContent ?? ''}${text}`);
+}
+
+/** Every distinct status line the editor commits, in order, from before it renders. */
+function recordStatuses(): string[] {
+  const statuses: string[] = [];
+  const observer = new MutationObserver(() => {
+    const status = document.querySelector(`[data-testid="${editorStatus}"]`)?.textContent ?? '';
+    if (status && status !== statuses.at(-1)) {
+      statuses.push(status);
+    }
+  });
+  observer.observe(document.body, { childList: true, characterData: true, subtree: true });
+  onTestFinished(() => observer.disconnect());
+  return statuses;
 }
 
 function bodyElement(): Element | null {
@@ -176,6 +191,32 @@ describe('Post editor saving', () => {
     await appendToBody(' edited');
 
     await expect.poll(() => saveApi.requests.length).toBe(1);
+  });
+
+  it('leaves a post alone when its cards rewrite themselves on mount', async () => {
+    // A header card adopts the editor's accent colour as it mounts, in both instances.
+    const saveApi = fakeSavablePost({
+      lexical: buildLexical({ header: { accentColor: '#123456' } }),
+    });
+    const statuses = recordStatuses();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.body().getByText('Header card')).toBeVisible();
+    await expect
+      .element(editorScreen.secondaryInstance().getByText('Header card'))
+      .toBeInTheDocument();
+    await editorScreen.titleInput().click();
+    await editorScreen.body().getByText('Before header').click();
+    expect(saveApi.requests).toHaveLength(0);
+    await expect.poll(unsavedChangesGuarded).toBe(false);
+    expect(statuses).toEqual(['Draft - Saved']);
+
+    await userEvent.keyboard(' edited');
+
+    await expect.poll(() => saveApi.requests.length).toBeGreaterThan(0);
+    const saved = submittedBody(saveApi);
+    expect(saved).toContain(' edited');
+    expect(saved).not.toContain('#123456');
   });
 
   it('creates a new post on the first edit and swaps the URL without remounting', async () => {
@@ -502,6 +543,22 @@ describe('Post editor saving', () => {
       .toHaveTextContent('Hello from React and more and then some');
     await expect(editorScreen.notFound()).toHaveCount(0);
     expect(bodyElement()).toBe(mountedBody);
+  });
+
+  it('says the editor has crashed when a create is answered with a 404, and keeps the content', async () => {
+    fakeEditorChrome();
+    fakeAdminEndpoint('GET', /^\/slugs\/post\/untitled\//, { slugs: [{ slug: 'untitled' }] });
+    const createApi = fakeAdminEndpoint('POST', /^\/posts\/\?/, POST_NOT_FOUND, { status: 404 });
+    await renderAdminApp('/editor/post', FLAG_ON);
+
+    await appendToBody('First words');
+
+    await expect.poll(() => createApi.requests.length).toBe(1);
+    await expect.element(editorScreen.conflictBanner()).toHaveTextContent('The editor has crashed');
+    await expect.element(editorScreen.copyConflictedContent()).toBeVisible();
+    await expect(editorScreen.conflictBanner().getByRole('button')).toHaveCount(1);
+    await expect.element(editorScreen.body()).toHaveTextContent('First words');
+    expect(currentRoute()).toBe('/editor/post');
   });
 
   it('holds a title past the limit where it is typed, and refuses it on Cmd-S', async () => {

@@ -69,23 +69,11 @@ class I18n {
    * @returns {string}
    */
   t(translationPath, bindings) {
-    let msg;
-
+    // _findString only ever returns a string: a key that resolves to an
+    // object or array is treated as missing and gets the fallback message.
     const string = this._findString(translationPath);
 
-    // If the path returns an array (as in the case with anything that has multiple paragraphs such as emails), then
-    // loop through them and return an array of translated/formatted strings. Otherwise, just return the normal
-    // translated/formatted string.
-    if (Array.isArray(string)) {
-      msg = [];
-      string.forEach(function (s) {
-        msg.push(this._formatMessage(s, bindings));
-      });
-    } else {
-      msg = this._formatMessage(string, bindings);
-    }
-
-    return msg;
+    return this._formatMessage(string, bindings);
   }
 
   /**

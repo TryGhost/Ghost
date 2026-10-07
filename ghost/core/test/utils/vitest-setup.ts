@@ -13,6 +13,11 @@ import { isConsoleAllowed, resetConsoleAllowed } from './console-guard';
 // resolution. Must run before any Ghost source is required below.
 require('tsx/cjs');
 
+// Compile Ghost's own source as strict mode, so writes sloppy mode would drop
+// silently fail the test instead. Must also run before any Ghost source is
+// required. See ./strict-mode.ts.
+require('./strict-mode').enableStrictMode();
+
 process.env.NODE_ENV = process.env.NODE_ENV || 'testing';
 process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_SECRET';
 

@@ -1,13 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
-import { flags, read, prepareStatuses, run, runsScroller } from './run-list.test-utils';
+import {
+  openAutomationSidebar,
+  flags,
+  read,
+  prepareStatuses,
+  run,
+  runsScroller,
+} from './run-list.test-utils';
 
-const entries = () => page.getByRole('region', { name: 'Total entries' });
+const entries = () => page.getByRole('region', { name: 'Total runs' });
 const statuses = () => page.getByRole('region', { name: 'Automation status counts' });
 const statusCard = (name: string) => statuses().getByRole('button', { name, exact: true });
-const open = () => page.getByRole('button', { name: 'Show performance' }).click();
-const close = () => page.getByRole('button', { name: 'Hide performance' }).click();
+const open = openAutomationSidebar;
+const close = () => page.getByRole('button', { name: 'Hide automation sidebar' }).click();
 
 const runsRegion = () => page.getByRole('region', { name: 'Automation runs', exact: true });
 // Named cases make the member fallbacks and recorded statuses explicit.
@@ -33,13 +40,16 @@ const runsResponse = () => ({
 describe('Automation run list', () => {
   it('fetches on first opening and shows runs in server order with member and status fallbacks', async () => {
     prepareStatuses();
+    read('first', 'inactive');
     const request = fakeAdminEndpoint(
       'GET',
       /\/automations\/first\/runs\/\?timezone=[^&]+$/,
       runsResponse(),
     );
     await renderAdminApp('/automations/first', flags);
-    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    await expect
+      .element(page.getByRole('button', { name: 'Show automation sidebar' }))
+      .toBeVisible();
     expect(request.requests).toHaveLength(0);
     await open();
     await expect(
@@ -55,15 +65,15 @@ describe('Automation run list', () => {
     expect(
       Array.from(runsRegion().element().querySelectorAll('time')).map((time) => time.dateTime),
     ).toEqual(runsResponse().automation_runs.map((row) => row.created_at));
-    for (const label of ['In progress', 'Completed', 'Exited early']) {
+    for (const label of ['In progress', 'Completed', 'Stopped']) {
       await expect.element(runsRegion().getByRole('img', { name: label }).first()).toBeVisible();
     }
     await expect
-      .element(runsRegion().getByRole('columnheader', { name: 'Entered' }))
+      .element(runsRegion().getByRole('columnheader', { name: 'Started' }))
       .toHaveAttribute('aria-sort', 'descending');
     await expect
-      .element(runsRegion().getByRole('img', { name: 'Exited early — Failed', exact: true }))
-      .toHaveAttribute('title', 'Exited early — Failed');
+      .element(runsRegion().getByRole('img', { name: 'Stopped — Failed', exact: true }))
+      .toHaveAttribute('title', 'Stopped — Failed');
     await expect(runsRegion().getByRole('link')).toHaveCount(0);
     await expect(runsRegion().getByRole('button', { name: /^View run history/ })).toHaveCount(10);
     expect(request.requests).toHaveLength(1);
@@ -110,7 +120,7 @@ describe('Automation run list', () => {
 
   it('caches runs across closing, then fetches again on the next visit', async () => {
     prepareStatuses();
-    read('second');
+    read('second', 'inactive');
     const request = fakeAdminEndpoint(
       'GET',
       /\/automations\/first\/runs\/\?timezone=[^&]+$/,
@@ -126,10 +136,13 @@ describe('Automation run list', () => {
     expect(request.requests).toHaveLength(1);
     await expect(runsRegion().getByText('Noah Bennett', { exact: true })).toHaveCount(2);
     window.location.hash = '#/automations/second';
-    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    await expect
+      .element(page.getByRole('button', { name: 'Show automation sidebar' }))
+      .toBeVisible();
     window.location.hash = '#/automations/first';
-    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
-    expect(request.requests).toHaveLength(1);
+    await expect
+      .element(page.getByRole('button', { name: 'Hide automation sidebar' }))
+      .toBeVisible();
     await open();
     await expect.poll(() => request.requests.length).toBe(2);
   });
@@ -148,7 +161,7 @@ describe('Automation run list', () => {
       await open();
       await expect
         .element(runsRegion().getByRole('alert'))
-        .toHaveTextContent('Could not load entries');
+        .toHaveTextContent('Could not load runs');
       await expect.element(entries()).toHaveTextContent('1,432');
       await expect.element(statusCard('Completed')).toHaveTextContent('1,260');
       await close();
@@ -176,9 +189,7 @@ describe('Automation run list', () => {
     const refresh = fakeAdminEndpoint('GET', endpoint, {}, { status: 500 });
     // The app's authentication bridge can invalidate a previously successful query.
     await queryClient.invalidateQueries();
-    await expect
-      .element(runsRegion().getByRole('alert'))
-      .toHaveTextContent('Could not load entries');
+    await expect.element(runsRegion().getByRole('alert')).toHaveTextContent('Could not load runs');
     expect(refresh.requests).toHaveLength(1);
     await expect.element(runsRegion()).not.toHaveTextContent('No members match');
 
@@ -196,9 +207,7 @@ describe('Automation run list', () => {
     fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?timezone=[^&]+$/, {});
     await renderAdminApp('/automations/first', flags);
     await open();
-    await expect
-      .element(runsRegion().getByRole('alert'))
-      .toHaveTextContent('Could not load entries');
+    await expect.element(runsRegion().getByRole('alert')).toHaveTextContent('Could not load runs');
     await expect.element(runsRegion()).not.toHaveTextContent('No members match');
   });
 

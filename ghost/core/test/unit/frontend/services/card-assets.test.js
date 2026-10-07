@@ -55,7 +55,7 @@ describe('Card Asset Manifest Builder', function () {
       ),
     ]);
 
-    const { buildType } = await import('../../../../scripts/build-card-assets.mjs');
+    const { buildType } = await import('../../../../scripts/build-card-assets.mts');
     manifest = {
       css: await buildType('css', testDir),
       js: await buildType('js', testDir),

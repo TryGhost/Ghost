@@ -14,6 +14,7 @@ import {
   post,
   renderAdminApp,
   staffRole,
+  settleTransitions,
   submittedPost,
   unsavedChangesGuarded,
   withoutAutosave,
@@ -63,6 +64,7 @@ function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
 async function openMetaData() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  await settleTransitions();
   await editorScreen.settingsSubviewRow(settingsMetaDataRow).click();
   await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
 }

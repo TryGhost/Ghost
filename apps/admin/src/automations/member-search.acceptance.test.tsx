@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
-import { flags, prepareStatuses, run } from './run-list.test-utils';
+import { openAutomationSidebar, flags, prepareStatuses, run } from './run-list.test-utils';
 
 const list = () => page.getByRole('region', { name: 'Automation runs', exact: true });
 const input = () => page.getByRole('textbox', { name: 'Search members' });
@@ -13,7 +13,7 @@ const result = (cursor: string | null = null, rows = [run()]) => ({
 });
 async function open() {
   await renderAdminApp('/automations/first', flags);
-  await page.getByRole('button', { name: 'Show performance' }).click();
+  await openAutomationSidebar();
 }
 
 describe('Automation member search', () => {
@@ -24,22 +24,20 @@ describe('Automation member search', () => {
     await page.getByRole('button', { name: 'Filter performance' }).click();
     await page.getByRole('menuitemradio', { name: 'Last 7 days' }).click();
     await page.getByRole('button', { name: 'Completed', exact: true }).click();
-    const headingLeft = page
-      .getByRole('heading', { name: 'Performance' })
+    const tabsLeft = page
+      .getByRole('tablist', { name: 'Automation sidebar' })
       .element()
       .getBoundingClientRect().left;
     await page.getByRole('button', { name: 'Search members', exact: true }).click();
     await expect.element(input()).toHaveFocus();
-    // Opening an empty search replaces the heading rather than squeezing beside it.
+    // Opening an empty search replaces the tabs rather than squeezing beside them.
     const field = input().element().closest('[data-slot="input-group"]')!;
-    expect(field.getBoundingClientRect().left).toBe(headingLeft);
+    expect(field.getBoundingClientRect().left).toBe(tabsLeft);
     await input().fill('  a  ');
     await expect
       .poll(() => requests.requests.some((r) => new URL(r.url).searchParams.get('search') === 'a'))
       .toBe(true);
-    await expect
-      .element(page.getByRole('region', { name: 'Total entries' }))
-      .not.toBeInTheDocument();
+    await expect.element(page.getByRole('region', { name: 'Total runs' })).not.toBeInTheDocument();
     await expect
       .element(page.getByRole('region', { name: 'Automation status counts' }))
       .not.toBeInTheDocument();
@@ -49,12 +47,12 @@ describe('Automation member search', () => {
     await expect
       .element(page.getByRole('button', { name: 'Clear date filter' }))
       .not.toBeInTheDocument();
-    await list().getByRole('button', { name: 'Entered', exact: true }).click();
+    await list().getByRole('button', { name: 'Started', exact: true }).click();
     await expect
       .poll(() => Object.fromEntries(new URL(requests.requests.at(-1)!.url).searchParams))
       .toEqual({ search: 'a', order: 'created_at asc' });
     await page.getByRole('button', { name: 'Close member search' }).click();
-    await expect.element(page.getByRole('region', { name: 'Total entries' })).toBeVisible();
+    await expect.element(page.getByRole('region', { name: 'Total runs' })).toBeVisible();
     await expect
       .element(page.getByRole('button', { name: 'Completed', exact: true }))
       .toHaveAttribute('aria-pressed', 'true');
@@ -90,7 +88,7 @@ describe('Automation member search', () => {
     await open();
     await page.getByRole('button', { name: 'Search members', exact: true }).click();
     await input().fill('anna');
-    await expect.element(list().getByText('Could not load entries')).toBeVisible();
+    await expect.element(list().getByText('Could not load runs')).toBeVisible();
     await expect.element(list().getByText('No members match')).not.toBeInTheDocument();
     await list().getByRole('button', { name: 'Retry' }).click();
     await expect.element(list().getByText('Anna', { exact: true })).toBeVisible();
@@ -170,7 +168,7 @@ describe('Automation member search', () => {
     await open();
     await page.getByRole('button', { name: 'Search members', exact: true }).click();
     await input().fill('anna');
-    await expect.element(list().getByText('Could not load entries')).toBeVisible();
+    await expect.element(list().getByText('Could not load runs')).toBeVisible();
     expect(cursors).toEqual([null, 'first', 'second']);
 
     repaired = true;
@@ -183,7 +181,7 @@ describe('Automation member search', () => {
       .poll(() => cursors)
       .toEqual([null, 'first', 'second', 'second', null, 'first', 'second']);
     await expect.element(list().getByText('No members match')).toBeVisible();
-    await expect.element(list().getByText('Could not load entries')).not.toBeInTheDocument();
+    await expect.element(list().getByText('Could not load runs')).not.toBeInTheDocument();
   });
 
   it.each([
@@ -219,7 +217,7 @@ describe('Automation member search', () => {
     await open();
     await page.getByRole('button', { name: 'Search members', exact: true }).click();
     await input().fill('ann');
-    await expect.element(list().getByText('Could not load entries')).toBeVisible();
+    await expect.element(list().getByText('Could not load runs')).toBeVisible();
     await expect.element(list()).toHaveAttribute('aria-busy', 'false');
     await expect.element(list().getByText('No members match')).not.toBeInTheDocument();
     if (!firstPage) {
@@ -232,7 +230,7 @@ describe('Automation member search', () => {
     repaired = true;
     await list().getByRole('button', { name: 'Retry' }).click();
     await expect.element(list().getByText('Annette', { exact: true })).toBeVisible();
-    await expect.element(list().getByText('Could not load entries')).not.toBeInTheDocument();
+    await expect.element(list().getByText('Could not load runs')).not.toBeInTheDocument();
     expect(searchRequests()).toHaveLength(firstPage ? 2 : 3);
     if (!firstPage) {
       expect(new URL(searchRequests().at(-1)!.url).searchParams.get('cursor')).toBe('next');

@@ -13,6 +13,7 @@
     "build:clean": "nx reset && rimraf -g 'ghost/*/build' && rimraf -g 'ghost/*/tsconfig.tsbuildinfo'",
     "clean:hard": "node ./scripts/clean.js",
     "dev": "pnpm nx run ghost-monorepo:docker:dev",
+    "dev:ember": "pnpm nx run ghost-monorepo:docker:dev:ember",
     "dev:sqlite": "DEV_COMPOSE_FILES='-f compose.dev.sqlite.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:mailgun": "DEV_COMPOSE_FILES='-f compose.dev.mailgun.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:fake-mailgun": "DEV_COMPOSE_FILES='-f compose.dev.fake-mailgun.yaml' pnpm nx run ghost-monorepo:docker:dev",
@@ -44,13 +45,14 @@
     "docker:rebase": "git fetch ${GHOST_UPSTREAM:-origin} main && git rebase ${GHOST_UPSTREAM:-origin}/main && pnpm install && pnpm nx run-many -t build --projects=@tryghost/shade,@tryghost/admin-x-framework && docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} up -d --build --force-recreate ghost-dev",
     "knip": "knip",
     "knip:fix": "knip --fix --allow-remove-files=false",
-    "lint": "pnpm nx run-many -t lint lint:boundaries && pnpm lint:packages && pnpm lint:docs",
+    "lint": "pnpm nx run-many -t lint lint:boundaries && pnpm lint:packages && pnpm lint:versioning && pnpm lint:docs",
     "lint:agent-guidance": "node scripts/check-agent-guidance.js",
     "lint:agent-skills": "node scripts/check-agent-skill-links.js",
     "lint:doc-links": "git ls-files -z '*.md' ':(exclude,glob).changeset/**' ':(exclude,glob)**/fixture/**' ':(exclude,glob)**/fixtures/**' | xargs -0 remark --use remark-validate-links --frail --quiet",
     "lint:markdown": "git ls-files -z '*.md' ':(exclude,glob).changeset/**' ':(exclude,glob)**/fixture/**' ':(exclude,glob)**/fixtures/**' | xargs -0 markdownlint-cli2 --config .markdownlint-cli2.jsonc",
     "lint:boundaries": "depcruise ghost/core/core apps --config .dependency-cruiser.cjs",
     "lint:packages": "node scripts/check-internal-packages.js",
+    "lint:versioning": "node scripts/check-versioning-ignore.js",
     "lint:docs": "pnpm lint:agent-skills && pnpm lint:agent-guidance && pnpm lint:markdown && pnpm lint:doc-links",
     "format": "node scripts/format.js",
     "format:check": "oxfmt --check",
@@ -73,7 +75,8 @@
     "tb:test": "pnpm tb test run",
     "data:analytics:generate": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js generate",
     "data:analytics:clear": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js clear",
-    "release": "node scripts/release.js"
+    "release": "node scripts/release.js",
+    "inventory:typescript": "node scripts/typescript-inventory.ts"
   },
   "devDependencies": {
     "@playwright/test": "catalog:",
@@ -171,6 +174,34 @@
             "target": "dev",
             "projects": [
               "@tryghost/admin",
+              "@tryghost/portal"
+            ]
+          }
+        ]
+      },
+      "docker:dev:ember": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "trap 'docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down' EXIT; docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} logs -f"
+        },
+        "dependsOn": [
+          "docker:up",
+          {
+            "target": "build:assets",
+            "projects": [
+              "ghost"
+            ]
+          },
+          {
+            "target": "dev:ember",
+            "projects": [
+              "@tryghost/admin"
+            ]
+          },
+          {
+            "target": "dev",
+            "projects": [
               "@tryghost/portal"
             ]
           }

@@ -38,7 +38,7 @@ export interface OptionsStepProps {
   post: PublishFlowPost;
   state: PublishOptionsState;
   timezone: string;
-  /** True when the site turned newsletters off; hides the historic send row. */
+  /** True when the site turned newsletters or members off; hides the historic send row. */
   emailDisabledInSettings: boolean;
   /** The limit checks can demote the publish type, so review waits for them. */
   limitsChecked: boolean;

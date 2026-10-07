@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "6.67.1-rc.0",
+  "version": "6.68.1-rc.0",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -44,8 +44,6 @@
     "@html-next/vertical-collection": "3.0.0",
     "@internal/cfg-eslint": "workspace:*",
     "@sentry/ember": "7.120.3",
-    "@sentry/integrations": "7.114.0",
-    "@sentry/replay": "7.116.0",
     "@tryghost/admin-x-framework": "workspace:*",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "catalog:",
@@ -174,8 +172,12 @@
     "webpack": "5.105.4"
   },
   "nx": {
+    "namedInputs": {
+      "reactAdminDependency": []
+    },
     "implicitDependencies": [
-      "!ghost"
+      "!ghost",
+      "@internal/scripts"
     ],
     "targets": {
       "dev": {

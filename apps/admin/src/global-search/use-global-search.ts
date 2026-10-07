@@ -9,7 +9,7 @@ import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/
 import { isOwnerUser } from '@tryghost/admin-x-framework/api/users';
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { useFetchApi, useHandleError } from '@tryghost/admin-x-framework/hooks';
-import { useForceUpgrade } from '@/ember-bridge';
+import { useForceUpgrade } from '@/billing/api';
 // pulls in FlexSearch, so import this hook only from a lazily loaded module
 import { createSearchProvider } from './search-providers';
 import {

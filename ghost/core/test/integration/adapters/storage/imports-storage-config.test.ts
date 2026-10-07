@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import _ from 'lodash';
 
 import defaults from '../../../../core/shared/config/defaults.json';
+import { configSources } from '../../../utils/config-sources';
 import {
   normalizeAdapterConfig,
   resolveAdapterOptions,
@@ -25,9 +26,7 @@ const LOCAL_IMPORTS = {
 
 // Site config layered over the shipped defaults, as the config loader layers its files.
 function resolveFor(feature: string, siteConfig: object) {
-  const config = createConfig(
-    _.merge({}, structuredClone(defaults), { env: 'testing' }, siteConfig),
-  );
+  const config = createConfig(configSources(_.merge({}, structuredClone(defaults), siteConfig)));
 
   return resolveAdapterOptions(feature, normalizeAdapterConfig(config));
 }

@@ -86,7 +86,7 @@ const RunRow = forwardRef<
       <TableCell className="h-[72px] p-4">
         <Stack className="min-w-0" gap="none">
           <button
-            aria-label={`View run history for ${run.memberName}, entered ${run.enteredDescription}`}
+            aria-label={`View run history for ${run.memberName}, started ${run.enteredDescription}`}
             aria-pressed={selectedRunId === run.id}
             className="truncate text-left font-medium outline-offset-4 focus-visible:outline-2 focus-visible:outline-focus-ring"
             disabled={isSelectionDisabled}
@@ -245,7 +245,7 @@ export const RunList: React.FC<{
                   type="button"
                   onClick={() => onDirectionChange(direction === 'asc' ? 'desc' : 'asc')}
                 >
-                  Entered <SortIcon aria-hidden="true" />
+                  Started <SortIcon aria-hidden="true" />
                 </TableHeadButton>
               </TableHead>
               <TableHead className="w-20 px-4" scope="col">
@@ -290,7 +290,7 @@ export const RunList: React.FC<{
         )}
         {(isLoadingMore || isScanning) && (
           <Text className="sr-only" role="status">
-            Loading more entries
+            Loading more runs
           </Text>
         )}
         {!isLoading && !isError && !scanning && !isNextPageError && runs?.length === 0 && (
@@ -301,7 +301,7 @@ export const RunList: React.FC<{
         {isError && (
           <Stack className="px-4 py-6" gap="sm" role="alert">
             <Text size="sm" tone="secondary">
-              Could not load entries
+              Could not load runs
             </Text>
             <Button className="self-start" size="sm" variant="outline" onClick={retry}>
               Retry
@@ -311,7 +311,7 @@ export const RunList: React.FC<{
         {isNextPageError && (
           <Stack className="px-4 py-6" gap="sm" role="alert">
             <Text size="sm" tone="secondary">
-              Could not load entries
+              Could not load runs
             </Text>
             <Button className="self-start" size="sm" variant="outline" onClick={loadMore}>
               Retry

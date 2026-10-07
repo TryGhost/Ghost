@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import {E2E_PORT} from '../../../playwright.config';
-import {EMBED_RENDERER_MAX_HEIGHT} from '../../../src/utils/embed-renderer';
+import {EMBED_RENDERER_MAX_HEIGHT, EMBED_RENDERER_TIMEOUT} from '../../../src/utils/embed-renderer';
 import {assertHTML, createSnippet, focusEditor, html, initialize, isMac, pasteText} from '../../utils/e2e';
 import {chromium, expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
@@ -172,6 +172,43 @@ test.describe('Embed card', async () => {
                 await expect(iframe).toHaveCSS('height', `${Math.ceil(width / (200 / 113))}px`);
             } finally {
                 await browser.close();
+            }
+        });
+
+        test('renders the embed when the renderer answers after the timeout', async function ({browser}) {
+            // its own page, so the fake clock doesn't leak into other tests
+            const slowPage = await browser.newPage();
+            const reported: string[] = [];
+            slowPage.on('console', message => message.type() === 'error' && reported.push(message.text()));
+
+            try {
+                let answerRenderer: () => Promise<void>;
+                await slowPage.route(`${rendererDirectory}**`, (route) => {
+                    answerRenderer = () => route.fulfill({path: rendererFile, contentType: 'text/html'});
+                });
+                await slowPage.clock.install();
+
+                // the unanswered renderer holds up the page's load event
+                const uri = `/#/?embedPreviewUrl=${encodeURIComponent(rendererDirectory)}&content=${embedContent('<div style="height: 400px">Embedded content</div>')}`;
+                await slowPage.goto(`http://localhost:${E2E_PORT}${uri}`, {waitUntil: 'domcontentloaded'});
+                await expect(slowPage.getByTestId('embed-iframe')).toBeAttached();
+
+                await slowPage.clock.runFor(EMBED_RENDERER_TIMEOUT);
+
+                await expect(slowPage.getByTestId('embed-preview-unavailable')).toBeVisible();
+                await expect(slowPage.getByTestId('embed-iframe')).toBeHidden();
+
+                await answerRenderer();
+
+                await expect(slowPage.getByTestId('embed-iframe')).toBeVisible();
+                await expect(slowPage.getByTestId('embed-iframe')).toHaveCSS('height', '400px');
+                await expect(slowPage.getByTestId('embed-preview-unavailable')).toHaveCount(0);
+
+                // both the timeout and the recovery reach the host's onError
+                expect(reported.filter(text => text.includes('Embed renderer unavailable: timed out, frame never loaded'))).toHaveLength(1);
+                expect(reported.filter(text => /Embed renderer answered late: \d+\.\ds \(frame never loaded at timeout\)/.test(text))).toHaveLength(1);
+            } finally {
+                await slowPage.close();
             }
         });
 

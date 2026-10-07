@@ -24,6 +24,11 @@ new one included, gets a new session, so two posts opened by URL each get their
 own. The editor tells the screen once its session has created its post, so the
 new-post URL reached afterwards opens a new post even when the router renders
 the create's URL replace and that navigation together.
+Native hash entries reuse the router's default location key, so that combined
+navigation can even retain the same location object. The screen also tracks the
+router's matched params to recognize that navigation and give the new post a
+fresh session. Ordinary rerenders and loader-data-only updates retain those
+params; revalidating the created post's URL also keeps its session.
 
 Requests are made without the transport's session-expiry redirect, so an expired
 session is surfaced in place rather than navigating away from unsaved content.
@@ -182,19 +187,27 @@ published with a validation error. That also becomes `conflict`, since only the
 server's newer copy lets the writer save again.
 
 Of the other failures, a session-expired, unauthorized or 401 failure becomes
-`session-invalid`; a host-limit failure becomes `host-limit`; an unreachable
-server, a maintenance response and a timeout become `transport`; a validation
-failure, a payload the server refuses as too large and a 422 become
-`validation`, because a payload refused outright has to suppress background
-saves the way a validation failure does or it retries on every edit; a 404
-becomes `not-found`; and anything else becomes `unknown`.
+`session-invalid`; any other `NoPermissionError`, which is how Core refuses a
+writer who may no longer edit the post, becomes `forbidden`; a host-limit
+failure becomes `host-limit`; an unreachable server, a maintenance response and
+a timeout become `transport`; a validation failure, a payload the server
+refuses as too large and a 422 become `validation`, because a payload refused
+outright has to suppress background saves the way a validation failure does or
+it retries on every edit; a 404 becomes `not-found`; and anything else becomes
+`unknown`.
 
-A `validation` or `host-limit` failure the server reports carries the server's
-reason as its message. The server sends that reason as the error's context
-beside a generic summary, and the summary is used only when there is no context.
-The save-error banner shows a host limit's reason with its "please upgrade"
-phrase linked to the host's upgrade screen, `/pro` unless the host configures
-another, and keeps the content and the banner's retry.
+A `validation`, `host-limit` or `forbidden` failure the server reports carries
+the server's reason as its message. The server sends that reason as the error's
+context beside a generic summary, and the summary is used only when there is no
+context. The save-error banner shows a host limit's reason with its "please
+upgrade" phrase linked to the host's upgrade screen, `/pro` unless the host
+configures another, and keeps the content and the banner's retry.
+
+An `unknown` failure the API answered, or one the session describes itself,
+shows its own message. One thrown in the browser instead, such as a
+`TypeError`, reads as "Something went wrong while saving. Please try again." in
+the banner, the status line, the publish flow and the preview alike; the error
+keeps its own message and cause for reporting.
 
 ## Adopting the server's answer
 
@@ -217,7 +230,9 @@ save carries the token the writer's content was built on, together with a
 canvas — the writer's own, or the saved copy for a settings save — so where the
 newer version's canvas differs the server refuses it with a collision instead
 of letting it overwrite that version; reloading the document is the way onto
-it. A refused read is offered again
+it. While nothing is unsaved and no save is under way, a later version refused
+this way shows a notice offering that reload; it goes once a reload or save
+brings the session up to that version. A refused read is offered again
 whenever the engine moves on, so a read of a save that was in flight is adopted
 once that save's acknowledgement has landed and the session holds its token.
 
@@ -323,10 +338,10 @@ is skipped. A copy still waiting for the minute is dropped once a save leaves
 nothing unsaved or the post leaves draft. A copy is written straight away when
 the page is hidden or closed, when the session is disposed holding unsaved work,
 before a revision from the post's history replaces the body, and when a save
-stops on a conflict, a deleted post, an expired session or a crash; a conflict
-that failing saves keep re-entering is copied once. A save that keeps failing is
-otherwise left to the minute's pace, and nothing is copied while a revision's
-restore is being saved.
+stops on a conflict, a deleted post, a post the writer may no longer edit, an
+expired session or a crash; a conflict that failing saves keep re-entering is
+copied once. A save that keeps failing is otherwise left to the minute's pace,
+and nothing is copied while a revision's restore is being saved.
 
 Each post keeps its newest five copies. A post that has not been created keeps
 at most five from one session; once it is created those copies are removed, and
@@ -369,11 +384,18 @@ shows that copy while its refetch runs, and the refetch decides. Once that read
 has settled, later reads decide neither: a refetch that takes away the writer's
 access, or that brings a version stored only as mobiledoc, leaves the editor and
 the unsaved content where they are, and the next save shows the server's refusal
-or the collision.
+or the collision. A save refused because the writer may no longer edit the post
+stops saving for good, as one that finds the post deleted does: the banner says
+they can no longer edit it and offers their content to copy, and there is no
+retry, since the server would refuse every later save too.
 
 What a halted queue looks like is the session's caller's decision, not the
 engine's: `reauth-pending` and `conflict` are states, not UI. The writer gets a
 way back in and the content stays untouched.
+
+A create the server answers with a 404 leaves the editor with no post to save
+to. Saving stops for good there too: the banner says the editor has crashed and
+offers the content to copy into a new post, with no retry.
 
 ## Signing in again without leaving
 
@@ -437,6 +459,12 @@ history, so Back after leaving can step through them. A change to the URL that
 keeps the editor's screen, such as dropping a trailing slash, stays in the
 address bar and leaves the held exit in place.
 
+An expired session is not a way out either. The editor's own requests never
+leave the page for sign in, but another request made while it is open, such as
+closing a notice from the server, would. While the post holds unsaved work the
+editor holds that redirect for every request: the page stays, the next save asks
+for the password in place, and leaving goes through the steps above.
+
 ## What the session reports
 
 Failures never reach the writer as thrown errors; the session reports them. Every
@@ -455,14 +483,15 @@ older copies had to make room, `quotaExceededNoSpace` when nothing could, and
 `saveError` for any other failure.
 
 Sentry receives these through the editor's own reporter, with the response
-status and URL when the transport answered. Validation failures, host limits and
-an unreachable server are not sent: they are the writer's or the host's to act
-on. A failed request that took more than two seconds is sent as a second event
-with its timing. Every error banner the writer is shown — a failed save, a
-collision, a deleted post — is also sent once as a message carrying the text
-they read. A Koenig instance that crashes its error boundary is reported as a
-Lexical failure. Sentry stays optional: without a DSN the calls are no-ops, and
-an error is still logged to the console.
+status and URL when the transport answered. Validation failures, host limits, a
+refusal of a writer who may no longer edit the post and an unreachable server
+are not sent: none of them is a fault in the editor. A failed request that took
+more than two seconds is sent as a second event with its timing. Every error
+banner the writer is shown — a failed save, a collision, a deleted post — is
+also sent once as a message carrying the text they read. A Koenig instance that
+crashes its error boundary is reported as a Lexical failure. Sentry stays
+optional: without a DSN the calls are no-ops, and an error is still logged to
+the console.
 
 ## The autosave debounce
 

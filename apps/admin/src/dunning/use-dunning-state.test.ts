@@ -13,7 +13,7 @@ vi.mock('@tryghost/admin-x-framework/api/config', () => ({
   useBrowseConfig: mockUseBrowseConfig,
 }));
 
-vi.mock('@/ember-bridge', () => ({
+vi.mock('@/billing/api', () => ({
   useSubscriptionStatus: mockUseSubscriptionStatus,
 }));
 

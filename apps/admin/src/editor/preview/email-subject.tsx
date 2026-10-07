@@ -36,14 +36,16 @@ export interface EmailSubjectEditor {
 
 interface EmailSubjectProps {
   editor: EmailSubjectEditor;
-  /** Whether a failed save is the subject's own, as it is wherever nothing else saves. */
-  ownsSaveError: boolean;
 }
 
 // The engine refuses every later field save after these, so an edit cannot clear them.
-const LASTING_FAILURES: ReadonlySet<SaveErrorKind> = new Set(['conflict', 'not-found']);
+const LASTING_FAILURES: ReadonlySet<SaveErrorKind> = new Set([
+  'conflict',
+  'not-found',
+  'forbidden',
+]);
 
-export function EmailSubject({ editor, ownsSaveError }: EmailSubjectProps) {
+export function EmailSubject({ editor }: EmailSubjectProps) {
   const errorId = useId();
   const [editedPast, setEditedPast] = useState<SaveError | null>(null);
   const validationError = overLength(editor.value, EMAIL_SUBJECT_MAX)
@@ -55,7 +57,7 @@ export function EmailSubject({ editor, ownsSaveError }: EmailSubjectProps) {
       ? editor.saveError
       : null;
   const error = validationError ?? (saveError && describeSaveError(saveError).message);
-  const invalid = !!validationError || (!!saveError && ownsSaveError);
+  const invalid = !!validationError || !!saveError;
 
   const commit = () => {
     if (validationError) {

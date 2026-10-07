@@ -1,13 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
-import { flags, response, prepareStatuses, run } from './run-list.test-utils';
+import {
+  openAutomationSidebar,
+  flags,
+  response,
+  prepareStatuses,
+  run,
+} from './run-list.test-utils';
 
-const entries = () => page.getByRole('region', { name: 'Total entries' });
+const entries = () => page.getByRole('region', { name: 'Total runs' });
 const statuses = () => page.getByRole('region', { name: 'Automation status counts' });
 const statusCard = (name: string) => statuses().getByRole('button', { name, exact: true });
-const open = () => page.getByRole('button', { name: 'Show performance' }).click();
-const close = () => page.getByRole('button', { name: 'Hide performance' }).click();
+const open = openAutomationSidebar;
+const close = () => page.getByRole('button', { name: 'Hide automation sidebar' }).click();
 
 const runsRegion = () => page.getByRole('region', { name: 'Automation runs', exact: true });
 const filteredRunsResponse = (
@@ -54,7 +60,7 @@ describe('Automation run status filtering', () => {
     await expect.element(entries()).toHaveTextContent('1,432');
     for (const [label, status] of [
       ['Completed', 'completed'],
-      ['Exited early', 'exited_early'],
+      ['Stopped', 'exited_early'],
       ['In progress', 'in_progress'],
     ]) {
       await statusCard(label).click();
@@ -188,9 +194,7 @@ describe('Automation run status filtering', () => {
     await renderAdminApp('/automations/first', flags);
     await open();
     await statusCard('Completed').click();
-    await expect
-      .element(runsRegion().getByRole('alert'))
-      .toHaveTextContent('Could not load entries');
+    await expect.element(runsRegion().getByRole('alert')).toHaveTextContent('Could not load runs');
     await statusCard('Completed').click();
     await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
     await statusCard('Completed').click();

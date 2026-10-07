@@ -72,9 +72,13 @@ describe('Automation action validation feedback', () => {
     await page.getByRole('heading', { name: 'Member signs up', exact: true }).click();
     await expect.element(warning).not.toBeInTheDocument();
     await page.getByRole('button', { name: 'Why this step needs attention' }).click();
-    await page.getByRole('textbox', { name: 'Subject line' }).click();
+    await expect.element(warning).toBeVisible();
+    const subject = page.getByRole('textbox', { name: 'Subject line' });
+    const { width, height } = subject.element().getBoundingClientRect();
+    // The open warning covers the input's center; its right padding stays exposed.
+    await subject.click({ position: { x: width - 8, y: height / 2 } });
     await expect.element(warning).not.toBeInTheDocument();
-    await expect.element(page.getByRole('textbox', { name: 'Subject line' })).toHaveFocus();
+    await expect.element(subject).toHaveFocus();
   });
 
   for (const enabled of [false, true]) {
@@ -161,14 +165,14 @@ describe('Automation action validation feedback', () => {
     const save = serve();
     await boot(true);
     const wait = page.getByRole('textbox', { name: 'Wait for' });
-    await wait.fill('0');
+    await wait.fill('31');
     await page.getByRole('button', { name: 'Save', exact: true }).click();
     const message = page.getByText('Fix all issues to save this automation.', { exact: true });
     await expect.element(message).toBeVisible();
     await expect
       .element(page.getByText('Automation needs a few details', { exact: true }))
       .not.toBeInTheDocument();
-    await expect.element(wait).toHaveValue('0');
+    await expect.element(wait).toHaveValue('31');
     expect(save.requests).toHaveLength(0);
     await wait.click();
     await wait.fill('2');
@@ -183,7 +187,7 @@ describe('Automation action validation feedback', () => {
     const save = serve('active');
     await boot(true);
     const wait = page.getByRole('textbox', { name: 'Wait for' });
-    await wait.fill('0');
+    await wait.fill('31');
     await page.getByRole('button', { name: 'Turn off', exact: true }).click();
     await expect
       .element(page.getByText('Fix all issues to turn off this automation.', { exact: true }))

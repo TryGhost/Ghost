@@ -167,7 +167,7 @@ The flow is a four-way branch, taken in this order:
 | The user asked for the final review      | `ConfirmStep`                |
 | Otherwise                                | `OptionsStep`                |
 
-`OptionsStep` is an accordion of the three settings — publish type, email recipients, publish time — with at most one section open, plus the read-only row describing a send the post already had. While `willEmail` holds, the publish type row carries the email size warning when the post's email is estimated at 100kB or more; the estimate is the editor's, described in [the editor README](../README.md#email-size). Its continue button waits for `checkLimits()`, since a block landing late demotes the publish type and the user must not carry a stale choice into the review. `ConfirmStep` captures the publish intent on entry, so the copy on the button and in the sentence cannot change while the save is in flight. `CompleteStep` shows the post as a bookmark card and, for a schedule, offers the revert.
+`OptionsStep` is an accordion of the three settings — publish type, email recipients, publish time — with at most one section open, plus the read-only row describing a send the post already had, which is hidden while the site has newsletters or members turned off. While `willEmail` holds, the publish type row carries the email size warning when the post's email is estimated at 100kB or more; the estimate is the editor's, described in [the editor README](../README.md#email-size). Its continue button waits for `checkLimits()`, since a block landing late demotes the publish type and the user must not carry a stale choice into the review. `ConfirmStep` captures the publish intent on entry, so the copy on the button and in the sentence cannot change while the save is in flight. `CompleteStep` shows the post as a bookmark card and, for a schedule, offers the revert.
 
 ## Gates
 
@@ -218,7 +218,7 @@ An audience that could not be counted is not an audience of none: the hook resol
 
 ## Update flow
 
-`UpdateFlowModal` is the counterpart for a post that is already published, scheduled or sent. It describes what happened and offers the one action available at that point: reverting to a draft, dispatched as `toRevertDispatch()`.
+`UpdateFlowModal` is the counterpart for a post that is already published, scheduled or sent. It describes what happened and offers the one action available at that point: reverting to a draft, dispatched as `toRevertDispatch()`. An email-only post that is not scheduled offers nothing, since its email cannot be taken back, and its flow is headed "Sent".
 
 It reads the newsletter from the post rather than from the options machine, because the machine only ever exposes a selectable newsletter: a post sent to a since-archived one would be described against the site's default instead.
 

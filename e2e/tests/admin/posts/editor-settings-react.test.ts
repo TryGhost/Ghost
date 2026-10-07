@@ -16,7 +16,7 @@ import { expect, test, withIsolatedPage } from '@/helpers/playwright';
 import { signInAsMember } from '@/helpers/playwright/flows/sign-in';
 import type { Browser, Page } from '@playwright/test';
 
-// Smoke round trips through the React post editor's settings sidebar, behind the `editorReact` Labs flag
+// Smoke round trips through the React post editor's settings sidebar
 
 const POSTS_API = '/ghost/api/admin/posts/';
 const IMAGES_API = '/ghost/api/admin/images/upload/';
@@ -270,7 +270,7 @@ async function startDraft(page: Page, { title, body }: { title: string; body: st
   await postsPage.goto();
   await postsPage.newPostButton.click();
 
-  const editor = new PostEditorPage(page, { implementation: 'react' });
+  const editor = new PostEditorPage(page);
   await Promise.all([
     page.waitForResponse(
       (response) =>
@@ -324,9 +324,6 @@ async function readPostAsMember(
 }
 
 test.describe('Ghost Admin - Post editor settings (React)', () => {
-  // `test.use` only takes effect on the describe.
-  test.use({ labs: { editorReact: true } });
-
   let memberFactory: MemberFactory;
   let postFactory: PostFactory;
   let tagFactory: TagFactory;
@@ -515,7 +512,7 @@ test.describe('Ghost Admin - Post editor settings (React)', () => {
     ]);
     await updatePost(page, created.id, { twitter_image: xImage, og_image: facebookImage });
 
-    const editor = new PostEditorPage(page, { implementation: 'react' });
+    const editor = new PostEditorPage(page);
     await editor.gotoPost(created.id);
     const { settings } = editor;
 

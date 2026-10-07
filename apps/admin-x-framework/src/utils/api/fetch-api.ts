@@ -68,6 +68,19 @@ const CURRENT_USER_REQUEST = /\/ghost\/api\/admin\/users\/me\/([?#]|$)/;
 // before that are the signed-out state, which the signin flow handles.
 let sessionConfirmed = false;
 let sessionExpiryHandled = false;
+const sessionExpiryRedirectHolds = new Set<symbol>();
+
+/**
+ * Keeps an expired session found by any request from leaving the page until the
+ * returned release is called, for a screen that signs in again in place.
+ */
+export const holdSessionExpiryRedirect = (): (() => void) => {
+  const hold = Symbol('sessionExpiryRedirectHold');
+  sessionExpiryRedirectHolds.add(hold);
+  return () => {
+    sessionExpiryRedirectHolds.delete(hold);
+  };
+};
 
 const isUnauthenticatedAdminRoute = (adminRoot: string) => {
   return (
@@ -86,11 +99,16 @@ const isSessionExpiry = (endpoint: string | URL) => {
 };
 
 // Replace to the admin root at most once across concurrent failures, unless
-// Ember is already booting or displaying an unauthenticated route
+// Ember is already booting or displaying an unauthenticated route, or a screen holds it
 const redirectOnSessionExpiry = () => {
   const { adminRoot } = getGhostPaths();
 
-  if (sessionConfirmed && !sessionExpiryHandled && !isUnauthenticatedAdminRoute(adminRoot)) {
+  if (
+    sessionConfirmed &&
+    !sessionExpiryHandled &&
+    sessionExpiryRedirectHolds.size === 0 &&
+    !isUnauthenticatedAdminRoute(adminRoot)
+  ) {
     sessionExpiryHandled = true;
     window.location.replace(adminRoot);
   }
@@ -164,7 +182,7 @@ const fetchWithXhr = (
   });
 
 export const useFetchApi = () => {
-  const { ghostVersion, sentryDSN } = useFramework();
+  const { ghostVersion } = useFramework();
 
   // Memoized so hooks that depend on fetchApi can cache
   /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -213,11 +231,13 @@ export const useFetchApi = () => {
       const retryPeriods = [500, 1000];
       const retryableErrors = [ServerUnreachableError, MaintenanceError, TypeError];
 
-      const getErrorData = (error?: APIError, response?: Response) => {
+      const getErrorData = (response?: Response, error?: unknown) => {
         const data: Record<string, unknown> = {
-          errorName: error?.name,
+          error: error === undefined ? undefined : String(error),
+          status: response?.status,
+          method,
           attempts,
-          totalSeconds: retryingMs / 1000,
+          totalSeconds: (Date.now() - startTime) / 1000,
           endpoint: endpoint.toString(),
         };
         if (endpoint.toString().includes('/ghost/api/')) {
@@ -241,6 +261,11 @@ export const useFetchApi = () => {
             if (CURRENT_USER_REQUEST.test(endpoint.toString())) {
               sessionConfirmed = true;
             }
+            if (attempts !== 0 && Sentry.getClient()) {
+              Sentry.captureMessage('Request took multiple attempts', {
+                extra: getErrorData(response),
+              });
+            }
             return data;
           } catch (error) {
             retryingMs = Date.now() - startTime;
@@ -261,9 +286,9 @@ export const useFetchApi = () => {
               continue;
             }
 
-            if (attempts !== 0 && sentryDSN) {
+            if (attempts !== 0 && Sentry.getClient()) {
               Sentry.captureMessage('Request failed after multiple attempts', {
-                extra: getErrorData(),
+                extra: getErrorData(error instanceof APIError ? error.response : undefined, error),
               });
             }
 
@@ -305,7 +330,7 @@ export const useFetchApi = () => {
       // because of retry + attempts usage combination
       return undefined as never;
     },
-    [ghostVersion, sentryDSN],
+    [ghostVersion],
   );
 };
 

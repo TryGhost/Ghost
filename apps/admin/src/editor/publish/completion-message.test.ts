@@ -1,13 +1,16 @@
 import { describe, expect, it } from 'vitest';
+import { APIError } from '@tryghost/admin-x-framework/errors';
 import {
   CONFLICT_MESSAGE,
   DROPPED_MESSAGE,
   REAUTH_MESSAGE,
   SESSION_ABANDONED_MESSAGE,
+  UNEXPECTED_MESSAGE,
   UNREACHABLE_MESSAGE,
   describeCompletionFailure,
+  describeSaveError,
 } from '@/editor/publish/completion-message';
-import type { SaveCompletion, SaveErrorKind } from '@/editor/engine/save-engine';
+import type { SaveCompletion, SaveError, SaveErrorKind } from '@/editor/engine/save-engine';
 
 function failed(kind: SaveErrorKind, message = 'boom'): SaveCompletion {
   return { kind: 'failed', error: { kind, message }, executedAs: 'publish' };
@@ -63,5 +66,43 @@ describe('describeCompletionFailure', () => {
     expect(describeCompletionFailure({ kind: 'superseded', by: 'publish' })).toEqual({
       message: DROPPED_MESSAGE,
     });
+  });
+});
+
+describe('describeSaveError', () => {
+  it('shows a generic message for an exception thrown in the browser', () => {
+    const cause = new TypeError("Cannot read properties of undefined (reading 'x')");
+
+    expect(describeSaveError({ kind: 'unknown', message: cause.message, cause })).toEqual({
+      message: UNEXPECTED_MESSAGE,
+    });
+  });
+
+  it('keeps the message of an API error response', () => {
+    const cause = new APIError(
+      new Response(null, { status: 500 }),
+      undefined,
+      'Saving is paused while the site is migrated.',
+    );
+
+    expect(describeSaveError({ kind: 'unknown', message: cause.message, cause })).toEqual({
+      message: 'Saving is paused while the site is migrated.',
+    });
+  });
+
+  it.each<SaveErrorKind>([
+    'validation',
+    'transport',
+    'conflict',
+    'session-invalid',
+    'host-limit',
+    'not-found',
+    'forbidden',
+  ])('keeps the %s copy whatever caused it', (kind) => {
+    const error: SaveError = { kind, message: 'Title is too long.' };
+
+    expect(describeSaveError({ ...error, cause: new Error('boom') })).toEqual(
+      describeSaveError(error),
+    );
   });
 });

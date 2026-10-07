@@ -12,7 +12,7 @@ describe('Automations list', () => {
     await renderAdminApp('/automations', AUTOMATIONS_ENABLED);
 
     await expect.element(automationsScreen.heading()).toBeVisible();
-    await expect.element(automationsScreen.columnHeader('Last entry')).toBeVisible();
+    await expect.element(automationsScreen.columnHeader('Last started')).toBeVisible();
   });
 
   it('lists the welcome automations', async () => {
@@ -42,8 +42,8 @@ describe('Automations list', () => {
     await renderAdminApp('/automations', AUTOMATIONS_ENABLED);
 
     await expect.element(automationsScreen.link('Free member welcome flow')).toBeVisible();
-    await expect.element(automationsScreen.columnHeader('Last entry')).toBeVisible();
-    await expect.element(automationsScreen.columnHeader('Total entries')).toBeVisible();
+    await expect.element(automationsScreen.columnHeader('Last started')).toBeVisible();
+    await expect.element(automationsScreen.columnHeader('Total runs')).toBeVisible();
     await expect.element(automationsScreen.columnHeader('In progress')).toBeVisible();
     const row = automationsScreen.rows();
     await expect.element(row).toHaveTextContent('Greet new free members.');
@@ -66,8 +66,8 @@ describe('Automations list', () => {
     await renderAdminApp('/automations', AUTOMATIONS_ENABLED);
 
     await expect.element(automationsScreen.link('Free member welcome flow')).toBeVisible();
-    await expect.element(automationsScreen.columnHeader('Last entry')).not.toBeInTheDocument();
-    await expect.element(automationsScreen.columnHeader('Total entries')).not.toBeInTheDocument();
+    await expect.element(automationsScreen.columnHeader('Last started')).not.toBeInTheDocument();
+    await expect.element(automationsScreen.columnHeader('Total runs')).not.toBeInTheDocument();
     await expect.element(automationsScreen.columnHeader('In progress')).not.toBeInTheDocument();
   });
 });

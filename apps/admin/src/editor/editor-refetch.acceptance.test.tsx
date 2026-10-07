@@ -1,3 +1,4 @@
+import type { QueryClient } from '@tanstack/react-query';
 import { describe, expect, it, onTestFinished } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { postsDataType } from '@tryghost/admin-x-framework/api/posts';
@@ -144,6 +145,7 @@ async function appendToBody(text: string) {
   const body = editorScreen.body();
   await expect.element(body).toBeVisible();
   await body.fill(`${body.element().textContent ?? ''}${text}`);
+  await expect.poll(unsavedChangesGuarded).toBe(true);
 }
 
 /** This tab's title save lands; the other writer's save lands before its refetch is read. */
@@ -159,6 +161,7 @@ async function saveThenTheySave(
   const releaseReads = shared.holdReads();
 
   await editorScreen.titleInput().fill('My title');
+  await expect.poll(unsavedChangesGuarded).toBe(true);
   await save();
   await expect.poll(() => shared.saveApi.requests.length).toBe(1);
   await expect.poll(() => shared.readApi.requests.length).toBe(2);
@@ -224,12 +227,12 @@ describe('Post editor refetch', () => {
     const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
     const releaseReads = await saveThenTheySave(shared, saveShortcut);
-    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+    // The guard clears when the save is acknowledged; the status holds "Saving…" for 3s.
+    await expect.poll(unsavedChangesGuarded).toBe(false);
     releaseReads();
     await editorReadLanded(queryClient, shared.stored());
 
-    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
-    expect(unsavedChangesGuarded()).toBe(false);
+    await expect.poll(unsavedChangesGuarded).toBe(false);
     await expect(editorScreen.conflictBanner()).toHaveCount(0);
     await expect.element(editorScreen.titleInput()).toHaveValue('My title');
     expect(shared.saveApi.requests).toHaveLength(1);
@@ -241,6 +244,7 @@ describe('Post editor refetch', () => {
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
 
     await editorScreen.titleInput().fill('My title');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
     await saveShortcut();
     await expect.poll(() => shared.saveApi.requests.length).toBe(1);
     await editorReadLanded(queryClient, shared.stored());
@@ -250,7 +254,7 @@ describe('Post editor refetch', () => {
 
     await expect.poll(() => shared.saveApi.requests.length).toBe(2);
     expect(submittedPost(shared.saveApi)).toMatchObject({ updated_at: MY_SAVE_AT });
-    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+    await expect.poll(unsavedChangesGuarded).toBe(false);
     await expect(editorScreen.conflictBanner()).toHaveCount(0);
     expect(shared.stored()).toMatchObject({ title: 'My title' });
     expect(shared.stored().lexical).toContain('Hello from React and more');
@@ -263,10 +267,11 @@ describe('Post editor refetch', () => {
     const releaseReads = shared.holdReads();
 
     await editorScreen.titleInput().fill('My title');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
     await saveShortcut();
     await expect.poll(() => shared.saveApi.requests.length).toBe(1);
     await expect.poll(() => shared.readApi.requests.length).toBe(2);
-    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+    await expect.poll(unsavedChangesGuarded).toBe(false);
 
     await editorScreen.backLink('post').click();
     await expect.poll(currentRoute).toBe('/posts');
@@ -282,7 +287,7 @@ describe('Post editor refetch', () => {
 
     await expect.poll(() => shared.saveApi.requests.length).toBe(2);
     expect(submittedPost(shared.saveApi)).toMatchObject({ updated_at: MY_SAVE_AT });
-    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+    await expect.poll(unsavedChangesGuarded).toBe(false);
     await expect(editorScreen.conflictBanner()).toHaveCount(0);
     expect(shared.stored().lexical).toContain('Hello from React and more');
   });
@@ -295,7 +300,7 @@ describe('Post editor refetch', () => {
     ],
     ['drops the Author from its authors', 'Author', { authors: [{ id: 'other-user' }] }],
   ])(
-    'keeps the editor and the unsaved text when another writer %s, and the next save is refused',
+    'keeps the editor and the unsaved text when another writer %s, and stops saving at the refusal',
     async (_change, role, theirChanges) => {
       const shared = fakeSharedPost(
         { authors: [{ id: CURRENT_USER_ID }] },
@@ -316,8 +321,10 @@ describe('Post editor refetch', () => {
       await saveShortcut();
 
       await expect
-        .element(editorScreen.saveErrorBanner())
-        .toHaveTextContent('You do not have permission to perform this action');
+        .element(editorScreen.conflictBanner())
+        .toHaveTextContent('You no longer have permission to edit this post');
+      await expect.element(editorScreen.copyConflictedContent()).toBeVisible();
+      await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
       expect(shared.saveApi.requests).toHaveLength(2);
       await expect.element(editorScreen.titleInput()).toHaveValue('My title');
       await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and mine');
@@ -365,6 +372,68 @@ describe('Post editor refetch', () => {
   });
 });
 
+/** Another writer saves, and this tab's next background read brings their version. */
+async function theySaveAndTheReadLands(shared: SharedPost, queryClient: QueryClient) {
+  shared.theySave({ title: 'Their title', lexical: buildLexicalParagraph('Their words') });
+  await queryClient.invalidateQueries({ queryKey: [postsDataType] });
+  const theirs = shared.stored();
+  await editorReadLanded(queryClient, theirs);
+  return theirs;
+}
+
+/**
+ * A writer with nothing unsaved hears of another writer's version as soon as a read
+ * brings it, rather than at their first save's collision.
+ */
+describe('Post editor newer version notice', () => {
+  it('tells a clean writer, and Reload brings in the newer version', async () => {
+    const shared = fakeSharedPost();
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
+
+    const theirs = await theySaveAndTheReadLands(shared, queryClient);
+
+    await expect
+      .element(editorScreen.newerVersionNotice())
+      .toHaveTextContent('This post was updated elsewhere.');
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
+
+    await editorScreen.reloadNewerVersion().click();
+
+    await expect.element(editorScreen.titleInput()).toHaveValue('Their title');
+    await expect.element(editorScreen.body()).toHaveTextContent('Their words');
+    await expect(editorScreen.newerVersionNotice()).toHaveCount(0);
+
+    await appendToBody(' and mine');
+    await saveShortcut();
+
+    await expect.poll(() => shared.saveApi.requests.length).toBe(1);
+    expect(submittedPost(shared.saveApi)).toMatchObject({ updated_at: theirs.updated_at });
+    await expect.poll(unsavedChangesGuarded).toBe(false);
+    await expect(editorScreen.conflictBanner()).toHaveCount(0);
+  });
+
+  it('leaves a writer with unsaved work to the collision, without the notice', async () => {
+    const shared = fakeSharedPost();
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await appendToBody(' and mine');
+
+    await theySaveAndTheReadLands(shared, queryClient);
+
+    await expect(editorScreen.newerVersionNotice()).toHaveCount(0);
+    await saveShortcut();
+
+    await expect.poll(() => shared.saveApi.requests.length).toBe(1);
+    expect(submittedPost(shared.saveApi)).toMatchObject({ updated_at: LOADED_AT });
+    await expect
+      .element(editorScreen.conflictBanner())
+      .toHaveTextContent('Someone else is editing this post');
+    await expect(editorScreen.newerVersionNotice()).toHaveCount(0);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and mine');
+  });
+});
+
 /** A read at the version this tab holds brings another writer's alt text and caption. */
 async function theirAltAndCaptionLanded(
   overrides: Partial<Post> = {},
@@ -381,6 +450,7 @@ async function theirAltAndCaptionLanded(
   const releaseReads = shared.holdReads();
 
   await editorScreen.titleInput().fill('My title');
+  await expect.poll(unsavedChangesGuarded).toBe(true);
   await (shared.stored().status === 'draft' ? saveShortcut() : editorScreen.updateButton().click());
   await expect.poll(() => shared.saveApi.requests.length).toBe(1);
   await expect.poll(() => shared.readApi.requests.length).toBe(2);
@@ -403,7 +473,7 @@ describe('Post editor refetch of another writer’s alt text and caption', () =>
     const shared = await theirAltAndCaptionLanded();
 
     await expect.element(editorScreen.featureImageCaption()).toHaveTextContent('Their caption');
-    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+    await expect.poll(unsavedChangesGuarded).toBe(false);
     await editorScreen.featureImageAltToggle().click();
     await expect.element(editorScreen.featureImageAltInput()).toHaveValue('Their alt');
     await appendToBody(' and mine');

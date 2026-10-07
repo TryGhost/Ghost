@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useState } from 'react';
-import { useLocation } from '@tryghost/admin-x-framework';
+import { useLocation, useMatches } from '@tryghost/admin-x-framework';
 import { withoutTrailingSlash } from '@/hooks/use-history-pop-navigation-guard';
 
 interface EditorSessionLocationState {
@@ -36,6 +36,8 @@ interface ScreenSession {
   path: string;
   /** The location the key was last decided for. */
   location: object;
+  /** Matched params change on navigation, even when the location's values do not. */
+  navigation: object | undefined;
   /** Whether the session has created its post. */
   created: boolean;
 }
@@ -52,19 +54,24 @@ export interface EditorScreenSession {
  */
 export function useEditorScreenSessionKey(): EditorScreenSession {
   const location = useLocation();
+  // Native hash entries reuse the default location key. If a create's replace
+  // never commits, returning to the new-post URL can reuse useLocation's object.
+  // Match params distinguish that navigation and survive loader-data-only updates.
+  const navigation = useMatches().at(-1)?.params;
   const path = withoutTrailingSlash(location.pathname);
   const [session, setSession] = useState<ScreenSession>(() => ({
     screen: screenId(),
     count: 0,
     path,
     location,
+    navigation,
     created: false,
   }));
   const markCreated = useCallback(() => {
     setSession((current) => (current.created ? current : { ...current, created: true }));
   }, []);
   const key = `${session.screen}:${session.count}`;
-  if (location === session.location) {
+  if (location === session.location && navigation === session.navigation) {
     return { key, markCreated };
   }
   const carried = (location.state as EditorSessionLocationState | null)?.editorSession;
@@ -74,8 +81,8 @@ export function useEditorScreenSessionKey(): EditorScreenSession {
   // A create's URL replace carries the key to the post's new id.
   const keeps = path === session.path ? !isNewPost : carried === key;
   const next: ScreenSession = keeps
-    ? { ...session, path, location }
-    : { ...session, path, location, count: session.count + 1, created: false };
+    ? { ...session, path, location, navigation }
+    : { ...session, path, location, navigation, count: session.count + 1, created: false };
   setSession(next);
   return { key: `${next.screen}:${next.count}`, markCreated };
 }

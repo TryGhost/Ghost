@@ -30,7 +30,8 @@ export default class ApplicationController extends Controller {
     }
 
     get showBilling() {
-        return this.config.hostSettings?.billing?.enabled;
+        // The React admin mounts its own billing app when billingReact is on
+        return this.config.hostSettings?.billing?.enabled && this.feature.billingReact !== true;
     }
 
     get showUpdateBanner() {

@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-html-to-lexical",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Converts HTML strings into Lexical editor state for Ghost",
   "license": "MIT",
   "author": "Ghost Foundation",

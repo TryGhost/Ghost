@@ -19,6 +19,7 @@ import {
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import { sidebarScreen } from './sidebar.screen';
+import type { StateBridge } from '@/ember-bridge';
 import { postsListScreen } from '@/posts/list/posts-list.screen';
 import { clearStickyPostFilters } from '@/posts/list/posts-sticky-filters';
 
@@ -371,6 +372,54 @@ describe('Sidebar user menu', () => {
     await expect
       .element(sidebarScreen.errorToast())
       .toHaveTextContent("Couldn't sign out. Please try again.");
+  });
+
+  it('applies appearance through the connected Ember stylesheet and editor adapter', async () => {
+    const stylesheet = document.createElement('link');
+    stylesheet.title = 'dark';
+    stylesheet.disabled = true;
+    document.head.appendChild(stylesheet);
+    let editorDarkMode = false;
+    let activeConnections = 0;
+    window.EmberBridge = {
+      state: {
+        onUpdate: () => {},
+        onInvalidate: () => {},
+        onDelete: () => {},
+        on: () => {},
+        off: () => {},
+        sidebarVisible: true,
+        isFeatureEnabled: () => false,
+        connectAdminTheme: () => {
+          activeConnections += 1;
+          return {
+            preload: async () => {},
+            apply: (theme) => {
+              stylesheet.disabled = theme !== 'dark';
+              editorDarkMode = theme === 'dark';
+            },
+            disconnect: () => {
+              activeConnections -= 1;
+            },
+          };
+        },
+      } satisfies StateBridge,
+    };
+    try {
+      await renderAdminApp('/site');
+      await expect.poll(() => activeConnections).toBe(1);
+      await sidebarScreen.selectAppearance('dark');
+      await expect.poll(() => document.documentElement.classList.contains('dark')).toBe(true);
+      expect(stylesheet.disabled).toBe(false);
+      expect(editorDarkMode).toBe(true);
+      await sidebarScreen.selectAppearance('light');
+      await expect.poll(() => document.documentElement.classList.contains('dark')).toBe(false);
+      expect(stylesheet.disabled).toBe(true);
+      expect(editorDarkMode).toBe(false);
+    } finally {
+      delete window.EmberBridge;
+      stylesheet.remove();
+    }
   });
 
   it('switches the appearance and shows the current choice', async () => {

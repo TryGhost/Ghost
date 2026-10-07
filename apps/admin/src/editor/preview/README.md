@@ -2,17 +2,18 @@
 
 `<PostPreviewModal>` shows a post as its readers will get it: rendered by the site (Web) or rendered as the newsletter it would be sent as (Email). It is self-contained — the caller supplies the post's identity and preview URL, and the modal reads everything else (settings, tiers, newsletters, the current user, the email preview) from the Admin API.
 
-| Prop              | Meaning                                                                                      |
-| ----------------- | -------------------------------------------------------------------------------------------- |
-| `open`            | Whether the modal is shown; `onOpenChange` reports closing                                   |
-| `postId`          | Identifies the post for the email preview and test-send endpoints                            |
-| `previewUrl`      | The post's public preview URL; empty until the post has a uuid                               |
-| `isPost`          | Pages have no email preview                                                                  |
-| `newsletterSlug`  | The post's own newsletter, preselected in the email preview                                  |
-| `subjectEditor`   | The session's subject field: value, title fallback, save state, and stage and commit         |
-| `onBeforeOpen`    | Awaited before the preview renders, so the caller can save the draft it previews             |
-| `onPublish`       | Renders a Publish button; supplied for every user who can publish                            |
-| `publishDisabled` | Keeps the Publish button rendered but disabled while the caller cannot open its publish flow |
+| Prop                     | Meaning                                                                                      |
+| ------------------------ | -------------------------------------------------------------------------------------------- |
+| `open`                   | Whether the modal is shown; `onOpenChange` reports closing                                   |
+| `postId`                 | Identifies the post for the email preview and test-send endpoints                            |
+| `previewUrl`             | The post's public preview URL; empty until the post has a uuid                               |
+| `isPost`                 | Pages have no email preview                                                                  |
+| `newsletterSlug`         | The post's own newsletter, preselected in the email preview                                  |
+| `fallbackNewsletterSlug` | Preselected when the post has no newsletter of its own, such as the publish flow's pick      |
+| `subjectEditor`          | The session's subject field: value, title fallback, save state, and stage and commit         |
+| `onBeforeOpen`           | Awaited before the preview renders, so the caller can save the draft it previews             |
+| `onPublish`              | Renders a Publish button; supplied for every user who can publish                            |
+| `publishDisabled`        | Keeps the Publish button rendered but disabled while the caller cannot open its publish flow |
 
 The modal stages and commits subject edits through the optional `subjectEditor` port to the editor session. `onBeforeOpen` exists because a draft must be persisted before the site or the email renderer can see the latest content; what that means — dirty checks, a save in flight — belongs to the caller.
 
@@ -53,7 +54,13 @@ The rendered email arrives as a complete HTML document and is shown in a `srcdoc
 
 The newsletters offered are the site's active ones, read from the same full browse the publish flow reads and narrowed here, every page of it. The post's own newsletter stays selectable even once it has been archived, which is looked up by slug; a newsletter the site has deleted leaves the email unsendable.
 
+Each newsletter is shown with the address its email goes out from: its sender address, or the site's default address when it has none. When the host manages the site's email, the default address also replaces a sender that is not on the host's sending domain, or any sender when there is no sending domain.
+
+Each opening preselects the post's own newsletter, else `fallbackNewsletterSlug`, else the first one offered; a newsletter picked inside the preview lasts until it closes.
+
 Switching newsletters re-renders the preview against that newsletter, and the test send goes to exactly one address — the current user's, unless it is edited — for the audience currently selected.
+
+A test send that finds the session expired opens the editor's sign-in dialog over the preview and goes out once the writer has signed in. Abandoning the sign-in says beneath Send that the session expired, and sending again asks again.
 
 When the caller passes the saved post, a banner above the rendered email gives its size once the email is estimated at 100kB or more. The estimate is the editor's, described in [the editor README](../README.md#email-size), so it does not follow the newsletter or audience picked here.
 
@@ -71,9 +78,9 @@ title, as text. Closing preview preserves unsaved subject edits. If those edits 
 saving when preview reopens, the save-failure screen keeps the subject field available
 for correction, and committing the corrected subject retries preparation, whose save
 carries it, before displaying the preview or enabling sharing and test sends. That
-screen's failed save is the preview's own, so it is shown beside the field without
-marking the subject invalid, which only its own length or failed save does.
+screen says why the preview's save failed, so the field there reports only the
+subject's own length.
 
 ## Not here yet
 
-Known gaps, listed so they are not mistaken for decisions: an already-sent post is re-rendered by the preview endpoint rather than showing its stored email, and the sender address does not apply the managed-email override.
+Known gaps, listed so they are not mistaken for decisions: an already-sent post is re-rendered by the preview endpoint rather than showing its stored email.

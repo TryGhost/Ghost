@@ -78,6 +78,8 @@ function KeyedUpdateFlowModal({
   const isScheduled = post.status === 'scheduled';
   const isSent = post.status === 'sent';
   const emailOnly = post.emailOnly === true || isSent;
+  const canRevert = isScheduled || !emailOnly;
+  const heading = canRevert ? (isScheduled ? 'Unschedule' : 'Unpublish') : 'Sent';
   const willEmail = isScheduled && Boolean(post.newsletter) && !post.email;
   const hasBeenEmailed =
     post.displayName === 'post' &&
@@ -166,22 +168,19 @@ function KeyedUpdateFlowModal({
   return (
     <FullscreenDialog
       data-testid={updateFlowModal}
-      modal={false}
-      title={isScheduled ? 'Unschedule' : 'Unpublish'}
+      title={heading}
       open
       onOpenChange={(open) => !open && close()}
     >
       <Box className="relative min-h-full">
         <Inline className="absolute inset-x-0 top-0 p-4" justify="between">
           <Text aria-hidden="true" as="h2" className="text-lg tracking-tight" weight="semibold">
-            {isScheduled ? 'Unschedule' : 'Unpublish'}
+            {heading}
           </Text>
           <PageHeader.ActionGroup>
-            {isSent ? null : (
-              <Button variant="outline" onClick={close}>
-                Close
-              </Button>
-            )}
+            <Button variant="outline" onClick={close}>
+              Close
+            </Button>
           </PageHeader.ActionGroup>
         </Inline>
 
@@ -246,7 +245,7 @@ function KeyedUpdateFlowModal({
             </Banner>
           ) : null}
 
-          {isScheduled || !emailOnly ? (
+          {canRevert ? (
             <Inline justify="start">
               <Button
                 className="h-auto min-h-11 max-w-full px-5 py-2 whitespace-normal"

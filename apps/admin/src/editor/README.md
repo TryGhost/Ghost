@@ -10,6 +10,11 @@ While React serves the editor, the shell also fetches the editor screen and
 Koenig through `api.ts` once a signed-in admin is idle, so opening the first
 post doesn't wait on either download.
 
+The editor opens once it has the site's settings, config and site record and
+the current user, which Koenig's cards are configured from. If one of them fails
+to load with no copy cached, the editor shows its load error, and Retry reads it
+again.
+
 ## The modules
 
 | Module                                           | What it is                                                                                                           |
@@ -58,9 +63,17 @@ then starts at its email-failure step. Whether a post qualifies is decided by
 the flow's own `initialEmailError()`, and the button is offered only to roles
 Core lets retry an email, so an Author sees the failure without it.
 
-Every opener stays unavailable until the publish inputs have loaded. When they
-fail to load, the header shows the error with a Retry for a draft, and for a
-post whose status line offers the retry. After a retry, or a publish that
+While the title or a settings field breaks its rule, the header's Publish, its
+shortcut, Unpublish and Unschedule open nothing: each is refused as a save the
+writer asks for is, with the field's message, and moves focus to the title or
+excerpt, opening the settings panel when the field lives there. Update moves
+focus the same way.
+
+Every opener stays unavailable until the publish inputs have loaded, and so
+does the update flow behind Unpublish, Unschedule and a sent post's "Sent" in
+the status line. When they fail to load, the header shows the error with a
+Retry beside Publish, Unpublish or Unschedule, and for a post whose status line
+offers "Sent" or the retry. After a retry, or a publish that
 emails, a published post's status line reads "Published and sending to N
 members" while the email is on its way and "Published and sent to N members"
 once the flow's email confirmation finds it submitted; an email-only send reads

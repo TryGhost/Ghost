@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.68.0-rc.0",
+  "version": "6.68.1-rc.0",
   "description": "The professional publishing platform",
   "keywords": [
     "blog",
@@ -46,8 +46,8 @@
     "archive": "node scripts/pack.mjs",
     "dev": "nodemon index.js",
     "build:assets": "pnpm run '/^build:assets:/'",
-    "build:assets:js": "node scripts/minify-assets.mjs",
-    "build:assets:cards": "node scripts/build-card-assets.mjs",
+    "build:assets:js": "node scripts/minify-assets.mts",
+    "build:assets:cards": "node scripts/build-card-assets.mts",
     "generate-golden-email": "node bin/generate-golden-email.js",
     "query-parameter-policy:export": "node --import=tsx scripts/export-query-parameter-policy.ts",
     "migrate:create": "node bin/create-migration.js",
@@ -66,6 +66,7 @@
     "test:legacy": "vitest run -c vitest.config.db.ts --project legacy",
     "test:ci:e2e": "COVERAGE_LANE=e2e pnpm test:e2e --coverage",
     "test:ci:integration": "COVERAGE_LANE=integration pnpm test:integration --coverage",
+    "test:ci:unit": "vitest run --coverage --coverage.reportsDirectory=coverage-unit --coverage.reporter=cobertura --coverage.reporter=text-summary",
     "test:int:slow": "pnpm test:integration",
     "test:e2e:slow": "vitest run -c vitest.config.db.ts --project e2e --project e2e-api --reporter=verbose",
     "test:leg:slow": "vitest run -c vitest.config.db.ts --project legacy --reporter=verbose",
@@ -158,10 +159,10 @@
     "cheerio": "catalog:",
     "clsx": "catalog:",
     "common-tags": "1.8.2",
-    "compression": "1.8.1",
+    "compression": "1.8.2",
     "connect-slashes": "1.4.0",
     "cookie-session": "2.1.1",
-    "cookies": "0.9.1",
+    "cookies": "0.9.2",
     "cors": "2.8.6",
     "countries-and-timezones": "3.9.0",
     "cron-validate": "catalog:",
@@ -391,6 +392,15 @@
         ],
         "outputs": [
           "{projectRoot}/coverage-integration/cobertura-coverage.xml"
+        ]
+      },
+      "test:ci:unit": {
+        "dependsOn": [
+          "build:assets",
+          "^build"
+        ],
+        "outputs": [
+          "{projectRoot}/coverage-unit/cobertura-coverage.xml"
         ]
       }
     }

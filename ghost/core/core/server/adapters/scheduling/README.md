@@ -37,8 +37,26 @@ starts this rebuild with the previous key. Post scheduling and
 fresh poll chain and lets the old callback fail authentication.
 
 Boot rebuilds are consumer-specific and only run when the adapter sets
-`rescheduleOnBoot`. Same-key replacements use `bootstrap` unscheduling so the
-default adapter does not tombstone the replacement job.
+`rescheduleOnBoot`. On boot the queued job and the reissued job share a
+callback URL, so post scheduling handles them according to what the adapter
+declares:
+
+- By default it unschedules each job with `bootstrap`, then schedules it. The
+  unschedule keeps a persistent queue from gaining a duplicate on every boot,
+  and `bootstrap` tells the default adapter not to tombstone the replacement.
+- When the adapter sets `dedupesByIdempotencyKey = true`, it only schedules.
+  Each job's idempotency key is derived from its fire time and callback URL,
+  so the adapter recognises the job it already holds and creates nothing. This
+  is the safer path for a persistent queue: an unschedule sent alongside the
+  schedule is not ordered against it on the wire, and one that lands second
+  removes the job that was just registered.
+
+An adapter should only set `dedupesByIdempotencyKey` once every job in its
+queue carries a key. A job queued without one is invisible to the dedupe, so
+the first boot would add a keyed twin beside it.
+
+`SignedFlushScheduler` uses `bootstrap` unscheduling for its same-key
+replacements regardless of the flag.
 
 ## Consumers
 

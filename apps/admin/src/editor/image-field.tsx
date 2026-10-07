@@ -56,6 +56,8 @@ export interface ImageFieldProps {
   testId?: string;
   /** A field with no alt text leaves its preview presentational. */
   alt?: string | null;
+  /** Fades the preview of an image the post leaves out. */
+  faded?: boolean;
   /** Takes the uploaded or picked src, and `null` when the writer removes it. */
   onChange: (src: string | null) => void;
   /** Takes the photographer credit too. Defaults to `onChange` with the picked src. */
@@ -78,6 +80,7 @@ export function ImageField({
   className,
   testId,
   alt = null,
+  faded = false,
   onChange,
   onUnsplashSelect,
   children,
@@ -137,7 +140,12 @@ export function ImageField({
 
   const preview = (
     <ImageUploadPreview className={variant === 'bar' ? 'rounded-none' : undefined}>
-      <ImageUploadImage alt={alt ?? ''} role={alt ? 'img' : 'presentation'} src={src} />
+      <ImageUploadImage
+        alt={alt ?? ''}
+        className={faded ? 'opacity-50' : undefined}
+        role={alt ? 'img' : 'presentation'}
+        src={src}
+      />
       {isUploading ? (
         <Inline align="center" className="absolute inset-0 bg-background/60" justify="center">
           <LoadingIndicator size="sm" />

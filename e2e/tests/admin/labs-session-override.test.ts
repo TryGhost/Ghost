@@ -1,29 +1,27 @@
-import { PostEditorPage } from '@/admin-pages';
+import { SidebarPage } from '@/admin-pages';
 import { expect, test } from '@/helpers/playwright';
 
-// Exercised through `editorReact`, which is off by default, so ownership of
-// `/editor/post` visibly moves between the React and Ember routers.
+// Exercised through `automations`, which is off by default and gates the
+// sidebar's Automations link.
 test.describe('Ghost Admin - Labs session override', () => {
-  test('keeps the React URL override for the session and returns to Ember after clearing and reloading', async ({
+  test('keeps a URL override for the session and drops it after clearing and reloading', async ({
     page,
   }) => {
-    const reactEditor = new PostEditorPage(page, { implementation: 'react' });
-    const emberEditor = new PostEditorPage(page);
+    const sidebar = new SidebarPage(page);
+    const automationsLink = sidebar.getNavLink('Automations');
 
-    await page.goto('/ghost/#/editor/post?labs=editorReact');
-    await expect(reactEditor.titleInput).toBeVisible();
-    await expect(emberEditor.titleInput).toBeHidden();
+    await page.goto('/ghost/#/posts?labs=automations');
+    await expect(automationsLink).toBeVisible();
 
     // A fresh document without the query parameter retains the session choice.
-    await page.goto('/ghost/#/editor/post');
+    await page.goto('/ghost/#/posts');
     await page.reload();
-    await expect(reactEditor.titleInput).toBeVisible();
-    await expect(emberEditor.titleInput).toBeHidden();
+    await expect(automationsLink).toBeVisible();
 
-    // Reload after clearing so both routers start with the same ownership state.
-    await page.goto('/ghost/#/editor/post?labs=');
+    await page.goto('/ghost/#/posts?labs=');
     await page.reload();
-    await expect(emberEditor.titleInput).toBeVisible();
-    await expect(reactEditor.titleInput).toBeHidden();
+    // The sidebar renders its links together, so an override would show by now.
+    await expect(sidebar.getNavLink('Tags')).toBeVisible();
+    await expect(automationsLink).toBeHidden();
   });
 });

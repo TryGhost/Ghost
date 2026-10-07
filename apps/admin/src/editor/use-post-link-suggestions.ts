@@ -6,14 +6,16 @@ import type { PostType } from './card-config';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import {
   type AutocompleteLink,
+  buildAutocompleteLinks,
+  buildOfferLinks,
+} from '@/shared/autocomplete-links';
+import {
   type LatestPostSource,
   type LinkSearchGroup,
   type LinkSearchResultGroup,
   type SearchIndexEntity,
   type SearchIndexPost,
-  buildAutocompleteLinks,
   buildLatestPostsGroup,
-  buildOfferLinks,
   filterLinkSearchResults,
   searchIndexEntitiesGroup,
   searchIndexPostsGroup,
@@ -25,6 +27,7 @@ export interface PostLinkSuggestionOptions {
   paidMembersEnabled: boolean;
   donationsEnabled: boolean;
   recommendationsEnabled: boolean;
+  membersSignupAccess?: string;
   membersEnabled: boolean;
   timezone: string;
 }
@@ -49,6 +52,7 @@ export function usePostLinkSuggestions({
   paidMembersEnabled,
   donationsEnabled,
   recommendationsEnabled,
+  membersSignupAccess,
   membersEnabled,
   timezone,
 }: PostLinkSuggestionOptions) {
@@ -93,7 +97,14 @@ export function usePostLinkSuggestions({
     const offerLinks = await cache.current.offerLinks;
 
     return buildAutocompleteLinks(
-      { postType, homepageUrl, paidMembersEnabled, donationsEnabled, recommendationsEnabled },
+      {
+        postType,
+        homepageUrl,
+        paidMembersEnabled,
+        donationsEnabled,
+        recommendationsEnabled,
+        membersSignupAccess,
+      },
       offerLinks,
     );
   }, [
@@ -103,6 +114,7 @@ export function usePostLinkSuggestions({
     paidMembersEnabled,
     donationsEnabled,
     recommendationsEnabled,
+    membersSignupAccess,
   ]);
 
   const decorationSettings = useMemo(
