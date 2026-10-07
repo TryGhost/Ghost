@@ -121,4 +121,17 @@ async function fetchData(pathOptions, routerOptions, locals) {
   return response;
 }
 
+/**
+ * Read the post or page a route's data names, with the relations an entry needs.
+ *
+ * @param {Object} query resolved `read` spec for posts or pages
+ * @param {Object} locals
+ * @returns {Promise<Object|undefined>}
+ */
+async function fetchEntry(query, locals) {
+  const result = await processQuery(_.merge({}, query, defaultQueryOptions), null, locals);
+  return result[query.resource][0];
+}
+
 module.exports = fetchData;
+module.exports.fetchEntry = fetchEntry;
