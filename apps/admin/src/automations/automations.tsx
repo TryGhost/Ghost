@@ -66,7 +66,11 @@ const Automations: React.FC = () => {
             </PageHeader>
           </ListPage.Header>
           <ListPage.Body>
-            <AutomationsList automations={automations} isLoading={isLoading} />
+            <AutomationsList
+              automations={automations}
+              canManage={!!currentUser && canManageAutomations(currentUser)}
+              isLoading={isLoading}
+            />
             <AutomationsHelpCards />
           </ListPage.Body>
         </ListPage>

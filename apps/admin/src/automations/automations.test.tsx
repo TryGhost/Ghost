@@ -18,6 +18,12 @@ vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
   return {
     ...actual,
     useBrowseAutomations: mockUseBrowseAutomations,
+    useSetAutomationStatus: () => ({
+      mutate: vi.fn(),
+      reset: vi.fn(),
+      isPending: false,
+      isError: false,
+    }),
   };
 });
 
@@ -169,8 +175,10 @@ describe('Automations', () => {
     const button = screen.getByRole('button', { name: 'New automation' });
     if (disabled) {
       expect(button).toBeDisabled();
+      expect(screen.queryByRole('button', { name: /Actions for/ })).not.toBeInTheDocument();
     } else {
       expect(button).toBeEnabled();
+      expect(screen.queryByRole('button', { name: /Actions for/ })).not.toBeInTheDocument();
     }
   });
 

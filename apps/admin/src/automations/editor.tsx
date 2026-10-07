@@ -1,4 +1,5 @@
 import NewAutomation from './new-automation';
+import AutomationStatusDialog from './components/automation-status-dialog';
 import { TRIGGER_CANVAS_ID } from './components/canvas/nodes';
 import AutomationCanvas, { EMAIL_STEP_QUERY_PARAM } from './components/canvas/automation-canvas';
 import AutomationHeader, { type AutomationValidationAction } from './components/automation-header';
@@ -287,10 +288,6 @@ const AutomationEditorContent: React.FC<{
   const publishButtonChildren: React.ReactNode =
     draft?.status === 'active' ? (hasUnsavedChanges ? 'Publish changes' : 'Published') : 'Publish';
   let isTurnOffButtonEnabled = true;
-  let turnOffButtonChildren: React.ReactNode = 'Turn off';
-  let isPublishConfirmButtonEnabled = true;
-  let publishConfirmButtonVariant: ButtonProps['variant'] = 'default';
-  let publishConfirmButtonChildren: React.ReactNode = 'Publish';
   let isRepublishButtonEnabled = true;
   let republishButtonVariant: ButtonProps['variant'] = 'default';
   let republishButtonChildren: React.ReactNode = 'Publish changes';
@@ -312,13 +309,6 @@ const AutomationEditorContent: React.FC<{
           );
           break;
         case 'publish':
-          isPublishConfirmButtonEnabled = false;
-          publishConfirmButtonChildren = (
-            <>
-              <LoadingIndicator color="light" size="sm" />
-              <span className="sr-only">Publishing...</span>
-            </>
-          );
           break;
         case 'republish':
           isRepublishButtonEnabled = false;
@@ -330,12 +320,6 @@ const AutomationEditorContent: React.FC<{
           );
           break;
         case 'unpublish':
-          turnOffButtonChildren = (
-            <>
-              <LoadingIndicator color="light" size="sm" />
-              <span className="sr-only">Turning off...</span>
-            </>
-          );
           break;
       }
       break;
@@ -365,8 +349,6 @@ const AutomationEditorContent: React.FC<{
         case 'publish':
           isSaveButtonEnabled = false;
           isPublishButtonEnabled = false;
-          publishConfirmButtonVariant = 'destructive';
-          publishConfirmButtonChildren = 'Retry';
           break;
         case 'republish':
           isPublishButtonEnabled = false;
@@ -376,7 +358,6 @@ const AutomationEditorContent: React.FC<{
           break;
         case 'unpublish':
           isTurnOffButtonEnabled = true;
-          turnOffButtonChildren = 'Retry';
           break;
       }
       break;
@@ -549,53 +530,16 @@ const AutomationEditorContent: React.FC<{
 
       <DirtyConfirmDialog {...discardDialogProps} />
 
-      <AlertDialog open={isConfirmPublishAlertOpen} onOpenChange={onConfirmPublishOpenChange}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Start your automation?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Once published, your automation goes live. Any member who meets the trigger will be
-              enrolled automatically.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isEditRequestActive}>Cancel</AlertDialogCancel>
-            <Button
-              disabled={!isPublishConfirmButtonEnabled}
-              variant={publishConfirmButtonVariant}
-              onClick={() => save('active')}
-            >
-              {publishConfirmButtonChildren}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={isConfirmUnpublishAlertOpen} onOpenChange={onConfirmUnpublishOpenChange}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Turn off automation?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Your automation will no longer run, and any members currently in progress will be
-              removed.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isEditRequestActive}>Cancel</AlertDialogCancel>
-            <Button
-              disabled={isEditRequestActive}
-              variant={
-                editState.phase === 'failed' && editState.action === 'unpublish'
-                  ? 'destructive'
-                  : 'default'
-              }
-              onClick={() => save('inactive')}
-            >
-              {turnOffButtonChildren}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <AutomationStatusDialog
+        isError={editState.phase === 'failed'}
+        isPending={isEditRequestActive}
+        open={isConfirmPublishAlertOpen || isConfirmUnpublishAlertOpen}
+        status={isConfirmUnpublishAlertOpen ? 'inactive' : 'active'}
+        onConfirm={() => save(isConfirmUnpublishAlertOpen ? 'inactive' : 'active')}
+        onOpenChange={
+          isConfirmUnpublishAlertOpen ? onConfirmUnpublishOpenChange : onConfirmPublishOpenChange
+        }
+      />
 
       <AlertDialog open={isConfirmRepublishAlertOpen} onOpenChange={onConfirmRepublishOpenChange}>
         <AlertDialogContent>
