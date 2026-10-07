@@ -172,7 +172,7 @@ describe('Comments Service: CommentsServiceEmails', function () {
       instance.commentsServiceEmailRenderer.renderEmailTemplate = renderStub;
       const getPostUrlSpy = sinon.spy(instance, 'getPostUrl');
 
-      return { instance, post, comment, getPostUrlSpy, renderStub, urlService };
+      return { instance, post, comment, getPostUrlSpy, renderStub, mailerSendStub, urlService };
     }
 
     it('notifyPostAuthors: passes the right post arg into getPostUrl and threads the URL into templateData', async function () {
@@ -243,27 +243,30 @@ describe('Comments Service: CommentsServiceEmails', function () {
       assert.equal(templateData.postUrl, POST_URL_FOR_COMMENT);
     });
 
-    it('notifyReport: starts independent lookups without waiting for the post', async function () {
-      const { instance, post, comment } = buildHarness();
-      let releasePost;
-      instance.models.Post.findOne.returns(
-        new Promise((resolve) => {
-          releasePost = () => resolve(post);
-        }),
-      );
+    it('notifyReport: emails the owner a report with the post, member and comment details', async function () {
+      const { instance, comment, renderStub, mailerSendStub } = buildHarness();
 
-      const notification = instance.notifyReport(comment, {
-        name: 'Reporter',
-        email: 'reporter@example.com',
+      await instance.notifyReport(comment, { name: 'Reporter', email: 'reporter@example.com' });
+
+      sinon.assert.calledOnce(renderStub);
+      const [template, templateData] = renderStub.firstCall.args;
+      assert.equal(template, 'report');
+      assert.equal(templateData.postTitle, 'My Post');
+      assert.equal(templateData.postUrl, POST_URL_FOR_COMMENT);
+      assert.equal(templateData.commentHtml, '<p>hi</p>');
+      assert.equal(templateData.memberName, 'Reader');
+      assert.equal(templateData.memberEmail, 'reader@example.com');
+      assert.equal(templateData.reporter, 'Reporter (reporter@example.com)');
+      assert.equal(templateData.toEmail, 'owner@example.com');
+      assert.match(templateData.staffUrl, /\/settings\/staff\/owner\/email-notifications$/);
+      assert.match(templateData.moderationUrl, /\/comments\/\?id=is:comment-id$/);
+
+      sinon.assert.calledOnceWithMatch(mailerSendStub, {
+        to: 'owner@example.com',
+        subject: '🚩 A comment has been reported on your post',
+        html: 'h',
+        text: 't',
       });
-
-      try {
-        sinon.assert.calledOnce(instance.models.Member.findOne);
-        sinon.assert.calledOnce(instance.models.User.getOwnerUser);
-      } finally {
-        releasePost();
-        await notification;
-      }
     });
   });
 });
