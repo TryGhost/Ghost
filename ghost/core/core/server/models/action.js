@@ -12,6 +12,11 @@ const AppInstallationResource = ghostBookshelf.Model.extend({
   tableName: 'app_installations',
 });
 
+// Gift links are too. Their entries point at the post a link belongs to.
+const GiftLinkResource = ghostBookshelf.Model.extend({
+  tableName: 'posts',
+});
+
 const Action = ghostBookshelf.Model.extend(
   {
     tableName: 'actions',
@@ -33,6 +38,7 @@ const Action = ghostBookshelf.Model.extend(
 
       candidates.push([MemberMetafieldResource, 'member_custom_field']);
       candidates.push([AppInstallationResource, 'app_installation']);
+      candidates.push([GiftLinkResource, 'gift_link']);
 
       return candidates;
     },
