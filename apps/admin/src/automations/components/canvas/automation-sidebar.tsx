@@ -1,11 +1,15 @@
 import type { PerformanceDateRange } from '@/automations/utils/performance-date-range';
 import { useAutomationPerformanceStats } from '@/automations/hooks/use-automation-performance-stats';
 import React, { useId, useState } from 'react';
-import type { AutomationRunStatusFilter } from '@tryghost/admin-x-framework/api/automations';
+import type {
+  AutomationRunStatusFilter,
+  AutomationTrigger,
+} from '@tryghost/admin-x-framework/api/automations';
 import {
   Button,
   Field,
   FieldLabel,
+  FieldDescription,
   FieldError,
   Input,
   Textarea,
@@ -156,6 +160,7 @@ export const AutomationSidebar: React.FC<{
   automationId: string;
   name: string;
   description: string;
+  triggerTierScope: AutomationTrigger['trigger_tier_scope'];
   performanceEnabled: boolean;
   metadata: AutomationMetadata;
   onDetailsChange: (details: { name: string; description: string }) => void;
@@ -168,6 +173,7 @@ export const AutomationSidebar: React.FC<{
   automationId,
   name,
   description,
+  triggerTierScope,
   performanceEnabled,
   metadata,
   onDetailsChange,
@@ -216,6 +222,26 @@ export const AutomationSidebar: React.FC<{
   // Mount on the first opening, including the active-flow default, then retain cached content.
   if (isOpen && performanceEnabled && activeTab === 'performance' && !hasOpened) {
     setHasOpened(true);
+  }
+
+  let exitConditionDescription: string;
+  switch (triggerTierScope) {
+    case 'free':
+    case null:
+      exitConditionDescription = 'Members exit early if they unsubscribe.';
+      break;
+    case 'all_paid':
+      exitConditionDescription =
+        'Members exit early if they unsubscribe or cancel their subscription.';
+      break;
+    case 'selected_paid':
+      exitConditionDescription =
+        'Members exit early if they unsubscribe, cancel their subscription, or leave the selected tier(s).';
+      break;
+    default: {
+      const _exhaustive: never = triggerTierScope;
+      throw new Error(`Unknown automation trigger scope: ${String(_exhaustive)}`);
+    }
   }
 
   return (
@@ -367,6 +393,10 @@ export const AutomationSidebar: React.FC<{
                         onDetailsChange({ name, description: event.target.value })
                       }
                     />
+                  </Field>
+                  <Field>
+                    <FieldLabel>Exit conditions</FieldLabel>
+                    <FieldDescription>{exitConditionDescription}</FieldDescription>
                   </Field>
                 </Stack>
               </TabsContent>
