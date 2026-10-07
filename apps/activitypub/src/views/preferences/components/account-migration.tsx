@@ -1,6 +1,14 @@
 import Layout from '@src/components/layout';
 import React, { useState } from 'react';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
   Button,
   Field,
   FieldDescription,
@@ -9,6 +17,10 @@ import {
   Input,
   LoadingIndicator,
   Skeleton,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
 } from '@tryghost/shade/components';
 import { H2 } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
@@ -17,6 +29,7 @@ import {
   useAccountAliasesForUser,
   useAccountMigrationForUser,
   useAddAccountAliasMutationForUser,
+  useLookupAccountMutationForUser,
   useMoveAccountMutationForUser,
   useRemoveAccountAliasMutationForUser,
 } from '@hooks/use-activity-pub-queries';
@@ -97,14 +110,17 @@ const AccountMigration: React.FC = () => {
   const migrationUnavailable =
     isApiError(migrationLoadError) &&
     [401, 403, 404, 405, 501].includes(migrationLoadError.statusCode);
+  const lookupAccountMutation = useLookupAccountMutationForUser('index');
   const moveAccountMutation = useMoveAccountMutationForUser('index');
   const [sourceHandle, setSourceHandle] = useState('');
   const [handleError, setHandleError] = useState<string | null>(null);
   const [aliasActionError, setAliasActionError] = useState<string | null>(null);
   const [removingAlias, setRemovingAlias] = useState<string | null>(null);
   const [targetHandle, setTargetHandle] = useState('');
-  const [moveConfirmed, setMoveConfirmed] = useState(false);
+  const [exportFormReady, setExportFormReady] = useState(false);
+  const [moveConfirmOpen, setMoveConfirmOpen] = useState(false);
   const [moveError, setMoveError] = useState<string | null>(null);
+  const isPreparingMove = lookupAccountMutation.isPending || moveAccountMutation.isPending;
 
   const aliases = [...(aliasData?.aliases ?? [])].reverse();
   const showAliasesSection = isLoadingAliases || hasAliasLoadError || aliases.length > 0;
@@ -144,9 +160,9 @@ const AccountMigration: React.FC = () => {
     }
   };
 
-  const handleMove = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleMoveSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!moveConfirmed || moveAccountMutation.isPending) {
+    if (isPreparingMove) {
       return;
     }
     if (!HANDLE_REGEX.test(targetHandle.trim())) {
@@ -155,8 +171,24 @@ const AccountMigration: React.FC = () => {
     }
     setMoveError(null);
     try {
+      await lookupAccountMutation.mutateAsync(normalizeHandle(targetHandle));
+      setMoveConfirmOpen(true);
+    } catch (error) {
+      if (isApiError(error) && error.statusCode === 404) {
+        setMoveError('Could not find that profile. Check the handle and try again.');
+        return;
+      }
+      setMoveError('Could not verify the destination profile. Try again later.');
+    }
+  };
+
+  const handleConfirmMove = async () => {
+    if (moveAccountMutation.isPending) {
+      return;
+    }
+    setMoveConfirmOpen(false);
+    try {
       await moveAccountMutation.mutateAsync(normalizeHandle(targetHandle));
-      setMoveConfirmed(false);
     } catch (error) {
       setMoveError(getMoveErrorMessage(error));
     }
@@ -168,206 +200,259 @@ const AccountMigration: React.FC = () => {
         <div className="flex items-center justify-between gap-8">
           <H2>Account migration</H2>
         </div>
+        <p className="mt-3 text-base text-gray-800 dark:text-gray-600">
+          Move your followers to this Ghost account, or from this account to somewhere else.
+        </p>
 
-        <div className="mt-3 text-base text-gray-800 dark:text-gray-600">
-          <p>
-            You can move your followers from another social web account (eg.{' '}
-            <a
-              className="underline hover:text-black dark:hover:text-white"
-              href="https://docs.joinmastodon.org/user/moving/#move"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              Mastodon
-            </a>
-            ) to this one by creating an account alias. You can remove the alias later. The move
-            itself is initiated from the old account and may not be reversible on every server.
-          </p>
-        </div>
+        <div className="mt-6">
+          <Tabs defaultValue="import" variant="underline">
+            <TabsList>
+              <TabsTrigger value="import">Bring followers here</TabsTrigger>
+              <TabsTrigger value="export">Move followers away</TabsTrigger>
+            </TabsList>
 
-        <form className="mt-10" onSubmit={handleSubmit}>
-          <Field data-invalid={handleError ? true : undefined}>
-            <FieldLabel htmlFor="account-migration-source-handle">Old account handle</FieldLabel>
-            <FieldDescription id="account-migration-source-handle-description">
-              Specify the username@domain of the account you want to move from
-            </FieldDescription>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Input
-                aria-describedby={
-                  handleError
-                    ? 'account-migration-source-handle-error'
-                    : 'account-migration-source-handle-description'
-                }
-                aria-invalid={handleError ? true : undefined}
-                autoComplete="off"
-                className="sm:flex-1"
-                id="account-migration-source-handle"
-                placeholder="username@domain"
-                value={sourceHandle}
-                data-1p-ignore
-                onChange={(event) => setSourceHandle(event.target.value)}
-              />
-              <Button
-                className="relative h-9 text-sm sm:w-auto"
-                disabled={addAliasMutation.isPending}
-                type="submit"
-              >
-                <span className={addAliasMutation.isPending ? 'invisible' : undefined}>
-                  Create alias
-                </span>
-                {addAliasMutation.isPending && (
-                  <span className="absolute inset-0 flex items-center justify-center">
-                    <LoadingIndicator color="light" size="sm" />
-                    <span className="sr-only">Creating alias...</span>
-                  </span>
-                )}
-              </Button>
-            </div>
-            {handleError && (
-              <FieldError id="account-migration-source-handle-error">{handleError}</FieldError>
-            )}
-            {aliasActionError && (
-              <FieldError id="account-migration-alias-error">{aliasActionError}</FieldError>
-            )}
-          </Field>
-        </form>
-
-        {showAliasesSection && (
-          <div className="mt-10" data-testid="account-migration-aliases">
-            <div className="pb-3">
-              <FieldLabel asChild>
-                <div>Account aliases</div>
-              </FieldLabel>
-            </div>
-
-            {isLoadingAliases ? (
-              <div className="border-t border-gray-200 py-4 dark:border-gray-950">
-                <Skeleton className="h-5 w-48" />
+            <TabsContent className="mt-6" value="import">
+              <div className="text-base text-gray-800 dark:text-gray-600">
+                <p>
+                  You can move your followers from another social web account (eg.{' '}
+                  <a
+                    className="underline hover:text-black dark:hover:text-white"
+                    href="https://docs.joinmastodon.org/user/moving/#move"
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    Mastodon
+                  </a>
+                  ) to this one by creating an account alias. You can remove the alias later. The
+                  move itself is initiated from the old account and may not be reversible on every
+                  server.
+                </p>
               </div>
-            ) : hasAliasLoadError ? (
-              <div className="flex items-center justify-between gap-4 border-t border-gray-200 py-4 text-sm text-gray-700 dark:border-gray-950 dark:text-gray-600">
-                <span>Could not load account aliases.</span>
-                <Button
-                  className="px-0 font-medium"
-                  variant="link"
-                  onClick={() => refetchAliases()}
-                >
-                  Retry
-                </Button>
-              </div>
-            ) : (
-              /* eslint-disable-next-line tailwindcss/no-contradicting-classname -- divide-* colors children, border-t colors this element; the plugin compares properties without selectors */
-              <div className="divide-y divide-gray-200 border-t border-gray-200 dark:divide-gray-950 dark:border-gray-950">
-                {aliases.map((alias) => (
-                  <div key={alias.apId} className="flex items-center justify-between gap-4 py-4">
-                    <div className="min-w-0 truncate text-base text-black dark:text-white">
-                      {getAliasDisplayHandle(alias.apId)}
-                    </div>
+
+              <form className="mt-6" onSubmit={handleSubmit}>
+                <Field data-invalid={handleError ? true : undefined}>
+                  <FieldLabel htmlFor="account-migration-source-handle">
+                    Old account handle
+                  </FieldLabel>
+                  <FieldDescription id="account-migration-source-handle-description">
+                    Specify the username@domain of the account you want to move from
+                  </FieldDescription>
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <Input
+                      aria-describedby={
+                        handleError
+                          ? 'account-migration-source-handle-error'
+                          : 'account-migration-source-handle-description'
+                      }
+                      aria-invalid={handleError ? true : undefined}
+                      autoComplete="off"
+                      className="sm:flex-1"
+                      id="account-migration-source-handle"
+                      placeholder="username@domain"
+                      value={sourceHandle}
+                      data-1p-ignore
+                      onChange={(event) => setSourceHandle(event.target.value)}
+                    />
                     <Button
-                      className="shrink-0 px-0 font-medium text-gray-700 hover:text-red dark:text-gray-600 dark:hover:text-red"
-                      disabled={removingAlias === alias.apId}
-                      variant="link"
-                      onClick={() => handleRemoveAlias(alias.apId)}
+                      className="relative sm:w-auto"
+                      disabled={addAliasMutation.isPending}
+                      type="submit"
                     >
-                      {removingAlias === alias.apId ? (
-                        <LoadingIndicator size="sm" />
-                      ) : (
-                        <>
-                          <LucideIcon.Trash2 size={15} /> Unlink
-                        </>
+                      <span className={addAliasMutation.isPending ? 'invisible' : undefined}>
+                        Create alias
+                      </span>
+                      {addAliasMutation.isPending && (
+                        <span className="absolute inset-0 flex items-center justify-center">
+                          <LoadingIndicator color="light" size="sm" />
+                          <span className="sr-only">Creating alias...</span>
+                        </span>
                       )}
                     </Button>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {hasMigrationLoadError && !migrationUnavailable && (
-          <section className="mt-12 border-t border-gray-200 pt-8 dark:border-gray-950">
-            <H2>Move followers from Ghost</H2>
-            <p className="mt-3" role="alert">
-              Could not load migration status. Please try again.
-            </p>
-            <Button className="mt-3" onClick={() => refetchMigration()}>
-              Retry
-            </Button>
-          </section>
-        )}
-
-        {!hasMigrationLoadError && migration && (
-          <section className="mt-12 border-t border-gray-200 pt-8 dark:border-gray-950">
-            <H2>Move followers from Ghost</H2>
-            <p className="mt-3 text-base text-gray-800 dark:text-gray-600">
-              Add <strong>{aliasData?.destination.handle ?? 'this Ghost account'}</strong> as an
-              alias on your new social web profile first. Then enter that profile’s handle here.
-              Compatible servers will receive a request to move your followers. Keep this Ghost
-              account available while they process it.
-            </p>
-
-            {migration.sent ? (
-              <p className="mt-6 text-base" role="status">
-                Migration sent to {migration.targetApId}. Follower servers may process it at
-                different times.
-              </p>
-            ) : (
-              <form className="mt-6" onSubmit={handleMove}>
-                {migration.targetApId && (
-                  <p className="mb-4 text-sm" role="status">
-                    A move to {migration.targetApId} is pending. Retry with the same destination
-                    handle if it did not finish.
-                  </p>
-                )}
-                <Field data-invalid={moveError ? true : undefined}>
-                  <FieldLabel htmlFor="account-migration-target-handle">
-                    New account handle
-                  </FieldLabel>
-                  <Input
-                    aria-describedby={
-                      moveError ? 'account-migration-target-handle-error' : undefined
-                    }
-                    aria-invalid={moveError ? true : undefined}
-                    autoComplete="off"
-                    className="mt-2"
-                    disabled={moveAccountMutation.isPending}
-                    id="account-migration-target-handle"
-                    placeholder="username@domain"
-                    value={targetHandle}
-                    onChange={(event) => {
-                      setTargetHandle(event.target.value);
-                      setMoveConfirmed(false);
-                      setMoveError(null);
-                    }}
-                  />
-                  <label className="mt-4 flex items-start gap-2 text-sm">
-                    <input
-                      checked={moveConfirmed}
-                      className="mt-1"
-                      disabled={moveAccountMutation.isPending}
-                      type="checkbox"
-                      onChange={(event) => setMoveConfirmed(event.target.checked)}
-                    />
-                    I have added my Ghost account as an alias on the destination. I understand this
-                    move cannot simply be undone.
-                  </label>
-                  {moveError && (
-                    <FieldError className="mt-3" id="account-migration-target-handle-error">
-                      {moveError}
+                  {handleError && (
+                    <FieldError id="account-migration-source-handle-error">
+                      {handleError}
                     </FieldError>
                   )}
-                  <Button
-                    className="mt-4"
-                    disabled={!moveConfirmed || moveAccountMutation.isPending}
-                    type="submit"
-                  >
-                    {moveAccountMutation.isPending ? 'Sending move...' : 'Move followers'}
-                  </Button>
+                  {aliasActionError && (
+                    <FieldError id="account-migration-alias-error">{aliasActionError}</FieldError>
+                  )}
                 </Field>
               </form>
-            )}
-          </section>
-        )}
+
+              {showAliasesSection && (
+                <div className="mt-10" data-testid="account-migration-aliases">
+                  <div className="pb-3">
+                    <FieldLabel asChild>
+                      <div>Account aliases</div>
+                    </FieldLabel>
+                  </div>
+
+                  {isLoadingAliases ? (
+                    <div className="border-t border-gray-200 py-4 dark:border-gray-950">
+                      <Skeleton className="h-5 w-48" />
+                    </div>
+                  ) : hasAliasLoadError ? (
+                    <div className="flex items-center justify-between gap-4 border-t border-gray-200 py-4 text-sm text-gray-700 dark:border-gray-950 dark:text-gray-600">
+                      <span>Could not load account aliases.</span>
+                      <Button
+                        className="px-0 font-medium"
+                        variant="link"
+                        onClick={() => refetchAliases()}
+                      >
+                        Retry
+                      </Button>
+                    </div>
+                  ) : (
+                    /* eslint-disable-next-line tailwindcss/no-contradicting-classname -- divide-* colors children, border-t colors this element; the plugin compares properties without selectors */
+                    <div className="divide-y divide-gray-200 border-t border-gray-200 dark:divide-gray-950 dark:border-gray-950">
+                      {aliases.map((alias) => (
+                        <div
+                          key={alias.apId}
+                          className="flex items-center justify-between gap-4 py-4"
+                        >
+                          <div className="min-w-0 truncate text-base text-black dark:text-white">
+                            {getAliasDisplayHandle(alias.apId)}
+                          </div>
+                          <Button
+                            className="shrink-0 px-0 font-medium text-gray-700 hover:text-red dark:text-gray-600 dark:hover:text-red"
+                            disabled={removingAlias === alias.apId}
+                            variant="link"
+                            onClick={() => handleRemoveAlias(alias.apId)}
+                          >
+                            {removingAlias === alias.apId ? (
+                              <LoadingIndicator size="sm" />
+                            ) : (
+                              <>
+                                <LucideIcon.Trash2 size={15} /> Unlink
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent className="mt-6" value="export">
+              {hasMigrationLoadError && !migrationUnavailable && (
+                <>
+                  <p role="alert">Could not load migration status. Please try again.</p>
+                  <Button className="mt-3" onClick={() => refetchMigration()}>
+                    Retry
+                  </Button>
+                </>
+              )}
+
+              {!hasMigrationLoadError && migration && (
+                <>
+                  <p className="text-base text-gray-800 dark:text-gray-600">
+                    Add <strong>{aliasData?.destination.handle ?? 'this Ghost account'}</strong> as
+                    an alias on your new social web profile first. Then enter that profile’s handle
+                    here. Compatible servers will receive a request to move your followers. Keep
+                    this Ghost account available while they process it.
+                  </p>
+
+                  {migration.sent ? (
+                    <p className="mt-6 text-base" role="status">
+                      Migration sent to {migration.targetApId}. Follower servers may process it at
+                      different times.
+                    </p>
+                  ) : exportFormReady || migration.targetApId ? (
+                    <form className="mt-6" onSubmit={handleMoveSubmit}>
+                      {migration.targetApId && (
+                        <p className="mb-4 text-sm" role="status">
+                          A move to {migration.targetApId} is pending. Retry with the same
+                          destination handle if it did not finish.
+                        </p>
+                      )}
+                      <Field data-invalid={moveError ? true : undefined}>
+                        <FieldLabel htmlFor="account-migration-target-handle">
+                          New account handle
+                        </FieldLabel>
+                        <FieldDescription id="account-migration-target-handle-description">
+                          Specify the username@domain of the account you want to move to
+                        </FieldDescription>
+                        <div className="flex flex-col gap-3 sm:flex-row">
+                          <Input
+                            aria-describedby={
+                              moveError
+                                ? 'account-migration-target-handle-error'
+                                : 'account-migration-target-handle-description'
+                            }
+                            aria-invalid={moveError ? true : undefined}
+                            autoComplete="off"
+                            className="sm:flex-1"
+                            disabled={isPreparingMove}
+                            id="account-migration-target-handle"
+                            placeholder="username@domain"
+                            value={targetHandle}
+                            onChange={(event) => {
+                              setTargetHandle(event.target.value);
+                              setMoveError(null);
+                            }}
+                          />
+                          <Button
+                            className="relative sm:w-auto"
+                            disabled={isPreparingMove}
+                            type="submit"
+                          >
+                            <span className={isPreparingMove ? 'invisible' : undefined}>
+                              Move followers
+                            </span>
+                            {isPreparingMove && (
+                              <span className="absolute inset-0 flex items-center justify-center">
+                                <LoadingIndicator color="light" size="sm" />
+                                <span className="sr-only">
+                                  {moveAccountMutation.isPending
+                                    ? 'Sending move...'
+                                    : 'Checking profile...'}
+                                </span>
+                              </span>
+                            )}
+                          </Button>
+                        </div>
+                        {moveError && (
+                          <FieldError id="account-migration-target-handle-error">
+                            {moveError}
+                          </FieldError>
+                        )}
+                      </Field>
+                    </form>
+                  ) : (
+                    <Button
+                      className="mt-6"
+                      variant="outline"
+                      onClick={() => setExportFormReady(true)}
+                    >
+                      I’ve added the alias
+                      <LucideIcon.ArrowRight />
+                    </Button>
+                  )}
+
+                  <AlertDialog open={moveConfirmOpen} onOpenChange={setMoveConfirmOpen}>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Move followers?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          I understand this move cannot simply be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction variant="destructive" onClick={handleConfirmMove}>
+                          Move followers
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
     </Layout>
   );

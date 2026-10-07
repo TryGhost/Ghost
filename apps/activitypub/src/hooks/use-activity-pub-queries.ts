@@ -1870,6 +1870,15 @@ export function useAccountMigrationForUser(handle: string) {
   });
 }
 
+export function useLookupAccountMutationForUser(handle: string) {
+  return useMutation({
+    async mutationFn(profileHandle: string) {
+      const siteUrl = await getSiteUrl();
+      return createActivityPubAPI(handle, siteUrl).getAccount(profileHandle);
+    },
+  });
+}
+
 export function useMoveAccountMutationForUser(handle: string) {
   const queryClient = useQueryClient();
   return useMutation({

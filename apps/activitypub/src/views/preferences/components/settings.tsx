@@ -81,7 +81,9 @@ const Settings: React.FC<SettingsProps> = ({ account, className = '' }) => {
       <SettingItem to="/preferences/move" withHover>
         <SettingHeader>
           <SettingTitle>Account migration</SettingTitle>
-          <SettingDescription>Move another social web account to this one</SettingDescription>
+          <SettingDescription>
+            Move followers to this account, or from this account to somewhere else
+          </SettingDescription>
         </SettingHeader>
         <SettingAction className="flex items-center gap-2">
           <LucideIcon.ChevronRight size={20} />
