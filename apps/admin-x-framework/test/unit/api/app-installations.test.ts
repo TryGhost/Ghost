@@ -68,13 +68,14 @@ describe('app installations api', () => {
           id: 'installation-1',
           manifest_url: MANIFEST_URL,
           digest: 'abc',
+          revision: 2,
         });
       });
 
       expect(requestOf(mock)).toEqual({
         path: '/ghost/api/admin/apps/installations/installation-1/',
         method: 'PUT',
-        body: { app_installations: [{ manifest_url: MANIFEST_URL, digest: 'abc' }] },
+        body: { app_installations: [{ manifest_url: MANIFEST_URL, digest: 'abc', revision: 2 }] },
       });
     });
   });

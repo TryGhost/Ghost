@@ -383,7 +383,11 @@ export const InstallDialog: React.FC<{ manifestUrl: string | null }> = ({ manife
     const reviewed = { manifest_url: preview.manifest_url, digest: preview.digest };
     try {
       if (preview.installation) {
-        await approveApp({ id: preview.installation.id, ...reviewed });
+        await approveApp({
+          id: preview.installation.id,
+          revision: preview.installation.revision,
+          ...reviewed,
+        });
         // A move confirms where the app runs now.
         const { name } = preview.manifest;
         const move = movedBetween(preview.installation, preview);

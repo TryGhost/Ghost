@@ -37,6 +37,8 @@ export interface AppInstallationPreview {
   installation: {
     id: string;
     status: AppInstallationStatus;
+    /** Sent back when approving, so the changes approved are the ones that were reviewed. */
+    revision: number;
     manifest_url: string;
     manifest: AppManifest;
     changes: AppManifestChange[];
@@ -84,10 +86,14 @@ export const useAddAppInstallation = createMutation<
   invalidateQueries: { dataType },
 });
 
-/** Approves changes to an installed app, including the app moving somewhere new. */
+/**
+ * Approves changes to an installed app, including the app moving somewhere new. `revision`
+ * is the installation's, as the preview showed it: Ghost refuses the approval if the
+ * installation changed since.
+ */
 export const useApproveAppInstallation = createMutation<
   AppInstallationsResponseType,
-  ReviewedAppManifest & { id: string }
+  ReviewedAppManifest & { id: string; revision: number }
 >({
   method: 'PUT',
   path: ({ id }) => `/apps/installations/${id}/`,
