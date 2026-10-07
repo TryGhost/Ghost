@@ -60,12 +60,13 @@ function positions(postType: 'post' | 'page') {
 }
 
 const HELD_DURATION = 100_000;
-const SETTINGS_MOTION = '[class*="editor-settings-motion-"]';
+/** The editor's own parts that move with the settings panel, and Koenig's cards that ease with it. */
+const SETTINGS_MOTION = '[class*="editor-settings-motion-"], [data-settings-moving] [data-kg-card]';
 
 /** Holds the real settings motion long enough to inspect precise points on its timeline. */
 function slowSettingsTransition() {
   const style = document.createElement('style');
-  style.textContent = `${SETTINGS_MOTION} {
+  style.textContent = `:is(${SETTINGS_MOTION}) {
     transition-duration: ${HELD_DURATION / 1000}s !important;
   }`;
   document.head.appendChild(style);
@@ -86,9 +87,9 @@ function settingsTransitions() {
 const SETTINGS_MOTION_PARTS = 7;
 
 /** Waits for every part of a settings motion that started after `previous`, held at its start. */
-async function heldSettingsMotion(previous: CSSTransition[] = []) {
+async function heldSettingsMotion(previous: CSSTransition[] = [], parts = SETTINGS_MOTION_PARTS) {
   const started = () => settingsTransitions().filter((t) => !previous.includes(t));
-  await expect.poll(() => started().length).toBe(SETTINGS_MOTION_PARTS);
+  await expect.poll(() => started().length).toBe(parts);
   const transitions = started();
   const motion = {
     transitions,
@@ -120,6 +121,61 @@ function expectNoAnimatedCustomProperty() {
         animation instanceof CSSTransition && animation.transitionProperty.startsWith('--'),
     );
   expect(animated).toHaveLength(0);
+}
+
+/** An image card at `cardWidth` in a lexical document, from an SVG the caller revokes. */
+function breakoutImage(cardWidth: 'wide' | 'full', alt: string) {
+  const src = URL.createObjectURL(
+    new Blob(
+      [
+        '<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="400"><rect width="1600" height="400" fill="gray"/></svg>',
+      ],
+      { type: 'image/svg+xml' },
+    ),
+  );
+  return {
+    src,
+    node: { type: 'image', version: 1, src, alt, width: 1600, height: 400, cardWidth },
+  };
+}
+
+/**
+ * A full card spans the writing area edge to edge; a wide card is 75vw less the
+ * width beside the writing area (wide enough here to clear its minimum), centred on
+ * it. Both cards' borders extend 1px
+ * beyond those bounds.
+ */
+function expectBreakoutsFitWritingArea(fullImage: Element, wideImage: Element) {
+  const area = editorScreen.scrollPane().firstElementChild!.getBoundingClientRect();
+  const full = fullImage.closest('[data-kg-card]')!.getBoundingClientRect();
+  expect(full.left).toBeCloseTo(area.left - 1, 1);
+  expect(full.right).toBeCloseTo(area.right + 1, 1);
+  const wide = wideImage.closest('[data-kg-card]')!.getBoundingClientRect();
+  expect(wide.width).toBeCloseTo(
+    window.innerWidth * 0.75 - (window.innerWidth - area.width) + 2,
+    1,
+  );
+  expect(wide.left + wide.width / 2).toBeCloseTo(area.left + area.width / 2, 1);
+}
+
+/**
+ * At rest the adjustment computes to the pixels Koenig's card settings panel
+ * parses to keep itself beside the writing area.
+ */
+function expectPixelAdjustment(card: Element) {
+  const area = editorScreen.scrollPane().firstElementChild!.getBoundingClientRect();
+  expect(getComputedStyle(card).getPropertyValue('--kg-breakout-adjustment')).toBe(
+    `${window.innerWidth - area.width}px`,
+  );
+}
+
+/** Lets a frame pass, so resize observers reporting the last layout have run. */
+function nextFrame() {
+  return new Promise<void>((resolve) => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => resolve());
+    });
+  });
 }
 
 /** Newsletters answer 500, which fails the header's publish inputs. */
@@ -585,6 +641,84 @@ describe('Floating editor shell', () => {
       expect(getComputedStyle(pane).overflowX).toBe('hidden');
     } finally {
       URL.revokeObjectURL(imageUrl);
+    }
+  });
+
+  it('keeps wide and full cards fitted to the writing area at every point of the settings motion', async () => {
+    await page.viewport(1920, 1000);
+    const full = breakoutImage('full', 'Full-width landscape');
+    const wide = breakoutImage('wide', 'Wide landscape');
+    try {
+      const lexical = JSON.parse(buildLexicalParagraph('Between the images')) as {
+        root: { children: Record<string, unknown>[] };
+      };
+      lexical.root.children.unshift(full.node);
+      lexical.root.children.push(wide.node);
+      fakeLongDocument('post', 'draft', JSON.stringify(lexical));
+      await renderAdminApp('/editor/post/abc123', FLAG_ON);
+      const fullImage = editorScreen.body().getByRole('img', { name: 'Full-width landscape' });
+      const wideImage = editorScreen.body().getByRole('img', { name: 'Wide landscape' });
+      await expect.element(fullImage).toBeVisible();
+      await expect.element(wideImage).toBeVisible();
+      const writingArea = editorScreen.scrollPane().firstElementChild as HTMLElement;
+      expectBreakoutsFitWritingArea(fullImage.element(), wideImage.element());
+
+      const animationStyle = slowSettingsTransition();
+      try {
+        // The full card eases its width and margins, the wide card those and its offset.
+        const cardParts = 3 + 4;
+        await editorScreen.settingsToggle().click();
+        const opening = await heldSettingsMotion([], SETTINGS_MOTION_PARTS + cardParts);
+        expectNoAnimatedCustomProperty();
+        expectBreakoutsFitWritingArea(fullImage.element(), wideImage.element());
+        // Nothing beside the writing area is rewritten while it narrows: an
+        // inherited value written per frame would restyle the whole document.
+        const areaStyle = writingArea.getAttribute('style');
+        for (const time of [HELD_DURATION / 4, HELD_DURATION / 2, (HELD_DURATION * 3) / 4]) {
+          opening.seek(time);
+          await nextFrame();
+          expect(writingArea.getAttribute('style')).toBe(areaStyle);
+          expectBreakoutsFitWritingArea(fullImage.element(), wideImage.element());
+        }
+        const sidebar = editorScreen.settingsSidebar().element();
+        const panel = sidebar.parentElement!;
+        expect(panel.getBoundingClientRect().width).toBeGreaterThan(0);
+        expect(panel.getBoundingClientRect().width).toBeLessThan(350);
+        opening.finish();
+        await expect.poll(() => panel.getBoundingClientRect().width).toBe(350);
+        expectBreakoutsFitWritingArea(fullImage.element(), wideImage.element());
+        expectPixelAdjustment(fullImage.element());
+
+        await editorScreen.settingsToggle().click();
+        const closing = await heldSettingsMotion(
+          opening.transitions,
+          SETTINGS_MOTION_PARTS + cardParts,
+        );
+        closing.seek(HELD_DURATION / 2);
+        await nextFrame();
+        expect(writingArea.getAttribute('style')).toBe(areaStyle);
+        expectBreakoutsFitWritingArea(fullImage.element(), wideImage.element());
+        closing.finish();
+        await expect(editorScreen.settingsSidebar()).toHaveCount(0);
+        expectBreakoutsFitWritingArea(fullImage.element(), wideImage.element());
+        expectPixelAdjustment(fullImage.element());
+
+        // Once the panel has arrived the cards follow a window resize at once.
+        await editorScreen.settingsToggle().click();
+        (await heldSettingsMotion(closing.transitions, SETTINGS_MOTION_PARTS + cardParts)).finish();
+        await expect.poll(() => document.querySelector('[data-settings-moving]')).toBeNull();
+        await page.viewport(1800, 1000);
+        await expect.poll(() => window.innerWidth).toBe(1800);
+        await nextFrame();
+        expect(settingsTransitions()).toHaveLength(0);
+        expectBreakoutsFitWritingArea(fullImage.element(), wideImage.element());
+        expectPixelAdjustment(fullImage.element());
+      } finally {
+        animationStyle.remove();
+      }
+    } finally {
+      URL.revokeObjectURL(full.src);
+      URL.revokeObjectURL(wide.src);
     }
   });
 

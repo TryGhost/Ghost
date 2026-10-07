@@ -185,6 +185,7 @@ export function PostEditor({
 }: PostEditorProps) {
   const { darkMode, isAdmin7 } = useFocusContext();
   const isKeyboardOpen = useOnscreenKeyboard();
+  const scrollPaneRef = useRef<HTMLDivElement>(null);
   const writingAreaRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const excerptRef = useRef<HTMLTextAreaElement>(null);
@@ -199,22 +200,30 @@ export function PostEditor({
   useAutosize(titleRef, title);
   useAutosize(excerptRef, excerpt);
 
+  // Koenig's breakout cards are sized in viewport units less
+  // `--kg-breakout-adjustment`, the width beside the writing area. The settings
+  // panel's share of it is CSS on the writing area, from the shell's static
+  // progress; this measures the rest: the pane's offset and its scrollbar. The
+  // panel's motion leaves both unchanged, so nothing is written while it runs —
+  // rewriting an inherited property every frame would restyle the whole document.
   useLayoutEffect(() => {
-    const container = writingAreaRef.current;
-    if (!container) {
+    const pane = scrollPaneRef.current;
+    const area = writingAreaRef.current;
+    if (!pane || !area) {
       return;
     }
-    // Koenig's breakout cards use viewport units; subtract the space outside
-    // the writing area, including its inset and the animated sidebar.
+    let written = '';
     const measure = () => {
-      container.style.setProperty(
-        '--kg-breakout-adjustment',
-        `${Math.max(0, window.innerWidth - container.clientWidth)}px`,
-      );
+      const scrollbar = pane.offsetWidth - pane.clientWidth;
+      const inset = `${Math.max(0, pane.getBoundingClientRect().left + scrollbar)}px`;
+      if (inset !== written) {
+        written = inset;
+        area.style.setProperty('--editor-breakout-inset', inset);
+      }
     };
     measure();
     const observer = new ResizeObserver(measure);
-    observer.observe(container);
+    observer.observe(pane);
     window.addEventListener('resize', measure);
     return () => {
       observer.disconnect();
@@ -355,10 +364,16 @@ export function PostEditor({
 
   return (
     <div className="relative h-full min-h-0" data-testid={postEditor}>
-      <div className="h-full scroll-pt-(--editor-overlap) overflow-x-hidden overflow-y-auto">
+      <div
+        ref={scrollPaneRef}
+        className="h-full scroll-pt-(--editor-overlap) overflow-x-hidden overflow-y-auto"
+      >
+        {/* Beside the settings panel, the breakout adjustment adds the panel and the
+            margin before it at their resting values; the cards ease to it on the
+            panel's timing (see `[data-settings-moving]` in index.css). */}
         <Stack
           ref={writingAreaRef}
-          className="min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24 editor-settings-motion-[margin-right] lg:mr-[calc(var(--spacing)*3*var(--editor-settings-progress,0))]"
+          className="min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24 editor-settings-motion-[margin-right] [--kg-breakout-adjustment:var(--editor-breakout-inset,0px)] lg:mr-[calc(var(--spacing)*3*var(--editor-settings-progress,0))] lg:[--kg-breakout-adjustment:calc(var(--editor-breakout-inset,0px)+(var(--editor-settings-width,0px)+var(--spacing)*3)*var(--editor-settings-progress,0))]"
           gap="none"
           onDragOver={(event) => event.preventDefault()}
           onDrop={onPaneDrop}

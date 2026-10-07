@@ -236,7 +236,7 @@ export function PostSettingsSidebar({
     <SubviewContext.Provider value={subviews}>
       <Box
         ref={ownFrameRef}
-        className="absolute inset-y-0 right-0 z-30 w-[calc(var(--editor-settings-progress,1)*var(--editor-settings-width))] overflow-hidden editor-settings-motion-[width] [--editor-settings-width:350px] max-[500px]:[--editor-settings-width:100vw] lg:static lg:shrink-0"
+        className="absolute inset-y-0 right-0 z-30 w-[calc(var(--editor-settings-progress,1)*var(--editor-settings-width))] overflow-hidden editor-settings-motion-[width] lg:static lg:shrink-0"
         style={entering ? ({ '--editor-settings-progress': 0 } as CSSProperties) : undefined}
       >
         <aside

@@ -94,7 +94,8 @@ editor entry. There is no keyboard shortcut for it.
 Below the `lg` breakpoint the panel overlays the editor from the right rather
 than narrowing it, and below 500px it takes the full width. Above it the panel
 sits in the flow beside the editor at a fixed 350px, including while a subview
-is open.
+is open, and wide and full cards in the document keep fitting the narrowed
+writing area throughout the panel's motion.
 
 ## URL
 

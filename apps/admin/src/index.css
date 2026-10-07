@@ -49,6 +49,22 @@ body {
   }
 }
 
+/* Koenig's wide and full cards are sized in viewport units less this width
+   beside the writing area. Registered as a length so a formula still computes
+   to the pixels Koenig's card settings panel parses; Ember sets pixels. */
+@property --kg-breakout-adjustment {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+/* The writing area takes the adjustment at the panel's resting state, so while
+   the panel moves, Koenig's cards ease their own geometry to it on the panel's
+   timing rather than have an inherited value rewritten every frame. */
+[data-settings-moving] [data-kg-card] {
+  @apply editor-settings-motion-[width,margin,transform,translate];
+}
+
 /* Shimmer for an active send's status line. The gradient is 300% wide so
    each sweep has a pause before the next. */
 @keyframes email-sending-shimmer {

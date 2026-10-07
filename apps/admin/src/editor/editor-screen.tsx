@@ -228,6 +228,11 @@ function EditorContent({
   // Closed on every editor entry, as the menu it replaces was.
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsPresent, setSettingsPresent] = useState(false);
+  // From a toggle until everything moving with the panel has arrived. Koenig's
+  // breakout cards ease with the panel only meanwhile, so a window resize still
+  // resizes them at once.
+  const [settingsMoving, setSettingsMoving] = useState(false);
+  const shellRef = useRef<HTMLDivElement>(null);
   const settingsFrameRef = useRef<HTMLDivElement>(null);
   const settingsToggleRef = useRef<HTMLButtonElement>(null);
   const [settingsToggleWidth, setSettingsToggleWidth] = useState(0);
@@ -270,6 +275,26 @@ function EditorContent({
       cancelled = true;
     };
   }, [settingsOpen, settingsPresent]);
+  // Reading the shell's transitions also flushes the style that starts them; a
+  // reversal replaces them and cancels this wait.
+  useLayoutEffect(() => {
+    if (!settingsMoving) {
+      return;
+    }
+    const transitions =
+      shellRef.current
+        ?.getAnimations({ subtree: true })
+        .filter((animation) => animation instanceof CSSTransition) ?? [];
+    let cancelled = false;
+    void Promise.allSettled(transitions.map((transition) => transition.finished)).then(() => {
+      if (!cancelled) {
+        setSettingsMoving(false);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [settingsOpen, settingsMoving]);
   const headerRef = useRef<HTMLDivElement>(null);
   const [headerHeight, setHeaderHeight] = useState(0);
   useLayoutEffect(() => {
@@ -285,6 +310,7 @@ function EditorContent({
   }, []);
   const toggleSettings = useCallback(() => {
     settingsToggleRef.current?.focus();
+    setSettingsMoving(true);
     setSettingsPresent(true);
     setSettingsOpen((open) => !open);
   }, []);
@@ -302,6 +328,7 @@ function EditorContent({
     } else if (field && field !== 'email_subject') {
       // Rendered at once, so the excerpt is there to take focus.
       flushSync(() => {
+        setSettingsMoving(true);
         setSettingsPresent(true);
         setSettingsOpen(true);
       });
@@ -347,8 +374,10 @@ function EditorContent({
 
   return (
     <Inline
+      ref={shellRef}
       align="stretch"
-      className="relative h-full min-h-0"
+      className="relative h-full min-h-0 [--editor-settings-width:350px] max-[500px]:[--editor-settings-width:100vw]"
+      data-settings-moving={settingsMoving || undefined}
       gap="none"
       style={
         {
