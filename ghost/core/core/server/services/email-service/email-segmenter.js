@@ -24,8 +24,12 @@ class EmailSegmenter {
     this.#membersRepository = membersRepository;
   }
 
-  getMemberFilterForSegment(newsletter, emailRecipientFilter, segment) {
-    const filter = [`newsletters.id:'${newsletter.id}'`, 'email_disabled:0'];
+  getMemberFilterForSegment(newsletter, emailRecipientFilter, segment, options = {}) {
+    // Preparation joins members_newsletters itself so the subscription index can drive the plan.
+    const { withNewsletter = true } = options;
+    const filter = withNewsletter
+      ? [`newsletters.id:'${newsletter.id}'`, 'email_disabled:0']
+      : ['email_disabled:0'];
 
     switch (emailRecipientFilter) {
       case 'all':
@@ -60,6 +64,24 @@ class EmailSegmenter {
     }
 
     return filter.join('+');
+  }
+
+  /**
+   * Restricts a preparation query to the newsletter's subscribers with an explicit join rather
+   * than the `newsletters.id` relation filter, so MySQL can walk the (newsletter_id, member_id)
+   * index backwards and stream candidates newest-first without materializing or sorting them.
+   * @param {import('knex').Knex.QueryBuilder} query
+   * @param {Newsletter} newsletter
+   * @returns {{query: import('knex').Knex.QueryBuilder, orderColumn: string, joinOrder: string[]}}
+   */
+  scopePreparationQuery(query, newsletter) {
+    return {
+      query: query
+        .innerJoin('members_newsletters', 'members_newsletters.member_id', 'members.id')
+        .where('members_newsletters.newsletter_id', newsletter.id),
+      orderColumn: 'members_newsletters.member_id',
+      joinOrder: ['members_newsletters', 'members'],
+    };
   }
 
   async getMembersCount(newsletter, emailRecipientFilter, segment) {

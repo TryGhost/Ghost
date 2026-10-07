@@ -63,19 +63,43 @@ immediately before a crash. No submission has started. After `prepared_at` is
 saved, the audience stays frozen.
 
 Select member IDs for every segment upfront in one `UNION ALL` statement, using
-the existing audience filters and the email's member-ID cutoff. The statement
-gives all segments the same database view without holding a transaction open
-across selection queries or batch writes. Failed selections retry as a whole
-within the existing database budget, before any batches are written. Only a
-complete successful result contributes candidates.
+the existing audience filters, the email's member-ID cutoff, and an explicit join
+on `members_newsletters` for the newsletter (added by the segmenter) instead of
+the `newsletters.id` relation filter. The statement gives all segments the same
+database view without holding a transaction open across selection queries or
+batch writes. Only a complete successful result contributes candidates.
 
-Order the result by segment and descending member ID, collapse adjacent duplicate
-IDs within each segment, and count candidates before dividing them into pages.
+Consume the statement as a stream rather than waiting for the whole result. On
+MySQL each branch orders itself by `members_newsletters.member_id` descending
+with a `LIMIT` (MySQL ignores a branch `ORDER BY` without one) and a `JOIN_ORDER`
+hint that makes the subscription index the driving table, so rows arrive segment
+by segment, newest first, from a reverse covering index scan with no temporary
+table or sort. The union itself has no `ORDER BY`. SQLite cannot order compound
+members and buffers the result, so it keeps the outer `ORDER BY`; the consumer is
+the same. Adjacent duplicate IDs within a segment are collapsed as they arrive.
+
+Cut each segment's IDs into pages as they arrive and dispatch a page to the
+workers as soon as it is full, so the first batch commits while selection is
+still running and the sending status reports progress within its next poll.
 Choose each page's domain and cap its size at the remaining warming capacity
-before dispatching it; after that capacity is exhausted, use full-size fallback
-pages. Prepare the selected segments sequentially. All segments' candidate IDs
-remain in memory until preparation finishes; the combined ordering can require a
-database sort over the full audience.
+when the page is built; after that capacity is exhausted, use full-size fallback
+pages. Warming capacity counts every candidate placed in a page, including later
+exclusions, in arrival order, which is today's segment-then-newest-first order. A
+segment switch or the end of the stream flushes the partial page. Pages of a
+later segment may be written while the previous segment's last pages are still
+in flight; allocation is fixed when a page is built, so this does not change it.
+
+The producer stays at most a few pages ahead of the workers so their round trips
+interleave with row parsing; otherwise a fast server can deliver the whole
+audience before the first commit. Waiting pauses the database stream, which the
+server closes after `net_write_timeout` (60s on Ghost(Pro)), so a wait longer than
+20s stops waiting and buffers the rest in memory (`email.preparation.stream_unbounded`).
+Candidate IDs then occupy memory as the previous candidate arrays did.
+
+A selection (stream) failure drains in-flight page writes, discards the pages
+written by that attempt through the normal cleanup, and reselects within the
+existing database retry budget. A page write failure that has already spent its
+own retries does not reselect.
 
 `bulkEmail:batchCreationConcurrency` defaults to 2 and directly bounds active
 pages per email, independently of database pool settings. Explicit per-site
@@ -116,7 +140,10 @@ the recovery read; a lock-wait timeout is not evidence that the original insert
 failed.
 
 Workers stop claiming pages when shutdown or a terminal preparation failure
-occurs. A per-segment abort signal wakes preparation retry backoffs and stops
+occurs, and the producer reads the remaining selection without dispatching so the
+connection returns to the pool. Shutdown during selection starts no new page
+writes; pages already written are cleaned up by the next attempt. An abort
+signal wakes preparation retry backoffs and stops
 further tries. It does not interrupt an in-flight transaction or recovery read,
 but prevents retrying a failed recovery read. A batch that committed without an
 acknowledgement can therefore remain unverified and pending until the next

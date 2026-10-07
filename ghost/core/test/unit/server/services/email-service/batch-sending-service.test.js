@@ -1,3 +1,4 @@
+const { Readable } = require('node:stream');
 const { createModel, createModelClass, createDb, sleep } = require('./utils');
 const BatchSendingService = require('../../../../../core/server/services/email-service/batch-sending-service');
 const SendingService = require('../../../../../core/server/services/email-service/sending-service');
@@ -349,22 +350,28 @@ describe('Batch Sending Service', function () {
   });
 
   describe('createBatches', function () {
-    function mockSweep(db, rows) {
+    /**
+     * Replaces the sweep statement with a stream of the given rows. `source` may be an async
+     * generator factory to control pacing and failures.
+     */
+    function mockSweep(db, rows, source) {
       db.knex.raw = () => null;
-      db.knex.unionAll = () => ({
+      const defaultSource = async function* () {
+        for (const row of rows) {
+          yield { id: row.id, segment_index: 0 };
+        }
+      };
+      const sweep = sinon.stub().callsFake(() => ({
         orderBy() {
           return this;
         },
-        then(resolve, reject) {
-          return Promise.resolve(rows.map((row) => ({ id: row.id, segment_index: 0 }))).then(
-            resolve,
-            reject,
-          );
-        },
-      });
+        stream: () => Readable.from((source ?? defaultSource)()),
+      }));
+      db.knex.unionAll = sweep;
+      return sweep;
     }
 
-    function createAudienceService(rows = []) {
+    function createAudienceService(rows = [], { source, retry, onResolve, resolveError } = {}) {
       const getSegments = sinon.stub().resolves([null]);
       const getFilteredCollectionQuery = sinon.stub().callsFake(() => {
         const query = createDb({ all: rows });
@@ -388,6 +395,9 @@ describe('Batch Sending Service', function () {
               return this;
             },
             whereIn() {
+              if (table === 'members') {
+                onResolve?.();
+              }
               return this;
             },
             groupBy() {
@@ -407,12 +417,15 @@ describe('Batch Sending Service', function () {
               return Promise.resolve(counted ? { count: 0 } : null);
             },
             then(resolve, reject) {
+              if (table === 'members' && resolveError) {
+                return Promise.reject(resolveError).then(resolve, reject);
+              }
               return Promise.resolve(table === 'members' ? rows : []).then(resolve, reject);
             },
           };
         },
       };
-      mockSweep(db, rows);
+      const sweep = mockSweep(db, rows, source);
       const service = new BatchSendingService({
         db,
         models: {
@@ -421,14 +434,122 @@ describe('Batch Sending Service', function () {
         },
         domainWarmingService: { isEnabled: () => false },
         emailRenderer: { getSegments },
-        emailSegmenter: { getMemberFilterForSegment: () => '' },
+        emailSegmenter: {
+          getMemberFilterForSegment: () => '',
+          scopePreparationQuery: (query) => ({ query }),
+        },
         sendingService: {
           getMaximumRecipients: () => 5,
           getTargetDeliveryWindow: () => 0,
         },
+        ...(retry ? { BEFORE_RETRY_CONFIG: retry } : {}),
       });
-      return { service, getSegments, getFilteredCollectionQuery };
+      return { service, getSegments, getFilteredCollectionQuery, sweep };
     }
+
+    // Candidates without recipient data are excluded without a batch write.
+    const audienceRows = (count) =>
+      Array.from({ length: count }, (_, index) => ({ id: `member-${index}` }));
+
+    function deferred() {
+      let resolve;
+      const promise = new Promise((done) => {
+        resolve = done;
+      });
+      return { promise, resolve };
+    }
+
+    it('processes the first page while selection is still streaming', async function () {
+      const rows = audienceRows(10);
+      const firstPageResolved = deferred();
+      const { service, sweep } = createAudienceService(rows, {
+        onResolve: () => firstPageResolved.resolve(),
+        source: async function* () {
+          for (const row of rows.slice(0, 5)) {
+            yield { id: row.id, segment_index: 0 };
+          }
+          await Promise.race([
+            firstPageResolved.promise,
+            sleep(1000).then(() => {
+              throw new Error('the first page was not looked up before selection finished');
+            }),
+          ]);
+          for (const row of rows.slice(5)) {
+            yield { id: row.id, segment_index: 0 };
+          }
+        },
+      });
+      const email = createModel({ preflight_email_count: 10, email_count: 10 });
+      await service.createBatches({ email, post: createModel({}), newsletter: createModel({}) });
+      sinon.assert.calledOnce(sweep);
+      assert.equal(email.get('candidate_count'), 10);
+      assert.equal(email.get('preparation_excluded_count'), 10);
+    });
+
+    it('discards pages from a failed selection and reselects within the retry budget', async function () {
+      const rows = audienceRows(10);
+      let attempts = 0;
+      const { service, sweep } = createAudienceService(rows, {
+        retry: { maxRetries: 2, sleep: 0 },
+        source: async function* () {
+          attempts += 1;
+          for (const row of rows.slice(0, 5)) {
+            yield { id: row.id, segment_index: 0 };
+          }
+          if (attempts === 1) {
+            throw new Error('transient sweep failure');
+          }
+          for (const row of rows.slice(5)) {
+            yield { id: row.id, segment_index: 0 };
+          }
+        },
+      });
+      const email = createModel({ preflight_email_count: 10, email_count: 10 });
+      await service.createBatches({ email, post: createModel({}), newsletter: createModel({}) });
+      sinon.assert.calledTwice(sweep);
+      assert.equal(email.get('candidate_count'), 10);
+      assert.equal(email.get('preparation_excluded_count'), 10);
+    });
+
+    it('does not reselect after a page failure that spent its own retries', async function () {
+      const failure = Object.assign(new Error('member lookup failed'), { retryable: false });
+      const { service, sweep } = createAudienceService(audienceRows(5), {
+        retry: { maxRetries: 2, sleep: 0 },
+        resolveError: failure,
+      });
+      const email = createModel({ preflight_email_count: 5, email_count: 5 });
+      await assert.rejects(
+        service.createBatches({ email, post: createModel({}), newsletter: createModel({}) }),
+        (error) => error === failure,
+      );
+      sinon.assert.calledOnce(sweep);
+      assert.equal(email.get('prepared_at') ?? null, null);
+    });
+
+    it('starts no page work when shutdown begins during selection', async function () {
+      const rows = audienceRows(5);
+      let resolved = 0;
+      const running = {};
+      const { service, sweep } = createAudienceService(rows, {
+        onResolve: () => {
+          resolved += 1;
+        },
+        source: async function* () {
+          running.service.onPreStop();
+          for (const row of rows) {
+            yield { id: row.id, segment_index: 0 };
+          }
+        },
+      });
+      running.service = service;
+      const email = createModel({ preflight_email_count: 5, email_count: 5 });
+      await assert.rejects(
+        service.createBatches({ email, post: createModel({}), newsletter: createModel({}) }),
+        { code: 'BULK_EMAIL_SHUTDOWN_IN_PROGRESS' },
+      );
+      sinon.assert.calledOnce(sweep);
+      assert.equal(resolved, 0);
+    });
 
     it('freezes an empty accounted audience and reuses it on retry', async function () {
       const { service, getSegments, getFilteredCollectionQuery } = createAudienceService();
@@ -605,7 +726,10 @@ describe('Batch Sending Service', function () {
         },
         domainWarmingService: { isEnabled: () => false },
         emailRenderer: { getSegments: async () => [null] },
-        emailSegmenter: { getMemberFilterForSegment: () => '' },
+        emailSegmenter: {
+          getMemberFilterForSegment: () => '',
+          scopePreparationQuery: (query) => ({ query }),
+        },
         sendingService: { getMaximumRecipients: () => 5 },
       });
       const email = createModel({

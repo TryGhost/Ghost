@@ -2,10 +2,12 @@ import assert from 'node:assert/strict';
 import knex from 'knex';
 import { vi } from 'vitest';
 import {
-  preparationPages,
+  PreparationPageBuilder,
+  PreparationQueue,
+  buildPreparationSelection,
   resolvePreparationMembers,
   runPreparationWorkers,
-  selectPreparationCandidates,
+  streamPreparationCandidates,
   waitForPreparationRetry,
 } from '../../../../../core/server/services/email-service/recipient-preparation';
 import { RECIPIENT_VERIFICATION_CODE } from '../../../../../core/server/services/email-service/recipient-accounting';
@@ -18,6 +20,23 @@ function deferred() {
     resolve = done;
   });
   return { promise, resolve };
+}
+
+/** Pages an array through the incremental builder, as the stream consumer does. */
+function buildPages(ids: string[], batchSize: number, warmingCapacity?: number) {
+  const builder = new PreparationPageBuilder(batchSize, warmingCapacity);
+  const result = [];
+  for (const id of ids) {
+    const page = builder.push(id);
+    if (page) {
+      result.push(page);
+    }
+  }
+  const last = builder.flush();
+  if (last) {
+    result.push(last);
+  }
+  return result;
 }
 
 describe('Recipient preparation workers', () => {
@@ -42,14 +61,11 @@ describe('Recipient preparation workers', () => {
   });
 
   it('pages selected candidates without lookahead', () => {
-    const ids = ['c', 'b', 'a'];
-    assert.deepEqual(
-      [...preparationPages(ids, 2)],
-      [
-        { ids: ['c', 'b'], offset: 0, useFallbackDomain: false },
-        { ids: ['a'], offset: 2, useFallbackDomain: false },
-      ],
-    );
+    assert.deepEqual(buildPages(['c', 'b', 'a'], 2), [
+      { ids: ['c', 'b'], offset: 0, useFallbackDomain: false },
+      { ids: ['a'], offset: 2, useFallbackDomain: false },
+    ]);
+    assert.deepEqual(buildPages([], 2), []);
   });
 
   it('selects ordered candidates for every segment in one statement, including empty segments', async () => {
@@ -72,37 +88,125 @@ describe('Recipient preparation workers', () => {
       await db('matches').insert([{ member_id: 'c' }, { member_id: 'c' }]);
       const queries: string[] = [];
       db.on('query', (query) => queries.push(query.sql));
-      assert.deepEqual(
-        await selectPreparationCandidates(db, [
-          db('members').where('status', 'comped'),
-          db('members').where('status', 'free'),
-          db('members').where('status', 'paid'),
-          db('members').join('matches', 'matches.member_id', 'members.id'),
-        ]),
-        [[], ['c', 'a'], ['b'], ['c']],
-      );
+      const segmentQueries = [
+        db('members').where('status', 'comped'),
+        db('members').where('status', 'free'),
+        db('members').where('status', 'paid'),
+        db('members').join('matches', 'matches.member_id', 'members.id'),
+      ];
+      const candidates: string[][] = segmentQueries.map(() => []);
+      for await (const { id, segmentIndex } of streamPreparationCandidates(db, segmentQueries)) {
+        candidates[segmentIndex]!.push(id);
+      }
+      assert.deepEqual(candidates, [[], ['c', 'a'], ['b'], ['c']]);
       assert.equal(queries.length, 1);
-      assert.deepEqual(await selectPreparationCandidates(db, []), []);
+      assert.match(queries[0]!, /order by `segment_index` asc, `id` desc$/);
+      for await (const candidate of streamPreparationCandidates(db, [])) {
+        assert.fail(`unexpected candidate ${candidate.id}`);
+      }
       assert.equal(queries.length, 1);
     } finally {
       await db.destroy();
     }
   });
 
-  it('ends a page at the warming boundary and fills the next on the fallback domain', () => {
-    assert.deepEqual(
-      [...preparationPages(['d', 'c', 'b', 'a'], 3, 1)],
-      [
-        { ids: ['d'], offset: 0, useFallbackDomain: false },
-        { ids: ['c', 'b', 'a'], offset: 1, useFallbackDomain: true },
-      ],
+  it('orders each MySQL branch for streaming instead of sorting the union', () => {
+    const db = knex({ client: 'mysql2' });
+    const branch = (status: string) =>
+      db('members')
+        .innerJoin('members_newsletters', 'members_newsletters.member_id', 'members.id')
+        .where('members.status', status);
+    const { sql, bindings } = buildPreparationSelection(db, [branch('free'), branch('paid')], {
+      orderColumn: 'members_newsletters.member_id',
+      joinOrder: ['members_newsletters', 'members'],
+    })
+      .toSQL()
+      .toNative();
+    assert.equal(
+      sql,
+      '(select /*+ JOIN_ORDER(`members_newsletters`, `members`) */ `members`.`id`, ? as segment_index from `members` inner join `members_newsletters` on `members_newsletters`.`member_id` = `members`.`id` where `members`.`status` = ? order by `members_newsletters`.`member_id` desc limit ?) union all (select /*+ JOIN_ORDER(`members_newsletters`, `members`) */ `members`.`id`, ? as segment_index from `members` inner join `members_newsletters` on `members_newsletters`.`member_id` = `members`.`id` where `members`.`status` = ? order by `members_newsletters`.`member_id` desc limit ?)',
     );
+    assert.deepEqual(bindings, [
+      0,
+      'free',
+      Number.MAX_SAFE_INTEGER,
+      1,
+      'paid',
+      Number.MAX_SAFE_INTEGER,
+    ]);
+  });
+
+  it('hands queued pages to concurrent workers and finishes when the queue closes', async () => {
+    const queue = new PreparationQueue<number>();
+    const seen: number[] = [];
+    const run = runPreparationWorkers(
+      queue,
+      2,
+      () => {},
+      async (item) => {
+        seen.push(item);
+      },
+    );
+    queue.push(1);
+    queue.push(2);
+    await queue.drained(0);
+    queue.push(3);
+    queue.close();
+    await run;
+    assert.deepEqual(seen.sort(), [1, 2, 3]);
+  });
+
+  it('rejects waiting workers and wakes a waiting producer when the queue fails', async () => {
+    const queue = new PreparationQueue<number>();
+    const pending = queue.next();
+    const failure = new Error('stream broke');
+    queue.fail(failure);
+    await assert.rejects(pending, (error) => error === failure);
+    await assert.rejects(queue.next(), (error) => error === failure);
+
+    const backlog = new PreparationQueue<number>();
+    backlog.push(1);
+    backlog.push(2);
+    const drained = backlog.drained(0);
+    backlog.fail(failure);
+    await drained;
+  });
+
+  it('resolves a drain wait once consumers take enough items', async () => {
+    const queue = new PreparationQueue<number>();
+    queue.push(1);
+    queue.push(2);
+    queue.push(3);
+    let drained = false;
+    const wait = queue.drained(1).then(() => {
+      drained = true;
+    });
+    await queue.next();
+    await Promise.resolve();
+    assert.equal(drained, false);
+    await queue.next();
+    await wait;
+    assert.equal(queue.size(), 1);
+    queue.close();
+    assert.deepEqual(await queue.next(), { value: 3, done: false });
+    assert.deepEqual(await queue.next(), { value: undefined, done: true });
+  });
+
+  it('ends a page at the warming boundary and fills the next on the fallback domain', () => {
+    assert.deepEqual(buildPages(['d', 'c', 'b', 'a'], 3, 1), [
+      { ids: ['d'], offset: 0, useFallbackDomain: false },
+      { ids: ['c', 'b', 'a'], offset: 1, useFallbackDomain: true },
+    ]);
+    assert.deepEqual(buildPages(['d', 'c', 'b', 'a'], 3, 0), [
+      { ids: ['d', 'c', 'b'], offset: 0, useFallbackDomain: true },
+      { ids: ['a'], offset: 3, useFallbackDomain: true },
+    ]);
   });
 
   for (const batchSize of [0, -1, 1.5, NaN, Infinity]) {
-    it(`rejects batch size ${batchSize} before yielding a page`, () => {
+    it(`rejects batch size ${batchSize} before building a page`, () => {
       assert.throws(
-        () => preparationPages(['a'], batchSize).next(),
+        () => new PreparationPageBuilder(batchSize),
         /batchSize must be a positive integer/,
       );
     });
@@ -185,7 +289,7 @@ describe('Recipient preparation workers', () => {
         ids.map((id) => ({ id, uuid: `uuid-${id}`, email: `${id}@example.com`, name: null })),
       );
       await runPreparationWorkers(
-        preparationPages(ids, 2),
+        buildPages(ids, 2),
         2,
         () => {},
         async (page) => {

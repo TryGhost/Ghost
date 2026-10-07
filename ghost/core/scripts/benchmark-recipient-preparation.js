@@ -23,7 +23,7 @@ const database = `ghost_preparation_bench_${process.pid}_${crypto.randomBytes(3)
 process.env.NODE_ENV = 'testing-mysql';
 process.env.database__client = 'mysql2';
 process.env.database__connection__host = '127.0.0.1';
-process.env.database__connection__port = '3306';
+process.env.database__connection__port ||= '3306';
 process.env.database__connection__user ||= 'root';
 process.env.database__connection__password ??= 'root';
 process.env.database__connection__database = database;
@@ -35,6 +35,7 @@ const admin = knexFactory({
   client: 'mysql2',
   connection: {
     host: '127.0.0.1',
+    port: Number(process.env.database__connection__port),
     user: process.env.database__connection__user,
     password: process.env.database__connection__password,
   },
@@ -63,11 +64,19 @@ async function main() {
   let metrics = {};
   let measureStart = 0;
   logging.info = (event) => {
+    if (event?.event?.name === 'email.preparation.swept') {
+      metrics.stream_first_row_ms = event.first_row_ms;
+      metrics.stream_first_page_ms = event.first_page_ms;
+    }
     if (event?.event?.name === 'email.preparation.discarded') {
       metrics.discard_ms = Date.now() - measureStart;
     }
     if (event?.event?.name === 'email.preparation.swept') {
       metrics.sweep_ms = event.duration_ms;
+    }
+    if (event?.event?.name === 'email.batch.prepared' && metrics.first_page_ms === undefined) {
+      // Time until the first batch row exists: the moment the status API can report progress.
+      metrics.first_page_ms = Date.now() - measureStart;
     }
     if (event?.event?.name === 'email.batches.created') {
       metrics.batches = event.batches_total;

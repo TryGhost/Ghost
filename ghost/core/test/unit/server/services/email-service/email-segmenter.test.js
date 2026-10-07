@@ -3,6 +3,42 @@ const EmailSegmenter = require('../../../../../core/server/services/email-servic
 const sinon = require('sinon');
 
 describe('Email segmenter', function () {
+  describe('scopePreparationQuery', function () {
+    it('joins the newsletter subscription and orders by its index', function () {
+      const emailSegmenter = new EmailSegmenter({});
+      const calls = [];
+      const query = {
+        innerJoin(...args) {
+          calls.push(['innerJoin', ...args]);
+          return this;
+        },
+        where(...args) {
+          calls.push(['where', ...args]);
+          return this;
+        },
+      };
+      const scoped = emailSegmenter.scopePreparationQuery(query, { id: 'newsletter-123' });
+      assert.equal(scoped.query, query);
+      assert.deepEqual(calls, [
+        ['innerJoin', 'members_newsletters', 'members_newsletters.member_id', 'members.id'],
+        ['where', 'members_newsletters.newsletter_id', 'newsletter-123'],
+      ]);
+      assert.equal(scoped.orderColumn, 'members_newsletters.member_id');
+      assert.deepEqual(scoped.joinOrder, ['members_newsletters', 'members']);
+    });
+
+    it('omits the newsletter relation from the filter when preparation scopes it', function () {
+      const emailSegmenter = new EmailSegmenter({});
+      const newsletter = { id: 'newsletter-123', get: () => 'members' };
+      assert.equal(
+        emailSegmenter.getMemberFilterForSegment(newsletter, 'all', 'status:free', {
+          withNewsletter: false,
+        }),
+        'email_disabled:0+(status:free)',
+      );
+    });
+  });
+
   describe('getMemberCount', function () {
     let membersRepository;
     let listStub;

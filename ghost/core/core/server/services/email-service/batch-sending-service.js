@@ -13,12 +13,32 @@ const {
   missingRecipientFields,
 } = require('./recipient-accounting');
 const {
-  selectPreparationCandidates,
+  streamPreparationCandidates,
   resolvePreparationMembers,
   runPreparationWorkers,
-  preparationPages,
+  PreparationPageBuilder,
+  PreparationQueue,
   waitForPreparationRetry,
 } = require('./recipient-preparation');
+
+const PREPARATION_STREAM_PAUSE_LIMIT_MS = 20 * 1000;
+
+/** Marks a selection (stream) failure so the audience is reselected after discarding its pages. */
+class PreparationSelectionError extends Error {
+  constructor({ cause }) {
+    super(cause?.message ?? 'Newsletter audience selection failed');
+    this.cause = cause;
+  }
+}
+
+/** Carries a page failure through retryDb without another selection attempt. */
+class NonRetryable extends Error {
+  constructor({ cause }) {
+    super(cause?.message ?? 'Newsletter preparation failed');
+    this.cause = cause;
+    this.retryable = false;
+  }
+}
 const messages = {
   emailErrorPartialFailure:
     'An error occurred, and your newsletter was only partially sent. Please retry sending the remaining emails.',
@@ -490,77 +510,179 @@ class BatchSendingService {
     }
   }
 
-  async #selectPreparationAudience({ email, newsletter, segments, attemptId }) {
-    const startedAt = Date.now();
-    this.#checkPreparationActive();
+  #preparationQueries({ email, newsletter, segments }) {
     // Parse once outside retries: malformed filters and newsletter settings cannot recover.
+    let selection = {};
     const queries = segments.map((segment) => {
       const filter = this.#emailSegmenter.getMemberFilterForSegment(
         newsletter,
         email.get('recipient_filter'),
         segment,
+        { withNewsletter: false },
       );
-      return this.#models.Member.getFilteredCollectionQuery({
-        filter: filter + `+id:<'${email.id}'`,
-      });
+      const scoped = this.#emailSegmenter.scopePreparationQuery(
+        this.#models.Member.getFilteredCollectionQuery({
+          filter: filter + `+id:<'${email.id}'`,
+        }),
+        newsletter,
+      );
+      selection = { orderColumn: scoped.orderColumn, joinOrder: scoped.joinOrder };
+      return scoped.query;
     });
-    const candidates = await this.retryDb(
-      () => {
-        this.#checkPreparationActive();
-        return selectPreparationCandidates(this.#db.knex, queries);
-      },
-      {
-        ...this.#getBeforeRetryConfig(email),
-        description: `sweep audience for email ${email.id}`,
-      },
-    );
-    this.#checkPreparationActive();
-    logging.info(
-      {
-        event: { name: 'email.preparation.swept' },
-        email_id: email.id,
-        attempt_id: attemptId,
-        candidate_count: candidates.reduce((total, ids) => total + ids.length, 0),
-        duration_ms: Date.now() - startedAt,
-      },
-      'Selected newsletter candidate recipients',
-    );
-    return candidates;
+    return { queries, selection };
   }
 
   async #prepareAudience({ email, post, newsletter, attemptId }) {
     const segments = await this.#emailRenderer.getSegments(post);
-    const candidates = await this.#selectPreparationAudience({
-      email,
-      newsletter,
-      segments,
-      attemptId,
-    });
+    this.#checkPreparationActive();
+    const { queries, selection } = this.#preparationQueries({ email, newsletter, segments });
     const batchSize = this.#sendingService.getMaximumRecipients();
     const warmupLimit = this.#getDomainWarmupLimit(email);
+    let attempt = 0;
+    try {
+      return await this.retryDb(
+        async () => {
+          // A failed selection leaves pages from this attempt behind; clear them before reselecting.
+          attempt += 1;
+          if (attempt > 1) {
+            await this.#discardIncompletePreparation(email);
+          }
+          try {
+            return await this.#streamPreparation({
+              email,
+              segments,
+              queries,
+              selection,
+              attemptId,
+              batchSize,
+              warmupLimit,
+            });
+          } catch (error) {
+            if (error instanceof PreparationSelectionError) {
+              throw error.cause;
+            }
+            // Page failures already spent their own retries; do not reselect for them.
+            throw new NonRetryable({ cause: error });
+          }
+        },
+        {
+          ...this.#getBeforeRetryConfig(email),
+          description: `sweep audience for email ${email.id}`,
+        },
+      );
+    } catch (error) {
+      throw error instanceof NonRetryable ? error.cause : error;
+    }
+  }
+
+  /**
+   * Streams candidate IDs straight into pages so the first batch commits while selection is
+   * still running. The producer stays a bounded number of pages ahead of the workers, and
+   * stops waiting for them rather than let a stalled worker hold the database stream open.
+   */
+  async #streamPreparation({
+    email,
+    segments,
+    queries,
+    selection,
+    attemptId,
+    batchSize,
+    warmupLimit,
+  }) {
+    const startedAt = Date.now();
+    const queue = new PreparationQueue();
+    // Run at most this many pages ahead of the workers so their round trips interleave with
+    // row parsing; a fast server can otherwise flood the event loop before the first commit.
+    const lookahead = this.#batchCreationConcurrency * 4;
     let candidateCount = 0;
     let excludedCount = 0;
-    for (const [index, ids] of candidates.entries()) {
-      const segment = segments[index];
-      const remainingCapacity = warmupLimit - candidateCount;
-      candidateCount += ids.length;
-      if (ids.length === 0) {
-        continue;
-      }
-      await runPreparationWorkers(
-        preparationPages(ids, batchSize, remainingCapacity),
-        // Avoid allocating idle workers for a small audience and a large configured limit.
-        // Warming can introduce one additional partial page.
-        Math.min(this.#batchCreationConcurrency, Math.ceil(ids.length / batchSize) + 1),
-        () => this.#checkPreparationActive(),
-        async (page, signal) => {
-          const pageExcludedCount = await this.#prepareSweptPage(
+    let firstPageAt = null;
+    let firstRowAt = null;
+    let streamEndedAt = null;
+    let selectionError = null;
+    let abandoned = false;
+    let unbounded = false;
+    const produce = async () => {
+      let builder = null;
+      let currentSegment = -1;
+      const enqueue = async (segmentIndex, page) => {
+        firstPageAt ??= Date.now();
+        queue.push({ segment: segments[segmentIndex], page });
+        if (unbounded || queue.size() < lookahead) {
+          return;
+        }
+        // Waiting pauses the database stream. Stop waiting before the server's write timeout
+        // can close it (net_write_timeout defaults to 60s) and buffer the rest in memory instead.
+        const pauseLimit = new AbortController();
+        const waited = await Promise.race([
+          queue.drained(Math.floor(lookahead / 2)).then(() => false),
+          waitForPreparationRetry(PREPARATION_STREAM_PAUSE_LIMIT_MS, pauseLimit.signal).then(
+            () => true,
+            () => false,
+          ),
+        ]);
+        pauseLimit.abort();
+        if (waited) {
+          unbounded = true;
+          logging.info(
             {
-              email,
-              segment,
-              attemptId,
-              page,
+              event: { name: 'email.preparation.stream_unbounded' },
+              email_id: email.id,
+              attempt_id: attemptId,
+              queued_pages: queue.size(),
             },
+            'Buffering remaining newsletter candidates without waiting for page writes',
+          );
+        }
+      };
+      const flush = async () => {
+        const page = builder?.flush();
+        if (page) {
+          await enqueue(currentSegment, page);
+        }
+      };
+      try {
+        for await (const { id, segmentIndex } of streamPreparationCandidates(
+          this.#db.knex,
+          queries,
+          selection,
+        )) {
+          if (abandoned) {
+            // Read the statement to its end so the connection returns to the pool cleanly.
+            continue;
+          }
+          firstRowAt ??= Date.now();
+          this.#checkPreparationActive();
+          if (segmentIndex !== currentSegment) {
+            await flush();
+            currentSegment = segmentIndex;
+            builder = new PreparationPageBuilder(batchSize, warmupLimit - candidateCount);
+          }
+          candidateCount += 1;
+          const page = builder.push(id);
+          if (page) {
+            await enqueue(segmentIndex, page);
+          }
+        }
+        streamEndedAt = Date.now();
+        if (!abandoned) {
+          await flush();
+        }
+        queue.close();
+      } catch (error) {
+        selectionError = error;
+        queue.fail(error);
+      }
+    };
+    const producer = produce();
+    try {
+      await runPreparationWorkers(
+        queue,
+        this.#batchCreationConcurrency,
+        () => this.#checkPreparationActive(),
+        async ({ segment, page }, signal) => {
+          const pageExcludedCount = await this.#prepareSweptPage(
+            { email, segment, attemptId, page },
             signal,
           );
           // Read the aggregate only after awaiting: compound assignment across
@@ -568,7 +690,33 @@ class BatchSendingService {
           excludedCount += pageExcludedCount;
         },
       );
+    } catch (error) {
+      // Workers are done; failing the queue only wakes a producer waiting to run ahead.
+      abandoned = true;
+      queue.fail(error);
+      await producer;
+      throw selectionError && error === selectionError
+        ? new PreparationSelectionError({ cause: error })
+        : error;
     }
+    await producer;
+    if (selectionError) {
+      throw new PreparationSelectionError({ cause: selectionError });
+    }
+    logging.info(
+      {
+        event: { name: 'email.preparation.swept' },
+        email_id: email.id,
+        attempt_id: attemptId,
+        candidate_count: candidateCount,
+        duration_ms: streamEndedAt - startedAt,
+        first_page_ms: firstPageAt === null ? null : firstPageAt - startedAt,
+        first_row_ms: firstRowAt === null ? null : firstRowAt - startedAt,
+        preparation_ms: Date.now() - startedAt,
+        stream_unbounded: unbounded,
+      },
+      'Selected newsletter candidate recipients',
+    );
     return { candidateCount, excludedCount };
   }
 

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
+import { PassThrough } from 'node:stream';
 import ObjectID from 'bson-objectid';
 import sinon from 'sinon';
 import type { Knex } from 'knex';
@@ -74,6 +75,8 @@ describe('Upfront recipient preparation through MySQL', () => {
           _filter: unknown,
           segment: string | null,
         ) => (segment ? `${filter}+(${segment})` : filter),
+        // Fixture members hold no subscriptions; the audience is the filter alone.
+        scopePreparationQuery: (query: Knex.QueryBuilder) => ({ query }),
       },
       domainWarmingService: { isEnabled: () => true },
       sendingService: { getMaximumRecipients: () => 2 },
@@ -101,18 +104,46 @@ describe('Upfront recipient preparation through MySQL', () => {
   const recipients = () =>
     db.knex('email_recipients').where({ 'email_recipients.email_id': email.id });
 
-  function interceptSweep(after: (rows: { id: string }[]) => Promise<void>) {
+  /**
+   * Wraps the streamed sweep. `before` runs ahead of the first row. By default the selected rows
+   * are held until `after` has run, so a test can change members between selection and the first
+   * page write; with `buffer: false` rows flow to the workers as they arrive and `after` runs at the
+   * end, so a rejection there fails the selection after pages may have been written.
+   */
+  function interceptSweep(
+    after: (rows: { id: string }[]) => Promise<void>,
+    { before, buffer = true }: { before?: () => Promise<void> | void; buffer?: boolean } = {},
+  ) {
     const original = db.knex.unionAll.bind(db.knex);
     return sinon.stub(db.knex, 'unionAll').callsFake((...args) => {
       const query = original(...args);
-      const execute = query.then.bind(query);
-      query.then = (resolve, reject) =>
-        execute()
-          .then(async (rows) => {
+      const stream = query.stream.bind(query);
+      query.stream = (options?: object) => {
+        const source = stream(options);
+        const out = new PassThrough({ objectMode: true });
+        (async () => {
+          const rows: { id: string }[] = [];
+          try {
+            await before?.();
+            for await (const row of source) {
+              rows.push(row);
+              if (!buffer) {
+                out.write(row);
+              }
+            }
             await after(rows);
-            return rows;
-          })
-          .then(resolve, reject);
+            if (buffer) {
+              for (const row of rows) {
+                out.write(row);
+              }
+            }
+            out.end();
+          } catch (error) {
+            out.destroy(error as Error);
+          }
+        })();
+        return out;
+      };
       return query;
     });
   }
@@ -121,8 +152,11 @@ describe('Upfront recipient preparation through MySQL', () => {
     const audience = sinon.spy(models.Member, 'getFilteredCollectionQuery');
     await prepare();
     sinon.assert.calledOnce(audience);
-    const sweep = queries.find((query) => query.sql.startsWith('select `members`.`id`'))!;
-    assert.ok(!/distinct|limit/i.test(sweep.sql));
+    const sweep = queries.find((query) => query.sql.includes('segment_index'))!;
+    assert.ok(!/distinct/i.test(sweep.sql));
+    // Each branch orders itself for streaming; no sort over the union.
+    assert.match(sweep.sql, /^\(select .* order by .* desc limit \?\)( union all \(select .*\))*$/);
+    assert.match(sweep.sql, /limit \?\)$/);
     assert.ok(sweep.bindings?.includes(email.id));
     assert.equal(email.get('candidate_count'), 4);
     assert.equal((await recipients()).length, 4);
@@ -261,7 +295,7 @@ describe('Upfront recipient preparation through MySQL', () => {
       assert.equal(Boolean(row.fallback_sending_domain), row.member_id === id(3));
     }
     assert.equal(email.get('candidate_count'), 4);
-    const sweeps = queries.filter((query) => query.sql.startsWith('select `members`.`id`'));
+    const sweeps = queries.filter((query) => query.sql.includes('segment_index'));
     assert.equal(sweeps.length, 1);
     assert.match(sweeps[0]!.sql, /union all/);
   });
@@ -310,25 +344,25 @@ describe('Upfront recipient preparation through MySQL', () => {
     });
   }
 
-  it('retries the entire selection before writing any batches', async () => {
+  it('discards pages written before a selection failure and reselects', async () => {
     segments = ['status:free', 'status:-free'];
     filter += '+email_disabled:0';
     let attempts = 0;
-    const batchCounts: number[] = [];
-    const audience = interceptSweep(async () => {
-      attempts += 1;
-      batchCounts.push((await service.getBatches(email)).length);
-      if (attempts === 1) {
-        await db
-          .knex('members')
-          .where({ id: id(4) })
-          .update({ email_disabled: true });
-        throw new Error('transient sweep failure');
-      }
-    });
+    const audience = interceptSweep(
+      async () => {
+        attempts += 1;
+        if (attempts === 1) {
+          await db
+            .knex('members')
+            .where({ id: id(4) })
+            .update({ email_disabled: true });
+          throw new Error('transient sweep failure');
+        }
+      },
+      { buffer: false },
+    );
     await prepare();
     sinon.assert.callCount(audience, 2);
-    assert.deepEqual(batchCounts, [0, 0]);
     assert.equal(email.get('candidate_count'), 3);
     assert.deepEqual((await recipients()).map((row) => row.member_id).sort(), [
       id(1),
@@ -381,7 +415,7 @@ describe('Upfront recipient preparation through MySQL', () => {
 
   it('does not begin preparation when shutdown starts during selection', async () => {
     segments = ['status:free', 'status:-free'];
-    interceptSweep(async () => service.onPreStop());
+    interceptSweep(async () => {}, { before: () => service.onPreStop() });
     await assert.rejects(prepare(), { code: 'BULK_EMAIL_SHUTDOWN_IN_PROGRESS' });
     assert.deepEqual(await service.getBatches(email), []);
     assert.equal((await recipients()).length, 0);
@@ -460,10 +494,8 @@ describe('Upfront recipient preparation through MySQL', () => {
     sinon.assert.calledWithMatch(logging.info, { event: { name: 'email.batch.recovered' } });
   });
 
-  it('does not start page writes when shutdown occurs during the sweep', async () => {
-    interceptSweep(async () => {
-      service.onPreStop();
-    });
+  it('does not start page writes when shutdown occurs before the first candidate', async () => {
+    interceptSweep(async () => {}, { before: () => service.onPreStop() });
     const write = sinon.spy(service, 'createBatch');
     await assert.rejects(prepare(), { code: 'BULK_EMAIL_SHUTDOWN_IN_PROGRESS' });
     sinon.assert.notCalled(write);

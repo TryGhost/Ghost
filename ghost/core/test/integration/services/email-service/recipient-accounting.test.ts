@@ -68,7 +68,10 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
   let data: SendData;
   let sentry: { captureException: sinon.SinonStub; captureMessage: sinon.SinonStub };
   let renderer: { getSegments: sinon.SinonStub };
-  let segmenter: { getMemberFilterForSegment: sinon.SinonStub };
+  let segmenter: {
+    getMemberFilterForSegment: sinon.SinonStub;
+    scopePreparationQuery: (query: Knex.QueryBuilder) => { query: Knex.QueryBuilder };
+  };
   let sender: {
     getMaximumRecipients: () => number;
     getTargetDeliveryWindow: () => number;
@@ -118,6 +121,8 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
         .callsFake((_newsletter: unknown, filter: string) =>
           filter === 'all' ? 'status:free' : filter,
         ),
+      // Fixture members hold no subscriptions; the audience is the filter alone.
+      scopePreparationQuery: (query: Knex.QueryBuilder) => ({ query }),
     };
     service = createService();
     data = { email, post: {}, newsletter: {} };
