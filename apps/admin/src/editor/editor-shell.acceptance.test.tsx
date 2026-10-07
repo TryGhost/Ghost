@@ -59,23 +59,67 @@ function positions(postType: 'post' | 'page') {
   });
 }
 
+const HELD_DURATION = 100_000;
+const SETTINGS_MOTION = '[class*="editor-settings-motion-"]';
+
+/** Holds the real settings motion long enough to inspect precise points on its timeline. */
 function slowSettingsTransition() {
   const style = document.createElement('style');
-  style.textContent = `[style*="--editor-settings-progress"] {
-    transition-duration: 100s !important;
+  style.textContent = `${SETTINGS_MOTION} {
+    transition-duration: ${HELD_DURATION / 1000}s !important;
   }`;
   document.head.appendChild(style);
   return style;
 }
 
-function settingsTransition() {
-  return document
+function settingsTransitions() {
+  return document.getAnimations().filter((animation): animation is CSSTransition => {
+    const target = (animation.effect as KeyframeEffect | null)?.target;
+    return animation instanceof CSSTransition && !!target?.matches(SETTINGS_MOTION);
+  });
+}
+
+/**
+ * The panel, its contents, the writing pane, the footer, and the header's
+ * padding, action gap and toggle slot each move with the settings panel.
+ */
+const SETTINGS_MOTION_PARTS = 7;
+
+/** Waits for every part of a settings motion that started after `previous`, held at its start. */
+async function heldSettingsMotion(previous: CSSTransition[] = []) {
+  const started = () => settingsTransitions().filter((t) => !previous.includes(t));
+  await expect.poll(() => started().length).toBe(SETTINGS_MOTION_PARTS);
+  const transitions = started();
+  const motion = {
+    transitions,
+    seek(time: number) {
+      for (const transition of transitions) {
+        transition.pause();
+        transition.currentTime = time;
+      }
+    },
+    finish() {
+      for (const transition of transitions) {
+        transition.finish();
+      }
+    },
+  };
+  motion.seek(0);
+  return motion;
+}
+
+/**
+ * Animating a custom property that the editor document inherits restyles the
+ * whole document on every frame, which makes the motion choppy in long posts.
+ */
+function expectNoAnimatedCustomProperty() {
+  const animated = document
     .getAnimations()
-    .find(
+    .filter(
       (animation) =>
-        animation instanceof CSSTransition &&
-        animation.transitionProperty === '--editor-settings-progress',
+        animation instanceof CSSTransition && animation.transitionProperty.startsWith('--'),
     );
+  expect(animated).toHaveLength(0);
 }
 
 /** Newsletters answer 500, which fails the header's publish inputs. */
@@ -325,10 +369,8 @@ describe('Floating editor shell', () => {
     const animationStyle = slowSettingsTransition();
     try {
       await editorScreen.settingsToggle().click();
-      await expect.poll(settingsTransition).toBeDefined();
-      const opening = settingsTransition()!;
-      opening.pause();
-      opening.currentTime = 0;
+      const opening = await heldSettingsMotion();
+      expectNoAnimatedCustomProperty();
       const sidebar = editorScreen.settingsSidebar().element();
       const panel = sidebar.parentElement!;
       const contents = sidebar.firstElementChild!;
@@ -338,9 +380,11 @@ describe('Floating editor shell', () => {
       );
       expect(panel.getBoundingClientRect().width).toBe(0);
       expect(getComputedStyle(contents).opacity).toBe('0');
-      expect(opening.effect!.getTiming().easing).not.toBe('linear');
+      for (const transition of opening.transitions) {
+        expect(transition.effect!.getTiming().easing).not.toBe('linear');
+      }
 
-      opening.currentTime = 50_000;
+      opening.seek(HELD_DURATION / 2);
       const width = panel.getBoundingClientRect().width;
       const sidebarWidth = sidebar.getBoundingClientRect().width + 8;
       expect(width).toBeGreaterThan(0);
@@ -361,15 +405,13 @@ describe('Floating editor shell', () => {
 
       const publishOpen = editorScreen.publishButton().element().getBoundingClientRect().right;
       await editorScreen.settingsToggle().click();
-      await expect.poll(settingsTransition).toBeDefined();
-      const closing = settingsTransition()!;
-      closing.pause();
-      closing.currentTime = 0;
+      const closing = await heldSettingsMotion(opening.transitions);
+      expectNoAnimatedCustomProperty();
       expect(editorScreen.publishButton().element().getBoundingClientRect().right).toBeCloseTo(
         publishOpen,
         1,
       );
-      closing.currentTime = 50_000;
+      closing.seek(HELD_DURATION / 2);
       expect(sidebar.isConnected).toBe(true);
       expect(panel.getBoundingClientRect().width).toBeGreaterThan(0);
       expect(panel.getBoundingClientRect().width).toBeLessThan(sidebarWidth);
@@ -397,8 +439,8 @@ describe('Floating editor shell', () => {
     const animationStyle = slowSettingsTransition();
     try {
       await editorScreen.settingsToggle().click();
-      await expect.poll(settingsTransition).toBeDefined();
-      settingsTransition()!.finish();
+      const opening = await heldSettingsMotion();
+      opening.finish();
       const sidebar = editorScreen.settingsSidebar().element();
       const panel = sidebar.parentElement!;
       await expect
@@ -406,18 +448,13 @@ describe('Floating editor shell', () => {
         .toBe(sidebar.getBoundingClientRect().width + 8);
 
       await editorScreen.settingsToggle().click();
-      await expect.poll(settingsTransition).toBeDefined();
-      const closing = settingsTransition()!;
-      closing.pause();
-      closing.currentTime = 50_000;
+      const closing = await heldSettingsMotion(opening.transitions);
+      closing.seek(HELD_DURATION / 2);
       const widthBefore = panel.getBoundingClientRect().width;
       const publishBefore = editorScreen.publishButton().element().getBoundingClientRect().right;
       // The stationary toggle remains usable from the keyboard as the sidebar recedes.
       await userEvent.keyboard(' ');
-      await expect.poll(() => settingsTransition() !== closing).toBe(true);
-      const reopening = settingsTransition()!;
-      reopening.pause();
-      reopening.currentTime = 0;
+      const reopening = await heldSettingsMotion(closing.transitions);
       expect(editorScreen.settingsSidebar().element()).toBe(sidebar);
       expect(panel.getBoundingClientRect().width).toBeCloseTo(widthBefore, 1);
       expect(editorScreen.publishButton().element().getBoundingClientRect().right).toBeCloseTo(
@@ -442,17 +479,15 @@ describe('Floating editor shell', () => {
     const animationStyle = slowSettingsTransition();
     try {
       await editorScreen.settingsToggle().click();
-      await expect.poll(settingsTransition).toBeDefined();
-      settingsTransition()!.finish();
+      const opening = await heldSettingsMotion();
+      opening.finish();
       const sidebar = editorScreen.settingsSidebar().element();
       await expect
         .poll(() => sidebar.parentElement!.getBoundingClientRect().width)
         .toBe(sidebar.getBoundingClientRect().width + 8);
       await editorScreen.settingsToggle().click();
-      await expect.poll(settingsTransition).toBeDefined();
-      const closing = settingsTransition()!;
-      closing.pause();
-      closing.currentTime = 50_000;
+      const closing = await heldSettingsMotion(opening.transitions);
+      closing.seek(HELD_DURATION / 2);
       editorScreen.titleInput().element().focus();
       closing.finish();
       await expect(editorScreen.settingsSidebar()).toHaveCount(0);

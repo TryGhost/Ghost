@@ -110,7 +110,7 @@ function EditorHeader({
   return (
     <Grid
       align="center"
-      className="grid-cols-[auto_minmax(0,1fr)] pt-[calc(var(--spacing)*5+1px)] pr-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] pb-3 pl-4 sm:grid-cols-[auto_minmax(0,1fr)_auto] [&_a]:pointer-events-auto [&_button]:pointer-events-auto"
+      className="grid-cols-[auto_minmax(0,1fr)] pt-[calc(var(--spacing)*5+1px)] pr-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] pb-3 pl-4 editor-settings-motion-[padding-right] sm:grid-cols-[auto_minmax(0,1fr)_auto] [&_a]:pointer-events-auto [&_button]:pointer-events-auto"
       gap="sm"
     >
       <PageHeader.Action
@@ -228,7 +228,7 @@ function EditorContent({
   // Closed on every editor entry, as the menu it replaces was.
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsPresent, setSettingsPresent] = useState(false);
-  const shellRef = useRef<HTMLDivElement>(null);
+  const settingsFrameRef = useRef<HTMLDivElement>(null);
   const settingsToggleRef = useRef<HTMLButtonElement>(null);
   const [settingsToggleWidth, setSettingsToggleWidth] = useState(0);
   useLayoutEffect(() => {
@@ -242,8 +242,9 @@ function EditorContent({
     observer.observe(toggle);
     return () => observer.disconnect();
   }, []);
-  // Keep the panel's fields and subview mounted until the closing transition ends.
-  // Reading animations also handles reduced motion (no animation) and reversals.
+  // Keep the panel's fields and subview mounted until its closing transition ends.
+  // Reading the panel's own transitions also handles reduced motion (none) and
+  // reversals (a reopen cancels this wait).
   useLayoutEffect(() => {
     if (settingsOpen || !settingsPresent) {
       return;
@@ -251,7 +252,10 @@ function EditorContent({
     const finishClosing = () => {
       setSettingsPresent(false);
     };
-    const animations = shellRef.current?.getAnimations() ?? [];
+    const animations =
+      settingsFrameRef.current
+        ?.getAnimations()
+        .filter((animation) => animation instanceof CSSTransition) ?? [];
     if (!animations.length) {
       finishClosing();
       return;
@@ -343,16 +347,20 @@ function EditorContent({
 
   return (
     <Inline
-      ref={shellRef}
       align="stretch"
-      className="relative h-full min-h-0 transition-[--editor-settings-progress] duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+      className="relative h-full min-h-0"
       gap="none"
       style={
         {
           '--editor-header-height': `${headerHeight}px`,
           '--editor-overlap': '0px',
+          // Never animated: what moves with the panel transitions its own property.
           '--editor-settings-progress': settingsOpen ? 1 : 0,
-          '--editor-settings-toggle-width': `${settingsToggleWidth}px`,
+          // Unset until measured: the toggle's slot then starts at auto width, which
+          // nothing eases from, rather than easing out from an unmeasured toggle.
+          '--editor-settings-toggle-width': settingsToggleWidth
+            ? `${settingsToggleWidth}px`
+            : undefined,
         } as CSSProperties
       }
     >
@@ -368,7 +376,7 @@ function EditorContent({
                 onOpenUpdateFlow={canPublish ? openUpdateFlow : undefined}
               />
             ) : null}
-            <PageHeader.ActionGroup className="ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] max-sm:col-start-2 max-sm:row-start-1 sm:col-start-3">
+            <PageHeader.ActionGroup className="ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap] max-sm:col-start-2 max-sm:row-start-1 sm:col-start-3">
               <EditorHeaderActions
                 currentUser={currentUser}
                 offersEmailRetry={offersEmailRetry}
@@ -383,7 +391,7 @@ function EditorContent({
               />
               <Box
                 aria-hidden="true"
-                className="w-[calc((var(--editor-settings-toggle-width)+var(--spacing)*2+1px)*(1-var(--editor-settings-progress)))] shrink-0"
+                className="w-[calc((var(--editor-settings-toggle-width)+var(--spacing)*2+1px)*(1-var(--editor-settings-progress)))] shrink-0 editor-settings-motion-[width]"
               />
             </PageHeader.ActionGroup>
           </EditorHeader>
@@ -438,6 +446,7 @@ function EditorContent({
           currentUser={currentUser}
           excerptRef={settingsExcerptRef}
           featureImage={featureImage.featureImage}
+          frameRef={settingsFrameRef}
           hasInlineExcerpt={showExcerpt}
           postType={postType}
           session={session}

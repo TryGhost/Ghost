@@ -1,4 +1,16 @@
-import { Fragment, memo, type ReactNode, type Ref, useEffect, useId } from 'react';
+import {
+  type CSSProperties,
+  Fragment,
+  memo,
+  type ReactNode,
+  type Ref,
+  useEffect,
+  useId,
+  useImperativeHandle,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { FieldError, Label, Separator, Switch, Textarea } from '@tryghost/shade/components';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
@@ -117,6 +129,8 @@ export interface PostSettingsSidebarProps {
   hasInlineExcerpt?: boolean;
   /** The excerpt field, for the screen to take the writer to. */
   excerptRef?: Ref<HTMLTextAreaElement>;
+  /** The panel's frame, whose width transition the screen waits on before unmounting it. */
+  frameRef?: Ref<HTMLDivElement | null>;
 }
 
 /**
@@ -132,7 +146,18 @@ export function PostSettingsSidebar({
   currentUser,
   hasInlineExcerpt = false,
   excerptRef,
+  frameRef,
 }: PostSettingsSidebarProps) {
+  const ownFrameRef = useRef<HTMLDivElement>(null);
+  useImperativeHandle(frameRef, () => ownFrameRef.current, []);
+  // The panel mounts in the render that opens it, and a new element has no
+  // earlier style to transition from. It renders closed first, its style is
+  // read, and then it takes the shell's progress, so it opens like a reopen.
+  const [entering, setEntering] = useState(true);
+  useLayoutEffect(() => {
+    ownFrameRef.current?.getBoundingClientRect();
+    setEntering(false);
+  }, []);
   // The sections take the narrow port rather than the handle, so an edit they
   // cannot see does not hand them a new object.
   const session = useEditorSettingsPort(handle);
@@ -209,13 +234,20 @@ export function PostSettingsSidebar({
 
   return (
     <SubviewContext.Provider value={subviews}>
-      <Box className="absolute inset-y-0 right-0 z-30 w-[calc(var(--editor-settings-progress,1)*var(--editor-settings-width))] overflow-hidden [--editor-settings-width:350px] max-[500px]:[--editor-settings-width:100vw] lg:static lg:shrink-0">
+      <Box
+        ref={ownFrameRef}
+        className="absolute inset-y-0 right-0 z-30 w-[calc(var(--editor-settings-progress,1)*var(--editor-settings-width))] overflow-hidden editor-settings-motion-[width] [--editor-settings-width:350px] max-[500px]:[--editor-settings-width:100vw] lg:static lg:shrink-0"
+        style={entering ? ({ '--editor-settings-progress': 0 } as CSSProperties) : undefined}
+      >
         <aside
           aria-label={open?.title ?? panelLabel}
           className="my-2 mr-2 h-[calc(100%-var(--spacing)*4)] w-[calc(var(--editor-settings-width)-var(--spacing)*2)] overflow-hidden rounded-xl border border-border bg-sidebar"
           data-testid={postSettingsSidebar}
         >
-          <Stack className="h-full min-h-0 opacity-(--editor-settings-progress,1)" gap="none">
+          <Stack
+            className="h-full min-h-0 opacity-(--editor-settings-progress,1) editor-settings-motion-[opacity]"
+            gap="none"
+          >
             {open ? null : (
               <Box className="z-10 shrink-0 bg-sidebar">
                 <Inline align="center" className="px-4 py-3" gap="sm" justify="between">

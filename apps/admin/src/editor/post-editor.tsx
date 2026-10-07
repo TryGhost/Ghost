@@ -358,7 +358,7 @@ export function PostEditor({
       <div className="h-full scroll-pt-(--editor-overlap) overflow-x-hidden overflow-y-auto">
         <Stack
           ref={writingAreaRef}
-          className="min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24 lg:mr-[calc(var(--spacing)*3*var(--editor-settings-progress,0))]"
+          className="min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24 editor-settings-motion-[margin-right] lg:mr-[calc(var(--spacing)*3*var(--editor-settings-progress,0))]"
           gap="none"
           onDragOver={(event) => event.preventDefault()}
           onDrop={onPaneDrop}
@@ -486,7 +486,7 @@ export function PostEditor({
         </Stack>
       </div>
       <Inline
-        className="absolute right-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] bottom-3 z-20"
+        className="absolute right-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] bottom-3 z-20 editor-settings-motion-[right]"
         gap="sm"
       >
         {!isKeyboardOpen && (

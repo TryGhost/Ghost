@@ -34,11 +34,19 @@ body {
   margin: 0;
 }
 
-/* One progress value keeps the settings panel and its vacated header slot in sync. */
-@property --editor-settings-progress {
-  syntax: '<number>';
-  inherits: true;
-  initial-value: 0;
+/* The editor settings panel's motion. `--editor-settings-progress` on the editor
+   shell is only ever 0 or 1; each element that moves with the panel transitions
+   its own property, named in brackets (`editor-settings-motion-[width]`), on this
+   one timing. Animating the inherited progress value itself would restyle the
+   whole document on every frame of the motion. */
+@utility editor-settings-motion-* {
+  transition-property: --value([*]);
+  transition-duration: 450ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+
+  @media (prefers-reduced-motion: reduce) {
+    transition-property: none;
+  }
 }
 
 /* Shimmer for an active send's status line. The gradient is 300% wide so
