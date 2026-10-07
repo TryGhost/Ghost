@@ -13438,10 +13438,6 @@ packages:
   downsize-cjs@1.1.2:
     resolution: {integrity: sha512-WfytyidccC61hSKwiWeMXTO4WwWxjOHhl70cH+nbFEy8tkUyEBdz70FI2xc94uS5GL3cyPG3h5r4HH5cpFsUvw==}
 
-  dtrace-provider@0.8.8:
-    resolution: {integrity: sha512-b7Z7cNtHPhH9EJhNNbbeqTcXB8LGFFZhq1PGgEvpeHlzd36bhbdTWoE/Ba/YguqpBSlAPKnARWhVlhunCMwfxg==}
-    engines: {node: '>=0.10'}
-
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
     engines: {node: '>= 0.4'}
@@ -22763,6 +22759,9 @@ packages:
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
+
+ignoredOptionalDependencies:
+  - dtrace-provider
 
 snapshots:
 
@@ -32208,7 +32207,6 @@ snapshots:
 
   bunyan@1.8.15:
     optionalDependencies:
-      dtrace-provider: 0.8.8
       moment: 2.31.0
       mv: 2.1.1
       safe-json-stringify: 1.2.0
@@ -33796,11 +33794,6 @@ snapshots:
   dotenv@17.4.2: {}
 
   downsize-cjs@1.1.2: {}
-
-  dtrace-provider@0.8.8:
-    dependencies:
-      nan: 2.28.0
-    optional: true
 
   dunder-proto@1.0.1:
     dependencies:
