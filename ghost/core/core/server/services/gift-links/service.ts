@@ -3,21 +3,23 @@ import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import { GiftLinkRow, giftLinkCodec, giftLinkColumns } from './codec';
 import { generateGiftLinkToken, type GiftLink, type Post } from './models';
-import { type RecordGiftLinkAction, type RequestContext } from './actions';
+import type { GiftLinkEvent } from './events';
+import type { RequestContext } from '../../lib/actor';
+import type { ChangeEvents } from '../../lib/change-events';
 
 // The LEFT JOIN leaves every link column nullable; the explicit generic names a row shape knex
 // can't infer from a dynamic column list.
 type LiveLinkRow = {
   [K in keyof z.input<typeof GiftLinkRow>]: z.input<typeof GiftLinkRow>[K] | null;
-};
+} & { title: string };
 
 export class GiftLinksService {
   private knex: Knex;
-  private recordAction: RecordGiftLinkAction;
+  private events: ChangeEvents<GiftLinkEvent>;
 
-  constructor({ knex, recordAction }: { knex: Knex; recordAction: RecordGiftLinkAction }) {
+  constructor({ knex, events }: { knex: Knex; events: ChangeEvents<GiftLinkEvent> }) {
     this.knex = knex;
-    this.recordAction = recordAction;
+    this.events = events;
   }
 
   async getPost(postId: string): Promise<Post> {
@@ -27,19 +29,23 @@ export class GiftLinksService {
       .where('posts.id', postId)
       .leftJoin('post_gift_links', 'post_gift_links.post_id', 'posts.id')
       .leftJoin('gift_links', 'gift_links.token', 'post_gift_links.gift_link_token')
-      .select<LiveLinkRow[]>(giftLinkColumns);
+      .select<LiveLinkRow[]>([...giftLinkColumns, 'posts.title as title']);
 
     if (rows.length === 0) {
       throw new errors.NotFoundError({ message: `Post ${postId} does not exist.` });
     }
 
     const giftLinks = rows
-      .filter((row): row is z.input<typeof GiftLinkRow> => row.token !== null)
+      .filter((row): row is z.input<typeof GiftLinkRow> & { title: string } => row.token !== null)
       .map((row) => z.decode(giftLinkCodec, row));
-    return { id: postId, giftLinks };
+    return { id: postId, title: rows[0].title, giftLinks };
   }
 
-  async getPostByToken(token: string): Promise<Post | null> {
+  /**
+   * The post a live token belongs to, without the post's own columns: this runs on every
+   * read that carries a gift token.
+   */
+  async getPostByToken(token: string): Promise<Pick<Post, 'id' | 'giftLinks'> | null> {
     const row = await this.knex('post_gift_links')
       .join('gift_links', 'gift_links.token', 'post_gift_links.gift_link_token')
       .where('gift_links.token', token)
@@ -55,15 +61,25 @@ export class GiftLinksService {
     if (post.giftLinks.length) {
       return post;
     }
-    const minted = await this.mint(postId);
-    await this.recordAction({ context, verb: 'add', subject: postId });
+    const minted = await this.mint(post);
+    await this.events.raise(context.actor, {
+      type: 'GiftLinkAdded',
+      change: 'edited',
+      previous: post,
+      next: minted,
+    });
     return minted;
   }
 
   async create(context: RequestContext, postId: string): Promise<Post> {
-    await this.getPost(postId); // asserts the post exists (throws NotFound)
-    const minted = await this.mint(postId);
-    await this.recordAction({ context, verb: 'reset', subject: postId });
+    const post = await this.getPost(postId);
+    const minted = await this.mint(post);
+    await this.events.raise(context.actor, {
+      type: 'GiftLinkReset',
+      change: 'edited',
+      previous: post,
+      next: minted,
+    });
     return minted;
   }
 
@@ -71,18 +87,22 @@ export class GiftLinksService {
   async removeAll(context: RequestContext): Promise<number> {
     const removed = await this.knex('post_gift_links').del();
     if (removed > 0) {
-      await this.recordAction({ context, verb: 'remove', subject: null });
+      await this.events.raise(context.actor, {
+        type: 'GiftLinksRevoked',
+        change: 'edited',
+        count: removed,
+      });
     }
     return removed;
   }
 
-  private async mint(postId: string): Promise<Post> {
+  private async mint(post: Post): Promise<Post> {
     const link: GiftLink = { token: generateGiftLinkToken(), createdAt: new Date() };
     await this.knex.transaction(async (trx) => {
-      await this.addToHistory(trx, postId, link);
-      await this.setLiveLink(trx, postId, link);
+      await this.addToHistory(trx, post.id, link);
+      await this.setLiveLink(trx, post.id, link);
     });
-    return { id: postId, giftLinks: [link] };
+    return { ...post, giftLinks: [link] };
   }
 
   private addToHistory(trx: Knex.Transaction, postId: string, link: GiftLink) {

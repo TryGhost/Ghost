@@ -4,6 +4,7 @@ import ObjectId from 'bson-objectid';
 import nock from 'nock';
 import { agentProvider, fixtureManager, mockManager } from '../../utils/e2e-framework';
 import { toDatabaseDate } from '../../../core/server/lib/db-types/date';
+import { assertActionLogged, readActions } from '../../utils/action-log';
 
 // Required, not imported, so this is the same module instance Ghost initialised at boot.
 const appInstallations: typeof import('../../../core/server/services/app-installations') = require('../../../core/server/services/app-installations');
@@ -58,11 +59,7 @@ describe('App installations Admin API', function () {
       .expectStatus(status);
     return status === 200 ? body.app_installation_previews[0] : body.errors[0];
   };
-  const actions = () =>
-    models.Base.knex('actions')
-      .where('resource_type', 'app_installation')
-      .orderBy('created_at', 'asc')
-      .orderBy('id', 'asc');
+  const loggedActions = () => readActions(agent, { resourceType: 'app_installation' });
   const installationRow = (id: string) =>
     models.Base.knex('app_installations').where({ id }).first();
   const manifestRows = () => models.Base.knex('app_installation_manifests').orderBy('id', 'asc');
@@ -124,7 +121,7 @@ describe('App installations Admin API', function () {
         return true;
       });
       assert.equal((await service().browse()).length, 0);
-      assert.equal((await actions()).length, 0);
+      assert.equal((await loggedActions()).length, 0);
     });
 
     it('refuses an app served from the site itself', async function () {
@@ -193,7 +190,7 @@ describe('App installations Admin API', function () {
       }
       assert.equal((await service().browse()).length, 1);
       assert.equal((await manifestRows()).length, 1);
-      assert.equal((await actions()).length, 1);
+      assert.equal((await loggedActions()).length, 1);
     });
 
     it('installs different apps side by side', async function () {
@@ -223,17 +220,20 @@ describe('App installations Admin API', function () {
       );
     });
 
-    it('records who installed the app in the staff history', async function () {
+    it('records who installed the app in the action log', async function () {
       const installation = await install();
 
-      const [action] = await actions();
-      assert.equal(action.event, 'installed');
-      assert.equal(action.resource_id, installation.id);
-      assert.equal(action.actor_type, 'user');
-      assert.equal(action.actor_id, owner.actor.id);
-      assert.deepEqual(JSON.parse(action.context), {
-        primary_name: 'Podcast',
-        app_id: 'com.example.podcast',
+      await assertActionLogged(agent, {
+        resourceType: 'app_installation',
+        event: 'added',
+        resourceId: installation.id,
+        actor: owner.actor,
+        details: {
+          primary_name: 'Podcast',
+          count: 1,
+          action_name: 'installed',
+          app_id: 'com.example.podcast',
+        },
       });
     });
   });
@@ -361,7 +361,7 @@ describe('App installations Admin API', function () {
       const [stored] = await manifestRows();
       assert.equal(stored.digest, createHash('sha256').update(stored.manifest).digest('hex'));
       assert.notEqual(stored.digest, digest);
-      assert.equal((await actions())[0].event, 'installed');
+      assert.equal((await loggedActions())[0].details?.action_name, 'installed');
     });
 
     it('refuses confirming another address with the digest reviewed elsewhere', async function () {
@@ -476,14 +476,18 @@ describe('App installations Admin API', function () {
       assert.equal(row.revision, 1);
       assert.equal(Boolean(second.requires_approval), true);
 
-      const [, action] = await actions();
-      assert.equal(action.event, 'changes_approved');
-      assert.equal(action.actor_id, owner.actor.id);
-      assert.deepEqual(JSON.parse(action.context), {
-        primary_name: 'Podcast',
-        app_id: 'com.example.podcast',
-        from_manifest_id: first.id,
-        to_manifest_id: second.id,
+      await assertActionLogged(agent, {
+        resourceType: 'app_installation',
+        event: 'edited',
+        resourceId: installed.id,
+        actor: owner.actor,
+        details: {
+          primary_name: 'Podcast',
+          action_name: 'changes_approved',
+          app_id: 'com.example.podcast',
+          from_manifest_id: first.id,
+          to_manifest_id: second.id,
+        },
       });
     });
 
@@ -497,7 +501,7 @@ describe('App installations Admin API', function () {
 
       assert.equal((await installationRow(installed.id)).revision, 0);
       assert.equal((await manifestRows()).length, 1);
-      assert.equal((await actions()).length, 1);
+      assert.equal((await loggedActions()).length, 1);
     });
 
     it('asks for a new review when the app changed in between', async function () {
@@ -578,8 +582,8 @@ describe('App installations Admin API', function () {
       assert.equal(row.manifest_id, pendingId);
       assert.equal(row.pending_manifest_id, null);
       assert.equal((await manifestRows()).length, 2);
-      const [, action] = await actions();
-      assert.equal(JSON.parse(action.context).to_manifest_id, pendingId);
+      const [, approval] = await loggedActions();
+      assert.equal(approval.details?.to_manifest_id, pendingId);
     });
 
     it('lets go of a pending manifest the app went back on, keeping no copy', async function () {
@@ -599,10 +603,10 @@ describe('App installations Admin API', function () {
       assert.equal(row.revision, 1);
       // The approved one and the pending one: approving added nothing.
       assert.equal((await manifestRows()).length, 2);
-      const [, action] = await actions();
-      assert.equal(action.event, 'changes_approved');
-      assert.equal(JSON.parse(action.context).from_manifest_id, row.manifest_id);
-      assert.equal(JSON.parse(action.context).to_manifest_id, row.manifest_id);
+      const [, approval] = await loggedActions();
+      assert.equal(approval.details?.action_name, 'changes_approved');
+      assert.equal(approval.details?.from_manifest_id, row.manifest_id);
+      assert.equal(approval.details?.to_manifest_id, row.manifest_id);
     });
 
     it('does not lift a suspension that is not waiting for changes', async function () {
@@ -713,16 +717,18 @@ describe('App installations Admin API', function () {
       assert.equal(ended.current_app_id, null);
     });
 
-    it('records who uninstalled the app in the staff history', async function () {
+    it('records who uninstalled the app in the action log', async function () {
       const installation = await install();
 
       await agent.delete(`apps/installations/${installation.id}/`).expectStatus(204);
 
-      const [, action] = await actions();
-      assert.equal(action.event, 'uninstalled');
-      assert.equal(action.resource_id, installation.id);
-      assert.equal(action.actor_id, owner.actor.id);
-      assert.equal(JSON.parse(action.context).primary_name, 'Podcast');
+      await assertActionLogged(agent, {
+        resourceType: 'app_installation',
+        event: 'deleted',
+        resourceId: installation.id,
+        actor: owner.actor,
+        details: { primary_name: 'Podcast', action_name: 'uninstalled' },
+      });
     });
 
     it('does nothing, and records nothing, the second time', async function () {
@@ -731,7 +737,7 @@ describe('App installations Admin API', function () {
       await agent.delete(`apps/installations/${installation.id}/`).expectStatus(204);
       await agent.delete(`apps/installations/${installation.id}/`).expectStatus(204);
 
-      assert.equal((await actions()).length, 2);
+      assert.equal((await loggedActions()).length, 2);
     });
 
     it('answers 404 for an installation that does not exist', async function () {
@@ -739,19 +745,18 @@ describe('App installations Admin API', function () {
     });
   });
 
-  describe('staff history', function () {
+  describe('action log', function () {
     it('still lists actions alongside their resources', async function () {
       const installation = await install();
       await service().uninstall(owner, installation.id);
 
-      const { body } = await agent
-        .get('actions/?include=actor,resource&filter=resource_type:app_installation')
-        .expectStatus(200);
-
-      assert.deepEqual(body.actions.map((action: any) => action.event).sort(), [
-        'installed',
-        'uninstalled',
-      ]);
+      assert.deepEqual(
+        (await loggedActions()).map((action) => [action.event, action.details?.action_name]),
+        [
+          ['added', 'installed'],
+          ['deleted', 'uninstalled'],
+        ],
+      );
     });
   });
 
@@ -835,9 +840,10 @@ describe('App installations Admin API', function () {
       await agent.get('apps/installations/').expectStatus(200);
       await agent.delete(`apps/installations/${installationId}/`).expectStatus(204);
 
-      const [, action] = await actions();
-      assert.equal(action.event, 'uninstalled');
-      assert.equal(action.actor_type, 'user');
+      await agent.loginAsOwner();
+      const [, uninstalled] = await loggedActions();
+      assert.equal(uninstalled.details?.action_name, 'uninstalled');
+      assert.equal(uninstalled.actor_type, 'user');
     });
   });
 });

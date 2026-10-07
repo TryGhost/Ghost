@@ -153,6 +153,12 @@ async function initCore({ ghostServer, config }) {
   await i18n.init();
   debug('End: i18n');
 
+  // Action log: records the change events of knex-backed services, once the DB is ready.
+  debug('Begin: Action Log');
+  const actionLog = require('./server/services/action-log');
+  actionLog.init();
+  debug('End: Action Log');
+
   // Gift links service: wires the (knex-backed) repository once the DB is ready.
   debug('Begin: Gift Links Service');
   const giftLinksService = require('./server/services/gift-links');

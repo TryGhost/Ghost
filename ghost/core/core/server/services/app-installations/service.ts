@@ -11,7 +11,9 @@ import {
   type ParseManifestOptions,
 } from '@tryghost/app-contracts/manifest';
 import { toDatabaseDate } from '../../lib/db-types/date';
-import type { RecordAppInstallationAction, RequestContext } from './actions';
+import type { RequestContext } from '../../lib/actor';
+import type { ChangeEvents } from '../../lib/change-events';
+import type { AppInstallationEvent } from './events';
 import {
   AppInstallationRow,
   CurrentInstallationRow,
@@ -117,23 +119,23 @@ export type ManifestRules = Omit<ParseManifestOptions, 'manifestUrl'>;
 
 export class AppInstallationsService {
   private knex: Knex;
-  private recordAction: RecordAppInstallationAction;
+  private events: ChangeEvents<AppInstallationEvent>;
   private getManifestRules: () => ManifestRules;
   private fetchManifest: FetchManifest;
 
   constructor({
     knex,
-    recordAction,
+    events,
     getManifestRules,
     fetchManifest,
   }: {
     knex: Knex;
-    recordAction: RecordAppInstallationAction;
+    events: ChangeEvents<AppInstallationEvent>;
     getManifestRules: () => ManifestRules;
     fetchManifest: FetchManifest;
   }) {
     this.knex = knex;
-    this.recordAction = recordAction;
+    this.events = events;
     this.getManifestRules = getManifestRules;
     this.fetchManifest = fetchManifest;
   }
@@ -375,13 +377,13 @@ export class AppInstallationsService {
       throw err;
     }
 
-    await this.recordAction({
-      context,
-      event: 'installed',
-      subject: id,
-      details: { primary_name: manifest.name, app_id: manifest.id },
+    const installed = z.decode(AppInstallationRow, written);
+    await this.events.raise(context.actor, {
+      type: 'AppInstalled',
+      change: 'added',
+      next: installed,
     });
-    return z.decode(AppInstallationRow, written);
+    return installed;
   }
 
   /**
@@ -487,27 +489,25 @@ export class AppInstallationsService {
         errorDetails: await this.previewOf(loaded),
       });
     }
+    const updated = await this.read(id);
     if (approved) {
-      await this.recordAction({
-        context,
-        event: 'changes_approved',
-        subject: id,
-        details: {
-          primary_name: loaded.manifest.name,
-          app_id: loaded.manifest.id,
-          from_manifest_id: approved.from,
-          to_manifest_id: approved.to,
-        },
+      await this.events.raise(context.actor, {
+        type: 'AppChangesApproved',
+        change: 'edited',
+        previous: installation,
+        next: updated,
+        fromManifestId: approved.from,
+        toManifestId: approved.to,
       });
     }
-    return this.read(id);
+    return updated;
   }
 
   /**
    * Ends an installation. The row stays, so the site keeps a record of what was installed.
    *
    * Uninstalling one that has already ended does nothing and records nothing, so a
-   * repeated request cannot add a second uninstall to the history.
+   * repeated request cannot add a second uninstall to the action log.
    */
   async uninstall(context: RequestContext, id: string): Promise<void> {
     const installation = await this.read(id);
@@ -525,11 +525,10 @@ export class AppInstallationsService {
       return;
     }
 
-    await this.recordAction({
-      context,
-      event: 'uninstalled',
-      subject: id,
-      details: { primary_name: installation.manifest.name, app_id: installation.app_id },
+    await this.events.raise(context.actor, {
+      type: 'AppUninstalled',
+      change: 'deleted',
+      previous: installation,
     });
   }
 }

@@ -1576,8 +1576,10 @@ module.exports = {
     resource_type: { type: 'string', maxlength: 50, nullable: false },
     actor_id: { type: 'string', maxlength: 24, nullable: false },
     actor_type: { type: 'string', maxlength: 50, nullable: false },
-    // @NOTE: The event column contains short buzzwords e.g. subscribed, started, added, deleted, edited etc.
-    //        We already store and require the target resource type. No need to remember e.g. post.edited
+    // @NOTE: The event column contains added, edited or deleted, which the filters and icons on
+    //        Admin's History page rely on. A more specific name for what happened, such as "reset", goes in
+    //        `context.action_name`. We already store and require the target resource type, so
+    //        there is no need to remember e.g. post.edited
     event: { type: 'string', maxlength: 50, nullable: false },
     // @NOTE: The context object can be used to store information about an action e.g. diffs, meta
     context: { type: 'text', maxlength: 1000000000, nullable: true },

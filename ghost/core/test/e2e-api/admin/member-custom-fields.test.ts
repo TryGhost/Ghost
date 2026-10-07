@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { assertObjectMatches } from '../../utils/assertions';
+import { assertActionLogged, readActions } from '../../utils/action-log';
 
 const {
   agentProvider,
@@ -2160,31 +2162,15 @@ describe('Member Custom Fields Admin API', function () {
     });
   });
 
-  describe('records actions in the history (via the actions API)', function () {
-    let actorId: string;
-
-    const customFieldActions = async () => {
-      const { body } = await agent
-        .get('actions/?filter=resource_type:member_custom_field&include=actor,resource')
-        .expectStatus(200);
-      return body.actions;
-    };
-
-    // A field is addressed publicly by its key, and the key rides in the action's
-    // context rather than in resource_id, which holds the row id.
-    const contextOf = (a: { context: unknown }) =>
-      (typeof a.context === 'string' ? JSON.parse(a.context) : a.context) as {
-        primary_name?: string;
-        key?: string;
-        previous_name?: string;
-        member_access?: string;
-        previous_member_access?: string;
-        action_name?: string;
-        count?: number;
-      };
+  describe('records actions in the action log (via the actions API)', function () {
+    const customFields = { resourceType: 'member_custom_field' };
+    let staff: { type: 'user'; id: string };
 
     beforeAll(async function () {
-      actorId = (await agent.get('users/me/').expectStatus(200)).body.users[0].id;
+      staff = {
+        type: 'user',
+        id: (await agent.get('users/me/').expectStatus(200)).body.users[0].id,
+      };
     });
 
     it("records what a field's member access became, and what it was", async function () {
@@ -2194,30 +2180,29 @@ describe('Member Custom Fields Admin API', function () {
         .body({ members_metafields: [{ access: { member: 'write' } }] })
         .expectStatus(200);
 
-      const actions = await customFieldActions();
-      const opened = actions.find((a: { event: string }) => a.event === 'edited') as unknown as {
-        context: unknown;
-      };
-
-      assert.equal(contextOf(opened).member_access, 'write');
-      assert.equal(contextOf(opened).previous_member_access, 'none');
+      await assertActionLogged(agent, {
+        ...customFields,
+        event: 'edited',
+        actor: staff,
+        details: { key: field.key, member_access: 'write', previous_member_access: 'none' },
+      });
     });
 
     it('records an "added" action when a field is created', async function () {
       const field = await createField({ name: 'Favourite topic' });
 
-      const actions = await customFieldActions();
-      assert.equal(actions.length, 1);
-      assert.equal(actions[0].event, 'added');
-      assert.equal(contextOf(actions[0]).key, field.key);
-      assert.equal(actions[0].actor_type, 'user');
-      assert.equal(actions[0].actor_id, actorId);
-      assert.equal(actions[0].resource.name, field.name);
+      const added = await assertActionLogged(agent, {
+        ...customFields,
+        event: 'added',
+        actor: staff,
+        details: { key: field.key, primary_name: field.name, count: 1, action_name: null },
+      });
+      assert.equal(added.resource?.name, field.name);
     });
 
-    // `resource_id` holds 24 characters and a key derived from a publisher-chosen
-    // name can be far longer, so only the row id fits every field. The action
-    // write is best-effort, so a row that does not fit is dropped without error.
+    // `resource_id` holds at most 24 characters, while a key made from a long field
+    // name can be longer. The entry has to use the field's row id, or it could not
+    // be recorded.
     it('records an action for a field whose key is longer than resource_id allows', async function () {
       const field = await createField({ name: 'Favourite ice cream flavour' });
       assert.ok(
@@ -2225,18 +2210,19 @@ describe('Member Custom Fields Admin API', function () {
         'the key needs to be longer than resource_id to be a regression test',
       );
 
-      const actions = await customFieldActions();
-      assert.equal(actions.length, 1);
-      assert.equal(contextOf(actions[0]).key, field.key);
-
       const row = await models.Base.knex('members_metafields').where('key', field.key).first();
-      assert.equal(actions[0].resource_id, row.id);
+      await assertActionLogged(agent, {
+        ...customFields,
+        event: 'added',
+        resourceId: row.id,
+        details: { key: field.key },
+      });
     });
 
-    // A reorder is one act by the publisher, so it is one entry — not one per
-    // field whose position happened to shift. It belongs to no single field, so
-    // it carries no resource_id, and the count is what lets the activity feed
-    // read it as "3 custom fields reordered".
+    // Reordering is one change by the publisher, so it records one entry rather
+    // than one per field that moved. The entry has no `resource_id`, as it belongs
+    // to no single field, and Admin uses its count to show "3 custom fields
+    // reordered".
     it('records a single action when the list is reordered', async function () {
       await createField({ name: 'Company' });
       await createField({ name: 'Shirt size' });
@@ -2249,14 +2235,18 @@ describe('Member Custom Fields Admin API', function () {
         })
         .expectStatus(200);
 
-      const edited = (await customFieldActions()).filter(
-        (a: { event: string }) => a.event === 'edited',
+      const reordered = await assertActionLogged(agent, {
+        ...customFields,
+        event: 'edited',
+        actor: staff,
+        details: { primary_name: 'Custom fields', count: 3, action_name: 'reordered' },
+      });
+      assert.equal(reordered.resource_id, null);
+      assert.equal(
+        (await readActions(agent, { ...customFields, event: 'edited' })).length,
+        1,
+        'a reorder records one action, not one per field',
       );
-      assert.equal(edited.length, 1, 'a reorder records one action, not one per field');
-      assert.equal(edited[0].resource_id, null);
-      assert.equal(contextOf(edited[0]).action_name, 'reordered');
-      assert.equal(contextOf(edited[0]).count, 3);
-      assert.equal(edited[0].actor_id, actorId);
     });
 
     it('records an "edited" action when a field is renamed', async function () {
@@ -2266,12 +2256,12 @@ describe('Member Custom Fields Admin API', function () {
         .body({ members_metafields: [{ name: 'Topic' }] })
         .expectStatus(200);
 
-      const edited = (await customFieldActions()).find(
-        (a: { event: string }) => a.event === 'edited',
-      );
-      assert.ok(edited, 'an edited action should be recorded');
-      assert.equal(contextOf(edited).key, field.key);
-      assert.equal(edited.actor_id, actorId);
+      await assertActionLogged(agent, {
+        ...customFields,
+        event: 'edited',
+        actor: staff,
+        details: { key: field.key, primary_name: 'Topic', previous_name: 'Favourite topic' },
+      });
     });
 
     it('records no action when a rename does not change the name', async function () {
@@ -2281,22 +2271,24 @@ describe('Member Custom Fields Admin API', function () {
         .body({ members_metafields: [{ name: 'Favourite topic' }] })
         .expectStatus(200);
 
-      const edited = (await customFieldActions()).find(
-        (a: { event: string }) => a.event === 'edited',
+      const logged = await readActions(agent, customFields);
+      assert.deepEqual(
+        logged.map((action) => action.event),
+        ['added'],
+        'a no-op rename should not record an action',
       );
-      assert.equal(edited, undefined, 'a no-op rename should not record an action');
     });
 
     it('records an "archived" action when a field is archived', async function () {
       const field = await createField({ name: 'Favourite topic' });
       await setStatus(field.key, 'archived');
 
-      const archived = (await customFieldActions()).find(
-        (a: { event: string }) => a.event === 'archived',
-      );
-      assert.ok(archived, 'an archived action should be recorded');
-      assert.equal(contextOf(archived).key, field.key);
-      assert.equal(archived.actor_id, actorId);
+      await assertActionLogged(agent, {
+        ...customFields,
+        event: 'edited',
+        actor: staff,
+        details: { key: field.key, action_name: 'archived' },
+      });
     });
 
     it('records a "restored" action when an archived field is restored', async function () {
@@ -2304,26 +2296,24 @@ describe('Member Custom Fields Admin API', function () {
       await setStatus(field.key, 'archived');
       await setStatus(field.key, 'active');
 
-      const restored = (await customFieldActions()).find(
-        (a: { event: string }) => a.event === 'restored',
-      );
-      assert.ok(restored, 'a restored action should be recorded');
-      assert.equal(contextOf(restored).key, field.key);
-      assert.equal(restored.actor_id, actorId);
+      await assertActionLogged(agent, {
+        ...customFields,
+        event: 'edited',
+        actor: staff,
+        details: { key: field.key, action_name: 'restored' },
+      });
     });
 
     it('records no action when the status does not change', async function () {
       const field = await createField({ name: 'Favourite topic' });
       await setStatus(field.key, 'active');
 
-      const archived = (await customFieldActions()).find(
-        (a: { event: string }) => a.event === 'archived',
+      const logged = await readActions(agent, customFields);
+      assert.deepEqual(
+        logged.map((action) => action.event),
+        ['added'],
+        'a no-op status change should not record an action',
       );
-      const restored = (await customFieldActions()).find(
-        (a: { event: string }) => a.event === 'restored',
-      );
-      assert.equal(archived, undefined, 'a no-op status change should not record an action');
-      assert.equal(restored, undefined, 'a no-op status change should not record an action');
     });
 
     it('records a "deleted" action when an archived field is permanently deleted', async function () {
@@ -2331,18 +2321,16 @@ describe('Member Custom Fields Admin API', function () {
       await setStatus(field.key, 'archived');
       await agent.delete(`members/metafields/custom/${field.key}/`).expectStatus(204);
 
-      const deleted = (await customFieldActions()).find(
-        (a: { event: string }) => a.event === 'deleted',
-      );
-      assert.ok(deleted, 'a deleted action should be recorded');
-      assert.equal(contextOf(deleted).key, field.key);
-      assert.equal(deleted.actor_id, actorId);
+      const deleted = await assertActionLogged(agent, {
+        ...customFields,
+        event: 'deleted',
+        actor: staff,
+        details: { key: field.key, primary_name: 'Favourite topic' },
+      });
       assert.deepEqual(deleted.resource, {});
     });
 
     it('records the whole lifecycle as an ordered, attributed, named timeline', async function () {
-      // One field, driven through every transition over the public HTTP API;
-      // the assertions read only the action-log API, never the service.
       const field = await createField({ name: 'Delivery address' });
       await agent
         .put(`members/metafields/custom/${field.key}/`)
@@ -2353,42 +2341,52 @@ describe('Member Custom Fields Admin API', function () {
       await setStatus(field.key, 'archived');
       await agent.delete(`members/metafields/custom/${field.key}/`).expectStatus(204);
 
-      // Oldest-first by id: action ids are bson ObjectIds, so they sort in
-      // creation order even for events that land in the same second (which
-      // created_at ordering can't disambiguate).
-      const timeline = (await customFieldActions())
-        .filter((a: { context: unknown }) => contextOf(a).key === field.key)
-        .sort((a: { id: string }, b: { id: string }) => (a.id < b.id ? -1 : 1));
+      const timeline = (await readActions(agent, customFields)).filter(
+        (entry) => entry.details?.key === field.key,
+      );
 
       // The full ordered story, including the repeated archive.
       assert.deepEqual(
-        timeline.map((a: { event: string }) => a.event),
-        ['added', 'edited', 'archived', 'restored', 'archived', 'deleted'],
+        timeline.map((entry) => [entry.event, entry.details?.action_name]),
+        [
+          ['added', null],
+          ['edited', null],
+          ['edited', 'archived'],
+          ['edited', 'restored'],
+          ['edited', 'archived'],
+          ['deleted', null],
+        ],
       );
 
-      // Every entry is attributed and carries the field's name — no anonymous
-      // logs, and the delete still says what the field was after its row is gone.
-      for (const a of timeline) {
-        assert.equal(a.actor_id, actorId, `the ${a.event} action is attributed`);
-        assert.ok(contextOf(a)?.primary_name, `the ${a.event} action names the field`);
-        assert.deepEqual(a.resource, {}, `the ${a.event} action tolerates its deleted resource`);
+      // Every entry names who made the change and the field's name, so the
+      // deleted entry still names the field after its row is gone.
+      for (const entry of timeline) {
+        assert.equal(entry.actor_id, staff.id, `the ${entry.event} action is attributed`);
+        assert.ok(entry.details?.primary_name, `the ${entry.event} action names the field`);
+        assert.deepEqual(
+          entry.resource,
+          {},
+          `the ${entry.event} action tolerates its deleted resource`,
+        );
       }
 
       // Names track the field at each point; the rename also records what it was.
-      assert.equal(contextOf(timeline[0]).primary_name, 'Delivery address');
-      assert.equal(contextOf(timeline[1]).primary_name, 'Shipping address');
-      assert.equal(contextOf(timeline[1]).previous_name, 'Delivery address');
-      assert.equal(contextOf(timeline[5]).primary_name, 'Shipping address');
+      assertObjectMatches(timeline[0].details ?? {}, { primary_name: 'Delivery address' });
+      assertObjectMatches(timeline[1].details ?? {}, {
+        primary_name: 'Shipping address',
+        previous_name: 'Delivery address',
+      });
+      assertObjectMatches(timeline[5].details ?? {}, { primary_name: 'Shipping address' });
     });
   });
 
-  describe('records member custom field value changes in the history (via the actions API)', function () {
+  describe('records member custom field value changes in the action log (via the actions API)', function () {
     // `context` is a text column, so the API hands it back as a JSON string —
     // Admin parses it before reading `action_name`, and so does this.
     const parseContext = (action: { context: string | null }) =>
       typeof action.context === 'string' ? JSON.parse(action.context) : action.context;
 
-    // Read back over the API the history log is served from, not the table,
+    // Read back over the API the action log is served from, not the table,
     // so what Admin receives is what's asserted — `context` included.
     // Waits for the first action, which is inserted once the edit's transaction commits and
     // can land after the response.
