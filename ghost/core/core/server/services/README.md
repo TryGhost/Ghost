@@ -33,17 +33,13 @@ and provider adapters as private implementation details.
 
 - Keep implementation used only by one service inside that service.
 - Put shared server libraries, reusable constructors, and provider clients in
-  `server/lib/`, grouped by a specific capability rather than a miscellaneous
-  `services/lib/` directory.
+  `server/lib/`, grouped by a specific capability.
 - Put HTTP routing and middleware in the appropriate part of `server/web/`.
 - Keep API-specific support with its API owner rather than making it a service.
 
 For example:
 
-- `email-service` exposes an application-owned wrapper initialized during boot;
-  `mail` exports `GhostMailer` for callers to construct and a template helper.
-  The latter is mail support, not a service root, even though sending mail has
-  side effects. Its remaining placement here is legacy, not a pattern to copy.
+- `email-service` exposes an application-owned wrapper initialized during boot.
 - `email-address` constructs and exposes the application's email-address
   implementation through `init()` and `service`. It qualifies without owning a
   background worker.
@@ -62,6 +58,49 @@ lifecycle interface is not yet the implemented contract throughout this
 directory. Do not assume every root exports `init`, `service`, and `shutdown`.
 Standardizing that interface must include the implementation, boot wiring, and
 tests, not just a documentation change.
+
+The temporary [service inventory](service-inventory.yaml) tracks this migration.
+Update it when adding, removing or renaming a root. It includes standalone
+files and supporting modules still awaiting relocation. Boot never reads it.
+
+Each entry records its intended ownership and audit status. `pending` means
+the contract audit has not started; `auditing` means evidence is incomplete;
+`audited` means all facets have been investigated and recorded from source or
+test evidence. It describes audit completeness, not test coverage or migration
+readiness. An audited entry can still have test gaps or known bugs in `blockers`.
+The `notes` describe audit priorities and intended changes, not verified contracts.
+
+The `unverified` facets are open questions:
+
+| Facet         | Question to resolve                                              |
+| ------------- | ---------------------------------------------------------------- |
+| exports       | What runtime exports and import conventions do callers use?      |
+| construction  | Where are instances constructed, including deep imports?         |
+| consumers     | Which application, request, job or CLI callers use them?         |
+| startup       | What must be ready before each supported use?                    |
+| lifetime      | What identity and state survive initialization or restart?       |
+| configuration | Which values stay live and which are captured?                   |
+| resources     | Who owns, drains and releases resources, including nested ones?  |
+| failures      | Which failures abort, continue, retry or disable the capability? |
+
+Recorded summaries link to source and test evidence using paths relative to
+`ghost/core`. Entry points are relative to this services directory and include
+separate composition paths reached through deep imports. They are not a list
+of every importable helper, type or job definition. An empty test list means
+the summary has source evidence only. A nonempty list does not imply that every
+claim is tested: when coverage is partial, the summary must say what the cited
+tests assert and which claims are source-only. Keep established source facts
+under `contracts`; reserve `unverified` for questions the audit has not answered.
+
+Record missing coverage and known bugs in `blockers`. Before changing a service,
+address the gaps relevant to that change; neither `audited` nor a passing
+inventory check proves that its behavior is protected against regressions.
+
+The unit test checks the inventory's shape, paths and directory coverage. It
+does not import services or drive initialization. `README.md` and the inventory
+itself are the only metadata exclusions. Retire the inventory after migration;
+keep the behavioral tests and replace the legacy check with a check for the
+established service convention.
 
 Follow an existing service in the same area when extending established code,
 without treating its legacy placement or lifecycle shortcuts as requirements.

@@ -1,17 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act } from 'react';
-import { run, setupEmbeddedRootFontSize } from './run-list.test-utils';
+import { flags, openAutomationSidebar, run } from './run-list.test-utils';
 
 import { QueryCache } from '@tanstack/react-query';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import type { AutomationPerformanceStats } from '@tryghost/admin-x-framework/api/automations';
 
-setupEmbeddedRootFontSize();
-
-const flags = {
-  labs: { automations: true, automationRunAnalytics: true, automationsTinybirdSync: true },
-};
 const endpoint = /\/automations\/dates\/performance-stats\/\?/;
 const timezone = 'America/New_York';
 const presets = [
@@ -19,9 +14,9 @@ const presets = [
   { days: 30, start: '2024-02-10', counts: [4, 5, 6] },
   { days: 90, start: '2023-12-12', counts: [7, 8, 9] },
 ] as const;
-const entries = () => page.getByRole('region', { name: 'Total entries' });
+const entries = () => page.getByRole('region', { name: 'Total runs' });
 const card = (name: string) => page.getByRole('button', { name, exact: true });
-const labels = ['In progress', 'Completed', 'Exited early'] as const;
+const labels = ['In progress', 'Completed', 'Stopped'] as const;
 
 // Freeze only Date so network, polling, and UI timers still run normally.
 beforeEach(() => {
@@ -70,6 +65,8 @@ const render = async (withRuns = false) => {
         id: 'dates',
         name: 'Welcome',
         slug: 'member-welcome-email-free',
+        trigger_tier_scope: 'free',
+        trigger_tier_ids: null,
         status: 'active',
         actions: [{ id: 'wait', type: 'wait', data: { wait_hours: 24 } }],
         edges: [],
@@ -77,7 +74,7 @@ const render = async (withRuns = false) => {
     ],
   });
   await renderAdminApp('/automations/dates', flags);
-  await page.getByRole('button', { name: 'Show performance' }).click();
+  await openAutomationSidebar();
 };
 const selectRange = async (label: string) => {
   await page.getByRole('button', { name: 'Filter performance' }).click();
@@ -87,7 +84,7 @@ const expectCounts = async (counts: readonly [number, number, number]) => {
   const total = counts.reduce((sum, count) => sum + count, 0);
   await expect
     .element(entries().getByRole('status'))
-    .toHaveTextContent(`Total entries loaded: ${total}.`);
+    .toHaveTextContent(`Total runs loaded: ${total}.`);
   await expect.element(entries().getByRole('figure')).toBeVisible();
   for (const [index, label] of labels.entries()) {
     await expect.element(card(label)).toHaveTextContent(String(counts[index]));
@@ -205,9 +202,7 @@ describe('Automation performance date filter', () => {
     await expect.element(runs()).toHaveTextContent('Noah Bennett');
     try {
       await selectRange('Last 7 days');
-      await expect
-        .element(entries().getByRole('status'))
-        .toHaveTextContent('Loading total entries');
+      await expect.element(entries().getByRole('status')).toHaveTextContent('Loading total runs');
       await expect.element(runs().getByRole('status')).toHaveTextContent('Loading automation runs');
       await expect.element(runs()).not.toHaveTextContent('Noah Bennett');
       for (const label of labels) {
@@ -217,7 +212,7 @@ describe('Automation performance date filter', () => {
       finish();
     }
     await expectCounts([0, 0, 0]);
-    await expect.element(runs().getByRole('status')).toHaveTextContent('No entries in this period');
+    await expect.element(runs().getByRole('status')).toHaveTextContent('No members match');
   });
 
   it('retains the selected period on reopening and clears back to all time', async () => {
@@ -228,8 +223,8 @@ describe('Automation performance date filter', () => {
     await expectCounts([10, 20, 30]);
     await selectRange('Last 7 days');
     await expectCounts([1, 2, 3]);
-    await page.getByRole('button', { name: 'Hide performance' }).click();
-    await page.getByRole('button', { name: 'Show performance' }).click();
+    await page.getByRole('button', { name: 'Hide automation sidebar' }).click();
+    await openAutomationSidebar();
     await expect
       .element(page.getByRole('button', { name: 'Clear date filter' }))
       .toHaveTextContent('Last 7 days');
@@ -260,9 +255,7 @@ describe('Automation performance date filter', () => {
       const cards = labels.map((label) => card(label).element());
       const chartCard = entries().element();
       await selectRange('Last 7 days');
-      await expect
-        .element(entries().getByRole('status'))
-        .toHaveTextContent('Loading total entries');
+      await expect.element(entries().getByRole('status')).toHaveTextContent('Loading total runs');
       expect(entries().element()).toBe(chartCard);
       for (const [index, label] of labels.entries()) {
         expect(card(label).element()).toBe(cards[index]);
@@ -304,16 +297,16 @@ describe('Automation performance date filter', () => {
     const expectEmpty = async (message: string) => {
       await expect.element(runs().getByRole('status')).toHaveTextContent(message);
       await expect(page.getByText(message, { exact: true })).toHaveCount(1);
-      await expect.element(entries()).not.toHaveTextContent('No entries');
+      await expect.element(entries()).not.toHaveTextContent('No members match');
       await expectCounts([0, 0, 0]);
     };
-    await expectEmpty('No entries yet');
+    await expectEmpty('No members match');
     await selectRange('Last 7 days');
-    await expectEmpty('No entries in this period');
+    await expectEmpty('No members match');
     await card('Completed').click();
-    await expectEmpty('No matching entries');
+    await expectEmpty('No members match');
     await card('Completed').click();
-    await expectEmpty('No entries in this period');
+    await expectEmpty('No members match');
   });
 
   it('rejects a backend that ignores the date range and retries the selected range', async () => {

@@ -10,6 +10,7 @@ import {
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import {
+  settingsCanonicalUrlInput,
   settingsMetaDescriptionInput,
   settingsMetaTitleInput,
   settingsSerpPreview,
@@ -149,6 +150,7 @@ export function MetaDataSection({ session, siteUrl }: MetaDataSectionProps) {
       <Field>
         <FieldLabel htmlFor={canonical.fieldProps.id}>Canonical URL</FieldLabel>
         <Input
+          data-testid={settingsCanonicalUrlInput}
           placeholder={
             session.loadedRecord?.url ?? `${siteUrl.replace(/\/$/, '')}/${session.slug}/`
           }

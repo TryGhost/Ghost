@@ -2,6 +2,7 @@ import dns from 'dns';
 import path from 'path';
 import {defineConfig, devices} from '@playwright/test';
 import {fileURLToPath} from 'url';
+import {E2E_PORT} from './test/test-server.ts';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -15,7 +16,7 @@ dns.setDefaultResultOrder('verbatim');
 // "request for X is not in cache"). The async loader path handles it fine.
 // Fixed in Node 24.x — drop the flag when the workspace moves off Node 22.
 
-export const E2E_PORT = 5174;
+export {E2E_PORT};
 export default defineConfig({
     outputDir: path.resolve(__dirname, 'test-results'),
     testDir: './test/e2e',
@@ -64,7 +65,7 @@ export default defineConfig({
     webServer: {
         command: `pnpm dev:test`,
         url: `http://localhost:${E2E_PORT}`,
-        reuseExistingServer: !process.env.CI,
+        reuseExistingServer: false,
         timeout: 10000
     }
 });

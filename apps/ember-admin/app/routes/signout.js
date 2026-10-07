@@ -20,10 +20,4 @@ export default class SignoutRoute extends AuthenticatedRoute {
         this.notifications.clearAll();
         this.session.invalidate();
     }
-
-    buildRouteInfoMetadata() {
-        return {
-            titleToken: 'Sign Out'
-        };
-    }
 }

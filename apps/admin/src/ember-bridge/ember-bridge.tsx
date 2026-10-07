@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { getListReturnNavigationState } from '@/shared/virtual-list/list-return-state';
 import type { EmberNotificationsHost } from './ember-notifications-host';
+import type { AdminThemeAdapter } from '@tryghost/admin-x-framework/utils/admin-theme';
 
 export interface EmberBridge {
   state: StateBridge;
@@ -17,17 +17,19 @@ export type StateBridgeEventMap = {
   restoreListState: { path: string };
 };
 
-export type AdminThemeMode = 'light' | 'dark' | 'system';
-
 export interface StateBridge {
   onUpdate: (dataType: string, response: unknown) => void;
   onInvalidate: (dataType: string) => void;
   onDelete: (dataType: string, id: string) => void;
   refreshFeatureFlagOverrides?: () => void;
   isFeatureEnabled?: (name: string) => boolean | undefined;
-  preloadAdminThemeStylesheet?: () => Promise<void>;
-  applyAdminThemePreference?: (mode: AdminThemeMode) => Promise<void> | void;
+  connectAdminTheme?: () => AdminThemeAdapter & { disconnect: () => void };
   navigateToBillingSubRoute?: (subRoute: string) => void;
+  applyBillingSubscriptionUpdate?: (update: BillingSubscriptionUpdate) => Promise<void>;
+  captureBillingAppLoadFailure?: (report: {
+    billingMonitor: Record<string, unknown>;
+    tags: Record<string, string | null>;
+  }) => void;
   setPostListQueryParams?: (resource: 'posts' | 'pages', params: Record<string, string>) => void;
   setReactFullScreen?: (isFullScreen: boolean) => void;
   setReactRoutePattern?: (routePattern: string | null) => void;
@@ -66,6 +68,10 @@ export interface SubscriptionState {
     trial_end: string | null;
     status: string;
   };
+}
+
+export interface BillingSubscriptionUpdate extends SubscriptionState {
+  checkoutRoute: string;
 }
 
 export interface SidebarVisibilityChangeEvent {
@@ -245,7 +251,8 @@ export function useEmberListReturnSync() {
   );
 }
 
-export function useSubscriptionStatus() {
+/** The billing app's subscription state as relayed by Ember's billing iframe. */
+export function useEmberSubscriptionStatus() {
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionState | null>(null);
 
   useEffect(() => {
@@ -279,40 +286,20 @@ export function useEmberFeatureFlag(flag: string): boolean | null | undefined {
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
 
-/**
- * Whether Ember owns the DOM theme. In the embedded admin, Ember manages the
- * `dark` class and the dark stylesheet, and installs its own
- * prefers-color-scheme listener, so React must not apply the theme itself.
- *
- * Deliberately a synchronous snapshot (no waitForStateBridge): theme effects
- * need the answer at effect time and fall back to applying the theme
- * themselves while the bridge is absent.
- */
-export function isEmberThemeManaged(): boolean {
-  return typeof window !== 'undefined' && Boolean(window.EmberBridge);
-}
-
-/**
- * Preloads Ember's dark stylesheet so a subsequent theme switch lands without
- * a flash. Resolves immediately when no bridge (or an older Ember without the
- * method) is present.
- */
-export async function preloadEmberAdminThemeStylesheet(): Promise<void> {
-  await window.EmberBridge?.state.preloadAdminThemeStylesheet?.();
-}
-
-/**
- * Asks Ember to apply an admin theme preference. Returns false when no bridge
- * (or an older Ember without the method) is present, so the caller can fall
- * back to applying the theme itself.
- */
-export function applyEmberAdminThemePreference(mode: AdminThemeMode): boolean {
-  const stateBridge = window.EmberBridge?.state;
-  if (!stateBridge?.applyAdminThemePreference) {
-    return false;
-  }
-  void stateBridge.applyAdminThemePreference(mode);
-  return true;
+/** React owns the controller; Ember supplies stylesheet and editor compatibility. */
+export function connectEmberAdminTheme(onReady: (adapter: AdminThemeAdapter) => void): () => void {
+  let disconnect: (() => void) | undefined;
+  const stopPolling = waitForStateBridge((stateBridge) => {
+    const connection = stateBridge.connectAdminTheme?.();
+    if (connection) {
+      disconnect = connection.disconnect;
+      onReady(connection);
+    }
+  });
+  return () => {
+    stopPolling();
+    disconnect?.();
+  };
 }
 
 /**
@@ -326,6 +313,25 @@ export function navigateEmberBillingSubRoute(subRoute: string): boolean {
   }
   stateBridge.navigateToBillingSubRoute(subRoute);
   return true;
+}
+
+/**
+ * Hands a billing app subscription report to Ember, which refreshes its config
+ * and plan limits as its own billing iframe would. Resolves once Ember is done,
+ * or immediately without a bridge.
+ */
+export async function applyEmberBillingSubscriptionUpdate(
+  update: BillingSubscriptionUpdate,
+): Promise<void> {
+  await window.EmberBridge?.state.applyBillingSubscriptionUpdate?.(update);
+}
+
+/** Reports a billing app load failure through Ember's Sentry client; a no-op without a bridge. */
+export function reportEmberBillingLoadFailure(report: {
+  billingMonitor: Record<string, unknown>;
+  tags: Record<string, string | null>;
+}): void {
+  window.EmberBridge?.state.captureBillingAppLoadFailure?.(report);
 }
 
 /** Keep the Ember editor's breadcrumb in sync with the React list. */
@@ -419,38 +425,4 @@ export function useSidebarVisibility(): boolean {
     getSidebarVisibility,
     getSidebarVisibility, // Server snapshot (same as client for now)
   );
-}
-
-/**
- * Hook to get the forceUpgrade state.
- *
- * Returns true when the site is in force upgrade mode (requires billing action).
- * Returns undefined while the initial config request is loading.
- *
- * Force upgrade state is determined by:
- * 1. Config hostSettings.forceUpgrade (set by server, requires restart to change)
- * 2. Subscription status (if subscription becomes 'active', forceUpgrade is cleared)
- */
-export function useForceUpgrade(): boolean | undefined {
-  const { data: config, isLoading } = useBrowseConfig();
-  const subscriptionStatus = useSubscriptionStatus();
-
-  if (isLoading) {
-    return undefined;
-  }
-
-  const configForceUpgrade = config?.config?.hostSettings?.forceUpgrade;
-
-  // If config doesn't have forceUpgrade, we're not in force upgrade mode
-  if (!configForceUpgrade) {
-    return false;
-  }
-
-  // If subscription has become active, billing was completed successfully
-  // The server config hasn't restarted yet, but we can clear forceUpgrade locally
-  if (subscriptionStatus?.subscription?.status === 'active') {
-    return false;
-  }
-
-  return true;
 }

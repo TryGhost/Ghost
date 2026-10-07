@@ -22,12 +22,7 @@ type Logger = {
   info(...args: unknown[]): void;
 };
 
-type Labs = {
-  isSet(feature: string): boolean;
-};
-
 type TinybirdSyncDependencies = GetIngestConfigDependencies & {
-  labs: Labs;
   knex: Knex;
   logging: Logger;
   random: () => number;
@@ -39,7 +34,6 @@ type TinybirdSyncDependencies = GetIngestConfigDependencies & {
 export function createTinybirdSyncService({
   config,
   settingsCache,
-  labs,
   knex,
   logging,
   random,
@@ -78,10 +72,6 @@ export function createTinybirdSyncService({
   };
 
   const sync = async (): Promise<void> => {
-    if (!labs.isSet('automationsTinybirdSync')) {
-      return;
-    }
-
     const ingest = getIngestConfig({ config, settingsCache });
     if (!ingest) {
       return;
@@ -106,11 +96,7 @@ export function createTinybirdSyncService({
 
     scheduled = true;
 
-    const isSyncEnabled = labs.isSet('automationsTinybirdSync');
-    logging.info(
-      { system: { event: 'tinybird.sync.started' } },
-      `[Tinybird sync] Started: sync ${isSyncEnabled ? 'enabled' : 'disabled'} by labs flag (but may change)`,
-    );
+    logging.info({ system: { event: 'tinybird.sync.started' } }, '[Tinybird sync] Started');
 
     const at = randomFiveMinuteCron(random);
     logging.info(`[Background Job] ${TinybirdSyncJob.type} scheduled at ${at}`);

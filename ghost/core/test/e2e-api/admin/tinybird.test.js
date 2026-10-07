@@ -21,6 +21,32 @@ describe('Tinybird API', function () {
       await agent.loginAsOwner();
     });
 
+    it('reads the current signing config on every token request, including when disabled', async function () {
+      const jwt = require('jsonwebtoken');
+      const previousConfig = configUtils.config.get('tinybird');
+      try {
+        configUtils.set('tinybird', null);
+        const disabled = await agent.get('/tinybird/token/').expectStatus(200);
+        assert.equal(disabled.body.tinybird, null);
+
+        for (const suffix of ['a', 'b']) {
+          const adminToken = `test-signing-key-${suffix}`;
+          const workspaceId = `test-workspace-${suffix}`;
+          configUtils.set('tinybird', { workspaceId, adminToken });
+          const { body } = await agent.get('/tinybird/token/').expectStatus(200);
+          const decoded = jwt.verify(body.tinybird.token, adminToken, { algorithms: ['HS256'] });
+          assert.equal(decoded.workspace_id, workspaceId);
+          assert.equal(body.tinybird.exp, new Date(decoded.exp * 1000).toISOString());
+        }
+
+        configUtils.set('tinybird', null);
+        const disabledAgain = await agent.get('/tinybird/token/').expectStatus(200);
+        assert.equal(disabledAgain.body.tinybird, null);
+      } finally {
+        configUtils.set('tinybird', previousConfig);
+      }
+    });
+
     describe('With Tinybird configuration', function () {
       beforeAll(async function () {
         configUtils.set('tinybird', {

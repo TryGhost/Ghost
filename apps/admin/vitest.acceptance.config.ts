@@ -5,6 +5,7 @@ import type { BrowserCommand, BrowserCommandContext } from 'vitest/node';
 import { playwright } from '@vitest/browser-playwright';
 import type { PluginOption } from 'vite';
 import react from '@vitejs/plugin-react';
+import svgr from 'vite-plugin-svgr';
 import tailwindcss from '@tailwindcss/vite';
 
 import { sharedDefine, sharedResolve } from './vite.shared';
@@ -68,7 +69,7 @@ const resetFakeFrameOrigins: BrowserCommand<[]> = async ({ page }) => {
 };
 
 export default defineConfig({
-  plugins: [tailwindcss() as PluginOption, react()],
+  plugins: [tailwindcss() as PluginOption, svgr(), react()],
   server: {
     // Vitest owns console reporting; Vite forwarding bypasses silent below.
     forwardConsole: false,
@@ -90,7 +91,9 @@ export default defineConfig({
     // Print totals and failures, without per-test output that CI expands into
     // separate lines. Use --silent=false --reporter=verbose to debug.
     silent: 'passed-only',
-    reporters: process.env.GITHUB_ACTIONS ? ['minimal', 'github-actions', 'json'] : ['minimal'],
+    reporters: process.env.GITHUB_ACTIONS
+      ? ['minimal', 'github-actions', 'json']
+      : ['minimal', 'json'],
     // Keep per-test timings and failure details without expanding the CI log.
     outputFile: { json: './test-results/acceptance.json' },
     include: ['src/**/*.acceptance.test.tsx', 'src/**/*.component.test.tsx'],

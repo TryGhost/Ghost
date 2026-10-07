@@ -9,6 +9,7 @@ import {
   fakePages,
   post,
   renderAdminApp,
+  settleTransitions,
   submittedPost,
   unsavedChangesGuarded,
   withoutAutosave,
@@ -17,6 +18,7 @@ import { editorScreen } from '@/editor/editor.screen';
 import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
+const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 const SCHEDULED_AT = '2099-12-01T10:00:00.000Z';
@@ -45,6 +47,8 @@ function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
 async function openSidebar() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  // Visible from its first frame; a click while it still slides in can be lost.
+  await settleTransitions();
 }
 
 /**
@@ -208,27 +212,20 @@ describe('Post settings URL', () => {
     await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
   });
 
-  it('stages a published post’s slug until Update', async () => {
+  it('saves a published post’s slug on its own', async () => {
     fakeSlugs();
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openSidebar();
 
-    await expect.element(editorScreen.updateButton()).toBeDisabled();
-
     await editorScreen.settingsSlug().fill('published-slug');
     await userEvent.keyboard('{Enter}');
 
-    // The unsaved signal for a published post is the Update button, not a save.
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
-    expect(saveApi.requests).toHaveLength(0);
-
-    await userEvent.keyboard('{Meta>}s{/Meta}');
-
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
       slug: 'published-slug',
-      status: 'published',
     });
     await expect.element(editorScreen.updateButton()).toBeDisabled();
   });

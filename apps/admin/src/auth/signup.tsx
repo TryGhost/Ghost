@@ -52,7 +52,7 @@ function SignupForm({ email, token }: { email: string; token: string }) {
 
   const problemWith = (field: SignupField, values = { name, password }) => {
     if (field === 'name') {
-      return values.name ? undefined : 'Please enter a name.';
+      return values.name ? undefined : 'Enter a name.';
     }
     return passwordProblems(values.password, { email, siteTitle: siteData?.site.title })[0];
   };
@@ -67,7 +67,7 @@ function SignupForm({ email, token }: { email: string; token: string }) {
     const nextErrors = { name: problemWith('name'), password: problemWith('password') };
     setErrors(nextErrors);
     if (nextErrors.name || nextErrors.password) {
-      setFlowError('Please fill out the form to complete your signup');
+      setFlowError('Fill out the form to complete your signup');
       setSubmitState('failed');
       return;
     }
@@ -113,6 +113,19 @@ function SignupForm({ email, token }: { email: string; token: string }) {
       <AuthHeader title="Create your account." />
       <form noValidate onSubmit={(event) => void submit(event)}>
         <Stack gap="lg">
+          <Field>
+            <FieldLabel htmlFor="username">Email address</FieldLabel>
+            <Input
+              autoComplete="username"
+              data-test-input="email"
+              id="username"
+              name="username"
+              type="text"
+              value={email}
+              disabled
+              readOnly
+            />
+          </Field>
           <Field data-invalid={Boolean(errors.name) || undefined}>
             <FieldLabel htmlFor="display-name">Full name</FieldLabel>
             <Input
@@ -132,20 +145,7 @@ function SignupForm({ email, token }: { email: string; token: string }) {
               }}
               onChange={(event) => setName(event.target.value)}
             />
-            <FieldError>{errors.name}</FieldError>
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="username">Email address</FieldLabel>
-            <Input
-              autoComplete="username"
-              data-test-input="email"
-              id="username"
-              name="username"
-              type="text"
-              value={email}
-              disabled
-              readOnly
-            />
+            <FieldError className="text-base">{errors.name}</FieldError>
           </Field>
           <Field data-invalid={Boolean(errors.password) || undefined}>
             <FieldLabel htmlFor="password">Password</FieldLabel>
@@ -162,7 +162,7 @@ function SignupForm({ email, token }: { email: string; token: string }) {
               onBlur={() => validateField('password')}
               onChange={(event) => setPassword(event.target.value)}
             />
-            <FieldError>{errors.password}</FieldError>
+            <FieldError className="text-base">{errors.password}</FieldError>
           </Field>
           <SubmitButton
             label="Create Account →"

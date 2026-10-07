@@ -158,6 +158,12 @@ export type Config = {
     enabled?: boolean;
     id?: string;
   };
+  clientExtensions?: {
+    script?: {
+      container?: string;
+      src?: string;
+    };
+  };
   // Config is relatively fluid, so we only type used properties above and still support arbitrary property access when needed
   [key: string]: JSONValue | undefined;
 };

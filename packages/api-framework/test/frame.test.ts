@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import { expectTypeOf } from 'vitest';
 import * as shared from '../src/index.ts';
+import type { Controller, Frame } from '../src/index.ts';
 
 describe('Frame', function () {
   it('constructor', function () {
@@ -16,6 +18,28 @@ describe('Frame', function () {
       'method',
       'response',
     ]);
+  });
+
+  it('provides default and endpoint-specific value types', function () {
+    const frame = new shared.Frame();
+    expectTypeOf(frame.data.id).toEqualTypeOf<string | undefined>();
+    expectTypeOf(frame.options.id).toEqualTypeOf<string | undefined>();
+
+    type ReadFrame = Frame<{
+      data: { id: string };
+      options: { include?: string };
+    }>;
+
+    const controller = {
+      read: {
+        query(readFrame: ReadFrame) {
+          expectTypeOf(readFrame.data.id).toEqualTypeOf<string>();
+          expectTypeOf(readFrame.options.include).toEqualTypeOf<string | undefined>();
+        },
+      },
+    } satisfies Controller<{ read: ReadFrame }>;
+
+    expectTypeOf(controller.read.query).parameter(0).toEqualTypeOf<ReadFrame>();
   });
 
   describe('fn: configure', function () {

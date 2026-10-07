@@ -3,8 +3,8 @@ import type {
   AutomationTriggerTierScope,
   AutomationsRepository,
 } from './automations-repository';
-import { getMailgunMessageId } from '../lib/mailgun-message-id';
-import { getMailgunError } from '../lib/mailgun-error';
+import { getMailgunMessageId } from '../../lib/mailgun/mailgun-message-id';
+import { getMailgunError } from '../../lib/mailgun/mailgun-error';
 import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
 import { MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES } from '../member-welcome-emails/constants';
@@ -45,6 +45,9 @@ type MemberModel = {
   related(key: 'newsletters'): {
     models: unknown[];
   };
+  related(key: 'products'): {
+    models: { id: string }[];
+  };
 };
 
 type PollOptions = {
@@ -61,10 +64,10 @@ type PollOptions = {
   memberWelcomeEmailService: MemberWelcomeEmailService;
 };
 
-// TODO(NY-1643) Add support for "selected_paid" trigger tier scope.
 const MEMBER_STATUS_BY_TRIGGER_TIER_SCOPE = new Map<AutomationTriggerTierScope, 'free' | 'paid'>([
   ['free', 'free'],
   ['all_paid', 'paid'],
+  ['selected_paid', 'paid'],
 ]);
 
 const hasUpdatesAndAnnouncementsEnabled = (member: MemberModel): boolean => {
@@ -187,9 +190,13 @@ const processStep = async ({
     return null;
   }
 
+  const memberRelationsToLoad = ['newsletters'];
+  if (triggerTierScope === 'selected_paid') {
+    memberRelationsToLoad.push('products');
+  }
   const member = (await Member.findOne(
     { id: step.member_id },
-    { withRelated: ['newsletters'] },
+    { withRelated: memberRelationsToLoad },
   )) as MemberModel | null;
 
   if (!member) {
@@ -212,7 +219,13 @@ const processStep = async ({
   const eligibleStatuses = MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES[
     memberStatus
   ] as readonly string[];
-  if (!eligibleStatuses.includes(member.get('status') ?? '')) {
+  const doesMemberStatusStillMatchAutomation =
+    eligibleStatuses.includes(member.get('status') ?? '') &&
+    (triggerTierScope !== 'selected_paid' ||
+      member
+        .related('products')
+        .models.some((tier) => step.automation_trigger_tier_ids.includes(tier.id)));
+  if (!doesMemberStatusStillMatchAutomation) {
     await automationsApi.markStepTerminal(step, 'member changed status');
     return null;
   }

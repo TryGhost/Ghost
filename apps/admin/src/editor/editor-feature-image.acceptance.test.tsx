@@ -13,6 +13,7 @@ import {
   renderAdminApp,
   submittedPost,
   withPintura,
+  withoutAutosave,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 import { deferred } from '@/utils/deferred';
@@ -23,6 +24,7 @@ const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const UPLOADED = 'https://example.com/content/images/2026/09/hills.png';
 const EXISTING = 'https://example.com/content/images/2026/09/coast.png';
 const EDITED = 'https://example.com/content/images/2026/09/coast-edited.png';
+const UNSPLASH_REFERRAL = 'utm_source=ghost&utm_medium=referral&utm_campaign=api-credit';
 
 const SAVE_POLL = { timeout: 10_000 };
 
@@ -153,7 +155,9 @@ describe('Post editor feature image', () => {
 
   it('saves the caption once it loses focus', async () => {
     const saveApi = fakeSavablePost({ feature_image: UPLOADED });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    // Loading the body arms an autosave that can include caption edits. This
+    // scenario proves the blur-triggered save, so keep that debounce out of it.
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
 
     await expect.element(editorScreen.featureImageCaption()).toBeVisible();
     await editorScreen.featureImageCaption().click();
@@ -198,8 +202,7 @@ describe('Post editor feature image', () => {
     await editorScreen.featureImageAltToggle().click();
     await editorScreen.featureImageAltInput().fill('Rolling hills');
 
-    // A published post's background saves are dropped: the sidebar stages
-    // these edits until Update.
+    // A published post's canvas edits wait for an explicit save.
     await expect.element(editorScreen.featureImageAltInput()).toHaveValue('Rolling hills');
     await expect.poll(() => saveApi.requests.length).toBe(0);
 
@@ -259,6 +262,14 @@ describe('Post editor feature image', () => {
     expect(saved.feature_image).toBe(UNSPLASH_PICKED);
     // The photographer credit the picker hands over, as the caption stores it.
     expect(String(saved.feature_image_caption)).toContain('A Photographer');
+    const credit = new DOMParser().parseFromString(
+      String(saved.feature_image_caption),
+      'text/html',
+    );
+    expect(Array.from(credit.links, (link) => link.href)).toEqual([
+      `https://unsplash.com/@photographer?${UNSPLASH_REFERRAL}`,
+      `https://unsplash.com/?${UNSPLASH_REFERRAL}`,
+    ]);
     await expect.element(editorScreen.removeFeatureImage()).toBeVisible();
   });
 

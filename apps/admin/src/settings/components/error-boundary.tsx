@@ -5,6 +5,8 @@ import { Banner } from '@tryghost/shade/components';
 export interface ErrorBoundaryProps {
   children: ReactNode;
   name: ReactNode;
+  /** Rendered in place of the default banner once a child has thrown. */
+  fallback?: ReactNode;
   /** Replaces the default Sentry capture; the console lines stay. */
   onError?: (error: unknown, info: ErrorInfo) => void;
 }
@@ -41,6 +43,9 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps> {
 
   render() {
     if (this.state.hasError) {
+      if (this.props.fallback !== undefined) {
+        return this.props.fallback;
+      }
       return (
         <Banner
           className="border border-state-danger/40 bg-state-danger/10 text-destructive"

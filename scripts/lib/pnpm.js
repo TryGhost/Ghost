@@ -119,7 +119,7 @@ export function resolvePackageCatalog(workspace, pkg) {
 }
 
 /**
- * @typedef {Object} PublishablePackage
+ * @typedef {Object} WorkspacePackage
  * @property {string} name - The name of the package.
  * @property {string} pkgPath - The path to the package.json file.
  * @property {object} manifest - The parsed package.json content.
@@ -127,17 +127,14 @@ export function resolvePackageCatalog(workspace, pkg) {
  */
 
 /**
- * Lists all currently publishable package names in the workspace, leveraging
- * the pnpm-workspace.yaml file and the package.json files in the workspace.
- *
- * Uses the same logic as `.pnpmfile.mjs` to determine which packages are publishable.
+ * Lists every package in the workspace by expanding the `packages` globs in
+ * pnpm-workspace.yaml.
  *
  * @param {WorkspaceManifest} workspace - The workspace manifest object.
- * @returns {Promise<PublishablePackage[]>} - An array of publishable package objects.
+ * @returns {Promise<WorkspacePackage[]>} - An array of workspace package objects.
  */
-export async function getPublishablePackages(workspace) {
-  const { packages, versioning = {} } = workspace;
-  const igoredPackages = new Set(versioning.ignore ?? []);
+export async function getWorkspacePackages(workspace) {
+  const { packages } = workspace;
 
   const exclude = packages.filter((p) => p.startsWith('!')).map((p) => p.slice(1));
   const patterns = packages.filter((p) => !p.startsWith('!')).map((p) => `${p}/package.json`);
@@ -147,23 +144,31 @@ export async function getPublishablePackages(workspace) {
   // wouldn't be pruned.
   const files = await Array.fromAsync(glob(patterns, { exclude, cwd: ROOT_DIR }));
 
-  const pkgs = await Promise.all(
+  return Promise.all(
     files.map(async (file) => {
-      const pkg = await readJson(resolve(ROOT_DIR, file));
-      if (pkg.private || igoredPackages.has(pkg.name)) {
-        return null;
-      }
-
+      const manifest = await readJson(resolve(ROOT_DIR, file));
       return {
-        name: pkg.name,
-        manifest: pkg,
+        name: manifest.name,
+        manifest,
         pkgPath: file,
         dir: dirname(file),
       };
     }),
   );
+}
 
-  return pkgs.filter(Boolean);
+/**
+ * Lists all currently publishable package names in the workspace: packages
+ * that are neither private nor listed in `versioning.ignore`.
+ *
+ * @param {WorkspaceManifest} workspace - The workspace manifest object.
+ * @returns {Promise<WorkspacePackage[]>} - An array of publishable package objects.
+ */
+export async function getPublishablePackages(workspace) {
+  const ignoredPackages = new Set(workspace.versioning?.ignore ?? []);
+  const pkgs = await getWorkspacePackages(workspace);
+
+  return pkgs.filter((pkg) => !pkg.manifest.private && !ignoredPackages.has(pkg.name));
 }
 
 /**

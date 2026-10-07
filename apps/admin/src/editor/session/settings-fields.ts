@@ -194,23 +194,15 @@ export function settingsFieldErrorFor(
   if (key === 'tiers') {
     return tiersIncomplete(fields) ? TIERS_REQUIRED : null;
   }
+  // Ember's post validator (validators/post.js): unless blank, it starts with `/` or a
+  // scheme and holds no whitespace.
   if (key === 'canonical_url') {
-    const url = fields.canonical_url;
-    if (!url) {
+    const url = fields.canonical_url ?? '';
+    if (!/\S/.test(url)) {
       return null;
     }
-    if (/\s/.test(url)) {
+    if (/\s/.test(url) || !/^(\/|[a-zA-Z0-9-]+:)/.test(url)) {
       return 'Please enter a valid URL';
-    }
-    // Root-relative paths are supported; absolute URLs must have a valid host.
-    if (!url.startsWith('/')) {
-      try {
-        if (!new URL(url).hostname) {
-          return 'Please enter a valid URL';
-        }
-      } catch {
-        return 'Please enter a valid URL';
-      }
     }
     return overLength(url, 2000) ? 'Canonical URL is too long, max 2000 chars' : null;
   }
@@ -223,9 +215,14 @@ export function settingsFieldErrorFor(
  * post the server has not created yet is not held to the tier rule
  * (validators/post.js `isNew`); its write leaves the pair out instead.
  */
-export function settingsFieldError(fields: ValidatedSettingsFields, isNew: boolean): string | null {
+export function settingsFieldError(
+  fields: ValidatedSettingsFields,
+  isNew: boolean,
+  /** Fields the save leaves for a later one, whose rules wait for it. */
+  skip: ReadonlyArray<ValidatedSettingsFieldKey> = [],
+): string | null {
   for (const key of VALIDATED_SETTINGS_FIELD_KEYS) {
-    if (isNew && key === 'tiers') {
+    if ((isNew && key === 'tiers') || skip.includes(key)) {
       continue;
     }
     const error = settingsFieldErrorFor(key, fields);

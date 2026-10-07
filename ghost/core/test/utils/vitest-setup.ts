@@ -13,6 +13,11 @@ import { isConsoleAllowed, resetConsoleAllowed } from './console-guard';
 // resolution. Must run before any Ghost source is required below.
 require('tsx/cjs');
 
+// Compile Ghost's own source as strict mode, so writes sloppy mode would drop
+// silently fail the test instead. Must also run before any Ghost source is
+// required. See ./strict-mode.ts.
+require('./strict-mode').enableStrictMode();
+
 process.env.NODE_ENV = process.env.NODE_ENV || 'testing';
 process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_SECRET';
 
@@ -21,6 +26,9 @@ process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_
 // port 2369 by default, which matches the canonical port committed in
 // snapshots — no per-worker session overrides needed.
 require('../../core/server/overrides');
+
+// Tests swap url config at runtime, so url-utils must read it live.
+require('../../core/shared/url-utils').default.unfreeze();
 
 // @tryghost/express-test's snapshot bridge is pulled in lazily — requiring it
 // is ~170ms per worker and only the hooks below ever read it. The mock-manager

@@ -1,6 +1,6 @@
 import { keepPreviousData } from '@tanstack/react-query';
 import type { PerformanceDateRange } from '@/automations/utils/performance-date-range';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import {
   useBrowseAutomationRuns,
   type AutomationRunStatusFilter,
@@ -14,18 +14,22 @@ export const useAutomationRuns = (
   direction: RunSortDirection,
   queryScope: string,
   dateRange: PerformanceDateRange,
+  search = '',
+  enabled = true,
+  updating = false,
 ) => {
   const query = useBrowseAutomationRuns(automationId, queryScope, {
     ...performanceQueryOptions,
+    enabled: !updating,
     // Date changes remount RunList; list controls retain rows while fetching.
     placeholderData: keepPreviousData,
     searchParams: {
-      ...dateRange.searchParams,
-      ...(status ? { status } : {}),
+      ...(search ? { search } : { ...dateRange.searchParams, ...(status ? { status } : {}) }),
       ...(direction === 'asc' ? { order: 'created_at asc' } : {}),
     },
   });
-  const runs = query.data;
+  const runs = query.data?.runs;
+  const scanning = !query.isPlaceholderData && !!query.data?.scanning;
   // A failed later page keeps the loaded rows and retries only itself.
   const nextPageFailed = !query.isFetching && query.isFetchNextPageError;
   const failed = !query.isFetching && query.isError && !query.isFetchNextPageError;
@@ -34,14 +38,28 @@ export const useAutomationRuns = (
   const loadMore = useCallback(() => {
     void fetchNextPage({ cancelRefetch: false });
   }, [fetchNextPage]);
+  // A scan can return no matches before reaching the end. Continue sequentially.
+  useEffect(() => {
+    if (enabled && !updating && scanning && !query.isFetching && !query.isError) {
+      loadMore();
+    }
+  }, [enabled, updating, scanning, query.isFetching, query.isError, query.data, loadMore]);
   return {
     runs,
-    isLoading: query.isFetching && !query.isFetchingNextPage,
-    isError: failed,
+    scanning,
+    isLoading: updating || (query.isFetching && !query.isFetchingNextPage),
+    isError: !updating && failed,
     retry: () => {
       void query.refetch();
     },
-    canLoadMore: !!runs && !query.isPlaceholderData && query.hasNextPage && !nextPageFailed,
+    canLoadMore:
+      enabled &&
+      !updating &&
+      !scanning &&
+      !!runs &&
+      !query.isPlaceholderData &&
+      query.hasNextPage &&
+      !nextPageFailed,
     isLoadingMore: query.isFetchingNextPage,
     isNextPageError: nextPageFailed,
     loadMore,

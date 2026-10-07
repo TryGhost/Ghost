@@ -11,6 +11,7 @@ export default class PostsRoute extends AuthenticatedRoute {
     // declared to carry the list's filters through to React.
     queryParams = {
         type: {refreshModel: true},
+        featured: {refreshModel: true},
         visibility: {refreshModel: true},
         author: {refreshModel: true},
         tag: {refreshModel: true},

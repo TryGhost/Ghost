@@ -198,6 +198,7 @@ describe('createSaveEngine onSaveFailed', () => {
         title: 'Hello',
         slug: 'hello',
         isDirty: true,
+        settingsDirty: false,
         changedSinceLastRevision: true,
         version: 1,
       }),

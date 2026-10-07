@@ -99,7 +99,7 @@ jobs:
       # Ghost-Moya re-reads the PR before acting, so a superseded request is skipped.
       - name: Dispatch deploy to Ghost-Moya
         if: steps.check.outputs.skip != 'true'
-        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4
+        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
         with:
           token: ${{ secrets.CANARY_DOCKER_BUILD }}
           repository: TryGhost/Ghost-Moya
@@ -146,7 +146,7 @@ jobs:
 
       - name: Dispatch destroy to Ghost-Moya
         if: steps.recheck.outputs.skip != 'true'
-        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4
+        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
         with:
           token: ${{ secrets.CANARY_DOCKER_BUILD }}
           repository: TryGhost/Ghost-Moya

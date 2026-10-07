@@ -31,7 +31,9 @@ const emberDataTypeMapping = {
 
 export default class StateBridgeService extends Service.extend(Evented) {
     @service billing;
+    @service configManager;
     @service feature;
+    @service limit;
     @service membersUtils;
     @service notifications;
     @service router;
@@ -235,13 +237,8 @@ export default class StateBridgeService extends Service.extend(Evented) {
     }
 
     @action
-    preloadAdminThemeStylesheet() {
-        return this.feature._loadAdminThemeStylesheet();
-    }
-
-    @action
-    applyAdminThemePreference(mode) {
-        return this.feature._setAdminTheme(mode);
+    connectAdminTheme() {
+        return this.feature.connectAdminTheme();
     }
 
     /* Ember -> React -------------------------------------------------------
@@ -278,6 +275,48 @@ export default class StateBridgeService extends Service.extend(Evented) {
     setSidebarVisible(isVisible) {
         this.trigger('sidebarVisibilityChange', {
             isVisible
+        });
+    }
+
+    // React's billing app hands subscription reports to Ember so Ember's own
+    // state matches what its billing iframe would have produced: fresh config
+    // and plan limits for the publish flow, subscription listeners, and the
+    // in-memory force upgrade lift that holds until the server restarts
+    @action
+    async applyBillingSubscriptionUpdate(data) {
+        try {
+            await this.configManager.fetch();
+        } catch (e) {
+            // re-evaluate limits against the config we have
+        }
+        this.limit.reload();
+        this.triggerSubscriptionChange(data);
+
+        this.billing.subscription = data.subscription;
+        this.billing.checkoutRoute = data.checkoutRoute ?? '/plans';
+
+        if (data.subscription?.status === 'active' && this.config.hostSettings?.forceUpgrade) {
+            this.config.hostSettings.forceUpgrade = false;
+        }
+    }
+
+    // React's billing app has no Sentry client; report through Ember's with
+    // the billing service's event shape so both shells land in one issue
+    @action
+    captureBillingAppLoadFailure({billingMonitor, tags}) {
+        if (!this.config.sentry_dsn) {
+            return;
+        }
+
+        Sentry.captureException('Billing app failed to become ready', {
+            level: 'warning',
+            fingerprint: [
+                'billing-app-load-failure',
+                billingMonitor.document_visibility_state,
+                String(billingMonitor.attempts)
+            ],
+            contexts: {ghost: {billing_monitor: billingMonitor}},
+            tags
         });
     }
 

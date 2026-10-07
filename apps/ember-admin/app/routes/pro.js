@@ -4,6 +4,8 @@ import {inject as service} from '@ember/service';
 
 export default class ProRoute extends AuthenticatedRoute {
     @service billing;
+    @service feature;
+    @service router;
 
     queryParams = {
         action: {refreshModel: true}
@@ -11,6 +13,22 @@ export default class ProRoute extends AuthenticatedRoute {
 
     beforeModel(transition) {
         super.beforeModel(...arguments);
+
+        // React owns /pro when the flag is on. Strictly boolean: a non-boolean
+        // labs value must not hand the route to React.
+        if (this.feature.billingReact === true) {
+            transition.abort();
+            const reactRouteUrl = this._reactRouteUrl(transition);
+
+            // A URL intent already points the browser here, so React renders;
+            // a named intent has no URL yet and would otherwise be a no-op.
+            if (!transition.intent?.url) {
+                this._navigateToReactRoute(reactRouteUrl);
+            }
+
+            this._parkOnReactFallback(reactRouteUrl);
+            return;
+        }
 
         // canAccessBilling also admits non-owner users when the site is in a
         // force upgrade state
@@ -48,9 +66,32 @@ export default class ProRoute extends AuthenticatedRoute {
         this.billing.toggleProWindow(isBillingTransition);
     }
 
-    buildRouteInfoMetadata() {
-        return {
-            titleToken: 'Ghost(Pro)'
-        };
+    // Built by hand like PostsRoute#_reactRouteUrl: router.urlFor depends on
+    // the configured location
+    _reactRouteUrl(transition) {
+        const sub = transition.to?.params?.sub?.replace(/\/$/, '');
+        const billingAction = transition.to?.queryParams?.action;
+        const path = sub ? `/pro/${sub}` : '/pro';
+        return billingAction ? `${path}?action=${encodeURIComponent(billingAction)}` : path;
+    }
+
+    // See PostsRoute#_parkOnReactFallback: keeps Ember's router state honest
+    // after the abort without writing the fallback's URL.
+    _parkOnReactFallback(reactRouteUrl) {
+        const fallbackPath = reactRouteUrl.split('?')[0].replace(/^\//, '');
+        const parkedPath = this.router.currentRouteName === 'react-fallback'
+            ? this.router.currentRoute?.params?.path
+            : null;
+
+        if (parkedPath === fallbackPath) {
+            return;
+        }
+
+        this.router.replaceWith('react-fallback', fallbackPath).method(null);
+    }
+
+    // Seam so tests can assert the navigation without a real hash location
+    _navigateToReactRoute(url) {
+        window.location.hash = url;
     }
 }

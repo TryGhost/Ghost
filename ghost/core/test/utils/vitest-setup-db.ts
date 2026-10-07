@@ -27,6 +27,9 @@ const chalk = require('chalk');
 // run before any Ghost source is required below.
 require('tsx/cjs');
 
+// Compile Ghost's own source as strict mode — see ./vitest-setup.ts.
+require('./strict-mode').enableStrictMode();
+
 // DB-backed suites run against MySQL. Reject vitest's own `NODE_ENV='test'`
 // default (Ghost has no config.test.json) by setting the MySQL test environment
 // before config loads.
@@ -97,6 +100,9 @@ const sessionPort = parseInt(process.env.server__port, 10);
 // Load Ghost's runtime overrides (nconf wiring, etc.) — config now reads the env
 // vars set above.
 require('../../core/server/overrides');
+
+// Tests swap url config at runtime, so url-utils must read it live.
+require('../../core/shared/url-utils').default.unfreeze();
 
 const snapshotExports = require('@tryghost/express-test').snapshot;
 const { snapshotManager, mochaHooks } = snapshotExports;

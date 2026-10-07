@@ -14,7 +14,7 @@ export class SendingStatusService {
 
   async statusFor(emailId: string): Promise<EmailSendingStatus | null> {
     const row = await this.#knex('emails')
-      .select('id', 'status', 'email_count', 'updated_at')
+      .select('id', 'status', 'email_count', 'preflight_email_count', 'updated_at')
       .where('id', emailId)
       .first();
 
@@ -23,9 +23,13 @@ export class SendingStatusService {
     }
 
     const email = DbEmailSendingRow.parse(row);
-    // A submitted email answers from its own count, and batch creation reconciles email_count
-    // to the recipient rows it built, so the batch query is skipped rather than run and ignored.
-    const batches = email.status === 'submitted' ? [] : await this.#batchesFor(emailId);
+    // Completion persists the verified submitted count. Emails with null
+    // preflight_email_count, or batches submitted before submission counts were
+    // recorded, retain their intended count. Neither needs aggregation once finished.
+    const batches =
+      email.status === 'submitted'
+        ? []
+        : await this.#batchesFor(emailId, email.preflight_email_count !== null);
 
     return {
       id: email.id,
@@ -42,7 +46,26 @@ export class SendingStatusService {
     };
   }
 
-  async #batchesFor(emailId: string): Promise<SendingBatch[]> {
+  async #batchesFor(emailId: string, recipientAccounting: boolean): Promise<SendingBatch[]> {
+    if (recipientAccounting) {
+      const rows = await this.#knex('email_batches')
+        // Retain unknown intent so progress can use the email's saved total as
+        // a lower bound instead of silently treating missing recipients as zero.
+        .select('status', 'created_at', 'updated_at', 'recipient_count')
+        // Both missing counts identify preparation-only deployments. A partially
+        // missing pair is invalid and earns no verified submission progress.
+        .select(
+          this.#knex.raw(
+            `CASE
+              WHEN submitted_count IS NULL AND submission_excluded_count IS NULL
+              THEN COALESCE(recipient_count, 0)
+              ELSE COALESCE(submitted_count + submission_excluded_count, 0)
+            END AS accounted_recipient_count`,
+          ),
+        )
+        .where('email_id', emailId);
+      return rows.map((batchRow) => camelKeys(DbBatchSendingRow.parse(batchRow)));
+    }
     // Correlated per-batch count stays on the batch_id index; grouping recipients by email_id scans every recipient row.
     const recipientCount = this.#knex('email_recipients as recipient')
       .count('*')

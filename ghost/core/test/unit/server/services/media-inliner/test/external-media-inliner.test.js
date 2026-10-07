@@ -6,7 +6,7 @@ const nock = require('nock');
 const path = require('path');
 const loggingLib = require('@tryghost/logging');
 const configUtils = require('../../../../../utils/config-utils');
-const urlUtils = require('../../../../../../core/shared/url-utils').default;
+const urlUtilsHelper = require('../../../../../utils/url-utils');
 const ExternalMediaInliner = require('../../../../../../core/server/services/media-inliner/external-media-inliner');
 
 describe('ExternalMediaInliner', function () {
@@ -1394,23 +1394,25 @@ describe('ExternalMediaInliner', function () {
 
   describe('CDN storage adapter', function () {
     const CDN_BASE_URL = 'https://storage.ghost.is/c/6f/a3/site';
-    let originalAssetBaseUrls;
 
     beforeEach(function () {
       configUtils.set('urls:image', CDN_BASE_URL);
       configUtils.set('urls:media', CDN_BASE_URL);
       configUtils.set('urls:files', CDN_BASE_URL);
 
-      originalAssetBaseUrls = { ...urlUtils._assetBaseUrls };
-      urlUtils._assetBaseUrls = {
-        image: CDN_BASE_URL,
-        media: CDN_BASE_URL,
-        files: CDN_BASE_URL,
-      };
+      urlUtilsHelper.stubUrlUtilsWithCdn(
+        {
+          assetBaseUrls: {
+            image: CDN_BASE_URL,
+            media: CDN_BASE_URL,
+            files: CDN_BASE_URL,
+          },
+        },
+        sinon,
+      );
     });
 
     afterEach(async function () {
-      urlUtils._assetBaseUrls = originalAssetBaseUrls;
       await configUtils.restore();
     });
 

@@ -400,9 +400,11 @@ const filterOperatorVariants = cva(
   },
 );
 
+// The label is static text, so it takes no pointer events: no hover state,
+// including the one FilterBar paints on every segment of a pill.
 const filterFieldLabelVariants = cva(
   [
-    'flex shrink-0 items-center gap-1.5 px-1.5 py-1 text-foreground',
+    'pointer-events-none flex shrink-0 items-center gap-1.5 px-1.5 py-1 text-foreground',
     '[&_svg:not([class*=size-])]:size-4',
   ],
   {
@@ -1038,6 +1040,12 @@ export interface ValueSource<T = string> {
 export interface FilterFieldConfig<T = unknown> {
   key?: string;
   label?: string;
+  // Label on an applied pill, when it should read differently from the field's
+  // entry in the add-filter menu (e.g. menu "Featured", pill "Post is Featured").
+  pillLabel?: string;
+  // The customRenderer shows fixed text with nothing to pick, so the value area
+  // takes no hover or pointer.
+  staticValue?: boolean;
   icon?: React.ReactNode;
   type?:
     | 'select'
@@ -2234,12 +2242,15 @@ function FilterValueSelector<T = unknown>({
 
     return (
       <div
-        className={filterFieldValueVariants({
-          variant: context.variant,
-          size: context.size,
-          cursorPointer: context.cursorPointer,
-          readOnly,
-        })}
+        className={cn(
+          filterFieldValueVariants({
+            variant: context.variant,
+            size: context.size,
+            cursorPointer: field.staticValue ? false : context.cursorPointer,
+            readOnly,
+          }),
+          field.staticValue && 'pointer-events-none',
+        )}
         data-slot="filters-value"
       >
         {field.customRenderer({ field, values, onChange, operator, onOperatorChange, readOnly })}
@@ -2774,7 +2785,7 @@ export const FiltersContent = <T = unknown,>({
               })}
             >
               {field.icon}
-              {field.label}
+              {field.pillLabel ?? field.label}
             </div>
 
             {/* Operator Dropdown */}
@@ -3315,7 +3326,7 @@ export function Filters<T = unknown>({
                 })}
               >
                 {field.icon}
-                {field.label}
+                {field.pillLabel ?? field.label}
               </div>
 
               {/* Operator Dropdown */}

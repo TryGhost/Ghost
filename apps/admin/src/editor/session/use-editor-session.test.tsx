@@ -1,7 +1,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
+import { buildPostEditorReadParams } from '@tryghost/admin-x-framework/api/post-contract';
+import { postsDataType } from '@tryghost/admin-x-framework/api/posts';
+import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { dispatchedIntents } from './__test-utils__/save-engine-spy';
 import { record } from './__test-utils__/session-harness';
 import { reportLeaveConfirmation, reportSaveFailure } from '@/editor/report-error';
@@ -48,10 +51,6 @@ beforeEach(() => {
   postApi.edit.mockReset();
   offeredReads.length = 0;
 });
-
-vi.mock('@tryghost/admin-x-framework', () => ({
-  useLocation: () => ({ key: 'editor', state: null }),
-}));
 
 vi.mock('@/editor/report-error', () => ({
   reportEditorError: vi.fn(),
@@ -264,6 +263,7 @@ describe('useEditorSession refetched record', () => {
 
     expect(result.current.loadedRecord).toBe(loaded);
     expect(result.current.isDirty()).toBe(false);
+    expect(result.current.newerVersionAvailable).toBe(true);
   });
 
   it('describes a read of its own save once that save has landed', async () => {
@@ -284,6 +284,7 @@ describe('useEditorSession refetched record', () => {
     postApi.read = { posts: [ownSave] };
     rerender();
     expect(result.current.loadedRecord).toBe(loaded);
+    expect(result.current.newerVersionAvailable).toBe(false);
 
     await act(async () => {
       answer.resolve({ posts: [ownSave] });
@@ -292,5 +293,84 @@ describe('useEditorSession refetched record', () => {
 
     expect(result.current.loadedRecord).toBe(ownSave);
     expect(result.current.isDirty()).toBe(false);
+    expect(result.current.newerVersionAvailable).toBe(false);
+  });
+});
+
+describe('useEditorSession saved record', () => {
+  const screenRead = [postsDataType, apiUrl('/posts/abc123/', buildPostEditorReadParams())];
+
+  beforeEach(() => queryClient.clear());
+
+  it('writes the record a save was answered with into the screen’s read', async () => {
+    const answered = record({ title: 'A new title', updated_at: '2026-01-01T00:00:01.000Z' });
+    postApi.edit.mockResolvedValue({ posts: [answered] });
+    const { result } = setup();
+
+    act(() => result.current.bind.onTitleChange('A new title'));
+    await act(() => result.current.saveExplicit());
+
+    expect(queryClient.getQueryData(screenRead)).toEqual({ posts: [answered] });
+  });
+
+  it('keeps a later version a read put there before the save’s answer landed', async () => {
+    const answer = deferred<{ posts: EditorRecord[] }>();
+    postApi.edit.mockReturnValueOnce(answer.promise);
+    const { result } = setup();
+
+    act(() => result.current.bind.onTitleChange('A new title'));
+    let saving!: Promise<SaveCompletion>;
+    act(() => {
+      saving = result.current.saveExplicit();
+    });
+    await waitFor(() => expect(postApi.edit).toHaveBeenCalledTimes(1));
+
+    // Another writer saved after this one, and a read of theirs landed first.
+    const theirs = {
+      posts: [record({ title: 'Their title', updated_at: '2026-01-01T00:00:02.000Z' })],
+    };
+    queryClient.setQueryData(screenRead, theirs);
+    await act(async () => {
+      answer.resolve({
+        posts: [record({ title: 'A new title', updated_at: '2026-01-01T00:00:01.000Z' })],
+      });
+      await saving;
+    });
+
+    expect(queryClient.getQueryData(screenRead)).toBe(theirs);
+  });
+});
+
+describe('useEditorSession reload', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('refuses a newer version when the writer edits while the reload waits', async () => {
+    const newer = record({ title: 'Their title', updated_at: '2026-01-02T00:00:00.000Z' });
+    stable.fetchApi.mockResolvedValueOnce({ posts: [newer] });
+    const cancelled = deferred<void>();
+    const cancelQueries = vi
+      .spyOn(queryClient, 'cancelQueries')
+      .mockReturnValueOnce(cancelled.promise);
+    const { result } = setup();
+    const loaded = result.current.loadedRecord;
+
+    let reloading!: Promise<string>;
+    act(() => {
+      reloading = result.current.reload();
+    });
+    await waitFor(() => expect(cancelQueries).toHaveBeenCalledTimes(1));
+    act(() => result.current.bind.onTitleChange('Typed while reloading'));
+
+    let outcome = '';
+    await act(async () => {
+      cancelled.resolve();
+      outcome = await reloading;
+    });
+
+    expect(outcome).toBe('failed');
+    expect(result.current.loadedRecord).toBe(loaded);
+    expect(result.current.bind.title).toBe('Typed while reloading');
   });
 });

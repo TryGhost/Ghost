@@ -1,9 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
+import { holdSessionExpiryRedirect } from '@tryghost/admin-x-framework/helpers';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { PostType } from '@/editor/card-config';
-import { hasUnsavedWork, isCreatedIdUrlSwap } from './leave-guard';
-import { useEditorSessionKey, type EditorSessionHandle } from './use-editor-session';
+import type { SaveEngineState } from '@/editor/engine/save-engine';
+import {
+  hasUnsavedWork,
+  isCreatedIdUrlSwap,
+  LEAVE_DECISION_DEADLINE_MS,
+  leaveDecisionWithin,
+} from './leave-guard';
+import { useEditorSessionKey, useMarkEditorSessionCreated } from './session-key';
+import type { EditorSessionHandle } from './use-editor-session';
 
 export interface EditorLeaveGuard {
   /** Wiring for Shade's `DirtyConfirmDialog`. */
@@ -20,8 +28,9 @@ export interface EditorLeaveGuard {
  * made outside the router) are put to the save engine, which finishes or saves
  * whatever is outstanding and answers `proceed` (leaving loses nothing) or
  * `confirm` (ask first); a held pop keeps the editor's URL until then. A tab
- * close or reload gets the browser's own prompt. The session's own URL replace
- * after a create is not an exit and passes silently.
+ * close or reload gets the browser's own prompt, and an expired session found by
+ * another request does not leave the page. The session's own URL replace after a
+ * create is not an exit and passes silently.
  */
 export function useEditorLeaveGuard(
   session: EditorSessionHandle,
@@ -42,8 +51,15 @@ export function useEditorLeaveGuard(
     guardHistoryPops: true,
   });
 
+  // Another request's expired session must not take unsaved work off the page.
+  useEffect(() => (hasWork ? holdSessionExpiryRedirect() : undefined), [hasWork]);
+
   const guardRef = useRef(guard);
   guardRef.current = guard;
+  const stateRef = useRef(session.state);
+  stateRef.current = session.state;
+  // The engine state a leave last ran out of time in: another leave in that state asks at once.
+  const lateStateRef = useRef<SaveEngineState | null>(null);
   // Stays set while an accepted exit is transitioning. React Router does not
   // consult blockers again in its `proceeding` state, so the deferred ID swap
   // must not race and replace that navigation either.
@@ -73,6 +89,12 @@ export function useEditorLeaveGuard(
   // Router owns one blocker target, so starting this replace while an exit is
   // blocked would overwrite the writer's original destination.
   const createdId = session.createdId;
+  const markSessionCreated = useMarkEditorSessionCreated();
+  useEffect(() => {
+    if (createdId) {
+      markSessionCreated();
+    }
+  }, [createdId, markSessionCreated]);
   const { hasBlockedNavigation } = guard;
   useEffect(() => {
     if (!createdId || hasBlockedNavigation() || isUrlSwapBlocked || isLeavingRef.current) {
@@ -118,8 +140,15 @@ export function useEditorLeaveGuard(
       return;
     }
     isDecidingRef.current = true;
-    void leaveRequested().then((decision) => {
-      if (!isMountedRef.current) {
+    void leaveDecisionWithin(leaveRequested(), {
+      ms: stateRef.current === lateStateRef.current ? 0 : LEAVE_DECISION_DEADLINE_MS,
+      isSigningIn: () => stateRef.current.kind === 'reauth-pending',
+      onLate: () => {
+        lateStateRef.current = stateRef.current;
+      },
+    }).then((decision) => {
+      // An exit the router dropped meanwhile has nothing left for a dialog to settle.
+      if (!isMountedRef.current || !guardRef.current.isBlocked) {
         return;
       }
       if (decision === 'confirm') {

@@ -11,17 +11,21 @@ members the sections read — rather than the whole editing handle.
 
 A settings field is staged as the writer changes it and committed on the gesture
 that ends the edit — a blur for a text field, the choice itself for a toggle or
-a picker. Committing is not saving: whether the value is persisted now or held
-until the writer asks for a save is decided by the save engine, and
-[the session README](../session/README.md#staging-and-committing) describes it
-and its pending-work contract. Title, feature image, settings and body saves all
-reach the engine and use the same preparation validator.
+a picker. The commit saves it, whatever the post's status; only a tier pick
+outside a draft waits for a later save, as [Access](#access) describes. A draft's commit
+saves the whole document, as its other edits do. A published, scheduled or sent
+post's commit saves the changed settings alone and keeps the post's status,
+while the title, the body and the rest of the canvas wait for Update.
+[The session README](../session/README.md#staging-and-committing) describes the
+rules and the pending-work contract behind them. A save that fails keeps the
+writer's value and shows the save error; on a post that is not a draft, its
+retry repeats the settings save and leaves the canvas waiting.
 
 Two of the panel's sections write something that is not a settings field, so
 they have their own routes onto the session: the URL section edits the slug
 through the slug machine, and the Publish date section stages the publish time,
-which is the save engine's command target. Both are then subject to the same
-engine policy as everything else.
+which is the save engine's command target. Both then commit as every other
+section does.
 
 The excerpt, the header and footer code, and the meta and social-card text
 fields are held to the lengths the server accepts: 300 characters for the
@@ -97,7 +101,7 @@ is open.
 The URL section edits the slug. A manual edit goes to the slug machine, whose
 [ownership and ordering rules](../engine/README.md#slug-machine) decide what
 happens to it, and only a proposal the machine applies reaches the live
-document, where the save policy then decides whether it is persisted or staged.
+document, where it is saved as any other settings field is.
 A superseded proposal is ignored, and a generator that fails or answers blank
 leaves the slug alone: the input reverts to whatever the machine still holds and
 the section says the URL could not be updated, marking the input itself invalid,
@@ -122,19 +126,21 @@ When the post is published, edited in the site's timezone and carried as a UTC
 instant. A post that has no publish time yet shows the current moment, and only
 an edit stages a value, so an untouched draft still leaves the time to the
 server. The fields share the row equally, with calendar and clock icons and the
-timezone inside the time field. The date is chosen from a calendar and the time entered
+timezone inside the time field. The date is typed as `YYYY-MM-DD` or chosen from
+a calendar, and the time entered
 through Shade's native `TimePicker`, whose value is `HH:mm`; an unparseable time returns to the value already held. Both fields commit at minute
 granularity, and the seconds a publish stamped are kept whenever the committed
-minute is the one already saved. Tabbing through an untouched time, retyping it,
-or choosing the displayed calendar day does not commit a value.
+minute is the one already saved. Tabbing through an untouched field, retyping the
+value it shows, or choosing the displayed calendar day does not commit a value.
 
 An edit made during a save stays staged until that save settles, even if the
 writer returns to the saved minute or a refetch already carries the chosen time.
 An older response cannot discard that choice. Once the saved time agrees and no
 older save can overwrite it, the staged edit is released.
 
-The calendar stops at today, and a draft's or published post's time may not be
-the current moment or later. Choosing one leaves the value staged and shown with
+The calendar stops at today, though a later date can still be typed, and a
+draft's or published post's time may not be the current moment or later.
+Entering one leaves the value staged and shown with
 `Please choose a past date and time.` beside the fields. A sent post is exempt
 from the rule and is re-timed like a published one.
 
@@ -173,8 +179,8 @@ the save because that is the rule the server applies. Two tags can share a name
 and differ only by slug, so what makes them the same tag is the id whenever both
 sides have one.
 
-The list offers the first hundred tags matching what is typed, in name order.
-Narrowing the search is how the rest are reached. Enter takes the highlighted
+The list offers the tags matching what is typed, in name order, a hundred at a
+time: scrolling to its end reads the next hundred. Enter takes the highlighted
 row, and so does Tab once something is typed; Tab through an empty field moves
 on. Escape closes the list and leaves the term where it was typed. A chip is
 removed by clicking it, or with Backspace on an empty field. Dragging a chip
@@ -187,9 +193,11 @@ There is no keyboard reorder: Enter and Space on a chip remove it.
 Access is two coupled fields, `visibility` and `tiers`, and only an Owner,
 Administrator or Editor sees them. A post carries no visibility until its first
 save applies the site default, so the select shows `default_content_visibility`
-until then. Re-choosing the value already shown is not an edit and sends
-nothing. Choosing anything other than `Specific tier(s)` clears the tiers it
-granted. The tier list is every one of the site's paid
+until then. When that default is `Specific tier(s)`, the list ticks the tiers
+in `default_content_visibility_tiers` until then too, and ticking or unticking
+a tier starts from them. Re-choosing the value already shown is not an edit and
+sends nothing. Choosing anything other than `Specific tier(s)` clears the tiers
+it granted. The tier list is every one of the site's paid
 tiers, active ones before archived, and it loads only while `Specific tier(s)`
 is the choice. The browse is followed page by page, and the list shows once the
 last page has arrived. Reads carry tier relations for Public, Members and Paid posts;
@@ -198,7 +206,7 @@ selection, and a tier ID without type metadata is preserved. A failed tier
 lookup shows an error and a Retry action in place of the list.
 
 An empty tier selection is staged like any other edit but never sent: the
-section asks for at least one tier. On a post that exists, no field save runs
+section asks for at least one tier. On a post that exists, no settings save runs
 while the pairing is incomplete and a save the writer asks for is refused with
 the same message. Because the pairing is staged rather than held in the panel,
 it survives closing the sidebar, enables Update and is what the leave guard asks
@@ -217,6 +225,11 @@ every paid tier, archived ones included, so switching one of those posts to
 the save that follows the switch. Once saved, an unrelated edit sends neither
 access field.
 
+On a post that is not a draft, ticking or unticking a tier is staged without a
+save of its own, as in Ember: every save of a published post writes a revision,
+so the picks go out once, with the next settings change or Update, and count as
+unsaved work until then. The visibility choice itself saves at once.
+
 Koenig cards read the post's access from the editor's card config, which follows
 the live field rather than the saved record: a staged visibility changes what
 the cards describe before any save.
@@ -225,8 +238,10 @@ the cards describe before any save.
 
 The excerpt is the one field with two homes. When the inline excerpt is on it
 renders under the title and the sidebar leaves it out; when it is off the
-sidebar owns it. Either way the same session binding and the same limit are
-behind it, and the message for an excerpt past its limit sits under the field.
+sidebar owns it. Either way the same field and the same limit are behind it,
+and the message for an excerpt past its limit sits under the field. The home
+decides the save: under the title it is canvas, held for Update on a post that
+is not a draft, and in the sidebar it is saved as the panel's other fields are.
 
 ## Authors
 
@@ -259,7 +274,7 @@ that order.
 The whole staff record stays in the field and the request is what reduces it.
 A post always needs one. A new post is credited to whoever started it, which is
 what the first save sends; emptying the list instead leaves the field asking for
-an author, and while it is empty no field save runs and a save the writer asks
+an author, and while it is empty no settings save runs and a save the writer asks
 for is refused with the same message, which the publish flow carries too. The
 field itself is marked invalid and points at that message.
 
@@ -281,8 +296,9 @@ disabled and names the template the URL picked.
 
 A page can render without its own title and feature image, and only a page: the
 field has no meaning for a post, so the section is left out there. Every role
-that can open the editor sees it, and the editor's cards read the live value
-rather than the saved one.
+that can open the editor sees it, and the editor's cards and canvas read the
+live value rather than the saved one: while the choice is off, the canvas fades
+the title and feature image and marks them with an eye-off icon.
 
 Honouring the choice is the theme's job. When the active theme's report says its
 page-builder helper is missing and the writer has turned the setting off, the
@@ -358,10 +374,14 @@ are a recommendation rather than a limit: 60 for the title, 145 for the descript
 counted as symbols so a multibyte character counts once, and coloured once the
 writer is past the recommendation.
 
-The optional canonical URL accepts root-relative paths or absolute URLs with a
-valid host, rejects whitespace, and keeps Ember's 2,000-character limit. Invalid
-values stay staged and block saves until corrected. Clearing the field stores
-no canonical override.
+The canonical URL is optional as well. Anything but a blank value has to start
+with `/` or a scheme such as `https:` and hold no whitespace, or the field says
+`Please enter a valid URL`, and past 2,000 characters it says `Canonical URL is
+too long, max 2000 chars`. The rule is no stricter because every save checks the
+value the post holds, including one it was loaded with: a post already carrying
+a URL the rule refused could not be saved at all. An invalid value stays staged,
+nothing is saved while it is there, and a save the writer asks for is refused
+with the same message. Clearing the field stores no value.
 
 The preview under them is the result the post would produce, with a Google logo,
 search bar and blue result title. Each line falls back rather than emptying: the title is the meta title, else the title the
@@ -430,7 +450,8 @@ the API's answer, not the panel's.
 
 Confirming names the post and says the deletion is permanent. Cancelling returns
 focus to the Delete button. An expired session asks the writer to sign in, in
-place, before retrying, so their draft stays open. A refusal keeps
+place, before retrying, so their draft stays open. Abandoning the sign-in keeps
+the dialog, says the session expired, and the next Delete asks again. A refusal keeps
 the dialog, shows the sentence the API gave for it and leaves the editor as it
 was, so unsaved work is still the writer's to save. A deletion that succeeds
 ends the editing session before leaving for the list: the save in flight is

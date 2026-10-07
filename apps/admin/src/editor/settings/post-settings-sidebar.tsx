@@ -1,4 +1,4 @@
-import { Fragment, memo, type ReactNode, useEffect, useId } from 'react';
+import { Fragment, memo, type ReactNode, type Ref, useEffect, useId } from 'react';
 import { FieldError, Label, Separator, Switch, Textarea } from '@tryghost/shade/components';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
@@ -49,7 +49,13 @@ const MemoTagsSection = memo(TagsSection);
 const MemoTemplateSection = memo(TemplateSection);
 const MemoUrlSection = memo(UrlSection);
 
-const ExcerptSection = memo(function ExcerptSection({ session }: { session: EditorSettingsPort }) {
+const ExcerptSection = memo(function ExcerptSection({
+  session,
+  inputRef,
+}: {
+  session: EditorSettingsPort;
+  inputRef?: Ref<HTMLTextAreaElement>;
+}) {
   const inputId = useId();
   const errorId = useId();
   const error = settingsFieldErrorFor('custom_excerpt', session.settings);
@@ -58,14 +64,15 @@ const ExcerptSection = memo(function ExcerptSection({ session }: { session: Edit
     <SettingsSection>
       <Label htmlFor={inputId}>Excerpt</Label>
       <Textarea
+        ref={inputRef}
         aria-describedby={error ? errorId : undefined}
         aria-invalid={!!error}
         data-testid={settingsExcerptInput}
         id={inputId}
         rows={3}
-        value={session.bind.excerpt}
+        value={session.settings.custom_excerpt ?? ''}
         onBlur={session.commitSettings}
-        onChange={(event) => session.bind.onExcerptChange(event.target.value)}
+        onChange={(event) => session.stageSettings({ custom_excerpt: event.target.value || null })}
       />
       {error ? <FieldError id={errorId}>{error}</FieldError> : null}
     </SettingsSection>
@@ -108,6 +115,8 @@ export interface PostSettingsSidebarProps {
   currentUser?: User;
   /** The excerpt renders under the title instead, so the sidebar leaves it out. */
   hasInlineExcerpt?: boolean;
+  /** The excerpt field, for the screen to take the writer to. */
+  excerptRef?: Ref<HTMLTextAreaElement>;
 }
 
 /**
@@ -122,6 +131,7 @@ export function PostSettingsSidebar({
   featureImage,
   currentUser,
   hasInlineExcerpt = false,
+  excerptRef,
 }: PostSettingsSidebarProps) {
   // The sections take the narrow port rather than the handle, so an edit they
   // cannot see does not hand them a new object.
@@ -137,7 +147,7 @@ export function PostSettingsSidebar({
     url: <MemoUrlSection postType={postType} session={session} siteUrl={siteUrl} />,
     'publish-date': <MemoPublishDateSection session={session} />,
     tags: canTag ? <MemoTagsSection session={session} /> : null,
-    excerpt: hasInlineExcerpt ? null : <ExcerptSection session={session} />,
+    excerpt: hasInlineExcerpt ? null : <ExcerptSection inputRef={excerptRef} session={session} />,
     featured: canManagePost ? <FeaturedSection postType={postType} session={session} /> : null,
     access: canManagePost ? <MemoAccessSection postType={postType} session={session} /> : null,
     authors: canCreditOthers ? (

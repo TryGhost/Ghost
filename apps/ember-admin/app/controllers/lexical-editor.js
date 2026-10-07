@@ -181,7 +181,7 @@ export default class LexicalEditorController extends Controller {
         const resource = this.post?.displayName === 'page' ? 'pages' : 'posts';
         // Explicit nulls clear any stale query params retained by Ember.
         return {
-            type: null, visibility: null, author: null, tag: null, order: null,
+            type: null, featured: null, visibility: null, author: null, tag: null, order: null,
             ...this.stateBridge.postListQueryParams[resource]
         };
     }
@@ -944,8 +944,6 @@ export default class LexicalEditorController extends Controller {
             yield this.generateSlugTask.perform();
             yield this.autosaveTask.perform();
         }
-
-        this.ui.updateDocumentTitle();
     }
 
     /*

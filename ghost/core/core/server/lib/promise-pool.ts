@@ -1,12 +1,13 @@
 import errors from '@tryghost/errors';
 import type { Promisable } from 'type-fest';
 
-const validateMaxConcurrency = (maxConcurrency: number) => {
+export const validateMaxConcurrency = (maxConcurrency: number, name = 'Concurrency'): number => {
   if (maxConcurrency < 1 || !Number.isSafeInteger(maxConcurrency)) {
     throw new errors.IncorrectUsageError({
-      message: 'Concurrency must be a positive integer',
+      message: `${name} must be a positive integer`,
     });
   }
+  return maxConcurrency;
 };
 
 /**

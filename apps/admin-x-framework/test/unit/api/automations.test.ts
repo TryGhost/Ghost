@@ -26,6 +26,8 @@ const baseDetail = (
 ): AutomationDetail => ({
   id: 'a1',
   slug: 'welcome',
+  trigger_tier_scope: 'free',
+  trigger_tier_ids: null,
   name: 'Welcome',
   description: 'Welcome new members.',
   status: 'active',
@@ -122,14 +124,14 @@ describe('automations api queries', () => {
       );
       await waitFor(() => expect(completedRequests).toBe(1));
       rerender({ scope: 'visit:1', status: 'exited_early' });
-      await waitFor(() => expect(result.current.data?.[0].id).toBe('exited'));
+      await waitFor(() => expect(result.current.data?.runs[0].id).toBe('exited'));
       rerender({ scope: 'visit:2', status: 'completed' });
-      await waitFor(() => expect(result.current.data?.[0].id).toBe('fresh'));
+      await waitFor(() => expect(result.current.data?.runs[0].id).toBe('fresh'));
       finish(response('late', 'completed'));
       // Wait for every request to settle using the public client API before checking the result.
       await waitFor(() => expect(queryClient.isFetching()).toBe(0));
       expect(completedRequests).toBe(2);
-      expect(result.current.data?.[0].id).toBe('fresh');
+      expect(result.current.data?.runs[0].id).toBe('fresh');
     } finally {
       finish(response('late', 'completed'));
       fetch.mockRestore();
@@ -190,7 +192,7 @@ describe('automation run pagination queries', () => {
         await result.current.fetchNextPage();
       });
       await waitFor(() =>
-        expect(result.current.data).toEqual([row('a', 'First observed name'), row('b')]),
+        expect(result.current.data?.runs).toEqual([row('a', 'First observed name'), row('b')]),
       );
       expect(requests).toHaveLength(2);
       expect(requests[0].pathname).toBe('/ghost/api/admin/automations/automation-id/runs/');
@@ -212,6 +214,36 @@ describe('automation run pagination queries', () => {
     }
   });
 
+  it('allows the same cursor sequence when refetching loaded pages', async () => {
+    const cursors: Array<string | null> = [];
+    const fetch = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const cursor = new URL(String(input)).searchParams.get('cursor');
+      cursors.push(cursor);
+      return Response.json({
+        automation_runs: [row(cursor ?? 'first')],
+        meta: {
+          pagination: { limit: 50, next_cursor: cursor ? null : 'next-page' },
+        },
+      });
+    });
+    try {
+      const { result } = renderRuns();
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      await act(async () => {
+        await result.current.fetchNextPage();
+      });
+      await waitFor(() => expect(result.current.hasNextPage).toBe(false));
+      await act(async () => {
+        await result.current.refetch();
+      });
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(cursors).toEqual([null, 'next-page', null, 'next-page']);
+      expect(result.current.data?.runs).toEqual([row('first'), row('next-page')]);
+    } finally {
+      fetch.mockRestore();
+    }
+  });
+
   it('stops fetching after the final page', async () => {
     await withMockFetch(
       {
@@ -228,7 +260,7 @@ describe('automation run pagination queries', () => {
           await result.current.fetchNextPage();
         });
         expect(mock.calls).toHaveLength(1);
-        expect(result.current.data).toEqual([row('a')]);
+        expect(result.current.data?.runs).toEqual([row('a')]);
       },
     );
   });

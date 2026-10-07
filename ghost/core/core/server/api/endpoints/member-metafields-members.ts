@@ -1,3 +1,4 @@
+import type { Controller, Frame } from '@tryghost/api-framework';
 import { MEMBERS, definitions } from '../../services/members-metafields';
 
 /**
@@ -13,11 +14,11 @@ import { MEMBERS, definitions } from '../../services/members-metafields';
  * so there is always a member by the time this runs.
  */
 
-interface Frame {
+type BrowseFrame = Frame<{
   options: {
     namespace: string;
   };
-}
+}>;
 
 const controller = {
   // The Admin resource's name, so the response Portal reads is the one Admin's
@@ -30,14 +31,14 @@ const controller = {
     options: ['namespace'],
     validation: { options: { namespace: { required: true } } },
     permissions: false,
-    query(frame: Frame) {
+    query(frame: BrowseFrame) {
       // No `filter`, which Admin offers: whether a field is archived is a
       // publisher's business, and a member is only ever shown what they can still
       // fill in.
       return definitions!.browse({ namespace: frame.options.namespace }, MEMBERS);
     },
   },
-};
+} satisfies Controller<{ browse: BrowseFrame }>;
 
 export default controller;
 module.exports = controller;

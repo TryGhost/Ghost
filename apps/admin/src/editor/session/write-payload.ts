@@ -9,7 +9,7 @@ import type {
  * The fields the editor writes. `show_title_and_feature_image` is a page field;
  * the write contract strips it from post payloads (post-contract.ts).
  */
-type EditorWritableData = Omit<
+export type EditorWritableData = Omit<
   PostEditableData & Pick<PageEditableData, 'show_title_and_feature_image'>,
   'tiers'
 > & {
@@ -21,8 +21,11 @@ type EditorWritableData = Omit<
 /** A create carries no identity: the server assigns the id and the first token. */
 export type EditorCreatePayload = CreateContentData<EditorWritableData>;
 
-/** An update carries the id and the collision token the save was built at. */
-export type EditorEditPayload = EditorCreatePayload & {
+/**
+ * An update carries the id and the collision token the save was built at. A
+ * settings save writes the settings alone, so an update need not carry a title.
+ */
+export type EditorEditPayload = EditorWritableData & {
   id: string;
   updated_at: string;
 };

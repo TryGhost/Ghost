@@ -72,7 +72,7 @@ test.use({mailgunEnabled: true});
 The fake service records Mailgun requests and forwards rendered messages to
 Mailpit, where tests can inspect them with the existing email fixture. See the
 [E2E workspace README](../../e2e/README.md) and the
-[newsletter-send test](../../e2e/tests/admin/posts/newsletter-send.test.ts) for
+[publishing test](../../e2e/tests/admin/posts/publishing-react.test.ts) for
 the current fixtures and an example.
 
 Ghost Core tests should use the existing Mailgun stubs and email test utilities

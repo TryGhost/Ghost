@@ -14,6 +14,8 @@ const urlUtils = new UrlUtils({
   slugs: config.get('slugs').protected,
   redirectCacheMaxAge: config.get('caching:301:maxAge'),
   baseApiPath: BASE_API_PATH,
+  // url config is static at runtime; tests that swap it unfreeze in their setup
+  frozen: true,
 });
 
 export default urlUtils;

@@ -7,6 +7,7 @@ import {
   normalizeRecipientFilter,
 } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import type { PostNewsletter, PostStatus } from '@tryghost/admin-x-framework/api/posts';
+import { writerMessage } from './publish/completion-message';
 import type { SaveEngineState } from './engine/save-engine';
 
 /** How long "Saving…" stays on screen once a save starts, so it is noticeable. */
@@ -28,7 +29,7 @@ export interface EditorStatusRecord {
 }
 
 export type EditorStatusView =
-  /** A save the writer has to act on; the message is the engine's. */
+  /** A save the writer has to act on; the message is the failed save's. */
   | { kind: 'problem'; message: string }
   | { kind: 'saving' }
   | { kind: 'new' }
@@ -112,7 +113,7 @@ export function deriveEditorStatus({
 }: DeriveEditorStatusInput): EditorStatusView {
   // A collision has its own banner; a failed save has nowhere else to surface.
   if (state.kind === 'error') {
-    return { kind: 'problem', message: state.error.message };
+    return { kind: 'problem', message: writerMessage(state.error) };
   }
 
   const status = record?.status ?? 'draft';

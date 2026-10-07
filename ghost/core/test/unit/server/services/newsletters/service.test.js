@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 // DI requirements
 const { Newsletter } = require('../../../../../core/server/models/newsletter');
 const { Member } = require('../../../../../core/server/models/member');
-const mail = require('../../../../../core/server/services/mail');
+const mail = require('../../../../../core/server/lib/mail');
 
 // Mocked utilities
 const urlUtils = require('../../../../utils/url-utils');
@@ -313,6 +313,32 @@ describe('NewslettersService', function () {
         { sender_email: 'test@example.com' },
         { id: 'abc123' },
       );
+    });
+
+    it('rejects a token issued for a different flow', async function () {
+      // support address tokens carry {key, value}, so id and property are missing
+      const token = JSON.stringify({
+        key: 'members_support_address',
+        value: 'test@example.com',
+      });
+
+      await assert.rejects(newsletterService.verifyPropertyUpdate(token), {
+        name: 'BadRequestError',
+      });
+      sinon.assert.notCalled(editStub);
+    });
+
+    it('rejects a token for a property that cannot be verified', async function () {
+      const token = JSON.stringify({
+        id: 'abc123',
+        property: 'name',
+        value: 'New name',
+      });
+
+      await assert.rejects(newsletterService.verifyPropertyUpdate(token), {
+        name: 'BadRequestError',
+      });
+      sinon.assert.notCalled(editStub);
     });
   });
 });

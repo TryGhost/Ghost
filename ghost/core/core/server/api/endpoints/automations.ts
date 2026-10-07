@@ -1,3 +1,4 @@
+import type { Controller, Frame } from '@tryghost/api-framework';
 import errors from '@tryghost/errors';
 import * as automationsApi from '../../services/automations/automations-api';
 // @ts-expect-error This module lacks type definitions.
@@ -5,20 +6,12 @@ import labs from '../../../shared/labs';
 
 const MAX_AUTOMATIONS = 20;
 
-type ReadFrame = {
-  data: {
-    id: string;
-  };
-};
-
-type EditFrame = {
-  options: {
-    id: string;
-  };
-  data?: {
-    automations?: unknown[];
-  };
-};
+type ReadFrame = Frame<{ data: { id: string } }>;
+type AddFrame = Frame<{ data: { automations?: unknown[] } }>;
+type EditFrame = Frame<{
+  options: { id: string };
+  data: { automations?: unknown[] };
+}>;
 
 const assertCanAddAutomations = (): void => {
   if (!labs.isSet('automations') || !labs.isSet('automationsPerTier')) {
@@ -75,15 +68,10 @@ export const controller = {
       cacheInvalidate: false,
     },
     permissions: true,
-    async query() {
+    async query(frame: AddFrame) {
       assertCanAddAutomations();
       await assertNotAddingTooManyAutomations();
-      // TODO(NY-1637) Implement this endpoint.
-      throw new errors.InternalServerError({
-        statusCode: 501,
-        code: 'NOT_IMPLEMENTED',
-        message: 'Adding automations is not implemented.',
-      });
+      return await automationsApi.add(frame.data.automations?.[0]);
     },
   },
 
@@ -111,4 +99,10 @@ export const controller = {
       automationsApi.requestPoll();
     },
   },
-};
+} satisfies Controller<{
+  browse: Frame;
+  read: ReadFrame;
+  add: AddFrame;
+  edit: EditFrame;
+  poll: Frame;
+}>;

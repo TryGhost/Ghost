@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { defineConfig } from 'vitest/config';
+import { coverageEnv } from './test/utils/strict-mode';
 
 // ghost/core's unit tests run under vitest. The DB-backed integration,
 // e2e-api, and legacy suites run under vitest too, via the separate
@@ -38,6 +39,8 @@ const unitConfig = {
   env: {
     NODE_ENV: 'testing',
     WEBHOOK_SECRET: 'TEST_STRIPE_WEBHOOK_SECRET',
+    // Turns the strict-mode test hook off under --coverage; see strict-mode.ts.
+    ...coverageEnv(),
   },
   setupFiles: ['./test/utils/vitest-setup.ts'],
   resolveSnapshotPath,

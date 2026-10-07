@@ -16,6 +16,7 @@ import {
   postRevision,
   renderAdminApp,
   settingsResponse,
+  settleTransitions,
   staffUser,
   submittedPost,
 } from '@test-utils/acceptance';
@@ -145,6 +146,8 @@ function fakeUnsavablePost() {
 async function openSidebar() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  // Visible from its first frame; a click while it still slides in can be lost.
+  await settleTransitions();
 }
 
 async function openHistory() {
@@ -291,6 +294,42 @@ describe('Post settings post history', () => {
       .toHaveTextContent('The very first words');
     // Selecting is a preview, not an edit: the post is untouched.
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
+  });
+
+  it('does not let a card in the previewed version be selected', async () => {
+    const withCallout = postRevision({
+      ...NEWEST,
+      lexical: JSON.stringify({
+        root: {
+          children: [
+            {
+              type: 'callout',
+              version: 1,
+              calloutText: '<p><span>A callout from the past</span></p>',
+              calloutEmoji: '💡',
+              backgroundColor: 'grey',
+            },
+          ],
+          direction: null,
+          format: '',
+          indent: 0,
+          type: 'root',
+          version: 1,
+        },
+      }),
+    });
+    fakeSavablePost({ post_revisions: [withCallout] });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openHistory();
+
+    const card = editorScreen.postHistoryPreviewBody().getByText('A callout from the past');
+    await expect.element(card, POLL).toBeVisible();
+
+    // Forced: an unreachable card fails Playwright's hit-target check by design.
+    await card.click({ force: true });
+    await card.click({ force: true });
+
+    expect(editorScreen.postHistoryPreviewSelectedCard()).toBeNull();
   });
 
   it('shows the version’s feature image in the preview', async () => {

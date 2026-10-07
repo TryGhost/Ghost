@@ -4,6 +4,7 @@ import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
   currentRoute,
+  editorReadLanded,
   fakeAdminEndpoint,
   fakeEditorChrome,
   post,
@@ -115,6 +116,42 @@ function fakeCollidingPost() {
   );
 
   return { readApi, saveApi };
+}
+
+const scheduled = (overrides: Partial<ReturnType<typeof mine>> = {}) => ({
+  ...mine(),
+  status: 'scheduled',
+  published_at: '2030-01-01T09:00:00.000Z',
+  ...overrides,
+});
+
+// Core refuses a stale `scheduled` update with this body ahead of its collision
+// check; from that refusal on, the read serves the post the scheduler published.
+function fakePostPublishedBySchedule() {
+  fakeEditorChrome();
+
+  let refused = false;
+  fakeAdminEndpoint('GET', READ_ROUTE, () => ({
+    posts: [refused ? scheduled({ status: 'published', updated_at: THEIR_SAVE_AT }) : scheduled()],
+  }));
+
+  return fakeAdminEndpoint(
+    'PUT',
+    READ_ROUTE,
+    () => {
+      refused = true;
+      return {
+        errors: [
+          {
+            type: 'ValidationError',
+            message: 'Validation error, cannot edit post.',
+            context: 'Your post is already published, please reload your page.',
+          },
+        ],
+      };
+    },
+    { status: 422 },
+  );
 }
 
 /**
@@ -340,7 +377,7 @@ describe('Post editor update collision', () => {
 
   it('accepts a newer detail read that finishes before an older reload', async () => {
     const { saveApi } = fakeCollidingPost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await collide(saveApi);
 
     await editorScreen.reloadAfterConflict().click();
@@ -385,9 +422,7 @@ describe('Post editor update collision', () => {
       updated_at: '2026-01-01T11:00:00.000Z',
     });
     pendingDetailRead.resolve({ posts: [newest] });
-    await new Promise<void>((resolve) => {
-      setTimeout(resolve, 0);
-    });
+    await editorReadLanded(queryClient, newest);
     pendingReload.resolve({
       posts: [
         theirs({
@@ -620,5 +655,48 @@ describe('Post editor update collision', () => {
 
     await expect.poll(() => copied.length).toBe(1);
     expect(copied[0]).toBe('Hello from React\n\nHello from React and more');
+  });
+
+  it('offers a reload when Update finds the post already published by its schedule', async () => {
+    const copied = recordClipboard();
+    const saveApi = fakePostPublishedBySchedule();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.element(editorScreen.status()).toHaveTextContent('Scheduled');
+
+    await appendToBody(' and more');
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
+    await editorScreen.updateButton().click();
+
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    expect(postIn(saveApi.lastRequest)).toMatchObject({ status: 'scheduled' });
+    await expect.element(editorScreen.conflictBanner()).toBeVisible();
+    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+
+    await editorScreen.copyConflictedContent().click();
+    await expect.poll(() => copied.length).toBe(1);
+    expect(copied[0]).toContain('Hello from React and more');
+
+    await editorScreen.reloadAfterConflict().click();
+    await editorScreen.confirmConflictReload().click();
+
+    await expect.element(editorScreen.status()).toHaveTextContent('Published');
+    await expect.element(editorScreen.body()).toHaveTextContent(/^Hello from React$/);
+    await expect(editorScreen.conflictBanner()).toHaveCount(0);
+    await expect.element(editorScreen.updateButton()).toBeDisabled();
+
+    // An Update that still said `scheduled` would be refused again.
+    const nextSave = fakeAdminEndpoint('PUT', READ_ROUTE, () => ({
+      posts: [scheduled({ status: 'published', updated_at: AFTER_SAVE_AT })],
+    }));
+    await appendToBody(' after publishing');
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
+    await editorScreen.updateButton().click();
+
+    await expect.poll(() => nextSave.requests.length).toBe(1);
+    expect(postIn(nextSave.lastRequest)).toMatchObject({
+      status: 'published',
+      updated_at: THEIR_SAVE_AT,
+    });
   });
 });

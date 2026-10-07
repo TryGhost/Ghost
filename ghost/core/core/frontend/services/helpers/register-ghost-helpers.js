@@ -6,7 +6,7 @@ exports.registerGhostHelpers = () => {
   registry.registerHelper('body_class', require('../../helpers/body_class'));
   registry.registerHelper('cancel_link', require('../../helpers/cancel_link'));
   registry.registerHelper('collection', require('../../helpers/collection'));
-  registry.registerHelper('color_to_rgba', require('../../helpers/color_to_rgba'));
+  registry.registerHelper('color_to_rgba', require('../../helpers/color_to_rgba').color_to_rgba);
   registry.registerHelper('comment_count', require('../../helpers/comment_count'));
   registry.registerHelper('comments', require('../../helpers/comments'));
   registry.registerHelper('concat', require('../../helpers/concat'));
@@ -17,7 +17,7 @@ exports.registerGhostHelpers = () => {
   registry.registerHelper('date', require('../../helpers/date'));
   registry.registerHelper('encode', require('../../helpers/encode'));
   registry.registerHelper('excerpt', require('../../helpers/excerpt'));
-  registry.registerHelper('facebook_url', require('../../helpers/facebook_url'));
+  registry.registerHelper('facebook_url', require('../../helpers/facebook_url').facebook_url);
   registry.registerHelper('foreach', require('../../helpers/foreach'));
   registry.registerHelper('get', require('../../helpers/get'));
   registry.registerHelper('ghost_foot', require('../../helpers/ghost_foot'));

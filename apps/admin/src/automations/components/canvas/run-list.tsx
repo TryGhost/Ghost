@@ -59,63 +59,124 @@ const PlaceholderRow = forwardRef<HTMLTableRowElement, { 'data-index': number }>
   },
 );
 
-const RunRow = forwardRef<HTMLTableRowElement, { run: AutomationRun; 'data-index': number }>(
-  function RunRow({ run: data, ...props }, ref) {
-    const run = mapAutomationRun(data);
-    const { Icon, color } = statusIcons[run.status];
-    return (
-      <TableRow ref={ref} {...props}>
-        <TableCell className="h-[72px] p-4">
-          <Stack className="min-w-0" gap="none">
-            <span className="truncate font-medium" title={run.memberName}>
-              {run.memberName}
-            </span>
-            {run.memberEmail && (
-              <span className="truncate text-muted-foreground" title={run.memberEmail}>
-                {run.memberEmail}
-              </span>
-            )}
-          </Stack>
-        </TableCell>
-        <TableCell className="p-4">
-          <time className="block truncate" dateTime={run.enteredAt} title={run.enteredDescription}>
-            {run.enteredLabel}
-          </time>
-        </TableCell>
-        <TableCell className="p-4 text-center">
-          <Inline
-            aria-label={run.statusLabel}
-            as="span"
-            justify="center"
-            role="img"
-            title={run.statusLabel}
+const RunRow = forwardRef<
+  HTMLTableRowElement,
+  {
+    run: AutomationRun;
+    'data-index': number;
+    selectedRunId: string | null;
+    onSelectRun: (id: string, memberName: string) => void;
+    isSelectionDisabled: boolean;
+  }
+>(function RunRow({ run: data, selectedRunId, onSelectRun, isSelectionDisabled, ...props }, ref) {
+  const run = mapAutomationRun(data);
+  const { Icon, color } = statusIcons[run.status];
+  return (
+    <TableRow
+      ref={ref}
+      {...props}
+      className={isSelectionDisabled ? undefined : 'cursor-pointer'}
+      data-state={selectedRunId === run.id ? 'selected' : undefined}
+      onClick={() => {
+        if (!isSelectionDisabled) {
+          onSelectRun(run.id, run.memberName);
+        }
+      }}
+    >
+      <TableCell className="h-[72px] p-4">
+        <Stack className="min-w-0" gap="none">
+          <button
+            aria-label={`View run history for ${run.memberName}, started ${run.enteredDescription}`}
+            aria-pressed={selectedRunId === run.id}
+            className="truncate text-left font-medium outline-offset-4 focus-visible:outline-2 focus-visible:outline-focus-ring"
+            disabled={isSelectionDisabled}
+            title={run.memberName}
+            type="button"
           >
-            <span className="relative">
-              <Icon aria-hidden="true" className={`size-4 ${color}`} />
-              {run.failed && (
-                <span
-                  aria-hidden="true"
-                  className="absolute -top-1 -right-1 size-1.5 rounded-full bg-state-danger"
-                />
-              )}
+            {run.memberName}
+          </button>
+          {run.memberEmail && (
+            <span className="truncate text-muted-foreground" title={run.memberEmail}>
+              {run.memberEmail}
             </span>
-          </Inline>
-        </TableCell>
-      </TableRow>
-    );
-  },
-);
+          )}
+        </Stack>
+      </TableCell>
+      <TableCell className="p-4">
+        <time className="block truncate" dateTime={run.enteredAt} title={run.enteredDescription}>
+          {run.enteredLabel}
+        </time>
+      </TableCell>
+      <TableCell className="p-4 text-center">
+        <Inline
+          aria-label={run.statusLabel}
+          as="span"
+          justify="center"
+          role="img"
+          title={run.statusLabel}
+        >
+          <span className="relative">
+            <Icon aria-hidden="true" className={`size-4 ${color}`} />
+            {run.failed && (
+              <span
+                aria-hidden="true"
+                className="absolute -top-1 -right-1 size-1.5 rounded-full bg-state-danger"
+              />
+            )}
+          </span>
+        </Inline>
+      </TableCell>
+    </TableRow>
+  );
+});
 
 export const RunList: React.FC<{
   automationId: string;
+  search?: string;
+  enabled?: boolean;
+  updating?: boolean;
   queryScope: string;
   dateRange: PerformanceDateRange;
   status: AutomationRunStatusFilter | null;
+  selectedRunId: string | null;
+  onSelectRun: (id: string, memberName: string) => void;
+  isSelectionDisabled: boolean;
   direction: RunSortDirection;
   onDirectionChange: (direction: RunSortDirection) => void;
-}> = ({ automationId, queryScope, status, dateRange, direction, onDirectionChange }) => {
-  const { runs, isLoading, isError, retry, canLoadMore, isLoadingMore, isNextPageError, loadMore } =
-    useAutomationRuns(automationId, status, direction, queryScope, dateRange);
+}> = ({
+  automationId,
+  queryScope,
+  status,
+  dateRange,
+  direction,
+  onDirectionChange,
+  selectedRunId,
+  onSelectRun,
+  isSelectionDisabled,
+  search = '',
+  enabled = true,
+  updating = false,
+}) => {
+  const {
+    runs,
+    isLoading,
+    isError,
+    retry,
+    canLoadMore,
+    isLoadingMore,
+    isNextPageError,
+    loadMore,
+    scanning,
+  } = useAutomationRuns(
+    automationId,
+    status,
+    direction,
+    queryScope,
+    dateRange,
+    search,
+    enabled,
+    updating,
+  );
   const [showLoading, setShowLoading] = useState(false);
   useEffect(() => {
     if (!isLoading) {
@@ -126,18 +187,13 @@ export const RunList: React.FC<{
     return () => window.clearTimeout(timeout);
   }, [isLoading]);
   const loadingVisible = isLoading && showLoading;
-  let emptyMessage = 'No entries yet';
-  if (status) {
-    emptyMessage = 'No matching entries';
-  } else if (dateRange.value !== 'all') {
-    emptyMessage = 'No entries in this period';
-  }
 
   const SortIcon = direction === 'asc' ? LucideIcon.ArrowUp : LucideIcon.ArrowDown;
   const scrollRef = useRef<HTMLDivElement>(null);
   const items = runs ?? [];
+  const isScanning = scanning && !isError && !isNextPageError && !updating;
   // One extra row loads the next page without reserving space for unloaded history.
-  const totalItems = items.length + (canLoadMore ? 1 : 0);
+  const totalItems = items.length + (canLoadMore || isScanning ? 1 : 0);
   const { visibleItems, spaceBefore, spaceAfter } = useInfiniteVirtualScroll({
     items,
     totalItems,
@@ -154,7 +210,7 @@ export const RunList: React.FC<{
   }, [queryScope, dateRange]);
   return (
     <Stack
-      aria-busy={isLoading}
+      aria-busy={isLoading || isLoadingMore || isScanning}
       aria-label="Automation runs"
       className="min-h-[216px] flex-1"
       gap="sm"
@@ -189,7 +245,7 @@ export const RunList: React.FC<{
                   type="button"
                   onClick={() => onDirectionChange(direction === 'asc' ? 'desc' : 'asc')}
                 >
-                  Entered <SortIcon aria-hidden="true" />
+                  Started <SortIcon aria-hidden="true" />
                 </TableHeadButton>
               </TableHead>
               <TableHead className="w-20 px-4" scope="col">
@@ -208,7 +264,16 @@ export const RunList: React.FC<{
               if (virtualItem.index > items.length - 1) {
                 return <PlaceholderRow key={key} {...props} />;
               }
-              return <RunRow key={item.id} run={item} {...props} />;
+              return (
+                <RunRow
+                  key={item.id}
+                  isSelectionDisabled={isSelectionDisabled}
+                  run={item}
+                  selectedRunId={selectedRunId}
+                  onSelectRun={onSelectRun}
+                  {...props}
+                />
+              );
             })}
             <SpacerRow height={spaceAfter} />
           </TableBody>
@@ -223,20 +288,20 @@ export const RunList: React.FC<{
             Updating automation runs
           </Text>
         )}
-        {isLoadingMore && (
+        {(isLoadingMore || isScanning) && (
           <Text className="sr-only" role="status">
-            Loading more entries
+            Loading more runs
           </Text>
         )}
-        {!isLoading && !isError && runs?.length === 0 && (
+        {!isLoading && !isError && !scanning && !isNextPageError && runs?.length === 0 && (
           <Text className="px-4 py-6 text-center" role="status" size="sm" tone="secondary">
-            {emptyMessage}
+            No members match
           </Text>
         )}
         {isError && (
           <Stack className="px-4 py-6" gap="sm" role="alert">
             <Text size="sm" tone="secondary">
-              Could not load automation runs
+              Could not load runs
             </Text>
             <Button className="self-start" size="sm" variant="outline" onClick={retry}>
               Retry
@@ -246,7 +311,7 @@ export const RunList: React.FC<{
         {isNextPageError && (
           <Stack className="px-4 py-6" gap="sm" role="alert">
             <Text size="sm" tone="secondary">
-              Could not load more runs
+              Could not load runs
             </Text>
             <Button className="self-start" size="sm" variant="outline" onClick={loadMore}>
               Retry

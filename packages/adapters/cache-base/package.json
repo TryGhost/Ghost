@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/adapter-base-cache",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Base class for Ghost cache adapters.",
   "license": "MIT",
   "author": "Ghost Foundation",

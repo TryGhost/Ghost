@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const jwt = require('jsonwebtoken');
-const jwkToPem = require('jwk-to-pem');
 const crypto = require('node:crypto');
 const TokenService = require('../../../../../../../core/server/services/members/members-api/services/token-service');
 const { staticSigningKeys } = require('../../../../../../utils/signing-keys');
@@ -51,7 +50,7 @@ describe('TokenService', function () {
       // Entitlement tokens are consumed by external integrations that verify
       // against the published public keys, not via decodeToken (see below).
       const jwks = await tokenService.getPublicKeys();
-      const entitlementPublicKey = jwkToPem(jwks.keys[0]);
+      const entitlementPublicKey = crypto.createPublicKey({ key: jwks.keys[0], format: 'jwk' });
       const decodedToken = jwt.verify(token, entitlementPublicKey, {
         algorithms: ['RS512'],
         issuer: 'http://127.0.0.1:2369/members/api',
@@ -125,7 +124,7 @@ describe('TokenService', function () {
     it('can verify the token using public keys', async function () {
       const token = await tokenService.encodeIdentityToken({ sub: 'member@example.com' });
       const jwks = await tokenService.getPublicKeys();
-      const verificationKey = jwkToPem(jwks.keys[0]);
+      const verificationKey = crypto.createPublicKey({ key: jwks.keys[0], format: 'jwk' });
 
       const decodedToken = jwt.verify(token, verificationKey, {
         algorithms: ['RS512'],
@@ -187,7 +186,9 @@ describe('TokenService', function () {
 
       assert.equal(keys.length, 2);
       assert.equal(keys[0].kid, jwt.decode(token, { complete: true }).header.kid);
-      jwt.verify(token, jwkToPem(keys[0]), { algorithms: ['RS512'] });
+      jwt.verify(token, crypto.createPublicKey({ key: keys[0], format: 'jwk' }), {
+        algorithms: ['RS512'],
+      });
     });
   });
 });

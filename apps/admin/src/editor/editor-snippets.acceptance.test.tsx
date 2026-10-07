@@ -8,6 +8,7 @@ import {
   currentUserResponse,
   fakeAdminEndpoint,
   fakeEditorPost,
+  fakeEmailPreview,
   fakeNewsletters,
   fakePosts,
   fakeSnippets,
@@ -54,6 +55,7 @@ function fakeEditorWithSnippets(snippets: Snippet[]) {
   fakeSnippets(snippets);
   fakePosts([]);
   fakeNewsletters([]);
+  fakeEmailPreview();
   return fakeEditorPost({ authors: [{ id: CURRENT_USER_ID }] });
 }
 

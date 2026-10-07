@@ -31,7 +31,9 @@ describe('{{comments}} helper', function () {
     settingsCacheGetStub.withArgs('members_enabled').returns(true);
     settingsCacheGetStub.withArgs('comments_enabled').returns('all');
 
-    const rendered = await comments({});
+    // Handlebars always calls helpers with the current context as `this`;
+    // an empty context is what a template outside a post passes.
+    const rendered = await comments.call({}, {});
     assert.equal(rendered, undefined);
   });
 

@@ -1,7 +1,7 @@
 import { type ComponentProps, type FormEvent, useState } from 'react';
 import { Navigate, useNavigate } from '@tryghost/admin-x-framework';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
-import { Field, FieldError, FieldLabel, GhostOrb, Input } from '@tryghost/shade/components';
+import { Field, FieldError, FieldLabel, Input } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
 import { toast } from 'sonner';
 import validator from 'validator';
@@ -14,6 +14,7 @@ import {
 import { AuthLayout, FlowMessage, SubmitButton, type SubmitState } from './auth-layout';
 import { passwordProblems } from './password-rules';
 import { reloadAdmin } from './reload';
+import ghostOrb from '@/assets/images/ghost-orb.png';
 
 type SetupField = 'blogTitle' | 'name' | 'email' | 'password';
 type SetupValues = Record<SetupField, string>;
@@ -38,14 +39,14 @@ const problemWith = (
   switch (field) {
     case 'blogTitle':
       if (!values.blogTitle) {
-        return 'Please enter a site title.';
+        return 'Enter a site title.';
       }
       return validator.isLength(values.blogTitle, { max: 150 }) ? undefined : 'Title is too long';
     case 'name':
-      return values.name ? undefined : 'Please enter a name.';
+      return values.name ? undefined : 'Enter a name.';
     case 'email':
       if (!values.email.trim()) {
-        return 'Please enter an email.';
+        return 'Enter an email.';
       }
       return validator.isEmail(values.email) ? undefined : 'Invalid Email.';
     case 'password':
@@ -104,7 +105,7 @@ function SetupForm({
     );
     setErrors(nextErrors);
     if (Object.values(nextErrors).some(Boolean)) {
-      setFlowError('Please fill out every field correctly to set up your site.');
+      setFlowError('Fill out every field correctly to set up your site.');
       return;
     }
 
@@ -174,15 +175,15 @@ function SetupForm({
         onChange={(event) => setValue(name, event.target.value)}
         {...input}
       />
-      <FieldError>{errors[name]}</FieldError>
+      <FieldError className="text-base">{errors[name]}</FieldError>
     </Field>
   );
 
   return (
     <AuthLayout>
       <header className="flex flex-col items-center gap-3 text-center">
-        <GhostOrb aria-label="Ghost" className="size-18" />
-        <h1 className="text-4xl leading-tight font-bold tracking-tight text-foreground">
+        <img alt="Ghost" className="size-15" src={ghostOrb} />
+        <h1 className="text-4xl leading-tight font-bold tracking-tighter text-foreground">
           Welcome to Ghost.
         </h1>
         <p className="text-lg text-muted-foreground">

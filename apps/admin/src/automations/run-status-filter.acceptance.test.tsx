@@ -2,20 +2,18 @@ import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import {
+  openAutomationSidebar,
   flags,
   response,
   prepareStatuses,
   run,
-  setupEmbeddedRootFontSize,
 } from './run-list.test-utils';
 
-setupEmbeddedRootFontSize();
-
-const entries = () => page.getByRole('region', { name: 'Total entries' });
+const entries = () => page.getByRole('region', { name: 'Total runs' });
 const statuses = () => page.getByRole('region', { name: 'Automation status counts' });
 const statusCard = (name: string) => statuses().getByRole('button', { name, exact: true });
-const open = () => page.getByRole('button', { name: 'Show performance' }).click();
-const close = () => page.getByRole('button', { name: 'Hide performance' }).click();
+const open = openAutomationSidebar;
+const close = () => page.getByRole('button', { name: 'Hide automation sidebar' }).click();
 
 const runsRegion = () => page.getByRole('region', { name: 'Automation runs', exact: true });
 const filteredRunsResponse = (
@@ -62,7 +60,7 @@ describe('Automation run status filtering', () => {
     await expect.element(entries()).toHaveTextContent('1,432');
     for (const [label, status] of [
       ['Completed', 'completed'],
-      ['Exited early', 'exited_early'],
+      ['Stopped', 'exited_early'],
       ['In progress', 'in_progress'],
     ]) {
       await statusCard(label).click();
@@ -153,7 +151,7 @@ describe('Automation run status filtering', () => {
     await expect.element(runsRegion()).toHaveTextContent('Keyboard member');
     await userEvent.keyboard('{Enter}');
     await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'false');
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
   });
 
   it('allows zero-count cards to show no matches and clear the filter', async () => {
@@ -175,10 +173,10 @@ describe('Automation run status filtering', () => {
     await open();
     await expect.element(statusCard('Completed')).toHaveTextContent('0');
     await statusCard('Completed').click();
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No matching entries');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
     await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'true');
     await statusCard('Completed').click();
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
   });
 
   it('refetches a failed filter on reselection and supports explicit retry while idle', async () => {
@@ -196,11 +194,9 @@ describe('Automation run status filtering', () => {
     await renderAdminApp('/automations/first', flags);
     await open();
     await statusCard('Completed').click();
-    await expect
-      .element(runsRegion().getByRole('alert'))
-      .toHaveTextContent('Could not load automation runs');
+    await expect.element(runsRegion().getByRole('alert')).toHaveTextContent('Could not load runs');
     await statusCard('Completed').click();
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
     await statusCard('Completed').click();
     await expect.element(runsRegion().getByRole('alert')).toBeVisible();
     expect(request.requests).toHaveLength(2);

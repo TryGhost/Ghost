@@ -1,3 +1,8 @@
+import {
+  normalizeMemberSearch,
+  searchCursorScope,
+  browseMemberSearch,
+} from './automation-member-search';
 import { decodeRunCursor, encodeRunCursor, type RunCursorScope } from './automation-run-cursor';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
@@ -28,6 +33,7 @@ const lexicalLib = require('../../lib/lexical');
 
 const MAX_AUTOMATION_ACTIONS = 50;
 const RUN_PAGE_SIZE = 50;
+const MAX_WAIT_HOURS = 720; // 30 days
 
 const messages = {
   invalidRunOrder: 'Automation run order must be one of: created_at desc, created_at asc.',
@@ -39,7 +45,8 @@ const messages = {
   automationNotFound: 'Automation not found.',
   runNotFound: 'Automation run not found.',
   automationActionNotFound: 'Automation action not found.',
-  invalidAutomationPayload: 'Automation edit payload must include status, actions, and edges.',
+  invalidAutomationCreationPayload: 'Invalid automation payload.',
+  invalidAutomationEditPayload: 'Automation edit payload must include status, actions, and edges.',
   invalidAutomationStatus: 'Automation status must be one of: active, inactive.',
   duplicateAutomationActionIdentity: 'Automation action identifiers must be unique.',
   invalidAutomationEdgeEndpoint: 'Automation edges must reference actions in the submitted graph.',
@@ -58,7 +65,7 @@ const waitActionSchema = z.object({
   id: objectIdSchema,
   type: z.literal('wait'),
   data: z.object({
-    wait_hours: z.number().int().positive(),
+    wait_hours: z.number().int().positive().max(MAX_WAIT_HOURS),
   }),
 });
 
@@ -77,16 +84,54 @@ const edgeSchema = z.object({
   target_action_id: objectIdSchema,
 });
 
-const editAutomationDataSchema = z.object({
-  name: z.string().trim().min(1).max(191).optional(),
-  description: z.string().trim().max(2000).optional(),
-  status: z.enum(['active', 'inactive']),
-  actions: z
-    .array(z.discriminatedUnion('type', [waitActionSchema, sendEmailActionSchema]))
-    .min(1)
-    .max(MAX_AUTOMATION_ACTIONS),
-  edges: z.array(edgeSchema),
-});
+const addAutomationMetadataShape = {
+  name: z.string().trim().min(1).max(191),
+  description: z.string().trim().max(2000),
+};
+const addAutomationDataSchema = z.discriminatedUnion('trigger_tier_scope', [
+  z.strictObject({
+    ...addAutomationMetadataShape,
+    trigger_tier_scope: z.enum(['free', 'all_paid']).nullable().optional(),
+    trigger_tier_ids: z.null().optional(),
+  }),
+  z.strictObject({
+    ...addAutomationMetadataShape,
+    trigger_tier_scope: z.literal('selected_paid'),
+    trigger_tier_ids: z
+      .array(objectIdSchema)
+      .min(1)
+      .transform((ids) => [...new Set(ids)]),
+  }),
+]);
+
+export type AddAutomationData = z.infer<typeof addAutomationDataSchema>;
+
+const editAutomationDataSchema = z
+  .object({
+    name: z.string().trim().min(1).max(191).optional(),
+    description: z.string().trim().max(2000).optional(),
+    status: z.enum(['active', 'inactive']),
+    actions: z
+      .array(z.discriminatedUnion('type', [waitActionSchema, sendEmailActionSchema]))
+      .min(1)
+      .max(MAX_AUTOMATION_ACTIONS),
+    edges: z.array(edgeSchema),
+  })
+  .and(
+    z.discriminatedUnion('trigger_tier_scope', [
+      z.object({
+        trigger_tier_scope: z.enum(['free', 'all_paid']).nullable().optional(),
+        trigger_tier_ids: z.null().optional(),
+      }),
+      z.object({
+        trigger_tier_scope: z.literal('selected_paid'),
+        trigger_tier_ids: z
+          .array(objectIdSchema)
+          .min(1)
+          .transform((ids) => [...new Set(ids)]),
+      }),
+    ]),
+  );
 
 const repository = createDatabaseAutomationsRepository({
   knex,
@@ -96,7 +141,7 @@ const repository = createDatabaseAutomationsRepository({
 });
 
 function getTinybirdClient() {
-  if (!labs.isSet('automationsTinybirdSync') || !config.get('tinybird:stats')) {
+  if (!config.get('tinybird:stats')) {
     return null;
   }
   try {
@@ -201,11 +246,13 @@ export async function readPerformanceStats(automationId: string, options: unknow
 
 export async function browseRuns(automationId: string, options: Record<string, unknown> = {}) {
   const { status, order, cursor } = options;
-  const { window: entryWindow, timezone } = parseEntryStatsOptions(options);
+  const query = normalizeMemberSearch(options.search);
+  // Initial member search spans all time and statuses; browse filters stay independent.
+  const { window: entryWindow, timezone } = parseEntryStatsOptions(query ? {} : options);
   const parsedStatus = z
     .enum(['in_progress', 'completed', 'exited_early'])
     .optional()
-    .safeParse(status);
+    .safeParse(query ? undefined : status);
   if (!parsedStatus.success) {
     throw new errors.ValidationError({
       message: tpl(messages.invalidRunStatus),
@@ -225,10 +272,19 @@ export async function browseRuns(automationId: string, options: Record<string, u
     status: parsedStatus.data ?? null,
     direction: parsedOrder.data === 'created_at asc' ? 'asc' : 'desc',
   };
+  const searchScope = query
+    ? searchCursorScope(
+        requestedScope,
+        config.get('tinybird:stats:id') || settingsCache.get('site_uuid'),
+        query,
+      )
+    : undefined;
   const continuation =
     cursor === undefined
       ? undefined
-      : decodeRunCursor(cursor, requestedScope, { preserveEndDate: options.date_to === undefined });
+      : decodeRunCursor(cursor, searchScope ?? requestedScope, {
+          preserveEndDate: !query && options.date_to === undefined,
+        });
   const scope = continuation?.scope ?? requestedScope;
   const exists = await repository.exists(automationId);
   if (!exists) {
@@ -237,6 +293,10 @@ export async function browseRuns(automationId: string, options: Record<string, u
   const client = getTinybirdClient();
   if (!client) {
     throw new errors.InternalServerError({ message: tpl(messages.tinybirdRunsFailed) });
+  }
+
+  if (searchScope) {
+    return browseMemberSearch(repository, client, searchScope, query, continuation?.position);
   }
 
   // One extra row tells us whether a next page exists without a separate count.
@@ -290,6 +350,21 @@ export async function browseActionLinks(automationId: string, actionId: string) 
   return links;
 }
 
+export async function add(data: unknown) {
+  const result = addAutomationDataSchema.safeParse(data);
+  if (!result.success) {
+    const issue = result.error.issues[0];
+    throwValidationError(
+      buildInvalidAutomationPayloadMessage(
+        result.error.issues,
+        messages.invalidAutomationCreationPayload,
+      ),
+      String(issue.path[0] ?? 'automations'),
+    );
+  }
+  return await repository.add(result.data);
+}
+
 export async function edit(automationId: string, data: unknown) {
   const parsedData = await validateEditData(data);
 
@@ -312,7 +387,12 @@ async function validateEditData(data: unknown): Promise<EditAutomationData> {
       throwValidationError(messages.invalidAutomationStatus, 'status');
     }
 
-    throwValidationError(buildInvalidAutomationPayloadMessage(result.error.issues));
+    throwValidationError(
+      buildInvalidAutomationPayloadMessage(
+        result.error.issues,
+        messages.invalidAutomationEditPayload,
+      ),
+    );
   }
 
   validateGraph(result.data.actions, result.data.edges);
@@ -424,9 +504,9 @@ function isEmptyParsedLexical(parsed: {
   return Array.isArray(children[0].children) && children[0].children.length === 0;
 }
 
-function buildInvalidAutomationPayloadMessage(issues: z.core.$ZodIssue[]) {
+function buildInvalidAutomationPayloadMessage(issues: z.core.$ZodIssue[], message: string) {
   if (!issues.length) {
-    return messages.invalidAutomationPayload;
+    return message;
   }
 
   const issueSummaries = issues.slice(0, 3).map((issue) => {
@@ -434,7 +514,7 @@ function buildInvalidAutomationPayloadMessage(issues: z.core.$ZodIssue[]) {
     return `${path}: ${issue.message}`;
   });
 
-  return `${messages.invalidAutomationPayload} ${issueSummaries.join('; ')}.`;
+  return `${message} ${issueSummaries.join('; ')}.`;
 }
 
 function validateGraph(actions: EditAutomationData['actions'], edges: EditAutomationData['edges']) {
