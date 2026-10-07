@@ -31,6 +31,10 @@ const entry = z
     kind: z.enum(['directory', 'file']),
     disposition: z.enum(['retain', 'relocate', 'review']),
     status: z.enum(['pending', 'auditing', 'audited']),
+    auditedAt: z
+      .string()
+      .regex(/^[0-9a-f]{40}$/)
+      .optional(),
     entryPoints: z.array(description).min(1),
     notes: description,
     contracts: z.partialRecord(facet, recordedContract),

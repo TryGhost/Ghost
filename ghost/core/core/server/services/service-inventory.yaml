@@ -110,6 +110,7 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
     entryPoints:
       - announcement-bar-service/index.js
     notes: >-
@@ -668,6 +669,7 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
     entryPoints:
       - donations/index.js
     notes: >-
@@ -1093,6 +1095,7 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
     entryPoints:
       - explore-ping/index.ts
     notes: >-
@@ -1337,6 +1340,7 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
     entryPoints:
       - gift-links/index.ts
     notes: >-
@@ -1726,6 +1730,7 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
     entryPoints:
       - indexnow-ping/index.ts
     notes: >-
@@ -3158,6 +3163,7 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
     entryPoints:
       - posts/posts-service-instance.js
       - posts/post-scheduling.js
@@ -3860,6 +3866,7 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
     entryPoints:
       - slack-ping/index.ts
     notes: >-
@@ -4368,6 +4375,7 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
     entryPoints:
       - tinybird/index.js
     notes: >-
