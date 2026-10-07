@@ -8,7 +8,23 @@ const cacheManager = require('cache-manager');
 const redisStoreFactory = require('./redis-store-factory');
 
 const PREFIX_HASH_KEY = 'prefix_hash';
+const EVENT_OPERATION_TIMEOUT_MS = 1000;
+const APPEND_EVENT_SCRIPT = `
+  local key = KEYS[1]
+  local timestamp = ARGV[1]
+  local value = ARGV[2]
+  local cutoff = ARGV[3]
+  local limit = tonumber(ARGV[4])
+  local ttl = ARGV[5]
 
+  redis.call('ZADD', key, timestamp, value)
+  redis.call('ZREMRANGEBYSCORE', key, '-inf', cutoff)
+  redis.call('ZREMRANGEBYRANK', key, 0, -limit - 1)
+  redis.call('EXPIRE', key, ttl)
+  return redis.call('ZCARD', key)
+`;
+
+/** @implements {import('@tryghost/adapter-base-cache').EventLogCache} */
 class AdapterCacheRedis extends CacheBase {
   /**
    *
@@ -77,6 +93,7 @@ class AdapterCacheRedis extends CacheBase {
     this._keyPrefix = config.keyPrefix || '';
     this._featureName = config.featureName;
     this._prefixHashInitInFlight = null;
+    this._timedOutEventOperations = 0;
     this.redisClient.on('error', this.handleRedisError);
   }
 
@@ -380,6 +397,90 @@ class AdapterCacheRedis extends CacheBase {
     // Raw client: cache-manager would JSON-wrap, and reset needs an unconditional overwrite (no NX).
     await this.redisClient.set(this._keyPrefix + PREFIX_HASH_KEY, value);
     return value;
+  }
+
+  // Append, trim and expire in one atomic operation, including on Redis Cluster.
+  async appendEvent(key, value, timestamp, ttl, limit) {
+    return await this._eventOperation(async (checkDeadline) => {
+      const internalKey = await this._buildKey(key);
+      checkDeadline();
+      return await this.redisClient.eval(
+        APPEND_EVENT_SCRIPT,
+        1,
+        internalKey,
+        timestamp,
+        value,
+        timestamp - ttl * 1000,
+        limit,
+        ttl,
+      );
+    });
+  }
+
+  async readEvents(key, since) {
+    return await this._eventOperation(async (checkDeadline) => {
+      const internalKey = await this._buildKey(key);
+      checkDeadline();
+      return this.redisClient.zrangebyscore(internalKey, since, '+inf');
+    });
+  }
+
+  async readEventsMany(keys, since) {
+    if (keys.length === 0) {
+      return [];
+    }
+    return await this._eventOperation(async (checkDeadline) => {
+      // Resolve once per batch so resets still take effect on the next read.
+      const prefix = await this.keyPrefix();
+      checkDeadline();
+      const results = await Promise.allSettled(
+        keys.map((key) => this.redisClient.zrangebyscore(`${prefix}${key}`, since, '+inf')),
+      );
+      return results.map((result) => {
+        if (result.status === 'rejected') {
+          throw result.reason;
+        }
+        return result.value;
+      });
+    });
+  }
+
+  async _eventOperation(operation) {
+    const timeoutError = () =>
+      new errors.InternalServerError({ message: 'Cache event operation timed out' });
+    if (this._timedOutEventOperations > 0) {
+      throw timeoutError();
+    }
+    let timedOut = false;
+    let timer;
+    const pending = Promise.resolve().then(() =>
+      operation(() => {
+        if (timedOut) {
+          throw timeoutError();
+        }
+      }),
+    );
+    // Already-sent commands cannot be cancelled on a shared Redis connection.
+    // Stop accepting more event work until timed-out operations settle.
+    const settled = pending.finally(() => {
+      if (timedOut) {
+        this._timedOutEventOperations -= 1;
+      }
+    });
+    try {
+      return await Promise.race([
+        settled,
+        new Promise((resolve, reject) => {
+          timer = setTimeout(() => {
+            timedOut = true;
+            this._timedOutEventOperations += 1;
+            reject(timeoutError());
+          }, EVENT_OPERATION_TIMEOUT_MS);
+        }),
+      ]);
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
   async reset() {

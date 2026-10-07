@@ -164,6 +164,52 @@ describe('Adapter Cache Redis', function () {
     });
   });
 
+  it('reads event logs with one prefix lookup per batch and sees prefix changes', async function () {
+    const cacheStub = createCacheStub({ keyPrefix: 'presence:' });
+    const client = cacheStub.store.getClient();
+    client.zrangebyscore = sinon.stub();
+    client.zrangebyscore.withArgs(`presence:${PREFIX_HASH}post`, 100, '+inf').resolves(['opened']);
+    client.zrangebyscore.withArgs(`presence:${PREFIX_HASH}page`, 100, '+inf').resolves(['editing']);
+    const cache = new RedisCache({ cache: cacheStub, keyPrefix: 'presence:' });
+
+    assert.deepEqual(await cache.readEventsMany(['post', 'page'], 100), [['opened'], ['editing']]);
+    sinon.assert.calledOnceWithExactly(client.get, 'presence:prefix_hash');
+    sinon.assert.calledTwice(client.zrangebyscore);
+
+    client.get.withArgs('presence:prefix_hash').resolves('rotated:');
+    client.zrangebyscore.withArgs('presence:rotated:post', 100, '+inf').resolves([]);
+    assert.deepEqual(await cache.readEventsMany(['post'], 100), [[]]);
+    sinon.assert.calledTwice(client.get);
+  });
+
+  it('stops adding event work after a timeout and recovers when pending work settles', async function () {
+    const clock = sinon.useFakeTimers();
+    const cacheStub = createCacheStub({ keyPrefix: 'presence:' });
+    const client = cacheStub.store.getClient();
+    client.zrangebyscore = sinon.stub().resolves(['opened']);
+    let finishPrefix;
+    client.get
+      .withArgs('presence:prefix_hash')
+      .onFirstCall()
+      .returns(
+        new Promise((resolve) => {
+          finishPrefix = resolve;
+        }),
+      );
+    const cache = new RedisCache({ cache: cacheStub, keyPrefix: 'presence:' });
+
+    const failedRead = assert.rejects(cache.readEventsMany(['post'], 0), /timed out/);
+    await clock.tickAsync(1000);
+    await failedRead;
+    await assert.rejects(cache.readEventsMany(['post'], 0), /timed out/);
+    sinon.assert.calledOnce(client.get);
+
+    finishPrefix(PREFIX_HASH);
+    await clock.tickAsync(0);
+    sinon.assert.notCalled(client.zrangebyscore);
+    assert.deepEqual(await cache.readEventsMany(['post'], 0), [['opened']]);
+  });
+
   describe('get', function () {
     it('can get a value from the cache', async function () {
       const cacheStub = createCacheStub();

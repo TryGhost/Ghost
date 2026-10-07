@@ -5,6 +5,9 @@ import { LoadMoreButton, useScrollRestoration } from '@/shared/virtual-list';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { FilterBar, PageHeader } from '@tryghost/shade/patterns';
 import { PostListRow } from './components/post-list-row';
+import { usePresence, usePresenceEnabled } from '@/shared/presence/use-presence';
+import { usePresenceByResource } from '@/shared/presence/use-presence-by-resource';
+import { useVisibleResources } from '@/shared/presence/use-visible-resources';
 import { PostsEmptyState } from './components/posts-empty-state';
 import { PostsFilters } from './components/posts-filters';
 import { ManagePostViewPopover } from './components/manage-post-view-popover';
@@ -140,6 +143,14 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
     usePostsList({ resource, params, context: { ownAuthorSlug } });
 
   useScrollRestoration({ parentRef: listRef, isLoading, resetOnNavigation: true });
+  const presenceEnabled = usePresenceEnabled(currentUser?.id);
+  const presenceResources = useVisibleResources(
+    listRef,
+    items.map((item) => ({ id: item.id, type: resource === 'pages' ? 'page' : 'post' })),
+    presenceEnabled,
+  );
+  const presence = usePresence(presenceResources, currentUser?.id);
+  const presenceForResource = usePresenceByResource(presence.events);
 
   // Snapshotted when the menu item is picked: Radix closes the menu at once,
   // which clears a transient selection before the modal could read it.
@@ -403,6 +414,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                       metricsSettings={metricsSettings}
                       paidMembersEnabled={paidMembersEnabled}
                       post={item}
+                      presenceEvents={presenceForResource(item.id)}
                       resource={resource}
                       showGiftLink={menuGiftLinkPostId === item.id}
                       timezone={timezone}
