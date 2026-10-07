@@ -10,7 +10,7 @@ const { anyContentVersion, anyEtag, anyContentLength, anyObject, stringMatching 
 /**
  * This is a snapshot test for the happy path of the config API
  * It does not test the full range of possible config values
- * as that should be tested in the unit tests for the public-config service
+ * as that should be tested in the unit tests for the public-config response builders
  */
 describe('Config API', function () {
   let agent;
@@ -61,8 +61,7 @@ describe('Config API', function () {
             labsValues.every((value) => typeof value === 'boolean'),
             'expected all labs flags to be booleans',
           );
-          // Fixture setup enables every registered writable flag. Keep an
-          // explicit assertion while this private rollout uses dynamic snapshots.
+          // Older Admin builds still read this GA value during independent deployments.
           assert.equal(labs.admin7Pill, true);
         })
         .matchHeaderSnapshot({

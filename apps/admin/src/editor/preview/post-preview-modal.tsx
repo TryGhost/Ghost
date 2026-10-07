@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
   EmptyIndicator,
   LoadingIndicator,
   Select,
@@ -8,7 +12,6 @@ import {
   SelectGroup,
   SelectItem,
   SelectLabel,
-  SelectTrigger,
   SelectValue,
   Tabs,
   TabsList,
@@ -21,12 +24,11 @@ import {
   useNewslettersEnabled,
   usePaidMembersEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
-import { Inline } from '@tryghost/shade/primitives';
+import { Inline, Stack } from '@tryghost/shade/primitives';
 import { PageHeader } from '@tryghost/shade/patterns';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
-import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import {
@@ -36,13 +38,16 @@ import {
   isOwnerUser,
 } from '@tryghost/admin-x-framework/api/users';
 
-import { NEWSLETTERS_SEARCH_PARAMS, PAID_TIERS_SEARCH_PARAMS } from '@/editor/browse-params';
+import { PAID_TIERS_SEARCH_PARAMS, newslettersSearchParams } from '@/editor/browse-params';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { postPreviewModal, postPreviewSaveFailed } from '@tryghost/test-data/selectors/editor';
 import { useEditorSettings } from '@/editor/use-editor-settings';
 import { FullscreenDialog } from '@/editor/fullscreen-dialog';
+import { describeRejectedAction } from '@/editor/publish/completion-message';
+import type { PublishFlowPost } from '@/editor/publish/flow-post';
 import { BrowserPreview } from './browser-preview';
 import { EmailPreview } from './email-preview';
+import { EmailSubject, type EmailSubjectEditor } from './email-subject';
 import {
   browserPreviewUrl,
   type PreviewAudience,
@@ -60,15 +65,24 @@ interface SegmentOption {
 }
 
 export interface PostPreviewModalProps {
+  subjectEditor?: EmailSubjectEditor;
   open: boolean;
+  animate?: boolean;
   postId: string;
   /** The post's public preview URL (`/p/:uuid/`), empty until the post has a uuid. */
   previewUrl: string;
   /** Pages have no email preview. */
   isPost?: boolean;
+  /** The saved post, whose email is checked against the size inboxes clip at. */
+  post?: PublishFlowPost;
   /** The post's own newsletter, preselected in the email preview. */
   newsletterSlug?: string;
-  /** Awaited before the preview renders, so the caller can save the draft first. */
+  /** Preselected when the post has no newsletter of its own, such as the publish flow's pick. */
+  fallbackNewsletterSlug?: string;
+  /**
+   * Awaited before the preview renders, so the caller can save the draft first.
+   * A rejection's message is shown to the writer as the reason it could not.
+   */
   onBeforeOpen?: () => Promise<void>;
   /** Renders a Publish button; supplied for users who can publish. */
   onPublish?: () => void;
@@ -78,11 +92,15 @@ export interface PostPreviewModalProps {
 }
 
 export function PostPreviewModal({
+  subjectEditor,
   open,
+  animate = true,
   postId,
   previewUrl,
   isPost = true,
+  post,
   newsletterSlug,
+  fallbackNewsletterSlug,
   onBeforeOpen,
   onPublish,
   publishDisabled = false,
@@ -96,9 +114,9 @@ export function PostPreviewModal({
   const [prepareState, setPrepareState] = useState<PrepareState>(() =>
     onBeforeOpen && open ? 'preparing' : 'ready',
   );
+  const [prepareFailure, setPrepareFailure] = useState('');
   const [wasOpen, setWasOpen] = useState(open);
 
-  const handleError = useHandleError();
   const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const { data: settingsData } = useEditorSettings();
   const paidMembersEnabled = usePaidMembersEnabled({ requestOptions: EDITOR_REQUEST_OPTIONS });
@@ -134,7 +152,7 @@ export function PostPreviewModal({
     isFetchingNextPage: isFetchingNextNewsletterPage,
     refetch: refetchActiveNewsletters,
   } = useBrowseNewsletters({
-    searchParams: NEWSLETTERS_SEARCH_PARAMS,
+    searchParams: newslettersSearchParams(currentUser),
     enabled: open && prepareState === 'ready' && emailAvailable,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
@@ -208,6 +226,10 @@ export function PostPreviewModal({
     setWasOpen(open);
     preparePromise.current = null;
     setPrepareState(open && onBeforeOpen ? 'preparing' : 'ready');
+    // Each opening starts from the post's or the publish flow's newsletter, not an earlier pick.
+    if (open) {
+      setPickedNewsletterSlug(null);
+    }
   }
 
   useEffect(() => {
@@ -232,7 +254,7 @@ export function PostPreviewModal({
       },
       (error: unknown) => {
         if (!cancelled) {
-          handleError(error);
+          setPrepareFailure(describeRejectedAction(error).message);
           setPrepareState('failed');
         }
       },
@@ -241,7 +263,7 @@ export function PostPreviewModal({
     return () => {
       cancelled = true;
     };
-  }, [handleError, open, prepareState]);
+  }, [open, prepareState]);
 
   const segmentOptions = useMemo<SegmentOption[]>(() => {
     const options: SegmentOption[] =
@@ -271,7 +293,13 @@ export function PostPreviewModal({
 
   // The post's own newsletter wins even when it is no longer on the active
   // list, because that is the newsletter its email would be rendered for.
-  const selectedNewsletterSlug = pickedNewsletterSlug ?? newsletterSlug ?? newsletters[0]?.slug;
+  const selectedNewsletterSlug =
+    pickedNewsletterSlug ?? newsletterSlug ?? fallbackNewsletterSlug ?? newsletters[0]?.slug;
+
+  const retryPreparation = () => {
+    preparePromise.current = null;
+    setPrepareState('preparing');
+  };
 
   const retryNewsletterLookup = () => {
     if (activeNewslettersError) {
@@ -308,146 +336,181 @@ export function PostPreviewModal({
 
   return (
     <FullscreenDialog
+      animate={animate}
       aria-describedby={undefined}
       data-testid={postPreviewModal}
       headerActions={
-        <>
-          <Inline gap="md">
-            {emailAvailable && (
-              <Tabs
-                value={format}
-                variant="segmented"
-                onValueChange={(value) => changeFormat(value as PreviewFormat)}
-              >
-                <TabsList>
-                  <TabsTrigger value="browser">Web</TabsTrigger>
-                  <TabsTrigger value="email">Email</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            )}
-            <ToggleGroup
-              shape="rounded"
-              type="single"
-              value={device}
-              onValueChange={(value) => {
-                if (value === 'desktop' || value === 'mobile') {
-                  setDevice(value);
-                }
-              }}
-            >
-              <ToggleGroupItem aria-label="Desktop" value="desktop">
-                <LucideIcon.Laptop />
-              </ToggleGroupItem>
-              <ToggleGroupItem aria-label="Mobile" value="mobile">
-                <LucideIcon.Smartphone />
-              </ToggleGroupItem>
-            </ToggleGroup>
-            {showSegmentSelect && (
-              <Select
-                value={segment}
-                onValueChange={(value) => setSegment(value as PreviewSegment)}
-              >
-                <SelectTrigger aria-label="Preview as" className="w-auto">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {segmentOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-            {showTierSelect && (
-              <Select value={tierSlug} onValueChange={setPickedTierSlug}>
-                <SelectTrigger aria-label="Tier" className="w-auto">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {activeTiers.length > 0 && (
-                    <SelectGroup>
-                      <SelectLabel>Active tiers</SelectLabel>
-                      {activeTiers.map((tier) => (
-                        <SelectItem key={tier.id} value={tier.slug}>
-                          {tier.name}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  )}
-                  {archivedTiers.length > 0 && (
-                    <SelectGroup>
-                      <SelectLabel>Archived tiers</SelectLabel>
-                      {archivedTiers.map((tier) => (
-                        <SelectItem key={tier.id} value={tier.slug}>
-                          {tier.name}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  )}
-                </SelectContent>
-              </Select>
-            )}
-          </Inline>
-          <PageHeader.ActionGroup>
-            <PageHeader.Action
-              disabled={!previewActionsAvailable}
-              label="Copy preview link"
-              iconOnly
-              onClick={() => void copyPreviewLink()}
-            >
-              <LucideIcon.Link />
-            </PageHeader.Action>
-            {previewActionsAvailable ? (
-              <PageHeader.Action label="Open in new tab" asChild>
+        <PageHeader.ActionGroup>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <PageHeader.Action disabled={!previewActionsAvailable} label="Share" iconOnly>
+                <LucideIcon.Share />
+              </PageHeader.Action>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={() => void copyPreviewLink()}>
+                <LucideIcon.Link />
+                Copy preview link
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
                 <a href={audienceUrl} rel="noopener noreferrer" target="_blank">
                   <LucideIcon.ExternalLink />
                   Open in new tab
                 </a>
-              </PageHeader.Action>
-            ) : (
-              <PageHeader.Action label="Open in new tab" disabled>
-                <LucideIcon.ExternalLink />
-                Open in new tab
-              </PageHeader.Action>
-            )}
-            <Button variant={onPublish ? 'outline' : 'default'} onClick={() => onOpenChange(false)}>
-              Close
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+            Close
+          </Button>
+          {onPublish ? (
+            <Button className="w-20 shrink-0" disabled={publishDisabled} onClick={onPublish}>
+              Publish
             </Button>
-            {onPublish ? (
-              <Button disabled={publishDisabled} onClick={onPublish}>
-                Publish
-              </Button>
-            ) : null}
-          </PageHeader.ActionGroup>
-        </>
+          ) : null}
+        </PageHeader.ActionGroup>
+      }
+      headerControls={
+        <Inline className="min-w-0" gap="md">
+          {emailAvailable && (
+            <Tabs
+              value={format}
+              variant="segmented"
+              onValueChange={(value) => changeFormat(value as PreviewFormat)}
+            >
+              <TabsList className="rounded-full">
+                <TabsTrigger className="rounded-full" value="browser">
+                  Web
+                </TabsTrigger>
+                <TabsTrigger className="rounded-full" value="email">
+                  Email
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          )}
+          <ToggleGroup
+            className="hidden shrink-0 sidebar:flex"
+            shape="pill"
+            type="single"
+            value={device}
+            onValueChange={(value) => {
+              if (value === 'desktop' || value === 'mobile') {
+                setDevice(value);
+              }
+            }}
+          >
+            <ToggleGroupItem aria-label="Desktop" value="desktop">
+              <LucideIcon.Laptop />
+            </ToggleGroupItem>
+            <ToggleGroupItem aria-label="Mobile" value="mobile">
+              <LucideIcon.Smartphone />
+            </ToggleGroupItem>
+          </ToggleGroup>
+          {showSegmentSelect && (
+            <Select value={segment} onValueChange={(value) => setSegment(value as PreviewSegment)}>
+              <PageHeader.SelectTrigger
+                className="hidden shrink-0 md:flex"
+                label="Preview as"
+                shape="pill"
+                variant="ghost"
+                showChevron
+              >
+                <SelectValue />
+              </PageHeader.SelectTrigger>
+              <SelectContent>
+                {segmentOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {showTierSelect && (
+            <Select value={tierSlug} onValueChange={setPickedTierSlug}>
+              <PageHeader.SelectTrigger
+                className="hidden max-w-[240px] min-w-0 md:flex [&>span]:min-w-0 [&>span]:truncate"
+                label="Tier"
+                shape="pill"
+                title={selectedTier?.name}
+                variant="ghost"
+                showChevron
+              >
+                <SelectValue />
+              </PageHeader.SelectTrigger>
+              <SelectContent>
+                {activeTiers.length > 0 && (
+                  <SelectGroup>
+                    <SelectLabel>Active tiers</SelectLabel>
+                    {activeTiers.map((tier) => (
+                      <SelectItem key={tier.id} value={tier.slug}>
+                        {tier.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                )}
+                {archivedTiers.length > 0 && (
+                  <SelectGroup>
+                    <SelectLabel>Archived tiers</SelectLabel>
+                    {archivedTiers.map((tier) => (
+                      <SelectItem key={tier.id} value={tier.slug}>
+                        {tier.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                )}
+              </SelectContent>
+            </Select>
+          )}
+        </Inline>
       }
       layout="header"
       open={open}
       title="Preview"
       onOpenChange={onOpenChange}
     >
-      <Inline className="min-h-0 overflow-auto bg-surface-panel p-6" gap="none" justify="center">
+      <Inline
+        align="start"
+        className={cn(
+          'min-h-0 overflow-auto',
+          showEmail || device === 'mobile' ? 'bg-muted' : 'bg-surface-panel',
+          (showEmail || device === 'mobile') && 'p-6',
+        )}
+        gap="none"
+        justify="center"
+      >
         {prepareState === 'preparing' ? (
-          <Inline align="center" className="grow" gap="none" justify="center">
+          <Inline
+            align="center"
+            aria-label="Preparing preview"
+            className="grow self-center"
+            gap="none"
+            justify="center"
+            role="status"
+          >
             <LoadingIndicator size="lg" />
           </Inline>
         ) : prepareState === 'failed' ? (
           <EmptyIndicator
             actions={
-              <Button
-                variant="outline"
-                onClick={() => {
-                  preparePromise.current = null;
-                  setPrepareState('preparing');
-                }}
-              >
-                Retry
-              </Button>
+              <Stack className="w-[320px] max-w-full" gap="md">
+                {emailAvailable && subjectEditor && (
+                  <Stack className="text-left" gap="xs">
+                    <span className="text-sm text-muted-foreground">Email subject</span>
+                    {/* Retrying the preview's own save carries the subject; the body says why it failed. */}
+                    <EmailSubject
+                      editor={{ ...subjectEditor, saveError: null, onCommit: retryPreparation }}
+                    />
+                  </Stack>
+                )}
+                <Button className="self-center" variant="outline" onClick={retryPreparation}>
+                  Retry
+                </Button>
+              </Stack>
             }
-            className="grow justify-center"
+            className="grow justify-center self-center"
             data-testid={postPreviewSaveFailed}
-            description="Saving the post failed, so there is nothing new to preview."
+            description={<span role="alert">{prepareFailure}</span>}
             title="Couldn’t preview this post"
           >
             <LucideIcon.TriangleAlert />
@@ -462,13 +525,20 @@ export function PostPreviewModal({
             newsletterMissing={postNewsletterDeleted && selectedNewsletterSlug === newsletterSlug}
             newsletters={newsletters}
             newsletterSlug={selectedNewsletterSlug}
+            post={post}
             postId={postId}
+            subjectEditor={subjectEditor}
             tierName={selectedTier?.name}
             onNewsletterChange={setPickedNewsletterSlug}
             onRetryNewsletterLookup={retryNewsletterLookup}
           />
         ) : (
-          <BrowserPreview audience={audience} device={device} previewUrl={previewUrl} />
+          <BrowserPreview
+            audience={audience}
+            device={device}
+            previewUrl={previewUrl}
+            onEscape={() => onOpenChange(false)}
+          />
         )}
       </Inline>
     </FullscreenDialog>

@@ -27,7 +27,17 @@ const messages = {
 };
 
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
-const GA_FEATURES = ['automationAnalytics'];
+// Admin no longer reads admin7Pill, postsListReact, membersActivityReact or selfServeArchives;
+// they stay enabled for older Admin builds during independent deployments.
+const GA_FEATURES = [
+  'automationAnalytics',
+  'automationRunAnalytics',
+  'admin7Pill',
+  'globalSearchReact',
+  'postsListReact',
+  'membersActivityReact',
+  'selfServeArchives',
+];
 
 // These features are considered publicly available and can be enabled/disabled by users
 const PUBLIC_BETA_FEATURES = [
@@ -41,32 +51,25 @@ const PUBLIC_BETA_FEATURES = [
 // Which is only visible if the developer experiments flag is enabled
 const PRIVATE_FEATURES = [
   'automations',
+  'automationsArchive',
   'automationsPerTier',
-  'automationRunAnalytics',
-  'automationsTinybirdSync',
   'stripeAutomaticTax',
   'importMemberTier',
   'csvContentImporter',
-  'adminUIRefresh',
-  'admin7Pill',
-  'tagsX',
   'emailUniqueid',
   'improveSendingUI',
   'themeTranslation',
   'pictureImageFormats',
   'getHelperDeduplication',
   'membersCustomFields',
-  'memberLocationMap',
   'stripeCheckoutCollection',
-  'membersImportRedesign',
   'paywallImprovements',
-  'selfServeArchives',
   'machinePayments',
-  'postsListReact',
-  'membersActivityReact',
   'editorReact',
-  'globalSearchReact',
-  'dunningWarnings',
+  'authReact',
+  'navigationUrlSuggestions',
+  'billingReact',
+  'apps',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

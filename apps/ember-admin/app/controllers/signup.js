@@ -71,7 +71,7 @@ export default class SignupController extends Controller {
         } catch (error) {
             // ValidationEngine throws undefined
             if (!error) {
-                this.flowErrors = 'Please fill out the form to complete your signup';
+                this.flowErrors = 'Fill out the form to complete your signup';
                 return false;
             }
 

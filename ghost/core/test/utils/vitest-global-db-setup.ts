@@ -121,10 +121,16 @@ export default async function setup() {
   }
 
   // Teardown: drop the template and every worker database once all forks have
-  // exited. Best effort.
+  // exited. Best effort. Skipped on GitHub Actions, where MySQL is a throwaway
+  // service container: suites with isolate:true leave one database per file
+  // (about 50 for integration), and dropping them one by one took ~23s per run.
+  // Keyed on GITHUB_ACTIONS rather than CI, which people also set locally to
+  // get CI's file shuffling, and which would leave databases behind there.
   return async () => {
     try {
-      await dropRunDatabases(run);
+      if (!process.env.GITHUB_ACTIONS) {
+        await dropRunDatabases(run);
+      }
     } finally {
       await portBlock.release();
     }

@@ -14,6 +14,11 @@ export type SiteData = {
   locale: string;
   version: string;
   site_uuid: string;
+  /** Whether Admin serves its React auth screens; absent on servers before the flag existed. */
+  authReact?: boolean;
+  /** Present only when the server has client error reporting configured. */
+  sentry_dsn?: string;
+  sentry_env?: string;
 };
 
 export interface SiteResponseType {

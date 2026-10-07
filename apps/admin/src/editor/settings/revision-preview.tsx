@@ -17,7 +17,7 @@ import {
 } from '@/settings/components/koenig-loader';
 import type { PostCardConfig } from '@/editor/card-config';
 import { editorFileUploader } from '@/editor/koenig-file-uploader';
-import { reportKoenigError } from '@/editor/report-error';
+import { reportKoenigError, reportKoenigRenderError } from '@/editor/report-error';
 import type { RevisionEntry } from './post-history';
 
 /** The part of Lexical's editor the loader's minimal instance type leaves out. */
@@ -53,7 +53,11 @@ function RevisionBody({
   }, []);
 
   return (
-    <div className="koenig-react-editor koenig-lexical" data-testid={postHistoryPreviewBody}>
+    <div
+      // Koenig cards select on their own mousedown, which neither lock above stops.
+      className="koenig-react-editor koenig-lexical [&_[data-kg-card]]:pointer-events-none"
+      data-testid={postHistoryPreviewBody}
+    >
       <KoenigComposer
         cardConfig={cardConfig}
         darkMode={darkMode}
@@ -95,7 +99,7 @@ export function RevisionPreview({
 
   return (
     <div className="mx-auto w-full max-w-[740px]" data-testid={postHistoryPreview}>
-      <ErrorBoundary name="this version">
+      <ErrorBoundary name="this version" onError={reportKoenigRenderError}>
         <Suspense
           fallback={
             <Inline className="py-10" justify="center">
@@ -121,7 +125,7 @@ export function RevisionPreview({
             </figure>
           ) : null}
           <div
-            className="heading-font-features mb-4 text-4xl leading-tight font-bold tracking-tight text-foreground"
+            className="heading-font-features mb-4 pb-1 text-[4.8rem] leading-[1.1] font-bold tracking-[-0.017em] text-foreground max-[769px]:text-[3.6rem] max-[501px]:text-[2.8rem]"
             data-testid={postHistoryPreviewTitle}
           >
             {title}

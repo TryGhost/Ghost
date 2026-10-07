@@ -77,7 +77,7 @@ Object {
   "errors": Array [
     Object {
       "code": null,
-      "context": "Image processing failed Image processing failed",
+      "context": "Image processing failed Unable to manipulate image.",
       "details": null,
       "ghostErrorCode": null,
       "help": "Please verify that the image is valid",

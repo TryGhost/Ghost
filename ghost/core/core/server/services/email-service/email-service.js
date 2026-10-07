@@ -4,13 +4,14 @@
  * @typedef {object} Post
  * @typedef {object} Email
  * @typedef {object} LimitService
- * @typedef {{checkVerificationRequired(): Promise<boolean>}} VerificationTrigger
+ * @typedef {{checkVerificationRequired(options?: {newsletterSend?: boolean}): Promise<boolean>}} VerificationTrigger
  * @typedef {import ('./domain-warming-service').DomainWarmingService} DomainWarmingService
  *
  * @typedef {object} EmailPreflight - Validation result from a pre-save checkCanSendEmail call
  * @property {object} newsletter
  * @property {string} emailRecipientFilter
  * @property {number} emailCount
+ * @property {number} [csdEmailCount] - How many to send from the warming domain, when domain warming is enabled
  */
 
 const BatchSendingService = require('./batch-sending-service');
@@ -27,6 +28,8 @@ const messages = {
   emailSendingDisabled: `Email sending is temporarily disabled because your account is currently in review. You should have an email about this from us already, but you can also reach us any time at support@ghost.org`,
   retryEmailStatusError: 'Can only retry emails for published posts',
   retryEmailNotFailed: 'Only failed emails can be retried',
+  retryEmailUnknownOutcome: 'Cannot retry email because the delivery outcome is unknown',
+  postChangedWhilePublishing: 'The post was changed while it was being published, please try again',
 };
 
 // Resume scanner won't pick up `pending` or `submitting` rows older than this. Rows beyond
@@ -38,9 +41,13 @@ const DEFAULT_RESUME_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 // Non-terminal email statuses, both of which the boot scanner recovers.
 const RESUMABLE_EMAIL_STATUSES = ['pending', 'submitting'];
 
+const RETRY_UNKNOWN_OUTCOME_CODE = 'EMAIL_RETRY_UNKNOWN_OUTCOME';
+const RETRY_NOT_FAILED_CODE = 'BULK_EMAIL_RETRY_NOT_FAILED';
+
 class EmailService {
   #batchSendingService;
   #sendingService;
+  #sendingStatusService;
   #models;
   #settingsCache;
   #emailRenderer;
@@ -57,6 +64,7 @@ class EmailService {
    * @param {object} dependencies
    * @param {BatchSendingService} dependencies.batchSendingService
    * @param {SendingService} dependencies.sendingService
+   * @param {import('./sending-status-service').SendingStatusService} dependencies.sendingStatusService
    * @param {object} dependencies.models
    * @param {object} dependencies.models.Email
    * @param {object} [dependencies.models.EmailBatch] - Required for resumeInterruptedSends breadcrumbs
@@ -73,6 +81,7 @@ class EmailService {
   constructor({
     batchSendingService,
     sendingService,
+    sendingStatusService,
     models,
     settingsCache,
     emailRenderer,
@@ -92,6 +101,7 @@ class EmailService {
     this.#limitService = limitService;
     this.#membersRepository = membersRepository;
     this.#sendingService = sendingService;
+    this.#sendingStatusService = sendingStatusService;
     this.#verificationTrigger = verificationTrigger;
     this.#emailAnalyticsJobs = emailAnalyticsJobs;
     this.#domainWarmingService = domainWarmingService;
@@ -114,7 +124,7 @@ class EmailService {
     }
 
     // Check if email verification is required
-    if (await this.#verificationTrigger.checkVerificationRequired()) {
+    if (await this.#verificationTrigger.checkVerificationRequired({ newsletterSend: true })) {
       const customMessage = this.#config?.get(
         'hostSettings:emailVerification:emailSendingDisabledMessage',
       );
@@ -132,11 +142,9 @@ class EmailService {
    *
    * @param {object} newsletter - The newsletter model to send to
    * @param {string} emailRecipientFilter - The recipient filter for the email
-   * @param {object} [options]
-   * @param {number} [options.emailCount] - A previously counted audience to revalidate without recounting
-   * @returns {Promise<{emailCount: number}>} The email count if checks pass, throws if email cannot be sent
+   * @returns {Promise<{emailCount: number, csdEmailCount?: number}>} The recipient counts if checks pass, throws if email cannot be sent
    */
-  async checkCanSendEmail(newsletter, emailRecipientFilter, { emailCount: knownEmailCount } = {}) {
+  async checkCanSendEmail(newsletter, emailRecipientFilter) {
     if (!newsletter) {
       throw new errors.EmailError({
         message: tpl(messages.missingNewsletterError),
@@ -151,58 +159,73 @@ class EmailService {
       });
     }
 
-    const emailCount =
-      knownEmailCount === undefined
-        ? await this.#emailSegmenter.getMembersCount(newsletter, emailRecipientFilter)
-        : knownEmailCount;
+    const emailCount = await this.#emailSegmenter.getMembersCount(newsletter, emailRecipientFilter);
     await this.checkLimits(emailCount);
-
-    return { emailCount };
-  }
-
-  /**
-   *
-   * @param {Post} post
-   * @param {object} [options]
-   * @param {EmailPreflight} [options.preflight] - The emailCount is reused if the newsletter and filter still match the saved post
-   * @returns {Promise<Email>}
-   */
-  async createEmail(post, { preflight } = {}) {
-    const newsletter = await post.getLazyRelation('newsletter');
-    const emailRecipientFilter = post.get('email_recipient_filter');
-
-    const preflightMatches =
-      preflight?.newsletter?.id &&
-      preflight.newsletter.id === newsletter?.id &&
-      preflight.emailRecipientFilter === emailRecipientFilter;
-    const { emailCount } = preflightMatches
-      ? await this.checkCanSendEmail(newsletter, emailRecipientFilter, {
-          emailCount: preflight.emailCount,
-        })
-      : await this.checkCanSendEmail(newsletter, emailRecipientFilter);
 
     const csdEmailCount = this.#domainWarmingService.isEnabled()
       ? await this.#domainWarmingService.getWarmupLimit(emailCount)
       : undefined; // Undefined here means domain warming was not used -- distinct from 0
 
-    const email = await this.#models.Email.add({
-      post_id: post.id,
-      newsletter_id: newsletter.id,
-      status: 'pending',
-      submitted_at: new Date(),
-      track_opens: !!this.#settingsCache.get('email_track_opens'),
-      track_clicks: !!this.#settingsCache.get('email_track_clicks'),
-      feedback_enabled: !!newsletter.get('feedback_enabled'),
-      recipient_filter: emailRecipientFilter,
-      subject: this.#emailRenderer.getSubject(post),
-      from: this.#emailRenderer.getFromAddress(post, newsletter),
-      replyTo: this.#emailRenderer.getReplyToAddress(post, newsletter),
-      email_count: emailCount,
-      csd_email_count: csdEmailCount,
-      source: post.get('lexical') || post.get('mobiledoc'),
-      source_type: post.get('lexical') ? 'lexical' : 'mobiledoc',
-    });
+    return { emailCount, csdEmailCount };
+  }
 
+  /**
+   * Creates the pending email for a post being published, from the checks `checkCanSendEmail`
+   * ran before the save. Schedule it with `scheduleEmail` once the post and email have committed.
+   *
+   * It runs no other queries, because the transaction saving the post holds a connection, and
+   * on SQLite the only one.
+   *
+   * @param {Post} post
+   * @param {object} options
+   * @param {EmailPreflight|null} options.preflight
+   * @param {object} [options.transacting]
+   * @returns {Promise<Email>}
+   */
+  async createEmail(post, { preflight, transacting }) {
+    const { newsletter, emailRecipientFilter, emailCount, csdEmailCount } = preflight ?? {};
+
+    // Only a concurrent edit can save a newsletter or audience other than the one checked
+    if (
+      !newsletter ||
+      post.get('newsletter_id') !== newsletter.id ||
+      post.get('email_recipient_filter') !== emailRecipientFilter
+    ) {
+      throw new errors.UpdateCollisionError({
+        message: tpl(messages.postChangedWhilePublishing),
+      });
+    }
+
+    return this.#models.Email.add(
+      {
+        post_id: post.id,
+        newsletter_id: newsletter.id,
+        status: 'pending',
+        submitted_at: new Date(),
+        track_opens: !!this.#settingsCache.get('email_track_opens'),
+        track_clicks: !!this.#settingsCache.get('email_track_clicks'),
+        feedback_enabled: !!newsletter.get('feedback_enabled'),
+        recipient_filter: emailRecipientFilter,
+        subject: this.#emailRenderer.getSubject(post),
+        from: this.#emailRenderer.getFromAddress(post, newsletter),
+        replyTo: this.#emailRenderer.getReplyToAddress(post, newsletter),
+        email_count: emailCount,
+        preflight_email_count: emailCount,
+        csd_email_count: csdEmailCount,
+        source: post.get('lexical') || post.get('mobiledoc'),
+        source_type: post.get('lexical') ? 'lexical' : 'mobiledoc',
+      },
+      { transacting },
+    );
+  }
+
+  /**
+   * Starts sending a committed pending email. A scheduling failure is saved on the email.
+   *
+   * @param {Email} email
+   * @returns {Promise<Email>}
+   */
+  async scheduleEmail(email) {
     try {
       await this.#batchSendingService.scheduleEmail(email);
     } catch (e) {
@@ -380,25 +403,57 @@ class EmailService {
       });
     }
 
-    if (email.get('status') !== 'failed') {
-      throw new errors.BadRequestError({
-        message: tpl(messages.retryEmailNotFailed),
-      });
-    }
+    await this.checkCanRetryEmail(email.id);
 
     await this.checkLimits();
 
-    // Change email status back to 'pending' before scheduling
-    // so we have a immediate response when retrying an email (schedule can take a while to kick off sometimes)
-    await email.save({ status: 'pending' }, { patch: true });
+    // Claim the retry in the database: another request may have already scheduled
+    // this email since the caller loaded its failed model. Refresh inside that
+    // transaction for database-normalized API timestamps: a failed read must
+    // roll back the claim rather than leave an unscheduled pending email.
+    const pendingEmail = await this.#batchSendingService.updateStatusLock(
+      this.#models.Email,
+      email.id,
+      'pending',
+      ['failed'],
+      { autoRefresh: true },
+    );
+    if (!pendingEmail) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.retryEmailNotFailed),
+        code: RETRY_NOT_FAILED_CODE,
+      });
+    }
 
     try {
-      await this.#batchSendingService.scheduleEmail(email);
+      await this.#batchSendingService.scheduleEmail(pendingEmail);
     } catch (e) {
-      await email.save({ status: 'failed' }, { patch: true });
+      await pendingEmail.save({ status: 'failed' }, { patch: true });
       throw e;
     }
-    return email;
+    return pendingEmail;
+  }
+
+  /**
+   * Validates retry eligibility before a retry is queued.
+   * @param {string} emailId
+   * @returns {Promise<void>}
+   */
+  async checkCanRetryEmail(emailId) {
+    // Re-read persisted state: the caller's email or eligibility can be stale.
+    const eligibility = await this.#sendingStatusService.retryEligibilityFor(emailId);
+    if (eligibility === 'not-failed') {
+      throw new errors.BadRequestError({
+        message: tpl(messages.retryEmailNotFailed),
+        code: RETRY_NOT_FAILED_CODE,
+      });
+    }
+    if (eligibility === 'unknown-outcome') {
+      throw new errors.BadRequestError({
+        message: tpl(messages.retryEmailUnknownOutcome),
+        code: RETRY_UNKNOWN_OUTCOME_CODE,
+      });
+    }
   }
 
   /**
@@ -571,3 +626,5 @@ class EmailService {
 }
 
 module.exports = EmailService;
+module.exports.RETRY_UNKNOWN_OUTCOME_CODE = RETRY_UNKNOWN_OUTCOME_CODE;
+module.exports.RETRY_NOT_FAILED_CODE = RETRY_NOT_FAILED_CODE;

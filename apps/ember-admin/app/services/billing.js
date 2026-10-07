@@ -50,7 +50,6 @@ export default class BillingService extends Service {
     @tracked billingWindowOpen = false;
     @tracked subscription = null;
     @tracked previousRoute = null;
-    @tracked action = null;
     @tracked ownerUser = null;
 
     @tracked billingAppLoaded = false;
@@ -95,13 +94,6 @@ export default class BillingService extends Service {
         }
 
         return Boolean(this.config.hostSettings?.billing?.enabled) && Boolean(this.session.user?.isOwnerOnly);
-    }
-
-    // The Admin route that shows the billing app at the given sub-route
-    // (eg. '/domain' -> '/pro/domain'). Admin's mounting point for the billing
-    // app is owned here — callers work with billing app sub-routes only
-    getAdminRouteForSubRoute(subRoute) {
-        return this.billingRouteRoot.replace(/^#/, '') + (subRoute === '/' ? '' : subRoute);
     }
 
     // The billing route in the current URL hash ('/pro', or a child route like
@@ -179,10 +171,6 @@ export default class BillingService extends Service {
     }
 
     _markDunningPaymentSettled() {
-        if (!this.feature.dunningWarnings) {
-            return;
-        }
-
         const dunning = parseDunningConfig(this.config.hostSettings?.billing?.dunning);
         if (!dunning) {
             return;
@@ -565,6 +553,7 @@ export default class BillingService extends Service {
             },
             tags: {
                 source: 'billing-app-load-monitor',
+                billing_shell: 'ember',
                 attempt_source: this.billingAppLoadAttemptSource,
                 attempt_phase: 'shell_ready',
                 route: this.router.currentRouteName,
@@ -668,18 +657,6 @@ export default class BillingService extends Service {
         }
     }
 
-    sendRouteUpdate() {
-        const action = this.action;
-
-        if (action) {
-            if (action === 'checkout') {
-                this.navigateToSubRoute(this.checkoutRoute);
-            }
-
-            this.action = null;
-        }
-    }
-
     sendUpdateLimits() {
         // Send Billing app message to fetch fresh limit usage
         this.postMessageToBillingApp({query: 'limitUpdate'});
@@ -689,16 +666,14 @@ export default class BillingService extends Service {
     // and the URL opened on the iframe. It is responsible to non user triggered iframe opening,
     // for example: by entering "/pro" route in the URL or using history navigation (back and forward)
     toggleProWindow(value) {
-        if (this.billingWindowOpen && value && !this.action) {
+        if (this.billingWindowOpen && value) {
             // don't attempt to open again
             return;
         }
 
         // Keyed off the pre-mutation state so a re-entrant open (overlay already
-        // visible, e.g. checkout) is not treated as a hidden→visible transition.
+        // visible) is not treated as a hidden→visible transition.
         const isOpeningTransition = value && !this.billingWindowOpen;
-
-        this.sendRouteUpdate();
 
         this.billingWindowOpen = value;
 
@@ -733,8 +708,6 @@ export default class BillingService extends Service {
         // Ensures correct "getIframeURL" calculation when syncing iframe location
         // in toggleProWindow
         window.location.hash = childRoute || '/pro';
-
-        this.sendRouteUpdate();
 
         this.router.transitionTo(childRoute || '/pro');
     }

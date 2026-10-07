@@ -2,7 +2,8 @@ const DomainEvents = require('@tryghost/domain-events');
 const Mention = require('../../../core/server/services/mentions/mention');
 const mentionsService = require('../../../core/server/services/mentions');
 const assert = require('node:assert/strict');
-const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
+const { startGhost, fixtureManager, mockManager } = require('../../utils/e2e-framework');
+const { AdminAPITestAgent, MembersAPITestAgent } = require('../../utils/agents');
 const configUtils = require('../../utils/config-utils');
 const { mockSetting } = require('../../utils/e2e-framework-mock-manager');
 const ObjectId = require('bson-objectid').default;
@@ -126,14 +127,16 @@ async function assertFromAddressNewsletter(aFrom, aReplyTo) {
 // Tests the from and replyTo addresses for most emails send from within Ghost.
 describe('Email addresses', function () {
   beforeAll(async function () {
-    // Can only set site URL once because otherwise agents are messed up
+    // Boot at the default URL: services capture the site URL on their first
+    // boot in a process, so booting at blog.acme.com would leak it into every
+    // later file. The agents still need the configured URL as their origin.
+    const app = await startGhost({ frontend: true });
     configureSite({
       siteUrl: 'http://blog.acme.com',
     });
-
-    const agents = await agentProvider.getAgentsForMembers();
-    agent = agents.adminAgent;
-    membersAgent = agents.membersAgent;
+    const originURL = configUtils.config.get('url');
+    agent = new AdminAPITestAgent(app, { apiURL: '/ghost/api/admin/', originURL });
+    membersAgent = new MembersAPITestAgent(app, { apiURL: '/members/', originURL });
 
     await fixtureManager.init('newsletters', 'members:newsletters', 'users', 'posts', 'comments');
     await agent.loginAsAdmin();

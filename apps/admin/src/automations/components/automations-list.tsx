@@ -13,31 +13,18 @@ import {
 } from '@tryghost/shade/components';
 import { cn, formatNumber, formatTimestamp } from '@tryghost/shade/utils';
 
-const AUTOMATION_DESCRIPTIONS: Record<string, string> = {
-  'member-welcome-email-free': 'Welcome new free members after they sign up.',
-  'member-welcome-email-paid': 'Welcome new paid members after they start their subscription.',
-};
-
-const getAutomationDescription = (automation: AutomationBrowseItem): string | undefined => {
-  if (automation.description !== undefined) {
-    return automation.description;
-  }
-
-  return automation.slug ? AUTOMATION_DESCRIPTIONS[automation.slug] : undefined;
-};
-
 // Widths are scoped to `lg` because below that the stats lay out on the row's
 // grid rather than in table cells, where a fixed width would fight the columns.
 const AUTOMATION_STAT_COLUMNS = [
   {
     key: 'lastEntry',
-    label: 'Last entry',
+    label: 'Last started',
     widthClassName: 'lg:w-40',
     skeletonWidthClassName: 'w-20',
   },
   {
     key: 'totalEntries',
-    label: 'Total entries',
+    label: 'Total runs',
     widthClassName: 'lg:w-32',
     skeletonWidthClassName: 'w-10',
   },
@@ -126,7 +113,7 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
         <TableHeader className="hidden lg:table-header-group">
           <TableRow className="hover:bg-transparent">
             <TableHead className="lg:px-4" scope="col">
-              Name
+              Automation
             </TableHead>
             {AUTOMATION_STAT_COLUMNS.map((column) => (
               <TableHead
@@ -145,7 +132,7 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
       )}
       <TableBody className="flex flex-col lg:table-row-group">
         {automations.map((automation) => {
-          const description = getAutomationDescription(automation);
+          const description = automation.description.trim();
           const lastEntry = automation.stats?.last_run_created_at;
           const totalEntries = automation.stats?.total_run_count ?? 0;
           const inProgressEntries = automation.stats?.in_progress_run_count ?? 0;

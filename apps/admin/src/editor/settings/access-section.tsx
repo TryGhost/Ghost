@@ -21,12 +21,17 @@ import type { PostType } from '@/editor/card-config';
 import { PAID_TIERS_SEARCH_PARAMS } from '@/editor/browse-params';
 import { useEditorSettings } from '@/editor/use-editor-settings';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
-import { TIERS_REQUIRED, tiersIncomplete } from '@/editor/session/settings-fields';
-import type { EditorSettingsPort } from './editor-settings-port';
+import {
+  TIERS_REQUIRED,
+  tiersIncomplete,
+  type EditorSettingsFields,
+} from '@/editor/session/settings-fields';
+import { type EditorSettingsPort, isNewPost } from './editor-settings-port';
 import { SectionLoadError } from './section-load-error';
 import { SettingsSection } from './settings-section';
 import {
   VISIBILITY_OPTIONS,
+  defaultTierIds,
   postTiers,
   selectedTierIds,
   selectedVisibility,
@@ -104,9 +109,21 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
     settingsData?.settings ?? null,
     'default_content_visibility',
   );
+  const defaultContentVisibilityTiers = getSettingValue<string>(
+    settingsData?.settings ?? null,
+    'default_content_visibility_tiers',
+  );
 
   const visibility = selectedVisibility(session.settings.visibility, defaultContentVisibility);
-  const selected = new Set(selectedTierIds(session.settings.tiers));
+  // Core grants a new post the default's tiers on create, so they stand in until
+  // the post has a visibility of its own, and a tier pick starts from them.
+  const followsDefaultTiers =
+    isNewPost(session) && !session.settings.visibility && visibility === 'tiers';
+  const selected = new Set(
+    followsDefaultTiers
+      ? defaultTierIds(defaultContentVisibilityTiers)
+      : selectedTierIds(session.settings.tiers),
+  );
   const tiersMissing = tiersIncomplete(session.settings);
 
   const {
@@ -132,9 +149,19 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
   }, [fetchNextPage, hasNextPage, isFetchingNextPage, tiersFailed]);
   const options = hasNextPage ? [] : tierOptions(tiersData?.tiers);
 
+  // An incomplete pair is left out of every write. On a post the server has not
+  // created yet it is staged without a save of its own: that write would carry nothing.
+  const editAccess = (patch: Pick<EditorSettingsFields, 'visibility' | 'tiers'>) => {
+    if (tiersIncomplete(patch) && isNewPost(session)) {
+      session.stageSettings(patch);
+      return;
+    }
+    session.editSettings(patch);
+  };
+
   // Leaving `tiers` clears the tiers it granted, as the tier pickers do.
   const changeVisibility = (next: string) =>
-    session.editSettings({
+    editAccess({
       visibility: next,
       tiers: next === 'tiers' ? postTiers(session.settings.tiers) : [],
     });
@@ -144,7 +171,14 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
     if (!next.delete(id)) {
       next.add(id);
     }
-    session.editSettings({ visibility: 'tiers', tiers: tiersFromSelection(options, next) });
+    const patch = { visibility: 'tiers', tiers: tiersFromSelection(options, next) };
+    // Each save of a published post writes a revision; as in Ember, a tier pick
+    // outside a draft waits for the next settings save or Update.
+    if (session.publishTime.status !== 'draft') {
+      session.stageSettings(patch);
+      return;
+    }
+    editAccess(patch);
   };
 
   return (

@@ -7,7 +7,7 @@ class CommentsServiceWrapper {
     const config = require('../../../shared/config');
     const logging = require('@tryghost/logging');
     const models = require('../../models');
-    const { GhostMailer } = require('../mail');
+    const { GhostMailer } = require('../../lib/mail');
     const mailer = new GhostMailer();
     const settingsCache = require('../../../shared/settings-cache');
     const urlService = require('../url');

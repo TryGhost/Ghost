@@ -6,7 +6,6 @@ class SiteMapIndexGenerator {
   constructor(options) {
     options = options || {};
     this.types = options.types;
-    this.maxPerPage = options.maxPerPage;
     // The index is the one sitemap crawlers fetch repeatedly, and rendering
     // it counts every resource of every type. Cached until something
     // invalidates the index; the manager resets this when it does.
@@ -25,7 +24,7 @@ class SiteMapIndexGenerator {
 
   generateSiteMapUrlElements() {
     return _.map(this.types, (resourceType) => {
-      const noOfPages = Math.ceil(resourceType.size / this.maxPerPage);
+      const noOfPages = resourceType.pageCount;
       const pages = [];
       for (let i = 0; i < noOfPages; i++) {
         const page = i === 0 ? '' : `-${i + 1}`;

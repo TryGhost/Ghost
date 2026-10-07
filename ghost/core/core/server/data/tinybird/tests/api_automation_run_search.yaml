@@ -1,0 +1,83 @@
+- name: recorded_statuses_and_stable_ties
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation
+  expected_result: |
+    {"id":"status-run-8","created_at":"2020-01-01T00:00:00.000000Z","status":"exited_early","failed":false}
+    {"id":"status-run-7","created_at":"2020-01-01T00:00:00.000000Z","status":"exited_early","failed":false}
+    {"id":"status-run-6","created_at":"2020-01-01T00:00:00.000000Z","status":"exited_early","failed":false}
+    {"id":"status-run-5","created_at":"2020-01-01T00:00:00.000000Z","status":"exited_early","failed":true}
+    {"id":"status-run-4","created_at":"2020-01-01T00:00:00.000000Z","status":"completed","failed":false}
+    {"id":"status-run-3","created_at":"2020-01-01T00:00:00.000000Z","status":"completed","failed":false}
+    {"id":"status-run-2","created_at":"2020-01-01T00:00:00.000000Z","status":"invalid","failed":false}
+    {"id":"status-run-10","created_at":"2020-01-01T00:00:00.000000Z","status":"invalid","failed":false}
+    {"id":"status-run-1","created_at":"2020-01-01T00:00:00.000000Z","status":"in_progress","failed":false}
+
+- name: other_automation
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=other-automation
+  expected_result: |
+    {"id":"status-run-11","created_at":"2020-01-01T00:00:00.000000Z","status":"in_progress","failed":false}
+
+- name: other_site
+  parameters: site_uuid=15840000-0000-4000-8000-000000000001&automation_id=status-automation
+  expected_result: |
+    {"id":"status-run-3","created_at":"2020-01-01T00:00:00.000000Z","status":"in_progress","failed":false}
+
+- name: pending_unknown
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-pending_unknown
+  expected_result: |
+    {"id":"case-pending_unknown","created_at":"2020-01-01T00:00:00.000000Z","status":"invalid","failed":false}
+
+- name: missing_steps
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-missing_steps
+  expected_result: ''
+
+- name: latest_versions_and_entry_time
+  parameters: site_uuid=bd05ceed-1df9-4af7-832a-d3b5faa7ca1d&automation_id=automation-1
+  expected_result: |
+    {"id":"run-2","created_at":"2020-01-01T01:00:00.000000Z","status":"in_progress","failed":false}
+    {"id":"run-1","created_at":"2020-01-01T01:00:00.000000Z","status":"in_progress","failed":false}
+
+- name: superseded_failure
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-recovered_step
+  expected_result: |
+    {"id":"case-recovered_step","created_at":"2020-01-01T00:00:00.000000Z","status":"completed","failed":false}
+
+- name: page_after_cursor_descending
+  parameters: site_uuid=15970000-0000-4000-8000-000000000000&automation_id=run-list-limit&after_created_at=2026-09-13T12:00:00.000Z&after_id=list-run-13
+  expected_result: |
+    {"id":"list-run-12","created_at":"2026-09-12T12:00:00.000000Z","status":"completed","failed":false}
+    {"id":"list-run-11","created_at":"2026-09-11T12:00:00.000000Z","status":"completed","failed":false}
+    {"id":"list-run-10","created_at":"2026-09-10T12:00:00.000000Z","status":"completed","failed":false}
+    {"id":"list-run-09","created_at":"2026-09-09T12:00:00.000000Z","status":"completed","failed":false}
+    {"id":"list-run-08","created_at":"2026-09-08T12:00:00.000000Z","status":"completed","failed":false}
+    {"id":"list-run-07","created_at":"2026-09-07T12:00:00.000000Z","status":"completed","failed":false}
+    {"id":"list-run-06","created_at":"2026-09-06T12:00:00.000000Z","status":"completed","failed":false}
+    {"id":"list-run-05","created_at":"2026-09-05T12:00:00.000000Z","status":"completed","failed":false}
+    {"id":"list-run-04","created_at":"2026-09-04T12:00:00.000000Z","status":"completed","failed":false}
+    {"id":"list-run-03","created_at":"2026-09-03T12:00:00.000000Z","status":"completed","failed":false}
+    {"id":"list-run-02","created_at":"2026-09-02T12:00:00.000000Z","status":"completed","failed":false}
+    {"id":"list-run-01","created_at":"2026-09-01T12:00:00.000000Z","status":"completed","failed":false}
+
+- name: page_after_cursor_ascending
+  parameters: site_uuid=15970000-0000-4000-8000-000000000000&automation_id=run-list-limit&sort_direction=asc&after_created_at=2026-10-18T12:00:00.000Z&after_id=list-run-48
+  expected_result: |
+    {"id":"list-run-49","created_at":"2026-10-19T12:00:00.000000Z","status":"completed","failed":false}
+    {"id":"list-run-50","created_at":"2026-10-20T12:00:00.000000Z","status":"completed","failed":false}
+    {"id":"list-run-51","created_at":"2026-10-21T12:00:00.000000Z","status":"completed","failed":false}
+    {"id":"list-run-52","created_at":"2026-10-22T12:00:00.000000Z","status":"in_progress","failed":false}
+
+- name: page_after_last_run_is_empty
+  parameters: site_uuid=15970000-0000-4000-8000-000000000000&automation_id=run-list-limit&after_created_at=2026-09-01T12:00:00.000Z&after_id=list-run-01
+  expected_result: ''
+
+- name: complete_match_set_before_limit
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&run_ids=status-run-3%2Cstatus-run-4%2Cstatus-run-5&sort_direction=asc&limit=1
+  expected_result: |
+    {"id":"status-run-3","created_at":"2020-01-01T00:00:00.000000Z","status":"completed","failed":false}
+
+- name: explicit_empty_match_set
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&run_ids=
+  expected_result: ''
+
+- name: invalid_history_before_cursor_is_not_repeated
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&run_ids=status-run-2&after_id=zzz&after_created_at=2030-01-01T00%3A00%3A00Z&sort_direction=asc
+  expected_result: ''

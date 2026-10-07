@@ -1,8 +1,14 @@
 const path = require('path');
 const fs = require('fs');
-const { quote: shellQuote } = require('shell-quote');
+const { quote } = require('shell-quote');
 
 const ROOT = process.cwd();
+
+function shellQuote(args) {
+  // lint-staged parses arguments without a shell, so backslash-escaped dollar
+  // signs become literal backslashes. Quote paths instead where possible.
+  return args.map((arg) => (arg.includes("'") ? quote([arg]) : `'${arg}'`)).join(' ');
+}
 
 function normalize(p) {
   return p.split(path.sep).join('/');

@@ -264,6 +264,7 @@ const GiftSuccessPage = () => {
                             : cadence === 'month'
                               ? tier.monthlyPrice
                               : tier.yearlyPrice,
+                          site?.locale,
                         )
                       : null
                   }

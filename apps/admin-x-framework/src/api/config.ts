@@ -42,7 +42,7 @@ export type Config = {
     siteId?: string;
     forceUpgrade?: boolean;
     limits?: {
-      // Partially typed, see https://github.com/TryGhost/SDK/tree/main/packages/limit-service
+      // Partially typed API limits; see packages/limit-service/src/config.ts and src/types.ts for service definitions.
       customIntegrations?: {
         disabled: boolean;
       };
@@ -135,9 +135,13 @@ export type Config = {
       enabled?: boolean;
       sendingDomain?: string;
     };
+    emailVerification?: {
+      // Shown in place of the default hold copy while the host reviews the account
+      emailSendingDisabledMessage?: string;
+    };
     export?: {
-      // Host archive webhook — when set, "Export data" delivers the
-      // archive by email instead of a synchronous download
+      // Host export webhook — when set, "Export data" delivers the
+      // export by email instead of a synchronous download
       webhookUrl?: string;
     };
   };
@@ -153,6 +157,12 @@ export type Config = {
   docsbot?: {
     enabled?: boolean;
     id?: string;
+  };
+  clientExtensions?: {
+    script?: {
+      container?: string;
+      src?: string;
+    };
   };
   // Config is relatively fluid, so we only type used properties above and still support arbitrary property access when needed
   [key: string]: JSONValue | undefined;

@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { availableParallelism } from 'node:os';
 import { defineConfig } from 'vitest/config';
+import { coverageEnv } from './test/utils/strict-mode';
 
 // DB-backed suite runner (integration / e2e / legacy) — separate from the unit
 // vitest.config.ts because these suites boot a real Ghost against a database.
@@ -8,7 +9,7 @@ import { defineConfig } from 'vitest/config';
 //  - pool 'forks' + isolate:false → N child processes, each booting ONE Ghost
 //    against its own per-process database + port (derived in vitest-setup-db.ts
 //    before Ghost's config loads). Within a fork, files run serially sharing that
-//    single Ghost (Ghost's db/knex, @tryghost/domain-events, the jobs manager,
+//    single Ghost (Ghost's db/knex, @tryghost/domain-events, the jobs service,
 //    nconf, the settings cache and the url service are process-wide singletons
 //    reset in place between boots, never duplicated — exactly one Ghost per
 //    process, the constraint mocha ran under). Across forks, files shard in
@@ -78,18 +79,8 @@ const sharedDbConfig = {
   env: {
     NODE_ENV: 'testing-mysql',
     WEBHOOK_SECRET: process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_SECRET',
-    // Bree runs jobs in worker_threads that inherit this NODE_OPTIONS; tsx lets
-    // them require() Ghost's .ts sources (job files pull in e.g.
-    // labs-flag-overrides.ts). The old mocha lane got tsx from `--node-option
-    // import=tsx`; vitest only registers tsx in the vitest worker itself (not
-    // in the execArgv Bree's worker_threads inherit) and ignores
-    // poolOptions.*.execArgv here, so route it through the env. Applied on
-    // test.env, i.e. inside the vitest worker once it's up, so only the
-    // worker_threads it spawns pick it up — pool-agnostic, works the same
-    // whether the vitest worker is a fork or a thread.
-    NODE_OPTIONS:
-      (process.env.NODE_OPTIONS ? process.env.NODE_OPTIONS + ' ' : '') +
-      '--import tsx --conditions=source',
+    // Turns the strict-mode test hook off under --coverage; see strict-mode.ts.
+    ...coverageEnv(),
   },
   hookTimeout: 60000,
 };
@@ -192,17 +183,11 @@ export default defineConfig({
         test: {
           ...sharedDbConfig,
           name: 'integration',
-          // isolate:true (overriding the shared default) gives each file
-          // its own fork → its own fresh per-process DB + Ghost. The
-          // integration suite has inter-file state pollution that the old
-          // fixed serial order masked but nondeterministic fork sharding
-          // exposes — e.g. migration.test.js can leave a rolled-back
-          // schema that a co-located file then inherits. Per-file
-          // isolation removes it by construction. The e2e project keeps
-          // isolate:false (it has no such pollution and is fastest that way).
-          isolate: true,
+          // Shares the default isolate:false (one shared boot per fork). The
+          // migration tests roll the schema back and forward, so they run in
+          // `integration-migrations` with per-file isolation instead.
           include: ['test/integration/**/*.test.{js,ts}'],
-          exclude: ['**/node_modules/**'],
+          exclude: ['**/node_modules/**', 'test/integration/migrations/**'],
           // Probes the optional Docker services (Redis, VersityGW) once in
           // the main process and exports GHOST_TEST_{REDIS,S3}_AVAILABLE
           // so the adapter suites skip when their service is down and run
@@ -210,6 +195,20 @@ export default defineConfig({
           // other DB suites.
           globalSetup: ['./test/utils/vitest-globalsetup-services.ts'],
           // Matches the mocha `--timeout=10000` for the integration suite.
+          testTimeout: 10000,
+        },
+      },
+      {
+        ssr: sharedSsrConfig,
+        test: {
+          ...sharedDbConfig,
+          name: 'integration-migrations',
+          // isolate:true gives each file its own fork, DB and Ghost:
+          // migration.test.js can leave a rolled-back schema that a later
+          // file in the same fork would otherwise inherit.
+          isolate: true,
+          include: ['test/integration/migrations/**/*.test.{js,ts}'],
+          exclude: ['**/node_modules/**'],
           testTimeout: 10000,
         },
       },
@@ -230,10 +229,10 @@ export default defineConfig({
           // locally: forks 2 hangs in ~10 runs, threads 0 in 39.
           // Not a perf change — ~4% at maxWorkers=3, well inside noise.
           pool: 'threads' as const,
-          // isolate:true for the same reason as integration: the legacy
-          // suite is the most state-pollution-prone (it was parked on
-          // exactly that under the old serial model), so per-file
-          // isolation removes the inter-file bleed by construction.
+          // isolate:true: the legacy suite is the most
+          // state-pollution-prone (it was parked on exactly that under the
+          // old serial model), so per-file isolation removes the inter-file
+          // bleed by construction.
           isolate: true,
           include: ['test/legacy/**/*.test.{js,ts}'],
           exclude: ['**/node_modules/**'],

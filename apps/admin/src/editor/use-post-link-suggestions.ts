@@ -1,19 +1,27 @@
 import { useCallback, useMemo, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import type { Offer } from '@tryghost/admin-x-framework/api/offers';
 import type { PostType } from './card-config';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import {
+  type SearchIndexItem,
+  type SearchIndexKey,
+  searchIndexQueryOptions,
+} from '@/shared/search-index';
+import {
   type AutocompleteLink,
+  buildAutocompleteLinks,
+  buildOfferLinks,
+} from '@/shared/autocomplete-links';
+import {
   type LatestPostSource,
   type LinkSearchGroup,
   type LinkSearchResultGroup,
   type SearchIndexEntity,
   type SearchIndexPost,
-  buildAutocompleteLinks,
   buildLatestPostsGroup,
-  buildOfferLinks,
   filterLinkSearchResults,
   searchIndexEntitiesGroup,
   searchIndexPostsGroup,
@@ -25,56 +33,48 @@ export interface PostLinkSuggestionOptions {
   paidMembersEnabled: boolean;
   donationsEnabled: boolean;
   recommendationsEnabled: boolean;
+  membersSignupAccess?: string;
   membersEnabled: boolean;
   timezone: string;
-}
-
-interface SearchIndex {
-  posts: SearchIndexPost[];
-  pages: SearchIndexPost[];
-  tags: SearchIndexEntity[];
-  users: SearchIndexEntity[];
 }
 
 interface SuggestionCache {
   offerLinks?: Promise<AutocompleteLink[]>;
   latestPosts?: Promise<LinkSearchGroup[]>;
-  index: Partial<Record<keyof SearchIndex, Promise<unknown[]>>>;
 }
 
-// Link toolbar data is fetched on first use and cached for the editor's lifetime
+const isEntity = (item: SearchIndexItem): item is SearchIndexItem & SearchIndexEntity =>
+  typeof item.name === 'string';
+const isPost = (item: SearchIndexItem): item is SearchIndexItem & SearchIndexPost =>
+  typeof item.title === 'string';
+
+// Link toolbar data is fetched on first use; content lists follow resource mutations.
 export function usePostLinkSuggestions({
   postType,
   homepageUrl,
   paidMembersEnabled,
   donationsEnabled,
   recommendationsEnabled,
+  membersSignupAccess,
   membersEnabled,
   timezone,
 }: PostLinkSuggestionOptions) {
   const fetchApi = useFetchApi();
-  const cache = useRef<SuggestionCache>({ index: {} });
+  const queryClient = useQueryClient();
+  const cache = useRef<SuggestionCache>({});
 
   const loadIndex = useCallback(
-    <Key extends keyof SearchIndex>(key: Key): Promise<SearchIndex[Key]> => {
-      const cached = cache.current.index[key];
-      if (cached) {
-        return cached as Promise<SearchIndex[Key]>;
+    async (key: SearchIndexKey): Promise<SearchIndexItem[]> => {
+      try {
+        const response = await queryClient.fetchQuery(
+          searchIndexQueryOptions(key, fetchApi, EDITOR_REQUEST_OPTIONS),
+        );
+        return response[key] ?? [];
+      } catch {
+        return [];
       }
-
-      const request: Promise<SearchIndex[Key]> = fetchApi<Record<Key, SearchIndex[Key]>>(
-        apiUrl(`/search-index/${key}/`),
-        EDITOR_REQUEST_OPTIONS,
-      )
-        .then((response) => response[key])
-        .catch(() => {
-          delete cache.current.index[key];
-          return [] as SearchIndex[Key];
-        });
-      cache.current.index[key] = request;
-      return request;
     },
-    [fetchApi],
+    [fetchApi, queryClient],
   );
 
   const fetchAutocompleteLinks = useCallback(async () => {
@@ -93,7 +93,14 @@ export function usePostLinkSuggestions({
     const offerLinks = await cache.current.offerLinks;
 
     return buildAutocompleteLinks(
-      { postType, homepageUrl, paidMembersEnabled, donationsEnabled, recommendationsEnabled },
+      {
+        postType,
+        homepageUrl,
+        paidMembersEnabled,
+        donationsEnabled,
+        recommendationsEnabled,
+        membersSignupAccess,
+      },
       offerLinks,
     );
   }, [
@@ -103,6 +110,7 @@ export function usePostLinkSuggestions({
     paidMembersEnabled,
     donationsEnabled,
     recommendationsEnabled,
+    membersSignupAccess,
   ]);
 
   const decorationSettings = useMemo(
@@ -139,10 +147,10 @@ export function usePostLinkSuggestions({
       ]);
 
       const groups: LinkSearchResultGroup[] = [
-        searchIndexEntitiesGroup('Staff', users, term),
-        searchIndexEntitiesGroup('Tags', tags, term),
-        searchIndexPostsGroup('Posts', posts, term),
-        searchIndexPostsGroup('Pages', pages, term),
+        searchIndexEntitiesGroup('Staff', users.filter(isEntity), term),
+        searchIndexEntitiesGroup('Tags', tags.filter(isEntity), term),
+        searchIndexPostsGroup('Posts', posts.filter(isPost), term),
+        searchIndexPostsGroup('Pages', pages.filter(isPost), term),
       ];
 
       return filterLinkSearchResults(groups, decorationSettings);

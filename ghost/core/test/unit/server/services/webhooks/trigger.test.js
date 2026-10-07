@@ -157,6 +157,51 @@ describe('Webhook Service', function () {
       assert.match(request.args[0][1].headers['Content-Version'], /v\d+\.\d+/);
     });
 
+    it('builds the payload once for every webhook registered for an event', async function () {
+      const webhookFor = (url) => {
+        const get = sinon.stub();
+        get.withArgs('event').returns(WEBHOOK_EVENT);
+        get.withArgs('target_url').returns(url);
+        return { get };
+      };
+      models.Webhook.findAllByEvent
+        .withArgs(WEBHOOK_EVENT, { context: { internal: true } })
+        .resolves({
+          models: [webhookFor('http://one.example.com'), webhookFor('http://two.example.com')],
+        });
+
+      const postModel = sinon.stub();
+      payload.withArgs(WEBHOOK_EVENT, postModel).resolves({ data: [1] });
+
+      await webhookTrigger.trigger(WEBHOOK_EVENT, postModel);
+
+      sinon.assert.calledOnce(payload);
+      sinon.assert.calledTwice(request);
+      assert.deepEqual(JSON.parse(request.args[1][1].body), { event: WEBHOOK_EVENT, data: [1] });
+    });
+
+    it('logs and sends nothing when the payload cannot be built', async function () {
+      const loggingStub = sinon.stub(logging, 'error');
+      try {
+        const webhookModel = {
+          get: sinon.stub().withArgs('event').returns(WEBHOOK_EVENT),
+        };
+        models.Webhook.findAllByEvent
+          .withArgs(WEBHOOK_EVENT, { context: { internal: true } })
+          .resolves({ models: [webhookModel] });
+        const failure = new Error('the payload could not be read');
+        payload.rejects(failure);
+
+        await webhookTrigger.trigger(WEBHOOK_EVENT, sinon.stub());
+
+        sinon.assert.notCalled(request);
+        sinon.assert.calledOnce(loggingStub);
+        assert.equal(loggingStub.args[0][0].err, failure);
+      } finally {
+        loggingStub.restore();
+      }
+    });
+
     it('includes a signature header when a webhook has a secret', async function () {
       const webhookModel = {
         get: sinon.stub(),

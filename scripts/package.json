@@ -7,8 +7,9 @@
   "type": "module",
   "scripts": {
     "lint": "eslint . --cache",
-    "test:unit": "node --test",
-    "test": "pnpm run '/^test:/'"
+    "test:unit": "node --test test/*.test.js test/*.test.cjs test/*.test.ts",
+    "test": "pnpm run '/^test:/'",
+    "test:types": "tsc6 --noEmit"
   },
   "dependencies": {
     "@octokit/core": "catalog:",
@@ -16,14 +17,60 @@
     "@octokit/plugin-throttling": "catalog:",
     "@pnpm/releasing.versioning": "catalog:",
     "@pnpm/workspace.workspace-manifest-reader": "catalog:",
-    "camelcase-keys": "10.0.2",
+    "@sentry/bundler-plugin-core": "catalog:",
+    "camelcase-keys": "10.0.3",
     "execa": "catalog:",
     "js-yaml": "catalog:",
     "picomatch": "4.0.5",
-    "semver": "catalog:"
+    "semver": "catalog:",
+    "typescript": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-typescript": "workspace:*",
+    "@playwright/test": "catalog:",
+    "@types/node": "catalog:",
     "eslint": "catalog:"
+  },
+  "nx": {
+    "namedInputs": {
+      "adminTestContracts": [
+        "{workspaceRoot}/apps/admin/package.json",
+        "{workspaceRoot}/apps/ember-admin/package.json",
+        "{workspaceRoot}/.github/workflows/ci.yml"
+      ],
+      "adminSourceContracts": [
+        "{workspaceRoot}/apps/admin-x-framework/package.json",
+        "{workspaceRoot}/apps/shade/package.json",
+        "{workspaceRoot}/apps/admin/vite*.ts",
+        "{workspaceRoot}/apps/admin/vitest.acceptance.config.ts",
+        "{workspaceRoot}/apps/admin/tsconfig*.json",
+        "{workspaceRoot}/apps/shade/tsconfig.json"
+      ]
+    },
+    "targets": {
+      "test": {
+        "inputs": [
+          "default",
+          "^default",
+          "adminTestContracts",
+          "adminSourceContracts",
+          {
+            "runtime": "node -v"
+          }
+        ]
+      },
+      "test:unit": {
+        "inputs": [
+          "default",
+          "^default",
+          "adminTestContracts",
+          "adminSourceContracts",
+          {
+            "runtime": "node -v"
+          }
+        ]
+      }
+    }
   }
 }

@@ -65,4 +65,34 @@ describe('Job: Send webmentions', function () {
     assert.equal(body.get('source'), 'http://127.0.0.1:2369/source-post/');
     assert.equal(body.get('target'), targetUrl.href);
   });
+
+  it('still sends to later links when an earlier linked page fails discovery', async function () {
+    const brokenUrl = new URL('https://page-with-invalid-webmention-endpoint.com/article/');
+    const targetUrl = new URL('https://later-target-of-outbound-webmention.com/article/');
+    const endpointUrl = new URL(
+      'https://later-target-of-outbound-webmention.com/webmention-endpoint/',
+    );
+
+    const brokenScope = nock(brokenUrl.origin)
+      .get(brokenUrl.pathname)
+      .reply(200, '', { Link: '<http://[invalid>; rel="webmention"' });
+    nock(targetUrl.origin)
+      .get(targetUrl.pathname)
+      .reply(200, `<link rel="webmention" href="${endpointUrl.href}">`, {
+        'Content-Type': 'text/html',
+      });
+    const endpointScope = nock(endpointUrl.origin).post(endpointUrl.pathname).reply(201);
+
+    await getJobsService().dispatch(
+      new SendWebmentionsJob({
+        sourceUrl: 'http://127.0.0.1:2369/source-post/',
+        html: `<a href="${brokenUrl.href}">broken</a><a href="${targetUrl.href}">linked</a>`,
+        previousHtml: null,
+      }),
+    );
+
+    const delivered = await waitFor(() => endpointScope.isDone());
+    assert.ok(delivered, 'The later link still received a webmention');
+    assert.ok(brokenScope.isDone(), 'The broken page was checked for an endpoint');
+  });
 });

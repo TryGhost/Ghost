@@ -92,12 +92,53 @@ describe('createSaveEngine', () => {
 
       void h.engine.dispatch('explicit');
       await flush();
-      expect(h.engine.getState()).toEqual({ kind: 'saving', intent: 'explicit' });
+      expect(h.engine.getState()).toEqual({ kind: 'preparing', intent: 'explicit' });
       expect(h.execute).not.toHaveBeenCalled();
 
       prepared.resolve({ ok: true, prepared: h.prepare.mock.calls[0][0] });
       await flush();
       expect(h.execute).toHaveBeenCalledTimes(1);
+    });
+
+    it.each(['preparing', 'saving'])(
+      'does not execute when disposed by a %s subscriber',
+      async (phase) => {
+        const h = setup();
+        h.engine.subscribe((state) => {
+          if (state.kind === phase) {
+            h.engine.dispose();
+          }
+        });
+        await expect(h.engine.dispatch('explicit')).resolves.toEqual({
+          kind: 'dropped',
+          reason: 'disposed',
+        });
+        await flush();
+        expect(h.execute).not.toHaveBeenCalled();
+        expect(h.reconcile).not.toHaveBeenCalled();
+      },
+    );
+
+    it('serializes commands queued by a preparing subscriber and carries its revision requirement', async () => {
+      const h = setup();
+      let queued: ReturnType<typeof h.engine.dispatch> | undefined;
+      const stop = h.engine.subscribe((state) => {
+        if (state.kind === 'preparing') {
+          stop();
+          h.edit();
+          queued = h.engine.dispatch('explicit');
+        }
+      });
+      const first = h.engine.dispatch('field');
+      await flush();
+      expect(h.execute).toHaveBeenCalledTimes(1);
+      expect(h.requests[0].snapshot.version).toBe(2);
+      await h.succeed();
+      await first;
+      expect(h.requests[1].saveRevision).toBe(true);
+      await h.succeed();
+      await expect(queued).resolves.toMatchObject({ kind: 'saved' });
+      expect(h.maxConcurrent()).toBe(1);
     });
 
     it('aborts the in-flight signal on dispose and never reconciles the late response', async () => {

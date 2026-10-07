@@ -1,13 +1,9 @@
 import { describe, it, assert } from 'vitest';
 import {
-  CHECKOUT_ELIGIBLE_FIELD_TYPES,
-  MAX_CHECKOUT_CUSTOM_FIELDS,
-  MAX_CHECKOUT_LABEL_LENGTH,
   PORT_FIELD,
   STRIPE_ALLOWED_COUNTRIES,
   STRIPE_PORT,
   STRIPE_PORTS,
-  isCheckoutEligible,
   isStripeAllowedCountry,
   isStripePort,
 } from '../src/index.ts';
@@ -50,22 +46,5 @@ describe('ports', function () {
     assert.equal(PORT_FIELD[STRIPE_PORT.shippingAddress].type, 'address');
     assert.equal(PORT_FIELD[STRIPE_PORT.shippingName].type, 'short_text');
     assert.equal(PORT_FIELD[STRIPE_PORT.phone].type, 'short_text');
-  });
-});
-
-describe('checkout questions', function () {
-  it('can be asked in a type Stripe renders', function () {
-    for (const type of CHECKOUT_ELIGIBLE_FIELD_TYPES) {
-      assert.ok(isCheckoutEligible(type));
-    }
-    // No Stripe equivalent: an address is collected through its own parameter.
-    assert.equal(isCheckoutEligible('address'), false);
-    // Stripe's text input caps shorter than this type allows.
-    assert.equal(isCheckoutEligible('long_text'), false);
-  });
-
-  it('states the caps Stripe enforces', function () {
-    assert.equal(MAX_CHECKOUT_CUSTOM_FIELDS, 3);
-    assert.equal(MAX_CHECKOUT_LABEL_LENGTH, 50);
   });
 });

@@ -40,6 +40,7 @@ export interface GhostInstance {
   port: number;
   baseUrl: string;
   siteUuid: string;
+  ownerEmail: string;
 }
 
 export interface GhostManagerConfig {

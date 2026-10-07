@@ -18,6 +18,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  imageOverlayButton,
 } from '@tryghost/shade/components';
 import {
   type ErrorMessages,
@@ -377,8 +378,10 @@ const UserDetailModalContent: React.FC<{
       (isEditorUser(currentUser) && isAuthorOrContributor(user)));
   const suspendUserLabel = formState.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
 
-  const coverButtonClasses =
-    'h-8 bg-surface-inverse px-3 text-surface-inverse-foreground opacity-80 hover:bg-surface-inverse/90 hover:text-surface-inverse-foreground hover:opacity-100';
+  const coverButtonClasses = clsx(
+    'h-8 px-3 opacity-80 hover:opacity-100',
+    imageOverlayButton(isAdmin7),
+  );
 
   const suspendedText = formState.status === 'inactive' ? ' (Suspended)' : '';
 

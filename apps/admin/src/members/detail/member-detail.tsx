@@ -1,3 +1,4 @@
+import { getListReturnNavigationState } from '@/shared/virtual-list';
 import MemberActionsMenu from './member-actions-menu';
 import MemberActivityFeed from './member-activity-feed';
 import MemberCustomFieldsField from './member-custom-fields-field';
@@ -48,7 +49,6 @@ import {
 import { toast } from 'sonner';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { MemberEditableFields } from './member-detail-edit';
 
@@ -82,8 +82,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
     defaultErrorHandler: false,
   });
   const member = data?.members?.[0];
-  const memberLocationMapEnabled = useFeatureFlag('memberLocationMap');
-  const mapEnabled = memberLocationMapEnabled && !!member;
+  const mapEnabled = !!member;
   // 4xx from the members endpoint on a real id means "gone" (deleted mid-flow
   // is the realistic case). 5xx/network is a different story — we don't want
   // to lie about that with a "not found" message.
@@ -379,7 +378,11 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                     <BreadcrumbList>
                       <BreadcrumbItem>
                         <BreadcrumbLink asChild>
-                          <Link data-test-link="members-back" to={backPath}>
+                          <Link
+                            data-test-link="members-back"
+                            state={getListReturnNavigationState(backPath)}
+                            to={backPath}
+                          >
                             Members
                           </Link>
                         </BreadcrumbLink>

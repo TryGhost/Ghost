@@ -5,6 +5,8 @@ import { useBrowseMembers } from '../api/members';
 import { useBrowseNewsletters } from '../api/newsletters';
 import { useBrowseRoles } from '../api/roles';
 import { useBrowseUsers } from '../api/users';
+import type { EmailsResponseType } from '../api/emails';
+import { apiUrl, useFetchApi, type RequestOptions } from '../utils/api/fetch-api';
 import { HostLimitError } from '../utils/errors';
 
 import { LimitService, type LimitConfig } from '@tryghost/limit-service';
@@ -24,21 +26,47 @@ export interface Limiter {
   errorIfIsOverLimit: (limitName: string) => Promise<void>;
 }
 
-export const useLimiter = (): Limiter => {
+export interface UseLimiterOptions {
+  /**
+   * The limits this caller checks. Others are not loaded, and the staff lists are only read
+   * when `staff` is named. Pass a referentially stable array: it is a memo dependency.
+   */
+  limits?: readonly string[];
+  /** Applied to the count reads the limiter makes itself. */
+  requestOptions?: Pick<RequestOptions, 'sessionExpiryRedirect'>;
+}
+
+/** Sums the recipients of the emails sent since the period started. */
+function countEmailRecipients(emails: EmailsResponseType['emails']): number {
+  return emails.reduce((total, email) => total + (email.email_count ?? 0), 0);
+}
+
+export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions = {}): Limiter => {
   const { data: configData } = useBrowseConfig({ refetchOnMount: false });
   const config = configData?.config;
-  const { data: { users } = { users: [] }, isLoading: usersLoading } = useBrowseUsers();
-  const { data: { invites } = { invites: [] }, isLoading: invitesLoading } = useBrowseInvites();
-  const { data: { roles } = {}, isLoading: rolesLoading } = useBrowseRoles();
-  const isStaffLoading = usersLoading || invitesLoading || rolesLoading;
+  const wantsStaff = !wanted || wanted.includes('staff');
+  const { data: { users } = { users: [] }, isLoading: usersLoading } = useBrowseUsers({
+    enabled: wantsStaff,
+  });
+  const { data: { invites } = { invites: [] }, isLoading: invitesLoading } = useBrowseInvites({
+    enabled: wantsStaff,
+  });
+  const { data: { roles } = {}, isLoading: rolesLoading } = useBrowseRoles({
+    enabled: wantsStaff,
+  });
+  const isStaffLoading = wantsStaff && (usersLoading || invitesLoading || rolesLoading);
   const { refetch: fetchMembers } = useBrowseMembers({
     searchParams: { limit: '1' },
     enabled: false,
+    requestOptions,
   });
   const { refetch: fetchNewsletters } = useBrowseNewsletters({
     searchParams: { filter: 'status:active', limit: '1' },
     enabled: false,
+    requestOptions,
   });
+  const fetchApi = useFetchApi();
+  const sessionExpiryRedirect = requestOptions?.sessionExpiryRedirect;
 
   const helpLink = useMemo(() => {
     if (config?.hostSettings?.billing?.enabled === true && config.hostSettings.billing.url) {
@@ -73,6 +101,9 @@ export const useLimiter = (): Limiter => {
     // limit that throws, so without one they're skipped to keep the rest working
     const limits = Object.fromEntries(
       Object.entries(config.hostSettings.limits).filter(([name, limit]) => {
+        if (wanted && !wanted.includes(name)) {
+          return false;
+        }
         if (!subscription && limit && Object.prototype.hasOwnProperty.call(limit, 'maxPeriodic')) {
           console.warn(`Skipping ${name} limit: periodic limits need hostSettings.subscription`); // eslint-disable-line no-console
           return false;
@@ -113,6 +144,23 @@ export const useLimiter = (): Limiter => {
       };
     }
 
+    if (limits.emails) {
+      // The package's own emails query counts through knex, which the browser has no access to.
+      limits.emails.currentCountQuery = async (_db, periodStart) => {
+        const since = new Date(periodStart ?? 0).toISOString();
+        const { emails } = await fetchApi<EmailsResponseType>(
+          apiUrl('/emails/', {
+            filter: `created_at:>='${since}'`,
+            fields: 'id,email_count',
+            limit: 'all',
+          }),
+          { sessionExpiryRedirect },
+        );
+
+        return countEmailRecipients(emails);
+      };
+    }
+
     limiter.loadLimits({
       limits,
       subscription,
@@ -135,5 +183,17 @@ export const useLimiter = (): Limiter => {
       errorIfIsOverLimit: (limitName: string): Promise<void> =>
         limiter.errorIfIsOverLimit(limitName),
     };
-  }, [config, fetchMembers, fetchNewsletters, helpLink, invites, isStaffLoading, roles, users]);
+  }, [
+    config,
+    fetchApi,
+    fetchMembers,
+    fetchNewsletters,
+    helpLink,
+    invites,
+    isStaffLoading,
+    roles,
+    sessionExpiryRedirect,
+    users,
+    wanted,
+  ]);
 };

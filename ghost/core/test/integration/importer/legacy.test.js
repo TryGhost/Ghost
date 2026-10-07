@@ -1,9 +1,6 @@
 const assert = require('node:assert/strict');
 const testUtils = require('../../utils');
-const importer = require('../../../core/server/data/importer');
-const dataImporter = importer.importers.find((instance) => {
-  return instance.type === 'data';
-});
+const dataImporter = require('../../../core/server/data/importer/importers/data');
 
 const { exportedBodyLegacy } = require('../../utils/fixtures/export/body-generator');
 

@@ -25,6 +25,10 @@ vi.mock('./ember-bridge', () => ({
   },
 }));
 
+vi.mock('./billing/api', () => ({
+  useForceUpgrade: () => false,
+}));
+
 // Stand in for the real lazy screen module so the test asserts the wiring
 // without pulling in the editor chunk.
 vi.mock('./editor/editor-screen', () => ({

@@ -88,9 +88,8 @@ export default AuthenticatedRoute.extend({
         // transition never reaches updateURL. A URL intent (cold load, hash
         // change, React-driven navigation) already has the browser URL
         // pointing here, so React renders and there is nothing to do. A
-        // named intent (post list title links, Cmd-K search results, the
-        // post-success modal's revert-to-draft) has no URL yet — without
-        // writing one the click is a silent no-op.
+        // named intent (such as a Cmd-K search result) has no URL yet —
+        // without writing one the click is a silent no-op.
         if (!transition.intent?.url) {
             this._navigateToReactRoute(reactRouteUrl);
         }
@@ -145,9 +144,6 @@ export default AuthenticatedRoute.extend({
 
     buildRouteInfoMetadata() {
         return {
-            titleToken: () => {
-                return this.get('controller.post.title') || 'Editor';
-            },
             bodyClasses: ['gh-body-fullscreen'],
             mainClasses: ['gh-main-white']
         };
@@ -179,12 +175,10 @@ export default AuthenticatedRoute.extend({
     // compares it against the route it thinks it is on, finds no difference,
     // and runs no transition at all. Park on `react-fallback` — the empty
     // catch-all Ember already uses for URLs React owns — to keep the
-    // router's state honest. The fallback must use the real editor path:
-    // parking on `lexical-editor` briefly sends React to an unknown URL, and
-    // restoring the hash with replaceState does not notify React Router. That
-    // leaves the browser showing React's 404 until the next reload.
-    // See PostsRoute#_parkOnReactFallback for the full rationale (replace
-    // semantics, the parked-path guard, and URL restoration).
+    // router's state honest without writing its URL. React may already have
+    // redirected to billing while Ember parks, so restoring a captured editor
+    // URL would overwrite that redirect. As in PostsRoute and ProRoute,
+    // `.method(null)` leaves the shared URL and React Router history untouched.
     _parkOnReactFallback(reactRouteUrl) {
         const fallbackPath = reactRouteUrl.replace(/^\//, '');
         const parkedPath = this.router.currentRouteName === 'react-fallback'
@@ -195,20 +189,7 @@ export default AuthenticatedRoute.extend({
             return;
         }
 
-        const url = window.location.hash;
-        const state = window.history.state;
-
-        this.router.replaceWith('react-fallback', fallbackPath)
-            .finally(() => this._restoreUrl(url, state));
-    },
-
-    // Parking writes the fallback route's own path, so the captured URL goes
-    // back afterwards. `replaceState`: no history entry, and no `hashchange`
-    // to re-enter routing. The captured history state goes back too —
-    // react-router keeps `{usr, key, idx}` there and a `null` state breaks
-    // its back/forward index and useBlocker.
-    _restoreUrl(url, state) {
-        window.history.replaceState(state, '', url);
+        this.router.replaceWith('react-fallback', fallbackPath).method(null);
     },
 
     // Seam so tests can assert the navigation without a real hash location —

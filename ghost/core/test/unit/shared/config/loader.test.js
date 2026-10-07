@@ -5,6 +5,11 @@ const path = require('path');
 const _ = require('lodash');
 const configUtils = require('../../../utils/config-utils');
 const sinon = require('sinon');
+
+// Captured before any test changes the environment.
+const envAtLoad = process.env;
+const envValuesAtLoad = { ...process.env };
+
 describe('Config Loader', function () {
   beforeAll(async function () {
     await configUtils.restore();
@@ -28,7 +33,7 @@ describe('Config Loader', function () {
     }
 
     beforeEach(function () {
-      originalEnv = _.clone(process.env);
+      originalEnv = { ...process.env };
       originalArgv = _.clone(process.argv);
       tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-loader-'));
       loader = require('../../../../core/shared/config/loader');
@@ -43,7 +48,14 @@ describe('Config Loader', function () {
     });
 
     afterEach(function () {
-      process.env = originalEnv;
+      // Restore in place: Vitest retains the original env object for
+      // vi.stubEnv cleanup, so replacing it would break later tests.
+      for (const key of Object.keys(process.env)) {
+        if (!(key in originalEnv)) {
+          delete process.env[key];
+        }
+      }
+      Object.assign(process.env, originalEnv);
       process.argv = originalArgv;
       fs.rmSync(tmpDir, { recursive: true, force: true });
       sinon.restore();
@@ -158,6 +170,14 @@ describe('Config Loader', function () {
     });
   });
 
+  // Runs after the hierarchy tests above, which set, change and delete keys.
+  describe('hierarchy fixture cleanup', function () {
+    it('keeps the same process.env object and restores its keys and values', function () {
+      assert.equal(process.env, envAtLoad);
+      assert.deepEqual({ ...process.env }, envValuesAtLoad);
+    });
+  });
+
   describe('Index', function () {
     it('should have exactly the right keys', function () {
       const pathConfig = configUtils.config.get('paths');
@@ -166,22 +186,28 @@ describe('Config Loader', function () {
       // NOTE: using `Object.keys` here instead of `should.have.keys` assertion
       //       because when `have.keys` fails there's no useful diff
       //       and it doesn't make sure to check for "extra" keys
-      assert.deepEqual(Object.keys(pathConfig), [
-        'contentPath',
-        'fixtures',
-        'defaultSettings',
-        'assetSrc',
-        'appRoot',
-        'corePath',
-        'adminAssets',
-        'helperTemplates',
-        'defaultViews',
-        'defaultRouteSettings',
-        'internalAppPath',
-        'internalAdaptersPath',
-        'migrationPath',
-        'publicFilePath',
-      ]);
+      // Sorted, because membership is the point: zod emits the keys the schema
+      // names first, in declaration order, so adding one to ./schema.ts would
+      // otherwise break this on ordering alone.
+      assert.deepEqual(
+        Object.keys(pathConfig).sort(),
+        [
+          'contentPath',
+          'fixtures',
+          'defaultSettings',
+          'assetSrc',
+          'appRoot',
+          'corePath',
+          'adminAssets',
+          'helperTemplates',
+          'defaultViews',
+          'defaultRouteSettings',
+          'internalAppPath',
+          'internalAdaptersPath',
+          'migrationPath',
+          'publicFilePath',
+        ].sort(),
+      );
     });
 
     it('should have the correct values for each key', function () {

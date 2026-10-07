@@ -5,7 +5,7 @@
         <div class="gh-unsplash-photo-overlay">
             <div class="gh-unsplash-photo-header">
                 <a class="gh-unsplash-button-likes gh-unsplash-button" href="{{@photo.links.html}}?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit" target="_blank" rel="noopener noreferrer">{{svg-jar "unsplash-heart"}}{{@photo.likes}}</a>
-                <a class="gh-unsplash-button-download gh-unsplash-button" href="{{@photo.links.download}}/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit&force=true">{{svg-jar "download"}}</a>
+                <a class="gh-unsplash-button-download gh-unsplash-button" href={{this.downloadUrl}}>{{svg-jar "download"}}</a>
             </div>
             <div class="gh-unsplash-photo-footer">
                 <div class="gh-unsplash-photo-author">

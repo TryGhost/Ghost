@@ -77,6 +77,13 @@ describe('actions api helpers', () => {
       expect(title('deleted')).toBe('Custom field deleted');
     });
 
+    it('formats app installs and uninstalls', () => {
+      const title = (event: string) =>
+        getActionTitle(baseAction({ resource_type: 'app_installation', event }));
+      expect(title('installed')).toBe('App installed');
+      expect(title('uninstalled')).toBe('App uninstalled');
+    });
+
     it('formats a member custom field value change', () => {
       expect(
         getActionTitle(

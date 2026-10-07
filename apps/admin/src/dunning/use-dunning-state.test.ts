@@ -13,9 +13,16 @@ vi.mock('@tryghost/admin-x-framework/api/config', () => ({
   useBrowseConfig: mockUseBrowseConfig,
 }));
 
-vi.mock('@/ember-bridge', () => ({
-  useSubscriptionStatus: mockUseSubscriptionStatus,
-}));
+vi.mock('@/billing/api', async () => {
+  const { activeDunning, readDunningPaymentSettledFor } = await vi.importActual<
+    typeof import('@/billing/billing-protocol')
+  >('@/billing/billing-protocol');
+  return {
+    activeDunning,
+    readDunningPaymentSettledFor,
+    useSubscriptionStatus: mockUseSubscriptionStatus,
+  };
+});
 
 const NOW = new Date('2026-09-10T12:00:00Z');
 
@@ -34,14 +41,6 @@ describe('useDunningState', () => {
 
   test('returns null without a dunning block', () => {
     mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(undefined));
-
-    const { result } = renderHook(() => useDunningState());
-
-    expect(result.current).toBeNull();
-  });
-
-  test('returns null while the dunningWarnings flag is off', () => {
-    mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(2), {}));
 
     const { result } = renderHook(() => useDunningState());
 
@@ -246,7 +245,7 @@ describe('useDunningState', () => {
   test('installs no periodic tick when there is nothing to derive', () => {
     // The hook mounts in the admin layout on every page: without dunning in
     // effect a tick would re-render every session each minute for nothing.
-    mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(2), {}));
+    mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(undefined));
 
     renderHook(() => useDunningState());
 

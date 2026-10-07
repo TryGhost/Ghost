@@ -1,6 +1,6 @@
 import { Banner, Button } from '@tryghost/shade/components';
-import { Stack, Text } from '@tryghost/shade/primitives';
-import { formatNumber } from '@tryghost/shade/utils';
+import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { formatNumber, LucideIcon } from '@tryghost/shade/utils';
 import { getRecipientType } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
@@ -45,17 +45,20 @@ function RevertToDraft({ onRevertToDraft }: { onRevertToDraft?: () => void }) {
   }
 
   return (
-    <Text>
-      Need to make a change?{' '}
-      <Button
-        className="h-auto p-0"
-        data-testid={publishRevertToDraft}
-        variant="link"
-        onClick={onRevertToDraft}
-      >
-        Unschedule and revert to draft &rarr;
-      </Button>
-    </Text>
+    <Stack gap="md">
+      <Text size="lg">Need to make a change?</Text>
+      <Inline>
+        <Button
+          className="h-auto min-h-11 max-w-full px-5 py-2 whitespace-normal"
+          data-testid={publishRevertToDraft}
+          size="lg"
+          variant="outline"
+          onClick={onRevertToDraft}
+        >
+          Unschedule and revert to draft &rarr;
+        </Button>
+      </Inline>
+    </Stack>
   );
 }
 
@@ -90,17 +93,17 @@ export function CompleteStep({
           {note}
         </Banner>
       ) : null}
-      <Text as="h2" size="3xl" weight="bold">
+      <Text as="h2" className="text-5xl leading-tighter tracking-tight" weight="bold">
         {captured.isScheduled ? (
           <>
-            <span className="text-state-success">All set!</span> Your{' '}
+            <span className="block text-state-success">All set!</span> Your{' '}
             {emailOnly ? 'email' : post.displayName} will be {deliveryVerb}{' '}
             {formatScheduledCompletion(publishedAt, timezone)}.
           </>
         ) : (
           <>
             {emailOnly && unconfirmed ? null : (
-              <span className="text-state-success">Boom. It’s out there. </span>
+              <span className="block text-state-success">Boom. It’s out there. </span>
             )}
             {emailOnly ? (
               unconfirmed ? (
@@ -121,9 +124,9 @@ export function CompleteStep({
       </Text>
 
       {emailOnly ? (
-        <Stack gap="md">
+        <Stack gap="xl">
           {unconfirmed ? null : (
-            <Text>
+            <Text className="text-pretty" size="lg">
               Your post {captured.isScheduled ? 'will be' : 'was'} sent to{' '}
               <strong>
                 {recipientsConfirmLabel({
@@ -143,16 +146,19 @@ export function CompleteStep({
           {captured.isScheduled ? <RevertToDraft onRevertToDraft={onRevertToDraft} /> : null}
         </Stack>
       ) : (
-        <Stack gap="md">
+        <Stack gap="xl">
           <PostBookmark post={post} siteTitle={siteTitle} />
           {captured.isScheduled ? (
             <RevertToDraft onRevertToDraft={onRevertToDraft} />
           ) : (
-            <Text>
-              <a className="underline" data-testid={publishBackToDashboard} href="#/analytics">
-                Back to dashboard
-              </a>
-            </Text>
+            <Inline>
+              <Button className="px-5" size="lg" variant="outline" asChild>
+                <a data-testid={publishBackToDashboard} href="#/analytics">
+                  <LucideIcon.ArrowLeft />
+                  Back to dashboard
+                </a>
+              </Button>
+            </Inline>
           )}
         </Stack>
       )}

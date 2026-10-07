@@ -2,12 +2,14 @@ const assert = require('node:assert/strict');
 const http = require('http');
 const nock = require('nock');
 const got = require('got').default;
+const logging = require('@tryghost/logging');
 const sinon = require('sinon');
 const sharp = require('sharp');
 const zlib = require('zlib');
 
 const OembedService = require('../../../../../core/server/services/oembed/oembed-service');
 const ghostConfig = require('../../../../../core/shared/config');
+const requestExternal = require('../../../../../core/server/lib/request-external');
 
 describe('oembed-service', function () {
   /** @type {OembedService} */
@@ -20,7 +22,7 @@ describe('oembed-service', function () {
           return true;
         },
       },
-      externalRequest: got,
+      externalRequest: requestExternal,
     });
 
     nock.disableNetConnect();
@@ -92,6 +94,19 @@ describe('oembed-service', function () {
         assert.equal(error.statusCode, 422);
         assert.equal(error.context, 'Request failed with error code 500');
       }
+    });
+
+    it('should return a ValidationError if upstream returns malformed data', async function () {
+      nock('https://www.youtube.com')
+        .get('/oembed')
+        .query(true)
+        .reply(200, { type: 'rich', html: { not: 'a string' } });
+
+      await assert.rejects(oembedService.knownProvider('https://www.youtube.com/watch?v=1234'), {
+        name: 'ValidationError',
+        statusCode: 422,
+        context: 'Provider returned an invalid oEmbed response',
+      });
     });
   });
 
@@ -556,7 +571,7 @@ describe('oembed-service', function () {
         .query((query) => {
           // Ensure the URL is converted to a watch URL and retains existing query params.
           const actual = query.url;
-          const expected = 'https://youtube.com/watch?param=existing&v=1234';
+          const expected = 'https://www.youtube.com/watch?param=existing&v=1234';
 
           assert.equal(actual, expected, 'URL passed to oembed endpoint is incorrect');
 
@@ -584,7 +599,7 @@ describe('oembed-service', function () {
         .query((query) => {
           // Ensure the URL is converted to a watch URL and retains existing query params.
           const actual = query.url;
-          const expected = 'https://youtube.com/watch?param=existing&v=1234';
+          const expected = 'https://www.youtube.com/watch?param=existing&v=1234';
 
           assert.equal(actual, expected, 'URL passed to oembed endpoint is incorrect');
 
@@ -602,6 +617,179 @@ describe('oembed-service', function () {
         });
 
       await oembedService.fetchOembedDataFromUrl('https://youtube.com/live/1234?param=existing');
+    });
+
+    describe('embed thumbnails', function () {
+      const thumbnailUrl = 'https://i.vimeocdn.com/video/123-d_640x360';
+
+      const mockVimeoOembed = () => {
+        nock('https://vimeo.com').get('/api/oembed.json').query(true).reply(200, {
+          type: 'video',
+          version: '1.0',
+          html: '<iframe src="https://player.vimeo.com/video/123"></iframe>',
+          width: 640,
+          height: 360,
+          thumbnail_url: thumbnailUrl,
+          thumbnail_width: 640,
+          thumbnail_height: 360,
+        });
+      };
+
+      afterEach(function () {
+        sinon.restore();
+      });
+
+      it('stores the thumbnail and returns the provider URL alongside', async function () {
+        const processImageFromUrlStub = sinon
+          .stub(oembedService, 'processImageFromUrl')
+          .resolves('/content/images/thumbnail/vimeo.jpg');
+        mockVimeoOembed();
+
+        const response = await oembedService.fetchOembedDataFromUrl('https://vimeo.com/123');
+
+        assert.equal(response.thumbnail_url, '/content/images/thumbnail/vimeo.jpg');
+        assert.equal(response.thumbnail_url_original, thumbnailUrl);
+        assert.equal(response.thumbnail_width, 640);
+        assert.equal(response.thumbnail_height, 360);
+        sinon.assert.calledOnceWithExactly(processImageFromUrlStub, thumbnailUrl, 'thumbnail');
+      });
+
+      it('keeps the provider thumbnail when it cannot be stored', async function () {
+        sinon.stub(oembedService, 'processImageFromUrl').rejects(new Error('fetch failed'));
+        const loggingStub = sinon.stub(logging, 'error');
+        mockVimeoOembed();
+
+        const response = await oembedService.fetchOembedDataFromUrl('https://vimeo.com/123');
+
+        assert.equal(response.thumbnail_url, thumbnailUrl);
+        assert.equal(response.thumbnail_url_original, thumbnailUrl);
+        assert.equal(response.thumbnail_width, 640);
+        assert.equal(response.thumbnail_height, 360);
+        sinon.assert.calledOnce(loggingStub);
+      });
+
+      describe('YouTube', function () {
+        const hqThumbnailUrl = 'https://i.ytimg.com/vi/1234/hqdefault.jpg';
+        let service;
+        let saveRaw;
+        let jpegBytes;
+
+        beforeAll(async function () {
+          jpegBytes = await sharp({
+            create: { width: 1, height: 1, channels: 3, background: 'red' },
+          })
+            .jpeg()
+            .toBuffer();
+        });
+
+        beforeEach(function () {
+          saveRaw = sinon.stub().callsFake(async (buffer, targetPath) => {
+            return `/content/images/${targetPath}`;
+          });
+          service = new OembedService({
+            config: ghostConfig,
+            externalRequest: requestExternal,
+            imageStore: { getSanitizedFileName: (name) => name, saveRaw },
+          });
+
+          nock('https://www.youtube.com').get('/oembed').query(true).reply(200, {
+            type: 'video',
+            version: '1.0',
+            html: '<iframe src="https://www.youtube.com/embed/1234"></iframe>',
+            width: 200,
+            height: 113,
+            thumbnail_url: hqThumbnailUrl,
+            thumbnail_width: 480,
+            thumbnail_height: 360,
+          });
+        });
+
+        it('stores the un-letterboxed max resolution thumbnail', async function () {
+          nock('https://i.ytimg.com').get('/vi/1234/maxresdefault.jpg').reply(200, jpegBytes);
+
+          const response = await service.fetchOembedDataFromUrl(
+            'https://www.youtube.com/watch?v=1234',
+          );
+
+          assert.match(
+            response.thumbnail_url,
+            /^\/content\/images\/thumbnail\/maxresdefault-.+\.jpg$/,
+          );
+          assert.equal(response.thumbnail_width, 1280);
+          assert.equal(response.thumbnail_height, 720);
+          assert.equal(response.thumbnail_url_original, hqThumbnailUrl);
+          sinon.assert.calledOnce(saveRaw);
+        });
+
+        it('falls back to the provider thumbnail when there is no max resolution thumbnail', async function () {
+          const loggingStub = sinon.stub(logging, 'error');
+          nock('https://i.ytimg.com')
+            .get('/vi/1234/maxresdefault.jpg')
+            .reply(404, jpegBytes)
+            .get('/vi/1234/hqdefault.jpg')
+            .reply(200, jpegBytes);
+
+          const response = await service.fetchOembedDataFromUrl(
+            'https://www.youtube.com/watch?v=1234',
+          );
+
+          assert.match(response.thumbnail_url, /^\/content\/images\/thumbnail\/hqdefault-.+\.jpg$/);
+          assert.equal(response.thumbnail_width, 480);
+          assert.equal(response.thumbnail_height, 360);
+          assert.equal(response.thumbnail_url_original, hqThumbnailUrl);
+          sinon.assert.calledOnce(saveRaw);
+          sinon.assert.notCalled(loggingStub);
+        });
+      });
+
+      it('leaves embeds without a thumbnail unchanged', async function () {
+        const processImageFromUrlStub = sinon.stub(oembedService, 'processImageFromUrl');
+
+        nock('https://www.youtube.com').get('/oembed').query(true).reply(200, {
+          type: 'video',
+          version: '1.0',
+          html: '<iframe src="https://www.youtube.com/embed/1234"></iframe>',
+          width: 200,
+          height: 113,
+        });
+
+        const response = await oembedService.fetchOembedDataFromUrl(
+          'https://www.youtube.com/watch?v=1234',
+        );
+
+        assert.equal('thumbnail_url' in response, false);
+        assert.equal('thumbnail_url_original' in response, false);
+        sinon.assert.notCalled(processImageFromUrlStub);
+      });
+
+      it('does not store thumbnails for mentions', async function () {
+        const service = new OembedService({
+          config: {
+            get() {
+              return true;
+            },
+          },
+          externalRequest: requestExternal,
+        });
+        service.registerProvider({
+          async canSupportRequest() {
+            return true;
+          },
+          async getOEmbedData() {
+            return { type: 'video', version: '1.0', thumbnail_url: thumbnailUrl };
+          },
+        });
+        const processImageFromUrlStub = sinon.stub(service, 'processImageFromUrl');
+
+        const response = await service.fetchOembedDataFromUrl(
+          'https://www.example.com/video',
+          'mention',
+        );
+
+        assert.equal(response.thumbnail_url, thumbnailUrl);
+        assert.equal('thumbnail_url_original' in response, false);
+        sinon.assert.notCalled(processImageFromUrlStub);
+      });
     });
 
     it('keeps unknown provider fallback by default when the page fetch fails', async function () {
@@ -1083,8 +1271,8 @@ describe('oembed-service', function () {
       });
 
       it('converts anything served under an .svg name, whatever its case', async function () {
-        // Padding defeats the content sniff, so the extension is what
-        // guarantees nothing is stored as an SVG document.
+        // Padding defeats the short content sniff used for other names, so
+        // the extension is what guarantees nothing is stored as an SVG document.
         const saveRaw = sinon.stub().resolves('/stored');
         const padded = `<!--${'x'.repeat(2000)}-->${SVG}`;
 
@@ -1094,6 +1282,27 @@ describe('oembed-service', function () {
         );
 
         assert.match(saveRaw.firstCall.args[1], /\.png$/);
+      });
+
+      it('does not convert a non-SVG image served under an .svg name', async function () {
+        // The converter picks its decoder from the contents, so the name
+        // alone must not route other formats into it.
+        const saveRaw = sinon.stub().resolves('/stored');
+        const avif = await sharp({
+          create: { width: 8, height: 8, channels: 3, background: 'red' },
+        })
+          .avif()
+          .toBuffer();
+
+        await assert.rejects(
+          () =>
+            buildService(saveRaw, avif).processImageFromUrl(
+              'https://example.com/favicon.svg',
+              'icon',
+            ),
+          { message: /not a supported file type/ },
+        );
+        sinon.assert.notCalled(saveRaw);
       });
 
       it('rejects a gzipped SVG rather than inflating it', async function () {

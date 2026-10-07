@@ -4,6 +4,7 @@ import {inject as service} from '@ember/service';
 
 Route.reopen({
     billing: service(),
+    feature: service(),
     router: service(),
     config: inject(),
 
@@ -13,7 +14,8 @@ Route.reopen({
                 transition.abort();
                 this.upgradeStatus.requireUpgrade();
                 return false;
-            } else if (this.config.hostSettings?.forceUpgrade) {
+            } else if (this.config.hostSettings?.forceUpgrade && this.feature.billingReact !== true) {
+                // React's ForceUpgradeGuard owns the redirect when billingReact is on
                 // Do not prevent transitions to the billing app, to signout, or to any settings routes
                 if (transition.to?.name?.startsWith('pro.') || transition.to?.name === 'signout' || transition.to?.params?.path?.startsWith('settings')) {
                     return true;

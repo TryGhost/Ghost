@@ -1,17 +1,30 @@
-import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { getListReturnNavigationState } from '@/shared/virtual-list';
+import {
+  type CSSProperties,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { flushSync } from 'react-dom';
 import { AdminLink } from '@/shared/admin-link';
+import { getPostListReturnUrl } from '@/posts/api';
+import { reloadAdmin } from '@/auth/api';
 import { NotFound } from '@/shared/not-found';
-import { Navigate, useNavigate, useParams } from '@tryghost/admin-x-framework';
+import { Navigate, useLocation, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
-import { useShade } from '@tryghost/shade/app';
 import { DirtyConfirmDialog, PageHeader } from '@tryghost/shade/patterns';
-import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { Box, Grid, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { APIError } from '@tryghost/admin-x-framework/errors';
+import { APIError, SessionExpiredError } from '@tryghost/admin-x-framework/errors';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useEditPage, useEditorPage } from '@tryghost/admin-x-framework/api/pages';
 import { useEditPost, useEditorPost } from '@tryghost/admin-x-framework/api/posts';
+import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import {
   type User,
   isAdminUser,
@@ -31,19 +44,34 @@ import {
   type PostType,
   withLiveSettings,
 } from './card-config';
-import { EditorHeaderActions } from './editor-header-actions';
+import { EditorHeaderActions, type OpenFlow } from './editor-header-actions';
+import { readEditorReturn } from './editor-return';
 import { EditorStatus } from './editor-status';
-import { PostEditor } from './post-editor';
+import { EmailSizeWarning } from './email-size-warning';
+import { PostEditor, type PostEditorHandle } from './post-editor';
 import type { EditorStatusRecord } from './post-status';
+import { buildPublishFlowPost } from './publish/flow-post';
+import { PAID_TIERS_SEARCH_PARAMS } from './browse-params';
+import { initialEmailError } from './publish/use-publish-flow';
 import { SessionBanners } from './session/session-banners';
+import {
+  VALIDATED_SETTINGS_FIELD_KEYS,
+  settingsFieldErrorFor,
+  titleError,
+} from './session/settings-fields';
+import { ReauthDialog } from './session/reauth-dialog';
 import { PostSettingsSidebar } from './settings/post-settings-sidebar';
 import { useFeatureImageBinding } from './session/feature-image-binding';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { useEditorLeaveGuard } from './session/use-leave-guard';
-import { useEditorSession, useEditorSessionKey } from './session/use-editor-session';
+import {
+  EditorSessionCreatedProvider,
+  EditorSessionKeyProvider,
+  useEditorScreenSessionKey,
+} from './session/session-key';
+import { useEditorSession } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
-import { useSaveShortcut } from './use-editor-shortcuts';
 import type { EditorRecord } from './session/projection';
 
 function EditorLoading() {
@@ -65,20 +93,47 @@ function EditorLoadError({ message, onRetry }: { message: string; onRetry: () =>
   );
 }
 
-function EditorHeader({ postType, children }: { postType: PostType; children?: ReactNode }) {
-  const { isAdmin7 } = useShade();
+function EditorHeader({
+  postType,
+  analyticsReturn,
+  children,
+}: {
+  postType: PostType;
+  analyticsReturn?: string;
+  children?: ReactNode;
+}) {
   const listLabel = postType === 'page' ? 'Pages' : 'Posts';
+  const resource = postType === 'page' ? 'pages' : 'posts';
+  const listUrl = getPostListReturnUrl(resource);
+  const backLabel = analyticsReturn ? 'Analytics' : listLabel;
 
   return (
-    <Inline className="shrink-0 px-4 py-3" gap="sm">
-      <Button size={isAdmin7 ? 'default' : 'sm'} variant="ghost" asChild>
-        <AdminLink to={postType === 'page' ? '/pages' : '/posts'}>
-          <LucideIcon.ArrowLeft />
-          {listLabel}
-        </AdminLink>
-      </Button>
+    <Grid
+      align="center"
+      className="grid-cols-[auto_minmax(0,1fr)] pt-[calc(var(--spacing)*5+1px)] pr-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] pb-3 pl-4 sm:grid-cols-[auto_minmax(0,1fr)_auto] [&_a]:pointer-events-auto [&_button]:pointer-events-auto"
+      gap="sm"
+    >
+      <PageHeader.Action
+        className="bg-background/80 backdrop-blur-sm"
+        fallbackSize="sm"
+        fallbackVariant="ghost"
+        label={backLabel}
+        asChild
+      >
+        {analyticsReturn ? (
+          <AdminLink to={analyticsReturn}>
+            <LucideIcon.ArrowLeft />
+            {backLabel}
+          </AdminLink>
+        ) : (
+          <AdminLink state={getListReturnNavigationState(listUrl)} to={listUrl}>
+            <LucideIcon.ArrowLeft />
+            {backLabel}
+          </AdminLink>
+        )}
+      </PageHeader.Action>
       {children}
-    </Inline>
+    </Grid>
   );
 }
 
@@ -135,9 +190,123 @@ function EditorContent({
     currentUserId: currentUser?.id,
   });
   const [tkCount, setTkCount] = useState(0);
+  const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
+  const openPublishFlow = useCallback(() => setOpenFlow('publish'), []);
+  const openUpdateFlow = useCallback(() => setOpenFlow('update'), []);
+  // Only reads what the sidebar's tier picker loaded, which names a tier picked before its save lands.
+  const { data: tiersData } = useBrowseTiers({
+    defaultErrorHandler: false,
+    enabled: false,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+    searchParams: PAID_TIERS_SEARCH_PARAMS,
+  });
+  const publishPost = buildPublishFlowPost({
+    snapshot: {
+      id: session.persistedId,
+      status: session.publishTime.status,
+      publishedAt: session.publishTime.publishedAt,
+      title: session.title,
+    },
+    record: session.loadedRecord,
+    access: session.settings,
+    knownTiers: tiersData?.tiers,
+    displayName: postType,
+    lexical: session.getLiveLexical(),
+  });
+  // Core refuses an email retry to Authors and Contributors.
+  const offersEmailRetry =
+    !!currentUser && !isAuthorOrContributor(currentUser) && !!initialEmailError(publishPost);
+  // The update flow is mounted with the publish controls, which Contributors never get.
+  const canPublish = !!currentUser && !isContributorUser(currentUser);
+  const location = useLocation();
+  const analyticsReturn = record ? readEditorReturn(location.state) : undefined;
+  const statusRecord = statusRecordOf(session.loadedRecord ?? record, createdId);
+  const didEmailFail =
+    postType === 'post' &&
+    (statusRecord?.status === 'published' || statusRecord?.status === 'sent') &&
+    statusRecord.emailStatus === 'failed';
   // Closed on every editor entry, as the menu it replaces was.
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const toggleSettings = useCallback(() => setSettingsOpen((open) => !open), []);
+  const [settingsPresent, setSettingsPresent] = useState(false);
+  const shellRef = useRef<HTMLDivElement>(null);
+  const settingsToggleRef = useRef<HTMLButtonElement>(null);
+  const [settingsToggleWidth, setSettingsToggleWidth] = useState(0);
+  useLayoutEffect(() => {
+    const toggle = settingsToggleRef.current;
+    if (!toggle) {
+      return;
+    }
+    const measure = () => setSettingsToggleWidth(toggle.getBoundingClientRect().width);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(toggle);
+    return () => observer.disconnect();
+  }, []);
+  // Keep the panel's fields and subview mounted until the closing transition ends.
+  // Reading animations also handles reduced motion (no animation) and reversals.
+  useLayoutEffect(() => {
+    if (settingsOpen || !settingsPresent) {
+      return;
+    }
+    const finishClosing = () => {
+      setSettingsPresent(false);
+    };
+    const animations = shellRef.current?.getAnimations() ?? [];
+    if (!animations.length) {
+      finishClosing();
+      return;
+    }
+    let cancelled = false;
+    void Promise.allSettled(animations.map((animation) => animation.finished)).then(() => {
+      if (!cancelled) {
+        finishClosing();
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [settingsOpen, settingsPresent]);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const [headerHeight, setHeaderHeight] = useState(0);
+  useLayoutEffect(() => {
+    const header = headerRef.current;
+    if (!header) {
+      return;
+    }
+    const measure = () => setHeaderHeight(header.getBoundingClientRect().height);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
+  const toggleSettings = useCallback(() => {
+    settingsToggleRef.current?.focus();
+    setSettingsPresent(true);
+    setSettingsOpen((open) => !open);
+  }, []);
+  const postEditorRef = useRef<PostEditorHandle>(null);
+  const settingsExcerptRef = useRef<HTMLTextAreaElement>(null);
+  /** Takes the writer to the first field a save would refuse; true when there is one. */
+  const revealInvalidField = useCallback((): boolean => {
+    const field = titleError(session.bind.title)
+      ? 'title'
+      : VALIDATED_SETTINGS_FIELD_KEYS.find((key) => settingsFieldErrorFor(key, session.settings));
+    if (field === 'title') {
+      postEditorRef.current?.focusTitle();
+    } else if (field === 'custom_excerpt' && showExcerpt) {
+      postEditorRef.current?.focusExcerpt();
+    } else if (field && field !== 'email_subject') {
+      // Rendered at once, so the excerpt is there to take focus.
+      flushSync(() => {
+        setSettingsPresent(true);
+        setSettingsOpen(true);
+      });
+      if (field === 'custom_excerpt') {
+        settingsExcerptRef.current?.focus();
+      }
+    }
+    return field !== undefined;
+  }, [session.bind.title, session.settings, showExcerpt]);
   const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
   const leaveGuard = useEditorLeaveGuard(session, postType);
   const liveVisibility = session.settings.visibility;
@@ -151,76 +320,133 @@ function EditorContent({
     [cardConfig, liveShowTitleAndFeatureImage, liveVisibility],
   );
 
-  useSaveShortcut(session.dispatchExplicit);
+  const settingsToggle = (
+    <PageHeader.Action
+      ref={settingsToggleRef}
+      aria-expanded={settingsOpen}
+      className={
+        settingsOpen
+          ? 'bg-transparent enabled:aria-expanded:bg-transparent enabled:aria-expanded:shadow-none enabled:aria-expanded:hover:bg-sidebar-accent'
+          : 'bg-background/80 backdrop-blur-sm'
+      }
+      data-testid={settingsMenuToggle}
+      fallbackSize="sm"
+      fallbackVariant="ghost"
+      label="Settings"
+      tooltip={false}
+      iconOnly
+      onClick={toggleSettings}
+    >
+      <LucideIcon.PanelRight />
+    </PageHeader.Action>
+  );
 
   return (
-    <Stack className="h-full" gap="none">
-      <EditorHeader postType={postType}>
-        <EditorStatus
-          isDirty={session.isDirty()}
-          record={statusRecordOf(session.loadedRecord ?? record, createdId)}
-          state={session.state}
+    <Inline
+      ref={shellRef}
+      align="stretch"
+      className="relative h-full min-h-0 transition-[--editor-settings-progress] duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+      gap="none"
+      style={
+        {
+          '--editor-header-height': `${headerHeight}px`,
+          '--editor-overlap': '0px',
+          '--editor-settings-progress': settingsOpen ? 1 : 0,
+          '--editor-settings-toggle-width': `${settingsToggleWidth}px`,
+        } as CSSProperties
+      }
+    >
+      <Stack className="min-h-0 min-w-0 flex-1" gap="none">
+        <Box ref={headerRef} className="pointer-events-none relative z-20 shrink-0">
+          <EditorHeader analyticsReturn={analyticsReturn} postType={postType}>
+            {!analyticsReturn || didEmailFail || session.state.kind === 'error' ? (
+              <EditorStatus
+                isDirty={session.isDirty()}
+                record={statusRecord}
+                state={session.state}
+                onOpenPublishFlow={offersEmailRetry ? openPublishFlow : undefined}
+                onOpenUpdateFlow={canPublish ? openUpdateFlow : undefined}
+              />
+            ) : null}
+            <PageHeader.ActionGroup className="ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] max-sm:col-start-2 max-sm:row-start-1 sm:col-start-3">
+              <EditorHeaderActions
+                currentUser={currentUser}
+                offersEmailRetry={offersEmailRetry}
+                openFlow={openFlow}
+                post={publishPost}
+                postType={postType}
+                revealInvalidField={revealInvalidField}
+                session={session}
+                siteUrl={cardConfig.siteUrl}
+                tkCount={tkCount}
+                onOpenFlow={setOpenFlow}
+              />
+              <Box
+                aria-hidden="true"
+                className="w-[calc((var(--editor-settings-toggle-width)+var(--spacing)*2+1px)*(1-var(--editor-settings-progress)))] shrink-0"
+              />
+            </PageHeader.ActionGroup>
+          </EditorHeader>
+        </Box>
+        <Box className="peer shrink-0">
+          <SessionBanners
+            contentText={session.contentText}
+            hasUnsavedContent={session.hasUnsavedContent}
+            newerVersionAvailable={session.newerVersionAvailable}
+            pendingSave={session.pendingSave}
+            state={session.state}
+            onReload={session.reload}
+            onRetrySave={session.retrySave}
+          />
+          <ReauthDialog
+            email={currentUser?.email ?? ''}
+            open={session.state.kind === 'reauth-pending'}
+            onAbandoned={session.reauthAbandoned}
+            onSucceeded={session.reauthSucceeded}
+          />
+        </Box>
+        {/* Session warnings reserve space; otherwise the document reaches behind the header. */}
+        <Box className="relative min-h-0 flex-1 peer-empty:[--editor-overlap:var(--editor-header-height)]">
+          <div className="-mt-(--editor-overlap) h-[calc(100%+var(--editor-overlap))] min-h-0">
+            <PostEditor
+              key={session.contentKey}
+              {...session.bind}
+              autofocusTitle={!record}
+              cardConfig={currentCardConfig}
+              excerptError={settingsFieldErrorFor('custom_excerpt', session.settings)}
+              featureImage={featureImage}
+              handleRef={postEditorRef}
+              postType={postType}
+              showExcerpt={showExcerpt}
+              titleAndFeatureImageHidden={
+                postType === 'page' && liveShowTitleAndFeatureImage === false
+              }
+              titleError={titleError(session.bind.title)}
+              wordCountAccessory={<EmailSizeWarning post={publishPost} />}
+              onExcerptBlur={session.commitField}
+              onTkCountChange={setTkCount}
+            />
+          </div>
+        </Box>
+      </Stack>
+      <Box className="absolute top-[calc(var(--spacing)*5+1px)] right-[calc(var(--spacing)*6+1px)] z-40">
+        {settingsToggle}
+      </Box>
+      {settingsPresent ? (
+        <PostSettingsSidebar
+          cardConfig={currentCardConfig}
+          currentUser={currentUser}
+          excerptRef={settingsExcerptRef}
+          featureImage={featureImage.featureImage}
+          hasInlineExcerpt={showExcerpt}
+          postType={postType}
+          session={session}
+          siteUrl={cardConfig.siteUrl}
         />
-        {/* One right-aligned group: two `ml-auto` siblings would split the free space. */}
-        <PageHeader.ActionGroup className="ml-auto">
-          <EditorHeaderActions
-            currentUser={currentUser}
-            postType={postType}
-            session={session}
-            siteUrl={cardConfig.siteUrl}
-            tkCount={tkCount}
-          />
-          <PageHeader.Action
-            aria-expanded={settingsOpen}
-            data-testid={settingsMenuToggle}
-            fallbackSize="sm"
-            fallbackVariant="ghost"
-            label="Settings"
-            iconOnly
-            onClick={toggleSettings}
-          >
-            <LucideIcon.PanelRight />
-          </PageHeader.Action>
-        </PageHeader.ActionGroup>
-      </EditorHeader>
-      <SessionBanners
-        contentText={session.contentText}
-        hasUnsavedContent={session.hasUnsavedContent}
-        state={session.state}
-        onDismissReauth={session.reauthAbandoned}
-        onReload={session.reload}
-        onRetryReauth={session.reauthSucceeded}
-        onRetrySave={session.dispatchExplicit}
-      />
-      <Inline align="stretch" className="relative min-h-0 flex-1" gap="none">
-        <div className="min-h-0 min-w-0 flex-1">
-          <PostEditor
-            key={session.contentKey}
-            {...session.bind}
-            autofocusTitle={!record}
-            cardConfig={currentCardConfig}
-            featureImage={featureImage}
-            postType={postType}
-            showExcerpt={showExcerpt}
-            onExcerptBlur={session.commitSettings}
-            onTkCountChange={setTkCount}
-          />
-        </div>
-        {settingsOpen ? (
-          <PostSettingsSidebar
-            cardConfig={currentCardConfig}
-            currentUser={currentUser}
-            featureImage={featureImage.featureImage}
-            hasInlineExcerpt={showExcerpt}
-            postType={postType}
-            session={session}
-            siteUrl={cardConfig.siteUrl}
-          />
-        ) : null}
-      </Inline>
+      ) : null}
       {snippetDialog}
       <DirtyConfirmDialog testId={editorLeaveDialog} {...leaveGuard.dialogProps} />
-    </Stack>
+    </Inline>
   );
 }
 
@@ -253,7 +479,7 @@ function EditorSurface({
         : undefined,
     visibility: record?.visibility,
   }));
-  const cardConfig = usePostCardConfig({
+  const { cardConfig, failed, retry } = usePostCardConfig({
     post: cardConfigPost,
     snippets,
     createSnippet,
@@ -261,7 +487,11 @@ function EditorSurface({
   });
 
   if (!cardConfig) {
-    return <EditorLoading />;
+    return failed ? (
+      <EditorLoadError message="Couldn’t load the editor." onRetry={retry} />
+    ) : (
+      <EditorLoading />
+    );
   }
 
   return (
@@ -325,7 +555,11 @@ function useLexicalConversion(postType: PostType) {
 function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   // A create replaces the URL with the id it acquired; the load must not restart.
   const [openedId] = useState(id);
+  // Access and conversion are judged until the opening read settles. Later
+  // reads belong to the session; unmounting the editor would dispose it.
+  const [openedWith, setOpenedWith] = useState<EditorRecord>();
   const navigate = useNavigate();
+  const { pathname, search } = useLocation();
   const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const postQuery = useEditorPost(openedId ?? '', {
     enabled: postType === 'post' && !!openedId,
@@ -342,31 +576,51 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
     postType === 'page' ? pageQuery.data?.pages[0] : postQuery.data?.posts[0];
   const { state: conversion, convert } = useLexicalConversion(postType);
   const listPath = postType === 'page' ? '/pages' : '/posts';
+  // A failed refetch keeps the last post read; unmounting the editor would dispose its session.
+  const loadError = openedWith || loaded ? null : query.error;
+  // Reloading is safe only while nothing is unsaved: the signed-out admin
+  // remembers this route and returns to it after sign in.
+  const sessionExpired = loadError instanceof SessionExpiredError;
+  useEffect(() => {
+    if (sessionExpired) {
+      reloadAdmin(`${pathname}${search}`);
+    }
+  }, [sessionExpired, pathname, search]);
 
-  const returnToList = !!currentUser && !!loaded && shouldReturnToList(currentUser, loaded);
+  const opening = openedWith ? undefined : loaded;
+  const returnToList = !!currentUser && !!opening && shouldReturnToList(currentUser, opening);
   useEffect(() => {
     if (returnToList) {
       navigate(listPath, { replace: true });
     }
   }, [returnToList, navigate, listPath]);
 
-  const needsConversion = !!currentUser && !!loaded?.mobiledoc && !loaded.lexical && !returnToList;
+  const needsConversion =
+    !!currentUser && !!opening?.mobiledoc && !opening.lexical && !returnToList;
   useEffect(() => {
-    if (needsConversion && loaded && conversion?.id !== loaded.id) {
-      void convert(loaded);
+    if (needsConversion && opening && conversion?.id !== opening.id) {
+      void convert(opening);
     }
-  }, [needsConversion, loaded, conversion?.id, convert]);
+  }, [needsConversion, opening, conversion?.id, convert]);
 
   if (!openedId) {
     return <EditorSurface createdId={id} postType={postType} />;
   }
 
-  const notFound = query.error instanceof APIError && query.error.response?.status === 404;
+  if (openedWith) {
+    return <EditorSurface postType={postType} record={openedWith} />;
+  }
+
+  const notFound = loadError instanceof APIError && loadError.response?.status === 404;
   if (notFound) {
     return <NotFound />;
   }
 
-  if (query.error) {
+  if (sessionExpired) {
+    return <EditorLoading />;
+  }
+
+  if (loadError) {
     return (
       <EditorLoadError
         message={`Couldn’t load this ${postType}.`}
@@ -403,12 +657,17 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
     record = converted.record;
   }
 
+  // Latched while rendering once the read settles: a reopened post's cached
+  // copy may be stale, so the refetch in flight still decides.
+  if (!query.isFetching) {
+    setOpenedWith(record);
+  }
   return <EditorSurface postType={postType} record={record} />;
 }
 
 export default function EditorScreen() {
   const editorPath = useParams()['*'] ?? '';
-  const sessionKey = useEditorSessionKey();
+  const { key: sessionKey, markCreated } = useEditorScreenSessionKey();
   const [typeSegment, id, ...rest] = editorPath.split('/').filter(Boolean);
 
   if (!typeSegment) {
@@ -419,5 +678,11 @@ export default function EditorScreen() {
     return <NotFound />;
   }
 
-  return <EditorLoader key={sessionKey} id={id} postType={typeSegment} />;
+  return (
+    <EditorSessionKeyProvider value={sessionKey}>
+      <EditorSessionCreatedProvider value={markCreated}>
+        <EditorLoader key={sessionKey} id={id} postType={typeSegment} />
+      </EditorSessionCreatedProvider>
+    </EditorSessionKeyProvider>
+  );
 }

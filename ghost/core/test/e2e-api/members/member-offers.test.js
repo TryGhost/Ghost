@@ -1,7 +1,6 @@
 const { agentProvider, mockManager, fixtureManager } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const assert = require('node:assert/strict');
-const DomainEvents = require('@tryghost/domain-events');
 
 let membersAgent;
 let membersService;
@@ -803,8 +802,6 @@ describe('Members API - Member Offers', function () {
           .body({ identity: token, offer_id: retentionOffer.id })
           .expectStatus(204);
 
-        await DomainEvents.allSettled();
-
         await subscription.refresh();
         assert.equal(subscription.get('offer_id'), retentionOffer.id);
 
@@ -1066,7 +1063,7 @@ describe('Members API - Member Offers', function () {
       }
     });
 
-    it('successfully applies retention offer to subscription', async function () {
+    it('records the redemption in the transaction that applies the offer', async function () {
       const { subscription } = await getMemberSubscription('paid@test.com');
       const stripePrice = subscription.related('stripePrice');
       const stripeProduct = stripePrice.related('stripeProduct');
@@ -1152,26 +1149,28 @@ describe('Members API - Member Offers', function () {
       });
 
       try {
-        const token = await getIdentityToken('paid@test.com');
+        // Read back before the transaction commits: a redemption saved by anything that
+        // runs after the commit isn't there yet.
+        await models.Base.transaction(async (transacting) => {
+          await membersService.api.members.applyOfferToSubscription(
+            {
+              email: 'paid@test.com',
+              subscription: { subscription_id: stripeSubscriptionId },
+              offerId: retentionOffer.id,
+              couponId: stripeCouponId,
+            },
+            { transacting },
+          );
 
-        await membersAgent
-          .post(`/api/subscriptions/${stripeSubscriptionId}/apply-offer`)
-          .body({ identity: token, offer_id: retentionOffer.id })
-          .expectStatus(204);
+          const redemption = await models.OfferRedemption.findOne(
+            { offer_id: retentionOffer.id, subscription_id: subscription.id },
+            { transacting },
+          );
+          assert.ok(redemption, 'Offer redemption should be recorded');
+        });
 
-        // Wait for domain events (offer redemption is created via event)
-        await DomainEvents.allSettled();
-
-        // Verify the subscription was updated with the offer
         await subscription.refresh();
         assert.equal(subscription.get('offer_id'), retentionOffer.id);
-
-        // Verify offer redemption was recorded
-        const redemption = await models.OfferRedemption.findOne({
-          offer_id: retentionOffer.id,
-          subscription_id: subscription.id,
-        });
-        assert.ok(redemption, 'Offer redemption should be recorded');
       } finally {
         // Clean up - find the redemption by its criteria and destroy by id
         const redemption = await models.OfferRedemption.findOne({

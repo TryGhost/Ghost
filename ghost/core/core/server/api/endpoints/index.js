@@ -11,6 +11,18 @@ module.exports = {
     return apiFramework.pipeline(require('./automations').controller, localUtils);
   },
 
+  get automationPerformanceStats() {
+    return apiFramework.pipeline(require('./automation-performance-stats'), localUtils);
+  },
+
+  get automationRuns() {
+    return apiFramework.pipeline(require('./automation-runs'), localUtils);
+  },
+
+  get automationRunHistory() {
+    return apiFramework.pipeline(require('./automation-run-history'), localUtils);
+  },
+
   get automationActionLinks() {
     return apiFramework.pipeline(require('./automation-action-links'), localUtils);
   },
@@ -114,10 +126,6 @@ module.exports = {
 
   get membersMetafields() {
     return apiFramework.pipeline(require('./member-metafields'), localUtils);
-  },
-
-  get tiersCheckoutConfig() {
-    return apiFramework.pipeline(require('./tiers-checkout-config'), localUtils);
   },
 
   get memberCommenting() {
@@ -322,6 +330,10 @@ module.exports = {
 
   get giftsMembers() {
     return apiFramework.pipeline(require('./gifts-members'), localUtils, 'members');
+  },
+
+  get appInstallations() {
+    return apiFramework.pipeline(require('./app-installations'), localUtils);
   },
 
   get giftLinks() {

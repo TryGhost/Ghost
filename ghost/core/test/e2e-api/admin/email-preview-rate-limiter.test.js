@@ -27,7 +27,7 @@ describe('Rate limiter', function () {
     mockManager.mockMailgun();
     // Reset both the brute table and rate limiter instances between tests
     await dbUtils.truncate('brute');
-    await resetRateLimits();
+    resetRateLimits();
   });
 
   beforeAll(async function () {

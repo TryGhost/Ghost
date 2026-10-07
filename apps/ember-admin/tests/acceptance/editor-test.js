@@ -118,10 +118,12 @@ describe('Acceptance: Editor', function () {
             'tags input'
         ).to.not.exist;
 
-        // post id 2 is published, we should be redirected to index
+        // post id 2 is published, we should be redirected to the posts list
+        const navigate = sinon.stub(this.owner.lookup('route:posts'), '_navigateToReactRoute');
         await visit('/editor/post/2');
 
-        expect(currentURL(), 'currentURL').to.equal('/posts');
+        expect(navigate.calledOnceWith('/posts'), 'navigated to the React posts list').to.be.true;
+        expect(currentRouteName(), 'currentRouteName').to.equal('react-fallback');
     });
 
     describe('when logged in', function () {
@@ -593,6 +595,37 @@ describe('Acceptance: Editor', function () {
                 'breadcrumb link'
             ).to.equal('/ghost/posts');
         });
+
+        for (const resource of ['posts', 'pages']) {
+            it(`returns the breadcrumb to the React ${resource} filters`, async function () {
+                const postType = resource === 'pages' ? 'page' : 'post';
+                const post = this.server.create(postType, {authors: [author]});
+                const bridge = this.owner.lookup('service:state-bridge');
+                bridge.setPostListQueryParams('posts', {tag: 'news'});
+                bridge.setPostListQueryParams('pages', {tag: 'pages'});
+                bridge.setPostListQueryParams(resource, {type: 'draft', tag: 'engineering', order: 'title asc'});
+                const route = this.owner.lookup(`route:${resource}`);
+                const navigate = sinon.stub(route, '_navigateToReactRoute');
+
+                await visit(`/editor/${postType}/${post.id}`);
+
+                const href = find('[data-test-breadcrumb]').getAttribute('href');
+                const params = new URLSearchParams(href.split('?')[1]);
+                expect(params.get('tag')).to.equal('engineering');
+                expect(params.get('type')).to.equal('draft');
+                expect(params.get('order')).to.equal('title asc');
+
+                await click('[data-test-breadcrumb]');
+
+                expect(navigate.calledOnce).to.be.true;
+                const destination = new URL(navigate.firstCall.args[0], 'https://example.com');
+                expect(destination.pathname).to.equal(`/${resource}`);
+                expect(destination.searchParams.get('tag')).to.equal('engineering');
+                expect(destination.searchParams.get('type')).to.equal('draft');
+                expect(destination.searchParams.get('order')).to.equal('title asc');
+                navigate.restore();
+            });
+        }
 
         it('renders a breadcrumb back to post analytics root if that\'s where we came from', async function () {
             const post = this.server.create('post', {

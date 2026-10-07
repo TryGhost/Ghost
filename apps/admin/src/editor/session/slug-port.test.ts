@@ -138,6 +138,55 @@ describe('createSlugPort', () => {
     expect(machine.getState().slug).toBe('chosen');
   });
 
+  it('waits for title generation past a no-op slug blur', async () => {
+    const title = deferred<string>();
+    const generateSlug = vi
+      .fn<(text: string) => Promise<string>>()
+      .mockReturnValueOnce(title.promise);
+    const { port, commitTitle, editSlug, machine } = harness(generateSlug);
+
+    commitTitle('First');
+    await expect(editSlug('original')).resolves.toMatchObject({ reason: 'reverted' });
+    let settled = false;
+    const wait = port.settled().then(() => {
+      settled = true;
+    });
+
+    await flush();
+    expect(settled).toBe(false);
+
+    title.resolve('first');
+    await wait;
+    expect(machine.getState().slug).toBe('first');
+  });
+
+  it('waits for a manual edit a withdrawing title commit releases', async () => {
+    const title = deferred<string>();
+    const manual = deferred<string>();
+    const generateSlug = vi
+      .fn<(text: string) => Promise<string>>()
+      .mockReturnValueOnce(title.promise)
+      .mockReturnValueOnce(manual.promise);
+    const { port, commitTitle, editSlug, machine } = harness(generateSlug);
+
+    commitTitle('First');
+    const edit = editSlug('Chosen');
+    commitTitle('Original');
+    expect(generateSlug).toHaveBeenLastCalledWith('Chosen');
+    let settled = false;
+    const wait = port.settled().then(() => {
+      settled = true;
+    });
+
+    await flush();
+    expect(settled).toBe(false);
+
+    manual.resolve('chosen');
+    await edit;
+    await wait;
+    expect(machine.getState().slug).toBe('chosen');
+  });
+
   it('releases old waits on reload without losing a new submission', async () => {
     const old = deferred<string>();
     const fresh = deferred<string>();
