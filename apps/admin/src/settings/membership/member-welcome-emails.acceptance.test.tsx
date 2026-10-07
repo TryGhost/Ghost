@@ -256,10 +256,11 @@ describe('Member welcome emails', () => {
     await subject.fill('Welcome {first_name}!');
     await modal.getByRole('button', { name: 'Save' }).click();
 
-    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
-    expect(editApi.lastRequest?.body).toMatchObject({
-      automated_emails: [{ subject: 'Welcome {first_name}!' }],
-    });
+    await expect
+      .poll(() => editApi.lastRequest?.body)
+      .toMatchObject({
+        automated_emails: [{ subject: 'Welcome {first_name}!' }],
+      });
   });
 
   it('shows invalid draft preview errors inline without issuing another request', async () => {
@@ -778,12 +779,13 @@ describe('Member welcome emails', () => {
       await expect(previewIcon).toHaveCount(0);
       await modal.getByRole('button', { name: 'Save' }).click();
 
-      await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
-      expect(editDesignApi.lastRequest?.body).toMatchObject({
-        automated_email_design: [{ show_header_icon: false }],
-      });
-      expect(addApi.requests).toHaveLength(1);
-      expect(senderApi.requests).toHaveLength(1);
+      await expect
+        .poll(() => editDesignApi.lastRequest?.body)
+        .toMatchObject({
+          automated_email_design: [{ show_header_icon: false }],
+        });
+      await expect.poll(() => addApi.requests).toHaveLength(1);
+      await expect.poll(() => senderApi.requests).toHaveLength(1);
     });
 
     it('hides the publication icon choice when no icon exists', async () => {
@@ -840,15 +842,18 @@ describe('Member welcome emails', () => {
       await modal.getByLabelText('Reply-to email').fill('shared-reply@example.com');
       await modal.getByRole('button', { name: 'Save' }).click();
 
-      await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
-      expect(addApi.lastRequest?.body).toMatchObject({
-        automated_emails: [{ slug: 'member-welcome-email-paid', status: 'inactive' }],
-      });
-      expect(senderApi.lastRequest?.body).toEqual({
-        sender_name: 'Shared sender',
-        sender_email: 'shared@example.com',
-        sender_reply_to: 'shared-reply@example.com',
-      });
+      await expect
+        .poll(() => addApi.lastRequest?.body)
+        .toMatchObject({
+          automated_emails: [{ slug: 'member-welcome-email-paid', status: 'inactive' }],
+        });
+      await expect
+        .poll(() => senderApi.lastRequest?.body)
+        .toEqual({
+          sender_name: 'Shared sender',
+          sender_email: 'shared@example.com',
+          sender_reply_to: 'shared-reply@example.com',
+        });
     });
 
     it('saves shared sender settings without creating rows when automations owns them', async () => {
@@ -880,12 +885,14 @@ describe('Member welcome emails', () => {
       await modal.getByLabelText('Reply-to email').fill('shared-reply@example.com');
       await modal.getByRole('button', { name: 'Save' }).click();
 
-      await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
-      expect(senderApi.lastRequest?.body).toEqual({
-        sender_name: 'Shared sender',
-        sender_email: 'shared@example.com',
-        sender_reply_to: 'shared-reply@example.com',
-      });
+      await expect
+        .poll(() => senderApi.lastRequest?.body)
+        .toEqual({
+          sender_name: 'Shared sender',
+          sender_email: 'shared@example.com',
+          sender_reply_to: 'shared-reply@example.com',
+        });
+      // Missing rows are created before the senders write, so none can follow it.
       expect(addApi.requests).toHaveLength(0);
     });
 

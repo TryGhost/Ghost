@@ -42,17 +42,18 @@ describe('Staff passwords', () => {
 
     await confirmPassword.fill('this-is-sufficiently-secure');
     await save.click();
-    await expect.element(save).toHaveTextContent('Saved');
-    expect(passwordApi.lastRequest?.body).toEqual({
-      password: [
-        {
-          user_id: administrator.id,
-          oldPassword: '',
-          newPassword: 'this-is-sufficiently-secure',
-          ne2Password: 'this-is-sufficiently-secure',
-        },
-      ],
-    });
+    await expect
+      .poll(() => passwordApi.lastRequest?.body)
+      .toEqual({
+        password: [
+          {
+            user_id: administrator.id,
+            oldPassword: '',
+            newPassword: 'this-is-sufficiently-secure',
+            ne2Password: 'this-is-sufficiently-secure',
+          },
+        ],
+      });
   });
 
   it('requires and submits the current password when changing your own', async () => {
@@ -80,9 +81,10 @@ describe('Staff passwords', () => {
 
     await oldPassword.fill('current-password');
     await save.click();
-    await expect.element(save).toHaveTextContent('Saved');
-    expect(passwordApi.lastRequest?.body).toMatchObject({
-      password: [{ oldPassword: 'current-password', user_id: owner.id }],
-    });
+    await expect
+      .poll(() => passwordApi.lastRequest?.body)
+      .toMatchObject({
+        password: [{ oldPassword: 'current-password', user_id: owner.id }],
+      });
   });
 });

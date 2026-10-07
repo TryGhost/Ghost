@@ -116,15 +116,16 @@ describe('Newsletter settings', () => {
     await settingsScreen.selectOption('Clean sans-serif').click();
     await modal.getByRole('button', { name: 'Save' }).click();
 
-    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
     await expect
       .element(settingsScreen.newsletters().getByText(updated.name, { exact: true }))
       .toBeVisible();
-    expect(editApi.lastRequest?.body).toMatchObject({
-      newsletters: [
-        { id: activeNewsletter.id, name: updated.name, body_font_category: 'sans_serif' },
-      ],
-    });
+    await expect
+      .poll(() => editApi.lastRequest?.body)
+      .toMatchObject({
+        newsletters: [
+          { id: activeNewsletter.id, name: updated.name, body_font_category: 'sans_serif' },
+        ],
+      });
   });
 
   describe('email addresses', () => {
@@ -209,11 +210,15 @@ describe('Newsletter settings', () => {
 
       await senderEmail.fill(updated.sender_email);
       await modal.getByRole('button', { name: 'Save' }).click();
-      await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
+      await expect
+        .poll(() => editApi.lastRequest?.body)
+        .toMatchObject({
+          newsletters: [{ sender_email: updated.sender_email }],
+        });
+      // Close stays disabled until the save settles, so no toast can follow it.
+      await modal.getByRole('button', { name: 'Close' }).click();
+      await expect(settingsScreen.newsletterModal()).toHaveCount(0);
       await expect(settingsScreen.infoToast()).toHaveCount(0);
-      expect(editApi.lastRequest?.body).toMatchObject({
-        newsletters: [{ sender_email: updated.sender_email }],
-      });
     });
 
     it('allows a custom-domain newsletter to use an external reply-to address with verification', async () => {

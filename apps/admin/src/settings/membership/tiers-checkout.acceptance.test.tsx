@@ -169,16 +169,13 @@ describe('Tier checkout collection', () => {
     await expect.element(modal.getByLabelText('Collect business tax ID')).toBeChecked();
     await expect.element(modal.getByLabelText('Collect phone number')).not.toBeChecked();
 
-    // Observe the short Saved feedback while the browser click is in flight.
-    await Promise.all([
-      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
-      settingsScreen.modalSaveButton(modal).click(),
-    ]);
-    expect(putApi.requests).toHaveLength(0);
+    await modal.getByRole('button', { name: 'Save' }).click();
 
-    // A clean save leaves nothing unsaved: closing asks no questions.
+    // A clean save leaves nothing unsaved: closing asks no questions. Close stays
+    // disabled until the save settles, so no write can follow it.
     await modal.getByRole('button', { name: 'Close' }).click();
     await expect(settingsScreen.tierDetailModal()).toHaveCount(0);
+    expect(putApi.requests).toHaveLength(0);
   });
 
   // The other half of the sentinel: a tier that delivers everywhere carries no list, and
@@ -217,10 +214,7 @@ describe('Tier checkout collection', () => {
     await page.getByRole('option', { name: addressField.name }).click();
     await modal.getByLabelText('Save recipient name as').click();
     await page.getByRole('option', { name: nameField.name }).click();
-    await Promise.all([
-      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
-      settingsScreen.modalSaveButton(modal).click(),
-    ]);
+    await modal.getByRole('button', { name: 'Save' }).click();
     await expect.poll(() => putApi.requests.length).toBe(1);
 
     const sent = (putApi.lastRequest?.body as { tiers_checkout_config: [Record<string, unknown>] })
@@ -356,15 +350,11 @@ describe('Tier checkout collection', () => {
     await modal.getByLabelText('Save recipient name as').click();
     await page.getByRole('option', { name: nameField.name }).click();
 
-    await Promise.all([
-      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
-      settingsScreen.modalSaveButton(modal).click(),
-    ]);
+    await modal.getByRole('button', { name: 'Save' }).click();
 
-    expect(createApi.lastRequest?.body).toMatchObject({ tiers: [{ name: createdTier.name }] });
-    // The checkout write is chained after the tier's, so "Saved" — which the tier's own
-    // save flips — is reached before it lands. Wait for the write itself.
+    // The checkout write is chained after the tier's, so waiting for it covers both.
     await expect.poll(() => putApi.requests.length).toBe(1);
+    expect(createApi.lastRequest?.body).toMatchObject({ tiers: [{ name: createdTier.name }] });
     const sent = (
       putApi.lastRequest?.body as { tiers_checkout_config: [{ shipping: { collect: boolean } }] }
     ).tiers_checkout_config[0];
@@ -391,11 +381,7 @@ describe('Tier checkout collection', () => {
     const modal = await openSupporterModal();
     await modal.getByLabelText('Collect business tax ID').click();
     await expect.poll(unsavedChangesGuarded).toBe(true);
-    await Promise.all([
-      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
-      settingsScreen.modalSaveButton(modal).click(),
-    ]);
-    // "Saved" is the tier save's signal; the checkout write is chained after it.
+    await modal.getByRole('button', { name: 'Save' }).click();
     await expect.poll(() => putApi.requests.length).toBe(1);
 
     await expect.poll(unsavedChangesGuarded).toBe(false);
@@ -442,12 +428,7 @@ describe('Tier checkout collection', () => {
       await expect.element(modal.getByLabelText('Collect shipping address')).not.toBeChecked();
 
       await modal.getByLabelText('Collect shipping address').click();
-      await Promise.all([
-        expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
-        settingsScreen.modalSaveButton(modal).click(),
-      ]);
-
-      // "Saved" is the tier save's signal; the checkout write is chained after it.
+      await modal.getByRole('button', { name: 'Save' }).click();
       await expect.poll(() => putApi.requests.length).toBe(1);
       expect(
         (putApi.lastRequest?.body as { tiers_checkout_config: [Record<string, unknown>] })
@@ -469,12 +450,7 @@ describe('Tier checkout collection', () => {
       await expect.element(modal.getByLabelText('Collect shipping address')).toBeChecked();
 
       await modal.getByLabelText('Collect phone number').click();
-      await Promise.all([
-        expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
-        settingsScreen.modalSaveButton(modal).click(),
-      ]);
-
-      // "Saved" is the tier save's signal; the checkout write is chained after it.
+      await modal.getByRole('button', { name: 'Save' }).click();
       await expect.poll(() => putApi.requests.length).toBe(1);
       expect(
         (putApi.lastRequest?.body as { tiers_checkout_config: [Record<string, unknown>] })

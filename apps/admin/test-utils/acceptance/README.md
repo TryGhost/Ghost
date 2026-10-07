@@ -44,6 +44,8 @@ await expect.poll(() => document.documentElement.classList.contains("dark")).toB
 
 **Unsaved-changes guards.** Typing into a dirty screen arms its navigation guard through a chain of passive effects, so a spec that navigates straight after a `fill` races the guard and an unguarded navigation just goes through. Wait for the guard itself, never for a frame count: `await expect.poll(unsavedChangesGuarded).toBe(true)` before the click or `window.history.back()`.
 
+**Transient feedback is not an outcome.** Labels like "Saved" and "Copied" revert on a timer (as little as 500ms), and under load a click's round trip can outlast them, so the assertion polls a label that is already gone. Assert what the action produced instead: the captured request (`await expect.poll(() => api.lastRequest?.body).toMatchObject(...)`), or the saved value rendered on screen. To act after a settings modal save, click Close. It stays disabled until the save settles, so the click also waits for it.
+
 **One render per test.** Each `renderAdminApp` gets a fresh QueryClient, which it resolves with for a wait nothing on screen can show, and the fake API resets between tests — there is no reload. State that would be persisted on a real server (user preferences, settings) is _represented_ by boot overrides; a journey that genuinely needs persistence across reloads belongs in `e2e/`.
 
 **Host page.** `renderAdminApp` mounts into a stand-in of the production host page (the `react-admin` body class + `#root` from index.html), so the shell's viewport-bounded grid applies and scroll-driven behaviors — virtualized lists, infinite paging — work like production.

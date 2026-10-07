@@ -88,15 +88,12 @@ describe('Staff profiles', () => {
     await x.fill('ghost');
     await modal.getByTitle('Social Links').click();
     await modal.getByTestId('website-input').fill('https://example.com');
-    // Observe the short Saved feedback while the browser click is in flight.
-    await Promise.all([
-      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
-      settingsScreen.modalSaveButton(modal).click(),
-    ]);
-
-    expect(editApi.lastRequest?.body).toMatchObject({
-      users: [{ facebook: 'username', twitter: '@ghost' }],
-    });
+    await modal.getByRole('button', { name: 'Save' }).click();
+    await expect
+      .poll(() => editApi.lastRequest?.body)
+      .toMatchObject({
+        users: [{ facebook: 'username', twitter: '@ghost' }],
+      });
   });
 
   it('saves core profile fields and the server response', async () => {
@@ -120,13 +117,13 @@ describe('Staff profiles', () => {
     await modal.getByLabelText('Email', { exact: true }).fill(saved.email);
     await modal.getByLabelText('Location').fill(saved.location);
     await modal.getByLabelText('Bio').fill(saved.bio);
-    await Promise.all([
-      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
-      settingsScreen.modalSaveButton(modal).click(),
-    ]);
-    expect(editApi.lastRequest?.body).toMatchObject({
-      users: [{ name: saved.name, email: saved.email, location: saved.location, bio: saved.bio }],
-    });
+    await modal.getByRole('button', { name: 'Save' }).click();
+
+    await expect
+      .poll(() => editApi.lastRequest?.body)
+      .toMatchObject({
+        users: [{ name: saved.name, email: saved.email, location: saved.location, bio: saved.bio }],
+      });
     await modal.getByRole('button', { name: 'Close' }).click();
     await expect
       .element(settingsScreen.users().getByText(saved.name, { exact: true }))
@@ -169,19 +166,18 @@ describe('Staff profiles', () => {
       .element(modal.getByTestId('cover-image-preview'))
       .toHaveAttribute('src', 'http://example.com/cover.png');
 
-    await Promise.all([
-      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
-      settingsScreen.modalSaveButton(modal).click(),
-    ]);
+    await modal.getByRole('button', { name: 'Save' }).click();
+    await expect
+      .poll(() => editApi.lastRequest?.body)
+      .toMatchObject({
+        users: [
+          {
+            profile_image: 'http://example.com/profile.png',
+            cover_image: 'http://example.com/cover.png',
+          },
+        ],
+      });
     expect(uploadApi.requests).toHaveLength(2);
-    expect(editApi.lastRequest?.body).toMatchObject({
-      users: [
-        {
-          profile_image: 'http://example.com/profile.png',
-          cover_image: 'http://example.com/cover.png',
-        },
-      ],
-    });
   });
 
   it("redirects my-profile to the current user's own staff profile", async () => {
@@ -220,24 +216,22 @@ describe('Staff profiles', () => {
       await modal.getByLabelText(label).click();
     }
     await modal.getByLabelText('Paid member cancellations').click();
-    await Promise.all([
-      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
-      settingsScreen.modalSaveButton(modal).click(),
-    ]);
-
-    expect(editApi.lastRequest?.body).toMatchObject({
-      users: [
-        {
-          comment_notifications: false,
-          free_member_signup_notification: false,
-          paid_subscription_started_notification: false,
-          paid_subscription_canceled_notification: true,
-          milestone_notifications: false,
-          donation_notifications: false,
-          gift_subscription_notifications: false,
-        },
-      ],
-    });
+    await modal.getByRole('button', { name: 'Save' }).click();
+    await expect
+      .poll(() => editApi.lastRequest?.body)
+      .toMatchObject({
+        users: [
+          {
+            comment_notifications: false,
+            free_member_signup_notification: false,
+            paid_subscription_started_notification: false,
+            paid_subscription_canceled_notification: true,
+            milestone_notifications: false,
+            donation_notifications: false,
+            gift_subscription_notifications: false,
+          },
+        ],
+      });
   });
 
   it('shows only engagement notifications to non-admin staff', async () => {
@@ -356,12 +350,8 @@ describe('Staff profiles', () => {
 
     const modal = settingsScreen.userDetailModal();
     await modal.getByLabelText('Slug').fill('New Admin');
-    await Promise.all([
-      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
-      settingsScreen.modalSaveButton(modal).click(),
-    ]);
-
-    expect(currentRoute()).toBe('/settings/staff/new-admin');
+    await modal.getByRole('button', { name: 'Save' }).click();
+    await expect.poll(currentRoute).toBe('/settings/staff/new-admin');
     await expect.element(modal.getByLabelText('Slug')).toHaveValue('new-admin');
     await expect.element(modal).toBeVisible();
   });
@@ -475,10 +465,9 @@ describe('Staff profile social links', () => {
       await input.fill(valid);
       await modal.getByTitle('Social Links').click();
       await modal.getByRole('button', { name: 'Save' }).click();
-      // Poll the capture, not the transient "Saved" label — the label
-      // reverts after ~2s and the window gets missed under parallel load.
-      await expect.poll(() => editApi.lastRequest?.body).toBeTruthy();
-      expect(editApi.lastRequest?.body).toMatchObject({ users: [{ [field]: stored }] });
+      await expect
+        .poll(() => editApi.lastRequest?.body)
+        .toMatchObject({ users: [{ [field]: stored }] });
     },
   );
 });
