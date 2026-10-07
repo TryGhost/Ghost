@@ -235,7 +235,7 @@ describe('Post analytics overview', () => {
     await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}/newsletter`);
     await expect.element(page.getByText('Newsletter clicks')).not.toBeInTheDocument();
     await expect
-      .element(page.getByText('Sends, opens and clicks will appear once every email has been sent'))
+      .element(page.getByText("You'll see opens and clicks here once it finishes"))
       .toBeVisible();
     await expect
       .element(page.getByRole('button', { name: /View members/ }).first())
