@@ -11,6 +11,7 @@
 
 export { APP_ID_MAX_LENGTH, isValidAppId } from './manifest/id.ts';
 export type {
+  AppIcon,
   AppManifest,
   AppSurface,
   AppSurfaceType,

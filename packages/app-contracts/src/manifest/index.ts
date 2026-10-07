@@ -10,10 +10,16 @@
  */
 
 export { APP_ID_MAX_LENGTH, isValidAppId } from './id.ts';
+export type { AppIcon } from './icon.ts';
 export {
   parseManifest,
   type ManifestError,
   type ParseManifestOptions,
   type ParseManifestResult,
 } from './parse.ts';
-export type { AppManifest, AppSurface, AppSurfaceType } from './schema.ts';
+export {
+  AppManifestSchema,
+  type AppManifest,
+  type AppSurface,
+  type AppSurfaceType,
+} from './schema.ts';
