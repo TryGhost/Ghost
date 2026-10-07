@@ -20,6 +20,11 @@ const features: Feature[] = [
     flag: 'automations',
   },
   {
+    title: 'Archive automations',
+    description: 'Let members archive and restore automations.',
+    flag: 'automationsArchive',
+  },
+  {
     title: 'Automations per tier',
     description: 'Allow automations to be configured for individual tiers.',
     flag: 'automationsPerTier',
