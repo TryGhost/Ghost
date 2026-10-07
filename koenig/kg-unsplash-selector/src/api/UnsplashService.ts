@@ -18,8 +18,6 @@ export class UnsplashService implements IUnsplashService {
   private photoUseCases: PhotoUseCases;
   private masonryService: MasonryService;
   public photos: Photo[] = [];
-  // Bumped whenever the gallery's contents are replaced, so results from a
-  // superseded request are discarded rather than overwriting newer ones
   private generation: number = 0;
 
   constructor(photoUseCases: PhotoUseCases, masonryService: MasonryService) {

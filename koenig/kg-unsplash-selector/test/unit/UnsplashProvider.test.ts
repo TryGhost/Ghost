@@ -6,7 +6,7 @@ import { fixturePhotos } from '../../src/api/unsplashFixtures';
 type PendingFetch = {
   url: string;
   signal?: AbortSignal;
-  respond: (body: unknown) => void;
+  respond: (body: unknown, headers?: HeadersInit) => void;
 };
 
 describe('UnsplashProvider', () => {
@@ -29,7 +29,8 @@ describe('UnsplashProvider', () => {
           pending.push({
             url,
             signal,
-            respond: (body) => resolve(new Response(JSON.stringify(body), { status: 200 })),
+            respond: (body, headers) =>
+              resolve(new Response(JSON.stringify(body), { status: 200, headers })),
           });
         });
       }),
@@ -98,5 +99,26 @@ describe('UnsplashProvider', () => {
     pending[0].respond({ results: [] });
     await search;
     expect(provider.REQUEST_IS_RUNNING).toBe(false);
+  });
+
+  it('keeps the new search pagination when an older next page finishes after it', async () => {
+    provider.PAGINATION = { next: 'https://api.unsplash.com/photos?page=2' };
+    const nextPage = provider.fetchNextPage();
+    const search = provider.searchPhotos('mobile');
+
+    pending[1].respond(
+      { results: [fixturePhotos[1]] },
+      { link: '<https://api.unsplash.com/search/photos?query=mobile&page=2>; rel="next"' },
+    );
+    pending[0].respond([fixturePhotos[0]], {
+      link: '<https://api.unsplash.com/photos?page=3>; rel="next"',
+    });
+
+    expect(await search).toEqual([fixturePhotos[1]]);
+    expect(await nextPage).toBeNull();
+    expect(provider.PAGINATION.next).toBe(
+      'https://api.unsplash.com/search/photos?query=mobile&page=2',
+    );
+    expect(provider.ERROR).toBeNull();
   });
 });

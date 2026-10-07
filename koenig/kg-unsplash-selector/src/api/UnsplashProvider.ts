@@ -12,6 +12,7 @@ export class UnsplashProvider implements IUnsplashProvider {
   IS_LOADING: boolean = false;
   private activeRequests: number = 0;
   private latestRequestController: AbortController | null = null;
+  private nextPageController: AbortController | null = null;
 
   constructor(HEADERS: DefaultHeaderTypes) {
     this.HEADERS = HEADERS;
@@ -37,8 +38,7 @@ export class UnsplashProvider implements IUnsplashProvider {
       const checkedResponse = await this.checkStatus(response);
       const jsonResponse = await checkedResponse.json();
 
-      // A newer request replaced this one while it was in flight, so its
-      // results and pagination are stale
+      // fetch can't reject once the body has been read
       if (signal?.aborted) {
         return null;
       }
@@ -62,10 +62,9 @@ export class UnsplashProvider implements IUnsplashProvider {
     }
   }
 
-  // Loading the initial photos or a search replaces whatever the gallery shows,
-  // so it cancels the previous one instead of being dropped while it's running
   private async makeLatestRequest(url: string): Promise<Photo[] | { results: Photo[] } | null> {
     this.latestRequestController?.abort();
+    this.nextPageController?.abort();
     const controller = new AbortController();
     this.latestRequestController = controller;
 
@@ -127,9 +126,18 @@ export class UnsplashProvider implements IUnsplashProvider {
 
     if (this.PAGINATION.next) {
       const url = `${this.PAGINATION.next}`;
-      const response = await this.makeRequest(url);
-      if (response) {
-        return response as Photo[];
+      const controller = new AbortController();
+      this.nextPageController = controller;
+
+      try {
+        const response = await this.makeRequest(url, controller.signal);
+        if (response) {
+          return response as Photo[];
+        }
+      } finally {
+        if (this.nextPageController === controller) {
+          this.nextPageController = null;
+        }
       }
     }
 
