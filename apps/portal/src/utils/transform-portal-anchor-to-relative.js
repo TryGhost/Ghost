@@ -4,7 +4,6 @@ export function transformPortalAnchorToRelative(anchor) {
   try {
     url = new URL(href, window.location.origin);
   } catch {
-    // A malformed theme link must not interrupt Portal initialization.
     return;
   }
   const supportedHashPrefixes = ['#/portal', '#/share'];
