@@ -66,4 +66,4 @@ const contentHelper = `.gh-post-upgrade-cta-content,
 
 const styles = contentHelper;
 
-module.exports = styles;
+export { styles };
