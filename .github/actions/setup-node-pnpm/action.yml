@@ -24,8 +24,15 @@ inputs:
       new workflow verifies unless it opts out.
     default: 'false'
   store-cache:
-    description: Let setup-node restore and save the pnpm store.
-    default: 'true'
+    description: >-
+      How this job uses the cached pnpm store: 'restore' (default) restores it,
+      'save' also saves it after installing, 'false' skips it. Only job_setup in
+      ci.yml saves, because it installs the whole workspace: a cache entry can't
+      be overwritten, so a job with a filtered install that saved first would
+      leave every later job with a partial store. Jobs with a filtered install
+      pass 'false': restoring the whole store costs them more than fetching
+      their few packages from the registry.
+    default: 'restore'
 
 runs:
   using: composite
@@ -37,7 +44,36 @@ runs:
         FORCE_COLOR: 0
       with:
         node-version: ${{ inputs.node-version }}
-        cache: ${{ inputs.store-cache == 'true' && 'pnpm' || '' }}
+
+    - name: Check store-cache input
+      shell: bash
+      env:
+        STORE_CACHE: ${{ inputs.store-cache }}
+      run: |
+        case "$STORE_CACHE" in
+          restore | save | false) ;;
+          *)
+            echo "::error::store-cache must be 'restore', 'save' or 'false', got '$STORE_CACHE'"
+            exit 1
+            ;;
+        esac
+
+    - name: Locate pnpm store
+      id: pnpm-store
+      if: inputs.store-cache != 'false' && inputs.install == 'true'
+      shell: bash
+      run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+    # A different lockfile falls back to the newest store for this platform,
+    # which still holds most packages.
+    - name: Restore pnpm store
+      id: restore-pnpm-store
+      if: inputs.store-cache != 'false' && inputs.install == 'true'
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.pnpm-store.outputs.path }}
+        key: pnpm-store-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: pnpm-store-${{ runner.os }}-${{ runner.arch }}-
 
     - name: Install dependencies
       if: inputs.install == 'true'
@@ -55,3 +91,10 @@ runs:
         # shellcheck disable=SC2206 # deliberate word split: install-args is an argument list
         args+=($INSTALL_ARGS)
         pnpm install "${args[@]}"
+
+    - name: Save pnpm store
+      if: inputs.store-cache == 'save' && inputs.install == 'true' && steps.restore-pnpm-store.outputs.cache-hit != 'true'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.pnpm-store.outputs.path }}
+        key: ${{ steps.restore-pnpm-store.outputs.cache-primary-key }}
