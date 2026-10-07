@@ -154,28 +154,28 @@ export class MetafieldValuesService {
   }
 
   /**
-   * The member's metafields, or undefined if they have none. Given an executor, reads
+   * The record's metafields, or undefined if it has none. Given an executor, reads
    * inside that transaction.
    */
-  async getValuesForMember(
-    memberId: string,
+  async getValues(
+    entityId: string,
     audience: Audience,
     executor: Knex = this.knex,
   ): Promise<Record<string, Record<string, unknown>> | undefined> {
-    return (await this.getValuesForMembers([memberId], audience, executor)).get(memberId);
+    return (await this.getValuesForMany([entityId], audience, executor)).get(entityId);
   }
 
   /**
-   * Metafields for each member, keyed by member id. Only active fields the audience can
-   * read are included. Members with no metafields have no entry. Given an executor, reads
+   * Metafields for each record, keyed by its id. Only active fields the audience can
+   * read are included. Records with no metafields have no entry. Given an executor, reads
    * inside that transaction.
    */
-  async getValuesForMembers(
-    memberIds: string[],
+  async getValuesForMany(
+    entityIds: string[],
     audience: Audience,
     executor: Knex = this.knex,
   ): Promise<Map<string, Record<string, Record<string, unknown>>>> {
-    if (memberIds.length === 0) {
+    if (entityIds.length === 0) {
       return new Map();
     }
 
@@ -190,11 +190,11 @@ export class MetafieldValuesService {
       ),
       audience,
     )
-      .whereIn(`${VALUES_TABLE}.member_id`, memberIds)
+      .whereIn(`${VALUES_TABLE}.member_id`, entityIds)
       .where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active)
       .orderBy(`${VALUES_TABLE}.path`, 'asc')
       .select(
-        `${VALUES_TABLE}.member_id`,
+        { entity_id: `${VALUES_TABLE}.member_id` },
         `${FIELDS_TABLE}.key`,
         `${FIELDS_TABLE}.type`,
         `${VALUES_TABLE}.path`,
@@ -219,8 +219,8 @@ export class MetafieldValuesService {
     }
 
     return new Map(
-      [...valuesFromLeaves(leaves)].map(([memberId, values]) => [
-        memberId,
+      [...valuesFromLeaves(leaves)].map(([entityId, values]) => [
+        entityId,
         { [CUSTOM_NAMESPACE]: values },
       ]),
     );

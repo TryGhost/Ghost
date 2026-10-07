@@ -2108,54 +2108,6 @@ services:
       - >-
         No wrapper shutdown or updater unsubscribe method is exposed. Characterize listener
         ownership and repeated boot before changing initialization.
-  members-metafields:
-    kind: directory
-    disposition: retain
-    status: auditing
-    entryPoints:
-      - members-metafields/index.ts
-    notes: >-
-      Preserve three boot-wired services and live definition limits; verify
-      partial-construction failure and repeated initialization.
-    contracts:
-      exports:
-        summary: >-
-          Named exports include init, the mutable definitions/values/bindings bindings,
-          audience and access constants, canWrite, actingContext and adminWriteOrigin. The
-          three service bindings are undefined before init.
-        sources:
-          - core/server/services/members-metafields/index.ts
-        tests: []
-      construction:
-        summary: >-
-          Boot calls synchronous init after database setup. It constructs definitions, values
-          and bindings in sequence, passing the values instance into bindings. Repeated init
-          returns only when all three bindings exist; assignment is not atomic.
-        sources:
-          - core/server/services/members-metafields/index.ts
-          - core/boot.js
-        tests: []
-      configuration:
-        summary: >-
-          Definitions and values receive getters that resolve
-          members:metafields:maxDefinitions from current config on each invocation rather than
-          capturing its numeric value at initialization.
-        sources:
-          - core/server/services/members-metafields/index.ts
-          - core/server/services/members-metafields/config.ts
-          - core/server/services/members-metafields/definitions-service.ts
-          - core/server/services/members-metafields/values-service.ts
-        tests: []
-    unverified:
-      - consumers
-      - startup
-      - lifetime
-      - resources
-      - failures
-    blockers:
-      - >-
-        Characterize the three exported identities and behavior after a construction failure;
-        constructor-level tests do not establish this wrapper contract.
   mentions:
     kind: directory
     disposition: retain
@@ -2216,6 +2168,54 @@ services:
       - >-
         Add retained-consumer dispatch coverage across jobs restart, and test pending
         initialization and failure propagation through boot.
+  metafields:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - metafields/index.ts
+    notes: >-
+      Preserve three boot-wired services and live definition limits; verify
+      partial-construction failure and repeated initialization.
+    contracts:
+      exports:
+        summary: >-
+          Named exports include init, the mutable definitions/values/bindings bindings,
+          audience and access constants, canWrite, actingContext and adminWriteOrigin. The
+          three service bindings are undefined before init.
+        sources:
+          - core/server/services/metafields/index.ts
+        tests: []
+      construction:
+        summary: >-
+          Boot calls synchronous init after database setup. It constructs definitions, values
+          and bindings in sequence, passing the values instance into bindings. Repeated init
+          returns only when all three bindings exist; assignment is not atomic.
+        sources:
+          - core/server/services/metafields/index.ts
+          - core/boot.js
+        tests: []
+      configuration:
+        summary: >-
+          Definitions and values receive getters that resolve
+          members:metafields:maxDefinitions from current config on each invocation rather than
+          capturing its numeric value at initialization.
+        sources:
+          - core/server/services/metafields/index.ts
+          - core/server/services/metafields/config.ts
+          - core/server/services/metafields/definitions-service.ts
+          - core/server/services/metafields/values-service.ts
+        tests: []
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - resources
+      - failures
+    blockers:
+      - >-
+        Characterize the three exported identities and behavior after a construction failure;
+        constructor-level tests do not establish this wrapper contract.
   milestones:
     kind: directory
     disposition: retain

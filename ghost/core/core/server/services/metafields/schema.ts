@@ -73,35 +73,18 @@ export const DbMetafieldValue = z.object({
 
 type MetafieldValueRow = z.infer<typeof DbMetafieldValue>;
 
-// The field's key travels with the row so a value assembles without a second lookup.
+// The field's key travels with the row so a value assembles without a second lookup, and
+// the record it belongs to under a name that does not depend on what kind of record it is.
 //
 // `type` takes no part in the assembly and is here as a gate: a value whose type has left
 // the catalog is one the definitions list no longer returns either, so failing to parse
 // is what drops it.
 export const DbMetafieldLeaf = z.object({
-  member_id: z.string(),
+  entity_id: z.string(),
   key: z.string(),
   type: FieldTypeSchema,
   path: z.string(),
   value_text: z.string(),
-});
-
-export const DbMetafieldBinding = z.object({
-  id: z.string(),
-  product_id: z.string(),
-  port: z.string(),
-  metafield_key: z.string(),
-  created_at: DbDate,
-  updated_at: DbDate.nullable(),
-});
-
-type MetafieldBindingRow = z.infer<typeof DbMetafieldBinding>;
-
-/** A binding joined to the field it points at, which is how a collected value is routed. */
-export const DbBoundField = z.object({
-  binding_id: z.string(),
-  key: z.string(),
-  type: FieldTypeSchema,
 });
 
 /**
@@ -213,13 +196,6 @@ declare module 'knex/types/tables' {
     members_metafield_change_events: Knex.CompositeTableType<
       MetafieldChangeEventRow,
       Omit<MetafieldChangeEventRow, 'created_at'> & { created_at: string }
-    >;
-    members_metafield_bindings: Knex.CompositeTableType<
-      MetafieldBindingRow,
-      // `updated_at` is set on insert as well as update: a binding is a setting, and
-      // "when was this last stated" is the same question whichever way it got there.
-      z.input<typeof DbMetafieldBinding>,
-      Partial<MetafieldBindingRow>
     >;
   }
 }
