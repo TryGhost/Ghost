@@ -30,6 +30,7 @@ export const CurrentInstallationRow = z.object({
     status: true,
     manifest_id: true,
     pending_manifest_id: true,
+    revision: true,
   }).shape,
   ...DbAppInstallationManifest.pick({ manifest_url: true, manifest: true, digest: true }).shape,
 });

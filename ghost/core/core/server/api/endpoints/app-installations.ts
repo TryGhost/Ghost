@@ -33,6 +33,17 @@ function reviewed(frame: WriteFrame): { manifestUrl: string; digest: string } {
   return { manifestUrl, digest };
 }
 
+/** What approving confirms on top: the revision of the installation the review was shown against. */
+function reviewedChange(frame: WriteFrame) {
+  const revision = frame.data.app_installations[0]?.revision;
+  if (typeof revision !== 'number') {
+    throw new errors.ValidationError({
+      message: 'Expected the revision of the installation that was reviewed.',
+    });
+  }
+  return { ...reviewed(frame), revision };
+}
+
 const noCacheInvalidation = { cacheInvalidate: false };
 
 const controller = {
@@ -76,7 +87,7 @@ const controller = {
       return service!.approve(
         actingContext(frame.options.context),
         frame.options.id,
-        reviewed(frame),
+        reviewedChange(frame),
       );
     },
   },

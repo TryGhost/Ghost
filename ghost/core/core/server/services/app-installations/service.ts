@@ -46,6 +46,11 @@ export interface AppInstallationPreview {
   installation: {
     id: string;
     status: AppInstallationStatus;
+    /**
+     * Sent back when approving, so the changes approved are the ones that were reviewed:
+     * every change to the installation moves it on.
+     */
+    revision: number;
     manifest_url: string;
     manifest: AppManifest;
     changes: AppManifestChange[];
@@ -66,6 +71,14 @@ interface LoadedManifest {
  */
 function digestOf(serialisedManifest: string): string {
   return createHash('sha256').update(serialisedManifest).digest('hex');
+}
+
+/** The installation the publisher reviewed is not the one being approved, or has ended. */
+function notTheReviewedInstallation() {
+  return new errors.ConflictError({
+    message: 'This installation is not the one for the app that was reviewed.',
+    code: 'APP_INSTALLATION_CHANGED',
+  });
 }
 
 function isUniqueViolation(err: unknown): boolean {
@@ -192,6 +205,7 @@ export class AppInstallationsService {
         'installation.status',
         'installation.manifest_id',
         'installation.pending_manifest_id',
+        'installation.revision',
         'approved.manifest_url',
         'approved.manifest',
         'approved.digest',
@@ -225,6 +239,7 @@ export class AppInstallationsService {
         ? {
             id: current.id,
             status: current.status,
+            revision: current.revision,
             manifest_url: current.manifest_url,
             manifest: current.manifest,
             changes: this.changesFrom(current, loaded),
@@ -341,14 +356,23 @@ export class AppInstallationsService {
    * changes waiting for approval, or the same app served from somewhere new. The
    * installation keeps its ID and history, and runs the reviewed manifest from now on.
    *
+   * `revision` is the installation's revision the review was shown against. Another
+   * approval in between moves it on, and what the publisher reviewed is then not what
+   * they would be approving, so they are asked to review again.
+   *
    * Approving what is already approved changes nothing and records nothing.
    */
   async approve(
     context: RequestContext,
     id: string,
-    { manifestUrl, digest }: { manifestUrl: string; digest: string },
+    { manifestUrl, digest, revision }: { manifestUrl: string; digest: string; revision: number },
   ): Promise<AppInstallation> {
-    await this.read(id);
+    const installation = await this.read(id);
+    // An ended installation is never brought back, so there is nothing to fetch for it.
+    // The check inside the transaction still covers one ending while the fetch is out.
+    if (installation.status === 'uninstalled') {
+      throw notTheReviewedInstallation();
+    }
     const loaded = await this.fetchReviewed(manifestUrl, digest);
 
     const approved = await this.knex.transaction(async (trx) => {
@@ -357,46 +381,62 @@ export class AppInstallationsService {
       // The reviewed manifest must belong to this installation, and it must still be
       // installed: anything else is not what the publisher was shown.
       if (!current || current.id !== id) {
-        throw new errors.ConflictError({
-          message: 'This installation is not the one for the app that was reviewed.',
-          code: 'APP_INSTALLATION_CHANGED',
-        });
+        throw notTheReviewedInstallation();
+      }
+      if (current.revision !== revision) {
+        return { stale: true } as const;
       }
 
-      const unchanged =
-        current.digest === loaded.digest &&
-        current.manifest_url === loaded.manifestUrl &&
-        current.status === 'active' &&
-        current.pending_manifest_id === null;
-      if (unchanged) {
+      // One reading of what differs, for the decision here and for the record: the preview
+      // lists changes from the same comparison, so approve cannot disagree with it.
+      const changes = this.changesFrom(current, loaded);
+      const sameManifest = changes.length === 0;
+      if (sameManifest && current.pending_manifest_id === null) {
         return null;
       }
 
-      const manifestId = new ObjectId().toHexString();
       const now = toDatabaseDate(new Date());
-      await trx(MANIFESTS).insert({
-        id: manifestId,
-        installation_id: id,
-        manifest_url: loaded.manifestUrl,
-        manifest: loaded.serialised,
-        digest: loaded.digest,
-        requires_approval: this.changesFrom(current, loaded).some(
-          (change) => change.requires_approval,
-        ),
-        created_at: now,
-      });
+      // The manifest the publisher just approved. When it is the approved one already,
+      // the app had changes waiting and then went back: there is nothing new to keep, only
+      // the pending manifest to let go of.
+      let manifestId = current.manifest_id;
+      if (!sameManifest) {
+        manifestId = new ObjectId().toHexString();
+        await trx(MANIFESTS).insert({
+          id: manifestId,
+          installation_id: id,
+          manifest_url: loaded.manifestUrl,
+          manifest: loaded.serialised,
+          digest: loaded.digest,
+          requires_approval: changes.some((change) => change.requires_approval),
+          created_at: now,
+        });
+      }
       await trx(INSTALLATIONS)
         .where({ id })
         .update({
-          status: 'active',
+          // A suspended app runs again once the changes it was waiting for are approved.
+          // Suspended means exactly that today; should a suspension ever have another
+          // cause, approving a manifest does not lift it.
+          status:
+            current.status === 'active' || current.pending_manifest_id !== null
+              ? 'active'
+              : current.status,
           manifest_id: manifestId,
           pending_manifest_id: null,
           revision: trx.raw('?? + 1', ['revision']),
           updated_at: now,
         });
-      return { from: current.manifest_id, to: manifestId };
+      return { stale: false, from: current.manifest_id, to: manifestId } as const;
     });
 
+    if (approved?.stale) {
+      throw new errors.ConflictError({
+        message: 'The installation changed while the app was being reviewed.',
+        code: 'APP_INSTALLATION_CHANGED',
+        errorDetails: await this.previewOf(loaded),
+      });
+    }
     if (approved) {
       await this.recordAction({
         context,
