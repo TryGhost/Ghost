@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
-import { type ConfigResponseType, useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
+import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { parseDunningConfig } from '@tryghost/admin-x-framework/api/dunning';
 import { isOwnerUser, type UsersResponseType } from '@tryghost/admin-x-framework/api/users';
@@ -23,8 +23,6 @@ import {
   type BillingAppMessage,
   EXCEEDED_ALERT_HTML,
   EXCEEDED_ALERT_KEY,
-  OVERDUE_ALERT_HTML,
-  OVERDUE_ALERT_KEY,
   PREVIOUS_PAGE_DESTINATION,
   adminDestinationRoute,
   billingAdminPath,
@@ -90,7 +88,6 @@ function BillingAppFrame({
   // rendered the next location — the path keeps that render from counting as open
   const visible = useBillingScreenOpen() && isBillingPath(location.pathname);
   const automations = useFeatureFlag('automations');
-  const dunningWarnings = useFeatureFlag('dunningWarnings');
 
   const locationRef = useRef(location);
   locationRef.current = location;
@@ -228,9 +225,7 @@ function BillingAppFrame({
 
   const navigateToAdmin = (destination: unknown) => {
     if (destination === PREVIOUS_PAGE_DESTINATION) {
-      const dunning = dunningWarnings
-        ? parseDunningConfig(config?.config.hostSettings?.billing?.dunning)
-        : null;
+      const dunning = parseDunningConfig(config?.config.hostSettings?.billing?.dunning);
       if (dunning) {
         markDunningPaymentSettled(dunning.paymentFailedAt);
       }
@@ -258,7 +253,7 @@ function BillingAppFrame({
       : '/plans';
 
     // As Ember's billing iframe does: listeners and alerts wait for the plan's
-    // fresh config, so a changed dunning block decides the overdue alert
+    // fresh config, so a changed dunning block lands with the subscription
     void queryClient.refetchQueries({ queryKey: ['SettingsResponseType'] }).catch(() => {});
     latestReportRef.current += 1;
     const report = latestReportRef.current;
@@ -279,23 +274,7 @@ function BillingAppFrame({
     setBillingSubscriptionState({ subscription });
     checkoutRouteRef.current = checkoutRoute;
 
-    const freshConfig = queryClient.getQueriesData<ConfigResponseType>({
-      queryKey: ['ConfigResponseType'],
-    })[0]?.[1];
-    const dunningWarningsActive =
-      dunningWarnings &&
-      parseDunningConfig(freshConfig?.config.hostSettings?.billing?.dunning) !== null;
-    const { overdue, exceeded } = billingAlerts(
-      { ...message, subscription },
-      { dunningWarningsActive },
-    );
-
-    // Shown to every user: only the owner can act, but everyone is affected
-    if (overdue) {
-      showAlert(alerts, OVERDUE_ALERT_KEY, 'error', OVERDUE_ALERT_HTML);
-    } else {
-      alerts.remove((alert) => alert.key === OVERDUE_ALERT_KEY);
-    }
+    const { exceeded } = billingAlerts(message);
     if (exceeded) {
       showAlert(alerts, EXCEEDED_ALERT_KEY, 'warn', EXCEEDED_ALERT_HTML);
     } else {

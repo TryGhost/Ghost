@@ -53,7 +53,17 @@ describe('billing routes', () => {
 
 describe('adminDestinationRoute', () => {
   it('resolves approved destinations', () => {
+    expect(adminDestinationRoute('theme', { automations: false })).toBe(
+      '/settings/design/change-theme',
+    );
+    expect(adminDestinationRoute('analytics', { automations: false })).toBe('/settings/analytics');
     expect(adminDestinationRoute('staff', { automations: false })).toBe('/settings/staff');
+    expect(adminDestinationRoute('stripe', { automations: false })).toBe(
+      '/settings/stripe-connect',
+    );
+    expect(adminDestinationRoute('integrations', { automations: false })).toBe(
+      '/settings/integrations',
+    );
     expect(adminDestinationRoute('newsletters', { automations: false })).toBe(
       '/settings/newsletters',
     );
@@ -61,7 +71,16 @@ describe('adminDestinationRoute', () => {
   });
 
   it('ignores anything else', () => {
-    for (const destination of ['__proto__', 'constructor', '/settings/staff', 42, null]) {
+    for (const destination of [
+      'dashboard',
+      '__proto__',
+      'constructor',
+      '/settings/staff',
+      42,
+      null,
+      undefined,
+      { destination: 'analytics' },
+    ]) {
       expect(adminDestinationRoute(destination, { automations: false })).toBeNull();
     }
   });
@@ -117,23 +136,11 @@ describe('parseBillingSubscription', () => {
 });
 
 describe('billingAlerts', () => {
-  const pastDue = { subscription: { status: 'past_due', isActiveTrial: false, trial_end: null } };
-
-  it('flags an overdue subscription unless the dunning warnings replace it', () => {
-    expect(billingAlerts(pastDue, { dunningWarningsActive: false }).overdue).toBe(true);
-    expect(billingAlerts(pastDue, { dunningWarningsActive: true }).overdue).toBe(false);
-  });
-
   it('flags an exceeded member limit that has a checkout route', () => {
     const exceeded = { exceededLimits: ['members'], checkoutRoute: '/plans' };
 
-    expect(billingAlerts(exceeded, { dunningWarningsActive: false }).exceeded).toBe(true);
-    expect(
-      billingAlerts({ ...exceeded, checkoutRoute: undefined }, { dunningWarningsActive: false })
-        .exceeded,
-    ).toBe(false);
-    expect(
-      billingAlerts({ exceededLimits: 'members' }, { dunningWarningsActive: false }).exceeded,
-    ).toBe(false);
+    expect(billingAlerts(exceeded).exceeded).toBe(true);
+    expect(billingAlerts({ ...exceeded, checkoutRoute: undefined }).exceeded).toBe(false);
+    expect(billingAlerts({ exceededLimits: 'members' }).exceeded).toBe(false);
   });
 });
