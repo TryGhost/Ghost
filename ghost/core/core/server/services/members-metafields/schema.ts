@@ -8,6 +8,7 @@ import {
 } from '@tryghost/metafield-types';
 import { DbDate } from '../../lib/db-types/date';
 import { MemberAccessSchema } from './access';
+import { MetafieldKey, Namespace } from './identifiers';
 
 // `archived` is soft: the field drops out of the values path but stays in the definition
 // list so it can be renamed, restored or deleted. Mirrors schema.js's `isIn` on the
@@ -104,8 +105,8 @@ type MetafieldBindingRow = z.infer<typeof DbMetafieldBinding>;
 /** A binding joined to the field it points at, which is how a collected value is routed. */
 export const DbBoundField = z.object({
   binding_id: z.string(),
-  namespace: z.string(),
-  key: z.string(),
+  namespace: Namespace,
+  key: MetafieldKey,
   type: FieldTypeSchema,
 });
 

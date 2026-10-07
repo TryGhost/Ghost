@@ -1,5 +1,9 @@
 import errors from '@tryghost/errors';
-import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
+import { CUSTOM_NAMESPACE as PUBLISHER } from '@tryghost/metafield-types/identity';
+import { Namespace } from './identifiers';
+
+/** The namespace a site's own staff define fields in. */
+export const CUSTOM_NAMESPACE = Namespace.parse(PUBLISHER);
 
 /**
  * Who may define fields in a namespace.
@@ -19,11 +23,13 @@ export function definableByPublisher(namespace: string): boolean {
   return namespace === CUSTOM_NAMESPACE;
 }
 
-export function assertDefinable(namespace: string): void {
+/** The namespace, once it's one a publisher may define fields in. */
+export function assertDefinable(namespace: string): Namespace {
   if (!definableByPublisher(namespace)) {
     throw new errors.ValidationError({
       message: `Fields cannot be defined in the "${namespace}" namespace.`,
       property: 'namespace',
     });
   }
+  return CUSTOM_NAMESPACE;
 }

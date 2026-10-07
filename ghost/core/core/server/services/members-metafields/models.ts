@@ -1,15 +1,13 @@
 import { z } from 'zod';
 import { FieldTypeSchema } from '@tryghost/metafield-types';
-import { IDENTITY_SEGMENT } from '@tryghost/metafield-types/identity';
 import { MemberAccessSchema } from './access';
+import { MetafieldKey, Namespace } from './identifiers';
 import { FieldStatusSchema } from './schema';
-
-const IdentitySegment = z.string().regex(IDENTITY_SEGMENT);
 
 export const Metafield = z.object({
   id: z.string(),
-  namespace: IdentitySegment,
-  key: IdentitySegment,
+  namespace: Namespace,
+  key: MetafieldKey,
   name: z.string(),
   type: FieldTypeSchema,
   status: FieldStatusSchema,

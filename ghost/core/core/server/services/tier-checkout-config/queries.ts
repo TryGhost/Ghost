@@ -1,6 +1,7 @@
 import type { Knex } from 'knex';
-import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
 import { FIELD_STATUS } from '../members-metafields/schema';
+import { CUSTOM_NAMESPACE } from '../members-metafields/namespaces';
+import { onField } from '../members-metafields/queries';
 import { STRIPE_PORT } from '@tryghost/checkout';
 import { DbCheckoutOptions } from './schema';
 import type { CollectionRow, QuestionRow } from './codec';
@@ -28,9 +29,8 @@ function collectionQuery(db: Knex) {
 
   const landsIn = (alias: string, binding: string) =>
     function (this: Knex.JoinClause) {
-      this.on(`${alias}.namespace`, `${binding}.metafield_namespace`)
-        .andOn(`${alias}.key`, `${binding}.metafield_key`)
-        .andOn(db.raw(`${alias}.status = ?`, [ACTIVE]));
+      onField(alias, binding).call(this);
+      this.andOn(db.raw(`${alias}.status = ?`, [ACTIVE]));
     };
 
   const query = db('products')
@@ -80,9 +80,8 @@ export function questionRows(db: Knex, productId?: string) {
   const query = db(QUESTIONS_TABLE)
     .join(BINDINGS_TABLE, `${BINDINGS_TABLE}.id`, `${QUESTIONS_TABLE}.binding_id`)
     .leftJoin({ question_field: FIELDS_TABLE }, function () {
-      this.on('question_field.namespace', `${BINDINGS_TABLE}.metafield_namespace`)
-        .andOn('question_field.key', `${BINDINGS_TABLE}.metafield_key`)
-        .andOn(db.raw('question_field.status = ?', [ACTIVE]));
+      onField('question_field', BINDINGS_TABLE).call(this);
+      this.andOn(db.raw('question_field.status = ?', [ACTIVE]));
     })
     .orderBy(`${BINDINGS_TABLE}.product_id`, 'asc')
     .orderBy(`${QUESTIONS_TABLE}.sort_order`, 'asc')

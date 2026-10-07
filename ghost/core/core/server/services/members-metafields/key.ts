@@ -1,12 +1,9 @@
-import { IDENTITY_SEGMENT } from '@tryghost/metafield-types/identity';
+import { MetafieldKey } from './identifiers';
 // Neither package ships types.
 const { stripInvisibleChars } = require('@tryghost/string') as {
   stripInvisibleChars(input: string): string;
 };
 const unidecode = require('unidecode') as (input: string) => string;
-
-/** Every character a key may contain. Nothing else survives minting. */
-export const KEY_CHARACTERS = IDENTITY_SEGMENT;
 
 /**
  * Mint the key a field is addressed by, from the name a publisher chose.
@@ -25,16 +22,15 @@ export const KEY_CHARACTERS = IDENTITY_SEGMENT;
  * separator. `__proto__` is unmintable as a result, which is worth more than
  * reserving it would be.
  *
- * Returns an empty string for a name with nothing usable in it; the caller decides
- * what to do about that.
+ * Returns null for a name with nothing usable in it; the caller decides what to do
+ * about that.
  */
-export function mintableKey(name: string): string {
-  return (
-    unidecode(stripInvisibleChars(name))
-      .toLowerCase()
-      // Dropped rather than separated, so a possessive reads as one word.
-      .replace(/'/g, '')
-      .replace(/[^a-z0-9]+/g, '_')
-      .replace(/^_+|_+$/g, '')
-  );
+export function mintableKey(name: string): MetafieldKey | null {
+  const minted = unidecode(stripInvisibleChars(name))
+    .toLowerCase()
+    // Dropped rather than separated, so a possessive reads as one word.
+    .replace(/'/g, '')
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+  return MetafieldKey.safeParse(minted).data ?? null;
 }

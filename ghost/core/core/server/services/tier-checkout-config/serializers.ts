@@ -5,6 +5,7 @@ import {
   isStripeAllowedCountry,
 } from '@tryghost/checkout';
 import { TierCheckoutConfig } from './models';
+import { MetafieldKey } from '../members-metafields/identifiers';
 
 // Every country Stripe will take, sent at once, was measured as accepted — so the only
 // ceiling is the list itself, and a request naming more than there are countries is naming
@@ -12,7 +13,10 @@ import { TierCheckoutConfig } from './models';
 const MAX_ALLOWED_COUNTRIES = STRIPE_ALLOWED_COUNTRIES.length;
 
 const QuestionInput = z.object({
-  key: z.string().min(1, { error: 'Every checkout question needs a custom field key.' }),
+  key: z
+    .string()
+    .min(1, { error: 'Every checkout question needs a custom field key.' })
+    .pipe(MetafieldKey),
   label: z.string().trim().min(1).nullish(),
   optional: z.boolean().optional(),
 });
@@ -37,7 +41,8 @@ const CountryCode = z
 const DESTINATION_REQUIRED = 'Say which custom field this is collected into.';
 const CustomFieldKey = z
   .string({ error: DESTINATION_REQUIRED })
-  .min(1, { error: DESTINATION_REQUIRED });
+  .min(1, { error: DESTINATION_REQUIRED })
+  .pipe(MetafieldKey);
 const Destination = z.strictObject(
   { custom_field_key: CustomFieldKey },
   { error: DESTINATION_REQUIRED },

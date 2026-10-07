@@ -23,7 +23,8 @@ import {
   nql,
   type DefinitionQuery,
 } from './queries';
-import { KEY_CHARACTERS, mintableKey } from './key';
+import { mintableKey } from './key';
+import { MetafieldKey, type Namespace } from './identifiers';
 import { type RecordMetafieldAction, type RequestContext } from './actions';
 
 const TABLE = 'members_metafields';
@@ -49,8 +50,8 @@ const MAX_KEY_BASE_LENGTH = MAX_KEY_LENGTH - (String(MAX_KEY_ITERATIONS).length 
 // to be reserved is every prototype name a well-formed key could spell. The ones that
 // carry a capital cannot be spelled at all and need no reserving; `constructor` and
 // `__proto__` can.
-const RESERVED_KEYS = Object.getOwnPropertyNames(Object.prototype).filter((name) =>
-  KEY_CHARACTERS.test(name),
+const RESERVED_KEYS = Object.getOwnPropertyNames(Object.prototype).filter(
+  (name) => MetafieldKey.safeParse(name).success,
 );
 
 const FieldName = z
@@ -181,7 +182,7 @@ export class MetafieldDefinitionsService {
    * key get distinct ones, exactly as if they had arrived as separate requests.
    */
   async add(context: RequestContext, namespace: string, input: unknown): Promise<Metafield[]> {
-    assertDefinable(namespace);
+    const definable = assertDefinable(namespace);
     const requestedCount = Array.isArray(input) ? input.length : 0;
 
     const parsed = AddFieldsInput.safeParse(input);
@@ -217,14 +218,14 @@ export class MetafieldDefinitionsService {
         // Read once, before the loop: a batch appends as consecutive ranks, so
         // the five fields of one request land in the order the request gave
         // them rather than all sharing the end of the list.
-        const firstSortOrder = await this.nextSortOrder(trx, namespace);
+        const firstSortOrder = await this.nextSortOrder(trx, definable);
 
-        const keys: string[] = [];
+        const keys: MetafieldKey[] = [];
         for (const [index, field] of fields.entries()) {
-          await this.assertNameAvailable(trx, namespace, field.name);
-          const key = await this.mintKey(trx, namespace, bases[index]);
+          await this.assertNameAvailable(trx, definable, field.name);
+          const key = await this.mintKey(trx, definable, bases[index]);
           await this.insertField(trx, {
-            namespace,
+            namespace: definable,
             key,
             name: field.name,
             type: field.type,
@@ -233,7 +234,7 @@ export class MetafieldDefinitionsService {
           });
           keys.push(key);
         }
-        return this.readMany(trx, namespace, keys);
+        return this.readMany(trx, definable, keys);
       });
     } catch (err) {
       // mintKey already picked a free key, so a unique violation here only
@@ -264,8 +265,13 @@ export class MetafieldDefinitionsService {
    * which a single-connection pool would deadlock against an open transaction.
    */
   async addOne(
-    namespace: string,
-    wanted: { key: string; name: string; type: FieldType; access: z.infer<typeof FieldAccess> },
+    namespace: Namespace,
+    wanted: {
+      key: MetafieldKey;
+      name: string;
+      type: FieldType;
+      access: z.infer<typeof FieldAccess>;
+    },
     { executor = this.knex }: { executor?: Knex } = {},
   ): Promise<Metafield> {
     // Before any database access, the way `add` mints before opening its transaction:
@@ -310,8 +316,8 @@ export class MetafieldDefinitionsService {
   private async insertField(
     db: Knex,
     field: {
-      namespace: string;
-      key: string;
+      namespace: Namespace;
+      key: MetafieldKey;
       name: string;
       type: FieldType;
       memberAccess: MemberAccess;
@@ -490,7 +496,7 @@ export class MetafieldDefinitionsService {
    * Reads the keys the namespace has already taken by that base — including archived
    * fields, so a key is never reused once minted.
    */
-  private async mintKey(db: Knex, namespace: string, base: string): Promise<string> {
+  private async mintKey(db: Knex, namespace: Namespace, base: MetafieldKey): Promise<MetafieldKey> {
     // Trimmed again after cutting, because the cut can land mid-separator and
     // a key that ends in one is not a shape minting is allowed to produce. The
     // base starts with an alphanumeric, so something always survives.
@@ -503,12 +509,12 @@ export class MetafieldDefinitionsService {
         .pluck('key')),
     ]);
     if (!taken.has(safeBase)) {
-      return safeBase;
+      return MetafieldKey.parse(safeBase);
     }
     for (let suffix = 2; suffix <= MAX_KEY_ITERATIONS; suffix += 1) {
       const candidate = `${safeBase}_${suffix}`;
       if (!taken.has(candidate)) {
-        return candidate;
+        return MetafieldKey.parse(candidate);
       }
     }
     throw new errors.ValidationError({
@@ -670,22 +676,15 @@ export class MetafieldDefinitionsService {
 }
 
 /**
- * The shape a stated key has to have. Minting derives one that is usable by
- * construction, so this is the check that path never needed: a caller stating its own
- * key has said nothing about the format, and guarding here covers every route in
- * rather than whichever one arrived first.
+ * What a stated key must also be, beyond the characters its type already guarantees: no
+ * longer than its column, and not a name every object already has. Minting derives keys
+ * that are both by construction; a caller stating its own has said nothing about either.
  *
  * The length bound is the column's own, not `mintKey`'s: that one holds back room for a
  * `_<n>` collision suffix, and a stated key is written exactly as given and never
  * suffixed, so the whole column is available to it.
  */
-function assertKeyUsable(key: string): void {
-  if (!KEY_CHARACTERS.test(key)) {
-    throw new errors.ValidationError({
-      message: 'A custom field key can only contain lowercase letters, numbers and underscores.',
-      property: 'key',
-    });
-  }
+function assertKeyUsable(key: MetafieldKey): void {
   if (key.length > MAX_KEY_LENGTH) {
     throw new errors.ValidationError({
       message: `A custom field key can be at most ${MAX_KEY_LENGTH} characters.`,

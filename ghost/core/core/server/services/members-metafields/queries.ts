@@ -61,7 +61,7 @@ export function definitions(
     /** One namespace's fields. Without it, every namespace's. */
     namespace?: string;
     /** One field. A key alone names none: each namespace has its own. */
-    field?: MetafieldRef;
+    field?: { namespace: string; key: string };
     /** A publisher's NQL filter, applied under the two filters below rather than over them. */
     filter?: (query: Knex.QueryBuilder) => Knex.QueryBuilder;
     limit?: number;
@@ -88,6 +88,24 @@ export function definitions(
   }
 
   return readableBy(query, scope.audience) as DefinitionQuery;
+}
+
+/** The columns a row that points at a field holds it in: namespace and key together. */
+export function fieldReference(field: MetafieldRef) {
+  return { metafield_namespace: field.namespace, metafield_key: field.key };
+}
+
+/**
+ * Joins a row that points at a field to that field. On namespace and key together, since
+ * a key alone names a field in every namespace that has one.
+ */
+export function onField(fieldsTable: string, pointingTable: string) {
+  return function (this: Knex.JoinClause) {
+    this.on(`${fieldsTable}.namespace`, `${pointingTable}.metafield_namespace`).andOn(
+      `${fieldsTable}.key`,
+      `${pointingTable}.metafield_key`,
+    );
+  };
 }
 
 /**

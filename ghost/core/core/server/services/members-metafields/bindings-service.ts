@@ -6,6 +6,7 @@ import { formatIdentity } from '@tryghost/metafield-types/identity';
 import { INTERNAL } from './access';
 import type { MetafieldRef } from './models';
 import { DbBoundField, FIELD_STATUS, type WriteOrigin } from './schema';
+import { fieldReference, onField } from './queries';
 import type { MetafieldPlan, MetafieldValuesService } from './values-service';
 
 const FIELDS_TABLE = 'members_metafields';
@@ -65,8 +66,7 @@ export class MetafieldBindingsService {
       id: bindingId,
       product_id: productId,
       port,
-      metafield_namespace: field.namespace,
-      metafield_key: field.key,
+      ...fieldReference(field),
       created_at: now,
       updated_at: now,
     });
@@ -167,12 +167,7 @@ export class MetafieldBindingsService {
 
   private async resolve(productId: string, port: string): Promise<BoundField | null> {
     const row = await this.knex(BINDINGS_TABLE)
-      .join(FIELDS_TABLE, function () {
-        this.on(`${BINDINGS_TABLE}.metafield_namespace`, `${FIELDS_TABLE}.namespace`).andOn(
-          `${BINDINGS_TABLE}.metafield_key`,
-          `${FIELDS_TABLE}.key`,
-        );
-      })
+      .join(FIELDS_TABLE, onField(FIELDS_TABLE, BINDINGS_TABLE))
       .where(`${BINDINGS_TABLE}.product_id`, productId)
       .where(`${BINDINGS_TABLE}.port`, port)
       // An archived destination is still where this goes, and still not somewhere a value

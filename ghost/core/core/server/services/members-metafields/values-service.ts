@@ -20,10 +20,12 @@ import {
   type WriteOrigin,
 } from './schema';
 import { toDatabaseDate } from '../../lib/db-types/date';
-import { ACTIVE_ONLY, definitions, knexify, readableBy } from './queries';
+import { ACTIVE_ONLY, definitions, fieldReference, knexify, onField, readableBy } from './queries';
+import { metafieldCodec } from './codec';
 import { canWrite, type Audience, type MemberAccess } from './access';
 import { leavesToWrite, valuesFromLeaves, type StoredLeaf } from './storage';
 import type { MetafieldRef } from './models';
+import type { MetafieldKey, Namespace } from './identifiers';
 
 const FIELDS_TABLE = 'members_metafields';
 const VALUES_TABLE = 'members_metafield_values';
@@ -55,11 +57,6 @@ const ValuesInput = z.record(z.string().max(MAX_IDENTITY_LENGTH), z.unknown());
 
 const wireProperty = (identity: string): string => [QUALIFIER, identity].join('.');
 
-/** The columns a value row names its field by. */
-function storedAs(field: MetafieldRef): Pick<DbLeafRow, 'metafield_namespace' | 'metafield_key'> {
-  return { metafield_namespace: field.namespace, metafield_key: field.key };
-}
-
 /** One value the site will not accept, against the name the write gave it. */
 interface Refusal {
   message: string;
@@ -87,8 +84,8 @@ function refusalError(refusals: Refusal[]): errors.ValidationError {
 
 interface AllowedField {
   id: string;
-  namespace: string;
-  key: string;
+  namespace: Namespace;
+  key: MetafieldKey;
   name: string;
   type: FieldType;
   memberAccess: MemberAccess;
@@ -149,19 +146,21 @@ export class MetafieldValuesService {
           );
         }
       })
-      .select('id', 'namespace', 'key', 'name', 'type', 'member_access');
+      .select('*');
     return new Map(
-      fields.map((field) => [
-        formatIdentity({ namespace: field.namespace, key: field.key, partPath: null }),
-        {
-          id: field.id,
-          namespace: field.namespace,
-          key: field.key,
-          name: field.name,
-          type: field.type,
-          memberAccess: field.member_access,
-        },
-      ]),
+      fields
+        .map((row) => z.decode(metafieldCodec, row))
+        .map((field) => [
+          formatIdentity({ namespace: field.namespace, key: field.key, partPath: null }),
+          {
+            id: field.id,
+            namespace: field.namespace,
+            key: field.key,
+            name: field.name,
+            type: field.type,
+            memberAccess: field.access.member,
+          },
+        ]),
     );
   }
 
@@ -195,12 +194,7 @@ export class MetafieldValuesService {
     // cannot carry an order. `path` is ordered so composite parts assemble the same
     // way every time.
     const rows = await readableBy(
-      executor(VALUES_TABLE).join(FIELDS_TABLE, function () {
-        this.on(`${VALUES_TABLE}.metafield_namespace`, `${FIELDS_TABLE}.namespace`).andOn(
-          `${VALUES_TABLE}.metafield_key`,
-          `${FIELDS_TABLE}.key`,
-        );
-      }),
+      executor(VALUES_TABLE).join(FIELDS_TABLE, onField(FIELDS_TABLE, VALUES_TABLE)),
       audience,
     )
       .whereIn(`${VALUES_TABLE}.member_id`, memberIds)
@@ -404,8 +398,7 @@ export class MetafieldValuesService {
 
         rows.push(
           ...set.map((leaf) => ({
-            metafield_namespace: field.namespace,
-            metafield_key: field.key,
+            ...fieldReference(field),
             path: leaf.path,
             member_id: memberId,
             value_text: leaf.value_text,
@@ -423,7 +416,7 @@ export class MetafieldValuesService {
           .where('member_id', memberId)
           .where((builder) => {
             for (const field of clearedFields) {
-              builder.orWhere((leaf) => leaf.where(storedAs(field)));
+              builder.orWhere((leaf) => leaf.where(fieldReference(field)));
             }
           })
           .del();
@@ -434,7 +427,7 @@ export class MetafieldValuesService {
           .where('member_id', memberId)
           .where((builder) => {
             for (const { field, paths } of clearedPaths) {
-              builder.orWhere((leaf) => leaf.where(storedAs(field)).whereIn('path', paths));
+              builder.orWhere((leaf) => leaf.where(fieldReference(field)).whereIn('path', paths));
             }
           })
           .del();
