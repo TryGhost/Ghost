@@ -109,51 +109,134 @@ services:
   announcement-bar-service:
     kind: directory
     disposition: retain
-    status: auditing
+    status: audited
+    auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
     entryPoints:
       - announcement-bar-service/index.js
     notes: >-
-      Preserve live settings reads and visibility decisions; account for the validator using
-      the implementation class directly.
+      Preserve live settings, request-local member visibility and the validator's deep class
+      import when moving composition to boot. This instance owns no background resources.
     contracts:
       exports:
         summary: >-
-          CommonJS exports one AnnouncementBarSettings instance with
-          getAnnouncementSettings(). The implementation class is also imported directly for
-          its static VisibilityValues.
+          CommonJS exports one AnnouncementBarSettings instance with synchronous
+          getAnnouncementSettings(member). The method requires its receiver for a private
+          callback. It returns undefined or a fresh object with announcement and
+          announcement_background.
+          The deep class exports mutable static VisibilityValues used by settings validation;
+          neither root nor class provides init, reset or shutdown.
         sources:
           - core/server/services/announcement-bar-service/index.js
           - core/server/services/announcement-bar-service/announcement-bar-settings.js
-          - core/server/api/endpoints/utils/validators/input/settings.js
-        tests: []
+          - core/server/services/announcement-bar-service/announcement-visibility-values.js
+        tests:
+          - test/unit/server/services/announcement-bar/announcement-bar-settings.test.js
       construction:
         summary: >-
-          The root constructs the instance at module evaluation with a settings-reader
-          callback. The announcements endpoint retains that instance; the settings validator
-          reads the class without constructing another.
-        sources:
-          - core/server/services/announcement-bar-service/index.js
-          - core/server/api/endpoints/announcements.js
-          - core/server/api/endpoints/utils/validators/input/settings.js
-        tests: []
-      configuration:
-        summary: >-
-          Every getAnnouncementSettings call invokes the callback to read content, background
-          and visibility from settingsCache; these values are not captured at construction.
+          Root import eagerly constructs the only production instance found with a callback
+          that reads the shared settings cache. Construction retains that callback without
+          reading settings. The validator imports the implementation class but constructs
+          no instance; units construct the class with injected settings callbacks.
         sources:
           - core/server/services/announcement-bar-service/index.js
           - core/server/services/announcement-bar-service/announcement-bar-settings.js
+          - core/server/api/endpoints/utils/validators/input/settings.js
+        tests:
+          - test/unit/server/services/announcement-bar/announcement-bar-settings.test.js
+      consumers:
+        summary: >-
+          The announcements endpoint is the only runtime instance consumer found; it passes
+          frame.options.context.member. Members-app routing loads the member session and sets
+          private cache headers. Settings validation consumes the class constants separately.
+          ghost_head reads settings directly to inject the frontend app, which consumes this
+          HTTP endpoint; it does not import the instance. No CLI/job consumer was found.
+        sources:
+          - core/server/api/endpoints/announcements.js
+          - core/server/web/members/app.js
+          - core/server/web/announcement/routes.js
+          - core/server/api/endpoints/utils/validators/input/settings.js
+          - core/frontend/helpers/ghost_head.js
+        tests:
+          - test/e2e-api/members/announcement.test.js
+          - test/e2e-api/admin/settings.test.js
+      startup:
+        summary: >-
+          There is no explicit boot initialization or readiness guard. Imports can construct
+          before settings are ready because reads are deferred to calls. The supported HTTP
+          path follows Ghost boot and member-session loading. Existing HTTP tests boot Ghost
+          and assert anonymous empty/present results; direct pre-boot behavior is not tested.
+        sources:
+          - core/boot.js
+          - core/server/services/announcement-bar-service/index.js
+          - core/server/web/members/app.js
+        tests:
+          - test/e2e-api/members/announcement.test.js
+      lifetime:
+        summary: >-
+          The cached instance and callback persist for the module lifetime. Each call keeps
+          member-dependent decisions local and creates its own result object; no per-member
+          result or settings value is cached. The HTTP suite edits the cache after boot and
+          observes the updated anonymous announcement, but does not establish alternating
+          member contexts, retained result independence or same-process restart behavior.
+        sources:
+          - core/server/services/announcement-bar-service/index.js
+          - core/server/services/announcement-bar-service/announcement-bar-settings.js
+        tests:
+          - test/e2e-api/members/announcement.test.js
+      configuration:
+        summary: >-
+          Every call reads content, background and visibility from settings. Falsy content or
+          empty visibility suppresses output. Visitors have no member; free members have status
+          free; paid visibility accepts any truthy member whose status is not free, including
+          comped. Matching calls return raw content/background without rendering. Unit cases
+          cover visitors, free, paid and comped, plus representative suppressed combinations.
+        sources:
+          - core/server/services/announcement-bar-service/index.js
+          - core/server/services/announcement-bar-service/announcement-bar-settings.js
+          - core/server/services/announcement-bar-service/announcement-visibility-values.js
+        tests:
+          - test/unit/server/services/announcement-bar/announcement-bar-settings.test.js
+      resources:
+        summary: >-
+          The instance owns only a callback reference and borrows the settings cache. It
+          creates no timers, event subscriptions, database/network operations or pending work.
+          HTTP/session resources belong to the surrounding application; no root cleanup is
+          registered or needed by this implementation's current synchronous operations.
+        sources:
+          - core/server/services/announcement-bar-service/index.js
+          - core/server/services/announcement-bar-service/announcement-bar-settings.js
+          - core/server/web/members/app.js
+          - core/boot.js
         tests: []
-    unverified:
-      - consumers
-      - startup
-      - lifetime
-      - resources
-      - failures
+      failures:
+        summary: >-
+          Callback failures propagate synchronously. With truthy content, missing visibility
+          or values lacking the expected operations can throw; strings can match because the
+          class uses length/includes without array validation. It does no error recovery. Normal settings writes reject unsupported visibility/background
+          through API validation, with HTTP 422 tests, but those tests do not characterize
+          corrupt cache contents or unbound service calls. The surrounding member-session
+          middleware swallows lookup errors and passes no member, selecting visitor visibility.
+        sources:
+          - core/server/services/announcement-bar-service/announcement-bar-settings.js
+          - core/server/api/endpoints/utils/validators/input/settings.js
+          - core/server/services/members/middleware.js
+        tests:
+          - test/e2e-api/admin/settings.test.js
+    unverified: []
     blockers:
       - >-
-        Add same-instance settings-change and root export characterization before moving
-        construction to boot.
+        Add same-root alternating visitor/free/paid/comped HTTP cases and changed visibility,
+        content and background assertions. Preserve private response caching and undefined
+        suppression; current HTTP tests only exercise anonymous empty and present responses.
+      - >-
+        Characterize root export/receiver behavior and retained callback/result identity before
+        boot composition. Preserve the separate static visibility import used by validation: mutating
+        shared constant fields affects both consumers, but reassigning the static class property
+        changes validator reads without changing the implementation's imported constants.
+      - >-
+        Decide supported pre-init and malformed-settings behavior explicitly. Source shows
+        native synchronous failure, but no existing test establishes the error contract or
+        confirms that the initialization change leaves successful member decisions unchanged.
   app-installations:
     kind: directory
     disposition: retain
@@ -585,54 +668,180 @@ services:
   donations:
     kind: directory
     disposition: retain
-    status: auditing
+    status: audited
+    auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
     entryPoints:
       - donations/index.js
     notes: >-
-      Preserve the guarded repository and the Stripe wrapper reference that resolves it after
-      early imports.
+      Preserve the guarded repository and Stripe's late-bound lookup. Donation persistence
+      precedes staff notification without a shared transaction or webhook deduplication key.
     contracts:
       exports:
         summary: >-
-          CommonJS exports one DonationServiceWrapper with init() and a repository property;
-          this root does not expose a service or controller property.
+          CommonJS index exports one eager wrapper with synchronous receiver-dependent init and
+          an initially undefined public repository. Init returns undefined. Deep modules export
+          the wrapper constructor, DonationBookshelfRepository and DonationPaymentEvent classes.
+          Repository save is async, requires its receiver, and resolves without returning the
+          model. The data object is mutable; create uses a supplied timestamp or the current time.
+          Consumer tests construct events indirectly, with no direct root/repository shape test.
         sources:
           - core/server/services/donations/index.js
           - core/server/services/donations/donation-service-wrapper.js
-        tests: []
+          - core/server/services/donations/donation-bookshelf-repository.ts
+          - core/server/services/donations/donation-payment-event.ts
+        tests:
+          - test/unit/server/services/stripe/services/webhooks/checkout-session-event-service.test.js
       construction:
         summary: >-
-          The root eagerly creates its wrapper, whose module captures the DonationPaymentEvent
-          model. The first init constructs DonationBookshelfRepository and later calls retain
-          it. Stripe retains the wrapper and resolves repository through a webhook-dependency
-          getter.
+          Wrapper module evaluation destructures and retains the shared DonationPaymentEvent
+          model. First init constructs a repository with that reference; its truthy repository
+          guard makes later calls no-ops. Construction only stores a private model reference and
+          performs no write. Boot is the only runtime init caller found; Stripe imports the eager
+          wrapper before initialization. No focused assertions pin import timing, model identity,
+          guarded construction or recovery after construction failure.
         sources:
           - core/server/services/donations/index.js
           - core/server/services/donations/donation-service-wrapper.js
           - core/server/services/donations/donation-bookshelf-repository.ts
           - core/server/services/stripe/service.js
-          - core/server/services/stripe/stripe-service.js
+          - core/boot.js
         tests: []
+      consumers:
+        summary: >-
+          Stripe retains the wrapper but supplies checkout handling with a getter that reads its
+          current repository at donation time. The handler creates the event, awaits save, then
+          directly awaits staff notification; the event class is not dispatched through DomainEvents.
+          Members event browsing reads the same model independently, without using this repository;
+          optional full database backup also includes the table. Real donation checkout/webhook HTTP tests prove
+          anonymous/member fields, attribution/UTM persistence and staff-mail subjects through
+          mocked Stripe/mail transports. Handler units inject the repository, and browsing units
+          pin requested relations rather than real saved-event projection.
+        sources:
+          - core/server/services/stripe/service.js
+          - core/server/services/stripe/stripe-service.js
+          - core/server/services/stripe/services/webhook/checkout-session-event-service.js
+          - core/server/services/staff/staff-service-emails.js
+          - core/server/services/members/api.js
+          - core/server/services/members/members-api/repositories/event-repository.js
+          - core/server/data/exporter/table-lists.js
+        tests:
+          - test/e2e-api/members/donation-checkout-session.test.js
+          - test/unit/server/services/stripe/services/webhooks/checkout-session-event-service.test.js
+          - test/unit/server/services/members/members-api/repositories/event-repository.test.js
       startup:
         summary: >-
-          Boot initializes Stripe before donations, then initializes donations in the main
-          service group. The deferred Stripe repository getter allows the earlier construction
-          to see the repository after donations init.
+          Boot constructs/configures Stripe before calling donations init in its main Promise.all
+          group; the getter defers repository access until after publication. Synchronous init
+          finishes before app readiness, even when frontend is disabled. The root has no readiness
+          guard for consumers beyond an absent repository. Completed-boot HTTP tests exercise real
+          Stripe-to-repository wiring, not early webhook delivery, retained lookup after replacing
+          repository, backend-only initialization or a focused dependency-order contract.
         sources:
           - core/boot.js
-          - core/server/services/stripe/stripe-service.js
           - core/server/services/donations/donation-service-wrapper.js
-        tests: []
-    unverified:
-      - consumers
-      - lifetime
-      - configuration
-      - resources
-      - failures
+          - core/server/services/stripe/service.js
+          - core/server/services/stripe/stripe-service.js
+          - core/server/services/stripe/services/webhook/checkout-session-event-service.js
+        tests:
+          - test/e2e-api/members/donation-checkout-session.test.js
+      lifetime:
+        summary: >-
+          The wrapper/repository retain identity through repeated init and have no reset/cache.
+          Stripe's getter would observe replacement of the public repository, while the repository
+          keeps its original model object. Saves issue independent model adds with no serialization,
+          transaction argument, idempotency key or compensation. Donation rows have a generated
+          primary key but no checkout/event identifier or unique donation constraint; the webhook
+          controller does not deduplicate incoming event IDs. Existing HTTP tests exercise single
+          deliveries and cannot establish duplicate or concurrent delivery behavior.
+        sources:
+          - core/server/services/donations/donation-service-wrapper.js
+          - core/server/services/donations/donation-bookshelf-repository.ts
+          - core/server/services/stripe/stripe-service.js
+          - core/server/services/stripe/webhook-controller.js
+          - core/server/data/schema/schema.js
+        tests:
+          - test/e2e-api/members/donation-checkout-session.test.js
+      configuration:
+        summary: >-
+          The root/repository reads no config or settings. Save maps donation, member, attribution,
+          referrer and all five UTM fields to model columns; it ignores event.timestamp and leaves
+          created_at/ID generation to the model. Checkout policy and supported donation metadata
+          belong to members/Stripe callers; staff formatting and notification preferences belong
+          to staff. Schema validation applies at persistence, not event construction. HTTP tests
+          pin real stored fields and reserved gift metadata separation. Handler units pin completed
+          payment-mode donation routing for true/string-true metadata, ignoring sessions with conflicting
+          donation/gift markers and async-payment-success events; donation routing does not check payment_status.
+          Handler fakes can accept
+          empty email or attribution types that the real model would reject. No timestamp mapping
+          or complete invalid-input repository test exists.
+        sources:
+          - core/server/services/donations/donation-bookshelf-repository.ts
+          - core/server/services/donations/donation-payment-event.ts
+          - core/server/models/donation-payment-event.js
+          - core/server/models/base/index.js
+          - core/server/models/base/bookshelf.js
+          - core/server/data/schema/schema.js
+          - core/server/data/schema/validator.ts
+          - core/server/models/base/plugins/events.js
+          - core/server/services/members/members-api/services/payments-service.js
+          - core/server/services/stripe/services/webhook/checkout-session-event-service.js
+          - core/server/services/staff/staff-service-emails.js
+        tests:
+          - test/e2e-api/members/donation-checkout-session.test.js
+          - test/unit/server/services/stripe/services/webhooks/checkout-session-event-service.test.js
+      resources:
+        summary: >-
+          Owns only wrapper/repository/data references; no timer, subscription, transport or pool
+          is created here. Shared models own database work, Stripe owns webhook handling and staff
+          owns mail delivery. Save does not expose a transaction or pending-operation registry, and
+          no root shutdown/drain exists. Staff notification runs after the durable add; no event-bus
+          delivery is required for it. Real HTTP tests inspect persisted rows and mocked mail, not
+          pending-write shutdown, provider completion or atomicity between storage and notification.
+        sources:
+          - core/server/services/donations/donation-service-wrapper.js
+          - core/server/services/donations/donation-bookshelf-repository.ts
+          - core/server/services/stripe/services/webhook/checkout-session-event-service.js
+          - core/server/services/staff/staff-service-emails.js
+          - core/server/ghost-server.ts
+        tests:
+          - test/e2e-api/members/donation-checkout-session.test.js
+      failures:
+        summary: >-
+          Repository model rejection propagates unchanged and stops subsequent staff notification.
+          Failure during notification cannot undo the inserted row. Staff awaits each sendMail
+          before pushing its result into allSettled, so send rejection can escape immediately,
+          like user/template/formatting failures; that collector does not catch it. Webhook controller
+          logs handler errors and responds
+          with their status or 500, permitting another delivery without local deduplication. Model
+          edit/destroy methods reject, but persistence has no workflow rollback. Existing positive
+          HTTP tests and handler units do not establish these real failure/retry boundaries.
+        sources:
+          - core/server/services/donations/donation-bookshelf-repository.ts
+          - core/server/models/donation-payment-event.js
+          - core/server/services/stripe/services/webhook/checkout-session-event-service.js
+          - core/server/services/stripe/webhook-controller.js
+          - core/server/services/staff/staff-service-emails.js
+        tests:
+          - test/e2e-api/members/donation-checkout-session.test.js
+          - test/unit/server/services/stripe/services/webhooks/checkout-session-event-service.test.js
+    unverified: []
     blockers:
       - >-
-        Add a real retained Stripe consumer test across donation initialization; audit webhook
-        operation and error contracts.
+        Pin root identity, synchronous guarded init, model capture and Stripe's getter across
+        early composition, repeated boot and repository replacement. Capturing repository while
+        composing Stripe would observe undefined before current boot initializes donations.
+      - >-
+        Add direct real-repository contracts for complete mapping, timestamp/created_at behavior,
+        return/error identity and schema-invalid input. Handler fakes permit empty email and an
+        attribution type outside the real schema, so their success is not persistence evidence.
+      - >-
+        Characterize duplicate/concurrent webhook delivery, database rejection and failure after
+        persistence but before notification completes. Decide whether idempotency/atomicity should
+        change separately; the current path has no checkout/event key or shared transaction.
+      - >-
+        Cover saved-event browsing/export and staff failure channels through real consumers,
+        including retained references and pending shutdown. Existing single-delivery HTTP tests
+        prove selected rows and mail subject/to values, not durable exactly-once delivery or drain.
   email-address:
     kind: directory
     disposition: retain
@@ -885,54 +1094,151 @@ services:
   explore-ping:
     kind: directory
     disposition: retain
-    status: auditing
+    status: audited
+    auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
     entryPoints:
       - explore-ping/index.ts
     notes: >-
-      Preserve the environment gate and unawaited boot ping; decide how the shared
-      initialization pattern represents this per-init instance.
+      Preserve the environment gate, payload and nonblocking boot ping. Decide how the common
+      pattern represents a fresh instance per eligible init and owns unfinished outbound work.
     contracts:
       exports:
         summary: >-
-          The TypeScript root exports createService() and async init(), without publishing a
-          retained service instance.
+          The TypeScript root exposes named createService and async init exports, consumed by
+          CommonJS boot. Neither exposes a retained service instance or a stop/reset method.
+          The implementation class and dependency type are deep exports; only tests construct
+          that class directly outside the factory in the searched repository.
         sources:
           - core/server/services/explore-ping/index.ts
+          - core/server/services/explore-ping/explore-ping-service.ts
+          - core/boot.js
         tests: []
       construction:
         summary: >-
-          createService constructs a new ExplorePingService and a posts-service instance.
-          Every eligible init invokes the factory and starts ping without awaiting it;
-          repeated init can create another instance and ping.
+          Every createService call constructs ExplorePingService and a fresh posts service,
+          including PostStats, PostsExporter and PostEmailHandler. Posts composition captures
+          emailService.service, though this consumer only uses stats. Other dependencies are
+          shared module objects. Every eligible init calls the factory, even when ping is disabled or
+          its URL is absent. The environment guard does not prevent module-scope imports.
         sources:
           - core/server/services/explore-ping/index.ts
           - core/server/services/posts/posts-service-instance.js
+          - core/server/services/posts/posts-service.js
+          - core/server/services/posts/posts-exporter.js
+          - core/server/services/posts/post-email-handler.js
+          - core/server/services/posts/stats/post-stats.js
         tests: []
-      startup:
+      consumers:
         summary: >-
-          Boot includes init in the main service group. It runs only in production/development
-          and resolves after launching ping, without waiting for payload collection or the
-          request.
+          Boot is the only production root caller found; no request, job or CLI consumer or
+          second composition path was found. Payload collection consumes posts.stats,
+          members.stats and statsService.api.mrr. Missing MRR availability silently produces
+          an empty array. Implementation tests inject these shapes and do not verify the real
+          roots remain compatible.
         sources:
           - core/boot.js
           - core/server/services/explore-ping/index.ts
+          - core/server/services/explore-ping/explore-ping-service.ts
+          - core/server/services/members/service.js
+          - core/server/services/stats/service.js
+        tests: []
+      startup:
+        summary: >-
+          Foreground boot calls init after database/settings setup, before app mounting and
+          readiness. Only production/development proceed. Member stats already exists at import;
+          stats init appears earlier in the same Promise.all list and currently sets api without
+          awaiting. Explore init launches ping and resolves without awaiting payload collection
+          or HTTP completion; direct factory use has no environment or readiness guard.
+        sources:
+          - core/boot.js
+          - core/shared/config/helpers.ts
+          - core/server/services/explore-ping/index.ts
+          - core/server/services/members/service.js
+          - core/server/services/stats/service.js
+        tests: []
+      lifetime:
+        summary: >-
+          No instance, completion promise, success state or deduplication guard is retained by
+          the root. Repeated eligible init creates independent pings that can overlap; there is
+          no implemented schedule or retry at this layer. An instance retains dependency
+          references but reads their mutable properties during each ping. Server stop neither
+          drains these pings nor prevents later calls.
+        sources:
+          - core/server/services/explore-ping/index.ts
+          - core/server/services/explore-ping/explore-ping-service.ts
+          - core/boot.js
+          - core/server/ghost-server.ts
         tests: []
       configuration:
         summary: >-
-          Each ping reads the Explore URL and enabled setting, and each payload reads current
-          settings/config. These values are not captured by the constructor.
+          Ping reads URL then enabled state once; payload reads version/site metadata before
+          awaiting three post queries, growth permission afterwards, then strict-true Stripe
+          live mode after member count. Disabled growth omits both growth fields; unavailable
+          MRR or non-live Stripe yields an empty array. Post queries count published/sent posts;
+          member count includes all members. Tests vary injected settings after construction,
+          but do not establish changes during pending work or real-root configuration wiring.
         sources:
           - core/server/services/explore-ping/explore-ping-service.ts
+          - core/server/services/posts/stats/post-stats.js
+          - core/server/services/members/stats/members-stats.js
+          - core/server/services/stats/mrr-stats-service.js
+          - core/server/data/schema/default-settings/default-settings.json
+        tests:
+          - test/unit/server/services/explore-ping/explore-ping-service.test.js
+      resources:
+        summary: >-
+          The owned posts helpers acquire no separate connections or listeners on construction;
+          their queries use shared database resources. Outbound work uses shared @tryghost/request.
+          Explore stores no abort handle or pending-work registry, supplies no request timeout,
+          and registers no boot cleanup. There are no service-owned timers or subscriptions;
+          transport/DNS resources remain with the shared request dependency.
+        sources:
+          - core/server/services/explore-ping/index.ts
+          - core/server/services/explore-ping/explore-ping-service.ts
+          - core/server/services/posts/posts-service-instance.js
+          - core/server/services/posts/stats/post-stats.js
+          - core/server/services/posts/posts-exporter.js
+          - core/server/services/posts/post-email-handler.js
+          - core/boot.js
+          - core/server/ghost-server.ts
+          - package.json
         tests: []
-    unverified:
-      - consumers
-      - lifetime
-      - resources
-      - failures
+      failures:
+        summary: >-
+          Factory failure rejects awaited init and can fail boot; ping rejection is detached.
+          Missing URL warns, disabled ping skips. Any post-query/date failure nulls all post
+          fields; member or MRR failure nulls both growth fields. Request rejection warns and
+          fulfills, while payload setup or serialization errors can reject ping outside these
+          catches and reach boot's unhandled-rejection logger. Tests assert null fallback for
+          post/member failure and request-error logging, but not MRR failure or detached rejection.
+        sources:
+          - core/server/services/explore-ping/index.ts
+          - core/server/services/explore-ping/explore-ping-service.ts
+          - core/boot.js
+        tests:
+          - test/unit/server/services/explore-ping/explore-ping-service.test.js
+    unverified: []
     blockers:
       - >-
-        Add root environment-gating and nonblocking-start tests; audit in-flight ping failures
-        and shutdown ownership.
+        Add root export/factory and boot contracts for environment gating, repeated init,
+        construction failure and nonblocking completion. Current tests instantiate only the
+        implementation; the shared config helper's tests do not prove the root uses its gate.
+      - >-
+        Exercise payload collection with the real service roots and database. Changing stats'
+        facade can silently replace MRR with an empty array while injected-shape tests pass.
+        Preserve member stats availability and stats initialization ordering explicitly.
+      - >-
+        Decide ownership of overlapping pings, unfinished queries/requests, cancellation and
+        shutdown. No service drain exists, and the request has no configured timeout; current
+        tests do not establish stalled-request, HTTP-status, redirect or transport cleanup behavior.
+      - >-
+        Add pending-work configuration contracts: URL/enabled state are checked before queries,
+        growth permission and Stripe mode later. Setting changes do not cancel a launched ping.
+        Cover real post/member count semantics and unavailable versus failed MRR distinctly.
+      - >-
+        Characterize detached payload/serialization failures, MRR rejection, post-date errors
+        and sibling queries continuing after Promise.all rejects. Existing fallback assertions
+        do not prove warning details for statistics failures or boot's error handling.
   export-requests:
     kind: directory
     disposition: retain
@@ -1033,49 +1339,218 @@ services:
   gift-links:
     kind: directory
     disposition: retain
-    status: auditing
+    status: audited
+    auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
     entryPoints:
       - gift-links/index.ts
     notes: >-
-      Preserve the deferred binding and database prerequisite; characterize API and public
-      gift-access behavior.
+      Preserve deferred database binding, single live link per post, historical tokens and the
+      public access/cache boundary. Root restart, transaction faults and cache-enabled revocation
+      need stronger contracts before migration.
     contracts:
       exports:
         summary: >-
-          Named TypeScript init and service exports; service is undefined until init
-          constructs it.
-        sources:
-          - core/server/services/gift-links/index.ts
-        tests: []
-      construction:
-        summary: >-
-          The first synchronous init reads the connected knex instance and Action model, then
-          constructs GiftLinksService with an action-recording callback. Later init calls
-          return without replacing it.
+          Named TypeScript init and live service exports; RequestContext is type-only. service
+          is undefined before synchronous receiver-independent init, which returns undefined.
+          The deep class requires its receiver: getPost/ensure/create return a post id plus
+          giftLinks, getPostByToken returns that shape or null, and removeAll returns a number.
+          Deep serializers map token/createdAt to gift_links token/created_at and removal count
+          to meta.count. Admin tests assert list/field allowlists, replacement and count shape;
+          no focused test pins root exports, detached calls or binding identity.
         sources:
           - core/server/services/gift-links/index.ts
           - core/server/services/gift-links/service.ts
-        tests: []
-      startup:
+          - core/server/services/gift-links/models.ts
+          - core/server/services/gift-links/serializers.ts
+          - core/server/api/endpoints/utils/serializers/output/gift-links.ts
+        tests:
+          - test/e2e-api/admin/gift-links.test.ts
+          - test/integration/services/gift-links.test.ts
+      construction:
         summary: >-
-          initCore initializes gift links after settings, signing keys and i18n. API endpoints
-          and gift-access resolution read the binding directly and require initialization
-          before use.
+          Import loads the class/action helper without constructing a service. First init reads
+          the shared database knex and models, partially applies the best-effort action recorder
+          and publishes one GiftLinksService retaining knex and the callback. Later init calls
+          preserve it. No separate production deep construction was found. The constructor
+          validates neither dependency nor database readiness; an early init can publish an
+          unusable captured dependency. Integration tests construct the class with real model
+          knex and matching recorder wiring; they do not enforce the root's deferred construction.
+        sources:
+          - core/server/services/gift-links/index.ts
+          - core/server/services/gift-links/service.ts
+          - core/server/services/gift-links/actions.ts
+          - core/server/data/db/index.js
+          - core/server/data/db/connection.ts
+        tests:
+          - test/integration/services/gift-links.test.ts
+      consumers:
+        summary: >-
+          Boot initializes the root. Admin posts/pages gift-link endpoints use the live binding
+          for browse/ensure/create and site-wide removal, with permission checks and actor mapping
+          in the endpoint. Public posts/pages reads use gift-link-access to resolve internal
+          context before the posts response cache, then apply a paid-member shim for the matched post.
+          Pages currently has no response cache but resolves the same key data.
+          Frontend entry lookup supplies that context; HTTP Content API gift query parameters
+          do not. Verified frontend renders set no-store/noindex/no-referrer and feed toast and
+          analytics helpers without exposing a member. Real HTTP tests pin access/redirects,
+          response headers, toast overrides and rendered analytics attributes, not analytics
+          ingestion. Admin role tests cover Owner success and Author/Contributor browse denial,
+          not every mutation/role or integration actor path.
         sources:
           - core/boot.js
           - core/server/api/endpoints/gift-links.ts
+          - core/server/web/api/endpoints/admin/routes.js
+          - core/server/api/endpoints/posts-public.js
+          - core/server/api/endpoints/pages-public.js
           - core/server/api/endpoints/utils/gift-link-access.ts
-        tests: []
-    unverified:
-      - consumers
-      - lifetime
-      - configuration
-      - resources
-      - failures
+          - core/frontend/services/data/entry-lookup.js
+          - core/frontend/services/routing/controllers/entry.ts
+          - core/frontend/services/routing/controllers/entry/gift-links.ts
+          - core/frontend/web/middleware/frontend-caching.js
+          - core/frontend/helpers/ghost_head.js
+          - core/frontend/helpers/ghost_foot.js
+        tests:
+          - test/e2e-api/admin/gift-links.test.ts
+          - test/e2e-api/content/gift-links.test.ts
+          - test/e2e-frontend/gift-links.test.ts
+          - test/e2e-frontend/gift-links-toast-override.test.ts
+          - test/unit/api/endpoints/utils/gift-link-access.test.ts
+      startup:
+        summary: >-
+          initCore calls init after database setup, settings, signing keys and i18n and before
+          request serving. There is no awaited initialization work or root readiness check;
+          consumers dereference service directly. Gift-access key resolution additionally needs
+          the live-link tables, while the paid-member shim reads Product models. Root and deep
+          codec/serializer imports do not need service initialization. Frontend/Admin suites
+          exercise booted composition, but no focused test covers pre-init access, failed/early
+          init, publication timing or booting again with a different database instance.
+        sources:
+          - core/boot.js
+          - core/server/services/gift-links/index.ts
+          - core/server/api/endpoints/gift-links.ts
+          - core/server/api/endpoints/utils/gift-link-access.ts
+          - core/server/services/members/create-paid-member-shim.ts
+        tests:
+          - test/e2e-api/admin/gift-links.test.ts
+          - test/e2e-frontend/gift-links.test.ts
+      lifetime:
+        summary: >-
+          Service and captured knex survive repeated init; no reset/stop/rebinding exists. Reads
+          query persisted state without a service cache. Mint inserts token history and upserts
+          one live association in a transaction; create replaces access while keeping history,
+          ensure returns an existing link or mints after a separate read, and removeAll deletes
+          every live association but keeps history. Unique post_id enforces at most one live
+          link, not concurrent ensure returning the same token. Tests pin sequential ensure,
+          replaced-token rejection, removal scope/count and uniqueness. Concurrent Admin ensures
+          assert one surviving returned token, without forcing both reads before mint or pinning
+          which caller wins. Public key units stub token lookup; actual cached revocation is untested.
+        sources:
+          - core/server/services/gift-links/index.ts
+          - core/server/services/gift-links/service.ts
+          - core/server/data/schema/schema.js
+          - core/server/api/endpoints/utils/gift-link-access.ts
+          - core/server/api/endpoints/posts-public.js
+        tests:
+          - test/integration/services/gift-links.test.ts
+          - test/e2e-api/admin/gift-links.test.ts
+          - test/unit/api/endpoints/utils/gift-link-access.test.ts
+      configuration:
+        summary: >-
+          The root/service read no feature config, settings or URL values. Database config is
+          captured by the borrowed connection; tokens use 24 random bytes encoded base64url and
+          creation time uses Date. No expiry, use count, visibility gate or automatic visibility
+          revocation exists here. API permissions and frontend format/cache rules are consumer
+          policy. Public key generation distinguishes no token, unresolved token and resolved
+          post id; the latter reuses a cache variant across replacement tokens. URL-based toast
+          assets use the separately frozen shared URL helpers, while branding/analytics settings
+          are consumer reads. Tests pin URL-safe tokens, decoded minimum byte length and sampled
+          uniqueness, not entropy mathematically; config test replacement is not hot reload evidence.
+        sources:
+          - core/server/services/gift-links/index.ts
+          - core/server/services/gift-links/service.ts
+          - core/server/services/gift-links/models.ts
+          - core/server/services/gift-links/codec.ts
+          - core/server/lib/db-types/date.ts
+          - core/server/data/db/connection.ts
+          - core/server/api/endpoints/gift-links.ts
+          - core/server/api/endpoints/utils/gift-link-access.ts
+          - core/frontend/services/routing/controllers/entry/markdown.ts
+          - core/frontend/helpers/ghost_head.js
+          - core/frontend/helpers/ghost_foot.js
+          - core/shared/url-utils.ts
+        tests:
+          - test/unit/server/services/gift-links/gift-link-token.test.ts
+          - test/unit/api/endpoints/utils/gift-link-access.test.ts
+          - test/e2e-frontend/gift-links.test.ts
+      resources:
+        summary: >-
+          No owned client, timer, worker, listener or memory cache. The service borrows the
+          shared knex pool and owns per-mint transaction work; action history is a separate
+          awaited model write after the command's database change. Database rows carry token
+          history/live state, with foreign-key cascade deletion and no scheduled pruning here.
+          The public response cache belongs to posts-public, and rendering/analytics belong to
+          frontend consumers. There is no root drain or cleanup registration; shutdown depends
+          on shared HTTP/database ownership. Real DB tests enforce live uniqueness and removal,
+          not rollback, history retention/deletion cascades or in-flight shutdown.
+        sources:
+          - core/server/services/gift-links/service.ts
+          - core/server/services/gift-links/actions.ts
+          - core/server/data/db/connection.ts
+          - core/server/data/schema/schema.js
+          - core/server/models/action.js
+          - core/server/services/posts-public/service.js
+          - core/server/ghost-server.ts
+          - core/boot.js
+        tests:
+          - test/integration/services/gift-links.test.ts
+          - test/e2e-api/admin/gift-links.test.ts
+      failures:
+        summary: >-
+          Missing posts throw NotFound; unknown or no-longer-live tokens return null. Query,
+          codec, random generation and transaction errors propagate, without retries; action
+          writes run after persistence and the production recorder logs/swallows failures, skipping
+          writes when actor is absent. That boundary is enforced by action units and a real-DB
+          deep-service test with a failing recorder. Gift access refuses missing key-resolution
+          setup and rejects mismatched tokens; frontend strips invalid gifts with a 301 while
+          other failures reach normal error handling. Product lookup failure logs and grants a
+          paid shim with no tiers. Unit tests pin those helpers, but no forced mint rollback,
+          delete failure, root failure or cache-enabled revoked-token response test was found.
+        sources:
+          - core/server/services/gift-links/service.ts
+          - core/server/services/gift-links/actions.ts
+          - core/server/services/gift-links/codec.ts
+          - core/server/services/gift-links/models.ts
+          - core/server/api/endpoints/utils/gift-link-access.ts
+          - core/frontend/services/routing/controllers/entry.ts
+          - core/frontend/services/routing/controllers/entry/gift-links.ts
+          - core/server/services/members/create-paid-member-shim.ts
+        tests:
+          - test/unit/server/services/gift-links/actions.test.ts
+          - test/integration/services/gift-links.test.ts
+          - test/e2e-api/admin/gift-links.test.ts
+          - test/unit/api/endpoints/utils/gift-link-access.test.ts
+          - test/unit/server/services/members/create-paid-member-shim.test.ts
+          - test/e2e-frontend/gift-links.test.ts
+    unverified: []
     blockers:
       - >-
-        Characterize binding identity across repeated boot and the API/frontend access
-        boundaries before changing composition.
+        Pin deferred root construction, live binding/identity, early and failed init, and
+        repeated boot with shared database dependencies. Existing deep-service and booted HTTP
+        tests do not establish safe rebinding or recovery from initialization before DB readiness.
+      - >-
+        Force transaction failures between history insertion and live-association upsert, and
+        characterize overlapping ensure/create/removeAll, token collision and history retention.
+        Concurrent HTTP ensures prove a single surviving returned token without forcing the race;
+        they do not guarantee all callers retain access or that failed mint leaves no history.
+      - >-
+        Exercise real public cache population and token replacement/removal together, proving
+        revoked/wrong-entry reads cannot use unlocked or anonymous cached responses. Current key
+        tests stub lookup and do not drive a cache; public HTTP gift tests run without that cache.
+      - >-
+        Complete consumer permissions and failure coverage for mutation denials, integration actors,
+        delete/codec failures and shutdown with in-flight commands. Keep business access policy in
+        scope when migrating: permission checks, gift verification and the paid-member shim are
+        currently wired through API support, not all contained in this root.
   gifts:
     kind: directory
     disposition: retain
@@ -1254,61 +1729,158 @@ services:
   indexnow-ping:
     kind: directory
     disposition: retain
-    status: auditing
+    status: audited
+    auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
     entryPoints:
       - indexnow-ping/index.ts
     notes: >-
-      Event-driven IndexNow notifications; preserve publication gating and swallowed ping
-      failures, and audit listener ownership.
+      Preserve post-event gating, live settings and request error reporting. Root lifecycle,
+      verification-route compatibility and production retry behavior still need contracts.
     contracts:
       exports:
         summary: >-
-          Default TypeScript export is one IndexNowPingServiceWrapper object exposing init
-          and, after initialization, service. CommonJS boot accesses .default.
+          The TypeScript default export is one wrapper exposing synchronous init and a public
+          writable service field, initially undefined. CommonJS boot uses .default; init
+          returns no instance. The implementation exports IndexNowPingService for direct
+          construction and exposes its dependencies, bound listener and operation methods.
         sources:
           - core/server/services/indexnow-ping/index.ts
+          - core/server/services/indexnow-ping/indexnow-ping-service.ts
           - core/boot.js
         tests: []
       construction:
         summary: >-
-          The first synchronous init constructs IndexNowPingService with settings/config, URL
-          services, request, logging and the model-event bus, assigns service, then subscribes
-          to post events. Later init calls return without reconstructing or resubscribing.
+          Import constructs only the wrapper. First init loads shared settings/config, URL
+          services, request, logging and model events, constructs the implementation, assigns
+          service, then subscribes. Later init calls skip construction and subscription.
+          The wrapper is the only runtime construction path found; class tests inject fakes
+          except for the real request helper.
         sources:
           - core/server/services/indexnow-ping/index.ts
           - core/server/services/indexnow-ping/indexnow-ping-service.ts
+        tests: []
+      consumers:
+        summary: >-
+          Boot is the only runtime root importer. Post model events invoke the listener for
+          post.published and post.published.edited, after commit when a transaction is supplied.
+          Import events and events without changed SEO fields return early; others pass post
+          JSON plus authors and tags to a detached ping. No runtime deep constructor or direct
+          ping caller was found. The frontend key-verification middleware independently reads
+          the same setting; it does not import this service.
+        sources:
+          - core/boot.js
+          - core/server/models/post.js
+          - core/server/models/base/plugins/events.js
+          - core/server/services/indexnow-ping/indexnow-ping-service.ts
+          - core/server/services/indexnow-ping/constants.ts
+          - core/server/services/content-import/import/importer.ts
+          - core/frontend/web/middleware/serve-indexnow-key.js
+        tests:
+          - test/unit/server/services/indexnow-ping/indexnow-ping-service.test.js
+      startup:
+        summary: >-
+          Boot initializes settings and dynamic routing before calling init in its required
+          service Promise.all, before readiness, including backend-only boot. Subscription
+          completes synchronously without checking key availability or sending a request;
+          disabled/private/development configurations still subscribe. The settings model
+          generates the key as a default, and frontend middleware serves its matching path.
+          Synchronous init failure rejects required startup.
+        sources:
+          - core/boot.js
+          - core/server/services/indexnow-ping/index.ts
+          - core/server/services/indexnow-ping/indexnow-ping-service.ts
+          - core/server/models/settings.js
+          - core/frontend/web/site.js
+          - core/frontend/web/middleware/serve-indexnow-key.js
         tests: []
       lifetime:
         summary: >-
-          The implementation keeps one bound event listener and subscribeEvents removes that
-          same listener before registering it for post.published and post.published.edited.
-          The wrapper does not call subscribeEvents again once service exists and exposes no
-          shutdown.
+          The wrapper retains one implementation and its bound listener. Direct subscribeEvents
+          removes that same callback before registering it for each event, but cannot remove
+          another instance's callback. Repeated wrapper init does not restore externally
+          removed listeners. Neither wrapper nor implementation exposes reset, unsubscribe or
+          shutdown. EventEmitter delivery is synchronous; ping completion is detached, with no
+          serialization, deduplication of pending work or retained completion handle.
         sources:
           - core/server/services/indexnow-ping/index.ts
           - core/server/services/indexnow-ping/indexnow-ping-service.ts
+          - core/server/lib/common/events.js
+          - core/boot.js
+          - core/server/ghost-server.ts
         tests: []
       configuration:
         summary: >-
-          Each ping reads environment, privacy, site privacy and the IndexNow key from live
-          providers. Development, pages, private sites, disabled privacy setting and default
-          post slugs are skipped; import events and events without relevant SEO changes are
-          skipped before pinging.
+          Each ping reads live environment, site privacy, privacy.useIndexNow, key and URL
+          providers. Development, pages, private sites, disabled privacy and listed default
+          slugs skip delivery. SEO fields and the IndexNow endpoint are module constants.
+          Requests carry url, key and keyLocation with a five-second request timeout. Key
+          lookup accepts any truthy value, while the verification middleware requires an exact
+          matching 32-character lowercase hex path. Class tests cover representative gates
+          and the url query, but not live changes, keyLocation or the verification route.
         sources:
           - core/server/services/indexnow-ping/indexnow-ping-service.ts
+          - core/server/services/indexnow-ping/constants.ts
+          - core/frontend/web/middleware/serve-indexnow-key.js
+          - core/server/models/settings.js
+        tests:
+          - test/unit/server/services/indexnow-ping/indexnow-ping-service.test.js
+      resources:
+        summary: >-
+          The implementation owns two model-event registrations and starts untracked HTTP
+          requests. Boot registers no cleanup; no cancellation or drain is exposed. The shared
+          request dependency owns DNS lookup/cache state and unref'ed cache-maintenance timers;
+          HTTP timeout and retry work belongs to that helper and Got. This root creates no
+          database connection, dedicated HTTP agent, scheduler or durable queue. Its borrowed
+          settings, URL services and event bus outlive individual deliveries.
+        sources:
+          - core/server/services/indexnow-ping/index.ts
+          - core/server/services/indexnow-ping/indexnow-ping-service.ts
+          - core/server/lib/common/events.js
+          - core/boot.js
+          - core/server/ghost-server.ts
+          - package.json
         tests: []
-    unverified:
-      - consumers
-      - startup
-      - resources
-      - failures
+      failures:
+        summary: >-
+          Subscription failure leaves service assigned, so another init skips retry.
+          Missing/unresolved URLs and absent keys warn and return; 200/202 log success, 429
+          logs rate_limited, 403/422 key_validation_failed and other errors ping_failed.
+          Ordinary URL-resolution/request errors are logged and swallowed. Model access in
+          the synchronous listener can throw; config gates precede ping's try and their
+          rejection is silently swallowed by the listener. Production GETs inherit Got
+          retries despite the no-retry comment; the request helper disables retries under
+          test environments. Class HTTP tests establish final classification, not production
+          attempts, timeout duration or event-to-persistence failure isolation.
+        sources:
+          - core/server/services/indexnow-ping/index.ts
+          - core/server/services/indexnow-ping/indexnow-ping-service.ts
+          - core/server/models/base/plugins/events.js
+          - package.json
+          - vitest.config.ts
+        tests:
+          - test/unit/server/services/indexnow-ping/indexnow-ping-service.test.js
+    unverified: []
     blockers:
       - >-
-        Verify event-bus reset/restart behavior: wrapper re-init does not restore listeners
-        removed outside the service.
+        Add root/boot contracts for exports, initialization identity, disabled first init,
+        partial subscription failure and restart after listener removal. The class subscription
+        test only checks event names and call count on a fake bus, not callback identity or
+        duplicate prevention. Decide listener disposal and pending-request drain ownership.
       - >-
-        Audit in-flight requests and shutdown ownership; no unsubscribe/drain contract is
-        exposed by the root.
+        Pin the real post-model/event/URL-service boundary, including transactional publication,
+        import suppression and author/tag-filtered routes. Current tests invoke the class with
+        fake models and URL services; no assertion establishes full publishing-path behavior.
+        Characterize synchronous model errors, pre-try config failures and logging failures.
+      - >-
+        Cover live setting changes, complete query encoding/keyLocation, subdirectory sites
+        and the actual key-verification route. The route and ping accept different key shapes;
+        existing getApiKey tests deliberately accept a non-hex key. Test the generated-key
+        contract before changing either side.
+      - >-
+        Resolve the no-retry comment against actual transport behavior: production Got GETs
+        permit two retries for eligible statuses/errors, while test mode disables retries.
+        Characterize production backoff/timeouts and stop with pending requests; the current
+        HTTP classification tests do not establish these lifecycle contracts.
   integrations:
     kind: directory
     disposition: retain
@@ -2590,50 +3162,252 @@ services:
   posts:
     kind: directory
     disposition: retain
-    status: auditing
+    status: audited
+    auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
     entryPoints:
       - posts/posts-service-instance.js
       - posts/post-scheduling.js
     notes: >-
-      Preserve factory-created caller instances and the separate scheduling module state;
-      prove isolation before choosing shared composition.
+      Record factory-created caller lifetimes and the separate scheduling module state;
+      establish which identity boundaries must survive before choosing shared composition.
+      The pilot needs focused construction/readiness and retained-consumer checks, not a
+      rewrite of unrelated post business logic.
     contracts:
       exports:
         summary: >-
-          There is no index. posts-service-instance exports a factory with PostsService
-          attached for tests. The independent post-scheduling module exports publish and
-          handleCacheInvalidation for the schedules endpoint.
-        sources:
-          - core/server/services/posts/posts-service-instance.js
-          - core/server/services/posts/post-scheduling.js
-          - core/server/api/endpoints/schedules.js
-        tests: []
-      construction:
-        summary: >-
-          Every factory call constructs PostStats, PostsExporter and PostsService;
-          PostsService also constructs PostEmailHandler. API modules retain factory results,
-          explore-ping injects one into each constructed ExplorePingService, and lexical
-          caches one on first rendering. post-scheduling separately retains an inFlight Set at
-          module scope.
+          There is no directory index. CommonJS posts-service-instance exports a synchronous
+          zero-argument factory with PostsService attached for tests. Each result exposes
+          browse/read/edit, bulk operations, export, visibility mapping, copying, cache helpers
+          and public collaborators including stats and postEmailHandler. Most methods require
+          their receiver; generateCopiedPostLocationFromUrl is passed unbound by posts/pages.
+          The separate post-scheduling module exports publish and handleCacheInvalidation.
+          Units assert selected copy/cache/edit results and handler dependencies; root/factory
+          export identity and repeated construction are source-only.
         sources:
           - core/server/services/posts/posts-service-instance.js
           - core/server/services/posts/posts-service.js
+          - core/server/services/posts/post-email-handler.js
           - core/server/services/posts/post-scheduling.js
           - core/server/api/endpoints/posts.js
+          - core/server/api/endpoints/pages.js
+        tests:
+          - test/unit/server/services/posts/posts-service.test.js
+          - test/unit/server/services/posts/post-email-handler.test.js
+      construction:
+        summary: >-
+          Every factory call creates PostStats, PostsExporter and PostsService, which creates
+          PostEmailHandler. It captures email-service.service immediately, shares the models
+          object with the handler, and gives the exporter a separate object of captured model
+          constructors. PostStats retains the shared DB facade and resolves knex on use. Other
+          dependencies are retained URL/settings helpers plus an isSet closure; the latter is
+          stored but unused by current PostsService methods. Constructors do no queries or
+          subscriptions themselves, although imports acquire shared modules. No guard, init or
+          singleton cache exists in the factory. Handler constructor tests assert injected
+          model/email identity; no test directly exercises the real factory dependency graph.
+        sources:
+          - core/server/services/posts/posts-service-instance.js
+          - core/server/services/posts/posts-service.js
+          - core/server/services/posts/post-email-handler.js
+          - core/server/services/posts/posts-exporter.js
+          - core/server/services/posts/stats/post-stats.js
+        tests:
+          - test/unit/server/services/posts/post-email-handler.test.js
+      consumers:
+        summary: >-
+          Posts/pages, public-post browse, admin/public search indexes, site exports and the
+          post output mapper each retain a factory result at module evaluation. Their uses
+          include edit/email, bulk/copy/cache headers, browse, export and legacy visibility
+          conversion; several other endpoint actions bypass this service and use models
+          directly. ExplorePingService receives a new result per construction and uses stats.
+          Lexical render/validate lazily creates and retains a result, but currently never
+          invokes it. The schedules endpoint calls the separate publisher. Search controller
+          units replace PostsService.prototype.browsePosts and assert URL-required columns;
+          real HTTP tests assert search projections, CSV/copy responses and bulk DB results.
+          Newsletter integration and retry HTTP tests exercise the real post/email connection
+          with provider or scheduling seams. Atomic-publication integration tests also exercise
+          transaction rollback and dispatch after commit. They do not pin factory/caller
+          identity timing.
+        sources:
+          - core/server/api/endpoints/posts.js
+          - core/server/api/endpoints/pages.js
+          - core/server/api/endpoints/posts-public.js
+          - core/server/api/endpoints/search-index.js
+          - core/server/api/endpoints/search-index-public.js
+          - core/server/api/endpoints/exports.js
+          - core/server/api/endpoints/utils/serializers/output/mappers/posts.js
           - core/server/services/explore-ping/index.ts
+          - core/server/services/explore-ping/explore-ping-service.ts
           - core/server/lib/lexical.js
-        tests: []
-    unverified:
-      - consumers
-      - startup
-      - lifetime
-      - configuration
-      - resources
-      - failures
+          - core/server/api/endpoints/schedules.js
+        tests:
+          - test/unit/api/endpoints/search-index.test.js
+          - test/unit/api/endpoints/search-index-public.test.js
+          - test/e2e-api/admin/search-index.test.js
+          - test/e2e-api/content/search-index.test.js
+          - test/e2e-api/admin/posts.test.js
+          - test/e2e-api/admin/posts-bulk.test.js
+          - test/integration/services/email-service/batch-sending.test.js
+          - test/integration/services/email-service/atomic-publish.test.ts
+          - test/e2e-api/admin/email-retry.test.ts
+      startup:
+        summary: >-
+          Boot has no posts initialization call. Factory readiness depends on the operation:
+          model/DB reads can work without email, while publication preflight/create/retry needs
+          the email implementation captured at construction. API pipeline getters and lazy
+          routers defer many caller imports; boot initializes email before mounting/readiness,
+          and Explore constructs posts during its later invocation in that service group.
+          Direct/early imports and Lexical construction are not guarded against capturing an
+          absent email service. Current HTTP tests prove selected normal boot/request paths,
+          not initialization order for retained callers or rejection before readiness. A new
+          managed root must explicitly coordinate these existing construction sites with boot.
+        sources:
+          - core/boot.js
+          - core/server/services/posts/posts-service-instance.js
+          - core/server/services/posts/post-email-handler.js
+          - core/server/api/endpoints/index.js
+          - core/shared/express.js
+          - core/server/web/api/app.js
+          - core/server/web/api/endpoints/admin/routes.js
+          - core/server/lib/lexical.js
+          - core/server/services/explore-ping/index.ts
+        tests:
+          - test/integration/services/email-service/batch-sending.test.js
+          - test/e2e-api/admin/email-retry.test.ts
+      lifetime:
+        summary: >-
+          Factory instances persist as long as callers retain them, with mutable public
+          collaborator fields and an independently retained email reference inside the handler.
+          Replacing email-service.service does not update either reference; replacing the
+          outer PostsService.emailService alone does not update its handler. Production callers
+          inspected do not replace these fields; units do replace postEmailHandler. No reset or
+          shutdown is exposed. Export state is per invocation. Scheduling has a module-wide
+          inFlight Set keyed by resource type/id and a shared no-op object; publish releases
+          the key in finally. Its gated unit proves same-key overlap returns no-op while the
+          first read is held, then one edit occurs. Error release, independent keys and
+          retained-consumer behavior across initialization remain source-only.
+        sources:
+          - core/server/services/posts/posts-service.js
+          - core/server/services/posts/post-email-handler.js
+          - core/server/services/posts/posts-service-instance.js
+          - core/server/services/posts/posts-exporter.js
+          - core/server/services/posts/post-scheduling.js
+        tests:
+          - test/unit/server/services/posts/posts-service.test.js
+          - test/unit/server/services/post-scheduling/post-scheduling.test.js
+      configuration:
+        summary: >-
+          Factory captures helper/model/email objects rather than a config subtree. Export
+          awaits newsletter/label/tier reads, then snapshots member, paid-member, tracking and
+          feedback settings for that stream; later exports read the retained facades again.
+          URL generation calls the shared output helper for each row. Scheduling reads the
+          configured minute tolerance at the beginning of each publish attempt, then uses that
+          captured value after its API read. PostStats has fixed published/sent filters.
+          Export units assert selected column changes after fake settings changes, default
+          limit 15, requested limits and order forwarding. This establishes per-call behavior
+          with fakes, not config hot reload or dependency rebinding; immutable config rules
+          still apply. Real factory capture/config timing lacks a dedicated test.
+        sources:
+          - core/server/services/posts/posts-service-instance.js
+          - core/server/services/posts/posts-exporter.js
+          - core/server/services/posts/post-scheduling.js
+          - core/server/services/posts/stats/post-stats.js
+        tests:
+          - test/unit/server/services/posts/posts-exporter.test.js
+      resources:
+        summary: >-
+          The factory graph owns no recurring timer, subscriber or provider client. It borrows
+          DB/models, email and URL/settings helpers. Edit creates or borrows a transaction for
+          the post and new email, then schedules or retries after commit. A caller-owned
+          transaction retains that callback through its executionPromise; this service has no
+          pending-callback registry or drain. Bulk operations use local transactions and dispatch
+          domain events without waiting for subscribers. Export owns a Readable over an async generator, one metadata
+          context and bounded pages of up to 50 rows; the HTTP serializer owns its CSV transform
+          and pipeline to the response, while site export owns its enclosing pipeline. Export
+          units consume the stream and assert 75 exact IDs across two 50-row queries. This does
+          not establish early-close cancellation of an already-running DB query. Scheduling
+          owns only the active-key guard, with no timeout/drain; queued timer ownership belongs
+          to the separate post-scheduling service/adapter, not this module.
+        sources:
+          - core/server/services/posts/posts-service.js
+          - core/server/services/posts/posts-exporter.js
+          - core/server/services/posts/post-scheduling.js
+          - core/server/services/posts/stats/post-stats.js
+          - core/server/lib/after-commit.ts
+          - core/server/api/endpoints/utils/serializers/output/posts.js
+          - core/server/api/endpoints/utils/serializers/output/stream-csv-response.ts
+          - core/server/api/endpoints/utils/serializers/output/stream-response.ts
+          - core/server/api/endpoints/exports.js
+        tests:
+          - test/unit/server/services/posts/posts-exporter.test.js
+          - test/e2e-api/admin/posts.test.js
+      failures:
+        summary: >-
+          editPost awaits preflight, then saves the post and any new newsletter email in one
+          transaction. With its own transaction it awaits scheduling/retry after commit,
+          serializes and awaits the optional event callback. A caller-owned transaction instead
+          registers scheduling/retry after its executionPromise resolves; edit does not wait
+          for that commit, and later send errors are logged. Preflight failure prevents edit;
+          email-insert failure rolls back publication, but a post-commit failure can reject
+          after publication. Handler wraps invalid recipient-filter queries as BadRequest,
+          warns without retrying an unknown delivery outcome, and tolerates a lost retry claim
+          only when the refreshed email is pending/submitting/submitted. Units assert selected
+          arguments, send-after-commit ordering, caller-commit gating and logged send failure.
+          Integration tests assert rollback on email-insert failure and an outer transaction
+          error, dispatch after caller commit, scheduled-publication retry, one email for two
+          overlapping edits, and rejection after a committed post when retry scheduling fails.
+          These do not prove delivery completion or every held completion/error boundary;
+          rollback without an error is also not covered and the helper treats a resolved
+          executionPromise as a commit.
+          Bulk methods propagate write failures and dispatch after their awaited local work;
+          no whole-operation/subscriber atomicity is implied. Export-context failure rejects
+          before returning a stream, later page/mapping failure reaches the stream; invalid
+          human-readable filters log and fall back. Scheduling treats missing/non-scheduled/
+          early resources as no-op, keeps overdue non-forced publishes as errors and propagates
+          other API failures. Legacy real HTTP cases assert publish/no-op/status and concurrent
+          one-email outcomes with outbound scheduler/provider mocks; they do not prove every
+          transaction rollback, guard-release failure or delivery completion.
+        sources:
+          - core/server/services/posts/posts-service.js
+          - core/server/services/posts/post-email-handler.js
+          - core/server/services/posts/posts-exporter.js
+          - core/server/services/posts/post-scheduling.js
+          - core/server/lib/after-commit.ts
+          - core/server/api/endpoints/schedules.js
+        tests:
+          - test/unit/server/services/posts/posts-service.test.js
+          - test/unit/server/services/posts/post-email-handler.test.js
+          - test/unit/server/services/posts/posts-exporter.test.js
+          - test/integration/services/email-service/atomic-publish.test.ts
+          - test/e2e-api/admin/email-retry.test.ts
+          - test/legacy/api/admin/schedules.test.js
+    unverified: []
     blockers:
       - >-
-        Audit all factory consumers and mutable dependencies before replacing per-caller
-        instances. Keep the scheduling inFlight guard distinct from those instance lifetimes.
+        Pilot gate: characterize the real factory's fresh identities/shared collaborators and
+        immediate email capture, then prove the proposed managed facade remains usable by
+        retained endpoint/mapper/Explore/Lexical consumers. Import-time availability and
+        call-time readiness must be explicit; current business tests do not pin those boundaries.
+      - >-
+        Pilot gate: add the smallest boot/consumer assertion that publication reaches the
+        initialized email implementation through the retained posts service. Preserve the
+        real PostEmailHandler connection and existing DTO, preflight and retry results; a
+        prototype-only controller stub would miss a broken facade/dependency reference.
+      - >-
+        Pilot gate if edit composition changes: hold preflight/email/event-callback completion and
+        assert downstream calls/results remain pending, with original failures propagated at
+        each boundary. Preserve the distinction between awaited sending after a local commit
+        and logged sending failures after a caller commit. Existing units hold the caller's
+        commit but replace the handler and do not hold every stage unresolved; reuse the
+        atomic-publication integration and existing HTTP/provider-mock coverage.
+      - >-
+        If migration touches the separate scheduling module, preserve its process-wide guard
+        and add failure-release/independent-key checks. Do not accidentally give each factory
+        its own guard. Existing overlap unit and HTTP test cover the successful same-key case.
+      - >-
+        Wider characterization, not a prerequisite for a composition-only pilot: export
+        interruption/page failure and transaction/subscriber failure boundaries remain partly
+        source-only, and PostStats real query behavior has no dedicated assertion found.
+        Preserve their existing owners and behavior unless the migration changes them.
   posts-public:
     kind: directory
     disposition: retain
@@ -3091,47 +3865,166 @@ services:
   slack-ping:
     kind: directory
     disposition: retain
-    status: auditing
+    status: audited
+    auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
     entryPoints:
       - slack-ping/index.ts
     notes: >-
-      Boot initializes a retained wrapper; preserve live Slack settings reads and the two
-      model-event listeners.
+      Preserve live Slack settings, publish/test event behavior and request failure handling.
+      Retained listeners, shared HTTP resources and partial initialization need contracts before
+      changing ownership.
     contracts:
       exports:
         summary: >-
-          The TypeScript default export is an eager wrapper with init and an optional service
-          property.
+          TypeScript default-exports one eager wrapper with synchronous init and a public
+          optional service property; CommonJS boot reads .default. init returns no instance.
+          The named SlackPingService class exposes ping, settings/event methods and stable
+          listener references. Neither class supplies reset or shutdown.
         sources:
           - core/server/services/slack-ping/index.ts
+          - core/server/services/slack-ping/slack-ping-service.ts
+          - core/boot.js
         tests: []
       construction:
         summary: >-
-          First init constructs SlackPingService, stores it before subscribing, and returns
-          early on subsequent calls.
+          First init obtains shared events, settings, URL helpers, blogIcon and request-external,
+          constructs SlackPingService, assigns service and subscribes it. The image-library
+          import also obtains image cache/storage adapters and constructs its shared helpers.
+          The wrapper is the only runtime SlackPingService constructor found; tests inject
+          collaborators directly. Initialization and subscription are not gated on a Slack URL.
         sources:
           - core/server/services/slack-ping/index.ts
+          - core/server/services/slack-ping/slack-ping-service.ts
+          - core/server/lib/image/index.js
+          - core/server/lib/image/image-utils.js
+          - core/server/lib/request-external.js
+        tests: []
+      consumers:
+        summary: >-
+          Boot is the only direct root caller. The shared model emitter invokes post.published
+          with the post model and its authors/tags relations; imports are skipped. The authenticated Admin
+          slack/test endpoint emits slack.test, whose listener sends a fixed test message.
+          Both listeners discard the ping promise, so API/model completion does not establish
+          webhook delivery. No CLI, scheduled job or alternate runtime deep constructor was
+          found. Unit tests call handlers directly; the API test mocks event emission.
+        sources:
+          - core/boot.js
+          - core/server/services/slack-ping/slack-ping-service.ts
+          - core/server/models/post.js
+          - core/server/models/base/plugins/events.js
+          - core/server/api/endpoints/slack.js
+          - core/server/web/api/endpoints/admin/routes.js
+        tests:
+          - test/unit/server/services/slack-ping/slack-ping-service.test.js
+          - test/e2e-api/admin/slack.test.js
+      startup:
+        summary: >-
+          Required-service boot calls init while assembling Promise.all prerequisites, after
+          settings and dynamic routing and before readiness. Importing the wrapper does not
+          subscribe; init installs callbacks synchronously without checking webhook delivery.
+          A constructed service can receive events immediately; direct ping depends on its
+          injected settings/URL/image helpers rather than an explicit readiness guard.
+        sources:
+          - core/boot.js
+          - core/server/services/slack-ping/index.ts
+          - core/server/services/slack-ping/slack-ping-service.ts
+        tests: []
+      lifetime:
+        summary: >-
+          Wrapper init returns early once service is assigned, retaining its dependencies and
+          listener identities across same-process boots. subscribeEvents removes/re-adds its
+          own bound post.published and slack.test callbacks; it cannot remove callbacks belonging
+          to another instance. Wrapper init does not restore listeners removed elsewhere.
+          There is no local queue, send deduplication or serialization, and server stop supplies
+          no Slack-ping reset or unsubscribe.
+        sources:
+          - core/server/services/slack-ping/index.ts
+          - core/server/services/slack-ping/slack-ping-service.ts
+          - core/server/lib/common/events.js
+          - core/boot.js
+          - core/server/ghost-server.ts
         tests: []
       configuration:
-        summary: Each ping reads Slack URL, username and blog title from the injected settings cache.
+        summary: >-
+          Each ping reads Slack URL, username and site title; blank username falls back to Ghost.
+          URL/image/icon helpers resolve current routing and settings. Post URL/description work
+          happens before the missing-URL, page and default-slug gates. Descriptions prefer custom
+          excerpts, otherwise strip HTML before the members-only marker and keep three sentences.
+          request-external captures agent options and test hooks at import, but reads environment
+          and site URL during request checks; its default request timeout is 10 seconds, 5 under
+          the import-time test hook. Ping adds no local timeout or retry policy.
         sources:
           - core/server/services/slack-ping/slack-ping-service.ts
-        tests: []
+          - core/server/services/slack-ping/constants.ts
+          - core/server/lib/image/blog-icon.js
+          - core/server/services/url/lazy-url-service.ts
+          - core/server/lib/request-external.js
+        tests:
+          - test/unit/server/services/slack-ping/slack-ping-service.test.js
       resources:
         summary: >-
-          subscribeEvents removes and re-adds stable post.published and slack.test callbacks
-          on the same instance. The wrapper has no shutdown method.
+          The service owns two shared-emitter subscriptions and outbound requests, with no
+          cancellation or drain bookkeeping. The wrapper borrows shared settings, routing and
+          image helpers; image adapter lifetime remains outside this root. Production requests
+          use request-external's shared configurable HTTP/HTTPS agents, keep-alive by default,
+          DNS checks and per-request timeout. No Slack cleanup is registered and the helper
+          exposes no lifecycle disposal hook; stopping Ghost does not await these sends.
         sources:
           - core/server/services/slack-ping/index.ts
           - core/server/services/slack-ping/slack-ping-service.ts
-        tests: []
-    unverified:
-      - consumers
-      - startup
-      - lifetime
-      - failures
+          - core/server/lib/request-external.js
+          - core/server/lib/image/index.js
+          - core/boot.js
+          - core/server/ghost-server.ts
+        tests:
+          - test/unit/server/services/slack-ping/slack-ping-service.test.js
+      failures:
+        summary: >-
+          Errors before service assignment permit a later init attempt; subscription errors
+          leave service assigned and can leave partial listeners, so later init skips retry.
+          Request promise rejection is wrapped in InternalServerError, logged and swallowed;
+          direct ping therefore resolves after a logged failure. Synchronous settings, model,
+          formatting, URL/icon or request-invocation errors occur outside that catch and can
+          propagate through the synchronous emitter, even after a post commit, interrupting later
+          callbacks without undoing persistence. The service itself provides no
+          retry/replay; successful slack/test API response does not report asynchronous failure.
+        sources:
+          - core/server/services/slack-ping/index.ts
+          - core/server/services/slack-ping/slack-ping-service.ts
+          - core/server/lib/common/events.js
+          - core/server/models/base/plugins/events.js
+          - core/server/api/endpoints/slack.js
+        tests:
+          - test/unit/server/services/slack-ping/slack-ping-service.test.js
+    unverified: []
     blockers:
-      - Audit in-flight requests and listener removal before replacing the retained instance.
+      - >-
+        Add root export, construction, idempotence and partial-subscription failure contracts.
+        Existing tests construct the implementation; registration assertions check on calls
+        against a fake emitter, not removeListener, callback counts or repeated subscriptions.
+      - >-
+        Exercise real boot, post publication and slack/test through the actual emitter and
+        wrapper. The API test mocks emission; class tests use fake URL/image/cache dependencies
+        and inject @tryghost/request, while production injects request-external. They do not
+        establish real routing, constructor wiring, startup readiness or production HTTP policy.
+      - >-
+        Characterize changed settings on a retained instance, custom username/title/icon,
+        custom excerpts and default-slug suppression. The existing missing-URL case only checks
+        helper calls; it does not assert no request. Tag forwarding is tested against a stub,
+        not a real collection-filter route.
+      - >-
+        Decide and test listener ownership across restart/replacement and externally cleared
+        emitters. Stable callbacks only prevent duplication for the same implementation object;
+        the wrapper guard cannot recover a cleared listener set or finish failed registration.
+      - >-
+        Characterize pending sends, overlapping events and shutdown with the real request helper.
+        The request-error test observes one log through an alternate injected transport; it
+        does not prove exact error context, direct-ping settlement, timeout behavior, cancellation
+        or shared-agent disposal. Keep per-request timeout distinct from an overall deadline.
+      - >-
+        Add synchronous failure contracts for malformed models/settings and throwing URL/icon
+        or request dependencies. Those failures bypass the request rejection handler and can
+        escape model/API event emission even when Slack is disabled or the post is later skipped.
   staff:
     kind: directory
     disposition: retain
@@ -3444,65 +4337,224 @@ services:
   tinybird:
     kind: directory
     disposition: retain
-    status: auditing
+    status: audited
+    auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
     entryPoints:
       - tinybird/index.js
     notes: >-
-      A class with static initialization manages the optional token service; stats initializes
-      it conditionally, not boot directly.
+      An optional token service is published through static methods. Preserve the different
+      lifetimes of request-time initialization, retained stats clients and automation lookups.
     contracts:
       exports:
         summary: >-
-          CommonJS exports a class with static init, reset and instance. instance begins
-          undefined; disabled init or reset sets it to null.
+          CommonJS index re-exports the wrapper class, with static synchronous init/reset and
+          mutable instance; instance starts undefined, and disabled init/reset assigns null.
+          Static methods reference the wrapper class directly rather than their receiver;
+          both return undefined. The deep implementation is a constructible class exposing
+          synchronous getToken, _generateToken and _isJWTExpired, with mutable configuration,
+          capability flags and token-cache fields. getToken returns token/optional numeric exp
+          or null. Units assert selected token shapes and static-token values; HTTP asserts
+          the serialized token/null shapes and ISO expiration. Exact root exports, unbound
+          static methods and reset behavior are source-only.
         sources:
           - core/server/services/tinybird/index.js
           - core/server/services/tinybird/tinybird-service-wrapper.js
-        tests: []
+          - core/server/services/tinybird/tinybird-service.js
+          - core/server/api/endpoints/tinybird.js
+          - core/server/api/endpoints/utils/serializers/output/tinybird.js
+        tests:
+          - test/unit/server/services/tinybird/tinybird-service.test.js
+          - test/e2e-api/admin/tinybird.test.js
       construction:
         summary: >-
-          Every configured init constructs a new TinybirdService. StatsService.create calls
-          init only when web analytics or the configured automation analytics path is enabled.
-        sources:
-          - core/server/services/tinybird/tinybird-service-wrapper.js
-          - core/server/services/stats/stats-service.js
-        tests: []
-      configuration:
-        summary: >-
-          init rereads configuration and site UUID. TinybirdService captures capability flags
-          and site ID at construction, retains the configuration object, and caches generated
-          tokens. The retained token endpoint supports disabled, credential A, credential B
-          and disabled transitions; missing site UUID clears the instance and can recover.
+          Every configured init constructs a new TinybirdService from current tinybird config
+          and settings site_uuid; no guard or shared instance reuse exists. Only the wrapper
+          constructs it in production; units construct it directly. Construction captures
+          flags and site ID, retains the config subtree and starts empty token-cache fields,
+          without signing or contacting Tinybird. StatsService.create conditionally initializes
+          the root, then creates a separate query client for web analytics using the published
+          instance. Factory units stub init and assert its gate plus client presence; the
+          retained-consumer test uses the real root and asserts replacement identity. Nested
+          construction and absence of provider I/O at init are otherwise source-established.
         sources:
           - core/server/services/tinybird/tinybird-service-wrapper.js
           - core/server/services/tinybird/tinybird-service.js
+          - core/server/services/stats/stats-service.js
+          - core/server/services/stats/utils/tinybird.js
+        tests:
+          - test/unit/server/services/stats/stats.test.ts
+          - test/unit/server/services/tinybird/consumer-configuration.test.ts
+      consumers:
+        summary: >-
+          Three production root consumers were found: the Admin token endpoint initializes
+          on each request, StatsService.create initializes and captures instance, and the
+          automations API reads the current instance without initializing it. Stats passes
+          its query client to posts/content statistics; automations builds clients for browse,
+          performance, runs and member search. No production deep implementation constructor
+          or wrapper-module import was found beyond the barrel. Token HTTP tests assert owner/
+          admin success and unauthenticated/editor denial. Automation HTTP tests exercise
+          real token composition and intercepted query responses for browse/performance/member
+          search; run tests replace the token service. These establish selected HTTP results, not
+          provider acceptance, every consumer or frontend token-refresh behavior.
+        sources:
           - core/server/api/endpoints/tinybird.js
+          - core/server/web/api/endpoints/admin/routes.js
+          - core/server/api/endpoints/utils/serializers/output/tinybird.js
+          - core/server/services/stats/stats-service.js
+          - core/server/services/stats/utils/tinybird.js
+          - core/server/services/stats/posts-stats-service.js
+          - core/server/services/stats/content-stats-service.js
+          - core/server/services/automations/automations-api.ts
+          - core/server/services/automations/tinybird-automation-stats.ts
+          - core/server/services/automations/automation-member-search.ts
+        tests:
+          - test/e2e-api/admin/tinybird.test.js
+          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automation-performance-stats.test.ts
+          - test/e2e-api/admin/automation-runs.test.ts
+          - test/e2e-api/admin/automation-member-search.test.ts
+      startup:
+        summary: >-
+          Boot has no direct Tinybird init; its awaited stats.init calls StatsService.create.
+          That initializes Tinybird when web_analytics_enabled or tinybird:stats config is
+          truthy. The query client itself is created only for web analytics. The wrapper
+          requires settings site_uuid even
+          when a stats.id override exists, and requires only truthy root config, not a usable
+          token/endpoint. Automations checks stats config and needs an already-published
+          token service; it does not initialize the root when configuration becomes available.
+          Factory units cover three gate combinations with stubbed init. An HTTP case resets
+          Tinybird and calls the real stats factory with web
+          analytics disabled, then asserts remote browse stats and no SQL run-stat query;
+          it does not prove complete boot ordering or later gate transitions.
+        sources:
+          - core/boot.js
+          - core/server/services/stats/service.js
+          - core/server/services/stats/stats-service.js
+          - core/server/services/tinybird/tinybird-service-wrapper.js
+          - core/server/services/automations/automations-api.ts
+        tests:
+          - test/unit/server/services/stats/stats.test.ts
+          - test/e2e-api/admin/automations.test.js
+      lifetime:
+        summary: >-
+          Source establishes that root re-init/reset changes only the published reference,
+          without disposing or revoking retained instances/tokens. Each implementation caches
+          one JWT and expiration, refreshing on use when verification fails or less than five
+          minutes remain. Later name/lifetime options are ignored while that cached token is
+          usable; endpoint re-init discards the cache each request. Stats retains its original
+          token service while rereading endpoint/site configuration, whereas a new stats client
+          captures the new instance. The consumer test asserts that mixed lifetime with fake
+          HTTP. Clock-controlled units assert repeated token equality and different tokens
+          after 176/180 minutes; equality alone does not prove signing was skipped. Automation
+          lookup after replacement and outstanding-query/reset behavior remain source-only.
+        sources:
+          - core/server/services/tinybird/tinybird-service-wrapper.js
+          - core/server/services/tinybird/tinybird-service.js
+          - core/server/services/stats/stats-service.js
+          - core/server/services/stats/utils/tinybird.js
+          - core/server/api/endpoints/tinybird.js
+          - core/server/services/automations/automations-api.ts
+        tests:
+          - test/unit/server/services/tinybird/tinybird-service.test.js
+          - test/unit/server/services/tinybird/consumer-configuration.test.ts
+      configuration:
+        summary: >-
+          Site ID (stats.id or settings site_uuid) and JWT/local/static capability flags are
+          captured at construction; token reads/signing use the retained config subtree.
+          JWT takes precedence over local, then legacy stats token; local-enabled can return
+          an undefined token without falling back. getToken defaults to 180 minutes, direct
+          _generateToken to 60; signing includes a fixed pipe allowlist scoped to captured site
+          ID. Request clients reread config/settings facades, including local endpoint/version.
+          Immutable config replacement does not update an existing service's captured subtree.
+          HTTP tests replace test config through disabled/key-A/key-B/disabled transitions and
+          verify signatures/workspaces/ISO expiry; consumer units cover missing-site recovery.
+          Scope units check each returned scope's type/site and three required resources, not
+          the exact allowlist. Test setters and mutable unit config do not prove hot reload.
+        sources:
+          - core/server/services/tinybird/tinybird-service-wrapper.js
+          - core/server/services/tinybird/tinybird-service.js
+          - core/server/services/stats/utils/tinybird.js
+          - core/server/api/endpoints/tinybird.js
+          - core/shared/config/loader.ts
         tests:
           - test/unit/server/services/tinybird/tinybird-service.test.js
           - test/unit/server/services/tinybird/consumer-configuration.test.ts
           - test/e2e-api/admin/tinybird.test.js
-      lifetime:
+      resources:
         summary: >-
-          Configured init replaces the root instance. A StatsService consumer retains its
-          original token service while rereading endpoint and site UUID for each request;
-          a newly constructed consumer uses the new token. This mixed lifetime is current
-          behavior, not a recommendation for the new lifecycle.
+          The token root owns configuration references and an in-memory JWT cache only: it
+          has no database, provider client, event subscription, timer, refresh job or shutdown.
+          Its stats/automation consumers borrow request-external, whose shared HTTP/HTTPS
+          keep-alive agents outlive a query client. Query construction asks for a 35-second
+          request timeout and zero retries; POST search additionally creates a timeout AbortSignal.
+          No root reset drains/cancels those requests or closes shared agents. Client units
+          assert request options and signal presence with fake HTTP, not elapsed timeout or
+          socket release. A member-search HTTP case asserts a delayed ten-second intercepted
+          response fails in less than five seconds, not an exact three-second deadline or
+          socket cleanup. A browse case substitutes plain Got to bypass request-external's
+          test retry hook and asserts the first failure falls back without consuming a second
+          interceptor. The shared transport is replaced in that retry case; request-external's
+          normal test hook changes request timeout to five seconds. These tests do not
+          establish production timing/cleanup behavior.
         sources:
           - core/server/services/tinybird/tinybird-service-wrapper.js
-          - core/server/services/stats/stats-service.js
+          - core/server/services/tinybird/tinybird-service.js
           - core/server/services/stats/utils/tinybird.js
+          - core/server/services/automations/automations-api.ts
+          - core/server/services/automations/automation-member-search.ts
+          - core/server/lib/request-external.js
         tests:
-          - test/unit/server/services/tinybird/consumer-configuration.test.ts
-    unverified:
-      - consumers
-      - startup
-      - resources
-      - failures
+          - test/unit/server/services/stats/utils/tinybird.test.js
+          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automation-member-search.test.ts
+      failures:
+        summary: >-
+          Missing config/site logs and publishes null; other initialization/signing errors
+          propagate. JWT verification errors mean expired and trigger regeneration, with no
+          fallback to static credentials if signing fails. Query build errors occur before
+          fetch's catch, while caught request/parse errors log and return null. Automations
+          catches preparation/token failures: browse falls back to database stats, but performance/
+          runs report failure when their client/data is unavailable. Stats consumers separately
+          catch query failures and use empty/zero results. Unit tests assert invalid-JWT expiry
+          and fake HTTP/JSON failures returning null. Browse HTTP tests assert database fallback
+          for missing configuration/token, empty local tokens, signing stubs and intercepted
+          failed/malformed responses; performance/runs assert selected 500/no-SQL-fallback
+          paths. Real signing-constructor faults, cleanup and provider rejection remain uncovered.
+        sources:
+          - core/server/services/tinybird/tinybird-service-wrapper.js
+          - core/server/services/tinybird/tinybird-service.js
+          - core/server/services/stats/utils/tinybird.js
+          - core/server/services/stats/posts-stats-service.js
+          - core/server/services/stats/content-stats-service.js
+          - core/server/services/automations/automations-api.ts
+          - core/server/services/automations/tinybird-automation-stats.ts
+        tests:
+          - test/unit/server/services/tinybird/tinybird-service.test.js
+          - test/unit/server/services/stats/utils/tinybird.test.js
+          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automation-performance-stats.test.ts
+          - test/e2e-api/admin/automation-runs.test.ts
+    unverified: []
     blockers:
       - >-
-        Decide how migration handles existing stats consumers combining a captured token
-        with live endpoint/site configuration. Complete the automation-consumer and boot-mode
-        audits, including disabled analytics, token failure and stop/start behavior.
+        Pin root/barrel compatibility, init/reset return and receiver behavior, repeated
+        construction and disabled/failed initialization with real boot consumers. Cover
+        analytics gates changing after initial stats boot and settings readiness, including
+        missing settings site_uuid when a configured site override exists.
+      - >-
+        Decide how migration preserves retained stats tokens alongside reread endpoint/site
+        values and automation's current-instance lookup. Existing replacement tests use fake
+        HTTP; add the relevant consumer paths before changing publication or reset semantics.
+      - >-
+        Protect exact token precedence, scope allowlist, captured site/workspace, cache signing
+        counts, default lifetimes, the exact refresh boundary and custom options on a cached
+        token. Define incomplete/local credentials and real signing failure behavior; current
+        equality and selected-scope assertions are not complete cache/authentication contracts.
+      - >-
+        Cover query construction faults through retained stats consumers, and distinguish
+        empty valid data from unavailability across stats and automations. Preserve browse's
+        database fallback versus performance/run failures; intercepted HTTP cannot establish
+        provider acceptance, production deadlines or shared transport disposal on stop/reset.
   tinybird-sync:
     kind: directory
     disposition: retain
