@@ -259,7 +259,11 @@ describe('MemberBreadService', function () {
   });
 
   describe('edit', function () {
-    function createMockMemberModel({ previousStatus = 'free', subscriptions = [], lazySubscriptions = false } = {}) {
+    function createMockMemberModel({
+      previousStatus = 'free',
+      subscriptions = [],
+      lazySubscriptions = false,
+    } = {}) {
       let loaded = !lazySubscriptions;
       const relation = {
         find: (predicate) => (loaded ? subscriptions.find(predicate) || null : null),
@@ -267,10 +271,10 @@ describe('MemberBreadService', function () {
         get models() {
           return loaded ? subscriptions : [];
         },
-        fetch: async () => {
+        fetch: sinon.spy(async () => {
           loaded = true;
           return relation;
-        },
+        }),
       };
       return {
         id: 'member_123',
@@ -326,6 +330,7 @@ describe('MemberBreadService', function () {
         getSuppressionDataStub,
         setComplimentarySubscription,
         removeComplimentarySubscription,
+        subscriptionsFetch: mockMemberModel.related().fetch,
       };
     }
 
@@ -414,9 +419,6 @@ describe('MemberBreadService', function () {
       assert.equal(setComplimentarySubscription.called, false);
     });
 
-    // The remove branch keys on the model's loaded stripeSubscriptions relation, so this
-    // only covers the service-level contract when that relation is present on the model —
-    // the Admin API edit path does not load it.
     it('removes the complimentary subscription when uncomping a member whose model has an active complimentary subscription loaded (#25735)', async function () {
       const { service, removeComplimentarySubscription, setComplimentarySubscription } =
         createService({
@@ -448,13 +450,18 @@ describe('MemberBreadService', function () {
 
     // Ordinary edit (no comped field): no comp work at all.
     it('does not touch subscriptions on an edit without comped (#25735)', async function () {
-      const { service, setComplimentarySubscription, removeComplimentarySubscription } =
-        createService({ stripeConfigured: true, previousStatus: 'comped' });
+      const {
+        service,
+        setComplimentarySubscription,
+        removeComplimentarySubscription,
+        subscriptionsFetch,
+      } = createService({ stripeConfigured: true, previousStatus: 'comped' });
 
       await service.edit({ name: 'New Name' }, { id: 'member_123' });
 
       assert.equal(setComplimentarySubscription.called, false);
       assert.equal(removeComplimentarySubscription.called, false);
+      assert.equal(subscriptionsFetch.called, false);
     });
 
     // Stripe not connected: comp branch never runs.

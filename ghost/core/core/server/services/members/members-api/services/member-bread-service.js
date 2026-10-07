@@ -650,7 +650,7 @@ module.exports = class MemberBREADService {
       throw error;
     }
 
-    if (this.stripeService.configured) {
+    if (this.stripeService.configured && typeof data.comped === 'boolean') {
       // update() does not load the subscriptions, so fetch them before looking for a comp one
       const subscriptions = await model
         .related('stripeSubscriptions')
@@ -664,18 +664,16 @@ module.exports = class MemberBREADService {
       // the pre-update status. Ref: https://github.com/TryGhost/Ghost/issues/25735
       const wasComped = model.previous('status') === 'comped';
 
-      if (typeof data.comped === 'boolean') {
-        if (data.comped && !hasCompedSubscription && !wasComped) {
-          await this.memberRepository.setComplimentarySubscription(model, {
-            context: options.context,
-            transacting: options.transacting,
-          });
-        } else if (!data.comped && hasCompedSubscription) {
-          await this.memberRepository.removeComplimentarySubscription(model, {
-            context: options.context,
-            transacting: options.transacting,
-          });
-        }
+      if (data.comped && !hasCompedSubscription && !wasComped) {
+        await this.memberRepository.setComplimentarySubscription(model, {
+          context: options.context,
+          transacting: options.transacting,
+        });
+      } else if (!data.comped && hasCompedSubscription) {
+        await this.memberRepository.removeComplimentarySubscription(model, {
+          context: options.context,
+          transacting: options.transacting,
+        });
       }
     }
 
