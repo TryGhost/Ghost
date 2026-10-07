@@ -22,7 +22,6 @@ import { GHOST_OWNER } from '@/helpers/environment/constants';
 import { GhostInstance, getEnvironmentManager, isAllowedHost } from '@/helpers/environment';
 import { SettingsService } from '@/helpers/services/settings/settings-service';
 import { extractInviteLink } from '@/helpers/services/email/utils';
-import { loginToGetAuthenticatedSession } from '@/helpers/playwright/flows/sign-in';
 
 const debug = baseDebug('e2e:ghost-fixture');
 const STRIPE_SECRET_KEY = 'sk_test_e2eTestKey';
@@ -170,10 +169,33 @@ async function setupNewAuthenticatedPage(
   });
   const page = await context.newPage();
 
-  await loginToGetAuthenticatedSession(page, ghostAccountOwner.email, ghostAccountOwner.password);
+  // Sign in through the session API rather than the sign-in form. A UI sign-in
+  // boots the admin twice (the form, then a full reload once signed in); this
+  // boots it once. The sign-in screens have their own tests.
+  const { email, password } = ghostAccountOwner;
+  const response = await context.request.post('/ghost/api/admin/session/', {
+    data: { username: email, password },
+  });
+  if (!response.ok()) {
+    throw new Error(
+      `Signing in as ${email} failed (${response.status()}): ${await response.text()}`,
+    );
+  }
+  await page.goto('/ghost/#/');
+  await waitForAdminHome(page);
   debug('Authentication completed for Ghost instance');
 
   return { page, context, ghostAccountOwner };
+}
+
+// Wait for either Analytics header (normal mode) or billing iframe (force upgrade mode)
+async function waitForAdminHome(page: Page) {
+  const analyticsPage = new AnalyticsOverviewPage(page);
+  const billingIframe = page.getByTitle('Billing');
+  await Promise.race([
+    analyticsPage.header.waitFor({ state: 'visible' }),
+    billingIframe.waitFor({ state: 'visible' }),
+  ]);
 }
 
 async function setupAuthenticatedPageFromStorageState(
@@ -192,13 +214,7 @@ async function setupAuthenticatedPageFromStorageState(
   });
   const page = await context.newPage();
   await page.goto('/ghost/#/');
-
-  const analyticsPage = new AnalyticsOverviewPage(page);
-  const billingIframe = page.getByTitle('Billing');
-  await Promise.race([
-    analyticsPage.header.waitFor({ state: 'visible' }),
-    billingIframe.waitFor({ state: 'visible' }),
-  ]);
+  await waitForAdminHome(page);
 
   return {
     page,
