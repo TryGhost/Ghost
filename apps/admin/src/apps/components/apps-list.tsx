@@ -74,7 +74,11 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall }) => {
                         {manifest.name}
                       </Link>
                       {isDevelopmentApp(manifest) && <DevelopmentBadge />}
-                      {status === 'suspended' && <Badge variant="secondary">Needs approval</Badge>}
+                      {status === 'suspended' && (
+                        <Badge data-testid="app-needs-approval-badge" variant="warning">
+                          Needs approval
+                        </Badge>
+                      )}
                       <span className="text-sm text-muted-foreground">
                         {manifest.author.name}
                       </span>
@@ -87,6 +91,14 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall }) => {
               </TableHead>
               <TableCell className="p-4">
                 <Inline gap="xs" justify="end">
+                  {status === 'suspended' && (
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate(appReviewRoute(installation.manifest_url))}
+                    >
+                      Review changes
+                    </Button>
+                  )}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
@@ -98,13 +110,6 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall }) => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      {status === 'suspended' && (
-                        <DropdownMenuItem
-                          onSelect={() => navigate(appReviewRoute(installation.manifest_url))}
-                        >
-                          Review changes
-                        </DropdownMenuItem>
-                      )}
                       <DropdownMenuItem
                         className="text-destructive focus:text-destructive"
                         onSelect={() => onUninstall(installation)}

@@ -87,7 +87,7 @@ const Details: React.FC<{ installation: AppInstallation }> = ({ installation }) 
               {manifest.name}
             </Text>
             {isDevelopmentApp(manifest) && <DevelopmentBadge />}
-            {status === 'suspended' && <Badge variant="secondary">Needs approval</Badge>}
+            {status === 'suspended' && <Badge variant="warning">Needs approval</Badge>}
             {status === 'uninstalled' && <Badge variant="secondary">Uninstalled</Badge>}
           </Inline>
           <Text tone="secondary">{manifest.description}</Text>
@@ -98,8 +98,8 @@ const Details: React.FC<{ installation: AppInstallation }> = ({ installation }) 
         <Banner data-testid="app-needs-approval" size="md" variant="warning">
           <Inline gap="md" justify="between">
             <Text as="p" size="sm">
-              {manifest.name} has been updated and needs additional permissions. Review and approve
-              the changes to keep using it.
+              {manifest.name} has been updated and needs more access. It won’t open until you
+              approve the changes.
             </Text>
             <Button
               size="sm"
