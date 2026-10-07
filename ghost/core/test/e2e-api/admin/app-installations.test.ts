@@ -684,6 +684,46 @@ describe('App installations Admin API', function () {
       assert.equal(body.app_installations[0].status, 'uninstalled');
     });
 
+    it('leaves out the manifests unless they are asked for', async function () {
+      const installation = await install();
+
+      const { body } = await agent.get(`apps/installations/${installation.id}/`).expectStatus(200);
+
+      assert.equal(body.app_installations[0].manifests, undefined);
+    });
+
+    it('lists every manifest the installation has run, newest first', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      const { digest } = await preview();
+      serve(manifest({ name: 'Podcasts' }));
+      await agent
+        .put(`apps/installations/${installed.id}/`)
+        .body({ app_installations: [{ manifest_url: MANIFEST_URL, digest }] })
+        .expectStatus(200);
+
+      const { body } = await agent
+        .get(`apps/installations/${installed.id}/?include=manifests`)
+        .expectStatus(200);
+
+      const { manifests } = body.app_installations[0];
+      assert.deepEqual(
+        manifests.map((row: any) => [row.manifest.name, row.requires_approval]),
+        [
+          ['Podcasts', true],
+          ['Podcast', false],
+        ],
+      );
+      assert.deepEqual(Object.keys(manifests[0]).sort(), [
+        'created_at',
+        'id',
+        'manifest',
+        'manifest_url',
+        'requires_approval',
+      ]);
+      assert.equal(manifests[0].manifest_url, MANIFEST_URL);
+    });
+
     it('answers 404 for an installation that does not exist', async function () {
       await agent.get('apps/installations/abcdefabcdefabcdefabcdef/').expectStatus(404);
     });

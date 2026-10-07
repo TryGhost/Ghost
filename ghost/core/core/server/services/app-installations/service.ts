@@ -13,10 +13,12 @@ import {
 import { toDatabaseDate } from '../../lib/db-types/date';
 import type { RecordAppInstallationAction, RequestContext } from './actions';
 import {
+  AppInstallationManifestRow,
   AppInstallationRow,
   CurrentInstallationRow,
   PendingManifestRow,
   type AppInstallation,
+  type AppInstallationManifest,
   type CurrentInstallation,
 } from './codec';
 import type { FetchManifest } from './fetch-manifest';
@@ -25,7 +27,7 @@ import { StoredManifest, type AppInstallationStatus } from './schema';
 const INSTALLATIONS = 'app_installations';
 const MANIFESTS = 'app_installation_manifests';
 
-export type { AppInstallation } from './codec';
+export type { AppInstallation, AppInstallationManifest } from './codec';
 
 /** One field that differs from what the publisher approved. */
 export interface AppManifestChange {
@@ -162,13 +164,38 @@ export class AppInstallationsService {
     return rows.map((row) => z.decode(AppInstallationRow, row));
   }
 
-  /** One installation by ID, whether it has ended or not. */
-  async read(id: string): Promise<AppInstallation> {
+  /**
+   * One installation by ID, whether it has ended or not, and on request every manifest it
+   * has run or been asked to approve.
+   */
+  async read(
+    id: string,
+    { withManifests = false }: { withManifests?: boolean } = {},
+  ): Promise<AppInstallation> {
     const [row] = await this.withApprovedManifest().where('installation.id', id);
     if (!row) {
       throw new errors.NotFoundError({ message: 'App installation not found.' });
     }
-    return z.decode(AppInstallationRow, row);
+    const installation: AppInstallation = z.decode(AppInstallationRow, row);
+    if (withManifests) {
+      installation.manifests = await this.manifestsOf(id);
+    }
+    return installation;
+  }
+
+  private async manifestsOf(id: string): Promise<AppInstallationManifest[]> {
+    const rows = await this.knex(MANIFESTS)
+      .where({ installation_id: id })
+      .orderBy('created_at', 'desc')
+      .orderBy('id', 'desc')
+      .select<z.input<typeof AppInstallationManifestRow>[]>(
+        'id',
+        'manifest_url',
+        'manifest',
+        'requires_approval',
+        'created_at',
+      );
+    return rows.map((manifestRow) => z.decode(AppInstallationManifestRow, manifestRow));
   }
 
   /**

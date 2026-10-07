@@ -17,8 +17,25 @@ export const AppInstallationRow = z.object({
   ...DbAppInstallationManifest.pick({ manifest_url: true, manifest: true }).shape,
 });
 
+/**
+ * A manifest an installation ran or was asked to approve. Together with staff history,
+ * these are the app's history: installed, updated, suspended, approved.
+ */
+export const AppInstallationManifestRow = DbAppInstallationManifest.pick({
+  id: true,
+  manifest_url: true,
+  manifest: true,
+  requires_approval: true,
+  created_at: true,
+});
+
+export type AppInstallationManifest = z.output<typeof AppInstallationManifestRow>;
+
 /** One site's approval of one app, as the Admin API returns it. */
-export type AppInstallation = z.output<typeof AppInstallationRow>;
+export type AppInstallation = z.output<typeof AppInstallationRow> & {
+  /** Only when asked for: every manifest the installation has run or been asked to approve, newest first. */
+  manifests?: AppInstallationManifest[];
+};
 
 /**
  * The current installation of an app, with the manifest it was approved with: what a
