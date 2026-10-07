@@ -4,7 +4,7 @@ import { MetafieldBindingsService } from './bindings-service';
 import { recordMetafieldAction, type RecordMetafieldAction } from './actions';
 import { resolveMaxDefinitions } from './config';
 
-export type { Metafield } from './models';
+export type { Metafield, MetafieldRef } from './models';
 export type { RequestContext } from './actions';
 export { actingContext, adminWriteOrigin } from './actions';
 export type { BoundField } from './bindings-service';

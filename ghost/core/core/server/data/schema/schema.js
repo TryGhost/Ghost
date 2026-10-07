@@ -1067,8 +1067,15 @@ module.exports = {
   },
   members_metafields: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
-    key: { type: 'string', maxlength: 191, nullable: false, unique: true },
-    name: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    // Who the field belongs to: `custom` for the fields a publisher defines, and whatever
+    // declared it otherwise. Keys and names are unique within a namespace rather than
+    // across them, so two owners can each have a `company` field without colliding.
+    //
+    // Both hold IDENTITY_SEGMENT in @tryghost/metafield-types, the source of truth this
+    // static schema can't import, so an address such as `custom.company` splits one way.
+    namespace: { type: 'string', maxlength: 191, nullable: false, pattern: '^[a-z0-9_]+$' },
+    key: { type: 'string', maxlength: 191, nullable: false, pattern: '^[a-z0-9_]+$' },
+    name: { type: 'string', maxlength: 191, nullable: false },
     type: {
       type: 'string',
       maxlength: 50,
@@ -1107,6 +1114,10 @@ module.exports = {
     sort_order: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
+    '@@UNIQUE_CONSTRAINTS@@': [
+      ['namespace', 'key'],
+      ['namespace', 'name'],
+    ],
   },
   // Where a source sends what it collected. The source is who collects, the port is that
   // source's own name for the thing, and the destination is the publisher's field, which
@@ -1125,20 +1136,31 @@ module.exports = {
       cascadeDelete: true,
     },
     port: { type: 'string', maxlength: 191, nullable: false },
-    // Indexed rather than unique: several sources landing in one field is expected.
-    metafield_key: {
-      type: 'string',
-      maxlength: 191,
-      nullable: false,
-      references: 'members_metafields.key',
-      cascadeDelete: true,
-    },
+    // The field, by the namespace and key that name it. Not unique: several sources
+    // landing in one field is expected.
+    metafield_namespace: { type: 'string', maxlength: 191, nullable: false },
+    metafield_key: { type: 'string', maxlength: 191, nullable: false },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
     '@@UNIQUE_CONSTRAINTS@@': [
       { columns: ['product_id', 'port'], indexName: 'members_metafield_bindings_unique' },
     ],
-    '@@INDEXES@@': [['metafield_key']],
+    // Named because the derived name overruns MySQL's limit. MySQL would make an index for
+    // the foreign key by itself; SQLite would not, and deleting a field searches here.
+    '@@INDEXES@@': [
+      {
+        columns: ['metafield_namespace', 'metafield_key'],
+        indexName: 'members_metafield_bindings_metafield_index',
+      },
+    ],
+    '@@FOREIGN_KEYS@@': [
+      {
+        columns: ['metafield_namespace', 'metafield_key'],
+        references: { table: 'members_metafields', columns: ['namespace', 'key'] },
+        constraintName: 'members_metafield_bindings_metafield_foreign',
+        cascadeDelete: true,
+      },
+    ],
   },
   // How a tier's checkout question is asked. Where the answer lands is the binding it
   // hangs off.
@@ -1182,18 +1204,18 @@ module.exports = {
     updated_at: { type: 'dateTime', nullable: true },
   },
   members_metafield_values: {
-    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
-    // The field's stable key, not its id: a value is addressed by key everywhere it
-    // matters (the write names it, a filter names it, the key is immutable), so the row
-    // carries it directly and the read and filter paths skip an id-to-key join. Matches
-    // the referenced column's 191, as a foreign key must.
-    metafield_key: {
-      type: 'string',
-      maxlength: 191,
-      nullable: false,
-      references: 'members_metafields.key',
-      cascadeDelete: true,
-    },
+    // The field, by its namespace and key rather than its id: a value is addressed that
+    // way everywhere it matters (a write names it, a filter names it, and neither part
+    // can change), so the row carries them directly and filters never look the field up.
+    // An id would save nothing either, being longer than `custom` and a typical key.
+    // Matches the referenced columns' 191, as a foreign key must.
+    metafield_namespace: { type: 'string', maxlength: 191, nullable: false },
+    metafield_key: { type: 'string', maxlength: 191, nullable: false },
+    // Which part of the field's value this row carries. A scalar has one part and
+    // stores it under the empty path; a composite stores one row per sub-field it
+    // fills, under that sub-field's key. Empty rather than null, because it is part of
+    // the primary key.
+    path: { type: 'string', maxlength: 191, nullable: false, defaultTo: '' },
     member_id: {
       type: 'string',
       maxlength: 24,
@@ -1201,11 +1223,6 @@ module.exports = {
       references: 'members.id',
       cascadeDelete: true,
     },
-    // Which part of the field's value this row carries. A scalar has one part and
-    // stores it under the empty path; a composite stores one row per sub-field it
-    // fills, under that sub-field's key. Not nullable, because MySQL counts NULLs
-    // as distinct in a unique index and the constraint below would stop holding.
-    path: { type: 'string', maxlength: 191, nullable: false, defaultTo: '' },
     // One row, one value: a part a member has not filled in has no row at all. The
     // column stays nullable even so, because making it NOT NULL is only reachable
     // through knex's dropNullable, which rewrites the column on MySQL and widens
@@ -1232,22 +1249,22 @@ module.exports = {
     written_by_id: { type: 'string', maxlength: 24, nullable: true },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
-    // Named rather than derived. The name knex builds from the table and all three
-    // columns used to overrun MySQL's 64-character identifier limit; the shorter table
-    // name now fits, but the index is named in a migration either way, so pinning it
-    // here keeps the two statements of it identical.
-    '@@UNIQUE_CONSTRAINTS@@': [
+    // The leaf itself is the key, so there is no surrogate id: one would only add a third
+    // index. Field first, because a segment filter asks for every member holding a value
+    // in one part of one field, newsletter audiences on every send among them, and this
+    // order keeps those rows together. A member's own values are read through the index
+    // on member_id instead. The value is not in the key: it is TEXT, which MySQL can
+    // only index by a prefix.
+    '@@PRIMARY_KEY@@': ['metafield_namespace', 'metafield_key', 'path', 'member_id'],
+    '@@INDEXES@@': [['member_id']],
+    '@@FOREIGN_KEYS@@': [
       {
-        columns: ['member_id', 'metafield_key', 'path'],
-        indexName: 'members_metafield_values_leaf_unique',
+        columns: ['metafield_namespace', 'metafield_key'],
+        references: { table: 'members_metafields', columns: ['namespace', 'key'] },
+        constraintName: 'members_metafield_values_metafield_foreign',
+        cascadeDelete: true,
       },
     ],
-    // What a segment filter looks up: every member holding a given value for a
-    // given part of a given field. The value itself is not in the index — it is
-    // TEXT, so MySQL would need a prefix length, and the schema's index builder
-    // applies one length to every column in a composite index rather than to a
-    // single chosen one.
-    '@@INDEXES@@': [['metafield_key', 'path']],
   },
   members_stripe_customers: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },

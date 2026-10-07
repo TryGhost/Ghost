@@ -1,5 +1,7 @@
 import type { Knex } from 'knex';
 import { FIELD_STATUS } from '../members-metafields/schema';
+import { CUSTOM_NAMESPACE } from '../members-metafields/namespaces';
+import { onField } from '../members-metafields/queries';
 import { STRIPE_PORT } from '@tryghost/checkout';
 import { DbCheckoutOptions } from './schema';
 import type { CollectionRow, QuestionRow } from './codec';
@@ -16,16 +18,19 @@ const optionColumns = Object.keys(DbCheckoutOptions.shape).map(
 );
 
 function collectionQuery(db: Knex) {
+  // Only bindings into the publisher's fields: what this reads back is a
+  // `custom_field_key`, which names a key in that namespace and no other.
   const bindTo = (alias: string, port: string) =>
     function (this: Knex.JoinClause) {
-      this.on(`${alias}.product_id`, 'products.id').andOn(db.raw(`${alias}.port = ?`, [port]));
+      this.on(`${alias}.product_id`, 'products.id')
+        .andOn(db.raw(`${alias}.port = ?`, [port]))
+        .andOn(db.raw(`${alias}.metafield_namespace = ?`, [CUSTOM_NAMESPACE]));
     };
 
   const landsIn = (alias: string, binding: string) =>
     function (this: Knex.JoinClause) {
-      this.on(`${alias}.key`, `${binding}.metafield_key`).andOn(
-        db.raw(`${alias}.status = ?`, [ACTIVE]),
-      );
+      onField(alias, binding).call(this);
+      this.andOn(db.raw(`${alias}.status = ?`, [ACTIVE]));
     };
 
   const query = db('products')
@@ -75,9 +80,8 @@ export function questionRows(db: Knex, productId?: string) {
   const query = db(QUESTIONS_TABLE)
     .join(BINDINGS_TABLE, `${BINDINGS_TABLE}.id`, `${QUESTIONS_TABLE}.binding_id`)
     .leftJoin({ question_field: FIELDS_TABLE }, function () {
-      this.on('question_field.key', `${BINDINGS_TABLE}.metafield_key`).andOn(
-        db.raw('question_field.status = ?', [ACTIVE]),
-      );
+      onField('question_field', BINDINGS_TABLE).call(this);
+      this.andOn(db.raw('question_field.status = ?', [ACTIVE]));
     })
     .orderBy(`${BINDINGS_TABLE}.product_id`, 'asc')
     .orderBy(`${QUESTIONS_TABLE}.sort_order`, 'asc')

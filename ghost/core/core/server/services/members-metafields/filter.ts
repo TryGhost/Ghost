@@ -8,17 +8,13 @@
 //   metafields.key:'custom.company'                     // has a value
 //   metafields.key:-'custom.shipping_address.country'   // that part is not set
 //
-// The values table holds one row per stored value: `metafield_key`, `path`
-// (empty for a plain field, the part's name for one part of a composite) and
-// `value_text`. A filter addresses those columns directly, so each one becomes a
-// single $elemMatch over them — positive asserts a matching row exists, $not
+// The values table holds one row per stored value: `metafield_namespace`,
+// `metafield_key`, `path` (empty for a plain field, the part's name for one part of a
+// composite) and `value_text`. A filter addresses those columns directly, so each one
+// becomes a single $elemMatch over them — positive asserts a matching row exists, $not
 // asserts none does — with no lookup against the field definitions.
 import errors from '@tryghost/errors';
-import {
-  CUSTOM_NAMESPACE,
-  formatIdentity,
-  parseIdentity,
-} from '@tryghost/metafield-types/identity';
+import { parseIdentity } from '@tryghost/metafield-types/identity';
 
 const RELATION = 'metafields';
 const PREFIX = `${RELATION}.`;
@@ -70,18 +66,9 @@ function negatedString(value: unknown): string | null {
 const ANY_PATH = null;
 
 interface LeafTarget {
-  key: string;
-  path: string | typeof ANY_PATH;
-}
-
-// A stored key never contains a dot, so a full dotted identity is a key no stored
-// row can equal.
-function unmatchableLeaf(identity: {
   namespace: string;
   key: string;
-  partPath: string | null;
-}): LeafTarget {
-  return { key: formatIdentity(identity), path: identity.partPath };
+  path: string | typeof ANY_PATH;
 }
 
 function parseLeafAddress(raw: unknown): LeafTarget {
@@ -91,17 +78,14 @@ function parseLeafAddress(raw: unknown): LeafTarget {
       message: `A metafield filter names a field as namespace.key, for example (${KEY_ATTRIBUTE}:'custom.company'+${VALUE_ATTRIBUTE}:'Ghost').`,
     });
   }
-  if (identity.namespace !== CUSTOM_NAMESPACE) {
-    return unmatchableLeaf(identity);
-  }
-  return { key: identity.key, path: identity.partPath };
+  return { namespace: identity.namespace, key: identity.key, path: identity.partPath };
 }
 
 export function createMetafieldsFilterTransformer() {
   // One (maybe-negated) $elemMatch over the leaf columns: positive is "a leaf pinned
   // by these matches", `$not` is "no leaf does".
   function buildElemMatch(target: LeafTarget, value: unknown, negate: boolean): QueryNode {
-    const match: QueryNode = { metafield_key: target.key };
+    const match: QueryNode = { metafield_namespace: target.namespace, metafield_key: target.key };
     if (value !== undefined) {
       match.path = target.path ?? ROOT_PATH;
       match.value_text = value;

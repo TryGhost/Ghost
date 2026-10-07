@@ -62,9 +62,9 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
     },
     savingDelay: 500,
     onValidate: (state) => {
-      // Name uniqueness is enforced by the API (globally unique); a 422
-      // comes back through onSaveError and highlights the field. Here we
-      // only guard the empty case so we never POST a blank name.
+      // Name uniqueness is enforced by the API (unique among the publisher's
+      // fields); a 422 comes back through onSaveError and highlights the
+      // field. Here we only guard the empty case so we never POST a blank name.
       const newErrors: Record<string, string> = {};
       if (!state.name.trim()) {
         newErrors.name = 'Enter a name for the field';

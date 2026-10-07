@@ -55,10 +55,11 @@ Related data is separated by responsibility:
 
 `labels` has a many-to-many relationship with `members` through
 `members_labels`. Newsletter subscriptions use the same pattern through
-`members_newsletters`. Metafield definitions are stored once in `members_metafields`;
-`members_metafield_values` stores the values a member has supplied, one row per
-leaf. `custom` is the one namespace a publisher defines fields in, and the admin
-UI calls those custom fields.
+`members_newsletters`. Metafield definitions are stored once in `members_metafields`,
+each in a namespace and with a key unique within it. `members_metafield_values`
+stores the values a member has supplied, one row per leaf, and names each field by
+its namespace and key rather than an id. `custom` is the namespace a publisher
+defines fields in, and the admin UI calls those custom fields.
 
 Ghost keeps a provider-independent subscription in `subscriptions`. The Stripe
 tables cache the provider records needed to synchronize paid membership state.

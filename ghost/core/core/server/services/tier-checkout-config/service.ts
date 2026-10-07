@@ -4,8 +4,10 @@ import { z } from 'zod';
 import type { Knex } from 'knex';
 import type { FieldType } from '@tryghost/metafield-types';
 import { DbMetafield, FIELD_STATUS } from '../members-metafields/schema';
+import { CUSTOM_NAMESPACE } from '../members-metafields/namespaces';
+import type { MetafieldKey, Namespace } from '../members-metafields/identifiers';
 import { MEMBER_ACCESS, type MemberAccess } from '../members-metafields';
-import type { Metafield, RequestContext } from '../members-metafields';
+import type { Metafield, MetafieldRef, RequestContext } from '../members-metafields';
 import {
   MAX_CHECKOUT_LABEL_LENGTH,
   PORT_FIELD,
@@ -41,7 +43,21 @@ import { CheckoutConfigInput } from './serializers';
 
 type FieldRow = Pick<z.infer<typeof DbMetafield>, 'key' | 'name' | 'type' | 'status'>;
 
-type NewField = { key: string; name: string; type: FieldType; access: { member: MemberAccess } };
+type NewField = {
+  key: MetafieldKey;
+  name: string;
+  type: FieldType;
+  access: { member: MemberAccess };
+};
+
+/**
+ * A field this API names. A request names one by key alone, as a `custom_field_key`,
+ * because a publisher only ever points a checkout at their own fields.
+ */
+const inPublisherFields = (key: MetafieldKey): MetafieldRef => ({
+  namespace: CUSTOM_NAMESPACE,
+  key,
+});
 
 /**
  * What a member may do with a field this service creates for them.
@@ -73,23 +89,17 @@ const BLOCK_PORTS = {
 interface CollectionPlan {
   clear: StripePort[];
   create: NewField[];
-  bind: Array<{ port: StripePort; key: string }>;
+  bind: Array<{ port: StripePort; key: MetafieldKey }>;
 }
 
 export interface PortBinder {
-  bind(
-    db: Knex,
-    productId: string,
-    port: string,
-    customFieldKey: string,
-    now: Date,
-  ): Promise<string>;
+  bind(db: Knex, productId: string, port: string, field: MetafieldRef, now: Date): Promise<string>;
   remove(db: Knex, productId: string, port: string): Promise<void>;
 }
 
 export interface FieldMaker {
-  findByKey(key: string, options?: { executor?: Knex }): Promise<Metafield | null>;
-  addOne(wanted: NewField, options?: { executor?: Knex }): Promise<Metafield>;
+  find(field: MetafieldRef, options?: { executor?: Knex }): Promise<Metafield | null>;
+  addOne(namespace: Namespace, wanted: NewField, options?: { executor?: Knex }): Promise<Metafield>;
   recordCreated(context: RequestContext, fields: Metafield[]): Promise<void>;
 }
 
@@ -175,10 +185,10 @@ export class TierCheckoutConfigService {
 
       const made: Metafield[] = [];
       for (const wanted of plan.create) {
-        made.push(await this.fields.addOne(wanted, { executor: trx }));
+        made.push(await this.fields.addOne(CUSTOM_NAMESPACE, wanted, { executor: trx }));
       }
       for (const { port, key } of plan.bind) {
-        await this.bindings.bind(trx, productId, port, key, now);
+        await this.bindings.bind(trx, productId, port, inPublisherFields(key), now);
       }
 
       if (stated.custom_fields) {
@@ -203,7 +213,7 @@ export class TierCheckoutConfigService {
   }
 
   private async planCollection(stated: CheckoutConfigInput): Promise<CollectionPlan> {
-    const wanted: Array<{ port: StripePort; key: string }> = [];
+    const wanted: Array<{ port: StripePort; key: MetafieldKey }> = [];
 
     if (stated.shipping?.collect) {
       wanted.push(
@@ -223,10 +233,10 @@ export class TierCheckoutConfigService {
       }
     }
 
-    const create = new Map<string, NewField>();
+    const create = new Map<MetafieldKey, NewField>();
     for (const { port, key } of wanted) {
       const wants = PORT_FIELD[port];
-      const existing = await this.fields.findByKey(key);
+      const existing = await this.fields.find(inPublisherFields(key));
       if (existing) {
         assertCollectableInto(port, existing, wants.type);
         continue;
@@ -268,7 +278,7 @@ export class TierCheckoutConfigService {
     questions: NonNullable<CheckoutConfigInput['custom_fields']>,
     now: Date,
   ): Promise<void> {
-    const asked = new Set(questions.map((question) => question.key));
+    const asked = new Set<string>(questions.map((question) => question.key));
     const alreadyAsked: Array<{ port: string }> = await trx(QUESTIONS_TABLE)
       .join(BINDINGS_TABLE, `${BINDINGS_TABLE}.id`, `${QUESTIONS_TABLE}.binding_id`)
       .where(`${BINDINGS_TABLE}.product_id`, productId)
@@ -280,7 +290,13 @@ export class TierCheckoutConfigService {
     }
 
     for (const [index, question] of questions.entries()) {
-      const bindingId = await this.bindings.bind(trx, productId, question.key, question.key, now);
+      const bindingId = await this.bindings.bind(
+        trx,
+        productId,
+        question.key,
+        inPublisherFields(question.key),
+        now,
+      );
       await trx(QUESTIONS_TABLE).where('binding_id', bindingId).del();
       await trx(QUESTIONS_TABLE).insert({
         id: new ObjectID().toHexString(),
@@ -404,6 +420,7 @@ async function assertQuestionsAskable(
   }
 
   const rows: FieldRow[] = await db(FIELDS_TABLE)
+    .where(`${FIELDS_TABLE}.namespace`, CUSTOM_NAMESPACE)
     .whereIn(`${FIELDS_TABLE}.key`, keys)
     .where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active)
     .select(

@@ -21,6 +21,7 @@ export interface Leaf {
 
 export interface StoredLeaf extends Leaf {
   member_id: string;
+  namespace: string;
   key: string;
 }
 
@@ -101,27 +102,36 @@ export function valueFromLeaves(leaves: readonly Leaf[]): unknown {
   return value;
 }
 
-/** Every member's values, keyed by member and then field key; a member with no rows is absent. */
+/**
+ * Every member's values, keyed by member, then namespace, then field key. A member with no
+ * rows is absent, and so is a namespace they hold nothing in.
+ */
 export function valuesFromLeaves(
   leaves: readonly StoredLeaf[],
-): Map<string, Record<string, unknown>> {
-  const byMemberAndField = new Map<string, Map<string, Leaf[]>>();
+): Map<string, Record<string, Record<string, unknown>>> {
+  const byMember = new Map<string, Map<string, Map<string, Leaf[]>>>();
 
-  for (const { member_id: memberId, key, path, value_text: valueText } of leaves) {
-    const fields = byMemberAndField.get(memberId) ?? new Map<string, Leaf[]>();
+  for (const { member_id: memberId, namespace, key, path, value_text: valueText } of leaves) {
+    const namespaces = byMember.get(memberId) ?? new Map<string, Map<string, Leaf[]>>();
+    const fields = namespaces.get(namespace) ?? new Map<string, Leaf[]>();
     const forField = fields.get(key) ?? [];
     forField.push({ path, value_text: valueText });
     fields.set(key, forField);
-    byMemberAndField.set(memberId, fields);
+    namespaces.set(namespace, fields);
+    byMember.set(memberId, namespaces);
   }
 
-  const byMember = new Map<string, Record<string, unknown>>();
-  for (const [memberId, fields] of byMemberAndField) {
-    byMember.set(
+  return new Map(
+    [...byMember].map(([memberId, namespaces]) => [
       memberId,
-      Object.fromEntries([...fields].map(([key, forField]) => [key, valueFromLeaves(forField)])),
-    );
-  }
-
-  return byMember;
+      Object.fromEntries(
+        [...namespaces].map(([namespace, fields]) => [
+          namespace,
+          Object.fromEntries(
+            [...fields].map(([key, forField]) => [key, valueFromLeaves(forField)]),
+          ),
+        ]),
+      ),
+    ]),
+  );
 }

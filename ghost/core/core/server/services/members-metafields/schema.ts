@@ -8,6 +8,7 @@ import {
 } from '@tryghost/metafield-types';
 import { DbDate } from '../../lib/db-types/date';
 import { MemberAccessSchema } from './access';
+import { MetafieldKey, Namespace } from './identifiers';
 
 // `archived` is soft: the field drops out of the values path but stays in the definition
 // list so it can be renamed, restored or deleted. Mirrors schema.js's `isIn` on the
@@ -20,6 +21,7 @@ export const FieldStatusSchema = z.enum([FIELD_STATUS.active, FIELD_STATUS.archi
 // as the field-type enum, so the row carries the narrow type and no codec needs a cast.
 export const DbMetafield = z.object({
   id: z.string(),
+  namespace: z.string(),
   key: z.string(),
   name: z.string(),
   type: FieldTypeSchema,
@@ -55,10 +57,10 @@ export type WrittenBy = z.infer<typeof WrittenBy>;
 // One part of a member's value. What a `path` means is storage.ts's business, so the row
 // carries it as a plain string.
 export const DbMetafieldValue = z.object({
-  id: z.string(),
+  metafield_namespace: z.string(),
   metafield_key: z.string(),
-  member_id: z.string(),
   path: z.string(),
+  member_id: z.string(),
   // Nullable like the column, though nothing here writes a null: a part with no value
   // has no row.
   value_text: z.string().nullable(),
@@ -73,13 +75,15 @@ export const DbMetafieldValue = z.object({
 
 type MetafieldValueRow = z.infer<typeof DbMetafieldValue>;
 
-// The field's key travels with the row so a value assembles without a second lookup.
+// The field's namespace and key travel with the row so a value assembles without a second
+// lookup.
 //
 // `type` takes no part in the assembly and is here as a gate: a value whose type has left
 // the catalog is one the definitions list no longer returns either, so failing to parse
 // is what drops it.
 export const DbMetafieldLeaf = z.object({
   member_id: z.string(),
+  namespace: z.string(),
   key: z.string(),
   type: FieldTypeSchema,
   path: z.string(),
@@ -90,6 +94,7 @@ export const DbMetafieldBinding = z.object({
   id: z.string(),
   product_id: z.string(),
   port: z.string(),
+  metafield_namespace: z.string(),
   metafield_key: z.string(),
   created_at: DbDate,
   updated_at: DbDate.nullable(),
@@ -100,7 +105,8 @@ type MetafieldBindingRow = z.infer<typeof DbMetafieldBinding>;
 /** A binding joined to the field it points at, which is how a collected value is routed. */
 export const DbBoundField = z.object({
   binding_id: z.string(),
-  key: z.string(),
+  namespace: Namespace,
+  key: MetafieldKey,
   type: FieldTypeSchema,
 });
 
@@ -198,9 +204,9 @@ declare module 'knex/types/tables' {
   interface Tables {
     members_metafields: Knex.CompositeTableType<
       MetafieldRow,
-      // `status` is DB-defaulted and only set via update, so it's absent here. The
+      // Written whole, encoded from the domain object, which is what checks it. The
       // rank is required: letting it default would land a new field at the top.
-      Omit<z.input<typeof DbMetafield>, 'updated_at' | 'status'> & MetafieldRank,
+      z.input<typeof DbMetafield> & MetafieldRank,
       Partial<MetafieldRow>
     >;
     members_metafield_values: Knex.CompositeTableType<

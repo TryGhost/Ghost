@@ -19,11 +19,11 @@ export const SEPARATOR = '.';
 /**
  * The namespace holding the fields a site's own staff define.
  *
- * It is a constant only because the table storing these fields has no namespace
- * column: it holds this namespace's fields and nothing else, so the query layer has
- * to supply the name the rows implicitly carry. Nothing outside that layer should
- * compare against this value — a namespace nobody has declared fields in is an empty
- * namespace, not an error.
+ * Namespaces are data, stored with every field, so reading or writing fields never
+ * needs this. It is for code that speaks only for the publisher's fields: who may define
+ * fields where, and the surfaces that name a publisher's field by key alone. Nothing
+ * should treat another namespace as an error because it is not this one: a namespace
+ * nobody has declared fields in is an empty namespace.
  */
 export const CUSTOM_NAMESPACE = 'custom';
 

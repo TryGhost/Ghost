@@ -8,6 +8,7 @@ const configUtils = require('../../../../utils/config-utils');
 const inDevelopment: typeof import('../../../../../core/server/data/schema/in-development') = require('../../../../../core/server/data/schema/in-development');
 
 type ColumnSpec = { references?: string };
+type ForeignKeySpec = { references: { table: string } };
 
 describe('In-development schema tables', function () {
   afterEach(async function () {
@@ -38,6 +39,14 @@ describe('In-development schema tables', function () {
         assert(
           !inDevelopment.isInDevelopmentTable(referencedTable),
           `${tableName}.${columnName} references in-development table ${referencedTable}`,
+        );
+      }
+
+      const foreignKeys: ForeignKeySpec[] = schema[tableName]['@@FOREIGN_KEYS@@'] ?? [];
+      for (const { references } of foreignKeys) {
+        assert(
+          !inDevelopment.isInDevelopmentTable(references.table),
+          `${tableName} references in-development table ${references.table}`,
         );
       }
     }
