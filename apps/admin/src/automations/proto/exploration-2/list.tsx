@@ -4,6 +4,7 @@ import { Button } from '@tryghost/shade/components';
 import { Box, Container } from '@tryghost/shade/primitives';
 import { ListPage } from '@tryghost/shade/page-templates';
 import { PageHeader } from '@tryghost/shade/patterns';
+import AutomationsHelpCards from '@/automations/components/automations-help-cards';
 import { AutomationsTable } from '@/automations/proto/shared/automations-table';
 import { lanePath } from '@/automations/proto/shared/lanes';
 import { laneShowsTrigger } from '@/automations/proto/shared/capabilities';
@@ -51,6 +52,10 @@ const AutomationsList: React.FC = () => {
           </ListPage.Header>
           <ListPage.Body>
             <AutomationsTable automations={automations} basePath={lanePath(LANE)} />
+            {/* The shipping list's own education and feedback cards — the real
+                component, not a copy. No Beta badge on the title here: by GA
+                the feature isn't in beta. */}
+            <AutomationsHelpCards />
           </ListPage.Body>
         </ListPage>
       </Container>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from '@tryghost/admin-x-framework';
 import { toast } from 'sonner';
 import {
+  Badge,
   Button,
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +14,7 @@ import { Box, Container } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { ListPage } from '@tryghost/shade/page-templates';
 import { PageHeader } from '@tryghost/shade/patterns';
+import AutomationsHelpCards from '@/automations/components/automations-help-cards';
 import { AutomationsTable } from '@/automations/proto/shared/automations-table';
 import { lanePath } from '@/automations/proto/shared/lanes';
 import { laneShowsTrigger } from '@/automations/proto/shared/capabilities';
@@ -220,7 +222,19 @@ const AutomationsList: React.FC = () => {
           <ListPage.Header>
             <PageHeader blurredBackground={false} sticky={false}>
               <PageHeader.Left>
-                <PageHeader.Title>Automations</PageHeader.Title>
+                {/* The shipping list's title, Beta badge included — copied
+                    verbatim from automations/automations.tsx, as in phase 1. */}
+                <PageHeader.Title>
+                  <span className="inline-flex items-baseline gap-2">
+                    Automations
+                    <Badge
+                      className="px-1 py-px text-[10px] leading-none tracking-wider uppercase"
+                      variant="secondary"
+                    >
+                      Beta
+                    </Badge>
+                  </span>
+                </PageHeader.Title>
               </PageHeader.Left>
               <PageHeader.Actions>
                 {/* Only the product's own action. Resetting the prototype's data
@@ -306,6 +320,9 @@ const AutomationsList: React.FC = () => {
                 onToggleStatus={handleToggleStatus}
               />
             )}
+            {/* The shipping list's own education and feedback cards — the real
+                component, not a copy, so they stay whatever production has. */}
+            <AutomationsHelpCards />
           </ListPage.Body>
         </ListPage>
       </Container>
