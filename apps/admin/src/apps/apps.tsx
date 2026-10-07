@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import AppsList from './components/apps-list';
 import { AppsGate } from './components/apps-gate';
+import { UninstallDialog } from './components/uninstall-dialog';
 import { Badge, EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
 import { Box, Container } from '@tryghost/shade/primitives';
 import { ListPage } from '@tryghost/shade/page-templates';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { PageHeader } from '@tryghost/shade/patterns';
-import { useBrowseAppInstallations } from '@tryghost/admin-x-framework/api/app-installations';
+import {
+  type AppInstallation,
+  useBrowseAppInstallations,
+} from '@tryghost/admin-x-framework/api/app-installations';
 import { getErrorMessage } from '@tryghost/admin-x-framework/errors';
 import { isUnsupported } from './lib/install-failure';
 
@@ -20,6 +24,7 @@ export const AppsListing: React.FC = () => {
   // Failures are shown in place: an older Ghost without apps answers 404, which isn't an error.
   const { data, isLoading, error } = useBrowseAppInstallations({ defaultErrorHandler: false });
   const installations = data?.app_installations ?? [];
+  const [uninstalling, setUninstalling] = useState<AppInstallation | null>(null);
 
   let body: React.ReactNode;
   if (error) {
@@ -45,7 +50,7 @@ export const AppsListing: React.FC = () => {
       </Centered>
     );
   } else if (installations.length) {
-    body = <AppsList installations={installations} />;
+    body = <AppsList installations={installations} onUninstall={setUninstalling} />;
   } else {
     body = (
       <Centered>
@@ -81,6 +86,14 @@ export const AppsListing: React.FC = () => {
           <ListPage.Body className="flex flex-col">{body}</ListPage.Body>
         </ListPage>
       </Container>
+      <UninstallDialog
+        installation={uninstalling}
+        onOpenChange={(open) => {
+          if (!open) {
+            setUninstalling(null);
+          }
+        }}
+      />
     </Box>
   );
 };
