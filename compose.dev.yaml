@@ -119,7 +119,10 @@ services:
       # Apps under development run on the host machine, where `localhost` is not this
       # container: Ghost fetches their manifests through this alias instead
       apps__localhostAlias: host.docker.internal
-    # Docker Desktop and OrbStack provide host.docker.internal; on Linux it needs this
+    # Docker Desktop and OrbStack provide host.docker.internal and forward it to the host's
+    # loopback. On Linux it needs this, and it reaches the docker bridge rather than
+    # loopback: an app that only listens on 127.0.0.1 (Vite's default) is not reachable
+    # through it, so bind the app to 0.0.0.0 while developing against this container.
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     depends_on:
