@@ -3218,7 +3218,9 @@ services:
           units replace PostsService.prototype.browsePosts and assert URL-required columns;
           real HTTP tests assert search projections, CSV/copy responses and bulk DB results.
           Newsletter integration and retry HTTP tests exercise the real post/email connection
-          with provider or scheduling seams. They do not pin factory/caller identity timing.
+          with provider or scheduling seams. Atomic-publication integration tests also exercise
+          transaction rollback and dispatch after commit. They do not pin factory/caller
+          identity timing.
         sources:
           - core/server/api/endpoints/posts.js
           - core/server/api/endpoints/pages.js
@@ -3239,6 +3241,7 @@ services:
           - test/e2e-api/admin/posts.test.js
           - test/e2e-api/admin/posts-bulk.test.js
           - test/integration/services/email-service/batch-sending.test.js
+          - test/integration/services/email-service/atomic-publish.test.ts
           - test/e2e-api/admin/email-retry.test.ts
       startup:
         summary: >-
@@ -3307,9 +3310,11 @@ services:
       resources:
         summary: >-
           The factory graph owns no recurring timer, subscriber or provider client. It borrows
-          DB/models, email and URL/settings helpers. Operations perform model queries/writes;
-          bulk operations use local transactions and dispatch domain events without waiting
-          for subscribers. Export owns a Readable over an async generator, one metadata
+          DB/models, email and URL/settings helpers. Edit creates or borrows a transaction for
+          the post and new email, then schedules or retries after commit. A caller-owned
+          transaction retains that callback through its executionPromise; this service has no
+          pending-callback registry or drain. Bulk operations use local transactions and dispatch
+          domain events without waiting for subscribers. Export owns a Readable over an async generator, one metadata
           context and bounded pages of up to 50 rows; the HTTP serializer owns its CSV transform
           and pipeline to the response, while site export owns its enclosing pipeline. Export
           units consume the stream and assert 75 exact IDs across two 50-row queries. This does
@@ -3321,6 +3326,7 @@ services:
           - core/server/services/posts/posts-exporter.js
           - core/server/services/posts/post-scheduling.js
           - core/server/services/posts/stats/post-stats.js
+          - core/server/lib/after-commit.ts
           - core/server/api/endpoints/utils/serializers/output/posts.js
           - core/server/api/endpoints/utils/serializers/output/stream-csv-response.ts
           - core/server/api/endpoints/utils/serializers/output/stream-response.ts
@@ -3330,13 +3336,22 @@ services:
           - test/e2e-api/admin/posts.test.js
       failures:
         summary: >-
-          editPost awaits preflight, model edit and email creation/retry, serializes synchronously,
-          then awaits the optional callback; it adds no transaction/compensation across those
-          stages. Validation
-          failure prevents edit; a later failure can reject after a saved post. Handler wraps
-          invalid recipient-filter queries as BadRequest and tolerates only a lost retry claim
-          whose refreshed email is pending/submitting/submitted. Units assert selected exact
-          arguments/results and rejection/no-edit behavior, but not held completion barriers.
+          editPost awaits preflight, then saves the post and any new newsletter email in one
+          transaction. With its own transaction it awaits scheduling/retry after commit,
+          serializes and awaits the optional event callback. A caller-owned transaction instead
+          registers scheduling/retry after its executionPromise resolves; edit does not wait
+          for that commit, and later send errors are logged. Preflight failure prevents edit;
+          email-insert failure rolls back publication, but a post-commit failure can reject
+          after publication. Handler wraps invalid recipient-filter queries as BadRequest,
+          warns without retrying an unknown delivery outcome, and tolerates a lost retry claim
+          only when the refreshed email is pending/submitting/submitted. Units assert selected
+          arguments, send-after-commit ordering, caller-commit gating and logged send failure.
+          Integration tests assert rollback on email-insert failure and an outer transaction
+          error, dispatch after caller commit, scheduled-publication retry, one email for two
+          overlapping edits, and rejection after a committed post when retry scheduling fails.
+          These do not prove delivery completion or every held completion/error boundary;
+          rollback without an error is also not covered and the helper treats a resolved
+          executionPromise as a commit.
           Bulk methods propagate write failures and dispatch after their awaited local work;
           no whole-operation/subscriber atomicity is implied. Export-context failure rejects
           before returning a stream, later page/mapping failure reaches the stream; invalid
@@ -3350,11 +3365,13 @@ services:
           - core/server/services/posts/post-email-handler.js
           - core/server/services/posts/posts-exporter.js
           - core/server/services/posts/post-scheduling.js
+          - core/server/lib/after-commit.ts
           - core/server/api/endpoints/schedules.js
         tests:
           - test/unit/server/services/posts/posts-service.test.js
           - test/unit/server/services/posts/post-email-handler.test.js
           - test/unit/server/services/posts/posts-exporter.test.js
+          - test/integration/services/email-service/atomic-publish.test.ts
           - test/e2e-api/admin/email-retry.test.ts
           - test/legacy/api/admin/schedules.test.js
     unverified: []
@@ -3370,10 +3387,12 @@ services:
         real PostEmailHandler connection and existing DTO, preflight and retry results; a
         prototype-only controller stub would miss a broken facade/dependency reference.
       - >-
-        Pilot gate if edit composition changes: hold preflight/email/callback completion and
+        Pilot gate if edit composition changes: hold preflight/email/event-callback completion and
         assert downstream calls/results remain pending, with original failures propagated at
-        each boundary. Existing edit units assert calls/results but replace the handler and
-        do not hold those stages unresolved. Reuse existing real HTTP/provider-mock coverage.
+        each boundary. Preserve the distinction between awaited sending after a local commit
+        and logged sending failures after a caller commit. Existing units hold the caller's
+        commit but replace the handler and do not hold every stage unresolved; reuse the
+        atomic-publication integration and existing HTTP/provider-mock coverage.
       - >-
         If migration touches the separate scheduling module, preserve its process-wide guard
         and add failure-release/independent-key checks. Do not accidentally give each factory
@@ -4426,13 +4445,14 @@ services:
       startup:
         summary: >-
           Boot has no direct Tinybird init; its awaited stats.init calls StatsService.create.
-          That initializes Tinybird when web_analytics_enabled is truthy, or when both the
-          automationsTinybirdSync flag and stats config are truthy. The query client itself
-          is created only for web analytics. The wrapper requires settings site_uuid even
+          That initializes Tinybird when web_analytics_enabled or tinybird:stats config is
+          truthy. The query client itself is created only for web analytics. The wrapper
+          requires settings site_uuid even
           when a stats.id override exists, and requires only truthy root config, not a usable
-          token/endpoint. Automations needs an already-published token service; enabling its
-          gate later does not initialize it. Factory units cover four gate combinations with
-          stubbed init. An HTTP case resets Tinybird and calls the real stats factory with web
+          token/endpoint. Automations checks stats config and needs an already-published
+          token service; it does not initialize the root when configuration becomes available.
+          Factory units cover three gate combinations with stubbed init. An HTTP case resets
+          Tinybird and calls the real stats factory with web
           analytics disabled, then asserts remote browse stats and no SQL run-stat query;
           it does not prove complete boot ordering or later gate transitions.
         sources:
