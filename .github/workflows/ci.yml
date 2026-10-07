@@ -2381,6 +2381,15 @@ jobs:
             --out shard-plan/tests.txt
           echo "E2E_TEST_LIST=shard-plan/tests.txt" >> "$GITHUB_ENV"
 
+      # The browser runs with host networking, so Chrome sees the host side of
+      # every container's veth. About 1.5s after a Ghost container starts, its
+      # veth gets an IPv6 link-local address, which Chrome treats as a network
+      # change and aborts in-flight requests (net::ERR_NETWORK_CHANGED). That
+      # lands while a fresh instance's admin is loading. Only affects new
+      # interfaces, so it must run before the tests create Ghost containers.
+      - name: Disable IPv6 on new network interfaces
+        run: sudo sysctl -w net.ipv6.conf.default.disable_ipv6=1
+
       - name: Run e2e tests in Playwright container
         env:
           TEST_WORKERS_COUNT: 1

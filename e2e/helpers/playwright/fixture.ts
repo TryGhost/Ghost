@@ -18,12 +18,11 @@ import {
 import { EmailClient, MailPit } from '@/helpers/services/email/mail-pit';
 import { FakeMailgunServer, MailgunTestService } from '@/helpers/services/mailgun';
 import { FakeStripeServer, StripeTestService, WebhookClient } from '@/helpers/services/stripe';
+import { GHOST_OWNER } from '@/helpers/environment/constants';
 import { GhostInstance, getEnvironmentManager, isAllowedHost } from '@/helpers/environment';
 import { SettingsService } from '@/helpers/services/settings/settings-service';
 import { extractInviteLink } from '@/helpers/services/email/utils';
-import { faker } from '@faker-js/faker';
 import { loginToGetAuthenticatedSession } from '@/helpers/playwright/flows/sign-in';
-import { setupUser } from '@/helpers/utils';
 
 const debug = baseDebug('e2e:ghost-fixture');
 const STRIPE_SECRET_KEY = 'sk_test_e2eTestKey';
@@ -75,7 +74,6 @@ interface WorkerFixtures {
 }
 
 let cachedPerFileInstance: PerFileInstanceCache | null = null;
-let cachedPerFileGhostAccountOwner: User | null = null;
 let cachedPerFileAuthenticatedSession: PerFileAuthenticatedSessionCache | null = null;
 
 // External hosts requested by the browser, accumulated across a worker so the
@@ -271,7 +269,6 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
       const environmentManager = await getEnvironmentManager();
       await environmentManager.perTestTeardown(cachedPerFileInstance.instance);
       cachedPerFileInstance = null;
-      cachedPerFileGhostAccountOwner = null;
       cachedPerFileAuthenticatedSession = null;
     },
     {
@@ -389,7 +386,6 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
       });
       const previousPerFileInstance = cachedPerFileInstance?.instance;
       cachedPerFileInstance = null;
-      cachedPerFileGhostAccountOwner = null;
       cachedPerFileAuthenticatedSession = null;
 
       if (previousPerFileInstance) {
@@ -428,7 +424,6 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         environmentSignature,
         instance: nextPerFileInstance,
       };
-      cachedPerFileGhostAccountOwner = null;
       cachedPerFileAuthenticatedSession = null;
 
       if (previousPerFileInstance) {
@@ -458,7 +453,6 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         environmentSignature,
         instance: nextInstance,
       };
-      cachedPerFileGhostAccountOwner = null;
       cachedPerFileAuthenticatedSession = null;
 
       Object.assign(holder, nextInstance);
@@ -581,33 +575,10 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
 
   // Create user credentials only (no authentication)
   ghostAccountOwner: async ({ ghostInstance, _testEnvironmentContext }, use) => {
-    if (!ghostInstance.baseUrl) {
-      throw new Error('baseURL is not defined');
-    }
-
     _testEnvironmentContext.markResetEnvironmentBlocker('ghostAccountOwner');
 
-    if (
-      _testEnvironmentContext.resolvedIsolation === 'per-file' &&
-      cachedPerFileGhostAccountOwner
-    ) {
-      await use(cachedPerFileGhostAccountOwner);
-      return;
-    }
-
-    // Create user in this Ghost instance
-    const ghostAccountOwner: User = {
-      name: 'Test User',
-      email: `test${faker.string.uuid()}@ghost.org`,
-      password: 'test@123@test',
-    };
-    await setupUser(ghostInstance.baseUrl, ghostAccountOwner);
-
-    if (_testEnvironmentContext.resolvedIsolation === 'per-file') {
-      cachedPerFileGhostAccountOwner = ghostAccountOwner;
-    }
-
-    await use(ghostAccountOwner);
+    // The owner is set up in the snapshot each test database is restored from.
+    await use({ ...GHOST_OWNER, email: ghostInstance.ownerEmail });
   },
 
   ghostAccountAuthor: async ({ pageWithAuthenticatedUser, emailClient }, use) => {
