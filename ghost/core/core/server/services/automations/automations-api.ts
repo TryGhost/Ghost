@@ -11,7 +11,11 @@ import ObjectId from 'bson-objectid';
 import { z } from 'zod';
 import { createDatabaseAutomationsRepository } from './database-automations-repository';
 import { parseFakeWaitHoursMultiplier } from './fake-wait-hours-multiplier';
-import type { AutomationsRepository, EditAutomationData } from './automations-repository';
+import type {
+  Automation,
+  AutomationsRepository,
+  EditAutomationData,
+} from './automations-repository';
 import {
   EMPTY_AUTOMATION_STATS,
   fetchAutomationStats,
@@ -397,13 +401,13 @@ async function validateEditData(data: unknown): Promise<EditAutomationData> {
   return result.data;
 }
 
-async function validateAutomationData(data: EditAutomationData) {
+async function validateAutomationData(data: Pick<Automation, 'status' | 'actions' | 'edges'>) {
   validateGraph(data.actions, data.edges);
   await validateEmailLexical(data.actions);
   validateActiveEmailSteps(data.status, data.actions);
 }
 
-async function validateEmailLexical(actions: EditAutomationData['actions']) {
+async function validateEmailLexical(actions: Automation['actions']) {
   await Promise.all(
     actions.map(async (action) => {
       if (action.type !== 'send_email') {
@@ -432,10 +436,7 @@ async function validateEmailLexical(actions: EditAutomationData['actions']) {
 // Drafts may persist empty email steps, but an active automation must have a
 // complete subject and body for every email it sends — mirroring the editor's
 // publish-time validation.
-function validateActiveEmailSteps(
-  status: EditAutomationData['status'],
-  actions: EditAutomationData['actions'],
-) {
+function validateActiveEmailSteps(status: Automation['status'], actions: Automation['actions']) {
   if (status !== 'active') {
     return;
   }
@@ -519,7 +520,7 @@ function buildInvalidAutomationPayloadMessage(issues: z.core.$ZodIssue[], messag
   return `${message} ${issueSummaries.join('; ')}.`;
 }
 
-function validateGraph(actions: EditAutomationData['actions'], edges: EditAutomationData['edges']) {
+function validateGraph(actions: Automation['actions'], edges: Automation['edges']) {
   const actionIdentities = new Set<string>();
 
   // Every action in the submitted graph must have a unique ObjectId so edges
