@@ -1,8 +1,7 @@
 import type { Knex } from 'knex';
-import { readableLevels, type Audience } from './access';
+import { readableFields, type Audience } from './access';
+import { metafieldTables, type MetafieldEntity } from './entity';
 import { FIELD_STATUS } from './schema';
-
-const FIELDS_TABLE = 'members_metafields';
 
 // The same NQL -> knex bridge Bookshelf's filter plugin uses, applied directly to our
 // raw-knex queries: nql parses a `filter` string to a Mongo query, mongo-knex turns that
@@ -19,8 +18,20 @@ export const knexify = require('@tryghost/mongo-knex') as <T extends Knex.QueryB
 // constraint stops a value row referencing one. Both filters are therefore applied in
 // code, and a query that forgets either is a silent bug.
 
-export function readableBy<T extends Knex.QueryBuilder>(query: T, audience: Audience): T {
-  query.whereIn(`${FIELDS_TABLE}.member_access`, readableLevels(audience));
+export function readableBy<T extends Knex.QueryBuilder>(
+  query: T,
+  audience: Audience,
+  entity: MetafieldEntity,
+): T {
+  const readable = readableFields(audience, entity.surfaces);
+  if (readable.fields === 'none') {
+    query.whereRaw('1 = 0');
+  } else if (readable.fields === 'where') {
+    query.whereIn(
+      `${metafieldTables(entity.table).definitions}.${readable.column}`,
+      readable.levels,
+    );
+  }
   return query;
 }
 
@@ -39,8 +50,8 @@ declare const scoped: unique symbol;
 // Unannotated so the builder keeps the row type knex derives from the table
 // registration; naming a type here would both lose that and make the alias below
 // refer to itself.
-function metafieldsTable(db: Knex) {
-  return db(FIELDS_TABLE);
+function metafieldsTable(db: Knex, entity: MetafieldEntity) {
+  return db(metafieldTables(entity.table).definitions);
 }
 
 /**
@@ -54,6 +65,7 @@ export type DefinitionQuery = ReturnType<typeof metafieldsTable> & { readonly [s
 
 export function definitions(
   db: Knex,
+  entity: MetafieldEntity,
   scope: {
     audience: Audience;
     status: StatusScope;
@@ -63,22 +75,23 @@ export function definitions(
     limit?: number;
   },
 ): DefinitionQuery {
-  let query = metafieldsTable(db);
+  const table = metafieldTables(entity.table).definitions;
+  let query = metafieldsTable(db, entity);
 
   if (scope.filter) {
     query = scope.filter(query);
   }
   if (scope.key !== undefined) {
-    query = query.where(`${FIELDS_TABLE}.key`, scope.key);
+    query = query.where(`${table}.key`, scope.key);
   }
   if (scope.status === ACTIVE_ONLY) {
-    query = query.where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active);
+    query = query.where(`${table}.status`, FIELD_STATUS.active);
   }
   if (scope.limit !== undefined) {
     query = query.limit(scope.limit);
   }
 
-  return readableBy(query, scope.audience) as DefinitionQuery;
+  return readableBy(query, scope.audience, entity) as DefinitionQuery;
 }
 
 /**
@@ -88,10 +101,11 @@ export function definitions(
  * `created_at` orders a site that has never reordered, where every row still holds the
  * default rank; `id` settles the rest so the order is total.
  */
-export function inFieldOrder<T extends Knex.QueryBuilder>(query: T): T {
+export function inFieldOrder<T extends Knex.QueryBuilder>(query: T, entity: MetafieldEntity): T {
+  const table = metafieldTables(entity.table).definitions;
   query
-    .orderBy(`${FIELDS_TABLE}.sort_order`, 'asc')
-    .orderBy(`${FIELDS_TABLE}.created_at`, 'asc')
-    .orderBy(`${FIELDS_TABLE}.id`, 'asc');
+    .orderBy(`${table}.sort_order`, 'asc')
+    .orderBy(`${table}.created_at`, 'asc')
+    .orderBy(`${table}.id`, 'asc');
   return query;
 }

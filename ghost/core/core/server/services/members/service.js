@@ -90,10 +90,7 @@ const buildImporterDeps = ({ stripeAPIService }) => {
     urlFor: urlUtils.urlFor.bind(urlUtils),
     stripeAPIService,
     productRepository: membersApi.productRepository,
-    metafields: {
-      definitions: metafields.definitions,
-      values: metafields.values,
-    },
+    metafields: metafields.metafieldsFor('members'),
   };
 };
 
@@ -270,10 +267,7 @@ module.exports = {
     // Constructed here rather than required statically: the exporter needs the
     // metafields services, which boot builds before this one.
     const metafields = require('../metafields');
-    module.exports.export = makeExporter({
-      definitions: metafields.definitions,
-      values: metafields.values,
-    });
+    module.exports.export = makeExporter(metafields.metafieldsFor('members'));
 
     await runStripeMigrations(stripeService);
   },

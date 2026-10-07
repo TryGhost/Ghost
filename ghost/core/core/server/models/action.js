@@ -1,11 +1,13 @@
 const ghostBookshelf = require('./base');
+const { metafieldEntities, metafieldTables } = require('../services/metafields/entity');
 
-// Member metafields are owned by a raw-knex service rather than the Bookshelf
+// Metafield definitions are owned by a raw-knex service rather than the Bookshelf
 // registry. Actions still need a read model for `include=resource` to recognise
 // their polymorphic resource type and load the current field definition.
-const MemberMetafieldResource = ghostBookshelf.Model.extend({
-  tableName: 'members_metafields',
-});
+const metafieldDefinitionResources = metafieldEntities().map((entity) => [
+  ghostBookshelf.Model.extend({ tableName: metafieldTables(entity.table).definitions }),
+  entity.definitionResource,
+]);
 
 const Action = ghostBookshelf.Model.extend(
   {
@@ -26,7 +28,7 @@ const Action = ghostBookshelf.Model.extend(
         candidates.push([User, 'security_action']);
       }
 
-      candidates.push([MemberMetafieldResource, 'member_custom_field']);
+      candidates.push(...metafieldDefinitionResources);
 
       return candidates;
     },

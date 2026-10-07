@@ -80,10 +80,6 @@ module.exports = {
     return require('./members');
   },
 
-  get members_metafields() {
-    return require('./member-metafields');
-  },
-
   get tiers() {
     return require('./tiers');
   },
