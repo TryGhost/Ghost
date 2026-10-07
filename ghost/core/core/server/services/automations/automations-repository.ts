@@ -57,12 +57,14 @@ export type AutomationEdge = {
   target_action_id: string;
 };
 
+export type AutomationStatus = 'inactive' | 'active';
+
 export type AutomationSummary = {
   id: string;
   slug: null | string;
   name: string;
   description: string;
-  status: string;
+  status: AutomationStatus;
   created_at: string;
   updated_at: string;
 };
@@ -92,7 +94,7 @@ export type Automation = AutomationSummary & {
 export type EditAutomationData = {
   name?: string;
   description?: string;
-  status: string;
+  status: AutomationStatus;
   actions: AutomationAction[];
   edges: AutomationEdge[];
 } & (
@@ -139,7 +141,7 @@ type AutomationStepBase = {
   automation_id: string;
   automation_trigger_tier_scope: null | AutomationTriggerTierScope;
   automation_trigger_tier_ids: string[];
-  automation_status: 'inactive' | 'active';
+  automation_status: AutomationStatus;
   member_id: string | null;
   member_email: string;
   action_id: string;
