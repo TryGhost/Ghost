@@ -4,7 +4,7 @@ import * as automationsApi from '../../services/automations/automations-api';
 // @ts-expect-error This module lacks type definitions.
 import labs from '../../../shared/labs';
 
-const MAX_AUTOMATIONS = 20;
+const MAX_AUTOMATIONS = 50;
 
 type ReadFrame = Frame<{ data: { id: string } }>;
 type AddFrame = Frame<{ data: { automations?: unknown[] } }>;
