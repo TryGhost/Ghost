@@ -8,6 +8,10 @@ describe('utils/truncate', function () {
                 truncateHtml('This is a short one', 10, 5),
                 'This<span class="desktop-only"> is a</span>…'
             );
+            assert.equal(
+                truncateHtml('This is abc', 10, 5),
+                'This<span class="desktop-only"> is a</span>…'
+            );
         });
 
         it('keeps the full text on desktop when it fits maxLength', function () {
