@@ -110,8 +110,10 @@ async function renderBilling(
     hostSettings = {},
     labs = {},
     billingReact = true,
+    appearance,
   }: {
     role?: StaffRoleName;
+    appearance?: 'dark' | 'light';
     /** Read on every `/config/` request, so a function can change what a refetch returns. */
     hostSettings?: Record<string, unknown> | (() => Record<string, unknown>);
     labs?: Record<string, boolean>;
@@ -121,6 +123,9 @@ async function renderBilling(
   const config = configResponse();
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name: role })];
+  if (appearance) {
+    me.users[0].accessibility = JSON.stringify({ nightShift: appearance });
+  }
   const hostSettingsNow = typeof hostSettings === 'function' ? hostSettings : () => hostSettings;
 
   await renderAdminApp(path, {
@@ -197,6 +202,51 @@ describe('Ghost(Pro) billing', () => {
           },
         },
       });
+  });
+
+  it('tells the billing app the Admin theme when asked', async () => {
+    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+    const messages = standInMessages();
+    await renderBilling('/pro', { appearance: 'dark' });
+    await expect.poll(() => document.documentElement.classList.contains('dark')).toBe(true);
+
+    await postFromBillingApp(messages, { request: 'theme' });
+
+    await expect
+      .poll(() => received(messages, 'request').find(({ request }) => request === 'theme'))
+      .toEqual({ request: 'theme', response: 'dark' });
+  });
+
+  it('pushes Admin theme changes to the loaded billing app', async () => {
+    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+    const messages = standInMessages();
+    await renderBilling('/pro');
+    await expect.element(billingScreen.frame()).toBeVisible();
+    await billingAppSettled(messages);
+    const themeUpdates = () =>
+      received(messages, 'query').filter(({ query }) => query === 'themeUpdate');
+    expect(themeUpdates()).toEqual([]);
+
+    await sidebarScreen.selectAppearance('dark');
+    await expect.poll(themeUpdates).toEqual([{ query: 'themeUpdate', response: 'dark' }]);
+
+    await sidebarScreen.selectAppearance('light');
+    await expect.poll(themeUpdates).toEqual([
+      { query: 'themeUpdate', response: 'dark' },
+      { query: 'themeUpdate', response: 'light' },
+    ]);
+  });
+
+  it('ignores a theme request from outside the billing app', async () => {
+    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+    const messages = standInMessages();
+    await renderBilling('/pro');
+    await billingAppSettled(messages);
+
+    window.postMessage({ request: 'theme' }, window.location.origin);
+    await billingAppSettled(messages);
+
+    expect(received(messages, 'request').filter(({ request }) => request === 'theme')).toEqual([]);
   });
 
   it('keeps the Admin URL in step with the billing app without reloading it', async () => {
