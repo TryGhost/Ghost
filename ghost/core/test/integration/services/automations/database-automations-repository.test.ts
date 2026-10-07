@@ -93,9 +93,17 @@ describe('database automations repository', function () {
   }
 
   describe('add', function () {
-    it('saves a new inactive automation without actions or edges', async function () {
+    it('saves a new active automation with actions and edges', async function () {
       const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
+      const actions = [1, 2].map((wait_hours) => ({
+        id: ObjectId().toHexString(),
+        type: 'wait' as const,
+        data: { wait_hours },
+      }));
       const data = {
+        status: 'active' as const,
+        actions,
+        edges: [{ source_action_id: actions[0].id, target_action_id: actions[1].id }],
         name: `Creation test ${ObjectId().toHexString()}`,
         description: 'Test description',
         trigger_tier_scope: 'free' as const,
@@ -109,11 +117,8 @@ describe('database automations repository', function () {
           id: automation.id,
           slug: null,
           ...data,
-          status: 'inactive',
           created_at: automation.created_at,
           updated_at: automation.updated_at,
-          actions: [],
-          edges: [],
         });
         assert.deepEqual(await repo.getById(automation.id), automation);
         const row = await knex('automations').where('id', automation.id).first();
@@ -121,13 +126,25 @@ describe('database automations repository', function () {
         assert(row.created_at);
         assert.deepEqual(row.updated_at, row.created_at);
       } finally {
+        const actionIds = data.actions.map((action) => action.id);
+        await knex('automation_action_edges').whereIn('source_action_id', actionIds).del();
+        await knex('automation_action_revisions').whereIn('action_id', actionIds).del();
+        await knex('automation_actions').whereIn('id', actionIds).del();
         await knex('automations').where('id', automation.id).del();
       }
     });
 
     it('rejects duplicate names', async function () {
       const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
+      const actions = [1, 2].map((wait_hours) => ({
+        id: ObjectId().toHexString(),
+        type: 'wait' as const,
+        data: { wait_hours },
+      }));
       const data = {
+        status: 'active' as const,
+        actions,
+        edges: [{ source_action_id: actions[0].id, target_action_id: actions[1].id }],
         name: `Duplicate creation test ${ObjectId().toHexString()}`,
         description: 'Test description',
         trigger_tier_scope: 'free' as const,
@@ -147,6 +164,10 @@ describe('database automations repository', function () {
         assert.deepEqual(rows, [{ id: automation.id }]);
         assert.deepEqual(await repo.getById(automation.id), automation);
       } finally {
+        const actionIds = data.actions.map((action) => action.id);
+        await knex('automation_action_edges').whereIn('source_action_id', actionIds).del();
+        await knex('automation_action_revisions').whereIn('action_id', actionIds).del();
+        await knex('automation_actions').whereIn('id', actionIds).del();
         await knex('automations').where('id', automation.id).del();
       }
     });

@@ -115,6 +115,33 @@ describe('SendingStatusService', function () {
     );
   }
 
+  it('derives retry eligibility from current batches on every read', async function () {
+    await addEmail({ status: 'failed', emailCount: 20 });
+    await addBatch({ status: 'failed', createdAt: '2026-09-02 12:00:00' });
+    await addBatch({ status: 'submitted', createdAt: '2026-09-02 12:00:00' });
+    const ordinaryFailure = await service.statusFor('email-id');
+    assert.equal(ordinaryFailure?.sending.status, 'failed');
+    assert.equal(Reflect.get(ordinaryFailure!.sending, 'retryable'), true);
+
+    await knex('email_batches').where('id', 'batch-1').update({ status: 'submitting' });
+    const unknownOutcome = await service.statusFor('email-id');
+    assert.equal(Reflect.get(unknownOutcome!.sending, 'retryable'), false);
+  });
+
+  it('answers retry eligibility with the same decision as the status read', async function () {
+    assert.equal(await service.retryEligibilityFor('missing-email'), 'not-failed');
+
+    await addEmail({ status: 'submitting', emailCount: 20 });
+    await addBatch({ status: 'failed', createdAt: '2026-09-02 12:00:00' });
+    assert.equal(await service.retryEligibilityFor('email-id'), 'not-failed');
+
+    await knex('emails').where('id', 'email-id').update({ status: 'failed' });
+    assert.equal(await service.retryEligibilityFor('email-id'), 'retryable');
+
+    await knex('email_batches').where('id', 'batch-1').update({ status: 'submitting' });
+    assert.equal(await service.retryEligibilityFor('email-id'), 'unknown-outcome');
+  });
+
   it('returns null when the email does not exist', async function () {
     assert.equal(await service.statusFor('missing-email'), null);
   });
@@ -213,6 +240,13 @@ describe('SendingStatusService', function () {
       });
     });
   }
+
+  it('rejects invalid stored email statuses when reading retry eligibility', async function () {
+    await addEmail({ status: 'failed', emailCount: 20 });
+    await knex('emails').where('id', 'email-id').update({ status: 'invalid' });
+
+    await assert.rejects(service.retryEligibilityFor('email-id'), { name: 'ZodError' });
+  });
 
   it('derives the sending status of an unsubmitted email from its batches and their recipient counts', async function () {
     await addEmail({ status: 'submitting', emailCount: 50, updatedAt: '2026-09-02 12:01:00' });

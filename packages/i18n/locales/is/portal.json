@@ -20,7 +20,7 @@
     "{months} months": "",
     "{months} months free": "",
     "{tierName} membership": "",
-    "{trialDays} days free": "dagar án endurgjalds",
+    "{trialDays} days free": "{trialDays} dagar án endurgjalds",
     "{years} years": "",
     "+1 (123) 456-7890": "",
     "1 month": "",

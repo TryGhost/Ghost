@@ -1,6 +1,7 @@
 const PostsService = require('../../../../../core/server/services/posts/posts-service');
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 
 describe('Posts Service', function () {
   it('Can construct class', function () {
@@ -257,12 +258,14 @@ describe('Posts Service', function () {
     let mockModels;
     let mockEmailService;
     let postEmailHandlerStub;
+    const transacting = {};
 
     beforeEach(function () {
       mockModels = {
         Post: {
           findOne: sinon.stub(),
           edit: sinon.stub(),
+          transaction: sinon.stub().callsFake(async (save) => save(transacting)),
         },
         Member: {
           findPage: sinon.stub(),
@@ -346,8 +349,75 @@ describe('Posts Service', function () {
 
       await postsService.editPost(frame);
 
+      sinon.assert.calledOnceWithExactly(mockModels.Post.edit, frame.data.posts[0], {
+        ...frame.options,
+        transacting,
+      });
       sinon.assert.calledOnceWithExactly(postEmailHandlerStub.createOrRetryEmail, model, {
         preflight,
+        transacting,
+      });
+    });
+
+    it('sends the email after the transaction commits and before responding', async function () {
+      let committed = false;
+      mockModels.Post.transaction.callsFake(async (save) => {
+        const result = await save(transacting);
+        committed = true;
+        return result;
+      });
+      const model = { toJSON: sinon.stub().returns({ id: 'post-123' }) };
+      mockModels.Post.edit.resolves(model);
+      const sendEmail = sinon.stub().callsFake(async () => {
+        assert.equal(committed, true);
+      });
+      postEmailHandlerStub.createOrRetryEmail.resolves(sendEmail);
+
+      await postsService.editPost({
+        data: { posts: [{ status: 'published' }] },
+        options: { id: 'post-123' },
+      });
+
+      sinon.assert.callOrder(sendEmail, model.toJSON);
+    });
+
+    describe('with a caller-owned transaction', function () {
+      async function editAndCommit(sendEmail) {
+        let commit;
+        const callerTransacting = {
+          executionPromise: new Promise((resolve) => {
+            commit = resolve;
+          }),
+        };
+        mockModels.Post.edit.resolves({ toJSON: sinon.stub().returns({ id: 'post-123' }) });
+        postEmailHandlerStub.createOrRetryEmail.resolves(sendEmail);
+
+        await postsService.editPost({
+          data: { posts: [{ status: 'published' }] },
+          options: { id: 'post-123', transacting: callerTransacting },
+        });
+
+        sinon.assert.notCalled(mockModels.Post.transaction);
+        sinon.assert.calledOnceWithMatch(postEmailHandlerStub.createOrRetryEmail, sinon.match.any, {
+          transacting: callerTransacting,
+        });
+        sinon.assert.notCalled(sendEmail);
+
+        commit();
+        await new Promise(setImmediate);
+      }
+
+      it('sends the email once the caller commits', async function () {
+        const sendEmail = sinon.stub().resolves();
+        await editAndCommit(sendEmail);
+        sinon.assert.calledOnce(sendEmail);
+      });
+
+      it('logs a send error after the caller commits', async function () {
+        const error = new Error('Would go over limit');
+        const logError = sinon.stub(logging, 'error');
+        await editAndCommit(sinon.stub().rejects(error));
+        sinon.assert.calledOnceWithExactly(logError, error);
       });
     });
 

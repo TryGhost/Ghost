@@ -20,7 +20,7 @@ module.exports = function apiRoutes() {
   // Webmentions
   router.post(
     '/receive',
-    bodyParser.urlencoded({ extended: true, limit: '5mb' }),
+    bodyParser.urlencoded({ extended: true, limit: '64kb' }),
     http(api.mentions.receive),
   );
 

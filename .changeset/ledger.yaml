@@ -171,6 +171,10 @@
   dir: koenig/kg-markdown-html-renderer
   intents:
     - strong-doors-grin
+"@tryghost/kg-markdown-html-renderer@7.2.7":
+  dir: koenig/kg-markdown-html-renderer
+  intents:
+    - tall-melons-eat
 "@tryghost/kg-simplemde@3.1.5":
   dir: koenig/kg-simplemde
   intents:
@@ -194,6 +198,10 @@
     - bright-geese-yell
     - curly-zebras-raise
     - nice-moles-bet
+"@tryghost/kg-unsplash-selector@0.4.7":
+  dir: koenig/kg-unsplash-selector
+  intents:
+    - unsplash-search-race
 "@tryghost/kg-utils@1.1.4":
   dir: koenig/kg-utils
   intents:

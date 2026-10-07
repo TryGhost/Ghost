@@ -113,7 +113,7 @@ export function stripHtml(html: string, exclude: string[] = []): string {
 
     // Replace tags that should have a space after them
     const withSpaces = withLineBreaks.replace(
-      /<\/p>\s*<p>|<\/div>\s*<div>|<\/h[1-6]>\s*<|<\/li>\s*<li>|<\/a>/gi,
+      /<\/p>\s*<p>|<\/div>\s*<div>|<\/h[1-6]>\s*(?=<)|<\/li>\s*<li>|<\/a>/gi,
       ' ',
     );
 

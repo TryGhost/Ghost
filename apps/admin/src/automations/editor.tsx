@@ -1,3 +1,4 @@
+import NewAutomation from './new-automation';
 import { TRIGGER_CANVAS_ID } from './components/canvas/nodes';
 import AutomationCanvas, { EMAIL_STEP_QUERY_PARAM } from './components/canvas/automation-canvas';
 import AutomationHeader, { type AutomationValidationAction } from './components/automation-header';
@@ -17,7 +18,7 @@ import {
   LoadingIndicator,
 } from '@tryghost/shade/components';
 import { DirtyConfirmDialog } from '@tryghost/shade/patterns';
-import { useEditAutomation } from '@tryghost/admin-x-framework/api/automations';
+import { useAddAutomation, useEditAutomation } from '@tryghost/admin-x-framework/api/automations';
 import type {
   AutomationDetail,
   AutomationStatus,
@@ -25,7 +26,7 @@ import type {
 import { dequal } from 'dequal';
 import { isEmptyEmailLexical } from './utils';
 import { toast } from 'sonner';
-import { useParams } from '@tryghost/admin-x-framework';
+import { useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { AutomationEditState } from './types';
 
@@ -75,7 +76,15 @@ const getActionErrors = (automation: AutomationDetail): Record<string, string> =
   return errors;
 };
 
-const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automationId }) => {
+const AutomationEditorContent: React.FC<{
+  automationId: string | null;
+  creation?: {
+    initialAutomation: AutomationDetail;
+    onCreated: (id: string) => void;
+  };
+}> = ({ automationId, creation }) => {
+  const navigate = useNavigate();
+  const addMutation = useAddAutomation();
   const { automation, isError: isReadError } = useAutomationForEditing(automationId);
 
   const editMutation = useEditAutomation();
@@ -121,7 +130,9 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
   const [savedAutomation, setSavedAutomation] = React.useState<AutomationDetail | undefined>(
     undefined,
   );
-  const [draft, setDraft] = React.useState<AutomationDetail | undefined>(undefined);
+  const [draft, setDraft] = React.useState<AutomationDetail | undefined>(
+    creation?.initialAutomation,
+  );
   React.useEffect(() => {
     if (!automation) {
       return;
@@ -135,7 +146,9 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
 
   // Only compare the fields the user can edit; server-stamped fields like `updated_at` would
   // otherwise flip the dirty flag immediately after every successful publish.
+  const isNew = !!draft && !draft.id;
   const hasUnsavedChanges =
+    isNew ||
     invalidWaitIds.size > 0 ||
     (!!draft && !!savedAutomation && !dequal(editableSlice(draft), editableSlice(savedAutomation)));
 
@@ -236,7 +249,8 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
 
     setEditState(requestState);
 
-    editMutation.mutate(
+    const mutation = isNew ? addMutation : editMutation;
+    mutation.mutate(
       { ...draft, status: newStatus },
       {
         onSuccess: (response) => {
@@ -245,6 +259,11 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
           setDraft(savedDraft);
           setActionErrors({});
           setEditState({ phase: 'idle' });
+          if (isNew) {
+            creation?.onCreated(savedDraft.id);
+            bypassNextNavigation();
+            navigate(`/automations/${savedDraft.id}`, { replace: true });
+          }
         },
         onError: () => {
           setEditState(errorState);
@@ -435,7 +454,11 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
   // The dirty email modal claims navigations that change its `emailStep`
   // query param (closing the modal, back button, leaving the editor) so the
   // canvas can run its own discard flow instead of the page-level dialog.
-  const { dialogProps: discardDialogProps, interceptedNavigation } = useUnsavedChangesGuard({
+  const {
+    dialogProps: discardDialogProps,
+    interceptedNavigation,
+    bypassNextNavigation,
+  } = useUnsavedChangesGuard({
     when: hasUnsavedChanges || isEmailModalDirty,
     confirmUnloadWhen: isEditRequestActive || hasUnsavedChanges || isEmailModalDirty,
     interceptNavigation: ({ currentLocation, nextLocation }) => {
@@ -602,6 +625,35 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
 const AutomationEditor: React.FC = () => {
   const { id: automationId = '' } = useParams<{ id: string }>();
 
+  // Keep the creation session mounted when its first save replaces /new with the server ID.
+  const [session, setSession] = React.useState({
+    routeId: automationId,
+    createdId: null as string | null,
+    key: 0,
+  });
+  if (automationId !== session.routeId) {
+    const isFirstSave = session.routeId === 'new' && automationId === session.createdId;
+    setSession({
+      routeId: automationId,
+      createdId: isFirstSave ? session.createdId : null,
+      key: isFirstSave ? session.key : session.key + 1,
+    });
+  }
+  if (automationId === 'new' || automationId === session.createdId) {
+    return (
+      <NewAutomation key={session.key}>
+        {(initialAutomation) => (
+          <AutomationEditorContent
+            automationId={null}
+            creation={{
+              initialAutomation,
+              onCreated: (createdId) => setSession((current) => ({ ...current, createdId })),
+            }}
+          />
+        )}
+      </NewAutomation>
+    );
+  }
   return <AutomationEditorContent key={automationId} automationId={automationId} />;
 };
 

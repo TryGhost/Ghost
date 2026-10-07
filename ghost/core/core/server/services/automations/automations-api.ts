@@ -11,7 +11,11 @@ import ObjectId from 'bson-objectid';
 import { z } from 'zod';
 import { createDatabaseAutomationsRepository } from './database-automations-repository';
 import { parseFakeWaitHoursMultiplier } from './fake-wait-hours-multiplier';
-import type { AutomationsRepository, EditAutomationData } from './automations-repository';
+import type {
+  Automation,
+  AutomationsRepository,
+  EditAutomationData,
+} from './automations-repository';
 import {
   EMPTY_AUTOMATION_STATS,
   fetchAutomationStats,
@@ -84,23 +88,34 @@ const edgeSchema = z.object({
   target_action_id: objectIdSchema,
 });
 
-const addAutomationMetadataShape = {
+const automationShape = {
   name: z.string().trim().min(1).max(191),
   description: z.string().trim().max(2000),
+  status: z.enum(['active', 'inactive']),
+  actions: z
+    .array(z.discriminatedUnion('type', [waitActionSchema, sendEmailActionSchema]))
+    .min(1)
+    .max(MAX_AUTOMATION_ACTIONS),
+  edges: z.array(edgeSchema),
 };
+
+const defaultTriggerShape = {
+  trigger_tier_scope: z.enum(['free', 'all_paid']).nullable().optional(),
+  trigger_tier_ids: z.null().optional(),
+};
+const selectedPaidTriggerShape = {
+  trigger_tier_scope: z.literal('selected_paid'),
+  trigger_tier_ids: z
+    .array(objectIdSchema)
+    .min(1)
+    .transform((ids) => [...new Set(ids)]),
+};
+
 const addAutomationDataSchema = z.discriminatedUnion('trigger_tier_scope', [
+  z.strictObject({ ...automationShape, ...defaultTriggerShape }),
   z.strictObject({
-    ...addAutomationMetadataShape,
-    trigger_tier_scope: z.enum(['free', 'all_paid']).nullable().optional(),
-    trigger_tier_ids: z.null().optional(),
-  }),
-  z.strictObject({
-    ...addAutomationMetadataShape,
-    trigger_tier_scope: z.literal('selected_paid'),
-    trigger_tier_ids: z
-      .array(objectIdSchema)
-      .min(1)
-      .transform((ids) => [...new Set(ids)]),
+    ...automationShape,
+    ...selectedPaidTriggerShape,
   }),
 ]);
 
@@ -108,28 +123,14 @@ export type AddAutomationData = z.infer<typeof addAutomationDataSchema>;
 
 const editAutomationDataSchema = z
   .object({
-    name: z.string().trim().min(1).max(191).optional(),
-    description: z.string().trim().max(2000).optional(),
-    status: z.enum(['active', 'inactive']),
-    actions: z
-      .array(z.discriminatedUnion('type', [waitActionSchema, sendEmailActionSchema]))
-      .min(1)
-      .max(MAX_AUTOMATION_ACTIONS),
-    edges: z.array(edgeSchema),
+    ...automationShape,
+    name: automationShape.name.optional(),
+    description: automationShape.description.optional(),
   })
   .and(
     z.discriminatedUnion('trigger_tier_scope', [
-      z.object({
-        trigger_tier_scope: z.enum(['free', 'all_paid']).nullable().optional(),
-        trigger_tier_ids: z.null().optional(),
-      }),
-      z.object({
-        trigger_tier_scope: z.literal('selected_paid'),
-        trigger_tier_ids: z
-          .array(objectIdSchema)
-          .min(1)
-          .transform((ids) => [...new Set(ids)]),
-      }),
+      z.object(defaultTriggerShape),
+      z.object(selectedPaidTriggerShape),
     ]),
   );
 
@@ -362,6 +363,7 @@ export async function add(data: unknown) {
       String(issue.path[0] ?? 'automations'),
     );
   }
+  await validateAutomationData(result.data);
   return await repository.add(result.data);
 }
 
@@ -395,13 +397,17 @@ async function validateEditData(data: unknown): Promise<EditAutomationData> {
     );
   }
 
-  validateGraph(result.data.actions, result.data.edges);
-  await validateEmailLexical(result.data.actions);
-  validateActiveEmailSteps(result.data.status, result.data.actions);
+  await validateAutomationData(result.data);
   return result.data;
 }
 
-async function validateEmailLexical(actions: EditAutomationData['actions']) {
+async function validateAutomationData(data: Pick<Automation, 'status' | 'actions' | 'edges'>) {
+  validateGraph(data.actions, data.edges);
+  await validateEmailLexical(data.actions);
+  validateActiveEmailSteps(data.status, data.actions);
+}
+
+async function validateEmailLexical(actions: Automation['actions']) {
   await Promise.all(
     actions.map(async (action) => {
       if (action.type !== 'send_email') {
@@ -430,10 +436,7 @@ async function validateEmailLexical(actions: EditAutomationData['actions']) {
 // Drafts may persist empty email steps, but an active automation must have a
 // complete subject and body for every email it sends — mirroring the editor's
 // publish-time validation.
-function validateActiveEmailSteps(
-  status: EditAutomationData['status'],
-  actions: EditAutomationData['actions'],
-) {
+function validateActiveEmailSteps(status: Automation['status'], actions: Automation['actions']) {
   if (status !== 'active') {
     return;
   }
@@ -517,7 +520,7 @@ function buildInvalidAutomationPayloadMessage(issues: z.core.$ZodIssue[], messag
   return `${message} ${issueSummaries.join('; ')}.`;
 }
 
-function validateGraph(actions: EditAutomationData['actions'], edges: EditAutomationData['edges']) {
+function validateGraph(actions: Automation['actions'], edges: Automation['edges']) {
   const actionIdentities = new Set<string>();
 
   // Every action in the submitted graph must have a unique ObjectId so edges

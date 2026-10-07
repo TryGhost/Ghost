@@ -16,10 +16,10 @@ validation only: nothing here fetches, stores or renders anything.
 
 Each contract is its own entry point, so a consumer only loads the one it uses.
 
-| Entry point                        | What it holds                                     |
-| ---------------------------------- | ------------------------------------------------- |
-| `@tryghost/app-contracts`          | Types, and rules that depend on nothing (app IDs) |
-| `@tryghost/app-contracts/manifest` | The app manifest and its validation               |
+| Entry point                        | What it holds                            |
+| ---------------------------------- | ---------------------------------------- |
+| `@tryghost/app-contracts`          | Types, and limits that depend on nothing |
+| `@tryghost/app-contracts/manifest` | The app manifest and its validation      |
 
 The root entry point must stay free of `zod`: some consumers ship to browsers
 that never validate anything. A lint rule enforces it.
@@ -75,9 +75,24 @@ const result = parseManifest(json, {
 
 if (result.success) {
   result.manifest.surfaces[0].url; // https://podcast.example.com/admin
+  result.manifestUrl; // the manifest's URL as it was checked, which is the one to keep
 } else {
   result.errors; // [{ path: 'surfaces[0].url', message: '…' }]
 }
+```
+
+`parseManifest` is for a manifest as an app serves it. A manifest it has accepted is
+read back, from a database say, with `AppManifestSchema`: the same shape, with every
+URL absolute and none of them resolved or checked again, so a manifest accepted before
+the site's URL changed still reads. It encodes too, so what is stored is what will be
+read:
+
+```ts
+import { z } from 'zod';
+import { AppManifestSchema } from '@tryghost/app-contracts/manifest';
+
+const stored = JSON.stringify(z.encode(AppManifestSchema, result.manifest));
+const manifest = AppManifestSchema.parse(JSON.parse(stored));
 ```
 
 `ghostUrls` is required and cannot be empty. Nothing Ghost loads from a manifest

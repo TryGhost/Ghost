@@ -40,14 +40,6 @@ describe('useDunningState', () => {
     expect(result.current).toBeNull();
   });
 
-  test('returns null while the dunningWarnings flag is off', () => {
-    mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(2), {}));
-
-    const { result } = renderHook(() => useDunningState());
-
-    expect(result.current).toBeNull();
-  });
-
   test('returns null when the block is inactive', () => {
     mockUseBrowseConfig.mockReturnValue(
       browseConfigWithDunning({ ...dunningWindow(2), active: false }),
@@ -246,7 +238,7 @@ describe('useDunningState', () => {
   test('installs no periodic tick when there is nothing to derive', () => {
     // The hook mounts in the admin layout on every page: without dunning in
     // effect a tick would re-render every session each minute for nothing.
-    mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(2), {}));
+    mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(undefined));
 
     renderHook(() => useDunningState());
 

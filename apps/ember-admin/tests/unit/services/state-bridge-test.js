@@ -85,13 +85,13 @@ describe('Unit: Service: state-bridge', function () {
             sinon.stub(configManager, 'fetch').resolves();
             const listener = sinon.spy();
             service.on('subscriptionChange', listener);
-            const data = {subscription: {status: 'active'}, checkoutRoute: '/checkout'};
+            const data = {subscription: {status: 'active'}};
 
             await service.applyBillingSubscriptionUpdate(data);
 
             expect(limit.reload.calledAfter(configManager.fetch)).to.be.true;
             expect(listener.calledOnceWithExactly(data)).to.be.true;
-            expect(this.owner.lookup('service:billing').checkoutRoute).to.equal('/checkout');
+            expect(this.owner.lookup('service:billing').subscription).to.deep.equal(data.subscription);
             service.off('subscriptionChange', listener);
         });
 

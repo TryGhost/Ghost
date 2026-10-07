@@ -829,6 +829,26 @@
           "name": "Remove all gift links",
           "action_type": "removeAll",
           "object_type": "gift_link"
+        },
+        {
+          "name": "Browse app installations",
+          "action_type": "browse",
+          "object_type": "app_installation"
+        },
+        {
+          "name": "Read app installations",
+          "action_type": "read",
+          "object_type": "app_installation"
+        },
+        {
+          "name": "Add app installations",
+          "action_type": "add",
+          "object_type": "app_installation"
+        },
+        {
+          "name": "Delete app installations",
+          "action_type": "destroy",
+          "object_type": "app_installation"
         }
       ]
     },
@@ -992,6 +1012,7 @@
           "collection": "all",
           "recommendation": "all",
           "gift_link": "all",
+          "app_installation": "all",
           "automation": ["browse", "read", "edit", "add"],
           "identity": "read"
         },

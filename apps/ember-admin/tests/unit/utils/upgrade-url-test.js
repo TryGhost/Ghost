@@ -10,9 +10,8 @@ describe('Unit | Utility | upgrade-url', function () {
         expect(upgradeUrl(configWith(undefined))).to.equal('#/pro');
     });
 
-    // the publish-limit modal linked straight into checkout before this was configurable
     it('uses the caller\'s fallback when one is given', function () {
-        expect(upgradeUrl({}, '#/pro?action=checkout')).to.equal('#/pro?action=checkout');
+        expect(upgradeUrl({}, '#/pro/plans')).to.equal('#/pro/plans');
     });
 
     it('keeps a configured hash href as-is', function () {

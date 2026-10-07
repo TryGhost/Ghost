@@ -382,3 +382,15 @@ register its own pinned endpoint, so it receives the payloads production receive
 2. **Traces**: Available in `test-results/` directory
 3. **Debug Mode**: Run with `pnpm test --debug` or `pnpm test --ui` to see browser
 4. **Verbose Logging**: Check CI logs for detailed error information
+
+### Sign-in page never renders on Linux
+
+If tests time out waiting for the admin sign-in form and the trace shows
+requests failing with `net::ERR_NETWORK_CHANGED`, Chrome is reacting to Docker
+giving a new Ghost container's host-side network interface an IPv6 link-local
+address, about 1.5s after the container starts. CI avoids this by disabling IPv6
+on new interfaces before the tests run; do the same locally:
+
+```bash
+sudo sysctl -w net.ipv6.conf.default.disable_ipv6=1
+```

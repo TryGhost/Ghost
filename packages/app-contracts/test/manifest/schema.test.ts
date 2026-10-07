@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 
+import { AppManifestSchema } from '../../src/manifest/index.ts';
 import { errorsOf, manifest, manifestOf } from './helpers.ts';
 
 describe('shape', () => {
@@ -128,5 +130,37 @@ describe('accent colour', () => {
         { path: 'accent_color', message: 'Expected a hex colour such as #ff5500' },
       ]);
     }
+  });
+});
+
+describe('AppManifestSchema', () => {
+  it('accepts what parseManifest hands back, wherever Ghost is served from now', () => {
+    const parsed = manifestOf(manifest());
+    expect(AppManifestSchema.parse(parsed)).toEqual(parsed);
+    expect(
+      AppManifestSchema.parse(manifestOf(manifest({ icon: { name: 'audio-lines' } }))),
+    ).toEqual(manifestOf(manifest({ icon: { name: 'audio-lines' } })));
+  });
+
+  it('encodes a manifest back to the same shape it reads', () => {
+    const parsed = manifestOf(manifest());
+    expect(z.encode(AppManifestSchema, parsed)).toEqual(parsed);
+    expect(JSON.stringify(z.encode(AppManifestSchema, parsed))).toBe(JSON.stringify(parsed));
+  });
+
+  it('only accepts absolute URLs, since there is nothing to resolve them against', () => {
+    const result = AppManifestSchema.safeParse(manifest());
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.map((issue) => issue.path.join('.'))).toEqual([
+      'icon.url',
+      'surfaces.0.url',
+    ]);
+  });
+
+  it('still rejects what parseManifest rejects, other than the URL rules', () => {
+    const parsed = manifestOf(manifest());
+    expect(AppManifestSchema.safeParse({ ...parsed, id: 'Podcast' }).success).toBe(false);
+    expect(AppManifestSchema.safeParse({ ...parsed, icon: {} }).success).toBe(false);
+    expect(AppManifestSchema.safeParse({ ...parsed, extra: true }).success).toBe(false);
   });
 });

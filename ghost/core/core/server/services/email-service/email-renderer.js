@@ -1257,17 +1257,19 @@ class EmailRenderer {
     }
     if (text && text.length > maxLengthMobile) {
       let ellipsis = '';
+      let desktopEnd = text.length;
 
       if (text.length > maxLengthMobile && text.length <= maxLength) {
         ellipsis = '<span class="hide-desktop">…</span>';
       } else if (text.length > maxLength) {
         ellipsis = '…';
+        desktopEnd = maxLength - 1;
       }
 
       return (
         escapeHtml(text.substring(0, maxLengthMobile - 1)) +
         '<span class="desktop-only">' +
-        escapeHtml(text.substring(maxLengthMobile - 1, maxLength - 1)) +
+        escapeHtml(text.substring(maxLengthMobile - 1, desktopEnd)) +
         '</span>' +
         ellipsis
       );

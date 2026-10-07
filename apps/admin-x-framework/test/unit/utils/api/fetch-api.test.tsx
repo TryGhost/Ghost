@@ -7,7 +7,12 @@ import React, { ReactNode } from 'react';
 import { FrameworkProvider } from '../../../../src/providers/framework-provider';
 import { useFetchApi } from '../../../../src/utils/api/fetch-api';
 import { onUpgradeStatus } from '../../../../src/utils/api/upgrade-status';
-import { MaintenanceError, TimeoutError, VersionMismatchError } from '../../../../src/utils/errors';
+import {
+  MaintenanceError,
+  ServerUnreachableError,
+  TimeoutError,
+  VersionMismatchError,
+} from '../../../../src/utils/errors';
 
 const wrapper: React.FC<{ children: ReactNode }> = ({ children }) => (
   <FrameworkProvider
@@ -79,6 +84,18 @@ describe('useFetchApi', () => {
           'Access-Control-Allow-Headers': '*',
           'Access-Control-Allow-Credentials': 'true',
         };
+
+        if (url.includes('no-content')) {
+          res.writeHead(204, corsHeaders);
+          res.end();
+          return;
+        }
+
+        if (url.includes('invalid-status') && req.method !== 'OPTIONS') {
+          res.writeHead(999, corsHeaders);
+          res.end();
+          return;
+        }
 
         if (url.includes('yaml')) {
           res.writeHead(200, { 'Content-Type': 'application/yaml', ...corsHeaders });
@@ -190,6 +207,30 @@ describe('useFetchApi', () => {
         retry: false,
       }),
     ).rejects.toBeInstanceOf(TimeoutError);
+  });
+
+  it('resolves a 204 response when upload progress is enabled', async () => {
+    const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+    await expect(
+      result.current(`${baseUrl}/ghost/api/admin/no-content/`, {
+        method: 'POST',
+        body: 'test',
+        retry: false,
+        onUploadProgress: vi.fn(),
+      }),
+    ).resolves.toBeUndefined();
+  });
+
+  it('rejects when an upload response cannot be converted', async () => {
+    const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+    await expect(
+      result.current(`${baseUrl}/ghost/api/admin/invalid-status/`, {
+        retry: false,
+        onUploadProgress: vi.fn(),
+      }),
+    ).rejects.toBeInstanceOf(ServerUnreachableError);
   });
 
   describe('upgrade status', () => {

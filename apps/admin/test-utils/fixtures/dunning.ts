@@ -18,16 +18,12 @@ export function dunningWindow(
 
 /**
  * A mocked `useBrowseConfig` return for a host carrying the given dunning
- * block, with the dunningWarnings flag on unless overridden via `labs`.
+ * block.
  */
-export function browseConfigWithDunning(
-  dunning?: unknown,
-  labs: Record<string, boolean> = { dunningWarnings: true },
-) {
+export function browseConfigWithDunning(dunning?: unknown) {
   return {
     data: {
       config: {
-        labs,
         hostSettings: {
           billing: { enabled: true, url: 'https://billing.example.com', dunning },
         },

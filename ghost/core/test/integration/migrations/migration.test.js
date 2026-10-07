@@ -87,7 +87,7 @@ describe('Migrations', function () {
     // Custom assertion to wrap all permissions
     function assertCompletePermissions(permissions) {
       // If you have to change this number, please add the relevant `assertHavePermission` checks below
-      assert.equal(permissions.length, 142);
+      assert.equal(permissions.length, 146);
 
       assertHavePermission(permissions, 'Export database', [
         'Administrator',
@@ -187,6 +187,11 @@ describe('Migrations', function () {
         'Super Editor',
       ]);
       assertHavePermission(permissions, 'Remove all gift links', ['Administrator']);
+
+      assertHavePermission(permissions, 'Browse app installations', ['Administrator']);
+      assertHavePermission(permissions, 'Read app installations', ['Administrator']);
+      assertHavePermission(permissions, 'Add app installations', ['Administrator']);
+      assertHavePermission(permissions, 'Delete app installations', ['Administrator']);
 
       assertHavePermission(permissions, 'Browse settings', [
         'Administrator',

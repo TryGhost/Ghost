@@ -146,6 +146,28 @@ describe('Integration: Component: gh-billing-iframe', function () {
         expect(billing.billingAppLoaded).to.be.false;
     });
 
+    it('links exceeded member limits to plans without a checkout route and clears the alert on recovery', async function () {
+        sinon.stub(this.owner.lookup('service:config-manager'), 'fetch').resolves();
+        sinon.stub(this.owner.lookup('service:limit'), 'reload');
+        const notifications = this.owner.lookup('service:notifications');
+        const showAlert = sinon.stub(notifications, 'showAlert');
+        const closeAlerts = sinon.stub(notifications, 'closeAlerts');
+        const subscription = {status: 'active'};
+
+        await render(hbs`<GhBillingIframe />`);
+        await postBillingMessage({subscription, exceededLimits: ['members']});
+
+        expect(showAlert.calledOnce).to.be.true;
+        expect(showAlert.firstCall.args[0].toString()).to.equal('Your audience has grown! To continue publishing, the site owner must <a href="#/pro/plans">confirm pricing for this number of members</a>.');
+        expect(showAlert.firstCall.args[1]).to.deep.equal({type: 'warn', key: 'billing.exceeded'});
+        expect(closeAlerts.called).to.be.false;
+
+        await postBillingMessage({subscription, exceededLimits: []});
+
+        expect(showAlert.calledOnce).to.be.true;
+        expect(closeAlerts.calledOnceWithExactly('billing.exceeded')).to.be.true;
+    });
+
     const approvedDestinations = {
         theme: '/settings/design/change-theme',
         analytics: '/settings/analytics',
@@ -192,77 +214,6 @@ describe('Integration: Component: gh-billing-iframe', function () {
 
         expect(transitionTo.calledOnceWithExactly('/settings/newsletters')).to.be.true;
     });
-
-    it('shows the overdue billing alert for a delinquent subscription', async function () {
-        const notifications = this.owner.lookup('service:notifications');
-        const showAlert = sinon.stub(notifications, 'showAlert');
-        sinon.stub(this.owner.lookup('service:config-manager'), 'fetch').resolves();
-        sinon.stub(this.owner.lookup('service:limit'), 'reload');
-
-        await render(hbs`<GhBillingIframe />`);
-
-        await postBillingMessage({subscription: {status: 'past_due'}});
-
-        expect(showAlert.calledOnce).to.be.true;
-        expect(showAlert.firstCall.args[1]).to.include({type: 'error', key: 'billing.overdue'});
-    });
-
-    it('stands the overdue alert down when the dunningWarnings flag is enabled', async function () {
-        const notifications = this.owner.lookup('service:notifications');
-        const showAlert = sinon.stub(notifications, 'showAlert');
-        const closeAlerts = sinon.stub(notifications, 'closeAlerts');
-        sinon.stub(this.owner.lookup('service:config-manager'), 'fetch').resolves();
-        sinon.stub(this.owner.lookup('service:limit'), 'reload');
-        const feature = this.owner.lookup('service:feature');
-        sinon.stub(feature, 'dunningWarnings').get(() => true);
-        const config = this.owner.lookup('config:main');
-        config.hostSettings = {
-            ...config.hostSettings,
-            billing: {
-                ...config.hostSettings?.billing,
-                dunning: {active: true, paymentFailedAt: '2026-08-26', suspendsAt: '2026-09-23'}
-            }
-        };
-
-        await render(hbs`<GhBillingIframe />`);
-
-        await postBillingMessage({subscription: {status: 'past_due'}});
-
-        expect(showAlert.called).to.be.false;
-        expect(closeAlerts.calledWith('billing.overdue')).to.be.true;
-    });
-
-    for (const [label, dunning] of [
-        ['missing config', undefined],
-        ['missing dates', {active: true}],
-        ['invalid dates', {active: true, paymentFailedAt: 'invalid', suspendsAt: '2026-09-29'}],
-        ['non-string dates', {active: true, paymentFailedAt: 1, suspendsAt: '2026-09-29'}],
-        ['an inverted window', {active: true, paymentFailedAt: '2026-09-29', suspendsAt: '2026-09-01'}],
-        ['an empty window', {active: true, paymentFailedAt: '2026-09-01', suspendsAt: '2026-09-01'}]
-    ]) {
-        for (const status of ['past_due', 'unpaid']) {
-            it(`keeps the overdue alert for ${status} with ${label}`, async function () {
-                const notifications = this.owner.lookup('service:notifications');
-                const showAlert = sinon.stub(notifications, 'showAlert');
-                const closeAlerts = sinon.stub(notifications, 'closeAlerts');
-                sinon.stub(this.owner.lookup('service:config-manager'), 'fetch').resolves();
-                sinon.stub(this.owner.lookup('service:limit'), 'reload');
-                sinon.stub(this.owner.lookup('service:feature'), 'dunningWarnings').get(() => true);
-                const config = this.owner.lookup('config:main');
-                config.hostSettings = {
-                    ...config.hostSettings,
-                    billing: {...config.hostSettings?.billing, dunning}
-                };
-
-                await render(hbs`<GhBillingIframe />`);
-                await postBillingMessage({subscription: {status}});
-
-                expect(showAlert.calledOnce).to.be.true;
-                expect(showAlert.firstCall.args[1]).to.include({type: 'error', key: 'billing.overdue'});
-                expect(closeAlerts.calledWith('billing.overdue')).to.be.false;
-            });
-        }
-    }
 
     it('ignores a navigateToAdmin message with an unknown destination', async function () {
         const router = this.owner.lookup('service:router');

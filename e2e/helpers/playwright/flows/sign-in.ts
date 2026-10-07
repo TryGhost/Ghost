@@ -1,4 +1,3 @@
-import { AnalyticsOverviewPage, LoginPage } from '@/helpers/pages';
 import { Page } from '@playwright/test';
 
 import { EmailClient, MailPit } from '@/helpers/services/email/mail-pit';
@@ -6,19 +5,6 @@ import { HomePage, PublicPage } from '@/public-pages';
 import { Member } from '@/data-factory';
 import { SignInPage } from '@/portal-pages';
 import { extractMagicLink } from '@/helpers/services/email/utils';
-
-export async function loginToGetAuthenticatedSession(page: Page, email: string, password: string) {
-  const loginPage = new LoginPage(page);
-  await loginPage.waitForLoginPageAfterUserCreated();
-  await loginPage.signIn(email, password);
-  const analyticsPage = new AnalyticsOverviewPage(page);
-  // Wait for either Analytics header (normal mode) or billing iframe (force upgrade mode)
-  const billingIframe = page.getByTitle('Billing');
-  await Promise.race([
-    analyticsPage.header.waitFor({ state: 'visible' }),
-    billingIframe.waitFor({ state: 'visible' }),
-  ]);
-}
 
 /**
  * Signs in as a member using the portal magic link flow.

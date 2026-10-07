@@ -177,9 +177,9 @@ describe('Automations', () => {
   it.each([
     { count: undefined, disabled: true },
     { count: 0, disabled: false },
-    { count: 19, disabled: false },
-    { count: 20, disabled: true },
-    { count: 21, disabled: true },
+    { count: 49, disabled: false },
+    { count: 50, disabled: true },
+    { count: 51, disabled: true },
   ])('sets "New automation" disabled=$disabled with count=$count', ({ count, disabled }) => {
     mockUseBrowseConfig.mockReturnValue({
       data: { config: { labs: { automationsPerTier: true } } },
@@ -216,7 +216,7 @@ describe('Automations', () => {
     });
     mockUseBrowseAutomations.mockReturnValue({
       data: {
-        automations: Array.from({ length: 20 }, (_, index) => ({
+        automations: Array.from({ length: 50 }, (_, index) => ({
           ...automations[index % automations.length],
           id: `automation-id-${index}`,
         })),

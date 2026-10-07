@@ -198,6 +198,7 @@ vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
     useBrowseAutomationActionLinks: (...args: unknown[]) =>
       mockUseBrowseAutomationActionLinks(...args),
     useEditAutomation: () => mockEditMutation,
+    useAddAutomation: () => ({ mutate: vi.fn() }),
     useReadAutomationPerformanceStats: () => ({ isFetching: true }),
   };
 });
@@ -554,6 +555,7 @@ describe('AutomationEditor', () => {
     const { router } = renderEditor();
 
     expect(mockUseReadAutomation).toHaveBeenCalledWith('automation-id-1', {
+      enabled: true,
       defaultErrorHandler: false,
       refetchOnMount: 'always',
     });
