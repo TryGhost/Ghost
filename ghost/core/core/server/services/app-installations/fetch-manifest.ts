@@ -1,4 +1,5 @@
 import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
 import { isLocalhost } from '@tryghost/app-contracts/manifest';
 import type { Got } from 'got';
 
@@ -19,9 +20,12 @@ export interface FetchedManifest {
 export type FetchManifest = (manifestUrl: string) => Promise<FetchedManifest>;
 
 // Says only that the app answered with an error, never why a request failed otherwise, so
-// the preview cannot be used to map the network Ghost runs in.
+// the preview cannot be used to map the network Ghost runs in. The reason is logged, so an
+// operator can still tell a timeout from a certificate problem.
 function unreachable(manifestUrl: string, err: unknown) {
   const status = (err as { response?: { statusCode?: number } } | null)?.response?.statusCode;
+  logging.warn(`Could not load the app manifest at ${manifestUrl}`);
+  logging.warn(err);
   return new errors.ValidationError({
     message: 'Could not load the app’s manifest.',
     code: 'APP_MANIFEST_UNREACHABLE',
@@ -48,12 +52,14 @@ function staysOnHost(from: URL, to: URL): boolean {
  * manifest Ghost acts on never comes from the browser.
  *
  * A redirect to another host is refused: the publisher reviews an app by where its
- * install link points, and the manifest must come from there.
+ * install link points, and the manifest must come from there. Each hop is judged against
+ * the one before it, so an upgrade to HTTPS cannot be followed by a step back down.
  *
  * `getLocalhostAlias` is for Ghost running in a container in development. There `localhost`
- * is the container, not the developer's machine where the app runs, so a localhost
- * address (by the same rule the manifest uses) is fetched through the alias (e.g. `host.docker.internal`) with the original
- * Host header. The manifest keeps its own URLs, which the browser still uses as they are.
+ * is the container, not the developer's machine where the app runs, so a localhost address
+ * (by the same rule the manifest uses) is fetched through the alias (e.g.
+ * `host.docker.internal`) with the original Host header. The manifest keeps its own URLs,
+ * which the browser still uses as they are.
  */
 export function createManifestFetcher({
   request,
@@ -63,45 +69,56 @@ export function createManifestFetcher({
   getLocalhostAlias: () => string | null;
 }): FetchManifest {
   return async function fetchManifest(manifestUrl) {
-    const requested = new URL(manifestUrl);
     const alias = getLocalhostAlias();
-    let current = requested;
+    // Where the manifest is being read from now, by the address the browser would use.
+    let current = new URL(manifestUrl);
 
+    const isAliased = (url: URL) => alias !== null && isLocalhost(url.hostname);
     const fetchUrl = (url: URL) => {
-      if (!alias || !isLocalhost(url.hostname)) {
+      if (!isAliased(url)) {
         return url;
       }
       const aliased = new URL(url.href);
-      aliased.hostname = alias;
+      aliased.hostname = alias!;
       return aliased;
     };
-    const hostHeader = (url: URL) => (fetchUrl(url) === url ? {} : { host: url.host });
+    const hostHeader = (url: URL) => (isAliased(url) ? { host: url.host } : {});
 
     let refusedRedirect: URL | undefined;
     let tooLarge = false;
     const abort = new AbortController();
 
-    const pending = request(fetchUrl(requested), {
-      headers: { accept: 'application/json', ...hostHeader(requested) },
+    const pending = request(fetchUrl(current), {
+      headers: { accept: 'application/json', ...hostHeader(current) },
       timeout: { request: TIMEOUT_MS },
       retry: { limit: 0 },
       maxRedirects: MAX_REDIRECTS,
       signal: abort.signal,
+      // Decided here rather than in a redirect hook: got asks this before any hook runs,
+      // so a redirect to another host is refused before the outbound guard looks its
+      // target up, and Ghost never resolves a host it was always going to refuse.
+      followRedirect: (response) => {
+        const location = response.headers.location;
+        if (!location) {
+          return true;
+        }
+        const target = new URL(location, response.url);
+        // Undo the alias, so the redirect is judged by where the browser would go.
+        if (isAliased(current) && target.hostname === alias) {
+          target.hostname = current.hostname;
+        }
+        if (!staysOnHost(current, target)) {
+          refusedRedirect = target;
+          return false;
+        }
+        current = target;
+        return true;
+      },
       hooks: {
         beforeRedirect: [
           (options) => {
-            const target = new URL(String(options.url));
-            // Undo the alias, so the redirect is judged by where the browser would go.
-            if (fetchUrl(requested) !== requested && target.hostname === alias) {
-              target.hostname = requested.hostname;
-            }
-            if (!staysOnHost(requested, target)) {
-              refusedRedirect = target;
-              throw new errors.InternalServerError({ message: 'Redirected to another host' });
-            }
-            current = target;
-            options.url = fetchUrl(target);
-            Object.assign(options.headers, hostHeader(target));
+            options.url = fetchUrl(current);
+            Object.assign(options.headers, hostHeader(current));
           },
         ],
       },
@@ -113,16 +130,14 @@ export function createManifestFetcher({
       }
     });
 
-    let body: Buffer;
+    // Decoded by got from the response's charset; the size limit above still applies, as
+    // it watches the download rather than the result.
+    let text: string;
     try {
-      body = Buffer.from(await pending.buffer());
+      text = await pending.text();
     } catch (err) {
       if (refusedRedirect) {
-        throw new errors.ValidationError({
-          message: 'The app’s manifest redirects to another host.',
-          code: 'APP_MANIFEST_REDIRECTED',
-          context: `${manifestUrl} redirects to ${refusedRedirect.host}`,
-        });
+        throw redirected(manifestUrl, refusedRedirect);
       }
       if (tooLarge) {
         throw new errors.ValidationError({
@@ -133,9 +148,11 @@ export function createManifestFetcher({
       }
       throw unreachable(manifestUrl, err);
     }
+    if (refusedRedirect) {
+      throw redirected(manifestUrl, refusedRedirect);
+    }
 
     // A byte order mark is valid at the start of a JSON file, but JSON.parse rejects it.
-    const text = body.toString('utf8');
     try {
       return {
         url: current.href,
@@ -149,4 +166,12 @@ export function createManifestFetcher({
       });
     }
   };
+}
+
+function redirected(manifestUrl: string, target: URL) {
+  return new errors.ValidationError({
+    message: 'The app’s manifest redirects to another host.',
+    code: 'APP_MANIFEST_REDIRECTED',
+    context: `${manifestUrl} redirects to ${target.host}`,
+  });
 }
