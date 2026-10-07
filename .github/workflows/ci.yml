@@ -99,9 +99,6 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           install-args: --ignore-scripts
-          # The one job that saves the pnpm store: it installs the whole
-          # workspace, and every other job restores what it saved.
-          store-cache: save
 
       # Replaced nrwl/nx-set-shas, which verified each candidate commit over the
       # API and hid the errors — see scripts/nx-set-shas.js.

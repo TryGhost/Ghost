@@ -25,12 +25,11 @@ inputs:
     default: 'false'
   store-cache:
     description: >-
-      How this job uses the cached pnpm store: 'restore' (default) restores it,
-      'save' also saves it after installing, 'false' skips it. Only job_setup in
-      ci.yml saves, because it installs the whole workspace: a cache entry can't
-      be overwritten, so a job with a filtered install that saved first would
-      leave every later job with a partial store to download the rest into.
-    default: 'restore'
+      How this job uses the cached pnpm store: 'restore' restores it, 'save'
+      also saves it after installing, 'false' (default) skips it. Off by
+      default: a cold install from the registry measured about as fast as
+      restoring the store, since most of an install is linking, not downloading.
+    default: 'false'
 
 runs:
   using: composite
