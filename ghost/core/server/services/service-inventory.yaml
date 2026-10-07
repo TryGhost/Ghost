@@ -3,6 +3,74 @@
 # An unverified facet is an open audit question, not an empty/no-op contract.
 exemplaryMigration: indexnow-ping
 services:
+  action-log:
+    kind: directory
+    disposition: retain
+    status: auditing
+    migrated: true
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        A root built on the shared initializer. Its factory subscribes one reaction per kind
+        of action to the change events of the services it logs, and returns the listening
+        service. A failed subscription removes the reactions already added before rethrowing.
+      reviewedAt: ae3185e26a33a24d6611c431ba331d9b323fa47b
+      sources:
+        - core/server/services/action-log/index.ts
+        - core/server/services/action-log/service.ts
+    entryPoints:
+      - action-log/index.ts
+    notes: >-
+      Logs the change events of services without Bookshelf models as actions, and lists the
+      kinds the Action model loads resources for.
+    contracts:
+      exports:
+        summary: >-
+          The root default-exports the shared initializer with async init and a guarded
+          service getter, and no extras. The kinds file holds the list of kinds and the
+          kind-to-table map the Action model reads.
+        sources:
+          - core/server/services/action-log/index.ts
+          - core/server/services/action-log/kinds.ts
+          - core/server/models/action.js
+        tests:
+          - test/e2e-api/admin/actions.test.js
+      construction:
+        summary: >-
+          Boot awaits init after the gift links, custom field, app installation and Stripe
+          Checkout services, whose change events it listens to, and throws if any of them is
+          not set up yet. The factory reads the shared knex and subscribes each kind's action
+          log to its service's change events.
+        sources:
+          - core/server/services/action-log/index.ts
+          - core/server/services/action-log/service.ts
+          - core/server/services/action-log/action-log.ts
+          - core/server/lib/change-events.ts
+          - core/boot.js
+        tests:
+          - test/e2e-api/admin/gift-links.test.ts
+          - test/e2e-api/admin/app-installations.test.ts
+          - test/e2e-api/admin/member-custom-fields.test.ts
+          - test/e2e-api/admin/stripe-checkout-config.test.ts
+      failures:
+        summary: >-
+          A row that fails validation, or an insert that fails, rejects the reaction. The
+          service's change events log it and the command still succeeds, keeping the change
+          without its action.
+        sources:
+          - core/server/services/action-log/action-log.ts
+          - core/server/lib/change-events.ts
+        tests:
+          - test/unit/server/lib/change-events.test.ts
+          - test/integration/services/gift-links.test.ts
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - configuration
+      - resources
+    blockers: []
   activitypub:
     kind: directory
     disposition: retain
@@ -638,15 +706,6 @@ services:
     disposition: retain
     status: auditing
     migrated: true
-    extras:
-      actingContext:
-        purpose: Convert API authentication context into the staff actor recorded in installation history.
-        callers:
-          - core/server/api/endpoints/app-installations.ts
-        timing: Pure conversion when an API command runs; it does not require initialization.
-        dependencies: []
-        failurePolicy: A missing staff user or an integration yields a null actor; permission checks remain with the API.
-        destination: A normalized request actor supplied by the API framework Frame, with actor policy owned by the application.
     migration:
       complexity: straightforward
       modelImpact: fits
@@ -681,8 +740,8 @@ services:
       exports:
         summary: >-
           The root default-exports the shared initializer with async init and a guarded
-          service getter and a typed actingContext extra. There are no named runtime
-          exports. Reading service before readiness throws.
+          service getter, and no extras. There are no named runtime exports. Reading service
+          before readiness throws.
         sources:
           - core/server/services/app-installations/index.ts
         tests:
@@ -691,16 +750,17 @@ services:
       construction:
         summary: >-
           Boot awaits initialization after database setup. The factory returns one
-          AppInstallationsService from knex, the Action model and a manifest loader built
-          from the outbound request guard, a manifest-rules getter and the localhost alias.
-          The root supplies logging to manifest loading and action recording. Successful
-          initialization retains that ready instance. Root units prove no connection access
-          on import, one retained instance without queries/delivery, and no publication after
-          a failed connection acquisition followed by a successful retry. They also verify
-          logged transport failures keep generic public errors and logged action-write failures
-          do not fail installation. The retained instance also holds the in-flight re-check
-          per installation that app sessions starting together share; e2e tests cover two
-          sessions making one fetch.
+          AppInstallationsService from knex, its change events, which the action log
+          subscribes to, and a manifest loader built from the outbound request guard, a
+          manifest-rules getter and the localhost alias. The root supplies logging to
+          manifest loading and to the change events. Successful initialization retains that
+          ready instance. Root units prove no connection access on import, one retained
+          instance without queries/delivery, and no publication after a failed connection
+          acquisition followed by a successful retry. They also verify logged transport
+          failures keep generic public errors and a logged failing reaction to its change
+          events does not fail installation. The retained instance also holds the in-flight
+          re-check per installation that app sessions starting together share; e2e tests
+          cover two sessions making one fetch.
         sources:
           - core/server/services/app-installations/index.ts
           - core/server/services/app-installations/service.ts
@@ -4091,14 +4151,11 @@ services:
       dependencies:
         complexity: straightforward
         reason: >-
-          Knex and action recording are already injected and acquired after the database connects.
-          Logging in the action helper and case-key conversion in the codec/serializer are the
-          remaining boundary violations. The data shape is small, so these can be removed or wired
+          Knex and the change events are injected and acquired after the database connects, and
+          the root creates the change events with its logger. Case-key conversion in the
+          codec/serializer is the remaining boundary violation. The data shape is small, so these can be removed or wired
           without changing transactions or introducing service dependencies.
         preparation:
-          - >-
-            Supply logging to the action recorder through the root while preserving best-effort
-            action failures.
           - >-
             Use explicit field mapping for the small codec/serializer shapes, or separately review
             an exact-file case-keys allowance; do not make importable serializers depend on an
@@ -4106,7 +4163,7 @@ services:
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
           - core/server/services/gift-links/index.ts
-          - core/server/services/gift-links/actions.ts
+          - core/server/services/gift-links/events.ts
           - core/server/services/gift-links/codec.ts
           - core/server/services/gift-links/serializers.ts
           - core/server/services/gift-links/service.ts
@@ -4115,9 +4172,10 @@ services:
       - gift-links/index.ts
     notes: >-
       Migration rechecked against base e7ab0fe5a8406036cfb0d790e8db7afdb58bfe36; the original
-      audit and dependency-assessment revisions are retained above. The root now supplies action
-      logging; case-key and date codecs use the existing exact-file library allowances. Deferred
-      database binding, token history and public access/cache policy are unchanged. No extras.
+      audit and dependency-assessment revisions are retained above. The root now supplies the
+      change events the action log reacts to; case-key and date codecs use the existing
+      exact-file library allowances. Deferred database binding, token history and public
+      access/cache policy are unchanged. No extras.
     contracts:
       exports:
         summary: >-
@@ -4144,18 +4202,17 @@ services:
       construction:
         summary: >-
           Import declares the initializer without constructing a service. Its factory reads the
-          shared database knex and models, partially applies the best-effort action recorder with
-          root-supplied logging and returns one GiftLinksService retaining knex and the callback.
-          The recorder still reads models.Action per invocation. Later init calls preserve it.
-          No separate production deep construction was found. The constructor validates neither
-          dependency nor database readiness; an early init can publish an unusable captured
-          dependency. Integration tests construct the class with real model knex and matching
-          recorder wiring. Root tests assert deferred acquisition and retained knex/instance across
+          shared database knex, creates the gift links' change events, which the action log
+          subscribes to, and returns one GiftLinksService retaining both. Later init calls
+          preserve it. No separate production deep construction was found. The constructor
+          validates neither dependency nor database readiness; an early init can publish an unusable captured
+          dependency. Integration tests construct the class with real model knex and change
+          events nothing reacts to. Root tests assert deferred acquisition and retained knex/instance across
           init calls and exercise earlier public/Admin consumers.
         sources:
           - core/server/services/gift-links/index.ts
           - core/server/services/gift-links/service.ts
-          - core/server/services/gift-links/actions.ts
+          - core/server/services/gift-links/events.ts
           - core/server/data/db/index.js
           - core/server/data/db/connection.ts
         tests:
@@ -4270,8 +4327,8 @@ services:
       resources:
         summary: >-
           No owned client, timer, worker, listener or memory cache. The service borrows the shared
-          knex pool and owns per-mint transaction work; action history is a separate awaited model
-          write after the command's database change. Database rows carry token history/live state,
+          knex pool and owns per-mint transaction work; each command raises its change event
+          after its database change. Database rows carry token history/live state,
           with foreign-key cascade deletion and no scheduled pruning here. The public response cache
           belongs to posts-public, and rendering/analytics belong to frontend consumers. There is no
           root drain or cleanup registration; shutdown depends on shared HTTP/database ownership.
@@ -4279,7 +4336,7 @@ services:
           association write; deletion cascades and in-flight shutdown remain untested.
         sources:
           - core/server/services/gift-links/service.ts
-          - core/server/services/gift-links/actions.ts
+          - core/server/services/gift-links/events.ts
           - core/server/data/db/connection.ts
           - core/server/data/schema/schema.js
           - core/server/models/action.js
@@ -4295,10 +4352,10 @@ services:
           Missing posts throw NotFound; unknown or no-longer-live tokens return null. Query, codec,
           random generation and transaction errors propagate, without retries. Factory rejection
           leaves service unavailable and boot fails; the shared initializer permits an explicit
-          retry, without service-specific failure/retry coverage. Action writes run
-          after persistence and the production recorder logs/swallows failures, skipping writes when
-          actor is absent. That boundary is enforced by action units and a real-DB deep-service test
-          with a failing recorder. Gift access refuses missing key-resolution setup and rejects
+          retry, without service-specific failure/retry coverage. Commands take a required actor
+          and raise their change events after persistence; a failing reaction is logged without
+          failing the command. A real-DB deep-service test covers a failing reaction. Gift access
+          refuses missing key-resolution setup and rejects
           mismatched tokens; frontend strips invalid gifts with a 301 while other failures reach
           normal error handling. Product lookup failure logs and grants a paid shim with no tiers.
           Units pin those helpers and root query-error propagation. Real DB tests pin mint rollback
@@ -4308,7 +4365,7 @@ services:
           - core/kernel/define-service.ts
           - core/boot.js
           - core/server/services/gift-links/service.ts
-          - core/server/services/gift-links/actions.ts
+          - core/server/services/gift-links/events.ts
           - core/server/services/gift-links/codec.ts
           - core/server/services/gift-links/models.ts
           - core/server/api/endpoints/utils/gift-link-access.ts
@@ -4316,7 +4373,7 @@ services:
           - core/frontend/services/routing/controllers/entry/gift-links.ts
           - core/server/services/members/create-paid-member-shim.ts
         tests:
-          - test/unit/server/services/gift-links/actions.test.ts
+          - test/unit/server/lib/change-events.test.ts
           - test/integration/services/gift-links.test.ts
           - test/e2e-api/admin/gift-links.test.ts
           - test/unit/api/endpoints/utils/gift-link-access.test.ts
@@ -4333,7 +4390,7 @@ services:
       - >-
         Characterize overlapping ensure/create/removeAll, token collision and history retention.
         Real-database tests now force the live-association write to fail for ensure/create and
-        assert history rollback, old-token retention, no action write and a successful retry.
+        assert history rollback, old-token retention, no raised change event and a successful retry.
         Concurrent HTTP ensures still do not force both reads before mint or guarantee that all
         callers retain access.
       - >-
@@ -8729,14 +8786,14 @@ services:
           namespace as archived. Service
           bindings are undefined before init; class methods depend on their receiver. Namespaces
           resolves a namespace's policy (owner and limits) and refuses what it doesn't allow. Definitions
-          exposes asynchronous CRUD/reorder and addOne/find/recordCreated helpers; values
+          exposes asynchronous CRUD/reorder and addOne/find/raiseAdded helpers; values
           exposes synchronous unwrapWire plus asynchronous read/plan/apply/feed methods; bindings exposes asynchronous
           bind/remove/planning. HTTP tests assert selected serialized definitions, values, access
           rules and provenance; they do not pin the root export shape or init return timing.
         sources:
           - core/server/services/members-metafields/index.ts
           - core/server/services/members-metafields/access.ts
-          - core/server/services/members-metafields/actions.ts
+          - core/server/services/members-metafields/write-origin.ts
           - core/server/services/members-metafields/namespaces.ts
           - core/server/services/members-metafields/definitions-service.ts
           - core/server/services/members-metafields/values-service.ts
@@ -8746,11 +8803,11 @@ services:
           - test/e2e-api/members/custom-fields.test.ts
       construction:
         summary: >-
-          Init obtains the shared Knex getter, models and config, then publishes namespaces,
+          Init obtains the shared Knex getter and config, then publishes namespaces,
           fields, definitions, values and bindings sequentially; bindings retains that values instance.
           Namespaces is built from custom fields' policy, which holds the host limit service and a
           ceiling callback, both asked on each use.
-          Definitions receives an action-recording closure over models.Action and the namespaces;
+          Definitions receives its change events, which the action log reacts to, and the namespaces;
           values receives the ceiling callback; all three receive the field source. Constructors
           store dependencies without querying or starting work.
           The shared DB getter can create the module-cached Knex client if not already loaded.
@@ -8865,15 +8922,15 @@ services:
           shared Knex. Definition add/reorder use transactions; addOne and value applyWrite join
           a supplied transaction or open one, while bind/remove use the supplied executor.
           Value changes and their history rows share a transaction; the members service
-          composes larger writes around it, and CSV import uses per-row transactions. Definition actions
-          are separate post-write work. Real HTTP proves batch rollback on a later name conflict,
+          composes larger writes around it, and CSV import uses per-row transactions. Definition
+          change events are raised after the write. Real HTTP proves batch rollback on a later name conflict,
           successful value/history writes and cascades; validation refusals do not prove rollback
           after a value/history write fails. Import failure units use fake commit/rollback.
         sources:
           - core/server/services/members-metafields/definitions-service.ts
           - core/server/services/members-metafields/values-service.ts
           - core/server/services/members-metafields/bindings-service.ts
-          - core/server/services/members-metafields/actions.ts
+          - core/server/services/members-metafields/events.ts
           - core/server/services/members/members-api/services/member-bread-service.js
           - core/server/services/members/import-export/import/importer.ts
           - core/server/data/db/connection.ts
@@ -8888,7 +8945,7 @@ services:
           Invalid plans reject before writes; malformed value leaves are logged/omitted and
           malformed history field lists become empty, while invalid definition decoding rejects
           the read. Bindings skip unresolved/invalid rows and return ordered good plans plus the
-          first failure. Definition action failures are logged after data writes. Multi-property definition edits are not atomic; limit
+          first failure. A failing reaction to a definition change is logged after the data write. Multi-property definition edits are not atomic; limit
           counting deliberately permits concurrent overshoot, and applying a plan does not
           revalidate its captured definition. HTTP asserts selected refusals/corrupt reads and
           successful actions; fake binding/import tests assert continuation/reporting.
@@ -8897,7 +8954,7 @@ services:
           - core/server/services/members-metafields/definitions-service.ts
           - core/server/services/members-metafields/values-service.ts
           - core/server/services/members-metafields/bindings-service.ts
-          - core/server/services/members-metafields/actions.ts
+          - core/server/services/members-metafields/events.ts
           - core/server/services/members/import-export/import/importer.ts
         tests:
           - test/e2e-api/admin/member-custom-fields.test.ts
@@ -14282,23 +14339,14 @@ services:
     disposition: retain
     status: auditing
     migrated: true
-    extras:
-      actingContext:
-        purpose: Convert API authentication context into the staff actor recorded in the config's history.
-        callers:
-          - core/server/api/endpoints/stripe-checkout-config.ts
-        timing: Pure conversion when an API command runs; it does not require initialization.
-        dependencies: []
-        failurePolicy: A missing staff user or an integration yields a null actor; permission checks remain with the API.
-        destination: A normalized request actor supplied by the API framework Frame, with actor policy owned by the application.
     migration:
       complexity: straightforward
       modelImpact: fits
       reason: >-
-        Boot awaits the defineService initializer in initCore after the custom fields services.
-        It builds the config, checkout, preview and branding services as one ready aggregate from
-        member-metafield bindings, knex, models, labs and logging, and keeps the deferred Stripe,
-        tier and member callbacks so construction does not pull later boot dependencies
+        Boot awaits the defineService initializer in initCore after the custom fields services. It
+        builds the config, checkout, preview and branding services as one ready aggregate from
+        member-metafield bindings, knex, change events, labs and logging, and keeps the deferred
+        Stripe, tier and member callbacks so construction does not pull later boot dependencies
         forward. The constructors own no startup resources.
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
@@ -14311,7 +14359,7 @@ services:
         reason: >-
           Checkout config starts before Stripe and Members, then uses deferred callbacks back into
           those consumers for preview/branding. The root injects logging into the config row codec
-          factory, the history recorder and the branding service, and gives the checkout service
+          factory, the change events and the branding service, and gives the checkout service
           the config service, labs and logging; the Stripe Checkout constraints package, the
           metafield identity schemas, the request parser and the case-key helpers are allowlisted
           by name, lodash is gone, and the metafield status is a type-only import. API output
@@ -14342,11 +14390,11 @@ services:
       exports:
         summary: >-
           The TypeScript root default-exports defineService with init, the guarded service getter
-          for the config, checkouts, previews and branding services, and actingContext as its only
-          extra. Its named exports are type-only. API endpoints read the services through service;
-          the members API reads checkouts when it is built and boot passes it to gifts init; and
-          the API's output serializers and the collection-flag checks import the wire serializers
-          and the collected parts' constants from the service's own modules.
+          for the config, checkouts, previews and branding services, with no extras. Its named
+          exports are type-only. API endpoints read the services through service; the members API
+          reads checkouts when it is built and boot passes it to gifts init; and the API's output
+          serializers and the collection-flag checks import the wire serializers and the collected
+          parts' constants from the service's own modules.
         sources:
           - core/kernel/define-service.ts
           - core/server/services/stripe-checkout-config/index.ts
@@ -14355,13 +14403,13 @@ services:
       construction:
         summary: >-
           Boot awaits init in initCore after the custom fields services. The initializer builds
-          the config service with knex, its history recorder, logging and the custom field
-          bindings it saves the shipping address and phone number into, and throws if those
-          bindings aren't set up yet. It builds the checkout service over that config service,
-          labs and logging, the preview service with that checkout service and lookups of Stripe,
-          tiers and the members payments service made per preview, and the branding service with
-          lookups of Stripe made per read, as those start later in boot. Later init calls keep
-          the same services.
+          the config service with knex, its change events, which the action log reacts to, logging
+          and the custom field bindings it saves the shipping address and phone number into, and
+          throws if those bindings aren't set up yet. It builds the checkout service over that
+          config service, labs and logging, the preview service with that checkout service and
+          lookups of Stripe, tiers and the members payments service made per preview, and the
+          branding service with lookups of Stripe made per read, as those start later in boot.
+          Later init calls keep the same services.
         sources:
           - core/server/services/stripe-checkout-config/index.ts
           - core/boot.js

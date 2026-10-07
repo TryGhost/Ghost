@@ -27,7 +27,9 @@ import {
 } from './queries';
 import { mintableKey } from './key';
 import { parseRequest } from '../../lib/parse-request';
-import { type RecordMetafieldAction, type RequestContext } from './actions';
+import type { RequestContext } from '../../lib/actor';
+import type { ChangeEvents } from '../../lib/change-events';
+import type { MetafieldDefinitionEvent } from './events';
 import type { MetafieldsTracking } from './tracking';
 
 // Column limits come from the canonical schema — the same source the migration and
@@ -113,26 +115,29 @@ const EditFieldInput = z.object({
 export class MetafieldDefinitionsService {
   private knex: Knex;
   private fields: FieldSource;
-  private recordAction: RecordMetafieldAction;
+  /** Lets other services react to the changes this service makes. */
+  readonly events: Pick<ChangeEvents<MetafieldDefinitionEvent>, 'react'>;
+  private readonly raise: ChangeEvents<MetafieldDefinitionEvent>['raise'];
   private namespaces: Namespaces;
   private tracking: MetafieldsTracking;
 
   constructor({
     knex,
     fields,
-    recordAction,
+    events,
     namespaces,
     tracking,
   }: {
     knex: Knex;
     fields: FieldSource;
-    recordAction: RecordMetafieldAction;
+    events: ChangeEvents<MetafieldDefinitionEvent>;
     namespaces: Namespaces;
     tracking: MetafieldsTracking;
   }) {
     this.knex = knex;
     this.fields = fields;
-    this.recordAction = recordAction;
+    this.events = events;
+    this.raise = events.raise;
     this.namespaces = namespaces;
     this.tracking = tracking;
   }
@@ -262,10 +267,8 @@ export class MetafieldDefinitionsService {
         throw err;
       }
 
-      // Logged after the commit: the action log is a separate Bookshelf write
-      // outside this transaction, so recording inside it would leave orphaned
-      // "added" entries for fields a rollback never created.
-      await this.recordCreated(context, created);
+      // Raised after the commit, so nothing reacts to fields a rollback never created.
+      await this.raiseAdded(context, created);
       return created;
     });
   }
@@ -369,14 +372,16 @@ export class MetafieldDefinitionsService {
     return row ? z.decode(metafieldCodec, row) : null;
   }
 
-  /** The same entry `add` writes. Only the caller knows its transaction committed. */
-  async recordCreated(context: RequestContext, fields: Metafield[]): Promise<void> {
+  /**
+   * Raises `MetafieldAdded` for each field. `add` raises its own; a caller that adds fields
+   * inside its own transaction calls this once that transaction has committed.
+   */
+  async raiseAdded(context: RequestContext, fields: Metafield[]): Promise<void> {
     for (const field of fields) {
-      await this.recordAction({
-        context,
-        verb: 'create',
-        subject: field.id,
-        details: { primary_name: field.name, key: field.key },
+      await this.raise(context.actor, {
+        type: 'MetafieldAdded',
+        change: 'added',
+        next: field,
       });
     }
   }
@@ -436,11 +441,10 @@ export class MetafieldDefinitionsService {
         );
       });
 
-      await this.recordAction({
-        context,
-        verb: 'reorder',
-        subject: null,
-        details: { action_name: 'reordered', count: ordered.length },
+      await this.raise(context.actor, {
+        type: 'MetafieldsReordered',
+        change: 'edited',
+        count: ordered.length,
       });
       return ordered;
     });
@@ -608,15 +612,19 @@ export class MetafieldDefinitionsService {
         });
       }
 
+      // Each change below raises its own event, from the field as the previous one left it.
+      let current = existing;
+
       // Only write (and log a rename) when the name actually changes, so
       // re-saving an unchanged field is a no-op rather than a spurious edit.
       if (patch.name !== undefined && patch.name !== existing.name) {
-        attempt.changing('rename');
+        attempt.changing('MetafieldRenamed');
         await this.assertNameAvailable(this.knex, namespace, patch.name, key);
+        const next = { ...current, name: patch.name, updatedAt: new Date() };
         try {
           await this.knex(FIELDS_TABLE)
             .where({ namespace, key })
-            .update({ name: patch.name, updated_at: new Date() });
+            .update({ name: next.name, updated_at: next.updatedAt });
         } catch (err) {
           if (isUniqueConstraintViolation(err)) {
             throw new errors.ConflictError({
@@ -625,45 +633,49 @@ export class MetafieldDefinitionsService {
           }
           throw err;
         }
-        await this.recordAction({
-          context,
-          verb: 'rename',
-          subject: existing.id,
-          details: { primary_name: patch.name, key, previous_name: existing.name },
+        await this.raise(context.actor, {
+          type: 'MetafieldRenamed',
+          change: 'edited',
+          previous: current,
+          next,
         });
+        current = next;
       }
 
       if (patch.access !== undefined && patch.access.member !== existing.access.member) {
-        attempt.changing('changeAccess');
+        attempt.changing('MetafieldAccessChanged');
+        const next = {
+          ...current,
+          access: { ...current.access, member: patch.access.member },
+          updatedAt: new Date(),
+        };
         await this.knex(FIELDS_TABLE)
           .where({ namespace, key })
-          .update({ member_access: patch.access.member, updated_at: new Date() });
-        await this.recordAction({
-          context,
-          verb: 'changeAccess',
-          subject: existing.id,
-          details: {
-            primary_name: patch.name ?? existing.name,
-            key,
-            member_access: patch.access.member,
-            previous_member_access: existing.access.member,
-          },
+          .update({ member_access: next.access.member, updated_at: next.updatedAt });
+        await this.raise(context.actor, {
+          type: 'MetafieldAccessChanged',
+          change: 'edited',
+          previous: current,
+          next,
         });
+        current = next;
       }
 
       // A status change is the archive/restore transition. Only write (and log)
       // when it actually flips, so re-sending the current status is a no-op.
       if (patch.status !== undefined && patch.status !== existing.status) {
-        const verb = patch.status === FIELD_STATUS.archived ? 'archive' : 'restore';
-        attempt.changing(verb);
+        const type =
+          patch.status === FIELD_STATUS.archived ? 'MetafieldArchived' : 'MetafieldRestored';
+        attempt.changing(type);
+        const next = { ...current, status: patch.status, updatedAt: new Date() };
         await this.knex(FIELDS_TABLE)
           .where({ namespace, key })
-          .update({ status: patch.status, updated_at: new Date() });
-        await this.recordAction({
-          context,
-          verb,
-          subject: existing.id,
-          details: { primary_name: patch.name ?? existing.name, key },
+          .update({ status: next.status, updated_at: next.updatedAt });
+        await this.raise(context.actor, {
+          type,
+          change: 'edited',
+          previous: current,
+          next,
         });
       }
 
@@ -681,7 +693,7 @@ export class MetafieldDefinitionsService {
   async destroy(context: RequestContext, namespace: Namespace, key: Key): Promise<void> {
     return this.tracking.definition('delete', async (attempt) => {
       await this.namespaces.assertChangeable(namespace);
-      const field = await this.knex(FIELDS_TABLE).where({ namespace, key }).first();
+      const field = await this.find({ namespace, key });
       if (!field) {
         throw new errors.NotFoundError({ message: 'Custom field not found.' });
       }
@@ -692,11 +704,10 @@ export class MetafieldDefinitionsService {
         });
       }
       await this.knex(FIELDS_TABLE).where({ namespace, key }).del();
-      await this.recordAction({
-        context,
-        verb: 'delete',
-        subject: field.id,
-        details: { primary_name: field.name, key },
+      await this.raise(context.actor, {
+        type: 'MetafieldDeleted',
+        change: 'deleted',
+        previous: field,
       });
     });
   }

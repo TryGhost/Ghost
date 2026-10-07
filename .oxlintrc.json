@@ -199,6 +199,7 @@
     },
     {
       "files": [
+        "ghost/core/server/services/action-log/index.ts",
         "ghost/core/server/services/app-installations/index.ts",
         "ghost/core/server/services/audience-feedback/index.ts",
         "ghost/core/server/services/custom-theme-settings/index.ts",

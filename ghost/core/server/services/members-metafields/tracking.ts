@@ -1,6 +1,6 @@
 import type { FieldType } from '@tryghost/metafield-types';
 import type { Tracer } from '../../lib/tracing/tracer';
-import type { MetafieldVerb } from './actions';
+import type { MetafieldDefinitionEvent } from './events';
 import type { SingleWriteOrigin } from './schema';
 
 // The outcome spans the custom fields commands record, in one place: a command reports what
@@ -8,13 +8,13 @@ import type { SingleWriteOrigin } from './schema';
 
 type Fields = readonly { type: FieldType }[];
 
-/** How each change an edit makes, named as its action is, reads on a dashboard. */
+/** How each change an edit makes, named by the event it raises, reads on a dashboard. */
 const CHANGES = {
-  rename: 'rename',
-  changeAccess: 'change_access',
-  archive: 'archive',
-  restore: 'restore',
-} as const satisfies Partial<Record<MetafieldVerb, string>>;
+  MetafieldRenamed: 'rename',
+  MetafieldAccessChanged: 'change_access',
+  MetafieldArchived: 'archive',
+  MetafieldRestored: 'restore',
+} as const satisfies Partial<Record<MetafieldDefinitionEvent['type'], string>>;
 
 /** What a command on the field definitions reports about its attempt. */
 interface DefinitionAttempt {

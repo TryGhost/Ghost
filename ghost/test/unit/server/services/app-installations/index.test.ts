@@ -151,10 +151,9 @@ describe('App installations composition root', function () {
     sinon.assert.calledWithExactly(warn.secondCall, failure);
   });
 
-  it('logs action recording failures without failing the installation', async function () {
+  it('logs a failing reaction to its events without failing the installation', async function () {
     const failure = new Error('History write failed');
     const error = sandbox.stub(logging, 'error');
-    const add = sandbox.stub(models.Action, 'add').rejects(failure);
     const insert = sandbox.stub().resolves();
     const trx = sandbox.stub().returns({ insert });
     Object.assign(query, {
@@ -164,6 +163,9 @@ describe('App installations composition root', function () {
     sandbox.stub(config, 'get').withArgs('env').returns('production');
     sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
     await root.init();
+    root.service.events.react(async () => {
+      throw failure;
+    });
     const manifestUrl = 'https://podcast.example/manifest.json';
     const preview = await root.service.preview(manifestUrl);
 
@@ -174,9 +176,8 @@ describe('App installations composition root', function () {
 
     assert.equal(installed.app_id, manifest.id);
     sinon.assert.calledTwice(insert);
-    sinon.assert.calledOnce(add);
-    assert.equal(add.firstCall.args[0].resource_id, installed.id);
-    sinon.assert.calledOnceWithExactly(error, failure);
+    sinon.assert.calledOnce(error);
+    assert.equal(error.firstCall.args[0].err, failure);
   });
 
   it('reads manifest rules and the development localhost alias per operation', async function () {

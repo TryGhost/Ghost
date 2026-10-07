@@ -3,16 +3,13 @@ import logging from '@tryghost/logging';
 import { defineService } from '../../../kernel/define-service';
 import config from '../../../shared/config';
 import urlUtils from '../../../shared/url-utils';
-import {
-  actingContext,
-  recordAppInstallationAction,
-  type RecordAppInstallationAction,
-} from './actions';
+import { createChangeEvents } from '../../lib/change-events';
+import type { AppInstallationEvent } from './events';
 import { createAppFetcher } from './fetch-from-app';
 import { createManifestLoader } from './load-manifest';
 import { AppInstallationsService } from './service';
 
-export type { RequestContext } from './actions';
+export type { RequestContext } from '../../lib/actor';
 export type { Installation, InstallationWithHistory } from './codec';
 export type { AppInstallation } from './serializers';
 export type { AppInstallationPreview, AppSession } from './service';
@@ -34,37 +31,27 @@ function localhostAlias(): string | null {
   return AppsConfig.parse(config.get('apps') ?? {}).localhostAlias;
 }
 
-const extras = { actingContext };
-
 // Constructed by init() at boot, not at import: knex is only available once the DB has connected.
-export default defineService(
-  'App Installations',
-  () => {
-    const { knex } = require('../../data/db');
-    const models = require('../../models');
-    const externalRequest = require('../../lib/request-external');
+export default defineService('App Installations', () => {
+  const { knex } = require('../../data/db');
+  const externalRequest = require('../../lib/request-external');
 
-    const recordAction: RecordAppInstallationAction = (input) =>
-      recordAppInstallationAction({ Action: models.Action, logging, ...input });
+  const fetchFromApp = createAppFetcher({
+    request: externalRequest,
+    getLocalhostAlias: localhostAlias,
+  });
 
-    const fetchFromApp = createAppFetcher({
-      request: externalRequest,
-      getLocalhostAlias: localhostAlias,
-    });
-
-    return new AppInstallationsService({
-      knex,
-      recordAction,
-      loadManifest: createManifestLoader({
-        fetchFromApp,
-        logging,
-        // Read per load, not once at boot: it's config, which tests change.
-        getManifestRules: () => ({
-          ghostUrls: [urlUtils.urlFor('home', true), urlUtils.urlFor('admin', true)],
-          allowLocalhost: isDevelopment(),
-        }),
+  return new AppInstallationsService({
+    knex,
+    events: createChangeEvents<AppInstallationEvent>({ logging }),
+    loadManifest: createManifestLoader({
+      fetchFromApp,
+      logging,
+      // Read per load, not once at boot: it's config, which tests change.
+      getManifestRules: () => ({
+        ghostUrls: [urlUtils.urlFor('home', true), urlUtils.urlFor('admin', true)],
+        allowLocalhost: isDevelopment(),
       }),
-    });
-  },
-  extras,
-);
+    }),
+  });
+});

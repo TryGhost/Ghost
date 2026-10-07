@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { assertActionLogged } from '../../utils/action-log';
 
 const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
@@ -133,71 +134,55 @@ describe('Gift Links Admin API', function () {
     assert.ok(returnedTokens.includes(body.gift_links[0].token));
   });
 
-  describe('records actions in the history (via the actions API)', function () {
-    let actorId: string;
-
-    const giftLinkActions = async () => {
-      const { body } = await agent.get('actions/?filter=resource_type:gift_link').expectStatus(200);
-      return body.actions;
-    };
-    const actionNameOf = (action: { context: unknown }): string | undefined => {
-      if (!action.context) {
-        return undefined;
-      }
-      const ctx = typeof action.context === 'string' ? JSON.parse(action.context) : action.context;
-      return ctx.action_name;
-    };
+  describe('records changes in the action log', function () {
+    let staff: { type: 'user'; id: string };
+    let postTitle: string;
 
     beforeAll(async function () {
-      actorId = (await agent.get('users/me/').expectStatus(200)).body.users[0].id;
+      staff = {
+        type: 'user',
+        id: (await agent.get('users/me/').expectStatus(200)).body.users[0].id,
+      };
+      postTitle = (await agent.get(`posts/${postId}/`).expectStatus(200)).body.posts[0].title;
     });
 
-    it('records an "added" action when a gift link is ensured', async function () {
+    it('records a gift link being added, with its post', async function () {
       await agent.put(`posts/${postId}/gift_links/`).expectStatus(200);
 
-      const actions = await giftLinkActions();
-      assert.equal(actions.length, 1);
-      assert.equal(actions[0].event, 'added');
-      assert.equal(actions[0].resource_id, postId);
-      assert.equal(actions[0].actor_type, 'user');
-      assert.equal(actions[0].actor_id, actorId);
-      assert.equal(actionNameOf(actions[0]), undefined);
+      const entry = await assertActionLogged(agent, {
+        resourceType: 'gift_link',
+        event: 'added',
+        resourceId: postId,
+        actor: staff,
+        details: { primary_name: postTitle, count: 1, action_name: null },
+      });
+      assert.equal(entry.resource?.title, postTitle);
     });
 
-    it('records an "edited" action labelled "reset" when the link is recreated', async function () {
+    it('records a reset as an edit named "reset"', async function () {
       await agent.put(`posts/${postId}/gift_links/`).expectStatus(200);
       await agent.post(`posts/${postId}/gift_links/`).expectStatus(200);
 
-      const reset = (await giftLinkActions()).find((a: { event: string }) => a.event === 'edited');
-      assert.ok(reset, 'an edited action should be recorded');
-      assert.equal(reset.resource_id, postId);
-      assert.equal(reset.actor_id, actorId);
-      assert.equal(actionNameOf(reset), 'reset');
+      await assertActionLogged(agent, {
+        resourceType: 'gift_link',
+        event: 'edited',
+        resourceId: postId,
+        actor: staff,
+        details: { primary_name: postTitle, count: 1, action_name: 'reset' },
+      });
     });
 
-    // Admin's history view asks for each entry's resource.
-    it('lists its actions with the post they belong to', async function () {
-      await agent.put(`posts/${postId}/gift_links/`).expectStatus(200);
-      const { body: posts } = await agent.get(`posts/${postId}/`).expectStatus(200);
-
-      const { body } = await agent
-        .get('actions/?filter=resource_type:gift_link&include=actor,resource')
-        .expectStatus(200);
-
-      assert.equal(body.actions[0].resource.title, posts.posts[0].title);
-    });
-
-    it('records a "deleted" action when gift links are revoked', async function () {
+    it('records revoking every gift link as how many were revoked', async function () {
       await agent.put(`posts/${postId}/gift_links/`).expectStatus(200);
       await agent.put('gift_links/remove_all/').expectStatus(200);
 
-      const deleted = (await giftLinkActions()).find(
-        (a: { event: string }) => a.event === 'deleted',
-      );
-      assert.ok(deleted, 'a deleted action should be recorded');
-      assert.equal(deleted.resource_id, null);
-      assert.equal(deleted.actor_id, actorId);
-      assert.equal(actionNameOf(deleted), undefined);
+      await assertActionLogged(agent, {
+        resourceType: 'gift_link',
+        event: 'deleted',
+        resourceId: null,
+        actor: staff,
+        details: { primary_name: 'All gift links', count: 1, action_name: null },
+      });
     });
   });
 });

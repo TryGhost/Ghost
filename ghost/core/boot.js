@@ -205,6 +205,11 @@ async function initCore({ ghostServer, config }) {
   await stripeCheckoutConfig.init();
   debug('End: Stripe Checkout Config Service');
 
+  // Action log: listens for the change events of the services above, so it starts after them.
+  debug('Begin: Action Log');
+  await require('./server/services/action-log').default.init();
+  debug('End: Action Log');
+
   if (ghostServer) {
     // Jobs Service allows parts of Ghost to run in the background
     debug('Begin: Jobs Service');
