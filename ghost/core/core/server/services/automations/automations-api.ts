@@ -15,7 +15,6 @@ import { knex } from '../../data/db';
 import lexicalLib from '../../lib/lexical';
 // @ts-expect-error This module lacks type definitions.
 import requestExternal from '../../lib/request-external';
-// @ts-expect-error This module lacks type definitions.
 import { create as createTinybirdClient } from '../stats/utils/tinybird';
 // @ts-expect-error This module lacks type definitions.
 import TinybirdServiceWrapper from '../tinybird';
