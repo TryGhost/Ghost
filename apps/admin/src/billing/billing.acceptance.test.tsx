@@ -291,21 +291,24 @@ describe('Ghost(Pro) billing', () => {
       .toEqual({ query: 'routeUpdate', response: '/plans' });
   });
 
-  it('sends the billing app to checkout once it has reported where checkout is', async () => {
+  it('opens plans from the exceeded member limit banner', async () => {
     await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
     const messages = standInMessages();
     await renderBilling('/pro');
     await postFromBillingApp(messages, {
       subscription: { status: 'active', isActiveTrial: false, trial_end: null },
-      checkoutRoute: '/plans/checkout',
+      exceededLimits: ['members'],
     });
     await billingAppSettled(messages);
 
-    window.location.hash = '#/pro?action=checkout';
+    const link = page.getByRole('link', { name: 'confirm pricing for this number of members' });
+    await expect.element(link).toHaveAttribute('href', '#/pro/plans');
+    await link.click();
+    await expect.poll(currentRoute).toBe('/pro/plans');
 
     await expect
       .poll(() => received(messages, 'query').at(-1))
-      .toEqual({ query: 'routeUpdate', response: '/plans/checkout' });
+      .toEqual({ query: 'routeUpdate', response: '/plans' });
   });
 
   it('withholds the token from staff who are not the owner', async () => {
@@ -484,7 +487,7 @@ describe('Ghost(Pro) billing', () => {
     await fakeFrameOrigin(
       BILLING_ORIGIN,
       billingStandIn(
-        `${READY} parent.postMessage({ subscription: { status: 'active', isActiveTrial: false, trial_end: null }, exceededLimits: ['members'], checkoutRoute: '/plans' }, '*');`,
+        `${READY} parent.postMessage({ subscription: { status: 'active', isActiveTrial: false, trial_end: null }, exceededLimits: ['members'] }, '*');`,
       ),
     );
     await renderBilling('/tags', { role: 'Editor' });
@@ -504,7 +507,6 @@ describe('Ghost(Pro) billing', () => {
     await postFromBillingApp(messages, {
       subscription,
       exceededLimits: ['members'],
-      checkoutRoute: '/plans',
     });
     await expect.element(alertsScreen.alert(/Your audience has grown/)).toBeVisible();
 
@@ -610,7 +612,7 @@ describe('Ghost(Pro) billing', () => {
     expect(loads(messages)[0]?.searchParams.has('interval')).toBe(false);
   });
 
-  it('hands the billing app its checkout action on the overview', async () => {
+  it('ignores the retired checkout action on the overview', async () => {
     await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
     const messages = standInMessages();
     await renderBilling('/pro?action=checkout');
@@ -618,7 +620,7 @@ describe('Ghost(Pro) billing', () => {
     await billingAppSettled(messages);
 
     expect(loads(messages)).toHaveLength(1);
-    expect(loads(messages)[0]?.searchParams.get('action')).toBe('checkout');
+    expect(loads(messages)[0]?.searchParams.has('action')).toBe(false);
   });
 
   it('holds the Ember editor on billing during a force upgrade', async () => {

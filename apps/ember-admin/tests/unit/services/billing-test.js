@@ -604,19 +604,6 @@ describe('Unit: Service: billing', function () {
         expect(limitUpdateCalls(postMessage)).to.have.lengthOf(0);
     });
 
-    it('does not send limitUpdate on checkout re-entry of an already-visible overlay', function () {
-        const service = this.owner.lookup('service:billing');
-        billingService = service;
-        const postMessage = sinon.spy();
-        sinon.stub(service, 'getBillingIframe').returns({contentWindow: {postMessage}});
-        service.billingWindowOpen = true;
-        service.action = 'checkout';
-
-        service.toggleProWindow(true);
-
-        expect(limitUpdateCalls(postMessage)).to.have.lengthOf(0);
-    });
-
     it('sends limitUpdate exactly once via the nav-link entry path', function () {
         const service = this.owner.lookup('service:billing');
         billingService = service;

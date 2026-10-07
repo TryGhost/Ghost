@@ -7,10 +7,6 @@ export default class ProRoute extends AuthenticatedRoute {
     @service feature;
     @service router;
 
-    queryParams = {
-        action: {refreshModel: true}
-    };
-
     beforeModel(transition) {
         super.beforeModel(...arguments);
 
@@ -39,11 +35,7 @@ export default class ProRoute extends AuthenticatedRoute {
         this.billing.previousTransition = transition;
     }
 
-    model(params) {
-        if (params.action) {
-            this.billing.action = params.action;
-        }
-
+    model() {
         this.billing.toggleProWindow(true);
     }
 
@@ -70,9 +62,7 @@ export default class ProRoute extends AuthenticatedRoute {
     // the configured location
     _reactRouteUrl(transition) {
         const sub = transition.to?.params?.sub?.replace(/\/$/, '');
-        const billingAction = transition.to?.queryParams?.action;
-        const path = sub ? `/pro/${sub}` : '/pro';
-        return billingAction ? `${path}?action=${encodeURIComponent(billingAction)}` : path;
+        return sub ? `/pro/${sub}` : '/pro';
     }
 
     // See PostsRoute#_parkOnReactFallback: keeps Ember's router state honest

@@ -102,9 +102,8 @@ function BillingAppFrame({
     () =>
       new BillingAppConnection(billingUrl, {
         // As Ember's pro routes queue the route before its iframe exists: a
-        // child route loads without the query, the root keeps `?action=…`
-        getLocationSubRoute: () =>
-          initialBillingSubRoute(locationRef.current.pathname, locationRef.current.search),
+        // child route loads without the query
+        getLocationSubRoute: () => initialBillingSubRoute(locationRef.current.pathname),
         getReportContext: () => ({
           isForceUpgrade: forceUpgradeRef.current === true,
           routeName: billingSubRoute(locationRef.current.pathname) ? 'pro.pro-sub' : 'pro.index',
@@ -117,7 +116,6 @@ function BillingAppFrame({
 
   // null until the billing app's token request has resolved who is asking
   const isOwnerRef = useRef<boolean | null>(null);
-  const checkoutRouteRef = useRef<string | null>(null);
   // The Admin path just synced from a billing app route report, consumed by
   // the navigation it causes so that report is not echoed back to the app
   const syncedPathRef = useRef<string | null>(null);
@@ -157,14 +155,6 @@ function BillingAppFrame({
     const syncedPath = syncedPathRef.current;
     syncedPathRef.current = null;
     if (!visible || syncedPath === `${location.pathname}${location.search}`) {
-      return;
-    }
-
-    const action = new URLSearchParams(location.search).get('action');
-    if (action) {
-      if (action === 'checkout') {
-        connection.navigateToSubRoute(checkoutRouteRef.current);
-      }
       return;
     }
 
@@ -260,10 +250,6 @@ function BillingAppFrame({
     message: BillingAppMessage,
     subscription: NonNullable<SubscriptionState['subscription']>,
   ) => {
-    const checkoutRoute = isBillingAppRoute(message.checkoutRoute)
-      ? message.checkoutRoute
-      : '/plans';
-
     // As Ember's billing iframe does: listeners and alerts wait for the plan's
     // fresh config, so a changed dunning block lands with the subscription
     void queryClient.refetchQueries({ queryKey: ['SettingsResponseType'] }).catch(() => {});
@@ -274,7 +260,6 @@ function BillingAppFrame({
       // Ember's limits failing to reload must not hold back React's state
       applyEmberBillingSubscriptionUpdate({
         subscription,
-        checkoutRoute,
       }).catch(() => {}),
     ]);
 
@@ -284,7 +269,6 @@ function BillingAppFrame({
     }
 
     setBillingSubscriptionState({ subscription });
-    checkoutRouteRef.current = checkoutRoute;
 
     const { exceeded } = billingAlerts(message);
     if (exceeded) {

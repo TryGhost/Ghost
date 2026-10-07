@@ -156,7 +156,6 @@ export default class GhBillingIframe extends Component {
         }
 
         this.billing.subscription = data.subscription;
-        this.billing.checkoutRoute = data?.checkoutRoute ?? '/plans';
 
         if (data.subscription.status === 'active' && this.config.hostSettings?.forceUpgrade) {
             // config might not be updated after a subscription has been set to active.
@@ -170,13 +169,8 @@ export default class GhBillingIframe extends Component {
             data?.exceededLimits
             && data?.exceededLimits.length
             && data?.exceededLimits.indexOf('members') >= 0
-            && data?.checkoutRoute
         ) {
-            // The action param will be picked up on a transition from the router and can
-            // then send the destination route as a message to the BMA, which then handles the redirect.
-            const checkoutAction = this.billing.billingRouteRoot + '?action=checkout';
-
-            this.notifications.showAlert(htmlSafe(`Your audience has grown! To continue publishing, the site owner must <a href="${checkoutAction}">confirm pricing for this number of members</a>.`), {type: 'warn', key: 'billing.exceeded'});
+            this.notifications.showAlert(htmlSafe(`Your audience has grown! To continue publishing, the site owner must <a href="${this.billing.billingRouteRoot}/plans">confirm pricing for this number of members</a>.`), {type: 'warn', key: 'billing.exceeded'});
         } else {
             this.notifications.closeAlerts('billing.exceeded');
         }
