@@ -168,6 +168,51 @@ describe('Integration: Component: gh-billing-iframe', function () {
         expect(closeAlerts.calledOnceWithExactly('billing.exceeded')).to.be.true;
     });
 
+    describe('exceeded member limits during dunning', function () {
+        const paymentFailedAt = '2026-09-01T00:00:00.000Z';
+        let showAlert;
+        let closeAlerts;
+
+        beforeEach(function () {
+            sinon.stub(this.owner.lookup('service:config-manager'), 'fetch').resolves();
+            sinon.stub(this.owner.lookup('service:limit'), 'reload');
+            const notifications = this.owner.lookup('service:notifications');
+            showAlert = sinon.stub(notifications, 'showAlert');
+            closeAlerts = sinon.stub(notifications, 'closeAlerts');
+            const config = this.owner.lookup('config:main');
+            config.hostSettings = {
+                ...config.hostSettings,
+                billing: {dunning: {active: true, paymentFailedAt, suspendsAt: '2026-09-29T00:00:00.000Z'}}
+            };
+        });
+
+        afterEach(function () {
+            window.sessionStorage.clear();
+        });
+
+        it('holds the alert until the payment is made', async function () {
+            await render(hbs`<GhBillingIframe />`);
+            await postBillingMessage({subscription: {status: 'past_due'}, exceededLimits: ['members']});
+
+            expect(showAlert.called).to.be.false;
+            expect(closeAlerts.calledOnceWithExactly('billing.exceeded')).to.be.true;
+
+            await postBillingMessage({subscription: {status: 'active'}, exceededLimits: ['members']});
+
+            expect(showAlert.calledOnce).to.be.true;
+            expect(showAlert.firstCall.args[1]).to.deep.equal({type: 'warn', key: 'billing.exceeded'});
+        });
+
+        it('shows the alert once this session settled the failure', async function () {
+            window.sessionStorage.setItem('ghost-dunning-payment-settled-for', paymentFailedAt);
+
+            await render(hbs`<GhBillingIframe />`);
+            await postBillingMessage({subscription: {status: 'past_due'}, exceededLimits: ['members']});
+
+            expect(showAlert.calledOnce).to.be.true;
+        });
+    });
+
     const approvedDestinations = {
         theme: '/settings/design/change-theme',
         analytics: '/settings/analytics',

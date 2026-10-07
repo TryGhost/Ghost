@@ -1,4 +1,5 @@
 import Component from '@glimmer/component';
+import {DUNNING_PAYMENT_SETTLED_STORAGE_KEY, parseDunningConfig} from '@tryghost/admin-x-framework/api/dunning';
 import {action} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -164,9 +165,9 @@ export default class GhBillingIframe extends Component {
             this.config.hostSettings.forceUpgrade = false;
         }
 
-        // Detect if the current member limits are exceeded and render a notification
         if (
-            data?.exceededLimits
+            !this._isDunningActive(data.subscription.status)
+            && data?.exceededLimits
             && data?.exceededLimits.length
             && data?.exceededLimits.indexOf('members') >= 0
         ) {
@@ -174,5 +175,20 @@ export default class GhBillingIframe extends Component {
         } else {
             this.notifications.closeAlerts('billing.exceeded');
         }
+    }
+
+    _isDunningActive(subscriptionStatus) {
+        const dunning = parseDunningConfig(this.config.hostSettings?.billing?.dunning);
+        if (!dunning || subscriptionStatus === 'active') {
+            return false;
+        }
+
+        let settledFor = null;
+        try {
+            settledFor = window.sessionStorage.getItem(DUNNING_PAYMENT_SETTLED_STORAGE_KEY);
+        } catch (e) {
+            // Without storage only an active subscription stands the warnings down
+        }
+        return settledFor !== dunning.paymentFailedAt.toISOString();
     }
 }
