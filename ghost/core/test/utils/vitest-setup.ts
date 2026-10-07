@@ -30,9 +30,13 @@ require('../../core/server/overrides');
 // Tests swap url config at runtime, so url-utils must read it live.
 require('../../core/shared/url-utils').default.unfreeze();
 
-// @tryghost/express-test's snapshot bridge is pulled in lazily — requiring it
-// is ~170ms per worker and only the hooks below ever read it. The mock-manager
-// just below uses the same shape.
+// Load the snapshot bridge and the mock manager here, as this setup file is
+// imported, rather than lazily inside the hooks below. Every unit test file
+// runs those hooks, so each worker loads both on its first file either way;
+// lazy loading only moved that cost into the first file's beforeAll. Hooks are
+// bounded by hookTimeout (10s by default) but setup-file imports are not, and
+// on a cold disk, such as a freshly started VM, this one-time load has run past
+// 10s, failing that file with "Hook timed out" and every test in it skipped.
 type SnapshotExports = {
   snapshotManager?: {
     setCurrentTest: (_info: { testPath?: string; testTitle: string }) => void;
@@ -43,24 +47,8 @@ type SnapshotExports = {
     afterAll?: () => Promise<void>;
   };
 };
-let snapshotExports: SnapshotExports | undefined;
-const getSnapshotExports = (): SnapshotExports => {
-  if (!snapshotExports) {
-    snapshotExports = require('@tryghost/express-test').snapshot;
-  }
-  return snapshotExports!;
-};
-
-// e2e-framework-mock-manager is pulled in lazily — it boots a fair
-// amount of Ghost-side machinery, which unit tests in the spike subtree
-// don't need. Only require it when a hook actually runs.
-let mockManager: { disableNetwork: () => void } | undefined;
-const getMockManager = () => {
-  if (!mockManager) {
-    mockManager = require('./e2e-framework-mock-manager');
-  }
-  return mockManager!;
-};
+const snapshotExports: SnapshotExports = require('@tryghost/express-test').snapshot;
+const mockManager: { disableNetwork: () => void } = require('./e2e-framework-mock-manager');
 
 // Console-output guard for the unit suite. The unit tier was cleaned to zero
 // un-captured console.error/console.warn output; this locks that in by failing
@@ -79,11 +67,11 @@ let recordedConsoleWarn: unknown[][] = [];
 // globals. The hooks are plain async functions so they translate
 // directly.
 beforeAll(async () => {
-  const { mochaHooks } = getSnapshotExports();
+  const { mochaHooks } = snapshotExports;
   if (mochaHooks?.beforeAll) {
     await mochaHooks.beforeAll();
   }
-  getMockManager().disableNetwork();
+  mockManager.disableNetwork();
 });
 
 // Bridge jest-snapshot's per-test config. The mocha hook reads
@@ -109,7 +97,7 @@ beforeEach((context: { task: { name: string; suite?: unknown; file?: { filepath?
   };
   /* eslint-enable no-console */
 
-  const { snapshotManager } = getSnapshotExports();
+  const { snapshotManager } = snapshotExports;
   if (!snapshotManager) {
     return;
   }
@@ -147,7 +135,7 @@ afterEach(async () => {
   clearTimeout(timeout);
 
   try {
-    const { mochaHooks } = getSnapshotExports();
+    const { mochaHooks } = snapshotExports;
     if (mochaHooks?.afterEach) {
       await mochaHooks.afterEach();
     }
@@ -155,7 +143,7 @@ afterEach(async () => {
     // Individual test afterEach hooks often call sinon.restore() which
     // strips the DNS stubs set in beforeAll; reapply so subsequent
     // tests don't hit real DNS on nocked domains.
-    getMockManager().disableNetwork();
+    mockManager.disableNetwork();
   }
 });
 
@@ -191,7 +179,7 @@ afterEach(() => {
 });
 
 afterAll(async () => {
-  const { mochaHooks } = getSnapshotExports();
+  const { mochaHooks } = snapshotExports;
   if (mochaHooks?.afterAll) {
     await mochaHooks.afterAll();
   }

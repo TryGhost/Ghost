@@ -46,8 +46,6 @@ const BACKUP_TABLES = [
   'members_metafields',
   'members_metafield_values',
   'members_metafield_bindings',
-  'products_checkout_fields',
-  'products_checkout_config',
   'mentions',
   'comments',
   'comment_likes',

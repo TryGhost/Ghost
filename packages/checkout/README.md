@@ -15,18 +15,13 @@ collects nothing.
 - `STRIPE_PORTS` / `STRIPE_PORT` / `isStripePort` — the names Stripe returns
   collected values under.
 - `PORT_FIELD` — what each port supplies, and the custom field type that can hold it.
-- `MAX_CHECKOUT_CUSTOM_FIELDS`, `MAX_CHECKOUT_LABEL_LENGTH`,
-  `CHECKOUT_ELIGIBLE_FIELD_TYPES` / `isCheckoutEligible` — the caps Stripe enforces
-  on checkout questions.
 
 ## Measured, not read
 
 Every value here was established by `e2e/scripts/probe-stripe-constraints.ts` against
 the live API at Ghost's pinned version, because the published artefacts disagree with
-it: the OpenAPI spec carries no `maxItems` on `custom_fields` and states the
-`customer_update` rule only in prose, and the SDK's `AllowedCountry` union omits `SD`,
-which the API accepts. Re-probe before changing a value; do not read a new one off the
-documentation.
+it: the SDK's `AllowedCountry` union omits `SD`, which the API accepts. Re-probe before
+changing a value; do not read a new one off the documentation.
 
 Two consequences of the country list are worth knowing before touching it. A code
 Stripe rejects fails the whole session create, so it is checked when a publisher
