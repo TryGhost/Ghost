@@ -50,6 +50,29 @@ describe('useInfiniteVirtualScroll', () => {
     expect(result.current.visibleItems[0].item).toEqual({ id: 0 });
   });
 
+  it('accounts for content above the rows without changing their total spacer height', () => {
+    const { parentRef, scrollElement } = createParentRef();
+    const { result } = renderHook(() =>
+      useInfiniteVirtualScroll({
+        items: Array.from({ length: 50 }, (_, id) => ({ id })),
+        totalItems: 50,
+        parentRef,
+        scrollMargin: 400,
+        fetchNextPage: vi.fn(),
+        estimateSize: () => 100,
+        getScrollElement: () => scrollElement,
+      }),
+    );
+    const { visibleItems, spaceBefore, spaceAfter } = result.current;
+    expect(visibleItems[0].virtualItem.start).toBe(400);
+    expect(spaceBefore).toBe(0);
+    expect(
+      spaceBefore +
+        visibleItems.reduce((height, item) => height + item.virtualItem.size, 0) +
+        spaceAfter,
+    ).toBe(5000);
+  });
+
   it('fetches the next page when trailing placeholder rows (rows without data) render', () => {
     const { scrollElement, parentRef } = createParentRef();
     const fetchNextPage = vi.fn();

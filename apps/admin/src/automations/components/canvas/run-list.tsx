@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@tryghost/shade/components';
-import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { Box, Grid, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { useAutomationRuns } from '@/automations/hooks/use-automation-runs';
 import { useInfiniteVirtualScroll } from '@/shared/virtual-list';
@@ -25,6 +25,8 @@ import { CompletedGlyph, ExitedGlyph, InProgressGlyph } from './run-status-icons
 
 const ROW_HEIGHT = 72;
 const INITIAL_SKELETON_ROWS = 10;
+// Match the prototype: reveal just before the padded summary boundary reaches the top.
+const STICKY_BOUNDARY_OFFSET = 12;
 
 const statusIcons = {
   in_progress: { Icon: InProgressGlyph, color: 'text-state-info' },
@@ -143,8 +145,12 @@ export const RunList: React.FC<{
   isSelectionDisabled: boolean;
   direction: RunSortDirection;
   onDirectionChange: (direction: RunSortDirection) => void;
+  summary: React.ReactNode;
+  stickySummary: React.ReactNode;
 }> = ({
   automationId,
+  summary,
+  stickySummary,
   queryScope,
   status,
   dateRange,
@@ -190,6 +196,47 @@ export const RunList: React.FC<{
 
   const SortIcon = direction === 'asc' ? LucideIcon.ArrowUp : LucideIcon.ArrowDown;
   const scrollRef = useRef<HTMLDivElement>(null);
+  const summaryRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLTableSectionElement>(null);
+  const stickyBarRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const [summaryHidden, setSummaryHidden] = useState(false);
+  const [scrollMargin, setScrollMargin] = useState(0);
+
+  useLayoutEffect(() => {
+    if (summaryRef.current) {
+      summaryRef.current.inert = summaryHidden;
+    }
+  }, [summaryHidden]);
+
+  useLayoutEffect(() => {
+    const scroller = scrollRef.current;
+    const summaryElement = summaryRef.current;
+    const header = headerRef.current;
+    const bar = stickyBarRef.current;
+    const list = listRef.current;
+    if (!scroller || !summaryElement || !header || !bar || !list) {
+      return;
+    }
+    const measure = () => {
+      const barHeight = bar.getBoundingClientRect().height;
+      // The header follows the bar through each animation frame. Measure its natural
+      // height, not its sticky position, when locating the virtualized rows.
+      scroller.style.setProperty('--sticky-status-height', `${barHeight}px`);
+      setScrollMargin(summaryElement.offsetHeight + barHeight + header.offsetHeight);
+      // Keep a viewport of space below the summary, even with only a few runs.
+      // Otherwise shrinking the bar could clamp scrolling across the sticky boundary.
+      list.style.minHeight = `${Math.max(0, scroller.clientHeight - barHeight)}px`;
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(summaryElement);
+    observer.observe(header);
+    observer.observe(bar);
+    observer.observe(scroller);
+    return () => observer.disconnect();
+  }, []);
+
   const items = runs ?? [];
   const isScanning = scanning && !isError && !isNextPageError && !updating;
   // One extra row loads the next page without reserving space for unloaded history.
@@ -203,26 +250,70 @@ export const RunList: React.FC<{
     fetchNextPage: loadMore,
     estimateSize: () => ROW_HEIGHT,
     overscan: 10,
+    scrollMargin,
     getScrollElement: (element) => element,
   });
   useLayoutEffect(() => {
     scrollRef.current?.scrollTo({ top: 0 });
+    setSummaryHidden(false);
   }, [queryScope, dateRange]);
+  const showStickySummary = summaryHidden && !!stickySummary;
+
   return (
-    <Stack
-      aria-busy={isLoading || isLoadingMore || isScanning}
-      aria-label="Automation runs"
-      className="min-h-[216px] flex-1"
-      gap="sm"
-      role="region"
+    <div
+      ref={scrollRef}
+      className="min-h-0 flex-1 overflow-y-auto"
+      data-testid="automation-runs-scroll"
+      style={{ overflowAnchor: 'none' }}
+      onScroll={(event) => {
+        const height = summaryRef.current?.offsetHeight ?? 0;
+        setSummaryHidden(
+          height > 0 && event.currentTarget.scrollTop > height - STICKY_BOUNDARY_OFFSET,
+        );
+      }}
     >
-      <div
-        ref={scrollRef}
-        className="min-h-0 flex-1 overflow-y-auto"
-        data-testid="automation-runs-scroll"
+      <Box
+        ref={summaryRef}
+        aria-hidden={summaryHidden || undefined}
+        className={summary ? 'pb-4' : undefined}
+      >
+        {summary}
+      </Box>
+      <Box
+        ref={stickyBarRef}
+        className={cn(
+          'sticky top-0 z-20 bg-surface-elevated',
+          showStickySummary && 'border-b border-border-default pb-4',
+        )}
+      >
+        <Grid
+          ref={(element) => {
+            if (element) {
+              element.inert = !showStickySummary;
+            }
+          }}
+          aria-hidden={!showStickySummary || undefined}
+          className={cn(
+            'transition-[grid-template-rows,opacity] duration-200 ease-out motion-reduce:transition-none',
+            showStickySummary ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0',
+          )}
+          gap="none"
+        >
+          <Box className="min-h-0 overflow-hidden">{stickySummary}</Box>
+        </Grid>
+      </Box>
+      <Box
+        ref={listRef}
+        aria-busy={isLoading || isLoadingMore || isScanning}
+        aria-label="Automation runs"
+        role="region"
       >
         <Table aria-label="Automation runs" className="table-fixed">
-          <TableHeader className="sticky top-0 z-10 bg-surface-elevated">
+          <TableHeader
+            ref={headerRef}
+            className="sticky z-10 bg-surface-elevated"
+            style={{ top: 'var(--sticky-status-height, 0px)' }}
+          >
             <TableRow>
               <TableHead className="px-4" scope="col">
                 <Inline gap="xs">
@@ -318,7 +409,7 @@ export const RunList: React.FC<{
             </Button>
           </Stack>
         )}
-      </div>
-    </Stack>
+      </Box>
+    </div>
   );
 };

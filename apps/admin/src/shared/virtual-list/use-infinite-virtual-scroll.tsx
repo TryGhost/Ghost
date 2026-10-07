@@ -32,6 +32,8 @@ export interface UseInfiniteVirtualScrollOptions<T> extends InfiniteQueryResultL
   estimateSize?: (index: number) => number;
   /** Number of rows to render outside the visible window (default: 5). */
   overscan?: number;
+  /** Offset of the first row within the scroll container. */
+  scrollMargin?: number;
   /**
    * Resolve the scrollable element from `parentRef.current`. Defaults to
    * walking up the DOM to the nearest scroll parent.
@@ -72,6 +74,7 @@ export function useInfiniteVirtualScroll<T>({
   fetchNextPage,
   estimateSize = () => 100,
   overscan = 5,
+  scrollMargin = 0,
   getScrollElement = getScrollParent,
 }: UseInfiniteVirtualScrollOptions<T>) {
   const virtualizer = useVirtualizer({
@@ -79,6 +82,7 @@ export function useInfiniteVirtualScroll<T>({
     getScrollElement: () => getScrollElement(parentRef.current),
     estimateSize,
     overscan,
+    scrollMargin,
   });
 
   const virtualItems = virtualizer.getVirtualItems();
@@ -88,7 +92,9 @@ export function useInfiniteVirtualScroll<T>({
       ? (virtualItems.at(0)?.start ?? 0) - virtualizer.options.scrollMargin
       : 0;
   const spaceAfter =
-    virtualItems.length > 0 ? virtualizer.getTotalSize() - (virtualItems.at(-1)?.end ?? 0) : 0;
+    virtualItems.length > 0
+      ? virtualizer.getTotalSize() + scrollMargin - (virtualItems.at(-1)?.end ?? 0)
+      : 0;
 
   const itemsToRender: VirtualScrollItem<T>[] = virtualItems.map((virtualItem) => ({
     virtualItem,

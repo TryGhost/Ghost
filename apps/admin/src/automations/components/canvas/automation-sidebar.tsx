@@ -18,7 +18,7 @@ import {
   TabsTrigger,
   TabsContent,
 } from '@tryghost/shade/components';
-import { Box, Grid, Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { TotalEntries } from './total-entries';
 import { StatusCounts } from './status-counts';
@@ -97,24 +97,32 @@ const PerformanceContent: React.FC<{
     );
   }
 
+  const statusCounts = (compact = false) => (
+    <StatusCounts
+      compact={compact}
+      data={counts}
+      isLoading={isLoading}
+      selectedStatus={selectedStatus}
+      onStatusChange={onStatusChange}
+    />
+  );
+
   return (
-    <>
-      <Grid
-        ref={(summary) => {
-          if (summary) {
-            summary.inert = searchActive;
-          }
-        }}
-        aria-hidden={searchActive || undefined}
-        className={cn(
-          'shrink-0 transition-[grid-template-rows,opacity] duration-200 ease-out motion-reduce:transition-none',
-          searchActive ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr] opacity-100',
-        )}
-        gap="none"
-      >
-        <Box className="min-h-0 overflow-hidden">
-          {/* Keep spacing inside the collapse so the list slides all the way up. */}
-          <Stack className="pb-3" gap="md">
+    <RunList
+      key={`${automationId}:${JSON.stringify(dateRange.searchParams)}`}
+      automationId={automationId}
+      dateRange={dateRange}
+      direction={direction}
+      enabled={enabled}
+      isSelectionDisabled={isRunSelectionDisabled}
+      queryScope={runQueryScope}
+      search={search}
+      selectedRunId={selectedRunId}
+      status={searchActive ? null : selectedStatus}
+      stickySummary={!searchActive && statusCounts(true)}
+      summary={
+        !searchActive && (
+          <Stack gap="md">
             {dateRange.value !== 'all' && (
               <Button
                 aria-label="Clear date filter"
@@ -128,31 +136,14 @@ const PerformanceContent: React.FC<{
               </Button>
             )}
             <TotalEntries chart={chart} isLoading={isLoading} />
-            <StatusCounts
-              data={counts}
-              isLoading={isLoading}
-              selectedStatus={selectedStatus}
-              onStatusChange={onStatusChange}
-            />
+            {statusCounts()}
           </Stack>
-        </Box>
-      </Grid>
-      <RunList
-        key={`${automationId}:${JSON.stringify(dateRange.searchParams)}`}
-        automationId={automationId}
-        dateRange={dateRange}
-        direction={direction}
-        enabled={enabled}
-        isSelectionDisabled={isRunSelectionDisabled}
-        queryScope={runQueryScope}
-        search={search}
-        selectedRunId={selectedRunId}
-        status={searchActive ? null : selectedStatus}
-        updating={updating}
-        onDirectionChange={onDirectionChange}
-        onSelectRun={onSelectRun}
-      />
-    </>
+        )
+      }
+      updating={updating}
+      onDirectionChange={onDirectionChange}
+      onSelectRun={onSelectRun}
+    />
   );
 };
 
