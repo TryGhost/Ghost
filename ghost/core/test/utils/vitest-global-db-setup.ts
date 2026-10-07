@@ -121,10 +121,14 @@ export default async function setup() {
   }
 
   // Teardown: drop the template and every worker database once all forks have
-  // exited. Best effort.
+  // exited. Best effort. Skipped in CI, where MySQL is a throwaway service
+  // container: suites with isolate:true leave one database per file (about 50
+  // for integration), and dropping them one by one took ~23s per run.
   return async () => {
     try {
-      await dropRunDatabases(run);
+      if (!process.env.CI) {
+        await dropRunDatabases(run);
+      }
     } finally {
       await portBlock.release();
     }
