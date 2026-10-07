@@ -79,9 +79,7 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall }) => {
                           Needs approval
                         </Badge>
                       )}
-                      <span className="text-sm text-muted-foreground">
-                        {manifest.author.name}
-                      </span>
+                      <span className="text-sm text-muted-foreground">{manifest.author.name}</span>
                     </Inline>
                     <span className="block max-w-2xl text-balance text-muted-foreground">
                       {manifest.description}
