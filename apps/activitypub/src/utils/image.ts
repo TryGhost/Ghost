@@ -5,16 +5,8 @@ export const PROFILE_MAX_DIMENSIONS = { width: 400, height: 400 };
 export const COVER_MAX_DIMENSIONS = { width: 4000, height: 3000 };
 
 /**
- * Converts an image URL to a data URL to avoid CORS issues
- *
- * Returns `null` when the image cannot be fetched — most commonly because
- * its host sends no `Access-Control-Allow-Origin` header, which blocks the
- * `mode: 'cors'` fetch. Callers must treat `null` as "this image cannot be
- * embedded" rather than falling back to the raw URL: the share card is
- * rendered to a canvas with `useCORS: true`, and an image whose host does
- * not opt into cross-origin reads is silently dropped from that canvas. A
- * raw-URL fallback therefore produced a copied card with the avatar or
- * cover image missing, while the copy still reported success.
+ * Converts an image URL to a data URL to avoid CORS issues.
+ * Returns null when the image can't be fetched, e.g. the host sends no CORS headers.
  */
 export const imageUrlToDataUrl = async (url: string): Promise<string | null> => {
   try {
