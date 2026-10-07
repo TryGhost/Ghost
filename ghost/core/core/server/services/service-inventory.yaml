@@ -2645,9 +2645,7 @@ services:
         summary: >-
           Boot has initialized signing keys and member metafields before the main service
           phase and awaits Stripe before calling members.init. members.init publishes its
-          API/import/export collaborators before awaiting historical Stripe migrations. The
-          migration runner records finished/failed status and skips rows whose status is not
-          failed.
+          API/import/export collaborators.
         sources:
           - core/boot.js
           - core/server/services/members/service.js
@@ -2673,8 +2671,8 @@ services:
         Complete the transitive audit of API repositories, mail/token providers, events and
         outstanding import/export work; the facade is not one uniformly reset instance.
       - >-
-        Preserve Stripe environment checks, migration failure handling and same-instance
-        restart behavior before changing initialization.
+        Preserve Stripe environment checks and same-instance restart behavior before
+        changing initialization.
       - >-
         Direct token-provider construction in settings, newsletters and welcome emails needs
         an explicit ownership decision during migration.
