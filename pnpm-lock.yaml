@@ -3062,9 +3062,6 @@ importers:
       eslint-plugin-ghost:
         specifier: 3.5.0
         version: 3.5.0(@babel/core@7.29.7(supports-color@10.2.2))(eslint@9.39.4(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
-      expect:
-        specifier: 29.7.0
-        version: 29.7.0
       globals:
         specifier: 17.7.0
         version: 17.7.0
@@ -25370,6 +25367,7 @@ snapshots:
   '@jest/expect-utils@29.7.0':
     dependencies:
       jest-get-type: 29.6.3
+    optional: true
 
   '@jest/expect-utils@30.3.0':
     dependencies:
@@ -25463,6 +25461,7 @@ snapshots:
   '@jest/schemas@29.6.3':
     dependencies:
       '@sinclair/typebox': 0.27.10
+    optional: true
 
   '@jest/schemas@30.0.5':
     dependencies:
@@ -25579,6 +25578,7 @@ snapshots:
       '@types/node': 22.20.1
       '@types/yargs': 17.0.35
       chalk: 4.1.2
+    optional: true
 
   '@jest/types@30.3.0':
     dependencies:
@@ -27674,7 +27674,8 @@ snapshots:
 
   '@simple-dom/void-map@1.4.0': {}
 
-  '@sinclair/typebox@0.27.10': {}
+  '@sinclair/typebox@0.27.10':
+    optional: true
 
   '@sinclair/typebox@0.34.49': {}
 
@@ -33639,7 +33640,8 @@ snapshots:
 
   didyoumean@1.2.2: {}
 
-  diff-sequences@29.6.3: {}
+  diff-sequences@29.6.3:
+    optional: true
 
   diff@3.5.1: {}
 
@@ -36188,6 +36190,7 @@ snapshots:
       jest-matcher-utils: 29.7.0
       jest-message-util: 29.7.0
       jest-util: 29.7.0
+    optional: true
 
   expect@30.3.0:
     dependencies:
@@ -38331,6 +38334,7 @@ snapshots:
       diff-sequences: 29.6.3
       jest-get-type: 29.6.3
       pretty-format: 29.7.0
+    optional: true
 
   jest-diff@30.3.0:
     dependencies:
@@ -38371,7 +38375,8 @@ snapshots:
       jest-util: 29.7.0
     optional: true
 
-  jest-get-type@29.6.3: {}
+  jest-get-type@29.6.3:
+    optional: true
 
   jest-haste-map@29.7.0:
     dependencies:
@@ -38433,6 +38438,7 @@ snapshots:
       jest-diff: 29.7.0
       jest-get-type: 29.6.3
       pretty-format: 29.7.0
+    optional: true
 
   jest-matcher-utils@30.3.0:
     dependencies:
@@ -38460,6 +38466,7 @@ snapshots:
       pretty-format: 29.7.0
       slash: 3.0.0
       stack-utils: 2.0.6
+    optional: true
 
   jest-message-util@30.3.0:
     dependencies:
@@ -38683,6 +38690,7 @@ snapshots:
       ci-info: 3.9.0
       graceful-fs: 4.2.11
       picomatch: 2.3.2
+    optional: true
 
   jest-util@30.3.0:
     dependencies:
@@ -42489,6 +42497,7 @@ snapshots:
       '@jest/schemas': 29.6.3
       ansi-styles: 5.2.0
       react-is: 18.3.1
+    optional: true
 
   pretty-format@30.3.0:
     dependencies:
