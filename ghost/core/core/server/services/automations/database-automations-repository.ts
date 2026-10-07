@@ -22,6 +22,7 @@ import type {
   AutomationAction,
   AutomationEdge,
   AutomationEmailStats,
+  AutomationStatus,
   AutomationSummary,
   AutomationRunMember,
   AutomationRunHistory,
@@ -99,7 +100,7 @@ type AutomationSummaryRow = {
   slug: null | string;
   name: string;
   description: string;
-  status: string;
+  status: AutomationStatus;
   created_at: DatabaseDate;
   updated_at: DatabaseDate;
 };
@@ -486,8 +487,18 @@ export function createDatabaseAutomationsRepository({
 
         await replaceAutomationGraph(trx, updatedAutomation.id, data.actions, data.edges);
 
-        if (updatedAutomation.status === 'inactive') {
-          await cancelCancelablePendingStepsForAutomation(trx, updatedAutomation.id, now);
+        switch (updatedAutomation.status) {
+          case 'active':
+            break;
+          case 'inactive':
+            await cancelCancelablePendingStepsForAutomation(trx, updatedAutomation.id, now);
+            break;
+          default: {
+            const _exhaustive: never = updatedAutomation.status;
+            throw new errors.InternalServerError({
+              message: `Unexpected automation status: ${_exhaustive}`,
+            });
+          }
         }
 
         return await buildAutomation(trx, updatedAutomation);
