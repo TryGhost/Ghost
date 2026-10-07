@@ -2780,7 +2780,7 @@ describe('AutomationEditor', () => {
     expect(edgePairs).toContainEqual([insertedId, 'action-email']);
   });
 
-  it('keeps the in-edge + button visible after leaving the button while still hovering the edge', () => {
+  it('shows the in-edge + button without hovering the edge', () => {
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [automationDetail] },
       isLoading: false,
@@ -2789,25 +2789,10 @@ describe('AutomationEditor', () => {
 
     renderEditor();
 
-    const edge = screen
-      .getByTestId('react-flow-mock-edges')
-      .querySelector('[data-edge-id="e-action-wait-action-email"]');
-    const edgeGroup = edge?.querySelector('g');
     const button = screen.getByTestId('add-step-button-action-wait-action-email');
-    const labelHitZone = button.closest('.pointer-events-auto');
 
-    expect(edgeGroup).toBeInTheDocument();
-    expect(labelHitZone).toBeInTheDocument();
-
-    fireEvent.mouseEnter(edgeGroup!);
-    expect(button).toHaveClass('opacity-100');
-
-    fireEvent.mouseEnter(labelHitZone!);
-    fireEvent.mouseLeave(labelHitZone!, { relatedTarget: edgeGroup });
-    expect(button).toHaveClass('opacity-100');
-
-    fireEvent.mouseLeave(edgeGroup!);
-    expect(button).toHaveClass('opacity-0');
+    expect(button).toBeVisible();
+    expect(button).not.toHaveClass('opacity-0');
   });
 
   it('deletes a wait step and reconnects the chain', () => {
