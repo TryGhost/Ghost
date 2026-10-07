@@ -3,7 +3,6 @@ import { page } from 'vitest/browser';
 import type {
   AppInstallation,
   AppInstallationPreview,
-  AppManifest,
 } from '@tryghost/admin-x-framework/api/app-installations';
 import {
   currentRoute,
@@ -13,38 +12,15 @@ import {
   staffRole,
 } from '@test-utils/acceptance';
 import { appsScreen } from './apps.screen';
+import { MANIFEST_URL, fakeInstallations, installation, labs, manifest } from './apps.test-utils';
 
-const MANIFEST_URL = 'https://podcast.example.com/ghost-app.json';
 const INSTALL_ROUTE = `/apps/install?manifest=${encodeURIComponent(MANIFEST_URL)}`;
-const labs = { apps: true };
-
-const manifest = (overrides: Partial<AppManifest> = {}): AppManifest => ({
-  id: 'com.example.podcast',
-  name: 'Podcast',
-  description: 'Publish episodes and embed players.',
-  author: { name: 'Example Audio', url: 'https://example.com/' },
-  accent_color: '#ff5500',
-  icon: { name: 'audio-lines' },
-  surfaces: [{ type: 'admin_page', url: 'https://podcast.example.com/admin' }],
-  ...overrides,
-});
 
 const preview = (overrides: Partial<AppInstallationPreview> = {}): AppInstallationPreview => ({
   manifest_url: MANIFEST_URL,
   manifest: manifest(),
   digest: 'digest-1',
   installation: null,
-  ...overrides,
-});
-
-const installation = (overrides: Partial<AppInstallation> = {}): AppInstallation => ({
-  id: 'installation-1',
-  app_id: 'com.example.podcast',
-  status: 'active',
-  manifest_url: MANIFEST_URL,
-  manifest: manifest(),
-  created_at: '2026-10-01T10:00:00.000Z',
-  updated_at: '2026-10-01T10:00:00.000Z',
   ...overrides,
 });
 
@@ -83,17 +59,6 @@ const apiError = (
     }),
     { status, headers: { 'content-type': 'application/json' } },
   );
-
-/** The site's installations: listed by the Apps screen, and changed by installing. */
-function fakeInstallations(initial: AppInstallation[] = []) {
-  let installed = initial;
-  fakeAdminEndpoint('GET', '/apps/installations/', () => ({ app_installations: installed }));
-  return {
-    set: (next: AppInstallation[]) => {
-      installed = next;
-    },
-  };
-}
 
 const fakePreview = (response: Parameters<typeof fakeAdminEndpoint>[2]) =>
   fakeAdminEndpoint('POST', '/apps/installations/preview/', response);

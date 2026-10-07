@@ -25,7 +25,12 @@ import { lazyRestoreScreen } from './editor/api';
 import { useFlagGatedRouteOwner } from './use-flag-gated-route-owner';
 import { type AccessRouteHandle } from './route-access';
 import { RouteAccessGuard } from './route-access-guard';
-import { canManageApps, lazyAppInstallScreen, lazyAppsScreen } from './apps/api';
+import {
+  canManageApps,
+  lazyAppDetailsScreen,
+  lazyAppInstallScreen,
+  lazyAppsScreen,
+} from './apps/api';
 import { lazyAutomationEditorScreen, lazyAutomationsScreen } from './automations/api';
 import { lazyCommentsScreen } from './comments/api';
 import { lazyMigrateScreen } from './migrate/api';
@@ -89,6 +94,12 @@ const appRoutes: RouteObject[] = [
     // Open to all staff, so those who can't install are told who can, not redirected.
     path: '/apps/install',
     lazy: lazyComponent(lazyAppInstallScreen),
+  },
+  {
+    // Not `/apps/:id`, which is left for the app's own pages.
+    path: '/apps/details/:installationId',
+    handle: { requiresAccess: canManageApps } satisfies AccessRouteHandle,
+    lazy: lazyComponent(lazyAppDetailsScreen),
   },
   {
     // The automation editor hides the admin sidebar for a focused,

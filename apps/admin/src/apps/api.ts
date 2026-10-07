@@ -8,3 +8,4 @@ export { canManageApps } from './permissions';
 // `lazy:`, so static re-exports would pull the chunks into the shell bundle.
 export const lazyAppsScreen = () => import('./apps');
 export const lazyAppInstallScreen = () => import('./install');
+export const lazyAppDetailsScreen = () => import('./app-details');
