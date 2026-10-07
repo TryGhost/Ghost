@@ -34,6 +34,7 @@ export const SOURCE_DOMAIN_MAP: Record<string, string> = {
   Pinterest: 'pinterest.com',
   TikTok: 'tiktok.com',
   YouTube: 'youtube.com',
+  Youtube: 'youtube.com',
   Telegram: 'telegram.org',
   WhatsApp: 'whatsapp.com',
   // Search engines
@@ -245,8 +246,7 @@ export const getFaviconDomain = (
     return { domain: mappedDomain, isDirectTraffic: false };
   }
 
-  // If not in mapping, check if it's already a domain. Require at least one dot so
-  // unmapped display names (e.g. "GitHub") don't become links like https://github/
+  // If not in mapping, check if it's already a domain (requires at least one dot)
   const isDomain =
     /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/.test(
       source,

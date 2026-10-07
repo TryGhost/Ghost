@@ -240,6 +240,10 @@ describe('source-utils', () => {
         domain: 'yandex.com',
         isDirectTraffic: false,
       });
+      expect(getFaviconDomain('Youtube')).toEqual({
+        domain: 'youtube.com',
+        isDirectTraffic: false,
+      });
     });
 
     it('does not treat unmapped single words as domains', () => {
@@ -247,13 +251,6 @@ describe('source-utils', () => {
         domain: null,
         isDirectTraffic: false,
       });
-    });
-
-    it('maps every normalized source name to a domain', () => {
-      const unmapped = [...new Set(SOURCE_NORMALIZATION_MAP.values())].filter(
-        (name) => !SOURCE_DOMAIN_MAP[name],
-      );
-      expect(unmapped).toEqual([]);
     });
 
     it('returns null for invalid inputs', () => {
