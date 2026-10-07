@@ -31,6 +31,7 @@ describe('usePostsFilterState', () => {
     // bucket's sort - even though it is not part of the chip model.
     expect(result.current.params).toEqual({
       type: null,
+      featured: null,
       visibility: null,
       author: null,
       tag: null,

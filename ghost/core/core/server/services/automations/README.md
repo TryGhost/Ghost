@@ -191,9 +191,9 @@ follow the same cursor ordering as other candidates.
 
 ## Availability
 
-The performance endpoint requires `automationsTinybirdSync`. A disabled flag,
-missing configuration/token, unavailable pipe, or invalid response produces an
-error. The automation list retains its MySQL fallback for those cases; a successful
+The performance endpoint requires Tinybird configuration. Missing
+configuration/token, unavailable pipe, or invalid response produces an error.
+The automation list retains its MySQL fallback for those cases; a successful
 empty Tinybird response still returns zero counts rather than falling back.
 
 The `automationRunAnalytics` flag controls presentation. See the

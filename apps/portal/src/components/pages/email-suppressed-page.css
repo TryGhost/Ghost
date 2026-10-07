@@ -24,10 +24,6 @@
   margin-top: 3px;
 }
 
-.gh-portal-action-footer .gh-email-faq-page-button {
-  margin-inline-start: 4px;
-}
-
 .emailReceivingFAQ .gh-portal-btn-back,
 .emailReceivingFAQ .gh-portal-btn-back:hover {
   left: calc(6vmin - 14px);

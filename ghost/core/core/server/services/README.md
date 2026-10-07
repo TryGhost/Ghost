@@ -65,8 +65,9 @@ files and supporting modules still awaiting relocation. Boot never reads it.
 
 Each entry records its intended ownership and audit status. `pending` means
 the contract audit has not started; `auditing` means evidence is incomplete;
-`audited` means all facets have been recorded. An audited entry can still have
-test gaps or known bugs in `blockers`; it is not necessarily ready to migrate.
+`audited` means all facets have been investigated and recorded from source or
+test evidence. It describes audit completeness, not test coverage or migration
+readiness. An audited entry can still have test gaps or known bugs in `blockers`.
 The `notes` describe audit priorities and intended changes, not verified contracts.
 
 The `unverified` facets are open questions:
@@ -85,10 +86,15 @@ The `unverified` facets are open questions:
 Recorded summaries link to source and test evidence using paths relative to
 `ghost/core`. Entry points are relative to this services directory and include
 separate composition paths reached through deep imports. They are not a list
-of every importable helper, type or job definition. An empty
-test list means the summary has source evidence only; the inventory check
-does not prove the behavior is covered. Keep missing coverage and known bugs
-in `blockers` rather than treating them as completed contracts.
+of every importable helper, type or job definition. An empty test list means
+the summary has source evidence only. A nonempty list does not imply that every
+claim is tested: when coverage is partial, the summary must say what the cited
+tests assert and which claims are source-only. Keep established source facts
+under `contracts`; reserve `unverified` for questions the audit has not answered.
+
+Record missing coverage and known bugs in `blockers`. Before changing a service,
+address the gaps relevant to that change; neither `audited` nor a passing
+inventory check proves that its behavior is protected against regressions.
 
 The unit test checks the inventory's shape, paths and directory coverage. It
 does not import services or drive initialization. `README.md` and the inventory

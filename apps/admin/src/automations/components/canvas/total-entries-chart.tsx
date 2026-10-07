@@ -10,9 +10,9 @@ export const TotalEntriesChart: React.FC<{ data: AutomationEntriesChartData }> =
       <Text className="tabular-nums" size="2xl" weight="semibold">
         {data.total}
       </Text>
-      <figure aria-label="Automation entries">
+      <figure aria-label="Automation runs">
         <figcaption className="sr-only">
-          Automation entries from {data.startDate} to {data.endDate}, in {data.timezone}.
+          Automation runs from {data.startDate} to {data.endDate}, in {data.timezone}.
         </figcaption>
         <GhAreaChart
           className="h-[180px]"

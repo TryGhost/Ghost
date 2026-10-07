@@ -6,8 +6,12 @@ import { FeatureImage } from './post-feature-image';
 import { Locator, Page } from '@playwright/test';
 import { PostSettingsSidebar } from './post-settings-sidebar';
 import {
+  conflictCancelReloadButton,
+  conflictDiscardAndReloadButton,
+  conflictReloadButton,
   editorBody,
   editorConflictBanner,
+  editorConflictReloadConfirm,
   editorReauthDialog,
   editorTitleInput,
   publishAtScheduleOption,
@@ -29,6 +33,9 @@ import {
 } from '@tryghost/test-data/selectors/editor';
 
 type PublishType = 'publish' | 'publish+send' | 'send';
+
+// Both editors also mount a hidden Koenig instance; only the visible one takes input.
+const VISIBLE_LEXICAL_EDITOR = '[data-secondary-instance="false"] [data-lexical-editor="true"]';
 
 const PUBLISH_TYPE_OPTIONS: Record<PublishType, string> = {
   publish: publishTypePublishOnlyOption,
@@ -141,6 +148,10 @@ export class PostEditorPage extends AdminPage {
   readonly backButton: Locator;
   /** The update-collision banner. */
   readonly conflictBanner: Locator;
+  readonly conflictReloadButton: Locator;
+  readonly conflictReloadDialog: Locator;
+  readonly conflictCancelReloadButton: Locator;
+  readonly conflictDiscardAndReloadButton: Locator;
   readonly reauthenticateModal: ReAuthenticateModal;
   readonly header: EditorHeader;
   readonly settings: PostSettingsSidebar;
@@ -166,6 +177,19 @@ export class PostEditorPage extends AdminPage {
     this.revertToDraftButton = page.getByTestId(publishRevertToDraft);
     this.backButton = this.header.backLink;
     this.conflictBanner = page.getByTestId(editorConflictBanner);
+    this.conflictReloadButton = this.conflictBanner.getByRole('button', {
+      name: conflictReloadButton,
+      exact: true,
+    });
+    this.conflictReloadDialog = page.getByTestId(editorConflictReloadConfirm);
+    this.conflictCancelReloadButton = this.conflictReloadDialog.getByRole('button', {
+      name: conflictCancelReloadButton,
+      exact: true,
+    });
+    this.conflictDiscardAndReloadButton = this.conflictReloadDialog.getByRole('button', {
+      name: conflictDiscardAndReloadButton,
+      exact: true,
+    });
     this.reauthenticateModal = new ReAuthenticateModal(page);
 
     this.settings = new PostSettingsSidebar(page, this.settingsToggleButton);
@@ -191,15 +215,15 @@ export class PostEditorPage extends AdminPage {
   }
 
   async createDraft({ title = 'Hello world', body = 'This is my post body.' } = {}): Promise<void> {
-    const editor = this.page.locator('[data-lexical-editor="true"]').first();
+    const editor = this.page.locator(VISIBLE_LEXICAL_EDITOR).first();
 
     await this.titleInput.click();
     await this.titleInput.fill(title);
     await editor.waitFor({ state: 'visible' });
     await this.page.keyboard.press('Enter');
 
-    await this.page.waitForFunction(() => {
-      const element = document.querySelector('[data-lexical-editor="true"]');
+    await this.page.waitForFunction((selector) => {
+      const element = document.querySelector(selector);
       if (!element) {
         return false;
       }
@@ -209,7 +233,7 @@ export class PostEditorPage extends AdminPage {
       return Boolean(
         activeElement && (activeElement === element || element.contains(activeElement)),
       );
-    });
+    }, VISIBLE_LEXICAL_EDITOR);
 
     await this.page.keyboard.type(body);
   }

@@ -184,14 +184,20 @@ pnpm nx run @tryghost/admin:build
 
 The assembler reads the individual build outputs, so it can also be rerun with
 `pnpm nx run @tryghost/admin:assemble:assets` after those builds. It does not run
-compilers or upload sourcemaps.
+compilers or upload sourcemaps. The hybrid build remains the default. A fresh
+React build without `emberAssetsPlugin` can use
+`pnpm --filter @tryghost/admin assemble:assets --without-ember` to assemble the
+same embedded bundles without Ember output. See
+[Admin asset assembly](../../scripts/README.md#admin-asset-assembly) for the input
+requirements and cutover usage. This option does not change route ownership or
+Labs flags.
 
 This outputs to `apps/admin/dist/` and updates the assets in `ghost/core/core/built/admin/`.
 
 The build also writes hidden sourcemaps: `.map` files that no bundle references.
-With `IS_SHIPPING` set, as CI does for `main` and release tags, it uploads them
-to Sentry under the release Admin's Sentry client reports. Without
-`VITE_SENTRY_AUTH_TOKEN` the upload is skipped.
+With `IS_SHIPPING` set, as CI does for `main` and release tags, it injects Sentry
+debug IDs into the bundles. CI then uploads the maps with `sentry-cli` in a
+separate step, so a slow or unavailable Sentry can't block the build.
 
 ## Automation member search
 

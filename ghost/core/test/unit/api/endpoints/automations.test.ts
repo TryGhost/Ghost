@@ -13,7 +13,13 @@ import labs from '../../../../core/shared/labs';
 
 vi.mock('../../../../core/server/services/automations/automations-api', async (importOriginal) => {
   const actual = await importOriginal<typeof automationsApi>();
-  return { ...actual, browse: vi.fn(), read: vi.fn(), getNumberOfAutomations: vi.fn() };
+  return {
+    ...actual,
+    browse: vi.fn(),
+    read: vi.fn(),
+    add: vi.fn(),
+    getNumberOfAutomations: vi.fn(),
+  };
 });
 
 describe('Automations controller', function () {
@@ -95,17 +101,49 @@ describe('Automations controller', function () {
   });
 
   describe('add', function () {
+    const payload = {
+      name: 'Test',
+      description: 'Test description',
+      trigger_tier_scope: 'free' as const,
+    };
+    const frame = new Frame<{ data: { automations: unknown[] } }>({
+      body: { automations: [payload] },
+    });
+    frame.configure({});
+
     let labsIsSetStub: sinon.SinonStub;
 
     beforeEach(function () {
       labsIsSetStub = sinon.stub(labs, 'isSet').returns(true);
     });
 
+    it('adds and returns new automations', async function () {
+      const automation = {
+        ...payload,
+        id: '64b6f7b7c8f1a2b3c4d5e6f7',
+        slug: null,
+        status: 'inactive',
+        created_at: '2026-10-01T00:00:00.000Z',
+        updated_at: '2026-10-01T00:00:00.000Z',
+        trigger_tier_ids: null,
+        actions: [],
+        edges: [],
+      };
+      vi.mocked(automationsApi.getNumberOfAutomations).mockResolvedValue(0);
+      vi.mocked(automationsApi.add).mockResolvedValue(automation);
+
+      const result = await automationsController.add.query(frame);
+
+      expect(automationsApi.add).toHaveBeenCalledExactlyOnceWith(payload);
+      assert.strictEqual(result, automation);
+      assert.equal(automationsController.add.statusCode, 201);
+    });
+
     for (const flag of ['automations', 'automationsPerTier']) {
       it(`returns 404 when ${flag} labs flag is disabled`, async function () {
         labsIsSetStub.withArgs(flag).returns(false);
 
-        await assert.rejects(automationsController.add.query(), {
+        await assert.rejects(automationsController.add.query(frame), {
           errorType: 'NotFoundError',
           statusCode: 404,
         });
@@ -113,24 +151,22 @@ describe('Automations controller', function () {
     }
 
     for (const count of [0, 19]) {
-      it(`returns NOT_IMPLEMENTED with ${count} automations`, async function () {
+      it(`creates with ${count} automations`, async function () {
         vi.mocked(automationsApi.getNumberOfAutomations).mockResolvedValue(count);
-        await assert.rejects(automationsController.add.query(), {
-          statusCode: 501,
-          code: 'NOT_IMPLEMENTED',
-          message: 'Adding automations is not implemented.',
-        });
+        await automationsController.add.query(frame);
+        expect(automationsApi.add).toHaveBeenCalledExactlyOnceWith(payload);
       });
     }
 
     for (const count of [20, 21]) {
       it(`rejects creation with ${count} automations`, async function () {
         vi.mocked(automationsApi.getNumberOfAutomations).mockResolvedValue(count);
-        await assert.rejects(automationsController.add.query(), {
+        await assert.rejects(automationsController.add.query(frame), {
           errorType: 'HostLimitError',
           statusCode: 403,
           code: 'AUTOMATION_LIMIT_REACHED',
         });
+        expect(automationsApi.add).not.toHaveBeenCalled();
       });
     }
   });

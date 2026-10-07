@@ -60,8 +60,10 @@ describe('sidebar route ownership with stale Ember fullscreen state', () => {
   it.each([
     ['/posts', 'ember', true],
     ['/tags', 'pending', true],
-    ['/pro', 'react', false],
-    ['/pro/plans', 'react', false],
+    ['/pro', 'ember', false],
+    ['/pro/plans', 'pending', false],
+    ['/pro', 'react', true],
+    ['/pro/plans', 'react', true],
     ['/editor/post/abc123', 'react', false],
     ['/editor/post/abc123', 'ember', false],
     ['/editor/post/abc123', 'pending', false],

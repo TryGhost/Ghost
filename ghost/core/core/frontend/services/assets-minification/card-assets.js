@@ -15,7 +15,7 @@ const isChunkMap = (chunks) =>
   _.isPlainObject(chunks) && Object.values(chunks).every((chunk) => typeof chunk === 'string');
 
 /**
- * Card assets are built ahead of time by scripts/build-card-assets.mjs, which
+ * Card assets are built ahead of time by scripts/build-card-assets.mts, which
  * minifies every card's CSS/JS into a manifest. The only per-site variable is
  * which cards the active theme asked for, so serving is a matter of picking
  * chunks out of the manifest and concatenating them.

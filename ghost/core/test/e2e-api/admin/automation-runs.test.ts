@@ -36,7 +36,6 @@ describe('Automation runs API', function () {
     automationId = (await models.Base.knex('automations').first('id')).id;
     memberIds = [];
     queries = [];
-    mockManager.mockLabsDisabled('automationsTinybirdSync');
     sinon.stub(logging, 'error');
   });
 
@@ -112,7 +111,6 @@ describe('Automation runs API', function () {
     let getToken: sinon.SinonStub;
     let siteUuid: string;
     beforeEach(async function () {
-      mockManager.mockLabsEnabled('automationsTinybirdSync');
       configUtils.set('tinybird:stats', { endpoint: 'https://api.tinybird.co', version: 'v2' });
       getToken = sinon.stub().returns({ token: 'test-token' });
       sinon.stub(TinybirdServiceWrapper, 'instance').value({ getToken });

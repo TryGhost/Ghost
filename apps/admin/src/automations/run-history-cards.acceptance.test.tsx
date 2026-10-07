@@ -51,7 +51,7 @@ describe('Recorded trigger, wait, and outcome cards', () => {
       expect(rect.bottom).toBeCloseTo(next.top, 0);
       expect(rect.left + rect.width / 2).toBeCloseTo(next.left + next.width / 2, 0);
     }
-    await page.getByRole('button', { name: 'Hide performance' }).click();
+    await page.getByRole('button', { name: 'Hide automation sidebar' }).click();
     await expect.element(card('Waited 3 days')).toBeVisible();
   });
 

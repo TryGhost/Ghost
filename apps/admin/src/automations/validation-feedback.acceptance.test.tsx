@@ -165,14 +165,14 @@ describe('Automation action validation feedback', () => {
     const save = serve();
     await boot(true);
     const wait = page.getByRole('textbox', { name: 'Wait for' });
-    await wait.fill('0');
+    await wait.fill('31');
     await page.getByRole('button', { name: 'Save', exact: true }).click();
     const message = page.getByText('Fix all issues to save this automation.', { exact: true });
     await expect.element(message).toBeVisible();
     await expect
       .element(page.getByText('Automation needs a few details', { exact: true }))
       .not.toBeInTheDocument();
-    await expect.element(wait).toHaveValue('0');
+    await expect.element(wait).toHaveValue('31');
     expect(save.requests).toHaveLength(0);
     await wait.click();
     await wait.fill('2');
@@ -187,7 +187,7 @@ describe('Automation action validation feedback', () => {
     const save = serve('active');
     await boot(true);
     const wait = page.getByRole('textbox', { name: 'Wait for' });
-    await wait.fill('0');
+    await wait.fill('31');
     await page.getByRole('button', { name: 'Turn off', exact: true }).click();
     await expect
       .element(page.getByText('Fix all issues to turn off this automation.', { exact: true }))

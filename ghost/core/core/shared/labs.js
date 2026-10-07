@@ -52,7 +52,6 @@ const PRIVATE_FEATURES = [
   'automations',
   'automationsPerTier',
   'automationRunAnalytics',
-  'automationsTinybirdSync',
   'stripeAutomaticTax',
   'importMemberTier',
   'csvContentImporter',
@@ -68,6 +67,9 @@ const PRIVATE_FEATURES = [
   'machinePayments',
   'editorReact',
   'authReact',
+  'navigationUrlSuggestions',
+  'billingReact',
+  'apps',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

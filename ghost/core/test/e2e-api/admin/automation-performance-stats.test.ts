@@ -35,7 +35,6 @@ describe('Automation performance stats API', function () {
     await setupAutomationsFixture();
     automationId = (await models.Base.knex('automations').first('id')).id;
     clock = sinon.useFakeTimers({ now: new Date('2026-09-14T12:00:00Z'), toFake: ['Date'] });
-    mockManager.mockLabsDisabled('automationsTinybirdSync');
   });
 
   afterEach(async function () {
@@ -64,11 +63,7 @@ describe('Automation performance stats API', function () {
     }
   }
 
-  it('fails with the flag disabled without querying SQL statistics', async function () {
-    await requestStats(500);
-  });
-
-  it('returns 404 for an unknown automation even with Tinybird disabled', async function () {
+  it('returns 404 for an unknown automation', async function () {
     await agent.get(`automations/${ObjectId().toHexString()}/performance-stats`).expectStatus(404);
   });
 
@@ -86,7 +81,6 @@ describe('Automation performance stats API', function () {
     let siteUuid: string;
     beforeEach(async function () {
       previousTinybirdInstance = TinybirdServiceWrapper.instance;
-      mockManager.mockLabsEnabled('automationsTinybirdSync');
       configUtils.set('tinybird', {
         workspaceId: 'test-workspace-id',
         adminToken: 'test-admin-token',

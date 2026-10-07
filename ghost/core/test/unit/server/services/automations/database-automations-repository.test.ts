@@ -712,6 +712,117 @@ describe('automations repository', function () {
     await knex?.destroy();
   });
 
+  describe('add', function () {
+    const tierIds = [ObjectId().toHexString(), ObjectId().toHexString()];
+    const data = {
+      name: 'New automation',
+      description: 'Test description',
+      trigger_tier_scope: 'selected_paid' as const,
+      trigger_tier_ids: tierIds,
+    };
+
+    beforeEach(async function () {
+      await knex('products').insert(tierIds.map((id) => ({ id, type: 'paid', active: true })));
+    });
+
+    it.each(['free', 'all_paid'] as const)('creates %s automations', async function (scope) {
+      const automation = await repo.add({
+        ...data,
+        trigger_tier_scope: scope,
+        trigger_tier_ids: null,
+      });
+      assert.equal(automation.trigger_tier_scope, scope);
+      assert.deepEqual(automation.trigger_tier_ids, null);
+      assert.deepEqual(
+        await knex('automation_trigger_tiers').where({ automation_id: automation.id }),
+        [],
+      );
+    });
+
+    it('creates selected_paid automations', async function () {
+      const automation = await repo.add(data);
+
+      assert.equal(automation.name, data.name);
+      assert.equal(automation.description, data.description);
+      assert.equal(automation.status, 'inactive');
+      assert.equal(automation.slug, null);
+      assert.equal(automation.trigger_tier_scope, 'selected_paid');
+      assert.deepEqual(automation.trigger_tier_ids.sort(), [...tierIds].sort());
+      assert.deepEqual(automation.actions, []);
+      assert.deepEqual(automation.edges, []);
+      assert.deepEqual(await repo.getById(automation.id), automation);
+      const row = await knex('automations').where({ id: automation.id }).first();
+      assert.equal(row.trigger_tier_scope, 'selected_paid');
+      assert.equal(row.created_at, row.updated_at);
+      assert.deepEqual(
+        await knex('automation_trigger_tiers')
+          .where({ automation_id: automation.id })
+          .pluck('product_id'),
+        tierIds,
+      );
+    });
+
+    it('reads stored trigger settings and preserves them when editing actions', async function () {
+      const automationId = await insertAutomation({
+        slug: null,
+        triggerTierScope: 'selected_paid',
+        triggerTierIds: tierIds,
+        status: 'inactive',
+      });
+      const automation = await repo.getById(automationId);
+      assert(automation);
+      assert.equal(automation.trigger_tier_scope, 'selected_paid');
+      assert.deepEqual([...automation.trigger_tier_ids].sort(), [...tierIds].sort());
+
+      const edited = await repo.edit(automationId, {
+        status: 'inactive',
+        actions: automation.actions,
+        edges: automation.edges,
+      });
+      assert(edited);
+      assert.equal(edited.trigger_tier_scope, 'selected_paid');
+      assert.deepEqual([...edited.trigger_tier_ids].sort(), [...tierIds].sort());
+    });
+
+    it('returns null scope and no tiers for legacy automations', async function () {
+      const automationId = await insertAutomation({ slug: null, triggerTierScope: null });
+      const automation = await repo.getById(automationId);
+      assert(automation);
+      assert.equal(automation.trigger_tier_scope, null);
+      assert.deepEqual(automation.trigger_tier_ids, null);
+    });
+
+    it('rejects missing tiers when creating an automation', async function () {
+      await knex('products').where({ id: tierIds[1] }).delete();
+      await assert.rejects(repo.add(data), {
+        errorType: 'ValidationError',
+        property: 'trigger_tier_ids',
+      });
+      assert.equal(await knex('automations').where({ name: data.name }).first(), undefined);
+      assert.deepEqual(await knex('automation_trigger_tiers'), []);
+    });
+
+    it('rejects free tiers when creating an automation', async function () {
+      await knex('products').where({ id: tierIds[1] }).update({ type: 'free' });
+      await assert.rejects(repo.add(data), {
+        errorType: 'ValidationError',
+        property: 'trigger_tier_ids',
+      });
+      assert.equal(await knex('automations').where({ name: data.name }).first(), undefined);
+      assert.deepEqual(await knex('automation_trigger_tiers'), []);
+    });
+
+    it('rejects archived tiers when creating an automation', async function () {
+      await knex('products').where({ id: tierIds[1] }).update({ active: false });
+      await assert.rejects(repo.add(data), {
+        errorType: 'ValidationError',
+        property: 'trigger_tier_ids',
+      });
+      assert.equal(await knex('automations').where({ name: data.name }).first(), undefined);
+      assert.deepEqual(await knex('automation_trigger_tiers'), []);
+    });
+  });
+
   describe('browse', function () {
     const deleteActionsForAutomationIds = async (automationIds: string[]) => {
       const actionIds = await knex('automation_actions')
@@ -976,6 +1087,17 @@ describe('automations repository', function () {
         .first();
 
       assert.equal(Number(totalActions?.count), 2);
+    });
+  });
+
+  describe('exists', function () {
+    it('resolves to false for automations that do not exist', async function () {
+      assert.equal(await repo.exists('missing'), false);
+    });
+
+    it('resolves to true for automations that exist', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      assert.equal(await repo.exists(automation.id), true);
     });
   });
 

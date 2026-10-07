@@ -1,3 +1,4 @@
+import { TRIGGER_CANVAS_ID } from './components/canvas/nodes';
 import AutomationCanvas, { EMAIL_STEP_QUERY_PARAM } from './components/canvas/automation-canvas';
 import AutomationHeader, { type AutomationValidationAction } from './components/automation-header';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
@@ -33,10 +34,19 @@ const BODY_REQUIRED_MESSAGE = 'Add an email body.';
 const SUBJECT_AND_BODY_REQUIRED_MESSAGE = 'Add a subject line and email body.';
 
 const editableSlice = (automation: AutomationDetail) => ({
+  name: automation.name,
+  description: automation.description,
   status: automation.status,
+  trigger_tier_scope: automation.trigger_tier_scope,
+  trigger_tier_ids: automation.trigger_tier_ids ? [...automation.trigger_tier_ids].sort() : null,
   actions: automation.actions,
   edges: automation.edges,
 });
+
+const getTriggerErrors = (automation: AutomationDetail): Record<string, string> =>
+  automation.trigger_tier_scope === 'selected_paid' && !automation.trigger_tier_ids.length
+    ? { [TRIGGER_CANVAS_ID]: 'Select at least one paid tier.' }
+    : {};
 
 const isFailedEditState = (editState: AutomationEditState): boolean => {
   return editState.phase === 'failed';
@@ -70,6 +80,7 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
 
   const editMutation = useEditAutomation();
   const automationRunAnalyticsEnabled = useFeatureFlag('automationRunAnalytics');
+  const automationsPerTierEnabled = useFeatureFlag('automationsPerTier');
   const [validationFeedback, setValidationFeedback] =
     React.useState<AutomationValidationAction | null>(null);
   const showValidationFeedback = (action: AutomationValidationAction) => {
@@ -142,7 +153,7 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
         return oldErrors;
       }
 
-      const nextErrors = getActionErrors(next);
+      const nextErrors = { ...getActionErrors(next), ...getTriggerErrors(next) };
       return Object.fromEntries(
         Object.entries(oldErrors).filter(([actionId]) => nextErrors[actionId]),
       );
@@ -156,7 +167,14 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
     action: AutomationValidationAction,
   ): boolean => {
     setValidationFeedback(null);
-    const nextActionErrors = action === 'publish' ? getActionErrors(automationToValidate) : {};
+    if (automationsPerTierEnabled && !automationToValidate.name.trim()) {
+      toast.error('Add an automation name.');
+      return false;
+    }
+    const nextActionErrors = {
+      ...(action === 'publish' ? getActionErrors(automationToValidate) : {}),
+      ...(automationRunAnalyticsEnabled ? getTriggerErrors(automationToValidate) : {}),
+    };
     if (Object.keys(nextActionErrors).length > 0 || invalidWaitIds.size > 0) {
       setActionErrors(nextActionErrors);
       setEditState(automationRunAnalyticsEnabled ? { phase: 'idle' } : errorState);
@@ -219,12 +237,7 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
     setEditState(requestState);
 
     editMutation.mutate(
-      {
-        id: draft.id,
-        status: newStatus,
-        actions: draft.actions,
-        edges: draft.edges,
-      },
+      { ...draft, status: newStatus },
       {
         onSuccess: (response) => {
           const savedDraft = response.automations[0];
@@ -487,6 +500,7 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
         isEmailNavigationBlocked={isEmailNavigationBlocked}
         isError={isEditorError}
         isLoading={isEditorLoading}
+        savedTriggerTierIds={savedAutomation?.trigger_tier_ids ?? []}
         selectedRunId={selectedRunId}
         onChange={onDraftChange}
         onDiscardBlockedEmailNavigation={(closeEmailModal) => {

@@ -3,7 +3,7 @@ import { fakeAdminEndpoint } from '@test-utils/acceptance';
 import type { AutomationDetail, AutomationRun } from '@tryghost/admin-x-framework/api/automations';
 import type { AutomationRunHistory } from '@tryghost/admin-x-framework/api/automation-run-history';
 
-import { response } from './run-list.test-utils';
+import { response, openAutomationSidebar } from './run-list.test-utils';
 export { flags } from './run-list.test-utils';
 
 export const timestamp = '2026-09-14T12:00:00.000Z';
@@ -43,6 +43,8 @@ export const detail = (id: string): AutomationDetail => ({
   name: 'Welcome series',
   description: '',
   slug: 'member-welcome-email-free',
+  trigger_tier_scope: 'free',
+  trigger_tier_ids: null,
   status: 'inactive',
   created_at: timestamp,
   updated_at: timestamp,
@@ -72,5 +74,5 @@ export const canvas = () => page.getByRole('region', { name: 'Run history', exac
 export const editingCanvas = () => page.getByRole('region', { name: 'Editing canvas' });
 export const select = (name = 'Alex') =>
   page.getByRole('button', { name: new RegExp(`View run history for ${name},`) }).click();
-export const open = () => page.getByRole('button', { name: 'Show performance' }).click();
+export const open = openAutomationSidebar;
 export const close = () => canvas().getByRole('button', { name: 'Back to editing' }).click();
