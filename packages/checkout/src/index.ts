@@ -14,15 +14,7 @@
 export { STRIPE_ALLOWED_COUNTRIES, isStripeAllowedCountry } from './allowed-countries.ts';
 export type { StripeAllowedCountry } from './allowed-countries.ts';
 
-export {
-  CHECKOUT_ELIGIBLE_FIELD_TYPES,
-  MAX_CHECKOUT_CUSTOM_FIELDS,
-  MAX_CHECKOUT_LABEL_LENGTH,
-  STRIPE_PORT,
-  STRIPE_PORTS,
-  isCheckoutEligible,
-  isStripePort,
-} from './field-ports.ts';
-export type { CheckoutEligibleFieldType, StripePort } from './field-ports.ts';
+export { STRIPE_PORT, STRIPE_PORTS, isStripePort } from './field-ports.ts';
+export type { StripePort } from './field-ports.ts';
 
 export { PORT_FIELD } from './destinations.ts';

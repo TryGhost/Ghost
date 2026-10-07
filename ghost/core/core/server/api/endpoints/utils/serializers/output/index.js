@@ -88,10 +88,6 @@ module.exports = {
     return require('./tiers');
   },
 
-  get tiers_checkout_config() {
-    return require('./tiers-checkout-config');
-  },
-
   get images() {
     return require('./images');
   },

@@ -1,11 +1,7 @@
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
-const {
-  SIGNUP_CONTEXTS,
-  canWelcomeEmailReplaceSignupPaidEmail,
-} = require('../../../../lib/member-signup-contexts');
-const { collectedByPort } = require('../checkout/completed-session');
+const { canWelcomeEmailReplaceSignupPaidEmail } = require('../../../../lib/member-signup-contexts');
 /** @typedef {import('../../../../lib/member-signup-contexts').SignupContext} SignupContext */
 
 function isStripeMetadataTrue(value) {
@@ -87,8 +83,6 @@ module.exports = class CheckoutSessionEventService {
    * @param {object} deps.staffServiceEmails
    * @param {function} deps.sendSignupEmail
    * @param {function} deps.isPaidWelcomeEmailActive
-   * @param {Pick<import('../../../members-metafields/bindings-service').MetafieldBindingsService, 'planCollected'>} deps.metafieldBindings
-   * @param {{updateWithMetafields: (data: object, options: {id: string}, plans: import('../../../members-metafields/values-service').MetafieldPlan[]) => Promise<unknown>}} deps.memberBREADService
    */
   constructor(deps) {
     this.api = deps.api;
@@ -340,7 +334,6 @@ module.exports = class CheckoutSessionEventService {
       email: customer.email,
     });
 
-    const memberPreexisted = Boolean(member);
     const checkoutType = _.get(session, 'metadata.checkoutType');
 
     if (!member) {
@@ -429,11 +422,6 @@ module.exports = class CheckoutSessionEventService {
       }
     }
 
-    // After the subscription work, and deliberately not part of it: a value the member
-    // gave us for free must never be able to fail the webhook. A throw here would make
-    // Stripe retry the event and risk doing the payment work twice.
-    await this.writeCollectedFields(member.id, session, { memberPreexisted });
-
     if (checkoutType !== 'upgrade') {
       const ghostSignupContext = /** @type {SignupContext | undefined} */ (
         session.metadata?.ghostSignupContext
@@ -450,72 +438,6 @@ module.exports = class CheckoutSessionEventService {
         // Direct checkout flows do not have a pre-checkout sign-in path.
         this.deps.sendSignupEmail(customer.email);
       }
-    }
-  }
-
-  /**
-   * This service knows how to read a completed Stripe session. It does not know, and must
-   * not know, which metafield any of those values belongs in — that is what a binding
-   * decides, so no field key appears anywhere in this code.
-   *
-   * Nothing here may be fatal: a throw fails the webhook, which makes Stripe retry it and
-   * risks doing the payment work twice.
-   *
-   * @param {string} memberId
-   * @param {import('stripe').Stripe.Checkout.Session} session
-   * @param {object} options
-   * @param {boolean} options.memberPreexisted Whether the member's record existed before this event resolved it
-   */
-  async writeCollectedFields(memberId, session, { memberPreexisted }) {
-    // Stamped at create time. A session predating this feature carries none. Read
-    // outside the try so a failure below can name the tier whose answers were lost.
-    const tierId = session.metadata?.ghostTierId;
-
-    try {
-      if (!tierId) {
-        return;
-      }
-
-      // A checkout can be started with nothing but an email address, and typing an
-      // email is not proof of owning it. Values may land on the member this event just
-      // created — that record holds nothing the buyer didn't supply — but a record
-      // that existed before the checkout belongs to whoever verified that email, so it
-      // is only written when the session was created by a signed-in member.
-      const wasAuthenticated =
-        session.metadata?.ghostSignupContext === SIGNUP_CONTEXTS.ALREADY_AUTHENTICATED;
-      if (memberPreexisted && !wasAuthenticated) {
-        logging.warn(
-          {
-            event: { name: 'stripe_checkout.collected_fields.write_skipped' },
-            memberId,
-            tierId,
-          },
-          'Skipped storing the fields an unverified checkout collected for an existing member',
-        );
-        return;
-      }
-
-      const { plans, failure } = await this.deps.metafieldBindings.planCollected(
-        tierId,
-        collectedByPort.parse(session),
-      );
-      if (plans.length > 0) {
-        // Through the members service, like any other edit, so the values reach webhooks.
-        await this.deps.memberBREADService.updateWithMetafields({}, { id: memberId }, plans);
-      }
-      if (failure) {
-        throw failure;
-      }
-    } catch (err) {
-      logging.error(
-        {
-          event: { name: 'stripe_checkout.collected_fields.write_failed' },
-          err,
-          memberId,
-          tierId,
-        },
-        'Failed to store the fields a checkout collected',
-      );
     }
   }
 };
