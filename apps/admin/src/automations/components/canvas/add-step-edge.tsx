@@ -37,8 +37,6 @@ const AddStepEdge: React.FC<EdgeProps> = ({
   data,
 }) => {
   const [open, setOpen] = useState(false);
-  const [edgeHovered, setEdgeHovered] = useState(false);
-  const [labelHovered, setLabelHovered] = useState(false);
   const edgeData = data as AddStepEdgeData | undefined;
 
   const [path, labelX, labelY] = getSmoothStepPath({
@@ -59,14 +57,12 @@ const AddStepEdge: React.FC<EdgeProps> = ({
     edgeData.onPick(type, { sourceId: edgeData.sourceId, targetId: edgeData.targetId });
   };
 
-  const visible = open || edgeHovered || labelHovered;
   const button = (
     <button
       aria-label={edgeData.label ?? 'Insert step here'}
       className={cn(
-        'flex size-8 items-center justify-center rounded-full border transition-opacity focus-visible:opacity-100 focus-visible:outline-none',
+        'flex size-8 items-center justify-center rounded-full border focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-none',
         INSERT_BUTTON_CLASSES,
-        visible ? 'opacity-100' : 'opacity-0',
         edgeData.disabled && 'cursor-not-allowed!',
       )}
       data-testid={`add-step-button-${edgeData.sourceId}-${edgeData.targetId}`}
@@ -108,22 +104,19 @@ const AddStepEdge: React.FC<EdgeProps> = ({
   }
 
   return (
-    <g onMouseEnter={() => setEdgeHovered(true)} onMouseLeave={() => setEdgeHovered(false)}>
-      <BaseEdge id={id} interactionWidth={30} path={path} style={{ stroke: DEFAULT_EDGE_STROKE }} />
+    <>
+      <BaseEdge id={id} path={path} style={{ stroke: DEFAULT_EDGE_STROKE }} />
       <EdgeLabelRenderer>
         <div
           className="pointer-events-auto absolute"
           style={{
             transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
           }}
-          onMouseEnter={() => setLabelHovered(true)}
-          onMouseLeave={() => setLabelHovered(false)}
         >
-          {/* Wider hit zone so the + becomes visible when the cursor is near the edge midpoint. */}
-          <div className="flex h-10 w-16 items-center justify-center">{control}</div>
+          {control}
         </div>
       </EdgeLabelRenderer>
-    </g>
+    </>
   );
 };
 
