@@ -156,7 +156,7 @@ const ColorPickerField = ({
         setOpen(nextOpen);
       }}
     >
-      {/* The trigger sits in a control-height band and the title is padded to center
+      {/* The trigger sits in a control-height band and the label is padded to center
           its first line on it, so any hint sits directly beneath the title */}
       <Inline
         align="start"
@@ -166,10 +166,11 @@ const ColorPickerField = ({
         justify="between"
       >
         {title && (
-          <label className="min-w-0 flex-1 cursor-pointer text-left" htmlFor={triggerId}>
-            <span className="block pt-[calc((var(--control-height)-1lh)/2)] font-medium">
-              {title}
-            </span>
+          <label
+            className="min-w-0 flex-1 cursor-pointer pt-[calc((var(--control-height)-1lh)/2)] text-left font-medium"
+            htmlFor={triggerId}
+          >
+            {title}
             {hint && (
               <FieldDescription className={error ? 'text-destructive' : undefined}>
                 {hint}
