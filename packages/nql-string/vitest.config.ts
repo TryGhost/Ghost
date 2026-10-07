@@ -1,3 +1,3 @@
-import {createVitestConfig} from '@internal/cfg-vitest';
+import { createVitestConfig } from '@internal/cfg-vitest';
 
 export default createVitestConfig();

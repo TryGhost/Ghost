@@ -1,6 +1,6 @@
 import React from 'react';
-import {Stack} from '@/components/primitives/stack';
-import {cn} from '@/lib/utils';
+import { Stack } from '@/components/primitives/stack';
+import { cn } from '@/lib/utils';
 
 type DetailPageProps = React.ComponentPropsWithoutRef<'div'>;
 
@@ -10,17 +10,12 @@ type DetailPageProps = React.ComponentPropsWithoutRef<'div'>;
  * matches the list-page rhythm (`py-5`) so a detail page's breadcrumb sits at
  * the same visual height as the tags/members list title.
  */
-function DetailPageHeader({className, children, ...rest}: DetailPageProps) {
-    return (
-        <Stack
-            className={cn('py-5', className)}
-            data-detail-page='header'
-            gap='lg'
-            {...rest}
-        >
-            {children}
-        </Stack>
-    );
+function DetailPageHeader({ className, children, ...rest }: DetailPageProps) {
+  return (
+    <Stack className={cn('py-5', className)} data-detail-page="header" gap="lg" {...rest}>
+      {children}
+    </Stack>
+  );
 }
 
 /**
@@ -28,22 +23,22 @@ function DetailPageHeader({className, children, ...rest}: DetailPageProps) {
  * scrolls its own content. The horizontal padding is inherited from the outer
  * `DetailPage`, so the header and body always line up on the same left edge.
  */
-function DetailPageBody({className, children, ...rest}: DetailPageProps) {
-    return (
-        <Stack
-            className={cn('min-h-0 min-w-0 grow overflow-y-auto pb-4 lg:pb-8', className)}
-            data-detail-page='body'
-            gap='none'
-            {...rest}
-        >
-            {children}
-        </Stack>
-    );
+function DetailPageBody({ className, children, ...rest }: DetailPageProps) {
+  return (
+    <Stack
+      className={cn('min-h-0 min-w-0 grow overflow-y-auto pb-4 lg:pb-8', className)}
+      data-detail-page="body"
+      gap="none"
+      {...rest}
+    >
+      {children}
+    </Stack>
+  );
 }
 
 type DetailPageComponent = React.FC<DetailPageProps> & {
-    Header: React.FC<DetailPageProps>;
-    Body: React.FC<DetailPageProps>;
+  Header: React.FC<DetailPageProps>;
+  Body: React.FC<DetailPageProps>;
 };
 
 /**
@@ -70,22 +65,22 @@ type DetailPageComponent = React.FC<DetailPageProps> & {
  * ```
  */
 const DetailPage: DetailPageComponent = Object.assign(
-    function DetailPage({className, children, ...rest}: DetailPageProps) {
-        return (
-            <Stack
-                className={cn('h-full min-h-0 grow px-4 lg:px-6', className)}
-                data-detail-page='detail-page'
-                gap='none'
-                {...rest}
-            >
-                {children}
-            </Stack>
-        );
-    },
-    {
-        Header: DetailPageHeader,
-        Body: DetailPageBody
-    }
+  function DetailPage({ className, children, ...rest }: DetailPageProps) {
+    return (
+      <Stack
+        className={cn('h-full min-h-0 grow px-4 lg:px-6', className)}
+        data-detail-page="detail-page"
+        gap="none"
+        {...rest}
+      >
+        {children}
+      </Stack>
+    );
+  },
+  {
+    Header: DetailPageHeader,
+    Body: DetailPageBody,
+  },
 );
 
-export {DetailPage};
+export { DetailPage };

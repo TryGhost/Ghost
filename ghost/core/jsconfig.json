@@ -1,13 +1,11 @@
 {
   "include": ["core/**/*.js", "test/**/*.js", "test/**/*.ts"],
   "compilerOptions": {
-     "checkJs": true,
-     "module": "commonjs",
-     "target": "es2024",
-     "moduleResolution": "node",
-     "ignoreDeprecations": "6.0"
+    "checkJs": true,
+    "module": "commonjs",
+    "target": "es2024",
+    "moduleResolution": "node",
+    "ignoreDeprecations": "6.0"
   },
-  "exclude": [
-    "core/built"
-  ]
+  "exclude": ["core/built"]
 }

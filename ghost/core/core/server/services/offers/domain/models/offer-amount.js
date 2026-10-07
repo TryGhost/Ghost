@@ -5,75 +5,75 @@ const InvalidOfferAmount = require('../errors').InvalidOfferAmount;
 class OfferAmount extends ValueObject {}
 
 class OfferPercentageAmount extends OfferAmount {
-    /** @param {unknown} amount */
-    static create(amount) {
-        if (typeof amount !== 'number') {
-            throw new InvalidOfferAmount({
-                message: 'Offer `amount` must be an integer between 0 and 100.'
-            });
-        }
-        if (!Number.isInteger(amount)) {
-            throw new InvalidOfferAmount({
-                message: 'Offer `amount` must be an integer between 0 and 100.'
-            });
-        }
-        if (amount < 0 || amount > 100) {
-            throw new InvalidOfferAmount({
-                message: 'Offer `amount` must be an integer between 0 and 100.'
-            });
-        }
-        return new OfferPercentageAmount(amount);
+  /** @param {unknown} amount */
+  static create(amount) {
+    if (typeof amount !== 'number') {
+      throw new InvalidOfferAmount({
+        message: 'Offer `amount` must be an integer between 0 and 100.',
+      });
     }
+    if (!Number.isInteger(amount)) {
+      throw new InvalidOfferAmount({
+        message: 'Offer `amount` must be an integer between 0 and 100.',
+      });
+    }
+    if (amount < 0 || amount > 100) {
+      throw new InvalidOfferAmount({
+        message: 'Offer `amount` must be an integer between 0 and 100.',
+      });
+    }
+    return new OfferPercentageAmount(amount);
+  }
 
-    static InvalidOfferAmount = InvalidOfferAmount;
+  static InvalidOfferAmount = InvalidOfferAmount;
 }
 
 class OfferFixedAmount extends OfferAmount {
-    /** @param {unknown} amount */
-    static create(amount) {
-        if (typeof amount !== 'number') {
-            throw new InvalidOfferAmount({
-                message: 'Offer `amount` must be an integer greater than 0.'
-            });
-        }
-        if (!Number.isInteger(amount)) {
-            throw new InvalidOfferAmount({
-                message: 'Offer `amount` must be a integer greater than 0.'
-            });
-        }
-        if (amount < 0) {
-            throw new InvalidOfferAmount({
-                message: 'Offer `amount` must be a integer greater than 0.'
-            });
-        }
-        return new OfferPercentageAmount(amount);
+  /** @param {unknown} amount */
+  static create(amount) {
+    if (typeof amount !== 'number') {
+      throw new InvalidOfferAmount({
+        message: 'Offer `amount` must be an integer greater than 0.',
+      });
     }
+    if (!Number.isInteger(amount)) {
+      throw new InvalidOfferAmount({
+        message: 'Offer `amount` must be a integer greater than 0.',
+      });
+    }
+    if (amount < 0) {
+      throw new InvalidOfferAmount({
+        message: 'Offer `amount` must be a integer greater than 0.',
+      });
+    }
+    return new OfferPercentageAmount(amount);
+  }
 
-    static InvalidOfferAmount = InvalidOfferAmount;
+  static InvalidOfferAmount = InvalidOfferAmount;
 }
 
 class OfferTrialAmount extends OfferAmount {
-    /** @param {unknown} amount */
-    static create(amount) {
-        if (typeof amount !== 'number') {
-            throw new InvalidOfferAmount({
-                message: 'Offer `amount` must be an integer greater than 0.'
-            });
-        }
-        if (!Number.isInteger(amount)) {
-            throw new InvalidOfferAmount({
-                message: 'Offer `amount` must be a integer greater than 0.'
-            });
-        }
-        if (amount < 0) {
-            throw new InvalidOfferAmount({
-                message: 'Offer `amount` must be a integer greater than 0.'
-            });
-        }
-        return new OfferTrialAmount(amount);
+  /** @param {unknown} amount */
+  static create(amount) {
+    if (typeof amount !== 'number') {
+      throw new InvalidOfferAmount({
+        message: 'Offer `amount` must be an integer greater than 0.',
+      });
     }
+    if (!Number.isInteger(amount)) {
+      throw new InvalidOfferAmount({
+        message: 'Offer `amount` must be a integer greater than 0.',
+      });
+    }
+    if (amount < 0) {
+      throw new InvalidOfferAmount({
+        message: 'Offer `amount` must be a integer greater than 0.',
+      });
+    }
+    return new OfferTrialAmount(amount);
+  }
 
-    static InvalidOfferAmount = InvalidOfferAmount;
+  static InvalidOfferAmount = InvalidOfferAmount;
 }
 
 module.exports = OfferAmount;

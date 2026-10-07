@@ -6,39 +6,45 @@ const localUtils = require('./utils');
 let request;
 
 describe('Pages API', function () {
-    beforeAll(async function () {
-        await localUtils.startGhost();
-        request = supertest.agent(config.get('url'));
-        await localUtils.doAuth(request, 'posts');
-    });
+  beforeAll(async function () {
+    await localUtils.startGhost();
+    request = supertest.agent(config.get('url'));
+    await localUtils.doAuth(request, 'posts');
+  });
 
-    describe('Edit', function () {
-        it('accepts html source', function () {
-            return request
-                .get(localUtils.API.getApiQuery(`pages/${testUtils.DataGenerator.Content.posts[5].id}/`))
-                .set('Origin', config.get('url'))
-                .expect(200)
-                .then((res) => {
-                    assert.equal(res.body.pages[0].slug, 'static-page-test');
+  describe('Edit', function () {
+    it('accepts html source', function () {
+      return request
+        .get(localUtils.API.getApiQuery(`pages/${testUtils.DataGenerator.Content.posts[5].id}/`))
+        .set('Origin', config.get('url'))
+        .expect(200)
+        .then((res) => {
+          assert.equal(res.body.pages[0].slug, 'static-page-test');
 
-                    return request
-                        .put(localUtils.API.getApiQuery('pages/' + testUtils.DataGenerator.Content.posts[5].id + '/?source=html'))
-                        .set('Origin', config.get('url'))
-                        .send({
-                            pages: [{
-                                html: '<p>HTML Ipsum presents</p>',
-                                updated_at: res.body.pages[0].updated_at
-                            }]
-                        })
-                        .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules.private)
-                        .expect(200);
-                })
-                .then((res) => {
-                    // ?source=html is converted to lexical
-                    assert.equal(res.body.pages[0].mobiledoc, null);
-                    assert.ok(res.body.pages[0].lexical.includes('HTML Ipsum presents'));
-                });
+          return request
+            .put(
+              localUtils.API.getApiQuery(
+                'pages/' + testUtils.DataGenerator.Content.posts[5].id + '/?source=html',
+              ),
+            )
+            .set('Origin', config.get('url'))
+            .send({
+              pages: [
+                {
+                  html: '<p>HTML Ipsum presents</p>',
+                  updated_at: res.body.pages[0].updated_at,
+                },
+              ],
+            })
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+        })
+        .then((res) => {
+          // ?source=html is converted to lexical
+          assert.equal(res.body.pages[0].mobiledoc, null);
+          assert.ok(res.body.pages[0].lexical.includes('HTML Ipsum presents'));
         });
     });
+  });
 });

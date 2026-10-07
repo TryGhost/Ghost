@@ -12,6 +12,8 @@ const dnsPromises = require('dns').promises;
 const errors = require('@tryghost/errors');
 const config = require('../../shared/config');
 const validator = require('@tryghost/validator');
+const ipaddr = require('ipaddr.js');
+const _ = require('lodash');
 
 // Shared keep-alive agents so outbound HTTPS connections are pooled and reused
 // across page renders / oEmbed / webmention / recommendations / image probes.
@@ -19,10 +21,10 @@ const validator = require('@tryghost/validator');
 // holds the gateway at its connection-rate ceiling and causes port-collision drops.
 // Pool sizing is configurable via `externalRequest` (see config defaults).
 const agentOptions = {
-    keepAlive: config.get('externalRequest:keepAlive') ?? true,
-    keepAliveMsecs: config.get('externalRequest:keepAliveMsecs') ?? 60000,
-    maxSockets: config.get('externalRequest:maxSockets') ?? 256,
-    maxFreeSockets: config.get('externalRequest:maxFreeSockets') ?? 256
+  keepAlive: config.get('externalRequest:keepAlive') ?? true,
+  keepAliveMsecs: config.get('externalRequest:keepAliveMsecs') ?? 60000,
+  maxSockets: config.get('externalRequest:maxSockets') ?? 256,
+  maxFreeSockets: config.get('externalRequest:maxFreeSockets') ?? 256,
 };
 const httpAgent = new http.Agent(agentOptions);
 const httpsAgent = new https.Agent(agentOptions);
@@ -33,200 +35,139 @@ const httpsAgent = new https.Agent(agentOptions);
  * Returns null if the address is not a valid IPv4 address.
  */
 function normalizeIPv4(addr) {
-    try {
-        const normalized = new URL('http://' + addr + '/').hostname;
-        if (net.isIPv4(normalized)) {
-            return normalized;
-        }
-    } catch {
-        // URL parsing failed
+  try {
+    const normalized = new URL('http://' + addr + '/').hostname;
+    if (net.isIPv4(normalized)) {
+      return normalized;
     }
-    return null;
+  } catch {
+    // URL parsing failed
+  }
+  return null;
+}
+
+const IPV4_COMPATIBLE = ipaddr.IPv6.parseCIDR('::/96');
+const NAT64_WELL_KNOWN = ipaddr.IPv6.parseCIDR('64:ff9b::/96');
+
+/**
+ * Build an IPv4 address from two 16-bit IPv6 groups.
+ *
+ * @param {number} hi
+ * @param {number} lo
+ * @returns {ipaddr.IPv4}
+ */
+function ipv4FromGroups(hi, lo) {
+  return new ipaddr.IPv4([(hi >> 8) & 0xff, hi & 0xff, (lo >> 8) & 0xff, lo & 0xff]);
 }
 
 /**
- * Normalize an IPv6 address from any expanded form (e.g. 0:0:0:0:0:0:0:1)
- * to compressed notation (e.g. ::1) using the WHATWG URL parser.
- * Returns null if the address is not a valid IPv6 address.
+ * Default-deny: anything outside ipaddr.js's plain "unicast" range is private.
+ * IPv6 transition prefixes that route to an embedded IPv4 address are classified
+ * by that IPv4 address instead, so e.g. DNS64-synthesized addresses for public
+ * hosts are still allowed on NAT64 networks.
+ *
+ * @param {ipaddr.IPv4 | ipaddr.IPv6} address
+ * @returns {boolean}
  */
-function normalizeIPv6(addr) {
-    try {
-        const hostname = new URL('http://[' + addr + ']/').hostname;
-        // hostname includes brackets, strip them
-        const normalized = hostname.slice(1, -1);
-        if (net.isIPv6(normalized)) {
-            return normalized;
+function isPrivateAddress(address) {
+  if (address instanceof ipaddr.IPv6) {
+    const parts = address.parts;
+
+    // ::/96 - unspecified, loopback and deprecated IPv4-compatible addresses (RFC 4291).
+    // ipaddr.js classifies IPv4-compatible addresses such as ::7f00:1 as unicast.
+    if (address.match(IPV4_COMPATIBLE)) {
+      return true;
+    }
+
+    switch (address.range()) {
+      // ::ffff:0:0/96 IPv4-mapped (RFC 4291) and ::ffff:0:0:0/96 IPv4-translated (RFC 6145)
+      case 'ipv4Mapped':
+      case 'rfc6145':
+        return isPrivateAddress(ipv4FromGroups(parts[6], parts[7]));
+      // 64:ff9b::/96 NAT64 well-known prefix (RFC 6052). The 64:ff9b:1::/48 local-use
+      // prefix (RFC 8215) has a network-specific IPv4 position, so it stays blocked.
+      case 'rfc6052':
+        if (address.match(NAT64_WELL_KNOWN)) {
+          return isPrivateAddress(ipv4FromGroups(parts[6], parts[7]));
         }
-    } catch {
-        // URL parsing failed
+        return true;
+      // 2002::/16 6to4 (RFC 3056)
+      case '6to4':
+        return isPrivateAddress(ipv4FromGroups(parts[1], parts[2]));
     }
-    return null;
-}
+  }
 
-/**
- * Check if a normalized (dotted-decimal) IPv4 address falls in a private/reserved range.
- */
-function isPrivateIPv4(addr) {
-    const parts = addr.split('.');
-    const a = parseInt(parts[0], 10);
-    const b = parseInt(parts[1], 10);
-
-    // 10.0.0.0/8
-    if (a === 10) {
-        return true;
-    }
-    // 172.16.0.0/12
-    if (a === 172 && b >= 16 && b <= 31) {
-        return true;
-    }
-    // 192.168.0.0/16
-    if (a === 192 && b === 168) {
-        return true;
-    }
-    // 127.0.0.0/8
-    if (a === 127) {
-        return true;
-    }
-    // 169.254.0.0/16
-    if (a === 169 && b === 254) {
-        return true;
-    }
-    // 100.64.0.0/10 (carrier-grade NAT, RFC 6598)
-    if (a === 100 && b >= 64 && b <= 127) {
-        return true;
-    }
-    // 198.18.0.0/15 (benchmarking, RFC 2544)
-    if (a === 198 && (b === 18 || b === 19)) {
-        return true;
-    }
-    // 0.0.0.0/8
-    if (a === 0) {
-        return true;
-    }
-    // 240.0.0.0/4 (reserved) and 255.255.255.255 (broadcast)
-    if (a >= 240) {
-        return true;
-    }
-    return false;
+  return address.range() !== 'unicast';
 }
 
 function isPrivateIp(addr) {
-    // Fail closed: treat missing/empty values as private
-    if (!addr) {
-        return true;
-    }
+  // Fail closed: treat missing/empty values as private
+  if (!addr) {
+    return true;
+  }
 
-    // Check for IPv4-mapped IPv6 in dotted notation (e.g. ::ffff:192.168.0.1)
-    const v4DottedMatch = addr.match(/^::ffff:(\d[\d.]+)$/i);
-    if (v4DottedMatch) {
-        const normalized = normalizeIPv4(v4DottedMatch[1]);
-        if (normalized) {
-            return isPrivateIPv4(normalized);
-        }
-        return true;
-    }
-
-    // Check for IPv4-mapped IPv6 in hex notation (e.g. ::ffff:7f00:1)
-    const v4HexMatch = addr.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i);
-    if (v4HexMatch) {
-        const hi = parseInt(v4HexMatch[1], 16);
-        const lo = parseInt(v4HexMatch[2], 16);
-        const mapped = ((hi >> 8) & 0xff) + '.' + (hi & 0xff) + '.' + ((lo >> 8) & 0xff) + '.' + (lo & 0xff);
-        return isPrivateIPv4(mapped);
-    }
-
-    // Try normalizing as IPv4 (handles decimal, octal, hex, and integer notation)
-    const normalized = normalizeIPv4(addr);
-    if (normalized) {
-        return isPrivateIPv4(normalized);
-    }
-
-    // IPv6 checks
-    const normalized6 = normalizeIPv6(addr);
-    if (normalized6) {
-        // ::1 loopback, :: unspecified
-        if (normalized6 === '::1' || normalized6 === '::' || normalized6 === '::0') {
-            return true;
-        }
-        // fc00::/7 unique local
-        if (/^f[cd][0-9a-f]{2}:/i.test(normalized6)) {
-            return true;
-        }
-        // fe80::/10 link-local
-        if (/^fe[89ab][0-9a-f]:/i.test(normalized6)) {
-            return true;
-        }
-        // Re-check for IPv4-mapped IPv6 after normalization
-        // Handles expanded forms like 0:0:0:0:0:ffff:127.0.0.1 which normalize to ::ffff:...
-        const v4DottedNorm = normalized6.match(/^::ffff:(\d[\d.]+)$/i);
-        if (v4DottedNorm) {
-            const normV4 = normalizeIPv4(v4DottedNorm[1]);
-            if (normV4) {
-                return isPrivateIPv4(normV4);
-            }
-            return true;
-        }
-        const v4HexNorm = normalized6.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i);
-        if (v4HexNorm) {
-            const hi = parseInt(v4HexNorm[1], 16);
-            const lo = parseInt(v4HexNorm[2], 16);
-            const mapped = ((hi >> 8) & 0xff) + '.' + (hi & 0xff) + '.' + ((lo >> 8) & 0xff) + '.' + (lo & 0xff);
-            return isPrivateIPv4(mapped);
-        }
-        return false;
-    }
-
+  let address;
+  try {
+    // WHATWG normalization first so every IPv4 form Node will connect to
+    // (decimal, octal, hex, integer, shortened) is parsed the same way
+    address = ipaddr.parse(normalizeIPv4(addr) ?? addr);
+  } catch {
     // Unrecognized format - fail closed
     return true;
+  }
+
+  return isPrivateAddress(address);
 }
 
 async function errorIfHostnameResolvesToPrivateIp(options) {
-    // Allow all requests if we are in development mode
-    if (config.get('env') === 'development') {
-        return;
-    }
+  // Allow all requests if we are in development mode
+  if (config.get('env') === 'development') {
+    return;
+  }
 
-    // allow requests through to local Ghost instance
-    const siteUrl = new URL(config.get('url'));
-    const requestUrl = new URL(options.url.href);
-    if (requestUrl.host === siteUrl.host) {
-        return;
-    }
+  // allow requests through to local Ghost instance
+  const siteUrl = new URL(config.get('url'));
+  const requestUrl = new URL(options.url.href);
+  if (requestUrl.host === siteUrl.host) {
+    return;
+  }
 
-    const result = await dnsPromises.lookup(options.url.hostname);
+  const result = await dnsPromises.lookup(options.url.hostname);
 
-    if (isPrivateIp(result.address)) {
-        return Promise.reject(new errors.InternalServerError({
-            message: 'URL resolves to a non-permitted private IP block',
-            code: 'URL_PRIVATE_INVALID',
-            context: options.url.href
-        }));
-    }
+  if (isPrivateIp(result.address)) {
+    return Promise.reject(
+      new errors.InternalServerError({
+        message: 'URL resolves to a non-permitted private IP block',
+        code: 'URL_PRIVATE_INVALID',
+        context: options.url.href,
+      }),
+    );
+  }
 }
 
 async function errorIfInvalidUrl(options) {
-    if (config.get('env') === 'development') {
-        return;
-    }
+  if (config.get('env') === 'development') {
+    return;
+  }
 
-    if (!options.url.hostname || !validator.isURL(options.url.hostname)) {
-        throw new errors.InternalServerError({
-            message: 'URL invalid.',
-            code: 'URL_MISSING_INVALID',
-            context: options.url.href
-        });
-    }
+  if (!options.url.hostname || !validator.isURL(options.url.hostname)) {
+    throw new errors.InternalServerError({
+      message: 'URL invalid.',
+      code: 'URL_MISSING_INVALID',
+      context: options.url.href,
+    });
+  }
 }
 
 async function disableRetries(options) {
-    // Force disable retries
-    options.retry = {
-        limit: 0,
-        calculateDelay: () => 0
-    };
-    options.timeout = {
-        request: 5000
-    };
+  // Force disable retries
+  options.retry = {
+    limit: 0,
+    calculateDelay: () => 0,
+  };
+  options.timeout = {
+    request: 5000,
+  };
 }
 
 /**
@@ -236,51 +177,109 @@ async function disableRetries(options) {
  * here is the same one Node's http module will connect to.
  */
 function installSafeDnsLookup(options) {
-    if (config.get('env') === 'development') {
-        return;
-    }
+  if (config.get('env') === 'development') {
+    return;
+  }
 
-    const siteUrl = new URL(config.get('url'));
-    if (options.url.host === siteUrl.host) {
-        return;
-    }
+  const siteUrl = new URL(config.get('url'));
+  if (options.url.host === siteUrl.host) {
+    return;
+  }
 
-    const requestHref = options.url.href;
-    // Use 'lookup' (the native http.request option) rather than 'dnsLookup'
-    // (got's public API property which doesn't flow to the native request).
-    options.dnsLookup = (hostname, dnsOpts, callback) => {
-        if (typeof dnsOpts === 'function') {
-            callback = dnsOpts;
-            dnsOpts = {};
+  const requestHref = options.url.href;
+  // Use 'lookup' (the native http.request option) rather than 'dnsLookup'
+  // (got's public API property which doesn't flow to the native request).
+  options.dnsLookup = (hostname, dnsOpts, callback) => {
+    if (typeof dnsOpts === 'function') {
+      callback = dnsOpts;
+      dnsOpts = {};
+    }
+    dns.lookup(hostname, dnsOpts, (err, addressOrResult, family) => {
+      if (err) {
+        return callback(err, addressOrResult, family);
+      }
+      // When all:true, result is an array of {address, family} objects
+      if (dnsOpts && dnsOpts.all) {
+        const results = /** @type {{address: string, family: number}[]} */ (addressOrResult);
+        for (const entry of results) {
+          if (isPrivateIp(entry.address)) {
+            return callback(
+              new errors.InternalServerError({
+                message: 'URL resolves to a non-permitted private IP block',
+                code: 'URL_PRIVATE_INVALID',
+                context: requestHref,
+              }),
+            );
+          }
         }
-        dns.lookup(hostname, dnsOpts, (err, addressOrResult, family) => {
-            if (err) {
-                return callback(err, addressOrResult, family);
-            }
-            // When all:true, result is an array of {address, family} objects
-            if (dnsOpts && dnsOpts.all) {
-                const results = /** @type {{address: string, family: number}[]} */ (addressOrResult);
-                for (const entry of results) {
-                    if (isPrivateIp(entry.address)) {
-                        return callback(new errors.InternalServerError({
-                            message: 'URL resolves to a non-permitted private IP block',
-                            code: 'URL_PRIVATE_INVALID',
-                            context: requestHref
-                        }));
-                    }
-                }
-                return callback(null, results);
-            }
-            if (isPrivateIp(/** @type {string} */ (addressOrResult))) {
-                return callback(new errors.InternalServerError({
-                    message: 'URL resolves to a non-permitted private IP block',
-                    code: 'URL_PRIVATE_INVALID',
-                    context: requestHref
-                }));
-            }
-            callback(null, addressOrResult, family);
-        });
-    };
+        return callback(null, results);
+      }
+      if (isPrivateIp(/** @type {string} */ (addressOrResult))) {
+        return callback(
+          new errors.InternalServerError({
+            message: 'URL resolves to a non-permitted private IP block',
+            code: 'URL_PRIVATE_INVALID',
+            context: requestHref,
+          }),
+        );
+      }
+      callback(null, addressOrResult, family);
+    });
+  };
+}
+
+// fetch requires these statuses to be constructed with a null body
+const NULL_BODY_STATUSES = new Set([101, 103, 204, 205, 304]);
+
+/**
+ * Wraps a Got instance in a fetch-compatible function so libraries that take a
+ * custom fetcher still go through the instance's hooks, agents, and timeouts
+ *
+ * @param {Got} client
+ * @returns {(input: string | URL, init?: RequestInit) => Promise<Response>}
+ */
+function createFetch(client) {
+  return async function fetch(input, init = {}) {
+    let body;
+    if (typeof init.body === 'string') {
+      body = init.body;
+    } else if (init.body instanceof Uint8Array) {
+      body = Buffer.from(init.body);
+    } else if (init.body !== undefined && init.body !== null) {
+      throw new errors.IncorrectUsageError({
+        message: 'externalRequest.fetch only supports string or Uint8Array bodies',
+      });
+    }
+
+    const redirect = init.redirect ?? 'follow';
+
+    const response = await client(input, {
+      method: /** @type {import('got').Method} */ (init.method ?? 'GET'),
+      headers: Object.fromEntries(new Headers(init.headers)),
+      body,
+      signal: init.signal ?? undefined,
+      followRedirect: redirect === 'follow',
+      throwHttpErrors: false,
+      responseType: 'buffer',
+    });
+
+    if (redirect === 'error' && response.statusCode >= 300 && response.statusCode < 400) {
+      throw new errors.InternalServerError({
+        message: 'Unexpected redirect',
+        context: response.url,
+      });
+    }
+
+    const res = new Response(NULL_BODY_STATUSES.has(response.statusCode) ? null : response.body, {
+      status: response.statusCode,
+      statusText: response.statusMessage,
+      // raw pairs keep repeated headers (e.g. set-cookie) that response.headers comma-joins
+      headers: _.chunk(response.rawHeaders, 2),
+    });
+    Object.defineProperty(res, 'url', { value: response.url });
+
+    return res;
+  };
 }
 
 // same as our normal request lib but if any request in a redirect chain resolves
@@ -290,24 +289,25 @@ function installSafeDnsLookup(options) {
 // preventing DNS rebinding attacks where the IP changes between check and connect.
 /** @type {ExtendOptions} */
 const gotOpts = {
-    headers: {
-        'user-agent': 'Ghost(https://github.com/TryGhost/Ghost)'
-    },
-    timeout: {
-        request: 10000
-    }, // default is no timeout
-    agent: {
-        http: httpAgent,
-        https: httpsAgent
-    },
-    hooks: {
-        init: process.env.NODE_ENV?.startsWith('test') ? [disableRetries] : [],
-        beforeRequest: [errorIfInvalidUrl, errorIfHostnameResolvesToPrivateIp, installSafeDnsLookup],
-        beforeRedirect: [errorIfHostnameResolvesToPrivateIp, installSafeDnsLookup]
-    }
+  headers: {
+    'user-agent': 'Ghost(https://github.com/TryGhost/Ghost)',
+  },
+  timeout: {
+    request: 10000,
+  }, // default is no timeout
+  agent: {
+    http: httpAgent,
+    https: httpsAgent,
+  },
+  hooks: {
+    init: process.env.NODE_ENV?.startsWith('test') ? [disableRetries] : [],
+    beforeRequest: [errorIfInvalidUrl, errorIfHostnameResolvesToPrivateIp, installSafeDnsLookup],
+    beforeRedirect: [errorIfHostnameResolvesToPrivateIp, installSafeDnsLookup],
+  },
 };
 
 const externalRequest = got.extend(gotOpts);
 externalRequest.isPrivateIp = isPrivateIp;
 externalRequest._installSafeDnsLookup = installSafeDnsLookup;
+externalRequest.fetch = createFetch(externalRequest);
 module.exports = externalRequest;

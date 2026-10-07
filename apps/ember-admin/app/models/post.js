@@ -17,8 +17,8 @@ const SEARCH_INDEXED_FIELDS = ['title', 'slug', 'status', 'visibility', 'publish
 const {Comparable} = Ember;
 
 function statusCompare(postA, postB) {
-    let status1 = postA.get('status');
-    let status2 = postB.get('status');
+    const status1 = postA.get('status');
+    const status2 = postB.get('status');
 
     // if any of those is empty
     if (!status1 && !status2) {
@@ -49,8 +49,8 @@ function statusCompare(postA, postB) {
 }
 
 function publishedAtCompare(postA, postB) {
-    let published1 = postA.get('publishedAtUTC');
-    let published2 = postB.get('publishedAtUTC');
+    const published1 = postA.get('publishedAtUTC');
+    const published2 = postB.get('publishedAtUTC');
 
     if (!published1 && !published2) {
         return 0;
@@ -229,10 +229,10 @@ export default Model.extend(Comparable, ValidationEngine, {
     }),
 
     previewUrl: computed('uuid', 'ghostPaths.url', 'config.blogUrl', function () {
-        let blogUrl = this.config.blogUrl;
-        let uuid = this.uuid;
+        const blogUrl = this.config.blogUrl;
+        const uuid = this.uuid;
         // routeKeywords.preview: 'p'
-        let previewKeyword = 'p';
+        const previewKeyword = 'p';
         // New posts don't have a preview
         if (!uuid) {
             return '';
@@ -257,7 +257,7 @@ export default Model.extend(Comparable, ValidationEngine, {
                 return 'status:-free';
             }
             if (this.visibility === 'tiers' && this.tiers) {
-                let filter = this.tiers.map((tier) => {
+                const filter = this.tiers.map((tier) => {
                     return `tier:${tier.slug}`;
                 }).join(',');
                 return filter;
@@ -278,9 +278,9 @@ export default Model.extend(Comparable, ValidationEngine, {
     // will only re-compute if this property is being observed elsewhere
     pastScheduledTime: computed('isScheduled', 'publishedAtUTC', 'clock.second', function () {
         if (this.isScheduled) {
-            let now = moment.utc();
-            let publishedAtUTC = this.publishedAtUTC || now;
-            let pastScheduledTime = publishedAtUTC.diff(now, 'hours', true) < 0;
+            const now = moment.utc();
+            const publishedAtUTC = this.publishedAtUTC || now;
+            const pastScheduledTime = publishedAtUTC.diff(now, 'hours', true) < 0;
 
             // force a recompute
             this.get('clock.second');
@@ -296,7 +296,7 @@ export default Model.extend(Comparable, ValidationEngine, {
             return this._getPublishedAtBlogTZ();
         },
         set(key, value) {
-            let momentValue = value ? moment(value) : null;
+            const momentValue = value ? moment(value) : null;
             this._setPublishedAtBlogStrings(momentValue);
             return this._getPublishedAtBlogTZ();
         }
@@ -314,17 +314,17 @@ export default Model.extend(Comparable, ValidationEngine, {
     }),
 
     _getPublishedAtBlogTZ() {
-        let publishedAtUTC = this.publishedAtUTC;
-        let publishedAtBlogDate = this.publishedAtBlogDate;
-        let publishedAtBlogTime = this.publishedAtBlogTime;
-        let blogTimezone = this.settings.timezone;
+        const publishedAtUTC = this.publishedAtUTC;
+        const publishedAtBlogDate = this.publishedAtBlogDate;
+        const publishedAtBlogTime = this.publishedAtBlogTime;
+        const blogTimezone = this.settings.timezone;
 
         if (!publishedAtUTC && isBlank(publishedAtBlogDate) && isBlank(publishedAtBlogTime)) {
             return null;
         }
 
         if (publishedAtBlogDate && publishedAtBlogTime) {
-            let publishedAtBlog = moment.tz(`${publishedAtBlogDate} ${publishedAtBlogTime}`, blogTimezone);
+            const publishedAtBlog = moment.tz(`${publishedAtBlogDate} ${publishedAtBlogTime}`, blogTimezone);
 
             /**
              * Note:
@@ -352,14 +352,14 @@ export default Model.extend(Comparable, ValidationEngine, {
     // TODO: is there a better way to handle this?
     // eslint-disable-next-line ghost/ember/no-observers
     _setPublishedAtBlogTZ: on('init', observer('publishedAtUTC', 'settings.timezone', function () {
-        let publishedAtUTC = this.publishedAtUTC;
+        const publishedAtUTC = this.publishedAtUTC;
         this._setPublishedAtBlogStrings(publishedAtUTC);
     })),
 
     _setPublishedAtBlogStrings(momentDate) {
         if (momentDate) {
-            let blogTimezone = this.settings.timezone;
-            let publishedAtBlog = moment.tz(momentDate, blogTimezone);
+            const blogTimezone = this.settings.timezone;
+            const publishedAtBlog = moment.tz(momentDate, blogTimezone);
 
             this.set('publishedAtBlogDate', publishedAtBlog.format('YYYY-MM-DD'));
             this.set('publishedAtBlogTime', publishedAtBlog.format('HH:mm'));
@@ -374,8 +374,8 @@ export default Model.extend(Comparable, ValidationEngine, {
     // when returned from the server with ids.
     // https://github.com/emberjs/data/issues/1829
     updateTags() {
-        let tags = this.tags;
-        let oldTags = tags.filterBy('id', null);
+        const tags = this.tags;
+        const oldTags = tags.filterBy('id', null);
 
         tags.removeObjects(oldTags);
         oldTags.invoke('deleteRecord');
@@ -391,12 +391,8 @@ export default Model.extend(Comparable, ValidationEngine, {
     //     updatedAt: DESC
     //     id: DESC
     compare(postA, postB) {
-        let updated1 = postA.get('updatedAtUTC');
-        let updated2 = postB.get('updatedAtUTC');
-        let idResult,
-            publishedAtResult,
-            statusResult,
-            updatedAtResult;
+        const updated1 = postA.get('updatedAtUTC');
+        const updated2 = postB.get('updatedAtUTC');
 
         // when `updatedAt` is undefined, the model is still
         // being written to with the results from the server
@@ -409,10 +405,10 @@ export default Model.extend(Comparable, ValidationEngine, {
         }
 
         // TODO: revisit the ID sorting because we no longer have auto-incrementing IDs
-        idResult = compare(postA.get('id'), postB.get('id'));
-        statusResult = statusCompare(postA, postB);
-        updatedAtResult = compare(updated1.valueOf(), updated2.valueOf());
-        publishedAtResult = publishedAtCompare(postA, postB);
+        const idResult = compare(postA.get('id'), postB.get('id'));
+        const statusResult = statusCompare(postA, postB);
+        const updatedAtResult = compare(updated1.valueOf(), updated2.valueOf());
+        const publishedAtResult = publishedAtCompare(postA, postB);
 
         if (statusResult === 0) {
             if (publishedAtResult === 0) {
@@ -436,8 +432,8 @@ export default Model.extend(Comparable, ValidationEngine, {
     // the publishedAtBlog{Date/Time} strings are set separately so they can be
     // validated, grab that time if it exists and set the publishedAtUTC
     beforeSave() {
-        let publishedAtBlogTZ = this.publishedAtBlogTZ;
-        let publishedAtUTC = publishedAtBlogTZ ? publishedAtBlogTZ.utc() : null;
+        const publishedAtBlogTZ = this.publishedAtBlogTZ;
+        const publishedAtUTC = publishedAtBlogTZ ? publishedAtBlogTZ.utc() : null;
         this.set('publishedAtUTC', publishedAtUTC);
     },
 

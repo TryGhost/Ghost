@@ -1,96 +1,100 @@
-import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { useBrowseConfig } from "@tryghost/admin-x-framework/api/config";
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
+import { getListReturnNavigationState } from '@/shared/virtual-list/list-return-state';
+import type { EmberNotificationsHost } from './ember-notifications-host';
 
 export interface EmberBridge {
-    state: StateBridge;
+  state: StateBridge;
 }
 
 export type StateBridgeEventMap = {
-    emberDataChange: EmberDataChangeEvent;
-    emberAuthChange: EmberAuthChangeEvent;
-    subscriptionChange: SubscriptionState;
-    sidebarVisibilityChange: SidebarVisibilityChangeEvent;
-    routeChange: RouteChangeEvent;
-    openGiftLinkModal: OpenGiftLinkModalEvent;
-    featureFlagsChange: undefined;
-}
+  emberDataChange: EmberDataChangeEvent;
+  emberAuthChange: EmberAuthChangeEvent;
+  subscriptionChange: SubscriptionState;
+  sidebarVisibilityChange: SidebarVisibilityChangeEvent;
+  featureFlagsChange: undefined;
+  restoreListState: { path: string };
+};
+
+export type AdminThemeMode = 'light' | 'dark' | 'system';
 
 export interface StateBridge {
-    onUpdate: (dataType: string, response: unknown) => void;
-    onInvalidate: (dataType: string) => void;
-    onDelete: (dataType: string, id: string) => void;
-    isFeatureEnabled?: (name: string) => boolean | undefined;
-    preloadAdminThemeStylesheet?: () => Promise<void>;
-    applyAdminThemePreference?: (mode: 'light' | 'dark' | 'system') => Promise<void> | void;
-    on<K extends keyof StateBridgeEventMap>(event: K, callback: (event: StateBridgeEventMap[K]) => void): void;
-    off<K extends keyof StateBridgeEventMap>(event: K, callback: (event: StateBridgeEventMap[K]) => void): void;
-    sidebarVisible: boolean;
-    getRouteUrl: (routeName: string, queryParams?: Record<string, string | null> | null) => string;
-    isRouteActive: (routeNames: string | string[], queryParams?: Record<string, string | null> | null) => boolean;
+  onUpdate: (dataType: string, response: unknown) => void;
+  onInvalidate: (dataType: string) => void;
+  onDelete: (dataType: string, id: string) => void;
+  refreshFeatureFlagOverrides?: () => void;
+  isFeatureEnabled?: (name: string) => boolean | undefined;
+  preloadAdminThemeStylesheet?: () => Promise<void>;
+  applyAdminThemePreference?: (mode: AdminThemeMode) => Promise<void> | void;
+  navigateToBillingSubRoute?: (subRoute: string) => void;
+  setPostListQueryParams?: (resource: 'posts' | 'pages', params: Record<string, string>) => void;
+  setReactFullScreen?: (isFullScreen: boolean) => void;
+  setReactRoutePattern?: (routePattern: string | null) => void;
+  connectNotificationsHost?: (host: EmberNotificationsHost) => () => void;
+  on<K extends keyof StateBridgeEventMap>(
+    event: K,
+    callback: (event: StateBridgeEventMap[K]) => void,
+  ): void;
+  off<K extends keyof StateBridgeEventMap>(
+    event: K,
+    callback: (event: StateBridgeEventMap[K]) => void,
+  ): void;
+  sidebarVisible: boolean;
 }
 
 declare global {
-    interface Window {
-        EmberBridge?: EmberBridge;
-    }
+  interface Window {
+    EmberBridge?: EmberBridge;
+  }
 }
 
 export interface EmberDataChangeEvent {
-    operation: 'update' | 'create' | 'delete';
-    modelName: string;
-    id: string;
-    data: Record<string, unknown> | null;
+  operation: 'update' | 'create' | 'delete';
+  modelName: string;
+  id: string;
+  data: Record<string, unknown> | null;
 }
 
 export interface EmberAuthChangeEvent {
-    isAuthenticated: boolean;
+  isAuthenticated: boolean;
 }
 
 export interface SubscriptionState {
-    subscription?: {
-        isActiveTrial: boolean;
-        trial_end: string | null;
-        status: string;
-    };
+  subscription?: {
+    isActiveTrial: boolean;
+    trial_end: string | null;
+    status: string;
+  };
 }
 
 export interface SidebarVisibilityChangeEvent {
-    isVisible: boolean;
+  isVisible: boolean;
 }
-
-export interface RouteChangeEvent {
-    routeName: string;
-    queryParams: Record<string, unknown>;
-}
-
-export interface OpenGiftLinkModalEvent {
-    id: string;
-    resource: 'posts' | 'pages';
-}
-
-export type EmberRouting = Pick<StateBridge, 'getRouteUrl' | 'isRouteActive'>;
 
 /**
  * Maps Ember Data model names to React ResponseType strings.
  * This is the inverse of emberDataTypeMapping in state-bridge.js
  */
 const EMBER_TO_REACT_TYPE_MAPPING: Record<string, string> = {
-    'integration': 'IntegrationsResponseType',
-    'invite': 'InvitesResponseType',
-    'offer': 'OffersResponseType',
-    'newsletter': 'NewslettersResponseType',
-    'recommendation': 'RecommendationResponseType',
-    'setting': 'SettingsResponseType',
-    'theme': 'ThemesResponseType',
-    'tier': 'TiersResponseType',
-    'user': 'UsersResponseType',
-    'post': 'PostsResponseType',
-    'member': 'MembersResponseType',
-    'comment': 'CommentsResponseType',
-    'tag': 'TagsResponseType',
-    'label': 'LabelsResponseType',
-    'webhook': 'WebhooksResponseType'
+  integration: 'IntegrationsResponseType',
+  invite: 'InvitesResponseType',
+  offer: 'OffersResponseType',
+  newsletter: 'NewslettersResponseType',
+  recommendation: 'RecommendationResponseType',
+  setting: 'SettingsResponseType',
+  theme: 'ThemesResponseType',
+  tier: 'TiersResponseType',
+  user: 'UsersResponseType',
+  post: 'PostsResponseType',
+  // Without this, saving a page in the (Ember) editor never invalidates the
+  // React pages list, so a newly created page only appears after a manual
+  // refresh. Harmless while Ember owned /pages; visible as soon as React does.
+  page: 'PagesResponseType',
+  member: 'MembersResponseType',
+  tag: 'TagsResponseType',
+  label: 'LabelsResponseType',
+  snippet: 'SnippetsResponseType',
 };
 
 /**
@@ -102,47 +106,47 @@ const EMBER_TO_REACT_TYPE_MAPPING: Record<string, string> = {
  * @returns Function to unsubscribe from the StateBridge polling
  */
 function waitForStateBridge(onReady: (stateBridge: StateBridge) => void): () => void {
-    if (typeof window === 'undefined') {
-        return () => {};
-    }
+  if (typeof window === 'undefined') {
+    return () => {};
+  }
 
+  if (window.EmberBridge?.state) {
+    onReady(window.EmberBridge.state);
+    return () => {};
+  }
+
+  const interval = setInterval(() => {
     if (window.EmberBridge?.state) {
-        onReady(window.EmberBridge.state);
-        return () => {};
+      clearInterval(interval);
+      onReady(window.EmberBridge.state);
     }
+  }, 100);
 
-    const interval = setInterval(() => {
-        if (window.EmberBridge?.state) {
-            clearInterval(interval);
-            onReady(window.EmberBridge.state);
-        }
-    }, 100);
-
-    return () => clearInterval(interval);
+  return () => clearInterval(interval);
 }
 
 function onEmberStateBridgeEvent<K extends keyof StateBridgeEventMap>(
-    event: K,
-    handler: (event: StateBridgeEventMap[K]) => void,
-    onReady?: () => void
+  event: K,
+  handler: (event: StateBridgeEventMap[K]) => void,
+  onReady?: () => void,
 ): () => void {
-    let unsubscribe: (() => void) | null = null;
-    let isMounted = true;
+  let unsubscribe: (() => void) | null = null;
+  let isMounted = true;
 
-    const stopPolling = waitForStateBridge((stateBridge) => {
-        if (!isMounted) {
-            return;
-        }
-        stateBridge.on(event, handler);
-        unsubscribe = () => stateBridge.off(event, handler);
-        onReady?.();
-    });
+  const stopPolling = waitForStateBridge((stateBridge) => {
+    if (!isMounted) {
+      return;
+    }
+    stateBridge.on(event, handler);
+    unsubscribe = () => stateBridge.off(event, handler);
+    onReady?.();
+  });
 
-    return () => {
-        isMounted = false;
-        stopPolling();
-        unsubscribe?.();
-    };
+  return () => {
+    isMounted = false;
+    stopPolling();
+    unsubscribe?.();
+  };
 }
 
 /**
@@ -155,30 +159,40 @@ function onEmberStateBridgeEvent<K extends keyof StateBridgeEventMap>(
  * called once at the app level. It will be removed once the migration is complete.
  */
 export function useEmberDataSync() {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    useEffect(() => {
-        const handleEmberDataChange = (event: EmberDataChangeEvent) => {
-            const { modelName } = event;
-            const reactDataType = EMBER_TO_REACT_TYPE_MAPPING[modelName];
+  useEffect(() => {
+    const handleEmberDataChange = (event: EmberDataChangeEvent) => {
+      const { modelName } = event;
+      const reactDataType = EMBER_TO_REACT_TYPE_MAPPING[modelName];
 
-            if (!reactDataType) {
-                // Model not configured for syncing, ignore
-                return;
-            }
+      if (!reactDataType) {
+        // Model not configured for syncing, ignore
+        return;
+      }
 
-            // Invalidate all queries matching this data type
-            void queryClient.invalidateQueries({
-                predicate: (query) => {
-                    // Query keys are structured as [dataType, url]
-                    return query.queryKey[0] === reactDataType;
-                }
-            });
-        };
+      /**
+       * Saving a post or page can *create* tags: a tag typed into the
+       * editor is written as part of that post's own save, as an embedded
+       * relation. Ember therefore reports a `post` change and never a
+       * `tag` one — so without this the posts list's tag filter keeps
+       * serving a cached list, and a tag the user just made is missing
+       * from it until a full browser reload.
+       */
+      const alsoInvalidate =
+        modelName === 'post' || modelName === 'page' ? ['TagsResponseType'] : [];
+      const dataTypes = new Set([reactDataType, ...alsoInvalidate]);
 
-        return onEmberStateBridgeEvent('emberDataChange', handleEmberDataChange);
-    }, [queryClient]);
+      void queryClient.invalidateQueries({
+        predicate: (query) => {
+          // Query keys are structured as [dataType, url]
+          return dataTypes.has(query.queryKey[0] as string);
+        },
+      });
+    };
 
+    return onEmberStateBridgeEvent('emberDataChange', handleEmberDataChange);
+  }, [queryClient]);
 }
 
 /**
@@ -192,32 +206,57 @@ export function useEmberDataSync() {
  */
 
 export function useEmberAuthSync() {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    useEffect(() => {
-        const handleEmberAuthChange = (event: EmberAuthChangeEvent) => {
-            if (event.isAuthenticated) {
-                void queryClient.invalidateQueries();
-            }
-        };
+  useEffect(() => {
+    const handleEmberAuthChange = (event: EmberAuthChangeEvent) => {
+      if (event.isAuthenticated) {
+        void queryClient.invalidateQueries();
+      }
+    };
 
-        return onEmberStateBridgeEvent('emberAuthChange', handleEmberAuthChange);
-    }, [queryClient]);
+    return onEmberStateBridgeEvent('emberAuthChange', handleEmberAuthChange);
+  }, [queryClient]);
+}
 
+/** Ember writes the destination hash before asking React to restore list state. */
+export function useEmberListReturnSync() {
+  useEffect(
+    () =>
+      onEmberStateBridgeEvent('restoreListState', ({ path }) => {
+        const returnState = getListReturnNavigationState(path);
+        if (!returnState) {
+          return;
+        }
+        const state = window.history.state as Record<string, unknown> | null;
+        const userState = state?.usr;
+        window.history.replaceState(
+          {
+            ...state,
+            usr: {
+              ...(userState && typeof userState === 'object' ? userState : {}),
+              ...returnState,
+            },
+          },
+          '',
+        );
+      }),
+    [],
+  );
 }
 
 export function useSubscriptionStatus() {
-    const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionState | null>(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionState | null>(null);
 
-    useEffect(() => {
-        const handleSubscriptionChange = (payload: SubscriptionState) => {
-            setSubscriptionStatus(payload);
-        };
+  useEffect(() => {
+    const handleSubscriptionChange = (payload: SubscriptionState) => {
+      setSubscriptionStatus(payload);
+    };
 
-        return onEmberStateBridgeEvent('subscriptionChange', handleSubscriptionChange);
-    }, []);
+    return onEmberStateBridgeEvent('subscriptionChange', handleSubscriptionChange);
+  }, []);
 
-    return subscriptionStatus;
+  return subscriptionStatus;
 }
 
 /**
@@ -226,40 +265,143 @@ export function useSubscriptionStatus() {
  * `undefined` means there is no Ember feature reader (standalone React).
  */
 export function useEmberFeatureFlag(flag: string): boolean | null | undefined {
-    const subscribe = useCallback((callback: () => void) => {
-        return onEmberStateBridgeEvent('featureFlagsChange', callback, callback);
-    }, []);
-    const getSnapshot = useCallback(() => {
-        const stateBridge = window.EmberBridge?.state;
-        if (!stateBridge?.isFeatureEnabled) {
-            return undefined;
-        }
-        return stateBridge.isFeatureEnabled(flag) ?? null;
-    }, [flag]);
+  const subscribe = useCallback((callback: () => void) => {
+    return onEmberStateBridgeEvent('featureFlagsChange', callback, callback);
+  }, []);
+  const getSnapshot = useCallback(() => {
+    const stateBridge = window.EmberBridge?.state;
+    if (!stateBridge?.isFeatureEnabled) {
+      return undefined;
+    }
+    return stateBridge.isFeatureEnabled(flag) ?? null;
+  }, [flag]);
 
-    return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
 
 /**
- * Subscribes to Ember's request to open the (React-owned) gift-link modal.
+ * Whether Ember owns the DOM theme. In the embedded admin, Ember manages the
+ * `dark` class and the dark stylesheet, and installs its own
+ * prefers-color-scheme listener, so React must not apply the theme itself.
  *
- * Ember surfaces — the posts/pages list context menu — fire `openGiftLinkModal`
- * over the bridge instead of rendering their own modal. The consumer owns the
- * modal's open/close state and just reacts to each request. Returns an
- * unsubscribe function.
+ * Deliberately a synchronous snapshot (no waitForStateBridge): theme effects
+ * need the answer at effect time and fall back to applying the theme
+ * themselves while the bridge is absent.
  */
-export function subscribeOpenGiftLinkModal(handler: (event: OpenGiftLinkModalEvent) => void): () => void {
-    return onEmberStateBridgeEvent('openGiftLinkModal', handler);
+export function isEmberThemeManaged(): boolean {
+  return typeof window !== 'undefined' && Boolean(window.EmberBridge);
 }
+
+/**
+ * Preloads Ember's dark stylesheet so a subsequent theme switch lands without
+ * a flash. Resolves immediately when no bridge (or an older Ember without the
+ * method) is present.
+ */
+export async function preloadEmberAdminThemeStylesheet(): Promise<void> {
+  await window.EmberBridge?.state.preloadAdminThemeStylesheet?.();
+}
+
+/**
+ * Asks Ember to apply an admin theme preference. Returns false when no bridge
+ * (or an older Ember without the method) is present, so the caller can fall
+ * back to applying the theme itself.
+ */
+export function applyEmberAdminThemePreference(mode: AdminThemeMode): boolean {
+  const stateBridge = window.EmberBridge?.state;
+  if (!stateBridge?.applyAdminThemePreference) {
+    return false;
+  }
+  void stateBridge.applyAdminThemePreference(mode);
+  return true;
+}
+
+/**
+ * Hands a billing app sub-route straight to Ember's billing app, for when the
+ * billing route is already showing. Returns false when no bridge is present.
+ */
+export function navigateEmberBillingSubRoute(subRoute: string): boolean {
+  const stateBridge = window.EmberBridge?.state;
+  if (!stateBridge?.navigateToBillingSubRoute) {
+    return false;
+  }
+  stateBridge.navigateToBillingSubRoute(subRoute);
+  return true;
+}
+
+/** Keep the Ember editor's breadcrumb in sync with the React list. */
+export function syncEmberPostListQueryParams(
+  resource: 'posts' | 'pages',
+  params: Record<string, string>,
+): () => void {
+  return waitForStateBridge((stateBridge) => {
+    stateBridge.setPostListQueryParams?.(resource, params);
+  });
+}
+
+/** Tells Ember whether React's current route hides the admin sidebar. */
+export function syncEmberFullScreen(isFullScreen: boolean): () => void {
+  return waitForStateBridge((stateBridge) => {
+    stateBridge.setReactFullScreen?.(isFullScreen);
+  });
+}
+
+/** Tells Ember the pattern of the React route showing, or null while Ember shows its own. */
+export function syncEmberRoutePattern(routePattern: string | null): () => void {
+  return waitForStateBridge((stateBridge) => {
+    stateBridge.setReactRoutePattern?.(routePattern);
+  });
+}
+
+/**
+ * Hands Ember's notifications to a React host once the bridge is ready.
+ * Returns a disconnect that also cancels a connection still waiting.
+ */
+export function connectEmberNotificationsHost(host: EmberNotificationsHost): () => void {
+  let disconnect: (() => void) | undefined;
+  let isConnected = true;
+
+  const stopPolling = waitForStateBridge((stateBridge) => {
+    if (isConnected) {
+      disconnect = stateBridge.connectNotificationsHost?.(host);
+    }
+  });
+
+  return () => {
+    isConnected = false;
+    stopPolling();
+    disconnect?.();
+  };
+}
+
+/**
+ * React -> Ember handlers for the FrameworkProvider. Feature flag overrides
+ * wait for Ember to load; mutation handlers no-op when the bridge is absent.
+ */
+export const emberMutationHandlers = {
+  onFeatureFlagOverridesChange: (): (() => void) => {
+    return waitForStateBridge((stateBridge) => {
+      stateBridge.refreshFeatureFlagOverrides?.();
+    });
+  },
+  onUpdate: (dataType: string, response: unknown): void => {
+    window.EmberBridge?.state.onUpdate(dataType, response);
+  },
+  onInvalidate: (dataType: string): void => {
+    window.EmberBridge?.state.onInvalidate(dataType);
+  },
+  onDelete: (dataType: string, id: string): void => {
+    window.EmberBridge?.state.onDelete(dataType, id);
+  },
+};
 
 // External store for sidebar visibility state
 function subscribeSidebarVisibility(callback: () => void): () => void {
-    return onEmberStateBridgeEvent('sidebarVisibilityChange', callback);
+  return onEmberStateBridgeEvent('sidebarVisibilityChange', callback);
 }
 
 function getSidebarVisibility(): boolean {
-    // Always read from Ember as the source of truth
-    return window.EmberBridge?.state.sidebarVisible ?? true;
+  // Always read from Ember as the source of truth
+  return window.EmberBridge?.state.sidebarVisible ?? true;
 }
 
 /**
@@ -272,86 +414,43 @@ function getSidebarVisibility(): boolean {
  * removed once the editor is ported to React.
  */
 export function useSidebarVisibility(): boolean {
-    return useSyncExternalStore(
-        subscribeSidebarVisibility,
-        getSidebarVisibility,
-        getSidebarVisibility // Server snapshot (same as client for now)
-    );
-}
-
-// Default no-op routing for when the bridge isn't available yet
-const defaultRouting: EmberRouting = {
-    getRouteUrl: (routeName) => routeName,
-    isRouteActive: () => false
-};
-
-/**
- * Hook to access Ember routing state.
- * Returns routing methods that re-render when Ember's route changes.
- *
- * @example
- * ```tsx
- * const routing = useEmberRouting();
- * const postsUrl = routing.getRouteUrl('posts');
- * const customUrl = routing.getRouteUrl('posts', {type: 'draft'});
- * const isActive = routing.isRouteActive('posts', {type: 'draft'});
- * ```
- */
-export function useEmberRouting(): EmberRouting {
-    const [bridge, setBridge] = useState<StateBridge | null>(() => window.EmberBridge?.state ?? null);
-    const [, forceUpdate] = useState(0);
-
-    useEffect(() => {
-        // Wait for bridge to be available
-        if (!bridge) {
-            return waitForStateBridge(setBridge);
-        }
-
-        // Subscribe to route changes to force re-renders
-        const handleRouteChange = () => {
-            forceUpdate(n => n + 1);
-        };
-
-        bridge.on('routeChange', handleRouteChange);
-        return () => bridge.off('routeChange', handleRouteChange);
-    }, [bridge]);
-
-    // Return default no-op routing until bridge is available
-    if (!bridge) {
-        return defaultRouting;
-    }
-
-    return {
-        getRouteUrl: bridge.getRouteUrl,
-        isRouteActive: bridge.isRouteActive
-    };
+  return useSyncExternalStore(
+    subscribeSidebarVisibility,
+    getSidebarVisibility,
+    getSidebarVisibility, // Server snapshot (same as client for now)
+  );
 }
 
 /**
  * Hook to get the forceUpgrade state.
  *
  * Returns true when the site is in force upgrade mode (requires billing action).
+ * Returns undefined while the initial config request is loading.
  *
  * Force upgrade state is determined by:
  * 1. Config hostSettings.forceUpgrade (set by server, requires restart to change)
  * 2. Subscription status (if subscription becomes 'active', forceUpgrade is cleared)
  */
-export function useForceUpgrade(): boolean {
-    const { data: config } = useBrowseConfig();
-    const subscriptionStatus = useSubscriptionStatus();
+export function useForceUpgrade(): boolean | undefined {
+  const { data: config, isLoading } = useBrowseConfig();
+  const subscriptionStatus = useSubscriptionStatus();
 
-    const configForceUpgrade = config?.config?.hostSettings?.forceUpgrade;
+  if (isLoading) {
+    return undefined;
+  }
 
-    // If config doesn't have forceUpgrade, we're not in force upgrade mode
-    if (!configForceUpgrade) {
-        return false;
-    }
+  const configForceUpgrade = config?.config?.hostSettings?.forceUpgrade;
 
-    // If subscription has become active, billing was completed successfully
-    // The server config hasn't restarted yet, but we can clear forceUpgrade locally
-    if (subscriptionStatus?.subscription?.status === 'active') {
-        return false;
-    }
+  // If config doesn't have forceUpgrade, we're not in force upgrade mode
+  if (!configForceUpgrade) {
+    return false;
+  }
 
-    return true;
+  // If subscription has become active, billing was completed successfully
+  // The server config hasn't restarted yet, but we can clear forceUpgrade locally
+  if (subscriptionStatus?.subscription?.status === 'active') {
+    return false;
+  }
+
+  return true;
 }

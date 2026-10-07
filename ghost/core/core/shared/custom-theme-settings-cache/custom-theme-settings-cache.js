@@ -1,27 +1,27 @@
 module.exports = class CustomThemeSettingsCache {
-    constructor() {
-        this._content = new Object();
-    }
+  constructor() {
+    this._content = new Object();
+  }
 
-    get(key) {
-        return this._content[key];
-    }
+  get(key) {
+    return this._content[key];
+  }
 
-    getAll() {
-        return Object.assign({}, this._content);
-    }
+  getAll() {
+    return Object.assign({}, this._content);
+  }
 
-    populate(settings) {
-        this.clear();
+  populate(settings) {
+    this.clear();
 
-        settings.forEach((setting) => {
-            this._content[setting.key] = setting.value;
-        });
-    }
+    settings.forEach((setting) => {
+      this._content[setting.key] = setting.value;
+    });
+  }
 
-    clear() {
-        for (const key in this._content) {
-            delete this._content[key];
-        }
+  clear() {
+    for (const key in this._content) {
+      delete this._content[key];
     }
+  }
 };

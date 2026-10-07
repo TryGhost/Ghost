@@ -7,7 +7,7 @@
 // contract onto vitest's globals.
 //
 // Execution model: one Ghost server == one process (Ghost's db/knex,
-// @tryghost/domain-events, the jobs manager, nconf, settings cache, and the url
+// @tryghost/domain-events, the jobs service, nconf, settings cache, and the url
 // service are all module-level singletons that are reset in place between boots,
 // never duplicated). The DB suites therefore run in a single non-isolated worker
 // — `isolate: false` so the module registry (and the booted server) is shared
@@ -16,7 +16,7 @@
 // forks-based parallel model, where each fork is its own process with its own
 // DB) never collide.
 
-import {beforeAll, beforeEach, afterEach, afterAll} from 'vitest';
+import { beforeAll, beforeEach, afterEach, afterAll } from 'vitest';
 
 const crypto = require('crypto');
 const chalk = require('chalk');
@@ -27,62 +27,28 @@ const chalk = require('chalk');
 // run before any Ghost source is required below.
 require('tsx/cjs');
 
-// Reject vitest's own `NODE_ENV='test'` default (Ghost has no config.test.json);
-// keep any `testing*` value (CI uses `testing-mysql`), else default to `testing`.
-process.env.NODE_ENV = process.env.NODE_ENV?.startsWith('testing') ? process.env.NODE_ENV : 'testing';
+// DB-backed suites run against MySQL. Reject vitest's own `NODE_ENV='test'`
+// default (Ghost has no config.test.json) by setting the MySQL test environment
+// before config loads.
+process.env.NODE_ENV = 'testing-mysql';
 process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_SECRET';
 
 // Generate unique session values for database and port BEFORE loading Ghost, so
-// nconf picks them up naturally via nconf.env(). Worker threads spawned by bree
-// inherit these env vars and get the same values when they load a fresh nconf
-// instance.
+// nconf picks them up naturally via nconf.env().
 //
-// Each worker is its own process, so it gets its own database — that's what lets
-// the DB suites run fork-parallel. The per-fork sessionId is appended
-// even to a CI-pinned *base*: the sqlite leg exports a single
-// database__connection__filename=/dev/shm/ghost-test.db for the whole job, so
-// without a unique suffix every fork would hammer the same file. (The mysql leg
-// pins only host/port, so the database name is generated outright here.)
-//
-// sqlite names are keyed on VITEST_POOL_ID (1..poolSize, like the port below) so
-// a run reuses ~poolSize stable files instead of leaving a fresh random DB in
-// /tmp every run — that bounded reuse is what stops local /tmp accumulation.
-// A reused file still holds the prior fork's data, though, and Ghost reads it at
-// boot (settings cache, url service) before the suite resets — which corrupts
-// whichever file lands on the slot (null Owner, stale URLs, bad export). So the
-// file is deleted just below, before Ghost loads, so a reused slot boots from
-// nothing exactly as a fresh name would. mysql keeps a random per-fork name: it
-// has no /tmp to bound (CI databases die with the job) and a random name sidesteps
-// the same stale-reuse hazard without a pre-boot DROP.
-const poolSlot = parseInt(process.env.VITEST_POOL_ID || '', 10);
-const sqliteId = Number.isInteger(poolSlot)
-    ? `pool_${poolSlot}`
-    : crypto.randomBytes(4).toString('hex');
-const sqliteBase = process.env.database__connection__filename;
-process.env.database__connection__filename = sqliteBase
-    ? `${sqliteBase.replace(/\.db$/i, '')}-${sqliteId}.db`
-    : `/tmp/ghost-test-${sqliteId}.db`;
-const mysqlId = crypto.randomBytes(4).toString('hex');
-const mysqlBase = process.env.database__connection__database;
-process.env.database__connection__database = mysqlBase
-    ? `${mysqlBase}_${mysqlId}`
-    : `ghost_testing_${mysqlId}`;
-
-// Delete this slot's leftover sqlite file (+ sidecars) before Ghost loads, so a
-// reused pool name boots from a clean slate — see the note above. SQLITE LEG ONLY:
-// on the mysql leg (NODE_ENV testing-mysql) this derived filename is never ours —
-// it belongs to a concurrent sqlite run on the same machine, and deleting it out
-// from under that run destroys its database mid-write (SQLITE_READONLY). force:true
-// makes the sqlite delete a no-op on a slot's first use.
-if (!process.env.NODE_ENV.includes('mysql')) {
-    for (const suffix of ['', '-journal', '-wal', '-shm', '-orig']) {
-        try {
-            require('fs').rmSync(process.env.database__connection__filename + suffix, {force: true});
-        } catch (e) {
-            // best effort — a fresh boot recreates it
-        }
-    }
+// Each worker gets its own random database under the run prefix established by
+// globalSetup. The prefix lets global teardown discover and remove every schema
+// after the workers exit, including locally where the MySQL volume persists.
+const mysqlBase = process.env.GHOST_TEST_DB_BASE;
+const mysqlRunId = process.env.GHOST_TEST_DB_RUN_ID;
+if (!mysqlBase || !mysqlRunId) {
+  throw new Error('DB test setup requires vitest-global-db-setup.ts');
 }
+if (!process.env.GHOST_TEST_DB_WORKER_DATABASE) {
+  const mysqlId = crypto.randomBytes(4).toString('hex');
+  process.env.GHOST_TEST_DB_WORKER_DATABASE = `${mysqlBase}_${mysqlRunId}_${mysqlId}`;
+}
+process.env.database__connection__database = process.env.GHOST_TEST_DB_WORKER_DATABASE;
 
 // Flush this worker's V8 coverage after every file. The external c8 collector
 // reads NODE_V8_COVERAGE, which Node writes only on a clean process exit — but
@@ -95,22 +61,14 @@ if (!process.env.NODE_ENV.includes('mysql')) {
 // writes each file's coverage to disk before its worker is torn down, so c8
 // captures every file. No-op off coverage runs.
 if (process.env.NODE_V8_COVERAGE) {
-    afterAll(() => {
-        try {
-            require('v8').takeCoverage();
-        } catch (e) {
-            // best effort
-        }
-    });
+  afterAll(() => {
+    try {
+      require('v8').takeCoverage();
+    } catch (e) {
+      // best effort
+    }
+  });
 }
-
-// NOTE: each worker still leaves a DB behind — vitest force-terminates its
-// workers, so a process 'exit' handler can't reclaim them. sqlite stays bounded:
-// the next worker on a slot deletes the file at boot (see the derivation above)
-// and recreates it, so a run reuses at most ~poolSize files in /tmp instead of
-// leaving a fresh random one behind every run. mysql names are random per worker
-// but ephemeral on CI (the container dies with the job); locally the mysql suite
-// is rarely run.
 
 const canonicalTestPort = 2369;
 // The per-fork port must be unique among forks running concurrently. Each test
@@ -118,16 +76,20 @@ const canonicalTestPort = 2369;
 // supertest.agent(config.get('url'))); if two concurrent forks land on the same
 // port, one Ghost ends up serving the other's requests — or boots unready — and
 // every request 404s with an HTML body (e.g. the whole invites suite failing
-// intermittently). vitest gives each concurrent fork a distinct VITEST_POOL_ID
-// (1..poolSize); a recycled slot's port is reused only after its previous fork
-// has exited and freed it, so base+poolId never collides among live forks. The
-// old `Math.random()` port in a 7630-wide range collided often enough across ~90
-// parallel boots to flake. (The DB name already uses a 2^32 sessionId, which is
-// collision-resistant; only the port was under-spread.)
+// intermittently). globalSetup reserves a run-scoped low-port block with a
+// MySQL advisory lock, and vitest gives each concurrent fork a distinct
+// VITEST_POOL_ID within that block. A recycled slot's port is reused only after
+// its previous fork has exited and freed it.
 const poolId = parseInt(process.env.VITEST_POOL_ID || '', 10);
-const derivedPort = Number.isInteger(poolId)
-    ? 2370 + poolId
-    : 2370 + Math.floor(Math.random() * 7630);
+const portBase = parseInt(process.env.GHOST_TEST_PORT_BASE || '', 10);
+const portBlockSize = parseInt(process.env.GHOST_TEST_PORT_BLOCK_SIZE || '', 10);
+if (!Number.isInteger(portBase) || !Number.isInteger(portBlockSize)) {
+  throw new Error('DB test setup requires a reserved port block');
+}
+if (Number.isInteger(poolId) && (poolId < 1 || poolId >= portBlockSize)) {
+  throw new Error(`VITEST_POOL_ID ${poolId} is outside the reserved port block`);
+}
+const derivedPort = portBase + (Number.isInteger(poolId) ? poolId : 0);
 process.env.server__port = process.env.server__port || String(derivedPort);
 process.env.url = process.env.url || `http://127.0.0.1:${process.env.server__port}`;
 const sessionPort = parseInt(process.env.server__port, 10);
@@ -136,46 +98,49 @@ const sessionPort = parseInt(process.env.server__port, 10);
 // vars set above.
 require('../../core/server/overrides');
 
+// Tests swap url config at runtime, so url-utils must read it live.
+require('../../core/shared/url-utils').default.unfreeze();
+
 const snapshotExports = require('@tryghost/express-test').snapshot;
-const {snapshotManager, mochaHooks} = snapshotExports;
+const { snapshotManager, mochaHooks } = snapshotExports;
 
 // Normalize URLs before snapshot comparison. When a random port is in use,
 // response URLs contain the session port but committed snapshots use the
 // canonical port (2369). Keeps snapshot comparisons stable across sessions.
 if (sessionPort !== canonicalTestPort && snapshotManager) {
-    const originalMatch = snapshotManager.match.bind(snapshotManager);
-    const portRegex = new RegExp(`127\\.0\\.0\\.1:${sessionPort}`, 'g');
+  const originalMatch = snapshotManager.match.bind(snapshotManager);
+  const portRegex = new RegExp(`127\\.0\\.0\\.1:${sessionPort}`, 'g');
 
-    const normalizePort = (obj: any): any => {
-        if (obj === null || obj === undefined) {
-            return obj;
-        }
-        if (typeof obj === 'string') {
-            return obj.replace(portRegex, `127.0.0.1:${canonicalTestPort}`);
-        }
-        if (typeof obj !== 'object') {
-            return obj;
-        }
-        if (Array.isArray(obj)) {
-            return obj.map(normalizePort);
-        }
-        const proto = Object.getPrototypeOf(obj);
-        if (proto !== Object.prototype && proto !== null) {
-            return obj; // matcher or special object — leave as-is
-        }
-        const result: Record<string, any> = {};
-        for (const key of Object.keys(obj)) {
-            result[key] = normalizePort(obj[key]);
-        }
-        return result;
-    };
+  const normalizePort = (obj: any): any => {
+    if (obj === null || obj === undefined) {
+      return obj;
+    }
+    if (typeof obj === 'string') {
+      return obj.replace(portRegex, `127.0.0.1:${canonicalTestPort}`);
+    }
+    if (typeof obj !== 'object') {
+      return obj;
+    }
+    if (Array.isArray(obj)) {
+      return obj.map(normalizePort);
+    }
+    const proto = Object.getPrototypeOf(obj);
+    if (proto !== Object.prototype && proto !== null) {
+      return obj; // matcher or special object — leave as-is
+    }
+    const result: Record<string, any> = {};
+    for (const key of Object.keys(obj)) {
+      result[key] = normalizePort(obj[key]);
+    }
+    return result;
+  };
 
-    snapshotManager.match = function (received: any, properties: any, hint: any) {
-        const normalized = JSON.parse(
-            JSON.stringify(received).replace(portRegex, `127.0.0.1:${canonicalTestPort}`)
-        );
-        return originalMatch(normalized, normalizePort(properties), hint);
-    };
+  snapshotManager.match = function (received: any, properties: any, hint: any) {
+    const normalized = JSON.parse(
+      JSON.stringify(received).replace(portRegex, `127.0.0.1:${canonicalTestPort}`),
+    );
+    return originalMatch(normalized, normalizePort(properties), hint);
+  };
 }
 
 const mockManager = require('./e2e-framework-mock-manager');
@@ -184,16 +149,15 @@ const mockManager = require('./e2e-framework-mock-manager');
 //
 // NOTE: vitest runs setup-file hooks per *file*, not once per run like mocha's
 // root hooks. That's fine for these (disableNetwork is idempotent; the snapshot
-// hooks are per-file aware). DB teardown (drop database / remove the sqlite
-// file) is deliberately NOT done here for that reason — it would run after every
-// file and tear the shared connection down mid-run. The worker is terminated at
-// the end of the run instead; the per-session sqlite file lives in /tmp.
+// hooks are per-file aware). DB teardown is deliberately NOT done here for that
+// reason — it would run after every file and tear the shared connection down
+// mid-run. The worker is terminated at the end of the run instead.
 beforeAll(async () => {
-    if (mochaHooks?.beforeAll) {
-        await mochaHooks.beforeAll();
-    }
-    mockManager.disableNetwork();
-    mockManager.mockWebmentionDiscoveryDomains();
+  if (mochaHooks?.beforeAll) {
+    await mochaHooks.beforeAll();
+  }
+  mockManager.disableNetwork();
+  mockManager.mockWebmentionDiscoveryDomains();
 });
 
 // Bridge jest-snapshot's per-test config. The mocha hook reads
@@ -201,64 +165,62 @@ beforeAll(async () => {
 // testPath/testTitle from the vitest task. testTitle must exactly match mocha's
 // `fullTitle()` (describe names + test name joined by spaces) or committed .snap
 // keys won't resolve. Mirrors ./vitest-setup.ts.
-beforeEach((context: {task: {name: string; suite?: unknown; file?: {filepath?: string}}}) => {
-    if (!snapshotManager) {
-        return;
+beforeEach((context: { task: { name: string; suite?: unknown; file?: { filepath?: string } } }) => {
+  if (!snapshotManager) {
+    return;
+  }
+  const titleParts: string[] = [];
+  let node: { name?: string; suite?: unknown; filepath?: string } | undefined = context.task;
+  // Walk task -> describe(s); stop at the file node (it has `filepath`).
+  while (node && !node.filepath) {
+    if (node.name) {
+      titleParts.unshift(node.name);
     }
-    const titleParts: string[] = [];
-    let node: {name?: string; suite?: unknown; filepath?: string} | undefined = context.task;
-    // Walk task -> describe(s); stop at the file node (it has `filepath`).
-    while (node && !node.filepath) {
-        if (node.name) {
-            titleParts.unshift(node.name);
-        }
-        node = node.suite as typeof node;
-    }
-    snapshotManager.setCurrentTest({
-        testPath: context.task.file?.filepath,
-        testTitle: titleParts.join(' ')
-    });
+    node = node.suite as typeof node;
+  }
+  snapshotManager.setCurrentTest({
+    testPath: context.task.file?.filepath,
+    testTitle: titleParts.join(' '),
+  });
 });
 
 afterEach(async () => {
-    const domainEvents = require('@tryghost/domain-events');
-    const mentionsJobsService = require('../../core/server/services/mentions-jobs');
-    const jobsService = require('../../core/server/services/jobs');
+  const domainEvents = require('@tryghost/domain-events');
 
-    const timeout = setTimeout(() => {
-        // eslint-disable-next-line no-console
-        console.error(chalk.yellow(
-            '\n[SLOW TEST] It takes longer than 2s to wait for all jobs ' +
-            'and events to settle in the afterEach hook\n'
-        ));
-    }, 2000);
+  const timeout = setTimeout(() => {
+    // eslint-disable-next-line no-console
+    console.error(
+      chalk.yellow(
+        '\n[SLOW TEST] It takes longer than 2s to wait for all events ' +
+          'to settle in the afterEach hook\n',
+      ),
+    );
+  }, 2000);
 
-    await domainEvents.allSettled();
-    await mentionsJobsService.allSettled();
-    await jobsService.allSettled();
-    // Last time for events emitted during jobs
-    await domainEvents.allSettled();
+  await domainEvents.allSettled();
+  // Once more for events emitted while the first round settled
+  await domainEvents.allSettled();
 
-    clearTimeout(timeout);
+  clearTimeout(timeout);
 
-    try {
-        if (mochaHooks?.afterEach) {
-            await mochaHooks.afterEach();
-        }
-    } finally {
-        // Individual test afterEach hooks often call sinon.restore() which
-        // strips the DNS stubs set in beforeAll; reapply so subsequent tests
-        // don't hit real DNS on nocked domains. Some test files also call
-        // nock.cleanAll() directly (bypassing mockManager.restore()), which
-        // would otherwise silently drop the webmention mocks for every test
-        // that runs afterward in this worker.
-        mockManager.disableNetwork();
-        mockManager.mockWebmentionDiscoveryDomains();
+  try {
+    if (mochaHooks?.afterEach) {
+      await mochaHooks.afterEach();
     }
+  } finally {
+    // Individual test afterEach hooks often call sinon.restore() which
+    // strips the DNS stubs set in beforeAll; reapply so subsequent tests
+    // don't hit real DNS on nocked domains. Some test files also call
+    // nock.cleanAll() directly (bypassing mockManager.restore()), which
+    // would otherwise silently drop the webmention mocks for every test
+    // that runs afterward in this worker.
+    mockManager.disableNetwork();
+    mockManager.mockWebmentionDiscoveryDomains();
+  }
 });
 
 afterAll(async () => {
-    if (mochaHooks?.afterAll) {
-        await mochaHooks.afterAll();
-    }
+  if (mochaHooks?.afterAll) {
+    await mochaHooks.afterAll();
+  }
 });

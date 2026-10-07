@@ -3,7 +3,7 @@ import Transform from '@ember-data/serializer/transform';
 export default class TwitterUrlUser extends Transform {
     deserialize(serialized) {
         if (serialized) {
-            let [, user] = serialized.match(/@?([^/]*)/) || [];
+            const [, user] = serialized.match(/@?([^/]*)/) || [];
 
             return `https://twitter.com/${user}`;
         }
@@ -12,7 +12,7 @@ export default class TwitterUrlUser extends Transform {
 
     serialize(deserialized) {
         if (deserialized) {
-            let [, user] = deserialized.match(/(?:https:\/\/)(?:twitter\.com)\/(?:#!\/)?@?([^/]*)/) || [];
+            const [, user] = deserialized.match(/(?:https:\/\/)(?:twitter\.com)\/(?:#!\/)?@?([^/]*)/) || [];
 
             return `@${user}`;
         }

@@ -2,13 +2,16 @@
   "name": "@tryghost/kg-default-transforms",
   "version": "1.3.4",
   "description": "Shared Lexical node transforms for Ghost's Koenig editor",
+  "license": "MIT",
+  "author": "Ghost Foundation",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",
     "directory": "koenig/kg-default-transforms"
   },
-  "author": "Ghost Foundation",
-  "license": "MIT",
+  "files": [
+    "build"
+  ],
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",
   "types": "build/esm/index.d.ts",
@@ -20,6 +23,9 @@
       "require": "./build/cjs/index.js"
     }
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "tsc --watch --preserveWatchOutput --sourceMap",
     "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
@@ -28,11 +34,12 @@
     "test": "pnpm run '/^test:/'",
     "lint": "eslint"
   },
-  "files": [
-    "build"
-  ],
-  "publishConfig": {
-    "access": "public"
+  "dependencies": {
+    "@lexical/list": "0.13.1",
+    "@lexical/rich-text": "0.13.1",
+    "@lexical/utils": "0.13.1",
+    "@tryghost/kg-default-nodes": "workspace:~",
+    "lexical": "0.13.1"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
@@ -44,12 +51,5 @@
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vitest": "catalog:"
-  },
-  "dependencies": {
-    "@lexical/list": "0.13.1",
-    "@lexical/rich-text": "0.13.1",
-    "@lexical/utils": "0.13.1",
-    "@tryghost/kg-default-nodes": "workspace:~",
-    "lexical": "0.13.1"
   }
 }

@@ -16,12 +16,12 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 ## What patterns do (and don't)
 
-| Do | Don't |
-|---|---|
+| Do                                                             | Don't                                                        |
+| -------------------------------------------------------------- | ------------------------------------------------------------ |
 | Expose 3–6 named subcomponents (`.Title`, `.Actions`, `.Body`) | Take a prop bag (`title`, `onAdd`, `columns`, `emptyText` …) |
-| Compose components, primitives, recipes | Fetch data, own routing, read app context |
-| Carry generic names (`PageHeader`, `KpiCard`) | Carry surface-specific names (`MembersFilterBar`) |
-| Stay stable across consumers | Add a prop every time a new consumer needs something |
+| Compose components, primitives, recipes                        | Fetch data, own routing, read app context                    |
+| Carry generic names (`PageHeader`, `KpiCard`)                  | Carry surface-specific names (`MembersFilterBar`)            |
+| Stay stable across consumers                                   | Add a prop every time a new consumer needs something         |
 
 If you find `useQuery` inside a pattern, the boundary is wrong — bring-your-own state.
 

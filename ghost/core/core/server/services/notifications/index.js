@@ -3,6 +3,6 @@ const Notifications = require('./notifications');
 const models = require('../../models');
 
 module.exports.notifications = new Notifications({
-    settingsCache,
-    SettingsModel: models.Settings
+  settingsCache,
+  SettingsModel: models.Settings,
 });

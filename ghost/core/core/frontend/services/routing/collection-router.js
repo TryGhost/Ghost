@@ -5,7 +5,7 @@ const ParentRouter = require('./parent-router');
 const controllers = require('./controllers');
 const middleware = require('./middleware');
 const RSSRouter = require('./rss-router');
-const {toExpressNotation} = require('./permalink-adapter');
+const { toExpressNotation } = require('./permalink-adapter');
 
 /**
  * @description Collection Router for post resource.
@@ -13,157 +13,163 @@ const {toExpressNotation} = require('./permalink-adapter');
  * Fundamental router to define where resources live and how their url structure is.
  */
 class CollectionRouter extends ParentRouter {
-    constructor(mainRoute, object, RESOURCE_CONFIG, routerCreated) {
-        super('CollectionRouter');
+  constructor(mainRoute, object, RESOURCE_CONFIG, routerCreated) {
+    super('CollectionRouter');
 
-        this.RESOURCE_CONFIG = RESOURCE_CONFIG.QUERY.post;
+    this.RESOURCE_CONFIG = RESOURCE_CONFIG.QUERY.post;
 
-        this.routerName = mainRoute === '/' ? 'index' : mainRoute.replace(/\//g, '');
+    this.routerName = mainRoute === '/' ? 'index' : mainRoute.replace(/\//g, '');
 
-        // NOTE: this.route === index/parent route e.g. /, /podcast/, /magic/
-        this.route = {
-            value: mainRoute
-        };
+    // NOTE: this.route === index/parent route e.g. /, /podcast/, /magic/
+    this.route = {
+      value: mainRoute,
+    };
 
-        this.rss = object.rss !== false;
+    this.rss = object.rss !== false;
 
-        // convert domain `{slug}` -> Express/URL-service `:slug` at this boundary
-        this.permalinks = {
-            value: toExpressNotation(object.permalink)
-        };
+    // convert domain `{slug}` -> Express/URL-service `:slug` at this boundary
+    this.permalinks = {
+      value: toExpressNotation(object.permalink),
+    };
 
-        // @NOTE: see renderer/templates - we use unshift to prepend the templates
-        this.templates = (object.templates || []).reverse();
+    // @NOTE: see renderer/templates - we use unshift to prepend the templates
+    this.templates = (object.templates || []).reverse();
 
-        this.filter = object.filter;
-        this.data = object.data || {};
-        this.order = object.order;
-        this.limit = object.limit;
+    this.filter = object.filter;
+    this.data = object.data || {};
+    this.order = object.order;
+    this.limit = object.limit;
 
-        this.permalinks.getValue = (options) => {
-            options = options || {};
+    this.permalinks.getValue = (options) => {
+      options = options || {};
 
-            // @NOTE: url options are only required when registering urls in express.
-            //        e.g. the UrlService will access the routes and doesn't want to know about possible url options
-            if (options.withUrlOptions) {
-                return urlUtils.urlJoin(this.permalinks.value, '/:options(edit)?/');
-            }
+      // @NOTE: url options are only required when registering urls in express.
+      //        e.g. the UrlService will access the routes and doesn't want to know about possible url options
+      if (options.withUrlOptions) {
+        return urlUtils.urlJoin(this.permalinks.value, '/:options(edit)?/');
+      }
 
-            return this.permalinks.value;
-        };
+      return this.permalinks.value;
+    };
 
-        this.context = [this.routerName];
-        this.routerCreated = routerCreated;
+    this.context = [this.routerName];
+    this.routerCreated = routerCreated;
 
-        debug(this.name, this.route, this.permalinks);
+    debug(this.name, this.route, this.permalinks);
 
-        this._registerRoutes();
+    this._registerRoutes();
+  }
+
+  /**
+   * @description Register all routes of this router.
+   * @private
+   */
+  _registerRoutes() {
+    // REGISTER: context middleware for this collection
+    this.router().use(this._prepareEntriesContext.bind(this));
+
+    // REGISTER: collection route e.g. /, /podcast/
+    this.mountRoute(this.route.value, controllers.collection);
+
+    // REGISTER: enable pagination by default
+    this.router().param('page', middleware.pageParam);
+    this.mountRoute(
+      urlUtils.urlJoin(this.route.value, 'page', ':page(\\d+)'),
+      controllers.collection,
+    );
+
+    // REGISTER: is rss enabled?
+    if (this.rss) {
+      this.rssRouter = new RSSRouter();
+      this.mountRouter(this.route.value, this.rssRouter.router());
     }
 
-    /**
-     * @description Register all routes of this router.
-     * @private
-     */
-    _registerRoutes() {
-        // REGISTER: context middleware for this collection
-        this.router().use(this._prepareEntriesContext.bind(this));
+    // REGISTER: context middleware for entries
+    this.router().use(this._prepareEntryContext.bind(this));
 
-        // REGISTER: collection route e.g. /, /podcast/
-        this.mountRoute(this.route.value, controllers.collection);
+    // REGISTER: page/post resource redirects
+    this.router().param('slug', this._respectDominantRouter.bind(this));
 
-        // REGISTER: enable pagination by default
-        this.router().param('page', middleware.pageParam);
-        this.mountRoute(urlUtils.urlJoin(this.route.value, 'page', ':page(\\d+)'), controllers.collection);
+    // REGISTER: permalinks e.g. /:slug/, /podcast/:slug
+    this.mountRoute(this.permalinks.getValue({ withUrlOptions: true }), controllers.entry);
 
-        // REGISTER: is rss enabled?
-        if (this.rss) {
-            this.rssRouter = new RSSRouter();
-            this.mountRouter(this.route.value, this.rssRouter.router());
-        }
+    // REGISTER: .md variant for llms.txt markdown export
+    const mdPermalink = this.permalinks.value.replace(/\/$/, '.md');
+    this.mountRoute(mdPermalink, (req, res, next) => {
+      res.routerOptions.permalinks = mdPermalink;
+      res.routerOptions.isMarkdownRequest = true;
+      return controllers.entry(req, res, next);
+    });
 
-        // REGISTER: context middleware for entries
-        this.router().use(this._prepareEntryContext.bind(this));
+    this.routerCreated(this);
+  }
 
-        // REGISTER: page/post resource redirects
-        this.router().param('slug', this._respectDominantRouter.bind(this));
+  /**
+   * @description Prepare index context for further middleware/controllers.
+   */
+  _prepareEntriesContext(req, res, next) {
+    res.routerOptions = {
+      type: 'collection',
+      filter: this.filter,
+      limit: this.limit,
+      order: this.order,
+      permalinks: this.permalinks.getValue({ withUrlOptions: true }),
+      resourceType: this.getResourceType(),
+      query: this.RESOURCE_CONFIG,
+      context: this.context,
+      frontPageTemplate: 'home',
+      templates: this.templates,
+      identifier: this.identifier,
+      name: this.routerName,
+      data: this.data,
+    };
 
-        // REGISTER: permalinks e.g. /:slug/, /podcast/:slug
-        this.mountRoute(this.permalinks.getValue({withUrlOptions: true}), controllers.entry);
+    next();
+  }
 
-        // REGISTER: .md variant for llms.txt markdown export
-        const mdPermalink = this.permalinks.value.replace(/\/$/, '.md');
-        this.mountRoute(mdPermalink, (req, res, next) => {
-            res.routerOptions.permalinks = mdPermalink;
-            res.routerOptions.isMarkdownRequest = true;
-            return controllers.entry(req, res, next);
-        });
+  /**
+   * @description Prepare entry context for further middleware/controllers.
+   */
+  _prepareEntryContext(req, res, next) {
+    res.routerOptions.context = ['post'];
+    res.routerOptions.type = 'entry';
+    next();
+  }
 
-        this.routerCreated(this);
+  /**
+   * @description Get resource type of this router (always "posts")
+   * @returns {string}
+   */
+  getResourceType() {
+    return this.RESOURCE_CONFIG.resource;
+  }
+
+  /**
+   * @description Get index route e.g. /, /blog/
+   * @param {Object} options
+   * @returns {string}
+   */
+  getRoute(options) {
+    options = options || {};
+
+    return urlUtils.createUrl(this.route.value, options.absolute);
+  }
+
+  /**
+   * @description Generate rss url.
+   * @param {Object} options
+   * @returns {string}
+   */
+  getRssUrl(options) {
+    if (!this.rss) {
+      return null;
     }
 
-    /**
-     * @description Prepare index context for further middleware/controllers.
-     */
-    _prepareEntriesContext(req, res, next) {
-        res.routerOptions = {
-            type: 'collection',
-            filter: this.filter,
-            limit: this.limit,
-            order: this.order,
-            permalinks: this.permalinks.getValue({withUrlOptions: true}),
-            resourceType: this.getResourceType(),
-            query: this.RESOURCE_CONFIG,
-            context: this.context,
-            frontPageTemplate: 'home',
-            templates: this.templates,
-            identifier: this.identifier,
-            name: this.routerName,
-            data: this.data
-        };
-
-        next();
-    }
-
-    /**
-     * @description Prepare entry context for further middleware/controllers.
-     */
-    _prepareEntryContext(req, res, next) {
-        res.routerOptions.context = ['post'];
-        res.routerOptions.type = 'entry';
-        next();
-    }
-
-    /**
-     * @description Get resource type of this router (always "posts")
-     * @returns {string}
-     */
-    getResourceType() {
-        return this.RESOURCE_CONFIG.resource;
-    }
-
-    /**
-     * @description Get index route e.g. /, /blog/
-     * @param {Object} options
-     * @returns {string}
-     */
-    getRoute(options) {
-        options = options || {};
-
-        return urlUtils.createUrl(this.route.value, options.absolute);
-    }
-
-    /**
-     * @description Generate rss url.
-     * @param {Object} options
-     * @returns {string}
-     */
-    getRssUrl(options) {
-        if (!this.rss) {
-            return null;
-        }
-
-        return urlUtils.createUrl(urlUtils.urlJoin(this.route.value, this.rssRouter.route.value), options.absolute);
-    }
+    return urlUtils.createUrl(
+      urlUtils.urlJoin(this.route.value, this.rssRouter.route.value),
+      options.absolute,
+    );
+  }
 }
 
 module.exports = CollectionRouter;

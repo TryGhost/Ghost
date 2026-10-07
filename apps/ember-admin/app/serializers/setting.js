@@ -7,10 +7,10 @@ export default class Setting extends ApplicationSerializer {
         options = options || {};
         options.includeId = false;
 
-        let root = pluralize(type.modelName);
-        let data = Object.keys(record.record.changedAttributes()).length > 0 ?
+        const root = pluralize(type.modelName);
+        const data = Object.keys(record.record.changedAttributes()).length > 0 ?
             this.serialize(record, options) : [];
-        let payload = [];
+        const payload = [];
 
         delete data.id;
         delete data._meta;
@@ -37,17 +37,17 @@ export default class Setting extends ApplicationSerializer {
     }
 
     normalizeArrayResponse(store, primaryModelClass, _payload, id, requestType) {
-        let payload = {settings: [this._extractObjectFromArrayPayload(_payload)]};
+        const payload = {settings: [this._extractObjectFromArrayPayload(_payload)]};
         return super.normalizeArrayResponse(store, primaryModelClass, payload, id, requestType);
     }
 
     normalizeSingleResponse(store, primaryModelClass, _payload, id, requestType) {
-        let payload = {setting: this._extractObjectFromArrayPayload(_payload)};
+        const payload = {setting: this._extractObjectFromArrayPayload(_payload)};
         return super.normalizeSingleResponse(store, primaryModelClass, payload, id, requestType);
     }
 
     _extractObjectFromArrayPayload(_payload) {
-        let payload = {id: '0'};
+        const payload = {id: '0'};
 
         _payload.settings.forEach((setting) => {
             payload[setting.key] = setting.value;

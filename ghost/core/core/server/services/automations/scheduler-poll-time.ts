@@ -20,19 +20,19 @@ const SCHEDULER_POLL_INTERVAL_MS = 15 * 60 * 1000;
  * [1]: https://gist.github.com/EvanHahn/20d845c8157691d24977831159487950
  */
 const fnv1a32 = (asciiStr: string): number => {
-    let hash = 0x811c9dc5;
-    for (let i = 0; i < asciiStr.length; i++) {
-        hash ^= asciiStr.charCodeAt(i);
-        hash = Math.imul(hash, 0x01000193);
-    }
-    return hash >>> 0;
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < asciiStr.length; i++) {
+    hash ^= asciiStr.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return hash >>> 0;
 };
 
 /**
  * Round the time up to a 15-minute interval with site-specific jitter.
  */
 export const getSchedulerPollTime = (date: Readonly<Date>, siteIdentifier: string): Date => {
-    const siteOffset = fnv1a32(siteIdentifier) % SCHEDULER_POLL_INTERVAL_MS;
-    const interval = Math.ceil((date.getTime() - siteOffset) / SCHEDULER_POLL_INTERVAL_MS);
-    return new Date(interval * SCHEDULER_POLL_INTERVAL_MS + siteOffset);
-}
+  const siteOffset = fnv1a32(siteIdentifier) % SCHEDULER_POLL_INTERVAL_MS;
+  const interval = Math.ceil((date.getTime() - siteOffset) / SCHEDULER_POLL_INTERVAL_MS);
+  return new Date(interval * SCHEDULER_POLL_INTERVAL_MS + siteOffset);
+};

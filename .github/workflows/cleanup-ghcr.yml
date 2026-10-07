@@ -2,21 +2,21 @@ name: Cleanup GHCR Images
 
 on:
   schedule:
-    - cron: "30 4 * * *" # Daily at 04:30 UTC
+    - cron: '30 4 * * *' # Daily at 04:30 UTC
   workflow_dispatch:
     inputs:
       dry_run:
-        description: "Log what would be deleted without making changes"
+        description: 'Log what would be deleted without making changes'
         required: false
         default: true
         type: boolean
       retention_days:
-        description: "Delete versions older than this many days"
+        description: 'Delete versions older than this many days'
         required: false
         default: 14
         type: number
       min_keep:
-        description: "Always keep at least this many versions per package"
+        description: 'Always keep at least this many versions per package'
         required: false
         default: 10
         type: number

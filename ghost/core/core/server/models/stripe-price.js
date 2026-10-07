@@ -1,18 +1,18 @@
 const ghostBookshelf = require('./base');
 
 const StripePrice = ghostBookshelf.Model.extend({
-    tableName: 'stripe_prices',
+  tableName: 'stripe_prices',
 
-    stripeProduct() {
-        return this.belongsTo('StripeProduct', 'stripe_product_id', 'stripe_product_id');
-    }
+  stripeProduct() {
+    return this.belongsTo('StripeProduct', 'stripe_product_id', 'stripe_product_id');
+  },
 });
 
 const StripePrices = ghostBookshelf.Collection.extend({
-    model: StripePrice
+  model: StripePrice,
 });
 
 module.exports = {
-    StripePrice: ghostBookshelf.model('StripePrice', StripePrice),
-    StripePrices: ghostBookshelf.collection('StripePrices', StripePrices)
+  StripePrice: ghostBookshelf.model('StripePrice', StripePrice),
+  StripePrices: ghostBookshelf.collection('StripePrices', StripePrices),
 };

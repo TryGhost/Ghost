@@ -3,18 +3,22 @@
 const logging = require('@tryghost/logging');
 
 // For DML - data changes
-const {createTransactionalMigration} = require('../../utils');
+const { createTransactionalMigration } = require('../../utils');
 
 module.exports = createTransactionalMigration(
-    async function up(knex) {
-        try {
-            await knex('jobs')
-                .whereIn('name', ['email-analytics-latest-opened', 'email-analytics-latest-others', 'email-analytics-missing'])
-                .del();
-        } catch (error) {
-            logging.info(`Failed to delete email analytics jobs: ${error.message}`);
-        }
-    },
-    // down is a no-op
-    async function down() {}
+  async function up(knex) {
+    try {
+      await knex('jobs')
+        .whereIn('name', [
+          'email-analytics-latest-opened',
+          'email-analytics-latest-others',
+          'email-analytics-missing',
+        ])
+        .del();
+    } catch (error) {
+      logging.info(`Failed to delete email analytics jobs: ${error.message}`);
+    }
+  },
+  // down is a no-op
+  async function down() {},
 );

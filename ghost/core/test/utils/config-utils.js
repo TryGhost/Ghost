@@ -7,7 +7,7 @@ configUtils.config = config;
 configUtils.defaultConfig = _.cloneDeep(config.get());
 
 const clearDerivedContentPaths = function () {
-    config.set('adapters:redirects:FileStore:basePath', undefined);
+  config.set('adapters:redirects:FileStore:basePath', undefined);
 };
 
 /**
@@ -15,50 +15,42 @@ const clearDerivedContentPaths = function () {
  * configUtils.set('key', 'value');
  */
 configUtils.set = function () {
-    const key = arguments[0];
-    const value = arguments[1];
+  const key = arguments[0];
+  const value = arguments[1];
 
-    if (_.isObject(key)) {
-        _.each(key, function (settingValue, settingKey) {
-            config.set(settingKey, settingValue);
-        });
-        if (Object.prototype.hasOwnProperty.call(key, 'paths:contentPath')) {
-            clearDerivedContentPaths();
-        }
-    } else {
-        config.set(key, value);
-        if (key === 'paths:contentPath') {
-            clearDerivedContentPaths();
-        }
+  if (_.isObject(key)) {
+    _.each(key, function (settingValue, settingKey) {
+      config.set(settingKey, settingValue);
+    });
+    if (Object.hasOwn(key, 'paths:contentPath')) {
+      clearDerivedContentPaths();
     }
+  } else {
+    config.set(key, value);
+    if (key === 'paths:contentPath') {
+      clearDerivedContentPaths();
+    }
+  }
 };
 
 /**
- * important: do not delete cloneDeep for value
- * nconf keeps this as a reference and then it can happen that the defaultConfig get's overridden by new values
+ * Drop every override a test applied.
+ *
+ * reset() rebuilds from the config the loader produced, so it is enough on its
+ * own. This used to reset and then re-apply all ~117 top-level keys one at a
+ * time, which nconf needed - its reset() empties the stores - but which now just
+ * re-adds every default as an explicit override, at a full rebuild each.
  */
 configUtils.restore = async function () {
-    /**
-     * we have to reset the whole config object
-     * config keys, which get set via a test and do not exist in the config files, won't get reseted
-     */
-    await new Promise((resolve) => {
-        config.reset(() => {
-            resolve();
-        });
-    });
-
-    _.each(configUtils.defaultConfig, function (value, key) {
-        config.set(key, _.cloneDeep(value));
-    });
+  config.reset();
 };
 
-configUtils.getServerUrl = function ({protocol = 'http'} = {}) {
-    const host = config.get('server:host');
-    const port = config.get('server:port');
-    const hostname = net.isIPv6(host) ? `[${host}]` : host;
+configUtils.getServerUrl = function ({ protocol = 'http' } = {}) {
+  const host = config.get('server:host');
+  const port = config.get('server:port');
+  const hostname = net.isIPv6(host) ? `[${host}]` : host;
 
-    return `${protocol}://${hostname}:${port}`;
+  return `${protocol}://${hostname}:${port}`;
 };
 
 module.exports = configUtils;

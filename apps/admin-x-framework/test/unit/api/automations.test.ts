@@ -1,481 +1,744 @@
 import ObjectId from 'bson-objectid';
-import {waitFor} from '@testing-library/react';
-import {currentUserQueryKey} from '../../../src/api/current-user';
-import {createTestQueryClient, renderHookWithProviders} from '../../../src/test/test-utils';
-import {withMockFetch} from '../../utils/mock-fetch';
+import { act, waitFor } from '@testing-library/react';
+import { currentUserQueryKey } from '../../../src/api/current-user';
+import { createTestQueryClient, renderHookWithProviders } from '../../../src/test/test-utils';
+import { withMockFetch } from '../../utils/mock-fetch';
 import {
-    AutomationAction,
-    AutomationDetail,
-    AutomationSendEmailAction,
-    InsertActionAnchor,
-    insertSendEmailAction,
-    insertWaitAction,
-    removeAction,
-    updateSendEmailAction,
-    updateWaitAction,
-    useBrowseAutomationActionLinks
+  AutomationAction,
+  AutomationRunsResponseSchema,
+  type AutomationRun,
+  type AutomationRunStatusFilter,
+  useBrowseAutomationRuns,
+  AutomationDetail,
+  AutomationSendEmailAction,
+  InsertActionAnchor,
+  insertSendEmailAction,
+  insertWaitAction,
+  removeAction,
+  updateSendEmailAction,
+  updateWaitAction,
+  useBrowseAutomationActionLinks,
 } from '../../../src/api/automations';
 
-const baseDetail = (actions: AutomationDetail['actions'], edges: AutomationDetail['edges']): AutomationDetail => ({
-    id: 'a1',
-    slug: 'welcome',
-    name: 'Welcome',
-    status: 'active',
-    created_at: '2026-05-05T00:00:00.000Z',
-    updated_at: '2026-05-05T00:00:00.000Z',
-    actions,
-    edges
+const baseDetail = (
+  actions: AutomationDetail['actions'],
+  edges: AutomationDetail['edges'],
+): AutomationDetail => ({
+  id: 'a1',
+  slug: 'welcome',
+  name: 'Welcome',
+  description: 'Welcome new members.',
+  status: 'active',
+  created_at: '2026-05-05T00:00:00.000Z',
+  updated_at: '2026-05-05T00:00:00.000Z',
+  actions,
+  edges,
 });
 
-function expectSendEmailAction(action: AutomationAction): asserts action is AutomationSendEmailAction {
-    expect(action.type).toBe('send_email');
+function expectSendEmailAction(
+  action: AutomationAction,
+): asserts action is AutomationSendEmailAction {
+  expect(action.type).toBe('send_email');
 }
 
 const insertionCases: Array<{
-    name: string;
-    insert: (args: {detail: AutomationDetail; anchor: InsertActionAnchor}) => AutomationDetail;
-    expectedType: AutomationAction['type'];
+  name: string;
+  insert: (args: { detail: AutomationDetail; anchor: InsertActionAnchor }) => AutomationDetail;
+  expectedType: AutomationAction['type'];
 }> = [
-    {name: 'insertWaitAction', insert: insertWaitAction, expectedType: 'wait'},
-    {name: 'insertSendEmailAction', insert: insertSendEmailAction, expectedType: 'send_email'}
+  { name: 'insertWaitAction', insert: insertWaitAction, expectedType: 'wait' },
+  { name: 'insertSendEmailAction', insert: insertSendEmailAction, expectedType: 'send_email' },
 ];
 
 describe('automations api queries', () => {
-    it('builds the action links endpoint from the automation and action IDs', async () => {
-        const queryClient = createTestQueryClient();
-        queryClient.setQueryDefaults(currentUserQueryKey, {staleTime: Infinity});
-        queryClient.setQueryData(currentUserQueryKey, {
-            users: [{
-                id: 'user-id',
-                name: 'Test User',
-                email: 'test@example.com',
-                roles: []
-            }]
-        });
-
-        await withMockFetch({
-            json: {
-                automation_action_links: []
-            }
-        }, async (mock) => {
-            const {result} = renderHookWithProviders(() => useBrowseAutomationActionLinks('automation-id', 'action-id'), {queryClient});
-
-            await waitFor(() => expect(result.current.isSuccess).toBe(true));
-
-            expect(mock.calls[0][0]).toBe('http://localhost:3000/ghost/api/admin/automations/automation-id/actions/action-id/links/');
-        });
+  it('builds the action links endpoint from the automation and action IDs', async () => {
+    const queryClient = createTestQueryClient();
+    queryClient.setQueryDefaults(currentUserQueryKey, { staleTime: Infinity });
+    queryClient.setQueryData(currentUserQueryKey, {
+      users: [
+        {
+          id: 'user-id',
+          name: 'Test User',
+          email: 'test@example.com',
+          roles: [],
+        },
+      ],
     });
+
+    await withMockFetch(
+      {
+        json: {
+          automation_action_links: [],
+        },
+      },
+      async (mock) => {
+        const { result } = renderHookWithProviders(
+          () => useBrowseAutomationActionLinks('automation-id', 'action-id'),
+          { queryClient },
+        );
+
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+        expect(mock.calls[0][0]).toBe(
+          'http://localhost:3000/ghost/api/admin/automations/automation-id/actions/action-id/links/',
+        );
+      },
+    );
+  });
+  it('isolates a late response when returning to the same status in a new query scope', async () => {
+    const queryClient = createTestQueryClient();
+    queryClient.setQueryDefaults(currentUserQueryKey, { staleTime: Infinity });
+    queryClient.setQueryData(currentUserQueryKey, {
+      users: [{ id: 'user-id', name: 'Test User', email: 'test@example.com', roles: [] }],
+    });
+    const response = (id: string, status: AutomationRunStatusFilter) =>
+      Response.json({
+        meta: { pagination: { limit: 50, next_cursor: null } },
+        automation_runs: [
+          { id, status, created_at: '2026-09-14T12:00:00.000Z', failed: false, member: null },
+        ],
+      });
+    let finish!: (response: Response) => void;
+    const pending = new Promise<Response>((resolve) => {
+      finish = resolve;
+    });
+    let completedRequests = 0;
+    const fetch = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const status = new URL(String(input)).searchParams.get('status');
+      if (status === 'completed') {
+        completedRequests += 1;
+        return completedRequests === 1 ? pending : response('fresh', 'completed');
+      }
+      return response('exited', 'exited_early');
+    });
+    try {
+      const { result, rerender } = renderHookWithProviders(
+        ({ scope, status }: { scope: string; status: AutomationRunStatusFilter }) =>
+          useBrowseAutomationRuns('automation-id', scope, {
+            searchParams: { status },
+            staleTime: Infinity,
+          }),
+        { queryClient, initialProps: { scope: 'visit:0', status: 'completed' } },
+      );
+      await waitFor(() => expect(completedRequests).toBe(1));
+      rerender({ scope: 'visit:1', status: 'exited_early' });
+      await waitFor(() => expect(result.current.data?.runs[0].id).toBe('exited'));
+      rerender({ scope: 'visit:2', status: 'completed' });
+      await waitFor(() => expect(result.current.data?.runs[0].id).toBe('fresh'));
+      finish(response('late', 'completed'));
+      // Wait for every request to settle using the public client API before checking the result.
+      await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+      expect(completedRequests).toBe(2);
+      expect(result.current.data?.runs[0].id).toBe('fresh');
+    } finally {
+      finish(response('late', 'completed'));
+      fetch.mockRestore();
+      queryClient.clear();
+    }
+  });
+});
+
+describe('automation run pagination queries', () => {
+  const row = (id: string, name = id): AutomationRun => ({
+    id,
+    created_at: '2026-09-14T12:00:00.000Z',
+    status: 'completed',
+    failed: false,
+    member: { id, name, email: `${id}@example.test` },
+  });
+  const renderRuns = () => {
+    const queryClient = createTestQueryClient();
+    queryClient.setQueryDefaults(currentUserQueryKey, { staleTime: Infinity });
+    queryClient.setQueryData(currentUserQueryKey, {
+      users: [{ id: 'user', name: 'User', email: 'user@example.test', roles: [] }],
+    });
+    return renderHookWithProviders(
+      () =>
+        useBrowseAutomationRuns('automation-id', 'visit', {
+          searchParams: {
+            status: 'completed',
+            order: 'created_at asc',
+            date_from: '2026-09-01',
+            date_to: '2026-09-14',
+            timezone: 'America/New_York',
+          },
+        }),
+      { queryClient },
+    );
+  };
+
+  it('preserves filters and order across pages and keeps the first occurrence of repeated runs', async () => {
+    const requests: URL[] = [];
+    const fetch = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = new URL(String(input));
+      requests.push(url);
+      if (url.searchParams.has('cursor')) {
+        return Response.json({
+          automation_runs: [row('a', 'Changed on later page'), row('b')],
+          meta: { pagination: { limit: 50, next_cursor: null } },
+        });
+      }
+      return Response.json({
+        automation_runs: [row('a', 'First observed name')],
+        meta: { pagination: { limit: 50, next_cursor: 'next-page' } },
+      });
+    });
+    try {
+      const { result } = renderRuns();
+      await waitFor(() => expect(result.current.hasNextPage).toBe(true));
+      await act(async () => {
+        await result.current.fetchNextPage();
+      });
+      await waitFor(() =>
+        expect(result.current.data?.runs).toEqual([row('a', 'First observed name'), row('b')]),
+      );
+      expect(requests).toHaveLength(2);
+      expect(requests[0].pathname).toBe('/ghost/api/admin/automations/automation-id/runs/');
+      expect(Object.fromEntries(requests[0].searchParams)).toEqual({
+        status: 'completed',
+        order: 'created_at asc',
+        date_from: '2026-09-01',
+        date_to: '2026-09-14',
+        timezone: 'America/New_York',
+      });
+      expect(requests[1].pathname).toBe(requests[0].pathname);
+      expect(Object.fromEntries(requests[1].searchParams)).toEqual({
+        ...Object.fromEntries(requests[0].searchParams),
+        cursor: 'next-page',
+      });
+      expect(result.current.hasNextPage).toBe(false);
+    } finally {
+      fetch.mockRestore();
+    }
+  });
+
+  it('allows the same cursor sequence when refetching loaded pages', async () => {
+    const cursors: Array<string | null> = [];
+    const fetch = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const cursor = new URL(String(input)).searchParams.get('cursor');
+      cursors.push(cursor);
+      return Response.json({
+        automation_runs: [row(cursor ?? 'first')],
+        meta: {
+          pagination: { limit: 50, next_cursor: cursor ? null : 'next-page' },
+        },
+      });
+    });
+    try {
+      const { result } = renderRuns();
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      await act(async () => {
+        await result.current.fetchNextPage();
+      });
+      await waitFor(() => expect(result.current.hasNextPage).toBe(false));
+      await act(async () => {
+        await result.current.refetch();
+      });
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(cursors).toEqual([null, 'next-page', null, 'next-page']);
+      expect(result.current.data?.runs).toEqual([row('first'), row('next-page')]);
+    } finally {
+      fetch.mockRestore();
+    }
+  });
+
+  it('stops fetching after the final page', async () => {
+    await withMockFetch(
+      {
+        json: {
+          automation_runs: [row('a')],
+          meta: { pagination: { limit: 50, next_cursor: null } },
+        },
+      },
+      async (mock) => {
+        const { result } = renderRuns();
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+        expect(result.current.hasNextPage).toBe(false);
+        await act(async () => {
+          await result.current.fetchNextPage();
+        });
+        expect(mock.calls).toHaveLength(1);
+        expect(result.current.data?.runs).toEqual([row('a')]);
+      },
+    );
+  });
 });
 
 describe('automations api helpers', () => {
-    describe('shared insertion behavior', () => {
-        it('appends at the tail of a non-empty chain by wiring the previous tail to the new action', () => {
-            const detail = baseDetail(
-                [{id: 'a', type: 'wait', data: {wait_hours: 24}}],
-                []
-            );
+  describe('shared insertion behavior', () => {
+    it('appends at the tail of a non-empty chain by wiring the previous tail to the new action', () => {
+      const detail = baseDetail([{ id: 'a', type: 'wait', data: { wait_hours: 24 } }], []);
 
-            for (const {insert, expectedType} of insertionCases) {
-                const next = insert({detail, anchor: {previousActionId: 'a'}});
+      for (const { insert, expectedType } of insertionCases) {
+        const next = insert({ detail, anchor: { previousActionId: 'a' } });
 
-                expect(next.actions).toHaveLength(2);
-                const newAction = next.actions[1];
-                expect(newAction.type).toBe(expectedType);
-                expect(next.edges).toEqual([{source_action_id: 'a', target_action_id: newAction.id}]);
-            }
-        });
-
-        it('inserts at the head by leaving the new action as the new head', () => {
-            const detail = baseDetail(
-                [{id: 'a', type: 'wait', data: {wait_hours: 24}}],
-                []
-            );
-
-            for (const {insert, expectedType} of insertionCases) {
-                const next = insert({detail, anchor: {nextActionId: 'a'}});
-
-                expect(next.actions).toHaveLength(2);
-                const newAction = next.actions[1];
-                expect(newAction.type).toBe(expectedType);
-                expect(next.edges).toEqual([{source_action_id: newAction.id, target_action_id: 'a'}]);
-            }
-        });
-
-        it('inserts between two existing actions by replacing one edge with two', () => {
-            const detail = baseDetail(
-                [
-                    {id: 'a', type: 'wait', data: {wait_hours: 24}},
-                    {id: 'b', type: 'wait', data: {wait_hours: 48}}
-                ],
-                [{source_action_id: 'a', target_action_id: 'b'}]
-            );
-
-            for (const {insert, expectedType} of insertionCases) {
-                const next = insert({detail, anchor: {previousActionId: 'a', nextActionId: 'b'}});
-
-                expect(next.actions).toHaveLength(3);
-                const newAction = next.actions[2];
-                expect(newAction.type).toBe(expectedType);
-                expect(next.edges).toContainEqual({source_action_id: 'a', target_action_id: newAction.id});
-                expect(next.edges).toContainEqual({source_action_id: newAction.id, target_action_id: 'b'});
-                expect(next.edges).not.toContainEqual({source_action_id: 'a', target_action_id: 'b'});
-                expect(next.edges).toHaveLength(2);
-            }
-        });
+        expect(next.actions).toHaveLength(2);
+        const newAction = next.actions[1];
+        expect(newAction.type).toBe(expectedType);
+        expect(next.edges).toEqual([{ source_action_id: 'a', target_action_id: newAction.id }]);
+      }
     });
 
-    describe('insertWaitAction', () => {
-        it('creates a wait action with default values', () => {
-            const detail = baseDetail([], []);
+    it('inserts at the head by leaving the new action as the new head', () => {
+      const detail = baseDetail([{ id: 'a', type: 'wait', data: { wait_hours: 24 } }], []);
 
-            const next = insertWaitAction({detail, anchor: {}});
+      for (const { insert, expectedType } of insertionCases) {
+        const next = insert({ detail, anchor: { nextActionId: 'a' } });
 
-            expect(next.actions).toHaveLength(1);
-            expect(next.actions[0]).toMatchObject({type: 'wait', data: {wait_hours: 24}});
-            expect(next.edges).toEqual([]);
-        });
-
-        it('uses ObjectId-compatible action ids', () => {
-            const next = insertWaitAction({detail: baseDetail([], []), anchor: {}});
-
-            expect(ObjectId.isValid(next.actions[0].id)).toBe(true);
-        });
-
-        it('throws when previousActionId references a non-existent action', () => {
-            const detail = baseDetail(
-                [{id: 'a', type: 'wait', data: {wait_hours: 24}}],
-                []
-            );
-
-            expect(() => insertWaitAction({detail, anchor: {previousActionId: 'does-not-exist'}})).toThrow(/unknown action id "does-not-exist"/);
-        });
-
-        it('throws when nextActionId references a non-existent action', () => {
-            const detail = baseDetail(
-                [{id: 'a', type: 'wait', data: {wait_hours: 24}}],
-                []
-            );
-
-            expect(() => insertWaitAction({detail, anchor: {nextActionId: 'does-not-exist'}})).toThrow(/unknown action id "does-not-exist"/);
-        });
-
-        it('throws when inserting without an anchor into a non-empty automation', () => {
-            const detail = baseDetail(
-                [{id: 'a', type: 'wait', data: {wait_hours: 24}}],
-                []
-            );
-
-            expect(() => insertWaitAction({detail, anchor: {}})).toThrow(/anchor is required/);
-        });
-
-        it('throws when inserting between actions that are not directly connected', () => {
-            const detail = baseDetail(
-                [
-                    {id: 'a', type: 'wait', data: {wait_hours: 24}},
-                    {id: 'b', type: 'wait', data: {wait_hours: 48}}
-                ],
-                []
-            );
-
-            expect(() => insertWaitAction({detail, anchor: {previousActionId: 'a', nextActionId: 'b'}})).toThrow(/anchor edge "a" -> "b" does not exist/);
-        });
-
-        it('throws when appending after an action that already has an outgoing edge', () => {
-            const detail = baseDetail(
-                [
-                    {id: 'a', type: 'wait', data: {wait_hours: 24}},
-                    {id: 'b', type: 'wait', data: {wait_hours: 48}}
-                ],
-                [{source_action_id: 'a', target_action_id: 'b'}]
-            );
-
-            expect(() => insertWaitAction({detail, anchor: {previousActionId: 'a'}})).toThrow(/previousActionId "a" is not the tail action/);
-        });
-
-        it('throws when prepending before an action that already has an incoming edge', () => {
-            const detail = baseDetail(
-                [
-                    {id: 'a', type: 'wait', data: {wait_hours: 24}},
-                    {id: 'b', type: 'wait', data: {wait_hours: 48}}
-                ],
-                [{source_action_id: 'a', target_action_id: 'b'}]
-            );
-
-            expect(() => insertWaitAction({detail, anchor: {nextActionId: 'b'}})).toThrow(/nextActionId "b" is not the head action/);
-        });
+        expect(next.actions).toHaveLength(2);
+        const newAction = next.actions[1];
+        expect(newAction.type).toBe(expectedType);
+        expect(next.edges).toEqual([{ source_action_id: newAction.id, target_action_id: 'a' }]);
+      }
     });
 
-    describe('insertSendEmailAction', () => {
-        it('creates a send_email action with a blank body and default subject', () => {
-            const detail = baseDetail([], []);
+    it('inserts between two existing actions by replacing one edge with two', () => {
+      const detail = baseDetail(
+        [
+          { id: 'a', type: 'wait', data: { wait_hours: 24 } },
+          { id: 'b', type: 'wait', data: { wait_hours: 48 } },
+        ],
+        [{ source_action_id: 'a', target_action_id: 'b' }],
+      );
 
-            const next = insertSendEmailAction({detail, anchor: {}});
+      for (const { insert, expectedType } of insertionCases) {
+        const next = insert({ detail, anchor: { previousActionId: 'a', nextActionId: 'b' } });
 
-            expect(next.actions).toHaveLength(1);
-            const newAction = next.actions[0];
-            expectSendEmailAction(newAction);
-            expect(newAction.data.email_subject).toBe('');
-            expect(() => JSON.parse(newAction.data.email_lexical)).not.toThrow();
-            expect(JSON.parse(newAction.data.email_lexical).root.children).toEqual([]);
-            expect(newAction.data.email_design_setting_id).toBe('default-automated-email');
+        expect(next.actions).toHaveLength(3);
+        const newAction = next.actions[2];
+        expect(newAction.type).toBe(expectedType);
+        expect(next.edges).toContainEqual({
+          source_action_id: 'a',
+          target_action_id: newAction.id,
         });
-
-        it('returns an action id that the backend schema treats as a valid ObjectId', () => {
-            const next = insertSendEmailAction({detail: baseDetail([], []), anchor: {}});
-
-            expect(ObjectId.isValid(next.actions[0].id)).toBe(true);
+        expect(next.edges).toContainEqual({
+          source_action_id: newAction.id,
+          target_action_id: 'b',
         });
+        expect(next.edges).not.toContainEqual({ source_action_id: 'a', target_action_id: 'b' });
+        expect(next.edges).toHaveLength(2);
+      }
+    });
+  });
+
+  describe('insertWaitAction', () => {
+    it('creates a wait action with default values', () => {
+      const detail = baseDetail([], []);
+
+      const next = insertWaitAction({ detail, anchor: {} });
+
+      expect(next.actions).toHaveLength(1);
+      expect(next.actions[0]).toMatchObject({ type: 'wait', data: { wait_hours: 24 } });
+      expect(next.edges).toEqual([]);
     });
 
-    describe('removeAction', () => {
-        it('removes the only step and leaves the automation empty', () => {
-            const detail = baseDetail(
-                [{id: 'a', type: 'wait', data: {wait_hours: 24}}],
-                []
-            );
+    it('uses ObjectId-compatible action ids', () => {
+      const next = insertWaitAction({ detail: baseDetail([], []), anchor: {} });
 
-            const next = removeAction({detail, actionId: 'a'});
-
-            expect(next.actions).toEqual([]);
-            expect(next.edges).toEqual([]);
-        });
-
-        it('removes the head step, promoting the second action to head', () => {
-            const detail = baseDetail(
-                [
-                    {id: 'a', type: 'wait', data: {wait_hours: 24}},
-                    {id: 'b', type: 'wait', data: {wait_hours: 48}}
-                ],
-                [{source_action_id: 'a', target_action_id: 'b'}]
-            );
-
-            const next = removeAction({detail, actionId: 'a'});
-
-            expect(next.actions.map(action => action.id)).toEqual(['b']);
-            expect(next.edges).toEqual([]);
-        });
-
-        it('removes the tail step, leaving the previous action as the new tail', () => {
-            const detail = baseDetail(
-                [
-                    {id: 'a', type: 'wait', data: {wait_hours: 24}},
-                    {id: 'b', type: 'wait', data: {wait_hours: 48}}
-                ],
-                [{source_action_id: 'a', target_action_id: 'b'}]
-            );
-
-            const next = removeAction({detail, actionId: 'b'});
-
-            expect(next.actions.map(action => action.id)).toEqual(['a']);
-            expect(next.edges).toEqual([]);
-        });
-
-        it('removes a middle step by stitching its neighbours together', () => {
-            const detail = baseDetail(
-                [
-                    {id: 'a', type: 'wait', data: {wait_hours: 24}},
-                    {id: 'b', type: 'wait', data: {wait_hours: 48}},
-                    {id: 'c', type: 'wait', data: {wait_hours: 72}}
-                ],
-                [
-                    {source_action_id: 'a', target_action_id: 'b'},
-                    {source_action_id: 'b', target_action_id: 'c'}
-                ]
-            );
-
-            const next = removeAction({detail, actionId: 'b'});
-
-            expect(next.actions.map(action => action.id)).toEqual(['a', 'c']);
-            expect(next.edges).toEqual([{source_action_id: 'a', target_action_id: 'c'}]);
-        });
-
-        it('throws when actionId references a non-existent action', () => {
-            const detail = baseDetail(
-                [{id: 'a', type: 'wait', data: {wait_hours: 24}}],
-                []
-            );
-
-            expect(() => removeAction({detail, actionId: 'does-not-exist'})).toThrow(/unknown action id "does-not-exist"/);
-        });
+      expect(ObjectId.isValid(next.actions[0].id)).toBe(true);
     });
 
-    describe('updateWaitAction', () => {
-        it('updates wait_hours on the targeted wait action', () => {
-            const detail = baseDetail(
-                [
-                    {id: 'a', type: 'wait', data: {wait_hours: 24}},
-                    {id: 'b', type: 'wait', data: {wait_hours: 48}}
-                ],
-                [{source_action_id: 'a', target_action_id: 'b'}]
-            );
+    it('throws when previousActionId references a non-existent action', () => {
+      const detail = baseDetail([{ id: 'a', type: 'wait', data: { wait_hours: 24 } }], []);
 
-            const next = updateWaitAction({detail, actionId: 'a', waitHours: 5});
-
-            expect(next.actions[0]).toEqual({id: 'a', type: 'wait', data: {wait_hours: 5}});
-        });
-
-        it('leaves other actions, edges, and top-level fields untouched', () => {
-            const detail = baseDetail(
-                [
-                    {id: 'a', type: 'wait', data: {wait_hours: 24}},
-                    {id: 'b', type: 'wait', data: {wait_hours: 48}}
-                ],
-                [{source_action_id: 'a', target_action_id: 'b'}]
-            );
-
-            const next = updateWaitAction({detail, actionId: 'a', waitHours: 72});
-
-            expect(next.actions[1]).toBe(detail.actions[1]);
-            expect(next.edges).toEqual(detail.edges);
-            expect(next.id).toBe(detail.id);
-            expect(next.slug).toBe(detail.slug);
-            expect(next.status).toBe(detail.status);
-        });
-
-        it('throws when actionId references a non-existent action', () => {
-            const detail = baseDetail(
-                [{id: 'a', type: 'wait', data: {wait_hours: 24}}],
-                []
-            );
-
-            expect(() => updateWaitAction({detail, actionId: 'does-not-exist', waitHours: 1})).toThrow(/unknown action id "does-not-exist"/);
-        });
-
-        it('throws when the targeted action is not a wait action', () => {
-            const detail = baseDetail(
-                [
-                    {
-                        id: 'a',
-                        type: 'send_email',
-                        data: {
-                            email_subject: 'Hi',
-                            email_lexical: '{}',
-                            email_design_setting_id: 'default-automated-email'
-                        }
-                    }
-                ],
-                []
-            );
-
-            expect(() => updateWaitAction({detail, actionId: 'a', waitHours: 1})).toThrow(/is not a wait action/);
-        });
-
-        const expectInvalidWaitHoursRejected = (waitHours: number): void => {
-            const detail = baseDetail(
-                [{id: 'a', type: 'wait', data: {wait_hours: 24}}],
-                []
-            );
-
-            expect(() => updateWaitAction({detail, actionId: 'a', waitHours})).toThrow(/waitHours must be a safe positive integer/);
-            expect(detail.actions).toEqual([{id: 'a', type: 'wait', data: {wait_hours: 24}}]);
-            expect(detail.edges).toEqual([]);
-        };
-
-        it('throws when waitHours is zero', () => {
-            expectInvalidWaitHoursRejected(0);
-        });
-
-        it('throws when waitHours is negative', () => {
-            expectInvalidWaitHoursRejected(-1);
-        });
-
-        it('throws when waitHours is fractional', () => {
-            expectInvalidWaitHoursRejected(1.5);
-        });
-
-        it('throws when waitHours is out of the double precision range', () => {
-            expectInvalidWaitHoursRejected(Number.MAX_SAFE_INTEGER + 1);
-        });
-
-        it('throws when waitHours is Infinity', () => {
-            expectInvalidWaitHoursRejected(Number.POSITIVE_INFINITY);
-        });
-
-        it('throws when waitHours is NaN', () => {
-            expectInvalidWaitHoursRejected(Number.NaN);
-        });
+      expect(() =>
+        insertWaitAction({ detail, anchor: { previousActionId: 'does-not-exist' } }),
+      ).toThrow(/unknown action id "does-not-exist"/);
     });
 
-    describe('updateSendEmailAction', () => {
-        const sendEmailAction = (id: string, overrides: Partial<AutomationSendEmailAction['data']> = {}): AutomationSendEmailAction => ({
-            id,
+    it('throws when nextActionId references a non-existent action', () => {
+      const detail = baseDetail([{ id: 'a', type: 'wait', data: { wait_hours: 24 } }], []);
+
+      expect(() =>
+        insertWaitAction({ detail, anchor: { nextActionId: 'does-not-exist' } }),
+      ).toThrow(/unknown action id "does-not-exist"/);
+    });
+
+    it('throws when inserting without an anchor into a non-empty automation', () => {
+      const detail = baseDetail([{ id: 'a', type: 'wait', data: { wait_hours: 24 } }], []);
+
+      expect(() => insertWaitAction({ detail, anchor: {} })).toThrow(/anchor is required/);
+    });
+
+    it('throws when inserting between actions that are not directly connected', () => {
+      const detail = baseDetail(
+        [
+          { id: 'a', type: 'wait', data: { wait_hours: 24 } },
+          { id: 'b', type: 'wait', data: { wait_hours: 48 } },
+        ],
+        [],
+      );
+
+      expect(() =>
+        insertWaitAction({ detail, anchor: { previousActionId: 'a', nextActionId: 'b' } }),
+      ).toThrow(/anchor edge "a" -> "b" does not exist/);
+    });
+
+    it('throws when appending after an action that already has an outgoing edge', () => {
+      const detail = baseDetail(
+        [
+          { id: 'a', type: 'wait', data: { wait_hours: 24 } },
+          { id: 'b', type: 'wait', data: { wait_hours: 48 } },
+        ],
+        [{ source_action_id: 'a', target_action_id: 'b' }],
+      );
+
+      expect(() => insertWaitAction({ detail, anchor: { previousActionId: 'a' } })).toThrow(
+        /previousActionId "a" is not the tail action/,
+      );
+    });
+
+    it('throws when prepending before an action that already has an incoming edge', () => {
+      const detail = baseDetail(
+        [
+          { id: 'a', type: 'wait', data: { wait_hours: 24 } },
+          { id: 'b', type: 'wait', data: { wait_hours: 48 } },
+        ],
+        [{ source_action_id: 'a', target_action_id: 'b' }],
+      );
+
+      expect(() => insertWaitAction({ detail, anchor: { nextActionId: 'b' } })).toThrow(
+        /nextActionId "b" is not the head action/,
+      );
+    });
+  });
+
+  describe('insertSendEmailAction', () => {
+    it('creates a send_email action with a blank body and default subject', () => {
+      const detail = baseDetail([], []);
+
+      const next = insertSendEmailAction({ detail, anchor: {} });
+
+      expect(next.actions).toHaveLength(1);
+      const newAction = next.actions[0];
+      expectSendEmailAction(newAction);
+      expect(newAction.data.email_subject).toBe('');
+      expect(() => JSON.parse(newAction.data.email_lexical)).not.toThrow();
+      expect(JSON.parse(newAction.data.email_lexical).root.children).toEqual([]);
+      expect(newAction.data.email_design_setting_id).toBe('default-automated-email');
+    });
+
+    it('returns an action id that the backend schema treats as a valid ObjectId', () => {
+      const next = insertSendEmailAction({ detail: baseDetail([], []), anchor: {} });
+
+      expect(ObjectId.isValid(next.actions[0].id)).toBe(true);
+    });
+  });
+
+  describe('removeAction', () => {
+    it('removes the only step and leaves the automation empty', () => {
+      const detail = baseDetail([{ id: 'a', type: 'wait', data: { wait_hours: 24 } }], []);
+
+      const next = removeAction({ detail, actionId: 'a' });
+
+      expect(next.actions).toEqual([]);
+      expect(next.edges).toEqual([]);
+    });
+
+    it('removes the head step, promoting the second action to head', () => {
+      const detail = baseDetail(
+        [
+          { id: 'a', type: 'wait', data: { wait_hours: 24 } },
+          { id: 'b', type: 'wait', data: { wait_hours: 48 } },
+        ],
+        [{ source_action_id: 'a', target_action_id: 'b' }],
+      );
+
+      const next = removeAction({ detail, actionId: 'a' });
+
+      expect(next.actions.map((action) => action.id)).toEqual(['b']);
+      expect(next.edges).toEqual([]);
+    });
+
+    it('removes the tail step, leaving the previous action as the new tail', () => {
+      const detail = baseDetail(
+        [
+          { id: 'a', type: 'wait', data: { wait_hours: 24 } },
+          { id: 'b', type: 'wait', data: { wait_hours: 48 } },
+        ],
+        [{ source_action_id: 'a', target_action_id: 'b' }],
+      );
+
+      const next = removeAction({ detail, actionId: 'b' });
+
+      expect(next.actions.map((action) => action.id)).toEqual(['a']);
+      expect(next.edges).toEqual([]);
+    });
+
+    it('removes a middle step by stitching its neighbours together', () => {
+      const detail = baseDetail(
+        [
+          { id: 'a', type: 'wait', data: { wait_hours: 24 } },
+          { id: 'b', type: 'wait', data: { wait_hours: 48 } },
+          { id: 'c', type: 'wait', data: { wait_hours: 72 } },
+        ],
+        [
+          { source_action_id: 'a', target_action_id: 'b' },
+          { source_action_id: 'b', target_action_id: 'c' },
+        ],
+      );
+
+      const next = removeAction({ detail, actionId: 'b' });
+
+      expect(next.actions.map((action) => action.id)).toEqual(['a', 'c']);
+      expect(next.edges).toEqual([{ source_action_id: 'a', target_action_id: 'c' }]);
+    });
+
+    it('throws when actionId references a non-existent action', () => {
+      const detail = baseDetail([{ id: 'a', type: 'wait', data: { wait_hours: 24 } }], []);
+
+      expect(() => removeAction({ detail, actionId: 'does-not-exist' })).toThrow(
+        /unknown action id "does-not-exist"/,
+      );
+    });
+  });
+
+  describe('updateWaitAction', () => {
+    it('updates wait_hours on the targeted wait action', () => {
+      const detail = baseDetail(
+        [
+          { id: 'a', type: 'wait', data: { wait_hours: 24 } },
+          { id: 'b', type: 'wait', data: { wait_hours: 48 } },
+        ],
+        [{ source_action_id: 'a', target_action_id: 'b' }],
+      );
+
+      const next = updateWaitAction({ detail, actionId: 'a', waitHours: 5 });
+
+      expect(next.actions[0]).toEqual({ id: 'a', type: 'wait', data: { wait_hours: 5 } });
+    });
+
+    it('leaves other actions, edges, and top-level fields untouched', () => {
+      const detail = baseDetail(
+        [
+          { id: 'a', type: 'wait', data: { wait_hours: 24 } },
+          { id: 'b', type: 'wait', data: { wait_hours: 48 } },
+        ],
+        [{ source_action_id: 'a', target_action_id: 'b' }],
+      );
+
+      const next = updateWaitAction({ detail, actionId: 'a', waitHours: 72 });
+
+      expect(next.actions[1]).toBe(detail.actions[1]);
+      expect(next.edges).toEqual(detail.edges);
+      expect(next.id).toBe(detail.id);
+      expect(next.slug).toBe(detail.slug);
+      expect(next.status).toBe(detail.status);
+    });
+
+    it('throws when actionId references a non-existent action', () => {
+      const detail = baseDetail([{ id: 'a', type: 'wait', data: { wait_hours: 24 } }], []);
+
+      expect(() => updateWaitAction({ detail, actionId: 'does-not-exist', waitHours: 1 })).toThrow(
+        /unknown action id "does-not-exist"/,
+      );
+    });
+
+    it('throws when the targeted action is not a wait action', () => {
+      const detail = baseDetail(
+        [
+          {
+            id: 'a',
             type: 'send_email',
             data: {
-                email_subject: 'Original subject',
-                email_lexical: '{"root":{"children":[]}}',
-                email_design_setting_id: 'default-automated-email',
-                ...overrides
-            }
-        });
+              email_subject: 'Hi',
+              email_lexical: '{}',
+              email_design_setting_id: 'default-automated-email',
+            },
+          },
+        ],
+        [],
+      );
 
-        it('updates subject and lexical on the targeted send_email action', () => {
-            const detail = baseDetail([sendEmailAction('a')], []);
-
-            const next = updateSendEmailAction({
-                detail,
-                actionId: 'a',
-                emailSubject: 'New subject',
-                emailLexical: '{"root":{"children":[{"type":"paragraph"}]}}'
-            });
-
-            const updated = next.actions[0];
-            expectSendEmailAction(updated);
-            expect(updated.data.email_subject).toBe('New subject');
-            expect(updated.data.email_lexical).toBe('{"root":{"children":[{"type":"paragraph"}]}}');
-        });
-
-        it('updates subject and lexical, preserving the rest of data', () => {
-            const detail = baseDetail([sendEmailAction('a', {email_design_setting_id: 'design-setting-id'})], []);
-
-            const next = updateSendEmailAction({
-                detail,
-                actionId: 'a',
-                emailSubject: 'Just the subject',
-                emailLexical: '{"root":{"children":[{"type":"paragraph"}]}}'
-            });
-
-            const updated = next.actions[0];
-            expectSendEmailAction(updated);
-            expect(updated.data.email_subject).toBe('Just the subject');
-            expect(updated.data.email_lexical).toBe('{"root":{"children":[{"type":"paragraph"}]}}');
-            expect(updated.data.email_design_setting_id).toBe('design-setting-id');
-        });
-
-        it('does not mutate the original detail or action', () => {
-            const detail = baseDetail([sendEmailAction('a')], []);
-
-            updateSendEmailAction({detail, actionId: 'a', emailSubject: 'Changed', emailLexical: '{"root":{"children":[{"type":"paragraph"}]}}'});
-
-            const original = detail.actions[0];
-            expectSendEmailAction(original);
-            expect(original.data.email_subject).toBe('Original subject');
-        });
-
-        it('leaves other actions, edges, and top-level fields untouched', () => {
-            const detail = baseDetail(
-                [sendEmailAction('a'), {id: 'b', type: 'wait', data: {wait_hours: 24}}],
-                [{source_action_id: 'a', target_action_id: 'b'}]
-            );
-
-            const next = updateSendEmailAction({detail, actionId: 'a', emailSubject: 'New', emailLexical: '{"root":{"children":[]}}'});
-
-            expect(next.actions[1]).toBe(detail.actions[1]);
-            expect(next.edges).toEqual(detail.edges);
-            expect(next.id).toBe(detail.id);
-            expect(next.slug).toBe(detail.slug);
-            expect(next.status).toBe(detail.status);
-        });
-
-        it('throws when actionId references a non-existent action', () => {
-            const detail = baseDetail([sendEmailAction('a')], []);
-
-            expect(() => updateSendEmailAction({detail, actionId: 'nope', emailSubject: 'x', emailLexical: '{"root":{"children":[]}}'})).toThrow(/unknown action id "nope"/);
-        });
-
-        it('throws when the targeted action is not a send_email action', () => {
-            const detail = baseDetail([{id: 'a', type: 'wait', data: {wait_hours: 24}}], []);
-
-            expect(() => updateSendEmailAction({detail, actionId: 'a', emailSubject: 'x', emailLexical: '{"root":{"children":[]}}'})).toThrow(/is not a send_email action/);
-        });
+      expect(() => updateWaitAction({ detail, actionId: 'a', waitHours: 1 })).toThrow(
+        /is not a wait action/,
+      );
     });
+
+    const expectInvalidWaitHoursRejected = (waitHours: number): void => {
+      const detail = baseDetail([{ id: 'a', type: 'wait', data: { wait_hours: 24 } }], []);
+
+      expect(() => updateWaitAction({ detail, actionId: 'a', waitHours })).toThrow(
+        /waitHours must be a safe positive integer/,
+      );
+      expect(detail.actions).toEqual([{ id: 'a', type: 'wait', data: { wait_hours: 24 } }]);
+      expect(detail.edges).toEqual([]);
+    };
+
+    it('throws when waitHours is zero', () => {
+      expectInvalidWaitHoursRejected(0);
+    });
+
+    it('throws when waitHours is negative', () => {
+      expectInvalidWaitHoursRejected(-1);
+    });
+
+    it('throws when waitHours is fractional', () => {
+      expectInvalidWaitHoursRejected(1.5);
+    });
+
+    it('throws when waitHours is out of the double precision range', () => {
+      expectInvalidWaitHoursRejected(Number.MAX_SAFE_INTEGER + 1);
+    });
+
+    it('throws when waitHours is Infinity', () => {
+      expectInvalidWaitHoursRejected(Number.POSITIVE_INFINITY);
+    });
+
+    it('throws when waitHours is NaN', () => {
+      expectInvalidWaitHoursRejected(Number.NaN);
+    });
+  });
+
+  describe('updateSendEmailAction', () => {
+    const sendEmailAction = (
+      id: string,
+      overrides: Partial<AutomationSendEmailAction['data']> = {},
+    ): AutomationSendEmailAction => ({
+      id,
+      type: 'send_email',
+      data: {
+        email_subject: 'Original subject',
+        email_lexical: '{"root":{"children":[]}}',
+        email_design_setting_id: 'default-automated-email',
+        ...overrides,
+      },
+    });
+
+    it('updates subject and lexical on the targeted send_email action', () => {
+      const detail = baseDetail([sendEmailAction('a')], []);
+
+      const next = updateSendEmailAction({
+        detail,
+        actionId: 'a',
+        emailSubject: 'New subject',
+        emailLexical: '{"root":{"children":[{"type":"paragraph"}]}}',
+      });
+
+      const updated = next.actions[0];
+      expectSendEmailAction(updated);
+      expect(updated.data.email_subject).toBe('New subject');
+      expect(updated.data.email_lexical).toBe('{"root":{"children":[{"type":"paragraph"}]}}');
+    });
+
+    it('updates subject and lexical, preserving the rest of data', () => {
+      const detail = baseDetail(
+        [sendEmailAction('a', { email_design_setting_id: 'design-setting-id' })],
+        [],
+      );
+
+      const next = updateSendEmailAction({
+        detail,
+        actionId: 'a',
+        emailSubject: 'Just the subject',
+        emailLexical: '{"root":{"children":[{"type":"paragraph"}]}}',
+      });
+
+      const updated = next.actions[0];
+      expectSendEmailAction(updated);
+      expect(updated.data.email_subject).toBe('Just the subject');
+      expect(updated.data.email_lexical).toBe('{"root":{"children":[{"type":"paragraph"}]}}');
+      expect(updated.data.email_design_setting_id).toBe('design-setting-id');
+    });
+
+    it('does not mutate the original detail or action', () => {
+      const detail = baseDetail([sendEmailAction('a')], []);
+
+      updateSendEmailAction({
+        detail,
+        actionId: 'a',
+        emailSubject: 'Changed',
+        emailLexical: '{"root":{"children":[{"type":"paragraph"}]}}',
+      });
+
+      const original = detail.actions[0];
+      expectSendEmailAction(original);
+      expect(original.data.email_subject).toBe('Original subject');
+    });
+
+    it('leaves other actions, edges, and top-level fields untouched', () => {
+      const detail = baseDetail(
+        [sendEmailAction('a'), { id: 'b', type: 'wait', data: { wait_hours: 24 } }],
+        [{ source_action_id: 'a', target_action_id: 'b' }],
+      );
+
+      const next = updateSendEmailAction({
+        detail,
+        actionId: 'a',
+        emailSubject: 'New',
+        emailLexical: '{"root":{"children":[]}}',
+      });
+
+      expect(next.actions[1]).toBe(detail.actions[1]);
+      expect(next.edges).toEqual(detail.edges);
+      expect(next.id).toBe(detail.id);
+      expect(next.slug).toBe(detail.slug);
+      expect(next.status).toBe(detail.status);
+    });
+
+    it('throws when actionId references a non-existent action', () => {
+      const detail = baseDetail([sendEmailAction('a')], []);
+
+      expect(() =>
+        updateSendEmailAction({
+          detail,
+          actionId: 'nope',
+          emailSubject: 'x',
+          emailLexical: '{"root":{"children":[]}}',
+        }),
+      ).toThrow(/unknown action id "nope"/);
+    });
+
+    it('throws when the targeted action is not a send_email action', () => {
+      const detail = baseDetail([{ id: 'a', type: 'wait', data: { wait_hours: 24 } }], []);
+
+      expect(() =>
+        updateSendEmailAction({
+          detail,
+          actionId: 'a',
+          emailSubject: 'x',
+          emailLexical: '{"root":{"children":[]}}',
+        }),
+      ).toThrow(/is not a send_email action/);
+    });
+  });
+});
+
+describe('automation run response validation', () => {
+  const meta = { pagination: { limit: 50, next_cursor: null } };
+  const run: AutomationRun = {
+    id: 'one',
+    created_at: '2026-09-15T12:00:00.000Z',
+    status: 'completed',
+    failed: false,
+    member: { id: 'member', name: ' Alex ', email: 'alex@example.com' },
+  };
+
+  it('accepts empty history and separate runs for the same member', () => {
+    expect(
+      AutomationRunsResponseSchema.parse({ meta, automation_runs: [] }).automation_runs,
+    ).toEqual([]);
+    expect(
+      AutomationRunsResponseSchema.safeParse({
+        meta,
+        automation_runs: [run, { ...run, id: 'two' }],
+      }).success,
+    ).toBe(true);
+  });
+
+  it.each([
+    { name: 'missing envelope', body: {} },
+    { name: 'missing failure flag', body: { automation_runs: [{ ...run, failed: undefined }] } },
+    { name: 'invalid failure flag', body: { automation_runs: [{ ...run, failed: 'true' }] } },
+    { name: 'unknown status', body: { automation_runs: [{ ...run, status: 'future' }] } },
+    { name: 'invalid timestamp', body: { automation_runs: [{ ...run, created_at: 'invalid' }] } },
+    { name: 'missing member', body: { automation_runs: [{ ...run, member: undefined }] } },
+    { name: 'duplicate run', body: { automation_runs: [run, run] } },
+    {
+      name: 'more than fifty runs',
+      body: { automation_runs: Array.from({ length: 51 }, (_, i) => ({ ...run, id: String(i) })) },
+    },
+  ])('rejects $name', ({ body }) => {
+    expect(AutomationRunsResponseSchema.safeParse({ meta, ...body }).success).toBe(false);
+  });
 });

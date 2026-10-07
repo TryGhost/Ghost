@@ -10,13 +10,14 @@
  * CI environments where a build has already run and the TS is already compiled
  */
 try {
-    require('tsx/cjs');
+  require('tsx/cjs');
 } catch (err) {
-    if (err.code !== 'MODULE_NOT_FOUND') {
-        throw err;
-    }
+  if (err.code !== 'MODULE_NOT_FOUND') {
+    throw err;
+  }
 }
 
+const _ = require('lodash');
 const config = require('./core/shared/config');
 const ghostVersion = require('@tryghost/version');
 
@@ -27,7 +28,13 @@ const ghostVersion = require('@tryghost/version');
 require('./core/server/overrides');
 
 module.exports = {
-    currentVersion: ghostVersion.safe,
-    database: config.get('database'),
-    migrationPath: config.get('paths:migrationPath')
+  currentVersion: ghostVersion.safe,
+  // A clone, because knex-migrator's connect() assembles its knex options by
+  // mutating what it is given: it sets connection.timezone, charset and
+  // decimalNumbers, and deletes connection.filename. Config is read-only, so
+  // handing over the real thing drops those writes and leaves the migrator's
+  // connection without them. cloneDeep rather than structuredClone - this hands
+  // a tree to a third party, so it must not throw on a value it cannot clone.
+  database: _.cloneDeep(config.get('database')),
+  migrationPath: config.get('paths:migrationPath'),
 };

@@ -7,23 +7,27 @@ const PERMIT_ACCESS = true;
 const BLOCK_ACCESS = false;
 
 // TODO: better place to store this?
-const MEMBER_NQL_EXPANSIONS = [{
+const MEMBER_NQL_EXPANSIONS = [
+  {
     key: 'products',
-    replacement: 'products.slug'
-}, {
+    replacement: 'products.slug',
+  },
+  {
     key: 'product',
-    replacement: 'products.slug'
-}];
+    replacement: 'products.slug',
+  },
+];
 
-const rejectUnknownKeys = input => nql.utils.mapQuery(input, function (value, key) {
+const rejectUnknownKeys = (input) =>
+  nql.utils.mapQuery(input, function (value, key) {
     if (!['product', 'products', 'status'].includes(key.toLowerCase())) {
-        return;
+      return;
     }
 
     return {
-        [key]: value
+      [key]: value,
     };
-});
+  });
 
 /**
  * Builds the NQL member filter describing which members have access to a post's
@@ -40,20 +44,24 @@ const rejectUnknownKeys = input => nql.utils.mapQuery(input, function (value, ke
  *   misconfigured so that no member should have access.
  */
 function getPostAccessFilter(post) {
-    if (post.visibility === 'paid') {
-        return 'status:-free';
-    }
+  if (post.visibility === 'paid') {
+    return 'status:-free';
+  }
 
-    if (post.visibility === 'tiers') {
-        if (!post.tiers) {
-            return null;
-        }
-        return post.tiers.map((product) => {
-            return `product:'${product.slug}'`;
-        }).join(',') || null;
+  if (post.visibility === 'tiers') {
+    if (!post.tiers) {
+      return null;
     }
+    return (
+      post.tiers
+        .map((product) => {
+          return `product:'${product.slug}'`;
+        })
+        .join(',') || null
+    );
+  }
 
-    return post.visibility;
+  return post.visibility;
 }
 
 /**
@@ -63,25 +71,32 @@ function getPostAccessFilter(post) {
  * @returns {AccessFlag}
  */
 function checkPostAccess(post, member) {
-    if (post.visibility === 'public') {
-        return PERMIT_ACCESS;
-    }
+  if (post.visibility === 'public') {
+    return PERMIT_ACCESS;
+  }
 
-    if (!member) {
-        return BLOCK_ACCESS;
-    }
-
-    if (post.visibility === 'members') {
-        return PERMIT_ACCESS;
-    }
-
-    const visibility = getPostAccessFilter(post);
-
-    if (visibility && member.status && nql(visibility, {expansions: MEMBER_NQL_EXPANSIONS, transformer: rejectUnknownKeys}).queryJSON(member)) {
-        return PERMIT_ACCESS;
-    }
-
+  if (!member) {
     return BLOCK_ACCESS;
+  }
+
+  if (post.visibility === 'members') {
+    return PERMIT_ACCESS;
+  }
+
+  const visibility = getPostAccessFilter(post);
+
+  if (
+    visibility &&
+    member.status &&
+    nql(visibility, {
+      expansions: MEMBER_NQL_EXPANSIONS,
+      transformer: rejectUnknownKeys,
+    }).queryJSON(member)
+  ) {
+    return PERMIT_ACCESS;
+  }
+
+  return BLOCK_ACCESS;
 }
 
 /**
@@ -92,21 +107,21 @@ function checkPostAccess(post, member) {
  * @returns {string[]}
  */
 function collectSegmentProductSlugs(query) {
-    const slugs = [];
-    for (const [key, value] of Object.entries(query)) {
-        if (key === '$and' || key === '$or') {
-            for (const subQuery of value) {
-                slugs.push(...collectSegmentProductSlugs(subQuery));
-            }
-        } else if (key === 'products.slug') {
-            if (typeof value === 'string') {
-                slugs.push(value);
-            } else if (value && Array.isArray(value.$in)) {
-                slugs.push(...value.$in);
-            }
-        }
+  const slugs = [];
+  for (const [key, value] of Object.entries(query)) {
+    if (key === '$and' || key === '$or') {
+      for (const subQuery of value) {
+        slugs.push(...collectSegmentProductSlugs(subQuery));
+      }
+    } else if (key === 'products.slug') {
+      if (typeof value === 'string') {
+        slugs.push(value);
+      } else if (value && Array.isArray(value.$in)) {
+        slugs.push(...value.$in);
+      }
     }
-    return slugs;
+  }
+  return slugs;
 }
 
 /**
@@ -123,76 +138,79 @@ function collectSegmentProductSlugs(query) {
  * @returns {AccessFlag}
  */
 function checkSegmentPostAccess(post, segment) {
-    let nqlQuery;
-    let parsedQuery;
-    try {
-        nqlQuery = nql(segment, {expansions: MEMBER_NQL_EXPANSIONS, transformer: rejectUnknownKeys});
-        parsedQuery = nqlQuery.parse();
-    } catch (error) {
-        // segments arrive free-form from the API — unparseable ones get the
-        // paywall, not a 500
-        return BLOCK_ACCESS;
-    }
+  let nqlQuery;
+  let parsedQuery;
+  try {
+    nqlQuery = nql(segment, { expansions: MEMBER_NQL_EXPANSIONS, transformer: rejectUnknownKeys });
+    parsedQuery = nqlQuery.parse();
+  } catch (error) {
+    // segments arrive free-form from the API — unparseable ones get the
+    // paywall, not a 500
+    return BLOCK_ACCESS;
+  }
 
-    // a segment with only unknown keys parses to an empty query which would
-    // match every member — block, matching checkGatedBlockAccess semantics
-    if (Object.keys(parsedQuery).length === 0) {
-        return BLOCK_ACCESS;
-    }
+  // a segment with only unknown keys parses to an empty query which would
+  // match every member — block, matching checkGatedBlockAccess semantics
+  if (Object.keys(parsedQuery).length === 0) {
+    return BLOCK_ACCESS;
+  }
 
-    // a candidate only counts when it matches the segment — 'status:free'
-    // must never be evaluated as the paid member
-    const slugs = collectSegmentProductSlugs(parsedQuery);
-    const candidateMembers = [
-        {status: 'free', products: []},
-        {status: 'paid', products: slugs.map(slug => ({slug}))}
-    ];
-    // an OR of tiers matches members holding any one of them, so each named
-    // tier must grant access on its own
-    for (const slug of slugs) {
-        candidateMembers.push({status: 'paid', products: [{slug}]});
-    }
+  // a candidate only counts when it matches the segment — 'status:free'
+  // must never be evaluated as the paid member
+  const slugs = collectSegmentProductSlugs(parsedQuery);
+  const candidateMembers = [
+    { status: 'free', products: [] },
+    { status: 'paid', products: slugs.map((slug) => ({ slug })) },
+  ];
+  // an OR of tiers matches members holding any one of them, so each named
+  // tier must grant access on its own
+  for (const slug of slugs) {
+    candidateMembers.push({ status: 'paid', products: [{ slug }] });
+  }
 
-    // least privilege: every member the segment matches must have access —
-    // a mixed segment like 'status:free,status:-free' gets the free view
-    const matchingMembers = candidateMembers.filter(member => nqlQuery.queryJSON(member));
-    if (matchingMembers.length === 0) {
-        return BLOCK_ACCESS;
-    }
-    return matchingMembers.every(member => checkPostAccess(post, member));
+  // least privilege: every member the segment matches must have access —
+  // a mixed segment like 'status:free,status:-free' gets the free view
+  const matchingMembers = candidateMembers.filter((member) => nqlQuery.queryJSON(member));
+  if (matchingMembers.length === 0) {
+    return BLOCK_ACCESS;
+  }
+  return matchingMembers.every((member) => checkPostAccess(post, member));
 }
 
 function checkGatedBlockAccess(gatedBlockParams, member) {
-    const {nonMember, memberSegment} = gatedBlockParams;
-    const isLoggedIn = !!member;
+  const { nonMember, memberSegment } = gatedBlockParams;
+  const isLoggedIn = !!member;
 
-    if (nonMember && !isLoggedIn) {
-        return PERMIT_ACCESS;
-    }
+  if (nonMember && !isLoggedIn) {
+    return PERMIT_ACCESS;
+  }
 
-    if (!memberSegment && isLoggedIn) {
-        return BLOCK_ACCESS;
-    }
-
-    if (memberSegment && member) {
-        const nqlQuery = nql(memberSegment, {expansions: MEMBER_NQL_EXPANSIONS, transformer: rejectUnknownKeys});
-
-        // if we only have unknown keys the NQL query will be empty and "pass" for all members
-        // we should block access in this case to match the memberSegment:"" behaviour
-        const parsedQuery = nqlQuery.parse();
-        if (Object.keys(parsedQuery).length > 0) {
-            return nqlQuery.queryJSON(member) ? PERMIT_ACCESS : BLOCK_ACCESS;
-        }
-    }
-
+  if (!memberSegment && isLoggedIn) {
     return BLOCK_ACCESS;
+  }
+
+  if (memberSegment && member) {
+    const nqlQuery = nql(memberSegment, {
+      expansions: MEMBER_NQL_EXPANSIONS,
+      transformer: rejectUnknownKeys,
+    });
+
+    // if we only have unknown keys the NQL query will be empty and "pass" for all members
+    // we should block access in this case to match the memberSegment:"" behaviour
+    const parsedQuery = nqlQuery.parse();
+    if (Object.keys(parsedQuery).length > 0) {
+      return nqlQuery.queryJSON(member) ? PERMIT_ACCESS : BLOCK_ACCESS;
+    }
+  }
+
+  return BLOCK_ACCESS;
 }
 
 module.exports = {
-    getPostAccessFilter,
-    checkPostAccess,
-    checkSegmentPostAccess,
-    checkGatedBlockAccess,
-    PERMIT_ACCESS,
-    BLOCK_ACCESS
+  getPostAccessFilter,
+  checkPostAccess,
+  checkSegmentPostAccess,
+  checkGatedBlockAccess,
+  PERMIT_ACCESS,
+  BLOCK_ACCESS,
 };

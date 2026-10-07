@@ -1,12 +1,10 @@
-const {addPermissionWithRoles} = require('../../utils');
+const { addPermissionWithRoles } = require('../../utils');
 
-module.exports = addPermissionWithRoles({
+module.exports = addPermissionWithRoles(
+  {
     name: 'View active theme details',
     action: 'readActive',
-    object: 'theme'
-}, [
-    'Author',
-    'Editor',
-    'Administrator',
-    'Admin Integration'
-]);
+    object: 'theme',
+  },
+  ['Author', 'Editor', 'Administrator', 'Admin Integration'],
+);

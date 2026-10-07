@@ -1,5 +1,4 @@
 // TODO: remove usage of Ember Data's private `Errors` class when refactoring validations
-import CustomViewValidator from 'ghost-admin/validators/custom-view';
 import DS from 'ember-data'; // eslint-disable-line
 import IntegrationValidator from 'ghost-admin/validators/integration';
 import InviteUserValidator from 'ghost-admin/validators/invite-user';
@@ -9,7 +8,6 @@ import Mixin from '@ember/object/mixin';
 import Model from '@ember-data/model';
 import NavItemValidator from 'ghost-admin/validators/nav-item';
 import NewsletterValidator from 'ghost-admin/validators/newsletter';
-import OfferValidator from 'ghost-admin/validators/offer';
 import PostValidator from 'ghost-admin/validators/post';
 import RSVP from 'rsvp';
 import ResetValidator from 'ghost-admin/validators/reset';
@@ -55,7 +53,6 @@ export default Mixin.create({
         this.set('hasValidated', emberA());
 
         this.validators = {
-            customView: CustomViewValidator,
             inviteUser: InviteUserValidator,
             navItem: NavItemValidator,
             tierBenefitItem: TierBenefitItemValidator,
@@ -73,7 +70,6 @@ export default Mixin.create({
             label: LabelValidator,
             snippet: SnippetValidator,
             tier: TierValidator,
-            offer: OfferValidator,
             newsletter: NewsletterValidator
         };
     },
@@ -92,9 +88,6 @@ export default Mixin.create({
     */
     validate(opts) {
         let model = this;
-        let hasValidated,
-            type,
-            validator;
 
         opts = opts || {};
 
@@ -106,14 +99,13 @@ export default Mixin.create({
             model = this.model;
         }
 
-        type = this.validationType || model.validationType;
-        validator = this.get(`validators.${type}`) || model.validators[type];
-        hasValidated = this.hasValidated;
+        const type = this.validationType || model.validationType;
+        const validator = this.get(`validators.${type}`) || model.validators[type];
+        const hasValidated = this.hasValidated;
 
         opts.validationType = type;
 
         return new RSVP.Promise((resolve, reject) => {
-            let passed;
 
             if (!type || !validator) {
                 return reject([`The validator specified, "${type}", did not exist!`]);
@@ -127,7 +119,7 @@ export default Mixin.create({
                 model.errors.clear();
             }
 
-            passed = validator.check(model, opts.property);
+            const passed = validator.check(model, opts.property);
 
             return (passed) ? resolve() : reject();
         });
@@ -139,7 +131,7 @@ export default Mixin.create({
     * You can supply options to be passed into the `validate` method, since the ED `save` method takes no options.
     */
     save(options) {
-        let {_super} = this;
+        const {_super} = this;
 
         options = options || {};
         options.wasSave = true;

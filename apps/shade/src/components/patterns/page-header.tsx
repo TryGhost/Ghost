@@ -1,76 +1,226 @@
-import {DropdownMenu, DropdownMenuContent, DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
-import {H1} from '@/components/layout/heading';
-import {Inline, Stack, Text} from '@/components/primitives';
-import {cn} from '@/lib/utils';
+import { HeaderTooltipProvider } from '@/providers/header-tooltip-provider';
+import { useShade } from '@/providers/shade-provider';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button, type ButtonProps } from '@/components/ui/button';
+import { SelectTrigger } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Kbd } from '@/components/ui/kbd';
+import { H1 } from '@/components/layout/heading';
+import { Inline, Stack, Text } from '@/components/primitives';
+import { cn } from '@/lib/utils';
 
 import React from 'react';
+import { ListFilter } from 'lucide-react';
+import { Slot } from '@radix-ui/react-slot';
 
 type PropsWithChildrenAndClassName = React.PropsWithChildren & {
-    className?: string;
+  className?: string;
 };
 
 type PageHeaderProps = PropsWithChildrenAndClassName & {
-    sticky?: boolean;
-    blurredBackground?: boolean;
+  sticky?: boolean;
+  blurredBackground?: boolean;
 };
+
+/** Header tooltips require Admin 7 and never belong on primary actions. */
+function PageHeaderTooltip({
+  children,
+  label,
+  shortcut,
+}: React.PropsWithChildren<{ label: string; shortcut?: string }>) {
+  const { isAdmin7 } = useShade();
+  if (!isAdmin7) {
+    return <>{children}</>;
+  }
+  return (
+    <Tooltip>
+      {children}
+      <TooltipContent side="bottom" variant="white">
+        <Inline align="center" gap="sm">
+          {label}
+          {shortcut && <Kbd>{shortcut}</Kbd>}
+        </Inline>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+const PageHeaderTooltipTrigger = React.forwardRef<
+  React.ElementRef<typeof TooltipTrigger>,
+  React.ComponentPropsWithoutRef<typeof TooltipTrigger>
+>(({ children, asChild, ...props }, ref) => {
+  const { isAdmin7 } = useShade();
+  const PlainTrigger = asChild ? Slot : 'button';
+  return isAdmin7 ? (
+    <TooltipTrigger ref={ref} asChild={asChild} {...props}>
+      {children}
+    </TooltipTrigger>
+  ) : (
+    <PlainTrigger ref={ref} {...props}>
+      {children}
+    </PlainTrigger>
+  );
+});
+PageHeaderTooltipTrigger.displayName = 'PageHeaderTooltipTrigger';
+
+const PrimaryActionContext = React.createContext(false);
+
+type PageHeaderActionProps = ButtonProps & {
+  label: string;
+  iconOnly?: boolean;
+  primary?: boolean;
+  shortcut?: string;
+  /** Show an explanation for a changing value; static labels need no tooltip. */
+  tooltip?: boolean;
+  /** Temporary compatibility for existing screens; new headers use the defaults. */
+  fallbackVariant?: ButtonProps['variant'];
+  fallbackSize?: ButtonProps['size'];
+};
+
+const PageHeaderAction = React.forwardRef<HTMLButtonElement, PageHeaderActionProps>(
+  (
+    {
+      label,
+      iconOnly = false,
+      primary: primaryProp,
+      shortcut,
+      tooltip = iconOnly || Boolean(shortcut),
+      fallbackVariant = 'outline',
+      fallbackSize,
+      className,
+      ...props
+    },
+    ref,
+  ) => {
+    const { isAdmin7 } = useShade();
+    const primaryContext = React.useContext(PrimaryActionContext);
+    const primary = primaryProp ?? primaryContext;
+    const button = (
+      <Button
+        ref={ref}
+        aria-keyshortcuts={shortcut}
+        aria-label={label}
+        className={cn(isAdmin7 && '[&_svg]:stroke-2!', className)}
+        size={isAdmin7 ? (iconOnly ? 'icon' : undefined) : fallbackSize}
+        variant={isAdmin7 ? (primary ? 'default' : 'ghost') : fallbackVariant}
+        {...props}
+      />
+    );
+    return primary || !isAdmin7 || !tooltip ? (
+      button
+    ) : (
+      <PageHeaderTooltip label={label} shortcut={shortcut}>
+        <TooltipTrigger asChild>{button}</TooltipTrigger>
+      </PageHeaderTooltip>
+    );
+  },
+);
+PageHeaderAction.displayName = 'PageHeaderAction';
+
+const PageHeaderFilterTrigger = React.forwardRef<
+  HTMLButtonElement,
+  Omit<PageHeaderActionProps, 'label'>
+>((props, ref) => (
+  <PageHeaderAction
+    ref={ref}
+    data-slot="filters-add"
+    label="Filter"
+    shortcut="F"
+    type="button"
+    {...props}
+  >
+    <ListFilter className="size-4" />
+    Filter
+  </PageHeaderAction>
+));
+PageHeaderFilterTrigger.displayName = 'PageHeaderFilterTrigger';
+
+const PageHeaderSelectTrigger = React.forwardRef<
+  React.ElementRef<typeof SelectTrigger>,
+  React.ComponentPropsWithoutRef<typeof SelectTrigger> & { label: string; tooltip?: boolean }
+>(({ label, tooltip = true, className, ...props }, ref) => {
+  const { controlShape, isAdmin7 } = useShade();
+  const trigger = (
+    <SelectTrigger
+      ref={ref}
+      aria-label={label}
+      className={cn(
+        'w-auto',
+        isAdmin7 &&
+          'gap-1.5 font-medium [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-2! [&>svg]:mr-0',
+        className,
+      )}
+      shape={controlShape}
+      showChevron={!isAdmin7}
+      variant={isAdmin7 ? 'ghost' : 'default'}
+      {...props}
+    />
+  );
+  return tooltip ? (
+    <PageHeaderTooltip label={label}>
+      <PageHeaderTooltipTrigger asChild>{trigger}</PageHeaderTooltipTrigger>
+    </PageHeaderTooltip>
+  ) : (
+    trigger
+  );
+});
+PageHeaderSelectTrigger.displayName = 'PageHeaderSelectTrigger';
 
 // ---------------------------------------------------------------------------
 // Title-block primitives
 // ---------------------------------------------------------------------------
 
-function PageHeaderBreadcrumb({className, children}: PropsWithChildrenAndClassName) {
-    return (
-        <Inline
-            align='center'
-            className={cn('pt-1 text-sm text-muted-foreground', className)}
-            data-page-header='breadcrumb'
-            gap='sm'
-        >
-            {children}
-        </Inline>
-    );
+function PageHeaderBreadcrumb({ className, children }: PropsWithChildrenAndClassName) {
+  return (
+    <Inline
+      align="center"
+      className={cn('pt-1 text-sm text-muted-foreground', className)}
+      data-page-header="breadcrumb"
+      gap="sm"
+    >
+      {children}
+    </Inline>
+  );
 }
 
-function PageHeaderCount({className, children}: PropsWithChildrenAndClassName) {
-    return (
-        <Text
-            as='span'
-            className={cn('ml-1 text-base tabular-nums', className)}
-            data-page-header='count'
-            tone='secondary'
-            weight='regular'
-        >
-            {children}
-        </Text>
-    );
+function PageHeaderCount({ className, children }: PropsWithChildrenAndClassName) {
+  return (
+    <Text
+      as="span"
+      className={cn('ml-1 text-base tabular-nums', className)}
+      data-page-header="count"
+      tone="secondary"
+      weight="regular"
+    >
+      {children}
+    </Text>
+  );
 }
 
-function PageHeaderDescription({className, children}: PropsWithChildrenAndClassName) {
-    return (
-        <Text
-            as='p'
-            className={className}
-            data-page-header='description'
-            size='sm'
-            tone='secondary'
-        >
-            {children}
-        </Text>
-    );
+function PageHeaderDescription({ className, children }: PropsWithChildrenAndClassName) {
+  return (
+    <Text as="p" className={className} data-page-header="description" size="sm" tone="secondary">
+      {children}
+    </Text>
+  );
 }
 
-function PageHeaderMeta({className, children}: PropsWithChildrenAndClassName) {
-    return (
-        <Text
-            as='p'
-            className={cn('mt-0.5', className)}
-            data-page-header='meta'
-            size='sm'
-            tone='secondary'
-        >
-            {children}
-        </Text>
-    );
+function PageHeaderMeta({ className, children }: PropsWithChildrenAndClassName) {
+  return (
+    <Text
+      as="p"
+      className={cn('mt-0.5', className)}
+      data-page-header="meta"
+      size="sm"
+      tone="secondary"
+    >
+      {children}
+    </Text>
+  );
 }
 
 /**
@@ -78,242 +228,279 @@ function PageHeaderMeta({className, children}: PropsWithChildrenAndClassName) {
  * children. `Count` flows inline inside the H1; `Description` and `Meta` stack
  * below the heading.
  */
-function PageHeaderTitle({className, children}: PropsWithChildrenAndClassName) {
-    const headingChildren: React.ReactNode[] = [];
-    const subTextChildren: React.ReactNode[] = [];
+function PageHeaderTitle({ className, children }: PropsWithChildrenAndClassName) {
+  const headingChildren: React.ReactNode[] = [];
+  const subTextChildren: React.ReactNode[] = [];
 
-    React.Children.forEach(children, (child) => {
-        if (!React.isValidElement(child)) {
-            headingChildren.push(child);
-            return;
-        }
-
-        switch (child.type) {
-        case PageHeaderDescription:
-        case PageHeaderMeta:
-            subTextChildren.push(child);
-            break;
-        default:
-            headingChildren.push(child);
-        }
-    });
-
-    const heading = (
-        <H1
-            className={cn(
-                'text-lg font-semibold tracking-[0.1px] whitespace-nowrap',
-                className
-            )}
-            data-page-header='title'
-        >
-            {headingChildren}
-        </H1>
-    );
-
-    if (subTextChildren.length > 0) {
-        return (
-            <Stack data-page-header='title-body' gap='none'>
-                {heading}
-                {subTextChildren}
-            </Stack>
-        );
+  React.Children.forEach(children, (child) => {
+    if (!React.isValidElement(child)) {
+      headingChildren.push(child);
+      return;
     }
 
-    return heading;
+    switch (child.type) {
+      case PageHeaderDescription:
+      case PageHeaderMeta:
+        subTextChildren.push(child);
+        break;
+      default:
+        headingChildren.push(child);
+    }
+  });
+
+  const heading = (
+    <H1
+      className={cn('text-lg font-semibold tracking-[0.1px] whitespace-nowrap', className)}
+      data-page-header="title"
+    >
+      {headingChildren}
+    </H1>
+  );
+
+  if (subTextChildren.length > 0) {
+    return (
+      <Stack data-page-header="title-body" gap="none">
+        {heading}
+        {subTextChildren}
+      </Stack>
+    );
+  }
+
+  return heading;
 }
 
 // ---------------------------------------------------------------------------
 // Main row — Left (stack: Breadcrumb + Title) + Actions
 // ---------------------------------------------------------------------------
 
-function PageHeaderLeft({className, children}: PropsWithChildrenAndClassName) {
-    return (
-        <Stack
-            className={cn('h-full min-h-(--control-height) min-w-0', className)}
-            data-page-header='left'
-            gap='xs'
-            justify='center'
-        >
-            {children}
-        </Stack>
-    );
+function PageHeaderLeft({ className, children }: PropsWithChildrenAndClassName) {
+  return (
+    <Stack
+      className={cn('h-full min-h-(--control-height) min-w-0', className)}
+      data-page-header="left"
+      gap="xs"
+      justify="center"
+    >
+      {children}
+    </Stack>
+  );
 }
 
-type PageHeaderActionGroupPrimaryProps = React.PropsWithChildren;
-function PageHeaderActionGroupPrimary({children}: PageHeaderActionGroupPrimaryProps) {
-    return <>{children}</>;
+type PageHeaderActionGroupPrimaryProps = PropsWithChildrenAndClassName;
+function PageHeaderActionGroupPrimary({ children, className }: PageHeaderActionGroupPrimaryProps) {
+  const { isAdmin7 } = useShade();
+  if (React.Children.toArray(children).length === 0) {
+    return null;
+  }
+  return (
+    <PrimaryActionContext.Provider value={true}>
+      {isAdmin7 ? (
+        <Inline
+          className={cn('ms-3 shrink-0 first:ms-0', className)}
+          data-page-header="primary"
+          gap="none"
+        >
+          {children}
+        </Inline>
+      ) : className ? (
+        <Slot className={className}>{children}</Slot>
+      ) : (
+        children
+      )}
+    </PrimaryActionContext.Provider>
+  );
 }
 
 type PageHeaderActionGroupMobileMenuProps = React.PropsWithChildren;
-function PageHeaderActionGroupMobileMenu({children}: PageHeaderActionGroupMobileMenuProps) {
-    return <DropdownMenu>{children}</DropdownMenu>;
+function PageHeaderActionGroupMobileMenu({ children }: PageHeaderActionGroupMobileMenuProps) {
+  return <DropdownMenu>{children}</DropdownMenu>;
 }
 
-type PageHeaderActionGroupMobileMenuTriggerProps = React.ComponentPropsWithoutRef<typeof DropdownMenuTrigger>;
-function PageHeaderActionGroupMobileMenuTrigger({children, ...props}: PageHeaderActionGroupMobileMenuTriggerProps) {
-    return (
-        <DropdownMenuTrigger asChild {...props}>
-            {children}
-        </DropdownMenuTrigger>
-    );
+type PageHeaderActionGroupMobileMenuTriggerProps = React.ComponentPropsWithoutRef<
+  typeof DropdownMenuTrigger
+>;
+function PageHeaderActionGroupMobileMenuTrigger({
+  children,
+  ...props
+}: PageHeaderActionGroupMobileMenuTriggerProps) {
+  return (
+    <DropdownMenuTrigger asChild {...props}>
+      {children}
+    </DropdownMenuTrigger>
+  );
 }
 
-type PageHeaderActionGroupMobileMenuContentProps = React.ComponentPropsWithoutRef<typeof DropdownMenuContent>;
-function PageHeaderActionGroupMobileMenuContent({children, ...props}: PageHeaderActionGroupMobileMenuContentProps) {
-    return (
-        <DropdownMenuContent align='end' sideOffset={8} {...props}>
-            {children}
-        </DropdownMenuContent>
-    );
+type PageHeaderActionGroupMobileMenuContentProps = React.ComponentPropsWithoutRef<
+  typeof DropdownMenuContent
+>;
+function PageHeaderActionGroupMobileMenuContent({
+  children,
+  ...props
+}: PageHeaderActionGroupMobileMenuContentProps) {
+  return (
+    <DropdownMenuContent align="end" sideOffset={8} {...props}>
+      {children}
+    </DropdownMenuContent>
+  );
 }
 
 const DEFAULT_MOBILE_MENU_BREAKPOINT = 640;
 
 const isBelowBreakpoint = (breakpoint: number) => {
-    if (typeof window === 'undefined') {
-        return false;
-    }
+  if (typeof window === 'undefined') {
+    return false;
+  }
 
-    return window.innerWidth < breakpoint;
+  return window.innerWidth < breakpoint;
 };
 
 const useShouldCollapseActionGroup = (breakpoint: number) => {
-    const [shouldCollapse, setShouldCollapse] = React.useState(() => isBelowBreakpoint(breakpoint));
+  const [shouldCollapse, setShouldCollapse] = React.useState(() => isBelowBreakpoint(breakpoint));
 
-    React.useEffect(() => {
-        const onResize = () => {
-            setShouldCollapse(isBelowBreakpoint(breakpoint));
-        };
+  React.useEffect(() => {
+    const onResize = () => {
+      setShouldCollapse(isBelowBreakpoint(breakpoint));
+    };
 
-        onResize();
-        window.addEventListener('resize', onResize);
+    onResize();
+    window.addEventListener('resize', onResize);
 
-        return () => {
-            window.removeEventListener('resize', onResize);
-        };
-    }, [breakpoint]);
+    return () => {
+      window.removeEventListener('resize', onResize);
+    };
+  }, [breakpoint]);
 
-    return shouldCollapse;
+  return shouldCollapse;
 };
 
 type PageHeaderActionGroupProps = PropsWithChildrenAndClassName & {
-    mobileMenuBreakpoint?: number;
+  mobileMenuBreakpoint?: number;
 };
 type PageHeaderActionGroupComponent = React.FC<PageHeaderActionGroupProps> & {
-    Primary: React.FC<PageHeaderActionGroupPrimaryProps>;
-    MobileMenu: React.FC<PageHeaderActionGroupMobileMenuProps>;
-    MobileMenuTrigger: React.FC<PageHeaderActionGroupMobileMenuTriggerProps>;
-    MobileMenuContent: React.FC<PageHeaderActionGroupMobileMenuContentProps>;
+  Primary: React.FC<PageHeaderActionGroupPrimaryProps>;
+  MobileMenu: React.FC<PageHeaderActionGroupMobileMenuProps>;
+  MobileMenuTrigger: React.FC<PageHeaderActionGroupMobileMenuTriggerProps>;
+  MobileMenuContent: React.FC<PageHeaderActionGroupMobileMenuContentProps>;
 };
 
 const PageHeaderActionGroup: PageHeaderActionGroupComponent = Object.assign(
-    function PageHeaderActionGroup({className, children, mobileMenuBreakpoint = DEFAULT_MOBILE_MENU_BREAKPOINT}: PageHeaderActionGroupProps) {
-        const childNodes = React.Children.toArray(children);
-        const desktopChildren: React.ReactNode[] = [];
-        let mobileMenu: React.ReactElement | null = null;
-        let primaryAction: React.ReactNode = null;
-        const shouldCollapse = useShouldCollapseActionGroup(mobileMenuBreakpoint);
+  function PageHeaderActionGroup({
+    className,
+    children,
+    mobileMenuBreakpoint = DEFAULT_MOBILE_MENU_BREAKPOINT,
+  }: PageHeaderActionGroupProps) {
+    const { isAdmin7 } = useShade();
+    const gap = 'sm';
+    const childNodes = React.Children.toArray(children);
+    const desktopChildren: React.ReactNode[] = [];
+    let mobileMenu: React.ReactElement | null = null;
+    let primaryAction: React.ReactNode = null;
+    const shouldCollapse = useShouldCollapseActionGroup(mobileMenuBreakpoint);
 
-        childNodes.forEach((child) => {
-            if (!React.isValidElement(child)) {
-                desktopChildren.push(child);
-                return;
-            }
+    childNodes.forEach((child) => {
+      if (!React.isValidElement(child)) {
+        desktopChildren.push(child);
+        return;
+      }
 
-            const childElement = child as React.ReactElement<{children?: React.ReactNode}>;
+      const childElement = child as React.ReactElement<{ children?: React.ReactNode }>;
 
-            if (childElement.type === PageHeaderActionGroupMobileMenu) {
-                mobileMenu = childElement;
-                return;
-            }
+      if (childElement.type === PageHeaderActionGroupMobileMenu) {
+        mobileMenu = childElement;
+        return;
+      }
 
-            if (childElement.type === PageHeaderActionGroupPrimary) {
-                primaryAction = childElement.props.children ?? null;
-                desktopChildren.push(childElement.props.children ?? null);
-                return;
-            }
+      if (childElement.type === PageHeaderActionGroupPrimary) {
+        primaryAction = childElement;
+        desktopChildren.push(childElement);
+        return;
+      }
 
-            desktopChildren.push(childElement);
-        });
+      desktopChildren.push(childElement);
+    });
 
-        if (!mobileMenu) {
-            return (
-                <Inline
-                    align='center'
-                    className={className}
-                    data-page-header='action-group'
-                    gap='sm'
-                    justify='end'
-                >
-                    {children}
-                </Inline>
-            );
-        }
-
-        if (!shouldCollapse) {
-            return (
-                <Inline
-                    align='center'
-                    className={className}
-                    data-page-header='action-group'
-                    gap='sm'
-                    justify='end'
-                >
-                    <Inline
-                        align='center'
-                        data-page-header='action-group-desktop'
-                        gap='sm'
-                        justify='end'
-                    >
-                        {desktopChildren}
-                    </Inline>
-                </Inline>
-            );
-        }
-
-        return (
-            <Inline
-                align='center'
-                className={className}
-                data-page-header='action-group'
-                gap='sm'
-                justify='end'
-            >
-                <Inline
-                    align='center'
-                    className='ml-auto'
-                    data-page-header='action-group-mobile'
-                    gap='sm'
-                >
-                    {mobileMenu}
-                    {primaryAction && (
-                        <div data-page-header='action-group-mobile-primary'>
-                            {primaryAction}
-                        </div>
-                    )}
-                </Inline>
-            </Inline>
-        );
-    },
-    {
-        Primary: PageHeaderActionGroupPrimary,
-        MobileMenu: PageHeaderActionGroupMobileMenu,
-        MobileMenuTrigger: PageHeaderActionGroupMobileMenuTrigger,
-        MobileMenuContent: PageHeaderActionGroupMobileMenuContent
+    if (!mobileMenu) {
+      return (
+        <HeaderTooltipProvider>
+          <Inline
+            align="center"
+            className={className}
+            data-page-header="action-group"
+            gap={gap}
+            justify="end"
+          >
+            {children}
+          </Inline>
+        </HeaderTooltipProvider>
+      );
     }
+
+    if (!shouldCollapse) {
+      return (
+        <HeaderTooltipProvider>
+          <Inline
+            align="center"
+            className={className}
+            data-page-header="action-group"
+            gap={gap}
+            justify="end"
+          >
+            <Inline align="center" data-page-header="action-group-desktop" gap={gap} justify="end">
+              {desktopChildren}
+            </Inline>
+          </Inline>
+        </HeaderTooltipProvider>
+      );
+    }
+
+    return (
+      <HeaderTooltipProvider>
+        <Inline
+          align="center"
+          className={className}
+          data-page-header="action-group"
+          gap={gap}
+          justify="end"
+        >
+          <Inline
+            align="center"
+            className="ml-auto"
+            data-page-header="action-group-mobile"
+            gap={gap}
+          >
+            {mobileMenu}
+            {primaryAction &&
+              (isAdmin7 ? (
+                primaryAction
+              ) : (
+                <div data-page-header="action-group-mobile-primary">{primaryAction}</div>
+              ))}
+          </Inline>
+        </Inline>
+      </HeaderTooltipProvider>
+    );
+  },
+  {
+    Primary: PageHeaderActionGroupPrimary,
+    MobileMenu: PageHeaderActionGroupMobileMenu,
+    MobileMenuTrigger: PageHeaderActionGroupMobileMenuTrigger,
+    MobileMenuContent: PageHeaderActionGroupMobileMenuContent,
+  },
 );
 
-function PageHeaderActions({className, children}: PropsWithChildrenAndClassName) {
-    return (
-        <Inline
-            align='center'
-            className={cn('min-h-(--control-height) shrink-0', className)}
-            data-page-header='actions'
-            gap='lg'
-        >
-            {children}
-        </Inline>
-    );
+function PageHeaderActions({ className, children }: PropsWithChildrenAndClassName) {
+  return (
+    <HeaderTooltipProvider>
+      <Inline
+        align="center"
+        className={cn('min-h-(--control-height) shrink-0', className)}
+        data-page-header="actions"
+        gap="lg"
+      >
+        {children}
+      </Inline>
+    </HeaderTooltipProvider>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -321,78 +508,82 @@ function PageHeaderActions({className, children}: PropsWithChildrenAndClassName)
 // ---------------------------------------------------------------------------
 
 type PageHeaderComponent = React.FC<PageHeaderProps> & {
-    Left: React.FC<PropsWithChildrenAndClassName>;
-    Breadcrumb: React.FC<PropsWithChildrenAndClassName>;
-    Title: React.FC<PropsWithChildrenAndClassName>;
-    Count: React.FC<PropsWithChildrenAndClassName>;
-    Description: React.FC<PropsWithChildrenAndClassName>;
-    Meta: React.FC<PropsWithChildrenAndClassName>;
-    Actions: React.FC<PropsWithChildrenAndClassName>;
-    ActionGroup: PageHeaderActionGroupComponent;
+  Left: React.FC<PropsWithChildrenAndClassName>;
+  Breadcrumb: React.FC<PropsWithChildrenAndClassName>;
+  Title: React.FC<PropsWithChildrenAndClassName>;
+  Count: React.FC<PropsWithChildrenAndClassName>;
+  Description: React.FC<PropsWithChildrenAndClassName>;
+  Meta: React.FC<PropsWithChildrenAndClassName>;
+  Actions: React.FC<PropsWithChildrenAndClassName>;
+  ActionGroup: PageHeaderActionGroupComponent;
+  Action: typeof PageHeaderAction;
+  FilterTrigger: typeof PageHeaderFilterTrigger;
+  SelectTrigger: typeof PageHeaderSelectTrigger;
+  Tooltip: typeof PageHeaderTooltip;
+  TooltipTrigger: typeof PageHeaderTooltipTrigger;
 };
 
 /**
  * PageHeader is the canonical page-chrome component for Ghost Admin pages.
  *
- * Structure (a vertical stack of three rows; any row collapses if its slots
- * are absent):
- *
- *   1. Main row — `Inline align=start justify=between`:
- *        `Left` (stack: `Breadcrumb` + `Title`) | `Actions`
- *   2. View row — `Inline align=center justify=between`:
- *        `ViewBar` | `ViewActions`
- *   3. Filter bar — plain container.
- *
+ * The main row contains `Left` (Breadcrumb + Title) and `Actions`.
+ * Compose optional ViewBar and FilterBar rows beside it in ListPage.Header.
  * `Title` accepts an inline `Count` and stacked `Description`/`Meta` children.
+ * See page-header.mdx for the action ordering and interaction contract.
  */
 const PageHeader: PageHeaderComponent = Object.assign(
-    function PageHeader({className, children, sticky = true, blurredBackground = true}: PageHeaderProps) {
-        return (
-            <header
-                className={cn(
-                    'flex flex-col',
-                    sticky && 'sticky top-0 z-50',
-                    blurredBackground && 'bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md dark:bg-black',
-                    className
-                )}
-                data-page-header='page-header'
-            >
-                <Inline
-                    align='start'
-                    className='w-full'
-                    data-page-header='main'
-                    gap='lg'
-                    justify='between'
-                >
-                    {children}
-                </Inline>
-            </header>
-        );
-    },
-    {
-        Left: PageHeaderLeft,
-        Breadcrumb: PageHeaderBreadcrumb,
-        Title: PageHeaderTitle,
-        Count: PageHeaderCount,
-        Description: PageHeaderDescription,
-        Meta: PageHeaderMeta,
-        Actions: PageHeaderActions,
-        ActionGroup: PageHeaderActionGroup
-    }
+  function PageHeader({
+    className,
+    children,
+    sticky = true,
+    blurredBackground = true,
+  }: PageHeaderProps) {
+    return (
+      <header
+        className={cn(
+          'flex flex-col',
+          sticky && 'sticky top-0 z-50',
+          blurredBackground &&
+            'bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md dark:bg-black',
+          className,
+        )}
+        data-page-header="page-header"
+      >
+        <Inline align="start" className="w-full" data-page-header="main" gap="lg" justify="between">
+          {children}
+        </Inline>
+      </header>
+    );
+  },
+  {
+    Left: PageHeaderLeft,
+    Breadcrumb: PageHeaderBreadcrumb,
+    Title: PageHeaderTitle,
+    Count: PageHeaderCount,
+    Description: PageHeaderDescription,
+    Meta: PageHeaderMeta,
+    Actions: PageHeaderActions,
+    ActionGroup: PageHeaderActionGroup,
+    Action: PageHeaderAction,
+    FilterTrigger: PageHeaderFilterTrigger,
+    SelectTrigger: PageHeaderSelectTrigger,
+    Tooltip: PageHeaderTooltip,
+    TooltipTrigger: PageHeaderTooltipTrigger,
+  },
 );
 
 export {
-    PageHeader,
-    PageHeaderLeft,
-    PageHeaderBreadcrumb,
-    PageHeaderTitle,
-    PageHeaderCount,
-    PageHeaderDescription,
-    PageHeaderMeta,
-    PageHeaderActions,
-    PageHeaderActionGroup,
-    PageHeaderActionGroupPrimary,
-    PageHeaderActionGroupMobileMenu,
-    PageHeaderActionGroupMobileMenuTrigger,
-    PageHeaderActionGroupMobileMenuContent
+  PageHeader,
+  PageHeaderLeft,
+  PageHeaderBreadcrumb,
+  PageHeaderTitle,
+  PageHeaderCount,
+  PageHeaderDescription,
+  PageHeaderMeta,
+  PageHeaderActions,
+  PageHeaderActionGroup,
+  PageHeaderActionGroupPrimary,
+  PageHeaderActionGroupMobileMenu,
+  PageHeaderActionGroupMobileMenuTrigger,
+  PageHeaderActionGroupMobileMenuContent,
 };

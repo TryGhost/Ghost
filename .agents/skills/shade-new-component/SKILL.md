@@ -19,13 +19,13 @@ Before marking a Shade component or pattern done, this checklist must pass.
 
 ## Storybook title prefix
 
-| Layer | Title |
-|---|---|
-| Primitive | `Primitives / <Name>` |
-| Component | `Components / <Name>` |
-| Recipe | `Recipes / <Name>` |
-| Pattern | `Patterns / <Name>` |
-| Token gallery | `Tokens / <Topic>` |
+| Layer         | Title                 |
+| ------------- | --------------------- |
+| Primitive     | `Primitives / <Name>` |
+| Component     | `Components / <Name>` |
+| Recipe        | `Recipes / <Name>`    |
+| Pattern       | `Patterns / <Name>`   |
+| Token gallery | `Tokens / <Topic>`    |
 
 Required on every story file:
 

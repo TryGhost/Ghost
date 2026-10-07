@@ -1,5 +1,5 @@
-import {resolve} from 'node:path';
-import {execSync} from 'node:child_process';
+import { resolve } from 'node:path';
+import { execSync } from 'node:child_process';
 
 const ROOT = resolve(import.meta.dirname, '../..');
 const REPO_URL = 'https://github.com/TryGhost/Ghost';
@@ -11,77 +11,77 @@ const EMOJI_ORDER = ['💡', '🐛', '🎨', '✨', '🔒'];
 const USER_FACING_EMOJIS = new Set(EMOJI_ORDER);
 
 function getCommitLog(fromTag, toTag) {
-    const range = `${fromTag}..${toTag}`;
-    const format = '* %s - %an';
-    // --first-parent keeps us on the mainline: PRs are squash-merged, so every
-    // real change is a single commit there. Subtree imports (`git subtree add`,
-    // history merges from other repos) arrive as merge commits whose second
-    // parent is the foreign history — sometimes years of it — and following
-    // that side floods the changelog with unrelated commits.
-    const cmd = `git log --first-parent --no-merges --pretty=tformat:'${format}' ${range}`;
+  const range = `${fromTag}..${toTag}`;
+  const format = '* %s - %an';
+  // --first-parent keeps us on the mainline: PRs are squash-merged, so every
+  // real change is a single commit there. Subtree imports (`git subtree add`,
+  // history merges from other repos) arrive as merge commits whose second
+  // parent is the foreign history — sometimes years of it — and following
+  // that side floods the changelog with unrelated commits.
+  const cmd = `git log --first-parent --no-merges --pretty=tformat:'${format}' ${range}`;
 
-    let log;
-    try {
-        log = execSync(cmd, {cwd: ROOT, encoding: 'utf8'}).trim();
-    } catch {
-        return [];
-    }
+  let log;
+  try {
+    log = execSync(cmd, { cwd: ROOT, encoding: 'utf8' }).trim();
+  } catch {
+    return [];
+  }
 
-    if (!log) {
-        return [];
-    }
+  if (!log) {
+    return [];
+  }
 
-    return log.split('\n').map(line => line.trim());
+  return log.split('\n').map((line) => line.trim());
 }
 
 function extractLeadingEmoji(line) {
-    // Line format: * <message> - <author>
-    const match = line.match(/^\* (.)/u);
-    return match ? match[1] : '';
+  // Line format: * <message> - <author>
+  const match = line.match(/^\* (.)/u);
+  return match ? match[1] : '';
 }
 
 function filterAndSortByEmoji(lines) {
-    const emojiLines = lines.filter((line) => {
-        const emoji = extractLeadingEmoji(line);
-        return USER_FACING_EMOJIS.has(emoji);
-    });
+  const emojiLines = lines.filter((line) => {
+    const emoji = extractLeadingEmoji(line);
+    return USER_FACING_EMOJIS.has(emoji);
+  });
 
-    emojiLines.sort((a, b) => {
-        const emojiA = extractLeadingEmoji(a);
-        const emojiB = extractLeadingEmoji(b);
-        const indexA = EMOJI_ORDER.indexOf(emojiA);
-        const indexB = EMOJI_ORDER.indexOf(emojiB);
-        return indexB - indexA;
-    });
+  emojiLines.sort((a, b) => {
+    const emojiA = extractLeadingEmoji(a);
+    const emojiB = extractLeadingEmoji(b);
+    const indexA = EMOJI_ORDER.indexOf(emojiA);
+    const indexB = EMOJI_ORDER.indexOf(emojiB);
+    return indexB - indexA;
+  });
 
-    return emojiLines;
+  return emojiLines;
 }
 
 export function generateReleaseNotes(fromTag, toTag) {
-    const lines = getCommitLog(fromTag, toTag);
-    const filtered = filterAndSortByEmoji(lines);
+  const lines = getCommitLog(fromTag, toTag);
+  const filtered = filterAndSortByEmoji(lines);
 
-    let body;
-    if (filtered.length === 0) {
-        body = 'This release contains fixes for minor bugs and issues reported by Ghost users.';
-    } else {
-        // Deduplicate (preserving order)
-        body = [...new Set(filtered)].join('\n');
-    }
+  let body;
+  if (filtered.length === 0) {
+    body = 'This release contains fixes for minor bugs and issues reported by Ghost users.';
+  } else {
+    // Deduplicate (preserving order)
+    body = [...new Set(filtered)].join('\n');
+  }
 
-    body += `\n\n---\n\nView the changelog for full details: ${REPO_URL}/compare/${fromTag}...${toTag}`;
+  body += `\n\n---\n\nView the changelog for full details: ${REPO_URL}/compare/${fromTag}...${toTag}`;
 
-    return body;
+  return body;
 }
 
 // CLI: node release-notes.js <from-tag> <to-tag>
 if (import.meta.main) {
-    const [fromTag, toTag] = process.argv.slice(2);
+  const [fromTag, toTag] = process.argv.slice(2);
 
-    if (!fromTag || !toTag) {
-        console.error('Usage: node release-notes.js <from-tag> <to-tag>');
-        process.exit(1);
-    }
+  if (!fromTag || !toTag) {
+    console.error('Usage: node release-notes.js <from-tag> <to-tag>');
+    process.exit(1);
+  }
 
-    process.stdout.write(generateReleaseNotes(fromTag, toTag));
+  process.stdout.write(generateReleaseNotes(fromTag, toTag));
 }

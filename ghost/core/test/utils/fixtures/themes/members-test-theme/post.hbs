@@ -16,6 +16,17 @@
             state (a gift read stays anonymous even when the content is unlocked). --}}
             <p class="gh-test-member-state">{{#if @member}}member{{else}}anonymous{{/if}}</p>
 
+            {{!-- Dumps the shape of @member, not its values, so a test can pin
+            exactly which member fields a theme can see. @member is narrowed by
+            its own allowlist from the same member payload the members API
+            narrows separately; this is what shows a change behind the two of
+            them reaching one surface and not the other. --}}
+            <p class="gh-test-member-keys">{{#each @member}}{{@key}} {{/each}}</p>
+            {{#each @member.subscriptions}}
+            <p class="gh-test-member-subscription-keys">{{#each this}}{{@key}} {{/each}}</p>
+            <p class="gh-test-member-subscription-card">{{default_payment_card_last4}}</p>
+            {{/each}}
+
             <section class="post-full-content">
                 <div class="post-content">
                     {{content}}

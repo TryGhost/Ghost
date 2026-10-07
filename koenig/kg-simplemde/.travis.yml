@@ -1,11 +1,11 @@
 language: node_js
 node_js:
-- '6'
-- '5'
-- '4'
-- '0.12'
+  - '6'
+  - '5'
+  - '4'
+  - '0.12'
 before_script:
-- npm install -g gulp
+  - npm install -g gulp
 script: gulp
 deploy:
   provider: npm

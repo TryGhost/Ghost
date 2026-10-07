@@ -1,19 +1,21 @@
 {
   "name": "@tryghost/admin-api-schema",
   "version": "0.0.0",
-  "description": "JSON schemas used to validate Ghost Admin API requests",
   "private": true,
-  "ghostPackage": {
-    "goldenPath": "compliant"
-  },
-  "type": "module",
+  "description": "JSON schemas used to validate Ghost Admin API requests",
+  "license": "MIT",
+  "author": "Ghost Foundation",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",
     "directory": "packages/admin-api-schema"
   },
-  "author": "Ghost Foundation",
-  "license": "MIT",
+  "files": [
+    "build"
+  ],
+  "type": "module",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "exports": {
     ".": {
       "source": "./src/index.ts",
@@ -21,8 +23,6 @@
       "default": "./build/index.js"
     }
   },
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
   "scripts": {
     "build": "tsc",
     "test:unit": "NODE_ENV=testing vitest run --coverage",
@@ -32,29 +32,31 @@
     "lint:test": "eslint test/ --cache",
     "lint": "pnpm run '/^lint:/'"
   },
-  "files": [
-    "build"
-  ],
-  "devDependencies": {
-    "@internal/cfg-eslint": "workspace:*",
-    "@internal/cfg-typescript": "workspace:*",
-    "@internal/cfg-vitest": "workspace:*",
-    "@types/node": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
-    "@typescript/native": "catalog:",
-    "eslint": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
-  },
   "dependencies": {
     "@tryghost/errors": "catalog:",
     "ajv": "catalog:",
     "ajv-formats": "catalog:"
   },
+  "devDependencies": {
+    "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-typescript": "workspace:*",
+    "@internal/cfg-vitest": "workspace:*",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "ghostPackage": {
+    "goldenPath": "compliant"
+  },
   "nx": {
     "targets": {
       "build": {
-        "outputs": ["{projectRoot}/build"]
+        "outputs": [
+          "{projectRoot}/build"
+        ]
       }
     }
   }

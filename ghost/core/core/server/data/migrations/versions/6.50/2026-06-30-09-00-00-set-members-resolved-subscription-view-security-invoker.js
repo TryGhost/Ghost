@@ -1,4 +1,4 @@
-const {createNonTransactionalMigration} = require('../../utils');
+const { createNonTransactionalMigration } = require('../../utils');
 const logging = require('@tryghost/logging');
 const commands = require('../../../schema/commands');
 const views = require('../../../schema/views');
@@ -13,14 +13,18 @@ const views = require('../../../schema/views');
 // `SQL SECURITY INVOKER` on MySQL. CREATE OR REPLACE swaps the definition in
 // place, so existing installs are fixed without dropping the view.
 module.exports = createNonTransactionalMigration(
-    async function up(knex) {
-        logging.info('Recreating members_resolved_subscription view with SQL SECURITY INVOKER');
-        await commands.createViewOrReplace('members_resolved_subscription', views.members_resolved_subscription, knex);
-    },
-    async function down(knex) {
-        logging.info('Recreating members_resolved_subscription view with default security');
-        await knex.schema.createViewOrReplace('members_resolved_subscription', function (view) {
-            view.as(knex.raw(views.members_resolved_subscription));
-        });
-    }
+  async function up(knex) {
+    logging.info('Recreating members_resolved_subscription view with SQL SECURITY INVOKER');
+    await commands.createViewOrReplace(
+      'members_resolved_subscription',
+      views.members_resolved_subscription,
+      knex,
+    );
+  },
+  async function down(knex) {
+    logging.info('Recreating members_resolved_subscription view with default security');
+    await knex.schema.createViewOrReplace('members_resolved_subscription', function (view) {
+      view.as(knex.raw(views.members_resolved_subscription));
+    });
+  },
 );

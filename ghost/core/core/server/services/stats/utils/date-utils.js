@@ -9,10 +9,14 @@ const moment = require('moment-timezone');
  * @returns {{dateFrom: string|null, dateTo: string|null}} Processed dates in ISO format
  */
 function getDateBoundaries(options) {
-    const timezone = options.timezone || 'UTC';
-    const dateFrom = options.date_from ? moment.tz(options.date_from, timezone).startOf('day').utc().toISOString() : null;
-    const dateTo = options.date_to ? moment.tz(options.date_to, timezone).endOf('day').utc().toISOString() : null;
-    return {dateFrom, dateTo};
+  const timezone = options.timezone || 'UTC';
+  const dateFrom = options.date_from
+    ? moment.tz(options.date_from, timezone).startOf('day').utc().toISOString()
+    : null;
+  const dateTo = options.date_to
+    ? moment.tz(options.date_to, timezone).endOf('day').utc().toISOString()
+    : null;
+  return { dateFrom, dateTo };
 }
 
 /**
@@ -23,15 +27,15 @@ function getDateBoundaries(options) {
  * @param {string} dateColumn - The date column to filter on
  */
 function applyDateFilter(query, dateFrom, dateTo, dateColumn) {
-    if (dateFrom) {
-        query.where(dateColumn, '>=', dateFrom);
-    }
-    if (dateTo) {
-        query.where(dateColumn, '<=', dateTo);
-    }
+  if (dateFrom) {
+    query.where(dateColumn, '>=', dateFrom);
+  }
+  if (dateTo) {
+    query.where(dateColumn, '<=', dateTo);
+  }
 }
 
 module.exports = {
-    getDateBoundaries,
-    applyDateFilter
+  getDateBoundaries,
+  applyDateFilter,
 };

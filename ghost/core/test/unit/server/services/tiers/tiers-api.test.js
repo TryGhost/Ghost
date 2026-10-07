@@ -4,95 +4,95 @@ const TiersAPI = require('../../../../../core/server/services/tiers/tiers-api');
 const InMemoryTierRepository = require('../../../../../core/server/services/tiers/in-memory-tier-repository');
 
 describe('TiersAPI', function () {
-    /** @type {TiersAPI.ITierRepository} */
-    let repository;
+  /** @type {TiersAPI.ITierRepository} */
+  let repository;
 
-    /** @type {TiersAPI} */
-    let api;
+  /** @type {TiersAPI} */
+  let api;
 
-    beforeAll(function () {
-        repository = new InMemoryTierRepository();
-        api = new TiersAPI({
-            repository,
-            slugService: {
-                async generate(input) {
-                    return input;
-                }
-            }
-        });
+  beforeAll(function () {
+    repository = new InMemoryTierRepository();
+    api = new TiersAPI({
+      repository,
+      slugService: {
+        async generate(input) {
+          return input;
+        },
+      },
+    });
+  });
+
+  it('Can not create new free Tiers', async function () {
+    let error;
+    try {
+      await api.add({
+        name: 'My testing Tier',
+        type: 'free',
+      });
+      error = null;
+    } catch (err) {
+      error = err;
+    } finally {
+      assert(error, 'An error should have been thrown');
+    }
+  });
+
+  it('Can create new paid Tiers and find them again', async function () {
+    const tier = await api.add({
+      name: 'My testing Tier',
+      type: 'paid',
+      monthlyPrice: 5000,
+      yearlyPrice: 50000,
+      currency: 'usd',
     });
 
-    it('Can not create new free Tiers', async function () {
-        let error;
-        try {
-            await api.add({
-                name: 'My testing Tier',
-                type: 'free'
-            });
-            error = null;
-        } catch (err) {
-            error = err;
-        } finally {
-            assert(error, 'An error should have been thrown');
-        }
+    const found = await api.read(tier.id.toHexString());
+
+    assert(found);
+  });
+
+  it('Can edit a tier', async function () {
+    const tier = await api.add({
+      name: 'My testing Tier',
+      type: 'paid',
+      monthlyPrice: 5000,
+      yearlyPrice: 50000,
+      currency: 'usd',
     });
 
-    it('Can create new paid Tiers and find them again', async function () {
-        const tier = await api.add({
-            name: 'My testing Tier',
-            type: 'paid',
-            monthlyPrice: 5000,
-            yearlyPrice: 50000,
-            currency: 'usd'
-        });
-
-        const found = await api.read(tier.id.toHexString());
-
-        assert(found);
+    const updated = await api.edit(tier.id.toHexString(), {
+      name: 'Updated',
     });
 
-    it('Can edit a tier', async function () {
-        const tier = await api.add({
-            name: 'My testing Tier',
-            type: 'paid',
-            monthlyPrice: 5000,
-            yearlyPrice: 50000,
-            currency: 'usd'
-        });
+    assert(updated.name === 'Updated');
+  });
 
-        const updated = await api.edit(tier.id.toHexString(), {
-            name: 'Updated'
-        });
-
-        assert(updated.name === 'Updated');
+  it('Can archive a tier', async function () {
+    const tier = await api.add({
+      name: 'My testing Tier',
+      type: 'paid',
+      monthlyPrice: 5000,
+      yearlyPrice: 50000,
+      currency: 'usd',
     });
 
-    it('Can archive a tier', async function () {
-        const tier = await api.add({
-            name: 'My testing Tier',
-            type: 'paid',
-            monthlyPrice: 5000,
-            yearlyPrice: 50000,
-            currency: 'usd'
-        });
-
-        const updated = await api.edit(tier.id.toHexString(), {
-            status: 'archived'
-        });
-
-        assert(updated.status === 'archived');
+    const updated = await api.edit(tier.id.toHexString(), {
+      status: 'archived',
     });
 
-    it('Can browse tiers', async function () {
-        const page = await api.browse();
+    assert(updated.status === 'archived');
+  });
 
-        assert(page.data.length === 3);
-        assert(page.meta.pagination.total === 3);
-    });
+  it('Can browse tiers', async function () {
+    const page = await api.browse();
 
-    it('Can read a default tier', async function () {
-        const defaultTier = await api.readDefaultTier();
+    assert(page.data.length === 3);
+    assert(page.meta.pagination.total === 3);
+  });
 
-        assert.equal(defaultTier?.name, 'My testing Tier');
-    });
+  it('Can read a default tier', async function () {
+    const defaultTier = await api.readDefaultTier();
+
+    assert.equal(defaultTier?.name, 'My testing Tier');
+  });
 });

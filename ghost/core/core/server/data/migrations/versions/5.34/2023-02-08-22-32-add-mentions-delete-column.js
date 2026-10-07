@@ -1,7 +1,7 @@
-const {createAddColumnMigration} = require('../../utils');
+const { createAddColumnMigration } = require('../../utils');
 
 module.exports = createAddColumnMigration('mentions', 'deleted', {
-    type: 'boolean',
-    nullable: false,
-    defaultTo: false
+  type: 'boolean',
+  nullable: false,
+  defaultTo: false,
 });

@@ -25,7 +25,7 @@ function extractTags(pageAttrs, tags) {
 
 export default function mockPages(server) {
     server.post('/pages', function ({pages, users, tags}) {
-        let attrs = this.normalizedRequestAttrs();
+        const attrs = this.normalizedRequestAttrs();
 
         attrs.authors = extractAuthors(attrs, users);
         attrs.tags = extractTags(attrs, tags);
@@ -40,8 +40,8 @@ export default function mockPages(server) {
     server.get('/pages/', getPages);
 
     server.get('/pages/:id/', function ({pages}, {params}) {
-        let {id} = params;
-        let page = pages.find(id);
+        const {id} = params;
+        const page = pages.find(id);
 
         return page || new Response(404, {}, {
             errors: [{
@@ -52,8 +52,8 @@ export default function mockPages(server) {
     });
 
     server.put('/pages/:id/', function ({pages, users, tags}, {params}) {
-        let attrs = this.normalizedRequestAttrs();
-        let page = pages.find(params.id);
+        const attrs = this.normalizedRequestAttrs();
+        const page = pages.find(params.id);
 
         attrs.authors = extractAuthors(attrs, users);
         attrs.tags = extractTags(attrs, tags);

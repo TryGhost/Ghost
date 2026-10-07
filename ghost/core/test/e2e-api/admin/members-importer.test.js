@@ -1,408 +1,441 @@
 const path = require('path');
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../utils/assertions');
+const { assertExists } = require('../../utils/assertions');
 const supertest = require('supertest');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
 
-const {mockManager} = require('../../utils/e2e-framework');
+const { mockManager } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 
 let request;
 
 async function countMembers(agent) {
-    const res = await agent
-        .get(localUtils.API.getApiQuery('members/?limit=1'))
-        .set('Origin', config.get('url'))
-        .expect(200);
-    return res.body.meta.pagination.total;
+  const res = await agent
+    .get(localUtils.API.getApiQuery('members/?limit=1'))
+    .set('Origin', config.get('url'))
+    .expect(200);
+  return res.body.meta.pagination.total;
 }
 
 async function getNewsletters() {
-    return (await models.Newsletter.findAll({filter: 'status:active'})).models;
+  return (await models.Newsletter.findAll({ filter: 'status:active' })).models;
 }
 
 describe('Members Importer API', function () {
-    let newsletters;
+  let newsletters;
 
-    beforeAll(async function () {
-        await localUtils.startGhost();
-        request = supertest.agent(config.get('url'));
-        await localUtils.doAuth(request, 'newsletters', 'members:newsletters');
+  beforeAll(async function () {
+    await localUtils.startGhost();
+    request = supertest.agent(config.get('url'));
+    await localUtils.doAuth(request, 'newsletters', 'members:newsletters');
 
-        newsletters = await getNewsletters();
+    newsletters = await getNewsletters();
+  });
+
+  afterEach(function () {
+    mockManager.restore();
+  });
+
+  it('Can import CSV', async function () {
+    const filteredNewsletters = newsletters.filter((n) => n.get('subscribe_on_signup'));
+    assert(
+      filteredNewsletters.length > 0,
+      'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true',
+    );
+
+    const res = await request
+      .post(localUtils.API.getApiQuery(`members/upload/`))
+      .attach(
+        'membersfile',
+        path.join(__dirname, '/../../utils/fixtures/csv/valid-members-import.csv'),
+      )
+      .set('Origin', config.get('url'))
+      .expect('Content-Type', /json/)
+      .expect('Cache-Control', testUtils.cacheRules.private)
+      .expect(201);
+
+    assert.equal(res.headers['x-cache-invalidate'], undefined);
+    const jsonResponse = res.body;
+
+    assertExists(jsonResponse);
+    assertExists(jsonResponse.meta);
+    assertExists(jsonResponse.meta.stats);
+
+    assert.equal(jsonResponse.meta.stats.imported, 2);
+    assert.equal(jsonResponse.meta.stats.invalid.length, 0);
+    assert.match(jsonResponse.meta.import_label.name, /^Import \d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
+
+    const importLabel = jsonResponse.meta.import_label;
+
+    // check that members had the auto-generated label attached
+    const res2 = await request
+      .get(localUtils.API.getApiQuery(`members/?filter=label:${importLabel.slug}`))
+      .set('Origin', config.get('url'))
+      .expect('Content-Type', /json/)
+      .expect('Cache-Control', testUtils.cacheRules.private)
+      .expect(200);
+
+    const jsonResponse2 = res2.body;
+    assertExists(jsonResponse2);
+    assertExists(jsonResponse2.members);
+    assert.equal(jsonResponse2.members.length, 2);
+
+    const importedMember1 = jsonResponse2.members.find((m) => m.email === 'jbloggs@example.com');
+    assertExists(importedMember1);
+    assert.equal(importedMember1.name, 'joe');
+    assert.equal(importedMember1.note, null);
+    assert.equal(importedMember1.subscribed, true);
+    assert.equal(importedMember1.newsletters.length, filteredNewsletters.length);
+    assert.equal(importedMember1.labels.length, 1);
+    assert.equal(testUtils.API.isISO8601(importedMember1.created_at), true);
+    assert.equal(importedMember1.comped, false);
+    assertExists(importedMember1.subscriptions);
+    assert.equal(importedMember1.subscriptions.length, 0);
+
+    const importedMember2 = jsonResponse2.members.find((m) => m.email === 'test@example.com');
+    assertExists(importedMember2);
+    assert.equal(importedMember2.name, 'test');
+    assert.equal(importedMember2.note, 'test note');
+    assert.equal(importedMember2.subscribed, false);
+    assert.equal(importedMember2.newsletters.length, 0);
+    assert.equal(importedMember2.labels.length, 2);
+    assert.equal(testUtils.API.isISO8601(importedMember2.created_at), true);
+    assert.equal(importedMember2.created_at, '1991-10-02T20:30:31.000Z');
+    assert.equal(importedMember2.comped, false);
+    assertExists(importedMember2.subscriptions);
+    assert.equal(importedMember2.subscriptions.length, 0);
+  });
+
+  //TODO: fix this test and uncomment it
+  // it('Can import CSV and bulk destroy via auto-added label', function () {
+  //     // HACK: mock dates otherwise we'll often get unexpected members appearing
+  //     // from previous tests with the same import label due to auto-generated
+  //     // import labels only including minutes
+  //     sinon.stub(Date, 'now').returns(new Date('2021-03-30T17:21:00.000Z'));
+
+  //     // import our dummy data for deletion
+  //     return request
+  //         .post(localUtils.API.getApiQuery(`members/upload/`))
+  //         .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/valid-members-for-bulk-delete.csv'))
+  //         .set('Origin', config.get('url'))
+  //         .expect('Content-Type', /json/)
+  //         .expect('Cache-Control', testUtils.cacheRules.private)
+  //         .then((res) => {
+  //             assert(!res.headers['x-cache-invalidate']);
+
+  //             const jsonResponse = res.body;
+
+  //             assertExists(jsonResponse);
+  //             assertExists(jsonResponse.meta);
+  //             assertExists(jsonResponse.meta.stats);
+  //             assertExists(jsonResponse.meta.import_label);
+
+  //             assert.equal(jsonResponse.meta.stats.imported, 8);
+
+  //             return jsonResponse.meta.import_label;
+  //         })
+  //         .then((importLabel) => {
+  //             // check that the import worked by checking browse response with filter
+  //             return request.get(localUtils.API.getApiQuery(`members/?filter=label:${importLabel.slug}`))
+  //                 .set('Origin', config.get('url'))
+  //                 .expect('Content-Type', /json/)
+  //                 .expect('Cache-Control', testUtils.cacheRules.private)
+  //                 .expect(200)
+  //                 .then((res) => {
+  //                     assert(!res.headers['x-cache-invalidate']);
+  //                     const jsonResponse = res.body;
+  //                     assertExists(jsonResponse);
+  //                     assertExists(jsonResponse.members);
+  //                     assert.equal(jsonResponse.members.length, 8);
+  //                 })
+  //                 .then(() => importLabel);
+  //         })
+  //         .then((importLabel) => {
+  //             // perform the bulk delete
+  //             return request
+  //                 .del(localUtils.API.getApiQuery(`members/?filter=label:'${importLabel.slug}'`))
+  //                 .set('Origin', config.get('url'))
+  //                 .expect('Content-Type', /json/)
+  //                 .expect('Cache-Control', testUtils.cacheRules.private)
+  //                 .expect(200)
+  //                 .then((res) => {
+  //                     assert(!res.headers['x-cache-invalidate']);
+  //                     const jsonResponse = res.body;
+  //                     assertExists(jsonResponse);
+  //                     assertExists(jsonResponse.meta);
+  //                     assertExists(jsonResponse.meta.stats);
+  //                     assertExists(jsonResponse.meta.stats.successful);
+  //                     assert.equal(jsonResponse.meta.stats.successful, 8);
+  //                 })
+  //                 .then(() => importLabel);
+  //         })
+  //         .then((importLabel) => {
+  //             // check that the bulk delete worked by checking browse response with filter
+  //             return request.get(localUtils.API.getApiQuery(`members/?filter=label:${importLabel.slug}`))
+  //                 .set('Origin', config.get('url'))
+  //                 .expect('Content-Type', /json/)
+  //                 .expect('Cache-Control', testUtils.cacheRules.private)
+  //                 .expect(200)
+  //                 .then((res) => {
+  //                     const jsonResponse = res.body;
+  //                     assertExists(jsonResponse);
+  //                     assertExists(jsonResponse.members);
+  //                     assert.equal(jsonResponse.members.length, 0);
+  //                 });
+  //         });
+  // });
+
+  it('Can bulk unsubscribe members with filter', async function () {
+    const filteredNewsletters = newsletters.filter((n) => n.get('subscribe_on_signup'));
+    assert(
+      filteredNewsletters.length > 0,
+      'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true',
+    );
+
+    // import our dummy data for deletion
+    await request
+      .post(localUtils.API.getApiQuery(`members/upload/`))
+      .attach(
+        'membersfile',
+        path.join(__dirname, '/../../utils/fixtures/csv/members-for-bulk-unsubscribe.csv'),
+      )
+      .set('Origin', config.get('url'))
+      .expect('Content-Type', /json/)
+      .expect('Cache-Control', testUtils.cacheRules.private);
+
+    const browseResponse = await request
+      .get(localUtils.API.getApiQuery('members/?filter=label:bulk-unsubscribe-test'))
+      .set('Origin', config.get('url'))
+      .expect('Content-Type', /json/)
+      .expect('Cache-Control', testUtils.cacheRules.private)
+      .expect(200);
+
+    assert.equal(browseResponse.body.members.length, 8);
+    const allMembersSubscribed = browseResponse.body.members.every((member) => {
+      return member.subscribed && member.newsletters.length > 0;
     });
 
-    afterEach(function () {
-        mockManager.restore();
+    assert(allMembersSubscribed);
+
+    const bulkUnsubscribeResponse = await request
+      .put(localUtils.API.getApiQuery('members/bulk/?filter=label:bulk-unsubscribe-test'))
+      .set('Origin', config.get('url'))
+      .send({
+        bulk: {
+          action: 'unsubscribe',
+        },
+      })
+      .expect('Content-Type', /json/)
+      .expect('Cache-Control', testUtils.cacheRules.private)
+      .expect(200);
+
+    assertExists(bulkUnsubscribeResponse.body.bulk);
+    assertExists(bulkUnsubscribeResponse.body.bulk.meta);
+    assertExists(bulkUnsubscribeResponse.body.bulk.meta.stats);
+    assertExists(bulkUnsubscribeResponse.body.bulk.meta.stats.successful);
+    assert.equal(bulkUnsubscribeResponse.body.bulk.meta.stats.successful, 8);
+
+    const postUnsubscribeBrowseResponse = await request
+      .get(localUtils.API.getApiQuery('members/?filter=label:bulk-unsubscribe-test'))
+      .set('Origin', config.get('url'))
+      .expect('Content-Type', /json/)
+      .expect('Cache-Control', testUtils.cacheRules.private)
+      .expect(200);
+
+    assert.equal(postUnsubscribeBrowseResponse.body.members.length, 8);
+    const allMembersUnsubscribed = postUnsubscribeBrowseResponse.body.members.every((member) => {
+      return member.newsletters.length === 0;
     });
 
-    it('Can import CSV', async function () {
-        const filteredNewsletters = newsletters.filter(n => n.get('subscribe_on_signup'));
-        assert(filteredNewsletters.length > 0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
+    assert(allMembersUnsubscribed);
+  });
 
-        const res = await request
-            .post(localUtils.API.getApiQuery(`members/upload/`))
-            .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/valid-members-import.csv'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(201);
+  it('Can bulk add and remove labels to members with filter', async function () {
+    // import our dummy data for deletion
+    await request
+      .post(localUtils.API.getApiQuery('members/upload/'))
+      .attach(
+        'membersfile',
+        path.join(__dirname, '/../../utils/fixtures/csv/members-for-bulk-add-labels.csv'),
+      )
+      .set('Origin', config.get('url'))
+      .expect('Content-Type', /json/)
+      .expect('Cache-Control', testUtils.cacheRules.private);
 
-        assert.equal(res.headers['x-cache-invalidate'], undefined);
-        const jsonResponse = res.body;
+    const newLabelResponse = await request
+      .post(localUtils.API.getApiQuery('labels'))
+      .set('Origin', config.get('url'))
+      .send({
+        labels: [
+          {
+            name: 'Awesome Label For Testing Bulk Add',
+          },
+        ],
+      });
 
-        assertExists(jsonResponse);
-        assertExists(jsonResponse.meta);
-        assertExists(jsonResponse.meta.stats);
+    const labelToAdd = newLabelResponse.body.labels[0];
 
-        assert.equal(jsonResponse.meta.stats.imported, 2);
-        assert.equal(jsonResponse.meta.stats.invalid.length, 0);
-        assert.match(jsonResponse.meta.import_label.name, /^Import \d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
+    const bulkAddLabelResponse = await request
+      .put(localUtils.API.getApiQuery('members/bulk/?filter=label:bulk-add-labels-test'))
+      .set('Origin', config.get('url'))
+      .send({
+        bulk: {
+          action: 'addLabel',
+          meta: {
+            label: labelToAdd,
+          },
+        },
+      })
+      .expect('Content-Type', /json/)
+      .expect('Cache-Control', testUtils.cacheRules.private)
+      .expect(200);
 
-        const importLabel = jsonResponse.meta.import_label;
+    assertExists(bulkAddLabelResponse.body.bulk);
+    assertExists(bulkAddLabelResponse.body.bulk.meta);
+    assertExists(bulkAddLabelResponse.body.bulk.meta.stats);
+    assertExists(bulkAddLabelResponse.body.bulk.meta.stats.successful);
+    assert.equal(bulkAddLabelResponse.body.bulk.meta.stats.successful, 8);
 
-        // check that members had the auto-generated label attached
-        const res2 = await request.get(localUtils.API.getApiQuery(`members/?filter=label:${importLabel.slug}`))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+    const postLabelAddBrowseResponse = await request
+      .get(localUtils.API.getApiQuery(`members/?filter=label:${labelToAdd.slug}`))
+      .set('Origin', config.get('url'))
+      .expect('Content-Type', /json/)
+      .expect('Cache-Control', testUtils.cacheRules.private)
+      .expect(200);
 
-        const jsonResponse2 = res2.body;
-        assertExists(jsonResponse2);
-        assertExists(jsonResponse2.members);
-        assert.equal(jsonResponse2.members.length, 2);
+    assert.equal(postLabelAddBrowseResponse.body.members.length, 8);
 
-        const importedMember1 = jsonResponse2.members.find(m => m.email === 'jbloggs@example.com');
-        assertExists(importedMember1);
-        assert.equal(importedMember1.name, 'joe');
-        assert.equal(importedMember1.note, null);
-        assert.equal(importedMember1.subscribed, true);
-        assert.equal(importedMember1.newsletters.length, filteredNewsletters.length);
-        assert.equal(importedMember1.labels.length, 1);
-        assert.equal(testUtils.API.isISO8601(importedMember1.created_at), true);
-        assert.equal(importedMember1.comped, false);
-        assertExists(importedMember1.subscriptions);
-        assert.equal(importedMember1.subscriptions.length, 0);
+    const labelToRemove = newLabelResponse.body.labels[0];
 
-        const importedMember2 = jsonResponse2.members.find(m => m.email === 'test@example.com');
-        assertExists(importedMember2);
-        assert.equal(importedMember2.name, 'test');
-        assert.equal(importedMember2.note, 'test note');
-        assert.equal(importedMember2.subscribed, false);
-        assert.equal(importedMember2.newsletters.length, 0);
-        assert.equal(importedMember2.labels.length, 2);
-        assert.equal(testUtils.API.isISO8601(importedMember2.created_at), true);
-        assert.equal(importedMember2.created_at, '1991-10-02T20:30:31.000Z');
-        assert.equal(importedMember2.comped, false);
-        assertExists(importedMember2.subscriptions);
-        assert.equal(importedMember2.subscriptions.length, 0);
-    });
+    const bulkRemoveLabelResponse = await request
+      .put(localUtils.API.getApiQuery('members/bulk/?filter=label:bulk-add-labels-test'))
+      .set('Origin', config.get('url'))
+      .send({
+        bulk: {
+          action: 'removeLabel',
+          meta: {
+            label: labelToRemove,
+          },
+        },
+      })
+      .expect('Content-Type', /json/)
+      .expect('Cache-Control', testUtils.cacheRules.private)
+      .expect(200);
 
-    //TODO: fix this test and uncomment it
-    // it('Can import CSV and bulk destroy via auto-added label', function () {
-    //     // HACK: mock dates otherwise we'll often get unexpected members appearing
-    //     // from previous tests with the same import label due to auto-generated
-    //     // import labels only including minutes
-    //     sinon.stub(Date, 'now').returns(new Date('2021-03-30T17:21:00.000Z'));
+    assertExists(bulkRemoveLabelResponse.body.bulk);
+    assertExists(bulkRemoveLabelResponse.body.bulk.meta);
+    assertExists(bulkRemoveLabelResponse.body.bulk.meta.stats);
+    assertExists(bulkRemoveLabelResponse.body.bulk.meta.stats.successful);
+    assert.equal(bulkRemoveLabelResponse.body.bulk.meta.stats.successful, 8);
 
-    //     // import our dummy data for deletion
-    //     return request
-    //         .post(localUtils.API.getApiQuery(`members/upload/`))
-    //         .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/valid-members-for-bulk-delete.csv'))
-    //         .set('Origin', config.get('url'))
-    //         .expect('Content-Type', /json/)
-    //         .expect('Cache-Control', testUtils.cacheRules.private)
-    //         .then((res) => {
-    //             assert(!res.headers['x-cache-invalidate']);
+    const postLabelRemoveBrowseResponse = await request
+      .get(localUtils.API.getApiQuery(`members/?filter=label:${labelToRemove.slug}`))
+      .set('Origin', config.get('url'))
+      .expect('Content-Type', /json/)
+      .expect('Cache-Control', testUtils.cacheRules.private)
+      .expect(200);
 
-    //             const jsonResponse = res.body;
+    assert.equal(postLabelRemoveBrowseResponse.body.members.length, 0);
+  });
 
-    //             assertExists(jsonResponse);
-    //             assertExists(jsonResponse.meta);
-    //             assertExists(jsonResponse.meta.stats);
-    //             assertExists(jsonResponse.meta.import_label);
+  it('Imports a CSV of headers with no rows without failing', async function () {
+    const before = await countMembers(request);
 
-    //             assert.equal(jsonResponse.meta.stats.imported, 8);
+    const res = await request
+      .post(localUtils.API.getApiQuery(`members/upload/`))
+      .attach(
+        'membersfile',
+        path.join(__dirname, '/../../utils/fixtures/csv/members-headers-only.csv'),
+      )
+      .set('Origin', config.get('url'))
+      .expect(201);
 
-    //             return jsonResponse.meta.import_label;
-    //         })
-    //         .then((importLabel) => {
-    //             // check that the import worked by checking browse response with filter
-    //             return request.get(localUtils.API.getApiQuery(`members/?filter=label:${importLabel.slug}`))
-    //                 .set('Origin', config.get('url'))
-    //                 .expect('Content-Type', /json/)
-    //                 .expect('Cache-Control', testUtils.cacheRules.private)
-    //                 .expect(200)
-    //                 .then((res) => {
-    //                     assert(!res.headers['x-cache-invalidate']);
-    //                     const jsonResponse = res.body;
-    //                     assertExists(jsonResponse);
-    //                     assertExists(jsonResponse.members);
-    //                     assert.equal(jsonResponse.members.length, 8);
-    //                 })
-    //                 .then(() => importLabel);
-    //         })
-    //         .then((importLabel) => {
-    //             // perform the bulk delete
-    //             return request
-    //                 .del(localUtils.API.getApiQuery(`members/?filter=label:'${importLabel.slug}'`))
-    //                 .set('Origin', config.get('url'))
-    //                 .expect('Content-Type', /json/)
-    //                 .expect('Cache-Control', testUtils.cacheRules.private)
-    //                 .expect(200)
-    //                 .then((res) => {
-    //                     assert(!res.headers['x-cache-invalidate']);
-    //                     const jsonResponse = res.body;
-    //                     assertExists(jsonResponse);
-    //                     assertExists(jsonResponse.meta);
-    //                     assertExists(jsonResponse.meta.stats);
-    //                     assertExists(jsonResponse.meta.stats.successful);
-    //                     assert.equal(jsonResponse.meta.stats.successful, 8);
-    //                 })
-    //                 .then(() => importLabel);
-    //         })
-    //         .then((importLabel) => {
-    //             // check that the bulk delete worked by checking browse response with filter
-    //             return request.get(localUtils.API.getApiQuery(`members/?filter=label:${importLabel.slug}`))
-    //                 .set('Origin', config.get('url'))
-    //                 .expect('Content-Type', /json/)
-    //                 .expect('Cache-Control', testUtils.cacheRules.private)
-    //                 .expect(200)
-    //                 .then((res) => {
-    //                     const jsonResponse = res.body;
-    //                     assertExists(jsonResponse);
-    //                     assertExists(jsonResponse.members);
-    //                     assert.equal(jsonResponse.members.length, 0);
-    //                 });
-    //         });
-    // });
+    assert.equal(res.body.meta.stats.imported, 0);
+    assert.equal(await countMembers(request), before, 'nobody should have been created');
+  });
 
-    it('Can bulk unsubscribe members with filter', async function () {
-        const filteredNewsletters = newsletters.filter(n => n.get('subscribe_on_signup'));
-        assert(filteredNewsletters.length > 0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
+  it('Keeps every column when the first row has fewer fields than the header', async function () {
+    await request
+      .post(localUtils.API.getApiQuery(`members/upload/`))
+      .attach(
+        'membersfile',
+        path.join(__dirname, '/../../utils/fixtures/csv/members-ragged-row.csv'),
+      )
+      .set('Origin', config.get('url'))
+      .expect(201);
 
-        // import our dummy data for deletion
-        await request
-            .post(localUtils.API.getApiQuery(`members/upload/`))
-            .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/members-for-bulk-unsubscribe.csv'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private);
+    const res = await request
+      .get(localUtils.API.getApiQuery('members/?search=ragged-full'))
+      .set('Origin', config.get('url'))
+      .expect(200);
 
-        const browseResponse = await request
-            .get(localUtils.API.getApiQuery('members/?filter=label:bulk-unsubscribe-test'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+    const member = res.body.members.find((m) => m.email === 'ragged-full@example.com');
+    assertExists(member);
+    assert.equal(member.name, 'Bob');
+    assert.equal(member.note, 'a note');
+  });
 
-        assert.equal(browseResponse.body.members.length, 8);
-        const allMembersSubscribed = browseResponse.body.members.every((member) => {
-            return member.subscribed && member.newsletters.length > 0;
-        });
+  it('Stores values that look like formulas exactly as given', async function () {
+    await request
+      .post(localUtils.API.getApiQuery(`members/upload/`))
+      .attach(
+        'membersfile',
+        path.join(__dirname, '/../../utils/fixtures/csv/members-formula-like-values.csv'),
+      )
+      .set('Origin', config.get('url'))
+      .expect(201);
 
-        assert(allMembersSubscribed);
+    const res = await request
+      .get(localUtils.API.getApiQuery('members/?search=formula'))
+      .set('Origin', config.get('url'))
+      .expect(200);
 
-        const bulkUnsubscribeResponse = await request
-            .put(localUtils.API.getApiQuery('members/bulk/?filter=label:bulk-unsubscribe-test'))
-            .set('Origin', config.get('url'))
-            .send({
-                bulk: {
-                    action: 'unsubscribe'
-                }
-            })
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+    const dash = res.body.members.find((m) => m.email === 'formula@example.com');
+    assertExists(dash);
+    assert.equal(dash.name, '-5');
+    assert.equal(dash.note, '+44 123');
 
-        assertExists(bulkUnsubscribeResponse.body.bulk);
-        assertExists(bulkUnsubscribeResponse.body.bulk.meta);
-        assertExists(bulkUnsubscribeResponse.body.bulk.meta.stats);
-        assertExists(bulkUnsubscribeResponse.body.bulk.meta.stats.successful);
-        assert.equal(bulkUnsubscribeResponse.body.bulk.meta.stats.successful, 8);
+    const symbols = res.body.members.find((m) => m.email === 'formula2@example.com');
+    assertExists(symbols);
+    assert.equal(symbols.name, '=SUM(A1)');
+    assert.equal(symbols.note, '@handle');
+  });
 
-        const postUnsubscribeBrowseResponse = await request
-            .get(localUtils.API.getApiQuery('members/?filter=label:bulk-unsubscribe-test'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+  it('Keeps a form label that contains a comma as one label', async function () {
+    await request
+      .post(localUtils.API.getApiQuery(`members/upload/`))
+      .field('labels', ['Bristol, UK'])
+      .attach(
+        'membersfile',
+        path.join(__dirname, '/../../utils/fixtures/csv/valid-members-labels.csv'),
+      )
+      .set('Origin', config.get('url'))
+      .expect(201);
 
-        assert.equal(postUnsubscribeBrowseResponse.body.members.length, 8);
-        const allMembersUnsubscribed = postUnsubscribeBrowseResponse.body.members.every((member) => {
-            return member.newsletters.length === 0;
-        });
+    const res = await request
+      .get(localUtils.API.getApiQuery("members/?filter=label:'bristol-uk'"))
+      .set('Origin', config.get('url'))
+      .expect(200);
 
-        assert(allMembersUnsubscribed);
-    });
+    assert.equal(res.body.meta.pagination.total, 2, 'both members should carry the whole label');
+    const labels = res.body.members[0].labels.map((l) => l.name);
+    assert.ok(
+      labels.includes('Bristol, UK'),
+      `expected "Bristol, UK", got ${JSON.stringify(labels)}`,
+    );
+    assert.equal(labels.includes('Bristol'), false, 'the label must not have been split');
+  });
 
-    it('Can bulk add and remove labels to members with filter', async function () {
-        // import our dummy data for deletion
-        await request
-            .post(localUtils.API.getApiQuery('members/upload/'))
-            .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/members-for-bulk-add-labels.csv'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private);
+  it('Can handle empty body', async function () {
+    const res = await request
+      .post(localUtils.API.getApiQuery(`members/upload/`))
+      .set('Origin', config.get('url'))
+      .expect('Content-Type', /json/)
+      .expect('Cache-Control', testUtils.cacheRules.private)
+      .expect(422);
 
-        const newLabelResponse = await request
-            .post(localUtils.API.getApiQuery('labels'))
-            .set('Origin', config.get('url'))
-            .send({
-                labels: [{
-                    name: 'Awesome Label For Testing Bulk Add'
-                }]
-            });
-
-        const labelToAdd = newLabelResponse.body.labels[0];
-
-        const bulkAddLabelResponse = await request
-            .put(localUtils.API.getApiQuery('members/bulk/?filter=label:bulk-add-labels-test'))
-            .set('Origin', config.get('url'))
-            .send({
-                bulk: {
-                    action: 'addLabel',
-                    meta: {
-                        label: labelToAdd
-                    }
-                }
-            })
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        assertExists(bulkAddLabelResponse.body.bulk);
-        assertExists(bulkAddLabelResponse.body.bulk.meta);
-        assertExists(bulkAddLabelResponse.body.bulk.meta.stats);
-        assertExists(bulkAddLabelResponse.body.bulk.meta.stats.successful);
-        assert.equal(bulkAddLabelResponse.body.bulk.meta.stats.successful, 8);
-
-        const postLabelAddBrowseResponse = await request
-            .get(localUtils.API.getApiQuery(`members/?filter=label:${labelToAdd.slug}`))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        assert.equal(postLabelAddBrowseResponse.body.members.length, 8);
-
-        const labelToRemove = newLabelResponse.body.labels[0];
-
-        const bulkRemoveLabelResponse = await request
-            .put(localUtils.API.getApiQuery('members/bulk/?filter=label:bulk-add-labels-test'))
-            .set('Origin', config.get('url'))
-            .send({
-                bulk: {
-                    action: 'removeLabel',
-                    meta: {
-                        label: labelToRemove
-                    }
-                }
-            })
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        assertExists(bulkRemoveLabelResponse.body.bulk);
-        assertExists(bulkRemoveLabelResponse.body.bulk.meta);
-        assertExists(bulkRemoveLabelResponse.body.bulk.meta.stats);
-        assertExists(bulkRemoveLabelResponse.body.bulk.meta.stats.successful);
-        assert.equal(bulkRemoveLabelResponse.body.bulk.meta.stats.successful, 8);
-
-        const postLabelRemoveBrowseResponse = await request
-            .get(localUtils.API.getApiQuery(`members/?filter=label:${labelToRemove.slug}`))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        assert.equal(postLabelRemoveBrowseResponse.body.members.length, 0);
-    });
-
-    it('Imports a CSV of headers with no rows without failing', async function () {
-        const before = await countMembers(request);
-
-        const res = await request
-            .post(localUtils.API.getApiQuery(`members/upload/`))
-            .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/members-headers-only.csv'))
-            .set('Origin', config.get('url'))
-            .expect(201);
-
-        assert.equal(res.body.meta.stats.imported, 0);
-        assert.equal(await countMembers(request), before, 'nobody should have been created');
-    });
-
-    it('Keeps every column when the first row has fewer fields than the header', async function () {
-        await request
-            .post(localUtils.API.getApiQuery(`members/upload/`))
-            .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/members-ragged-row.csv'))
-            .set('Origin', config.get('url'))
-            .expect(201);
-
-        const res = await request
-            .get(localUtils.API.getApiQuery('members/?search=ragged-full'))
-            .set('Origin', config.get('url'))
-            .expect(200);
-
-        const member = res.body.members.find(m => m.email === 'ragged-full@example.com');
-        assertExists(member);
-        assert.equal(member.name, 'Bob');
-        assert.equal(member.note, 'a note');
-    });
-
-    it('Stores values that look like formulas exactly as given', async function () {
-        await request
-            .post(localUtils.API.getApiQuery(`members/upload/`))
-            .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/members-formula-like-values.csv'))
-            .set('Origin', config.get('url'))
-            .expect(201);
-
-        const res = await request
-            .get(localUtils.API.getApiQuery('members/?search=formula'))
-            .set('Origin', config.get('url'))
-            .expect(200);
-
-        const dash = res.body.members.find(m => m.email === 'formula@example.com');
-        assertExists(dash);
-        assert.equal(dash.name, '-5');
-        assert.equal(dash.note, '+44 123');
-
-        const symbols = res.body.members.find(m => m.email === 'formula2@example.com');
-        assertExists(symbols);
-        assert.equal(symbols.name, '=SUM(A1)');
-        assert.equal(symbols.note, '@handle');
-    });
-
-    it('Keeps a form label that contains a comma as one label', async function () {
-        await request
-            .post(localUtils.API.getApiQuery(`members/upload/`))
-            .field('labels', ['Bristol, UK'])
-            .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/valid-members-labels.csv'))
-            .set('Origin', config.get('url'))
-            .expect(201);
-
-        const res = await request
-            .get(localUtils.API.getApiQuery("members/?filter=label:'bristol-uk'"))
-            .set('Origin', config.get('url'))
-            .expect(200);
-
-        assert.equal(res.body.meta.pagination.total, 2, 'both members should carry the whole label');
-        const labels = res.body.members[0].labels.map(l => l.name);
-        assert.ok(labels.includes('Bristol, UK'), `expected "Bristol, UK", got ${JSON.stringify(labels)}`);
-        assert.equal(labels.includes('Bristol'), false, 'the label must not have been split');
-    });
-
-    it('Can handle empty body', async function () {
-        const res = await request
-            .post(localUtils.API.getApiQuery(`members/upload/`))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(422);
-
-        assert.equal(res.body.errors[0].message, 'Please select a members CSV file.');
-    });
+    assert.equal(res.body.errors[0].message, 'Please select a members CSV file.');
+  });
 });

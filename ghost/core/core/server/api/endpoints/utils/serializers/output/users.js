@@ -2,50 +2,39 @@ const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output
 const tpl = require('@tryghost/tpl');
 
 const messages = {
-    pwdChangedSuccessfully: 'Password changed successfully.'
+  pwdChangedSuccessfully: 'Password changed successfully.',
 };
 
 module.exports = {
-    destroy(filename, apiConfig, frame) {
-        debug('destroy');
+  changePassword(models, apiConfig, frame) {
+    debug('changePassword');
 
-        frame.response = {
-            meta: {
-                filename: filename
-            }
-        };
-    },
+    frame.response = {
+      password: [{ message: tpl(messages.pwdChangedSuccessfully) }],
+    };
+  },
 
-    changePassword(models, apiConfig, frame) {
-        debug('changePassword');
+  transferOwnership(models, apiConfig, frame) {
+    debug('transferOwnership');
 
-        frame.response = {
-            password: [{message: tpl(messages.pwdChangedSuccessfully)}]
-        };
-    },
+    frame.response = {
+      users: models.map((model) => model.toJSON(frame.options)),
+    };
+  },
 
-    transferOwnership(models, apiConfig, frame) {
-        debug('transferOwnership');
+  readStaffToken(model, apiConfig, frame) {
+    debug('readStaffToken');
 
-        frame.response = {
-            users: models.map(model => model.toJSON(frame.options))
-        };
-    },
+    frame.response = {
+      apiKey: model.toJSON(frame.options),
+    };
+  },
 
-    readStaffToken(model, apiConfig, frame) {
-        debug('readStaffToken');
+  regenerateStaffToken(model, apiConfig, frame) {
+    debug('regenerateStaffToken');
 
-        frame.response = {
-            apiKey: model.toJSON(frame.options)
-        };
-    },
-
-    regenerateStaffToken(model, apiConfig, frame) {
-        debug('regenerateStaffToken');
-
-        frame.response = {
-            apiKey: model.toJSON(frame.options)
-        };
-    }
-
+    frame.response = {
+      apiKey: model.toJSON(frame.options),
+    };
+  },
 };

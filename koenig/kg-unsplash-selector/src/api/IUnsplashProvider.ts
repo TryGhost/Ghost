@@ -1,9 +1,9 @@
-import {Photo} from '../UnsplashTypes';
+import { Photo } from '../UnsplashTypes';
 
 export interface IUnsplashProvider {
-    fetchPhotos(): Promise<Photo[]>;
-    fetchNextPage(): Promise<Photo[] | null>;
-    searchPhotos(term: string): Promise<Photo[]>;
-    triggerDownload(photo: Pick<Photo, 'links'>): Promise<void> | void;
-    searchIsRunning(): boolean;
+  fetchPhotos(): Promise<Photo[]>;
+  fetchNextPage(): Promise<Photo[] | null>;
+  searchPhotos(term: string): Promise<Photo[]>;
+  triggerDownload(photo: Pick<Photo, 'links'>): Promise<void> | void;
+  searchIsRunning(): boolean;
 }

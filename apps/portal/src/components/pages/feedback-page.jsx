@@ -1,14 +1,14 @@
-import {useContext, useEffect, useState} from 'react';
+import { useContext, useEffect, useState } from 'react';
 import AppContext from '../../app-context';
 import ThumbDownIcon from '../../images/icons/thumbs-down.svg?react';
 import ThumbUpIcon from '../../images/icons/thumbs-up.svg?react';
 import ThumbErrorIcon from '../../images/icons/thumbs-error.svg?react';
 import setupGhostApi from '../../utils/api';
-import {chooseBestErrorMessage} from '../../utils/errors';
+import { chooseBestErrorMessage } from '../../utils/errors';
 import ActionButton from '../common/action-button';
 import CloseButton from '../common/close-button';
 import LoadingPage from './loading-page';
-import {t} from '../../utils/i18n';
+import { t } from '../../utils/i18n';
 
 export const FeedbackPageStyles = `
     .gh-portal-feedback {
@@ -170,181 +170,182 @@ export const FeedbackPageStyles = `
     }
 `;
 
-function ErrorPage({error}) {
-    const {doAction} = useContext(AppContext);
+function ErrorPage({ error }) {
+  const { doAction } = useContext(AppContext);
 
-    return (
-        <div className='gh-portal-content gh-portal-feedback with-footer'>
-            <CloseButton />
-            <div className="gh-feedback-icon gh-feedback-icon-error">
-                <ThumbErrorIcon />
-            </div>
-            <h1 className="gh-portal-main-title">{t('Sorry, that didn’t work.')}</h1>
-            <div>
-                <p className="gh-portal-text-center">{error}</p>
-            </div>
-            <ActionButton
-                style={{width: '100%'}}
-                retry={false}
-                onClick = {() => doAction('closePopup')}
-                disabled={false}
-                brandColor='#000000'
-                label={t('Close')}
-                isRunning={false}
-                tabIndex={3}
-                classes={'sticky bottom'}
-            />
-        </div>
-    );
+  return (
+    <div className="gh-portal-content gh-portal-feedback with-footer">
+      <CloseButton />
+      <div className="gh-feedback-icon gh-feedback-icon-error">
+        <ThumbErrorIcon />
+      </div>
+      <h1 className="gh-portal-main-title">{t('Sorry, that didn’t work.')}</h1>
+      <div>
+        <p className="gh-portal-text-center">{error}</p>
+      </div>
+      <ActionButton
+        style={{ width: '100%' }}
+        retry={false}
+        onClick={() => doAction('closePopup')}
+        disabled={false}
+        brandColor="#000000"
+        label={t('Close')}
+        isRunning={false}
+        tabIndex={3}
+        classes={'sticky bottom'}
+      />
+    </div>
+  );
 }
 
-const ConfirmDialog = ({onConfirm, loading, initialScore}) => {
-    const {doAction, brandColor} = useContext(AppContext);
-    const [score, setScore] = useState(initialScore);
+const ConfirmDialog = ({ onConfirm, loading, initialScore }) => {
+  const { doAction, brandColor } = useContext(AppContext);
+  const [score, setScore] = useState(initialScore);
 
-    const stopPropagation = (event) => {
-        event.stopPropagation();
-    };
+  const stopPropagation = (event) => {
+    event.stopPropagation();
+  };
 
-    const close = () => {
-        doAction('closePopup');
-    };
+  const close = () => {
+    doAction('closePopup');
+  };
 
-    const submit = async (event) => {
-        event.stopPropagation();
-        await onConfirm(score);
-    };
+  const submit = async (event) => {
+    event.stopPropagation();
+    await onConfirm(score);
+  };
 
-    const getButtonClassNames = (value) => {
-        const baseClassName = 'gh-feedback-button';
-        return value === score ? `${baseClassName} gh-feedback-button-selected` : baseClassName;
-    };
+  const getButtonClassNames = (value) => {
+    const baseClassName = 'gh-feedback-button';
+    return value === score ? `${baseClassName} gh-feedback-button-selected` : baseClassName;
+  };
 
-    const getInlineStyles = (value) => {
-        return value === score ? {color: brandColor} : {};
-    };
+  const getInlineStyles = (value) => {
+    return value === score ? { color: brandColor } : {};
+  };
 
-    return (
-        <div className="gh-portal-confirm-dialog" onMouseDown={stopPropagation}>
-            <h1 className="gh-portal-confirm-title">{t('Give feedback on this post')}</h1>
+  return (
+    <div className="gh-portal-confirm-dialog" onMouseDown={stopPropagation}>
+      <h1 className="gh-portal-confirm-title">{t('Give feedback on this post')}</h1>
 
-            <div className="gh-feedback-buttons-group">
-                <button
-                    className={getButtonClassNames(1)}
-                    style={getInlineStyles(1)}
-                    onClick={() => setScore(1)}
-                >
-                    <ThumbUpIcon />
-                    {t('More like this')}
-                </button>
+      <div className="gh-feedback-buttons-group">
+        <button
+          className={getButtonClassNames(1)}
+          style={getInlineStyles(1)}
+          onClick={() => setScore(1)}
+        >
+          <ThumbUpIcon />
+          {t('More like this')}
+        </button>
 
-                <button
-                    className={getButtonClassNames(0)}
-                    style={getInlineStyles(0)}
-                    onClick={() => setScore(0)}
-                >
-                    <ThumbDownIcon />
-                    {t('Less like this')}
-                </button>
-            </div>
+        <button
+          className={getButtonClassNames(0)}
+          style={getInlineStyles(0)}
+          onClick={() => setScore(0)}
+        >
+          <ThumbDownIcon />
+          {t('Less like this')}
+        </button>
+      </div>
 
-            <ActionButton
-                classes="gh-portal-confirm-button"
-                retry={false}
-                onClick={submit}
-                disabled={false}
-                brandColor={brandColor}
-                label={t('Submit feedback')}
-                isRunning={loading}
-                tabIndex={3}
-            />
-            <CloseButton close={() => close(false)} />
-        </div>
-    );
+      <ActionButton
+        classes="gh-portal-confirm-button"
+        retry={false}
+        onClick={submit}
+        disabled={false}
+        brandColor={brandColor}
+        label={t('Submit feedback')}
+        isRunning={loading}
+        tabIndex={3}
+      />
+      <CloseButton close={() => close(false)} />
+    </div>
+  );
 };
 
-async function sendFeedback({siteUrl, uuid, key, postId, score}, api) {
-    const ghostApi = api || setupGhostApi({siteUrl});
-    await ghostApi.feedback.add({uuid, postId, key, score});
+async function sendFeedback({ siteUrl, uuid, key, postId, score }, api) {
+  const ghostApi = api || setupGhostApi({ siteUrl });
+  await ghostApi.feedback.add({ uuid, postId, key, score });
 }
 
-const LoadingFeedbackView = ({action, score}) => {
-    useEffect(() => {
-        action(score);
-    });
+const LoadingFeedbackView = ({ action, score }) => {
+  useEffect(() => {
+    action(score);
+  });
 
-    return <LoadingPage/>;
+  return <LoadingPage />;
 };
 
-const ConfirmFeedback = ({positive}) => {
-    const {doAction, brandColor} = useContext(AppContext);
+const ConfirmFeedback = ({ positive }) => {
+  const { doAction, brandColor } = useContext(AppContext);
 
-    const icon = positive ? <ThumbUpIcon /> : <ThumbDownIcon />;
+  const icon = positive ? <ThumbUpIcon /> : <ThumbDownIcon />;
 
-    return (
-        <div className='gh-portal-content gh-portal-feedback'>
-            <CloseButton />
+  return (
+    <div className="gh-portal-content gh-portal-feedback">
+      <CloseButton />
 
-            <div className="gh-feedback-icon">
-                {icon}
-            </div>
-            <h1 className="gh-portal-main-title">{t('Thanks for the feedback!')}</h1>
-            <p className="gh-portal-text-center">{t('Your input helps shape what gets published.')}</p>
-            <ActionButton
-                style={{width: '100%'}}
-                retry={false}
-                onClick = {() => doAction('closePopup')}
-                disabled={false}
-                brandColor={brandColor}
-                label={t('Close')}
-                isRunning={false}
-                tabIndex={3}
-                classes={'sticky bottom'}
-            />
-        </div>
-    );
+      <div className="gh-feedback-icon">{icon}</div>
+      <h1 className="gh-portal-main-title">{t('Thanks for the feedback!')}</h1>
+      <p className="gh-portal-text-center">{t('Your input helps shape what gets published.')}</p>
+      <ActionButton
+        style={{ width: '100%' }}
+        retry={false}
+        onClick={() => doAction('closePopup')}
+        disabled={false}
+        brandColor={brandColor}
+        label={t('Close')}
+        isRunning={false}
+        tabIndex={3}
+        classes={'sticky bottom'}
+      />
+    </div>
+  );
 };
 
 export default function FeedbackPage() {
-    const {site, pageData, member, api} = useContext(AppContext);
-    const {uuid, key, postId, score: initialScore} = pageData;
-    const [score, setScore] = useState(initialScore);
-    const positive = score === 1;
-    const isLoggedIn = !!member;
-    const fromEmailLink = !!(uuid && key);
+  const { site, pageData, member, api } = useContext(AppContext);
+  const { uuid, key, postId, score: initialScore } = pageData;
+  const [score, setScore] = useState(initialScore);
+  const positive = score === 1;
+  const isLoggedIn = !!member;
+  const fromEmailLink = !!(uuid && key);
 
-    const [confirmed, setConfirmed] = useState(fromEmailLink && isLoggedIn);
-    const [loading, setLoading] = useState(fromEmailLink && isLoggedIn);
-    const [error, setError] = useState(null);
+  const [confirmed, setConfirmed] = useState(fromEmailLink && isLoggedIn);
+  const [loading, setLoading] = useState(fromEmailLink && isLoggedIn);
+  const [error, setError] = useState(null);
 
-    const doSendFeedback = async (selectedScore) => {
-        setLoading(true);
-        try {
-            await sendFeedback({siteUrl: site.url, uuid, key, postId, score: selectedScore}, api);
-            setScore(selectedScore);
-        } catch (e) {
-            const text = chooseBestErrorMessage(e, t('There was a problem submitting your feedback. Please try again a little later.'));
-            setError(text);
-        }
-        setLoading(false);
-    };
-
-    const onConfirm = async (selectedScore) => {
-        await doSendFeedback(selectedScore);
-        setConfirmed(true);
-    };
-
-    // Case: failed
-    if (error) {
-        return <ErrorPage error={error} />;
+  const doSendFeedback = async (selectedScore) => {
+    setLoading(true);
+    try {
+      await sendFeedback({ siteUrl: site.url, uuid, key, postId, score: selectedScore }, api);
+      setScore(selectedScore);
+    } catch (e) {
+      const text = chooseBestErrorMessage(
+        e,
+        t('There was a problem submitting your feedback. Please try again a little later.'),
+      );
+      setError(text);
     }
+    setLoading(false);
+  };
 
-    if (!confirmed) {
-        return (<ConfirmDialog onConfirm={onConfirm} loading={loading} initialScore={score} />);
-    } else {
-        if (loading) {
-            return <LoadingFeedbackView action={doSendFeedback} score={score} />;
-        }
+  const onConfirm = async (selectedScore) => {
+    await doSendFeedback(selectedScore);
+    setConfirmed(true);
+  };
+
+  // Case: failed
+  if (error) {
+    return <ErrorPage error={error} />;
+  }
+
+  if (!confirmed) {
+    return <ConfirmDialog onConfirm={onConfirm} loading={loading} initialScore={score} />;
+  } else {
+    if (loading) {
+      return <LoadingFeedbackView action={doSendFeedback} score={score} />;
     }
-    return (<ConfirmFeedback positive={positive} />);
+  }
+  return <ConfirmFeedback positive={positive} />;
 }

@@ -1,12 +1,12 @@
 import errors from '@tryghost/errors';
-import {loadAdapterClass, resolveAdapterOptions, normalizeAdapterConfig, getConfiguredFeatures} from './utils';
-import type {ConfigInstance} from '../../../shared/config/loader';
-import type {
-    Adapter,
-    AdapterConstructor,
-    AdapterName,
-    ResolvedAdapter
-} from './types';
+import {
+  loadAdapterClass,
+  resolveAdapterOptions,
+  normalizeAdapterConfig,
+  getConfiguredFeatures,
+} from './utils';
+import type { ConfigInstance } from '../../../shared/config/loader';
+import type { Adapter, AdapterConstructor, AdapterName, ResolvedAdapter } from './types';
 
 /**
  * A map from an adapter type name (e.g. "storage") to the base class every
@@ -20,18 +20,18 @@ export type BaseClassMap = Record<string, AdapterConstructor>;
  * return a precisely-typed instance.
  */
 export type RegistryOf<BaseClasses extends BaseClassMap> = {
-    [Type in keyof BaseClasses]: InstanceType<BaseClasses[Type]>;
+  [Type in keyof BaseClasses]: InstanceType<BaseClasses[Type]>;
 };
 
 export interface AdapterManagerOptions<BaseClasses extends BaseClassMap = BaseClassMap> {
-    /** The paths to check, e.g. ['content/adapters', 'core/server/adapters'] */
-    pathsToAdapters: string[];
-    /** A function to load adapters, e.g. global.require */
-    loadAdapterFromPath: (path: string) => unknown;
-    /** The base classes keyed by adapter type name, e.g. {storage: GhostStorageBase} */
-    baseClasses: BaseClasses;
-    /** The config instance used to resolve which adapter and options to load */
-    config: ConfigInstance;
+  /** The paths to check, e.g. ['content/adapters', 'core/server/adapters'] */
+  pathsToAdapters: string[];
+  /** A function to load adapters, e.g. global.require */
+  loadAdapterFromPath: (path: string) => unknown;
+  /** The base classes keyed by adapter type name, e.g. {storage: GhostStorageBase} */
+  baseClasses: BaseClasses;
+  /** The config instance used to resolve which adapter and options to load */
+  config: ConfigInstance;
 }
 
 /**
@@ -55,199 +55,209 @@ export interface AdapterManagerOptions<BaseClasses extends BaseClassMap = BaseCl
  * ```
  */
 export class AdapterManager<BaseClasses extends BaseClassMap = BaseClassMap> {
-    private baseClasses: BaseClassMap;
-    private instanceCache: Record<string, Record<string, Adapter>>;
-    private pathsToAdapters: string[];
-    private loadAdapterFromPath: (path: string) => unknown;
-    private config: ConfigInstance;
+  private baseClasses: BaseClassMap;
+  private instanceCache: Record<string, Record<string, Adapter>>;
+  private pathsToAdapters: string[];
+  private loadAdapterFromPath: (path: string) => unknown;
+  private config: ConfigInstance;
 
-    constructor({pathsToAdapters, loadAdapterFromPath, baseClasses, config}: AdapterManagerOptions<BaseClasses>) {
-        this.baseClasses = {};
-        this.instanceCache = {};
-        this.pathsToAdapters = pathsToAdapters;
-        this.loadAdapterFromPath = loadAdapterFromPath;
-        this.config = config;
+  constructor({
+    pathsToAdapters,
+    loadAdapterFromPath,
+    baseClasses,
+    config,
+  }: AdapterManagerOptions<BaseClasses>) {
+    this.baseClasses = {};
+    this.instanceCache = {};
+    this.pathsToAdapters = pathsToAdapters;
+    this.loadAdapterFromPath = loadAdapterFromPath;
+    this.config = config;
 
-        for (const [type, BaseClass] of Object.entries(baseClasses)) {
-            if (type.includes(':')) {
-                throw new errors.IncorrectUsageError({
-                    message: `Adapter type "${type}" cannot contain a colon.`
-                });
-            }
+    for (const [type, BaseClass] of Object.entries(baseClasses)) {
+      if (type.includes(':')) {
+        throw new errors.IncorrectUsageError({
+          message: `Adapter type "${type}" cannot contain a colon.`,
+        });
+      }
 
-            this.instanceCache[type] = {};
-            this.baseClasses[type] = BaseClass;
-        }
+      this.instanceCache[type] = {};
+      this.baseClasses[type] = BaseClass;
+    }
+  }
+
+  /**
+   * Force recreation of all instances instead of reusing cached instances.
+   * Use when editing config file during tests.
+   */
+  clearCache(): void {
+    for (const key of Object.keys(this.instanceCache)) {
+      this.instanceCache[key] = {};
+    }
+  }
+
+  /**
+   * getAdapter
+   *
+   * Resolves the active adapter class name and options for the given name from
+   * config, then loads, validates and caches the adapter instance.
+   *
+   * @param name The name of the type of adapter, e.g. "storage" or
+   *   "scheduling", optionally including the feature, e.g. "storage:images"
+   *
+   * @returns The resolved and instantiated adapter
+   */
+  getAdapter<Name extends AdapterName<RegistryOf<BaseClasses>>>(
+    name: Name,
+  ): ResolvedAdapter<RegistryOf<BaseClasses>, Name>;
+  getAdapter(name: string): Adapter {
+    if (!name) {
+      throw new errors.IncorrectUsageError({
+        message: 'getAdapter must be called with an adapter name.',
+      });
     }
 
-    /**
-     * Force recreation of all instances instead of reusing cached instances.
-     * Use when editing config file during tests.
-     */
-    clearCache(): void {
-        for (const key of Object.keys(this.instanceCache)) {
-            this.instanceCache[key] = {};
-        }
+    const { Adapter, adapterConfig, adapterType, adapterClassName } = this.loadAdapter(name);
+    const adapterCache = this.instanceCache[adapterType];
+
+    // @NOTE: example cache key value 'email:newsletters:custom-newsletter-adapter'
+    const adapterCacheKey = `${name}:${adapterClassName}`;
+    if (adapterCache[adapterCacheKey]) {
+      return adapterCache[adapterCacheKey];
     }
 
-    /**
-     * getAdapter
-     *
-     * Resolves the active adapter class name and options for the given name from
-     * config, then loads, validates and caches the adapter instance.
-     *
-     * @param name The name of the type of adapter, e.g. "storage" or
-     *   "scheduling", optionally including the feature, e.g. "storage:images"
-     *
-     * @returns The resolved and instantiated adapter
-     */
-    getAdapter<Name extends AdapterName<RegistryOf<BaseClasses>>>(
-        name: Name
-    ): ResolvedAdapter<RegistryOf<BaseClasses>, Name>;
-    getAdapter(name: string): Adapter {
-        if (!name) {
-            throw new errors.IncorrectUsageError({
-                message: 'getAdapter must be called with an adapter name.'
-            });
-        }
+    // `Adapter` is an abstract-compatible constructor type; the runtime value
+    // is always a concrete class here, so instantiation is safe.
+    const AdapterClass = Adapter as new (config?: object) => Adapter;
+    const adapter = new AdapterClass(adapterConfig);
 
-        const {Adapter, adapterConfig, adapterType, adapterClassName} = this.loadAdapter(name);
-        const adapterCache = this.instanceCache[adapterType];
-
-        // @NOTE: example cache key value 'email:newsletters:custom-newsletter-adapter'
-        const adapterCacheKey = `${name}:${adapterClassName}`;
-        if (adapterCache[adapterCacheKey]) {
-            return adapterCache[adapterCacheKey];
-        }
-
-        // `Adapter` is an abstract-compatible constructor type; the runtime value
-        // is always a concrete class here, so instantiation is safe.
-        const AdapterClass = Adapter as new (config?: object) => Adapter;
-        const adapter = new AdapterClass(adapterConfig);
-
-        const BaseClass = this.baseClasses[adapterType];
-        if (!(adapter instanceof BaseClass)) {
-            if (Object.getPrototypeOf(Adapter).name !== BaseClass.name) {
-                throw new errors.IncorrectUsageError({
-                    message: `${adapterType} adapter ${adapterClassName} does not inherit from the base class.`
-                });
-            }
-        }
-
-        if (!Array.isArray(adapter.requiredFns)) {
-            throw new errors.IncorrectUsageError({
-                message: `${adapterType} adapter ${adapterClassName} does not have the requiredFns array.`
-            });
-        }
-
-        for (const requiredFn of adapter.requiredFns) {
-            if (typeof (adapter as any)[requiredFn] !== 'function') {
-                throw new errors.IncorrectUsageError({
-                    message: `${adapterType} adapter ${adapterClassName} is missing the ${requiredFn} method.`
-                });
-            }
-        }
-
-        adapterCache[adapterCacheKey] = adapter;
-
-        return adapter;
+    const BaseClass = this.baseClasses[adapterType];
+    if (!(adapter instanceof BaseClass)) {
+      if (Object.getPrototypeOf(Adapter).name !== BaseClass.name) {
+        throw new errors.IncorrectUsageError({
+          message: `${adapterType} adapter ${adapterClassName} does not inherit from the base class.`,
+        });
+      }
     }
 
-    /**
-     * Resolve the active adapter class name and options for `name` from config,
-     * then locate and load the adapter constructor from `pathsToAdapters`.
-     *
-     * Does not instantiate the adapter or touch the instance cache — shared by
-     * `getAdapter` (which instantiates + caches) and `init` (which validates).
-     */
-    private loadAdapter(name: string): {
-        Adapter: AdapterConstructor;
-        adapterConfig: object;
-        adapterType: string;
-        adapterClassName: string;
-    } {
-        // Re-read config on every call so runtime config changes (and test config
-        // overrides) are reflected, matching the original JS implementation.
-        const adapterServiceConfig = normalizeAdapterConfig(this.config);
-        const {adapterClassName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
-
-        const [adapterType] = name.split(':');
-
-        if (!this.baseClasses[adapterType]) {
-            throw new errors.NotFoundError({
-                message: `Unknown adapter type ${adapterType}. Please register adapter.`
-            });
-        }
-
-        if (!adapterClassName) {
-            throw new errors.IncorrectUsageError({
-                message: `Unable to find ${adapterType} adapter in ${this.pathsToAdapters}.`
-            });
-        }
-
-        const Adapter = loadAdapterClass(adapterType, adapterClassName, this.pathsToAdapters, this.loadAdapterFromPath);
-
-        return {Adapter, adapterConfig: adapterConfig ?? {}, adapterType, adapterClassName};
+    if (!Array.isArray(adapter.requiredFns)) {
+      throw new errors.IncorrectUsageError({
+        message: `${adapterType} adapter ${adapterClassName} does not have the requiredFns array.`,
+      });
     }
 
-    /**
-     * Validate the config of every configured adapter up-front, so
-     * misconfiguration fails at boot rather than on first lazy `getAdapter`.
-     *
-     * Enumerates the active adapter for each registered type plus every
-     * configured feature variant (e.g. `storage:media`), resolves each to a
-     * distinct class + config, and calls the adapter's optional static
-     * `validate` when present. All failures — bad config or a failure to load a
-     * configured adapter — are aggregated into a single error so an operator
-     * sees every problem at once. Types with no configured adapter are skipped;
-     * presence is still enforced on use by `getAdapter`.
-     */
-    init(): void {
-        const adapterServiceConfig = normalizeAdapterConfig(this.config);
-
-        // 1. Enumerate every configured adapter name (active + feature variants).
-        const names: string[] = [];
-        for (const adapterType of Object.keys(this.baseClasses)) {
-            names.push(adapterType);
-            for (const feature of getConfiguredFeatures(adapterServiceConfig[adapterType])) {
-                names.push(`${adapterType}:${feature}`);
-            }
-        }
-
-        // 2. Resolve to distinct class + config pairs, skipping unconfigured
-        //    types/features and deduping identical class+config combinations.
-        const distinct = new Map<string, string>();
-        for (const name of names) {
-            const {adapterClassName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
-            if (!adapterClassName) {
-                continue;
-            }
-            const [adapterType] = name.split(':');
-            const key = `${adapterType}:${adapterClassName}:${JSON.stringify(adapterConfig ?? {})}`;
-            if (!distinct.has(key)) {
-                distinct.set(key, name);
-            }
-        }
-
-        // 3. Load + validate each distinct adapter, aggregating all failures.
-        const failures: {name: string; err: Error}[] = [];
-        for (const name of distinct.values()) {
-            try {
-                const {Adapter, adapterConfig} = this.loadAdapter(name);
-                if (typeof Adapter.validate === 'function') {
-                    Adapter.validate(adapterConfig);
-                }
-            } catch (err) {
-                failures.push({name, err: err as Error});
-            }
-        }
-
-        if (failures.length > 0) {
-            const details = failures.map(({name, err}) => `- ${name}: ${err.message}`).join('\n');
-            throw new errors.IncorrectUsageError({
-                message: `Invalid adapter configuration:\n${details}`,
-                errorDetails: failures.map(({name, err}) => ({adapter: name, message: err.message}))
-            });
-        }
+    for (const requiredFn of adapter.requiredFns) {
+      if (typeof (adapter as any)[requiredFn] !== 'function') {
+        throw new errors.IncorrectUsageError({
+          message: `${adapterType} adapter ${adapterClassName} is missing the ${requiredFn} method.`,
+        });
+      }
     }
+
+    adapterCache[adapterCacheKey] = adapter;
+
+    return adapter;
+  }
+
+  /**
+   * Resolve the active adapter class name and options for `name` from config,
+   * then locate and load the adapter constructor from `pathsToAdapters`.
+   *
+   * Does not instantiate the adapter or touch the instance cache — shared by
+   * `getAdapter` (which instantiates + caches) and `init` (which validates).
+   */
+  private loadAdapter(name: string): {
+    Adapter: AdapterConstructor;
+    adapterConfig: object;
+    adapterType: string;
+    adapterClassName: string;
+  } {
+    // Re-read config on every call so runtime config changes (and test config
+    // overrides) are reflected, matching the original JS implementation.
+    const adapterServiceConfig = normalizeAdapterConfig(this.config);
+    const { adapterClassName, adapterConfig } = resolveAdapterOptions(name, adapterServiceConfig);
+
+    const [adapterType] = name.split(':');
+
+    if (!this.baseClasses[adapterType]) {
+      throw new errors.NotFoundError({
+        message: `Unknown adapter type ${adapterType}. Please register adapter.`,
+      });
+    }
+
+    if (!adapterClassName) {
+      throw new errors.IncorrectUsageError({
+        message: `Unable to find ${adapterType} adapter in ${this.pathsToAdapters}.`,
+      });
+    }
+
+    const Adapter = loadAdapterClass(
+      adapterType,
+      adapterClassName,
+      this.pathsToAdapters,
+      this.loadAdapterFromPath,
+    );
+
+    return { Adapter, adapterConfig: adapterConfig ?? {}, adapterType, adapterClassName };
+  }
+
+  /**
+   * Validate the config of every configured adapter up-front, so
+   * misconfiguration fails at boot rather than on first lazy `getAdapter`.
+   *
+   * Enumerates the active adapter for each registered type plus every
+   * configured feature variant (e.g. `storage:media`), resolves each to a
+   * distinct class + config, and calls the adapter's optional static
+   * `validate` when present. All failures — bad config or a failure to load a
+   * configured adapter — are aggregated into a single error so an operator
+   * sees every problem at once. Types with no configured adapter are skipped;
+   * presence is still enforced on use by `getAdapter`.
+   */
+  init(): void {
+    const adapterServiceConfig = normalizeAdapterConfig(this.config);
+
+    // 1. Enumerate every configured adapter name (active + feature variants).
+    const names: string[] = [];
+    for (const adapterType of Object.keys(this.baseClasses)) {
+      names.push(adapterType);
+      for (const feature of getConfiguredFeatures(adapterServiceConfig[adapterType])) {
+        names.push(`${adapterType}:${feature}`);
+      }
+    }
+
+    // 2. Resolve to distinct class + config pairs, skipping unconfigured
+    //    types/features and deduping identical class+config combinations.
+    const distinct = new Map<string, string>();
+    for (const name of names) {
+      const { adapterClassName, adapterConfig } = resolveAdapterOptions(name, adapterServiceConfig);
+      if (!adapterClassName) {
+        continue;
+      }
+      const [adapterType] = name.split(':');
+      const key = `${adapterType}:${adapterClassName}:${JSON.stringify(adapterConfig ?? {})}`;
+      if (!distinct.has(key)) {
+        distinct.set(key, name);
+      }
+    }
+
+    // 3. Load + validate each distinct adapter, aggregating all failures.
+    const failures: { name: string; err: Error }[] = [];
+    for (const name of distinct.values()) {
+      try {
+        const { Adapter, adapterConfig } = this.loadAdapter(name);
+        if (typeof Adapter.validate === 'function') {
+          Adapter.validate(adapterConfig);
+        }
+      } catch (err) {
+        failures.push({ name, err: err as Error });
+      }
+    }
+
+    if (failures.length > 0) {
+      const details = failures.map(({ name, err }) => `- ${name}: ${err.message}`).join('\n');
+      throw new errors.IncorrectUsageError({
+        message: `Invalid adapter configuration:\n${details}`,
+        errorDetails: failures.map(({ name, err }) => ({ adapter: name, message: err.message })),
+      });
+    }
+  }
 }

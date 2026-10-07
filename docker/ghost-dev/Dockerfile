@@ -1,8 +1,8 @@
-# syntax=docker/dockerfile:1@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+# syntax=docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
 # Minimal Development Dockerfile for Ghost Core
 # Source code is mounted at runtime for hot-reload support
 
-ARG NODE_VERSION=22.23.1
+ARG NODE_VERSION=22.23.3
 
 FROM node:$NODE_VERSION-bookworm-slim
 
@@ -32,6 +32,12 @@ WORKDIR /home/ghost
 # the file is absent — even though its only hook (beforePacking) never runs
 # during install.
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .pnpmfile.mjs ./
+
+# patchedDependencies in pnpm-workspace.yaml names every patch by path, and pnpm
+# hashes those files during install: a missing patch fails the install outright
+# with ENOENT rather than resolving unpatched. This COPY must therefore list the
+# whole dir, so adding a patch needs no change here.
+COPY patches patches
 
 # Copy the manifests of the top-level dirs that hold ghost/core's dependency
 # closure — ghost/* (core, i18n, parse-email-address), koenig/* (the kg-*
@@ -72,8 +78,7 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
     pnpm install --filter "ghost..." --frozen-lockfile --prefer-offline
 
 # Copy entrypoint script that optionally loads Tinybird config
-COPY docker/ghost-dev/entrypoint.sh entrypoint.sh
-RUN chmod +x entrypoint.sh
+COPY --chmod=755 docker/ghost-dev/entrypoint.sh entrypoint.sh
 
 # Public app assets are served via /ghost/assets/* in dev mode.
 # Caddy forwards these paths to host frontend dev servers.

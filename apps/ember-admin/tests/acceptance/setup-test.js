@@ -8,7 +8,7 @@ import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../helpers/visit';
 
 describe('Acceptance: Setup', function () {
-    let hooks = setupApplicationTest();
+    const hooks = setupApplicationTest();
     setupMirage(hooks);
 
     // Helper function to setup the setup flow
@@ -47,7 +47,7 @@ describe('Acceptance: Setup', function () {
     }
 
     it('redirects if already authenticated', async function () {
-        let role = this.server.create('role', {name: 'Author'});
+        const role = this.server.create('role', {name: 'Author'});
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();

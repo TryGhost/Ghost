@@ -1,54 +1,48 @@
 const _ = require('lodash');
-const xml = require('xml');
-const moment = require('moment');
 const urlUtils = require('../../../shared/url-utils').default;
-const localUtils = require('./utils');
-
-const XMLNS_DECLS = {
-    _attr: {
-        xmlns: 'http://www.sitemaps.org/schemas/sitemap/0.9'
-    }
-};
+const sitemapXml = require('./sitemap-xml');
 
 class SiteMapIndexGenerator {
-    constructor(options) {
-        options = options || {};
-        this.types = options.types;
-        this.maxPerPage = options.maxPerPage;
+  constructor(options) {
+    options = options || {};
+    this.types = options.types;
+    // The index is the one sitemap crawlers fetch repeatedly, and rendering
+    // it counts every resource of every type. Cached until something
+    // invalidates the index; the manager resets this when it does.
+    this.siteMapContent = null;
+  }
+
+  getXml() {
+    if (this.siteMapContent !== null) {
+      return this.siteMapContent;
     }
 
-    getXml() {
-        const urlElements = this.generateSiteMapUrlElements();
+    this.siteMapContent = sitemapXml.renderSiteMapIndex(this.generateSiteMapUrlElements());
 
-        const data = {
-            // Concat the elements to the _attr declaration
-            sitemapindex: [XMLNS_DECLS].concat(urlElements)
-        };
+    return this.siteMapContent;
+  }
 
-        // Return the xml
-        return localUtils.getDeclarations() + xml(data);
-    }
+  generateSiteMapUrlElements() {
+    return _.map(this.types, (resourceType) => {
+      const noOfPages = resourceType.pageCount;
+      const pages = [];
+      for (let i = 0; i < noOfPages; i++) {
+        const page = i === 0 ? '' : `-${i + 1}`;
+        const url = urlUtils.urlFor(
+          { relativeUrl: '/sitemap-' + resourceType.name + page + '.xml' },
+          true,
+        );
 
-    generateSiteMapUrlElements() {
-        return _.map(this.types, (resourceType) => {
-            const noOfPages = Math.ceil(Object.keys(resourceType.nodeLookup).length / this.maxPerPage);
-            const pages = [];
-            for (let i = 0; i < noOfPages; i++) {
-                const page = i === 0 ? '' : `-${i + 1}`;
-                const url = urlUtils.urlFor({relativeUrl: '/sitemap-' + resourceType.name + page + '.xml'}, true);
-                const lastModified = resourceType.lastModified;
+        pages.push({ loc: url, ts: resourceType.lastModified });
+      }
 
-                pages.push({
-                    sitemap: [
-                        {loc: url},
-                        {lastmod: moment(lastModified).toISOString()}
-                    ]
-                });
-            }
+      return pages;
+    }).flat();
+  }
 
-            return pages;
-        }).flat();
-    }
+  reset() {
+    this.siteMapContent = null;
+  }
 }
 
 module.exports = SiteMapIndexGenerator;

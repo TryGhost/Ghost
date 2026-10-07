@@ -1,44 +1,44 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../../../utils/assertions');
+const { assertExists } = require('../../../../utils/assertions');
 const fs = require('fs-extra');
 const configUtils = require('../../../../utils/config-utils');
 const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
 
 const schedulingPath = configUtils.config.getContentPath('adapters') + 'scheduling/';
 describe('Scheduling: utils', function () {
-    const scope = {adapter: null};
+  const scope = { adapter: null };
 
-    beforeAll(function () {
-        if (!fs.existsSync(schedulingPath)) {
-            fs.mkdirSync(schedulingPath);
-        }
+  beforeAll(function () {
+    if (!fs.existsSync(schedulingPath)) {
+      fs.mkdirSync(schedulingPath);
+    }
+  });
+
+  afterEach(async function () {
+    if (scope.adapter) {
+      fs.unlinkSync(scope.adapter);
+      scope.adapter = null;
+    }
+
+    await configUtils.restore();
+  });
+
+  describe('success', function () {
+    it('create good adapter', function () {
+      const adapter = adapterManager.getAdapter('scheduling');
+      assertExists(adapter);
     });
 
-    afterEach(async function () {
-        if (scope.adapter) {
-            fs.unlinkSync(scope.adapter);
-            scope.adapter = null;
-        }
+    it('create good adapter from custom file', function () {
+      scope.adapter = schedulingPath + 'another-scheduler.js';
 
-        await configUtils.restore();
-    });
+      configUtils.set({
+        scheduling: {
+          active: 'another-scheduler',
+        },
+      });
 
-    describe('success', function () {
-        it('create good adapter', function () {
-            const adapter = adapterManager.getAdapter('scheduling');
-            assertExists(adapter);
-        });
-
-        it('create good adapter from custom file', function () {
-            scope.adapter = schedulingPath + 'another-scheduler.js';
-
-            configUtils.set({
-                scheduling: {
-                    active: 'another-scheduler'
-                }
-            });
-
-            const jsFile = `
+      const jsFile = `
                 const {SchedulingBase} = require('@tryghost/adapter-base-scheduling');
 
                 module.exports = class AnotherAdapter extends SchedulingBase {
@@ -50,41 +50,41 @@ describe('Scheduling: utils', function () {
                     schedule() {}
                     unschedule() {}
                 }
-            `
+            `;
 
-            fs.writeFileSync(scope.adapter, jsFile);
+      fs.writeFileSync(scope.adapter, jsFile);
 
-            const adapter = adapterManager.getAdapter('scheduling');
-            assertExists(adapter);
-        });
+      const adapter = adapterManager.getAdapter('scheduling');
+      assertExists(adapter);
     });
+  });
 
-    describe('error', function () {
-        it('create with adapter, but missing fn\'s', function () {
-            scope.adapter = schedulingPath + 'bad-adapter.js';
-            const jsFile = `
+  describe('error', function () {
+    it("create with adapter, but missing fn's", function () {
+      scope.adapter = schedulingPath + 'bad-adapter.js';
+      const jsFile = `
                 const {SchedulingBase} = require('@tryghost/adapter-base-scheduling');
                 module.exports = class BadAdapter extends SchedulingBase {
                   schedule() {}
                 }
-            `
+            `;
 
-            fs.writeFileSync(scope.adapter, jsFile);
+      fs.writeFileSync(scope.adapter, jsFile);
 
-            configUtils.set({
-                scheduling: {
-                    active: 'bad-adapter'
-                }
-            });
+      configUtils.set({
+        scheduling: {
+          active: 'bad-adapter',
+        },
+      });
 
-            assert.throws(
-                () => adapterManager.getAdapter('scheduling'),
-                (err) => {
-                    assertExists(err);
-                    assert.equal(err.errorType, 'IncorrectUsageError');
-                    return true;
-                }
-            );
-        });
+      assert.throws(
+        () => adapterManager.getAdapter('scheduling'),
+        (err) => {
+          assertExists(err);
+          assert.equal(err.errorType, 'IncorrectUsageError');
+          return true;
+        },
+      );
     });
+  });
 });

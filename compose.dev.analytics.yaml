@@ -5,15 +5,19 @@
 
 services:
   analytics:
-    image: ghost/traffic-analytics:1.0.336@sha256:13ca3b62c1334fba8fc3c9486290ef42d1f8fb6c628e19dd75356f30cea9733d
+    image: ghost/traffic-analytics:1.0.439@sha256:1b597033cec3662f361e826d5ccccdbe3d90dc40c3e0450649650b20fae1b2b8
     container_name: ghost-dev-analytics
     platform: linux/amd64
-    command: ["node", "--enable-source-maps", "dist/server.js"]
-    entrypoint: ["/app/entrypoint.sh"]
+    command: ['node', '--enable-source-maps', 'dist/server.js']
+    entrypoint: ['/app/entrypoint.sh']
     expose:
-      - "3000"
+      - '3000'
     healthcheck:
-      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3000').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))\""]
+      test:
+        [
+          'CMD-SHELL',
+          'node -e "fetch(''http://localhost:3000'').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"',
+        ]
       interval: 30s
       retries: 5
       start_period: 120s
@@ -31,14 +35,17 @@ services:
         condition: service_completed_successfully
 
   tinybird-local:
-    image: tinybirdco/tinybird-local:latest@sha256:cf9de0516700eea366161181e74cae943f1a7310e6f2cc4f5762cb1777ed3fb3
+    image: tinybirdco/tinybird-local:latest@sha256:b2ce4910a5e92c97e0dbe77e08d3507c04837b8af88dd215715890dac54bff97
     container_name: ghost-dev-tinybird
     platform: linux/amd64
     stop_grace_period: 2s
     ports:
-      - "7181:7181"
+      - '7181:7181'
+    volumes:
+      - tinybird-clickhouse:/var/lib/clickhouse
+      - tinybird-metadata:/redis-data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:7181/v0/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:7181/v0/health']
       interval: 30s
       timeout: 5s
       retries: 5
@@ -46,12 +53,12 @@ services:
       start_interval: 1s
 
   tb-cli:
-    build:
+    build: &tb-cli-build
       context: ./
       dockerfile: docker/tb-cli/Dockerfile
     container_name: ghost-dev-tb-cli
     working_dir: /home/tinybird
-    environment:
+    environment: &tb-cli-environment
       - TB_HOST=http://tinybird-local:7181
       - TB_LOCAL_HOST=tinybird-local
     volumes:
@@ -61,6 +68,19 @@ services:
       tinybird-local:
         condition: service_healthy
 
+  tb-watch:
+    build: *tb-cli-build
+    container_name: ghost-dev-tb-watch
+    working_dir: /home/tinybird
+    # Keep initialization in tb-cli so Ghost can wait for it to finish.
+    entrypoint: ['tb', '--local', 'dev']
+    environment: *tb-cli-environment
+    volumes:
+      - ./ghost/core/core/server/data/tinybird:/home/tinybird
+    depends_on:
+      tb-cli:
+        condition: service_completed_successfully
+
   ghost-dev:
     volumes:
       # Mount shared-config volume to access Tinybird tokens created by tb-cli
@@ -68,7 +88,7 @@ services:
     environment:
       # Analytics configuration
       analytics__url: http://analytics:3000
-      analytics__enabled: "true"
+      analytics__enabled: 'true'
       # Tinybird configuration
       # These static values are set here; workspaceId and adminToken are sourced from
       # /mnt/shared-config/.env.tinybird by docker/ghost-dev/entrypoint.sh
@@ -86,5 +106,5 @@ services:
 
 volumes:
   shared-config:
-
-
+  tinybird-clickhouse:
+  tinybird-metadata:

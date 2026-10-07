@@ -1,6 +1,7 @@
 import loginAsRole from '../../helpers/login-as-role';
 import moment from 'moment-timezone';
-import {blur, click, fillIn, find, findAll, triggerEvent, waitFor} from '@ember/test-helpers';
+import sinon from 'sinon';
+import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent, waitFor, waitUntil} from '@ember/test-helpers';
 import {clickTrigger, removeMultipleOption, selectChoose} from 'ember-power-select/test-support/helpers';
 import {disableMailgun, enableMailgun} from '../../helpers/mailgun';
 import {disableMembers, enableMembers} from '../../helpers/members';
@@ -33,7 +34,7 @@ function lexicalWithPublicPreview({before = 'Public preview content', after = 'F
 }
 
 describe('Acceptance: Publish flow', function () {
-    let hooks = setupApplicationTest();
+    const hooks = setupApplicationTest();
     setupMirage(hooks);
 
     beforeEach(function () {
@@ -224,25 +225,22 @@ describe('Acceptance: Publish flow', function () {
         expect(find('[data-test-button="confirm-publish"]'), 'publish button text')
             .to.have.rendered.trimmed.text('Publish post, right now');
 
+        const navigate = sinon.stub(this.owner.lookup('route:posts'), '_navigateToReactRoute');
+
         await click('[data-test-button="confirm-publish"]');
 
         expect(post.status, 'post status after publish').to.equal('published');
 
-        expect(find('[data-test-publish-flow="complete"]'), 'complete step').to.exist;
-        expect(find('[data-test-complete-title]'), 'complete title').to.have.rendered.trimmed.text('Boom! It\'s out there.\nThat\'s 1 post published.');
-        expect(find('[data-test-complete-bookmark]'), 'bookmark card').to.exist;
+        // publishing hands over to the React posts list
+        expect(navigate.calledOnceWith('/posts'), 'navigated to the React posts list').to.be.true;
+        expect(currentRouteName(), 'route after publishing').to.equal('react-fallback');
 
         await visit(`/editor/post/${post.id}`);
 
         // "revert to draft" only shown for scheduled posts
         expect(find('[data-test-button="revert-to-draft"]'), 'revert-to-draft button').to.not.exist;
 
-        // publish/preview buttons are hidden on complete step
-        expect(find('[data-test-button="publish-flow-preview"]'), 'preview button on complete step').to.not.exist;
-        expect(find('[data-test-button="publish-flow-publish"]'), 'publish button on complete step').to.not.exist;
-
-        await click('[data-test-button="close-publish-flow"]');
-
+        expect(find('[data-test-modal="publish-flow"]'), 'publish flow modal after publishing').to.not.exist;
         expect(find('[data-test-button="publish-flow"]'), 'publish button after publishing').to.not.exist;
         expect(find('[data-test-button="update-flow"]'), 'update button after publishing').to.exist;
 
@@ -376,11 +374,12 @@ describe('Acceptance: Publish flow', function () {
             expect(find('[data-test-button="confirm-publish"]')).to.have.rendered.trimmed
                 .text('Publish & send, right now');
 
+            const navigate = sinon.stub(this.owner.lookup('route:posts'), '_navigateToReactRoute');
+
             await click('[data-test-button="confirm-publish"]');
 
-            // complete text has right count
-            expect(find('[data-test-complete-title]')).to.contain.rendered
-                .text('Boom! It\'s out there.\nThat\'s 1 post published.');
+            expect(post.status, 'post status after publish').to.equal('published');
+            expect(navigate.calledOnceWith('/posts'), 'navigated to the React posts list').to.be.true;
         });
 
         it('can publish+send with multiple newsletters', async function () {
@@ -784,7 +783,61 @@ describe('Acceptance: Publish flow', function () {
         });
 
         it('handles server error when confirming');
-        it('handles email sending error');
+
+        it('uses the analytics sending flow when improved sending UI is enabled', async function () {
+            enableLabsFlag(this.server, 'improveSendingUI');
+
+            await loginAsRole('Administrator', this.server);
+            const post = this.server.create('post', {status: 'draft'});
+            const email = this.server.create('email', {status: 'pending'});
+
+            this.server.put('/posts/:id/', function ({posts}, {params}) {
+                return posts.find(params.id).update({
+                    status: 'published',
+                    email
+                });
+            });
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+            await click('[data-test-button="continue"]');
+            await click('[data-test-button="confirm-publish"]');
+
+            await waitUntil(() => currentURL() === `/posts/analytics/${post.id}`);
+            expect(find('[data-test-modal="publish-flow"]'), 'publish flow closed after save').not.to.exist;
+            expect(email.status, 'legacy poll did not reload the failed email').to.equal('pending');
+        });
+
+        it('preserves the legacy email failure flow when improved sending UI is disabled', async function () {
+            await loginAsRole('Administrator', this.server);
+            const post = this.server.create('post', {status: 'draft'});
+            const email = this.server.create('email', {status: 'pending'});
+
+            this.server.put('/posts/:id/', function ({posts}, {params}) {
+                return posts.find(params.id).update({
+                    status: 'published',
+                    email
+                });
+            });
+            this.server.get('/posts/:id/', function ({posts}, {params}) {
+                const savedPost = posts.find(params.id);
+                if (savedPost.status === 'published') {
+                    email.update({
+                        status: 'failed',
+                        error: 'Mailgun rejected the batch.'
+                    });
+                }
+                return savedPost;
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+            await click('[data-test-button="continue"]');
+            await click('[data-test-button="confirm-publish"]');
+
+            await waitFor('.gh-publish-title .red');
+            expect(find('.gh-publish-confirmation'), 'email error')
+                .to.contain.trimmed.text('Mailgun rejected the batch.');
+        });
 
         it('defaults to publish-only when default recipients is "Usually nobody"', async function () {
             // Set default recipients to "Usually nobody" (filter with null filter)

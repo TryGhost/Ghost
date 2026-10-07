@@ -1,31 +1,11 @@
 {
   "name": "ghost-monorepo",
   "version": "0.0.0-private",
-  "description": "The professional publishing platform",
   "private": true,
-  "packageManager": "pnpm@11.21.0+sha512.521705bce689924eac72f5a3587122f362689ef6571e55ba80076fd637c11132ecffada26fad4ea79c485bfddbfd3d5a2a5b05805a77e893de71ec8a6cca3bb1",
-  "engines": {
-    "node": "^22.23.1"
-  },
-  "devEngines": {
-    "runtime": {
-      "name": "node",
-      "version": "22.23.1",
-      "onFail": "download"
-    }
-  },
-  "repository": "https://github.com/TryGhost/Ghost",
-  "author": "Ghost Foundation",
+  "description": "The professional publishing platform",
   "license": "MIT",
-  "monorepo": {
-    "public": false,
-    "internalPackages": true,
-    "repo": "https://github.com/TryGhost/Ghost",
-    "scope": "@tryghost"
-  },
-  "eslintIgnore": [
-    "**/node_modules/**"
-  ],
+  "author": "Ghost Foundation",
+  "repository": "https://github.com/TryGhost/Ghost",
   "scripts": {
     "archive": "pnpm nx run ghost:archive",
     "build:production": "pnpm nx run ghost:build:tsc && pnpm nx run ghost:build:assets && pnpm nx run @tryghost/admin:build",
@@ -35,10 +15,12 @@
     "dev": "pnpm nx run ghost-monorepo:docker:dev",
     "dev:sqlite": "DEV_COMPOSE_FILES='-f compose.dev.sqlite.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:mailgun": "DEV_COMPOSE_FILES='-f compose.dev.mailgun.yaml' pnpm nx run ghost-monorepo:docker:dev",
+    "dev:fake-mailgun": "DEV_COMPOSE_FILES='-f compose.dev.fake-mailgun.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:lexical": "EDITOR_URL=http://localhost:2368/ghost/assets/koenig-lexical/ pnpm nx run ghost-monorepo:docker:dev:lexical",
     "dev:public": "pnpm nx run ghost-monorepo:docker:dev:public",
     "dev:full": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev:public",
     "dev:analytics": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' pnpm nx run ghost-monorepo:docker:dev",
+    "dev:analytics:local": "ANALYTICS_PROXY_TARGET=traffic-analytics-local:3000 DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:storage": "DEV_COMPOSE_FILES='-f compose.dev.storage.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:stripe": "./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev",
     "dev:all": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev",
@@ -46,15 +28,15 @@
     "fix": "pnpm store prune && rimraf -g '**/node_modules' && pnpm install && pnpm nx reset",
     "create-package": "node ./scripts/create-package.js",
     "knex-migrator": "pnpm --filter ghost run knex-migrator",
-    "setup": "pnpm install && git submodule update --init --recursive",
+    "bootstrap": "pnpm install && git submodule update --init --recursive && git config --local blame.ignoreRevsFile .git-blame-ignore-revs",
     "migrate:db": "docker exec --workdir /home/ghost/ghost/core ghost-dev pnpm knex-migrator migrate",
     "rollback:db": "docker exec --workdir /home/ghost/ghost/core ghost-dev pnpm knex-migrator rollback",
     "reset:db": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && pnpm knex-migrator reset && pnpm knex-migrator init'",
     "reset:db:volume": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down && docker volume rm ghost-dev_mysql-data",
-    "reset:data": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node index.js generate-data --clear-database --quantities members:1000,posts:100 --seed 123'",
-    "reset:data:empty": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node index.js generate-data --clear-database --quantities members:0,posts:0 --seed 123'",
-    "reset:data:xxl": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node index.js generate-data --clear-database --quantities members:2000000,posts:0,emails:0,members_stripe_customers:0,members_login_events:0,members_status_events:0 --seed 123'",
-    "seed:multi-sub-scenarios": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node scripts/seed-multi-sub-scenarios.js'",
+    "reset:data": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node --conditions=source --import=tsx index.js generate-data --clear-database --quantities members:1000,posts:100 --seed 123'",
+    "reset:data:empty": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node --conditions=source --import=tsx index.js generate-data --clear-database --quantities members:0,posts:0 --seed 123'",
+    "reset:data:xxl": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node --conditions=source --import=tsx index.js generate-data --clear-database --quantities members:2000000,posts:0,emails:0,members_stripe_customers:0,members_login_events:0,members_status_events:0 --seed 123'",
+    "seed:multi-sub-scenarios": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node --conditions=source --import=tsx scripts/seed-multi-sub-scenarios.js'",
     "docker:build": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} build",
     "docker:build:verbose": "docker compose --progress=plain -f compose.dev.yaml ${DEV_COMPOSE_FILES} build",
     "docker:clean": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile all down -v --remove-orphans --rmi local",
@@ -70,10 +52,11 @@
     "lint:boundaries": "depcruise ghost/core/core apps --config .dependency-cruiser.cjs",
     "lint:packages": "node scripts/check-internal-packages.js",
     "lint:docs": "pnpm lint:agent-skills && pnpm lint:agent-guidance && pnpm lint:markdown && pnpm lint:doc-links",
-    "format": "oxfmt",
+    "format": "node scripts/format.js",
     "format:check": "oxfmt --check",
-    "check": "pnpm lint && pnpm test",
+    "check": "pnpm format:check && pnpm lint && pnpm test",
     "test": "pnpm nx run-many -t test --exclude @tryghost/e2e --exclude ghost-admin",
+    "test:types": "pnpm nx run-many -t test:types",
     "test:unit": "pnpm nx run-many -t test:unit",
     "test:watch": "vitest",
     "test:e2e": "pnpm --filter @tryghost/e2e test",
@@ -85,8 +68,9 @@
     "main:submodules": "git submodule sync && git submodule update && git submodule foreach \"git checkout main && git pull ${GHOST_UPSTREAM:-origin} main\"",
     "preinstall": "node ./scripts/enforce-package-manager.js",
     "prepare": "husky .github/hooks",
-    "tb": "tb local start && cd ghost/core/core/server/data/tinybird && tb dev",
-    "tb:install": "curl https://tinybird.co | sh",
+    "query-parameter-policy:export": "pnpm --filter ghost query-parameter-policy:export",
+    "tb": "docker compose -f compose.dev.yaml -f compose.dev.analytics.yaml run --rm --no-deps --entrypoint tb tb-cli --local",
+    "tb:test": "pnpm tb test run",
     "data:analytics:generate": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js generate",
     "data:analytics:clear": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js clear",
     "release": "node scripts/release.js"
@@ -101,7 +85,7 @@
     "knip": "catalog:",
     "lint-staged": "catalog:",
     "markdownlint-cli2": "catalog:",
-    "nx": "23.1.1",
+    "nx": "23.2.0",
     "oxfmt": "catalog:",
     "remark-cli": "catalog:",
     "remark-validate-links": "catalog:",
@@ -110,6 +94,26 @@
     "shell-quote": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "eslintIgnore": [
+    "**/node_modules/**"
+  ],
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "22.23.3",
+      "onFail": "download"
+    }
+  },
+  "engines": {
+    "node": "^22.23.1 || ^24.20.0"
+  },
+  "packageManager": "pnpm@12.8.2+sha512.a5941679663d952c5f0ecc38ba98af98b4dc01b95780354f6894f2f873973cef2f7e2989d7db3ee5393938ae21f62fe06bcdf685d475ddad829a62095d2b8b11",
+  "monorepo": {
+    "public": false,
+    "internalPackages": true,
+    "repo": "https://github.com/TryGhost/Ghost",
+    "scope": "@tryghost"
   },
   "nx": {
     "includedScripts": [],

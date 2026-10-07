@@ -1,17 +1,18 @@
-import type {ReadonlyDeep} from 'type-fest';
-import type {StaffTextBaseData} from './types';
+import type { ReadonlyDeep } from 'type-fest';
+import type { StaffTextBaseData } from './types';
 
-type DonationTextData = StaffTextBaseData & ReadonlyDeep<{
+type DonationTextData = StaffTextBaseData &
+  ReadonlyDeep<{
     donation: {
-        amount: string;
-        name: string;
-        donationMessage: string | null;
+      amount: string;
+      name: string;
+      donationMessage: string | null;
     };
-}>;
+  }>;
 
 export function renderText(data: DonationTextData): string {
-    // Be careful when you indent the email, because whitespaces are visible in emails!
-    return `
+  // Be careful when you indent the email, because whitespaces are visible in emails!
+  return `
 Cha-ching!
 
 You received a one-time payment from of ${data.donation.amount} from "${data.donation.name}".

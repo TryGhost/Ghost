@@ -5,4 +5,4 @@ services:
 
   ghost-dev-gateway:
     ports: !override
-      - "2370:80"
+      - '2370:80'

@@ -10,16 +10,16 @@
 const hbs = require('./theme-engine/engine');
 
 module.exports = {
-    hbs: hbs,
-    SafeString: hbs.SafeString,
-    escapeExpression: hbs.escapeExpression,
-    // The local template thing, should this be merged with the channels one?
-    templates: require('./theme-engine/handlebars/template'),
+  hbs: hbs,
+  SafeString: hbs.SafeString,
+  escapeExpression: hbs.escapeExpression,
+  // The local template thing, should this be merged with the channels one?
+  templates: require('./theme-engine/handlebars/template'),
 
-    // Theme i18n
-    // @TODO: this should live somewhere else...
-    themeI18n: require('./theme-engine/i18n'),
-    themeI18next: require('./theme-engine/i18next'),
-    // TODO: these need a more sensible home
-    localUtils: require('./theme-engine/handlebars/utils')
+  // Theme i18n
+  // @TODO: this should live somewhere else...
+  themeI18n: require('./theme-engine/i18n'),
+  themeI18next: require('./theme-engine/i18next'),
+  // TODO: these need a more sensible home
+  localUtils: require('./theme-engine/handlebars/utils'),
 };

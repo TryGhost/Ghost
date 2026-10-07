@@ -1,9 +1,9 @@
 const ghostBookshelf = require('./base');
 
 const Job = ghostBookshelf.Model.extend({
-    tableName: 'jobs'
+  tableName: 'jobs',
 });
 
 module.exports = {
-    Job: ghostBookshelf.model('Job', Job)
+  Job: ghostBookshelf.model('Job', Job),
 };

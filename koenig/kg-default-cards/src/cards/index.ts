@@ -1,4 +1,4 @@
-import type {Card} from '../types.js';
+import type { Card } from '../types.js';
 import bookmarkCard from './bookmark.js';
 import codeCard from './code.js';
 import emailCard from './email.js';
@@ -21,26 +21,26 @@ import headerCard from './header.js';
 import beforeAfterCard from './before-after.js';
 
 const cards: Card[] = [
-    bookmarkCard,
-    codeCard,
-    emailCard,
-    emailCtaCard,
-    embedCard,
-    galleryCard,
-    hrCard,
-    htmlCard,
-    imageCard,
-    markdownCard,
-    paywallCard,
-    buttonCard,
-    calloutCard,
-    productCard,
-    toggleCard,
-    audioCard,
-    videoCard,
-    fileCard,
-    headerCard,
-    beforeAfterCard
+  bookmarkCard,
+  codeCard,
+  emailCard,
+  emailCtaCard,
+  embedCard,
+  galleryCard,
+  hrCard,
+  htmlCard,
+  imageCard,
+  markdownCard,
+  paywallCard,
+  buttonCard,
+  calloutCard,
+  productCard,
+  toggleCard,
+  audioCard,
+  videoCard,
+  fileCard,
+  headerCard,
+  beforeAfterCard,
 ];
 
-export {cards};
+export { cards };

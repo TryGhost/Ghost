@@ -1,492 +1,573 @@
 const assert = require('node:assert/strict');
-const {assertObjectMatches} = require('../../utils/assertions');
-const {agentProvider, fixtureManager, configUtils} = require('../../utils/e2e-framework');
+const { assertObjectMatches } = require('../../utils/assertions');
+const { agentProvider, fixtureManager, configUtils } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const urlServiceUtils = require('../../utils/url-service-utils');
 const memberAttributionService = require('../../../core/server/services/member-attribution');
 const urlUtils = require('../../../core/shared/url-utils').default;
 
 describe('Member Attribution Service', function () {
-    beforeAll(async function () {
-        await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init('posts');
+  beforeAll(async function () {
+    await agentProvider.getAdminAPIAgent();
+    await fixtureManager.init('posts');
+  });
+
+  /**
+   * Test that getAttribution correctly resolves all model types that are supported
+   */
+  describe('getAttribution for models', function () {
+    describe('without subdirectory', function () {
+      it('resolves urls', async function () {
+        const subdomainRelative = '/my-static-page/';
+        const url = urlUtils.createUrl(subdomainRelative, false);
+        const absoluteUrl = urlUtils.createUrl(subdomainRelative, true);
+
+        const attribution = await memberAttributionService.service.getAttribution([
+          {
+            path: url,
+            time: Date.now(),
+          },
+        ]);
+        assertObjectMatches(attribution, {
+          id: null,
+          url: subdomainRelative,
+          type: 'url',
+        });
+
+        assertObjectMatches(await attribution.fetchResource(), {
+          id: null,
+          url: absoluteUrl,
+          type: 'url',
+          title: subdomainRelative,
+        });
+      });
+
+      it('resolves posts', async function () {
+        const id = fixtureManager.get('posts', 0).id;
+        const post = await models.Post.where('id', id).fetch({ require: true });
+        const url = urlServiceUtils.urlFor(post, 'posts', {
+          absolute: false,
+          withSubdirectory: true,
+        });
+
+        const attribution = await memberAttributionService.service.getAttribution([
+          {
+            path: url,
+            time: Date.now(),
+          },
+        ]);
+        assertObjectMatches(attribution, {
+          id: post.id,
+          url,
+          type: 'post',
+        });
+
+        const absoluteUrl = urlServiceUtils.urlFor(post, 'posts', {
+          absolute: true,
+          withSubdirectory: true,
+        });
+
+        assertObjectMatches(await attribution.fetchResource(), {
+          id: post.id,
+          url: absoluteUrl,
+          type: 'post',
+          title: post.get('title'),
+        });
+      });
+
+      it('resolves removed resources', async function () {
+        const id = fixtureManager.get('posts', 0).id;
+        const post = await models.Post.where('id', id).fetch({ require: true });
+        const url = urlServiceUtils.urlFor(post, 'posts', {
+          absolute: false,
+          withSubdirectory: true,
+        });
+        const urlWithoutSubdirectory = urlServiceUtils.urlFor(post, 'posts', {
+          absolute: false,
+          withSubdirectory: false,
+        });
+        const absoluteUrl = urlServiceUtils.urlFor(post, 'posts', {
+          absolute: true,
+          withSubdirectory: true,
+        });
+
+        const attribution = await memberAttributionService.service.getAttribution([
+          {
+            path: url,
+            time: Date.now(),
+          },
+        ]);
+
+        // Without subdirectory
+        assertObjectMatches(attribution, {
+          id: post.id,
+          url: urlWithoutSubdirectory,
+          type: 'post',
+        });
+
+        // Unpublish this post
+        await models.Post.edit({ status: 'draft' }, { id });
+
+        assertObjectMatches(await attribution.fetchResource(), {
+          id: null,
+          url: absoluteUrl,
+          type: 'url',
+          title: urlWithoutSubdirectory,
+        });
+
+        await models.Post.edit({ status: 'published' }, { id });
+      });
+
+      it('resolves pages', async function () {
+        const id = fixtureManager.get('posts', 5).id;
+        const post = await models.Post.where('id', id).fetch({ require: true });
+        assert.equal(post.get('type'), 'page');
+
+        const url = urlServiceUtils.urlFor(post, 'pages', {
+          absolute: false,
+          withSubdirectory: true,
+        });
+
+        const attribution = await memberAttributionService.service.getAttribution([
+          {
+            path: url,
+            time: Date.now(),
+          },
+        ]);
+        assertObjectMatches(attribution, {
+          id: post.id,
+          url,
+          type: 'page',
+        });
+
+        const absoluteUrl = urlServiceUtils.urlFor(post, 'pages', {
+          absolute: true,
+          withSubdirectory: true,
+        });
+
+        assertObjectMatches(await attribution.fetchResource(), {
+          id: post.id,
+          url: absoluteUrl,
+          type: 'page',
+          title: post.get('title'),
+        });
+      });
+
+      it('resolves tags', async function () {
+        const id = fixtureManager.get('tags', 0).id;
+        const tag = await models.Tag.where('id', id).fetch({ require: true });
+        const url = urlServiceUtils.urlFor(tag, 'tags', {
+          absolute: false,
+          withSubdirectory: true,
+        });
+
+        const attribution = await memberAttributionService.service.getAttribution([
+          {
+            path: url,
+            time: Date.now(),
+          },
+        ]);
+        assertObjectMatches(attribution, {
+          id: tag.id,
+          url,
+          type: 'tag',
+        });
+
+        const absoluteUrl = urlServiceUtils.urlFor(tag, 'tags', {
+          absolute: true,
+          withSubdirectory: true,
+        });
+
+        assertObjectMatches(await attribution.fetchResource(), {
+          id: tag.id,
+          url: absoluteUrl,
+          type: 'tag',
+          title: tag.get('name'),
+        });
+      });
+
+      it('resolves authors', async function () {
+        const id = fixtureManager.get('users', 0).id;
+        const author = await models.User.where('id', id).fetch({ require: true });
+        const url = urlServiceUtils.urlFor(author, 'authors', {
+          absolute: false,
+          withSubdirectory: true,
+        });
+
+        const attribution = await memberAttributionService.service.getAttribution([
+          {
+            path: url,
+            time: Date.now(),
+          },
+        ]);
+        assertObjectMatches(attribution, {
+          id: author.id,
+          url,
+          type: 'author',
+        });
+
+        const absoluteUrl = urlServiceUtils.urlFor(author, 'authors', {
+          absolute: true,
+          withSubdirectory: true,
+        });
+
+        assertObjectMatches(await attribution.fetchResource(), {
+          id: author.id,
+          url: absoluteUrl,
+          type: 'author',
+          title: author.get('name'),
+        });
+      });
+
+      it('resolves email-only posts via id and type', async function () {
+        // Simulates the offer link flow: member-attribution.js extracts
+        // attribution_id and attribution_type from the URL search params
+        // and stores them as {id, type} entries in the URL history
+        const id = fixtureManager.get('posts', 0).id;
+        const post = await models.Post.where('id', id).fetch({ require: true });
+
+        // Make the post email-only (must set email_only flag first,
+        // otherwise the model rejects the 'sent' status)
+        await models.Post.edit({ posts_meta: { email_only: true }, status: 'published' }, { id });
+        await models.Post.edit({ status: 'sent' }, { id });
+
+        try {
+          const attribution = await memberAttributionService.service.getAttribution([
+            {
+              id: post.id,
+              type: 'post',
+              time: Date.now(),
+            },
+          ]);
+
+          // Should resolve to the post, not fall through to homepage
+          assertObjectMatches(attribution, {
+            id: post.id,
+            url: `/email/${post.get('uuid')}/`,
+            type: 'post',
+          });
+
+          const resource = await attribution.fetchResource();
+          const expectedUrl = urlUtils.createUrl(`/email/${post.get('uuid')}/`, true);
+
+          assertObjectMatches(resource, {
+            id: post.id,
+            url: expectedUrl,
+            type: 'post',
+            title: post.get('title'),
+          });
+        } finally {
+          await models.Post.edit(
+            { posts_meta: { email_only: false }, status: 'published' },
+            { id },
+          );
+        }
+      });
+
+      it('does not resolve draft posts via id and type', async function () {
+        const id = fixtureManager.get('posts', 0).id;
+        const post = await models.Post.where('id', id).fetch({ require: true });
+
+        await models.Post.edit({ status: 'draft' }, { id });
+
+        try {
+          const attribution = await memberAttributionService.service.getAttribution([
+            {
+              id: post.id,
+              type: 'post',
+              time: Date.now(),
+            },
+          ]);
+
+          // Draft posts should not resolve — falls through to null attribution
+          assertObjectMatches(attribution, {
+            id: null,
+            type: null,
+          });
+        } finally {
+          await models.Post.edit({ status: 'published' }, { id });
+        }
+      });
     });
 
-    /**
-     * Test that getAttribution correctly resolves all model types that are supported
-     */
-    describe('getAttribution for models', function () {
-        describe('without subdirectory', function () {
-            it('resolves urls', async function () {
-                const subdomainRelative = '/my-static-page/';
-                const url = urlUtils.createUrl(subdomainRelative, false);
-                const absoluteUrl = urlUtils.createUrl(subdomainRelative, true);
+    describe('with subdirectory', function () {
+      beforeEach(function () {
+        configUtils.set('url', 'https://siteurl.com/subdirectory/');
+      });
 
-                const attribution = await memberAttributionService.service.getAttribution([
-                    {
-                        path: url,
-                        time: Date.now()
-                    }
-                ]);
-                assertObjectMatches(attribution, {
-                    id: null,
-                    url: subdomainRelative,
-                    type: 'url'
-                });
+      afterEach(async function () {
+        await configUtils.restore();
+      });
 
-                assertObjectMatches(await attribution.fetchResource(), {
-                    id: null,
-                    url: absoluteUrl,
-                    type: 'url',
-                    title: subdomainRelative
-                });
-            });
+      it('resolves urls', async function () {
+        const subdomainRelative = '/my-static-page/';
+        const url = urlUtils.createUrl(subdomainRelative, false);
+        const absoluteUrl = urlUtils.createUrl(subdomainRelative, true);
 
-            it('resolves posts', async function () {
-                const id = fixtureManager.get('posts', 0).id;
-                const post = await models.Post.where('id', id).fetch({require: true});
-                const url = urlServiceUtils.urlFor(post, 'posts', {absolute: false, withSubdirectory: true});
-
-                const attribution = await memberAttributionService.service.getAttribution([
-                    {
-                        path: url,
-                        time: Date.now()
-                    }
-                ]);
-                assertObjectMatches(attribution, {
-                    id: post.id,
-                    url,
-                    type: 'post'
-                });
-
-                const absoluteUrl = urlServiceUtils.urlFor(post, 'posts', {absolute: true, withSubdirectory: true});
-
-                assertObjectMatches(await attribution.fetchResource(), {
-                    id: post.id,
-                    url: absoluteUrl,
-                    type: 'post',
-                    title: post.get('title')
-                });
-            });
-
-            it('resolves removed resources', async function () {
-                const id = fixtureManager.get('posts', 0).id;
-                const post = await models.Post.where('id', id).fetch({require: true});
-                const url = urlServiceUtils.urlFor(post, 'posts', {absolute: false, withSubdirectory: true});
-                const urlWithoutSubdirectory = urlServiceUtils.urlFor(post, 'posts', {absolute: false, withSubdirectory: false});
-                const absoluteUrl = urlServiceUtils.urlFor(post, 'posts', {absolute: true, withSubdirectory: true});
-
-                const attribution = await memberAttributionService.service.getAttribution([
-                    {
-                        path: url,
-                        time: Date.now()
-                    }
-                ]);
-
-                // Without subdirectory
-                assertObjectMatches(attribution, {
-                    id: post.id,
-                    url: urlWithoutSubdirectory,
-                    type: 'post'
-                });
-
-                // Unpublish this post
-                await models.Post.edit({status: 'draft'}, {id});
-
-                assertObjectMatches(await attribution.fetchResource(), {
-                    id: null,
-                    url: absoluteUrl,
-                    type: 'url',
-                    title: urlWithoutSubdirectory
-                });
-
-                await models.Post.edit({status: 'published'}, {id});
-            });
-
-            it('resolves pages', async function () {
-                const id = fixtureManager.get('posts', 5).id;
-                const post = await models.Post.where('id', id).fetch({require: true});
-                assert.equal(post.get('type'), 'page');
-
-                const url = urlServiceUtils.urlFor(post, 'pages', {absolute: false, withSubdirectory: true});
-
-                const attribution = await memberAttributionService.service.getAttribution([
-                    {
-                        path: url,
-                        time: Date.now()
-                    }
-                ]);
-                assertObjectMatches(attribution, {
-                    id: post.id,
-                    url,
-                    type: 'page'
-                });
-
-                const absoluteUrl = urlServiceUtils.urlFor(post, 'pages', {absolute: true, withSubdirectory: true});
-
-                assertObjectMatches(await attribution.fetchResource(), {
-                    id: post.id,
-                    url: absoluteUrl,
-                    type: 'page',
-                    title: post.get('title')
-                });
-            });
-
-            it('resolves tags', async function () {
-                const id = fixtureManager.get('tags', 0).id;
-                const tag = await models.Tag.where('id', id).fetch({require: true});
-                const url = urlServiceUtils.urlFor(tag, 'tags', {absolute: false, withSubdirectory: true});
-
-                const attribution = await memberAttributionService.service.getAttribution([
-                    {
-                        path: url,
-                        time: Date.now()
-                    }
-                ]);
-                assertObjectMatches(attribution, {
-                    id: tag.id,
-                    url,
-                    type: 'tag'
-                });
-
-                const absoluteUrl = urlServiceUtils.urlFor(tag, 'tags', {absolute: true, withSubdirectory: true});
-
-                assertObjectMatches(await attribution.fetchResource(), {
-                    id: tag.id,
-                    url: absoluteUrl,
-                    type: 'tag',
-                    title: tag.get('name')
-                });
-            });
-
-            it('resolves authors', async function () {
-                const id = fixtureManager.get('users', 0).id;
-                const author = await models.User.where('id', id).fetch({require: true});
-                const url = urlServiceUtils.urlFor(author, 'authors', {absolute: false, withSubdirectory: true});
-
-                const attribution = await memberAttributionService.service.getAttribution([
-                    {
-                        path: url,
-                        time: Date.now()
-                    }
-                ]);
-                assertObjectMatches(attribution, {
-                    id: author.id,
-                    url,
-                    type: 'author'
-                });
-
-                const absoluteUrl = urlServiceUtils.urlFor(author, 'authors', {absolute: true, withSubdirectory: true});
-
-                assertObjectMatches(await attribution.fetchResource(), {
-                    id: author.id,
-                    url: absoluteUrl,
-                    type: 'author',
-                    title: author.get('name')
-                });
-            });
-
-            it('resolves email-only posts via id and type', async function () {
-                // Simulates the offer link flow: member-attribution.js extracts
-                // attribution_id and attribution_type from the URL search params
-                // and stores them as {id, type} entries in the URL history
-                const id = fixtureManager.get('posts', 0).id;
-                const post = await models.Post.where('id', id).fetch({require: true});
-
-                // Make the post email-only (must set email_only flag first,
-                // otherwise the model rejects the 'sent' status)
-                await models.Post.edit({posts_meta: {email_only: true}, status: 'published'}, {id});
-                await models.Post.edit({status: 'sent'}, {id});
-
-                try {
-                    const attribution = await memberAttributionService.service.getAttribution([
-                        {
-                            id: post.id,
-                            type: 'post',
-                            time: Date.now()
-                        }
-                    ]);
-
-                    // Should resolve to the post, not fall through to homepage
-                    assertObjectMatches(attribution, {
-                        id: post.id,
-                        url: `/email/${post.get('uuid')}/`,
-                        type: 'post'
-                    });
-
-                    const resource = await attribution.fetchResource();
-                    const expectedUrl = urlUtils.createUrl(`/email/${post.get('uuid')}/`, true);
-
-                    assertObjectMatches(resource, {
-                        id: post.id,
-                        url: expectedUrl,
-                        type: 'post',
-                        title: post.get('title')
-                    });
-                } finally {
-                    await models.Post.edit({posts_meta: {email_only: false}, status: 'published'}, {id});
-                }
-            });
-
-            it('does not resolve draft posts via id and type', async function () {
-                const id = fixtureManager.get('posts', 0).id;
-                const post = await models.Post.where('id', id).fetch({require: true});
-
-                await models.Post.edit({status: 'draft'}, {id});
-
-                try {
-                    const attribution = await memberAttributionService.service.getAttribution([
-                        {
-                            id: post.id,
-                            type: 'post',
-                            time: Date.now()
-                        }
-                    ]);
-
-                    // Draft posts should not resolve — falls through to null attribution
-                    assertObjectMatches(attribution, {
-                        id: null,
-                        type: null
-                    });
-                } finally {
-                    await models.Post.edit({status: 'published'}, {id});
-                }
-            });
+        const attribution = await memberAttributionService.service.getAttribution([
+          {
+            path: url,
+            time: Date.now(),
+          },
+        ]);
+        assertObjectMatches(attribution, {
+          id: null,
+          url: subdomainRelative,
+          type: 'url',
         });
 
-        describe('with subdirectory', function () {
-            beforeEach(function () {
-                configUtils.set('url', 'https://siteurl.com/subdirectory/');
-            });
-
-            afterEach(async function () {
-                await configUtils.restore();
-            });
-
-            it('resolves urls', async function () {
-                const subdomainRelative = '/my-static-page/';
-                const url = urlUtils.createUrl(subdomainRelative, false);
-                const absoluteUrl = urlUtils.createUrl(subdomainRelative, true);
-
-                const attribution = await memberAttributionService.service.getAttribution([
-                    {
-                        path: url,
-                        time: Date.now()
-                    }
-                ]);
-                assertObjectMatches(attribution, {
-                    id: null,
-                    url: subdomainRelative,
-                    type: 'url'
-                });
-
-                assertObjectMatches(await attribution.fetchResource(), {
-                    id: null,
-                    url: absoluteUrl,
-                    type: 'url',
-                    title: subdomainRelative
-                });
-            });
-
-            it('resolves posts', async function () {
-                const id = fixtureManager.get('posts', 0).id;
-                const post = await models.Post.where('id', id).fetch({require: true});
-                const url = urlServiceUtils.urlFor(post, 'posts', {absolute: false, withSubdirectory: true});
-                const urlWithoutSubdirectory = urlServiceUtils.urlFor(post, 'posts', {absolute: false, withSubdirectory: false});
-
-                // Check if we are actually testing with subdirectories
-                assert(url.startsWith('/subdirectory/'));
-
-                const attribution = await memberAttributionService.service.getAttribution([
-                    {
-                        path: url,
-                        time: Date.now()
-                    }
-                ]);
-
-                // Without subdirectory
-                assertObjectMatches(attribution, {
-                    id: post.id,
-                    url: urlWithoutSubdirectory,
-                    type: 'post'
-                });
-
-                const absoluteUrl = urlServiceUtils.urlFor(post, 'posts', {absolute: true, withSubdirectory: true});
-
-                assertObjectMatches(await attribution.fetchResource(), {
-                    id: post.id,
-                    url: absoluteUrl,
-                    type: 'post',
-                    title: post.get('title')
-                });
-            });
-
-            it('resolves removed resources', async function () {
-                const id = fixtureManager.get('posts', 0).id;
-                const post = await models.Post.where('id', id).fetch({require: true});
-                const url = urlServiceUtils.urlFor(post, 'posts', {absolute: false, withSubdirectory: true});
-                const urlWithoutSubdirectory = urlServiceUtils.urlFor(post, 'posts', {absolute: false, withSubdirectory: false});
-                const absoluteUrl = urlServiceUtils.urlFor(post, 'posts', {absolute: true, withSubdirectory: true});
-
-                // Check if we are actually testing with subdirectories
-                assert(url.startsWith('/subdirectory/'));
-
-                const attribution = await memberAttributionService.service.getAttribution([
-                    {
-                        path: url,
-                        time: Date.now()
-                    }
-                ]);
-
-                // Without subdirectory
-                assertObjectMatches(attribution, {
-                    id: post.id,
-                    url: urlWithoutSubdirectory,
-                    type: 'post'
-                });
-
-                // Unpublish this post
-                await models.Post.edit({status: 'draft'}, {id});
-
-                assertObjectMatches(await attribution.fetchResource(), {
-                    id: null,
-                    url: absoluteUrl,
-                    type: 'url',
-                    title: urlWithoutSubdirectory
-                });
-            });
-
-            it('resolves pages', async function () {
-                const id = fixtureManager.get('posts', 5).id;
-                const post = await models.Post.where('id', id).fetch({require: true});
-                assert.equal(post.get('type'), 'page');
-
-                const url = urlServiceUtils.urlFor(post, 'pages', {absolute: false, withSubdirectory: true});
-                const urlWithoutSubdirectory = urlServiceUtils.urlFor(post, 'pages', {absolute: false, withSubdirectory: false});
-
-                const attribution = await memberAttributionService.service.getAttribution([
-                    {
-                        path: url,
-                        time: Date.now()
-                    }
-                ]);
-                assertObjectMatches(attribution, {
-                    id: post.id,
-                    url: urlWithoutSubdirectory,
-                    type: 'page'
-                });
-
-                const absoluteUrl = urlServiceUtils.urlFor(post, 'pages', {absolute: true, withSubdirectory: true});
-
-                assertObjectMatches(await attribution.fetchResource(), {
-                    id: post.id,
-                    url: absoluteUrl,
-                    type: 'page',
-                    title: post.get('title')
-                });
-            });
-
-            it('resolves tags', async function () {
-                const id = fixtureManager.get('tags', 0).id;
-                const tag = await models.Tag.where('id', id).fetch({require: true});
-                const url = urlServiceUtils.urlFor(tag, 'tags', {absolute: false, withSubdirectory: true});
-                const urlWithoutSubdirectory = urlServiceUtils.urlFor(tag, 'tags', {absolute: false, withSubdirectory: false});
-
-                const attribution = await memberAttributionService.service.getAttribution([
-                    {
-                        path: url,
-                        time: Date.now()
-                    }
-                ]);
-                assertObjectMatches(attribution, {
-                    id: tag.id,
-                    url: urlWithoutSubdirectory,
-                    type: 'tag'
-                });
-
-                const absoluteUrl = urlServiceUtils.urlFor(tag, 'tags', {absolute: true, withSubdirectory: true});
-
-                assertObjectMatches(await attribution.fetchResource(), {
-                    id: tag.id,
-                    url: absoluteUrl,
-                    type: 'tag',
-                    title: tag.get('name')
-                });
-            });
-
-            it('resolves authors', async function () {
-                const id = fixtureManager.get('users', 0).id;
-                const author = await models.User.where('id', id).fetch({require: true});
-                const url = urlServiceUtils.urlFor(author, 'authors', {absolute: false, withSubdirectory: true});
-                const urlWithoutSubdirectory = urlServiceUtils.urlFor(author, 'authors', {absolute: false, withSubdirectory: false});
-
-                const attribution = await memberAttributionService.service.getAttribution([
-                    {
-                        path: url,
-                        time: Date.now()
-                    }
-                ]);
-                assertObjectMatches(attribution, {
-                    id: author.id,
-                    url: urlWithoutSubdirectory,
-                    type: 'author'
-                });
-
-                const absoluteUrl = urlServiceUtils.urlFor(author, 'authors', {absolute: true, withSubdirectory: true});
-
-                assertObjectMatches(await attribution.fetchResource(), {
-                    id: author.id,
-                    url: absoluteUrl,
-                    type: 'author',
-                    title: author.get('name')
-                });
-            });
+        assertObjectMatches(await attribution.fetchResource(), {
+          id: null,
+          url: absoluteUrl,
+          type: 'url',
+          title: subdomainRelative,
         });
+      });
+
+      it('resolves posts', async function () {
+        const id = fixtureManager.get('posts', 0).id;
+        const post = await models.Post.where('id', id).fetch({ require: true });
+        const url = urlServiceUtils.urlFor(post, 'posts', {
+          absolute: false,
+          withSubdirectory: true,
+        });
+        const urlWithoutSubdirectory = urlServiceUtils.urlFor(post, 'posts', {
+          absolute: false,
+          withSubdirectory: false,
+        });
+
+        // Check if we are actually testing with subdirectories
+        assert(url.startsWith('/subdirectory/'));
+
+        const attribution = await memberAttributionService.service.getAttribution([
+          {
+            path: url,
+            time: Date.now(),
+          },
+        ]);
+
+        // Without subdirectory
+        assertObjectMatches(attribution, {
+          id: post.id,
+          url: urlWithoutSubdirectory,
+          type: 'post',
+        });
+
+        const absoluteUrl = urlServiceUtils.urlFor(post, 'posts', {
+          absolute: true,
+          withSubdirectory: true,
+        });
+
+        assertObjectMatches(await attribution.fetchResource(), {
+          id: post.id,
+          url: absoluteUrl,
+          type: 'post',
+          title: post.get('title'),
+        });
+      });
+
+      it('resolves removed resources', async function () {
+        const id = fixtureManager.get('posts', 0).id;
+        const post = await models.Post.where('id', id).fetch({ require: true });
+        const url = urlServiceUtils.urlFor(post, 'posts', {
+          absolute: false,
+          withSubdirectory: true,
+        });
+        const urlWithoutSubdirectory = urlServiceUtils.urlFor(post, 'posts', {
+          absolute: false,
+          withSubdirectory: false,
+        });
+        const absoluteUrl = urlServiceUtils.urlFor(post, 'posts', {
+          absolute: true,
+          withSubdirectory: true,
+        });
+
+        // Check if we are actually testing with subdirectories
+        assert(url.startsWith('/subdirectory/'));
+
+        const attribution = await memberAttributionService.service.getAttribution([
+          {
+            path: url,
+            time: Date.now(),
+          },
+        ]);
+
+        // Without subdirectory
+        assertObjectMatches(attribution, {
+          id: post.id,
+          url: urlWithoutSubdirectory,
+          type: 'post',
+        });
+
+        // Unpublish this post
+        await models.Post.edit({ status: 'draft' }, { id });
+
+        assertObjectMatches(await attribution.fetchResource(), {
+          id: null,
+          url: absoluteUrl,
+          type: 'url',
+          title: urlWithoutSubdirectory,
+        });
+      });
+
+      it('resolves pages', async function () {
+        const id = fixtureManager.get('posts', 5).id;
+        const post = await models.Post.where('id', id).fetch({ require: true });
+        assert.equal(post.get('type'), 'page');
+
+        const url = urlServiceUtils.urlFor(post, 'pages', {
+          absolute: false,
+          withSubdirectory: true,
+        });
+        const urlWithoutSubdirectory = urlServiceUtils.urlFor(post, 'pages', {
+          absolute: false,
+          withSubdirectory: false,
+        });
+
+        const attribution = await memberAttributionService.service.getAttribution([
+          {
+            path: url,
+            time: Date.now(),
+          },
+        ]);
+        assertObjectMatches(attribution, {
+          id: post.id,
+          url: urlWithoutSubdirectory,
+          type: 'page',
+        });
+
+        const absoluteUrl = urlServiceUtils.urlFor(post, 'pages', {
+          absolute: true,
+          withSubdirectory: true,
+        });
+
+        assertObjectMatches(await attribution.fetchResource(), {
+          id: post.id,
+          url: absoluteUrl,
+          type: 'page',
+          title: post.get('title'),
+        });
+      });
+
+      it('resolves tags', async function () {
+        const id = fixtureManager.get('tags', 0).id;
+        const tag = await models.Tag.where('id', id).fetch({ require: true });
+        const url = urlServiceUtils.urlFor(tag, 'tags', {
+          absolute: false,
+          withSubdirectory: true,
+        });
+        const urlWithoutSubdirectory = urlServiceUtils.urlFor(tag, 'tags', {
+          absolute: false,
+          withSubdirectory: false,
+        });
+
+        const attribution = await memberAttributionService.service.getAttribution([
+          {
+            path: url,
+            time: Date.now(),
+          },
+        ]);
+        assertObjectMatches(attribution, {
+          id: tag.id,
+          url: urlWithoutSubdirectory,
+          type: 'tag',
+        });
+
+        const absoluteUrl = urlServiceUtils.urlFor(tag, 'tags', {
+          absolute: true,
+          withSubdirectory: true,
+        });
+
+        assertObjectMatches(await attribution.fetchResource(), {
+          id: tag.id,
+          url: absoluteUrl,
+          type: 'tag',
+          title: tag.get('name'),
+        });
+      });
+
+      it('resolves authors', async function () {
+        const id = fixtureManager.get('users', 0).id;
+        const author = await models.User.where('id', id).fetch({ require: true });
+        const url = urlServiceUtils.urlFor(author, 'authors', {
+          absolute: false,
+          withSubdirectory: true,
+        });
+        const urlWithoutSubdirectory = urlServiceUtils.urlFor(author, 'authors', {
+          absolute: false,
+          withSubdirectory: false,
+        });
+
+        const attribution = await memberAttributionService.service.getAttribution([
+          {
+            path: url,
+            time: Date.now(),
+          },
+        ]);
+        assertObjectMatches(attribution, {
+          id: author.id,
+          url: urlWithoutSubdirectory,
+          type: 'author',
+        });
+
+        const absoluteUrl = urlServiceUtils.urlFor(author, 'authors', {
+          absolute: true,
+          withSubdirectory: true,
+        });
+
+        assertObjectMatches(await attribution.fetchResource(), {
+          id: author.id,
+          url: absoluteUrl,
+          type: 'author',
+          title: author.get('name'),
+        });
+      });
+    });
+  });
+
+  /**
+   * Test that getAttribution correctly resolves all model types that are supported
+   */
+  describe('getAttribution for referrer', function () {
+    it('resolves urls', async function () {
+      const attribution = await memberAttributionService.service.getAttribution([
+        {
+          id: null,
+          path: '/',
+          time: Date.now(),
+          referrerSource: 'ghost-explore',
+          referrerMedium: null,
+          referrerUrl: null,
+        },
+      ]);
+      assertObjectMatches(attribution, {
+        id: null,
+        url: '/',
+        type: 'url',
+        referrerSource: 'Ghost Explore',
+        referrerMedium: 'Ghost Network',
+        referrerUrl: null,
+      });
     });
 
-    /**
-     * Test that getAttribution correctly resolves all model types that are supported
-     */
-    describe('getAttribution for referrer', function () {
-        it('resolves urls', async function () {
-            const attribution = await memberAttributionService.service.getAttribution([
-                {
-                    id: null,
-                    path: '/',
-                    time: Date.now(),
-                    referrerSource: 'ghost-explore',
-                    referrerMedium: null,
-                    referrerUrl: null
-                }
-            ]);
-            assertObjectMatches(attribution, {
-                id: null,
-                url: '/',
-                type: 'url',
-                referrerSource: 'Ghost Explore',
-                referrerMedium: 'Ghost Network',
-                referrerUrl: null
-            });
-        });
-
-        it('resolves Portal signup URLs', async function () {
-            // NOTE: We cannot test the actual hash URL here; the attribution below is what is receieved when navigating to /#/portal/signup?ref=ghost
-            // TODO: We don't appear to have tests for parsing URLs for params.
-            const attribution = await memberAttributionService.service.getAttribution([
-                {
-                    path: '/',
-                    time: Date.now(),
-                    referrerSource: 'casper'
-                }
-            ]);
-            assertObjectMatches(attribution, {
-                id: null,
-                url: '/',
-                type: 'url',
-                referrerSource: 'casper',
-                referrerMedium: null,
-                referrerUrl: null
-            });
-        });
+    it('resolves Portal signup URLs', async function () {
+      // NOTE: We cannot test the actual hash URL here; the attribution below is what is receieved when navigating to /#/portal/signup?ref=ghost
+      // TODO: We don't appear to have tests for parsing URLs for params.
+      const attribution = await memberAttributionService.service.getAttribution([
+        {
+          path: '/',
+          time: Date.now(),
+          referrerSource: 'casper',
+        },
+      ]);
+      assertObjectMatches(attribution, {
+        id: null,
+        url: '/',
+        type: 'url',
+        referrerSource: 'casper',
+        referrerMedium: null,
+        referrerUrl: null,
+      });
     });
+  });
 });

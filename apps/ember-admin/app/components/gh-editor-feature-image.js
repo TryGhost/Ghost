@@ -118,7 +118,7 @@ export default class GhEditorFeatureImageComponent extends Component {
         // this is needed to work around inconsistencies with dropping files
         // from Chrome's downloads bar
         if (navigator.userAgent.indexOf('Chrome') > -1) {
-            let eA = event.dataTransfer.effectAllowed;
+            const eA = event.dataTransfer.effectAllowed;
             event.dataTransfer.dropEffect = (eA === 'move' || eA === 'linkMove') ? 'move' : 'copy';
         }
 

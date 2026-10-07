@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/vitest';
-import {afterEach} from 'vitest';
-import {cleanup} from '@testing-library/react';
+import { afterEach } from 'vitest';
+import { cleanup } from '@testing-library/react';
 
 // TODO: remove this once we're switched `jest` to `vi` in code
 globalThis.jest = vi;

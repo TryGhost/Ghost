@@ -1,206 +1,221 @@
 const assert = require('node:assert/strict');
-const {agentProvider, mockManager, fixtureManager, dbUtils, matchers} = require('../utils/e2e-framework');
-const {anyGhostAgent, anyObjectId, anyISODateTime, anyUuid, anyContentVersion, anyContentLength} = matchers;
+const {
+  agentProvider,
+  mockManager,
+  fixtureManager,
+  dbUtils,
+  matchers,
+} = require('../utils/e2e-framework');
+const { anyGhostAgent, anyObjectId, anyISODateTime, anyUuid, anyContentVersion, anyContentLength } =
+  matchers;
 
 const buildNewsletterSnapshot = () => {
-    const newsLetterSnapshot = {
-        id: anyObjectId
-    };
+  const newsLetterSnapshot = {
+    id: anyObjectId,
+  };
 
-    return newsLetterSnapshot;
+  return newsLetterSnapshot;
 };
 
 const buildMemberSnapshot = () => {
-    const memberSnapshot = {
-        id: anyObjectId,
-        uuid: anyUuid,
-        created_at: anyISODateTime,
-        updated_at: anyISODateTime,
-        newsletters: new Array(1).fill(buildNewsletterSnapshot())
-    };
+  const memberSnapshot = {
+    id: anyObjectId,
+    uuid: anyUuid,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime,
+    newsletters: new Array(1).fill(buildNewsletterSnapshot()),
+  };
 
-    return memberSnapshot;
+  return memberSnapshot;
 };
 
 describe('member.* events', function () {
-    let adminAPIAgent;
-    let webhookMockReceiver;
+  let adminAPIAgent;
+  let webhookMockReceiver;
 
-    beforeAll(async function () {
-        adminAPIAgent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init('integrations');
-        await adminAPIAgent.loginAsOwner();
+  beforeAll(async function () {
+    adminAPIAgent = await agentProvider.getAdminAPIAgent();
+    await fixtureManager.init('integrations');
+    await adminAPIAgent.loginAsOwner();
+  });
+
+  beforeEach(async function () {
+    await dbUtils.truncate('webhooks');
+    webhookMockReceiver = mockManager.mockWebhookRequests();
+  });
+
+  afterEach(function () {
+    mockManager.restore();
+  });
+
+  it('member.added event is triggered', async function () {
+    const webhookURL = 'https://test-webhook-receiver.com/member-added/';
+    await webhookMockReceiver.mock(webhookURL);
+    await fixtureManager.insertWebhook({
+      event: 'member.added',
+      url: webhookURL,
     });
 
-    beforeEach(async function () {
-        await dbUtils.truncate('webhooks');
-        webhookMockReceiver = mockManager.mockWebhookRequests();
+    await adminAPIAgent
+      .post('members/')
+      .body({
+        members: [
+          {
+            name: 'Test Member',
+            email: 'testemail@example.com',
+            note: 'test note',
+          },
+        ],
+      })
+      .expectStatus(201);
+
+    await webhookMockReceiver.receivedRequest();
+
+    webhookMockReceiver
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        'content-length': anyContentLength,
+        'user-agent': anyGhostAgent,
+      })
+      .matchBodySnapshot({
+        member: {
+          current: buildMemberSnapshot(),
+        },
+      });
+  });
+
+  it('member.deleted event is triggered', async function () {
+    const webhookURL = 'https://test-webhook-receiver.com/member-deleted/';
+    await webhookMockReceiver.mock(webhookURL);
+    await fixtureManager.insertWebhook({
+      event: 'member.deleted',
+      url: webhookURL,
     });
 
-    afterEach(function () {
-        mockManager.restore();
+    const res = await adminAPIAgent
+      .post('members/')
+      .body({
+        members: [
+          {
+            name: 'Test Member2',
+            email: 'testemail2@example.com',
+            note: 'test note2',
+          },
+        ],
+      })
+      .expectStatus(201);
+
+    const id = res.body.members[0].id;
+
+    await adminAPIAgent.delete('members/' + id).expectStatus(204);
+
+    await webhookMockReceiver.receivedRequest();
+
+    webhookMockReceiver
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        'content-length': anyContentLength,
+        'user-agent': anyGhostAgent,
+      })
+      .matchBodySnapshot({
+        member: {
+          current: {},
+          previous: buildMemberSnapshot(),
+        },
+      });
+  });
+
+  it('member.edited event is triggered', async function () {
+    const webhookURL = 'https://test-webhook-receiver.com/member-edited/';
+    await webhookMockReceiver.mock(webhookURL);
+    await fixtureManager.insertWebhook({
+      event: 'member.edited',
+      url: webhookURL,
     });
 
-    it('member.added event is triggered', async function () {
-        const webhookURL = 'https://test-webhook-receiver.com/member-added/';
-        await webhookMockReceiver.mock(webhookURL);
-        await fixtureManager.insertWebhook({
-            event: 'member.added',
-            url: webhookURL
-        });
+    const res = await adminAPIAgent
+      .post('members/')
+      .body({
+        members: [
+          {
+            name: 'Test Member3',
+            email: 'testemail3@example.com',
+            note: 'test note3',
+          },
+        ],
+      })
+      .expectStatus(201);
 
-        await adminAPIAgent
-            .post('members/')
-            .body({
-                members: [{
-                    name: 'Test Member',
-                    email: 'testemail@example.com',
-                    note: 'test note'
-                }]
-            })
-            .expectStatus(201);
+    const id = res.body.members[0].id;
 
-        await webhookMockReceiver.receivedRequest();
+    await adminAPIAgent
+      .put('members/' + id)
+      .body({
+        members: [{ name: 'Ghost' }],
+      })
+      .expectStatus(200);
 
-        webhookMockReceiver
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                'content-length': anyContentLength,
-                'user-agent': anyGhostAgent
-            })
-            .matchBodySnapshot({
-                member: {
-                    current: buildMemberSnapshot()
-                }
-            });
+    await webhookMockReceiver.receivedRequest();
+
+    webhookMockReceiver
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        'content-length': anyContentLength,
+        'user-agent': anyGhostAgent,
+      })
+      .matchBodySnapshot({
+        member: {
+          current: buildMemberSnapshot(),
+          previous: {
+            updated_at: anyISODateTime,
+          },
+        },
+      });
+  });
+
+  it('member.edited event includes tiers when comped', async function () {
+    mockManager.mockStripe();
+
+    const webhookURL = 'https://test-webhook-receiver.example/member-comped/';
+    await webhookMockReceiver.mock(webhookURL);
+    await fixtureManager.insertWebhook({
+      event: 'member.edited',
+      url: webhookURL,
     });
 
-    it('member.deleted event is triggered', async function () {
-        const webhookURL = 'https://test-webhook-receiver.com/member-deleted/';
-        await webhookMockReceiver.mock(webhookURL);
-        await fixtureManager.insertWebhook({
-            event: 'member.deleted',
-            url: webhookURL
-        });
+    const res = await adminAPIAgent
+      .post('members/')
+      .body({
+        members: [
+          {
+            name: 'Comped Test Member',
+            email: 'comped-test@example.com',
+          },
+        ],
+      })
+      .expectStatus(201);
 
-        const res = await adminAPIAgent
-            .post('members/')
-            .body({
-                members: [{
-                    name: 'Test Member2',
-                    email: 'testemail2@example.com',
-                    note: 'test note2'
-                }]
-            })
-            .expectStatus(201);
+    const memberId = res.body.members[0].id;
 
-        const id = res.body.members[0].id;
+    await adminAPIAgent
+      .put('members/' + memberId)
+      .body({
+        members: [
+          {
+            comped: true,
+          },
+        ],
+      })
+      .expectStatus(200);
 
-        await adminAPIAgent
-            .delete('members/' + id)
-            .expectStatus(204);
+    await webhookMockReceiver.receivedRequest();
 
-        await webhookMockReceiver.receivedRequest();
+    const webhookPayload = webhookMockReceiver.body.body;
+    const current = webhookPayload.member.current;
 
-        webhookMockReceiver
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                'content-length': anyContentLength,
-                'user-agent': anyGhostAgent
-            })
-            .matchBodySnapshot({
-                member: {
-                    current: {},
-                    previous: buildMemberSnapshot()
-                }
-            });
-    });
-
-    it('member.edited event is triggered', async function () {
-        const webhookURL = 'https://test-webhook-receiver.com/member-edited/';
-        await webhookMockReceiver.mock(webhookURL);
-        await fixtureManager.insertWebhook({
-            event: 'member.edited',
-            url: webhookURL
-        });
-
-        const res = await adminAPIAgent
-            .post('members/')
-            .body({
-                members: [{
-                    name: 'Test Member3',
-                    email: 'testemail3@example.com',
-                    note: 'test note3'
-                }]
-            })
-            .expectStatus(201);
-
-        const id = res.body.members[0].id;
-
-        await adminAPIAgent
-            .put('members/' + id)
-            .body({
-                members: [{name: 'Ghost'}]
-            })
-            .expectStatus(200);
-
-        await webhookMockReceiver.receivedRequest();
-
-        webhookMockReceiver
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                'content-length': anyContentLength,
-                'user-agent': anyGhostAgent
-            })
-            .matchBodySnapshot({
-                member: {
-                    current: buildMemberSnapshot(),
-                    previous: {
-                        updated_at: anyISODateTime
-                    }
-                }
-            });
-    });
-
-    it('member.edited event includes tiers when comped', async function () {
-        mockManager.mockStripe();
-
-        const webhookURL = 'https://test-webhook-receiver.example/member-comped/';
-        await webhookMockReceiver.mock(webhookURL);
-        await fixtureManager.insertWebhook({
-            event: 'member.edited',
-            url: webhookURL
-        });
-
-        const res = await adminAPIAgent
-            .post('members/')
-            .body({
-                members: [{
-                    name: 'Comped Test Member',
-                    email: 'comped-test@example.com'
-                }]
-            })
-            .expectStatus(201);
-
-        const memberId = res.body.members[0].id;
-
-        await adminAPIAgent
-            .put('members/' + memberId)
-            .body({
-                members: [{
-                    comped: true
-                }]
-            })
-            .expectStatus(200);
-
-        await webhookMockReceiver.receivedRequest();
-
-        const webhookPayload = webhookMockReceiver.body.body;
-        const current = webhookPayload.member.current;
-
-        assert.equal(current.tiers.length, 1, 'Webhook should include one tier');
-        assert.ok(current.tiers[0].id, 'Tier should have an id');
-        assert.ok(current.tiers[0].name, 'Tier should have a name');
-        assert.ok(current.tiers[0].slug, 'Tier should have a slug');
-    });
+    assert.equal(current.tiers.length, 1, 'Webhook should include one tier');
+    assert.ok(current.tiers[0].id, 'Tier should have an id');
+    assert.ok(current.tiers[0].name, 'Tier should have a name');
+    assert.ok(current.tiers[0].slug, 'Tier should have a slug');
+  });
 });

@@ -36,11 +36,27 @@
             "defaultValue": null,
             "type": "string"
         },
+        "ghost_next_private_key": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "ghost_previous_public_key": {
+            "defaultValue": null,
+            "type": "string"
+        },
         "members_public_key": {
             "defaultValue": null,
             "type": "string"
         },
         "members_private_key": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "members_next_private_key": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "members_previous_public_key": {
             "defaultValue": null,
             "type": "string"
         },
@@ -448,6 +464,22 @@
         },
         "portal_signup_checkbox_required": {
             "defaultValue": "false",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        },
+        "portal_signup_gift_promotion": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        },
+        "portal_account_gift_promotion": {
+            "defaultValue": "true",
             "validations": {
                 "isEmpty": false,
                 "isIn": [["true", "false"]]

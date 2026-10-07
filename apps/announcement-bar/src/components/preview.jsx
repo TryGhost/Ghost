@@ -1,8 +1,6 @@
 import React from 'react';
-import {AnnouncementBar} from './announcement-bar';
+import { AnnouncementBar } from './announcement-bar';
 
-export function Preview({previewData}) {
-    return (
-        <AnnouncementBar settings={previewData} />
-    );
+export function Preview({ previewData }) {
+  return <AnnouncementBar settings={previewData} />;
 }

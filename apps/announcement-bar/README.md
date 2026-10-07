@@ -6,7 +6,7 @@ Announcement banner injected into Ghost sites.
 
 ### Pre-requisites
 
-- Run `pnpm setup` in the Ghost monorepo root
+- Run `pnpm bootstrap` in the Ghost monorepo root
 
 ### Running via Ghost from the monorepo root
 
@@ -39,6 +39,6 @@ For an intentional minor or major release:
 
 `pnpm ship` updates both the package version and Ghost's default Announcement Bar version.
 
-# Copyright & License 
+# Copyright & License
 
 Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](https://github.com/TryGhost/Ghost/blob/main/LICENSE).

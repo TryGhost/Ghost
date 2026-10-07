@@ -1,284 +1,355 @@
+import assert from 'node:assert/strict';
+import EmailAnalyticsGiftFetchLatestJob from '../../../../../core/server/services/email-analytics/jobs/email-analytics-gift-fetch-latest-job';
+import EmailAnalyticsAutomationFetchLatestJob from '../../../../../core/server/services/email-analytics/jobs/email-analytics-automation-fetch-latest-job';
 import sinon from 'sinon';
-import {deferred} from '../../../../utils/deferred';
-import {EmailAnalyticsJobScheduler} from '../../../../../core/server/services/email-analytics/jobs/email-analytics-job-scheduler';
+import EmailAnalyticsFetchLatestJob from '../../../../../core/server/services/email-analytics/jobs/email-analytics-fetch-latest-job';
+import { EmailAnalyticsJobScheduler } from '../../../../../core/server/services/email-analytics/jobs/email-analytics-job-scheduler';
 
 function buildNewsletterQuery(emailCount: string | number = 1) {
-    const query = {
-        where: sinon.stub(),
-        count: sinon.stub().resolves(emailCount)
-    };
-    query.where.returns(query);
+  const query = {
+    where: sinon.stub(),
+    count: sinon.stub().resolves(emailCount),
+  };
+  query.where.returns(query);
 
-    return query;
+  return query;
 }
 
 function buildAutomationsQuery(automatedEmailRecipient: unknown = null) {
-    const query = {
-        where: sinon.stub(),
-        whereNotNull: sinon.stub(),
-        first: sinon.stub().resolves(automatedEmailRecipient)
-    };
-    query.where.returns(query);
-    query.whereNotNull.returns(query);
+  const query = {
+    where: sinon.stub(),
+    whereNotNull: sinon.stub(),
+    first: sinon.stub().resolves(automatedEmailRecipient),
+  };
+  query.where.returns(query);
+  query.whereNotNull.returns(query);
 
-    return query;
+  return query;
 }
 
 function buildScheduler({
-    emailAnalyticsEnabled = true,
-    backgroundJobEnabled = true,
-    emailCount = 1,
-    automatedEmailRecipient = null
+  emailAnalyticsEnabled = true,
+  backgroundJobEnabled = true,
+  emailCount = 1,
+  automatedEmailRecipient = null,
+  giftDelivery = null,
 }: {
-    emailAnalyticsEnabled?: boolean;
-    backgroundJobEnabled?: boolean;
-    emailCount?: string | number;
-    automatedEmailRecipient?: unknown;
+  emailAnalyticsEnabled?: boolean;
+  backgroundJobEnabled?: boolean;
+  emailCount?: string | number;
+  automatedEmailRecipient?: unknown;
+  giftDelivery?: unknown;
 } = {}) {
-    const newsletterQuery = buildNewsletterQuery(emailCount);
-    const automationsQuery = buildAutomationsQuery(automatedEmailRecipient);
-    const models = {
-        Email: {
-            where: newsletterQuery.where
-        },
-        AutomatedEmailRecipient: {
-            query: sinon.stub().returns(automationsQuery)
-        }
-    };
-    const config = {
-        get: sinon.stub()
-    };
-    config.get.withArgs('emailAnalytics:enabled').returns(emailAnalyticsEnabled);
-    config.get.withArgs('backgroundJobs:emailAnalytics').returns(backgroundJobEnabled);
+  const newsletterQuery = buildNewsletterQuery(emailCount);
+  const automationsQuery = buildAutomationsQuery(automatedEmailRecipient);
+  const giftQuery = buildAutomationsQuery(giftDelivery);
+  const models = {
+    Email: {
+      where: newsletterQuery.where,
+    },
+    AutomatedEmailRecipient: {
+      query: sinon.stub().returns(automationsQuery),
+    },
+    GiftDelivery: {
+      query: sinon.stub().returns(giftQuery),
+    },
+  };
+  const config = {
+    get: sinon.stub(),
+  };
+  config.get.withArgs('emailAnalytics:enabled').returns(emailAnalyticsEnabled);
+  config.get.withArgs('backgroundJobs:emailAnalytics').returns(backgroundJobEnabled);
 
-    const jobManager = {
-        addJob: sinon.stub()
-    };
+  const jobsService = { scheduleRecurring: sinon.stub().resolves() };
 
-    return {
-        scheduler: new EmailAnalyticsJobScheduler({
-            models,
-            config,
-            jobManager
-        }),
-        config,
-        jobManager,
-        newsletterQuery,
-        automationsQuery,
-        models
-    };
+  return {
+    jobsService,
+    scheduler: new EmailAnalyticsJobScheduler({
+      models,
+      config,
+      jobsService,
+    }),
+    config,
+    newsletterQuery,
+    automationsQuery,
+    giftQuery,
+    models,
+  };
 }
 
 describe('EmailAnalyticsJobScheduler', function () {
-    afterEach(function () {
-        sinon.restore();
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  it('adds a recurring job when conditions are met', async function () {
+    sinon.stub(Math, 'random').onFirstCall().returns(0.1).onSecondCall().returns(0.7);
+
+    const { scheduler, jobsService } = buildScheduler({ emailCount: '3' });
+
+    await scheduler.scheduleRecurringNewslettersJob();
+
+    sinon.assert.calledOnceWithExactly(
+      jobsService.scheduleRecurring,
+      new EmailAnalyticsFetchLatestJob(),
+      { cron: '6 3/5 * * * *' },
+    );
+  });
+
+  it('does not add a job when config options are disabled', async function () {
+    for (const options of [
+      { emailAnalyticsEnabled: false, backgroundJobEnabled: true },
+      { emailAnalyticsEnabled: true, backgroundJobEnabled: false },
+      { emailAnalyticsEnabled: false, backgroundJobEnabled: false },
+    ]) {
+      const { scheduler, jobsService, newsletterQuery, automationsQuery, models } =
+        buildScheduler(options);
+
+      await scheduler.scheduleRecurringNewslettersJob();
+      await scheduler.scheduleRecurringAutomationsJob();
+      await scheduler.scheduleRecurringGiftDeliveriesJob();
+
+      sinon.assert.notCalled(jobsService.scheduleRecurring);
+      sinon.assert.notCalled(newsletterQuery.count);
+      sinon.assert.notCalled(models.AutomatedEmailRecipient.query);
+      sinon.assert.notCalled(automationsQuery.first);
+    }
+  });
+
+  it('does not add another job when called twice', async function () {
+    const { scheduler, jobsService, newsletterQuery } = buildScheduler();
+
+    await scheduler.scheduleRecurringNewslettersJob();
+    await scheduler.scheduleRecurringNewslettersJob();
+
+    sinon.assert.calledOnce(jobsService.scheduleRecurring);
+    sinon.assert.calledOnce(newsletterQuery.count);
+  });
+
+  it('does not add another newsletter job when called concurrently', async function () {
+    const { scheduler, jobsService, newsletterQuery } = buildScheduler();
+    const emailCount = Promise.withResolvers<void>();
+    newsletterQuery.count.returns(emailCount.promise.then(() => 1));
+
+    const firstSchedule = scheduler.scheduleRecurringNewslettersJob();
+    sinon.assert.calledOnce(newsletterQuery.count);
+
+    const secondSchedule = scheduler.scheduleRecurringNewslettersJob(true);
+    emailCount.resolve();
+
+    await Promise.all([firstSchedule, secondSchedule]);
+
+    sinon.assert.calledOnce(jobsService.scheduleRecurring);
+    sinon.assert.calledOnce(newsletterQuery.count);
+  });
+
+  it('does not add another automation job when called twice', async function () {
+    const { scheduler, jobsService, automationsQuery } = buildScheduler({
+      emailCount: 0,
+      automatedEmailRecipient: { id: 'recipient-id' },
     });
 
-    it('adds a recurring job when conditions are met', async function () {
-        sinon.stub(Math, 'random')
-            .onFirstCall().returns(0.1)
-            .onSecondCall().returns(0.7);
+    await scheduler.scheduleRecurringAutomationsJob();
+    await scheduler.scheduleRecurringAutomationsJob();
 
-        const {scheduler, jobManager} = buildScheduler({emailCount: '3'});
+    sinon.assert.calledOnce(jobsService.scheduleRecurring);
+    sinon.assert.calledOnce(automationsQuery.first);
+  });
 
-        await scheduler.scheduleRecurringNewslettersJob();
+  it('does not add another automation job when called concurrently', async function () {
+    const { scheduler, jobsService, automationsQuery } = buildScheduler({
+      emailCount: 0,
+    });
+    const automatedEmailRecipient = Promise.withResolvers<void>();
+    automationsQuery.first.returns(
+      automatedEmailRecipient.promise.then(() => ({ id: 'recipient-id' })),
+    );
 
-        sinon.assert.calledOnceWithExactly(jobManager.addJob, {
-            at: '6 3/5 * * * *',
-            job: sinon.match((value: unknown) => (
-                typeof value === 'string' &&
-                value.endsWith('fetch-latest/index.js')
-            )),
-            name: 'email-analytics-fetch-latest'
-        });
+    const firstSchedule = scheduler.scheduleRecurringAutomationsJob();
+    const secondSchedule = scheduler.scheduleRecurringAutomationsJob();
+
+    sinon.assert.calledTwice(automationsQuery.first);
+    automatedEmailRecipient.resolve();
+
+    await Promise.all([firstSchedule, secondSchedule]);
+
+    sinon.assert.calledOnce(jobsService.scheduleRecurring);
+  });
+
+  it('does not add another newsletter job while a registration is still in flight', async function () {
+    const { scheduler, jobsService } = buildScheduler();
+    const registration = Promise.withResolvers<void>();
+    jobsService.scheduleRecurring.returns(registration.promise);
+
+    const firstSchedule = scheduler.scheduleRecurringNewslettersJob(true);
+    const secondSchedule = scheduler.scheduleRecurringNewslettersJob(true);
+    registration.resolve();
+
+    await Promise.all([firstSchedule, secondSchedule]);
+
+    sinon.assert.calledOnce(jobsService.scheduleRecurring);
+  });
+
+  it('allows scheduling the newsletter job again after a registration is rejected', async function () {
+    const { scheduler, jobsService } = buildScheduler();
+    jobsService.scheduleRecurring.onFirstCall().rejects(new Error('unavailable'));
+
+    await assert.rejects(scheduler.scheduleRecurringNewslettersJob(true), /unavailable/);
+    await scheduler.scheduleRecurringNewslettersJob(true);
+
+    sinon.assert.calledTwice(jobsService.scheduleRecurring);
+  });
+
+  it('does not add a job when no emails are found', async function () {
+    const { scheduler, jobsService, newsletterQuery } = buildScheduler({ emailCount: 0 });
+
+    await scheduler.scheduleRecurringNewslettersJob();
+
+    sinon.assert.notCalled(jobsService.scheduleRecurring);
+    sinon.assert.calledOnce(newsletterQuery.count);
+  });
+
+  it('can add a job later when emails are found', async function () {
+    const { scheduler, jobsService, newsletterQuery } = buildScheduler();
+    newsletterQuery.count.onFirstCall().resolves(0);
+    newsletterQuery.count.onSecondCall().resolves(1);
+
+    await scheduler.scheduleRecurringNewslettersJob();
+    await scheduler.scheduleRecurringNewslettersJob();
+
+    sinon.assert.calledOnce(jobsService.scheduleRecurring);
+    sinon.assert.calledTwice(newsletterQuery.count);
+  });
+
+  it('can skip the email lookup', async function () {
+    const { scheduler, jobsService, newsletterQuery } = buildScheduler({ emailCount: 0 });
+
+    await scheduler.scheduleRecurringNewslettersJob(true);
+
+    sinon.assert.calledOnce(jobsService.scheduleRecurring);
+    sinon.assert.notCalled(newsletterQuery.where);
+    sinon.assert.notCalled(newsletterQuery.count);
+  });
+
+  it('adds an automation job when recipients exist', async function () {
+    sinon.stub(Math, 'random').onFirstCall().returns(0.2).onSecondCall().returns(0.8);
+
+    const { scheduler, jobsService, automationsQuery, models } = buildScheduler({
+      emailCount: 0,
+      automatedEmailRecipient: { id: 'recipient-id' },
     });
 
-    it('does not add a job when config options are disabled', async function () {
-        for (const options of [
-            {emailAnalyticsEnabled: false, backgroundJobEnabled: true},
-            {emailAnalyticsEnabled: true, backgroundJobEnabled: false},
-            {emailAnalyticsEnabled: false, backgroundJobEnabled: false}
-        ]) {
-            const {scheduler, jobManager, newsletterQuery, automationsQuery, models} = buildScheduler(options);
+    await scheduler.scheduleRecurringAutomationsJob();
 
-            await scheduler.scheduleRecurringNewslettersJob();
-            await scheduler.scheduleRecurringAutomationsJob();
+    sinon.assert.calledOnceWithExactly(
+      jobsService.scheduleRecurring,
+      new EmailAnalyticsAutomationFetchLatestJob(),
+      { cron: '12 4/5 * * * *' },
+    );
+    sinon.assert.calledOnce(models.AutomatedEmailRecipient.query);
+    sinon.assert.calledOnceWithExactly(automationsQuery.where, 'created_at', '>', sinon.match.date);
+    sinon.assert.calledOnceWithExactly(automationsQuery.whereNotNull, 'mailgun_message_id');
+    sinon.assert.calledOnceWithExactly(automationsQuery.first, 'id');
+  });
 
-            sinon.assert.notCalled(jobManager.addJob);
-            sinon.assert.notCalled(newsletterQuery.count);
-            sinon.assert.notCalled(models.AutomatedEmailRecipient.query);
-            sinon.assert.notCalled(automationsQuery.first);
-        }
+  it('can skip the automation email recipient lookup', async function () {
+    const { scheduler, jobsService, automationsQuery } = buildScheduler({
+      emailCount: 0,
+      automatedEmailRecipient: null,
     });
 
-    it('does not add another job when called twice', async function () {
-        const {scheduler, jobManager, newsletterQuery} = buildScheduler();
+    await scheduler.scheduleRecurringAutomationsJob(true);
 
-        await scheduler.scheduleRecurringNewslettersJob();
-        await scheduler.scheduleRecurringNewslettersJob();
+    sinon.assert.calledOnceWithMatch(
+      jobsService.scheduleRecurring,
+      sinon.match.instanceOf(EmailAnalyticsAutomationFetchLatestJob),
+    );
+    sinon.assert.notCalled(automationsQuery.first);
+  });
 
-        sinon.assert.calledOnce(jobManager.addJob);
-        sinon.assert.calledOnce(newsletterQuery.count);
+  it('adds both newsletter and automation jobs when conditions are met', async function () {
+    const { scheduler, jobsService } = buildScheduler({
+      emailCount: 1,
+      automatedEmailRecipient: { id: 'recipient-id' },
     });
 
-    it('does not add another newsletter job when called concurrently', async function () {
-        const {scheduler, jobManager, newsletterQuery} = buildScheduler();
-        const emailCount = deferred();
-        newsletterQuery.count.returns(emailCount.promise.then(() => 1));
+    await scheduler.scheduleRecurringNewslettersJob();
+    await scheduler.scheduleRecurringAutomationsJob();
 
-        const firstSchedule = scheduler.scheduleRecurringNewslettersJob();
-        sinon.assert.calledOnce(newsletterQuery.count);
+    sinon.assert.calledTwice(jobsService.scheduleRecurring);
+    sinon.assert.calledWithMatch(
+      jobsService.scheduleRecurring,
+      sinon.match.instanceOf(EmailAnalyticsFetchLatestJob),
+    );
+    sinon.assert.calledWithMatch(
+      jobsService.scheduleRecurring,
+      sinon.match.instanceOf(EmailAnalyticsAutomationFetchLatestJob),
+    );
+  });
 
-        const secondSchedule = scheduler.scheduleRecurringNewslettersJob(true);
-        emailCount.done();
-
-        await Promise.all([firstSchedule, secondSchedule]);
-
-        sinon.assert.calledOnce(jobManager.addJob);
-        sinon.assert.calledOnce(newsletterQuery.count);
+  it('does not add an automation job when no automation recipients are found', async function () {
+    const { scheduler, jobsService, automationsQuery } = buildScheduler({
+      emailCount: 0,
+      automatedEmailRecipient: null,
     });
 
-    it('does not add another automation job when called twice', async function () {
-        const {scheduler, jobManager, automationsQuery} = buildScheduler({
-            emailCount: 0,
-            automatedEmailRecipient: {id: 'recipient-id'}
-        });
+    await scheduler.scheduleRecurringAutomationsJob();
 
-        await scheduler.scheduleRecurringAutomationsJob();
-        await scheduler.scheduleRecurringAutomationsJob();
+    sinon.assert.notCalled(jobsService.scheduleRecurring);
+    sinon.assert.calledOnce(automationsQuery.first);
+  });
 
-        sinon.assert.calledOnce(jobManager.addJob);
-        sinon.assert.calledOnce(automationsQuery.first);
+  it('adds the existing recurring analytics collector for accepted gift email telemetry', async function () {
+    const { scheduler, jobsService, giftQuery, models } = buildScheduler({
+      emailCount: 0,
+      giftDelivery: { id: 'gift-id' },
     });
 
-    it('does not add another automation job when called concurrently', async function () {
-        const {scheduler, jobManager, automationsQuery} = buildScheduler({
-            emailCount: 0,
-        });
-        const automatedEmailRecipient = deferred();
-        automationsQuery.first.returns(automatedEmailRecipient.promise.then(() => ({id: 'recipient-id'})));
+    await scheduler.scheduleRecurringGiftDeliveriesJob();
 
-        const firstSchedule = scheduler.scheduleRecurringAutomationsJob();
-        const secondSchedule = scheduler.scheduleRecurringAutomationsJob();
+    sinon.assert.calledOnceWithMatch(
+      jobsService.scheduleRecurring,
+      sinon.match.instanceOf(EmailAnalyticsGiftFetchLatestJob),
+    );
+    sinon.assert.calledOnce(models.GiftDelivery.query);
+    sinon.assert.calledOnceWithExactly(giftQuery.where, 'email_sent_at', '>', sinon.match.date);
+    sinon.assert.calledOnceWithExactly(giftQuery.whereNotNull, 'email_provider_message_id');
+    sinon.assert.calledOnceWithExactly(giftQuery.first, 'id');
+  });
+  it('keeps three independent schedules and flags with independently randomized cron values', async function () {
+    const random = sinon.stub(Math, 'random');
+    [0.1, 0.2, 0.3, 0.4, 0.5, 0.6].forEach((value, index) => random.onCall(index).returns(value));
+    const { scheduler, jobsService } = buildScheduler();
+    for (let i = 0; i < 2; i += 1) {
+      await scheduler.scheduleRecurringNewslettersJob(true);
+      await scheduler.scheduleRecurringAutomationsJob(true);
+      await scheduler.scheduleRecurringGiftDeliveriesJob(true);
+    }
+    sinon.assert.calledThrice(jobsService.scheduleRecurring);
+    sinon.assert.calledWithExactly(
+      jobsService.scheduleRecurring,
+      new EmailAnalyticsFetchLatestJob(),
+      { cron: '6 1/5 * * * *' },
+    );
+    sinon.assert.calledWithExactly(
+      jobsService.scheduleRecurring,
+      new EmailAnalyticsAutomationFetchLatestJob(),
+      { cron: '18 2/5 * * * *' },
+    );
+    sinon.assert.calledWithExactly(
+      jobsService.scheduleRecurring,
+      new EmailAnalyticsGiftFetchLatestJob(),
+      { cron: '30 3/5 * * * *' },
+    );
+  });
 
-        sinon.assert.calledTwice(automationsQuery.first);
-        automatedEmailRecipient.done();
-
-        await Promise.all([firstSchedule, secondSchedule]);
-
-        sinon.assert.calledOnce(jobManager.addJob);
-    });
-
-    it('does not add a job when no emails are found', async function () {
-        const {scheduler, jobManager, newsletterQuery} = buildScheduler({emailCount: 0});
-
-        await scheduler.scheduleRecurringNewslettersJob();
-
-        sinon.assert.notCalled(jobManager.addJob);
-        sinon.assert.calledOnce(newsletterQuery.count);
-    });
-
-    it('can add a job later when emails are found', async function () {
-        const {scheduler, jobManager, newsletterQuery} = buildScheduler();
-        newsletterQuery.count.onFirstCall().resolves(0);
-        newsletterQuery.count.onSecondCall().resolves(1);
-
-        await scheduler.scheduleRecurringNewslettersJob();
-        await scheduler.scheduleRecurringNewslettersJob();
-
-        sinon.assert.calledOnce(jobManager.addJob);
-        sinon.assert.calledTwice(newsletterQuery.count);
-    });
-
-    it('can skip the email lookup', async function () {
-        const {scheduler, jobManager, newsletterQuery} = buildScheduler({emailCount: 0});
-
-        await scheduler.scheduleRecurringNewslettersJob(true);
-
-        sinon.assert.calledOnce(jobManager.addJob);
-        sinon.assert.notCalled(newsletterQuery.where);
-        sinon.assert.notCalled(newsletterQuery.count);
-    });
-
-    it('adds an automation job when recipients exist', async function () {
-        sinon.stub(Math, 'random')
-            .onFirstCall().returns(0.2)
-            .onSecondCall().returns(0.8);
-
-        const {scheduler, jobManager, automationsQuery, models} = buildScheduler({
-            emailCount: 0,
-            automatedEmailRecipient: {id: 'recipient-id'}
-        });
-
-        await scheduler.scheduleRecurringAutomationsJob();
-
-        sinon.assert.calledOnceWithExactly(jobManager.addJob, {
-            at: '12 4/5 * * * *',
-            job: sinon.match((value: unknown) => (
-                typeof value === 'string' &&
-                value.endsWith('automation-fetch-latest/index.js')
-            )),
-            name: 'email-analytics-automation-fetch-latest'
-        });
-        sinon.assert.calledOnce(models.AutomatedEmailRecipient.query);
-        sinon.assert.calledOnceWithExactly(automationsQuery.where, 'created_at', '>', sinon.match.date);
-        sinon.assert.calledOnceWithExactly(automationsQuery.whereNotNull, 'mailgun_message_id');
-        sinon.assert.calledOnceWithExactly(automationsQuery.first, 'id');
-    });
-
-    it('can skip the automation email recipient lookup', async function () {
-        const {scheduler, jobManager, automationsQuery} = buildScheduler({
-            emailCount: 0,
-            automatedEmailRecipient: null
-        });
-
-        await scheduler.scheduleRecurringAutomationsJob(true);
-
-        sinon.assert.calledOnceWithMatch(jobManager.addJob, {
-            job: sinon.match((value: unknown) => (
-                typeof value === 'string' &&
-                value.endsWith('automation-fetch-latest/index.js')
-            )),
-            name: 'email-analytics-automation-fetch-latest'
-        });
-        sinon.assert.notCalled(automationsQuery.first);
-    });
-
-    it('adds both newsletter and automation jobs when conditions are met', async function () {
-        const {scheduler, jobManager} = buildScheduler({
-            emailCount: 1,
-            automatedEmailRecipient: {id: 'recipient-id'}
-        });
-
-        await scheduler.scheduleRecurringNewslettersJob();
-        await scheduler.scheduleRecurringAutomationsJob();
-
-        sinon.assert.calledTwice(jobManager.addJob);
-        sinon.assert.calledWithMatch(jobManager.addJob, {
-            job: sinon.match((value: unknown) => (
-                typeof value === 'string' &&
-                value.endsWith('fetch-latest/index.js')
-            )),
-            name: 'email-analytics-fetch-latest'
-        });
-        sinon.assert.calledWithMatch(jobManager.addJob, {
-            job: sinon.match((value: unknown) => (
-                typeof value === 'string' &&
-                value.endsWith('automation-fetch-latest/index.js')
-            )),
-            name: 'email-analytics-automation-fetch-latest'
-        });
-    });
-
-    it('does not add an automation job when no automation recipients are found', async function () {
-        const {scheduler, jobManager, automationsQuery} = buildScheduler({
-            emailCount: 0,
-            automatedEmailRecipient: null
-        });
-
-        await scheduler.scheduleRecurringAutomationsJob();
-
-        sinon.assert.notCalled(jobManager.addJob);
-        sinon.assert.calledOnce(automationsQuery.first);
-    });
+  it('does not schedule gifts without a historical delivery, but accepts the sending bypass', async function () {
+    const { scheduler, jobsService, giftQuery } = buildScheduler();
+    await scheduler.scheduleRecurringGiftDeliveriesJob();
+    sinon.assert.notCalled(jobsService.scheduleRecurring);
+    await scheduler.scheduleRecurringGiftDeliveriesJob(true);
+    await scheduler.scheduleRecurringGiftDeliveriesJob(true);
+    sinon.assert.calledOnce(jobsService.scheduleRecurring);
+    sinon.assert.calledOnce(giftQuery.first);
+  });
 });

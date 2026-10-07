@@ -1,22 +1,19 @@
 {
   "name": "@tryghost/admin-toolbar",
-  "type": "module",
   "version": "0.1.11",
   "description": "Frontend staff toolbar for Ghost sites",
   "license": "MIT",
-  "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
+  "repository": "https://github.com/TryGhost/Ghost",
   "files": [
     "umd/",
     "LICENSE",
     "README.md"
   ],
+  "type": "module",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
-  },
-  "dependencies": {
-    "preact": "catalog:"
   },
   "scripts": {
     "build": "vite build",
@@ -27,6 +24,9 @@
     "preship": "pnpm lint",
     "ship": "node ../../scripts/release-apps.js",
     "prepublishOnly": "pnpm build"
+  },
+  "dependencies": {
+    "preact": "catalog:"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",

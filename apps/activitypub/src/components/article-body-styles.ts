@@ -1,5 +1,5 @@
 const articleBodyStyles = () => {
-    return `<style>
+  return `<style>
 
 /* Variables */
 

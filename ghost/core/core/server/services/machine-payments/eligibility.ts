@@ -1,1 +1,1 @@
-export {isPurchasableEntry, isMachinePaymentsEnabled} from '../../../shared/machine-payments';
+export { isPurchasableEntry, isMachinePaymentsEnabled } from '../../../shared/machine-payments';

@@ -5,7 +5,7 @@ import {paginateModelCollection} from '../utils';
 export default function mockUsers(server) {
     // /users/me = Always return the user with ID=1
     server.get('/users/me/', function ({users}) {
-        let user = users.find(1);
+        const user = users.find(1);
 
         if (user) {
             return user;
@@ -17,8 +17,8 @@ export default function mockUsers(server) {
     });
 
     server.get('/users/', function ({users}, {queryParams}) {
-        let page = +queryParams.page || 1;
-        let filter = queryParams.filter || '';
+        const page = +queryParams.page || 1;
+        const filter = queryParams.filter || '';
 
         // NOTE: this is naive and only set up to work with queries that are
         // actually used - if you use a different filter in the app, add it here!
@@ -44,26 +44,26 @@ export default function mockUsers(server) {
     });
 
     server.get('/users/slug/:slug/', function ({users}, {params, queryParams}) {
-        let user = users.findBy({slug: params.slug});
+        const user = users.findBy({slug: params.slug});
         user.postCount = queryParams.include.match(/count\.posts/);
         return user;
     });
 
     server.get('/users/:id', function ({users}, {params, queryParams}) {
-        let user = users.find(params.id);
+        const user = users.find(params.id);
         user.postCount = queryParams.include.match(/count\.posts/);
         return user;
     });
 
     server.put('/users/:id/', function ({users}, {params}) {
-        let {id} = params;
+        const {id} = params;
 
         if (id === 'password') {
             return {
                 password: [{message: 'Password changed successfully.'}]
             };
         } else {
-            let attrs = this.normalizedRequestAttrs();
+            const attrs = this.normalizedRequestAttrs();
 
             // TODO: why is our custom serializer causing .update to throw
             // children.update is not a function?

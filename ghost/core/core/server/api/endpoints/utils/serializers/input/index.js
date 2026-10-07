@@ -1,65 +1,69 @@
 module.exports = {
-    get db() {
-        return require('./db');
-    },
+  get db() {
+    return require('./db');
+  },
 
-    get emails() {
-        return require('./emails');
-    },
+  get exports() {
+    return require('./exports');
+  },
 
-    get integrations() {
-        return require('./integrations');
-    },
+  get emails() {
+    return require('./emails');
+  },
 
-    get pages() {
-        return require('./pages');
-    },
+  get integrations() {
+    return require('./integrations');
+  },
 
-    get posts() {
-        return require('./posts');
-    },
+  get pages() {
+    return require('./pages');
+  },
 
-    get settings() {
-        return require('./settings');
-    },
+  get posts() {
+    return require('./posts');
+  },
 
-    get users() {
-        return require('./users');
-    },
+  get settings() {
+    return require('./settings');
+  },
 
-    get authors() {
-        return require('./authors');
-    },
+  get users() {
+    return require('./users');
+  },
 
-    get tags() {
-        return require('./tags');
-    },
+  get authors() {
+    return require('./authors');
+  },
 
-    get members() {
-        return require('./members');
-    },
+  get tags() {
+    return require('./tags');
+  },
 
-    get media() {
-        return require('./media');
-    },
+  get members() {
+    return require('./members');
+  },
 
-    get tiers() {
-        return require('./tiers');
-    },
+  get media() {
+    return require('./media');
+  },
 
-    get webhooks() {
-        return require('./webhooks');
-    },
+  get tiers() {
+    return require('./tiers');
+  },
 
-    get mentions() {
-        return require('./mentions');
-    },
+  get webhooks() {
+    return require('./webhooks');
+  },
 
-    get comments() {
-        return require('./comments');
-    },
+  get mentions() {
+    return require('./mentions');
+  },
 
-    get member_commenting() {
-        return require('./member-commenting');
-    }
+  get comments() {
+    return require('./comments');
+  },
+
+  get member_commenting() {
+    return require('./member-commenting');
+  },
 };

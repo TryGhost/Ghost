@@ -84,10 +84,41 @@ pnpm knex-migrator rollback --v <previous-version> --force
 method. You can use this workflow to iterate while `down()` restores the same
 state that existed before `up()`.
 
+### New tables still in development
+
+A new table's shape often changes several times before its feature is ready.
+Rather than writing a migration for each change, list the table in
+`IN_DEVELOPMENT_TABLES` in
+[`core/server/data/schema/in-development.ts`](../../ghost/core/core/server/data/schema/in-development.ts)
+and define its schema in `schema.js` without adding a versioned migration. It
+is only created in development and testing databases.
+
+To apply a changed definition to your local database, rebuild the listed
+tables. This drops them and discards their data:
+
+```bash
+cd ghost/core
+pnpm migrate:rebuild-in-development-tables
+```
+
+Code that reads or writes the table must stay dormant wherever the table is not
+created, for example behind a [feature flag](feature-flags.md).
+The table still needs a classification in the exporter table lists.
+
+When the definition is final, remove the table from `IN_DEVELOPMENT_TABLES`,
+add the versioned migration that creates it, and update the schema integrity
+hash. Create the table with
+`addTable(name, tableSpec, {replaceDevelopmentCopy: true})`: development and
+testing databases already have a copy built from an earlier definition, and the
+option replaces it with the final one. This discards its data and drops the
+tables that reference it; Ghost recreates the ones still in development when it
+next boots. From then on the table follows the normal migration rules.
+
 ### Testing
 
-Test migrations against both MySQL and SQLite because Knex can behave
-differently between database clients.
+The database-backed migration suites run against MySQL, Ghost's supported
+production database. Changes to retained SQLite compatibility paths should add
+focused unit coverage for that dialect.
 
 Run the schema integrity test after changing `schema.js`, fixtures, default
 settings, or default routes. Update only the expected hash for the change you
@@ -107,8 +138,7 @@ pnpm test:single test/integration/migrations/migration.test.js
 ```
 
 Add focused tests for any non-trivial transformation, then run the affected Core
-tests. CI runs the database-backed Core suites with both MySQL and SQLite
-because Knex and the database engines do not always behave identically.
+tests. CI runs the database-backed Core suites against MySQL.
 
 ### Reviewing
 

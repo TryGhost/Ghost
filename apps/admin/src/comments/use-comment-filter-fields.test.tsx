@@ -1,45 +1,47 @@
-import {afterEach, describe, expect, it, vi} from 'vitest';
-import {renderHook} from '@testing-library/react';
-import {useCommentFilterFields} from '@/comments/use-comment-filter-fields';
-import type {ValueSource} from '@tryghost/shade/patterns';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { renderHook } from '@testing-library/react';
+import { useCommentFilterFields } from '@/comments/use-comment-filter-fields';
+import type { ValueSource } from '@tryghost/shade/patterns';
 
 const emptyValueSource: ValueSource<string> = {
-    id: 'empty',
-    useOptions: () => ({
-        options: [],
-        isInitialLoad: false,
-        isSearching: false,
-        isLoadingMore: false,
-        hasMore: false,
-        loadMore: vi.fn()
-    })
+  id: 'empty',
+  useOptions: () => ({
+    options: [],
+    isInitialLoad: false,
+    isSearching: false,
+    isLoadingMore: false,
+    hasMore: false,
+    loadMore: vi.fn(),
+  }),
 };
 
 describe('useCommentFilterFields', () => {
-    afterEach(() => {
-        vi.useRealTimers();
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('sets date filter defaults in the site timezone', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2024-03-10T06:00:00.000Z'));
+
+    const { result } = renderHook(() =>
+      useCommentFilterFields({
+        memberValueSource: emptyValueSource,
+        postValueSource: emptyValueSource,
+        siteTimezone: 'America/Los_Angeles',
+      }),
+    );
+
+    expect(result.current.find((field) => field.key === 'created_at')).toMatchObject({
+      defaultValue: '2024-03-09',
+      operators: [
+        { value: 'is-less', label: 'before' },
+        { value: 'is-or-less', label: 'on or before' },
+        { value: 'is-greater', label: 'after' },
+        { value: 'is-or-greater', label: 'on or after' },
+        { value: 'in-the-last', label: 'in the last' },
+      ],
+      customRenderer: expect.any(Function) as unknown,
     });
-
-    it('sets date filter defaults in the site timezone', () => {
-        vi.useFakeTimers();
-        vi.setSystemTime(new Date('2024-03-10T06:00:00.000Z'));
-
-        const {result} = renderHook(() => useCommentFilterFields({
-            memberValueSource: emptyValueSource,
-            postValueSource: emptyValueSource,
-            siteTimezone: 'America/Los_Angeles'
-        }));
-
-        expect(result.current.find(field => field.key === 'created_at')).toMatchObject({
-            defaultValue: '2024-03-09',
-            operators: [
-                {value: 'is-less', label: 'before'},
-                {value: 'is-or-less', label: 'on or before'},
-                {value: 'is-greater', label: 'after'},
-                {value: 'is-or-greater', label: 'on or after'},
-                {value: 'in-the-last', label: 'in the last'}
-            ],
-            customRenderer: expect.any(Function) as unknown
-        });
-    });
+  });
 });

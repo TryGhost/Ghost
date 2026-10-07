@@ -1,10 +1,10 @@
-import {useContext} from 'react';
+import { useContext } from 'react';
 import AppContext from '../../app-context';
 import CloseButton from '../common/close-button';
 import ActionButton from '../common/action-button';
 import WarningIcon from '../../images/icons/warning-outline.svg?react';
 import * as Sentry from '@sentry/react';
-import {t} from '../../utils/i18n';
+import { t } from '../../utils/i18n';
 
 export const TipsAndDonationsErrorStyle = `
     .gh-portal-tips-and-donations .gh-tips-and-donations-icon-error {
@@ -25,39 +25,40 @@ export const TipsAndDonationsErrorStyle = `
     }
 `;
 
-const SupportError = ({error}) => {
-    const {doAction} = useContext(AppContext);
-    const errorTitle = t('Sorry, that didn’t work.');
-    const errorMessage = error || t('There was an error processing your payment. Please try again.');
-    const buttonLabel = t('Close');
+const SupportError = ({ error }) => {
+  const { doAction } = useContext(AppContext);
+  const errorTitle = t('Sorry, that didn’t work.');
+  const errorMessage = error || t('There was an error processing your payment. Please try again.');
+  const buttonLabel = t('Close');
 
-    if (error) { // Log error to Sentry
-        Sentry.captureException(error);
-    }
+  if (error) {
+    // Log error to Sentry
+    Sentry.captureException(error);
+  }
 
-    return (
-        <div className='gh-portal-content gh-portal-tips-and-donations'>
-            <CloseButton />
+  return (
+    <div className="gh-portal-content gh-portal-tips-and-donations">
+      <CloseButton />
 
-            <div className="gh-tips-and-donations-icon-error">
-                <WarningIcon />
-            </div>
-            <h1 className="gh-portal-main-title">{errorTitle}</h1>
-            <p className="gh-portal-text-center">{errorMessage}</p>
-            <ActionButton
-                style={{width: '100%'}}
-                retry={true}
-                onClick = {() => doAction('closePopup')}
-                disabled={false}
-                brandColor='#000000'
-                label={buttonLabel}
-                isDestructive={true}
-                isRunning={false}
-                tabIndex={3}
-                classes={'sticky bottom'}
-            />
-        </div>
-    );
+      <div className="gh-tips-and-donations-icon-error">
+        <WarningIcon />
+      </div>
+      <h1 className="gh-portal-main-title">{errorTitle}</h1>
+      <p className="gh-portal-text-center">{errorMessage}</p>
+      <ActionButton
+        style={{ width: '100%' }}
+        retry={true}
+        onClick={() => doAction('closePopup')}
+        disabled={false}
+        brandColor="#000000"
+        label={buttonLabel}
+        isDestructive={true}
+        isRunning={false}
+        tabIndex={3}
+        classes={'sticky bottom'}
+      />
+    </div>
+  );
 };
 
 export default SupportError;

@@ -13,7 +13,7 @@ export function Error({error}) {
         return (
             <p>
                 The GIF API key is not valid. Please check your configuration by following our
-                <a href="https://ghost.org/docs/config/" rel="noopener noreferrer" target="_blank"> documentation here</a>.
+                <a href="https://docs.ghost.org/config/" rel="noopener noreferrer" target="_blank"> documentation here</a>.
             </p>
         );
     }

@@ -1,6 +1,5 @@
 const sinon = require('sinon');
 const ObjectId = require('bson-objectid').default;
-const _ = require('lodash');
 const assert = require('node:assert/strict');
 const testUtils = require('../../../../utils');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
@@ -11,404 +10,713 @@ const TagGenerator = require('../../../../../core/frontend/services/sitemap/tags
 const UserGenerator = require('../../../../../core/frontend/services/sitemap/user-map-generator');
 
 describe('Generators', function () {
-    let generator;
+  let generator;
 
-    afterEach(function () {
-        sinon.restore();
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  it('max node setting results in the right number of nodes', function () {
+    generator = new PostGenerator({ maxPerPage: 5 });
+
+    for (let i = 0; i < 10; i++) {
+      generator.addUrl(
+        `http://my-ghost-blog.com/episode-${i}/`,
+        testUtils.DataGenerator.forKnex.createPost({
+          created_at: Date.UTC(2014, 11, 22, 12) - 360000 + 200,
+          updated_at: null,
+          published_at: null,
+          slug: `episode-${i}`,
+        }),
+      );
+    }
+
+    generator.getXml();
+
+    // We end up with 10 nodes
+    assert.equal(generator.size, 10);
+
+    // But only 5 are output in the xml
+    assert.equal(generator.siteMapContent.get(1).match(/<loc>/g).length, 5);
+  });
+
+  it('default is 50k', function () {
+    generator = new PostGenerator();
+    assert.equal(generator.maxPerPage, 50000);
+  });
+
+  describe('fn: reset', function () {
+    const addPostAt = (gen, slug, updatedAt) =>
+      gen.addUrl(
+        `http://my-ghost-blog.com/${slug}/`,
+        testUtils.DataGenerator.forKnex.createPost({
+          slug,
+          updated_at: updatedAt,
+          created_at: updatedAt,
+          published_at: updatedAt,
+        }),
+      );
+
+    it('clears lastModified so a rebuild cannot report a removed resource', function () {
+      generator = new PostGenerator();
+
+      addPostAt(generator, 'older', '2024-01-01T00:00:00.000Z');
+      addPostAt(generator, 'newer', '2024-06-01T00:00:00.000Z');
+      assert.equal(new Date(generator.lastModified).toISOString(), '2024-06-01T00:00:00.000Z');
+
+      // The index rebuild resets every generator and replays only the
+      // resources that are still routable — here "newer" was deleted.
+      generator.reset();
+      addPostAt(generator, 'older', '2024-01-01T00:00:00.000Z');
+
+      assert.equal(
+        new Date(generator.lastModified).toISOString(),
+        '2024-01-01T00:00:00.000Z',
+        'lastModified must fall back to the newest surviving resource',
+      );
     });
 
-    it('max node setting results in the right number of nodes', function () {
-        generator = new PostGenerator({maxPerPage: 5});
+    it('leaves lastModified at zero when nothing is replayed', function () {
+      generator = new PostGenerator();
+
+      addPostAt(generator, 'only', '2024-06-01T00:00:00.000Z');
+      generator.reset();
+
+      assert.equal(generator.lastModified, 0);
+    });
+  });
+
+  describe('ordering', function () {
+    const addPostAt = (gen, slug, updatedAt) =>
+      gen.addUrl(
+        `http://my-ghost-blog.com/${slug}/`,
+        testUtils.DataGenerator.forKnex.createPost({ slug, updated_at: updatedAt }),
+      );
+    const locs = (xml) => [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
+
+    it('re-sorts a resource added after a render', function () {
+      generator = new PostGenerator({ maxPerPage: 2 });
+      addPostAt(generator, 'oldest', '2023-06-01T00:00:00.000Z');
+      addPostAt(generator, 'older', '2024-01-01T00:00:00.000Z');
+      addPostAt(generator, 'middle', '2024-03-01T00:00:00.000Z');
+      generator.getXml(1);
+
+      addPostAt(generator, 'newest', '2024-06-01T00:00:00.000Z');
+
+      assert.deepEqual(locs(generator.getXml(1)), [
+        'http://my-ghost-blog.com/newest/',
+        'http://my-ghost-blog.com/middle/',
+      ]);
+      assert.deepEqual(locs(generator.getXml(2)), [
+        'http://my-ghost-blog.com/older/',
+        'http://my-ghost-blog.com/oldest/',
+      ]);
+    });
+
+    it('sorts once and reuses the order for later pages', function () {
+      generator = new PostGenerator({ maxPerPage: 2 });
+      addPostAt(generator, 'a', '2024-01-01T00:00:00.000Z');
+      addPostAt(generator, 'b', '2024-02-01T00:00:00.000Z');
+      addPostAt(generator, 'c', '2024-03-01T00:00:00.000Z');
+      addPostAt(generator, 'd', '2024-04-01T00:00:00.000Z');
+      addPostAt(generator, 'e', '2024-05-01T00:00:00.000Z');
+
+      generator.getXml(1);
+      const sortedIndexes = generator.sortedIndexes;
+      generator.getXml(2);
+
+      assert.ok(sortedIndexes);
+      assert.equal(generator.sortedIndexes, sortedIndexes);
+    });
+  });
+
+  describe('releasing records', function () {
+    const addPostAt = (gen, slug, updatedAt) =>
+      gen.addUrl(
+        `http://my-ghost-blog.com/${slug}/`,
+        testUtils.DataGenerator.forKnex.createPost({ slug, updated_at: updatedAt }),
+      );
+
+    beforeEach(function () {
+      generator = new PostGenerator({ maxPerPage: 2 });
+      addPostAt(generator, 'a', '2024-01-01T00:00:00.000Z');
+      addPostAt(generator, 'b', '2024-02-01T00:00:00.000Z');
+      addPostAt(generator, 'c', '2024-03-01T00:00:00.000Z');
+    });
+
+    it('keeps the records until every page is rendered', function () {
+      generator.getXml(1);
+      assert.equal(generator.released, false);
+
+      generator.getXml(2);
+      assert.equal(generator.released, true);
+      assert.equal(generator.records, null);
+      assert.equal(generator.sortedIndexes, null);
+    });
+
+    it('serves the same pages and index inputs after release', function () {
+      const pages = [generator.getXml(1), generator.getXml(2)];
+
+      assert.deepEqual([generator.getXml(1), generator.getXml(2)], pages);
+      assert.equal(generator.size, 3);
+      assert.equal(generator.pageCount, 2);
+      assert.equal(new Date(generator.lastModified).toISOString(), '2024-03-01T00:00:00.000Z');
+
+      const index = new IndexGenerator({ types: { posts: generator } });
+      assert.match(index.getXml(), /sitemap-posts-2\.xml/);
+    });
+
+    it('returns null for pages out of range without caching them', function () {
+      assert.equal(generator.getXml(0), null);
+      assert.equal(generator.getXml(3), null);
+      assert.equal(generator.getXml(99999), null);
+      assert.equal(generator.siteMapContent.size, 0);
+
+      generator.getXml(1);
+      generator.getXml(2);
+      assert.equal(generator.getXml(3), null);
+    });
+
+    it('serves one cache entry per page, whatever a caller passes', function () {
+      assert.equal(generator.getXml('1'), generator.getXml(1));
+      assert.deepEqual([...generator.siteMapContent.keys()], [1]);
+
+      // A fractional page would render a window straddling two pages, and
+      // would count towards the release below.
+      assert.equal(generator.getXml(1.5), null);
+      assert.deepEqual([...generator.siteMapContent.keys()], [1]);
+      assert.equal(generator.released, false);
+
+      assert.ok(generator.getXml(2));
+      assert.equal(generator.released, true);
+    });
+
+    it('refuses new urls once released, until reset', function () {
+      generator.getXml(1);
+      generator.getXml(2);
+
+      assert.throws(() => addPostAt(generator, 'd', '2024-04-01T00:00:00.000Z'), {
+        errorType: 'IncorrectUsageError',
+        message: /posts sitemap generator/,
+      });
+
+      generator.reset();
+      addPostAt(generator, 'd', '2024-04-01T00:00:00.000Z');
+      assert.match(generator.getXml(1), /<loc>http:\/\/my-ghost-blog.com\/d\/<\/loc>/);
+    });
+
+    it('refuses new urls once sealed, whatever has been rendered', function () {
+      generator.seal();
+
+      assert.throws(() => addPostAt(generator, 'd', '2024-04-01T00:00:00.000Z'), {
+        errorType: 'IncorrectUsageError',
+      });
+
+      generator.reset();
+      addPostAt(generator, 'd', '2024-04-01T00:00:00.000Z');
+      assert.equal(generator.size, 1);
+    });
+  });
+
+  describe('IndexGenerator', function () {
+    beforeEach(function () {
+      generator = new IndexGenerator({
+        types: {
+          posts: new PostGenerator({ maxPerPage: 5 }),
+          pages: new PageGenerator({ maxPerPage: 5 }),
+          tags: new TagGenerator({ maxPerPage: 5 }),
+          authors: new UserGenerator({ maxPerPage: 5 }),
+        },
+      });
+    });
+
+    describe('fn: getXml', function () {
+      it('default', function () {
+        generator.types.posts.addUrl('http://my-ghost-blog.com/episode-1/', {
+          id: 'identifier1',
+          staticRoute: true,
+        });
+        generator.types.pages.addUrl('http://my-ghost-blog.com/home/', {
+          id: 'identifier1',
+          staticRoute: true,
+        });
+        generator.types.tags.addUrl('http://my-ghost-blog.com/home/', {
+          id: 'identifier1',
+          staticRoute: true,
+        });
+        generator.types.authors.addUrl('http://my-ghost-blog.com/home/', {
+          id: 'identifier1',
+          staticRoute: true,
+        });
+
+        const xml = generator.getXml();
+
+        assert.match(xml, /sitemap-tags.xml/);
+        assert.match(xml, /sitemap-posts.xml/);
+        assert.match(xml, /sitemap-pages.xml/);
+        assert.match(xml, /sitemap-authors.xml/);
+      });
+
+      it('does not create entries for pages with no content', function () {
+        generator.types.tags.addUrl('http://my-ghost-blog.com/episode-1/', {
+          id: 'identifier1',
+          staticRoute: true,
+        });
+
+        const xml = generator.getXml();
+
+        assert.match(xml, /sitemap-tags.xml/);
+        assert.doesNotMatch(xml, /sitemap-posts.xml/);
+        assert.doesNotMatch(xml, /sitemap-pages.xml/);
+        assert.doesNotMatch(xml, /sitemap-authors.xml/);
+      });
+
+      it('reports the newest surviving resource after a rebuild', function () {
+        const addPostAt = (slug, updatedAt) =>
+          generator.types.posts.addUrl(
+            `http://my-ghost-blog.com/${slug}/`,
+            testUtils.DataGenerator.forKnex.createPost({
+              slug,
+              updated_at: updatedAt,
+              created_at: updatedAt,
+              published_at: updatedAt,
+            }),
+          );
+
+        addPostAt('older', '2024-01-01T00:00:00.000Z');
+        addPostAt('newer', '2024-06-01T00:00:00.000Z');
+        assert.match(generator.getXml(), /<lastmod>2024-06-01T00:00:00.000Z<\/lastmod>/);
+
+        generator.types.posts.reset();
+        addPostAt('older', '2024-01-01T00:00:00.000Z');
+        // The index caches its xml; the manager drops that cache with the
+        // rest of the index whenever anything invalidates it.
+        generator.reset();
+
+        assert.match(generator.getXml(), /<lastmod>2024-01-01T00:00:00.000Z<\/lastmod>/);
+      });
+
+      it('renders once and serves the cache until it is reset', function () {
+        generator.types.posts.addUrl('http://my-ghost-blog.com/episode-1/', {
+          id: 'identifier1',
+          staticRoute: true,
+        });
+
+        const first = generator.getXml();
+        sinon.spy(generator, 'generateSiteMapUrlElements');
+
+        assert.equal(generator.getXml(), first);
+        sinon.assert.notCalled(generator.generateSiteMapUrlElements);
+
+        generator.reset();
+        generator.getXml();
+        sinon.assert.calledOnce(generator.generateSiteMapUrlElements);
+      });
+
+      it('creates multiple pages when there are too many posts', function () {
+        for (let i = 0; i < 10; i++) {
+          generator.types.posts.addUrl(
+            `http://my-ghost-blog.com/episode-${i}/`,
+            testUtils.DataGenerator.forKnex.createPost({
+              created_at: Date.UTC(2014, 11, 22, 12) - 360000 + 200,
+              updated_at: null,
+              published_at: null,
+              slug: `episode-${i}`,
+            }),
+          );
+        }
+        const xml = generator.getXml();
+
+        assert.match(xml, /sitemap-posts.xml/);
+        assert.match(xml, /sitemap-posts-2.xml/);
+      });
+    });
+  });
+
+  describe('PostGenerator', function () {
+    beforeEach(function () {
+      generator = new PostGenerator();
+    });
+
+    describe('url elements', function () {
+      it('adds an image:image element if post has a cover image', function () {
+        generator.addUrl(
+          'https://myblog.com/test/',
+          testUtils.DataGenerator.forKnex.createPost({
+            feature_image: 'post-100.jpg',
+            page: false,
+            slug: 'test',
+          }),
+        );
+
+        const xml = generator.getXml();
+
+        assert.match(xml, /<loc>https:\/\/myblog\.com\/test\/<\/loc>/);
+        assert.match(xml, /<lastmod>\d{4}-\d{2}-\d{2}T[\d:.]+Z<\/lastmod>/);
+        assert.match(
+          xml,
+          /<image:image><image:loc>[^<]+<\/image:loc><image:caption>post-100\.jpg<\/image:caption><\/image:image>/,
+        );
+      });
+
+      it('omits the image:image element when there is no image', function () {
+        generator.addUrl(
+          'https://myblog.com/test/',
+          testUtils.DataGenerator.forKnex.createPost({
+            feature_image: null,
+            page: false,
+            slug: 'test',
+          }),
+        );
+
+        const xml = generator.getXml();
+
+        assert.match(xml, /<loc>https:\/\/myblog\.com\/test\/<\/loc>/);
+        assert.doesNotMatch(xml, /image:image/);
+      });
+
+      it('falls back to now when the datum carries no date at all', function () {
+        const before = Date.now();
+
+        generator.addUrl('https://myblog.com/test/', {
+          id: 'identifier1',
+          staticRoute: true,
+        });
+
+        const lastmod = Date.parse(generator.getXml().match(/<lastmod>([^<]+)<\/lastmod>/)[1]);
+        assert(lastmod >= before && lastmod <= Date.now());
+      });
+
+      it('falls back to now rather than throwing on a date it cannot parse', function () {
+        const before = Date.now();
+
+        generator.addUrl('https://myblog.com/test/', {
+          id: 'identifier1',
+          // An Invalid Date, which `new Date(...).toISOString()` throws on
+          updated_at: new Date(NaN),
+        });
+
+        const lastmod = Date.parse(generator.getXml().match(/<lastmod>([^<]+)<\/lastmod>/)[1]);
+        assert(lastmod >= before && lastmod <= Date.now());
+      });
+
+      it('omits the image:image element when the url does not validate', function () {
+        const userGenerator = new UserGenerator();
+
+        // A path without a host: rejected by the author generator's stricter
+        // check, so the entry keeps its <loc> and loses only the image.
+        sinon.stub(urlUtils, 'urlFor').returns('/content/images/1.jpg');
+
+        userGenerator.addUrl('https://myblog.com/author/jo/', {
+          id: 'identifier1',
+          profile_image: '1.jpg',
+          updated_at: '2024-01-01T00:00:00.000Z',
+        });
+
+        const [record] = userGenerator.records;
+        assert.equal(record.imageLoc, null);
+        assert.equal(record.loc, 'https://myblog.com/author/jo/');
+      });
+
+      it('escapes xml special characters in urls and captions', function () {
+        generator.addUrl(
+          'https://myblog.com/a&b/',
+          testUtils.DataGenerator.forKnex.createPost({
+            feature_image: 'me & you.jpg',
+            page: false,
+            slug: 'a&b',
+          }),
+        );
+
+        const xml = generator.getXml();
+
+        assert.match(xml, /<loc>https:\/\/myblog\.com\/a&amp;b\/<\/loc>/);
+        assert.match(xml, /<image:caption>me &amp; you\.jpg<\/image:caption>/);
+        // The raw ampersand must not survive anywhere in the document
+        assert.doesNotMatch(xml, /&(?!amp;|quot;|apos;|lt;|gt;)/);
+      });
+    });
+
+    describe('fn: hasCanonicalUrl', function () {
+      it('can check for canonical url', function () {
+        const isCanonical = generator.hasCanonicalUrl(
+          testUtils.DataGenerator.forKnex.createPost({
+            page: false,
+            slug: 'some-cool-page',
+            canonical_url: 'https://myblog.com/test/',
+          }),
+          'https://myblog.com/some-cool-page/',
+        );
+        assert.equal(isCanonical, true);
+      });
+      it('returns false if no canonical url', function () {
+        const isCanonical = generator.hasCanonicalUrl(
+          testUtils.DataGenerator.forKnex.createPost({
+            page: false,
+            slug: 'some-cool-page',
+            canonical_url: null,
+          }),
+        );
+        assert.equal(isCanonical, false);
+      });
+
+      it('returns false if the normalized canonical url matches the post url', function () {
+        const isCanonical = generator.hasCanonicalUrl(
+          testUtils.DataGenerator.forKnex.createPost({
+            page: false,
+            slug: 'some-cool-page',
+            canonical_url: 'https://MYBLOG.com:443/some-cool-page',
+          }),
+          'https://myblog.com/some-cool-page/',
+        );
+
+        assert.equal(isCanonical, false);
+      });
+
+      it('returns false if the transform-ready canonical url matches the post url', function () {
+        const isCanonical = generator.hasCanonicalUrl(
+          testUtils.DataGenerator.forKnex.createPost({
+            page: false,
+            slug: 'some-cool-page',
+            canonical_url: '__GHOST_URL__/some-cool-page',
+          }),
+          urlUtils.urlJoin(urlUtils.urlFor('home', true), 'some-cool-page/'),
+        );
+
+        assert.equal(isCanonical, false);
+      });
+
+      it('returns true if the transform-ready canonical url points to a different path', function () {
+        const isCanonical = generator.hasCanonicalUrl(
+          testUtils.DataGenerator.forKnex.createPost({
+            page: false,
+            slug: 'some-cool-page',
+            canonical_url: '__GHOST_URL__/other-page',
+          }),
+          urlUtils.urlJoin(urlUtils.urlFor('home', true), 'some-cool-page/'),
+        );
+
+        assert.equal(isCanonical, true);
+      });
+    });
+
+    describe('fn: addUrl', function () {
+      it('does not include posts containing canonical_url', function () {
+        generator.addUrl(
+          'https://myblog.com/test2/',
+          testUtils.DataGenerator.forKnex.createPost({
+            page: false,
+            slug: 'test2',
+            canonical_url: null,
+          }),
+        );
+        generator.addUrl(
+          'https://myblog.com/test/',
+          testUtils.DataGenerator.forKnex.createPost({
+            page: false,
+            slug: 'test',
+            canonical_url: 'https://external.com/test/',
+          }),
+        );
+        const xml = generator.getXml();
+        assert.doesNotMatch(xml, /https:\/\/external.com\/test\//);
+      });
+    });
+
+    describe('fn: getXml', function () {
+      let urlUtilsUrlForStub;
+
+      beforeEach(function () {
+        urlUtilsUrlForStub = sinon.stub(urlUtils, 'urlFor');
+      });
+
+      it('get cached xml', function () {
+        sinon.spy(generator, 'generateXmlFromNodes');
+        generator.siteMapContent.set(1, 'something');
+        assert.equal(generator.getXml(), 'something');
+        generator.siteMapContent.clear();
+        sinon.assert.notCalled(generator.generateXmlFromNodes);
+      });
+
+      it('compare content output', function () {
+        urlUtilsUrlForStub
+          .withArgs('image', { image: 'post-100.jpg' }, true)
+          .returns('http://my-ghost-blog.com/images/post-100.jpg');
+        urlUtilsUrlForStub
+          .withArgs('image', { image: 'post-200.jpg' }, true)
+          .returns('http://my-ghost-blog.com/images/post-200.jpg');
+        urlUtilsUrlForStub
+          .withArgs('image', { image: 'post-300.jpg' }, true)
+          .returns('http://my-ghost-blog.com/images/post-300.jpg');
+        urlUtilsUrlForStub
+          .withArgs('sitemap_xsl', true)
+          .returns('http://my-ghost-blog.com/sitemap.xsl');
+
+        generator.addUrl(
+          'http://my-ghost-blog.com/url/100/',
+          testUtils.DataGenerator.forKnex.createPost({
+            feature_image: 'post-100.jpg',
+            created_at: Date.UTC(2014, 11, 22, 12) - 360000 + 100,
+            updated_at: null,
+            published_at: null,
+            slug: '100',
+          }),
+        );
+
+        generator.addUrl(
+          'http://my-ghost-blog.com/url/200/',
+          testUtils.DataGenerator.forKnex.createPost({
+            created_at: Date.UTC(2014, 11, 22, 12) - 360000 + 200,
+            updated_at: null,
+            published_at: null,
+            slug: '200',
+          }),
+        );
+
+        generator.addUrl(
+          'http://my-ghost-blog.com/url/300/',
+          testUtils.DataGenerator.forKnex.createPost({
+            created_at: Date.UTC(2014, 11, 22, 12) - 360000 + 300,
+            feature_image: 'post-300.jpg',
+            updated_at: null,
+            published_at: null,
+            slug: '300',
+          }),
+        );
+
+        const xml = generator.getXml();
+
+        assert(xml.includes('<loc>http://my-ghost-blog.com/url/100/</loc>'));
+        assert(xml.includes('<loc>http://my-ghost-blog.com/url/200/</loc>'));
+        assert(xml.includes('<loc>http://my-ghost-blog.com/url/300/</loc>'));
+
+        assert(xml.includes('<image:loc>http://my-ghost-blog.com/images/post-100.jpg</image:loc>'));
+        // This should NOT be present
+        assert(
+          !xml.includes('<image:loc>http://my-ghost-blog.com/images/post-200.jpg</image:loc>'),
+        );
+        assert(xml.includes('<image:loc>http://my-ghost-blog.com/images/post-300.jpg</image:loc>'));
+
+        // Validate order newest to oldest
+        const idxFirst = xml.indexOf('<loc>http://my-ghost-blog.com/url/300/</loc>');
+        const idxSecond = xml.indexOf('<loc>http://my-ghost-blog.com/url/200/</loc>');
+        const idxThird = xml.indexOf('<loc>http://my-ghost-blog.com/url/100/</loc>');
+
+        assert(idxFirst < idxSecond);
+        assert(idxSecond < idxThird);
+      });
+
+      it('creates multiple pages when there are too many posts', function () {
+        generator.maxPerPage = 5;
+        urlUtilsUrlForStub
+          .withArgs('sitemap_xsl', true)
+          .returns('http://my-ghost-blog.com/sitemap.xsl');
+        for (let i = 0; i < 10; i++) {
+          generator.addUrl(
+            `http://my-ghost-blog.com/episode-${i}/`,
+            testUtils.DataGenerator.forKnex.createPost({
+              created_at: Date.UTC(2014, 11, 22, 12) - 360000 + 200,
+              updated_at: null,
+              published_at: null,
+              slug: `episode-${i}`,
+            }),
+          );
+        }
+
+        const pages = [generator.getXml(), generator.getXml(2)];
 
         for (let i = 0; i < 10; i++) {
-            generator.addUrl(`http://my-ghost-blog.com/episode-${i}/`, testUtils.DataGenerator.forKnex.createPost({
-                created_at: (Date.UTC(2014, 11, 22, 12) - 360000) + 200,
-                updated_at: null,
-                published_at: null,
-                slug: `episode-${i}`
-            }));
+          const pageIndex = Math.floor(i / 5);
+          assert(pages[pageIndex].includes(`<loc>http://my-ghost-blog.com/episode-${i}/</loc>`));
         }
+      });
+
+      it("shouldn't break with out of bounds pages", function () {
+        assert.equal(generator.getXml(-1), null);
+        assert.equal(generator.getXml(99999), null);
+        assert.equal(generator.getXml(0), null);
+      });
+    });
+
+    describe('fn: getXml', function () {
+      it('add', function () {
+        generator.addUrl('http://my-ghost-blog.com/home/', {
+          id: 'identifier1',
+          staticRoute: true,
+        });
+        generator.addUrl('http://my-ghost-blog.com/magic/', {
+          id: 'identifier2',
+          staticRoute: false,
+        });
+        generator.addUrl('http://my-ghost-blog.com/subscribe/', {
+          id: ObjectId().toHexString(),
+          page: 1,
+        });
 
         generator.getXml();
 
-        // We end up with 10 nodes
-        assert.equal(Object.keys(generator.nodeLookup).length, 10);
-
-        // But only 5 are output in the xml
-        assert.equal(generator.siteMapContent.get(1).match(/<loc>/g).length, 5);
-    });
-
-    it('default is 50k', function () {
-        generator = new PostGenerator();
-        assert.equal(generator.maxPerPage, 50000);
-    });
-
-    describe('fn: reset', function () {
-        const addPostAt = (gen, slug, updatedAt) => gen.addUrl(
-            `http://my-ghost-blog.com/${slug}/`,
-            testUtils.DataGenerator.forKnex.createPost({
-                slug,
-                updated_at: updatedAt,
-                created_at: updatedAt,
-                published_at: updatedAt
-            })
+        assert(
+          generator.siteMapContent.get(1).includes('<loc>http://my-ghost-blog.com/home/</loc>'),
+        );
+        assert(
+          generator.siteMapContent.get(1).includes('<loc>http://my-ghost-blog.com/magic/</loc>'),
+        );
+        assert(
+          generator.siteMapContent
+            .get(1)
+            .includes('<loc>http://my-ghost-blog.com/subscribe/</loc>'),
         );
 
-        it('clears lastModified so a rebuild cannot report a removed resource', function () {
-            generator = new PostGenerator();
+        // <loc> should exist exactly one time
+        assert.equal(generator.siteMapContent.get(1).match(/<loc>/g).length, 3);
+      });
+      it('does not include pages containing canonical_url', function () {
+        generator.addUrl(
+          'https://myblog.com/test2/',
+          testUtils.DataGenerator.forKnex.createPost({
+            page: true,
+            slug: 'test2',
+            canonical_url: null,
+          }),
+        );
+        generator.addUrl(
+          'https://myblog.com/test/',
+          testUtils.DataGenerator.forKnex.createPost({
+            page: true,
+            slug: 'test',
+            canonical_url: 'https://external.com/test/',
+          }),
+        );
+        const xml = generator.getXml();
+        assert.doesNotMatch(xml, /https:\/\/external.com\/test\//);
+      });
+    });
+  });
 
-            addPostAt(generator, 'older', '2024-01-01T00:00:00.000Z');
-            addPostAt(generator, 'newer', '2024-06-01T00:00:00.000Z');
-            assert.equal(generator.lastModified.toISOString(), '2024-06-01T00:00:00.000Z');
-
-            // The index rebuild resets every generator and replays only the
-            // resources that are still routable — here "newer" was deleted.
-            generator.reset();
-            addPostAt(generator, 'older', '2024-01-01T00:00:00.000Z');
-
-            assert.equal(
-                generator.lastModified.toISOString(),
-                '2024-01-01T00:00:00.000Z',
-                'lastModified must fall back to the newest surviving resource'
-            );
-        });
-
-        it('leaves lastModified at zero when nothing is replayed', function () {
-            generator = new PostGenerator();
-
-            addPostAt(generator, 'only', '2024-06-01T00:00:00.000Z');
-            generator.reset();
-
-            assert.equal(generator.lastModified, 0);
-        });
+  describe('UserGenerator', function () {
+    beforeEach(function () {
+      generator = new UserGenerator();
     });
 
-    describe('IndexGenerator', function () {
-        beforeEach(function () {
-            generator = new IndexGenerator({
-                types: {
-                    posts: new PostGenerator(),
-                    pages: new PageGenerator(),
-                    tags: new TagGenerator(),
-                    authors: new UserGenerator()
-                },
-                maxPerPage: 5
-            });
-        });
+    describe('fn: validateImageUrl', function () {
+      it('image url is localhost', function () {
+        assert.equal(
+          generator.validateImageUrl('http://localhost:2368/content/images/1.jpg'),
+          true,
+        );
+      });
 
-        describe('fn: getXml', function () {
-            it('default', function () {
-                generator.types.posts.addUrl('http://my-ghost-blog.com/episode-1/', {id: 'identifier1', staticRoute: true});
-                generator.types.pages.addUrl('http://my-ghost-blog.com/home/', {id: 'identifier1', staticRoute: true});
-                generator.types.tags.addUrl('http://my-ghost-blog.com/home/', {id: 'identifier1', staticRoute: true});
-                generator.types.authors.addUrl('http://my-ghost-blog.com/home/', {id: 'identifier1', staticRoute: true});
+      it('image url is https', function () {
+        assert.equal(generator.validateImageUrl('https://myblog.com/content/images/1.png'), true);
+      });
 
-                const xml = generator.getXml();
+      it('image url is external', function () {
+        assert.equal(generator.validateImageUrl('https://myblog.com/1.jpg'), true);
+      });
 
-                assert.match(xml, /sitemap-tags.xml/);
-                assert.match(xml, /sitemap-posts.xml/);
-                assert.match(xml, /sitemap-pages.xml/);
-                assert.match(xml, /sitemap-authors.xml/);
-            });
-
-            it('does not create entries for pages with no content', function () {
-                generator.types.tags.addUrl('http://my-ghost-blog.com/episode-1/', {id: 'identifier1', staticRoute: true});
-
-                const xml = generator.getXml();
-
-                assert.match(xml, /sitemap-tags.xml/);
-                assert.doesNotMatch(xml, /sitemap-posts.xml/);
-                assert.doesNotMatch(xml, /sitemap-pages.xml/);
-                assert.doesNotMatch(xml, /sitemap-authors.xml/);
-            });
-
-            it('reports the newest surviving resource after a rebuild', function () {
-                const addPostAt = (slug, updatedAt) => generator.types.posts.addUrl(
-                    `http://my-ghost-blog.com/${slug}/`,
-                    testUtils.DataGenerator.forKnex.createPost({
-                        slug,
-                        updated_at: updatedAt,
-                        created_at: updatedAt,
-                        published_at: updatedAt
-                    })
-                );
-
-                addPostAt('older', '2024-01-01T00:00:00.000Z');
-                addPostAt('newer', '2024-06-01T00:00:00.000Z');
-                assert.match(generator.getXml(), /<lastmod>2024-06-01T00:00:00.000Z<\/lastmod>/);
-
-                generator.types.posts.reset();
-                addPostAt('older', '2024-01-01T00:00:00.000Z');
-
-                assert.match(generator.getXml(), /<lastmod>2024-01-01T00:00:00.000Z<\/lastmod>/);
-            });
-
-            it('creates multiple pages when there are too many posts', function () {
-                for (let i = 0; i < 10; i++) {
-                    generator.types.posts.addUrl(`http://my-ghost-blog.com/episode-${i}/`, testUtils.DataGenerator.forKnex.createPost({
-                        created_at: (Date.UTC(2014, 11, 22, 12) - 360000) + 200,
-                        updated_at: null,
-                        published_at: null,
-                        slug: `episode-${i}`
-                    }));
-                }
-                const xml = generator.getXml();
-
-                assert.match(xml, /sitemap-posts.xml/);
-                assert.match(xml, /sitemap-posts-2.xml/);
-            });
-        });
+      it('no host', function () {
+        assert.equal(generator.validateImageUrl('/content/images/1.jpg'), false);
+      });
     });
-
-    describe('PostGenerator', function () {
-        beforeEach(function () {
-            generator = new PostGenerator();
-        });
-
-        describe('fn: createNodeFromDatum', function () {
-            it('adds an image:image element if post has a cover image', function () {
-                const urlNode = generator.createUrlNodeFromDatum('https://myblog.com/test/', testUtils.DataGenerator.forKnex.createPost({
-                    feature_image: 'post-100.jpg',
-                    page: false,
-                    slug: 'test'
-                }));
-
-                assert(Array.isArray(urlNode.url));
-                assert.equal(urlNode.url.length, 3);
-
-                /**
-                 * A urlNode looks something like:
-                 * { url:
-                 *   [ { loc: 'http://127.0.0.1:2369/author/' },
-                 *     { lastmod: '2014-12-22T11:54:00.100Z' },
-                 *     { 'image:image': [
-                 *       { 'image:loc': 'post-100.jpg' },
-                 *       { 'image:caption': 'post-100.jpg' }
-                 *     ] }
-                 *  ] }
-                 */
-                const flatNode = _.extend.apply(_, urlNode.url);
-                assert('loc' in flatNode);
-                assert('lastmod' in flatNode);
-                assert('image:image' in flatNode);
-            });
-        });
-
-        describe('fn: hasCanonicalUrl', function () {
-            it('can check for canonical url', function () {
-                const isCanonical = generator.hasCanonicalUrl(testUtils.DataGenerator.forKnex.createPost({
-                    page: false,
-                    slug: 'some-cool-page',
-                    canonical_url: 'https://myblog.com/test/'
-                }), 'https://myblog.com/some-cool-page/');
-                assert.equal(isCanonical, true);
-            });
-            it('returns false if no canonical url', function () {
-                const isCanonical = generator.hasCanonicalUrl(testUtils.DataGenerator.forKnex.createPost({
-                    page: false,
-                    slug: 'some-cool-page',
-                    canonical_url: null
-                }
-                ));
-                assert.equal(isCanonical, false);
-            });
-
-            it('returns false if the normalized canonical url matches the post url', function () {
-                const isCanonical = generator.hasCanonicalUrl(testUtils.DataGenerator.forKnex.createPost({
-                    page: false,
-                    slug: 'some-cool-page',
-                    canonical_url: 'https://MYBLOG.com:443/some-cool-page'
-                }), 'https://myblog.com/some-cool-page/');
-
-                assert.equal(isCanonical, false);
-            });
-
-            it('returns false if the transform-ready canonical url matches the post url', function () {
-                const isCanonical = generator.hasCanonicalUrl(testUtils.DataGenerator.forKnex.createPost({
-                    page: false,
-                    slug: 'some-cool-page',
-                    canonical_url: '__GHOST_URL__/some-cool-page'
-                }), urlUtils.urlJoin(urlUtils.urlFor('home', true), 'some-cool-page/'));
-
-                assert.equal(isCanonical, false);
-            });
-
-            it('returns true if the transform-ready canonical url points to a different path', function () {
-                const isCanonical = generator.hasCanonicalUrl(testUtils.DataGenerator.forKnex.createPost({
-                    page: false,
-                    slug: 'some-cool-page',
-                    canonical_url: '__GHOST_URL__/other-page'
-                }), urlUtils.urlJoin(urlUtils.urlFor('home', true), 'some-cool-page/'));
-
-                assert.equal(isCanonical, true);
-            });
-        });
-
-        describe('fn: addUrl', function () {
-            it('does not include posts containing canonical_url', function () {
-                generator.addUrl('https://myblog.com/test2/', testUtils.DataGenerator.forKnex.createPost({
-                    page: false,
-                    slug: 'test2',
-                    canonical_url: null
-                }));
-                generator.addUrl('https://myblog.com/test/', testUtils.DataGenerator.forKnex.createPost({
-                    page: false,
-                    slug: 'test',
-                    canonical_url: 'https://external.com/test/'
-                }));
-                const xml = generator.getXml();
-                assert.doesNotMatch(xml, /https:\/\/external.com\/test\//);
-            });
-        });
-
-        describe('fn: getXml', function () {
-            let urlUtilsUrlForStub;
-
-            beforeEach(function () {
-                urlUtilsUrlForStub = sinon.stub(urlUtils, 'urlFor');
-            });
-
-            it('get cached xml', function () {
-                sinon.spy(generator, 'generateXmlFromNodes');
-                generator.siteMapContent.set(1, 'something');
-                assert.equal(generator.getXml(), 'something');
-                generator.siteMapContent.clear();
-                sinon.assert.notCalled(generator.generateXmlFromNodes);
-            });
-
-            it('compare content output', function () {
-                let idxFirst;
-                let idxSecond;
-                let idxThird;
-
-                urlUtilsUrlForStub.withArgs('image', {image: 'post-100.jpg'}, true).returns('http://my-ghost-blog.com/images/post-100.jpg');
-                urlUtilsUrlForStub.withArgs('image', {image: 'post-200.jpg'}, true).returns('http://my-ghost-blog.com/images/post-200.jpg');
-                urlUtilsUrlForStub.withArgs('image', {image: 'post-300.jpg'}, true).returns('http://my-ghost-blog.com/images/post-300.jpg');
-                urlUtilsUrlForStub.withArgs('sitemap_xsl', true).returns('http://my-ghost-blog.com/sitemap.xsl');
-
-                generator.addUrl('http://my-ghost-blog.com/url/100/', testUtils.DataGenerator.forKnex.createPost({
-                    feature_image: 'post-100.jpg',
-                    created_at: (Date.UTC(2014, 11, 22, 12) - 360000) + 100,
-                    updated_at: null,
-                    published_at: null,
-                    slug: '100'
-                }));
-
-                generator.addUrl('http://my-ghost-blog.com/url/200/', testUtils.DataGenerator.forKnex.createPost({
-                    created_at: (Date.UTC(2014, 11, 22, 12) - 360000) + 200,
-                    updated_at: null,
-                    published_at: null,
-                    slug: '200'
-                }));
-
-                generator.addUrl('http://my-ghost-blog.com/url/300/', testUtils.DataGenerator.forKnex.createPost({
-                    created_at: (Date.UTC(2014, 11, 22, 12) - 360000) + 300,
-                    feature_image: 'post-300.jpg',
-                    updated_at: null,
-                    published_at: null,
-                    slug: '300'
-                }));
-
-                const xml = generator.getXml();
-
-                assert(xml.includes('<loc>http://my-ghost-blog.com/url/100/</loc>'));
-                assert(xml.includes('<loc>http://my-ghost-blog.com/url/200/</loc>'));
-                assert(xml.includes('<loc>http://my-ghost-blog.com/url/300/</loc>'));
-
-                assert(xml.includes('<image:loc>http://my-ghost-blog.com/images/post-100.jpg</image:loc>'));
-                // This should NOT be present
-                assert(!xml.includes('<image:loc>http://my-ghost-blog.com/images/post-200.jpg</image:loc>'));
-                assert(xml.includes('<image:loc>http://my-ghost-blog.com/images/post-300.jpg</image:loc>'));
-
-                // Validate order newest to oldest
-                idxFirst = xml.indexOf('<loc>http://my-ghost-blog.com/url/300/</loc>');
-                idxSecond = xml.indexOf('<loc>http://my-ghost-blog.com/url/200/</loc>');
-                idxThird = xml.indexOf('<loc>http://my-ghost-blog.com/url/100/</loc>');
-
-                assert(idxFirst < idxSecond);
-                assert(idxSecond < idxThird);
-            });
-
-            it('creates multiple pages when there are too many posts', function () {
-                generator.maxPerPage = 5;
-                urlUtilsUrlForStub.withArgs('sitemap_xsl', true).returns('http://my-ghost-blog.com/sitemap.xsl');
-                for (let i = 0; i < 10; i++) {
-                    generator.addUrl(`http://my-ghost-blog.com/episode-${i}/`, testUtils.DataGenerator.forKnex.createPost({
-                        created_at: (Date.UTC(2014, 11, 22, 12) - 360000) + 200,
-                        updated_at: null,
-                        published_at: null,
-                        slug: `episode-${i}`
-                    }));
-                }
-
-                const pages = [generator.getXml(), generator.getXml(2)];
-
-                for (let i = 0; i < 10; i++) {
-                    const pageIndex = Math.floor(i / 5);
-                    assert(pages[pageIndex].includes(`<loc>http://my-ghost-blog.com/episode-${i}/</loc>`));
-                }
-            });
-
-            it('shouldn\'t break with out of bounds pages', function () {
-                assert.equal(generator.getXml(-1), null);
-                assert.equal(generator.getXml(99999), null);
-                assert.equal(generator.getXml(0), null);
-            });
-        });
-
-        describe('fn: getXml', function () {
-            it('add', function () {
-                generator.addUrl('http://my-ghost-blog.com/home/', {id: 'identifier1', staticRoute: true});
-                generator.addUrl('http://my-ghost-blog.com/magic/', {id: 'identifier2', staticRoute: false});
-                generator.addUrl('http://my-ghost-blog.com/subscribe/', {id: ObjectId().toHexString(), page: 1});
-
-                generator.getXml();
-
-                assert(generator.siteMapContent.get(1).includes('<loc>http://my-ghost-blog.com/home/</loc>'));
-                assert(generator.siteMapContent.get(1).includes('<loc>http://my-ghost-blog.com/magic/</loc>'));
-                assert(generator.siteMapContent.get(1).includes('<loc>http://my-ghost-blog.com/subscribe/</loc>'));
-
-                // <loc> should exist exactly one time
-                assert.equal(generator.siteMapContent.get(1).match(/<loc>/g).length, 3);
-            });
-            it('does not include pages containing canonical_url', function () {
-                generator.addUrl('https://myblog.com/test2/', testUtils.DataGenerator.forKnex.createPost({
-                    page: true,
-                    slug: 'test2',
-                    canonical_url: null
-                }));
-                generator.addUrl('https://myblog.com/test/', testUtils.DataGenerator.forKnex.createPost({
-                    page: true,
-                    slug: 'test',
-                    canonical_url: 'https://external.com/test/'
-                }));
-                const xml = generator.getXml();
-                assert.doesNotMatch(xml, /https:\/\/external.com\/test\//);
-            });
-        });
-    });
-
-    describe('UserGenerator', function () {
-        beforeEach(function () {
-            generator = new UserGenerator();
-        });
-
-        describe('fn: validateImageUrl', function () {
-            it('image url is localhost', function () {
-                assert.equal(generator.validateImageUrl('http://localhost:2368/content/images/1.jpg'), true);
-            });
-
-            it('image url is https', function () {
-                assert.equal(generator.validateImageUrl('https://myblog.com/content/images/1.png'), true);
-            });
-
-            it('image url is external', function () {
-                assert.equal(generator.validateImageUrl('https://myblog.com/1.jpg'), true);
-            });
-
-            it('no host', function () {
-                assert.equal(generator.validateImageUrl('/content/images/1.jpg'), false);
-            });
-        });
-    });
+  });
 });

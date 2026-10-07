@@ -1,0 +1,58 @@
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import errors from '@tryghost/errors';
+// @ts-expect-error This module lacks type definitions.
+import models from '../../../../core/server/models';
+
+const { SubscriptionCreatedEvent } = models;
+
+describe('Unit: models/SubscriptionCreatedEvent', function () {
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  describe('validation', function () {
+    it('throws error for invalid attribution_type', function () {
+      return SubscriptionCreatedEvent.add({
+        attribution_type: 'invalid',
+        member_id: '123',
+        subscription_id: '123',
+      })
+        .then(function () {
+          throw new Error('expected ValidationError');
+        })
+        .catch(function (err: unknown) {
+          assert(Array.isArray(err));
+          assert.equal(err.length, 1);
+          assert.equal(err[0] instanceof errors.ValidationError, true);
+          assert.match(err[0].context, /members_subscription_created_events\.attribution_type/);
+        });
+    });
+
+    it('throws if member_id is missing', function () {
+      return SubscriptionCreatedEvent.add({ attribution_type: 'post', subscription_id: '123' })
+        .then(function () {
+          throw new Error('expected ValidationError');
+        })
+        .catch(function (err: unknown) {
+          assert(Array.isArray(err));
+          assert.equal(err.length, 1);
+          assert.equal(err[0] instanceof errors.ValidationError, true);
+          assert.match(err[0].context, /members_subscription_created_events\.member_id/);
+        });
+    });
+
+    it('throws if subscription_id is missing', function () {
+      return SubscriptionCreatedEvent.add({ attribution_type: 'post', member_id: '123' })
+        .then(function () {
+          throw new Error('expected ValidationError');
+        })
+        .catch(function (err: unknown) {
+          assert(Array.isArray(err));
+          assert.equal(err.length, 1);
+          assert.equal(err[0] instanceof errors.ValidationError, true);
+          assert.match(err[0].context, /members_subscription_created_events\.subscription_id/);
+        });
+    });
+  });
+});

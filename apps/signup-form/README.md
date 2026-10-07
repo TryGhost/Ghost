@@ -6,7 +6,7 @@ Embed a Ghost signup form on any site.
 
 ### Pre-requisites
 
-- Run `pnpm setup` in the Ghost monorepo root
+- Run `pnpm bootstrap` in the Ghost monorepo root
 
 ### Running via Ghost from the monorepo root
 

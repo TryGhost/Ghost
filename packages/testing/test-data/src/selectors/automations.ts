@@ -4,7 +4,7 @@
  */
 
 // testids
-export const automationsPage = "automations-page";
-export const automationsList = "automations-list";
-export const automationListRow = "automation-list-row";
-export const automationsListLoading = "automations-list-loading";
+export const automationsPage = 'automations-page';
+export const automationsList = 'automations-list';
+export const automationListRow = 'automation-list-row';
+export const automationsListLoading = 'automations-list-loading';

@@ -17,8 +17,8 @@ export default class GhProgressBar extends Component {
     didReceiveAttrs() {
         super.didReceiveAttrs(...arguments);
 
-        let percentage = this.percentage;
-        let width = (percentage > 0) ? `${percentage}%` : '0';
+        const percentage = this.percentage;
+        const width = (percentage > 0) ? `${percentage}%` : '0';
 
         this.set('progressStyle', htmlSafe(`width: ${width}`));
     }

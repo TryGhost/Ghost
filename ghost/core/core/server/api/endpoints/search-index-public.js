@@ -1,65 +1,73 @@
 const models = require('../../models');
 const urlService = require('../../services/url');
-const {requiredUrlColumns} = require('./utils/serializers/input/utils/url');
+const { requiredUrlColumns } = require('./utils/serializers/input/utils/url');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const postsService = getPostServiceInstance();
 
 const urlRelationsForRouting = () => {
-    const withRelated = urlService.getRequiredRelations();
-    return withRelated.length ? {withRelated} : {};
+  const withRelated = urlService.getRequiredRelations();
+  return withRelated.length ? { withRelated } : {};
 };
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
-    docName: 'search_index',
-    fetchPosts: {
-        headers: {
-            cacheInvalidate: false
-        },
-        permissions: true,
-        query() {
-            const options = {
-                filter: 'type:post',
-                limit: '10000',
-                order: 'updated_at DESC',
-                columns: requiredUrlColumns('posts', ['id', 'slug', 'title', 'excerpt', 'url', 'updated_at', 'visibility']),
-                ...urlRelationsForRouting()
-            };
-
-            return postsService.browsePosts(options);
-        }
+  docName: 'search_index',
+  fetchPosts: {
+    headers: {
+      cacheInvalidate: false,
     },
-    fetchAuthors: {
-        headers: {
-            cacheInvalidate: false
-        },
-        permissions: true,
-        query() {
-            const options = {
-                limit: '10000',
-                order: 'updated_at DESC',
-                columns: requiredUrlColumns('authors', ['id', 'slug', 'name', 'url', 'profile_image'])
-            };
+    permissions: true,
+    query() {
+      const options = {
+        filter: 'type:post',
+        limit: '10000',
+        order: 'updated_at DESC',
+        columns: requiredUrlColumns('posts', [
+          'id',
+          'slug',
+          'title',
+          'excerpt',
+          'url',
+          'updated_at',
+          'visibility',
+        ]),
+        ...urlRelationsForRouting(),
+      };
 
-            return models.Author.findPage(options);
-        }
+      return postsService.browsePosts(options);
     },
-    fetchTags: {
-        headers: {
-            cacheInvalidate: false
-        },
-        permissions: true,
-        query() {
-            const options = {
-                limit: '10000',
-                order: 'updated_at DESC',
-                columns: requiredUrlColumns('tags', ['id', 'slug', 'name', 'url']),
-                filter: 'visibility:public'
-            };
+  },
+  fetchAuthors: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    permissions: true,
+    query() {
+      const options = {
+        limit: '10000',
+        order: 'updated_at DESC',
+        columns: requiredUrlColumns('authors', ['id', 'slug', 'name', 'url', 'profile_image']),
+      };
 
-            return models.Tag.findPage(options);
-        }
-    }
+      return models.Author.findPage(options);
+    },
+  },
+  fetchTags: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    permissions: true,
+    query() {
+      const options = {
+        limit: '10000',
+        order: 'updated_at DESC',
+        columns: requiredUrlColumns('tags', ['id', 'slug', 'name', 'url']),
+        filter: 'visibility:public',
+      };
+
+      return models.Tag.findPage(options);
+    },
+  },
 };
 
 module.exports = controller;

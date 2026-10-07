@@ -7,11 +7,11 @@ coverage:
       default: false
       admin-tests:
         flags:
-        - admin-tests
+          - admin-tests
         threshold: 0.2%
       e2e-tests:
         flags:
-        - e2e-tests
+          - e2e-tests
         threshold: 0.2%
 flags:
   admin-tests:

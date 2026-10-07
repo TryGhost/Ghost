@@ -13,7 +13,7 @@ export default BaseValidator.create({
     },
 
     email(model) {
-        let email = model.email;
+        const email = model.email;
 
         if (isBlank(email)) {
             model.errors.add('email', 'Please enter an email.');
@@ -31,7 +31,7 @@ export default BaseValidator.create({
     },
 
     note(model) {
-        let note = model.note;
+        const note = model.note;
 
         if (!validator.isLength(note || '', {max: 500})) {
             model.errors.add('note', 'Note is too long.');

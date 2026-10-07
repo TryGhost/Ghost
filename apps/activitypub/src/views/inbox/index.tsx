@@ -1,1 +1,1 @@
-export {default} from './inbox';
+export { default } from './inbox';

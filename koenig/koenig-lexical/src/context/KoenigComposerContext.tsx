@@ -77,6 +77,8 @@ export interface CardConfigFeature {
 export interface CardConfig {
     createSnippet?: (snippet: Snippet) => void;
     deleteSnippet?: (snippet: {name: string}) => void;
+    // directory serving the embed renderer on a separate origin; embeds preview in the editor's origin when unset
+    embedPreviewUrl?: string;
     fetchEmbed?: (url: string, options: FetchEmbedOptions) => Promise<EmbedResponse>;
     fetchLabels?: () => Promise<string[]>;
     fetchAutocompleteLinks?: () => Promise<{value: string; label: string}[]>;

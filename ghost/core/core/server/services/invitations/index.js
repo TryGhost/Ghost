@@ -1,5 +1,5 @@
 module.exports = {
-    get accept() {
-        return require('./accept');
-    }
+  get accept() {
+    return require('./accept');
+  },
 };

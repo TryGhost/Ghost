@@ -158,11 +158,7 @@
                 "maxLength": 191
               }
             },
-            "anyOf": [
-              { "required": ["id"] },
-              { "required": ["name"] },
-              { "required": ["slug"] }
-            ]
+            "anyOf": [{ "required": ["id"] }, { "required": ["name"] }, { "required": ["slug"] }]
           },
           {
             "type": "string",
@@ -192,11 +188,7 @@
                 "maxLength": 191
               }
             },
-            "anyOf": [
-              { "required": ["id"] },
-              { "required": ["slug"] },
-              { "required": ["email"] }
-            ]
+            "anyOf": [{ "required": ["id"] }, { "required": ["slug"] }, { "required": ["email"] }]
           },
           {
             "type": "string",

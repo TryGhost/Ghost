@@ -4,13 +4,13 @@
 
 /* Custom reset */
 html {
-    font-size: 62.5%;
+  font-size: 62.5%;
 }
 
 body {
-    font-size: 1.5rem;
+  font-size: 1.5rem;
 }
 
 .ghost-display {
-    display: block !important;
+  display: block !important;
 }

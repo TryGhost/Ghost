@@ -11,7 +11,7 @@ export default class Trigger extends EmberPowerSelectMultipleTrigger {
         this.args.select.actions.close();
 
         if (!event.target.closest('[data-selected-index]')) {
-            let optionMouseDown = this.args.extra.optionMouseDown;
+            const optionMouseDown = this.args.extra.optionMouseDown;
             if (optionMouseDown) {
                 return optionMouseDown(event);
             }
@@ -22,7 +22,7 @@ export default class Trigger extends EmberPowerSelectMultipleTrigger {
 
     @action
     handleOptionTouchStart(event) {
-        let optionTouchStart = this.args.extra.optionTouchStart;
+        const optionTouchStart = this.args.extra.optionTouchStart;
         if (optionTouchStart) {
             return optionTouchStart(event);
         }
@@ -33,7 +33,7 @@ export default class Trigger extends EmberPowerSelectMultipleTrigger {
         // ember-drag-drop's sortable-objects has two-way bindings and will
         // update EPS' selected value directly. We have to create a copy
         // after sorting in order to force the onchange action to be triggered
-        let selectedCopy = this.args.select.selected.slice();
+        const selectedCopy = this.args.select.selected.slice();
         this.args.select.actions.select(selectedCopy);
     }
 
@@ -48,13 +48,13 @@ export default class Trigger extends EmberPowerSelectMultipleTrigger {
         if (e.keyCode === 8) {
             e.stopPropagation();
             if (isBlank(e.target.value)) {
-                let lastSelection = this.args.select.selected[this.args.select.selected.length - 1];
+                const lastSelection = this.args.select.selected[this.args.select.selected.length - 1];
                 if (lastSelection) {
                     this.args.select.actions.select(this.args.buildSelection(lastSelection, this.args.select), e);
                     if (typeof lastSelection === 'string') {
                         this.args.select.actions.search(lastSelection);
                     } else {
-                        let searchField = this.searchField;
+                        const searchField = this.searchField;
                         assert('`{{power-select-multiple}}` requires a `searchField` when the options are not strings to remove options using backspace', searchField);
                         this.args.select.actions.search(get(lastSelection, searchField));
                     }

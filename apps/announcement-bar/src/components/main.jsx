@@ -1,26 +1,24 @@
 import React from 'react';
-import {AnnouncementBar} from './announcement-bar';
+import { AnnouncementBar } from './announcement-bar';
 import setupGhostApi from '../utils/api';
 
-export function Main({apiUrl}) {
-    const api = React.useRef(setupGhostApi({apiUrl}));
-    const [siteSettings, setSiteSettings] = React.useState();
+export function Main({ apiUrl }) {
+  const api = React.useRef(setupGhostApi({ apiUrl }));
+  const [siteSettings, setSiteSettings] = React.useState();
 
-    React.useEffect(() => {
-        if (siteSettings) {
-            return;
-        }
-        const getSiteSettings = async () => {
-            const announcement = await api.current.init();
+  React.useEffect(() => {
+    if (siteSettings) {
+      return;
+    }
+    const getSiteSettings = async () => {
+      const announcement = await api.current.init();
 
-            setSiteSettings(announcement);
-        };
+      setSiteSettings(announcement);
+    };
 
-        getSiteSettings();
-        // We only do this for init
-    }, []);
+    getSiteSettings();
+    // We only do this for init
+  }, []);
 
-    return (
-        <AnnouncementBar settings={siteSettings}/>
-    );
+  return <AnnouncementBar settings={siteSettings} />;
 }

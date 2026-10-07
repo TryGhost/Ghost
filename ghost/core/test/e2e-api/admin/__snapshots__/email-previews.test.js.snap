@@ -231,37 +231,6 @@ table[class=body] a[class=small] {
     font-size: 11px !important;
   }
 }
-.kg-nft-link {
-  display: block;
-  text-decoration: none !important;
-  color: #15212A !important;
-  font-family: inherit !important;
-  font-size: 14px;
-  line-height: 1.3;
-  padding-top: 4px;
-  padding-right: 20px;
-  padding-left: 20px;
-  padding-bottom: 4px;
-}
-.kg-twitter-link {
-  display: block;
-  text-decoration: none !important;
-  color: #15212A !important;
-  font-family: inherit !important;
-  font-size: 15px;
-  padding: 8px;
-  line-height: 1.3;
-}
-.kg-cta-link-accent .kg-cta-sponsor-label a {
-  color: #FF1A75 !important;
-}
-.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
-  color: #15212A;
-  text-decoration: underline;
-}
-.kg-cta-link-accent .kg-cta-text a {
-  color: #FF1A75 !important;
-}
 @media only screen and (max-width: 620px) {
   table.body .kg-bookmark-card {
     width: 90vw;
@@ -365,27 +334,6 @@ table[class=body] a[class=small] {
     font-weight: inherit;
     line-height: inherit;
   }
-}
-.post-title-link {
-  display: block;
-  margin-top: 32px;
-  color: #15212A;
-  text-align: center;
-  line-height: 1.1;
-}
-.post-title-link-left {
-  text-align: left;
-}
-.view-online-link {
-  word-wrap: none;
-  white-space: nowrap;
-  color: #15212a;
-  color: rgba(0, 0, 0, 0.6);
-  text-decoration: underline !important;
-}
-.kg-audio-link {
-  color: #15212a !important;
-  color: rgba(0, 0, 0, 0.6) !important;
 }
 @media only screen and (max-width: 620px) {
   .hide-mobile {
@@ -641,11 +589,6 @@ table.body h2 span {
     font-size: 13px!important;
   }
 }
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-}
 </style>
         <!--[if mso]>
         <style type=\\"text/css\\">
@@ -657,7 +600,7 @@ table.body h2 span {
         <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">This is the actual post content...</span>
         <!-- SPACING TO AVOID BODY TEXT BEING DUPLICATED IN PREVIEW TEXT -->
         <div class=\\"preheader-spacing\\" style=\\"display:none; max-height:0; overflow:hidden; mso-hide: all;\\" aria-hidden=\\"true\\" role=\\"presentation\\">
-            &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD;  &#xA0;
+            &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad;  &#xa0;
         </div>
 
         <!-- HEADER WITH FULL-WIDTH BACKGROUND -->
@@ -670,7 +613,7 @@ table.body h2 span {
                             <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
                 <![endif]-->
                 <tr>
-                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xa0;</td>
                     <td class=\\"container\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
                         <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- Header content constrained to 600px -->
@@ -732,7 +675,7 @@ table.body h2 span {
                         </table>
                         </div>
                     </td>
-                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xa0;</td>
                 </tr>
                 <!--[if mso]>
                             </table>
@@ -752,7 +695,7 @@ table.body h2 span {
                         <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
             <![endif]-->
             <tr>
-                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xa0;</td>
                 <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 20px 0; width: 100%; max-width: 600px; background: #ffffff; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">                            <tr>
@@ -776,7 +719,7 @@ table.body h2 span {
                                     <td class=\\"feedback-buttons-container\\" dir=\\"ltr\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 32px 0 24px; border-bottom: 1px solid #e0e7eb; text-align: center; background-color: #ffffff;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
                                         <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: 100%;\\" width=\\"100%\\">
                                             <tr>
-                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; box-sizing: border-box; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 100%;\\" width=\\"100%\\">
+                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; box-sizing: border-box; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 100%;\\" width=\\"100%\\">
                                                         <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#ghost-comments-root\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
                                                             <img src=\\"https://static.ghost.org/v5.0.0/images/comment-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Comment\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; vertical-align: middle;\\">
                                                             <p class=\\"feedback-button-text\\" style=\\"display: inline-block; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; color: #15212A; font-weight: 500; margin: 1em 0 0 0; line-height: 1.4; word-break: break-word; font-size: 13px;\\">Comment</p>
@@ -793,7 +736,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xa9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -806,7 +749,7 @@ table.body h2 span {
                         <!-- END CENTERED WHITE CONTAINER -->
                     </div>
                 </td>
-                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xa0;</td>
             </tr>
 
             <!--[if mso]>
@@ -1027,7 +970,7 @@ exports[`Email Preview API Read can read post email preview with email card and 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "36982",
+  "content-length": "35705",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1172,37 +1115,6 @@ table[class=body] a[class=small] {
     font-size: 11px !important;
   }
 }
-.kg-nft-link {
-  display: block;
-  text-decoration: none !important;
-  color: #15212A !important;
-  font-family: inherit !important;
-  font-size: 14px;
-  line-height: 1.3;
-  padding-top: 4px;
-  padding-right: 20px;
-  padding-left: 20px;
-  padding-bottom: 4px;
-}
-.kg-twitter-link {
-  display: block;
-  text-decoration: none !important;
-  color: #15212A !important;
-  font-family: inherit !important;
-  font-size: 15px;
-  padding: 8px;
-  line-height: 1.3;
-}
-.kg-cta-link-accent .kg-cta-sponsor-label a {
-  color: #FF1A75 !important;
-}
-.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
-  color: #15212A;
-  text-decoration: underline;
-}
-.kg-cta-link-accent .kg-cta-text a {
-  color: #FF1A75 !important;
-}
 @media only screen and (max-width: 620px) {
   table.body .kg-bookmark-card {
     width: 90vw;
@@ -1306,27 +1218,6 @@ table[class=body] a[class=small] {
     font-weight: inherit;
     line-height: inherit;
   }
-}
-.post-title-link {
-  display: block;
-  margin-top: 32px;
-  color: #15212A;
-  text-align: center;
-  line-height: 1.1;
-}
-.post-title-link-left {
-  text-align: left;
-}
-.view-online-link {
-  word-wrap: none;
-  white-space: nowrap;
-  color: #15212a;
-  color: rgba(0, 0, 0, 0.6);
-  text-decoration: underline !important;
-}
-.kg-audio-link {
-  color: #15212a !important;
-  color: rgba(0, 0, 0, 0.6) !important;
 }
 @media only screen and (max-width: 620px) {
   .hide-mobile {
@@ -1582,11 +1473,6 @@ table.body h2 span {
     font-size: 13px!important;
   }
 }
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-}
 </style>
         <!--[if mso]>
         <style type=\\"text/css\\">
@@ -1598,7 +1484,7 @@ table.body h2 span {
         <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">This is my custom excerpt!</span>
         <!-- SPACING TO AVOID BODY TEXT BEING DUPLICATED IN PREVIEW TEXT -->
         <div class=\\"preheader-spacing\\" style=\\"display:none; max-height:0; overflow:hidden; mso-hide: all;\\" aria-hidden=\\"true\\" role=\\"presentation\\">
-            &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD;  &#xA0;
+            &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad;  &#xa0;
         </div>
 
         <!-- HEADER WITH FULL-WIDTH BACKGROUND -->
@@ -1611,7 +1497,7 @@ table.body h2 span {
                             <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
                 <![endif]-->
                 <tr>
-                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xa0;</td>
                     <td class=\\"container\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
                         <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- Header content constrained to 600px -->
@@ -1678,7 +1564,7 @@ table.body h2 span {
                         </table>
                         </div>
                     </td>
-                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xa0;</td>
                 </tr>
                 <!--[if mso]>
                             </table>
@@ -1698,7 +1584,7 @@ table.body h2 span {
                         <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
             <![endif]-->
             <tr>
-                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xa0;</td>
                 <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 20px 0; width: 100%; max-width: 600px; background: #ffffff; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">                            <tr>
@@ -1722,7 +1608,7 @@ table.body h2 span {
                                     <td class=\\"feedback-buttons-container\\" dir=\\"ltr\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 32px 0 24px; border-bottom: 1px solid #e0e7eb; text-align: center; background-color: #ffffff;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
                                         <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: 100%;\\" width=\\"100%\\">
                                             <tr>
-                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; box-sizing: border-box; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 100%;\\" width=\\"100%\\">
+                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; box-sizing: border-box; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 100%;\\" width=\\"100%\\">
                                                         <a href=\\"http://127.0.0.1:2369/html-ipsum/#ghost-comments-root\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
                                                             <img src=\\"https://static.ghost.org/v5.0.0/images/comment-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Comment\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; vertical-align: middle;\\">
                                                             <p class=\\"feedback-button-text\\" style=\\"display: inline-block; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; color: #15212A; font-weight: 500; margin: 1em 0 0 0; line-height: 1.4; word-break: break-word; font-size: 13px;\\">Comment</p>
@@ -1739,7 +1625,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xa9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -1752,7 +1638,7 @@ table.body h2 span {
                         <!-- END CENTERED WHITE CONTAINER -->
                     </div>
                 </td>
-                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xa0;</td>
             </tr>
 
             <!--[if mso]>
@@ -1990,7 +1876,7 @@ exports[`Email Preview API Read can read post email preview with fields 4: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "41302",
+  "content-length": "40025",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2166,37 +2052,6 @@ table[class=body] a[class=small] {
     font-size: 11px !important;
   }
 }
-.kg-nft-link {
-  display: block;
-  text-decoration: none !important;
-  color: #15212A !important;
-  font-family: inherit !important;
-  font-size: 14px;
-  line-height: 1.3;
-  padding-top: 4px;
-  padding-right: 20px;
-  padding-left: 20px;
-  padding-bottom: 4px;
-}
-.kg-twitter-link {
-  display: block;
-  text-decoration: none !important;
-  color: #15212A !important;
-  font-family: inherit !important;
-  font-size: 15px;
-  padding: 8px;
-  line-height: 1.3;
-}
-.kg-cta-link-accent .kg-cta-sponsor-label a {
-  color: #FF1A75 !important;
-}
-.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
-  color: #15212A;
-  text-decoration: underline;
-}
-.kg-cta-link-accent .kg-cta-text a {
-  color: #FF1A75 !important;
-}
 @media only screen and (max-width: 620px) {
   table.body .kg-bookmark-card {
     width: 90vw;
@@ -2300,27 +2155,6 @@ table[class=body] a[class=small] {
     font-weight: inherit;
     line-height: inherit;
   }
-}
-.post-title-link {
-  display: block;
-  margin-top: 32px;
-  color: #15212A;
-  text-align: center;
-  line-height: 1.1;
-}
-.post-title-link-left {
-  text-align: left;
-}
-.view-online-link {
-  word-wrap: none;
-  white-space: nowrap;
-  color: #15212a;
-  color: rgba(0, 0, 0, 0.6);
-  text-decoration: underline !important;
-}
-.kg-audio-link {
-  color: #15212a !important;
-  color: rgba(0, 0, 0, 0.6) !important;
 }
 @media only screen and (max-width: 620px) {
   .hide-mobile {
@@ -2576,11 +2410,6 @@ table.body h2 span {
     font-size: 13px!important;
   }
 }
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-}
 </style>
         <!--[if mso]>
         <style type=\\"text/css\\">
@@ -2592,7 +2421,7 @@ table.body h2 span {
         <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">Testing links in email excerpt and apostrophes &#39;</span>
         <!-- SPACING TO AVOID BODY TEXT BEING DUPLICATED IN PREVIEW TEXT -->
         <div class=\\"preheader-spacing\\" style=\\"display:none; max-height:0; overflow:hidden; mso-hide: all;\\" aria-hidden=\\"true\\" role=\\"presentation\\">
-            &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD;  &#xA0;
+            &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad;  &#xa0;
         </div>
 
         <!-- HEADER WITH FULL-WIDTH BACKGROUND -->
@@ -2605,7 +2434,7 @@ table.body h2 span {
                             <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
                 <![endif]-->
                 <tr>
-                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xa0;</td>
                     <td class=\\"container\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
                         <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- Header content constrained to 600px -->
@@ -2667,7 +2496,7 @@ table.body h2 span {
                         </table>
                         </div>
                     </td>
-                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xa0;</td>
                 </tr>
                 <!--[if mso]>
                             </table>
@@ -2687,7 +2516,7 @@ table.body h2 span {
                         <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
             <![endif]-->
             <tr>
-                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xa0;</td>
                 <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 20px 0; width: 100%; max-width: 600px; background: #ffffff; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">                            <tr>
@@ -2711,7 +2540,7 @@ table.body h2 span {
                                     <td class=\\"feedback-buttons-container\\" dir=\\"ltr\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 32px 0 24px; border-bottom: 1px solid #e0e7eb; text-align: center; background-color: #ffffff;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
                                         <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: 100%;\\" width=\\"100%\\">
                                             <tr>
-                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; box-sizing: border-box; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 100%;\\" width=\\"100%\\">
+                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; box-sizing: border-box; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 100%;\\" width=\\"100%\\">
                                                         <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#ghost-comments-root\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
                                                             <img src=\\"https://static.ghost.org/v5.0.0/images/comment-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Comment\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; vertical-align: middle;\\">
                                                             <p class=\\"feedback-button-text\\" style=\\"display: inline-block; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; color: #15212A; font-weight: 500; margin: 1em 0 0 0; line-height: 1.4; word-break: break-word; font-size: 13px;\\">Comment</p>
@@ -2728,7 +2557,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xa9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -2741,7 +2570,7 @@ table.body h2 span {
                         <!-- END CENTERED WHITE CONTAINER -->
                     </div>
                 </td>
-                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xa0;</td>
             </tr>
 
             <!--[if mso]>
@@ -2969,7 +2798,7 @@ exports[`Email Preview API Read has custom content transformations for email com
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "36694",
+  "content-length": "35417",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3230,7 +3059,7 @@ table.body figcaption a {
                         <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
             <![endif]-->
             <tr>
-                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xa0;</td>
                 <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
@@ -3295,7 +3124,7 @@ table.body figcaption a {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box; padding: 0 20px;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; font-size: 13px; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2023 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; font-size: 13px; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xa9; 2023 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -3309,7 +3138,7 @@ table.body figcaption a {
                         <!-- END CENTERED WHITE CONTAINER -->
                     </div>
                 </td>
-                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xa0;</td>
             </tr>
 
             <!--[if mso]>
@@ -3474,37 +3303,6 @@ table[class=body] a[class=small] {
     font-size: 11px !important;
   }
 }
-.kg-nft-link {
-  display: block;
-  text-decoration: none !important;
-  color: #15212A !important;
-  font-family: inherit !important;
-  font-size: 14px;
-  line-height: 1.3;
-  padding-top: 4px;
-  padding-right: 20px;
-  padding-left: 20px;
-  padding-bottom: 4px;
-}
-.kg-twitter-link {
-  display: block;
-  text-decoration: none !important;
-  color: #15212A !important;
-  font-family: inherit !important;
-  font-size: 15px;
-  padding: 8px;
-  line-height: 1.3;
-}
-.kg-cta-link-accent .kg-cta-sponsor-label a {
-  color: #FF1A75 !important;
-}
-.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
-  color: #15212A;
-  text-decoration: underline;
-}
-.kg-cta-link-accent .kg-cta-text a {
-  color: #FF1A75 !important;
-}
 @media only screen and (max-width: 620px) {
   table.body .kg-bookmark-card {
     width: 90vw;
@@ -3608,27 +3406,6 @@ table[class=body] a[class=small] {
     font-weight: inherit;
     line-height: inherit;
   }
-}
-.post-title-link {
-  display: block;
-  margin-top: 32px;
-  color: #15212A;
-  text-align: center;
-  line-height: 1.1;
-}
-.post-title-link-left {
-  text-align: left;
-}
-.view-online-link {
-  word-wrap: none;
-  white-space: nowrap;
-  color: #15212a;
-  color: rgba(0, 0, 0, 0.6);
-  text-decoration: underline !important;
-}
-.kg-audio-link {
-  color: #15212a !important;
-  color: rgba(0, 0, 0, 0.6) !important;
 }
 @media only screen and (max-width: 620px) {
   .hide-mobile {
@@ -3884,11 +3661,6 @@ table.body h2 span {
     font-size: 13px!important;
   }
 }
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-}
 </style>
         <!--[if mso]>
         <style type=\\"text/css\\">
@@ -3900,7 +3672,7 @@ table.body h2 span {
         <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">Testing links in email excerpt and apostrophes &#39;</span>
         <!-- SPACING TO AVOID BODY TEXT BEING DUPLICATED IN PREVIEW TEXT -->
         <div class=\\"preheader-spacing\\" style=\\"display:none; max-height:0; overflow:hidden; mso-hide: all;\\" aria-hidden=\\"true\\" role=\\"presentation\\">
-            &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD;  &#xA0;
+            &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad;  &#xa0;
         </div>
 
         <!-- HEADER WITH FULL-WIDTH BACKGROUND -->
@@ -3913,7 +3685,7 @@ table.body h2 span {
                             <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
                 <![endif]-->
                 <tr>
-                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xa0;</td>
                     <td class=\\"container title-serif\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
                         <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- Header content constrained to 600px -->
@@ -3982,7 +3754,7 @@ table.body h2 span {
                         </table>
                         </div>
                     </td>
-                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xa0;</td>
                 </tr>
                 <!--[if mso]>
                             </table>
@@ -4002,7 +3774,7 @@ table.body h2 span {
                         <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
             <![endif]-->
             <tr>
-                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xa0;</td>
                 <td class=\\"container title-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 20px 0; width: 100%; max-width: 600px; background: #ffffff; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">                            <tr>
@@ -4026,7 +3798,7 @@ table.body h2 span {
                                     <td class=\\"feedback-buttons-container\\" dir=\\"ltr\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 32px 0 24px; border-bottom: 1px solid #e0e7eb; text-align: center; background-color: #ffffff;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
                                         <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: 100%;\\" width=\\"100%\\">
                                             <tr>
-                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; box-sizing: border-box; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 100%;\\" width=\\"100%\\">
+                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; box-sizing: border-box; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 100%;\\" width=\\"100%\\">
                                                         <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#ghost-comments-root\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
                                                             <img src=\\"https://static.ghost.org/v5.0.0/images/comment-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Comment\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; vertical-align: middle;\\">
                                                             <p class=\\"feedback-button-text\\" style=\\"display: inline-block; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; color: #15212A; font-weight: 500; margin: 1em 0 0 0; line-height: 1.4; word-break: break-word; font-size: 13px;\\">Comment</p>
@@ -4043,7 +3815,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xa9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -4056,7 +3828,7 @@ table.body h2 span {
                         <!-- END CENTERED WHITE CONTAINER -->
                     </div>
                 </td>
-                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xa0;</td>
             </tr>
 
             <!--[if mso]>
@@ -4291,7 +4063,7 @@ exports[`Email Preview API Read uses the newsletter provided through ?newsletter
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "37539",
+  "content-length": "36262",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4557,7 +4329,7 @@ table.body figcaption a {
         <![endif]-->
 
         <tr>
-            <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+            <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xa0;</td>
             <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
                 <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
 
@@ -4637,7 +4409,7 @@ table.body figcaption a {
                                 <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                     
                                     <tr>
-                                        <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; font-size: 13px; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2022 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?preview=1\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                        <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; font-size: 13px; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xa9; 2022 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?preview=1\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                     </tr>
 
                                     
@@ -4653,7 +4425,7 @@ table.body figcaption a {
                     <!-- END CENTERED WHITE CONTAINER -->
                 </div>
             </td>
-            <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+            <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xa0;</td>
         </tr>
 
     <!--[if mso]>
@@ -4822,37 +4594,6 @@ table[class=body] a[class=small] {
     font-size: 11px !important;
   }
 }
-.kg-nft-link {
-  display: block;
-  text-decoration: none !important;
-  color: #15212A !important;
-  font-family: inherit !important;
-  font-size: 14px;
-  line-height: 1.3;
-  padding-top: 4px;
-  padding-right: 20px;
-  padding-left: 20px;
-  padding-bottom: 4px;
-}
-.kg-twitter-link {
-  display: block;
-  text-decoration: none !important;
-  color: #15212A !important;
-  font-family: inherit !important;
-  font-size: 15px;
-  padding: 8px;
-  line-height: 1.3;
-}
-.kg-cta-link-accent .kg-cta-sponsor-label a {
-  color: #FF1A75 !important;
-}
-.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
-  color: #15212A;
-  text-decoration: underline;
-}
-.kg-cta-link-accent .kg-cta-text a {
-  color: #FF1A75 !important;
-}
 @media only screen and (max-width: 620px) {
   table.body .kg-bookmark-card {
     width: 90vw;
@@ -4956,27 +4697,6 @@ table[class=body] a[class=small] {
     font-weight: inherit;
     line-height: inherit;
   }
-}
-.post-title-link {
-  display: block;
-  margin-top: 32px;
-  color: #15212A;
-  text-align: center;
-  line-height: 1.1;
-}
-.post-title-link-left {
-  text-align: left;
-}
-.view-online-link {
-  word-wrap: none;
-  white-space: nowrap;
-  color: #15212a;
-  color: rgba(0, 0, 0, 0.6);
-  text-decoration: underline !important;
-}
-.kg-audio-link {
-  color: #15212a !important;
-  color: rgba(0, 0, 0, 0.6) !important;
 }
 @media only screen and (max-width: 620px) {
   .hide-mobile {
@@ -5232,11 +4952,6 @@ table.body h2 span {
     font-size: 13px!important;
   }
 }
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-}
 </style>
         <!--[if mso]>
         <style type=\\"text/css\\">
@@ -5248,7 +4963,7 @@ table.body h2 span {
         <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">Testing links in email excerpt and apostrophes &#39;</span>
         <!-- SPACING TO AVOID BODY TEXT BEING DUPLICATED IN PREVIEW TEXT -->
         <div class=\\"preheader-spacing\\" style=\\"display:none; max-height:0; overflow:hidden; mso-hide: all;\\" aria-hidden=\\"true\\" role=\\"presentation\\">
-            &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD;  &#xA0;
+            &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#x2007;&#x34f; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad; &#xad;  &#xa0;
         </div>
 
         <!-- HEADER WITH FULL-WIDTH BACKGROUND -->
@@ -5261,7 +4976,7 @@ table.body h2 span {
                             <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
                 <![endif]-->
                 <tr>
-                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xa0;</td>
                     <td class=\\"container title-serif\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
                         <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- Header content constrained to 600px -->
@@ -5330,7 +5045,7 @@ table.body h2 span {
                         </table>
                         </div>
                     </td>
-                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xa0;</td>
                 </tr>
                 <!--[if mso]>
                             </table>
@@ -5350,7 +5065,7 @@ table.body h2 span {
                         <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
             <![endif]-->
             <tr>
-                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xa0;</td>
                 <td class=\\"container title-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 20px 0; width: 100%; max-width: 600px; background: #ffffff; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">                            <tr>
@@ -5374,7 +5089,7 @@ table.body h2 span {
                                     <td class=\\"feedback-buttons-container\\" dir=\\"ltr\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 32px 0 24px; border-bottom: 1px solid #e0e7eb; text-align: center; background-color: #ffffff;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
                                         <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: 100%;\\" width=\\"100%\\">
                                             <tr>
-                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; box-sizing: border-box; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 100%;\\" width=\\"100%\\">
+                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; box-sizing: border-box; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 100%;\\" width=\\"100%\\">
                                                         <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#ghost-comments-root\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
                                                             <img src=\\"https://static.ghost.org/v5.0.0/images/comment-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Comment\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; vertical-align: middle;\\">
                                                             <p class=\\"feedback-button-text\\" style=\\"display: inline-block; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; color: #15212A; font-weight: 500; margin: 1em 0 0 0; line-height: 1.4; word-break: break-word; font-size: 13px;\\">Comment</p>
@@ -5391,7 +5106,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xa9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -5404,7 +5119,7 @@ table.body h2 span {
                         <!-- END CENTERED WHITE CONTAINER -->
                     </div>
                 </td>
-                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xa0;</td>
             </tr>
 
             <!--[if mso]>
@@ -5639,7 +5354,7 @@ exports[`Email Preview API Read uses the posts newsletter by default 4: [headers
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "37539",
+  "content-length": "36262",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

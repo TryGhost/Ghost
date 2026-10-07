@@ -33,12 +33,12 @@ export default class RatioZoom extends Modifier {
 
         const offsets = element.getBoundingClientRect();
 
-        let maxHeight = {
+        const maxHeight = {
             width: offsets.height / ratio,
             height: offsets.height
         };
 
-        let maxWidth = {
+        const maxWidth = {
             width: offsets.width,
             height: offsets.width * ratio
         };

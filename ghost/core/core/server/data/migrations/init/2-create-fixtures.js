@@ -1,9 +1,9 @@
-const {fixtureManager} = require('../../schema/fixtures');
+const { fixtureManager } = require('../../schema/fixtures');
 
 module.exports.config = {
-    transaction: true
+  transaction: true,
 };
 
 module.exports.up = async function insertFixtures(options) {
-    return await fixtureManager.addAllFixtures(options);
+  return await fixtureManager.addAllFixtures(options);
 };

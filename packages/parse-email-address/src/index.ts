@@ -1,20 +1,20 @@
-import {parseEmailAddress as upstreamParseEmailAddress} from 'parse-email-address';
-import {domainToASCII} from 'node:url';
+import { parseEmailAddress as upstreamParseEmailAddress } from 'parse-email-address';
+import { domainToASCII } from 'node:url';
 
 export const parseEmailAddress = (
-    emailAddress: string
+  emailAddress: string,
 ): null | { local: string; domain: string } => {
-    const upstreamParsed = upstreamParseEmailAddress(emailAddress);
-    if (!upstreamParsed) {
-        return null;
-    }
+  const upstreamParsed = upstreamParseEmailAddress(emailAddress);
+  if (!upstreamParsed) {
+    return null;
+  }
 
-    const {user: local, domain: rawDomain} = upstreamParsed;
+  const { user: local, domain: rawDomain } = upstreamParsed;
 
-    const domain = domainToASCII(rawDomain);
-    if (!domain) {
-        return null;
-    }
+  const domain = domainToASCII(rawDomain);
+  if (!domain) {
+    return null;
+  }
 
-    return {local, domain};
+  return { local, domain };
 };

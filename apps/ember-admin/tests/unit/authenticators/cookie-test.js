@@ -59,8 +59,8 @@ describe('Unit: Authenticator: cookie', () => {
 
     describe('#authenticate', function () {
         it('posts the username and password to the sessionEndpoint and returns the promise', function () {
-            let authenticator = this.owner.lookup('authenticator:cookie');
-            let post = authenticator.ajax.post;
+            const authenticator = this.owner.lookup('authenticator:cookie');
+            const post = authenticator.ajax.post;
 
             return authenticator.authenticate({identification: 'AzureDiamond', password: 'hunter2'}).then(() => {
                 expect(post.args[0][0]).to.equal(`${ghostPaths().apiRoot}/session`);
@@ -80,8 +80,8 @@ describe('Unit: Authenticator: cookie', () => {
         });
 
         it('puts the token to the sessionVerifyEndpoint and returns the promise', function () {
-            let authenticator = this.owner.lookup('authenticator:cookie');
-            let put = authenticator.ajax.put;
+            const authenticator = this.owner.lookup('authenticator:cookie');
+            const put = authenticator.ajax.put;
 
             return authenticator.authenticate({token: '123456'}).then(() => {
                 expect(put.args[0][0]).to.equal(`${ghostPaths().apiRoot}/session/verify`);
@@ -102,8 +102,8 @@ describe('Unit: Authenticator: cookie', () => {
 
     describe('#invalidate', function () {
         it('makes a delete request to the sessionEndpoint', function () {
-            let authenticator = this.owner.lookup('authenticator:cookie');
-            let del = authenticator.ajax.del;
+            const authenticator = this.owner.lookup('authenticator:cookie');
+            const del = authenticator.ajax.del;
 
             return authenticator.invalidate().then(() => {
                 expect(del.args[0][0]).to.equal(`${ghostPaths().apiRoot}/session`);

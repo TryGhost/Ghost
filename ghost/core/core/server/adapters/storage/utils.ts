@@ -13,27 +13,27 @@ import urlUtils from '../../../shared/url-utils';
  * local file storage.
  */
 export function getLocalImagesStoragePath(imagePath: string): string {
-    // The '/' in urlJoin is necessary to add the '/' to `content/images`, if no subdirectory is setup
-    const urlRegExp = new RegExp(`^${urlUtils.urlJoin(
-        urlUtils.urlFor('home', true),
-        urlUtils.getSubdir(),
-        '/',
-        urlUtils.STATIC_IMAGE_URL_PREFIX)}`
-    );
+  // The '/' in urlJoin is necessary to add the '/' to `content/images`, if no subdirectory is setup
+  const urlRegExp = new RegExp(
+    `^${urlUtils.urlJoin(
+      urlUtils.urlFor('home', true),
+      urlUtils.getSubdir(),
+      '/',
+      urlUtils.STATIC_IMAGE_URL_PREFIX,
+    )}`,
+  );
 
-    const filePathRegExp = new RegExp(`^${urlUtils.urlJoin(
-        urlUtils.getSubdir(),
-        '/',
-        urlUtils.STATIC_IMAGE_URL_PREFIX)}`
-    );
+  const filePathRegExp = new RegExp(
+    `^${urlUtils.urlJoin(urlUtils.getSubdir(), '/', urlUtils.STATIC_IMAGE_URL_PREFIX)}`,
+  );
 
-    if (imagePath.match(urlRegExp)) {
-        return imagePath.replace(urlRegExp, '');
-    } else if (imagePath.match(filePathRegExp)) {
-        return imagePath.replace(filePathRegExp, '');
-    } else {
-        return imagePath;
-    }
+  if (imagePath.match(urlRegExp)) {
+    return imagePath.replace(urlRegExp, '');
+  } else if (imagePath.match(filePathRegExp)) {
+    return imagePath.replace(filePathRegExp, '');
+  } else {
+    return imagePath;
+  }
 }
 
 /**
@@ -42,7 +42,7 @@ export function getLocalImagesStoragePath(imagePath: string): string {
  * @param imagePath as URL or filepath
  */
 export function isLocalImage(imagePath: string): boolean {
-    return getLocalImagesStoragePath(imagePath) !== imagePath;
+  return getLocalImagesStoragePath(imagePath) !== imagePath;
 }
 
 /**
@@ -51,10 +51,10 @@ export function isLocalImage(imagePath: string): boolean {
  * @param imagePath as URL or filepath
  */
 export function isInternalImage(imagePath: string): boolean {
-    if (isLocalImage(imagePath)) {
-        return true;
-    }
+  if (isLocalImage(imagePath)) {
+    return true;
+  }
 
-    const imageBaseUrl = (config.get('urls:image') || '').replace(/\/+$/, '');
-    return !!(imageBaseUrl && imagePath.startsWith(imageBaseUrl + '/'));
+  const imageBaseUrl = (config.get('urls:image') || '').replace(/\/+$/, '');
+  return !!(imageBaseUrl && imagePath.startsWith(imageBaseUrl + '/'));
 }

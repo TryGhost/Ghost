@@ -1,91 +1,257 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest';
+import { page } from 'vitest/browser';
 
-import { fakeMembers, label, member, renderAdminApp, tier } from "@test-utils/acceptance";
-import { membersScreen } from "./members.screen";
+import {
+  currentRoute,
+  fakeAdminEndpoint,
+  fakeMemberCustomFields,
+  fakeMembers,
+  label,
+  member,
+  renderAdminApp,
+  settingsResponse,
+  tier,
+} from '@test-utils/acceptance';
+import { membersScreen } from './members.screen';
 
-describe("Members list", () => {
-    it("lists members", async () => {
-        fakeMembers([
-            member({ name: "First Member" }),
-            member({ name: "Second Member" }),
-            member({ name: "Third Member" }),
-        ]);
-        await renderAdminApp("/members");
+describe('Members list', () => {
+  it('lists members', async () => {
+    fakeMembers([
+      member({ name: 'First Member' }),
+      member({ name: 'Second Member' }),
+      member({ name: 'Third Member' }),
+    ]);
+    await renderAdminApp('/members');
 
-        await expect(membersScreen.memberRows()).toHaveCount(3);
-        await expect.element(membersScreen.link("First Member")).toBeVisible();
-        await expect.element(membersScreen.link("Second Member")).toBeVisible();
-        await expect.element(membersScreen.link("Third Member")).toBeVisible();
+    await expect(membersScreen.memberRows()).toHaveCount(3);
+    await expect.element(membersScreen.link('First Member')).toBeVisible();
+    await expect.element(membersScreen.link('Second Member')).toBeVisible();
+    await expect.element(membersScreen.link('Third Member')).toBeVisible();
+  });
+
+  it('filters members by label from the URL', async () => {
+    const vip = label({ name: 'VIP' });
+    const membersApi = fakeMembers([
+      member({ name: 'Labelled One', labels: [vip] }),
+      member({ name: 'Labelled Two', labels: [vip] }),
+    ]);
+    await renderAdminApp('/members?filter=label:VIP');
+
+    await expect.element(membersScreen.link('Labelled One')).toBeVisible();
+    await expect(membersScreen.memberRows()).toHaveCount(2);
+
+    // The URL's `label:VIP` is re-serialized into the multiselect list
+    // form on the API request.
+    await expect(membersApi).toHaveSentFilter('label:[VIP]');
+  });
+
+  it('shows no results state when search matches nothing', async () => {
+    const membersApi = fakeMembers(({ search }) =>
+      search ? [] : [member({ name: 'Existing Member' })],
+    );
+    await renderAdminApp('/members');
+
+    await expect(membersScreen.memberRows()).toHaveCount(1);
+
+    await page.getByRole('button', { name: 'Search members', exact: true }).click();
+    await membersScreen.searchInput().fill('nonexistentnamestring');
+
+    await expect.element(membersScreen.noResults()).toBeVisible();
+    await expect.element(membersScreen.showAllButton()).toBeVisible();
+    await expect(membersApi).toHaveSentSearch('nonexistentnamestring');
+  });
+
+  it("finds tiers by slug in the tier filter's search dropdown", async () => {
+    // The tier filter only appears once more than one paid tier exists.
+    const gold = tier({ name: 'Gold Tier' });
+    const silver = tier({ name: 'Silver Tier', slug: 'silver-tier' });
+    const membersApi = fakeMembers(
+      ({ filter }) =>
+        filter
+          ? [member({ name: 'Silver Member' })]
+          : [
+              member({ name: 'Paid Member' }),
+              member({ name: 'Silver Member' }),
+              member({ name: 'Free Member' }),
+            ],
+      { tiers: [gold, silver] },
+    );
+    await renderAdminApp('/members');
+
+    await expect(membersScreen.memberRows()).toHaveCount(3);
+
+    await membersScreen.addSearchableFilter('Membership tier', silver.slug, silver.name);
+
+    await expect(membersApi).toHaveSentFilter(`tier_id:[${silver.id}]`);
+    await expect(membersScreen.memberRows()).toHaveCount(1);
+    await expect.element(membersScreen.link('Silver Member')).toBeVisible();
+  });
+
+  it('builds a custom field filter without losing the page to the hydration gate', async () => {
+    const fieldsApi = fakeMemberCustomFields([
+      {
+        namespace: 'custom',
+        key: 'employer',
+        name: 'Employer',
+        type: 'short_text',
+        status: 'active',
+        access: { member: 'none' },
+        created_at: '2026-08-05T00:00:00.000Z',
+        updated_at: null,
+      },
+    ]);
+    const membersApi = fakeMembers(({ filter }) =>
+      filter ? [member({ name: 'Acme Member' })] : [member({ name: 'Acme Member' }), member()],
+    );
+    await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+
+    await expect(membersScreen.memberRows()).toHaveCount(2);
+
+    // The filter bar fetches the archived-inclusive catalog up front: it is the query the
+    // hydration gate waits on once a filter names a custom field, so it must be answered
+    // before a field can be picked — a cold cache here unmounts the page to a spinner on
+    // the first keystroke of the value.
+    await expect(fieldsApi).toHaveSentFilter('status:[active,archived]');
+
+    await membersScreen.openFilterField('Employer');
+    const valueInput = page.getByRole('textbox', { name: 'Employer value' });
+    await valueInput.fill('Acme');
+
+    // Still here: typing the value must not unmount the filter UI.
+    await expect.element(valueInput).toBeVisible();
+    await expect(membersApi).toHaveSentFilter(
+      "(metafields.key:'custom.employer'+metafields.value:~'Acme')",
+    );
+    await expect(membersScreen.memberRows()).toHaveCount(1);
+
+    // Every catalog browse this flow made was the archived-inclusive one the gate shares.
+    expect(fieldsApi.requests.map((request) => request.filter)).toEqual(
+      fieldsApi.requests.map(() => 'status:[active,archived]'),
+    );
+  });
+
+  // The deploy-compatibility rule in apps/admin/README.md: an Admin deployed ahead of a
+  // Core without the definitions endpoint must keep filtering intact. Adding a filter swaps
+  // the filter bar between its two placements, and each one asks for the definitions; the
+  // failed answer has to hold across that, or every swap asks again, the answer flips the
+  // page's field catalog, and the URL is rewritten in a loop that never settles.
+  it('adds a filter against a Core without the definitions endpoint', async () => {
+    const membersApi = fakeMembers(({ filter }) =>
+      filter
+        ? [member({ name: 'Alice Alpha' })]
+        : [member({ name: 'Alice Alpha' }), member({ name: 'Bob Beta' })],
+    );
+    // After fakeMembers, which serves an empty definitions list on behalf of specs that never
+    // mention custom fields: a handler registered later wins.
+    const definitionsApi = fakeAdminEndpoint(
+      'GET',
+      /^\/members\/metafields\/custom\/(\?|$)/,
+      { errors: [{ type: 'NotFoundError', message: 'Resource not found error.' }] },
+      { status: 404 },
+    );
+    await renderAdminApp('/members');
+
+    await expect(membersScreen.memberRows()).toHaveCount(2);
+    // The list doesn't wait for the definitions lookup, so let it land before counting.
+    await expect.poll(() => definitionsApi.requests.length).toBeGreaterThan(0);
+    const requestsBeforeFilter = definitionsApi.requests.length;
+
+    await membersScreen.addFilter('Name', 'Alice');
+
+    await expect(membersApi).toHaveSentFilter(/name:~'Alice'/);
+    await expect(membersScreen.memberRows()).toHaveCount(1);
+    // The loop asks again roughly every round trip, so a short pause is enough to catch it.
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 500);
     });
+    expect(definitionsApi.requests.length).toBe(requestsBeforeFilter);
+    expect(currentRoute()).toMatch(/^\/members\?filter=/);
+  });
 
-    it("filters members by label from the URL", async () => {
-        const vip = label({ name: "VIP" });
-        const membersApi = fakeMembers([
-            member({ name: "Labelled One", labels: [vip] }),
-            member({ name: "Labelled Two", labels: [vip] }),
-        ]);
-        await renderAdminApp("/members?filter=label:VIP");
+  it('builds a name filter through the filters UI', async () => {
+    const membersApi = fakeMembers(({ filter }) =>
+      filter
+        ? [member({ name: 'Alice Alpha' })]
+        : [member({ name: 'Alice Alpha' }), member({ name: 'Bob Beta' })],
+    );
+    await renderAdminApp('/members');
 
-        await expect.element(membersScreen.link("Labelled One")).toBeVisible();
-        await expect(membersScreen.memberRows()).toHaveCount(2);
+    await expect(membersScreen.memberRows()).toHaveCount(2);
 
-        // The URL's `label:VIP` is re-serialized into the multiselect list
-        // form on the API request.
-        await expect(membersApi).toHaveSentFilter("label:[VIP]");
+    await membersScreen.addFilter('Name', 'Alice');
+
+    await expect(membersApi).toHaveSentFilter(/name:~'Alice'/);
+    await expect(membersScreen.memberRows()).toHaveCount(1);
+    await expect.element(membersScreen.link('Alice Alpha')).toBeVisible();
+  });
+
+  // A navigation that lands while the list is syncing its filters to the URL must not be
+  // overwritten: leaving a saved view and clicking straight back lands on the view.
+  it('reopens a saved view clicked straight after leaving it', async () => {
+    const vip = label({ name: 'VIP' });
+    const viewFilter = 'label:[VIP]';
+    fakeMembers(({ filter }) =>
+      filter
+        ? [member({ name: 'Vip One', labels: [vip] })]
+        : [member({ name: 'Vip One', labels: [vip] }), member({ name: 'Plain' })],
+    );
+    await renderAdminApp(`/members?filter=${encodeURIComponent(viewFilter)}`, {
+      boot: {
+        browseSettings: {
+          response: settingsResponse({
+            settings: {
+              shared_views: JSON.stringify([
+                { name: 'VIPs', route: 'members', filter: { filter: viewFilter } },
+              ]),
+            },
+          }),
+        },
+      },
     });
+    await expect(membersScreen.memberRows()).toHaveCount(1);
 
-    it("shows no results state when search matches nothing", async () => {
-        const membersApi = fakeMembers(
-            ({ search }) => (search ? [] : [member({ name: "Existing Member" })])
-        );
-        await renderAdminApp("/members");
+    const wait = (ms: number) =>
+      new Promise<void>((resolve) => {
+        setTimeout(resolve, ms);
+      });
+    // The list's own "Members" link, not the heading: the sidebar has one by that href.
+    const membersLink = () =>
+      document.querySelector<HTMLAnchorElement>('a[href="#/members"]') ?? undefined;
+    await expect.element(membersScreen.link('VIPs')).toBeVisible();
 
-        await expect(membersScreen.memberRows()).toHaveCount(1);
+    const onTheView = () =>
+      currentRoute().includes('filter=') &&
+      document.querySelectorAll('[data-slot="filter-item"]').length === 1 &&
+      membersScreen.memberRows().elements().length === 1;
 
-        await membersScreen.searchInput().fill("nonexistentnamestring");
+    // How quickly the second click follows the first is what exposed the race, so a few
+    // short gaps are tried, each starting from the view. Clicks go straight to the DOM so
+    // the gap between them is the one chosen.
+    for (const gap of [5, 10, 20, 30]) {
+      membersLink()!.click();
+      await wait(gap);
+      const viewLink = membersScreen.link('VIPs').element();
+      if (!(viewLink instanceof HTMLElement)) {
+        throw new Error('The saved view link is not a clickable element');
+      }
+      viewLink.click();
 
-        await expect.element(membersScreen.noResults()).toBeVisible();
-        await expect.element(membersScreen.showAllButton()).toBeVisible();
-        await expect(membersApi).toHaveSentSearch("nonexistentnamestring");
-    });
-
-    it("finds tiers by slug in the tier filter's search dropdown", async () => {
-        // The tier filter only appears once more than one paid tier exists.
-        const gold = tier({ name: "Gold Tier" });
-        const silver = tier({ name: "Silver Tier", slug: "silver-tier" });
-        const membersApi = fakeMembers(({ filter }) => (filter
-            ? [member({ name: "Silver Member" })]
-            : [
-                member({ name: "Paid Member" }),
-                member({ name: "Silver Member" }),
-                member({ name: "Free Member" }),
-            ]), { tiers: [gold, silver] });
-        await renderAdminApp("/members");
-
-        await expect(membersScreen.memberRows()).toHaveCount(3);
-
-        await membersScreen.addSearchableFilter("Membership tier", silver.slug, silver.name);
-
-        await expect(membersApi).toHaveSentFilter(`tier_id:[${silver.id}]`);
-        await expect(membersScreen.memberRows()).toHaveCount(1);
-        await expect.element(membersScreen.link("Silver Member")).toBeVisible();
-    });
-
-    it("builds a name filter through the filters UI", async () => {
-        const membersApi = fakeMembers(({ filter }) => (filter
-            ? [member({ name: "Alice Alpha" })]
-            : [
-                member({ name: "Alice Alpha" }),
-                member({ name: "Bob Beta" }),
-            ]));
-        await renderAdminApp("/members");
-
-        await expect(membersScreen.memberRows()).toHaveCount(2);
-
-        await membersScreen.addFilter("Name", "Alice");
-
-        await expect(membersApi).toHaveSentFilter(/name:~'Alice'/);
-        await expect(membersScreen.memberRows()).toHaveCount(1);
-        await expect.element(membersScreen.link("Alice Alpha")).toBeVisible();
-    });
+      // Straight after the clicks the page can still show the view it is leaving, so one look
+      // proves nothing. Wait until it rests on the view; a stale write leaves it for good.
+      let onViewSince: number | undefined;
+      await expect
+        .poll(
+          () => {
+            if (!onTheView()) {
+              onViewSince = undefined;
+              return false;
+            }
+            onViewSince ??= performance.now();
+            return performance.now() - onViewSince >= 500;
+          },
+          { message: `settles on the view after a ${gap}ms gap`, timeout: 10_000, interval: 20 },
+        )
+        .toBe(true);
+    }
+  });
 });

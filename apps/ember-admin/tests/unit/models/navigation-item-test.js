@@ -6,7 +6,7 @@ describe('Unit: Model: navigation-item', function () {
     setupTest();
 
     it('isComplete is true when label and url are filled', function () {
-        let model = this.owner.lookup('model:navigation-item');
+        const model = this.owner.lookup('model:navigation-item');
 
         model.set('label', 'test');
         model.set('url', 'test');
@@ -15,7 +15,7 @@ describe('Unit: Model: navigation-item', function () {
     });
 
     it('isComplete is true when icon and url are filled', function () {
-        let model = this.owner.lookup('model:navigation-item');
+        const model = this.owner.lookup('model:navigation-item');
 
         model.set('label', '');
         model.set('icon', 'https://example.com/icon.svg');
@@ -25,7 +25,7 @@ describe('Unit: Model: navigation-item', function () {
     });
 
     it('isComplete is false when label and icon are blank', function () {
-        let model = this.owner.lookup('model:navigation-item');
+        const model = this.owner.lookup('model:navigation-item');
 
         model.set('label', '');
         model.set('icon', '');
@@ -35,7 +35,7 @@ describe('Unit: Model: navigation-item', function () {
     });
 
     it('isComplete is false when url is blank', function () {
-        let model = this.owner.lookup('model:navigation-item');
+        const model = this.owner.lookup('model:navigation-item');
 
         model.set('label', 'test');
         model.set('url', '');
@@ -44,7 +44,7 @@ describe('Unit: Model: navigation-item', function () {
     });
 
     it('isBlank is true when label, url, and icon are blank', function () {
-        let model = this.owner.lookup('model:navigation-item');
+        const model = this.owner.lookup('model:navigation-item');
 
         model.set('label', '');
         model.set('url', '');
@@ -54,7 +54,7 @@ describe('Unit: Model: navigation-item', function () {
     });
 
     it('isBlank is false when label is present', function () {
-        let model = this.owner.lookup('model:navigation-item');
+        const model = this.owner.lookup('model:navigation-item');
 
         model.set('label', 'test');
         model.set('url', '');
@@ -63,7 +63,7 @@ describe('Unit: Model: navigation-item', function () {
     });
 
     it('isBlank is false when url is present', function () {
-        let model = this.owner.lookup('model:navigation-item');
+        const model = this.owner.lookup('model:navigation-item');
 
         model.set('label', '');
         model.set('url', 'test');
@@ -72,7 +72,7 @@ describe('Unit: Model: navigation-item', function () {
     });
 
     it('isBlank is false when icon is present', function () {
-        let model = this.owner.lookup('model:navigation-item');
+        const model = this.owner.lookup('model:navigation-item');
 
         model.set('label', '');
         model.set('url', '');

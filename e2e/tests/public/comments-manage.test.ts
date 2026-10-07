@@ -1,109 +1,120 @@
 import {
-    CommentFactory,
-    MemberFactory,
-    PostFactory,
-    TierFactory,
-    createFactories
+  CommentFactory,
+  MemberFactory,
+  PostFactory,
+  TierFactory,
+  createFactories,
 } from '@/data-factory';
-import {PostPage} from '@/public-pages';
-import {SettingsService} from '@/helpers/services/settings/settings-service';
-import {expect, signInAsMember, test} from '@/helpers/playwright';
+import { PostPage } from '@/public-pages';
+import { SettingsService } from '@/helpers/services/settings/settings-service';
+import { expect, signInAsMember, test } from '@/helpers/playwright';
 
 test.describe('Ghost Public - Comments - Manage', () => {
-    let commentFactory: CommentFactory;
-    let postFactory: PostFactory;
-    let memberFactory: MemberFactory;
-    let tierFactory: TierFactory;
-    let settingsService: SettingsService;
+  let commentFactory: CommentFactory;
+  let postFactory: PostFactory;
+  let memberFactory: MemberFactory;
+  let tierFactory: TierFactory;
+  let settingsService: SettingsService;
 
-    test.beforeEach(async ({page}) => {
-        ({postFactory, memberFactory, commentFactory, tierFactory} = createFactories(page.request));
+  test.beforeEach(async ({ page }) => {
+    ({ postFactory, memberFactory, commentFactory, tierFactory } = createFactories(page.request));
 
-        settingsService = new SettingsService(page.request);
+    settingsService = new SettingsService(page.request);
+  });
+
+  test.beforeEach(async () => {
+    await settingsService.setCommentsEnabled('all');
+  });
+
+  test('no comment management buttons for non comment author', async ({ page }) => {
+    const post = await postFactory.create({ status: 'published' });
+    const paidTier = await tierFactory.getFirstPaidTier();
+    const paidMember = await memberFactory.create({
+      status: 'comped',
+      tiers: [{ id: paidTier.id }],
+    });
+    const anotherPaidMember = await memberFactory.create({
+      status: 'comped',
+      tiers: [{ id: paidTier.id }],
     });
 
-    test.beforeEach(async () => {
-        await settingsService.setCommentsEnabled('all');
+    await commentFactory.create({
+      html: 'Comment to edit',
+      post_id: post.id,
+      member_id: paidMember.id,
     });
 
-    test('no comment management buttons for non comment author', async ({page}) => {
-        const post = await postFactory.create({status: 'published'});
-        const paidTier = await tierFactory.getFirstPaidTier();
-        const paidMember = await memberFactory.create({status: 'comped', tiers: [{id: paidTier.id}]});
-        const anotherPaidMember = await memberFactory.create({status: 'comped', tiers: [{id: paidTier.id}]});
+    await signInAsMember(page, anotherPaidMember);
 
-        await commentFactory.create({
-            html: 'Comment to edit',
-            post_id: post.id,
-            member_id: paidMember.id
-        });
+    const postPage = new PostPage(page);
+    const postCommentsSection = postPage.commentsSection;
+    await postPage.gotoPost(post.slug);
+    await postPage.waitForCommentsToLoad();
 
-        await signInAsMember(page, anotherPaidMember);
+    const { editCommentButton, deleteCommentButton, hideCommentButton, showCommentButton } =
+      await postCommentsSection.getCommentActionButtons('Comment to edit');
 
-        const postPage = new PostPage(page);
-        const postCommentsSection = postPage.commentsSection;
-        await postPage.gotoPost(post.slug);
-        await postPage.waitForCommentsToLoad();
+    await expect(editCommentButton).toBeHidden();
+    await expect(deleteCommentButton).toBeHidden();
+    await expect(hideCommentButton).toBeVisible();
+    await expect(showCommentButton).toBeHidden();
+  });
 
-        const {
-            editCommentButton, deleteCommentButton, hideCommentButton, showCommentButton
-        } = await postCommentsSection.getCommentActionButtons('Comment to edit');
-
-        await expect(editCommentButton).toBeHidden();
-        await expect(deleteCommentButton).toBeHidden();
-        await expect(hideCommentButton).toBeVisible();
-        await expect(showCommentButton).toBeHidden();
+  test('edit comment', async ({ page }) => {
+    const post = await postFactory.create({ status: 'published' });
+    const paidTier = await tierFactory.getFirstPaidTier();
+    const paidMember = await memberFactory.create({
+      status: 'comped',
+      tiers: [{ id: paidTier.id }],
     });
 
-    test('edit comment', async ({page}) => {
-        const post = await postFactory.create({status: 'published'});
-        const paidTier = await tierFactory.getFirstPaidTier();
-        const paidMember = await memberFactory.create({status: 'comped', tiers: [{id: paidTier.id}]});
-
-        await commentFactory.create({
-            html: 'Comment to edit',
-            post_id: post.id,
-            member_id: paidMember.id
-        });
-
-        await signInAsMember(page, paidMember);
-
-        const postPage = new PostPage(page);
-        const postCommentsSection = postPage.commentsSection;
-        await postPage.gotoPost(post.slug);
-        await postPage.waitForCommentsToLoad();
-
-        await postCommentsSection.editComment('Comment to edit', 'Updated comment');
-        await expect(postCommentsSection.comments).toHaveCount(1);
-        await expect(postCommentsSection.comments.first()).toContainText('Updated comment');
+    await commentFactory.create({
+      html: 'Comment to edit',
+      post_id: post.id,
+      member_id: paidMember.id,
     });
 
-    test('delete comment', async ({page}) => {
-        const post = await postFactory.create({status: 'published'});
-        const paidTier = await tierFactory.getFirstPaidTier();
-        const paidMember = await memberFactory.create({status: 'comped', tiers: [{id: paidTier.id}]});
+    await signInAsMember(page, paidMember);
 
-        await commentFactory.create({
-            html: 'First comment',
-            post_id: post.id,
-            member_id: paidMember.id
-        });
+    const postPage = new PostPage(page);
+    const postCommentsSection = postPage.commentsSection;
+    await postPage.gotoPost(post.slug);
+    await postPage.waitForCommentsToLoad();
 
-        await commentFactory.create({
-            html: 'Comment to delete',
-            post_id: post.id,
-            member_id: paidMember.id
-        });
+    await postCommentsSection.editComment('Comment to edit', 'Updated comment');
+    await expect(postCommentsSection.comments).toHaveCount(1);
+    await expect(postCommentsSection.comments.first()).toContainText('Updated comment');
+  });
 
-        await signInAsMember(page, paidMember);
-
-        const postPage = new PostPage(page);
-        await postPage.gotoPost(post.slug);
-        await postPage.waitForCommentsToLoad();
-        const postCommentsSection = postPage.commentsSection;
-
-        await postCommentsSection.deleteComment('Comment to delete');
-        await expect(postCommentsSection.comments).toHaveCount(1);
-        await expect(postCommentsSection.comments.first()).toContainText('First comment');
+  test('delete comment', async ({ page }) => {
+    const post = await postFactory.create({ status: 'published' });
+    const paidTier = await tierFactory.getFirstPaidTier();
+    const paidMember = await memberFactory.create({
+      status: 'comped',
+      tiers: [{ id: paidTier.id }],
     });
+
+    await commentFactory.create({
+      html: 'First comment',
+      post_id: post.id,
+      member_id: paidMember.id,
+    });
+
+    await commentFactory.create({
+      html: 'Comment to delete',
+      post_id: post.id,
+      member_id: paidMember.id,
+    });
+
+    await signInAsMember(page, paidMember);
+
+    const postPage = new PostPage(page);
+    await postPage.gotoPost(post.slug);
+    await postPage.waitForCommentsToLoad();
+    const postCommentsSection = postPage.commentsSection;
+
+    await postCommentsSection.deleteComment('Comment to delete');
+    await expect(postCommentsSection.comments).toHaveCount(1);
+    await expect(postCommentsSection.comments.first()).toContainText('First comment');
+  });
 });

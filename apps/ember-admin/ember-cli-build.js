@@ -26,7 +26,7 @@ const cssnano = require('cssnano');
 const targets = require('./config/targets');
 
 const codemirrorAssets = function () {
-    let codemirrorFiles = [
+    const codemirrorFiles = [
         'lib/codemirror.js',
         'mode/htmlmixed/htmlmixed.js',
         'mode/xml/xml.js',
@@ -38,7 +38,7 @@ const codemirrorAssets = function () {
         return {import: codemirrorFiles};
     }
 
-    let config = {};
+    const config = {};
 
     config.public = {
         include: codemirrorFiles,
@@ -55,7 +55,7 @@ const codemirrorAssets = function () {
                 jsTree = new Terser(jsTree);
             }
 
-            let mergedTree = mergeTrees([tree, jsTree]);
+            const mergedTree = mergeTrees([tree, jsTree]);
             return new Funnel(mergedTree, {include: ['assets/**/*', 'theme/**/*']});
         }
     };
@@ -68,7 +68,7 @@ const codemirrorAssets = function () {
     return config;
 };
 
-let denylist = [];
+const denylist = [];
 if (process.env.CI) {
     denylist.push('ember-cli-eslint');
 }
@@ -131,7 +131,7 @@ if (isProduction) {
 }
 
 module.exports = function (defaults) {
-    let app = new EmberApp(defaults, {
+    const app = new EmberApp(defaults, {
         addons: {denylist},
         tests: includeTestAssets,
         hinting: includeTestAssets,
@@ -269,8 +269,8 @@ module.exports = function (defaults) {
     app.import('node_modules/codemirror/theme/xq-light.css');
 
     // 'dem Scripts
-    app.import('node_modules/google-caja-bower/html-css-sanitizer-bundle.js');
-    app.import('node_modules/keymaster/keymaster.js');
+    // keymaster is vendored - see vendor/keymaster/README.md
+    app.import('vendor/keymaster/keymaster.js');
     app.import('node_modules/reframe.js/dist/noframe.js');
 
     // pull things we rely on via lazy-loading into the test-support.js file so

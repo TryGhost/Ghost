@@ -30,7 +30,7 @@ describe('Integration: Service: config-manager', function () {
     });
 
     it('normalizes blogUrl to non-trailing-slash', function (done) {
-        let stubBlogUrl = function stubBlogUrl(url) {
+        const stubBlogUrl = function stubBlogUrl(url) {
             server.get(`${ghostPaths().apiRoot}/config/`, function () {
                 return [
                     200,

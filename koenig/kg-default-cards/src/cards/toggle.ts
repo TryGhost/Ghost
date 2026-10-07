@@ -1,21 +1,21 @@
 import {
-    htmlToTransformReady,
-    htmlAbsoluteToRelative,
-    htmlRelativeToAbsolute
+  htmlToTransformReady,
+  htmlAbsoluteToRelative,
+  htmlRelativeToAbsolute,
 } from '@tryghost/url-utils/lib/utils/index.js';
-import {hbs, dedent} from '../utils/index.js';
-import type {Card} from '../types.js';
+import { hbs, dedent } from '../utils/index.js';
+import type { Card } from '../types.js';
 
 const toggleCard: Card = {
-    name: 'toggle',
-    type: 'dom',
+  name: 'toggle',
+  type: 'dom',
 
-    render({payload, env: {dom}, options = {}}) {
-        if (!payload.heading) {
-            return dom.createTextNode('');
-        }
+  render({ payload, env: { dom }, options = {} }) {
+    if (!payload.heading) {
+      return dom.createTextNode('');
+    }
 
-        const frontendTemplate = hbs`
+    const frontendTemplate = hbs`
             <div class="kg-card kg-toggle-card" data-kg-toggle-state="close">
                 <div class="kg-toggle-heading">
                     <h4 class="kg-toggle-heading-text">{{{heading}}}</h4>
@@ -27,38 +27,51 @@ const toggleCard: Card = {
             </div>
         `;
 
-        const emailTemplate = hbs`
+    const emailTemplate = hbs`
             <div class="kg-toggle-card">
                 <h4 style="font-size: 1.375rem !important; font-weight: 600; margin-bottom: 8px; margin-top:0px">{{{heading}}}</h4>
                 <div style="font-size: 1rem !important; line-height: 1.5; margin-bottom: -1.5em;">{{{content}}}</div>
             </div>
         `;
 
-        const renderTemplate = options.target === 'email' ? emailTemplate : frontendTemplate;
+    const renderTemplate = options.target === 'email' ? emailTemplate : frontendTemplate;
 
-        const html = dedent(renderTemplate({
-            heading: payload.heading,
-            content: payload.content
-        }));
+    const html = dedent(
+      renderTemplate({
+        heading: payload.heading,
+        content: payload.content,
+      }),
+    );
 
-        return dom.createRawHTMLSection(html);
-    },
+    return dom.createRawHTMLSection(html);
+  },
 
-    absoluteToRelative(payload, options) {
-        payload.content = payload.content && htmlAbsoluteToRelative(payload.content as string, options.siteUrl, options);
-        return payload;
-    },
+  absoluteToRelative(payload, options) {
+    payload.content =
+      payload.content &&
+      htmlAbsoluteToRelative(payload.content as string, options.siteUrl, options);
+    return payload;
+  },
 
-    relativeToAbsolute(payload, options) {
-        payload.content = payload.content && htmlRelativeToAbsolute(payload.content as string, options.siteUrl, options.itemUrl ?? '', options);
-        return payload;
-    },
+  relativeToAbsolute(payload, options) {
+    payload.content =
+      payload.content &&
+      htmlRelativeToAbsolute(
+        payload.content as string,
+        options.siteUrl,
+        options.itemUrl ?? '',
+        options,
+      );
+    return payload;
+  },
 
-    toTransformReady(payload, options) {
-        payload.heading = payload.heading && htmlToTransformReady(payload.heading as string, options.siteUrl, options);
-        payload.content = payload.content && htmlToTransformReady(payload.content as string, options.siteUrl, options);
-        return payload;
-    }
+  toTransformReady(payload, options) {
+    payload.heading =
+      payload.heading && htmlToTransformReady(payload.heading as string, options.siteUrl, options);
+    payload.content =
+      payload.content && htmlToTransformReady(payload.content as string, options.siteUrl, options);
+    return payload;
+  },
 };
 
 export default toggleCard;

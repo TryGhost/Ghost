@@ -27,7 +27,12 @@ export default class SignupRoute extends UnauthenticatedRoute {
 
     @inject config;
 
-    beforeModel() {
+    beforeModel(transition) {
+        if (this.feature.isAuthReact()) {
+            transition.abort();
+            return;
+        }
+
         if (this.session.isAuthenticated) {
             this.notifications.showAlert('You need to sign out to register as a new user.', {type: 'warn', delayed: true, key: 'signup.create.already-authenticated'});
         }
@@ -36,8 +41,8 @@ export default class SignupRoute extends UnauthenticatedRoute {
     }
 
     model(params) {
-        let signupDetails = SignupDetails.create();
-        let re = /^(?:[A-Za-z0-9_-]{4})*(?:[A-Za-z0-9_-]{2}|[A-Za-z0-9_-]{3})?$/;
+        const signupDetails = SignupDetails.create();
+        const re = /^(?:[A-Za-z0-9_-]{4})*(?:[A-Za-z0-9_-]{2}|[A-Za-z0-9_-]{3})?$/;
         let email,
             tokenText;
 
@@ -52,13 +57,10 @@ export default class SignupRoute extends UnauthenticatedRoute {
             tokenText = atob(params.token);
             email = tokenText.split('|')[1];
 
-            // leave e-mail blank even though we get it from the token because
-            // we need the user to type it in for Chrome to remember the
-            // email/password combo properly
-            signupDetails.email = '';
+            signupDetails.email = email;
             signupDetails.token = params.token;
 
-            let authUrl = this.ghostPaths.url.api('authentication', 'invitation');
+            const authUrl = this.ghostPaths.url.api('authentication', 'invitation');
 
             this.ajax.request(authUrl, {
                 dataType: 'json',

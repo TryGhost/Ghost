@@ -1,76 +1,136 @@
-import {useState} from 'react';
-import type {Meta, StoryObj} from '@storybook/react-vite';
-import {Button} from '@/components/ui/button';
-import {FilterBar} from '@/components/patterns/filter-bar';
-import {Filters, createFilter, type Filter, type FilterFieldConfig} from '@/components/patterns/filters';
-import {Circle, X} from 'lucide-react';
+import { useState } from 'react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { FilterBar } from '@/components/patterns/filter-bar';
+import {
+  Filters,
+  createFilter,
+  type Filter,
+  type FilterFieldConfig,
+} from '@/components/patterns/filters';
+import { Circle } from 'lucide-react';
 
 const meta = {
-    title: 'Patterns / Filter Bar',
-    component: FilterBar,
-    tags: ['autodocs'],
-    parameters: {
-        layout: 'fullscreen'
-    }
+  title: 'Patterns / Filter Bar',
+  component: FilterBar,
+  tags: ['autodocs'],
+  parameters: {
+    layout: 'fullscreen',
+    docs: {
+      description: {
+        component: 'A full-width row for active filters with compact, consistent filter actions.',
+      },
+    },
+  },
 } satisfies Meta<typeof FilterBar>;
 
 export default meta;
 type Story = StoryObj<typeof FilterBar>;
 
 const memberStatusFields: FilterFieldConfig[] = [
-    {
-        key: 'memberStatus',
-        label: 'Member status',
-        type: 'select',
-        icon: <Circle className="size-4" />,
-        options: [
-            {value: 'free', label: 'Free'},
-            {value: 'paid', label: 'Paid'},
-            {value: 'complimentary', label: 'Complimentary'}
-        ]
-    }
+  {
+    key: 'memberStatus',
+    label: 'Member status',
+    type: 'select',
+    icon: <Circle className="size-4" />,
+    options: [
+      { value: 'free', label: 'Free' },
+      { value: 'paid', label: 'Paid' },
+      { value: 'complimentary', label: 'Complimentary' },
+    ],
+  },
 ];
 
 export const WithFilters: Story = {
-    name: 'With filters',
-    render: () => {
-        const [filters, setFilters] = useState<Filter[]>([
-            createFilter('memberStatus', 'is', ['complimentary'])
-        ]);
+  name: 'With filters',
+  parameters: {
+    docs: {
+      description: {
+        story: 'Use for active filters with compact actions such as saving the current view.',
+      },
+    },
+  },
+  render: () => {
+    const [filters, setFilters] = useState<Filter[]>([
+      createFilter('memberStatus', 'is', ['complimentary']),
+    ]);
 
-        return (
-            <FilterBar>
-                <Filters
-                    addButtonText="Add filter"
-                    clearButtonIcon={<X className="size-4" />}
-                    clearButtonText="Clear"
-                    fields={memberStatusFields}
-                    filters={filters}
-                    showClearButton={true}
-                    onChange={setFilters}
-                />
-                <Button variant="ghost">Save view</Button>
-            </FilterBar>
-        );
-    }
+    return (
+      <FilterBar>
+        <Filters
+          addButtonText="Add filter"
+          className="sm:pr-44"
+          clearButton={
+            <FilterBar.Actions>
+              <FilterBar.Action variant="ghost" onClick={() => setFilters([])}>
+                Clear
+              </FilterBar.Action>
+              <FilterBar.Action variant="outline">Save view</FilterBar.Action>
+            </FilterBar.Actions>
+          }
+          fields={memberStatusFields}
+          filters={filters}
+          showClearButton={true}
+          onChange={setFilters}
+        />
+      </FilterBar>
+    );
+  },
+};
+
+export const SeparateActions: Story = {
+  name: 'Separate actions',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Place actions beside Filters to reserve their width in normal flow, stacking them below filters on narrow screens. Actions passed through clearButton stay anchored inside Filters; reserve space for custom actions with className.',
+      },
+    },
+  },
+  render: () => {
+    const [filters, setFilters] = useState<Filter[]>([
+      createFilter('memberStatus', 'is', ['complimentary']),
+    ]);
+
+    return (
+      <FilterBar className="flex-col sm:flex-row">
+        <Filters fields={memberStatusFields} filters={filters} onChange={setFilters} />
+        {filters.length > 0 && (
+          <FilterBar.Actions>
+            <FilterBar.Action variant="ghost" onClick={() => setFilters([])}>
+              Clear
+            </FilterBar.Action>
+            <FilterBar.Action variant="outline">Save view</FilterBar.Action>
+          </FilterBar.Actions>
+        )}
+      </FilterBar>
+    );
+  },
 };
 
 export const Empty: Story = {
-    render: () => {
-        const [filters, setFilters] = useState<Filter[]>([]);
+  parameters: {
+    docs: {
+      description: {
+        story: 'An empty Filters instance keeps its labelled add action until filters are active.',
+      },
+    },
+  },
+  render: () => {
+    const [filters, setFilters] = useState<Filter[]>([]);
 
-        return (
-            <div className="space-y-2">
-                <p className="px-4 text-sm text-muted-foreground">FilterBar auto-collapses when empty:</p>
-                <FilterBar>
-                    <Filters
-                        addButtonText="Add filter"
-                        fields={memberStatusFields}
-                        filters={filters}
-                        onChange={setFilters}
-                    />
-                </FilterBar>
-            </div>
-        );
-    }
+    return (
+      <div className="space-y-2">
+        <p className="px-4 text-sm text-muted-foreground">FilterBar auto-collapses when empty:</p>
+        <FilterBar>
+          <Filters
+            addButtonText="Add filter"
+            fields={memberStatusFields}
+            filters={filters}
+            onChange={setFilters}
+          />
+        </FilterBar>
+      </div>
+    );
+  },
 };

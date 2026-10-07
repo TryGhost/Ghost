@@ -1,6 +1,6 @@
 module.exports = {
-    all() {
-        // No response
-        return;
-    }
+  all() {
+    // No response
+    return;
+  },
 };

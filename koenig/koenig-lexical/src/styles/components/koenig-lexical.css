@@ -62,10 +62,17 @@
         --rgb-accent: 48, 207, 67;
         /* --grey-950 */
         --rgb-background: 35, 41, 47;
-        /* --grey-300 */
-        --rgb-color: 221, 225, 229;
+        /* --grey-200, matches Shade's dark --foreground */
+        --rgb-color: 235, 238, 240;
         /* --grey-900 */
         --rgb-input: 57, 64, 71;
+
+        /* Search field, dark values — see the light block */
+        --kg-emoji-search-border: color-mix(in oklab, var(--grey-900) 70%, transparent);
+        --kg-emoji-search-bg: transparent;
+        --kg-emoji-search-muted: var(--grey-600);
+        --kg-emoji-search-focus-border: var(--grey-900);
+        --kg-emoji-search-focus-ring: color-mix(in srgb, var(--grey-900) 25%, transparent);
       }
 }
 
@@ -92,7 +99,17 @@ em-emoji-picker {
     /* --background-rgb: 85, 170, 255; */
     --font-size: 13px;
     --rgb-accent: 57, 64, 71;
-    --rgb-color: 174, 183, 193;
+    /* --black, matches Shade's light --foreground */
+    --rgb-color: 21, 23, 26;
+
+    /* Search field — read by EmojiPicker.shadow.css from inside the picker's
+       shadow root, which only custom properties reach. Here so the field follows
+       .dark like the rest of the picker. */
+    --kg-emoji-search-border: color-mix(in oklab, var(--grey-200), var(--grey-300));
+    --kg-emoji-search-bg: var(--white);
+    --kg-emoji-search-muted: var(--grey-700);
+    --kg-emoji-search-focus-border: var(--grey-600);
+    --kg-emoji-search-focus-ring: color-mix(in srgb, var(--grey-600) 25%, transparent);
     --em-rgb-accent: (255,0,0)
     /* --rgb-input: 255, 235, 235; */;
     --shadow: 0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08);
@@ -102,14 +119,6 @@ em-emoji-picker {
 
   em-emoji-picker #nav button[aria-selected] svg {
     fill: red;
-  }
-
-  em-emoji-picker .search input[type="search"] {
-    border-radius: 5px;
-  }
-
-  .search input, .search button {
-    font-size: 20px !important;
   }
 
   /* HTML card */

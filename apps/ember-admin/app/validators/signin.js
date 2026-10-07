@@ -7,7 +7,7 @@ export default BaseValidator.create({
     invalidMessage: 'Email address is not valid',
 
     identification(model) {
-        let id = model.identification;
+        const id = model.identification;
 
         if (!isBlank(id) && !validator.isEmail(id)) {
             model.errors.add('identification', this.invalidMessage);
@@ -16,8 +16,8 @@ export default BaseValidator.create({
     },
 
     signin(model) {
-        let id = model.identification;
-        let password = model.password;
+        const id = model.identification;
+        const password = model.password;
 
         model.errors.clear();
 
@@ -38,7 +38,7 @@ export default BaseValidator.create({
     },
 
     forgotPassword(model) {
-        let id = model.identification;
+        const id = model.identification;
 
         model.errors.clear();
 

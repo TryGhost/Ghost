@@ -5,42 +5,44 @@
 //
 // Defaults to words="50"
 
-const {SafeString} = require('../services/handlebars');
+const { SafeString } = require('../services/handlebars');
 const metaData = require('../meta');
 const _ = require('lodash');
 const getMetaDataExcerpt = metaData.getMetaDataExcerpt;
 
 module.exports = function excerpt(options) {
-    let truncateOptions = (options || {}).hash || {};
+  let truncateOptions = (options || {}).hash || {};
 
-    let excerptText;
+  let excerptText;
 
-    if (this.custom_excerpt) {
-        excerptText = String(this.custom_excerpt);
-    } else if (this.excerpt) {
-        excerptText = String(this.excerpt);
-    } else {
-        excerptText = '';
+  if (this.custom_excerpt) {
+    excerptText = String(this.custom_excerpt);
+  } else if (this.excerpt) {
+    excerptText = String(this.excerpt);
+  } else {
+    excerptText = '';
+  }
+
+  excerptText = _.escape(excerptText);
+
+  truncateOptions = _.reduce(
+    truncateOptions,
+    (_truncateOptions, value, key) => {
+      if (['words', 'characters'].includes(key)) {
+        _truncateOptions[key] = parseInt(value, 10);
+      }
+      return _truncateOptions;
+    },
+    {},
+  );
+
+  // For custom excerpts, make sure we truncate them only based on length
+  if (!_.isEmpty(this.custom_excerpt)) {
+    truncateOptions.characters = excerptText.length; // length is expanded by use of escaped characters
+    if (truncateOptions.words) {
+      delete truncateOptions.words;
     }
+  }
 
-    excerptText = _.escape(excerptText);
-
-    truncateOptions = _.reduce(truncateOptions, (_truncateOptions, value, key) => {
-        if (['words', 'characters'].includes(key)) {
-            _truncateOptions[key] = parseInt(value, 10);
-        }
-        return _truncateOptions;
-    }, {});
-
-    // For custom excerpts, make sure we truncate them only based on length
-    if (!_.isEmpty(this.custom_excerpt)) {
-        truncateOptions.characters = excerptText.length; // length is expanded by use of escaped characters
-        if (truncateOptions.words) {
-            delete truncateOptions.words;
-        }
-    }
-
-    return new SafeString(
-        getMetaDataExcerpt(excerptText, truncateOptions)
-    );
+  return new SafeString(getMetaDataExcerpt(excerptText, truncateOptions));
 };

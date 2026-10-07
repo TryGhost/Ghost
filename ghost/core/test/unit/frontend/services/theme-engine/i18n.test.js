@@ -1,4 +1,7 @@
 const assert = require('node:assert/strict');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const sinon = require('sinon');
 
 const I18n = require('../../../../../core/frontend/services/theme-engine/i18n/i18n');
@@ -6,89 +9,110 @@ const I18n = require('../../../../../core/frontend/services/theme-engine/i18n/i1
 const logging = require('@tryghost/logging');
 
 describe('I18n Class behavior', function () {
-    it('defaults to en', function () {
-        const i18n = new I18n();
-        assert.equal(i18n.locale(), 'en');
+  it('defaults to en', function () {
+    const i18n = new I18n();
+    assert.equal(i18n.locale(), 'en');
+  });
+
+  it('can have a different locale set', function () {
+    const i18n = new I18n({ locale: 'fr' });
+    assert.equal(i18n.locale(), 'fr');
+  });
+
+  describe('file loading behavior', function () {
+    it('will fallback to en file correctly without changing locale', function () {
+      const i18n = new I18n({ locale: 'fr' });
+
+      const fileSpy = sinon.spy(i18n, '_readTranslationsFile');
+
+      assert.equal(i18n.locale(), 'fr');
+      i18n.init();
+
+      assert.equal(i18n.locale(), 'fr');
+      sinon.assert.calledTwice(fileSpy);
+      assert.equal(fileSpy.secondCall.args[0], 'en');
     });
 
-    it('can have a different locale set', function () {
-        const i18n = new I18n({locale: 'fr'});
-        assert.equal(i18n.locale(), 'fr');
+    it('only reads locale files from inside the translations directory', function () {
+      sinon.stub(logging, 'warn');
+
+      const root = fs.mkdtempSync(path.join(os.tmpdir(), 'i18n-traversal-'));
+      const translations = path.join(root, 'locales');
+      fs.mkdirSync(translations, { recursive: true });
+      fs.writeFileSync(path.join(translations, 'en.json'), JSON.stringify({ Hello: 'Hello EN' }));
+      fs.writeFileSync(path.join(root, 'secret.json'), JSON.stringify({ Hello: 'LEAKED' }));
+
+      const i18n = new I18n({
+        basePath: translations,
+        locale: '../secret',
+        stringMode: 'fulltext',
+      });
+      i18n.init();
+
+      assert.equal(i18n.t('Hello'), 'Hello EN');
+
+      fs.rmSync(root, { recursive: true, force: true });
+      sinon.restore();
+    });
+  });
+
+  describe('translation key dot notation (default behavior)', function () {
+    const fakeStrings = {
+      test: { string: { path: 'I am correct' } },
+    };
+    let i18n;
+
+    beforeEach(function initBasicI18n() {
+      i18n = new I18n();
+      sinon.stub(i18n, '_loadStrings').returns(fakeStrings);
+      i18n.init();
     });
 
-    describe('file loading behavior', function () {
-        it('will fallback to en file correctly without changing locale', function () {
-            const i18n = new I18n({locale: 'fr'});
-
-            let fileSpy = sinon.spy(i18n, '_readTranslationsFile');
-
-            assert.equal(i18n.locale(), 'fr');
-            i18n.init();
-
-            assert.equal(i18n.locale(), 'fr');
-            sinon.assert.calledTwice(fileSpy);
-            assert.equal(fileSpy.secondCall.args[0], 'en');
-        });
+    it('correctly loads strings', function () {
+      assert.equal(i18n._strings, fakeStrings);
     });
 
-    describe('translation key dot notation (default behavior)', function () {
-        const fakeStrings = {
-            test: {string: {path: 'I am correct'}}
-        };
-        let i18n;
-
-        beforeEach(function initBasicI18n() {
-            i18n = new I18n();
-            sinon.stub(i18n, '_loadStrings').returns(fakeStrings);
-            i18n.init();
-        });
-
-        it('correctly loads strings', function () {
-            assert.equal(i18n._strings, fakeStrings);
-        });
-
-        it('correctly uses dot notation', function () {
-            assert.equal(i18n.t('test.string.path'), 'I am correct');
-        });
-
-        it('uses key fallback correctly', function () {
-            const loggingStub = sinon.stub(logging, 'error');
-            assert.equal(i18n.t('unknown.string'), 'An error occurred');
-            sinon.assert.calledOnce(loggingStub);
-        });
-
-        it('errors for invalid strings', function () {
-            assert.throws(
-                () => i18n.t('unknown string'),
-                {message: 'i18n.t() called with an invalid key: unknown string'}
-            );
-        });
+    it('correctly uses dot notation', function () {
+      assert.equal(i18n.t('test.string.path'), 'I am correct');
     });
 
-    describe('translation key fulltext notation (theme behavior)', function () {
-        const fakeStrings = {'Full text': 'I am correct'};
-        let i18n;
-
-        beforeEach(function initFulltextI18n() {
-            i18n = new I18n({stringMode: 'fulltext'});
-            sinon.stub(i18n, '_loadStrings').returns(fakeStrings);
-            i18n.init();
-        });
-
-        afterEach(function () {
-            sinon.restore();
-        });
-
-        it('correctly loads strings', function () {
-            assert.equal(i18n._strings, fakeStrings);
-        });
-
-        it('correctly uses fulltext with bracket notation', function () {
-            assert.equal(i18n.t('Full text'), 'I am correct');
-        });
-
-        it('uses key fallback correctly', function () {
-            assert.equal(i18n.t('unknown string'), 'unknown string');
-        });
+    it('uses key fallback correctly', function () {
+      const loggingStub = sinon.stub(logging, 'error');
+      assert.equal(i18n.t('unknown.string'), 'An error occurred');
+      sinon.assert.calledOnce(loggingStub);
     });
+
+    it('errors for invalid strings', function () {
+      assert.throws(() => i18n.t('unknown string'), {
+        message: 'i18n.t() called with an invalid key: unknown string',
+      });
+    });
+  });
+
+  describe('translation key fulltext notation (theme behavior)', function () {
+    const fakeStrings = { 'Full text': 'I am correct' };
+    let i18n;
+
+    beforeEach(function initFulltextI18n() {
+      i18n = new I18n({ stringMode: 'fulltext' });
+      sinon.stub(i18n, '_loadStrings').returns(fakeStrings);
+      i18n.init();
+    });
+
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    it('correctly loads strings', function () {
+      assert.equal(i18n._strings, fakeStrings);
+    });
+
+    it('correctly uses fulltext with bracket notation', function () {
+      assert.equal(i18n.t('Full text'), 'I am correct');
+    });
+
+    it('uses key fallback correctly', function () {
+      assert.equal(i18n.t('unknown string'), 'unknown string');
+    });
+  });
 });

@@ -1,36 +1,35 @@
-import {sign} from 'jsonwebtoken';
+import { sign } from 'jsonwebtoken';
+import type { SigningKeyProvider } from '../signing-keys/signing-key-service';
+
+type SigningKeys = Pick<SigningKeyProvider, 'getSigningKey'>;
 
 export class IdentityTokenService {
-    private privateKey: string;
-    private issuer: string;
-    private keyId: string;
+  private signingKeys: SigningKeys;
+  private issuer: string;
 
-    constructor(
-        privateKey: string,
-        issuer: string,
-        keyId: string
-    ) {
-        this.privateKey = privateKey;
-        this.issuer = issuer;
-        this.keyId = keyId;
+  constructor(signingKeys: SigningKeys, issuer: string) {
+    this.signingKeys = signingKeys;
+    this.issuer = issuer;
+  }
+
+  async getTokenForUser(email: string, role?: string) {
+    const claims: Record<string, string> = {
+      sub: email,
+    };
+
+    if (typeof role === 'string') {
+      claims.role = role;
     }
 
-    async getTokenForUser(email: string, role?: string) {
-        const claims: Record<string, string> = {
-            sub: email
-        };
+    const { privateKey, kid } = await this.signingKeys.getSigningKey();
 
-        if (typeof role === 'string') {
-            claims.role = role;
-        }
+    const token = sign(claims, privateKey, {
+      issuer: this.issuer,
+      expiresIn: '5m',
+      algorithm: 'RS256',
+      keyid: kid,
+    });
 
-        const token = sign(claims, this.privateKey, {
-            issuer: this.issuer,
-            expiresIn: '5m',
-            algorithm: 'RS256',
-            keyid: this.keyId
-        });
-
-        return token;
-    }
+    return token;
+  }
 }

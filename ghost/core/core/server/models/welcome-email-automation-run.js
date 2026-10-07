@@ -1,27 +1,34 @@
 const ghostBookshelf = require('./base');
 
 const WelcomeEmailAutomationRun = ghostBookshelf.Model.extend({
-    tableName: 'welcome_email_automation_runs',
+  tableName: 'welcome_email_automation_runs',
 
-    defaults() {
-        return {
-            stepAttempts: 0
-        };
-    },
+  defaults() {
+    return {
+      stepAttempts: 0,
+    };
+  },
 
-    automation() {
-        return this.belongsTo('Automation', 'welcome_email_automation_id', 'id');
-    },
+  automation() {
+    return this.belongsTo('Automation', 'welcome_email_automation_id', 'id');
+  },
 
-    member() {
-        return this.belongsTo('Member', 'member_id', 'id');
-    },
+  member() {
+    return this.belongsTo('Member', 'member_id', 'id');
+  },
 
-    nextWelcomeEmailAutomatedEmail() {
-        return this.belongsTo('WelcomeEmailAutomatedEmail', 'next_welcome_email_automated_email_id', 'id');
-    }
+  nextWelcomeEmailAutomatedEmail() {
+    return this.belongsTo(
+      'WelcomeEmailAutomatedEmail',
+      'next_welcome_email_automated_email_id',
+      'id',
+    );
+  },
 });
 
 module.exports = {
-    WelcomeEmailAutomationRun: ghostBookshelf.model('WelcomeEmailAutomationRun', WelcomeEmailAutomationRun)
+  WelcomeEmailAutomationRun: ghostBookshelf.model(
+    'WelcomeEmailAutomationRun',
+    WelcomeEmailAutomationRun,
+  ),
 };

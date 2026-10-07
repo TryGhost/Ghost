@@ -1,6 +1,6 @@
 const debug = require('@tryghost/debug')('services:routing:controllers:preview');
 const config = require('../../../../shared/config');
-const {routerManager} = require('../');
+const { routerManager } = require('../');
 const urlUtils = require('../../../../shared/url-utils').default;
 const renderer = require('../../rendering');
 
@@ -12,62 +12,65 @@ const renderer = require('../../rendering');
  * @returns {Promise}
  */
 module.exports = function previewController(req, res, next) {
-    debug('previewController');
+  debug('previewController');
 
-    const api = require('../../proxy').api;
+  const api = require('../../proxy').api;
 
-    const params = {
-        uuid: req.params.uuid,
-        status: 'all',
-        include: 'authors,tags,tiers',
-        member_status: req.query?.member_status,
-        member_tier: req.query?.member_tier
-    };
+  const params = {
+    uuid: req.params.uuid,
+    status: 'all',
+    include: 'authors,tags,tiers',
+    member_status: req.query?.member_status,
+    member_tier: req.query?.member_tier,
+  };
 
-    return api[res.routerOptions.query.controller]
-        .read(params)
-        .then(function then(result) {
-            const post = result[res.routerOptions.query.resource][0];
-            if (!post) {
-                return next();
-            }
+  return api[res.routerOptions.query.controller]
+    .read(params)
+    .then(function then(result) {
+      const post = result[res.routerOptions.query.resource][0];
+      if (!post) {
+        return next();
+      }
 
-            if (req.params.options && req.params.options.toLowerCase() === 'edit') {
-                // CASE: last param of the url is /edit but admin redirects are disabled
-                if (!config.get('admin:redirects')) {
-                    return next();
-                }
+      if (req.params.options && req.params.options.toLowerCase() === 'edit') {
+        // CASE: last param of the url is /edit but admin redirects are disabled
+        if (!config.get('admin:redirects')) {
+          return next();
+        }
 
-                const resourceType = post.type;
+        const resourceType = post.type;
 
-                // CASE: last param of the url is /edit, redirect to admin
-                return urlUtils.redirectToAdmin(302, res, `/#/editor/${resourceType}/${post.id}`);
-            } else if (req.params.options) {
-                // CASE: unknown options param detected, ignore
-                return next();
-            }
+        // CASE: last param of the url is /edit, redirect to admin
+        return urlUtils.redirectToAdmin(302, res, `/#/editor/${resourceType}/${post.id}`);
+      } else if (req.params.options) {
+        // CASE: unknown options param detected, ignore
+        return next();
+      }
 
-            // published content should only resolve to /:slug - /p/:uuid is for drafts only in lieu of an actual preview api
-            if (post.status === 'published') {
-                // The URL service routes by resource type, and `previews` (the
-                // preview router's resource) is not a routable type. Tag the
-                // resource with the post's own type — the previews serializer
-                // re-adds `type` (model.get('type')), so it is 'post' or 'page'.
-                const type = post.type;
-                return urlUtils.redirect301(res, routerManager.getUrlForResource({...post, type}, {withSubdirectory: true}));
-            }
+      // published content should only resolve to /:slug - /p/:uuid is for drafts only in lieu of an actual preview api
+      if (post.status === 'published') {
+        // The URL service routes by resource type, and `previews` (the
+        // preview router's resource) is not a routable type. Tag the
+        // resource with the post's own type — the previews serializer
+        // re-adds `type` (model.get('type')), so it is 'post' or 'page'.
+        const type = post.type;
+        return urlUtils.redirect301(
+          res,
+          routerManager.getUrlForResource({ ...post, type }, { withSubdirectory: true }),
+        );
+      }
 
-            // once an email-only post has been sent it shouldn't be available via /p/ to avoid leaking members-only content
-            if (post.status === 'sent') {
-                return urlUtils.redirect301(res, urlUtils.urlJoin('/email', post.uuid, '/'));
-            }
+      // once an email-only post has been sent it shouldn't be available via /p/ to avoid leaking members-only content
+      if (post.status === 'sent') {
+        return urlUtils.redirect301(res, urlUtils.urlJoin('/email', post.uuid, '/'));
+      }
 
-            // Preserve the old behavior of assuming the user has access to the post if member_status is not provided
-            if (!req.query?.member_status) {
-                post.access = !!post.html;
-            }
+      // Preserve the old behavior of assuming the user has access to the post if member_status is not provided
+      if (!req.query?.member_status) {
+        post.access = !!post.html;
+      }
 
-            return renderer.renderEntry(req, res)(post);
-        })
-        .catch(renderer.handleError(next));
+      return renderer.renderEntry(req, res)(post);
+    })
+    .catch(renderer.handleError(next));
 };

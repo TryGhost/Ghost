@@ -7,23 +7,23 @@ const controller = require('./controller');
 // so the public URLs at /gift/assets/* can be safely cached forever.
 const ASSET_DIR = __dirname;
 const ASSETS = {
-    'gift-card-orb.png': 'image/png',
-    'gift-card-noise.png': 'image/png'
+  'gift-card-orb.png': 'image/png',
+  'gift-card-noise.png': 'image/png',
 };
 
 module.exports = function giftPreviewApp() {
-    const app = express('gift-preview');
+  const app = express('gift-preview');
 
-    Object.keys(ASSETS).forEach((filename) => {
-        app.get(`/assets/${filename}`, (req, res) => {
-            res.set('Cache-Control', 'public, max-age=31536000, immutable');
-            res.type(ASSETS[filename]);
-            res.sendFile(path.join(ASSET_DIR, filename));
-        });
+  Object.keys(ASSETS).forEach((filename) => {
+    app.get(`/assets/${filename}`, (req, res) => {
+      res.set('Cache-Control', 'public, max-age=31536000, immutable');
+      res.type(ASSETS[filename]);
+      res.sendFile(path.join(ASSET_DIR, filename));
     });
+  });
 
-    app.get('/:token/image', controller.giftPreviewImage);
-    app.get('/:token', controller.giftPreview);
+  app.get('/:token/image', controller.giftPreviewImage);
+  app.get('/:token', controller.giftPreview);
 
-    return app;
+  return app;
 };

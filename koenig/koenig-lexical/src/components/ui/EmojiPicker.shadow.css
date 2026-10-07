@@ -1,0 +1,59 @@
+/*
+ * Search field in the emoji picker, matching Shade's input; each value names the
+ * Shade token behind it. emoji-mart hardcodes this chrome inside its shadow DOM
+ * with no variables to hook into, so EmojiPicker.tsx appends this file to the
+ * shadow root — light-DOM rules can't reach it.
+ *
+ * Colours come from --kg-emoji-search-* in koenig-lexical.css, so the field
+ * follows the same .dark class as the rest of the picker.
+ *
+ * Two things that look removable but aren't: [data-theme] is specificity, not
+ * theming — it's what beats emoji-mart's [dir="rtl"] padding and icon rules; and
+ * lengths are px because rem here resolves against the host document (16px in
+ * the demo, 10px in Admin).
+ */
+
+[data-theme] .search input[type="search"] {
+    height: 32px; /* --control-height */
+    border: 1px solid var(--kg-emoji-search-border); /* --control-border */
+    border-radius: 6px; /* --radius-md */
+    background-color: var(--kg-emoji-search-bg); /* --control-surface */
+    padding-block: 0;
+    padding-inline: 36px 12px; /* pl-3 (12) + size-4 icon (16) + gap-2 (8), then px-3 */
+    font-size: 13px; /* --text-control */
+    transition: color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+        background-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+        border-color 150ms cubic-bezier(0.4, 0, 0.2, 1); /* transition-colors */
+}
+
+[data-theme] .search input[type="search"]::placeholder {
+    color: var(--kg-emoji-search-muted); /* placeholder:text-muted-foreground */
+    opacity: 1; /* emoji-mart dims its own placeholder to .6 */
+}
+
+[data-theme] .search input[type="search"]:focus-visible {
+    border-color: var(--kg-emoji-search-focus-border); /* focus-visible:border-focus-ring */
+    outline: none;
+    box-shadow: 0 0 0 2px var(--kg-emoji-search-focus-ring); /* ring-2 ring-focus-ring/25 */
+    background-color: var(--kg-emoji-search-bg); /* holds still — emoji-mart swaps it on :focus */
+}
+
+/* InputGroupAddon */
+[data-theme] .search .icon {
+    color: var(--kg-emoji-search-muted);
+}
+
+[data-theme] .search .icon svg {
+    width: 16px; /* size-4 */
+    height: 16px;
+}
+
+[data-theme] .search .loupe {
+    inset-inline-start: 12px; /* pl-3 */
+    inset-inline-end: auto;
+}
+
+[data-theme] .search .delete {
+    inset-inline-start: auto;
+    inset-inline-end: 12px; /* pr-3 */
+}

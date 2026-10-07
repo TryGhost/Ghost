@@ -1,30 +1,33 @@
 const ghostBookshelf = require('./base');
 
-const Mention = ghostBookshelf.Model.extend({
+const Mention = ghostBookshelf.Model.extend(
+  {
     tableName: 'mentions',
     defaults: {
-        deleted: false,
-        verified: false,
-        revalidation_failure_count: 0
+      deleted: false,
+      verified: false,
+      revalidation_failure_count: 0,
     },
     defaultFilters() {
-        return 'deleted:false';
-    }
-}, {
+      return 'deleted:false';
+    },
+  },
+  {
     permittedOptions(methodName) {
-        let options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
-        const validOptions = {
-            findPage: ['selectRaw', 'whereRaw']
-        };
+      let options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
+      const validOptions = {
+        findPage: ['selectRaw', 'whereRaw'],
+      };
 
-        if (validOptions[methodName]) {
-            options = options.concat(validOptions[methodName]);
-        }
+      if (validOptions[methodName]) {
+        options = options.concat(validOptions[methodName]);
+      }
 
-        return options;
-    }
-});
+      return options;
+    },
+  },
+);
 
 module.exports = {
-    Mention: ghostBookshelf.model('Mention', Mention)
+  Mention: ghostBookshelf.model('Mention', Mention),
 };

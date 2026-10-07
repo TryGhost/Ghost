@@ -1,4 +1,4 @@
-import {defineConfig} from 'eslint/config';
+import { defineConfig } from 'eslint/config';
 import eslint from '@eslint/js';
 import ghostPlugin from 'eslint-plugin-ghost';
 import tseslint from 'typescript-eslint';
@@ -7,12 +7,13 @@ export default defineConfig([
   { ignores: ['build/**', 'cjs/**', 'es/**'] },
   {
     files: ['**/*.ts'],
-    extends: [
-      eslint.configs.recommended,
-      tseslint.configs.recommended,
-    ],
+    extends: [eslint.configs.recommended, tseslint.configs.recommended],
     languageOptions: {
-      parserOptions: { ecmaVersion: 2022, sourceType: 'module', tsconfigRootDir: import.meta.dirname },
+      parserOptions: {
+        ecmaVersion: 2022,
+        sourceType: 'module',
+        tsconfigRootDir: import.meta.dirname,
+      },
     },
     plugins: { ghost: ghostPlugin },
     rules: {

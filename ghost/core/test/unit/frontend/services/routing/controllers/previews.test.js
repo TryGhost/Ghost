@@ -4,98 +4,100 @@ const testUtils = require('../../../../../utils');
 const configUtils = require('../../../../../utils/config-utils');
 const api = require('../../../../../../core/frontend/services/proxy').api;
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
-const {routerManager} = require('../../../../../../core/frontend/services/routing');
+const { routerManager } = require('../../../../../../core/frontend/services/routing');
 const renderer = require('../../../../../../core/frontend/services/rendering');
 const urlUtils = require('../../../../../../core/shared/url-utils').default;
 
 describe('Unit - services/routing/controllers/previews', function () {
-    let renderStub;
-    let req;
-    let res;
-    let post;
-    let apiResponse;
+  let renderStub;
+  let req;
+  let res;
+  let post;
+  let apiResponse;
 
-    afterEach(async function () {
-        sinon.restore();
-        await configUtils.restore();
+  afterEach(async function () {
+    sinon.restore();
+    await configUtils.restore();
+  });
+
+  let previewStub;
+
+  beforeEach(function () {
+    post = testUtils.DataGenerator.forKnex.createPost({ status: 'draft' });
+
+    apiResponse = {
+      previews: [post],
+    };
+
+    req = {
+      path: '/',
+      params: {
+        uuid: 'something',
+      },
+      route: {},
+    };
+
+    res = {
+      routerOptions: {
+        query: { controller: 'previews', resource: 'previews' },
+      },
+      locals: {},
+      render: sinon.spy(),
+      redirect: sinon.spy(),
+      set: sinon.spy(),
+    };
+
+    sinon.stub(urlUtils, 'redirectToAdmin');
+    sinon.stub(urlUtils, 'redirect301');
+
+    renderStub = sinon.stub();
+    sinon.stub(renderer, 'renderEntry').get(function () {
+      return function () {
+        return renderStub;
+      };
     });
 
-    let previewStub;
+    previewStub = sinon.stub();
+    previewStub
+      .withArgs({
+        uuid: req.params.uuid,
+        status: 'all',
+        include: 'authors,tags,tiers',
+        member_status: undefined,
+        member_tier: undefined,
+      })
+      .resolves(apiResponse);
 
-    beforeEach(function () {
-        post = testUtils.DataGenerator.forKnex.createPost({status: 'draft'});
+    sinon.stub(api, 'previews').get(() => {
+      return {
+        read: previewStub,
+      };
+    });
+  });
 
-        apiResponse = {
-            previews: [post]
-        };
+  it('should render post', async function () {
+    const next = sinon.stub();
+    await controllers.previews(req, res, next);
+    sinon.assert.called(renderStub);
+    sinon.assert.notCalled(next);
+  });
 
-        req = {
-            path: '/',
-            params: {
-                uuid: 'something'
-            },
-            route: {}
-        };
+  it('redirects a published preview using the real resource type, not "previews"', async function () {
+    // The URL service routes by resource type; `previews` is not a routable
+    // type, so it must resolve to the post's own type ('post'/'page').
+    post.status = 'published';
+    post.type = 'post';
 
-        res = {
-            routerOptions: {
-                query: {controller: 'previews', resource: 'previews'}
-            },
-            locals: {},
-            render: sinon.spy(),
-            redirect: sinon.spy(),
-            set: sinon.spy()
-        };
-
-        sinon.stub(urlUtils, 'redirectToAdmin');
-        sinon.stub(urlUtils, 'redirect301');
-
-        renderStub = sinon.stub();
-        sinon.stub(renderer, 'renderEntry').get(function () {
-            return function () {
-                return renderStub;
-            };
-        });
-
-        previewStub = sinon.stub();
-        previewStub.withArgs({
-            uuid: req.params.uuid,
-            status: 'all',
-            include: 'authors,tags,tiers',
-            member_status: undefined,
-            member_tier: undefined
-        }).resolves(apiResponse);
-
-        sinon.stub(api, 'previews').get(() => {
-            return {
-                read: previewStub
-            };
-        });
+    let capturedType;
+    sinon.stub(routerManager, 'getUrlForResource').callsFake((resource) => {
+      capturedType = resource.type;
+      return 'http://127.0.0.1:2369/the-slug/';
     });
 
-    it('should render post', async function () {
-        const next = sinon.stub();
-        await controllers.previews(req, res, next);
-        sinon.assert.called(renderStub);
-        sinon.assert.notCalled(next);
-    });
+    const next = sinon.stub();
+    await controllers.previews(req, res, next);
 
-    it('redirects a published preview using the real resource type, not "previews"', async function () {
-        // The URL service routes by resource type; `previews` is not a routable
-        // type, so it must resolve to the post's own type ('post'/'page').
-        post.status = 'published';
-        post.type = 'post';
-
-        let capturedType;
-        sinon.stub(routerManager, 'getUrlForResource').callsFake((resource) => {
-            capturedType = resource.type;
-            return 'http://127.0.0.1:2369/the-slug/';
-        });
-
-        const next = sinon.stub();
-        await controllers.previews(req, res, next);
-
-        sinon.assert.calledOnce(urlUtils.redirect301);
-        assert.equal(capturedType, 'post', 'expected the post type, not "previews"');
-    });
+    sinon.assert.calledOnce(urlUtils.redirect301);
+    assert.equal(capturedType, 'post', 'expected the post type, not "previews"');
+  });
 });

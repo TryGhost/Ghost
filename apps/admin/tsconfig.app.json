@@ -10,6 +10,7 @@
 
     /* Bundler mode */
     "moduleResolution": "bundler",
+    "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
@@ -19,7 +20,7 @@
     /* Path aliases */
     "paths": {
       "@/*": ["./src/*"],
-      "@test-utils/*": ["./test-utils/*"],
+      "@test-utils/*": ["./test-utils/*"]
     },
 
     /* Linting */
@@ -32,6 +33,7 @@
   },
   "include": ["src", "test-utils"],
   "references": [
-    { "path": "../admin-x-framework/tsconfig.declaration.json" },    { "path": "../activitypub/tsconfig.declaration.json" }
+    { "path": "../admin-x-framework/tsconfig.declaration.json" },
+    { "path": "../activitypub/tsconfig.declaration.json" }
   ]
 }

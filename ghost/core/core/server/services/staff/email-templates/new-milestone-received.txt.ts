@@ -1,13 +1,14 @@
-import type {ReadonlyDeep} from 'type-fest';
-import type {StaffTextBaseData} from './types';
+import type { ReadonlyDeep } from 'type-fest';
+import type { StaffTextBaseData } from './types';
 
-type NewMilestoneReceivedTextData = StaffTextBaseData & ReadonlyDeep<{
+type NewMilestoneReceivedTextData = StaffTextBaseData &
+  ReadonlyDeep<{
     subject: string;
-}>;
+  }>;
 
 export function renderText(data: NewMilestoneReceivedTextData): string {
-    // Be careful when you indent the email, because whitespaces are visible in emails!
-    return `
+  // Be careful when you indent the email, because whitespaces are visible in emails!
+  return `
 Congratulations!
 
 ${data.subject}

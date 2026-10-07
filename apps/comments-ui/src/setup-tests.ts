@@ -1,5 +1,5 @@
-import {afterEach} from 'vitest';
-import {cleanup} from '@testing-library/react';
+import { afterEach } from 'vitest';
+import { cleanup } from '@testing-library/react';
 // jest-dom adds custom jest matchers for asserting on DOM nodes.
 // allows you to do things like:
 // expect(element).toHaveTextContent(/react/i)
@@ -7,13 +7,13 @@ import {cleanup} from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 afterEach(() => {
-    cleanup();
+  cleanup();
 });
 
 global.ResizeObserver = vi.fn().mockImplementation(function () {
-    return {
-        observe: vi.fn(),
-        unobserve: vi.fn(),
-        disconnect: vi.fn()
-    };
+  return {
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
+  };
 });

@@ -1,26 +1,23 @@
 import {
-    absoluteToRelative,
-    htmlAbsoluteToRelative,
-    relativeToAbsolute,
-    htmlRelativeToAbsolute,
-    toTransformReady,
-    htmlToTransformReady
+  absoluteToRelative,
+  htmlAbsoluteToRelative,
+  relativeToAbsolute,
+  htmlRelativeToAbsolute,
+  toTransformReady,
+  htmlToTransformReady,
 } from '@tryghost/url-utils/lib/utils/index.js';
-import {
-    hbs,
-    dedent
-} from '../utils/index.js';
-import type {Card} from '../types.js';
+import { hbs, dedent } from '../utils/index.js';
+import type { Card } from '../types.js';
 
 interface VideoPayload {
-    src?: string;
-    loop?: boolean;
-    width?: number;
-    height?: number;
-    cardWidth?: string;
-    caption?: string;
-    customThumbnailSrc?: string;
-    thumbnailSrc?: string;
+  src?: string;
+  loop?: boolean;
+  width?: number;
+  height?: number;
+  cardWidth?: string;
+  caption?: string;
+  customThumbnailSrc?: string;
+  thumbnailSrc?: string;
 }
 
 // A transparent 1x1 GIF, used as a local placeholder `poster` for the web <video>
@@ -28,29 +25,37 @@ interface VideoPayload {
 // element has an explicit CSS aspect ratio, so the browser scales the poster
 // invisibly to fill the video's box while the real thumbnail shows through via
 // the CSS `background` on the element.
-const TRANSPARENT_PIXEL_SRC = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+const TRANSPARENT_PIXEL_SRC =
+  'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
 function getAspectRatio(width?: number | null, height?: number | null) {
-    if (typeof width === 'number' && Number.isFinite(width) && width > 0 && typeof height === 'number' && Number.isFinite(height) && height > 0) {
-        return `${width} / ${height}`;
-    }
+  if (
+    typeof width === 'number' &&
+    Number.isFinite(width) &&
+    width > 0 &&
+    typeof height === 'number' &&
+    Number.isFinite(height) &&
+    height > 0
+  ) {
+    return `${width} / ${height}`;
+  }
 
-    return '16 / 9';
+  return '16 / 9';
 }
 
 const videoCard: Card = {
-    name: 'video',
-    type: 'dom',
+  name: 'video',
+  type: 'dom',
 
-    render({payload: _payload, env: {dom}, options = {}}) {
-        const payload = _payload as VideoPayload;
-        if (!payload.src) {
-            return dom.createTextNode('');
-        }
+  render({ payload: _payload, env: { dom }, options = {} }) {
+    const payload = _payload as VideoPayload;
+    if (!payload.src) {
+      return dom.createTextNode('');
+    }
 
-        const hideControlsClass = payload.loop ? ' kg-video-hide' : '';
+    const hideControlsClass = payload.loop ? ' kg-video-hide' : '';
 
-        const frontendTemplate = hbs`
+    const frontendTemplate = hbs`
             <figure class="{{cardClasses}}">
                 <div class="kg-video-container">
                     <video src="{{payload.src}}" poster="{{posterSpacerSrc}}" width="{{payload.width}}" height="{{payload.height}}"{{#if payload.loop}} loop autoplay muted{{/if}} playsinline preload="metadata" style="aspect-ratio: {{aspectRatio}}; background: transparent url('{{thumbnailSrc}}') 50% 50% / cover no-repeat;" /></video>
@@ -100,7 +105,7 @@ const videoCard: Card = {
             </figure>
         `;
 
-        const emailTemplate = hbs`
+    const emailTemplate = hbs`
             <figure class="{{cardClasses}}">
                 <!--[if !mso !vml]-->
                 <a class="kg-video-preview" href="{{postUrl}}" aria-label="Play video" style="mso-hide: all">
@@ -132,67 +137,79 @@ const videoCard: Card = {
             </figure>
         `;
 
-        const cardClasses = ['kg-card kg-video-card'];
-        if (payload.cardWidth) {
-            cardClasses.push(`kg-width-${payload.cardWidth}`);
-        }
-        if (payload.caption) {
-            cardClasses.push(`kg-card-hascaption`);
-        }
-
-        const emailTemplateMaxWidth = 600;
-        const aspectRatio = (payload.width || 0) / (payload.height || 1);
-        const emailSpacerWidth = Math.round(emailTemplateMaxWidth / 4);
-        const emailSpacerHeight = Math.round(emailTemplateMaxWidth / aspectRatio);
-
-        const payloadData = Object.assign({alignment: 'left', loop: false}, payload);
-        const templateData = {
-            payload: payloadData,
-            postUrl: options.postUrl,
-            cardClasses: cardClasses.join(' '),
-            thumbnailSrc: payloadData.customThumbnailSrc || payloadData.thumbnailSrc || '',
-            aspectRatio: getAspectRatio(payload.width, payload.height),
-            posterSpacerSrc: TRANSPARENT_PIXEL_SRC,
-            emailSpacerSrc: `https://img.spacergif.org/v1/${emailSpacerWidth}x${emailSpacerHeight}/0a/spacer.png`,
-            emailTemplateMaxWidth,
-            outlookCircleLeft: Math.round((emailTemplateMaxWidth / 2) - 39),
-            outlookCircleTop: Math.round((emailSpacerHeight / 2) - 39),
-            outlookPlayLeft: Math.round((emailTemplateMaxWidth / 2) - 11),
-            outlookPlayTop: Math.round((emailSpacerHeight / 2) - 17)
-        };
-
-        const renderTemplate = options.target === 'email' ? emailTemplate : frontendTemplate;
-        const html = dedent(renderTemplate(templateData));
-
-        return dom.createRawHTMLSection(html);
-    },
-
-    absoluteToRelative(payload, options) {
-        const p = payload as VideoPayload;
-        p.src = p.src && absoluteToRelative(p.src, options.siteUrl, options);
-        p.thumbnailSrc = p.thumbnailSrc && absoluteToRelative(p.thumbnailSrc, options.siteUrl, options);
-        p.customThumbnailSrc = p.customThumbnailSrc && absoluteToRelative(p.customThumbnailSrc, options.siteUrl, options);
-        p.caption = p.caption && htmlAbsoluteToRelative(p.caption, options.siteUrl, options);
-        return payload;
-    },
-
-    relativeToAbsolute(payload, options) {
-        const p = payload as VideoPayload;
-        p.src = p.src && relativeToAbsolute(p.src, options.siteUrl, options.itemUrl ?? '', options);
-        p.thumbnailSrc = p.thumbnailSrc && relativeToAbsolute(p.thumbnailSrc, options.siteUrl, options.itemUrl ?? '', options);
-        p.customThumbnailSrc = p.customThumbnailSrc && relativeToAbsolute(p.customThumbnailSrc, options.siteUrl, options.itemUrl ?? '', options);
-        p.caption = p.caption && htmlRelativeToAbsolute(p.caption, options.siteUrl, options.itemUrl ?? '', options);
-        return payload;
-    },
-
-    toTransformReady(payload, options) {
-        const p = payload as VideoPayload;
-        p.src = p.src && toTransformReady(p.src, options.siteUrl, options.itemUrl ?? '', options);
-        p.thumbnailSrc = p.thumbnailSrc && toTransformReady(p.thumbnailSrc, options.siteUrl, options.itemUrl ?? '', options);
-        p.customThumbnailSrc = p.customThumbnailSrc && toTransformReady(p.customThumbnailSrc, options.siteUrl, options.itemUrl ?? '', options);
-        p.caption = p.caption && htmlToTransformReady(p.caption, options.siteUrl, options.itemUrl ?? '', options);
-        return payload;
+    const cardClasses = ['kg-card kg-video-card'];
+    if (payload.cardWidth) {
+      cardClasses.push(`kg-width-${payload.cardWidth}`);
     }
+    if (payload.caption) {
+      cardClasses.push(`kg-card-hascaption`);
+    }
+
+    const emailTemplateMaxWidth = 600;
+    const aspectRatio = (payload.width || 0) / (payload.height || 1);
+    const emailSpacerWidth = Math.round(emailTemplateMaxWidth / 4);
+    const emailSpacerHeight = Math.round(emailTemplateMaxWidth / aspectRatio);
+
+    const payloadData = Object.assign({ alignment: 'left', loop: false }, payload);
+    const templateData = {
+      payload: payloadData,
+      postUrl: options.postUrl,
+      cardClasses: cardClasses.join(' '),
+      thumbnailSrc: payloadData.customThumbnailSrc || payloadData.thumbnailSrc || '',
+      aspectRatio: getAspectRatio(payload.width, payload.height),
+      posterSpacerSrc: TRANSPARENT_PIXEL_SRC,
+      emailSpacerSrc: `https://img.spacergif.org/v1/${emailSpacerWidth}x${emailSpacerHeight}/0a/spacer.png`,
+      emailTemplateMaxWidth,
+      outlookCircleLeft: Math.round(emailTemplateMaxWidth / 2 - 39),
+      outlookCircleTop: Math.round(emailSpacerHeight / 2 - 39),
+      outlookPlayLeft: Math.round(emailTemplateMaxWidth / 2 - 11),
+      outlookPlayTop: Math.round(emailSpacerHeight / 2 - 17),
+    };
+
+    const renderTemplate = options.target === 'email' ? emailTemplate : frontendTemplate;
+    const html = dedent(renderTemplate(templateData));
+
+    return dom.createRawHTMLSection(html);
+  },
+
+  absoluteToRelative(payload, options) {
+    const p = payload as VideoPayload;
+    p.src = p.src && absoluteToRelative(p.src, options.siteUrl, options);
+    p.thumbnailSrc = p.thumbnailSrc && absoluteToRelative(p.thumbnailSrc, options.siteUrl, options);
+    p.customThumbnailSrc =
+      p.customThumbnailSrc && absoluteToRelative(p.customThumbnailSrc, options.siteUrl, options);
+    p.caption = p.caption && htmlAbsoluteToRelative(p.caption, options.siteUrl, options);
+    return payload;
+  },
+
+  relativeToAbsolute(payload, options) {
+    const p = payload as VideoPayload;
+    p.src = p.src && relativeToAbsolute(p.src, options.siteUrl, options.itemUrl ?? '', options);
+    p.thumbnailSrc =
+      p.thumbnailSrc &&
+      relativeToAbsolute(p.thumbnailSrc, options.siteUrl, options.itemUrl ?? '', options);
+    p.customThumbnailSrc =
+      p.customThumbnailSrc &&
+      relativeToAbsolute(p.customThumbnailSrc, options.siteUrl, options.itemUrl ?? '', options);
+    p.caption =
+      p.caption &&
+      htmlRelativeToAbsolute(p.caption, options.siteUrl, options.itemUrl ?? '', options);
+    return payload;
+  },
+
+  toTransformReady(payload, options) {
+    const p = payload as VideoPayload;
+    p.src = p.src && toTransformReady(p.src, options.siteUrl, options.itemUrl ?? '', options);
+    p.thumbnailSrc =
+      p.thumbnailSrc &&
+      toTransformReady(p.thumbnailSrc, options.siteUrl, options.itemUrl ?? '', options);
+    p.customThumbnailSrc =
+      p.customThumbnailSrc &&
+      toTransformReady(p.customThumbnailSrc, options.siteUrl, options.itemUrl ?? '', options);
+    p.caption =
+      p.caption && htmlToTransformReady(p.caption, options.siteUrl, options.itemUrl ?? '', options);
+    return payload;
+  },
 };
 
 export default videoCard;

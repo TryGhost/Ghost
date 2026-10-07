@@ -4,9 +4,9 @@ const permissions = require('../../services/permissions');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
-    invalidScore: 'Invalid feedback score. Only 1 or 0 is currently allowed.',
-    postNotFound: 'Post not found.',
-    memberNotFound: 'Member not found.'
+  invalidScore: 'Invalid feedback score. Only 1 or 0 is currently allowed.',
+  postNotFound: 'Post not found.',
+  memberNotFound: 'Member not found.',
 };
 
 /**
@@ -19,125 +19,125 @@ const messages = {
  */
 
 class AudienceFeedbackController {
-    /** @type IFeedbackRepository */
-    #repository;
-    /** @type {import('./audience-feedback-service')} */
-    #audienceFeedbackService;
+  /** @type IFeedbackRepository */
+  #repository;
+  /** @type {import('./audience-feedback-service')} */
+  #audienceFeedbackService;
 
-    /**
-     * @param {object} deps
-     * @param {IFeedbackRepository} deps.repository
-     * @param {import('./audience-feedback-service')} deps.audienceFeedbackService
-     */
-    constructor(deps) {
-        this.#repository = deps.repository;
-        this.#audienceFeedbackService = deps.audienceFeedbackService;
+  /**
+   * @param {object} deps
+   * @param {IFeedbackRepository} deps.repository
+   * @param {import('./audience-feedback-service')} deps.audienceFeedbackService
+   */
+  constructor(deps) {
+    this.#repository = deps.repository;
+    this.#audienceFeedbackService = deps.audienceFeedbackService;
+  }
+
+  /**
+   * Express handler for the durable, id-based feedback link in newsletters.
+   * Resolves the post's *current* URL from its id and redirects to the Portal
+   * feedback flow, so changing a post's slug never breaks feedback buttons.
+   * Authentication happens later when Portal submits to the feedback API — this
+   * endpoint only forwards the uuid/key through to the destination.
+   */
+  async redirectToPost(req, res, next) {
+    try {
+      const { postId } = req.params;
+      const score = req.params.score === '1' ? 1 : 0;
+      const uuid = req.query.uuid;
+      const key = req.query.key;
+
+      // Load the full post (with tags/authors) rather than passing an
+      // id-only resource: the URL service needs status to apply the
+      // published base filter and tags/authors to evaluate filtered
+      // routes — the URL service reports a bare {id} as thin.
+      const post = await this.#repository.getPostById(postId, { withRelated: ['tags', 'authors'] });
+      const target = post
+        ? this.#audienceFeedbackService.buildLink(uuid, post, score, key)
+        : this.#audienceFeedbackService.buildFallbackLink(uuid, postId, score, key);
+      return res.redirect(target.toString());
+    } catch (err) {
+      return next(err);
+    }
+  }
+
+  /**
+   * Get member from frame
+   */
+  #getMember(frame) {
+    if (!frame.options?.context?.member?.id) {
+      // This is an internal server error because authentication should happen outside this service.
+      throw new errors.InternalServerError({
+        message: tpl(messages.memberNotFound),
+      });
+    }
+    return frame.options.context.member;
+  }
+
+  async add(frame) {
+    const data = frame.data.feedback[0];
+    const postId = data.post_id;
+    const score = data.score;
+
+    if (![0, 1].includes(score)) {
+      throw new errors.ValidationError({
+        message: tpl(messages.invalidScore),
+      });
     }
 
-    /**
-     * Express handler for the durable, id-based feedback link in newsletters.
-     * Resolves the post's *current* URL from its id and redirects to the Portal
-     * feedback flow, so changing a post's slug never breaks feedback buttons.
-     * Authentication happens later when Portal submits to the feedback API — this
-     * endpoint only forwards the uuid/key through to the destination.
-     */
-    async redirectToPost(req, res, next) {
-        try {
-            const {postId} = req.params;
-            const score = req.params.score === '1' ? 1 : 0;
-            const uuid = req.query.uuid;
-            const key = req.query.key;
+    const member = this.#getMember(frame);
 
-            // Load the full post (with tags/authors) rather than passing an
-            // id-only resource: the URL service needs status to apply the
-            // published base filter and tags/authors to evaluate filtered
-            // routes — the URL service reports a bare {id} as thin.
-            const post = await this.#repository.getPostById(postId, {withRelated: ['tags', 'authors']});
-            const target = post
-                ? this.#audienceFeedbackService.buildLink(uuid, post, score, key)
-                : this.#audienceFeedbackService.buildFallbackLink(uuid, postId, score, key);
-            return res.redirect(target.toString());
-        } catch (err) {
-            return next(err);
-        }
+    const post = await this.#repository.getPostById(postId);
+    if (!post) {
+      throw new errors.NotFoundError({
+        message: tpl(messages.postNotFound),
+      });
     }
 
-    /**
-     * Get member from frame
-     */
-    #getMember(frame) {
-        if (!frame.options?.context?.member?.id) {
-            // This is an internal server error because authentication should happen outside this service.
-            throw new errors.InternalServerError({
-                message: tpl(messages.memberNotFound)
-            });
-        }
-        return frame.options.context.member;
+    const existing = await this.#repository.get(post.id, member.id);
+    if (existing) {
+      if (existing.score === score) {
+        // Don't save so we don't update the updated_at timestamp
+        return existing;
+      }
+      existing.score = score;
+      await this.#repository.edit(existing);
+      return existing;
     }
 
-    async add(frame) {
-        const data = frame.data.feedback[0];
-        const postId = data.post_id;
-        const score = data.score;
+    const feedback = new Feedback({
+      memberId: member.id,
+      postId: post.id,
+      score,
+    });
+    await this.#repository.add(feedback);
+    return feedback;
+  }
 
-        if (![0, 1].includes(score)) {
-            throw new errors.ValidationError({
-                message: tpl(messages.invalidScore)
-            });
-        }
+  async browse(frame) {
+    const postId = frame.data.id;
+    const options = {
+      limit: frame.options.limit || 10,
+      page: frame.options.page || 1,
+      withMember: false,
+    };
 
-        const member = this.#getMember(frame);
-
-        const post = await this.#repository.getPostById(postId);
-        if (!post) {
-            throw new errors.NotFoundError({
-                message: tpl(messages.postNotFound)
-            });
-        }
-
-        const existing = await this.#repository.get(post.id, member.id);
-        if (existing) {
-            if (existing.score === score) {
-                // Don't save so we don't update the updated_at timestamp
-                return existing;
-            }
-            existing.score = score;
-            await this.#repository.edit(existing);
-            return existing;
-        }
-
-        const feedback = new Feedback({
-            memberId: member.id,
-            postId: post.id,
-            score
-        });
-        await this.#repository.add(feedback);
-        return feedback;
+    // Add score filter if specified
+    if (frame.options.score !== undefined) {
+      options.score = parseInt(frame.options.score);
     }
 
-    async browse(frame) {
-        const postId = frame.data.id;
-        const options = {
-            limit: frame.options.limit || 10,
-            page: frame.options.page || 1,
-            withMember: false
-        };
-
-        // Add score filter if specified
-        if (frame.options.score !== undefined) {
-            options.score = parseInt(frame.options.score);
-        }
-
-        try {
-            await permissions.canThis(frame.options.context).browse.member();
-            options.withMember = true;
-        } catch {
-            // permissions throws; we want to return data but without member info
-        }
-
-        const result = await this.#repository.getForPost(postId, options);
-        return result;
+    try {
+      await permissions.canThis(frame.options.context).browse.member();
+      options.withMember = true;
+    } catch {
+      // permissions throws; we want to return data but without member info
     }
+
+    const result = await this.#repository.getForPost(postId, options);
+    return result;
+  }
 }
 
 module.exports = AudienceFeedbackController;

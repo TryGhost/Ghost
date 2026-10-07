@@ -6,7 +6,7 @@ export default BaseValidator.create({
     properties: ['email', 'role'],
 
     email(model) {
-        let email = model.email;
+        const email = model.email;
 
         if (isBlank(email)) {
             model.errors.add('email', 'Please enter an email.');
@@ -18,7 +18,7 @@ export default BaseValidator.create({
     },
 
     role(model) {
-        let role = model.role;
+        const role = model.role;
 
         if (isBlank(role)) {
             model.errors.add('role', 'Please select a role.');

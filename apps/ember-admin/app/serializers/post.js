@@ -15,7 +15,7 @@ export default class PostSerializer extends ApplicationSerializer.extend(Embedde
     };
 
     serialize(snapshot/*, options*/) {
-        let json = super.serialize(...arguments);
+        const json = super.serialize(...arguments);
 
         // Inserted locally as a convenience.
         delete json.author_id;

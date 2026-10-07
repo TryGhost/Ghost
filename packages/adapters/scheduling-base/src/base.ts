@@ -1,19 +1,18 @@
 import logging from '@tryghost/logging';
 
-
 /**
  * Shape of a job the scheduler adapter queues. Time is a unix timestamp;
  * url carries a JWT-signed admin token; extra forwards through to the
  * HTTP callback the adapter fires.
  */
 export interface SchedulerJob {
-    time: number;
-    url: string;
-    extra: {
-        httpMethod: string;
-        idempotencyKey?: string;
-        oldTime?: number | null;
-    };
+  time: number;
+  url: string;
+  extra: {
+    httpMethod: string;
+    idempotencyKey?: string;
+    oldTime?: number | null;
+  };
 }
 
 /**
@@ -22,7 +21,7 @@ export interface SchedulerJob {
  * rescheduler can unschedule any jobs that were queued under the old key.
  */
 export interface RescheduleOpts {
-    previousKey?: { id: string; secret: string};
+  previousKey?: { id: string; secret: string };
 }
 
 /**
@@ -32,7 +31,7 @@ export interface RescheduleOpts {
  * after an internal API key rotation.
  */
 export interface Rescheduler {
-    rescheduleAll(opts?: RescheduleOpts): Promise<void>;
+  rescheduleAll(opts?: RescheduleOpts): Promise<void>;
 }
 
 /**
@@ -42,52 +41,53 @@ export interface Rescheduler {
  * the ones each adapter implementation must provide.
  */
 export interface SchedulerAdapter {
-    run(): void | Promise<void>;
-    schedule(job: SchedulerJob): void | Promise<void>;
-    unschedule(job: SchedulerJob, opts?: {bootstrap?: boolean}): void | Promise<void>;
-    register(rescheduler: Rescheduler): void;
+  run(): void | Promise<void>;
+  schedule(job: SchedulerJob): void | Promise<void>;
+  unschedule(job: SchedulerJob, opts?: { bootstrap?: boolean }): void | Promise<void>;
+  register(rescheduler: Rescheduler): void;
 }
 
 export abstract class SchedulingBase implements SchedulerAdapter {
-    declare readonly requiredFns: readonly ['run', 'schedule', 'unschedule'];
+  declare readonly requiredFns: readonly ['run', 'schedule', 'unschedule'];
 
-    #reschedulers = new Set<Rescheduler>();
+  #reschedulers = new Set<Rescheduler>();
 
-    constructor() {
-        Object.defineProperty(this, 'requiredFns', {
-            value: Object.freeze(['run', 'schedule', 'unschedule']),
-            writable: false,
-        })
-    }
+  constructor() {
+    Object.defineProperty(this, 'requiredFns', {
+      value: Object.freeze(['run', 'schedule', 'unschedule']),
+      writable: false,
+    });
+  }
 
-    register(rescheduler: Rescheduler) {
-        this.#reschedulers.add(rescheduler);
-    }
+  register(rescheduler: Rescheduler) {
+    this.#reschedulers.add(rescheduler);
+  }
 
-    /**
-     * Ask every registered rescheduler to rebuild its queue under the current
-     * key. Best-effort: a failure in one doesn't block the others.
-     */
-    async rescheduleAll(opts?: RescheduleOpts) {
-        const reschedulers = Array.from(this.#reschedulers);
-        const results = await Promise.allSettled(
-            reschedulers.map(r => r.rescheduleAll(opts))
+  /**
+   * Ask every registered rescheduler to rebuild its queue under the current
+   * key. Best-effort: a failure in one doesn't block the others.
+   */
+  async rescheduleAll(opts?: RescheduleOpts) {
+    const reschedulers = Array.from(this.#reschedulers);
+    const results = await Promise.allSettled(reschedulers.map((r) => r.rescheduleAll(opts)));
+
+    results.forEach((result, i) => {
+      if (result.status === 'rejected') {
+        logging.error(
+          {
+            event: { name: 'scheduler.reschedule_all.failed' },
+            err: result.reason,
+            rescheduler: reschedulers[i]!.constructor?.name || 'unknown',
+          },
+          'Rescheduler failed',
         );
+      }
+    });
 
-        results.forEach((result, i) => {
-            if (result.status === 'rejected') {
-                logging.error({
-                    event: {name: 'scheduler.reschedule_all.failed'},
-                    err: result.reason,
-                    rescheduler: reschedulers[i]!.constructor?.name || 'unknown'
-                }, 'Rescheduler failed');
-            }
-        });
+    return results;
+  }
 
-        return results;
-    }
-
-    abstract run(): void | Promise<void>;
-    abstract schedule(job: SchedulerJob): void | Promise<void>
-    abstract unschedule(job: SchedulerJob, opts?: {bootstrap?: boolean}): void | Promise<void>
+  abstract run(): void | Promise<void>;
+  abstract schedule(job: SchedulerJob): void | Promise<void>;
+  abstract unschedule(job: SchedulerJob, opts?: { bootstrap?: boolean }): void | Promise<void>;
 }

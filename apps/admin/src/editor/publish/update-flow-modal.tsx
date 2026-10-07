@@ -1,0 +1,269 @@
+import { Banner, Button } from '@tryghost/shade/components';
+import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { formatNumber } from '@tryghost/shade/utils';
+import { PageHeader } from '@tryghost/shade/patterns';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import {
+  getFullRecipientFilter,
+  getNewsletterRecipientFilter,
+  normalizeRecipientFilter,
+} from '@tryghost/admin-x-framework/utils/recipient-filter';
+import {
+  publishRevertToDraft,
+  updateFlowConfirmation,
+  updateFlowModal,
+  updateFlowPreviousEmail,
+  updateFlowTitle,
+} from '@tryghost/test-data/selectors/editor';
+import { FullscreenDialog } from '@/editor/fullscreen-dialog';
+import { createPublishOptions } from './publish-options';
+import {
+  describeCompletionFailure,
+  describeRejectedAction,
+  type CompletionFailure,
+} from './completion-message';
+import { formatSiteDateTime } from './publish-copy';
+import type { PublishDispatcher } from './publish-options';
+import type { PublishFlowPost } from './flow-post';
+import type { PublishSiteInput, PublishUserInput } from './publish-options';
+import type { SaveCompletion } from '@/editor/engine/save-engine';
+
+export interface UpdateFlowModalProps {
+  post: PublishFlowPost;
+  site: PublishSiteInput;
+  user: PublishUserInput;
+  timezone: string;
+  dispatch: PublishDispatcher;
+  onClose: () => void;
+  /** Called after the revert lands, so the caller can leave or refresh. */
+  onReverted?: () => void;
+}
+
+function pluralSubscribers(count: number | null | undefined): string {
+  if (count === null || count === undefined) {
+    return 'subscribers';
+  }
+  return `${formatNumber(count)} ${count === 1 ? 'subscriber' : 'subscribers'}`;
+}
+
+export function UpdateFlowModal({ post, ...props }: UpdateFlowModalProps) {
+  return <KeyedUpdateFlowModal key={post.id} post={post} {...props} />;
+}
+
+function KeyedUpdateFlowModal({
+  post,
+  site,
+  user,
+  timezone,
+  dispatch,
+  onClose,
+  onReverted,
+}: UpdateFlowModalProps) {
+  // Read once, like the publish flow's machine: keyed on the post, not on prop identity.
+  const inputs = useRef({ post, site, user });
+  inputs.current = { post, site, user };
+
+  const machine = useMemo(() => {
+    const current = inputs.current;
+
+    return createPublishOptions({
+      post: { ...current.post, isPage: current.post.displayName === 'page' },
+      site: current.site,
+      user: current.user,
+    });
+  }, [post.id]);
+  const state = machine.getState();
+  const isScheduled = post.status === 'scheduled';
+  const isSent = post.status === 'sent';
+  const emailOnly = post.emailOnly === true || isSent;
+  const willEmail = isScheduled && Boolean(post.newsletter) && !post.email;
+  const hasBeenEmailed =
+    post.displayName === 'post' &&
+    (post.status === 'sent' || post.status === 'published') &&
+    Boolean(post.email && post.email.status !== 'failed');
+  const persistedNewsletter = site.newsletters.find(
+    (newsletter) => newsletter.slug === post.newsletter,
+  );
+  const persistedSegment = normalizeRecipientFilter(post.emailSegment);
+  const scheduledRecipientFilter =
+    willEmail && persistedNewsletter && persistedSegment
+      ? getFullRecipientFilter(getNewsletterRecipientFilter(persistedNewsletter), persistedSegment)
+      : null;
+  const { count: queriedCount } = useMembersCount(scheduledRecipientFilter, {
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
+  const count = scheduledRecipientFilter ? queriedCount : null;
+  const [failure, setFailure] = useState<CompletionFailure | null>(null);
+  const [running, setRunning] = useState(false);
+  const runningRef = useRef(false);
+  const activeRef = useRef(true);
+  // The post's own newsletter, not the picker's: a send to a since-archived
+  // newsletter must still be named, or it reads as a send to the default one.
+  const showNewsletterName = !state.onlyDefaultNewsletter || post.newsletterStatus === 'archived';
+  const close = () => {
+    if (!activeRef.current) {
+      return;
+    }
+    activeRef.current = false;
+    onClose();
+  };
+
+  useEffect(() => {
+    // Admin runs under StrictMode, which replays cleanup before this setup.
+    activeRef.current = true;
+    return () => {
+      activeRef.current = false;
+    };
+  }, []);
+
+  const revert = async () => {
+    if (runningRef.current) {
+      return;
+    }
+    runningRef.current = true;
+    setFailure(null);
+    setRunning(true);
+
+    let completion: SaveCompletion;
+
+    try {
+      completion = await dispatch(machine.toRevertDispatch());
+    } catch (error) {
+      if (activeRef.current) {
+        setFailure(describeRejectedAction(error));
+        setRunning(false);
+      }
+      runningRef.current = false;
+      return;
+    }
+
+    if (!activeRef.current) {
+      runningRef.current = false;
+      return;
+    }
+
+    const completionFailure = describeCompletionFailure(completion);
+
+    if (completionFailure) {
+      setFailure(completionFailure);
+      setRunning(false);
+      runningRef.current = false;
+      return;
+    }
+
+    setRunning(false);
+    runningRef.current = false;
+    onReverted?.();
+    if (activeRef.current) {
+      close();
+    }
+  };
+
+  const publishedAt = post.publishedAt;
+
+  return (
+    <FullscreenDialog
+      data-testid={updateFlowModal}
+      modal={false}
+      title={isScheduled ? 'Unschedule' : 'Unpublish'}
+      open
+      onOpenChange={(open) => !open && close()}
+    >
+      <Box className="relative min-h-full">
+        <Inline className="absolute inset-x-0 top-0 p-4" justify="between">
+          <Text aria-hidden="true" as="h2" className="text-lg tracking-tight" weight="semibold">
+            {isScheduled ? 'Unschedule' : 'Unpublish'}
+          </Text>
+          <PageHeader.ActionGroup>
+            {isSent ? null : (
+              <Button variant="outline" onClick={close}>
+                Close
+              </Button>
+            )}
+          </PageHeader.ActionGroup>
+        </Inline>
+
+        <Stack className="mx-auto w-full max-w-156 px-6 pt-[max(9.6rem,18vh)] pb-16" gap="xl">
+          <Text
+            as="h2"
+            className="text-5xl leading-tighter tracking-tight"
+            data-testid={updateFlowTitle}
+            weight="bold"
+          >
+            This {post.displayName} {isSent ? 'was' : 'has been'}{' '}
+            <span className="text-state-success">
+              {post.status}
+              {isSent ? ' by email' : ''}
+            </span>
+          </Text>
+
+          <Text className="text-pretty" data-testid={updateFlowConfirmation} size="lg">
+            Your {post.displayName} {isScheduled ? 'will be' : 'was'}{' '}
+            {hasBeenEmailed || willEmail ? (
+              <>
+                {emailOnly ? 'sent to' : 'published and sent to'}{' '}
+                <strong>
+                  {isScheduled
+                    ? pluralSubscribers(count)
+                    : pluralSubscribers(post.email?.email_count ?? null)}
+                </strong>
+                {showNewsletterName && post.newsletterName ? (
+                  <>
+                    {' '}
+                    of <strong>{post.newsletterName}</strong>
+                  </>
+                ) : null}
+              </>
+            ) : (
+              'published on your site'
+            )}
+            {publishedAt ? <> on {formatSiteDateTime(publishedAt, timezone)}.</> : '.'}
+          </Text>
+
+          {isScheduled && post.email ? (
+            <Text className="text-pretty" data-testid={updateFlowPreviousEmail} size="lg">
+              This post was previously emailed to{' '}
+              <strong>{pluralSubscribers(post.email.email_count ?? null)}</strong>
+              {showNewsletterName && post.newsletterName ? (
+                <>
+                  {' '}
+                  of <strong>{post.newsletterName}</strong>
+                </>
+              ) : null}
+              {post.emailCreatedAt ? (
+                <> on {formatSiteDateTime(post.emailCreatedAt, timezone)}.</>
+              ) : (
+                '.'
+              )}
+            </Text>
+          ) : null}
+
+          {failure ? (
+            <Banner role="alert" variant="destructive">
+              {failure.message}
+            </Banner>
+          ) : null}
+
+          {isScheduled || !emailOnly ? (
+            <Inline justify="start">
+              <Button
+                className="h-auto min-h-11 max-w-full px-5 py-2 whitespace-normal"
+                data-testid={publishRevertToDraft}
+                disabled={running}
+                size="lg"
+                variant="outline"
+                onClick={() => void revert()}
+              >
+                {isScheduled
+                  ? 'Unschedule and revert to draft →'
+                  : 'Unpublish and revert to private draft →'}
+              </Button>
+            </Inline>
+          ) : null}
+        </Stack>
+      </Box>
+    </FullscreenDialog>
+  );
+}

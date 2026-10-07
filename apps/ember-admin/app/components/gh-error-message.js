@@ -11,8 +11,8 @@ import {isEmpty} from '@ember/utils';
  */
 export default class GhErrorMessage extends Component {
     get message() {
-        let {property, errors} = this.args;
-        let messages = [];
+        const {property, errors} = this.args;
+        const messages = [];
         let index;
 
         if (!isEmpty(errors) && errors.get(property)) {

@@ -1,6 +1,3 @@
-const {combineTransactionalMigrations, removeSetting} = require('../../utils');
+const { combineTransactionalMigrations, removeSetting } = require('../../utils');
 
-module.exports = combineTransactionalMigrations(
-    removeSetting('amp'),
-    removeSetting('amp_gtag_id')
-);
+module.exports = combineTransactionalMigrations(removeSetting('amp'), removeSetting('amp_gtag_id'));

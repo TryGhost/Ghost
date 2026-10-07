@@ -10,131 +10,134 @@ const ParentRouter = require('./parent-router');
  * @description Template routes allow you to map individual URLs to specific template files within a Ghost theme
  */
 class StaticRoutesRouter extends ParentRouter {
-    constructor(mainRoute, object, routerCreated) {
-        super('StaticRoutesRouter');
+  constructor(mainRoute, object, routerCreated) {
+    super('StaticRoutesRouter');
 
-        this.route = {value: mainRoute};
-        this.templates = object.templates || [];
-        this.data = object.data || {};
-        this.routerName = mainRoute === '/' ? 'index' : mainRoute.replace(/\//g, '');
-        this.routerCreated = routerCreated;
+    this.route = { value: mainRoute };
+    this.templates = object.templates || [];
+    this.data = object.data || {};
+    this.routerName = mainRoute === '/' ? 'index' : mainRoute.replace(/\//g, '');
+    this.routerCreated = routerCreated;
 
-        debug(this.route.value, this.templates);
+    debug(this.route.value, this.templates);
 
-        // CASE 1: Route is channel (controller: channel) -  a stream of posts
-        // CASE 2: Route is just a static page e.g. landing page
-        if (this.isChannel(object)) {
-            this.templates = this.templates.reverse();
-            this.rss = object.rss !== false;
-            this.filter = object.filter;
-            this.limit = object.limit;
-            this.order = object.order;
+    // CASE 1: Route is channel (controller: channel) -  a stream of posts
+    // CASE 2: Route is just a static page e.g. landing page
+    if (this.isChannel(object)) {
+      this.templates = this.templates.reverse();
+      this.rss = object.rss !== false;
+      this.filter = object.filter;
+      this.limit = object.limit;
+      this.order = object.order;
 
-            this.type = object.type;
+      this.type = object.type;
 
-            debug(this.route.value, this.templates, this.filter, this.data);
-            this._registerChannelRoutes();
-        } else {
-            this.contentType = object.contentType;
-            debug(this.route.value, this.templates);
-            this._registerStaticRoute();
-        }
+      debug(this.route.value, this.templates, this.filter, this.data);
+      this._registerChannelRoutes();
+    } else {
+      this.contentType = object.contentType;
+      debug(this.route.value, this.templates);
+      this._registerStaticRoute();
+    }
+  }
+
+  /**
+   * @description Register all channel routes of this router (...if the router is a channel)
+   * @private
+   */
+  _registerChannelRoutes() {
+    // REGISTER: prepare context object
+    this.router().use(this._prepareChannelContext.bind(this));
+
+    // REGISTER: is rss enabled?
+    if (this.rss) {
+      this.rssRouter = new RSSRouter();
+      this.mountRouter(this.route.value, this.rssRouter.router());
     }
 
-    /**
-     * @description Register all channel routes of this router (...if the router is a channel)
-     * @private
-     */
-    _registerChannelRoutes() {
-        // REGISTER: prepare context object
-        this.router().use(this._prepareChannelContext.bind(this));
+    // REGISTER: channel route
+    this.mountRoute(this.route.value, controllers[this.type]);
 
-        // REGISTER: is rss enabled?
-        if (this.rss) {
-            this.rssRouter = new RSSRouter();
-            this.mountRouter(this.route.value, this.rssRouter.router());
-        }
+    // REGISTER: pagination
+    this.router().param('page', middleware.pageParam);
+    this.mountRoute(
+      urlUtils.urlJoin(this.route.value, 'page', ':page(\\d+)'),
+      controllers[this.type],
+    );
 
-        // REGISTER: channel route
-        this.mountRoute(this.route.value, controllers[this.type]);
+    this.routerCreated(this);
+  }
 
-        // REGISTER: pagination
-        this.router().param('page', middleware.pageParam);
-        this.mountRoute(urlUtils.urlJoin(this.route.value, 'page', ':page(\\d+)'), controllers[this.type]);
+  /**
+   * @description Prepare channel context for further middleware/controllers.
+   * @param {Object} req
+   * @param {Object} res
+   * @param {Function} next
+   * @private
+   */
+  _prepareChannelContext(req, res, next) {
+    res.routerOptions = {
+      type: this.type,
+      name: this.routerName,
+      context: [this.routerName],
+      filter: this.filter,
+      limit: this.limit,
+      order: this.order,
+      data: this.data,
+      templates: this.templates,
+    };
 
-        this.routerCreated(this);
-    }
+    next();
+  }
 
-    /**
-     * @description Prepare channel context for further middleware/controllers.
-     * @param {Object} req
-     * @param {Object} res
-     * @param {Function} next
-     * @private
-     */
-    _prepareChannelContext(req, res, next) {
-        res.routerOptions = {
-            type: this.type,
-            name: this.routerName,
-            context: [this.routerName],
-            filter: this.filter,
-            limit: this.limit,
-            order: this.order,
-            data: this.data,
-            templates: this.templates
-        };
+  /**
+   * @description Register all static routes of this router (...if the router is just a static route)
+   * @private
+   */
+  _registerStaticRoute() {
+    // REGISTER: prepare context object
+    this.router().use(this._prepareStaticRouteContext.bind(this));
 
-        next();
-    }
+    // REGISTER: static route
+    this.mountRoute(this.route.value, controllers.static);
 
-    /**
-     * @description Register all static routes of this router (...if the router is just a static route)
-     * @private
-     */
-    _registerStaticRoute() {
-        // REGISTER: prepare context object
-        this.router().use(this._prepareStaticRouteContext.bind(this));
+    this.routerCreated(this);
+  }
 
-        // REGISTER: static route
-        this.mountRoute(this.route.value, controllers.static);
+  /**
+   * @description Prepare static route context for further middleware/controllers.
+   * @param {Object} req
+   * @param {Object} res
+   * @param {Function} next
+   * @private
+   */
+  _prepareStaticRouteContext(req, res, next) {
+    res.routerOptions = {
+      type: 'custom',
+      templates: this.templates,
+      defaultTemplate: () => {
+        throw new errors.IncorrectUsageError({
+          message: `Missing template ${res.routerOptions.templates.map((x) => `${x}.hbs`).join(', ')} for route "${req.originalUrl}".`,
+        });
+      },
+      data: this.data,
+      context: [this.routerName],
+      contentType: this.contentType,
+    };
 
-        this.routerCreated(this);
-    }
+    next();
+  }
 
-    /**
-     * @description Prepare static route context for further middleware/controllers.
-     * @param {Object} req
-     * @param {Object} res
-     * @param {Function} next
-     * @private
-     */
-    _prepareStaticRouteContext(req, res, next) {
-        res.routerOptions = {
-            type: 'custom',
-            templates: this.templates,
-            defaultTemplate: () => {
-                throw new errors.IncorrectUsageError({
-                    message: `Missing template ${res.routerOptions.templates.map(x => `${x}.hbs`).join(', ')} for route "${req.originalUrl}".`
-                });
-            },
-            data: this.data,
-            context: [this.routerName],
-            contentType: this.contentType
-        };
-
-        next();
-    }
-
-    /**
-     * @description Helper function to figure out if this router is a channel.
-     * @param {Object} object
-     * @returns {boolean}
-     */
-    isChannel(object) {
-        // parseRouteSettings always sets `type` ('channel' | 'template') on
-        // every route, so a channel is simply `type === 'channel'`.
-        return object?.type === 'channel';
-    }
+  /**
+   * @description Helper function to figure out if this router is a channel.
+   * @param {Object} object
+   * @returns {boolean}
+   */
+  isChannel(object) {
+    // parseRouteSettings always sets `type` ('channel' | 'template') on
+    // every route, so a channel is simply `type === 'channel'`.
+    return object?.type === 'channel';
+  }
 }
 
 module.exports = StaticRoutesRouter;

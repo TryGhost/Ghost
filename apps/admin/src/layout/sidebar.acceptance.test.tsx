@@ -1,272 +1,532 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from 'vitest';
 
 import {
-    activeThemeResponse,
-    allowUnhandledRequests,
-    currentRoute,
-    fakeAdminEndpoint,
-    fakeEndpoint,
-    fakeTags,
-    renderAdminApp,
-    currentUserResponse,
-    settingsResponse,
-    type RenderAdminAppOptions,
-} from "@test-utils/acceptance";
-import { sidebarScreen } from "./sidebar.screen";
+  activeThemeResponse,
+  allowUnhandledRequests,
+  configResponse,
+  currentRoute,
+  fakeAdminEndpoint,
+  fakeEndpoint,
+  fakeNewsletters,
+  fakePages,
+  fakePosts,
+  fakePostsListScreen,
+  fakeTags,
+  fakeTiers,
+  renderAdminApp,
+  currentUserResponse,
+  settingsResponse,
+  type RenderAdminAppOptions,
+} from '@test-utils/acceptance';
+import { sidebarScreen } from './sidebar.screen';
+import { postsListScreen } from '@/posts/list/posts-list.screen';
+import { clearStickyPostFilters } from '@/posts/list/posts-sticky-filters';
 
 // The site fixture's URL roots the ActivityPub API (see use-activity-pub-queries.ts).
-const UNREAD_COUNT_URL = "http://test.com/.ghost/activitypub/v1/notifications/unread/count";
+const UNREAD_COUNT_URL = 'http://test.com/.ghost/activitypub/v1/notifications/unread/count';
 
 function socialWebEnabled(): RenderAdminAppOptions {
-    return { boot: { browseSettings: { response: settingsResponse({ settings: { social_web_enabled: true } }) } } };
+  return {
+    boot: {
+      browseSettings: { response: settingsResponse({ settings: { social_web_enabled: true } }) },
+    },
+  };
 }
 
 function fakeUnreadNotifications(count: number): void {
-    fakeAdminEndpoint("GET", "/identities/", { identities: [{ token: "test-token" }] });
-    fakeEndpoint("GET", UNREAD_COUNT_URL, { count });
+  fakeAdminEndpoint('GET', '/identities/', { identities: [{ token: 'test-token' }] });
+  fakeEndpoint('GET', UNREAD_COUNT_URL, { count });
 }
 
-describe("Sidebar navigation", () => {
-    it("renders the navigation for the current user", async () => {
-        await renderAdminApp("/site");
+/** The Ghost(Pro) item links to Ember's billing route; it shows for the owner of a hosted site. */
+function ghostProSite(): RenderAdminAppOptions {
+  const config = configResponse();
+  config.config.hostSettings = { billing: { enabled: true, url: 'https://billing.example.com' } };
+  return { boot: { browseConfig: { response: config } } };
+}
 
-        await expect.element(sidebarScreen.navLink("Analytics")).toBeVisible();
-        await expect.element(sidebarScreen.navLink("View site")).toBeVisible();
-        await expect.element(sidebarScreen.navLink("Posts")).toBeVisible();
-        await expect.element(sidebarScreen.navLink("Pages")).toBeVisible();
-        await expect.element(sidebarScreen.navLink("Tags")).toBeVisible();
-        await expect.element(sidebarScreen.navLink("Members")).toBeVisible();
-        await expect.element(sidebarScreen.navLink("Settings")).toBeVisible();
-        await expect.element(sidebarScreen.userMenuTrigger()).toBeVisible();
-        // The Network item requires the social_web_enabled setting, off by default.
-        await expect.element(sidebarScreen.navLink("Network")).not.toBeInTheDocument();
-    });
+/** The lists the sidebar's top-level items open, each fetching as soon as it mounts. */
+function fakeSidebarLists(): void {
+  fakePostsListScreen();
+  fakePosts([]);
+  fakePages([]);
+  fakeAdminEndpoint('GET', /^\/members\/events\//, { events: [] });
+  // Member activity also reads the active newsletters and paid tiers.
+  fakeNewsletters([]);
+  fakeTiers([]);
+}
 
-    it("clicking a nav item navigates and updates the active state", async () => {
-        fakeTags([]);
-        await renderAdminApp("/site");
-
-        await sidebarScreen.navLink("Tags").click();
-        await expect.poll(currentRoute).toBe("/tags");
-        await expect.element(sidebarScreen.navLink("Tags")).toHaveAttribute("aria-current", "page");
-
-        await sidebarScreen.navLink("View site").click();
-        await expect.poll(currentRoute).toBe("/site");
-        await expect.element(sidebarScreen.navLink("View site")).toHaveAttribute("aria-current", "page");
-        await expect.element(sidebarScreen.navLink("Tags")).not.toHaveAttribute("aria-current");
-    });
-
-    it("uses router navigation for React-owned routes and hash anchors for Ember-owned ones", async () => {
-        fakeTags([]);
-        await renderAdminApp("/site");
-
-        // Router links carry the router's history state (the unsaved-changes
-        // blockers rely on it); Ember's router only follows hashchange, so its
-        // links must stay native anchors.
-        await sidebarScreen.navLink("Tags").click();
-        await expect.poll(currentRoute).toBe("/tags");
-        expect(typeof (window.history.state as {key?: unknown} | null)?.key).toBe("string");
-
-        await sidebarScreen.navLink("Posts").click();
-        await expect.poll(currentRoute).toBe("/posts");
-        expect((window.history.state as {key?: unknown} | null)?.key).toBeUndefined();
-    });
-
-    it("clicking Posts and Pages navigates to the Ember-owned lists", async () => {
-        // Posts/Pages active states come from the Ember routing bridge, absent in this tier.
-        await renderAdminApp("/site");
-
-        await sidebarScreen.navLink("Posts").click();
-        await expect.poll(currentRoute).toBe("/posts");
-
-        await sidebarScreen.navLink("Pages").click();
-        await expect.poll(currentRoute).toBe("/pages");
-    });
-
-    it("shows the default post views and collapses them with the toggle", async () => {
-        await renderAdminApp("/posts");
-
-        await expect.element(sidebarScreen.postsToggle()).toHaveAttribute("aria-expanded", "true");
-        await expect.element(sidebarScreen.navLink("Drafts")).toBeVisible();
-        await expect.element(sidebarScreen.navLink("Scheduled")).toBeVisible();
-        await expect.element(sidebarScreen.navLink("Published")).toBeVisible();
-
-        await sidebarScreen.postsToggle().click();
-
-        await expect.element(sidebarScreen.postsToggle()).toHaveAttribute("aria-expanded", "false");
-        await expect.element(sidebarScreen.navLink("Drafts")).not.toBeInTheDocument();
-    });
-
-    it("clicking a posts submenu item navigates to the filtered list", async () => {
-        // The submenu item's active state comes from the Ember routing bridge, absent in this tier.
-        await renderAdminApp("/posts");
-
-        await sidebarScreen.navLink("Scheduled").click();
-
-        await expect.poll(currentRoute).toBe("/posts?type=scheduled");
-    });
-
-    it("navigates to settings from the sidebar footer and hides the shell nav", async () => {
-        // The settings app owns its request graph; this spec asserts only the shell navigation.
-        allowUnhandledRequests();
-        await renderAdminApp("/site");
-
-        await expect.element(sidebarScreen.shellNav()).toBeVisible();
-        await sidebarScreen.navLink("Settings").click();
-
-        await expect.poll(currentRoute).toMatch(/^\/settings/);
-        await expect.element(sidebarScreen.shellNav()).not.toBeInTheDocument();
-    });
-
-    it("hides the shell nav when a settings route is loaded directly", async () => {
-        // The settings app owns its request graph; this spec asserts only the shell navigation.
-        allowUnhandledRequests();
-        await renderAdminApp("/settings/staff");
-
-        await expect.poll(currentRoute).toMatch(/^\/settings\/staff/);
-        // The shell mounts only once the current user resolves — wait for it, or a
-        // sidebar that appears on that later paint slips past the assertion.
-        await expect.element(sidebarScreen.shellMain()).toBeInTheDocument();
-        await expect.element(sidebarScreen.shellNav()).not.toBeInTheDocument();
-    });
+afterEach(() => {
+  clearStickyPostFilters();
 });
 
-describe("Sidebar user menu", () => {
-    it("opens the user menu with profile, appearance and sign-out items", async () => {
-        await renderAdminApp("/site");
-
-        await sidebarScreen.userMenuTrigger().click();
-
-        await expect.element(sidebarScreen.profileMenuItem()).toBeVisible();
-        await expect.element(sidebarScreen.appearanceMenuItem()).toBeVisible();
-        await expect.element(sidebarScreen.signOutMenuItem()).toBeVisible();
+describe('Sidebar navigation', () => {
+  it('renders navigation without waiting for Labs config', async () => {
+    fakeTags([]);
+    let resolveConfig!: (value: ReturnType<typeof configResponse>) => void;
+    const pendingConfig = new Promise<ReturnType<typeof configResponse>>((resolve) => {
+      resolveConfig = resolve;
     });
 
-    it("navigates to the profile settings from the user menu", async () => {
-        // The settings app owns its request graph; this spec asserts only the shell navigation.
-        allowUnhandledRequests();
-        await renderAdminApp("/site");
-
-        await sidebarScreen.userMenuTrigger().click();
-        await sidebarScreen.profileMenuItem().click();
-
-        await expect.poll(currentRoute).toMatch(/^\/settings\/staff\//);
+    await renderAdminApp('/tags', {
+      boot: { browseConfig: { response: () => pendingConfig } },
     });
 
-    it("switches the appearance and shows the current choice", async () => {
-        // Without the Ember bridge the app itself toggles the root dark class.
-        const isDarkMode = () => document.documentElement.classList.contains("dark");
-        await renderAdminApp("/site");
+    await expect.element(sidebarScreen.shellNav()).toBeVisible();
 
-        await sidebarScreen.selectAppearance("dark");
-        await expect.poll(isDarkMode).toBe(true);
+    resolveConfig(configResponse());
+  });
 
-        await sidebarScreen.userMenuTrigger().click();
-        await expect.element(sidebarScreen.appearanceMenuItem()).toHaveTextContent("Dark");
-        await sidebarScreen.appearanceMenuItem().click();
-        await sidebarScreen.appearanceOption("light").click();
-        await expect.poll(isDarkMode).toBe(false);
-
-        await sidebarScreen.userMenuTrigger().click();
-        await expect.element(sidebarScreen.appearanceMenuItem()).toHaveTextContent("Light");
-        await sidebarScreen.appearanceMenuItem().click();
-        await sidebarScreen.appearanceOption("system").click();
-        await expect.poll(isDarkMode).toBe(false);
-
-        await sidebarScreen.userMenuTrigger().click();
-        await expect.element(sidebarScreen.appearanceMenuItem()).toHaveTextContent("System");
+  it('renders navigation when config cannot be loaded', async () => {
+    fakeTags([]);
+    await renderAdminApp('/tags', {
+      boot: {
+        browseConfig: {
+          response: { errors: [{ message: 'Config unavailable' }] },
+          responseStatus: 400,
+        },
+      },
     });
+
+    await expect.element(sidebarScreen.shellNav()).toBeVisible();
+  });
+
+  it('renders navigation when accessibility JSON is malformed', async () => {
+    fakeTags([]);
+    const me = currentUserResponse();
+    me.users[0].accessibility = '{invalid json';
+
+    await renderAdminApp('/tags', { boot: { browseMe: { response: me } } });
+
+    await expect.element(sidebarScreen.shellNav()).toBeVisible();
+  });
+
+  it('uses the static shell without reading the saved menu visibility', async () => {
+    fakeTags([]);
+    const me = currentUserResponse();
+    me.users[0].accessibility = JSON.stringify({
+      navigation: { expanded: { posts: true, members: true }, menu: { visible: false } },
+      nightShift: 'light',
+    });
+
+    await renderAdminApp('/tags', { boot: { browseMe: { response: me } } });
+
+    await expect.element(sidebarScreen.shellNav()).toBeVisible();
+    expect(document.querySelector('[aria-label="Hide sidebar"]')).toBeNull();
+  });
+
+  it('keeps the boot loader visible until React commits its mount marker', async () => {
+    await renderAdminApp('/site');
+    // `/site` is a lazy route, so the shell commits after its chunk loads.
+    await expect.element(sidebarScreen.shellNav()).toBeVisible();
+
+    const marker = document.querySelector<HTMLElement>('[data-react-admin-mounted]')!;
+    const emberApp = document.getElementById('ember-app')!;
+    const bridgeHost = emberApp.parentElement!;
+
+    try {
+      document.body.appendChild(emberApp);
+      expect(getComputedStyle(emberApp).visibility).toBe('hidden');
+      marker.removeAttribute('data-react-admin-mounted');
+      expect(getComputedStyle(emberApp).visibility).toBe('visible');
+    } finally {
+      marker.setAttribute('data-react-admin-mounted', '');
+      bridgeHost.appendChild(emberApp);
+    }
+  });
+
+  it('renders the navigation for the current user', async () => {
+    await renderAdminApp('/site');
+
+    await expect.element(sidebarScreen.navLink('Analytics')).toBeVisible();
+    await expect.element(sidebarScreen.navLink('View site')).toBeVisible();
+    await expect.element(sidebarScreen.navLink('Posts')).toBeVisible();
+    await expect.element(sidebarScreen.navLink('Pages')).toBeVisible();
+    await expect.element(sidebarScreen.navLink('Tags')).toBeVisible();
+    await expect.element(sidebarScreen.navLink('Members')).toBeVisible();
+    await expect.element(sidebarScreen.navLink('Settings')).toBeVisible();
+    await expect.element(sidebarScreen.userMenuTrigger()).toBeVisible();
+    // The Network item requires the social_web_enabled setting, off by default.
+    await expect.element(sidebarScreen.navLink('Network')).not.toBeInTheDocument();
+  });
+
+  it('clicking a nav item navigates and updates the active state', async () => {
+    fakeTags([]);
+    await renderAdminApp('/site');
+
+    await sidebarScreen.navLink('Tags').click();
+    await expect.poll(currentRoute).toBe('/tags');
+    await expect.element(sidebarScreen.navLink('Tags')).toHaveAttribute('aria-current', 'page');
+
+    await sidebarScreen.navLink('View site').click();
+    await expect.poll(currentRoute).toBe('/site');
+    await expect
+      .element(sidebarScreen.navLink('View site'))
+      .toHaveAttribute('aria-current', 'page');
+    await expect.element(sidebarScreen.navLink('Tags')).not.toHaveAttribute('aria-current');
+  });
+
+  it('uses router navigation for React-owned routes and hash anchors for Ember-owned ones', async () => {
+    fakeSidebarLists();
+    await renderAdminApp('/site', ghostProSite());
+    const historyKey = () => (window.history.state as { key?: unknown } | null)?.key;
+
+    // Router links carry the router's history state (the unsaved-changes
+    // blockers rely on it); Ember's router only follows hashchange, so its
+    // links must stay native anchors.
+    await sidebarScreen.navLink('Tags').click();
+    await expect.poll(currentRoute).toBe('/tags');
+    expect(typeof historyKey()).toBe('string');
+
+    await sidebarScreen.navLink('Posts').click();
+    await expect.poll(currentRoute).toBe('/posts');
+    expect(typeof historyKey()).toBe('string');
+
+    await sidebarScreen.ghostProLink().click();
+    await expect.poll(currentRoute).toBe('/pro');
+    expect(historyKey()).toBeUndefined();
+  });
+
+  it('clicking Posts and Pages navigates to the lists and marks them active', async () => {
+    fakeSidebarLists();
+    await renderAdminApp('/site');
+
+    await sidebarScreen.navLink('Posts').click();
+    await expect.poll(currentRoute).toBe('/posts');
+    await expect.element(sidebarScreen.navLink('Posts')).toHaveAttribute('aria-current', 'page');
+
+    await sidebarScreen.navLink('Pages').click();
+    await expect.poll(currentRoute).toBe('/pages');
+    await expect.element(sidebarScreen.navLink('Pages')).toHaveAttribute('aria-current', 'page');
+    await expect.element(sidebarScreen.navLink('Posts')).not.toHaveAttribute('aria-current');
+  });
+
+  it.each([false, true])(
+    'clears Posts filters and sorting after leaving the list: %s',
+    async (leaveList) => {
+      fakePostsListScreen();
+      fakePosts([]);
+      await renderAdminApp('/posts?tag=news&order=title+asc');
+      await expect.element(postsListScreen.filterBar()).toHaveTextContent('Unknown tag');
+
+      if (leaveList) {
+        await sidebarScreen.navLink('Tags').click();
+        await expect.poll(currentRoute).toBe('/tags');
+      }
+
+      await expect.element(sidebarScreen.navLink('Posts')).toHaveAttribute('href', '#/posts');
+      await sidebarScreen.navLink('Posts').click();
+
+      await expect.poll(currentRoute).toBe('/posts');
+      await expect.element(postsListScreen.filterBar()).not.toHaveTextContent('Unknown tag');
+    },
+  );
+
+  it('keeps Posts submenu filters and clears them with the main link', async () => {
+    fakePostsListScreen();
+    fakePosts([]);
+    await renderAdminApp('/posts');
+
+    await sidebarScreen.navLink('Drafts').click();
+    await expect.poll(currentRoute).toBe('/posts?type=draft');
+    await sidebarScreen.navLink('Posts').click();
+    await expect.poll(currentRoute).toBe('/posts');
+  });
+
+  it.each([
+    { label: 'Posts', route: '/posts' },
+    { label: 'Pages', route: '/pages' },
+    { label: 'Members', route: '/members-activity' },
+  ] as const)(
+    'marks $label active on its route and clears it after leaving',
+    async ({ label, route }) => {
+      fakeSidebarLists();
+      await renderAdminApp(route);
+
+      await expect.element(sidebarScreen.navLink(label)).toHaveAttribute('aria-current', 'page');
+
+      await sidebarScreen.navLink('Tags').click();
+      await expect.poll(currentRoute).toBe('/tags');
+      await expect.element(sidebarScreen.navLink(label)).not.toHaveAttribute('aria-current');
+    },
+  );
+
+  it('shows the default post views and collapses them with the toggle', async () => {
+    fakeSidebarLists();
+    await renderAdminApp('/posts');
+
+    await expect.element(sidebarScreen.postsToggle()).toHaveAttribute('aria-expanded', 'true');
+    await expect.element(sidebarScreen.navLink('Drafts')).toBeVisible();
+    await expect.element(sidebarScreen.navLink('Scheduled')).toBeVisible();
+    await expect.element(sidebarScreen.navLink('Published')).toBeVisible();
+
+    await sidebarScreen.postsToggle().click();
+
+    await expect.element(sidebarScreen.postsToggle()).toHaveAttribute('aria-expanded', 'false');
+    await expect.element(sidebarScreen.navLink('Drafts')).not.toBeInTheDocument();
+  });
+
+  it('clicking a posts submenu item navigates to the filtered list and marks only it active', async () => {
+    fakeSidebarLists();
+    await renderAdminApp('/posts');
+
+    await sidebarScreen.navLink('Scheduled').click();
+
+    await expect.poll(currentRoute).toBe('/posts?type=scheduled');
+    await expect
+      .element(sidebarScreen.navLink('Scheduled'))
+      .toHaveAttribute('aria-current', 'page');
+    // The parent stays expanded, but only the view underneath it is current.
+    await expect.element(sidebarScreen.postsToggle()).toHaveAttribute('aria-expanded', 'true');
+    await expect.element(sidebarScreen.navLink('Posts')).not.toHaveAttribute('aria-current');
+  });
+
+  it('clicking the parent Posts link moves the active state off the submenu item', async () => {
+    fakeSidebarLists();
+    await renderAdminApp('/posts?type=scheduled');
+    await expect
+      .element(sidebarScreen.navLink('Scheduled'))
+      .toHaveAttribute('aria-current', 'page');
+
+    await sidebarScreen.navLink('Posts').click();
+
+    await expect.poll(currentRoute).toBe('/posts');
+    await expect.element(sidebarScreen.navLink('Scheduled')).not.toHaveAttribute('aria-current');
+    await expect.element(sidebarScreen.navLink('Posts')).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('marks the Posts parent active for a submenu view once the submenu is collapsed', async () => {
+    fakeSidebarLists();
+    await renderAdminApp('/posts?type=scheduled');
+    await expect.element(sidebarScreen.navLink('Posts')).not.toHaveAttribute('aria-current');
+
+    await sidebarScreen.postsToggle().click();
+
+    await expect.element(sidebarScreen.navLink('Scheduled')).not.toBeInTheDocument();
+    await expect.element(sidebarScreen.navLink('Posts')).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('navigates to settings from the sidebar footer and hides the shell nav', async () => {
+    // The settings app owns its request graph; this spec asserts only the shell navigation.
+    allowUnhandledRequests();
+    await renderAdminApp('/site');
+
+    await expect.element(sidebarScreen.shellNav()).toBeVisible();
+    await sidebarScreen.navLink('Settings').click();
+
+    await expect.poll(currentRoute).toMatch(/^\/settings/);
+    await expect.element(sidebarScreen.shellNav()).not.toBeInTheDocument();
+  });
+
+  it('hides the shell nav when a settings route is loaded directly', async () => {
+    // The settings app owns its request graph; this spec asserts only the shell navigation.
+    allowUnhandledRequests();
+    await renderAdminApp('/settings/staff');
+
+    await expect.poll(currentRoute).toMatch(/^\/settings\/staff/);
+    // The shell mounts only once the current user resolves — wait for it, or a
+    // sidebar that appears on that later paint slips past the assertion.
+    await expect.element(sidebarScreen.shellMain()).toBeInTheDocument();
+    await expect.element(sidebarScreen.shellNav()).not.toBeInTheDocument();
+  });
 });
 
-describe("Network notification badge", () => {
-    it("shows the unread notifications count on the Network nav item", async () => {
-        fakeUnreadNotifications(5);
-        await renderAdminApp("/site", socialWebEnabled());
+describe('Sidebar user menu', () => {
+  it('opens the user menu with profile, appearance and sign-out items', async () => {
+    await renderAdminApp('/site');
 
-        await expect.element(sidebarScreen.navLink("Network")).toBeVisible();
-        await expect.element(sidebarScreen.networkBadge()).toHaveTextContent("5");
-    });
+    await sidebarScreen.userMenuTrigger().click();
 
-    it("does not show a badge when there are no unread notifications", async () => {
-        fakeUnreadNotifications(0);
-        await renderAdminApp("/site", socialWebEnabled());
+    await expect.element(sidebarScreen.profileMenuItem()).toBeVisible();
+    await expect.element(sidebarScreen.appearanceMenuItem()).toBeVisible();
+    await expect.element(sidebarScreen.signOutMenuItem()).toBeVisible();
+  });
 
-        await expect.element(sidebarScreen.navLink("Network")).toBeVisible();
-        await expect.element(sidebarScreen.networkBadge()).not.toBeInTheDocument();
-    });
+  it('navigates to the profile settings from the user menu', async () => {
+    // The settings app owns its request graph; this spec asserts only the shell navigation.
+    allowUnhandledRequests();
+    await renderAdminApp('/site');
 
-    it("hides the badge on the network route and restores it after navigating away", async () => {
-        // The ActivityPub app owns its request graph; this spec asserts only the shell badge.
-        allowUnhandledRequests();
-        fakeUnreadNotifications(5);
-        fakeAdminEndpoint("GET", "/users/?limit=100&include=roles", currentUserResponse());
-        await renderAdminApp("/site", socialWebEnabled());
+    await sidebarScreen.userMenuTrigger().click();
+    await sidebarScreen.profileMenuItem().click();
 
-        await expect.element(sidebarScreen.networkBadge()).toBeVisible();
+    await expect.poll(currentRoute).toMatch(/^\/settings\/staff\//);
+  });
 
-        await sidebarScreen.navLink("Network").click();
-        await expect.poll(currentRoute).toBe("/activitypub/welcome/1");
-        await expect.element(sidebarScreen.networkBadge()).not.toBeInTheDocument();
+  it('signs out through the session API and surfaces a failed sign-out', async () => {
+    // Success intentionally navigates to /ghost/ after the session is
+    // deleted; an error response keeps the page alive for assertions.
+    const api = fakeAdminEndpoint(
+      'DELETE',
+      '/session/',
+      { errors: [{ message: 'stop after request' }] },
+      { status: 400 },
+    );
+    await renderAdminApp('/site');
 
-        await sidebarScreen.navLink("Posts").click();
-        await expect.poll(currentRoute).toBe("/posts");
-        await expect.element(sidebarScreen.networkBadge()).toBeVisible();
-    });
+    await sidebarScreen.userMenuTrigger().click();
+    await sidebarScreen.signOutMenuItem().click();
+
+    await expect.poll(() => api.requests.length).toBe(1);
+    await expect
+      .element(sidebarScreen.errorToast())
+      .toHaveTextContent("Couldn't sign out. Please try again.");
+  });
+
+  it('switches the appearance and shows the current choice', async () => {
+    // Without the Ember bridge the app itself toggles the root dark class.
+    const isDarkMode = () => document.documentElement.classList.contains('dark');
+    await renderAdminApp('/site');
+
+    await sidebarScreen.selectAppearance('dark');
+    await expect.poll(isDarkMode).toBe(true);
+
+    await sidebarScreen.userMenuTrigger().click();
+    await expect.element(sidebarScreen.appearanceMenuItem()).toHaveTextContent('Dark');
+    await sidebarScreen.appearanceMenuItem().click();
+    await sidebarScreen.appearanceOption('light').click();
+    await expect.poll(isDarkMode).toBe(false);
+
+    await sidebarScreen.userMenuTrigger().click();
+    await expect.element(sidebarScreen.appearanceMenuItem()).toHaveTextContent('Light');
+    await sidebarScreen.appearanceMenuItem().click();
+    await sidebarScreen.appearanceOption('system').click();
+    await expect.poll(isDarkMode).toBe(false);
+
+    await sidebarScreen.userMenuTrigger().click();
+    await expect.element(sidebarScreen.appearanceMenuItem()).toHaveTextContent('System');
+  });
 });
 
-describe("Theme error notification", () => {
-    const DEPRECATED_HELPER_ERROR = {
-        code: "GS001-DEPR-PURL",
-        rule: "Replace deprecated helper",
-        details: "The <code>{{pageUrl}}</code> helper has been deprecated.",
-        failures: [{ ref: "default.hbs", message: "deprecated usage" }],
-        fatal: false,
-        level: "error",
-    };
+describe('Network notification badge', () => {
+  it('shows the unread notifications count on the Network nav item', async () => {
+    fakeUnreadNotifications(5);
+    await renderAdminApp('/site', socialWebEnabled());
 
-    // Surfaced inline in the design settings panel instead of the sidebar banner.
-    const PAGE_BUILDER_ERROR = {
-        code: "GS110-NO-MISSING-PAGE-BUILDER-USAGE",
-        rule: "Check page builder usage",
-        details: "Missing page builder helper usage.",
-        failures: [{ ref: "post.hbs", message: "show_title_and_feature_image" }],
-        fatal: false,
-        level: "error",
-    };
+    await expect.element(sidebarScreen.navLink('Network')).toBeVisible();
+    await expect.element(sidebarScreen.networkBadge()).toHaveTextContent('5');
+  });
 
-    it("shows a banner when the active theme has errors", async () => {
-        await renderAdminApp("/site", {
-            boot: { browseActiveTheme: { response: activeThemeResponse({ errors: [DEPRECATED_HELPER_ERROR] }) } },
-        });
+  it('does not show a badge when there are no unread notifications', async () => {
+    fakeUnreadNotifications(0);
+    await renderAdminApp('/site', socialWebEnabled());
 
-        await expect.element(sidebarScreen.themeErrorsBanner()).toBeVisible();
+    await expect.element(sidebarScreen.navLink('Network')).toBeVisible();
+    await expect.element(sidebarScreen.networkBadge()).not.toBeInTheDocument();
+  });
+
+  it('hides the badge on the network route and restores it after navigating away', async () => {
+    // The ActivityPub app owns its request graph; this spec asserts only the shell badge.
+    allowUnhandledRequests();
+    fakeUnreadNotifications(5);
+    fakeAdminEndpoint('GET', '/users/?limit=100&include=roles', currentUserResponse());
+    await renderAdminApp('/site', socialWebEnabled());
+
+    await expect.element(sidebarScreen.networkBadge()).toBeVisible();
+
+    await sidebarScreen.navLink('Network').click();
+    await expect.poll(currentRoute).toBe('/activitypub/welcome/1');
+    await expect.element(sidebarScreen.networkBadge()).not.toBeInTheDocument();
+
+    await sidebarScreen.navLink('Posts').click();
+    await expect.poll(currentRoute).toBe('/posts');
+    await expect.element(sidebarScreen.networkBadge()).toBeVisible();
+  });
+});
+
+describe('Theme error notification', () => {
+  const DEPRECATED_HELPER_ERROR = {
+    code: 'GS001-DEPR-PURL',
+    rule: 'Replace deprecated <code>{{pageUrl}}</code> helper',
+    details: 'The <code>{{pageUrl}}</code> helper has been deprecated.',
+    failures: [{ ref: 'default.hbs', message: 'deprecated usage' }],
+    fatal: false,
+    level: 'error',
+  };
+
+  // Surfaced inline in the design settings panel instead of the sidebar banner.
+  const PAGE_BUILDER_ERROR = {
+    code: 'GS110-NO-MISSING-PAGE-BUILDER-USAGE',
+    rule: 'Check page builder usage',
+    details: 'Missing page builder helper usage.',
+    failures: [{ ref: 'post.hbs', message: '{{@page.show_title_and_feature_image}} is not used' }],
+    fatal: false,
+    level: 'error',
+  };
+
+  it('shows a banner when the active theme has errors', async () => {
+    await renderAdminApp('/site', {
+      boot: {
+        browseActiveTheme: { response: activeThemeResponse({ errors: [DEPRECATED_HELPER_ERROR] }) },
+      },
     });
 
-    it("opens the theme errors dialog when the banner is clicked", async () => {
-        await renderAdminApp("/site", {
-            boot: { browseActiveTheme: { response: activeThemeResponse({ errors: [DEPRECATED_HELPER_ERROR] }) } },
-        });
+    await expect.element(sidebarScreen.themeErrorsBanner()).toBeVisible();
+  });
 
-        await sidebarScreen.themeErrorsBanner().click();
-
-        await expect.element(sidebarScreen.themeErrorsDialog()).toBeVisible();
-        await expect.element(sidebarScreen.themeErrorsDialog()).toHaveTextContent("Replace deprecated helper");
+  it('shows formatted theme issues and expandable details when the banner is clicked', async () => {
+    await renderAdminApp('/site', {
+      boot: {
+        browseActiveTheme: {
+          response: activeThemeResponse({
+            errors: [DEPRECATED_HELPER_ERROR],
+            warnings: [
+              {
+                code: 'GS001-DEPR-TWITTER-URL',
+                rule: 'Replace <code>{{twitter_url}}</code>',
+                details: 'Use the social_url helper.',
+                failures: [],
+                fatal: false,
+                level: 'warning',
+              },
+            ],
+          }),
+        },
+      },
     });
 
-    it("shows no banner when the active theme has no errors", async () => {
-        // The default boot serves an error-free active theme.
-        await renderAdminApp("/site");
+    await sidebarScreen.themeErrorsBanner().click();
 
-        await expect.element(sidebarScreen.userMenuTrigger()).toBeVisible();
-        await expect.element(sidebarScreen.themeErrorsBanner()).not.toBeInTheDocument();
+    const dialog = sidebarScreen.themeErrorsDialog();
+    await expect.element(dialog).toBeVisible();
+    await expect.element(dialog).toHaveTextContent('1 error, 1 warning');
+    await expect.element(dialog).toHaveTextContent('Replace deprecated {{pageUrl}} helper');
+    await expect.element(dialog).not.toHaveTextContent('<code>');
+
+    const error = dialog.getByRole('button', { name: /GS001-DEPR-PURL/ });
+    const warning = dialog.getByRole('button', { name: /GS001-DEPR-TWITTER-URL/ });
+    await expect.element(error).toHaveAttribute('aria-expanded', 'false');
+    await expect.element(warning).toHaveAttribute('aria-expanded', 'false');
+    expect(error.element().querySelector('code')?.textContent).toBe('{{pageUrl}}');
+
+    await error.click();
+    await expect.element(dialog).toHaveTextContent('The {{pageUrl}} helper has been deprecated.');
+    await expect.element(dialog).toHaveTextContent('Affected files');
+    await expect.element(dialog).toHaveTextContent('default.hbs: deprecated usage');
+    await warning.click();
+    await expect.element(dialog).toHaveTextContent('Use the social_url helper.');
+    await expect.element(error).toHaveAttribute('aria-expanded', 'true');
+
+    await dialog.getByRole('button', { name: 'OK', exact: true }).click();
+    await expect.element(dialog).not.toBeInTheDocument();
+  });
+
+  it('shows no banner when the active theme has no errors', async () => {
+    // The default boot serves an error-free active theme.
+    await renderAdminApp('/site');
+
+    await expect.element(sidebarScreen.userMenuTrigger()).toBeVisible();
+    await expect.element(sidebarScreen.themeErrorsBanner()).not.toBeInTheDocument();
+  });
+
+  it('does not show a banner for page-builder errors handled inline in design settings', async () => {
+    await renderAdminApp('/site', {
+      boot: {
+        browseActiveTheme: { response: activeThemeResponse({ errors: [PAGE_BUILDER_ERROR] }) },
+      },
     });
 
-    it("does not show a banner for page-builder errors handled inline in design settings", async () => {
-        await renderAdminApp("/site", {
-            boot: { browseActiveTheme: { response: activeThemeResponse({ errors: [PAGE_BUILDER_ERROR] }) } },
-        });
-
-        await expect.element(sidebarScreen.userMenuTrigger()).toBeVisible();
-        await expect.element(sidebarScreen.themeErrorsBanner()).not.toBeInTheDocument();
-    });
+    await expect.element(sidebarScreen.userMenuTrigger()).toBeVisible();
+    await expect.element(sidebarScreen.themeErrorsBanner()).not.toBeInTheDocument();
+  });
 });

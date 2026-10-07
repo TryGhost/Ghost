@@ -5,6 +5,7 @@ import {ServerUnreachableError} from 'ghost-admin/services/ajax';
 import {describe, it} from 'mocha';
 import {A as emberA} from '@ember/array';
 import {expect} from 'chai';
+import {htmlSafe} from '@ember/template';
 import {run} from '@ember/runloop';
 import {setupTest} from 'ember-mocha';
 
@@ -24,7 +25,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('filters alerts/notifications', function () {
-        let notifications = this.owner.lookup('service:notifications');
+        const notifications = this.owner.lookup('service:notifications');
 
         // wrapped in run-loop to enure alerts/notifications CPs are updated
         run(() => {
@@ -40,7 +41,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#handleNotification deals with DS.Notification notifications', function () {
-        let notifications = this.owner.lookup('service:notifications');
+        const notifications = this.owner.lookup('service:notifications');
         let notification = NotificationStub.create({message: '<h1>Test</h1>', status: 'alert'});
 
         notifications.handleNotification(notification);
@@ -52,7 +53,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#handleNotification defaults to notification if no status supplied', function () {
-        let notifications = this.owner.lookup('service:notifications');
+        const notifications = this.owner.lookup('service:notifications');
 
         notifications.handleNotification({message: 'Test'}, false);
 
@@ -61,7 +62,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#handleNotification shows generic error message when a word matches built-in error type', function () {
-        let notifications = this.owner.lookup('service:notifications');
+        const notifications = this.owner.lookup('service:notifications');
 
         notifications.handleNotification({message: 'TypeError test'});
         expect(notifications.content[0].message).to.equal(GENERIC_ERROR_MESSAGE);
@@ -78,7 +79,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showAlert adds POJO alerts', function () {
-        let notifications = this.owner.lookup('service:notifications');
+        const notifications = this.owner.lookup('service:notifications');
 
         run(() => {
             notifications.showAlert('Test Alert', {type: 'error'});
@@ -89,7 +90,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showAlert adds delayed notifications', function () {
-        let notifications = this.owner.lookup('service:notifications');
+        const notifications = this.owner.lookup('service:notifications');
 
         run(() => {
             notifications.showNotification('Test Alert', {type: 'error', delayed: true});
@@ -103,7 +104,7 @@ describe('Unit: Service: notifications', function () {
     // we split on the second period and treat the resulting base as
     // the key for duplicate checking
     it('#showAlert clears duplicates using keys', function () {
-        let notifications = this.owner.lookup('service:notifications');
+        const notifications = this.owner.lookup('service:notifications');
 
         run(() => {
             notifications.showAlert('Kept');
@@ -121,7 +122,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showAlert clears duplicates using message text', function () {
-        let notifications = this.owner.lookup('service:notifications');
+        const notifications = this.owner.lookup('service:notifications');
 
         notifications.showAlert('Not duplicate');
         notifications.showAlert('Duplicate', {key: 'duplicate'});
@@ -132,7 +133,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showNotification adds POJO notifications', function () {
-        let notifications = this.owner.lookup('service:notifications');
+        const notifications = this.owner.lookup('service:notifications');
 
         run(() => {
             notifications.showNotification('Test Notification', {type: 'success'});
@@ -143,7 +144,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showNotification adds delayed notifications', function () {
-        let notifications = this.owner.lookup('service:notifications');
+        const notifications = this.owner.lookup('service:notifications');
 
         run(() => {
             notifications.showNotification('Test Notification', {delayed: true});
@@ -154,14 +155,14 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showAPIError handles single json response error', function () {
-        let notifications = this.owner.lookup('service:notifications');
-        let error = new AjaxError({errors: [{message: 'Single error'}]});
+        const notifications = this.owner.lookup('service:notifications');
+        const error = new AjaxError({errors: [{message: 'Single error'}]});
 
         run(() => {
             notifications.showAPIError(error);
         });
 
-        let [alert] = notifications.alerts;
+        const [alert] = notifications.alerts;
         expect(alert.message).to.equal('Single error');
         expect(alert.status).to.equal('alert');
         expect(alert.type).to.equal('error');
@@ -169,8 +170,8 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showAPIError handles multiple json response errors', function () {
-        let notifications = this.owner.lookup('service:notifications');
-        let error = new AjaxError({errors: [
+        const notifications = this.owner.lookup('service:notifications');
+        const error = new AjaxError({errors: [
             {title: 'First error', message: 'First error message'},
             {title: 'Second error', message: 'Second error message'}
         ]});
@@ -180,14 +181,14 @@ describe('Unit: Service: notifications', function () {
         });
 
         expect(notifications.alerts.length).to.equal(2);
-        let [alert1, alert2] = notifications.alerts;
+        const [alert1, alert2] = notifications.alerts;
         expect(alert1).to.deep.equal({message: 'First error message', status: 'alert', type: 'error', key: 'api-error.first-error', actions: undefined, description: undefined, icon: undefined});
         expect(alert2).to.deep.equal({message: 'Second error message', status: 'alert', type: 'error', key: 'api-error.second-error', actions: undefined, description: undefined, icon: undefined});
     });
 
     it('#showAPIError displays default error text if response has no error/message', function () {
-        let notifications = this.owner.lookup('service:notifications');
-        let resp = false;
+        const notifications = this.owner.lookup('service:notifications');
+        const resp = false;
 
         run(() => {
             notifications.showAPIError(resp);
@@ -207,7 +208,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showAPIError sets correct key when passed a base key', function () {
-        let notifications = this.owner.lookup('service:notifications');
+        const notifications = this.owner.lookup('service:notifications');
 
         run(() => {
             notifications.showAPIError('Test', {key: 'test.alert'});
@@ -217,7 +218,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showAPIError sets correct key when not passed a key', function () {
-        let notifications = this.owner.lookup('service:notifications');
+        const notifications = this.owner.lookup('service:notifications');
 
         run(() => {
             notifications.showAPIError('Test');
@@ -227,14 +228,14 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showAPIError parses default ember-ajax errors correctly', function () {
-        let notifications = this.owner.lookup('service:notifications');
-        let error = new InvalidError();
+        const notifications = this.owner.lookup('service:notifications');
+        const error = new InvalidError();
 
         run(() => {
             notifications.showAPIError(error);
         });
 
-        let notification = notifications.alerts.firstObject;
+        const notification = notifications.alerts.firstObject;
         expect(notification.message).to.equal('Request was rejected because it was invalid');
         expect(notification.status).to.equal('alert');
         expect(notification.type).to.equal('error');
@@ -242,14 +243,14 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showAPIError parses custom ember-ajax errors correctly', function () {
-        let notifications = this.owner.lookup('service:notifications');
-        let error = new ServerUnreachableError();
+        const notifications = this.owner.lookup('service:notifications');
+        const error = new ServerUnreachableError();
 
         run(() => {
             notifications.showAPIError(error);
         });
 
-        let notification = notifications.alerts.firstObject;
+        const notification = notifications.alerts.firstObject;
         expect(notification.message).to.equal('Server was unreachable');
         expect(notification.status).to.equal('alert');
         expect(notification.type).to.equal('error');
@@ -257,8 +258,8 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showAPIError adds error context to message if available', function () {
-        let notifications = this.owner.lookup('service:notifications');
-        let error = new AjaxError({errors: [{
+        const notifications = this.owner.lookup('service:notifications');
+        const error = new AjaxError({errors: [{
             message: 'Authorization Error.',
             context: 'Please sign in.'
         }]});
@@ -267,7 +268,7 @@ describe('Unit: Service: notifications', function () {
             notifications.showAPIError(error);
         });
 
-        let [alert] = notifications.alerts;
+        const [alert] = notifications.alerts;
         expect(alert.message).to.equal('Authorization Error. Please sign in.');
         expect(alert.status).to.equal('alert');
         expect(alert.type).to.equal('error');
@@ -275,8 +276,8 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showAPIError does not add context to message if it duplicates the message', function () {
-        let notifications = this.owner.lookup('service:notifications');
-        let error = new AjaxError({errors: [{
+        const notifications = this.owner.lookup('service:notifications');
+        const error = new AjaxError({errors: [{
             message: 'Authorization Error.',
             context: 'Authorization Error.'
         }]});
@@ -285,7 +286,7 @@ describe('Unit: Service: notifications', function () {
             notifications.showAPIError(error);
         });
 
-        let [alert] = notifications.alerts;
+        const [alert] = notifications.alerts;
         expect(alert.message).to.equal('Authorization Error.');
         expect(alert.status).to.equal('alert');
         expect(alert.type).to.equal('error');
@@ -293,7 +294,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showAPIError shows generic error for built-in error types', function () {
-        let notifications = this.owner.lookup('service:notifications');
+        const notifications = this.owner.lookup('service:notifications');
         const error = new TypeError('Testing');
 
         notifications.showAPIError(error);
@@ -302,7 +303,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#displayDelayed moves delayed notifications into content', function () {
-        let notifications = this.owner.lookup('service:notifications');
+        const notifications = this.owner.lookup('service:notifications');
 
         run(() => {
             notifications.showNotification('First', {delayed: true});
@@ -319,8 +320,8 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#closeNotification removes POJO notifications', function () {
-        let notification = {message: 'Close test', status: 'notification'};
-        let notifications = this.owner.lookup('service:notifications');
+        const notification = {message: 'Close test', status: 'notification'};
+        const notifications = this.owner.lookup('service:notifications');
 
         run(() => {
             notifications.handleNotification(notification);
@@ -338,8 +339,8 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#closeNotification removes and deletes DS.Notification records', function () {
-        let notifications = this.owner.lookup('service:notifications');
-        let notification = NotificationStub.create({message: 'Close test', status: 'alert'});
+        const notifications = this.owner.lookup('service:notifications');
+        const notification = NotificationStub.create({message: 'Close test', status: 'alert'});
 
         notification.deleteRecord = function () {};
         sinon.spy(notification, 'deleteRecord');
@@ -369,7 +370,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#closeNotifications only removes notifications', function () {
-        let notifications = this.owner.lookup('service:notifications');
+        const notifications = this.owner.lookup('service:notifications');
 
         run(() => {
             notifications.showAlert('First alert');
@@ -389,7 +390,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#closeNotifications only closes notifications with specified key', function () {
-        let notifications = this.owner.lookup('service:notifications');
+        const notifications = this.owner.lookup('service:notifications');
 
         run(() => {
             notifications.showAlert('First alert');
@@ -409,8 +410,8 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#clearAll removes everything without deletion', function () {
-        let notifications = this.owner.lookup('service:notifications');
-        let notificationModel = EmberObject.create({message: 'model'});
+        const notifications = this.owner.lookup('service:notifications');
+        const notificationModel = EmberObject.create({message: 'model'});
 
         notificationModel.deleteRecord = function () {};
         sinon.spy(notificationModel, 'deleteRecord');
@@ -434,7 +435,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#closeAlerts only removes alerts', function () {
-        let notifications = this.owner.lookup('service:notifications');
+        const notifications = this.owner.lookup('service:notifications');
 
         notifications.showNotification('First notification');
         notifications.showAlert('First alert');
@@ -449,7 +450,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#closeAlerts closes only alerts with specified key', function () {
-        let notifications = this.owner.lookup('service:notifications');
+        const notifications = this.owner.lookup('service:notifications');
 
         notifications.showNotification('First notification');
         notifications.showAlert('First alert', {key: 'test.close'});
@@ -463,5 +464,126 @@ describe('Unit: Service: notifications', function () {
         expect(notifications.alerts.length).to.equal(1);
         expect(notifications.alerts.firstObject.message).to.equal('Second alert');
         expect(notifications.notifications.length).to.equal(1);
+    });
+
+    describe('with a connected host', function () {
+        function createHost() {
+            return {
+                show: sinon.spy(),
+                remove: sinon.spy(),
+                clearAll: sinon.spy()
+            };
+        }
+
+        it('forwards shown messages instead of rendering them', function () {
+            const notifications = this.owner.lookup('service:notifications');
+            const host = createHost();
+            notifications.connectHost(host);
+
+            notifications.showNotification('Saved', {type: 'success', key: 'post.save.success'});
+
+            expect(notifications.content).to.be.empty;
+            expect(host.show.calledOnce).to.be.true;
+            expect(host.show.firstCall.args[0]).to.deep.equal({
+                status: 'notification',
+                type: 'success',
+                key: 'post.save.success',
+                message: 'Saved',
+                description: undefined,
+                actions: undefined
+            });
+        });
+
+        it('serializes html-safe text as markup and everything else as plain text', function () {
+            const notifications = this.owner.lookup('service:notifications');
+            const host = createHost();
+            notifications.connectHost(host);
+
+            notifications.showNotification('Post published', {
+                description: htmlSafe('to <strong>2</strong> members'),
+                actions: htmlSafe('<a href="/p/">View on site</a>')
+            });
+            notifications.showAlert('<b>Plain</b>');
+
+            const [toast] = host.show.firstCall.args;
+            expect(toast.description).to.deep.equal({html: 'to <strong>2</strong> members'});
+            expect(toast.actions).to.deep.equal({html: '<a href="/p/">View on site</a>'});
+
+            const [alert] = host.show.secondCall.args;
+            expect(alert.status).to.equal('alert');
+            expect(alert.message).to.equal('<b>Plain</b>');
+        });
+
+        it('still scrubs raw JS error messages before forwarding', function () {
+            const notifications = this.owner.lookup('service:notifications');
+            const host = createHost();
+            notifications.connectHost(host);
+
+            notifications.showAPIError(new TypeError('Cannot read property of undefined'));
+
+            expect(host.show.firstCall.args[0].message).to.equal(GENERIC_ERROR_MESSAGE);
+            expect(host.show.firstCall.args[0].key).to.equal('api-error');
+        });
+
+        it('holds delayed messages until they are displayed', function () {
+            const notifications = this.owner.lookup('service:notifications');
+            const host = createHost();
+            notifications.connectHost(host);
+
+            notifications.showAlert('Invalid token.', {type: 'error', delayed: true, key: 'signup.create.invalid-token'});
+
+            expect(host.show.called).to.be.false;
+
+            notifications.displayDelayed();
+
+            expect(host.show.calledOnce).to.be.true;
+            expect(host.show.firstCall.args[0].message).to.equal('Invalid token.');
+            expect(notifications.delayedNotifications).to.be.empty;
+        });
+
+        it('forwards removals and clears', function () {
+            const notifications = this.owner.lookup('service:notifications');
+            const host = createHost();
+            notifications.connectHost(host);
+
+            notifications.closeAlerts('post.save');
+            notifications.closeNotifications();
+            notifications.clearAll();
+
+            expect(host.remove.firstCall.args).to.deep.equal(['alert', 'post.save']);
+            expect(host.remove.secondCall.args).to.deep.equal(['notification', undefined]);
+            expect(host.clearAll.calledOnce).to.be.true;
+        });
+
+        it('moves alerts shown before connecting to the host and leaves toasts to expire', function () {
+            const notifications = this.owner.lookup('service:notifications');
+            notifications.showAlert('Early alert', {type: 'error'});
+            notifications.showNotification('Early toast');
+
+            const host = createHost();
+            notifications.connectHost(host);
+
+            expect(host.show.calledOnce).to.be.true;
+            expect(host.show.firstCall.args[0].message).to.equal('Early alert');
+            expect(notifications.alerts).to.be.empty;
+            expect(notifications.notifications.length).to.equal(1);
+        });
+
+        it('only disconnects the host that is still current', function () {
+            const notifications = this.owner.lookup('service:notifications');
+            const first = createHost();
+            const second = createHost();
+
+            const disconnectFirst = notifications.connectHost(first);
+            const disconnectSecond = notifications.connectHost(second);
+            disconnectFirst();
+
+            notifications.showNotification('Still forwarded');
+            expect(second.show.calledOnce).to.be.true;
+
+            disconnectSecond();
+            notifications.showNotification('Rendered here');
+            expect(notifications.notifications.length).to.equal(1);
+        });
     });
 });

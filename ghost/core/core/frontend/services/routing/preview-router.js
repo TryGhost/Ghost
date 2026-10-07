@@ -6,45 +6,45 @@ const controllers = require('./controllers');
  * @description Preview Router.
  */
 class PreviewRouter extends ParentRouter {
-    constructor(RESOURCE_CONFIG) {
-        super('PreviewRouter');
+  constructor(RESOURCE_CONFIG) {
+    super('PreviewRouter');
 
-        this.RESOURCE_CONFIG = RESOURCE_CONFIG.QUERY.previews;
+    this.RESOURCE_CONFIG = RESOURCE_CONFIG.QUERY.previews;
 
-        // @NOTE: hardcoded, not configurable
-        this.route = {value: '/p/'};
+    // @NOTE: hardcoded, not configurable
+    this.route = { value: '/p/' };
 
-        this._registerRoutes();
-    }
+    this._registerRoutes();
+  }
 
-    /**
-     * @description Register all routes of this router.
-     * @private
-     */
-    _registerRoutes() {
-        // REGISTER: prepare context
-        this.router().use(this._prepareContext.bind(this));
+  /**
+   * @description Register all routes of this router.
+   * @private
+   */
+  _registerRoutes() {
+    // REGISTER: prepare context
+    this.router().use(this._prepareContext.bind(this));
 
-        // REGISTER: actual previews route
-        this.mountRoute(urlUtils.urlJoin(this.route.value, ':uuid', ':options?'), controllers.previews);
-    }
+    // REGISTER: actual previews route
+    this.mountRoute(urlUtils.urlJoin(this.route.value, ':uuid', ':options?'), controllers.previews);
+  }
 
-    /**
-     * @description Prepare context for further middleware/controllers.
-     * @param {Object} req
-     * @param {Object} res
-     * @param {Function} next
-     * @private
-     */
-    _prepareContext(req, res, next) {
-        res.routerOptions = {
-            type: 'entry',
-            query: this.RESOURCE_CONFIG,
-            context: ['preview']
-        };
+  /**
+   * @description Prepare context for further middleware/controllers.
+   * @param {Object} req
+   * @param {Object} res
+   * @param {Function} next
+   * @private
+   */
+  _prepareContext(req, res, next) {
+    res.routerOptions = {
+      type: 'entry',
+      query: this.RESOURCE_CONFIG,
+      context: ['preview'],
+    };
 
-        next();
-    }
+    next();
+  }
 }
 
 module.exports = PreviewRouter;

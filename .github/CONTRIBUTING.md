@@ -1,6 +1,6 @@
 # Contributing to Ghost
 
-For **help**, **support**, **questions** and **ideas** please use **[our forum](https://forum.ghost.org)**  🚑.
+For **help**, **support**, **questions** and **ideas** please use **[our forum](https://forum.ghost.org)** 🚑.
 
 ---
 
@@ -91,7 +91,7 @@ pnpm change --bump none
 ```
 
 A package `README.md` is published with the package and requires a release.
-Repository-only Markdown such as `AGENTS.md`, `CLAUDE.md`, changelogs, and
+Repository-only Markdown such as `AGENTS.md`, changelogs, and
 package-local `docs/` does not.
 
 CI enforces this — the **Check app version bump** job fails a pull request that affects a publishable package without a covering changeset. The pre-commit hook prints a non-blocking reminder locally, and `pnpm change status` shows what's currently pending.

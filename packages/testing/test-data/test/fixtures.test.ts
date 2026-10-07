@@ -1,58 +1,77 @@
-import {describe, expect, it} from "vitest";
-import {activeThemeResponse, configResponse, settingsResponse} from "../src/index";
+import { describe, expect, it } from 'vitest';
+import { activeThemeResponse, configResponse, settingsResponse } from '../src/index';
 
 function getSetting(response: ReturnType<typeof settingsResponse>, key: string) {
-    return response.settings.find(setting => setting.key === key)?.value;
+  return response.settings.find((setting) => setting.key === key)?.value;
 }
 
 function getLabs(response: ReturnType<typeof settingsResponse>): Record<string, boolean> {
-    return JSON.parse(getSetting(response, "labs") as string) as Record<string, boolean>;
+  return JSON.parse(getSetting(response, 'labs') as string) as Record<string, boolean>;
 }
 
-describe("boot fixtures", () => {
-    it("defaults labs flags to off in settings and config", () => {
-        expect(getLabs(settingsResponse())).toEqual({
-            superEditors: false,
-            editorExcerpt: false,
-            additionalPaymentMethods: false
-        });
-        expect(configResponse().config.labs).toEqual({
-            superEditors: false,
-            editorExcerpt: false,
-            additionalPaymentMethods: false
-        });
+describe('boot fixtures', () => {
+  it('defaults labs flags to off, and GA flags to on, in settings and config', () => {
+    const expected = {
+      postsListReact: true,
+      membersActivityReact: true,
+      superEditors: false,
+      editorExcerpt: false,
+      additionalPaymentMethods: false,
+    };
+
+    expect(getLabs(settingsResponse())).toEqual(expected);
+    expect(configResponse().config.labs).toEqual(expected);
+  });
+
+  it('merges labs overrides without mutating the canned data', () => {
+    const overridden = settingsResponse({ labs: { superEditors: true } });
+
+    expect(getLabs(overridden)).toMatchObject({ superEditors: true, editorExcerpt: false });
+    expect(getLabs(settingsResponse())).toMatchObject({ superEditors: false });
+    expect(configResponse({ labs: { superEditors: true } }).config.labs).toMatchObject({
+      superEditors: true,
     });
+  });
 
-    it("merges labs overrides without mutating the canned data", () => {
-        const overridden = settingsResponse({labs: {superEditors: true}});
+  it('merges per-key settings overrides over the defaults', () => {
+    const overridden = settingsResponse({ settings: { title: 'My Site' } });
 
-        expect(getLabs(overridden)).toMatchObject({superEditors: true, editorExcerpt: false});
-        expect(getLabs(settingsResponse())).toMatchObject({superEditors: false});
-        expect(configResponse({labs: {superEditors: true}}).config.labs).toMatchObject({superEditors: true});
-    });
+    expect(getSetting(overridden, 'title')).toBe('My Site');
+    expect(getSetting(overridden, 'description')).toBe('Thoughts, stories and ideas.');
+    expect(getSetting(settingsResponse(), 'title')).toBe('Test Site');
+  });
 
-    it("merges per-key settings overrides over the defaults", () => {
-        const overridden = settingsResponse({settings: {title: "My Site"}});
+  it('returns a fresh copy per call', () => {
+    const first = settingsResponse();
+    first.settings.length = 0;
 
-        expect(getSetting(overridden, "title")).toBe("My Site");
-        expect(getSetting(overridden, "description")).toBe("Thoughts, stories and ideas.");
-        expect(getSetting(settingsResponse(), "title")).toBe("Test Site");
-    });
+    expect(settingsResponse().settings.length).toBeGreaterThan(0);
+  });
 
-    it("returns a fresh copy per call", () => {
-        const first = settingsResponse();
-        first.settings.length = 0;
+  it('isolates array settings from other responses and caller-owned overrides', () => {
+    const first = settingsResponse();
+    const blockedDomains = getSetting(first, 'all_blocked_email_domains') as string[];
+    blockedDomains.push('spam.xyz');
 
-        expect(settingsResponse().settings.length).toBeGreaterThan(0);
-    });
+    expect(getSetting(settingsResponse(), 'all_blocked_email_domains')).toEqual([]);
 
-    it("serves one active casper theme with declarable gscan problems", () => {
-        const errors = [{code: "GS001", details: "boom"}];
-        const response = activeThemeResponse({errors});
-        const theme = response.themes[0];
+    const overrides = ['blocked.example'];
+    const overridden = settingsResponse({ settings: { all_blocked_email_domains: overrides } });
+    const overriddenDomains = getSetting(overridden, 'all_blocked_email_domains') as string[];
+    overriddenDomains.push('another.example');
+    expect(overrides).toEqual(['blocked.example']);
 
-        expect(theme).toMatchObject({name: "casper", active: true, errors, warnings: []});
-        expect(activeThemeResponse().themes[0].errors).toEqual([]);
-        expect(settingsResponse().settings).toContainEqual({key: "active_theme", value: "casper"});
-    });
+    overrides.push('later.example');
+    expect(overriddenDomains).toEqual(['blocked.example', 'another.example']);
+  });
+
+  it('serves one active casper theme with declarable gscan problems', () => {
+    const errors = [{ code: 'GS001', details: 'boom' }];
+    const response = activeThemeResponse({ errors });
+    const theme = response.themes[0];
+
+    expect(theme).toMatchObject({ name: 'casper', active: true, errors, warnings: [] });
+    expect(activeThemeResponse().themes[0].errors).toEqual([]);
+    expect(settingsResponse().settings).toContainEqual({ key: 'active_theme', value: 'casper' });
+  });
 });

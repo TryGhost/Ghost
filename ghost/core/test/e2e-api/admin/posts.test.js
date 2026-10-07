@@ -1,1143 +1,1301 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const {assertMatchSnapshot} = require('../../utils/assertions');
-const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
-const {anyArray, anyContentVersion, anyEtag, anyErrorId, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyStringNumber, anyUuid, stringMatching} = matchers;
+const { assertMatchSnapshot } = require('../../utils/assertions');
+const {
+  agentProvider,
+  fixtureManager,
+  mockManager,
+  matchers,
+} = require('../../utils/e2e-framework');
+const {
+  anyArray,
+  anyContentVersion,
+  anyEtag,
+  anyErrorId,
+  anyLocationFor,
+  anyObject,
+  anyObjectId,
+  anyISODateTime,
+  anyString,
+  anyStringNumber,
+  anyUuid,
+  stringMatching,
+} = matchers;
 const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
 const urlUtilsHelper = require('../../utils/url-utils');
 const escapeRegExp = require('lodash/escapeRegExp');
-const {mobiledocToLexical} = require('@tryghost/kg-converters');
+const { mobiledocToLexical } = require('@tryghost/kg-converters');
 
 const tierSnapshot = {
-    id: anyObjectId,
-    created_at: anyISODateTime,
-    updated_at: anyISODateTime
+  id: anyObjectId,
+  created_at: anyISODateTime,
+  updated_at: anyISODateTime,
 };
 
 const matchPostShallowIncludes = {
-    id: anyObjectId,
-    uuid: anyUuid,
-    comment_id: anyString,
-    url: anyString,
-    authors: anyArray,
-    primary_author: anyObject,
-    tags: anyArray,
-    primary_tag: anyObject,
-    tiers: Array(2).fill(tierSnapshot),
-    created_at: anyISODateTime,
-    updated_at: anyISODateTime,
-    published_at: anyISODateTime
+  id: anyObjectId,
+  uuid: anyUuid,
+  comment_id: anyString,
+  url: anyString,
+  authors: anyArray,
+  primary_author: anyObject,
+  tags: anyArray,
+  primary_tag: anyObject,
+  tiers: Array(2).fill(tierSnapshot),
+  created_at: anyISODateTime,
+  updated_at: anyISODateTime,
+  published_at: anyISODateTime,
 };
 
 function testCleanedSnapshot(text, ignoreReplacements) {
-    for (const {match, replacement} of ignoreReplacements) {
-        if (match instanceof RegExp) {
-            text = text.replace(match, replacement);
-        } else {
-            text = text.replace(new RegExp(escapeRegExp(match), 'g'), replacement);
-        }
+  for (const { match, replacement } of ignoreReplacements) {
+    if (match instanceof RegExp) {
+      text = text.replace(match, replacement);
+    } else {
+      text = text.replace(new RegExp(escapeRegExp(match), 'g'), replacement);
     }
-    assertMatchSnapshot({text});
+  }
+  assertMatchSnapshot({ text });
 }
 
 const createLexical = (text) => {
-    return JSON.stringify({
-        root: {
-            children: [
-                {
-                    children: [
-                        {
-                            detail: 0,
-                            format: 0,
-                            mode: 'normal',
-                            style: '',
-                            text,
-                            type: 'text',
-                            version: 1
-                        }
-                    ],
-                    direction: 'ltr',
-                    format: '',
-                    indent: 0,
-                    type: 'paragraph',
-                    version: 1
-                }
-            ],
-            direction: 'ltr',
-            format: '',
-            indent: 0,
-            type: 'root',
-            version: 1
-        }
-    });
+  return JSON.stringify({
+    root: {
+      children: [
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: 'normal',
+              style: '',
+              text,
+              type: 'text',
+              version: 1,
+            },
+          ],
+          direction: 'ltr',
+          format: '',
+          indent: 0,
+          type: 'paragraph',
+          version: 1,
+        },
+      ],
+      direction: 'ltr',
+      format: '',
+      indent: 0,
+      type: 'root',
+      version: 1,
+    },
+  });
 };
 
 const createMobiledoc = (text) => {
-    return JSON.stringify({
-        version: '0.3.1',
-        ghostVersion: '4.0',
-        markups: [],
-        atoms: [],
-        cards: [],
-        sections: [
-            [1, 'p', [
-                [0, [], 0, text]
-            ]]
-        ]
-    });
+  return JSON.stringify({
+    version: '0.3.1',
+    ghostVersion: '4.0',
+    markups: [],
+    atoms: [],
+    cards: [],
+    sections: [[1, 'p', [[0, [], 0, text]]]],
+  });
 };
 
 describe('Posts API', function () {
-    let agent;
+  let agent;
 
-    beforeAll(async function () {
-        agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init('posts');
-        await agent.loginAsOwner();
+  beforeAll(async function () {
+    agent = await agentProvider.getAdminAPIAgent();
+    await fixtureManager.init('posts');
+    await agent.loginAsOwner();
 
-        // convert inserted pages to lexical so we can test page.html reset/re-render
-        const pages = await models.Post.where('type', 'page').fetchAll();
-        for (const page of pages) {
-            const lexical = mobiledocToLexical(page.get('mobiledoc'));
-            await models.Base.knex.raw('UPDATE posts SET mobiledoc=NULL, lexical=? where id=?', [lexical, page.id]);
-        }
+    // convert inserted pages to lexical so we can test page.html reset/re-render
+    const pages = await models.Post.where('type', 'page').fetchAll();
+    for (const page of pages) {
+      const lexical = mobiledocToLexical(page.get('mobiledoc'));
+      await models.Base.knex.raw('UPDATE posts SET mobiledoc=NULL, lexical=? where id=?', [
+        lexical,
+        page.id,
+      ]);
+    }
+  });
+
+  afterEach(async function () {
+    // gives pages some HTML back to alleviate test interdependence when pages are reset on create/update/delete
+    await models.Base.knex.raw("update posts set html = '<p>Testing</p>' where type = 'page'");
+
+    mockManager.restore();
+  });
+
+  it('Can browse', async function () {
+    await agent
+      .get('posts/?limit=2')
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        posts: new Array(2).fill(matchPostShallowIncludes),
+      });
+  });
+
+  it('Can browse with formats', async function () {
+    await agent
+      .get('posts/?formats=mobiledoc,lexical,html,plaintext&limit=2')
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        posts: new Array(2).fill(matchPostShallowIncludes),
+      });
+  });
+
+  it('Can browse with restricted filter fields', async function () {
+    await agent
+      .get('posts/?filter=authors.password:abcd&limit=2')
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        posts: new Array(2).fill(matchPostShallowIncludes),
+      });
+  });
+
+  describe('Export', function () {
+    it('Can export', async function () {
+      const { text } = await agent
+        .get('posts/export')
+        .expectStatus(200)
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          'content-disposition': stringMatching(
+            /^Attachment; filename="(?:[a-z0-9-]+\.)?ghost\.analytics\.\d{4}-\d{2}-\d{2}\.csv"$/,
+          ),
+        });
+
+      // body snapshot doesn't work with text/csv
+      testCleanedSnapshot(text, [
+        {
+          match: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/g,
+          replacement: '2050-01-01T00:00:00.000Z',
+        },
+      ]);
     });
 
-    afterEach(async function () {
-        // gives pages some HTML back to alleviate test interdependence when pages are reset on create/update/delete
-        await models.Base.knex.raw('update posts set html = \'<p>Testing</p>\' where type = \'page\'');
+    it('Can export with order', async function () {
+      const { text } = await agent
+        .get('posts/export?order=published_at%20ASC')
+        .expectStatus(200)
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          'content-disposition': stringMatching(
+            /^Attachment; filename="(?:[a-z0-9-]+\.)?ghost\.analytics\.\d{4}-\d{2}-\d{2}\.csv"$/,
+          ),
+        });
 
-        mockManager.restore();
+      // body snapshot doesn't work with text/csv
+      testCleanedSnapshot(text, [
+        {
+          match: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/g,
+          replacement: '2050-01-01T00:00:00.000Z',
+        },
+      ]);
     });
 
-    it('Can browse', async function () {
-        await agent.get('posts/?limit=2')
+    it('Can export with limit', async function () {
+      const { text } = await agent
+        .get('posts/export?limit=1')
+        .expectStatus(200)
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          'content-disposition': stringMatching(
+            /^Attachment; filename="(?:[a-z0-9-]+\.)?ghost\.analytics\.\d{4}-\d{2}-\d{2}\.csv"$/,
+          ),
+        });
+
+      // body snapshot doesn't work with text/csv
+      testCleanedSnapshot(text, [
+        {
+          match: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/g,
+          replacement: '2050-01-01T00:00:00.000Z',
+        },
+      ]);
+    });
+
+    it('Can export with filter', async function () {
+      const { text } = await agent
+        .get('posts/export?filter=featured:true')
+        .expectStatus(200)
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          'content-disposition': stringMatching(
+            /^Attachment; filename="(?:[a-z0-9-]+\.)?ghost\.analytics\.\d{4}-\d{2}-\d{2}\.csv"$/,
+          ),
+        });
+
+      // body snapshot doesn't work with text/csv
+      testCleanedSnapshot(text, [
+        {
+          match: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/g,
+          replacement: '2050-01-01T00:00:00.000Z',
+        },
+      ]);
+    });
+
+    it('Can export with restricted filter fields', async function () {
+      const { text } = await agent
+        .get('posts/export?filter=authors.password:abcd')
+        .expectStatus(200)
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          'content-disposition': stringMatching(
+            /^Attachment; filename="(?:[a-z0-9-]+\.)?ghost\.analytics\.\d{4}-\d{2}-\d{2}\.csv"$/,
+          ),
+        });
+
+      // body snapshot doesn't work with text/csv
+      testCleanedSnapshot(text, [
+        {
+          match: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/g,
+          replacement: '2050-01-01T00:00:00.000Z',
+        },
+      ]);
+    });
+  });
+
+  describe('Create', function () {
+    it('Can create a post with mobiledoc', async function () {
+      const post = {
+        title: 'Mobiledoc test',
+        mobiledoc: createMobiledoc('Testing post creation with mobiledoc'),
+        lexical: null,
+      };
+
+      await agent
+        .post('/posts/?formats=mobiledoc,lexical,html', {
+          headers: {
+            'content-type': 'application/json',
+          },
+        })
+        .body({ posts: [post] })
+        .expectStatus(201)
+        .matchBodySnapshot({
+          posts: [Object.assign({}, matchPostShallowIncludes, { published_at: null })],
+        })
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          etag: anyEtag,
+          location: anyLocationFor('posts'),
+        });
+    });
+
+    it('Can create a post with lexical', async function () {
+      const lexical = createLexical('Testing post creation with lexical');
+
+      const post = {
+        title: 'Lexical test',
+        mobiledoc: null,
+        lexical,
+      };
+
+      const { body } = await agent
+        .post('/posts/?formats=mobiledoc,lexical,html')
+        .body({ posts: [post] })
+        .expectStatus(201)
+        .matchBodySnapshot({
+          posts: [Object.assign({}, matchPostShallowIncludes, { published_at: null })],
+        })
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          etag: anyEtag,
+          location: anyLocationFor('posts'),
+        });
+
+      const [postResponse] = body.posts;
+
+      // post revision is created
+      const postRevisions = await models.PostRevision.where('post_id', postResponse.id)
+        .orderBy('created_at_ts', 'desc')
+        .fetchAll();
+
+      assert.equal(postRevisions.length, 1);
+      assert.equal(postRevisions.at(0).get('lexical'), lexical);
+
+      // mobiledoc revision is not created
+      const mobiledocRevisions = await models.MobiledocRevision.where('post_id', postResponse.id)
+        .orderBy('created_at_ts', 'desc')
+        .fetchAll();
+
+      assert.equal(mobiledocRevisions.length, 0);
+    });
+
+    it('Can create a post with html', async function () {
+      const post = {
+        title: 'HTML test',
+        html: '<p>Testing post creation with html</p>',
+      };
+
+      await agent
+        .post('/posts/?source=html&formats=mobiledoc,lexical,html')
+        .body({ posts: [post] })
+        .expectStatus(201)
+        .matchBodySnapshot({
+          posts: [Object.assign({}, matchPostShallowIncludes, { published_at: null })],
+        })
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          etag: anyEtag,
+          location: anyLocationFor('posts'),
+        });
+    });
+
+    it('Errors if both mobiledoc and lexical are present', async function () {
+      const post = {
+        title: 'Mobiledoc+lexical test',
+        mobiledoc: createMobiledoc('Testing post creation with mobiledoc'),
+        lexical: createLexical('Testing post creation with lexical'),
+      };
+
+      await agent
+        .post('/posts/?formats=mobiledoc,lexical')
+        .body({ posts: [post] })
+        .expectStatus(422)
+        .matchBodySnapshot({
+          errors: [
+            {
+              id: anyErrorId,
+            },
+          ],
+        })
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          etag: anyEtag,
+        });
+    });
+
+    it('Errors with an invalid lexical state object', async function () {
+      const post = {
+        title: 'Invalid lexical state',
+        lexical: JSON.stringify({
+          notLexical: true,
+        }),
+      };
+
+      await agent
+        .post('/posts/?formats=mobiledoc,lexical,html')
+        .body({ posts: [post] })
+        .expectStatus(422)
+        .matchBodySnapshot({
+          errors: [
+            {
+              id: anyErrorId,
+              context: stringMatching(/Invalid lexical structure\..*/),
+            },
+          ],
+        })
+        .matchHeaderSnapshot({
+          etag: anyEtag,
+          'content-version': anyContentVersion,
+          'content-length': anyStringNumber,
+        });
+    });
+
+    it('Errors if feature_image_alt is too long', async function () {
+      const post = {
+        title: 'Feature image alt too long',
+        feature_image_alt: 'a'.repeat(201),
+      };
+
+      await agent
+        .post('/posts/?formats=mobiledoc,lexical,html')
+        .body({ posts: [post] })
+        .expectStatus(422)
+        .matchBodySnapshot({
+          errors: [
+            {
+              id: anyErrorId,
+              // TODO: this should be `posts.feature_image_alt` but we're hitting revision errors first
+              context: stringMatching(
+                /.*post_revisions\.feature_image_alt] exceeds maximum length of 191 characters.*/,
+              ),
+            },
+          ],
+        });
+    });
+
+    it('invalidates preview cache when updating a draft post', async function () {
+      const post = {
+        title: 'Cache invalidation test',
+        status: 'draft',
+      };
+
+      const { body: postBody } = await agent
+        .post('/posts/?formats=mobiledoc,lexical,html')
+        .body({ posts: [post] })
+        .expectStatus(201);
+
+      const [postResponse] = postBody.posts;
+
+      // check that header contains the correct cache invalidation pattern which is the post url and the post url with member_status=anonymous, free, paid
+      await agent
+        .put(`/posts/${postResponse.id}/?formats=mobiledoc,lexical,html`)
+        .body({ posts: [Object.assign({}, postResponse, { status: 'draft' })] })
+        .expectStatus(200)
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          etag: anyEtag,
+          'x-cache-invalidate': stringMatching(
+            /^\/p\/[a-z0-9-]+\/, \/p\/[a-z0-9-]+\/\?member_status=anonymous, \/p\/[a-z0-9-]+\/\?member_status=free, \/p\/[a-z0-9-]+\/\?member_status=paid$/,
+          ),
+        });
+    });
+
+    // update when updating a scheduled post
+  });
+
+  describe('Update', function () {
+    it('Can update a post with mobiledoc', async function () {
+      const originalMobiledoc = createMobiledoc('Original text');
+      const updatedMobiledoc = createMobiledoc('Updated text');
+
+      const { body: postBody } = await agent
+        .post('/posts/?formats=mobiledoc,lexical,html')
+        .body({
+          posts: [
+            {
+              title: 'Mobiledoc update test',
+              mobiledoc: originalMobiledoc,
+            },
+          ],
+        })
+        .expectStatus(201)
+        .matchBodySnapshot({
+          posts: [Object.assign({}, matchPostShallowIncludes, { published_at: null })],
+        })
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          etag: anyEtag,
+          location: anyLocationFor('posts'),
+        });
+
+      const [postResponse] = postBody.posts;
+
+      await agent
+        .put(`/posts/${postResponse.id}/?formats=mobiledoc,lexical,html`)
+        .body({
+          posts: [Object.assign({}, postResponse, { mobiledoc: updatedMobiledoc, lexical: null })],
+        })
+        .expectStatus(200)
+        .matchBodySnapshot({
+          posts: [Object.assign({}, matchPostShallowIncludes, { published_at: null })],
+        })
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          etag: anyEtag,
+          'x-cache-invalidate': stringMatching(
+            /^\/p\/[a-z0-9-]+\/, \/p\/[a-z0-9-]+\/\?member_status=anonymous, \/p\/[a-z0-9-]+\/\?member_status=free, \/p\/[a-z0-9-]+\/\?member_status=paid$/,
+          ),
+        });
+
+      // mobiledoc input is converted to lexical on save, so no mobiledoc revisions are created
+      const mobiledocRevisions = await models.MobiledocRevision.where('post_id', postResponse.id)
+        .orderBy('created_at_ts', 'desc')
+        .fetchAll();
+
+      assert.equal(mobiledocRevisions.length, 0);
+
+      // content is converted to lexical, so the initial lexical post revision is
+      // created instead of a mobiledoc revision (the update omits save_revision)
+      const postRevisions = await models.PostRevision.where('post_id', postResponse.id)
+        .orderBy('created_at_ts', 'desc')
+        .fetchAll();
+
+      assert.equal(postRevisions.length, 1);
+    });
+
+    it('Can update a post with lexical', async function () {
+      const originalLexical = createLexical('Original text');
+      const updatedLexical = createLexical('Updated text');
+
+      const { body: postBody } = await agent
+        .post('/posts/?formats=mobiledoc,lexical,html')
+        .body({
+          posts: [
+            {
+              title: 'Lexical update test',
+              lexical: originalLexical,
+            },
+          ],
+        })
+        .expectStatus(201)
+        .matchBodySnapshot({
+          posts: [Object.assign({}, matchPostShallowIncludes, { published_at: null })],
+        })
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          etag: anyEtag,
+          location: anyLocationFor('posts'),
+        });
+
+      const [postResponse] = postBody.posts;
+
+      await agent
+        .put(`/posts/${postResponse.id}/?formats=mobiledoc,lexical,html&save_revision=true`)
+        .body({ posts: [Object.assign({}, postResponse, { lexical: updatedLexical })] })
+        .expectStatus(200)
+        .matchBodySnapshot({
+          posts: [Object.assign({}, matchPostShallowIncludes, { published_at: null })],
+        })
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          etag: anyEtag,
+          'x-cache-invalidate': stringMatching(
+            /^\/p\/[a-z0-9-]+\/, \/p\/[a-z0-9-]+\/\?member_status=anonymous, \/p\/[a-z0-9-]+\/\?member_status=free, \/p\/[a-z0-9-]+\/\?member_status=paid$/,
+          ),
+        });
+
+      // post revisions are created
+      const postRevisions = await models.PostRevision.where('post_id', postResponse.id)
+        .orderBy('created_at_ts', 'desc')
+        .fetchAll();
+
+      assert.equal(postRevisions.length, 2);
+      assert.equal(postRevisions.at(0).get('lexical'), updatedLexical);
+      assert.equal(postRevisions.at(1).get('lexical'), originalLexical);
+
+      // mobiledoc revisions are not created
+      const mobiledocRevisions = await models.MobiledocRevision.where('post_id', postResponse.id)
+        .orderBy('created_at_ts', 'desc')
+        .fetchAll();
+
+      assert.equal(mobiledocRevisions.length, 0);
+    });
+
+    it('Does not create a revision when editing a lexical post without save_revision within the revision interval', async function () {
+      const originalLexical = createLexical('Original text for interval test');
+      const updatedLexical = createLexical('First update for interval test');
+      const secondUpdateLexical = createLexical('Second update for interval test');
+
+      const { body: postBody } = await agent
+        .post('/posts/?formats=mobiledoc,lexical,html')
+        .body({ posts: [{ title: 'Lexical interval test', lexical: originalLexical }] })
+        .expectStatus(201);
+
+      const [postResponse] = postBody.posts;
+
+      // Force a second revision so we have multiple revisions to test ordering against
+      const { body: firstEditBody } = await agent
+        .put(`/posts/${postResponse.id}/?formats=mobiledoc,lexical,html&save_revision=true`)
+        .body({ posts: [Object.assign({}, postResponse, { lexical: updatedLexical })] })
+        .expectStatus(200);
+
+      const revisionsBeforeTest = await models.PostRevision.where(
+        'post_id',
+        postResponse.id,
+      ).fetchAll();
+      assert.equal(revisionsBeforeTest.length, 2);
+
+      // Edit again without save_revision — should NOT create a revision within the interval
+      await agent
+        .put(`/posts/${firstEditBody.posts[0].id}/?formats=mobiledoc,lexical,html`)
+        .body({
+          posts: [Object.assign({}, firstEditBody.posts[0], { lexical: secondUpdateLexical })],
+        })
+        .expectStatus(200);
+
+      const revisionsAfter = await models.PostRevision.where('post_id', postResponse.id).fetchAll();
+      assert.equal(
+        revisionsAfter.length,
+        2,
+        'No new revision should be created within the interval without save_revision',
+      );
+    });
+
+    it('Does not convert a mobiledoc post to lexical on a metadata-only update', async function () {
+      // Posts created through the API are always stored as lexical, so write a
+      // genuine mobiledoc row directly to the DB to simulate legacy content -
+      // direct DB writes are the only way mobiledoc-stored posts exist after this change.
+      const legacyMobiledoc = createMobiledoc('Legacy mobiledoc content that must be preserved');
+
+      const { body: createBody } = await agent
+        .post('/posts/?formats=mobiledoc,lexical,html')
+        .body({ posts: [{ title: 'Legacy mobiledoc post', mobiledoc: legacyMobiledoc }] })
+        .expectStatus(201);
+
+      const postId = createBody.posts[0].id;
+
+      await models.Base.knex('posts')
+        .where('id', postId)
+        .update({ mobiledoc: legacyMobiledoc, lexical: null });
+
+      // sanity check: the post is now stored as mobiledoc
+      const { body: beforeBody } = await agent
+        .get(`/posts/${postId}/?formats=mobiledoc,lexical,html`)
+        .expectStatus(200);
+      const before = beforeBody.posts[0];
+      assert.ok(before.mobiledoc, 'post starts stored as mobiledoc');
+      assert.equal(before.lexical, null);
+      assert.ok(before.html, 'post starts with rendered html');
+
+      // a metadata-only update (title) must NOT trigger a mobiledoc -> lexical conversion
+      const { body: afterBody } = await agent
+        .put(`/posts/${postId}/?formats=mobiledoc,lexical,html`)
+        .body({ posts: [{ title: 'Updated title only', updated_at: before.updated_at }] })
+        .expectStatus(200);
+      const after = afterBody.posts[0];
+
+      assert.equal(after.title, 'Updated title only', 'title is updated');
+      assert.ok(after.mobiledoc, 'post is still stored as mobiledoc after a metadata-only edit');
+      assert.equal(after.lexical, null, 'no lexical is generated for a metadata-only edit');
+      assert.equal(
+        after.html,
+        before.html,
+        'existing html is preserved (not blanked or re-rendered)',
+      );
+
+      // confirm against the database, not just the serialized response
+      const [row] = await models.Base.knex('posts')
+        .where('id', postId)
+        .select('mobiledoc', 'lexical');
+      assert.ok(row.mobiledoc, 'mobiledoc column is still populated in the database');
+      assert.equal(row.lexical, null, 'lexical column remains null in the database');
+    });
+
+    it('Migrates a mobiledoc post to lexical when updating with ?source=html', async function () {
+      // As above, write a genuine mobiledoc row directly to the DB to simulate
+      // legacy content - direct DB writes are the only way mobiledoc-stored posts
+      // exist after this change.
+      const legacyMobiledoc = createMobiledoc('Original mobiledoc content');
+
+      const { body: createBody } = await agent
+        .post('/posts/?formats=mobiledoc,lexical,html')
+        .body({ posts: [{ title: 'Legacy mobiledoc post', mobiledoc: legacyMobiledoc }] })
+        .expectStatus(201);
+
+      const postId = createBody.posts[0].id;
+
+      await models.Base.knex('posts')
+        .where('id', postId)
+        .update({ mobiledoc: legacyMobiledoc, lexical: null });
+
+      // sanity check: the post is now stored as mobiledoc
+      const { body: beforeBody } = await agent
+        .get(`/posts/${postId}/?formats=mobiledoc,lexical,html`)
+        .expectStatus(200);
+      const before = beforeBody.posts[0];
+      assert.ok(before.mobiledoc, 'post starts stored as mobiledoc');
+      assert.equal(before.lexical, null);
+
+      // an explicit ?source=html update must replace the content - converting the
+      // incoming HTML to lexical and migrating the post off mobiledoc, rather than
+      // silently dropping the edit
+      const { body: afterBody } = await agent
+        .put(`/posts/${postId}/?source=html&formats=mobiledoc,lexical,html`)
+        .body({
+          posts: [
+            { html: '<p>Replacement content via source=html</p>', updated_at: before.updated_at },
+          ],
+        })
+        .expectStatus(200);
+      const after = afterBody.posts[0];
+
+      assert.equal(after.mobiledoc, null, 'post is migrated off mobiledoc');
+      assert.ok(after.lexical, 'lexical is generated from the incoming html');
+      assert.ok(
+        after.lexical.includes('Replacement content via source=html'),
+        'lexical contains the new content',
+      );
+      assert.ok(
+        after.html.includes('Replacement content via source=html'),
+        'html reflects the new content',
+      );
+      assert.ok(
+        !after.html.includes('Original mobiledoc content'),
+        'old content is replaced, not retained',
+      );
+
+      // confirm against the database, not just the serialized response
+      const [row] = await models.Base.knex('posts')
+        .where('id', postId)
+        .select('mobiledoc', 'lexical');
+      assert.equal(row.mobiledoc, null, 'mobiledoc column is cleared in the database');
+      assert.ok(row.lexical, 'lexical column is populated in the database');
+    });
+
+    it('Migrates a mobiledoc post to lexical when updating with lexical directly', async function () {
+      // Seed a genuine mobiledoc row directly in the DB to represent legacy content.
+      const legacyMobiledoc = createMobiledoc('Original mobiledoc content');
+
+      const { body: createBody } = await agent
+        .post('/posts/?formats=mobiledoc,lexical,html')
+        .body({ posts: [{ title: 'Legacy mobiledoc post', status: 'draft' }] })
+        .expectStatus(201);
+      const postId = createBody.posts[0].id;
+
+      await models.Base.knex('posts').where('id', postId).update({
+        mobiledoc: legacyMobiledoc,
+        lexical: null,
+        html: '<p>Original mobiledoc content</p>',
+      });
+
+      const { body: beforeBody } = await agent
+        .get(`/posts/${postId}/?formats=mobiledoc,lexical,html`)
+        .expectStatus(200);
+      const before = beforeBody.posts[0];
+      assert.ok(before.mobiledoc, 'post starts stored as mobiledoc');
+      assert.equal(before.lexical, null);
+
+      // sending lexical content directly (no ?source=html) resolves to a single format:
+      // the incoming lexical wins, the stored mobiledoc is dropped, and html is re-rendered -
+      // rather than leaving both formats stored with stale html
+      const updatedLexical = createLexical('Replacement content via lexical');
+      const { body: afterBody } = await agent
+        .put(`/posts/${postId}/?formats=mobiledoc,lexical,html`)
+        .body({ posts: [{ lexical: updatedLexical, updated_at: before.updated_at }] })
+        .expectStatus(200);
+      const after = afterBody.posts[0];
+
+      assert.equal(after.mobiledoc, null, 'post is migrated off mobiledoc');
+      assert.ok(
+        after.lexical && after.lexical.includes('Replacement content via lexical'),
+        'lexical contains the new content',
+      );
+      assert.ok(
+        after.html.includes('Replacement content via lexical'),
+        'html reflects the new content',
+      );
+      assert.ok(
+        !after.html.includes('Original mobiledoc content'),
+        'old content is replaced, not retained',
+      );
+
+      // confirm the database never ends up with both formats stored
+      const [row] = await models.Base.knex('posts')
+        .where('id', postId)
+        .select('mobiledoc', 'lexical');
+      assert.equal(row.mobiledoc, null, 'mobiledoc column is cleared in the database');
+      assert.ok(row.lexical, 'lexical column is populated in the database');
+    });
+
+    describe('Access', function () {
+      describe('Visibility is set to tiers', function () {
+        it('Saves only paid tiers', async function () {
+          const post = {
+            title: 'Test Page',
+            status: 'draft',
+          };
+
+          const products = await models.Product.findAll();
+
+          const freeTier = products.models[0];
+          const paidTier = products.models[1];
+
+          const { body: pageBody } = await agent
+            .post('/posts/', {
+              headers: {
+                'content-type': 'application/json',
+              },
+            })
+            .body({ posts: [post] })
+            .expectStatus(201);
+
+          const [pageResponse] = pageBody.posts;
+
+          await agent
+            .put(`/posts/${pageResponse.id}`)
+            .body({
+              posts: [
+                {
+                  id: pageResponse.id,
+                  updated_at: pageResponse.updated_at,
+                  visibility: 'tiers',
+                  tiers: [{ id: freeTier.id }, { id: paidTier.id }],
+                },
+              ],
+            })
             .expectStatus(200)
             .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
+              'content-version': anyContentVersion,
+              etag: anyEtag,
+              'x-cache-invalidate': stringMatching(
+                /^\/p\/[a-z0-9-]+\/, \/p\/[a-z0-9-]+\/\?member_status=anonymous, \/p\/[a-z0-9-]+\/\?member_status=free, \/p\/[a-z0-9-]+\/\?member_status=paid$/,
+              ),
             })
             .matchBodySnapshot({
-                posts: new Array(2).fill(matchPostShallowIncludes)
-            });
-    });
-
-    it('Can browse with formats', async function () {
-        await agent.get('posts/?formats=mobiledoc,lexical,html,plaintext&limit=2')
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                posts: new Array(2).fill(matchPostShallowIncludes)
-            });
-    });
-
-    it('Can browse with restricted filter fields', async function () {
-        await agent.get('posts/?filter=authors.password:abcd&limit=2')
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                posts: new Array(2).fill(matchPostShallowIncludes)
-            });
-    });
-
-    describe('Export', function () {
-        it('Can export', async function () {
-            const {text} = await agent.get('posts/export')
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    'content-disposition': stringMatching(/^Attachment; filename="(?:[a-z0-9-]+\.)?ghost\.analytics\.\d{4}-\d{2}-\d{2}\.csv"$/)
-                });
-
-            // body snapshot doesn't work with text/csv
-            testCleanedSnapshot(text, [
-                {
-                    match: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/g,
-                    replacement: '2050-01-01T00:00:00.000Z'
-                }
-            ]);
-        });
-
-        it('Can export with order', async function () {
-            const {text} = await agent.get('posts/export?order=published_at%20ASC')
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    'content-disposition': stringMatching(/^Attachment; filename="(?:[a-z0-9-]+\.)?ghost\.analytics\.\d{4}-\d{2}-\d{2}\.csv"$/)
-                });
-
-            // body snapshot doesn't work with text/csv
-            testCleanedSnapshot(text, [
-                {
-                    match: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/g,
-                    replacement: '2050-01-01T00:00:00.000Z'
-                }
-            ]);
-        });
-
-        it('Can export with limit', async function () {
-            const {text} = await agent.get('posts/export?limit=1')
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    'content-disposition': stringMatching(/^Attachment; filename="(?:[a-z0-9-]+\.)?ghost\.analytics\.\d{4}-\d{2}-\d{2}\.csv"$/)
-                });
-
-            // body snapshot doesn't work with text/csv
-            testCleanedSnapshot(text, [
-                {
-                    match: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/g,
-                    replacement: '2050-01-01T00:00:00.000Z'
-                }
-            ]);
-        });
-
-        it('Can export with filter', async function () {
-            const {text} = await agent.get('posts/export?filter=featured:true')
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    'content-disposition': stringMatching(/^Attachment; filename="(?:[a-z0-9-]+\.)?ghost\.analytics\.\d{4}-\d{2}-\d{2}\.csv"$/)
-                });
-
-            // body snapshot doesn't work with text/csv
-            testCleanedSnapshot(text, [
-                {
-                    match: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/g,
-                    replacement: '2050-01-01T00:00:00.000Z'
-                }
-            ]);
-        });
-
-        it('Can export with restricted filter fields', async function () {
-            const {text} = await agent.get('posts/export?filter=authors.password:abcd')
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    'content-disposition': stringMatching(/^Attachment; filename="(?:[a-z0-9-]+\.)?ghost\.analytics\.\d{4}-\d{2}-\d{2}\.csv"$/)
-                });
-
-            // body snapshot doesn't work with text/csv
-            testCleanedSnapshot(text, [
-                {
-                    match: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/g,
-                    replacement: '2050-01-01T00:00:00.000Z'
-                }
-            ]);
-        });
-    });
-
-    describe('Create', function () {
-        it('Can create a post with mobiledoc', async function () {
-            const post = {
-                title: 'Mobiledoc test',
-                mobiledoc: createMobiledoc('Testing post creation with mobiledoc'),
-                lexical: null
-            };
-
-            await agent
-                .post('/posts/?formats=mobiledoc,lexical,html', {
-                    headers: {
-                        'content-type': 'application/json'
-                    }
-                })
-                .body({posts: [post]})
-                .expectStatus(201)
-                .matchBodySnapshot({
-                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    location: anyLocationFor('posts')
-                });
-        });
-
-        it('Can create a post with lexical', async function () {
-            const lexical = createLexical('Testing post creation with lexical');
-
-            const post = {
-                title: 'Lexical test',
-                mobiledoc: null,
-                lexical
-            };
-
-            const {body} = await agent
-                .post('/posts/?formats=mobiledoc,lexical,html')
-                .body({posts: [post]})
-                .expectStatus(201)
-                .matchBodySnapshot({
-                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    location: anyLocationFor('posts')
-                });
-
-            const [postResponse] = body.posts;
-
-            // post revision is created
-            const postRevisions = await models.PostRevision
-                .where('post_id', postResponse.id)
-                .orderBy('created_at_ts', 'desc')
-                .fetchAll();
-
-            assert.equal(postRevisions.length, 1);
-            assert.equal(postRevisions.at(0).get('lexical'), lexical);
-
-            // mobiledoc revision is not created
-            const mobiledocRevisions = await models.MobiledocRevision
-                .where('post_id', postResponse.id)
-                .orderBy('created_at_ts', 'desc')
-                .fetchAll();
-
-            assert.equal(mobiledocRevisions.length, 0);
-        });
-
-        it('Can create a post with html', async function () {
-            const post = {
-                title: 'HTML test',
-                html: '<p>Testing post creation with html</p>'
-            };
-
-            await agent
-                .post('/posts/?source=html&formats=mobiledoc,lexical,html')
-                .body({posts: [post]})
-                .expectStatus(201)
-                .matchBodySnapshot({
-                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    location: anyLocationFor('posts')
-                });
-        });
-
-        it('Errors if both mobiledoc and lexical are present', async function () {
-            const post = {
-                title: 'Mobiledoc+lexical test',
-                mobiledoc: createMobiledoc('Testing post creation with mobiledoc'),
-                lexical: createLexical('Testing post creation with lexical')
-            };
-
-            await agent
-                .post('/posts/?formats=mobiledoc,lexical')
-                .body({posts: [post]})
-                .expectStatus(422)
-                .matchBodySnapshot({
-                    errors: [{
-                        id: anyErrorId
-                    }]
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                });
-        });
-
-        it('Errors with an invalid lexical state object', async function () {
-            const post = {
-                title: 'Invalid lexical state',
-                lexical: JSON.stringify({
-                    notLexical: true
-                })
-            };
-
-            await agent
-                .post('/posts/?formats=mobiledoc,lexical,html')
-                .body({posts: [post]})
-                .expectStatus(422)
-                .matchBodySnapshot({
-                    errors: [{
-                        id: anyErrorId,
-                        context: stringMatching(/Invalid lexical structure\..*/)
-                    }]
-                })
-                .matchHeaderSnapshot({
-                    etag: anyEtag,
-                    'content-version': anyContentVersion,
-                    'content-length': anyStringNumber
-                });
-        });
-
-        it('Errors if feature_image_alt is too long', async function () {
-            const post = {
-                title: 'Feature image alt too long',
-                feature_image_alt: 'a'.repeat(201)
-            };
-
-            await agent
-                .post('/posts/?formats=mobiledoc,lexical,html')
-                .body({posts: [post]})
-                .expectStatus(422)
-                .matchBodySnapshot({
-                    errors: [{
-                        id: anyErrorId,
-                        // TODO: this should be `posts.feature_image_alt` but we're hitting revision errors first
-                        context: stringMatching(/.*post_revisions\.feature_image_alt] exceeds maximum length of 191 characters.*/)
-                    }]
-                });
-        });
-
-        it('invalidates preview cache when updating a draft post', async function () {
-            const post = {
-                title: 'Cache invalidation test',
-                status: 'draft'
-            };
-
-            const {body: postBody} = await agent
-                .post('/posts/?formats=mobiledoc,lexical,html')
-                .body({posts: [post]})
-                .expectStatus(201);
-
-            const [postResponse] = postBody.posts;
-
-            // check that header contains the correct cache invalidation pattern which is the post url and the post url with member_status=anonymous, free, paid
-            await agent
-                .put(`/posts/${postResponse.id}/?formats=mobiledoc,lexical,html`)
-                .body({posts: [Object.assign({}, postResponse, {status: 'draft'})]})
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    'x-cache-invalidate': stringMatching(/^\/p\/[a-z0-9-]+\/, \/p\/[a-z0-9-]+\/\?member_status=anonymous, \/p\/[a-z0-9-]+\/\?member_status=free, \/p\/[a-z0-9-]+\/\?member_status=paid$/)
-                });
-        });
-
-        // update when updating a scheduled post
-    });
-
-    describe('Update', function () {
-        it('Can update a post with mobiledoc', async function () {
-            const originalMobiledoc = createMobiledoc('Original text');
-            const updatedMobiledoc = createMobiledoc('Updated text');
-
-            const {body: postBody} = await agent
-                .post('/posts/?formats=mobiledoc,lexical,html')
-                .body({posts: [{
-                    title: 'Mobiledoc update test',
-                    mobiledoc: originalMobiledoc
-                }]})
-                .expectStatus(201)
-                .matchBodySnapshot({
-                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    location: anyLocationFor('posts')
-                });
-
-            const [postResponse] = postBody.posts;
-
-            await agent
-                .put(`/posts/${postResponse.id}/?formats=mobiledoc,lexical,html`)
-                .body({posts: [Object.assign({}, postResponse, {mobiledoc: updatedMobiledoc, lexical: null})]})
-                .expectStatus(200)
-                .matchBodySnapshot({
-                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    'x-cache-invalidate': stringMatching(/^\/p\/[a-z0-9-]+\/, \/p\/[a-z0-9-]+\/\?member_status=anonymous, \/p\/[a-z0-9-]+\/\?member_status=free, \/p\/[a-z0-9-]+\/\?member_status=paid$/)
-                });
-
-            // mobiledoc input is converted to lexical on save, so no mobiledoc revisions are created
-            const mobiledocRevisions = await models.MobiledocRevision
-                .where('post_id', postResponse.id)
-                .orderBy('created_at_ts', 'desc')
-                .fetchAll();
-
-            assert.equal(mobiledocRevisions.length, 0);
-
-            // content is converted to lexical, so the initial lexical post revision is
-            // created instead of a mobiledoc revision (the update omits save_revision)
-            const postRevisions = await models.PostRevision
-                .where('post_id', postResponse.id)
-                .orderBy('created_at_ts', 'desc')
-                .fetchAll();
-
-            assert.equal(postRevisions.length, 1);
-        });
-
-        it('Can update a post with lexical', async function () {
-            const originalLexical = createLexical('Original text');
-            const updatedLexical = createLexical('Updated text');
-
-            const {body: postBody} = await agent
-                .post('/posts/?formats=mobiledoc,lexical,html')
-                .body({posts: [{
-                    title: 'Lexical update test',
-                    lexical: originalLexical
-                }]})
-                .expectStatus(201)
-                .matchBodySnapshot({
-                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    location: anyLocationFor('posts')
-                });
-
-            const [postResponse] = postBody.posts;
-
-            await agent
-                .put(`/posts/${postResponse.id}/?formats=mobiledoc,lexical,html&save_revision=true`)
-                .body({posts: [Object.assign({}, postResponse, {lexical: updatedLexical})]})
-                .expectStatus(200)
-                .matchBodySnapshot({
-                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    'x-cache-invalidate': stringMatching(/^\/p\/[a-z0-9-]+\/, \/p\/[a-z0-9-]+\/\?member_status=anonymous, \/p\/[a-z0-9-]+\/\?member_status=free, \/p\/[a-z0-9-]+\/\?member_status=paid$/)
-                });
-
-            // post revisions are created
-            const postRevisions = await models.PostRevision
-                .where('post_id', postResponse.id)
-                .orderBy('created_at_ts', 'desc')
-                .fetchAll();
-
-            assert.equal(postRevisions.length, 2);
-            assert.equal(postRevisions.at(0).get('lexical'), updatedLexical);
-            assert.equal(postRevisions.at(1).get('lexical'), originalLexical);
-
-            // mobiledoc revisions are not created
-            const mobiledocRevisions = await models.MobiledocRevision
-                .where('post_id', postResponse.id)
-                .orderBy('created_at_ts', 'desc')
-                .fetchAll();
-
-            assert.equal(mobiledocRevisions.length, 0);
-        });
-
-        it('Does not create a revision when editing a lexical post without save_revision within the revision interval', async function () {
-            const originalLexical = createLexical('Original text for interval test');
-            const updatedLexical = createLexical('First update for interval test');
-            const secondUpdateLexical = createLexical('Second update for interval test');
-
-            const {body: postBody} = await agent
-                .post('/posts/?formats=mobiledoc,lexical,html')
-                .body({posts: [{title: 'Lexical interval test', lexical: originalLexical}]})
-                .expectStatus(201);
-
-            const [postResponse] = postBody.posts;
-
-            // Force a second revision so we have multiple revisions to test ordering against
-            const {body: firstEditBody} = await agent
-                .put(`/posts/${postResponse.id}/?formats=mobiledoc,lexical,html&save_revision=true`)
-                .body({posts: [Object.assign({}, postResponse, {lexical: updatedLexical})]})
-                .expectStatus(200);
-
-            const revisionsBeforeTest = await models.PostRevision
-                .where('post_id', postResponse.id)
-                .fetchAll();
-            assert.equal(revisionsBeforeTest.length, 2);
-
-            // Edit again without save_revision — should NOT create a revision within the interval
-            await agent
-                .put(`/posts/${firstEditBody.posts[0].id}/?formats=mobiledoc,lexical,html`)
-                .body({posts: [Object.assign({}, firstEditBody.posts[0], {lexical: secondUpdateLexical})]})
-                .expectStatus(200);
-
-            const revisionsAfter = await models.PostRevision
-                .where('post_id', postResponse.id)
-                .fetchAll();
-            assert.equal(revisionsAfter.length, 2, 'No new revision should be created within the interval without save_revision');
-        });
-
-        it('Does not convert a mobiledoc post to lexical on a metadata-only update', async function () {
-            // Posts created through the API are always stored as lexical, so write a
-            // genuine mobiledoc row directly to the DB to simulate legacy content -
-            // direct DB writes are the only way mobiledoc-stored posts exist after this change.
-            const legacyMobiledoc = createMobiledoc('Legacy mobiledoc content that must be preserved');
-
-            const {body: createBody} = await agent
-                .post('/posts/?formats=mobiledoc,lexical,html')
-                .body({posts: [{title: 'Legacy mobiledoc post', mobiledoc: legacyMobiledoc}]})
-                .expectStatus(201);
-
-            const postId = createBody.posts[0].id;
-
-            await models.Base.knex('posts')
-                .where('id', postId)
-                .update({mobiledoc: legacyMobiledoc, lexical: null});
-
-            // sanity check: the post is now stored as mobiledoc
-            const {body: beforeBody} = await agent
-                .get(`/posts/${postId}/?formats=mobiledoc,lexical,html`)
-                .expectStatus(200);
-            const before = beforeBody.posts[0];
-            assert.ok(before.mobiledoc, 'post starts stored as mobiledoc');
-            assert.equal(before.lexical, null);
-            assert.ok(before.html, 'post starts with rendered html');
-
-            // a metadata-only update (title) must NOT trigger a mobiledoc -> lexical conversion
-            const {body: afterBody} = await agent
-                .put(`/posts/${postId}/?formats=mobiledoc,lexical,html`)
-                .body({posts: [{title: 'Updated title only', updated_at: before.updated_at}]})
-                .expectStatus(200);
-            const after = afterBody.posts[0];
-
-            assert.equal(after.title, 'Updated title only', 'title is updated');
-            assert.ok(after.mobiledoc, 'post is still stored as mobiledoc after a metadata-only edit');
-            assert.equal(after.lexical, null, 'no lexical is generated for a metadata-only edit');
-            assert.equal(after.html, before.html, 'existing html is preserved (not blanked or re-rendered)');
-
-            // confirm against the database, not just the serialized response
-            const [row] = await models.Base.knex('posts').where('id', postId).select('mobiledoc', 'lexical');
-            assert.ok(row.mobiledoc, 'mobiledoc column is still populated in the database');
-            assert.equal(row.lexical, null, 'lexical column remains null in the database');
-        });
-
-        it('Migrates a mobiledoc post to lexical when updating with ?source=html', async function () {
-            // As above, write a genuine mobiledoc row directly to the DB to simulate
-            // legacy content - direct DB writes are the only way mobiledoc-stored posts
-            // exist after this change.
-            const legacyMobiledoc = createMobiledoc('Original mobiledoc content');
-
-            const {body: createBody} = await agent
-                .post('/posts/?formats=mobiledoc,lexical,html')
-                .body({posts: [{title: 'Legacy mobiledoc post', mobiledoc: legacyMobiledoc}]})
-                .expectStatus(201);
-
-            const postId = createBody.posts[0].id;
-
-            await models.Base.knex('posts')
-                .where('id', postId)
-                .update({mobiledoc: legacyMobiledoc, lexical: null});
-
-            // sanity check: the post is now stored as mobiledoc
-            const {body: beforeBody} = await agent
-                .get(`/posts/${postId}/?formats=mobiledoc,lexical,html`)
-                .expectStatus(200);
-            const before = beforeBody.posts[0];
-            assert.ok(before.mobiledoc, 'post starts stored as mobiledoc');
-            assert.equal(before.lexical, null);
-
-            // an explicit ?source=html update must replace the content - converting the
-            // incoming HTML to lexical and migrating the post off mobiledoc, rather than
-            // silently dropping the edit
-            const {body: afterBody} = await agent
-                .put(`/posts/${postId}/?source=html&formats=mobiledoc,lexical,html`)
-                .body({posts: [{html: '<p>Replacement content via source=html</p>', updated_at: before.updated_at}]})
-                .expectStatus(200);
-            const after = afterBody.posts[0];
-
-            assert.equal(after.mobiledoc, null, 'post is migrated off mobiledoc');
-            assert.ok(after.lexical, 'lexical is generated from the incoming html');
-            assert.ok(after.lexical.includes('Replacement content via source=html'), 'lexical contains the new content');
-            assert.ok(after.html.includes('Replacement content via source=html'), 'html reflects the new content');
-            assert.ok(!after.html.includes('Original mobiledoc content'), 'old content is replaced, not retained');
-
-            // confirm against the database, not just the serialized response
-            const [row] = await models.Base.knex('posts').where('id', postId).select('mobiledoc', 'lexical');
-            assert.equal(row.mobiledoc, null, 'mobiledoc column is cleared in the database');
-            assert.ok(row.lexical, 'lexical column is populated in the database');
-        });
-
-        it('Migrates a mobiledoc post to lexical when updating with lexical directly', async function () {
-            // Seed a genuine mobiledoc row directly in the DB to represent legacy content.
-            const legacyMobiledoc = createMobiledoc('Original mobiledoc content');
-
-            const {body: createBody} = await agent
-                .post('/posts/?formats=mobiledoc,lexical,html')
-                .body({posts: [{title: 'Legacy mobiledoc post', status: 'draft'}]})
-                .expectStatus(201);
-            const postId = createBody.posts[0].id;
-
-            await models.Base.knex('posts')
-                .where('id', postId)
-                .update({mobiledoc: legacyMobiledoc, lexical: null, html: '<p>Original mobiledoc content</p>'});
-
-            const {body: beforeBody} = await agent
-                .get(`/posts/${postId}/?formats=mobiledoc,lexical,html`)
-                .expectStatus(200);
-            const before = beforeBody.posts[0];
-            assert.ok(before.mobiledoc, 'post starts stored as mobiledoc');
-            assert.equal(before.lexical, null);
-
-            // sending lexical content directly (no ?source=html) resolves to a single format:
-            // the incoming lexical wins, the stored mobiledoc is dropped, and html is re-rendered -
-            // rather than leaving both formats stored with stale html
-            const updatedLexical = createLexical('Replacement content via lexical');
-            const {body: afterBody} = await agent
-                .put(`/posts/${postId}/?formats=mobiledoc,lexical,html`)
-                .body({posts: [{lexical: updatedLexical, updated_at: before.updated_at}]})
-                .expectStatus(200);
-            const after = afterBody.posts[0];
-
-            assert.equal(after.mobiledoc, null, 'post is migrated off mobiledoc');
-            assert.ok(after.lexical && after.lexical.includes('Replacement content via lexical'), 'lexical contains the new content');
-            assert.ok(after.html.includes('Replacement content via lexical'), 'html reflects the new content');
-            assert.ok(!after.html.includes('Original mobiledoc content'), 'old content is replaced, not retained');
-
-            // confirm the database never ends up with both formats stored
-            const [row] = await models.Base.knex('posts').where('id', postId).select('mobiledoc', 'lexical');
-            assert.equal(row.mobiledoc, null, 'mobiledoc column is cleared in the database');
-            assert.ok(row.lexical, 'lexical column is populated in the database');
-        });
-
-        describe('Access', function () {
-            describe('Visibility is set to tiers', function () {
-                it('Saves only paid tiers', async function () {
-                    const post = {
-                        title: 'Test Page',
-                        status: 'draft'
-                    };
-
-                    const products = await models.Product.findAll();
-
-                    const freeTier = products.models[0];
-                    const paidTier = products.models[1];
-
-                    const {body: pageBody} = await agent
-                        .post('/posts/', {
-                            headers: {
-                                'content-type': 'application/json'
-                            }
-                        })
-                        .body({posts: [post]})
-                        .expectStatus(201);
-
-                    const [pageResponse] = pageBody.posts;
-
-                    await agent
-                        .put(`/posts/${pageResponse.id}`)
-                        .body({
-                            posts: [{
-                                id: pageResponse.id,
-                                updated_at: pageResponse.updated_at,
-                                visibility: 'tiers',
-                                tiers: [
-                                    {id: freeTier.id},
-                                    {id: paidTier.id}
-                                ]
-                            }]
-                        })
-                        .expectStatus(200)
-                        .matchHeaderSnapshot({
-                            'content-version': anyContentVersion,
-                            etag: anyEtag,
-                            'x-cache-invalidate': stringMatching(/^\/p\/[a-z0-9-]+\/, \/p\/[a-z0-9-]+\/\?member_status=anonymous, \/p\/[a-z0-9-]+\/\?member_status=free, \/p\/[a-z0-9-]+\/\?member_status=paid$/)
-                        })
-                        .matchBodySnapshot({
-                            posts: [Object.assign({}, matchPostShallowIncludes, {
-                                published_at: null,
-                                tiers: [
-                                    {type: paidTier.get('type'), ...tierSnapshot}
-                                ]
-                            })]
-                        });
-                });
+              posts: [
+                Object.assign({}, matchPostShallowIncludes, {
+                  published_at: null,
+                  tiers: [{ type: paidTier.get('type'), ...tierSnapshot }],
+                }),
+              ],
             });
         });
+      });
     });
+  });
 
-    describe('Delete', function () {
-        it('Can destroy a post', async function () {
-            await agent
-                .delete(`posts/${fixtureManager.get('posts', 0).id}/`)
-                .expectStatus(204)
-                .expectEmptyBody()
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                });
-        });
-
-        it('Can destroy a post with a threaded comment replying to another reply', async function () {
-            const post = fixtureManager.get('posts', 1);
-
-            const root = await models.Comment.add({
-                post_id: post.id,
-                html: '<p>Root comment</p>',
-                status: 'published'
-            });
-            const reply = await models.Comment.add({
-                post_id: post.id,
-                parent_id: root.id,
-                html: '<p>Reply</p>',
-                status: 'published'
-            });
-            await models.Comment.add({
-                post_id: post.id,
-                parent_id: root.id,
-                in_reply_to_id: reply.id,
-                html: '<p>Reply to the reply</p>',
-                status: 'published'
-            });
-
-            // A long back-and-forth conversation, where each reply replies to the
-            // previous one, chains more levels than MySQL can cascade: InnoDB
-            // hard-limits nested foreign key cascades to 15 levels and fails the
-            // delete with error 3008 beyond that, so `in_reply_to_id` cannot use
-            // ON DELETE CASCADE and must be cleared in the delete transaction
-            // https://dev.mysql.com/doc/mysql-reslimits-excerpt/8.0/en/ansi-diff-foreign-keys.html
-            let previous = reply;
-            for (let i = 0; i < 20; i++) {
-                previous = await models.Comment.add({
-                    post_id: post.id,
-                    parent_id: root.id,
-                    in_reply_to_id: previous.id,
-                    html: `<p>Reply ${i} in a long conversation</p>`,
-                    status: 'published'
-                });
-            }
-
-            await agent
-                .delete(`posts/${post.id}/`)
-                .expectStatus(204)
-                .expectEmptyBody()
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                });
-
-            const comments = await models.Base.knex('comments').where('post_id', post.id);
-            assert.equal(comments.length, 0, 'Expected all comments on the post to be deleted with the post');
-        });
-
-        it('Cannot delete a non-existent posts', async function () {
-            // This error message from the API is not really what I would expect
-            // Adding this as a guard to demonstrate how future refactoring improves the output
-            await agent
-                .delete('/posts/abcd1234abcd1234abcd1234/')
-                .expectStatus(404)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    errors: [{
-                        id: anyErrorId
-                    }]
-                });
+  describe('Delete', function () {
+    it('Can destroy a post', async function () {
+      await agent
+        .delete(`posts/${fixtureManager.get('posts', 0).id}/`)
+        .expectStatus(204)
+        .expectEmptyBody()
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          etag: anyEtag,
         });
     });
 
-    describe('Copy', function () {
-        it('Can copy a post', async function () {
-            const post = {
-                title: 'Test Post',
-                status: 'published'
-            };
+    it('Can destroy a post with a threaded comment replying to another reply', async function () {
+      const post = fixtureManager.get('posts', 1);
 
-            const {body: postBody} = await agent
-                .post('/posts/?formats=mobiledoc,lexical,html', {
-                    headers: {
-                        'content-type': 'application/json'
-                    }
-                })
-                .body({posts: [post]})
-                .expectStatus(201);
+      const root = await models.Comment.add({
+        post_id: post.id,
+        html: '<p>Root comment</p>',
+        status: 'published',
+      });
+      const reply = await models.Comment.add({
+        post_id: post.id,
+        parent_id: root.id,
+        html: '<p>Reply</p>',
+        status: 'published',
+      });
+      await models.Comment.add({
+        post_id: post.id,
+        parent_id: root.id,
+        in_reply_to_id: reply.id,
+        html: '<p>Reply to the reply</p>',
+        status: 'published',
+      });
 
-            const [postResponse] = postBody.posts;
+      // A long back-and-forth conversation, where each reply replies to the
+      // previous one, chains more levels than MySQL can cascade: InnoDB
+      // hard-limits nested foreign key cascades to 15 levels and fails the
+      // delete with error 3008 beyond that, so `in_reply_to_id` cannot use
+      // ON DELETE CASCADE and must be cleared in the delete transaction
+      // https://dev.mysql.com/doc/mysql-reslimits-excerpt/8.0/en/ansi-diff-foreign-keys.html
+      let previous = reply;
+      for (let i = 0; i < 20; i++) {
+        previous = await models.Comment.add({
+          post_id: post.id,
+          parent_id: root.id,
+          in_reply_to_id: previous.id,
+          html: `<p>Reply ${i} in a long conversation</p>`,
+          status: 'published',
+        });
+      }
 
-            await agent
-                .post(`/posts/${postResponse.id}/copy?formats=mobiledoc,lexical`)
-                .expectStatus(201)
-                .matchBodySnapshot({
-                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    location: anyLocationFor('posts')
-                });
+      await agent
+        .delete(`posts/${post.id}/`)
+        .expectStatus(204)
+        .expectEmptyBody()
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          etag: anyEtag,
+        });
+
+      const comments = await models.Base.knex('comments').where('post_id', post.id);
+      assert.equal(
+        comments.length,
+        0,
+        'Expected all comments on the post to be deleted with the post',
+      );
+    });
+
+    it('Cannot delete a non-existent posts', async function () {
+      // This error message from the API is not really what I would expect
+      // Adding this as a guard to demonstrate how future refactoring improves the output
+      await agent
+        .delete('/posts/abcd1234abcd1234abcd1234/')
+        .expectStatus(404)
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          etag: anyEtag,
+        })
+        .matchBodySnapshot({
+          errors: [
+            {
+              id: anyErrorId,
+            },
+          ],
+        });
+    });
+  });
+
+  describe('Copy', function () {
+    it('Can copy a post', async function () {
+      const post = {
+        title: 'Test Post',
+        status: 'published',
+      };
+
+      const { body: postBody } = await agent
+        .post('/posts/?formats=mobiledoc,lexical,html', {
+          headers: {
+            'content-type': 'application/json',
+          },
+        })
+        .body({ posts: [post] })
+        .expectStatus(201);
+
+      const [postResponse] = postBody.posts;
+
+      await agent
+        .post(`/posts/${postResponse.id}/copy?formats=mobiledoc,lexical`)
+        .expectStatus(201)
+        .matchBodySnapshot({
+          posts: [Object.assign({}, matchPostShallowIncludes, { published_at: null })],
+        })
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          etag: anyEtag,
+          location: anyLocationFor('posts'),
+        });
+    });
+  });
+
+  describe('Convert', function () {
+    it('can convert a mobiledoc post to lexical', async function () {
+      const mobiledoc = createMobiledoc('This is some great content.');
+      const expectedLexical = createLexical('This is some great content.');
+      const postData = {
+        title: 'Test Post',
+        status: 'published',
+        mobiledoc: mobiledoc,
+        lexical: null,
+      };
+
+      const { body } = await agent
+        .post('/posts/?formats=mobiledoc,lexical,html', {
+          headers: {
+            'content-type': 'application/json',
+          },
+        })
+        .body({ posts: [postData] })
+        .expectStatus(201);
+
+      const [postResponse] = body.posts;
+
+      const conversionResponse = await agent
+        .put(`/posts/${postResponse.id}/?formats=mobiledoc,lexical,html&convert_to_lexical=true`)
+        .body({ posts: [Object.assign({}, postResponse)] })
+        .expectStatus(200)
+        .matchBodySnapshot({
+          posts: [
+            Object.assign({}, matchPostShallowIncludes, {
+              lexical: expectedLexical,
+              mobiledoc: null,
+            }),
+          ],
+        })
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          etag: anyEtag,
+        });
+
+      const convertedPost = conversionResponse.body.posts[0];
+      const expectedConvertedLexical = convertedPost.lexical;
+      await agent
+        .put(`/posts/${postResponse.id}/?formats=mobiledoc,lexical,html&convert_to_lexical=true`)
+        .body({ posts: [Object.assign({}, convertedPost)] })
+        .expectStatus(200)
+        .matchBodySnapshot({
+          posts: [
+            Object.assign({}, matchPostShallowIncludes, {
+              lexical: expectedConvertedLexical,
+              mobiledoc: null,
+            }),
+          ],
+        })
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          etag: anyEtag,
         });
     });
 
-    describe('Convert', function () {
-        it('can convert a mobiledoc post to lexical', async function () {
-            const mobiledoc = createMobiledoc('This is some great content.');
-            const expectedLexical = createLexical('This is some great content.');
-            const postData = {
-                title: 'Test Post',
-                status: 'published',
-                mobiledoc: mobiledoc,
-                lexical: null
-            };
+    it('re-renders html and records a revision when converting a stored mobiledoc post', async function () {
+      // Posts created via the API are always lexical, so seed a genuine mobiledoc row
+      // directly in the DB to represent legacy content with stale html.
+      const legacyMobiledoc = createMobiledoc('Legacy mobiledoc to convert');
 
-            const {body} = await agent
-                .post('/posts/?formats=mobiledoc,lexical,html', {
-                    headers: {
-                        'content-type': 'application/json'
-                    }
-                })
-                .body({posts: [postData]})
-                .expectStatus(201);
+      const { body: createBody } = await agent
+        .post('/posts/?formats=mobiledoc,lexical,html')
+        .body({ posts: [{ title: 'Legacy mobiledoc post', status: 'draft' }] })
+        .expectStatus(201);
+      const postId = createBody.posts[0].id;
 
-            const [postResponse] = body.posts;
+      await models.Base.knex('posts')
+        .where('id', postId)
+        .update({ mobiledoc: legacyMobiledoc, lexical: null, html: '<p>stale html</p>' });
 
-            const conversionResponse = await agent
-                .put(`/posts/${postResponse.id}/?formats=mobiledoc,lexical,html&convert_to_lexical=true`)
-                .body({posts: [Object.assign({}, postResponse)]})
-                .expectStatus(200)
-                .matchBodySnapshot({
-                    posts: [Object.assign({}, matchPostShallowIncludes, {lexical: expectedLexical, mobiledoc: null})]
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                });
+      const { body: beforeBody } = await agent
+        .get(`/posts/${postId}/?formats=mobiledoc,lexical,html`)
+        .expectStatus(200);
+      const before = beforeBody.posts[0];
+      assert.ok(before.mobiledoc, 'post starts stored as mobiledoc');
+      assert.equal(before.lexical, null);
 
-            const convertedPost = conversionResponse.body.posts[0];
-            const expectedConvertedLexical = convertedPost.lexical;
-            await agent
-                .put(`/posts/${postResponse.id}/?formats=mobiledoc,lexical,html&convert_to_lexical=true`)
-                .body({posts: [Object.assign({}, convertedPost)]})
-                .expectStatus(200)
-                .matchBodySnapshot({
-                    posts: [Object.assign({}, matchPostShallowIncludes, {lexical: expectedConvertedLexical, mobiledoc: null})]
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                });
-        });
+      const revisionsBefore = await models.PostRevision.where('post_id', postId).fetchAll();
 
-        it('re-renders html and records a revision when converting a stored mobiledoc post', async function () {
-            // Posts created via the API are always lexical, so seed a genuine mobiledoc row
-            // directly in the DB to represent legacy content with stale html.
-            const legacyMobiledoc = createMobiledoc('Legacy mobiledoc to convert');
+      const { body: afterBody } = await agent
+        .put(
+          `/posts/${postId}/?convert_to_lexical=true&save_revision=true&formats=mobiledoc,lexical,html`,
+        )
+        .body({ posts: [{ updated_at: before.updated_at }] })
+        .expectStatus(200);
+      const after = afterBody.posts[0];
 
-            const {body: createBody} = await agent
-                .post('/posts/?formats=mobiledoc,lexical,html')
-                .body({posts: [{title: 'Legacy mobiledoc post', status: 'draft'}]})
-                .expectStatus(201);
-            const postId = createBody.posts[0].id;
+      // migrated off mobiledoc
+      assert.equal(after.mobiledoc, null, 'mobiledoc is cleared');
+      assert.ok(
+        after.lexical && after.lexical.includes('Legacy mobiledoc to convert'),
+        'content is converted to lexical',
+      );
 
-            await models.Base.knex('posts')
-                .where('id', postId)
-                .update({mobiledoc: legacyMobiledoc, lexical: null, html: '<p>stale html</p>'});
+      // html is re-rendered from the converted lexical (the conversion now goes through the
+      // shared render path, rather than leaving the stale stored html as the old late op did)
+      assert.ok(
+        after.html.includes('Legacy mobiledoc to convert'),
+        'html is re-rendered from lexical',
+      );
+      assert.ok(!after.html.includes('stale html'), 'stale html is replaced');
 
-            const {body: beforeBody} = await agent
-                .get(`/posts/${postId}/?formats=mobiledoc,lexical,html`)
-                .expectStatus(200);
-            const before = beforeBody.posts[0];
-            assert.ok(before.mobiledoc, 'post starts stored as mobiledoc');
-            assert.equal(before.lexical, null);
+      // conversion went through the revision gate, so a lexical revision is recorded
+      const revisionsAfter = await models.PostRevision.where('post_id', postId).fetchAll();
+      assert.ok(
+        revisionsAfter.length > revisionsBefore.length,
+        'a post revision is created for the conversion',
+      );
 
-            const revisionsBefore = await models.PostRevision.where('post_id', postId).fetchAll();
+      // DB ground truth
+      const [row] = await models.Base.knex('posts')
+        .where('id', postId)
+        .select('mobiledoc', 'lexical');
+      assert.equal(row.mobiledoc, null);
+      assert.ok(row.lexical);
+    });
+  });
 
-            const {body: afterBody} = await agent
-                .put(`/posts/${postId}/?convert_to_lexical=true&save_revision=true&formats=mobiledoc,lexical,html`)
-                .body({posts: [{updated_at: before.updated_at}]})
-                .expectStatus(200);
-            const after = afterBody.posts[0];
+  describe('With integration auth', function () {
+    it('can create and update a post with revisions', async function () {
+      // Use Zapier integration to test integration auth scenario
+      await agent.useZapierAdminAPIKey();
 
-            // migrated off mobiledoc
-            assert.equal(after.mobiledoc, null, 'mobiledoc is cleared');
-            assert.ok(after.lexical && after.lexical.includes('Legacy mobiledoc to convert'), 'content is converted to lexical');
+      const lexical = createLexical('This is content for revision testing.');
+      const postData = {
+        title: 'Integration Auth Test Post',
+        status: 'published',
+        lexical: lexical,
+        mobiledoc: null,
+      };
 
-            // html is re-rendered from the converted lexical (the conversion now goes through the
-            // shared render path, rather than leaving the stale stored html as the old late op did)
-            assert.ok(after.html.includes('Legacy mobiledoc to convert'), 'html is re-rendered from lexical');
-            assert.ok(!after.html.includes('stale html'), 'stale html is replaced');
+      // Create post using integration auth - this should trigger the revision creation
+      // with author fallback to owner user when contextUser returns integration context
+      const { body } = await agent
+        .post('/posts/?formats=lexical')
+        .body({ posts: [postData] })
+        .expectStatus(201);
 
-            // conversion went through the revision gate, so a lexical revision is recorded
-            const revisionsAfter = await models.PostRevision.where('post_id', postId).fetchAll();
-            assert.ok(revisionsAfter.length > revisionsBefore.length, 'a post revision is created for the conversion');
+      const [postResponse] = body.posts;
+      assert.equal(postResponse.title, 'Integration Auth Test Post');
+      assert.equal(postResponse.status, 'published');
+      assert.equal(postResponse.lexical, lexical);
 
-            // DB ground truth
-            const [row] = await models.Base.knex('posts').where('id', postId).select('mobiledoc', 'lexical');
-            assert.equal(row.mobiledoc, null);
-            assert.ok(row.lexical);
+      // Verify the post revision was created with owner user as author
+      const ownerUser = await models.User.getOwnerUser();
+      const postRevisions = await models.PostRevision.where('post_id', postResponse.id).fetchAll();
+
+      assert.equal(postRevisions.length, 1);
+      const revision = postRevisions.at(0);
+      assert.equal(revision.get('lexical'), lexical);
+      assert.equal(revision.get('author_id'), ownerUser.get('id'));
+
+      // Update the post to ensure revision creation works properly
+      const updatedLexical = createLexical('Updated content for revision testing.');
+      await agent
+        .put(`/posts/${postResponse.id}/?formats=lexical&save_revision=true`)
+        .body({
+          posts: [
+            {
+              ...postResponse,
+              lexical: updatedLexical,
+            },
+          ],
+        })
+        .expectStatus(200);
+
+      // Verify updated revision also has owner user as author
+      const updatedRevisions = await models.PostRevision.where('post_id', postResponse.id)
+        .orderBy('created_at_ts', 'desc')
+        .fetchAll();
+
+      assert.equal(updatedRevisions.length, 2);
+      const latestRevision = updatedRevisions.at(0);
+      assert.equal(latestRevision.get('lexical'), updatedLexical);
+      assert.equal(latestRevision.get('author_id'), ownerUser.get('id'));
+
+      // Verify the post was updated successfully
+      await agent
+        .get(`/posts/${postResponse.id}/?formats=lexical`)
+        .expectStatus(200)
+        .matchBodySnapshot({
+          posts: [
+            Object.assign({}, matchPostShallowIncludes, {
+              lexical: updatedLexical,
+            }),
+          ],
         });
     });
+  });
 
-    describe('With integration auth', function () {
-        it('can create and update a post with revisions', async function () {
-            // Use Zapier integration to test integration auth scenario
-            await agent.useZapierAdminAPIKey();
+  describe('URL transformations', function () {
+    const siteUrl = config.get('url');
+    const cdnUrl = 'https://cdn.example.com';
 
-            const lexical = createLexical('This is content for revision testing.');
-            const postData = {
-                title: 'Integration Auth Test Post',
-                status: 'published',
-                lexical: lexical,
-                mobiledoc: null
-            };
-
-            // Create post using integration auth - this should trigger the revision creation
-            // with author fallback to owner user when contextUser returns integration context
-            const {body} = await agent
-                .post('/posts/?formats=lexical')
-                .body({posts: [postData]})
-                .expectStatus(201);
-
-            const [postResponse] = body.posts;
-            assert.equal(postResponse.title, 'Integration Auth Test Post');
-            assert.equal(postResponse.status, 'published');
-            assert.equal(postResponse.lexical, lexical);
-
-            // Verify the post revision was created with owner user as author
-            const ownerUser = await models.User.getOwnerUser();
-            const postRevisions = await models.PostRevision
-                .where('post_id', postResponse.id)
-                .fetchAll();
-
-            assert.equal(postRevisions.length, 1);
-            const revision = postRevisions.at(0);
-            assert.equal(revision.get('lexical'), lexical);
-            assert.equal(revision.get('author_id'), ownerUser.get('id'));
-
-            // Update the post to ensure revision creation works properly
-            const updatedLexical = createLexical('Updated content for revision testing.');
-            await agent
-                .put(`/posts/${postResponse.id}/?formats=lexical&save_revision=true`)
-                .body({posts: [{
-                    ...postResponse,
-                    lexical: updatedLexical
-                }]})
-                .expectStatus(200);
-
-            // Verify updated revision also has owner user as author
-            const updatedRevisions = await models.PostRevision
-                .where('post_id', postResponse.id)
-                .orderBy('created_at_ts', 'desc')
-                .fetchAll();
-
-            assert.equal(updatedRevisions.length, 2);
-            const latestRevision = updatedRevisions.at(0);
-            assert.equal(latestRevision.get('lexical'), updatedLexical);
-            assert.equal(latestRevision.get('author_id'), ownerUser.get('id'));
-
-            // Verify the post was updated successfully
-            await agent
-                .get(`/posts/${postResponse.id}/?formats=lexical`)
-                .expectStatus(200)
-                .matchBodySnapshot({
-                    posts: [Object.assign({}, matchPostShallowIncludes, {
-                        lexical: updatedLexical
-                    })]
-                });
-        });
+    afterEach(function () {
+      sinon.restore();
     });
 
-    describe('URL transformations', function () {
-        const siteUrl = config.get('url');
-        const cdnUrl = 'https://cdn.example.com';
+    it('Can read Mobiledoc post with all URLs as absolute site URLs', async function () {
+      const res = await agent
+        .get('posts/slug/post-with-all-media-types-mobiledoc/?formats=mobiledoc')
+        .expectStatus(200);
 
-        afterEach(function () {
-            sinon.restore();
-        });
+      const post = res.body.posts[0];
+      const mobiledoc = JSON.parse(post.mobiledoc);
 
-        it('Can read Mobiledoc post with all URLs as absolute site URLs', async function () {
-            const res = await agent
-                .get('posts/slug/post-with-all-media-types-mobiledoc/?formats=mobiledoc')
-                .expectStatus(200);
-
-            const post = res.body.posts[0];
-            const mobiledoc = JSON.parse(post.mobiledoc);
-
-            assert.equal(post.feature_image, `${siteUrl}/content/images/feature.jpg`);
-            assert.equal(mobiledoc.cards.find(c => c[0] === 'image')[1].src, `${siteUrl}/content/images/inline.jpg`);
-            assert.equal(mobiledoc.cards.find(c => c[0] === 'file')[1].src, `${siteUrl}/content/files/document.pdf`);
-            assert.equal(mobiledoc.cards.find(c => c[0] === 'video')[1].src, `${siteUrl}/content/media/video.mp4`);
-            assert.equal(mobiledoc.cards.find(c => c[0] === 'audio')[1].src, `${siteUrl}/content/media/audio.mp3`);
-            assert(post.mobiledoc.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
-            assert(post.mobiledoc.includes(`${siteUrl}/content/files/snippet-document.pdf`));
-            assert(post.mobiledoc.includes(`${siteUrl}/content/media/snippet-video.mp4`));
-            assert(post.mobiledoc.includes(`${siteUrl}/content/media/snippet-audio.mp3`));
-            assert(!post.mobiledoc.includes('__GHOST_URL__'));
-        });
-
-        it('Can read Lexical post with all URLs as absolute site URLs', async function () {
-            const res = await agent
-                .get('posts/slug/post-with-all-media-types-lexical/?formats=lexical')
-                .expectStatus(200);
-
-            const post = res.body.posts[0];
-
-            assert.equal(post.feature_image, `${siteUrl}/content/images/feature.jpg`);
-            assert(post.lexical.includes(`${siteUrl}/content/images/inline.jpg`));
-            assert(post.lexical.includes(`${siteUrl}/content/files/document.pdf`));
-            assert(post.lexical.includes(`${siteUrl}/content/media/video.mp4`));
-            assert(post.lexical.includes(`${siteUrl}/content/media/audio.mp3`));
-            assert(post.lexical.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
-            assert(post.lexical.includes(`${siteUrl}/content/files/snippet-document.pdf`));
-            assert(post.lexical.includes(`${siteUrl}/content/media/snippet-video.mp4`));
-            assert(post.lexical.includes(`${siteUrl}/content/media/snippet-audio.mp3`));
-            assert(!post.lexical.includes('__GHOST_URL__'));
-        });
-
-        it('Can read Mobiledoc post with CDN URLs when configured', async function () {
-            urlUtilsHelper.stubUrlUtilsWithCdn({
-                assetBaseUrls: {media: cdnUrl, files: cdnUrl, image: cdnUrl}
-            }, sinon);
-
-            const res = await agent
-                .get('posts/slug/post-with-all-media-types-mobiledoc/?formats=mobiledoc')
-                .expectStatus(200);
-
-            const post = res.body.posts[0];
-            const mobiledoc = JSON.parse(post.mobiledoc);
-
-            // All assets use CDN URL
-            assert.equal(post.feature_image, `${cdnUrl}/content/images/feature.jpg`);
-            assert.equal(mobiledoc.cards.find(c => c[0] === 'image')[1].src, `${cdnUrl}/content/images/inline.jpg`);
-            assert.equal(mobiledoc.cards.find(c => c[0] === 'file')[1].src, `${cdnUrl}/content/files/document.pdf`);
-            assert.equal(mobiledoc.cards.find(c => c[0] === 'video')[1].src, `${cdnUrl}/content/media/video.mp4`);
-            assert.equal(mobiledoc.cards.find(c => c[0] === 'audio')[1].src, `${cdnUrl}/content/media/audio.mp3`);
-            // Video/audio thumbnails use CDN URL
-            assert.equal(mobiledoc.cards.find(c => c[0] === 'video')[1].thumbnailSrc, `${cdnUrl}/content/images/video-thumb.jpg`);
-            // Gallery images use CDN URL
-            const galleryCard = mobiledoc.cards.find(c => c[0] === 'gallery');
-            galleryCard[1].images.forEach((image) => {
-                assert(image.src.startsWith(cdnUrl));
-            });
-            // Inserted snippet images use CDN URL
-            assert(post.mobiledoc.includes(`${cdnUrl}/content/images/snippet-inline.jpg`));
-            assert(post.mobiledoc.includes(`${cdnUrl}/content/files/snippet-document.pdf`));
-            assert(post.mobiledoc.includes(`${cdnUrl}/content/media/snippet-video.mp4`));
-            assert(post.mobiledoc.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));
-            assert(!post.mobiledoc.includes('__GHOST_URL__'));
-        });
-
-        it('Can read Lexical post with CDN URLs when configured', async function () {
-            urlUtilsHelper.stubUrlUtilsWithCdn({
-                assetBaseUrls: {media: cdnUrl, files: cdnUrl, image: cdnUrl}
-            }, sinon);
-
-            const res = await agent
-                .get('posts/slug/post-with-all-media-types-lexical/?formats=lexical')
-                .expectStatus(200);
-
-            const post = res.body.posts[0];
-
-            // All assets use CDN URL
-            assert.equal(post.feature_image, `${cdnUrl}/content/images/feature.jpg`);
-            assert(post.lexical.includes(`${cdnUrl}/content/images/inline.jpg`));
-            assert(post.lexical.includes(`${cdnUrl}/content/files/document.pdf`));
-            assert(post.lexical.includes(`${cdnUrl}/content/media/video.mp4`));
-            assert(post.lexical.includes(`${cdnUrl}/content/media/audio.mp3`));
-            // Video/audio thumbnails use CDN URL
-            assert(post.lexical.includes(`${cdnUrl}/content/images/video-thumb.jpg`));
-            assert(post.lexical.includes(`${cdnUrl}/content/images/audio-thumb.jpg`));
-            // Gallery images use CDN URL
-            assert(post.lexical.includes(`${cdnUrl}/content/images/gallery-1.jpg`));
-            assert(post.lexical.includes(`${cdnUrl}/content/images/gallery-2.jpg`));
-            // Inserted snippet images use CDN URL
-            assert(post.lexical.includes(`${cdnUrl}/content/images/snippet-inline.jpg`));
-            assert(post.lexical.includes(`${cdnUrl}/content/files/snippet-document.pdf`));
-            assert(post.lexical.includes(`${cdnUrl}/content/media/snippet-video.mp4`));
-            assert(post.lexical.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));
-            assert(!post.lexical.includes('__GHOST_URL__'));
-        });
+      assert.equal(post.feature_image, `${siteUrl}/content/images/feature.jpg`);
+      assert.equal(
+        mobiledoc.cards.find((c) => c[0] === 'image')[1].src,
+        `${siteUrl}/content/images/inline.jpg`,
+      );
+      assert.equal(
+        mobiledoc.cards.find((c) => c[0] === 'file')[1].src,
+        `${siteUrl}/content/files/document.pdf`,
+      );
+      assert.equal(
+        mobiledoc.cards.find((c) => c[0] === 'video')[1].src,
+        `${siteUrl}/content/media/video.mp4`,
+      );
+      assert.equal(
+        mobiledoc.cards.find((c) => c[0] === 'audio')[1].src,
+        `${siteUrl}/content/media/audio.mp3`,
+      );
+      assert(post.mobiledoc.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
+      assert(post.mobiledoc.includes(`${siteUrl}/content/files/snippet-document.pdf`));
+      assert(post.mobiledoc.includes(`${siteUrl}/content/media/snippet-video.mp4`));
+      assert(post.mobiledoc.includes(`${siteUrl}/content/media/snippet-audio.mp3`));
+      assert(!post.mobiledoc.includes('__GHOST_URL__'));
     });
+
+    it('Can read Lexical post with all URLs as absolute site URLs', async function () {
+      const res = await agent
+        .get('posts/slug/post-with-all-media-types-lexical/?formats=lexical')
+        .expectStatus(200);
+
+      const post = res.body.posts[0];
+
+      assert.equal(post.feature_image, `${siteUrl}/content/images/feature.jpg`);
+      assert(post.lexical.includes(`${siteUrl}/content/images/inline.jpg`));
+      assert(post.lexical.includes(`${siteUrl}/content/files/document.pdf`));
+      assert(post.lexical.includes(`${siteUrl}/content/media/video.mp4`));
+      assert(post.lexical.includes(`${siteUrl}/content/media/audio.mp3`));
+      assert(post.lexical.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
+      assert(post.lexical.includes(`${siteUrl}/content/files/snippet-document.pdf`));
+      assert(post.lexical.includes(`${siteUrl}/content/media/snippet-video.mp4`));
+      assert(post.lexical.includes(`${siteUrl}/content/media/snippet-audio.mp3`));
+      assert(!post.lexical.includes('__GHOST_URL__'));
+    });
+
+    it('Can read Mobiledoc post with CDN URLs when configured', async function () {
+      urlUtilsHelper.stubUrlUtilsWithCdn(
+        {
+          assetBaseUrls: { media: cdnUrl, files: cdnUrl, image: cdnUrl },
+        },
+        sinon,
+      );
+
+      const res = await agent
+        .get('posts/slug/post-with-all-media-types-mobiledoc/?formats=mobiledoc')
+        .expectStatus(200);
+
+      const post = res.body.posts[0];
+      const mobiledoc = JSON.parse(post.mobiledoc);
+
+      // All assets use CDN URL
+      assert.equal(post.feature_image, `${cdnUrl}/content/images/feature.jpg`);
+      assert.equal(
+        mobiledoc.cards.find((c) => c[0] === 'image')[1].src,
+        `${cdnUrl}/content/images/inline.jpg`,
+      );
+      assert.equal(
+        mobiledoc.cards.find((c) => c[0] === 'file')[1].src,
+        `${cdnUrl}/content/files/document.pdf`,
+      );
+      assert.equal(
+        mobiledoc.cards.find((c) => c[0] === 'video')[1].src,
+        `${cdnUrl}/content/media/video.mp4`,
+      );
+      assert.equal(
+        mobiledoc.cards.find((c) => c[0] === 'audio')[1].src,
+        `${cdnUrl}/content/media/audio.mp3`,
+      );
+      // Video/audio thumbnails use CDN URL
+      assert.equal(
+        mobiledoc.cards.find((c) => c[0] === 'video')[1].thumbnailSrc,
+        `${cdnUrl}/content/images/video-thumb.jpg`,
+      );
+      // Gallery images use CDN URL
+      const galleryCard = mobiledoc.cards.find((c) => c[0] === 'gallery');
+      galleryCard[1].images.forEach((image) => {
+        assert(image.src.startsWith(cdnUrl));
+      });
+      // Inserted snippet images use CDN URL
+      assert(post.mobiledoc.includes(`${cdnUrl}/content/images/snippet-inline.jpg`));
+      assert(post.mobiledoc.includes(`${cdnUrl}/content/files/snippet-document.pdf`));
+      assert(post.mobiledoc.includes(`${cdnUrl}/content/media/snippet-video.mp4`));
+      assert(post.mobiledoc.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));
+      assert(!post.mobiledoc.includes('__GHOST_URL__'));
+    });
+
+    it('Can read Lexical post with CDN URLs when configured', async function () {
+      urlUtilsHelper.stubUrlUtilsWithCdn(
+        {
+          assetBaseUrls: { media: cdnUrl, files: cdnUrl, image: cdnUrl },
+        },
+        sinon,
+      );
+
+      const res = await agent
+        .get('posts/slug/post-with-all-media-types-lexical/?formats=lexical')
+        .expectStatus(200);
+
+      const post = res.body.posts[0];
+
+      // All assets use CDN URL
+      assert.equal(post.feature_image, `${cdnUrl}/content/images/feature.jpg`);
+      assert(post.lexical.includes(`${cdnUrl}/content/images/inline.jpg`));
+      assert(post.lexical.includes(`${cdnUrl}/content/files/document.pdf`));
+      assert(post.lexical.includes(`${cdnUrl}/content/media/video.mp4`));
+      assert(post.lexical.includes(`${cdnUrl}/content/media/audio.mp3`));
+      // Video/audio thumbnails use CDN URL
+      assert(post.lexical.includes(`${cdnUrl}/content/images/video-thumb.jpg`));
+      assert(post.lexical.includes(`${cdnUrl}/content/images/audio-thumb.jpg`));
+      // Gallery images use CDN URL
+      assert(post.lexical.includes(`${cdnUrl}/content/images/gallery-1.jpg`));
+      assert(post.lexical.includes(`${cdnUrl}/content/images/gallery-2.jpg`));
+      // Inserted snippet images use CDN URL
+      assert(post.lexical.includes(`${cdnUrl}/content/images/snippet-inline.jpg`));
+      assert(post.lexical.includes(`${cdnUrl}/content/files/snippet-document.pdf`));
+      assert(post.lexical.includes(`${cdnUrl}/content/media/snippet-video.mp4`));
+      assert(post.lexical.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));
+      assert(!post.lexical.includes('__GHOST_URL__'));
+    });
+  });
 });

@@ -4,123 +4,104 @@ const newslettersService = require('../../services/newsletters');
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
-    docName: 'newsletters',
+  docName: 'newsletters',
 
-    browse: {
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'include',
-            'filter',
-            'fields',
-            'limit',
-            'order',
-            'page'
-        ],
-        validation: {
-            options: {
-                include: {
-                    values: allowedIncludes
-                }
-            }
-        },
-        permissions: true,
-        query(frame) {
-            return newslettersService.browse(frame.options);
-        }
+  browse: {
+    headers: {
+      cacheInvalidate: false,
     },
-
-    read: {
-        headers: {
-            cacheInvalidate: false
+    options: ['include', 'filter', 'fields', 'limit', 'order', 'page'],
+    validation: {
+      options: {
+        include: {
+          values: allowedIncludes,
         },
-        options: [
-            'include',
-            'fields',
-            'debug',
-            // NOTE: only for internal context
-            'forUpdate',
-            'transacting'
-        ],
-        data: [
-            'id',
-            'slug',
-            'uuid'
-        ],
-        validation: {
-            options: {
-                include: {
-                    values: allowedIncludes
-                }
-            }
-        },
-        permissions: true,
-        async query(frame) {
-            return newslettersService.read(frame.data, frame.options);
-        }
+      },
     },
-
-    add: {
-        statusCode: 201,
-        headers: {
-            cacheInvalidate: true
-        },
-        options: [
-            'include',
-            'opt_in_existing'
-        ],
-        validation: {
-            options: {
-                include: {
-                    values: allowedIncludes
-                }
-            }
-        },
-        permissions: true,
-        async query(frame) {
-            return newslettersService.add(frame.data.newsletters[0], frame.options);
-        }
+    permissions: true,
+    query(frame) {
+      return newslettersService.browse(frame.options);
     },
+  },
 
-    edit: {
-        headers: {
-            cacheInvalidate: true
-        },
-        options: [
-            'id',
-            'include'
-        ],
-        validation: {
-            options: {
-                id: {
-                    required: true
-                },
-                include: {
-                    values: allowedIncludes
-                }
-            }
-        },
-        permissions: true,
-        async query(frame) {
-            return newslettersService.edit(frame.data.newsletters[0], frame.options);
-        }
+  read: {
+    headers: {
+      cacheInvalidate: false,
     },
+    options: [
+      'include',
+      'fields',
+      'debug',
+      // NOTE: only for internal context
+      'forUpdate',
+      'transacting',
+    ],
+    data: ['id', 'slug', 'uuid'],
+    validation: {
+      options: {
+        include: {
+          values: allowedIncludes,
+        },
+      },
+    },
+    permissions: true,
+    async query(frame) {
+      return newslettersService.read(frame.data, frame.options);
+    },
+  },
 
-    verifyPropertyUpdate: {
-        headers: {
-            cacheInvalidate: false
+  add: {
+    statusCode: 201,
+    headers: {
+      cacheInvalidate: true,
+    },
+    options: ['include', 'opt_in_existing'],
+    validation: {
+      options: {
+        include: {
+          values: allowedIncludes,
         },
-        permissions: {
-            method: 'edit'
+      },
+    },
+    permissions: true,
+    async query(frame) {
+      return newslettersService.add(frame.data.newsletters[0], frame.options);
+    },
+  },
+
+  edit: {
+    headers: {
+      cacheInvalidate: true,
+    },
+    options: ['id', 'include'],
+    validation: {
+      options: {
+        id: {
+          required: true,
         },
-        data: [
-            'token'
-        ],
-        async query(frame) {
-            return newslettersService.verifyPropertyUpdate(frame.data.token);
-        }
-    }
+        include: {
+          values: allowedIncludes,
+        },
+      },
+    },
+    permissions: true,
+    async query(frame) {
+      return newslettersService.edit(frame.data.newsletters[0], frame.options);
+    },
+  },
+
+  verifyPropertyUpdate: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    permissions: {
+      method: 'edit',
+    },
+    data: ['token'],
+    async query(frame) {
+      return newslettersService.verifyPropertyUpdate(frame.data.token);
+    },
+  },
 };
 
 module.exports = controller;

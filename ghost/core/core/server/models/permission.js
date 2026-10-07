@@ -1,46 +1,42 @@
 const ghostBookshelf = require('./base');
 
-let Permission;
-let Permissions;
+const Permission = ghostBookshelf.Model.extend({
+  tableName: 'permissions',
 
-Permission = ghostBookshelf.Model.extend({
+  relationships: ['roles'],
+  relationshipBelongsTo: {
+    roles: 'roles',
+  },
 
-    tableName: 'permissions',
+  /**
+   * The base model keeps only the columns, which are defined in the schema.
+   * We have to add the relations on top, otherwise bookshelf-relations
+   * has no access to the nested relations, which should be updated.
+   */
+  permittedAttributes: function permittedAttributes() {
+    const filteredKeys = ghostBookshelf.Model.prototype.permittedAttributes.apply(this, arguments);
 
-    relationships: ['roles'],
-    relationshipBelongsTo: {
-        roles: 'roles'
-    },
+    this.relationships.forEach((key) => {
+      filteredKeys.push(key);
+    });
 
-    /**
-     * The base model keeps only the columns, which are defined in the schema.
-     * We have to add the relations on top, otherwise bookshelf-relations
-     * has no access to the nested relations, which should be updated.
-     */
-    permittedAttributes: function permittedAttributes() {
-        let filteredKeys = ghostBookshelf.Model.prototype.permittedAttributes.apply(this, arguments);
+    return filteredKeys;
+  },
 
-        this.relationships.forEach((key) => {
-            filteredKeys.push(key);
-        });
+  roles: function roles() {
+    return this.belongsToMany('Role', 'permissions_roles', 'permission_id', 'role_id');
+  },
 
-        return filteredKeys;
-    },
-
-    roles: function roles() {
-        return this.belongsToMany('Role', 'permissions_roles', 'permission_id', 'role_id');
-    },
-
-    users: function users() {
-        return this.belongsToMany('User');
-    }
+  users: function users() {
+    return this.belongsToMany('User');
+  },
 });
 
-Permissions = ghostBookshelf.Collection.extend({
-    model: Permission
+const Permissions = ghostBookshelf.Collection.extend({
+  model: Permission,
 });
 
 module.exports = {
-    Permission: ghostBookshelf.model('Permission', Permission),
-    Permissions: ghostBookshelf.collection('Permissions', Permissions)
+  Permission: ghostBookshelf.model('Permission', Permission),
+  Permissions: ghostBookshelf.collection('Permissions', Permissions),
 };

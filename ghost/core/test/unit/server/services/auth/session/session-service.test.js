@@ -1,1138 +1,1140 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../../../../utils/assertions');
+const { assertExists } = require('../../../../../utils/assertions');
 const sinon = require('sinon');
 const express = require('express');
 const SessionService = require('../../../../../../core/server/services/auth/session/session-service');
 
 // Mimics express-session, where regenerate swaps in a brand new session object
 function createGetSession(initialProps = {}) {
-    return async function getSession(req) {
-        if (!req.session) {
-            const destroy = sinon.spy(cb => cb());
-            const regenerate = sinon.spy((cb) => {
-                req.session = {destroy, regenerate};
-                cb();
-            });
-            req.session = {destroy, regenerate, ...initialProps};
-        }
-        return req.session;
-    };
+  return async function getSession(req) {
+    if (!req.session) {
+      const destroy = sinon.spy((cb) => cb());
+      const regenerate = sinon.spy((cb) => {
+        req.session = { destroy, regenerate };
+        cb();
+      });
+      req.session = { destroy, regenerate, ...initialProps };
+    }
+    return req.session;
+  };
 }
 
 describe('SessionService', function () {
-    let getSettingsCache;
-    let urlUtils;
+  let getSettingsCache;
+  let urlUtils;
 
-    beforeEach(function () {
-        getSettingsCache = sinon.stub();
-        getSettingsCache.withArgs('require_email_mfa').returns(false);
-        getSettingsCache.withArgs('title').returns('Test Title');
-        getSettingsCache.withArgs('admin_session_secret').returns('secret-key');
-        urlUtils = {
-            getAdminUrl: sinon.stub().returns('https://admin.example.com'),
-            getSiteUrl: sinon.stub().returns('https://example.com'),
-            urlFor: sinon.stub().returns('https://example.com')
-        };
+  beforeEach(function () {
+    getSettingsCache = sinon.stub();
+    getSettingsCache.withArgs('require_email_mfa').returns(false);
+    getSettingsCache.withArgs('title').returns('Test Title');
+    getSettingsCache.withArgs('admin_session_secret').returns('secret-key');
+    urlUtils = {
+      getAdminUrl: sinon.stub().returns('https://admin.example.com'),
+      getSiteUrl: sinon.stub().returns('https://example.com'),
+      urlFor: sinon.stub().returns('https://example.com'),
+    };
+  });
+
+  it('Returns the user for the id stored on the session', async function () {
+    const getSession = createGetSession();
+
+    const findUserById = sinon.spy(async ({ id }) => ({ id }));
+    const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+
+    const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
+
+    const sessionService = SessionService({
+      getSession,
+      findUserById,
+      getOriginOfRequest,
+      getSettingsCache,
+      isStaffDeviceVerificationDisabled,
+      urlUtils,
     });
 
-    it('Returns the user for the id stored on the session', async function () {
-        const getSession = createGetSession();
+    const req = Object.create(express.request, {
+      ip: {
+        value: '0.0.0.0',
+      },
+      headers: {
+        value: {
+          cookie: 'thing',
+        },
+      },
+      get: {
+        value: () => 'https://admin.example.com',
+      },
+    });
+    const res = Object.create(express.response);
+    const user = { id: 'egg' };
 
-        const findUserById = sinon.spy(async ({id}) => ({id}));
-        const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+    await sessionService.createSessionForUser(req, res, user);
 
-        const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
+    assert.equal(req.session.user_id, 'egg');
 
-        const sessionService = SessionService({
-            getSession,
-            findUserById,
-            getOriginOfRequest,
-            getSettingsCache,
-            isStaffDeviceVerificationDisabled,
-            urlUtils
-        });
+    const actualUser = await sessionService.getUserForSession(req, res);
+    sinon.assert.calledWith(findUserById, sinon.match({ id: 'egg' }));
 
-        const req = Object.create(express.request, {
-            ip: {
-                value: '0.0.0.0'
-            },
-            headers: {
-                value: {
-                    cookie: 'thing'
-                }
-            },
-            get: {
-                value: () => 'https://admin.example.com'
-            }
-        });
-        const res = Object.create(express.response);
-        const user = {id: 'egg'};
+    const expectedUser = await findUserById.returnValues[0];
+    assert.equal(actualUser, expectedUser);
 
-        await sessionService.createSessionForUser(req, res, user);
+    await sessionService.removeUserForSession(req, res);
+    assert.equal(req.session.user_id, undefined);
 
-        assert.equal(req.session.user_id, 'egg');
+    const removedUser = await sessionService.getUserForSession(req, res);
+    assert.equal(removedUser, null);
+  });
 
-        const actualUser = await sessionService.getUserForSession(req, res);
-        sinon.assert.calledWith(findUserById, sinon.match({id: 'egg'}));
+  it('Throws an error when the csrf verification fails due to non-admin origin', async function () {
+    const getSession = async (req) => {
+      if (req.session) {
+        return req.session;
+      }
+      req.session = {
+        origin: 'https://admin.example.com',
+      };
+      return req.session;
+    };
+    const findUserById = sinon.spy(async ({ id }) => ({ id }));
+    const getOriginOfRequest = sinon.stub().returns('https://evil.com');
 
-        const expectedUser = await findUserById.returnValues[0];
-        assert.equal(actualUser, expectedUser);
-
-        await sessionService.removeUserForSession(req, res);
-        assert.equal(req.session.user_id, undefined);
-
-        const removedUser = await sessionService.getUserForSession(req, res);
-        assert.equal(removedUser, null);
+    const sessionService = SessionService({
+      getSession,
+      findUserById,
+      getOriginOfRequest,
+      urlUtils,
     });
 
-    it('Throws an error when the csrf verification fails due to non-admin origin', async function () {
-        const getSession = async (req) => {
-            if (req.session) {
-                return req.session;
-            }
-            req.session = {
-                origin: 'https://admin.example.com'
-            };
-            return req.session;
-        };
-        const findUserById = sinon.spy(async ({id}) => ({id}));
-        const getOriginOfRequest = sinon.stub().returns('https://evil.com');
+    const req = Object.create(express.request, {
+      ip: {
+        value: '0.0.0.0',
+      },
+      headers: {
+        value: {
+          cookie: 'thing',
+        },
+      },
+      get: {
+        value: () => 'https://evil.com',
+      },
+    });
+    const res = Object.create(express.response);
 
-        const sessionService = SessionService({
-            getSession,
-            findUserById,
-            getOriginOfRequest,
-            urlUtils
-        });
+    await assert.rejects(sessionService.getUserForSession(req, res), {
+      message: `Request made from incorrect origin. Expected 'https://admin.example.com' received 'https://evil.com'.`,
+    });
+  });
 
-        const req = Object.create(express.request, {
-            ip: {
-                value: '0.0.0.0'
-            },
-            headers: {
-                value: {
-                    cookie: 'thing'
-                }
-            },
-            get: {
-                value: () => 'https://evil.com'
-            }
-        });
-        const res = Object.create(express.response);
+  it("Doesn't throw an error when the csrf verification fails when bypassed", async function () {
+    const getSession = async (req) => {
+      if (req.session) {
+        return req.session;
+      }
+      req.session = {
+        origin: 'https://admin.example.com',
+      };
+      return req.session;
+    };
+    const findUserById = sinon.spy(async ({ id }) => ({ id }));
+    const getOriginOfRequest = sinon.stub().returns('https://other.example.com');
 
-        await assert.rejects(
-            sessionService.getUserForSession(req, res),
-            {message: `Request made from incorrect origin. Expected 'https://admin.example.com' received 'https://evil.com'.`}
-        );
+    const sessionService = SessionService({
+      getSession,
+      findUserById,
+      getOriginOfRequest,
+      urlUtils,
     });
 
-    it('Doesn\'t throw an error when the csrf verification fails when bypassed', async function () {
-        const getSession = async (req) => {
-            if (req.session) {
-                return req.session;
-            }
-            req.session = {
-                origin: 'https://admin.example.com'
-            };
-            return req.session;
-        };
-        const findUserById = sinon.spy(async ({id}) => ({id}));
-        const getOriginOfRequest = sinon.stub().returns('https://other.example.com');
+    const req = Object.create(express.request, {
+      ip: {
+        value: '0.0.0.0',
+      },
+      headers: {
+        value: {
+          cookie: 'thing',
+        },
+      },
+      get: {
+        value: () => 'https://other.example.com',
+      },
+    });
+    const res = Object.create(express.response);
+    res.locals = {
+      bypassCsrfProtection: true,
+    };
 
-        const sessionService = SessionService({
-            getSession,
-            findUserById,
-            getOriginOfRequest,
-            urlUtils
-        });
+    await sessionService.getUserForSession(req, res);
+  });
 
-        const req = Object.create(express.request, {
-            ip: {
-                value: '0.0.0.0'
-            },
-            headers: {
-                value: {
-                    cookie: 'thing'
-                }
-            },
-            get: {
-                value: () => 'https://other.example.com'
-            }
-        });
-        const res = Object.create(express.response);
-        res.locals = {
-            bypassCsrfProtection: true
-        };
+  it('Can verify a user session', async function () {
+    const getSession = createGetSession();
 
-        await sessionService.getUserForSession(req, res);
+    const findUserById = sinon.spy(async ({ id }) => ({ id }));
+    const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+
+    const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
+
+    const sessionService = SessionService({
+      getSession,
+      findUserById,
+      getOriginOfRequest,
+      getSettingsCache,
+      isStaffDeviceVerificationDisabled,
+      urlUtils,
     });
 
-    it('Can verify a user session', async function () {
-        const getSession = createGetSession();
+    const req = Object.create(express.request, {
+      ip: {
+        value: '0.0.0.0',
+      },
+      headers: {
+        value: {
+          cookie: 'thing',
+        },
+      },
+      get: {
+        value: () => 'https://admin.example.com',
+      },
+    });
+    const res = Object.create(express.response);
+    const user = { id: 'egg' };
 
-        const findUserById = sinon.spy(async ({id}) => ({id}));
-        const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+    await sessionService.createSessionForUser(req, res, user);
+    assert.equal(req.session.user_id, 'egg');
+    assert.equal(req.session.verified, undefined);
 
-        const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
+    await sessionService.verifySession(req, res);
+    assert.equal(req.session.verified, true);
 
-        const sessionService = SessionService({
-            getSession,
-            findUserById,
-            getOriginOfRequest,
-            getSettingsCache,
-            isStaffDeviceVerificationDisabled,
-            urlUtils
-        });
+    await sessionService.removeUserForSession(req, res);
+    assert.equal(req.session.user_id, undefined);
+    assert.equal(req.session.verified, true);
 
-        const req = Object.create(express.request, {
-            ip: {
-                value: '0.0.0.0'
-            },
-            headers: {
-                value: {
-                    cookie: 'thing'
-                }
-            },
-            get: {
-                value: () => 'https://admin.example.com'
-            }
-        });
-        const res = Object.create(express.response);
-        const user = {id: 'egg'};
+    await sessionService.createSessionForUser(req, res, user);
+    assert.equal(req.session.user_id, 'egg');
+    assert.equal(req.session.verified, true);
+  });
 
-        await sessionService.createSessionForUser(req, res, user);
-        assert.equal(req.session.user_id, 'egg');
-        assert.equal(req.session.verified, undefined);
+  it('#createSessionForUser regenerates the session even when no user was assigned to it', async function () {
+    const getSession = createGetSession();
 
-        await sessionService.verifySession(req, res);
-        assert.equal(req.session.verified, true);
+    const findUserById = sinon.spy(async ({ id }) => ({ id }));
+    const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
 
-        await sessionService.removeUserForSession(req, res);
-        assert.equal(req.session.user_id, undefined);
-        assert.equal(req.session.verified, true);
+    const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
 
-        await sessionService.createSessionForUser(req, res, user);
-        assert.equal(req.session.user_id, 'egg');
-        assert.equal(req.session.verified, true);
+    const sessionService = SessionService({
+      getSession,
+      findUserById,
+      getOriginOfRequest,
+      getSettingsCache,
+      isStaffDeviceVerificationDisabled,
+      urlUtils,
     });
 
-    it('#createSessionForUser regenerates the session even when no user was assigned to it', async function () {
-        const getSession = createGetSession();
+    const req = Object.create(express.request, {
+      ip: {
+        value: '0.0.0.0',
+      },
+      headers: {
+        value: {
+          cookie: 'thing',
+        },
+      },
+      get: {
+        value: () => 'https://admin.example.com',
+      },
+    });
+    const res = Object.create(express.response);
+    const user = { id: 'egg' };
 
-        const findUserById = sinon.spy(async ({id}) => ({id}));
-        const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+    const previousSession = await getSession(req);
+    await sessionService.createSessionForUser(req, res, user);
 
-        const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
+    sinon.assert.calledOnce(previousSession.regenerate);
+    assert.notEqual(req.session, previousSession);
+    assert.equal(req.session.user_id, 'egg');
+  });
 
-        const sessionService = SessionService({
-            getSession,
-            findUserById,
-            getOriginOfRequest,
-            getSettingsCache,
-            isStaffDeviceVerificationDisabled,
-            urlUtils
-        });
+  it('#createSessionForUser does not carry verification over to a different user', async function () {
+    const getSession = createGetSession();
 
-        const req = Object.create(express.request, {
-            ip: {
-                value: '0.0.0.0'
-            },
-            headers: {
-                value: {
-                    cookie: 'thing'
-                }
-            },
-            get: {
-                value: () => 'https://admin.example.com'
-            }
-        });
-        const res = Object.create(express.response);
-        const user = {id: 'egg'};
+    const findUserById = sinon.spy(async ({ id }) => ({ id }));
+    const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
 
-        const previousSession = await getSession(req);
-        await sessionService.createSessionForUser(req, res, user);
+    const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
 
-        sinon.assert.calledOnce(previousSession.regenerate);
-        assert.notEqual(req.session, previousSession);
-        assert.equal(req.session.user_id, 'egg');
+    const sessionService = SessionService({
+      getSession,
+      findUserById,
+      getOriginOfRequest,
+      getSettingsCache,
+      isStaffDeviceVerificationDisabled,
+      urlUtils,
     });
 
-    it('#createSessionForUser does not carry verification over to a different user', async function () {
-        const getSession = createGetSession();
+    const req = Object.create(express.request, {
+      ip: {
+        value: '0.0.0.0',
+      },
+      headers: {
+        value: {
+          cookie: 'thing',
+        },
+      },
+      get: {
+        value: () => 'https://admin.example.com',
+      },
+    });
+    const res = Object.create(express.response);
 
-        const findUserById = sinon.spy(async ({id}) => ({id}));
-        const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+    await sessionService.createSessionForUser(req, res, { id: 'egg' });
+    await sessionService.verifySession(req, res);
+    assert.equal(req.session.verified, true);
 
-        const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
+    // Signing in as another user without logging out first
+    await sessionService.createSessionForUser(req, res, { id: 'bacon' });
+    assert.equal(req.session.user_id, 'bacon');
+    assert.equal(req.session.verified, undefined);
+  });
 
-        const sessionService = SessionService({
-            getSession,
-            findUserById,
-            getOriginOfRequest,
-            getSettingsCache,
-            isStaffDeviceVerificationDisabled,
-            urlUtils
-        });
+  it('#createSessionForUser does not carry verification to a different user after logout', async function () {
+    const getSession = createGetSession();
 
-        const req = Object.create(express.request, {
-            ip: {
-                value: '0.0.0.0'
-            },
-            headers: {
-                value: {
-                    cookie: 'thing'
-                }
-            },
-            get: {
-                value: () => 'https://admin.example.com'
-            }
-        });
-        const res = Object.create(express.response);
+    const findUserById = sinon.spy(async ({ id }) => ({ id }));
+    const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
 
-        await sessionService.createSessionForUser(req, res, {id: 'egg'});
-        await sessionService.verifySession(req, res);
-        assert.equal(req.session.verified, true);
+    const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
 
-        // Signing in as another user without logging out first
-        await sessionService.createSessionForUser(req, res, {id: 'bacon'});
-        assert.equal(req.session.user_id, 'bacon');
-        assert.equal(req.session.verified, undefined);
+    const sessionService = SessionService({
+      getSession,
+      findUserById,
+      getOriginOfRequest,
+      getSettingsCache,
+      isStaffDeviceVerificationDisabled,
+      urlUtils,
     });
 
-    it('#createSessionForUser does not carry verification to a different user after logout', async function () {
-        const getSession = createGetSession();
+    const req = Object.create(express.request, {
+      ip: {
+        value: '0.0.0.0',
+      },
+      headers: {
+        value: {
+          cookie: 'thing',
+        },
+      },
+      get: {
+        value: () => 'https://admin.example.com',
+      },
+    });
+    const res = Object.create(express.response);
 
-        const findUserById = sinon.spy(async ({id}) => ({id}));
-        const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+    await sessionService.createSessionForUser(req, res, { id: 'egg' });
+    await sessionService.verifySession(req, res);
+    assert.equal(await sessionService.isVerifiedSession(req, res), true);
 
-        const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
+    // Trusted-device mode: logout keeps the verified flag
+    await sessionService.removeUserForSession(req, res);
+    assert.equal(req.session.user_id, undefined);
+    assert.equal(req.session.verified, true);
 
-        const sessionService = SessionService({
-            getSession,
-            findUserById,
-            getOriginOfRequest,
-            getSettingsCache,
-            isStaffDeviceVerificationDisabled,
-            urlUtils
-        });
+    // A different user signing in must verify again
+    await sessionService.createSessionForUser(req, res, { id: 'bacon' });
+    assert.equal(req.session.user_id, 'bacon');
+    assert.equal(req.session.verified, undefined);
+    assert.equal(await sessionService.isVerifiedSession(req, res), false);
+  });
 
-        const req = Object.create(express.request, {
-            ip: {
-                value: '0.0.0.0'
-            },
-            headers: {
-                value: {
-                    cookie: 'thing'
-                }
-            },
-            get: {
-                value: () => 'https://admin.example.com'
-            }
-        });
-        const res = Object.create(express.response);
+  it('#createSessionForUser keeps trusted-device verification for the same user after logout', async function () {
+    const getSession = createGetSession();
 
-        await sessionService.createSessionForUser(req, res, {id: 'egg'});
-        await sessionService.verifySession(req, res);
-        assert.equal(await sessionService.isVerifiedSession(req, res), true);
+    const findUserById = sinon.spy(async ({ id }) => ({ id }));
+    const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
 
-        // Trusted-device mode: logout keeps the verified flag
-        await sessionService.removeUserForSession(req, res);
-        assert.equal(req.session.user_id, undefined);
-        assert.equal(req.session.verified, true);
+    const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
 
-        // A different user signing in must verify again
-        await sessionService.createSessionForUser(req, res, {id: 'bacon'});
-        assert.equal(req.session.user_id, 'bacon');
-        assert.equal(req.session.verified, undefined);
-        assert.equal(await sessionService.isVerifiedSession(req, res), false);
+    const sessionService = SessionService({
+      getSession,
+      findUserById,
+      getOriginOfRequest,
+      getSettingsCache,
+      isStaffDeviceVerificationDisabled,
+      urlUtils,
     });
 
-    it('#createSessionForUser keeps trusted-device verification for the same user after logout', async function () {
-        const getSession = createGetSession();
+    const req = Object.create(express.request, {
+      ip: {
+        value: '0.0.0.0',
+      },
+      headers: {
+        value: {
+          cookie: 'thing',
+        },
+      },
+      get: {
+        value: () => 'https://admin.example.com',
+      },
+    });
+    const res = Object.create(express.response);
 
-        const findUserById = sinon.spy(async ({id}) => ({id}));
-        const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+    await sessionService.createSessionForUser(req, res, { id: 'egg' });
+    await sessionService.verifySession(req, res);
 
-        const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
+    await sessionService.removeUserForSession(req, res);
 
-        const sessionService = SessionService({
-            getSession,
-            findUserById,
-            getOriginOfRequest,
-            getSettingsCache,
-            isStaffDeviceVerificationDisabled,
-            urlUtils
-        });
+    await sessionService.createSessionForUser(req, res, { id: 'egg' });
+    assert.equal(req.session.user_id, 'egg');
+    assert.equal(req.session.verified, true);
+    assert.equal(await sessionService.isVerifiedSession(req, res), true);
+  });
 
-        const req = Object.create(express.request, {
-            ip: {
-                value: '0.0.0.0'
-            },
-            headers: {
-                value: {
-                    cookie: 'thing'
-                }
-            },
-            get: {
-                value: () => 'https://admin.example.com'
-            }
-        });
-        const res = Object.create(express.response);
-
-        await sessionService.createSessionForUser(req, res, {id: 'egg'});
-        await sessionService.verifySession(req, res);
-
-        await sessionService.removeUserForSession(req, res);
-
-        await sessionService.createSessionForUser(req, res, {id: 'egg'});
-        assert.equal(req.session.user_id, 'egg');
-        assert.equal(req.session.verified, true);
-        assert.equal(await sessionService.isVerifiedSession(req, res), true);
+  it('Treats legacy verified sessions without verified_user_id as unverified', async function () {
+    const getSession = createGetSession({
+      user_id: 'egg',
+      verified: true,
+      origin: 'https://admin.example.com',
     });
 
-    it('Treats legacy verified sessions without verified_user_id as unverified', async function () {
-        const getSession = createGetSession({user_id: 'egg', verified: true, origin: 'https://admin.example.com'});
+    const findUserById = sinon.spy(async ({ id }) => ({ id }));
+    const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
 
-        const findUserById = sinon.spy(async ({id}) => ({id}));
-        const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+    const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
 
-        const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
-
-        const sessionService = SessionService({
-            getSession,
-            findUserById,
-            getOriginOfRequest,
-            getSettingsCache,
-            isStaffDeviceVerificationDisabled,
-            urlUtils
-        });
-
-        const req = Object.create(express.request, {
-            ip: {
-                value: '0.0.0.0'
-            },
-            headers: {
-                value: {
-                    cookie: 'thing'
-                }
-            },
-            get: {
-                value: () => 'https://admin.example.com'
-            }
-        });
-        const res = Object.create(express.response);
-
-        assert.equal(await sessionService.isVerifiedSession(req, res), false);
-
-        // Verification is not carried into a new login either
-        await sessionService.createSessionForUser(req, res, {id: 'egg'});
-        assert.equal(req.session.verified, undefined);
-        assert.equal(await sessionService.isVerifiedSession(req, res), false);
+    const sessionService = SessionService({
+      getSession,
+      findUserById,
+      getOriginOfRequest,
+      getSettingsCache,
+      isStaffDeviceVerificationDisabled,
+      urlUtils,
     });
 
-    it('#createSessionForUser verifies session when valid token is provided on request', async function () {
-        const getSession = createGetSession();
+    const req = Object.create(express.request, {
+      ip: {
+        value: '0.0.0.0',
+      },
+      headers: {
+        value: {
+          cookie: 'thing',
+        },
+      },
+      get: {
+        value: () => 'https://admin.example.com',
+      },
+    });
+    const res = Object.create(express.response);
 
-        const findUserById = sinon.spy(async ({id}) => ({id}));
-        const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+    assert.equal(await sessionService.isVerifiedSession(req, res), false);
 
-        const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
+    // Verification is not carried into a new login either
+    await sessionService.createSessionForUser(req, res, { id: 'egg' });
+    assert.equal(req.session.verified, undefined);
+    assert.equal(await sessionService.isVerifiedSession(req, res), false);
+  });
 
-        const sessionService = SessionService({
-            getSession,
-            findUserById,
-            getOriginOfRequest,
-            getSettingsCache,
-            isStaffDeviceVerificationDisabled,
-            urlUtils
-        });
+  it('#createSessionForUser verifies session when valid token is provided on request', async function () {
+    const getSession = createGetSession();
 
-        const req = Object.create(express.request, {
-            ip: {
-                value: '0.0.0.0'
-            },
-            headers: {
-                value: {
-                    cookie: 'thing'
-                }
-            },
-            get: {
-                value: () => 'https://admin.example.com'
-            }
-        });
-        const res = Object.create(express.response);
-        const user = {id: 'egg'};
+    const findUserById = sinon.spy(async ({ id }) => ({ id }));
+    const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
 
-        // Generate a valid token for the same session challenge
-        const previousSession = await getSession(req);
-        previousSession.user_id = 'egg';
-        const validToken = await sessionService.generateAuthCodeForUser(req, res);
+    const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
 
-        // Now create session with token on request body
-        req.body = {token: validToken};
-        await sessionService.createSessionForUser(req, res, user);
-
-        assert.equal(req.session.user_id, 'egg');
-        assert.equal(req.session.verified, true);
+    const sessionService = SessionService({
+      getSession,
+      findUserById,
+      getOriginOfRequest,
+      getSettingsCache,
+      isStaffDeviceVerificationDisabled,
+      urlUtils,
     });
 
-    it('#createSessionForUser does not verify session when invalid token is provided on request', async function () {
-        const getSession = createGetSession();
+    const req = Object.create(express.request, {
+      ip: {
+        value: '0.0.0.0',
+      },
+      headers: {
+        value: {
+          cookie: 'thing',
+        },
+      },
+      get: {
+        value: () => 'https://admin.example.com',
+      },
+    });
+    const res = Object.create(express.response);
+    const user = { id: 'egg' };
 
-        const findUserById = sinon.spy(async ({id}) => ({id}));
-        const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+    // Generate a valid token for the same session challenge
+    const previousSession = await getSession(req);
+    previousSession.user_id = 'egg';
+    const validToken = await sessionService.generateAuthCodeForUser(req, res);
 
-        const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
+    // Now create session with token on request body
+    req.body = { token: validToken };
+    await sessionService.createSessionForUser(req, res, user);
 
-        const sessionService = SessionService({
-            getSession,
-            findUserById,
-            getOriginOfRequest,
-            getSettingsCache,
-            isStaffDeviceVerificationDisabled,
-            urlUtils
-        });
+    assert.equal(req.session.user_id, 'egg');
+    assert.equal(req.session.verified, true);
+  });
 
-        const req = Object.create(express.request, {
-            ip: {
-                value: '0.0.0.0'
-            },
-            headers: {
-                value: {
-                    cookie: 'thing'
-                }
-            },
-            get: {
-                value: () => 'https://admin.example.com'
-            }
-        });
-        const res = Object.create(express.response);
-        const user = {id: 'egg'};
+  it('#createSessionForUser does not verify session when invalid token is provided on request', async function () {
+    const getSession = createGetSession();
 
-        // Provide an invalid token on request body
-        req.body = {token: '000000'};
-        await sessionService.createSessionForUser(req, res, user);
+    const findUserById = sinon.spy(async ({ id }) => ({ id }));
+    const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
 
-        assert.equal(req.session.user_id, 'egg');
-        assert.equal(req.session.verified, undefined);
+    const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
+
+    const sessionService = SessionService({
+      getSession,
+      findUserById,
+      getOriginOfRequest,
+      getSettingsCache,
+      isStaffDeviceVerificationDisabled,
+      urlUtils,
     });
 
-    it('#createSessionForUser does not verify session when token belongs to a different session challenge', async function () {
-        const getSession = createGetSession();
+    const req = Object.create(express.request, {
+      ip: {
+        value: '0.0.0.0',
+      },
+      headers: {
+        value: {
+          cookie: 'thing',
+        },
+      },
+      get: {
+        value: () => 'https://admin.example.com',
+      },
+    });
+    const res = Object.create(express.response);
+    const user = { id: 'egg' };
 
-        const findUserById = sinon.spy(async ({id}) => ({id}));
-        const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+    // Provide an invalid token on request body
+    req.body = { token: '000000' };
+    await sessionService.createSessionForUser(req, res, user);
 
-        const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
+    assert.equal(req.session.user_id, 'egg');
+    assert.equal(req.session.verified, undefined);
+  });
 
-        const sessionService = SessionService({
-            getSession,
-            findUserById,
-            getOriginOfRequest,
-            getSettingsCache,
-            isStaffDeviceVerificationDisabled,
-            urlUtils
-        });
+  it('#createSessionForUser does not verify session when token belongs to a different session challenge', async function () {
+    const getSession = createGetSession();
 
-        const req = Object.create(express.request, {
-            ip: {
-                value: '0.0.0.0'
-            },
-            headers: {
-                value: {
-                    cookie: 'thing'
-                }
-            },
-            get: {
-                value: () => 'https://admin.example.com'
-            }
-        });
-        const res = Object.create(express.response);
-        const user = {id: 'egg'};
+    const findUserById = sinon.spy(async ({ id }) => ({ id }));
+    const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
 
-        // Generate token from a different challenge/session context
-        const tokenReq = Object.create(express.request, {
-            ip: {
-                value: '0.0.0.0'
-            },
-            headers: {
-                value: {
-                    cookie: 'thing'
-                }
-            },
-            get: {
-                value: () => 'https://admin.example.com'
-            }
-        });
-        tokenReq.session = {user_id: 'egg'};
-        const validTokenForOtherSession = await sessionService.generateAuthCodeForUser(tokenReq, res);
+    const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
 
-        req.body = {token: validTokenForOtherSession};
-        await sessionService.createSessionForUser(req, res, user);
-
-        assert.equal(req.session.user_id, 'egg');
-        assert.equal(req.session.verified, undefined);
+    const sessionService = SessionService({
+      getSession,
+      findUserById,
+      getOriginOfRequest,
+      getSettingsCache,
+      isStaffDeviceVerificationDisabled,
+      urlUtils,
     });
 
-    it('Generates a valid auth code and verifies it correctly', async function () {
-        const getSession = async (req) => {
-            if (req.session) {
-                return req.session;
-            }
-            req.session = {
-                destroy: sinon.spy(cb => cb()),
-                user_id: 'user-123',
-                origin: 'https://admin.example.com'
-            };
-            return req.session;
-        };
-        const findUserById = sinon.spy(async ({id}) => ({id}));
-        const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+    const req = Object.create(express.request, {
+      ip: {
+        value: '0.0.0.0',
+      },
+      headers: {
+        value: {
+          cookie: 'thing',
+        },
+      },
+      get: {
+        value: () => 'https://admin.example.com',
+      },
+    });
+    const res = Object.create(express.response);
+    const user = { id: 'egg' };
 
-        const sessionService = SessionService({
-            getSession,
-            findUserById,
-            getOriginOfRequest,
-            getSettingsCache,
-            urlUtils
-        });
+    // Generate token from a different challenge/session context
+    const tokenReq = Object.create(express.request, {
+      ip: {
+        value: '0.0.0.0',
+      },
+      headers: {
+        value: {
+          cookie: 'thing',
+        },
+      },
+      get: {
+        value: () => 'https://admin.example.com',
+      },
+    });
+    tokenReq.session = { user_id: 'egg' };
+    const validTokenForOtherSession = await sessionService.generateAuthCodeForUser(tokenReq, res);
 
-        const req = Object.create(express.request, {
-            ip: {
-                value: '0.0.0.0'
-            },
-            headers: {
-                value: {
-                    cookie: 'thing'
-                }
-            },
-            get: {
-                value: () => 'Fake'
-            }
-        });
-        const res = Object.create(express.response);
+    req.body = { token: validTokenForOtherSession };
+    await sessionService.createSessionForUser(req, res, user);
 
-        // Generate the auth code
-        const authCode = await sessionService.generateAuthCodeForUser(req, res);
-        assertExists(authCode);
+    assert.equal(req.session.user_id, 'egg');
+    assert.equal(req.session.verified, undefined);
+  });
 
-        req.body = {
-            token: authCode
-        };
+  it('Generates a valid auth code and verifies it correctly', async function () {
+    const getSession = async (req) => {
+      if (req.session) {
+        return req.session;
+      }
+      req.session = {
+        destroy: sinon.spy((cb) => cb()),
+        user_id: 'user-123',
+        origin: 'https://admin.example.com',
+      };
+      return req.session;
+    };
+    const findUserById = sinon.spy(async ({ id }) => ({ id }));
+    const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
 
-        // Verify the auth code
-        const isValid = await sessionService.verifyAuthCodeForUser(req, res);
-        assert.equal(isValid, true);
-
-        // A code can only be used once
-        const isValidOnSecondUse = await sessionService.verifyAuthCodeForUser(req, res);
-        assert.equal(isValidOnSecondUse, false);
+    const sessionService = SessionService({
+      getSession,
+      findUserById,
+      getOriginOfRequest,
+      getSettingsCache,
+      urlUtils,
     });
 
-    it('Fails to verify an incorrect auth code', async function () {
-        const getSession = async (req) => {
-            if (req.session) {
-                return req.session;
-            }
-            req.session = {
-                destroy: sinon.spy(cb => cb()),
-                user_id: 'user-123',
-                origin: 'https://admin.example.com'
-            };
-            return req.session;
-        };
-        const findUserById = sinon.spy(async ({id}) => ({id}));
-        const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+    const req = Object.create(express.request, {
+      ip: {
+        value: '0.0.0.0',
+      },
+      headers: {
+        value: {
+          cookie: 'thing',
+        },
+      },
+      get: {
+        value: () => 'Fake',
+      },
+    });
+    const res = Object.create(express.response);
 
-        const sessionService = SessionService({
-            getSession,
-            findUserById,
-            getOriginOfRequest,
-            getSettingsCache,
-            urlUtils
-        });
+    // Generate the auth code
+    const authCode = await sessionService.generateAuthCodeForUser(req, res);
+    assertExists(authCode);
 
-        const req = Object.create(express.request, {
-            ip: {
-                value: '0.0.0.0'
-            },
-            headers: {
-                value: {
-                    cookie: 'thing'
-                }
-            },
-            get: {
-                value: () => 'Fake'
-            }
-        });
-        const res = Object.create(express.response);
+    req.body = {
+      token: authCode,
+    };
 
-        // Generate the auth code
-        const authCode = await sessionService.generateAuthCodeForUser(req, res);
-        assertExists(authCode);
+    // Verify the auth code
+    const isValid = await sessionService.verifyAuthCodeForUser(req, res);
+    assert.equal(isValid, true);
 
-        req.body = {
-            token: 'wrong-code'
-        };
+    // A code can only be used once
+    const isValidOnSecondUse = await sessionService.verifyAuthCodeForUser(req, res);
+    assert.equal(isValidOnSecondUse, false);
+  });
 
-        // Verify an incorrect auth code
-        const isValid = await sessionService.verifyAuthCodeForUser(req, res);
-        assert.equal(isValid, false);
+  it('Fails to verify an incorrect auth code', async function () {
+    const getSession = async (req) => {
+      if (req.session) {
+        return req.session;
+      }
+      req.session = {
+        destroy: sinon.spy((cb) => cb()),
+        user_id: 'user-123',
+        origin: 'https://admin.example.com',
+      };
+      return req.session;
+    };
+    const findUserById = sinon.spy(async ({ id }) => ({ id }));
+    const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+
+    const sessionService = SessionService({
+      getSession,
+      findUserById,
+      getOriginOfRequest,
+      getSettingsCache,
+      urlUtils,
     });
 
-    it('Generates a different auth code for a different secret', async function () {
-        const getSession = async (req) => {
-            if (req.session) {
-                return req.session;
-            }
-            req.session = {
-                destroy: sinon.spy(cb => cb()),
-                user_id: 'user-123'
-            };
-            return req.session;
-        };
-        const findUserById = sinon.spy(async ({id}) => ({id}));
-        const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+    const req = Object.create(express.request, {
+      ip: {
+        value: '0.0.0.0',
+      },
+      headers: {
+        value: {
+          cookie: 'thing',
+        },
+      },
+      get: {
+        value: () => 'Fake',
+      },
+    });
+    const res = Object.create(express.response);
 
-        const req = Object.create(express.request, {
-            ip: {
-                value: '0.0.0.0'
-            },
-            headers: {
-                value: {
-                    cookie: 'thing'
-                }
-            },
-            get: {
-                value: () => 'https://admin.example.com'
-            }
-        });
-        const res = Object.create(express.response);
+    // Generate the auth code
+    const authCode = await sessionService.generateAuthCodeForUser(req, res);
+    assertExists(authCode);
 
-        // Test for first secret
-        const getSecretFirst = sinon.stub().returns('secret-key');
-        const sessionServiceFirst = SessionService({
-            getSession,
-            findUserById,
-            getOriginOfRequest,
-            getSettingsCache: getSecretFirst,
-            urlUtils
-        });
+    req.body = {
+      token: 'wrong-code',
+    };
 
-        const authCodeFirst = await sessionServiceFirst.generateAuthCodeForUser(req, res);
+    // Verify an incorrect auth code
+    const isValid = await sessionService.verifyAuthCodeForUser(req, res);
+    assert.equal(isValid, false);
+  });
 
-        // Test for second secret
-        const getSecretSecond = sinon.stub().returns('different-secret-key');
-        const sessionServiceSecond = SessionService({
-            getSession,
-            findUserById,
-            getOriginOfRequest,
-            getSettingsCache: getSecretSecond,
-            urlUtils
-        });
+  it('Generates a different auth code for a different secret', async function () {
+    const getSession = async (req) => {
+      if (req.session) {
+        return req.session;
+      }
+      req.session = {
+        destroy: sinon.spy((cb) => cb()),
+        user_id: 'user-123',
+      };
+      return req.session;
+    };
+    const findUserById = sinon.spy(async ({ id }) => ({ id }));
+    const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
 
-        const authCodeSecond = await sessionServiceSecond.generateAuthCodeForUser(req, res);
-        assert.notEqual(authCodeFirst, authCodeSecond);
+    const req = Object.create(express.request, {
+      ip: {
+        value: '0.0.0.0',
+      },
+      headers: {
+        value: {
+          cookie: 'thing',
+        },
+      },
+      get: {
+        value: () => 'https://admin.example.com',
+      },
+    });
+    const res = Object.create(express.response);
+
+    // Test for first secret
+    const getSecretFirst = sinon.stub().returns('secret-key');
+    const sessionServiceFirst = SessionService({
+      getSession,
+      findUserById,
+      getOriginOfRequest,
+      getSettingsCache: getSecretFirst,
+      urlUtils,
     });
 
-    it('sends an email with the auth code', async function () {
-        const getSession = async (req) => {
-            if (req.session) {
-                return req.session;
-            }
-            req.session = {
-                user_id: 'user-123',
-                ip: '0.0.0.0',
-                user_agent: 'Fake',
-                origin: 'https://admin.example.com'
-            };
-            return req.session;
-        };
+    const authCodeFirst = await sessionServiceFirst.generateAuthCodeForUser(req, res);
 
-        const findUserById = sinon.stub().resolves({
-            id: 'user-123',
-            get: sinon.stub().returns('test@example.com')
-        });
-
-        const mailer = {
-            send: sinon.stub().resolves()
-        };
-
-        const getBlogLogo = sinon.stub().returns('logo.png');
-        const localUrlUtils = {
-            getAdminUrl: sinon.stub().returns('https://admin.example.com'),
-            getSiteUrl: sinon.stub().returns('https://example.com'),
-            urlFor: sinon.stub().returns('https://example.com')
-        };
-
-        const t = sinon.stub().callsFake(text => text);
-        const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
-
-        const sessionService = SessionService({
-            getSession,
-            findUserById,
-            getOriginOfRequest,
-            getSettingsCache,
-            getBlogLogo,
-            urlUtils: localUrlUtils,
-            mailer,
-            t
-        });
-
-        const req = Object.create(express.request, {
-            headers: {
-                value: {
-                    origin: 'https://admin.example.com'
-                }
-            }
-        });
-        const res = Object.create(express.response);
-
-        await sessionService.sendAuthCodeToUser(req, res);
-
-        sinon.assert.calledOnce(mailer.send);
-        const emailArgs = mailer.send.firstCall.args[0];
-        assert.equal(emailArgs.to, 'test@example.com');
-        assert.match(emailArgs.subject, /Ghost sign in verification code/);
+    // Test for second secret
+    const getSecretSecond = sinon.stub().returns('different-secret-key');
+    const sessionServiceSecond = SessionService({
+      getSession,
+      findUserById,
+      getOriginOfRequest,
+      getSettingsCache: getSecretSecond,
+      urlUtils,
     });
 
-    it('throws an error when mail fails to send', async function () {
-        const getSession = async (req) => {
-            if (req.session) {
-                return req.session;
-            }
-            req.session = {
-                user_id: 'user-123',
-                ip: '0.0.0.0',
-                user_agent: 'Fake',
-                origin: 'https://admin.example.com'
-            };
-            return req.session;
-        };
+    const authCodeSecond = await sessionServiceSecond.generateAuthCodeForUser(req, res);
+    assert.notEqual(authCodeFirst, authCodeSecond);
+  });
 
-        const findUserById = sinon.stub().resolves({
-            id: 'user-123',
-            get: sinon.stub().returns('test@example.com')
-        });
+  it('sends an email with the auth code', async function () {
+    const getSession = async (req) => {
+      if (req.session) {
+        return req.session;
+      }
+      req.session = {
+        user_id: 'user-123',
+        ip: '0.0.0.0',
+        user_agent: 'Fake',
+        origin: 'https://admin.example.com',
+      };
+      return req.session;
+    };
 
-        const mailer = {
-            send: sinon.stub().rejects(new Error('Mail error'))
-        };
-
-        const getBlogLogo = sinon.stub().returns('logo.png');
-        const localUrlUtils = {
-            getAdminUrl: sinon.stub().returns('https://admin.example.com'),
-            getSiteUrl: sinon.stub().returns('https://example.com'),
-            urlFor: sinon.stub().returns('https://example.com')
-        };
-
-        const t = sinon.stub().callsFake(text => text);
-        const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
-
-        const sessionService = SessionService({
-            getSession,
-            findUserById,
-            getOriginOfRequest,
-            getSettingsCache,
-            getBlogLogo,
-            urlUtils: localUrlUtils,
-            mailer,
-            t
-        });
-
-        const req = Object.create(express.request, {
-            headers: {
-                value: {
-                    origin: 'https://admin.example.com'
-                }
-            }
-        });
-        const res = Object.create(express.response);
-
-        await assert.rejects(sessionService.sendAuthCodeToUser(req, res), {
-            message: 'Failed to send email. Please check your site configuration and try again.'
-        });
+    const findUserById = sinon.stub().resolves({
+      id: 'user-123',
+      get: sinon.stub().returns('test@example.com'),
     });
 
-    it('Can create a verified session for SSO', async function () {
-        const getSession = createGetSession();
-        const findUserById = sinon.spy(async ({id}) => ({id}));
-        const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+    const mailer = {
+      send: sinon.stub().resolves(),
+    };
 
-        const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
+    const getBlogLogo = sinon.stub().returns('logo.png');
+    const localUrlUtils = {
+      getAdminUrl: sinon.stub().returns('https://admin.example.com'),
+      getSiteUrl: sinon.stub().returns('https://example.com'),
+      urlFor: sinon.stub().returns('https://example.com'),
+    };
 
-        const sessionService = SessionService({
-            getSession,
-            findUserById,
-            getOriginOfRequest,
-            isStaffDeviceVerificationDisabled,
-            urlUtils
-        });
+    const t = sinon.stub().callsFake((text) => text);
+    const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
 
-        const req = Object.create(express.request, {
-            ip: {
-                value: '0.0.0.0'
-            },
-            headers: {
-                value: {
-                    cookie: 'thing'
-                }
-            },
-            get: {
-                value: () => 'https://admin.example.com'
-            }
-        });
-        const res = Object.create(express.response);
-        const user = {id: 'egg'};
-
-        await sessionService.createVerifiedSessionForUser(req, res, user);
-
-        assert.equal(req.session.user_id, 'egg');
-        assert.equal(req.session.verified, true);
-        // Verification must be bound to the SSO user, or isVerifiedSession
-        // would reject it and lock the user into a re-verify loop
-        assert.equal(req.session.verified_user_id, 'egg');
-        assert.equal(await sessionService.isVerifiedSession(req, res), true);
+    const sessionService = SessionService({
+      getSession,
+      findUserById,
+      getOriginOfRequest,
+      getSettingsCache,
+      getBlogLogo,
+      urlUtils: localUrlUtils,
+      mailer,
+      t,
     });
 
-    it('Throws if the user id is invalid', async function () {
-        const getSession = async (req) => {
-            if (req.session) {
-                return req.session;
-            }
-            req.session = {
-                user_id: 'user-123',
-                ip: '0.0.0.0',
-                user_agent: 'Fake',
-                origin: 'https://admin.example.com'
-            };
-            return req.session;
-        };
+    const req = Object.create(express.request, {
+      headers: {
+        value: {
+          origin: 'https://admin.example.com',
+        },
+      },
+    });
+    const res = Object.create(express.response);
 
-        const findUserById = sinon.stub().rejects(new Error('User not found'));
+    await sessionService.sendAuthCodeToUser(req, res);
 
-        const mailer = {
-            send: sinon.stub().resolves()
-        };
+    sinon.assert.calledOnce(mailer.send);
+    const emailArgs = mailer.send.firstCall.args[0];
+    assert.equal(emailArgs.to, 'test@example.com');
+    assert.match(emailArgs.subject, /Ghost sign in verification code/);
+  });
 
-        const getBlogLogo = sinon.stub().returns('logo.png');
-        const localUrlUtils = {
-            getAdminUrl: sinon.stub().returns('https://admin.example.com'),
-            getSiteUrl: sinon.stub().returns('https://example.com'),
-            urlFor: sinon.stub().returns('https://example.com')
-        };
+  it('throws an error when mail fails to send', async function () {
+    const getSession = async (req) => {
+      if (req.session) {
+        return req.session;
+      }
+      req.session = {
+        user_id: 'user-123',
+        ip: '0.0.0.0',
+        user_agent: 'Fake',
+        origin: 'https://admin.example.com',
+      };
+      return req.session;
+    };
 
-        const t = sinon.stub().callsFake(text => text);
-        const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
-
-        const sessionService = SessionService({
-            getSession,
-            findUserById,
-            getOriginOfRequest,
-            getSettingsCache,
-            getBlogLogo,
-            urlUtils: localUrlUtils,
-            mailer,
-            t
-        });
-
-        const req = Object.create(express.request, {
-            headers: {
-                value: {
-                    origin: 'https://admin.example.com'
-                }
-            }
-        });
-        const res = Object.create(express.response);
-
-        await assert.rejects(sessionService.sendAuthCodeToUser(req, res), {
-            message: 'Could not fetch user from the session.'
-        });
+    const findUserById = sinon.stub().resolves({
+      id: 'user-123',
+      get: sinon.stub().returns('test@example.com'),
     });
 
-    it('Can remove verified session', async function () {
-        const getSession = createGetSession();
+    const mailer = {
+      send: sinon.stub().rejects(new Error('Mail error')),
+    };
 
-        const findUserById = sinon.spy(async ({id}) => ({id}));
-        const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+    const getBlogLogo = sinon.stub().returns('logo.png');
+    const localUrlUtils = {
+      getAdminUrl: sinon.stub().returns('https://admin.example.com'),
+      getSiteUrl: sinon.stub().returns('https://example.com'),
+      urlFor: sinon.stub().returns('https://example.com'),
+    };
 
-        const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
-        getSettingsCache.withArgs('require_email_mfa').returns(true);
+    const t = sinon.stub().callsFake((text) => text);
+    const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
 
-        const sessionService = SessionService({
-            getSession,
-            findUserById,
-            getOriginOfRequest,
-            getSettingsCache,
-            isStaffDeviceVerificationDisabled,
-            urlUtils
-        });
-
-        const req = Object.create(express.request, {
-            ip: {
-                value: '0.0.0.0'
-            },
-            headers: {
-                value: {
-                    cookie: 'thing'
-                }
-            },
-            get: {
-                value: () => 'https://admin.example.com'
-            }
-        });
-        const res = Object.create(express.response);
-        const user = {id: 'egg'};
-
-        await sessionService.createSessionForUser(req, res, user);
-        assert.equal(req.session.user_id, 'egg');
-        assert.equal(req.session.verified, undefined);
-
-        await sessionService.verifySession(req, res);
-        assert.equal(req.session.verified, true);
-
-        await sessionService.removeUserForSession(req, res);
-        assert.equal(req.session.user_id, undefined);
-        assert.equal(req.session.verified, undefined);
-
-        await sessionService.createSessionForUser(req, res, user);
-        assert.equal(req.session.user_id, 'egg');
-        assert.equal(req.session.verified, undefined);
+    const sessionService = SessionService({
+      getSession,
+      findUserById,
+      getOriginOfRequest,
+      getSettingsCache,
+      getBlogLogo,
+      urlUtils: localUrlUtils,
+      mailer,
+      t,
     });
 
-    it('Rejects sendAuthCodeToUser when origin does not match admin URL', async function () {
-        const getSession = async (req) => {
-            if (req.session) {
-                return req.session;
-            }
-            req.session = {
-                user_id: 'user-123',
-                ip: '0.0.0.0',
-                user_agent: 'Fake',
-                origin: 'https://evil.com'
-            };
-            return req.session;
-        };
+    const req = Object.create(express.request, {
+      headers: {
+        value: {
+          origin: 'https://admin.example.com',
+        },
+      },
+    });
+    const res = Object.create(express.response);
 
-        const findUserById = sinon.stub().resolves({
-            id: 'user-123',
-            get: sinon.stub().returns('test@example.com')
-        });
+    await assert.rejects(sessionService.sendAuthCodeToUser(req, res), {
+      message: 'Failed to send email. Please check your site configuration and try again.',
+    });
+  });
 
-        const mailer = {
-            send: sinon.stub().resolves()
-        };
+  it('Can create a verified session for SSO', async function () {
+    const getSession = createGetSession();
+    const findUserById = sinon.spy(async ({ id }) => ({ id }));
+    const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
 
-        const getBlogLogo = sinon.stub().returns('logo.png');
-        const getOriginOfRequest = sinon.stub().returns('https://evil.com');
+    const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
 
-        const sessionService = SessionService({
-            getSession,
-            findUserById,
-            getOriginOfRequest,
-            getSettingsCache,
-            getBlogLogo,
-            urlUtils,
-            mailer,
-            t: sinon.stub().callsFake(text => text)
-        });
-
-        const req = Object.create(express.request, {
-            headers: {
-                value: {
-                    origin: 'https://evil.com'
-                }
-            }
-        });
-        const res = Object.create(express.response);
-
-        await assert.rejects(
-            sessionService.sendAuthCodeToUser(req, res),
-            {message: `Request made from incorrect origin. Expected 'https://admin.example.com' received 'https://evil.com'.`}
-        );
-
-        assert.equal(mailer.send.callCount, 0, 'No email should be sent');
+    const sessionService = SessionService({
+      getSession,
+      findUserById,
+      getOriginOfRequest,
+      isStaffDeviceVerificationDisabled,
+      urlUtils,
     });
 
-    it('Falls back to site URL when no admin URL is configured', async function () {
-        const getSession = async (req) => {
-            if (req.session) {
-                return req.session;
-            }
-            req.session = {
-                user_id: 'user-123',
-                origin: 'https://example.com'
-            };
-            return req.session;
-        };
+    const req = Object.create(express.request, {
+      ip: {
+        value: '0.0.0.0',
+      },
+      headers: {
+        value: {
+          cookie: 'thing',
+        },
+      },
+      get: {
+        value: () => 'https://admin.example.com',
+      },
+    });
+    const res = Object.create(express.response);
+    const user = { id: 'egg' };
 
-        const findUserById = sinon.spy(async ({id}) => ({id}));
-        const getOriginOfRequest = sinon.stub().returns('https://example.com');
-        const siteOnlyUrlUtils = {
-            getAdminUrl: sinon.stub().returns(null),
-            getSiteUrl: sinon.stub().returns('https://example.com'),
-            urlFor: sinon.stub().returns('https://example.com')
-        };
+    await sessionService.createVerifiedSessionForUser(req, res, user);
 
-        const sessionService = SessionService({
-            getSession,
-            findUserById,
-            getOriginOfRequest,
-            getSettingsCache,
-            urlUtils: siteOnlyUrlUtils
-        });
+    assert.equal(req.session.user_id, 'egg');
+    assert.equal(req.session.verified, true);
+    // Verification must be bound to the SSO user, or isVerifiedSession
+    // would reject it and lock the user into a re-verify loop
+    assert.equal(req.session.verified_user_id, 'egg');
+    assert.equal(await sessionService.isVerifiedSession(req, res), true);
+  });
 
-        const req = Object.create(express.request, {
-            ip: {
-                value: '0.0.0.0'
-            },
-            headers: {
-                value: {
-                    cookie: 'thing'
-                }
-            },
-            get: {
-                value: () => 'https://example.com'
-            }
-        });
-        const res = Object.create(express.response);
+  it('Throws if the user id is invalid', async function () {
+    const getSession = async (req) => {
+      if (req.session) {
+        return req.session;
+      }
+      req.session = {
+        user_id: 'user-123',
+        ip: '0.0.0.0',
+        user_agent: 'Fake',
+        origin: 'https://admin.example.com',
+      };
+      return req.session;
+    };
 
-        const user = await sessionService.getUserForSession(req, res);
-        assert.deepEqual(user, {id: 'user-123'});
+    const findUserById = sinon.stub().rejects(new Error('User not found'));
+
+    const mailer = {
+      send: sinon.stub().resolves(),
+    };
+
+    const getBlogLogo = sinon.stub().returns('logo.png');
+    const localUrlUtils = {
+      getAdminUrl: sinon.stub().returns('https://admin.example.com'),
+      getSiteUrl: sinon.stub().returns('https://example.com'),
+      urlFor: sinon.stub().returns('https://example.com'),
+    };
+
+    const t = sinon.stub().callsFake((text) => text);
+    const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+
+    const sessionService = SessionService({
+      getSession,
+      findUserById,
+      getOriginOfRequest,
+      getSettingsCache,
+      getBlogLogo,
+      urlUtils: localUrlUtils,
+      mailer,
+      t,
     });
 
-    describe('isVerificationRequired', function () {
-        it('returns true when require_email_mfa is true', async function () {
-            getSettingsCache.withArgs('require_email_mfa').returns(true);
-
-            const sessionService = SessionService({
-                getSettingsCache
-            });
-
-            const result = sessionService.isVerificationRequired();
-            assert.equal(result, true);
-        });
-
-        it('returns false when require_email_mfa is false', async function () {
-            getSettingsCache.withArgs('require_email_mfa').returns(false);
-
-            const sessionService = SessionService({
-                getSettingsCache
-            });
-
-            const result = sessionService.isVerificationRequired();
-            assert.equal(result, false);
-        });
-
-        it('returns false when require_email_mfa is not set', async function () {
-            getSettingsCache.withArgs('require_email_mfa').returns(undefined);
-
-            const sessionService = SessionService({
-                getSettingsCache
-            });
-
-            const result = sessionService.isVerificationRequired();
-            assert.equal(result, false);
-        });
+    const req = Object.create(express.request, {
+      headers: {
+        value: {
+          origin: 'https://admin.example.com',
+        },
+      },
     });
+    const res = Object.create(express.response);
+
+    await assert.rejects(sessionService.sendAuthCodeToUser(req, res), {
+      message: 'Could not fetch user from the session.',
+    });
+  });
+
+  it('Can remove verified session', async function () {
+    const getSession = createGetSession();
+
+    const findUserById = sinon.spy(async ({ id }) => ({ id }));
+    const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+
+    const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
+    getSettingsCache.withArgs('require_email_mfa').returns(true);
+
+    const sessionService = SessionService({
+      getSession,
+      findUserById,
+      getOriginOfRequest,
+      getSettingsCache,
+      isStaffDeviceVerificationDisabled,
+      urlUtils,
+    });
+
+    const req = Object.create(express.request, {
+      ip: {
+        value: '0.0.0.0',
+      },
+      headers: {
+        value: {
+          cookie: 'thing',
+        },
+      },
+      get: {
+        value: () => 'https://admin.example.com',
+      },
+    });
+    const res = Object.create(express.response);
+    const user = { id: 'egg' };
+
+    await sessionService.createSessionForUser(req, res, user);
+    assert.equal(req.session.user_id, 'egg');
+    assert.equal(req.session.verified, undefined);
+
+    await sessionService.verifySession(req, res);
+    assert.equal(req.session.verified, true);
+
+    await sessionService.removeUserForSession(req, res);
+    assert.equal(req.session.user_id, undefined);
+    assert.equal(req.session.verified, undefined);
+
+    await sessionService.createSessionForUser(req, res, user);
+    assert.equal(req.session.user_id, 'egg');
+    assert.equal(req.session.verified, undefined);
+  });
+
+  it('Rejects sendAuthCodeToUser when origin does not match admin URL', async function () {
+    const getSession = async (req) => {
+      if (req.session) {
+        return req.session;
+      }
+      req.session = {
+        user_id: 'user-123',
+        ip: '0.0.0.0',
+        user_agent: 'Fake',
+        origin: 'https://evil.com',
+      };
+      return req.session;
+    };
+
+    const findUserById = sinon.stub().resolves({
+      id: 'user-123',
+      get: sinon.stub().returns('test@example.com'),
+    });
+
+    const mailer = {
+      send: sinon.stub().resolves(),
+    };
+
+    const getBlogLogo = sinon.stub().returns('logo.png');
+    const getOriginOfRequest = sinon.stub().returns('https://evil.com');
+
+    const sessionService = SessionService({
+      getSession,
+      findUserById,
+      getOriginOfRequest,
+      getSettingsCache,
+      getBlogLogo,
+      urlUtils,
+      mailer,
+      t: sinon.stub().callsFake((text) => text),
+    });
+
+    const req = Object.create(express.request, {
+      headers: {
+        value: {
+          origin: 'https://evil.com',
+        },
+      },
+    });
+    const res = Object.create(express.response);
+
+    await assert.rejects(sessionService.sendAuthCodeToUser(req, res), {
+      message: `Request made from incorrect origin. Expected 'https://admin.example.com' received 'https://evil.com'.`,
+    });
+
+    assert.equal(mailer.send.callCount, 0, 'No email should be sent');
+  });
+
+  it('Falls back to site URL when no admin URL is configured', async function () {
+    const getSession = async (req) => {
+      if (req.session) {
+        return req.session;
+      }
+      req.session = {
+        user_id: 'user-123',
+        origin: 'https://example.com',
+      };
+      return req.session;
+    };
+
+    const findUserById = sinon.spy(async ({ id }) => ({ id }));
+    const getOriginOfRequest = sinon.stub().returns('https://example.com');
+    const siteOnlyUrlUtils = {
+      getAdminUrl: sinon.stub().returns(null),
+      getSiteUrl: sinon.stub().returns('https://example.com'),
+      urlFor: sinon.stub().returns('https://example.com'),
+    };
+
+    const sessionService = SessionService({
+      getSession,
+      findUserById,
+      getOriginOfRequest,
+      getSettingsCache,
+      urlUtils: siteOnlyUrlUtils,
+    });
+
+    const req = Object.create(express.request, {
+      ip: {
+        value: '0.0.0.0',
+      },
+      headers: {
+        value: {
+          cookie: 'thing',
+        },
+      },
+      get: {
+        value: () => 'https://example.com',
+      },
+    });
+    const res = Object.create(express.response);
+
+    const user = await sessionService.getUserForSession(req, res);
+    assert.deepEqual(user, { id: 'user-123' });
+  });
+
+  describe('isVerificationRequired', function () {
+    it('returns true when require_email_mfa is true', async function () {
+      getSettingsCache.withArgs('require_email_mfa').returns(true);
+
+      const sessionService = SessionService({
+        getSettingsCache,
+      });
+
+      const result = sessionService.isVerificationRequired();
+      assert.equal(result, true);
+    });
+
+    it('returns false when require_email_mfa is false', async function () {
+      getSettingsCache.withArgs('require_email_mfa').returns(false);
+
+      const sessionService = SessionService({
+        getSettingsCache,
+      });
+
+      const result = sessionService.isVerificationRequired();
+      assert.equal(result, false);
+    });
+
+    it('returns false when require_email_mfa is not set', async function () {
+      getSettingsCache.withArgs('require_email_mfa').returns(undefined);
+
+      const sessionService = SessionService({
+        getSettingsCache,
+      });
+
+      const result = sessionService.isVerificationRequired();
+      assert.equal(result, false);
+    });
+  });
 });

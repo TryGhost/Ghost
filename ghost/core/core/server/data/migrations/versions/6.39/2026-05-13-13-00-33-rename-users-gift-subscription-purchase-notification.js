@@ -1,3 +1,7 @@
-const {createRenameColumnMigration} = require('../../utils');
+const { createRenameColumnMigration } = require('../../utils');
 
-module.exports = createRenameColumnMigration('users', 'gift_subscription_purchase_notification', 'gift_subscription_notifications');
+module.exports = createRenameColumnMigration(
+  'users',
+  'gift_subscription_purchase_notification',
+  'gift_subscription_notifications',
+);

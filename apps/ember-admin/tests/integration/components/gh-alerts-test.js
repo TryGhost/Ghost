@@ -6,7 +6,7 @@ import {expect} from 'chai';
 import {find, findAll, render, settled} from '@ember/test-helpers';
 import {setupRenderingTest} from 'ember-mocha';
 
-let notificationsStub = Service.extend({
+const notificationsStub = Service.extend({
     alerts: emberA()
 });
 
@@ -15,7 +15,7 @@ describe('Integration: Component: gh-alerts', function () {
 
     beforeEach(function () {
         this.owner.register('service:notifications', notificationsStub);
-        let notifications = this.owner.lookup('service:notifications');
+        const notifications = this.owner.lookup('service:notifications');
 
         notifications.set('alerts', [
             {message: 'First', type: 'error'},
@@ -24,7 +24,7 @@ describe('Integration: Component: gh-alerts', function () {
     });
 
     it('renders', async function () {
-        let notifications = this.owner.lookup('service:notifications');
+        const notifications = this.owner.lookup('service:notifications');
 
         await render(hbs`<GhAlerts />`);
         expect(findAll('.gh-alerts').length).to.equal(1);
@@ -36,7 +36,7 @@ describe('Integration: Component: gh-alerts', function () {
     });
 
     it('triggers "notify" action when message count changes', async function () {
-        let notifications = this.owner.lookup('service:notifications');
+        const notifications = this.owner.lookup('service:notifications');
         let expectedCount = 0;
 
         // test double for notify action

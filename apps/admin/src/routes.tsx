@@ -1,230 +1,290 @@
-import {type AdminRouteHandle, type RouteObject, Outlet, lazyComponent, matchRoutes, redirect} from "@tryghost/admin-x-framework";
+import { useCallback, useEffect } from 'react';
+import {
+  type AdminRouteHandle,
+  type RouteObject,
+  Outlet,
+  lazyComponent,
+  matchRoutes,
+  redirect,
+  useLocation,
+} from '@tryghost/admin-x-framework';
 
 // ActivityPub
-import { FeatureFlagsProvider, routes as activityPubRoutes } from "@tryghost/activitypub/api";
-
+import { FeatureFlagsProvider, routes as activityPubRoutes } from '@tryghost/activitypub/api';
 
 // Stats (aka analytics)
-import { AnalyticsProvider, analyticsRouteChildren } from "./analytics/api";
-import MyProfileRedirect from "./my-profile-redirect";
+import { AnalyticsProvider, analyticsRouteChildren } from './analytics/api';
+import MyProfileRedirect from './my-profile-redirect';
 
 // Ember
-import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
-import type { RouteHandle } from "./ember-bridge";
-import HomeRedirect from "./home-redirect";
-import { EmberListWithGiftLinks } from "./gift-link-modal-host";
-import { TagDetailGate } from "./tag-detail-gate";
-import { OnboardingRedirect } from "./onboarding/onboarding-redirect";
-import { type AccessRouteHandle, RouteAccessGuard } from "./route-access-guard";
-import { canAccessSettingsRoute } from "./settings/settings-access";
-import { settingsRouteChildren } from "./settings/routes";
-import { canManageAutomations, canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api/users";
+import { EmberFallback, ForceUpgradeGuard, syncEmberRoutePattern } from './ember-bridge';
+import HomeRedirect from './home-redirect';
+import { EditorGate } from './editor-gate';
+import { lazyRestoreScreen } from './editor/api';
+import { useFlagGatedRouteOwner } from './use-flag-gated-route-owner';
+import { type AccessRouteHandle } from './route-access';
+import { RouteAccessGuard } from './route-access-guard';
+import { lazyAutomationEditorScreen, lazyAutomationsScreen } from './automations/api';
+import { lazyCommentsScreen } from './comments/api';
+import { lazyMigrateScreen } from './migrate/api';
+import { lazyMemberActivityScreen, membersRouteChildren } from './members/api';
+import { OnboardingRedirect, lazyOnboardingScreen } from './onboarding/api';
+import {
+  lazyPagesListRoute,
+  lazyPostAnalyticsRoot,
+  lazyPostDebugScreen,
+  lazyPostsListRoute,
+  postAnalyticsRouteChildren,
+} from './posts/api';
+import { canAccessSettingsRoute, lazySettingsScreen, settingsRouteChildren } from './settings/api';
+import { lazyTagDetailScreen, lazyTagsScreen } from './tags/api';
+import { lazyViewSiteScreen } from './view-site/api';
+const lazyFormsScreen = () => import('./forms/forms');
+import {
+  canManageAutomations,
+  canManageMembers,
+  canManageTags,
+  hasAdminAccess,
+} from '@tryghost/admin-x-framework/api/users';
 
-import { NotFound } from "./not-found";
+import { NotFound } from './shared/not-found';
+import { type AuthRouteHandle, authRoutes, useAuthScreensOwner } from './auth/api';
 
 // Routes handled by the Ember admin app. React delegates these to Ember via
 // EmberFallback. When migrating a route to React, remove its entry from here.
-const EMBER_ROUTES: string[] = [
-    "/site",
-    "/setup",
-    "/signin/*",
-    "/signout",
-    "/signup/*",
-    "/reset/*",
-    "/pro/*",
-    "/posts/analytics/:postId/debug",
-    "/restore",
-    "/editor/*",
-    "/migrate/*",
-    "/members-activity",
-];
+const EMBER_ROUTES: string[] = ['/pro/*'];
 
-const emberFallbackHandle = { allowInForceUpgrade: true } satisfies RouteHandle;
+const emberFallbackHandle = { allowInForceUpgrade: true } satisfies AdminRouteHandle;
 
-const emberFallbackRoutes: RouteObject[] = EMBER_ROUTES.map(path => ({
-    path,
-    Component: EmberFallback,
-    handle: emberFallbackHandle,
+const emberFallbackRoutes: RouteObject[] = EMBER_ROUTES.map((path) => ({
+  path,
+  Component: EmberFallback,
+  handle: emberFallbackHandle,
 }));
 
-const membersRoute: RouteObject = {
-    path: "/members",
-    handle: { ...emberFallbackHandle, requiresAccess: canManageMembers } satisfies RouteHandle & AccessRouteHandle,
-    children: [
-        {
-            index: true,
-            lazy: lazyComponent(() => import("./members/members"))
-        },
-        {
-            path: "import",
-            lazy: lazyComponent(() => import("./members/members"))
-        },
-        {
-            // Covers both edit (`:member_id`) and create (the sentinel `new`)
-            // — real member ids are 24-char hex ObjectIds, so they can't
-            // collide with the literal "new".
-            path: ":member_id",
-            lazy: lazyComponent(() => import("./members/detail/member-detail"))
-        }
-    ]
-};
-
 const appRoutes: RouteObject[] = [
-    {
-        // Role-based landing dispatch, including the hosted-signup
-        // `/?firstStart=true` onboarding entry.
-        path: "/",
-        Component: HomeRedirect,
-        handle: { allowInForceUpgrade: true } satisfies RouteHandle,
-    },
-    {
-        // The dashboard screen is retired; the URL redirects for old links.
-        path: "dashboard",
-        loader: () => redirect("/analytics"),
-    },
-    {
-        path: "/tags",
-        handle: { requiresAccess: canManageTags } satisfies AccessRouteHandle,
-        lazy: lazyComponent(() => import("./tags/tags")),
-    },
-    {
-        path: "/comments",
-        handle: { requiresAccess: canManageMembers } satisfies AccessRouteHandle,
-        lazy: lazyComponent(() => import("./comments/comments")),
-    },
-    {
-        path: "/automations",
-        handle: { requiresAccess: canManageAutomations } satisfies AccessRouteHandle,
-        lazy: lazyComponent(() => import("./automations/automations")),
-    },
-    {
-        // The automation editor hides the admin sidebar for a focused,
-        // full-screen editing surface.
-        path: "/automations/:id",
-        handle: {hideAdminSidebar: true, requiresAccess: canManageAutomations} satisfies AdminRouteHandle & AccessRouteHandle,
-        lazy: lazyComponent(() => import("./automations/editor")),
-    },
-    {
-        path: "/forms",
-        lazy: lazyComponent(() => import("./forms/forms")),
-    },
-    {
-        // Covers both edit (`:tagSlug`) and create (the sentinel `new`) —
-        // Ember's router declared `/tags/new` before `/tags/:tag_slug`, so a
-        // tag with the literal slug "new" was already unreachable.
-        //
-        // TagDetailGate serves Ember or React depending on the
-        // `tagDetailsReact` Labs flag.
-        path: "/tags/:tagSlug",
-        Component: TagDetailGate,
-        handle: {requiresAccess: canManageTags} satisfies AccessRouteHandle,
-    },
-    membersRoute,
-    {
-        path: "/posts/analytics/:postId",
-        lazy: async () => {
-            const [{ default: PostAnalyticsProvider }, { default: PostAnalytics }] = await Promise.all([
-                import("./posts/analytics/providers/post-analytics-provider"),
-                import("./posts/analytics/post-analytics"),
-            ]);
-            return {
-                element: (
-                    <PostAnalyticsProvider>
-                        <PostAnalytics />
-                    </PostAnalyticsProvider>
-                ),
-            };
-        },
-        children: [
-            { path: "", lazy: lazyComponent(() => import("./posts/analytics/overview/overview")) },
-            { path: "web", lazy: lazyComponent(() => import("./posts/analytics/web/web")) },
-            { path: "growth", lazy: lazyComponent(() => import("./posts/analytics/growth/growth")) },
-            { path: "newsletter", lazy: lazyComponent(() => import("./posts/analytics/newsletter/newsletter")) },
-        ],
-    },
-    {
-        // Analytics routes folded directly into the shell table. The
-        // AnalyticsProvider is attached to this route node (via its
-        // element) rather than a separate wrapper subtree; OnboardingRedirect
-        // still gates entry.
-        path: "analytics",
-        element: (
-            <OnboardingRedirect>
-                <AnalyticsProvider>
-                    <Outlet />
-                </AnalyticsProvider>
-            </OnboardingRedirect>
-        ),
-        children: analyticsRouteChildren,
-    },
-    {
-        path: "setup/onboarding",
-        lazy: lazyComponent(() => import("./onboarding/onboarding-route")),
-    },
-    {
-        path: `network`,
-        loader: () => redirect("/activitypub"),
-    },
-    {
-        path: "my-profile",
-        Component: MyProfileRedirect,
-        handle: { allowInForceUpgrade: true } satisfies RouteHandle,
-    },
-    {
-        path: "",
-        element: (
-            <FeatureFlagsProvider>
-                <Outlet />
-            </FeatureFlagsProvider>
-        ),
-        children: activityPubRoutes,
-    },
-    {
-        // hideAdminSidebar lives on the handle, not the lazy module, so the shell
-        // hides at first paint instead of waiting on the settings chunk.
-        path: `settings`,
-        lazy: lazyComponent(() => import("./settings/settings")),
-        children: settingsRouteChildren,
-        handle: {
-            allowInForceUpgrade: true,
-            hideAdminSidebar: true,
-            requiresAccess: canAccessSettingsRoute
-        } satisfies RouteHandle & AdminRouteHandle & AccessRouteHandle,
-    },
-    {path: "/posts", Component: EmberListWithGiftLinks, handle: emberFallbackHandle},
-    {path: "/pages", Component: EmberListWithGiftLinks, handle: emberFallbackHandle},
-    // Ember-handled routes
-    ...emberFallbackRoutes,
-    {
-        // 404 catch-all for routes not handled by React or Ember
-        path: "*",
-        Component: NotFound,
-    },
+  {
+    // Role-based landing dispatch, including the hosted-signup
+    // `/?firstStart=true` onboarding entry.
+    path: '/',
+    Component: HomeRedirect,
+    handle: { allowInForceUpgrade: true } satisfies AdminRouteHandle,
+  },
+  {
+    // The dashboard screen is retired; the URL redirects for old links.
+    path: 'dashboard',
+    loader: () => redirect('/analytics'),
+  },
+  {
+    path: '/tags',
+    handle: { requiresAccess: canManageTags } satisfies AccessRouteHandle,
+    lazy: lazyComponent(lazyTagsScreen),
+  },
+  {
+    path: '/comments',
+    handle: { requiresAccess: canManageMembers } satisfies AccessRouteHandle,
+    lazy: lazyComponent(lazyCommentsScreen),
+  },
+  {
+    path: '/automations',
+    handle: { requiresAccess: canManageAutomations } satisfies AccessRouteHandle,
+    lazy: lazyComponent(lazyAutomationsScreen),
+  },
+  {
+    // The automation editor hides the admin sidebar for a focused,
+    // full-screen editing surface.
+    path: '/automations/:id',
+    handle: {
+      hideAdminSidebar: true,
+      requiresAccess: canManageAutomations,
+    } satisfies AdminRouteHandle & AccessRouteHandle,
+    lazy: lazyComponent(lazyAutomationEditorScreen),
+  },
+  {
+    path: '/forms',
+    lazy: lazyComponent(lazyFormsScreen),
+  },
+  {
+    // Covers both edit (`:tagSlug`) and create (the sentinel `new`) —
+    // Ember's router declared `/tags/new` before `/tags/:tag_slug`, so a
+    // tag with the literal slug "new" was already unreachable.
+    path: '/tags/:tagSlug',
+    handle: { requiresAccess: canManageTags } satisfies AccessRouteHandle,
+    lazy: lazyComponent(lazyTagDetailScreen),
+  },
+  {
+    path: '/members',
+    handle: { requiresAccess: canManageMembers } satisfies AccessRouteHandle,
+    children: membersRouteChildren,
+  },
+  {
+    path: '/members-activity',
+    handle: { requiresAccess: canManageMembers } satisfies AccessRouteHandle,
+    lazy: lazyComponent(lazyMemberActivityScreen),
+  },
+  {
+    path: '/posts/analytics/:postId/debug',
+    lazy: lazyComponent(lazyPostDebugScreen),
+  },
+  {
+    path: '/posts/analytics/:postId',
+    lazy: lazyPostAnalyticsRoot,
+    children: postAnalyticsRouteChildren,
+  },
+  {
+    // Analytics routes folded directly into the shell table. The
+    // AnalyticsProvider is attached to this route node (via its
+    // element) rather than a separate wrapper subtree; OnboardingRedirect
+    // still gates entry.
+    path: 'analytics',
+    element: (
+      <OnboardingRedirect>
+        <AnalyticsProvider>
+          <Outlet />
+        </AnalyticsProvider>
+      </OnboardingRedirect>
+    ),
+    children: analyticsRouteChildren,
+  },
+  {
+    path: 'setup/onboarding',
+    lazy: lazyComponent(lazyOnboardingScreen),
+  },
+  {
+    path: `network`,
+    loader: () => redirect('/activitypub'),
+  },
+  {
+    path: 'my-profile',
+    Component: MyProfileRedirect,
+    handle: { allowInForceUpgrade: true } satisfies AdminRouteHandle,
+  },
+  {
+    path: '',
+    element: (
+      <FeatureFlagsProvider>
+        <Outlet />
+      </FeatureFlagsProvider>
+    ),
+    children: activityPubRoutes,
+  },
+  {
+    // hideAdminSidebar lives on the handle, not the lazy module, so the shell
+    // hides at first paint instead of waiting on the settings chunk.
+    path: `settings`,
+    lazy: lazyComponent(lazySettingsScreen),
+    children: settingsRouteChildren,
+    handle: {
+      allowInForceUpgrade: true,
+      hideAdminSidebar: true,
+      requiresAccess: canAccessSettingsRoute,
+    } satisfies AdminRouteHandle & AccessRouteHandle,
+  },
+  { path: '/posts', lazy: lazyComponent(lazyPostsListRoute) },
+  { path: '/pages', lazy: lazyComponent(lazyPagesListRoute) },
+  {
+    // Served by React or Ember depending on the `editorReact` Labs flag.
+    //
+    // The editor is a focused writing surface and has always hidden the nav
+    // sidebar. Ember arranges that by setting `ui.isFullScreen` when the
+    // editor route *activates* — but the Ember posts route aborts its
+    // transition to hand off to React, so the editor route never deactivates,
+    // and a second visit is a model change on an already-active route where
+    // `activate()` does not run again. The sidebar came back from the second
+    // post onwards. Deciding it from the route handle makes React the
+    // authority, removes the cross-implementation handshake, and applies to
+    // both sides of the `editorReact` flag.
+    path: '/editor/*',
+    Component: EditorGate,
+    handle: { ...emberFallbackHandle, hideAdminSidebar: true } satisfies AdminRouteHandle,
+  },
+  { path: '/site', lazy: lazyComponent(lazyViewSiteScreen) },
+  { path: '/restore', lazy: lazyComponent(lazyRestoreScreen) },
+  {
+    path: '/migrate/*',
+    lazy: lazyComponent(lazyMigrateScreen),
+    handle: {
+      hideAdminSidebar: true,
+      requiresAccess: hasAdminAccess,
+    } satisfies AdminRouteHandle & AccessRouteHandle,
+  },
+  // Ember-handled routes
+  ...emberFallbackRoutes,
+  {
+    // 404 catch-all for routes not handled by React or Ember
+    path: '*',
+    Component: NotFound,
+  },
 ];
 
 export const routes: RouteObject[] = [
-    {
-        // ForceUpgradeGuard wraps all routes to redirect to /pro when in force upgrade mode.
-        // Routes with handle.allowInForceUpgrade: true bypass this protection.
-        element: <ForceUpgradeGuard />,
-        children: [
-            {
-                // RouteAccessGuard redirects to the default view on routes whose
-                // handle.requiresAccess rule the current user's role fails.
-                element: <RouteAccessGuard />,
-                children: appRoutes,
-            },
-        ],
-    },
+  // Outside the guards: signed-out visitors have no user or settings to check.
+  ...authRoutes,
+  {
+    // ForceUpgradeGuard wraps all routes to redirect to /pro when in force upgrade mode.
+    // Routes with handle.allowInForceUpgrade: true bypass this protection.
+    element: <ForceUpgradeGuard />,
+    children: [
+      {
+        // RouteAccessGuard redirects to the default view on routes whose
+        // handle.requiresAccess rule the current user's role fails.
+        element: <RouteAccessGuard />,
+        children: appRoutes,
+      },
+    ],
+  },
 ];
 
 // Ember's router only learns about a URL change from `hashchange`, which the
 // React router's pushState navigation does not fire, so links into Ember-owned
 // routes must stay native hash anchors. Everything else can be a router link
 // (and so gets router history state, which the unsaved-changes blockers need).
-const EMBER_ROUTE_COMPONENTS = new Set<unknown>([EmberFallback, EmberListWithGiftLinks, TagDetailGate]);
+const EMBER_ROUTE_COMPONENTS = new Set<unknown>([EmberFallback]);
 
-export function isEmberOwnedRoute(pathname: string): boolean {
-    const leaf = matchRoutes(routes, pathname)?.at(-1)?.route;
-    return !leaf || EMBER_ROUTE_COMPONENTS.has(leaf.Component);
+/** Decides for any path whether Ember owns it, for destinations only known at event time. */
+export function useEmberOwnedRouteMatcher(): (pathname: string) => boolean {
+  const editorOwner = useFlagGatedRouteOwner('editorReact');
+  const authScreensOwner = useAuthScreensOwner();
+
+  return useCallback(
+    (pathname: string) => {
+      const leaf = matchRoutes(routes, pathname)?.at(-1)?.route;
+      if (!leaf) {
+        return true;
+      }
+      if (leaf.Component === EditorGate) {
+        return editorOwner !== 'react';
+      }
+      if ((leaf.handle as AuthRouteHandle | undefined)?.authScreen) {
+        return authScreensOwner !== 'react';
+      }
+      return EMBER_ROUTE_COMPONENTS.has(leaf.Component);
+    },
+    [editorOwner, authScreensOwner],
+  );
+}
+
+export function useIsEmberOwnedRoute(pathname: string): boolean {
+  return useEmberOwnedRouteMatcher()(pathname);
+}
+
+/** The matched route's path pattern, e.g. `/tags/:tagSlug`, never the path's own ids or slugs. */
+function matchedRoutePattern(pathname: string): string {
+  let pattern = '';
+  for (const { route } of matchRoutes(routes, pathname) ?? []) {
+    if (route.path) {
+      // An absolute child path already repeats its parents' paths
+      pattern = route.path.startsWith('/') ? route.path : `${pattern}/${route.path}`;
+    }
+  }
+  return pattern.replace(/\/\/+/g, '/') || '/';
+}
+
+/** Tells Ember which route pattern React is showing, or null while Ember serves the screen. */
+export function useSyncEmberRoutePattern(): void {
+  const { pathname } = useLocation();
+  const isEmberOwned = useIsEmberOwnedRoute(pathname);
+  const routePattern = isEmberOwned ? null : matchedRoutePattern(pathname);
+
+  useEffect(() => syncEmberRoutePattern(routePattern), [routePattern]);
 }

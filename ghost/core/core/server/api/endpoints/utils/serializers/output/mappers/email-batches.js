@@ -1,31 +1,29 @@
 const _ = require('lodash');
 
 const batchFields = [
-    'id',
-    'mailgun_message_id',
-    'status',
-    'member_segment',
-    'created_at',
-    'updated_at',
-    'error_status_code',
-    'error_message',
-    'error_data'
+  'id',
+  'mailgun_message_id',
+  'status',
+  'member_segment',
+  'created_at',
+  'updated_at',
+  'error_status_code',
+  'error_message',
+  'error_data',
 ];
 
-const countFields = [
-    'recipients'
-];
+const countFields = ['recipients'];
 
 const batchMapper = (model, frame) => {
-    const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
+  const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
 
-    const response = _.pick(jsonModel, batchFields);
+  const response = _.pick(jsonModel, batchFields);
 
-    if (jsonModel.count) {
-        response.count = _.pick(jsonModel.count, countFields);
-    }
+  if (jsonModel.count) {
+    response.count = _.pick(jsonModel.count, countFields);
+  }
 
-    return response;
+  return response;
 };
 
 module.exports = batchMapper;

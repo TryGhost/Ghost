@@ -6,5 +6,5 @@
  * @example toExpressNotation('/:slug/')                // => '/:slug/' (idempotent)
  */
 export function toExpressNotation(permalink: string): string {
-    return permalink.replace(/{(\w+)}/g, ':$1');
+  return permalink.replace(/{(\w+)}/g, ':$1');
 }

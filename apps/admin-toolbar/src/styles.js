@@ -1,5 +1,5 @@
 export function getToolbarStyle() {
-    return `
+  return `
         :host {
             all: initial;
             color-scheme: light;

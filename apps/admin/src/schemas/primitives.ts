@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 /**
  * Schema primitives for reusable data type transformations.
@@ -43,11 +43,7 @@ import { z } from "zod";
  * schema.parse({ publishedAt: "2025-10-22T15:30+00:00" });
  * ```
  */
-export const isoDatetimeToDate = z.codec(
-    z.iso.datetime({ offset: true }),
-    z.date(),
-    {
-        decode: (isoString) => new Date(isoString),
-        encode: (date) => date.toISOString(),
-    }
-);
+export const isoDatetimeToDate = z.codec(z.iso.datetime({ offset: true }), z.date(), {
+  decode: (isoString) => new Date(isoString),
+  encode: (date) => date.toISOString(),
+});

@@ -1,0 +1,230 @@
+import { describe, expect, it, onTestFinished } from 'vitest';
+import { page, userEvent } from 'vitest/browser';
+import { buildLexicalParagraph } from '@tryghost/test-data';
+import {
+  settingsKeyboardShortcutsBackButton,
+  settingsKeyboardShortcutsRow,
+} from '@tryghost/test-data/selectors/editor';
+
+import {
+  currentUserResponse,
+  fakeAdminEndpoint,
+  fakeEditorChrome,
+  fakeTiers,
+  post,
+  renderAdminApp,
+  staffRole,
+  type StaffRoleName,
+} from '@test-utils/acceptance';
+import { editorScreen } from '@/editor/editor.screen';
+
+const POST_ID = 'abc123';
+const CURRENT_USER_ID = '1';
+const FLAG_ON = { labs: { editorReact: true } };
+const ROUTE = new RegExp(`^/posts/${POST_ID}/\\?`);
+const MAC_AGENT =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
+const WINDOWS_AGENT =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
+
+/** The pane reads the platform as it renders, so the agent has to be in place first. */
+function onPlatform(userAgent: string) {
+  Object.defineProperty(navigator, 'userAgent', { configurable: true, get: () => userAgent });
+  onTestFinished(() => {
+    Reflect.deleteProperty(navigator, 'userAgent');
+  });
+}
+
+function asRole(name: StaffRoleName) {
+  const me = currentUserResponse();
+  me.users[0].roles = [staffRole({ name })];
+  return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+}
+
+function fakeEditablePost(overrides: Partial<ReturnType<typeof post>> = {}) {
+  fakeEditorChrome();
+  fakeTiers([]);
+  fakeAdminEndpoint('GET', /^\/slugs\/post\//, ({ url }) => ({
+    slugs: [{ slug: decodeURIComponent(url.split('/slugs/post/')[1].split('/')[0]) }],
+  }));
+
+  const current = post({
+    id: POST_ID,
+    title: 'Hello from React',
+    slug: 'hello-from-react',
+    status: 'draft',
+    lexical: buildLexicalParagraph('Hello from React'),
+    tags: [],
+    ...overrides,
+  });
+
+  fakeAdminEndpoint('GET', ROUTE, () => ({ posts: [current] }));
+  fakeAdminEndpoint('PUT', ROUTE, () => ({ posts: [current] }));
+}
+
+async function openShortcuts() {
+  await editorScreen.settingsToggle().click();
+  await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  await editorScreen.settingsSubviewRow(settingsKeyboardShortcutsRow).click();
+  await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
+}
+
+/**
+ * The sidebar's Keyboard shortcuts pane: the reference list of every chord and
+ * slash command the editor answers to, in the writer's own platform glyphs.
+ */
+describe('Post settings keyboard shortcuts', () => {
+  it.each([MAC_AGENT, WINDOWS_AGENT])(
+    'keeps labels readable under legacy host styles (%s)',
+    async (agent) => {
+      onPlatform(agent);
+      const initialViewport = { width: window.innerWidth, height: window.innerHeight };
+      onTestFinished(() => page.viewport(initialViewport.width, initialViewport.height));
+      const hostStyles = document.createElement('style');
+      // Ember's global definition-list and keycap rules also surround the embedded editor.
+      hostStyles.textContent = `
+      dl { margin: 1.6em 0; }
+      dl dt { float: left; clear: left; overflow: hidden; margin-bottom: 1em; width: 180px; text-align: right; text-overflow: ellipsis; white-space: nowrap; font-weight: bold; }
+      dl dd { margin-bottom: 1em; margin-left: 200px; }
+      kbd { margin-bottom: 0.4em; padding: 1px 8px; border: 1px solid; box-shadow: 0 1px 0; }
+    `;
+      document.head.append(hostStyles);
+      onTestFinished(() => hostStyles.remove());
+      fakeEditablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openShortcuts();
+
+      for (const width of [1280, 390]) {
+        await page.viewport(width, 844);
+        const pane = editorScreen.settingsSubviewPane().element();
+        for (const label of pane.querySelectorAll('dt')) {
+          expect(getComputedStyle(label).whiteSpace).toBe('normal');
+          expect(label.scrollWidth).toBeLessThanOrEqual(label.clientWidth + 1);
+        }
+        for (const definition of pane.querySelectorAll('dd')) {
+          expect(getComputedStyle(definition).marginLeft).toBe('0px');
+        }
+        for (const group of pane.querySelectorAll('[data-slot="kbd-group"]')) {
+          expect(getComputedStyle(group).borderTopWidth).toBe('0px');
+          const capHeight = Math.max(
+            ...[...group.querySelectorAll('[data-slot="kbd"]')].map(
+              (cap) => cap.getBoundingClientRect().height,
+            ),
+          );
+          expect(group.getBoundingClientRect().height).toBeLessThanOrEqual(capHeight + 1);
+        }
+        expect(pane.scrollWidth).toBeLessThanOrEqual(pane.clientWidth + 1);
+      }
+    },
+  );
+
+  it('opens the pane over the section list and comes back from it', async () => {
+    fakeEditablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openShortcuts();
+
+    // The pane replaces the list it was opened from.
+    await expect(editorScreen.settingsExcerpt()).toHaveCount(0);
+    await expect
+      .element(editorScreen.settingsSidebar())
+      .toHaveAttribute('aria-label', settingsKeyboardShortcutsRow);
+    await expect
+      .element(page.getByRole('heading', { level: 2, name: settingsKeyboardShortcutsRow }))
+      .toBeVisible();
+
+    await editorScreen.settingsSubviewBack(settingsKeyboardShortcutsBackButton).click();
+
+    await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
+    await expect.element(editorScreen.settingsExcerpt()).toBeVisible();
+    await expect
+      .element(editorScreen.settingsSubviewRow(settingsKeyboardShortcutsRow))
+      .toBeVisible();
+  });
+
+  it('lists every shortcut under the group it belongs to, without widening the panel', async () => {
+    fakeEditablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openShortcuts();
+
+    const pane = editorScreen.settingsSubviewPane();
+    await expect.element(pane).toHaveTextContent('Formatting');
+    await expect.element(pane).toHaveTextContent('Editing');
+    await expect.element(pane).toHaveTextContent('Application');
+    await expect.element(pane).toHaveTextContent('Inserting');
+
+    expect(editorScreen.settingsShortcutRows()).toHaveLength(50);
+    await expect
+      .poll(
+        () => editorScreen.settingsSidebar().element().parentElement!.getBoundingClientRect().width,
+      )
+      .toBe(350);
+  });
+
+  it('shows a Mac writer the Mac glyphs', async () => {
+    onPlatform(MAC_AGENT);
+    fakeEditablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openShortcuts();
+
+    const rows = editorScreen.settingsShortcutRows();
+    expect(rows).toContain('Bold⌘B');
+    expect(rows).toContain('Strike through⌃⌥U');
+    expect(rows).toContain('Inline code⌃⇧K');
+    expect(rows).toContain('Toggle card edit mode⌘↩');
+    expect(rows).toContain('Publish⌘⇧P');
+    expect(rows).toContain('Image/image');
+    expect(rows).toContain('Divider---or/hr');
+  });
+
+  it('names the modifier a glyph stands for when the writer hovers it', async () => {
+    onPlatform(MAC_AGENT);
+    fakeEditablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openShortcuts();
+
+    await userEvent.hover(page.getByRole('img', { name: 'Command', exact: true }).first());
+
+    // The tooltip opens after Radix's hover delay.
+    await expect.element(page.getByText('Command')).toBeVisible();
+  });
+
+  it('shows everyone else the key names instead', async () => {
+    onPlatform(WINDOWS_AGENT);
+    fakeEditablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openShortcuts();
+
+    const rows = editorScreen.settingsShortcutRows();
+    expect(rows).toContain('BoldCtrlB');
+    expect(rows).toContain('Strike throughCtrlAltU');
+    expect(rows).toContain('Inline codeCtrlShiftK');
+    expect(rows).toContain('Toggle card edit modeCtrlEnter');
+    expect(rows).toContain('PublishCtrlShiftP');
+    // A slash command is the same text whatever the writer is typing it on.
+    expect(rows).toContain('Image/image');
+  });
+
+  it('closes the pane on Escape and returns focus to the row', async () => {
+    fakeEditablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openShortcuts();
+
+    await userEvent.keyboard('{Escape}');
+
+    await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
+    await expect
+      .element(editorScreen.settingsSubviewRow(settingsKeyboardShortcutsRow))
+      .toHaveFocus();
+  });
+
+  it('gives a contributor the same reference list', async () => {
+    onPlatform(MAC_AGENT);
+    // A contributor may only open a draft they authored.
+    fakeEditablePost({ authors: [{ id: CURRENT_USER_ID }] });
+    await renderAdminApp(`/editor/post/${POST_ID}`, asRole('Contributor'));
+    await openShortcuts();
+
+    expect(editorScreen.settingsShortcutRows()).toHaveLength(50);
+    expect(editorScreen.settingsShortcutRows()).toContain('Bold⌘B');
+  });
+});

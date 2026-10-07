@@ -10,8 +10,8 @@
  * against the same rule set.
  */
 export function isSafeHref(url: string | undefined | null): url is string {
-    if (!url) {
-        return false;
-    }
-    return /^(https?:\/\/|\/|#\/)/i.test(url);
+  if (!url) {
+    return false;
+  }
+  return /^(https?:\/\/|\/|#\/)/i.test(url);
 }

@@ -1,5 +1,6 @@
 # SimpleMDE - Markdown Editor
-A customised version of upstream [simplemde](https://github.com/sparksuite/simplemde-markdown-editor) solely for use with the [koenig-lexical](https://github.com/TryGhost/Koenig/tree/main/packages/koenig-lexical) package.  
+
+A customised version of upstream [simplemde](https://github.com/sparksuite/simplemde-markdown-editor) solely for use with the [koenig-lexical](https://github.com/TryGhost/Koenig/tree/main/packages/koenig-lexical) package.
 
 A drop-in JavaScript textarea replacement for writing beautiful and understandable Markdown. The WYSIWYG-esque editor allows users who may be less experienced with Markdown to use familiar toolbar buttons and shortcuts. In addition, the syntax is rendered while editing to clearly show the expected result. Headings are larger, emphasized words are italicized, links are underlined, etc. SimpleMDE is one of the first editors to feature both built-in autosaving and spell checking.
 
@@ -8,21 +9,24 @@ A drop-in JavaScript textarea replacement for writing beautiful and understandab
 [![Preview](http://i.imgur.com/zqWfJwO.png)](https://simplemde.com)
 
 ## Why not a WYSIWYG editor or pure Markdown?
+
 WYSIWYG editors that produce HTML are often complex and buggy. Markdown solves this problem in many ways, plus Markdown can be rendered natively on more platforms than HTML. However, Markdown is not a syntax that an average user will be familiar with, nor is it visually clear while editing. In otherwords, for an unfamiliar user, the syntax they write will make little sense until they click the preview button. SimpleMDE has been designed to bridge this gap for non-technical users who are less familiar with or just learning Markdown syntax.
 
 ## Install
 
 Via [npm](https://www.npmjs.com/package/simplemde).
+
 ```
 npm install simplemde --save
 ```
 
 Via [bower](https://www.bower.io).
+
 ```
 bower install simplemde --save
 ```
 
-Via [jsDelivr](https://www.jsdelivr.com/#!simplemde). *Please note, jsDelivr may take a few days to update to the latest release.*
+Via [jsDelivr](https://www.jsdelivr.com/#!simplemde). _Please note, jsDelivr may take a few days to update to the latest release._
 
 ```HTML
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
@@ -71,13 +75,13 @@ simplemde.value("This text will appear in the editor");
 
 - **autoDownloadFontAwesome**: If set to `true`, force downloads Font Awesome (used for icons). If set to `false`, prevents downloading. Defaults to `undefined`, which will intelligently check whether Font Awesome has already been included, then download accordingly.
 - **autofocus**: If set to `true`, autofocuses the editor. Defaults to `false`.
-- **autosave**: *Saves the text that's being written and will load it back in the future. It will forget the text when the form it's contained in is submitted.*
+- **autosave**: _Saves the text that's being written and will load it back in the future. It will forget the text when the form it's contained in is submitted._
   - **enabled**: If set to `true`, autosave the text. Defaults to `false`.
   - **delay**: Delay between saves, in milliseconds. Defaults to `10000` (10s).
   - **uniqueId**: You must set a unique string identifier so that SimpleMDE can autosave. Something that separates this from other instances of SimpleMDE elsewhere on your website.
 - **blockStyles**: Customize how certain buttons that style blocks of text behave.
   - **bold** Can be set to `**` or `__`. Defaults to `**`.
-  - **code** Can be set to  ```` ``` ```` or `~~~`.  Defaults to ```` ``` ````.
+  - **code** Can be set to ` ``` ` or `~~~`. Defaults to ` ``` `.
   - **italic** Can be set to `*` or `_`. Defaults to `*`.
 - **element**: The DOM element for the textarea to use. Defaults to the first textarea on the page.
 - **forceSync**: If set to `true`, force text changes made in SimpleMDE to be immediately stored in original textarea. Defaults to `false`.
@@ -186,30 +190,30 @@ Below are the built-in toolbar icons (only some of which are enabled by default)
 
 Additionally, you can add a separator between any icons by adding `"|"` to the toolbar array.
 
-Name | Action | Tooltip<br>Class
-:--- | :----- | :--------------
-bold | toggleBold | Bold<br>fa fa-bold
-italic | toggleItalic | Italic<br>fa fa-italic
-strikethrough | toggleStrikethrough | Strikethrough<br>fa fa-strikethrough
-heading | toggleHeadingSmaller | Heading<br>fa fa-header
-heading-smaller | toggleHeadingSmaller | Smaller Heading<br>fa fa-header
-heading-bigger | toggleHeadingBigger | Bigger Heading<br>fa fa-lg fa-header
-heading-1 | toggleHeading1 | Big Heading<br>fa fa-header fa-header-x fa-header-1
-heading-2 | toggleHeading2 | Medium Heading<br>fa fa-header fa-header-x fa-header-2
-heading-3 | toggleHeading3 | Small Heading<br>fa fa-header fa-header-x fa-header-3
-code | toggleCodeBlock | Code<br>fa fa-code
-quote | toggleBlockquote | Quote<br>fa fa-quote-left
-unordered-list | toggleUnorderedList | Generic List<br>fa fa-list-ul
-ordered-list | toggleOrderedList | Numbered List<br>fa fa-list-ol
-clean-block | cleanBlock | Clean block<br>fa fa-eraser fa-clean-block
-link | drawLink | Create Link<br>fa fa-link
-image | drawImage | Insert Image<br>fa fa-picture-o
-table | drawTable | Insert Table<br>fa fa-table
-horizontal-rule | drawHorizontalRule | Insert Horizontal Line<br>fa fa-minus
-preview | togglePreview | Toggle Preview<br>fa fa-eye no-disable
-side-by-side | toggleSideBySide | Toggle Side by Side<br>fa fa-columns no-disable no-mobile
-fullscreen | toggleFullScreen | Toggle Fullscreen<br>fa fa-arrows-alt no-disable no-mobile
-guide | [This link](https://simplemde.com/markdown-guide) | Markdown Guide<br>fa fa-question-circle
+| Name            | Action                                            | Tooltip<br>Class                                           |
+| :-------------- | :------------------------------------------------ | :--------------------------------------------------------- |
+| bold            | toggleBold                                        | Bold<br>fa fa-bold                                         |
+| italic          | toggleItalic                                      | Italic<br>fa fa-italic                                     |
+| strikethrough   | toggleStrikethrough                               | Strikethrough<br>fa fa-strikethrough                       |
+| heading         | toggleHeadingSmaller                              | Heading<br>fa fa-header                                    |
+| heading-smaller | toggleHeadingSmaller                              | Smaller Heading<br>fa fa-header                            |
+| heading-bigger  | toggleHeadingBigger                               | Bigger Heading<br>fa fa-lg fa-header                       |
+| heading-1       | toggleHeading1                                    | Big Heading<br>fa fa-header fa-header-x fa-header-1        |
+| heading-2       | toggleHeading2                                    | Medium Heading<br>fa fa-header fa-header-x fa-header-2     |
+| heading-3       | toggleHeading3                                    | Small Heading<br>fa fa-header fa-header-x fa-header-3      |
+| code            | toggleCodeBlock                                   | Code<br>fa fa-code                                         |
+| quote           | toggleBlockquote                                  | Quote<br>fa fa-quote-left                                  |
+| unordered-list  | toggleUnorderedList                               | Generic List<br>fa fa-list-ul                              |
+| ordered-list    | toggleOrderedList                                 | Numbered List<br>fa fa-list-ol                             |
+| clean-block     | cleanBlock                                        | Clean block<br>fa fa-eraser fa-clean-block                 |
+| link            | drawLink                                          | Create Link<br>fa fa-link                                  |
+| image           | drawImage                                         | Insert Image<br>fa fa-picture-o                            |
+| table           | drawTable                                         | Insert Table<br>fa fa-table                                |
+| horizontal-rule | drawHorizontalRule                                | Insert Horizontal Line<br>fa fa-minus                      |
+| preview         | togglePreview                                     | Toggle Preview<br>fa fa-eye no-disable                     |
+| side-by-side    | toggleSideBySide                                  | Toggle Side by Side<br>fa fa-columns no-disable no-mobile  |
+| fullscreen      | toggleFullScreen                                  | Toggle Fullscreen<br>fa fa-arrows-alt no-disable no-mobile |
+| guide           | [This link](https://simplemde.com/markdown-guide) | Markdown Guide<br>fa fa-question-circle                    |
 
 Customize the toolbar using the `toolbar` option like:
 
@@ -245,22 +249,22 @@ var simplemde = new SimpleMDE({
 
 SimpleMDE comes with an array of predefined keyboard shortcuts, but they can be altered with a configuration option. The list of default ones is as follows:
 
-Shortcut | Action
-:------- | :-----
-*Cmd-'* | "toggleBlockquote"
-*Cmd-B* | "toggleBold"
-*Cmd-E* | "cleanBlock"
-*Cmd-H* | "toggleHeadingSmaller"
-*Cmd-I* | "toggleItalic"
-*Cmd-K* | "drawLink"
-*Cmd-L* | "toggleUnorderedList"
-*Cmd-P* | "togglePreview"
-*Cmd-Alt-C* | "toggleCodeBlock"
-*Cmd-Alt-I* | "drawImage"
-*Cmd-Alt-L* | "toggleOrderedList"
-*Shift-Cmd-H* | "toggleHeadingBigger"
-*F9* | "toggleSideBySide"
-*F11* | "toggleFullScreen"
+| Shortcut      | Action                 |
+| :------------ | :--------------------- |
+| _Cmd-'_       | "toggleBlockquote"     |
+| _Cmd-B_       | "toggleBold"           |
+| _Cmd-E_       | "cleanBlock"           |
+| _Cmd-H_       | "toggleHeadingSmaller" |
+| _Cmd-I_       | "toggleItalic"         |
+| _Cmd-K_       | "drawLink"             |
+| _Cmd-L_       | "toggleUnorderedList"  |
+| _Cmd-P_       | "togglePreview"        |
+| _Cmd-Alt-C_   | "toggleCodeBlock"      |
+| _Cmd-Alt-I_   | "drawImage"            |
+| _Cmd-Alt-L_   | "toggleOrderedList"    |
+| _Shift-Cmd-H_ | "toggleHeadingBigger"  |
+| _F9_          | "toggleSideBySide"     |
+| _F11_         | "toggleFullScreen"     |
 
 Here is how you can change a few, while leaving others untouched:
 
@@ -297,6 +301,7 @@ Or, you can keep the height static:
 ```
 
 ## Event handling
+
 You can catch the following list of events: https://codemirror.net/doc/manual.html#events
 
 ```JavaScript
@@ -307,6 +312,7 @@ simplemde.codemirror.on("change", function(){
 ```
 
 ## Removing SimpleMDE from textarea
+
 You can revert to the initial textarea by calling the `toTextArea` method. Note that this clears up the autosave (if enabled) associated with it. The textarea will retain any text from the destroyed SimpleMDE instance.
 
 ```JavaScript
@@ -317,6 +323,7 @@ simplemde = null;
 ```
 
 ## Useful methods
+
 The following self-explanatory methods may be of use while developing with SimpleMDE.
 
 ```js
@@ -327,8 +334,8 @@ simplemde.isFullscreenActive(); // returns boolean
 simplemde.clearAutosavedValue(); // no returned value
 ```
 
-
 ## How it works
+
 SimpleMDE began as an improvement of [lepture's Editor project](https://github.com/lepture/editor), but has now taken on an identity of its own. It is bundled with [CodeMirror](https://github.com/codemirror/codemirror) and depends on [Font Awesome](http://fontawesome.io).
 
 CodeMirror is the backbone of the project and parses much of the Markdown syntax as it's being written. This allows us to add styles to the Markdown that's being written. Additionally, a toolbar and status bar have been added to the top and bottom, respectively. Previews are rendered by [Marked](https://github.com/chjj/marked) using GFM.

@@ -7,7 +7,7 @@ import {
 import {expect} from 'chai';
 
 const testInvalidUrl = function (url) {
-    let navItem = NavItem.create({url});
+    const navItem = NavItem.create({url});
 
     validator.check(navItem, 'url');
 
@@ -20,7 +20,7 @@ const testInvalidUrl = function (url) {
 };
 
 const testValidUrl = function (url) {
-    let navItem = NavItem.create({url});
+    const navItem = NavItem.create({url});
 
     validator.check(navItem, 'url');
 
@@ -30,7 +30,7 @@ const testValidUrl = function (url) {
 
 describe('Unit: Validator: nav-item', function () {
     it('requires label or icon presence', function () {
-        let navItem = NavItem.create();
+        const navItem = NavItem.create();
 
         validator.check(navItem, 'label');
 
@@ -43,7 +43,7 @@ describe('Unit: Validator: nav-item', function () {
     });
 
     it('allows blank label when icon is present', function () {
-        let navItem = NavItem.create({icon: 'https://example.com/icon.svg'});
+        const navItem = NavItem.create({icon: 'https://example.com/icon.svg'});
 
         validator.check(navItem, 'label');
 
@@ -53,7 +53,7 @@ describe('Unit: Validator: nav-item', function () {
     });
 
     it('requires url presence', function () {
-        let navItem = NavItem.create();
+        const navItem = NavItem.create();
 
         validator.check(navItem, 'url');
 
@@ -66,7 +66,7 @@ describe('Unit: Validator: nav-item', function () {
     });
 
     it('fails on invalid url values', function () {
-        let invalidUrls = [
+        const invalidUrls = [
             'test@example.com',
             '/has spaces',
             'no-leading-slash',
@@ -79,7 +79,7 @@ describe('Unit: Validator: nav-item', function () {
     });
 
     it('passes on valid url values', function () {
-        let validUrls = [
+        const validUrls = [
             'http://localhost:2368',
             'http://localhost:2368/some-path',
             'https://localhost:2368/some-path',
@@ -99,7 +99,7 @@ describe('Unit: Validator: nav-item', function () {
     });
 
     it('validates url and label by default', function () {
-        let navItem = NavItem.create();
+        const navItem = NavItem.create();
 
         validator.check(navItem);
 
@@ -109,7 +109,7 @@ describe('Unit: Validator: nav-item', function () {
     });
 
     it('validates url and icon-only item by default', function () {
-        let navItem = NavItem.create({icon: 'https://example.com/icon.svg', url: '/icon-only/'});
+        const navItem = NavItem.create({icon: 'https://example.com/icon.svg', url: '/icon-only/'});
 
         validator.check(navItem);
 

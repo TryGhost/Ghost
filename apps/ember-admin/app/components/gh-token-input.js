@@ -28,10 +28,10 @@ export default class GhTokenInput extends Component {
     }
 
     get optionsWithoutSelected() {
-        let options = this.args.options;
-        let selected = this.args.selected;
+        const options = this.args.options;
+        const selected = this.args.selected;
 
-        let optionsWithoutSelected = [];
+        const optionsWithoutSelected = [];
 
         function filterSelectedOptions(opts, result) {
             opts.forEach((o) => {
@@ -67,7 +67,7 @@ export default class GhTokenInput extends Component {
         // On backspace with empty text, remove the last token but deviate
         // from default behaviour by not updating search to match last token
         if (event.keyCode === BACKSPACE && isBlank(event.target.value)) {
-            let lastSelection = select.selected[select.selected.length - 1];
+            const lastSelection = select.selected[select.selected.length - 1];
 
             if (lastSelection) {
                 this.args.onChange(select.selected.slice(0, -1), select);
@@ -136,7 +136,7 @@ export default class GhTokenInput extends Component {
             return;
         }
 
-        let suggestion = selection.find(option => option.__isSuggestion__);
+        const suggestion = selection.find(option => option.__isSuggestion__);
 
         if (suggestion) {
             // abort creating if we're still searching otherwise we could create duplicates
@@ -162,9 +162,9 @@ export default class GhTokenInput extends Component {
             return newOptions;
         }
 
-        let searchAction = this.args.search;
+        const searchAction = this.args.search;
         if (searchAction) {
-            let results = yield searchAction(term, select);
+            const results = yield searchAction(term, select);
 
             this._addCreateOption(term, results);
             return results;
@@ -181,7 +181,7 @@ export default class GhTokenInput extends Component {
     // always select the first item in the list that isn't the "Add x" option
     @action
     defaultHighlighted(select) {
-        let {results} = select;
+        const {results} = select;
         let option = advanceSelectableOption(results, undefined, 1);
 
         if (results.length > 1 && option.__isSuggestion__) {
@@ -220,7 +220,7 @@ export default class GhTokenInput extends Component {
     }
 
     _hideCreateOptionOnSameTerm(term, options) {
-        let existingOption = options.findBy(this.searchField, term);
+        const existingOption = options.findBy(this.searchField, term);
         return !existingOption;
     }
 

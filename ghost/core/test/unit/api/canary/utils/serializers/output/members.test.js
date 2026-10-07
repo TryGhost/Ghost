@@ -1,94 +1,104 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../../../../../utils/assertions');
+const { assertExists } = require('../../../../../../utils/assertions');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../utils');
 const labs = require('../../../../../../../core/shared/labs');
 const memberSerializer = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/members');
 
 describe('Unit: endpoints/utils/serializers/output/members', function () {
-    let memberModel;
-    beforeEach(function () {
-        memberModel = (data) => {
-            return Object.assign(data, {toJSON: sinon.stub().returns(data)});
-        };
-        sinon.stub(labs, 'isSet').returns(true);
-    });
+  let memberModel;
+  beforeEach(function () {
+    memberModel = (data) => {
+      return Object.assign(data, { toJSON: sinon.stub().returns(data) });
+    };
+    sinon.stub(labs, 'isSet').returns(true);
+  });
 
-    afterEach(function () {
-        sinon.restore();
-    });
+  afterEach(function () {
+    sinon.restore();
+  });
 
-    it('browse: includes newsletter data', function () {
-        const apiConfig = {docName: 'members'};
-        const frame = {
-            options: {
-                context: {}
-            }
-        };
+  it('browse: includes newsletter data', function () {
+    const apiConfig = { docName: 'members' };
+    const frame = {
+      options: {
+        context: {},
+      },
+    };
 
-        const ctrlResponse = memberModel(testUtils.DataGenerator.forKnex.createMemberWithNewsletter());
-        memberSerializer.browse({
-            data: [ctrlResponse],
-            meta: null
-        }, apiConfig, frame);
-        assertExists(frame.response.members[0].newsletters);
-    });
+    const ctrlResponse = memberModel(testUtils.DataGenerator.forKnex.createMemberWithNewsletter());
+    memberSerializer.browse(
+      {
+        data: [ctrlResponse],
+        meta: null,
+      },
+      apiConfig,
+      frame,
+    );
+    assertExists(frame.response.members[0].newsletters);
+  });
 
-    it('browse: includes tiers data', function () {
-        const apiConfig = {docName: 'members'};
-        const frame = {
-            options: {
-                context: {}
-            }
-        };
+  it('browse: includes tiers data', function () {
+    const apiConfig = { docName: 'members' };
+    const frame = {
+      options: {
+        context: {},
+      },
+    };
 
-        const ctrlResponse = memberModel(testUtils.DataGenerator.forKnex.createMemberWithProducts());
-        memberSerializer.browse({
-            data: [ctrlResponse],
-            meta: null
-        }, apiConfig, frame);
+    const ctrlResponse = memberModel(testUtils.DataGenerator.forKnex.createMemberWithProducts());
+    memberSerializer.browse(
+      {
+        data: [ctrlResponse],
+        meta: null,
+      },
+      apiConfig,
+      frame,
+    );
 
-        assertExists(frame.response.members[0].tiers);
-    });
+    assertExists(frame.response.members[0].tiers);
+  });
 
-    it('read: includes newsletter data', function () {
-        const apiConfig = {docName: 'members'};
-        const frame = {
-            options: {
-                context: {}
-            }
-        };
+  it('read: includes newsletter data', function () {
+    const apiConfig = { docName: 'members' };
+    const frame = {
+      options: {
+        context: {},
+      },
+    };
 
-        const ctrlResponse = memberModel(testUtils.DataGenerator.forKnex.createMemberWithNewsletter());
-        memberSerializer.read(ctrlResponse, apiConfig, frame);
-        assertExists(frame.response.members[0].newsletters);
-    });
+    const ctrlResponse = memberModel(testUtils.DataGenerator.forKnex.createMemberWithNewsletter());
+    memberSerializer.read(ctrlResponse, apiConfig, frame);
+    assertExists(frame.response.members[0].newsletters);
+  });
 
-    it('read: includes tiers data', function () {
-        const apiConfig = {docName: 'members'};
-        const frame = {
-            options: {
-                context: {}
-            }
-        };
+  it('read: includes tiers data', function () {
+    const apiConfig = { docName: 'members' };
+    const frame = {
+      options: {
+        context: {},
+      },
+    };
 
-        const ctrlResponse = memberModel(testUtils.DataGenerator.forKnex.createMemberWithProducts());
-        memberSerializer.read(ctrlResponse, apiConfig, frame);
+    const ctrlResponse = memberModel(testUtils.DataGenerator.forKnex.createMemberWithProducts());
+    memberSerializer.read(ctrlResponse, apiConfig, frame);
 
-        assertExists(frame.response.members[0].tiers);
-    });
+    assertExists(frame.response.members[0].tiers);
+  });
 
-    it('read: includes comment notification enabled flag', function () {
-        const apiConfig = {docName: 'members'};
-        const frame = {
-            options: {
-                context: {}
-            }
-        };
+  it('read: includes comment notification enabled flag', function () {
+    const apiConfig = { docName: 'members' };
+    const frame = {
+      options: {
+        context: {},
+      },
+    };
 
-        const ctrlResponse = memberModel(testUtils.DataGenerator.forKnex.createMember({enable_comment_notifications: true}));
-        memberSerializer.read(ctrlResponse, apiConfig, frame);
-        assertExists(frame.response.members[0].enable_comment_notifications);
-        assert.equal(frame.response.members[0].enable_comment_notifications, true);
-    });
+    const ctrlResponse = memberModel(
+      testUtils.DataGenerator.forKnex.createMember({ enable_comment_notifications: true }),
+    );
+    memberSerializer.read(ctrlResponse, apiConfig, frame);
+    assertExists(frame.response.members[0].enable_comment_notifications);
+    assert.equal(frame.response.members[0].enable_comment_notifications, true);
+  });
 });

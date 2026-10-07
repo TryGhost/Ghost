@@ -6,11 +6,11 @@ This guide explains how to write and structure them.
 
 For related guidance:
 
-| For | Read |
-| --- | --- |
-| Choosing between unit, integration, acceptance, and E2E tests | [Testing Ghost](testing.md) |
-| Running E2E tests, infrastructure modes, debugging, isolation, and fixtures | [E2E workspace README](../../e2e/README.md) |
-| Available factories and how to add one | [Data factory README](../../e2e/data-factory/README.md) |
+| For                                                                         | Read                                                    |
+| --------------------------------------------------------------------------- | ------------------------------------------------------- |
+| Choosing between unit, integration, acceptance, and E2E tests               | [Testing Ghost](testing.md)                             |
+| Running E2E tests, infrastructure modes, debugging, isolation, and fixtures | [E2E workspace README](../../e2e/README.md)             |
+| Available factories and how to add one                                      | [Data factory README](../../e2e/data-factory/README.md) |
 
 Workspace command examples start from the repository root and change into
 `e2e/`.
@@ -52,6 +52,7 @@ assertions in that test.
 ## Page Object Pattern
 
 ### Core Principles
+
 1. **Page Objects contain reusable page structure and interactions**
 2. **Reuse existing Page Objects when possible**
 3. **Create focused, single-responsibility Page Objects**
@@ -210,6 +211,7 @@ Ember Admin commonly uses `data-test-*` attributes and the React Admin apps use
 `data-testid`. Prefer a role, label, or unique visible text where one exists.
 
 ### Admin URLs
+
 - Editor: `/ghost/#/editor/post/[id]`
 - Posts list: `/ghost/#/posts`
 - Settings: `/ghost/#/settings`

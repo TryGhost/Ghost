@@ -19,6 +19,7 @@ Wherever possible, use the utility functions in `ghost/core/core/server/data/mig
 ## Migration PRs should be as minimal as possible
 
 Migration PRs should contain the minimal amount of code to create the migration. Usually this means it should only include:
+
 - the new migration file
 - updates to the schema.js file
 - updated schema integrity hash tests

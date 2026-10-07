@@ -10,10 +10,10 @@ const renderer = require('./renderer');
  * @returns {Closure)
  */
 module.exports = function renderEntries(req, res) {
-    debug('renderEntries called');
-    return function renderEntriesClosure(result) {
-        // Format data 2
-        // Render
-        return renderer(req, res, formatResponse.entries(result, false, res.locals));
-    };
+  debug('renderEntries called');
+  return function renderEntriesClosure(result) {
+    // Format data 2
+    // Render
+    return renderer(req, res, formatResponse.entries(result, false, res.locals));
+  };
 };

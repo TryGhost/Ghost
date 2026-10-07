@@ -1,17 +1,18 @@
-import {AdminPage} from './admin-page';
-import {Locator, Page} from '@playwright/test';
+import { AdminPage } from './admin-page';
+import { Locator, Page } from '@playwright/test';
+import { sitePreviewFrame } from '@tryghost/test-data/selectors/view-site';
 
 export class SitePage extends AdminPage {
-    readonly sitePreview: Locator;
+  readonly sitePreview: Locator;
 
-    constructor(page: Page) {
-        super(page);
-        this.pageUrl = '/ghost/#/site';
-        this.sitePreview = page.getByTitle('Site preview');
-    }
+  constructor(page: Page) {
+    super(page);
+    this.pageUrl = '/ghost/#/site';
+    this.sitePreview = page.getByTitle(sitePreviewFrame);
+  }
 
-    async waitForPageToFullyLoad(): Promise<void> {
-        await this.page.waitForURL(this.pageUrl);
-        await this.sitePreview.waitFor({state: 'visible'});
-    }
+  async waitForPageToFullyLoad(): Promise<void> {
+    await this.page.waitForURL(this.pageUrl);
+    await this.sitePreview.waitFor({ state: 'visible' });
+  }
 }

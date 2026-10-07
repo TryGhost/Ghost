@@ -1,17 +1,23 @@
 import _ from 'lodash';
 import errors from '@tryghost/errors';
-import {QUERY} from './config';
-import type {RouteData, DataEntry, DataShortForm, DataShortFormResource, DataLongFormEntry} from '@tryghost/adapter-base-route-settings';
+import { QUERY } from './config';
+import type {
+  RouteData,
+  DataEntry,
+  DataShortForm,
+  DataShortFormResource,
+  DataLongFormEntry,
+} from '@tryghost/adapter-base-route-settings';
 
 /**
  * A resolved Content API call: which controller to reach for, which method to
  * call on it, and the options to call it with.
  */
 export interface ApiCallSpec {
-    controller: string;
-    type: 'read' | 'browse';
-    resource: string;
-    options: Record<string, unknown>;
+  controller: string;
+  type: 'read' | 'browse';
+  resource: string;
+  options: Record<string, unknown>;
 }
 
 /**
@@ -19,15 +25,15 @@ export interface ApiCallSpec {
  * that slug, and other routers redirect to it.
  */
 export interface ResourceRead {
-    resource: string;
-    slug: string;
+  resource: string;
+  slug: string;
 }
 
 interface ResourceConfig {
-    controller: string;
-    type?: 'read' | 'browse';
-    resource: string;
-    options?: Record<string, unknown>;
+  controller: string;
+  type?: 'read' | 'browse';
+  resource: string;
+  options?: Record<string, unknown>;
 }
 
 // Without this, a domain resource with no entry here would only fail per request.
@@ -45,61 +51,70 @@ const RESOURCE_CONFIGS: Record<string, ResourceConfig | undefined> = QUERY;
  * a data entry is routing metadata (`redirect`) or unsupported (`fields`), and
  * is deliberately not forwarded.
  */
-const ALLOWED_QUERY_OPTIONS = ['limit', 'order', 'filter', 'include', 'slug', 'visibility', 'status', 'page'];
+const ALLOWED_QUERY_OPTIONS = [
+  'limit',
+  'order',
+  'filter',
+  'include',
+  'slug',
+  'visibility',
+  'status',
+  'page',
+];
 
 function unknownResource(resource: string) {
-    return new errors.IncorrectUsageError({message: `Unknown route data resource: ${resource}`});
+  return new errors.IncorrectUsageError({ message: `Unknown route data resource: ${resource}` });
 }
 
 // Shorthand names a resource the short way (`tag`), long form the way the API
 // does (`tags`). Both land on the same config.
 function splitShortForm(shortForm: DataShortForm): [string, string] {
-    const [key, slug] = shortForm.split('.');
-    return [key, slug];
+  const [key, slug] = shortForm.split('.');
+  return [key, slug];
 }
 
 function shortFormConfig(key: string): ResourceConfig | undefined {
-    return RESOURCE_CONFIGS[key];
+  return RESOURCE_CONFIGS[key];
 }
 
 function longFormConfig(resource: string): ResourceConfig | undefined {
-    return Object.values(RESOURCE_CONFIGS).find(config => config?.resource === resource);
+  return Object.values(RESOURCE_CONFIGS).find((config) => config?.resource === resource);
 }
 
 function resolveShortForm(shortForm: DataShortForm): ApiCallSpec {
-    const [key, slug] = splitShortForm(shortForm);
-    const config = shortFormConfig(key);
+  const [key, slug] = splitShortForm(shortForm);
+  const config = shortFormConfig(key);
 
-    if (!config?.type) {
-        throw unknownResource(key);
-    }
+  if (!config?.type) {
+    throw unknownResource(key);
+  }
 
-    return {
-        controller: config.controller,
-        type: config.type,
-        resource: config.resource,
-        options: {...config.options, slug}
-    };
+  return {
+    controller: config.controller,
+    type: config.type,
+    resource: config.resource,
+    options: { ...config.options, slug },
+  };
 }
 
 function resolveLongForm(entry: DataLongFormEntry): ApiCallSpec {
-    const config = longFormConfig(entry.resource);
+  const config = longFormConfig(entry.resource);
 
-    if (!config) {
-        throw unknownResource(entry.resource);
-    }
+  if (!config) {
+    throw unknownResource(entry.resource);
+  }
 
-    const options: Record<string, unknown> = _.pick(entry, ALLOWED_QUERY_OPTIONS);
+  const options: Record<string, unknown> = _.pick(entry, ALLOWED_QUERY_OPTIONS);
 
-    return {
-        controller: config.controller,
-        type: entry.type,
-        resource: config.resource,
-        // A `read` targets one known resource, so the resource defaults (e.g.
-        // `visibility: public` for tags) apply. A `browse` is author-driven and
-        // takes only what the entry asked for.
-        options: entry.type === 'read' ? _.defaults(options, config.options) : options
-    };
+  return {
+    controller: config.controller,
+    type: entry.type,
+    resource: config.resource,
+    // A `read` targets one known resource, so the resource defaults (e.g.
+    // `visibility: public` for tags) apply. A `browse` is author-driven and
+    // takes only what the entry asked for.
+    options: entry.type === 'read' ? _.defaults(options, config.options) : options,
+  };
 }
 
 /**
@@ -116,7 +131,7 @@ function resolveLongForm(entry: DataLongFormEntry): ApiCallSpec {
  *   // => {controller: 'tagsPublic', type: 'read', resource: 'tags', options: {slug: 'food', visibility: 'public'}}
  */
 export function resolveApiCall(entry: DataEntry): ApiCallSpec {
-    return typeof entry === 'string' ? resolveShortForm(entry) : resolveLongForm(entry);
+  return typeof entry === 'string' ? resolveShortForm(entry) : resolveLongForm(entry);
 }
 
 /**
@@ -126,17 +141,17 @@ export function resolveApiCall(entry: DataEntry): ApiCallSpec {
  * keyed by its resource shorthand — `tag` — matching what themes already expect.
  */
 export function resolveRouteData(routeData?: RouteData): Record<string, ApiCallSpec> {
-    if (!routeData) {
-        return {};
-    }
+  if (!routeData) {
+    return {};
+  }
 
-    if (typeof routeData === 'string') {
-        const [key] = splitShortForm(routeData);
+  if (typeof routeData === 'string') {
+    const [key] = splitShortForm(routeData);
 
-        return {[key]: resolveApiCall(routeData)};
-    }
+    return { [key]: resolveApiCall(routeData) };
+  }
 
-    return _.mapValues(routeData, entry => resolveApiCall(entry));
+  return _.mapValues(routeData, (entry) => resolveApiCall(entry));
 }
 
 /**
@@ -149,16 +164,16 @@ export function resolveRouteData(routeData?: RouteData): Record<string, ApiCallS
  * @example resolveResourceRead('tag.food') // => {resource: 'tags', slug: 'food'}
  */
 export function resolveResourceRead(entry: DataEntry): ResourceRead | null {
-    if (typeof entry === 'string') {
-        const [key, slug] = splitShortForm(entry);
-        const config = shortFormConfig(key);
+  if (typeof entry === 'string') {
+    const [key, slug] = splitShortForm(entry);
+    const config = shortFormConfig(key);
 
-        return config?.type === 'read' ? {resource: config.resource, slug} : null;
-    }
+    return config?.type === 'read' ? { resource: config.resource, slug } : null;
+  }
 
-    if (entry.type !== 'read') {
-        return null;
-    }
+  if (entry.type !== 'read') {
+    return null;
+  }
 
-    return longFormConfig(entry.resource) ? {resource: entry.resource, slug: entry.slug} : null;
+  return longFormConfig(entry.resource) ? { resource: entry.resource, slug: entry.slug } : null;
 }

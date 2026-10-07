@@ -10,9 +10,9 @@ const getPaginatedUrl = metaData.getPaginatedUrl;
 // We use the name page_url to match the helper for consistency:
 // eslint-disable-next-line camelcase
 module.exports = function page_url(page, options) {
-    if (!options) {
-        options = page;
-        page = 1;
-    }
-    return getPaginatedUrl(page, options.data.root);
+  if (!options) {
+    options = page;
+    page = 1;
+  }
+  return getPaginatedUrl(page, options.data.root);
 };

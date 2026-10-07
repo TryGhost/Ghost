@@ -1,150 +1,154 @@
 import * as analyticsSel from '@tryghost/test-data/selectors/analytics';
-import {AdminPage} from '@/admin-pages';
-import {Locator, Page} from '@playwright/test';
+import { AdminPage } from '@/admin-pages';
+import { Locator, Page } from '@playwright/test';
 
 export class AnalyticsWebTrafficPage extends AdminPage {
-    readonly totalViewsTab: Locator;
-    readonly totalUniqueVisitorsTab: Locator;
-    private readonly webGraph: Locator;
+  readonly totalViewsTab: Locator;
+  readonly totalUniqueVisitorsTab: Locator;
+  private readonly webGraph: Locator;
 
-    readonly topContentCard: Locator;
-    readonly postsAndPagesButton: Locator;
-    readonly postsButton: Locator;
-    readonly pagesButton: Locator;
+  readonly topContentCard: Locator;
+  readonly postsAndPagesButton: Locator;
+  readonly postsButton: Locator;
+  readonly pagesButton: Locator;
 
-    public readonly topSourcesCard: Locator;
-    public readonly sourcesTab: Locator;
-    public readonly campaignsDropdown: Locator;
+  public readonly topSourcesCard: Locator;
+  public readonly sourcesTab: Locator;
+  public readonly campaignsDropdown: Locator;
 
-    // Filter-related locators
-    public readonly filterContainer: Locator;
-    public readonly filterButton: Locator;
-    public readonly clearFiltersButton: Locator;
-    public readonly locationsCard: Locator;
+  // Filter-related locators
+  public readonly filterContainer: Locator;
+  public readonly filterButton: Locator;
+  public readonly clearFiltersButton: Locator;
+  public readonly locationsCard: Locator;
 
-    constructor(page: Page) {
-        super(page);
-        this.pageUrl = '/ghost/#/analytics/web';
+  constructor(page: Page) {
+    super(page);
+    this.pageUrl = '/ghost/#/analytics/web';
 
-        this.totalViewsTab = page.getByRole('tab', {name: 'Total views'});
-        this.totalUniqueVisitorsTab = page.getByRole('tab', {name: 'Unique visitors'});
+    this.totalViewsTab = page.getByRole('tab', { name: 'Total views' });
+    this.totalUniqueVisitorsTab = page.getByRole('tab', { name: 'Unique visitors' });
 
-        this.webGraph = page.getByTestId(analyticsSel.webGraph);
+    this.webGraph = page.getByTestId(analyticsSel.webGraph);
 
-        this.topContentCard = page.getByTestId(analyticsSel.topContentCard);
-        this.postsAndPagesButton = this.topContentCard.getByRole('tab', {name: 'Posts & pages'});
-        this.postsButton = this.topContentCard.getByRole('tab', {name: 'Posts', exact: true});
-        this.pagesButton = this.topContentCard.getByRole('tab', {name: 'Pages', exact: true});
+    this.topContentCard = page.getByTestId(analyticsSel.topContentCard);
+    this.postsAndPagesButton = this.topContentCard.getByRole('tab', { name: 'Posts & pages' });
+    this.postsButton = this.topContentCard.getByRole('tab', { name: 'Posts', exact: true });
+    this.pagesButton = this.topContentCard.getByRole('tab', { name: 'Pages', exact: true });
 
-        this.topSourcesCard = page.getByTestId(analyticsSel.topSourcesCard);
-        this.sourcesTab = this.topSourcesCard.getByRole('tab', {name: 'Sources'});
-        this.campaignsDropdown = this.topSourcesCard.getByRole('tab', {name: /Campaigns|UTM/});
+    this.topSourcesCard = page.getByTestId(analyticsSel.topSourcesCard);
+    this.sourcesTab = this.topSourcesCard.getByRole('tab', { name: 'Sources' });
+    this.campaignsDropdown = this.topSourcesCard.getByRole('tab', { name: /Campaigns|UTM/ });
 
-        // Filter elements
-        this.filterContainer = page.getByTestId(analyticsSel.statsFilterContainer);
-        this.filterButton = this.filterContainer.getByRole('button', {name: /Filter|Add filter/});
-        this.clearFiltersButton = page.getByTestId(analyticsSel.statsFilterClearButton);
-        this.locationsCard = page.getByTestId(analyticsSel.visitorsCard);
-    }
+    // Filter elements
+    this.filterContainer = page.getByTestId(analyticsSel.statsFilterContainer);
+    this.filterButton = this.filterContainer.getByRole('button', { name: /Filter|Add filter/ });
+    this.clearFiltersButton = page.getByTestId(analyticsSel.statsFilterClearButton);
+    this.locationsCard = page.getByTestId(analyticsSel.visitorsCard);
+  }
 
-    async openFilterPopover() {
-        await this.filterButton.click();
-    }
+  async openFilterPopover() {
+    await this.filterButton.click();
+  }
 
-    getFilterOption(name: string): Locator {
-        return this.page.getByRole('option', {name, exact: true});
-    }
+  getFilterOption(name: string): Locator {
+    return this.page.getByRole('option', { name, exact: true });
+  }
 
-    getFilterOptionValue(name: string): Locator {
-        // Filter option values usually show as "count name" (e.g., "1 Direct");
-        // some dimensions (e.g. Gift link) show a plain label without a count
-        return this.page.getByRole('option', {name: new RegExp(`^(\\d+\\s+)?${name}$`)});
-    }
+  getFilterOptionValue(name: string): Locator {
+    // Filter option values usually show as "count name" (e.g., "1 Direct");
+    // some dimensions (e.g. Gift link) show a plain label without a count
+    return this.page.getByRole('option', { name: new RegExp(`^(\\d+\\s+)?${name}$`) });
+  }
 
-    async selectFilterField(label: string) {
-        await this.getFilterOption(label).click();
-    }
+  async selectFilterField(label: string) {
+    await this.getFilterOption(label).click();
+  }
 
-    async selectFilterValue(label: string) {
-        await this.getFilterOptionValue(label).click();
-    }
+  async selectFilterValue(label: string) {
+    await this.getFilterOptionValue(label).click();
+  }
 
-    async addFilter(fieldLabel: string, valueLabel: string) {
-        await this.openFilterPopover();
-        await this.selectFilterField(fieldLabel);
-        await this.selectFilterValue(valueLabel);
-    }
+  async addFilter(fieldLabel: string, valueLabel: string) {
+    await this.openFilterPopover();
+    await this.selectFilterField(fieldLabel);
+    await this.selectFilterValue(valueLabel);
+  }
 
-    getActiveFilter(fieldLabel: string): Locator {
-        return this.filterContainer.locator('[data-slot="filter-item"]').filter({hasText: fieldLabel});
-    }
+  getActiveFilter(fieldLabel: string): Locator {
+    return this.filterContainer
+      .locator('[data-slot="filter-item"]')
+      .filter({ hasText: fieldLabel });
+  }
 
-    async removeFilter(fieldLabel: string) {
-        const filterItem = this.getActiveFilter(fieldLabel);
-        await filterItem.locator('[data-slot="filters-remove"]').click();
-    }
+  async removeFilter(fieldLabel: string) {
+    const filterItem = this.getActiveFilter(fieldLabel);
+    await filterItem.locator('[data-slot="filters-remove"]').click();
+  }
 
-    async clearAllFilters() {
-        await this.clearFiltersButton.click();
-    }
+  async clearAllFilters() {
+    await this.clearFiltersButton.click();
+  }
 
-    async hasActiveFilter(fieldLabel: string): Promise<boolean> {
-        return await this.getActiveFilter(fieldLabel).isVisible();
-    }
+  async hasActiveFilter(fieldLabel: string): Promise<boolean> {
+    return await this.getActiveFilter(fieldLabel).isVisible();
+  }
 
-    async clickSourceToFilter(sourceIdentifier: string) {
-        const row = this.page.getByTestId(`${analyticsSel.sourceRowPrefix}${sourceIdentifier}`);
-        await row.click();
-    }
+  async clickSourceToFilter(sourceIdentifier: string) {
+    const row = this.page.getByTestId(`${analyticsSel.sourceRowPrefix}${sourceIdentifier}`);
+    await row.click();
+  }
 
-    async clickLocationToFilter(locationCode: string) {
-        const row = this.page.getByTestId(`${analyticsSel.locationRowPrefix}${locationCode}`);
-        await row.click();
-    }
+  async clickLocationToFilter(locationCode: string) {
+    const row = this.page.getByTestId(`${analyticsSel.locationRowPrefix}${locationCode}`);
+    await row.click();
+  }
 
-    /**
-     * Get the search params from the current URL
-     * The URL is like this: /ghost/#/analytics/web?source=direct, so we need to split the URL and get the query part.
-     */
-    getSearchParams(): URLSearchParams {
-        const url = this.page.url();
-        const hashQuery = url.split('?')[1] ?? '';
-        return new URLSearchParams(hashQuery);
-    }
+  /**
+   * Get the search params from the current URL
+   * The URL is like this: /ghost/#/analytics/web?source=direct, so we need to split the URL and get the query part.
+   */
+  getSearchParams(): URLSearchParams {
+    const url = this.page.url();
+    const hashQuery = url.split('?')[1] ?? '';
+    return new URLSearchParams(hashQuery);
+  }
 
-    async gotoWithFilters(filters: Record<string, string>) {
-        const params = new URLSearchParams(filters);
-        await this.goto(`${this.pageUrl}?${params.toString()}`);
-    }
+  async gotoWithFilters(filters: Record<string, string>) {
+    const params = new URLSearchParams(filters);
+    await this.goto(`${this.pageUrl}?${params.toString()}`);
+  }
 
-    async selectCampaignType(campaignType: 'UTM sources' | 'UTM mediums' | 'UTM campaigns' | 'UTM contents' | 'UTM terms') {
-        // force: true is needed because the element is covered by an overlay button
-        await this.campaignsDropdown.waitFor({state: 'visible'});
-        await this.campaignsDropdown.click({force: true});
-        await this.page.getByRole('menuitem', {name: campaignType}).click();
-    }
+  async selectCampaignType(
+    campaignType: 'UTM sources' | 'UTM mediums' | 'UTM campaigns' | 'UTM contents' | 'UTM terms',
+  ) {
+    // force: true is needed because the element is covered by an overlay button
+    await this.campaignsDropdown.waitFor({ state: 'visible' });
+    await this.campaignsDropdown.click({ force: true });
+    await this.page.getByRole('menuitem', { name: campaignType }).click();
+  }
 
-    async refreshData() {
-        await this.page.reload();
-    }
+  async refreshData() {
+    await this.page.reload();
+  }
 
-    async totalViewsContent() {
-        return await this.webGraph.textContent();
-    }
+  async totalViewsContent() {
+    return await this.webGraph.textContent();
+  }
 
-    async totalUniqueVisitorsContent() {
-        return await this.totalUniqueVisitorsTab.textContent();
-    }
+  async totalUniqueVisitorsContent() {
+    return await this.totalUniqueVisitorsTab.textContent();
+  }
 
-    async viewTotalViews() {
-        await this.totalViewsTab.click();
-    }
+  async viewTotalViews() {
+    await this.totalViewsTab.click();
+  }
 
-    async viewTotalUniqueVisitors() {
-        await this.totalUniqueVisitorsTab.click();
-    }
+  async viewTotalUniqueVisitors() {
+    await this.totalUniqueVisitorsTab.click();
+  }
 
-    async viewWebGraphContent() {
-        await this.webGraph.textContent();
-    }
+  async viewWebGraphContent() {
+    await this.webGraph.textContent();
+  }
 }

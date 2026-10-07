@@ -1,0 +1,297 @@
+import { act, renderHook, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { createElement, type ReactNode } from 'react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { usePublishFlow, type PublishFlowOptions } from './use-publish-flow';
+import type { EmailConfirmationOutcome } from './email-confirmation';
+import type { NewsletterInput } from './publish-options';
+
+const transport = vi.hoisted(() => ({ fetchApi: vi.fn(), retryEmail: vi.fn() }));
+vi.mock('@tryghost/admin-x-framework/hooks', () => ({ useFetchApi: () => transport.fetchApi }));
+vi.mock('@tryghost/admin-x-framework/api/emails', () => ({
+  useRetryEmail: () => ({ mutateAsync: transport.retryEmail }),
+}));
+
+// A confirmation each spec settles itself; tearing the flow down settles it as cancelled.
+const confirmation = vi.hoisted(() => ({
+  settle: undefined as ((outcome: EmailConfirmationOutcome) => void) | undefined,
+}));
+vi.mock('./email-confirmation', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./email-confirmation')>()),
+  createEmailConfirmation: () => ({
+    confirm: () =>
+      new Promise<EmailConfirmationOutcome>((resolve) => {
+        confirmation.settle = resolve;
+      }),
+    retryAndConfirm: () =>
+      new Promise<EmailConfirmationOutcome>((resolve) => {
+        confirmation.settle = resolve;
+      }),
+    cancel: () => confirmation.settle?.({ kind: 'cancelled' }),
+  }),
+}));
+
+const NOW = new Date('2026-09-02T10:00:00.000Z');
+const SCHEDULED_AT = '2026-09-03T10:00:00.000Z';
+const WEEKLY: NewsletterInput = { slug: 'weekly', name: 'Weekly', status: 'active', sortOrder: 0 };
+const DAILY: NewsletterInput = { slug: 'daily', name: 'Daily', status: 'active', sortOrder: 1 };
+
+function options(): PublishFlowOptions {
+  return {
+    post: {
+      id: 'post-1',
+      displayName: 'post',
+      status: 'draft',
+      title: 'Hello',
+      visibility: 'public',
+    },
+    site: {
+      membersEnabled: true,
+      mailgunConfigured: true,
+      memberCount: 100,
+      newsletters: [WEEKLY, DAILY],
+      editorDefaultEmailRecipients: 'visibility',
+      editorDefaultEmailRecipientsFilter: null,
+    },
+    user: { isAdmin: true, isAuthorOrContributor: false },
+    now: () => NOW,
+    dispatch: vi.fn().mockResolvedValue({
+      kind: 'saved',
+      executedAs: 'schedule',
+      result: { id: 'post-1', status: 'scheduled', updatedAt: NOW.toISOString() },
+    }),
+  };
+}
+
+function wrapper({ children }: { children: ReactNode }) {
+  return createElement(QueryClientProvider, { client: new QueryClient() }, children);
+}
+
+afterEach(() => {
+  localStorage.clear();
+  vi.clearAllMocks();
+  confirmation.settle = undefined;
+});
+
+describe('publish option actions', () => {
+  it('renders changed options and confirms the same command without a caller refresh', async () => {
+    const inputs = options();
+    const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
+    await waitFor(() => expect(result.current.limitsChecked).toBe(true));
+
+    act(() => result.current.setPublishType('send'));
+    expect(result.current.state.willOnlyEmail).toBe(true);
+
+    act(() => result.current.setNewsletter(DAILY));
+    expect(result.current.state.newsletter?.slug).toBe('daily');
+
+    act(() => result.current.setRecipientFilter('label:vip'));
+    expect(result.current.state.recipientFilter).toBe('label:vip');
+
+    act(() => result.current.setIsScheduled(true));
+    expect(result.current.state.isScheduled).toBe(true);
+
+    act(() => result.current.setScheduledAt(new Date(SCHEDULED_AT)));
+    expect(result.current.state.scheduledAt).toBe(SCHEDULED_AT);
+
+    act(() => result.current.toConfirm());
+    expect(result.current.step).toBe('confirm');
+    expect(result.current.captured).toMatchObject({ isScheduled: true, willOnlyEmail: true });
+    await act(() => result.current.confirmPublish());
+    expect(inputs.dispatch).toHaveBeenCalledWith({
+      kind: 'schedule',
+      options: {
+        publishedAt: SCHEDULED_AT,
+        emailOnly: true,
+        newsletter: 'daily',
+        emailSegment: 'label:vip',
+      },
+    });
+    expect(result.current.step).toBe('complete');
+  });
+
+  it('keeps actions and selections through caller rerenders', async () => {
+    const inputs = options();
+    const { result, rerender } = renderHook((props) => usePublishFlow(props), {
+      initialProps: inputs,
+      wrapper,
+    });
+    await waitFor(() => expect(result.current.limitsChecked).toBe(true));
+    const setNewsletter = result.current.setNewsletter;
+    act(() => setNewsletter(DAILY));
+    rerender({ ...inputs, site: { ...inputs.site } });
+    expect(result.current.setNewsletter).toBe(setNewsletter);
+    expect(result.current.state.newsletter?.slug).toBe('daily');
+
+    act(() => setNewsletter(WEEKLY));
+    expect(result.current.state.newsletter?.slug).toBe('weekly');
+    expect(inputs.dispatch).not.toHaveBeenCalled();
+  });
+});
+
+describe('post reads after an emailed publish', () => {
+  /** Publishes and emails, leaving the flow waiting on its email confirmation. */
+  async function publishAndEmail() {
+    const client = new QueryClient();
+    const invalidateQueries = vi.spyOn(client, 'invalidateQueries');
+    const inputs = options();
+    const { result } = renderHook(() => usePublishFlow(inputs), {
+      wrapper: ({ children }: { children: ReactNode }) =>
+        createElement(QueryClientProvider, { client }, children),
+    });
+    await waitFor(() => expect(result.current.limitsChecked).toBe(true));
+    expect(result.current.state.willEmailImmediately).toBe(true);
+
+    act(() => result.current.toConfirm());
+    let publishing: Promise<void> = Promise.resolve();
+    act(() => {
+      publishing = result.current.confirmPublish();
+    });
+    await waitFor(() => expect(confirmation.settle).toBeDefined());
+
+    return { result, invalidateQueries, publishing };
+  }
+
+  it('refreshes them once the send is confirmed', async () => {
+    const { invalidateQueries, publishing } = await publishAndEmail();
+
+    await act(async () => {
+      confirmation.settle?.({ kind: 'submitted' });
+      await publishing;
+    });
+
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['PostsResponseType'] });
+  });
+
+  it.each([null, ''])('keeps a failed send recoverable with error %j', async (error) => {
+    const { result, invalidateQueries, publishing } = await publishAndEmail();
+
+    await act(async () => {
+      confirmation.settle?.({ kind: 'failed', error, partial: false });
+      await publishing;
+    });
+
+    expect(result.current.step).toBe('email-error');
+    expect(result.current.emailErrorMessage).toBe('Unknown error');
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['PostsResponseType'] });
+  });
+
+  it('leaves them alone when the flow is closed before the send is confirmed', async () => {
+    const { result, invalidateQueries, publishing } = await publishAndEmail();
+
+    await act(async () => {
+      result.current.cancel();
+      await publishing;
+    });
+
+    expect(invalidateQueries).not.toHaveBeenCalled();
+  });
+});
+
+describe('sends under improveSendingUI', () => {
+  const FAILED_EMAIL = {
+    id: 'email-1',
+    status: 'failed' as const,
+    error: 'The email service was unavailable.',
+    email_count: 20,
+    opened_count: 0,
+  };
+
+  it.each([
+    ['a publish that emails', {}, undefined],
+    ['an email-only send', {}, 'send' as const],
+    ['a draft whose earlier send failed', { email: FAILED_EMAIL }, undefined],
+  ])('completes %s as soon as it saves', async (_case, post, publishType) => {
+    const inputs = options();
+    inputs.post = { ...inputs.post, ...post };
+    inputs.improveSendingUI = true;
+    inputs.onCompleted = vi.fn();
+    inputs.dispatch = vi.fn().mockResolvedValue({
+      kind: 'saved',
+      executedAs: 'publish',
+      result: { id: 'post-1', status: 'published', updatedAt: NOW.toISOString() },
+    });
+    const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
+    await waitFor(() => expect(result.current.limitsChecked).toBe(true));
+    if (publishType) {
+      act(() => result.current.setPublishType(publishType));
+    }
+    expect(result.current.state.willEmailImmediately).toBe(true);
+
+    act(() => result.current.toConfirm());
+    let publishing: Promise<void> = Promise.resolve();
+    act(() => {
+      publishing = result.current.confirmPublish();
+    });
+
+    await waitFor(() =>
+      expect(inputs.onCompleted).toHaveBeenCalledWith({
+        postId: 'post-1',
+        isScheduled: false,
+        hasEmail: true,
+      }),
+    );
+    await act(() => publishing);
+    expect(confirmation.settle).toBeUndefined();
+    expect(result.current.step).toBe('complete');
+  });
+
+  it('still waits on the email when a failed send is retried', async () => {
+    const inputs = options();
+    inputs.post = { ...inputs.post, status: 'published', email: FAILED_EMAIL };
+    inputs.improveSendingUI = true;
+    inputs.onCompleted = vi.fn();
+    const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
+    await waitFor(() => expect(result.current.limitsChecked).toBe(true));
+
+    let retrying: Promise<void> = Promise.resolve();
+    act(() => {
+      retrying = result.current.retryEmail();
+    });
+    await waitFor(() => expect(confirmation.settle).toBeDefined());
+    expect(inputs.onCompleted).not.toHaveBeenCalled();
+
+    await act(async () => {
+      confirmation.settle?.({ kind: 'submitted' });
+      await retrying;
+    });
+    expect(inputs.onCompleted).toHaveBeenCalledWith({
+      postId: 'post-1',
+      isScheduled: false,
+      hasEmail: true,
+    });
+  });
+});
+
+describe('failed newsletter retry', () => {
+  it.each([null, ''])('keeps a failed retry recoverable with error %j', async (error) => {
+    const inputs = options();
+    inputs.post = {
+      ...inputs.post,
+      status: 'published',
+      email: {
+        id: 'email-1',
+        status: 'failed',
+        error: 'The email service was unavailable.',
+        email_count: 20,
+        opened_count: 0,
+      },
+    };
+    const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
+    await waitFor(() => expect(result.current.limitsChecked).toBe(true));
+
+    let retrying: Promise<void> = Promise.resolve();
+    act(() => {
+      retrying = result.current.retryEmail();
+    });
+
+    await act(async () => {
+      confirmation.settle?.({ kind: 'failed', error, partial: false });
+      await retrying;
+    });
+
+    expect(result.current.step).toBe('email-error');
+    expect(result.current.emailErrorMessage).toBe('Unknown error');
+    expect(result.current.retryStatus).toBe('idle');
+  });
+});

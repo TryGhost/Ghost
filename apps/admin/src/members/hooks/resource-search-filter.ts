@@ -1,9 +1,9 @@
-import {escapeNqlString} from '@tryghost/nql-string';
+import { escapeNqlString } from '@tryghost/nql-string';
 
 export function buildResourceFilter(baseFilter: string, search: string): string {
-    if (!search) {
-        return baseFilter;
-    }
+  if (!search) {
+    return baseFilter;
+  }
 
-    return `${baseFilter}+title:~${escapeNqlString(search)}`;
+  return `${baseFilter}+title:~${escapeNqlString(search)}`;
 }

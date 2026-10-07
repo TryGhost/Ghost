@@ -1,17 +1,17 @@
-import {faker} from "@faker-js/faker";
-import {createBuilder} from "../factory";
-import {generateId, generateSlug} from "../utils";
-import {member} from "./member";
-import type {Member} from "./member";
+import { faker } from '@faker-js/faker';
+import { createBuilder } from '../factory';
+import { generateId, generateSlug } from '../utils';
+import { member } from './member';
+import type { Member } from './member';
 
 /** The trimmed post embed the comments API returns alongside each comment. */
 export interface CommentPost {
-    id: string;
-    title: string;
-    slug: string;
-    url: string;
-    feature_image?: string;
-    excerpt?: string;
+  id: string;
+  title: string;
+  slug: string;
+  url: string;
+  feature_image?: string;
+  excerpt?: string;
 }
 
 /**
@@ -22,60 +22,60 @@ export interface CommentPost {
  * itself when a spec depends on it.
  */
 export interface Comment {
-    id: string;
-    html: string;
-    status: "published" | "hidden" | "deleted";
-    pinned: boolean;
-    created_at: string;
-    updated_at: string;
-    post_id: string;
-    member_id: string;
-    parent_id: string | null;
-    in_reply_to_id: string | null;
-    in_reply_to_snippet: string | null;
-    member: Member;
-    post: CommentPost;
-    count: {
-        replies: number;
-        direct_replies: number;
-        likes: number;
-        dislikes: number;
-        reports: number;
-    };
+  id: string;
+  html: string;
+  status: 'published' | 'hidden' | 'deleted';
+  pinned: boolean;
+  created_at: string;
+  updated_at: string;
+  post_id: string;
+  member_id: string;
+  parent_id: string | null;
+  in_reply_to_id: string | null;
+  in_reply_to_snippet: string | null;
+  member: Member;
+  post: CommentPost;
+  count: {
+    replies: number;
+    direct_replies: number;
+    likes: number;
+    dislikes: number;
+    reports: number;
+  };
 }
 
 export const comment = createBuilder<Comment>(() => {
-    const now = new Date().toISOString();
-    const author = member();
-    const postTitle = faker.lorem.words(3);
-    const postSlug = `${generateSlug(postTitle)}-${faker.string.alphanumeric(6).toLowerCase()}`;
-    const post: CommentPost = {
-        id: generateId(),
-        title: postTitle,
-        slug: postSlug,
-        url: `https://example.com/${postSlug}/`
-    };
+  const now = new Date().toISOString();
+  const author = member();
+  const postTitle = faker.lorem.words(3);
+  const postSlug = `${generateSlug(postTitle)}-${faker.string.alphanumeric(6).toLowerCase()}`;
+  const post: CommentPost = {
+    id: generateId(),
+    title: postTitle,
+    slug: postSlug,
+    url: `https://example.com/${postSlug}/`,
+  };
 
-    return {
-        id: generateId(),
-        html: `<p>${faker.lorem.sentence()}</p>`,
-        status: "published",
-        pinned: false,
-        created_at: now,
-        updated_at: now,
-        post_id: post.id,
-        member_id: author.id,
-        parent_id: null,
-        in_reply_to_id: null,
-        in_reply_to_snippet: null,
-        member: author,
-        post,
-        count: {
-            replies: 0,
-            direct_replies: 0,
-            likes: 0,
-            dislikes: 0,
-            reports: 0
-        }
-    };
+  return {
+    id: generateId(),
+    html: `<p>${faker.lorem.sentence()}</p>`,
+    status: 'published',
+    pinned: false,
+    created_at: now,
+    updated_at: now,
+    post_id: post.id,
+    member_id: author.id,
+    parent_id: null,
+    in_reply_to_id: null,
+    in_reply_to_snippet: null,
+    member: author,
+    post,
+    count: {
+      replies: 0,
+      direct_replies: 0,
+      likes: 0,
+      dislikes: 0,
+      reports: 0,
+    },
+  };
 });

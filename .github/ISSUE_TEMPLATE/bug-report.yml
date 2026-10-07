@@ -49,10 +49,10 @@ body:
     attributes:
       label: Database type
       options:
-         - MySQL 5.7
-         - MySQL 8
-         - SQLite3
-         - Other
+        - MySQL 5.7
+        - MySQL 8
+        - SQLite3
+        - Other
     validations:
       required: true
   - type: input

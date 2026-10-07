@@ -57,7 +57,7 @@ export default class ResetController extends Controller.extend(ValidationEngine)
         try {
             yield this.validate();
             try {
-                let {password_reset: [{message, emailVerificationToken: legacyEmailVerificationToken}]} = yield this.ajax.put(authUrl, {
+                const {password_reset: [{message, emailVerificationToken: legacyEmailVerificationToken}]} = yield this.ajax.put(authUrl, {
                     data: {
                         password_reset: [{newPassword, ne2Password, token}]
                     }

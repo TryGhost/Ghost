@@ -1,4 +1,4 @@
-import {test} from './fixture';
+import { test } from './fixture';
 
 /**
  * Opts a test file into per-test isolation (one Ghost environment per test).
@@ -33,6 +33,6 @@ import {test} from './fixture';
  * ```
  */
 export function usePerTestIsolation() {
-    test.describe.configure({mode: 'parallel'});
-    test.use({isolation: 'per-test'});
+  test.describe.configure({ mode: 'parallel' });
+  test.use({ isolation: 'per-test' });
 }

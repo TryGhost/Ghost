@@ -55,29 +55,56 @@ describe('Unit: Service: state-bridge', function () {
         sinon.restore();
     });
 
+    describe('#navigateToBillingSubRoute', function () {
+        it('hands the sub-route to the billing app', function () {
+            const billing = this.owner.lookup('service:billing');
+            sinon.stub(billing, 'navigateToSubRoute');
+
+            service.navigateToBillingSubRoute('/plans');
+
+            expect(billing.navigateToSubRoute.calledOnceWithExactly('/plans')).to.be.true;
+        });
+    });
+
     describe('#isFeatureEnabled', function () {
         it('does not claim route ownership before Labs settings load', function () {
             settings.settingsModel = null;
 
-            expect(service.isFeatureEnabled('tagDetailsReact')).to.be.undefined;
+            expect(service.isFeatureEnabled('editorReact')).to.be.undefined;
         });
 
         it('exposes the same strict Labs state used by Ember routes', function () {
             settings.settingsModel = {};
-            sinon.stub(feature, 'tagDetailsReact').get(() => true);
+            sinon.stub(feature, 'editorReact').get(() => true);
             sinon.stub(feature, 'adminUIRefresh').get(() => 'true');
 
-            expect(service.isFeatureEnabled('tagDetailsReact')).to.be.true;
+            expect(service.isFeatureEnabled('editorReact')).to.be.true;
             expect(service.isFeatureEnabled('adminUIRefresh')).to.be.false;
             expect(service.isFeatureEnabled('missingFlag')).to.be.false;
         });
     });
 
+    describe('#refreshFeatureFlagOverrides', function () {
+        it('refreshes Ember flags and notifies React subscribers', function () {
+            const refreshFeatureFlagOverrides = sinon.spy(feature, 'refreshFeatureFlagOverrides');
+            const featureFlagsChange = sinon.spy();
+            service.on('featureFlagsChange', featureFlagsChange);
+
+            service.refreshFeatureFlagOverrides();
+
+            expect(refreshFeatureFlagOverrides.calledOnce).to.be.true;
+            expect(featureFlagsChange.calledOnce).to.be.true;
+        });
+    });
+
     describe('#onUpdate', function () {
-        it('throws error for unknown data type', function () {
-            expect(() => {
+        it('ignores unknown data types', function () {
+            run(() => {
                 service.onUpdate('UnknownType', {});
-            }).to.throw('A mutation updating UnknownType succeeded in React Admin but there is no mapping to an Ember type');
+            });
+
+            expect(store.pushPayload.called).to.be.false;
+            expect(store.push.called).to.be.false;
         });
 
         it('skips processing for null-mapped data types', function () {
@@ -85,16 +112,6 @@ describe('Unit: Service: state-bridge', function () {
 
             run(() => {
                 service.onUpdate('CustomThemeSettingsResponseType', response);
-            });
-
-            expect(store.pushPayload.called).to.be.false;
-        });
-
-        it('skips processing for automated email design data type', function () {
-            const response = {automated_email_design: [{id: '1'}]};
-
-            run(() => {
-                service.onUpdate('AutomatedEmailDesignResponseType', response);
             });
 
             expect(store.pushPayload.called).to.be.false;
@@ -276,23 +293,17 @@ describe('Unit: Service: state-bridge', function () {
     });
 
     describe('#onInvalidate', function () {
-        it('throws error for unknown data type', function () {
-            expect(() => {
-                service.onInvalidate('UnknownType');
-            }).to.throw('A mutation invalidating UnknownType succeeded in React Admin but there is no mapping to an Ember type');
-        });
-
-        it('skips processing for null-mapped data types', function () {
+        it('ignores unknown data types', function () {
             run(() => {
-                service.onInvalidate('CustomThemeSettingsResponseType');
+                service.onInvalidate('UnknownType');
             });
 
             expect(store.unloadAll.called).to.be.false;
         });
 
-        it('skips processing for automated email design data type', function () {
+        it('skips processing for null-mapped data types', function () {
             run(() => {
-                service.onInvalidate('AutomatedEmailDesignResponseType');
+                service.onInvalidate('CustomThemeSettingsResponseType');
             });
 
             expect(store.unloadAll.called).to.be.false;
@@ -329,6 +340,14 @@ describe('Unit: Service: state-bridge', function () {
             expect(store.unloadAll.calledWith('integration')).to.be.true;
         });
 
+        it('unloads snippets when React snippet queries are invalidated', function () {
+            run(() => {
+                service.onInvalidate('SnippetsResponseType');
+            });
+
+            expect(store.unloadAll.calledOnceWith('snippet')).to.be.true;
+        });
+
         it('unloads all tags when tag queries are invalidated', function () {
             run(() => {
                 service.onInvalidate('TagsResponseType');
@@ -350,10 +369,14 @@ describe('Unit: Service: state-bridge', function () {
     });
 
     describe('#onDelete', function () {
-        it('throws error for unknown data type', function () {
-            expect(() => {
+        it('ignores unknown data types', function () {
+            sinon.spy(store, 'peekRecord');
+
+            run(() => {
                 service.onDelete('UnknownType', '123');
-            }).to.throw('A mutation deleting UnknownType succeeded in React Admin but there is no mapping to an Ember type');
+            });
+
+            expect(store.peekRecord.called).to.be.false;
         });
 
         it('skips processing for null-mapped data types', function () {
@@ -575,375 +598,6 @@ describe('Unit: Service: state-bridge', function () {
 
             ui.set('isFullScreen', false);
             expect(service.sidebarVisible).to.be.true;
-        });
-    });
-
-    describe('#getRouteUrl', function () {
-        let postsController, settingsHistoryController, originalLookup;
-
-        beforeEach(function () {
-            // Mock controllers
-            postsController = EmberObject.create({
-                queryParams: ['type'],
-                type: null
-            });
-
-            settingsHistoryController = EmberObject.create({
-                queryParams: [{excludedEvents: 'excludedEvents'}],
-                excludedEvents: null
-            });
-
-            // Stub the owner's lookup method to return our mock controllers
-            originalLookup = this.owner.lookup.bind(this.owner);
-            sinon.stub(this.owner, 'lookup').callsFake((name) => {
-                if (name === 'controller:posts') {
-                    return postsController;
-                }
-                if (name === 'controller:settings.history') {
-                    return settingsHistoryController;
-                }
-                // Fall back to original lookup for services, etc.
-                return originalLookup(name);
-            });
-
-            // Stub router methods
-            sinon.stub(service.router, 'urlFor').callsFake((routeName, options = {}) => {
-                const params = options.queryParams || {};
-                const queryString = Object.keys(params).length > 0 
-                    ? '?' + new URLSearchParams(params).toString() 
-                    : '';
-                return routeName + queryString;
-            });
-        });
-
-        it('returns empty string when routeName is null', function () {
-            const url = service.getRouteUrl(null);
-            expect(url).to.equal('');
-        });
-
-        it('returns empty string when routeName is undefined', function () {
-            const url = service.getRouteUrl(undefined);
-            expect(url).to.equal('');
-        });
-
-        it('returns base route when on the same route', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'posts');
-
-            const url = service.getRouteUrl('posts');
-            expect(url).to.equal('posts');
-        });
-
-        it('returns base route when on a subpath of the route', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'settings.history');
-
-            const url = service.getRouteUrl('settings');
-            expect(url).to.equal('settings');
-        });
-
-        it('generates URL with provided query params', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'dashboard');
-
-            const url = service.getRouteUrl('posts', {type: 'draft'});
-            expect(url).to.equal('posts?type=draft');
-        });
-
-        it('generates URL with multiple query params', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'dashboard');
-
-            const url = service.getRouteUrl('posts', {type: 'draft', author: 'john'});
-            expect(url).to.include('type=draft');
-            expect(url).to.include('author=john');
-        });
-
-        it('filters out null, undefined, and empty string query params', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'dashboard');
-
-            const url = service.getRouteUrl('posts', {
-                type: 'draft',
-                author: null,
-                tag: undefined,
-                search: ''
-            });
-            expect(url).to.equal('posts?type=draft');
-        });
-
-        it('properly encodes special characters in query params', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'dashboard');
-
-            const url = service.getRouteUrl('members', {filter: 'name:~\'O\'Brien\''});
-            expect(url).to.include('filter=');
-            // URLSearchParams encodes special characters (colons, tildes, quotes, etc.)
-            expect(url).to.include('name%3A'); // encoded colon
-            expect(url).to.include('%27'); // encoded single quote
-        });
-
-        it('generates URL from controller query params when not on route and no params provided', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'dashboard');
-            postsController.set('type', 'published');
-
-            const url = service.getRouteUrl('posts');
-            expect(url).to.equal('posts?type=published');
-        });
-
-        it('handles mapped query params correctly', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'dashboard');
-            settingsHistoryController.set('excludedEvents', 'user.updated');
-
-            // The controller has {excludedEvents: 'excludedEvents'}, so the URL should use the mapped param
-            const url = service.getRouteUrl('settings.history');
-            expect(url).to.equal('settings.history?excludedEvents=user.updated');
-        });
-
-        it('returns base route when controller does not exist', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'dashboard');
-
-            // 'tags' controller doesn't exist in our mock owner
-            const url = service.getRouteUrl('tags');
-            expect(url).to.equal('tags');
-        });
-
-        it('returns base route when controller params match a custom view', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'dashboard');
-            postsController.set('type', 'draft');
-            
-            sinon.stub(service.customViews, 'findView').returns({
-                name: 'Drafts',
-                route: 'posts',
-                filter: {type: 'draft'}
-            });
-
-            const url = service.getRouteUrl('posts');
-            expect(url).to.equal('posts');
-        });
-
-        it('generates consistent URLs for navigating between filtered views', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'posts');
-            postsController.set('type', 'draft');
-
-            // First navigate to drafts view
-            const draftsUrl = service.getRouteUrl('posts', {type: 'draft'});
-            expect(draftsUrl).to.equal('posts?type=draft');
-
-            // Then navigate to published view
-            const publishedUrl = service.getRouteUrl('posts', {type: 'published'});
-            expect(publishedUrl).to.equal('posts?type=published');
-
-            // Navigate back to base posts (should reset)
-            postsController.set('type', null);
-            const baseUrl = service.getRouteUrl('posts');
-            expect(baseUrl).to.equal('posts');
-        });
-    });
-
-    describe('#isRouteActive', function () {
-        it('returns true when route name matches exactly', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'posts');
-            sinon.stub(service.customViews, 'activeView').get(() => null);
-
-            const isActive = service.isRouteActive('posts');
-            expect(isActive).to.be.true;
-        });
-
-        it('returns true when current route is a subpath of provided route', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'settings.history');
-            sinon.stub(service.customViews, 'activeView').get(() => null);
-
-            const isActive = service.isRouteActive('settings');
-            expect(isActive).to.be.true;
-        });
-
-        it('returns false when route name does not match', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'pages');
-
-            const isActive = service.isRouteActive('posts');
-            expect(isActive).to.be.false;
-        });
-
-        it('supports array of route names', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'member');
-            sinon.stub(service.customViews, 'activeView').get(() => null);
-
-            const isActive = service.isRouteActive(['members', 'member', 'member.new']);
-            expect(isActive).to.be.true;
-        });
-
-        it('supports space-separated string of route names', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'tag');
-            sinon.stub(service.customViews, 'activeView').get(() => null);
-
-            const isActive = service.isRouteActive('tags tag tag.new');
-            expect(isActive).to.be.true;
-        });
-
-        it('returns false when not on any of the provided routes', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'posts');
-
-            const isActive = service.isRouteActive(['members', 'member', 'member.new']);
-            expect(isActive).to.be.false;
-        });
-
-        it('main navigation link is inactive when a filtered view is active', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'posts');
-            sinon.stub(service.customViews, 'activeView').get(() => ({
-                name: 'Drafts',
-                route: 'posts',
-                filter: {type: 'draft'}
-            }));
-
-            const isActive = service.isRouteActive('posts');
-            expect(isActive).to.be.false;
-        });
-
-        it('main navigation link is active when no filtered view is active', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'posts');
-            sinon.stub(service.customViews, 'activeView').get(() => null);
-
-            const isActive = service.isRouteActive('posts');
-            expect(isActive).to.be.true;
-        });
-
-        it('returns true when query params match active view', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'posts');
-            sinon.stub(service.customViews, 'activeView').get(() => ({
-                name: 'Drafts',
-                route: 'posts',
-                filter: {type: 'draft'}
-            }));
-            sinon.stub(service.customViews, 'cleanFilter').returns({type: 'draft'});
-            sinon.stub(service.customViews, 'isFilterEqual').returns(true);
-
-            const isActive = service.isRouteActive('posts', {type: 'draft'});
-            expect(isActive).to.be.true;
-        });
-
-        it('returns false when query params do not match active view', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'posts');
-            sinon.stub(service.customViews, 'activeView').get(() => ({
-                name: 'Drafts',
-                route: 'posts',
-                filter: {type: 'draft'}
-            }));
-            sinon.stub(service.customViews, 'cleanFilter').returns({type: 'scheduled'});
-            sinon.stub(service.customViews, 'isFilterEqual').returns(false);
-
-            const isActive = service.isRouteActive('posts', {type: 'scheduled'});
-            expect(isActive).to.be.false;
-        });
-
-        it('returns false when query params provided but no active view', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'posts');
-            sinon.stub(service.customViews, 'activeView').get(() => null);
-
-            const isActive = service.isRouteActive('posts', {type: 'draft'});
-            expect(isActive).to.be.false;
-        });
-
-        it('returns false when active view is for different route', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'posts');
-            sinon.stub(service.customViews, 'activeView').get(() => ({
-                name: 'Authors',
-                route: 'pages',
-                filter: {author: 'john'}
-            }));
-
-            const isActive = service.isRouteActive('posts', {type: 'draft'});
-            expect(isActive).to.be.false;
-        });
-
-        it('uses first route in array as primary route for query param matching', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'member');
-            sinon.stub(service.customViews, 'activeView').get(() => ({
-                name: 'Free Members',
-                route: 'members',
-                filter: {status: 'free'}
-            }));
-            sinon.stub(service.customViews, 'cleanFilter').returns({status: 'free'});
-            sinon.stub(service.customViews, 'isFilterEqual').returns(true);
-
-            const isActive = service.isRouteActive(['members', 'member', 'member.new'], {status: 'free'});
-            expect(isActive).to.be.true;
-        });
-
-        it('handles _loading route suffix correctly', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'posts_loading');
-            sinon.stub(service.customViews, 'activeView').get(() => null);
-
-            const isActive = service.isRouteActive('posts');
-            expect(isActive).to.be.true;
-        });
-    });
-
-    describe('routing integration', function () {
-        it('getRouteUrl and isRouteActive work consistently for filtered views', function () {
-            // Setup: User is on posts page with drafts filter active
-            sinon.stub(service.router, 'currentRouteName').get(() => 'posts');
-            sinon.stub(service.customViews, 'activeView').get(() => ({
-                name: 'Drafts',
-                route: 'posts',
-                filter: {type: 'draft'}
-            }));
-            sinon.stub(service.customViews, 'cleanFilter').returns({type: 'draft'});
-            sinon.stub(service.customViews, 'isFilterEqual').callsFake((filter1, filter2) => {
-                return JSON.stringify(filter1) === JSON.stringify(filter2);
-            });
-            sinon.stub(service.router, 'urlFor').callsFake((routeName, options = {}) => {
-                const params = options.queryParams || {};
-                const queryString = Object.keys(params).length > 0 
-                    ? '?' + new URLSearchParams(params).toString() 
-                    : '';
-                return routeName + queryString;
-            });
-
-            // When getting URL for drafts filter
-            const draftsUrl = service.getRouteUrl('posts', {type: 'draft'});
-            
-            // And checking if that filter is active
-            const isDraftsActive = service.isRouteActive('posts', {type: 'draft'});
-            
-            // Then the URL should be generated correctly
-            expect(draftsUrl).to.equal('posts?type=draft');
-            // And the active state should match
-            expect(isDraftsActive).to.be.true;
-
-            // When checking if a different filter is active
-            const isPublishedActive = service.isRouteActive('posts', {type: 'published'});
-            
-            // Then it should not be active
-            expect(isPublishedActive).to.be.false;
-        });
-
-        it('main link URL and active state are consistent when on base route', function () {
-            // Setup: User is on base posts page (no filters)
-            sinon.stub(service.router, 'currentRouteName').get(() => 'posts');
-            sinon.stub(service.customViews, 'activeView').get(() => null);
-            sinon.stub(service.router, 'urlFor').callsFake(routeName => routeName);
-
-            // When getting the main link URL (no query params)
-            const postsUrl = service.getRouteUrl('posts');
-            
-            // And checking if main link is active
-            const isMainLinkActive = service.isRouteActive('posts');
-            
-            // Then both should indicate the base route
-            expect(postsUrl).to.equal('posts');
-            expect(isMainLinkActive).to.be.true;
-        });
-
-        it('clicking a link resets filters when already on that route', function () {
-            // Setup: User is on posts page with filters
-            sinon.stub(service.router, 'currentRouteName').get(() => 'posts');
-            sinon.stub(service.customViews, 'activeView').get(() => ({
-                name: 'Drafts',
-                route: 'posts',
-                filter: {type: 'draft'}
-            }));
-            sinon.stub(service.router, 'urlFor').callsFake(routeName => routeName);
-
-            // When clicking the main posts link (expecting to reset filters)
-            const resetUrl = service.getRouteUrl('posts');
-            
-            // Then it should return the base route without query params
-            expect(resetUrl).to.equal('posts');
         });
     });
 });

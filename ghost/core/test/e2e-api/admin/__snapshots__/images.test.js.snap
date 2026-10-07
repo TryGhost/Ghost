@@ -77,7 +77,7 @@ Object {
   "errors": Array [
     Object {
       "code": null,
-      "context": "Image processing failed Image processing failed",
+      "context": "Image processing failed Unable to manipulate image.",
       "details": null,
       "ghostErrorCode": null,
       "help": "Please verify that the image is valid",
@@ -157,6 +157,24 @@ Object {
       "message": "The request could not be understood.",
       "property": null,
       "type": "BadRequestError",
+    },
+  ],
+}
+`;
+
+exports[`Images API Errors when uploading a non-SVG with an SVG content type 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Please select a valid SVG image",
+      "property": null,
+      "type": "UnsupportedMediaTypeError",
     },
   ],
 }

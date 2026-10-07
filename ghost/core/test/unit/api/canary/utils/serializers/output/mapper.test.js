@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../../../../../utils/assertions');
+const { assertExists } = require('../../../../../../utils/assertions');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../utils');
 const dateUtil = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/date');
@@ -11,904 +11,947 @@ const memberAttribution = require('../../../../../../../core/server/services/mem
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 
 function createJsonModel(data) {
-    return Object.assign(data, {toJSON: sinon.stub().returns(data)});
+  return Object.assign(data, { toJSON: sinon.stub().returns(data) });
 }
 
 describe('Unit: utils/serializers/output/mappers', function () {
-    afterEach(function () {
-        sinon.restore();
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  describe('Posts Mapper', function () {
+    beforeEach(function () {
+      sinon.stub(dateUtil, 'forPost').returns({});
+
+      sinon.stub(urlUtil, 'forPost').returns({});
+      sinon.stub(urlUtil, 'forTag').returns({});
+      sinon.stub(urlUtil, 'forUser').returns({});
+
+      sinon.stub(extraAttrsUtils, 'forPost').returns({});
+
+      sinon.stub(cleanUtil, 'post').returns({});
+      sinon.stub(cleanUtil, 'tag').returns({});
+      sinon.stub(cleanUtil, 'author').returns({});
+
+      memberAttribution.outboundLinkTagger = {
+        addToHtml: sinon.stub().callsFake((html) => Promise.resolve(html)),
+      };
     });
 
-    describe('Posts Mapper', function () {
-        beforeEach(function () {
-            sinon.stub(dateUtil, 'forPost').returns({});
+    it('calls mapper on relations', async function () {
+      const frame = {
+        original: {
+          context: {},
+        },
+        options: {
+          withRelated: ['tags', 'authors'],
+          context: {},
+        },
+        apiType: 'content',
+      };
 
-            sinon.stub(urlUtil, 'forPost').returns({});
-            sinon.stub(urlUtil, 'forTag').returns({});
-            sinon.stub(urlUtil, 'forUser').returns({});
+      const post = createJsonModel(
+        testUtils.DataGenerator.forKnex.createPost({
+          id: 'id1',
+          feature_image: 'value',
+          page: true,
+          tags: [
+            {
+              id: 'id3',
+              feature_image: 'value',
+            },
+          ],
+          authors: [
+            {
+              id: 'id4',
+              name: 'Ghosty',
+            },
+          ],
+        }),
+      );
 
-            sinon.stub(extraAttrsUtils, 'forPost').returns({});
+      await mappers.posts(post, frame);
 
-            sinon.stub(cleanUtil, 'post').returns({});
-            sinon.stub(cleanUtil, 'tag').returns({});
-            sinon.stub(cleanUtil, 'author').returns({});
+      sinon.assert.calledOnce(dateUtil.forPost);
 
-            memberAttribution.outboundLinkTagger = {
-                addToHtml: sinon.stub().callsFake(html => Promise.resolve(html))
-            };
-        });
+      sinon.assert.calledOnce(extraAttrsUtils.forPost);
 
-        it('calls mapper on relations', async function () {
-            const frame = {
-                original: {
-                    context: {}
-                },
-                options: {
-                    withRelated: ['tags', 'authors'],
-                    context: {}
-                },
-                apiType: 'content'
-            };
+      sinon.assert.calledOnce(cleanUtil.post);
+      sinon.assert.calledOnce(cleanUtil.tag);
+      sinon.assert.calledOnce(cleanUtil.author);
 
-            const post = createJsonModel(testUtils.DataGenerator.forKnex.createPost({
-                id: 'id1',
-                feature_image: 'value',
-                page: true,
-                tags: [{
-                    id: 'id3',
-                    feature_image: 'value'
-                }],
-                authors: [{
-                    id: 'id4',
-                    name: 'Ghosty'
-                }]
-            }));
+      sinon.assert.calledOnce(urlUtil.forPost);
+      sinon.assert.calledOnce(urlUtil.forTag);
+      sinon.assert.calledOnce(urlUtil.forUser);
 
-            await mappers.posts(post, frame);
-
-            sinon.assert.calledOnce(dateUtil.forPost);
-
-            sinon.assert.calledOnce(extraAttrsUtils.forPost);
-
-            sinon.assert.calledOnce(cleanUtil.post);
-            sinon.assert.calledOnce(cleanUtil.tag);
-            sinon.assert.calledOnce(cleanUtil.author);
-
-            sinon.assert.calledOnce(urlUtil.forPost);
-            sinon.assert.calledOnce(urlUtil.forTag);
-            sinon.assert.calledOnce(urlUtil.forUser);
-
-            assert.deepEqual(urlUtil.forTag.getCall(0).args, ['id3', {id: 'id3', feature_image: 'value'}, frame.options]);
-            assert.deepEqual(urlUtil.forUser.getCall(0).args, ['id4', {name: 'Ghosty', id: 'id4'}, frame.options]);
-        });
-
-        it('strips relations force-loaded for the URL after the URL is computed', async function () {
-            const frame = {
-                original: {
-                    context: {}
-                },
-                options: {
-                    withRelated: ['tags', 'authors'],
-                    context: {}
-                },
-                // input serializer recorded: caller asked for authors only,
-                // tags were force-loaded for the URL computation
-                forcedUrlRelations: ['tags'],
-                apiType: 'content'
-            };
-
-            const post = createJsonModel(testUtils.DataGenerator.forKnex.createPost({
-                id: 'id1',
-                tags: [{
-                    id: 'id3'
-                }],
-                authors: [{
-                    id: 'id4',
-                    name: 'Ghosty'
-                }]
-            }));
-
-            // the mapper mutates the model in place, so capture at call time
-            let tagsPresentAtUrlTime = false;
-            urlUtil.forPost.callsFake((id, attrs) => {
-                tagsPresentAtUrlTime = Array.isArray(attrs.tags);
-                return attrs;
-            });
-
-            const result = await mappers.posts(post, frame);
-
-            // url computed while tags were still on the model
-            sinon.assert.calledOnce(urlUtil.forPost);
-            assert.ok(tagsPresentAtUrlTime, 'tags must still be present when the URL is computed');
-
-            // ...but the response does not leak the unrequested relation
-            assert.equal(result.tags, undefined);
-            assert.ok(result.authors, 'requested relation must survive');
-            sinon.assert.notCalled(urlUtil.forTag);
-            sinon.assert.calledOnce(urlUtil.forUser);
-        });
-
-        it('strip runs before clean so computed primary_tag/primary_author do not leak', async function () {
-            // Post.toJSON attaches primary_tag/primary_author when tags/authors
-            // are loaded; clean.post only removes them when the relation key is
-            // absent, so the strip must run first.
-            cleanUtil.post.restore();
-
-            const frame = {
-                original: {
-                    context: {}
-                },
-                options: {
-                    withRelated: ['tags', 'authors'],
-                    context: {}
-                },
-                forcedUrlRelations: ['tags', 'authors'],
-                apiType: 'content'
-            };
-
-            const post = createJsonModel(testUtils.DataGenerator.forKnex.createPost({
-                id: 'id1',
-                tags: [{id: 'id3', visibility: 'public'}],
-                authors: [{id: 'id4', name: 'Ghosty'}],
-                primary_tag: {id: 'id3', visibility: 'public'},
-                primary_author: {id: 'id4', name: 'Ghosty'}
-            }));
-
-            const result = await mappers.posts(post, frame);
-
-            assert.equal(result.tags, undefined);
-            assert.equal(result.authors, undefined);
-            assert.equal(result.primary_tag, undefined);
-            assert.equal(result.primary_author, undefined);
-        });
-
-        it('strips columns force-loaded for the URL after the URL is computed', async function () {
-            const frame = {
-                original: {
-                    context: {}
-                },
-                options: {
-                    columns: ['url', 'id', 'status', 'slug'],
-                    context: {}
-                },
-                // input serializer recorded: caller asked for ?fields=url,id —
-                // status/slug were forced for the URL computation
-                forcedUrlColumns: {routerType: 'posts', columns: ['status', 'slug']},
-                apiType: 'admin'
-            };
-
-            let statusPresentAtUrlTime = false;
-            urlUtil.forPost.callsFake((id, attrs) => {
-                statusPresentAtUrlTime = attrs.status !== undefined;
-                return attrs;
-            });
-
-            const post = createJsonModel(testUtils.DataGenerator.forKnex.createPost({
-                id: 'id1',
-                status: 'published',
-                slug: 'my-post'
-            }));
-
-            const result = await mappers.posts(post, frame);
-
-            assert.ok(statusPresentAtUrlTime, 'status must still be present when the URL is computed');
-            assert.equal(result.status, undefined);
-            assert.equal(result.slug, undefined);
-            assert.equal(result.id, 'id1');
-        });
+      assert.deepEqual(urlUtil.forTag.getCall(0).args, [
+        'id3',
+        { id: 'id3', feature_image: 'value' },
+        frame.options,
+      ]);
+      assert.deepEqual(urlUtil.forUser.getCall(0).args, [
+        'id4',
+        { name: 'Ghosty', id: 'id4' },
+        frame.options,
+      ]);
     });
 
-    describe('User Mapper', function () {
-        beforeEach(function () {
-            sinon.stub(urlUtil, 'forUser').returns({});
-            sinon.stub(cleanUtil, 'author').returns({});
-        });
+    it('strips relations force-loaded for the URL after the URL is computed', async function () {
+      const frame = {
+        original: {
+          context: {},
+        },
+        options: {
+          withRelated: ['tags', 'authors'],
+          context: {},
+        },
+        // input serializer recorded: caller asked for authors only,
+        // tags were force-loaded for the URL computation
+        forcedUrlRelations: ['tags'],
+        apiType: 'content',
+      };
 
-        it('calls utils', function () {
-            const frame = {
-                options: {
-                    context: {}
-                }
-            };
+      const post = createJsonModel(
+        testUtils.DataGenerator.forKnex.createPost({
+          id: 'id1',
+          tags: [
+            {
+              id: 'id3',
+            },
+          ],
+          authors: [
+            {
+              id: 'id4',
+              name: 'Ghosty',
+            },
+          ],
+        }),
+      );
 
-            const user = createJsonModel(testUtils.DataGenerator.forKnex.createUser({
-                id: 'id1',
-                name: 'Ghosty'
-            }));
+      // the mapper mutates the model in place, so capture at call time
+      let tagsPresentAtUrlTime = false;
+      urlUtil.forPost.callsFake((id, attrs) => {
+        tagsPresentAtUrlTime = Array.isArray(attrs.tags);
+        return attrs;
+      });
 
-            mappers.users(user, frame);
+      const result = await mappers.posts(post, frame);
 
-            sinon.assert.calledOnce(urlUtil.forUser);
-            assert.deepEqual(urlUtil.forUser.getCall(0).args, ['id1', user, frame.options]);
-            sinon.assert.calledOnce(cleanUtil.author);
-        });
+      // url computed while tags were still on the model
+      sinon.assert.calledOnce(urlUtil.forPost);
+      assert.ok(tagsPresentAtUrlTime, 'tags must still be present when the URL is computed');
 
-        it('strips columns force-loaded for the URL after the URL is computed', function () {
-            const frame = {
-                options: {
-                    columns: ['id', 'url'],
-                    context: {}
-                },
-                forcedUrlColumns: {routerType: 'authors', columns: ['slug']}
-            };
-
-            const user = createJsonModel(testUtils.DataGenerator.forKnex.createUser({
-                id: 'id1',
-                name: 'Ghosty',
-                slug: 'ghosty'
-            }));
-
-            const result = mappers.users(user, frame);
-
-            assert.equal(result.slug, undefined);
-            assert.equal(result.id, 'id1');
-        });
-
-        it('leaves a nested author alone when the forced columns belong to another fetch', function () {
-            const frame = {
-                options: {
-                    columns: ['id', 'url'],
-                    context: {}
-                },
-                forcedUrlColumns: {routerType: 'posts', columns: ['status', 'type', 'slug']}
-            };
-
-            const user = createJsonModel(testUtils.DataGenerator.forKnex.createUser({
-                id: 'id1',
-                name: 'Ghosty',
-                slug: 'ghosty'
-            }));
-
-            const result = mappers.users(user, frame);
-
-            assert.equal(result.slug, 'ghosty');
-        });
+      // ...but the response does not leak the unrequested relation
+      assert.equal(result.tags, undefined);
+      assert.ok(result.authors, 'requested relation must survive');
+      sinon.assert.notCalled(urlUtil.forTag);
+      sinon.assert.calledOnce(urlUtil.forUser);
     });
 
-    describe('Tag Mapper', function () {
-        beforeEach(function () {
-            sinon.stub(urlUtil, 'forTag').returns({});
-            sinon.stub(cleanUtil, 'tag').returns({});
-        });
+    it('strip runs before clean so computed primary_tag/primary_author do not leak', async function () {
+      // Post.toJSON attaches primary_tag/primary_author when tags/authors
+      // are loaded; clean.post only removes them when the relation key is
+      // absent, so the strip must run first.
+      cleanUtil.post.restore();
 
-        it('calls utils', function () {
-            const frame = {
-                options: {
-                    context: {}
-                }
-            };
+      const frame = {
+        original: {
+          context: {},
+        },
+        options: {
+          withRelated: ['tags', 'authors'],
+          context: {},
+        },
+        forcedUrlRelations: ['tags', 'authors'],
+        apiType: 'content',
+      };
 
-            const tag = createJsonModel(testUtils.DataGenerator.forKnex.createTag({
-                id: 'id3',
-                feature_image: 'value'
-            }));
+      const post = createJsonModel(
+        testUtils.DataGenerator.forKnex.createPost({
+          id: 'id1',
+          tags: [{ id: 'id3', visibility: 'public' }],
+          authors: [{ id: 'id4', name: 'Ghosty' }],
+          primary_tag: { id: 'id3', visibility: 'public' },
+          primary_author: { id: 'id4', name: 'Ghosty' },
+        }),
+      );
 
-            mappers.tags(tag, frame);
+      const result = await mappers.posts(post, frame);
 
-            sinon.assert.calledOnce(urlUtil.forTag);
-            assert.deepEqual(urlUtil.forTag.getCall(0).args, ['id3', tag, frame.options]);
-            sinon.assert.calledOnce(cleanUtil.tag);
-        });
-
-        it('strips columns force-loaded for the URL after the URL is computed', function () {
-            const frame = {
-                options: {
-                    columns: ['name', 'url', 'visibility'],
-                    context: {}
-                },
-                forcedUrlColumns: {routerType: 'tags', columns: ['visibility']}
-            };
-
-            const tag = createJsonModel(testUtils.DataGenerator.forKnex.createTag({
-                id: 'id3',
-                name: 'Tag',
-                visibility: 'public'
-            }));
-
-            const result = mappers.tags(tag, frame);
-
-            assert.equal(result.visibility, undefined);
-            assert.equal(result.name, 'Tag');
-        });
+      assert.equal(result.tags, undefined);
+      assert.equal(result.authors, undefined);
+      assert.equal(result.primary_tag, undefined);
+      assert.equal(result.primary_author, undefined);
     });
 
-    describe('Integration Mapper', function () {
-        it('formats admin keys', function () {
-            const frame = {
-            };
+    it('strips columns force-loaded for the URL after the URL is computed', async function () {
+      const frame = {
+        original: {
+          context: {},
+        },
+        options: {
+          columns: ['url', 'id', 'status', 'slug'],
+          context: {},
+        },
+        // input serializer recorded: caller asked for ?fields=url,id —
+        // status/slug were forced for the URL computation
+        forcedUrlColumns: { routerType: 'posts', columns: ['status', 'slug'] },
+        apiType: 'admin',
+      };
 
-            const integration = createJsonModel(testUtils.DataGenerator.forKnex.createIntegration({
-                api_keys: testUtils.DataGenerator.Content.api_keys
-            }));
+      let statusPresentAtUrlTime = false;
+      urlUtil.forPost.callsFake((id, attrs) => {
+        statusPresentAtUrlTime = attrs.status !== undefined;
+        return attrs;
+      });
 
-            const mapped = mappers.integrations(integration, frame);
+      const post = createJsonModel(
+        testUtils.DataGenerator.forKnex.createPost({
+          id: 'id1',
+          status: 'published',
+          slug: 'my-post',
+        }),
+      );
 
-            assertExists(mapped.api_keys);
+      const result = await mappers.posts(post, frame);
 
-            mapped.api_keys.forEach((key) => {
-                if (key.type === 'admin') {
-                    const [id, secret] = key.secret.split(':');
-                    assertExists(id);
-                    assertExists(secret);
-                } else {
-                    const [id, secret] = key.secret.split(':');
-                    assertExists(id);
-                    assert.equal(secret, undefined);
-                }
-            });
-        });
+      assert.ok(statusPresentAtUrlTime, 'status must still be present when the URL is computed');
+      assert.equal(result.status, undefined);
+      assert.equal(result.slug, undefined);
+      assert.equal(result.id, 'id1');
+    });
+  });
+
+  describe('User Mapper', function () {
+    beforeEach(function () {
+      sinon.stub(urlUtil, 'forUser').returns({});
+      sinon.stub(cleanUtil, 'author').returns({});
     });
 
-    describe('Snippet Mapper', function () {
-        it('returns only allowed keys', function () {
-            const frame = {
-            };
+    it('calls utils', function () {
+      const frame = {
+        options: {
+          context: {},
+        },
+      };
 
-            const snippet = createJsonModel(testUtils.DataGenerator.forKnex.createBasic({
-                name: 'test snippet',
-                lexical: testUtils.DataGenerator.markdownToLexical('Hello World'),
-                foo: 'bar'
-            }));
+      const user = createJsonModel(
+        testUtils.DataGenerator.forKnex.createUser({
+          id: 'id1',
+          name: 'Ghosty',
+        }),
+      );
 
-            const mapped = mappers.snippets(snippet, frame);
+      mappers.users(user, frame);
 
-            assert.deepEqual(mapped, {
-                id: snippet.id,
-                name: snippet.name,
-                mobiledoc: snippet.mobiledoc,
-                lexical: snippet.lexical,
-                created_at: snippet.created_at,
-                updated_at: snippet.updated_at
-            });
-        });
+      sinon.assert.calledOnce(urlUtil.forUser);
+      assert.deepEqual(urlUtil.forUser.getCall(0).args, ['id1', user, frame.options]);
+      sinon.assert.calledOnce(cleanUtil.author);
     });
 
-    describe('Newsletter Mapper', function () {
-        it('returns only allowed keys for content API', function () {
-            const frame = {
-                apiType: 'content'
-            };
+    it('strips columns force-loaded for the URL after the URL is computed', function () {
+      const frame = {
+        options: {
+          columns: ['id', 'url'],
+          context: {},
+        },
+        forcedUrlColumns: { routerType: 'authors', columns: ['slug'] },
+      };
 
-            const newsletter = createJsonModel(testUtils.DataGenerator.forKnex.createNewsletter({
-                name: 'Basic newsletter',
-                slug: 'basic-newsletter'
-            }));
+      const user = createJsonModel(
+        testUtils.DataGenerator.forKnex.createUser({
+          id: 'id1',
+          name: 'Ghosty',
+          slug: 'ghosty',
+        }),
+      );
 
-            const mapped = mappers.newsletters(newsletter, frame);
+      const result = mappers.users(user, frame);
 
-            assert.deepEqual(mapped, {
-                id: newsletter.id,
-                uuid: newsletter.uuid,
-                name: newsletter.name,
-                description: newsletter.description,
-                slug: newsletter.slug,
-                sender_email: newsletter.sender_email,
-                subscribe_on_signup: newsletter.subscribe_on_signup,
-                visibility: newsletter.visibility,
-                sort_order: newsletter.sort_order,
-                created_at: newsletter.created_at,
-                updated_at: newsletter.updated_at
-            });
-        });
-
-        it('returns all keys for admin API', function () {
-            const frame = {};
-
-            const newsletter = createJsonModel(testUtils.DataGenerator.forKnex.createNewsletter({
-                name: 'Full newsletter',
-                slug: 'full-newsletter',
-                sender_email: null,
-                sender_reply_to: 'newsletter'
-            }));
-
-            const mapped = mappers.newsletters(newsletter, frame);
-            assert.deepEqual(mapped, newsletter.toJSON());
-        });
+      assert.equal(result.slug, undefined);
+      assert.equal(result.id, 'id1');
     });
 
-    describe('Email Batch Mapper', function () {
-        it('returns only mapped keys', function () {
-            const frame = {};
+    it('leaves a nested author alone when the forced columns belong to another fetch', function () {
+      const frame = {
+        options: {
+          columns: ['id', 'url'],
+          context: {},
+        },
+        forcedUrlColumns: { routerType: 'posts', columns: ['status', 'type', 'slug'] },
+      };
 
-            const model = createJsonModel({
-                id: 'id1',
-                mailgun_message_id: 'provider_id1',
-                status: 'status1',
-                member_segment: 'member_segment1',
-                created_at: 'created_at1',
-                updated_at: 'updated_at1',
-                error_status_code: 'error_status_code1',
-                error_message: 'error_message1',
-                error_data: 'error_data1',
-                foo: 'bar',
-                count: {
-                    recipients: 12,
-                    foo: 1
-                }
-            });
+      const user = createJsonModel(
+        testUtils.DataGenerator.forKnex.createUser({
+          id: 'id1',
+          name: 'Ghosty',
+          slug: 'ghosty',
+        }),
+      );
 
-            const mapped = mappers.emailBatches(model, frame);
-            assert.deepEqual(mapped, {
-                id: 'id1',
-                mailgun_message_id: 'provider_id1',
-                status: 'status1',
-                member_segment: 'member_segment1',
-                created_at: 'created_at1',
-                updated_at: 'updated_at1',
-                error_status_code: 'error_status_code1',
-                error_message: 'error_message1',
-                error_data: 'error_data1',
-                count: {
-                    recipients: 12
-                }
-            });
-        });
+      const result = mappers.users(user, frame);
+
+      assert.equal(result.slug, 'ghosty');
+    });
+  });
+
+  describe('Tag Mapper', function () {
+    beforeEach(function () {
+      sinon.stub(urlUtil, 'forTag').returns({});
+      sinon.stub(cleanUtil, 'tag').returns({});
     });
 
-    describe('Email Failure Mapper', function () {
-        it('returns only mapped keys', function () {
-            const frame = {};
+    it('calls utils', function () {
+      const frame = {
+        options: {
+          context: {},
+        },
+      };
 
-            const model = createJsonModel({
-                id: 'id1',
-                code: 'code1',
-                enhanced_code: 'enhanced_code1',
-                message: 'message1',
-                severity: 'severity1',
-                failed_at: 'failed_at1',
-                event_id: 'event_id1',
-                foo: 'bar',
-                member: {
-                    id: 'id1',
-                    uuid: 'uuid1',
-                    name: 'name1',
-                    email: 'email1',
-                    avatar_image: 'avatar_image1',
-                    foo: 'bar'
-                },
-                emailRecipient: {
-                    id: 'id1',
-                    batch_id: 'batch_id1',
-                    processed_at: 'processed_at1',
-                    delivered_at: 'delivered_at1',
-                    opened_at: 'opened_at1',
-                    failed_at: 'failed_at1',
-                    member_uuid: 'member_uuid1',
-                    member_email: 'member_email1',
-                    member_name: 'member_name1',
-                    foo: 'bar'
-                }
-            });
+      const tag = createJsonModel(
+        testUtils.DataGenerator.forKnex.createTag({
+          id: 'id3',
+          feature_image: 'value',
+        }),
+      );
 
-            const mapped = mappers.emailFailures(model, frame);
-            assert.deepEqual(mapped, {
-                id: 'id1',
-                code: 'code1',
-                enhanced_code: 'enhanced_code1',
-                message: 'message1',
-                severity: 'severity1',
-                failed_at: 'failed_at1',
-                event_id: 'event_id1',
-                member: {
-                    id: 'id1',
-                    uuid: 'uuid1',
-                    name: 'name1',
-                    email: 'email1',
-                    avatar_image: 'avatar_image1'
-                },
-                email_recipient: {
-                    id: 'id1',
-                    batch_id: 'batch_id1',
-                    processed_at: 'processed_at1',
-                    delivered_at: 'delivered_at1',
-                    opened_at: 'opened_at1',
-                    failed_at: 'failed_at1',
-                    member_uuid: 'member_uuid1',
-                    member_email: 'member_email1',
-                    member_name: 'member_name1'
-                }
-            });
-        });
+      mappers.tags(tag, frame);
 
-        it('returns null for missing relations', function () {
-            const frame = {};
-
-            const model = createJsonModel({
-                id: 'id1',
-                code: 'code1',
-                enhanced_code: 'enhanced_code1',
-                message: 'message1',
-                severity: 'severity1',
-                failed_at: 'failed_at1',
-                event_id: 'event_id1',
-                foo: 'bar'
-            });
-
-            const mapped = mappers.emailFailures(model, frame);
-            assert.deepEqual(mapped, {
-                id: 'id1',
-                code: 'code1',
-                enhanced_code: 'enhanced_code1',
-                message: 'message1',
-                severity: 'severity1',
-                failed_at: 'failed_at1',
-                event_id: 'event_id1',
-                member: null,
-                email_recipient: null
-            });
-        });
+      sinon.assert.calledOnce(urlUtil.forTag);
+      assert.deepEqual(urlUtil.forTag.getCall(0).args, ['id3', tag, frame.options]);
+      sinon.assert.calledOnce(cleanUtil.tag);
     });
 
-    describe('Activity Feed Mapper', function () {
-        beforeEach(function () {
-            sinon.stub(urlUtil, 'forPost').callsFake((_, a) => {
-                a.url = 'https://generatedurl';
-            });
-        });
+    it('strips columns force-loaded for the URL after the URL is computed', function () {
+      const frame = {
+        options: {
+          columns: ['name', 'url', 'visibility'],
+          context: {},
+        },
+        forcedUrlColumns: { routerType: 'tags', columns: ['visibility'] },
+      };
 
-        it('maps comment_event', function () {
-            const frame = {};
+      const tag = createJsonModel(
+        testUtils.DataGenerator.forKnex.createTag({
+          id: 'id3',
+          name: 'Tag',
+          visibility: 'public',
+        }),
+      );
 
-            const model = {
-                foo: 'bar',
-                type: 'comment_event',
-                data: {
-                    id: 'id1',
-                    status: 'status1',
-                    html: 'html1',
-                    created_at: 'created_at1',
-                    edited_at: 'edited_at1',
-                    foo: 'bar',
-                    member: {
-                        id: 'id1',
-                        uuid: 'uuid1',
-                        name: 'name1',
-                        expertise: 'expertise1',
-                        avatar_image: 'avatar_image1',
-                        can_comment: true,
-                        commenting: {disabled: false, disabled_reason: null, disabled_until: null},
-                        foo: 'bar'
-                    },
-                    post: {
-                        id: 'id1',
-                        uuid: 'uuid1',
-                        title: 'title1',
-                        url: 'url1',
-                        foo: 'bar'
-                    },
-                    count: {
-                        replies: 12,
-                        direct_replies: 5,
-                        likes: 13,
-                        foo: 1
-                    }
-                }
-            };
+      const result = mappers.tags(tag, frame);
 
-            const mapped = mappers.activityFeedEvents(model, frame);
-            assert.deepEqual(mapped, {
-                foo: 'bar',
-                type: 'comment_event',
-                data: {
-                    // same except the remove foo keys
-                    id: 'id1',
-                    in_reply_to_id: null,
-                    in_reply_to_snippet: null,
-                    status: 'status1',
-                    html: 'html1',
-                    created_at: 'created_at1',
-                    edited_at: 'edited_at1',
-                    pinned: false,
-                    member: {
-                        id: 'id1',
-                        uuid: 'uuid1',
-                        name: 'name1',
-                        expertise: 'expertise1',
-                        avatar_image: 'avatar_image1',
-                        can_comment: true,
-                        commenting: {
-                            disabled: false,
-                            disabled_reason: null,
-                            disabled_until: null
-                        }
-                    },
-                    post: {
-                        id: 'id1',
-                        uuid: 'uuid1',
-                        title: 'title1',
-                        url: 'https://generatedurl'
-                    },
-                    count: {
-                        replies: 12,
-                        direct_replies: 5,
-                        likes: 13
-                    }
-                }
-            });
-        });
+      assert.equal(result.visibility, undefined);
+      assert.equal(result.name, 'Tag');
+    });
+  });
 
-        it('maps click_event', function () {
-            const frame = {};
+  describe('Integration Mapper', function () {
+    it('formats admin keys', function () {
+      const frame = {};
 
-            const model = {
-                foo: 'bar',
-                type: 'click_event',
-                data: {
-                    id: 'id1',
-                    created_at: 'created_at1',
-                    foo: 'bar',
-                    link: {
-                        from: 'from',
-                        to: 'to',
-                        foo: 'bar',
-                        post: {
-                            id: 'id1',
-                            uuid: 'uuid1',
-                            title: 'title1',
-                            url: 'url1',
-                            foo: 'bar'
-                        }
-                    },
-                    member: {
-                        id: 'id1',
-                        uuid: 'uuid1',
-                        name: 'name1',
-                        avatar_image: 'avatar_image1',
-                        foo: 'bar'
-                    }
-                }
-            };
+      const integration = createJsonModel(
+        testUtils.DataGenerator.forKnex.createIntegration({
+          api_keys: testUtils.DataGenerator.Content.api_keys,
+        }),
+      );
 
-            const mapped = mappers.activityFeedEvents(model, frame);
-            assert.deepEqual(mapped, {
-                foo: 'bar',
-                type: 'click_event',
-                data: {
-                    // same except the remove foo keys
-                    id: 'id1',
-                    created_at: 'created_at1',
-                    link: {
-                        from: 'from',
-                        to: 'to'
-                    },
-                    post: {
-                        id: 'id1',
-                        uuid: 'uuid1',
-                        title: 'title1',
-                        url: 'https://generatedurl'
-                    },
-                    member: {
-                        id: 'id1',
-                        uuid: 'uuid1',
-                        name: 'name1',
-                        avatar_image: 'avatar_image1'
-                    }
-                }
-            });
-        });
+      const mapped = mappers.integrations(integration, frame);
 
-        it('maps aggregated_click_event', function () {
-            const frame = {};
+      assertExists(mapped.api_keys);
 
-            const model = {
-                foo: 'bar',
-                type: 'aggregated_click_event',
-                data: {
-                    id: 'id1',
-                    created_at: 'created_at1',
-                    foo: 'bar',
-                    member: {
-                        id: 'id1',
-                        uuid: 'uuid1',
-                        name: 'name1',
-                        avatar_image: 'avatar_image1',
-                        foo: 'bar'
-                    },
-                    count: {
-                        clicks: 12,
-                        foo: 1
-                    }
-                }
-            };
+      mapped.api_keys.forEach((key) => {
+        if (key.type === 'admin') {
+          const [id, secret] = key.secret.split(':');
+          assertExists(id);
+          assertExists(secret);
+        } else {
+          const [id, secret] = key.secret.split(':');
+          assertExists(id);
+          assert.equal(secret, undefined);
+        }
+      });
+    });
+  });
 
-            const mapped = mappers.activityFeedEvents(model, frame);
-            assert.deepEqual(mapped, {
-                foo: 'bar',
-                type: 'aggregated_click_event',
-                data: {
-                    // same except the remove foo keys
-                    id: 'id1',
-                    created_at: 'created_at1',
-                    member: {
-                        id: 'id1',
-                        uuid: 'uuid1',
-                        name: 'name1',
-                        avatar_image: 'avatar_image1'
-                    },
-                    count: {
-                        clicks: 12
-                    }
-                }
-            });
-        });
+  describe('Snippet Mapper', function () {
+    it('returns only allowed keys', function () {
+      const frame = {};
 
-        it('maps feedback_event', function () {
-            const frame = {};
+      const snippet = createJsonModel(
+        testUtils.DataGenerator.forKnex.createBasic({
+          name: 'test snippet',
+          lexical: testUtils.DataGenerator.markdownToLexical('Hello World'),
+          foo: 'bar',
+        }),
+      );
 
-            const model = {
-                foo: 'bar',
-                type: 'feedback_event',
-                data: {
-                    id: 'id1',
-                    score: 5,
-                    created_at: 'created_at1',
-                    foo: 'bar',
-                    member: {
-                        id: 'id1',
-                        uuid: 'uuid1',
-                        name: 'name1',
-                        avatar_image: 'avatar_image1',
-                        foo: 'bar'
-                    },
-                    post: {
-                        id: 'id1',
-                        uuid: 'uuid1',
-                        title: 'title1',
-                        url: 'url1',
-                        foo: 'bar'
-                    }
-                }
-            };
+      const mapped = mappers.snippets(snippet, frame);
 
-            const mapped = mappers.activityFeedEvents(model, frame);
-            assert.deepEqual(mapped, {
-                foo: 'bar',
-                type: 'feedback_event',
-                data: {
-                    // same except the remove foo keys
-                    id: 'id1',
-                    score: 5,
-                    created_at: 'created_at1',
-                    member: {
-                        id: 'id1',
-                        uuid: 'uuid1',
-                        name: 'name1',
-                        avatar_image: 'avatar_image1'
-                    },
-                    post: {
-                        id: 'id1',
-                        uuid: 'uuid1',
-                        title: 'title1',
-                        url: 'https://generatedurl'
-                    }
-                }
-            });
+      assert.deepEqual(mapped, {
+        id: snippet.id,
+        name: snippet.name,
+        mobiledoc: snippet.mobiledoc,
+        lexical: snippet.lexical,
+        created_at: snippet.created_at,
+        updated_at: snippet.updated_at,
+      });
+    });
+  });
 
-            const mapped2 = mappers.activityFeedEvents({...model, data: {...model.data, member: undefined, post: undefined}}, frame);
-            assert.deepEqual(mapped2, {
-                foo: 'bar',
-                type: 'feedback_event',
-                data: {
-                    // same except the remove foo keys
-                    id: 'id1',
-                    score: 5,
-                    created_at: 'created_at1',
-                    member: null,
-                    post: null
-                }
-            });
-        });
+  describe('Newsletter Mapper', function () {
+    it('returns only allowed keys for content API', function () {
+      const frame = {
+        apiType: 'content',
+      };
+
+      const newsletter = createJsonModel(
+        testUtils.DataGenerator.forKnex.createNewsletter({
+          name: 'Basic newsletter',
+          slug: 'basic-newsletter',
+        }),
+      );
+
+      const mapped = mappers.newsletters(newsletter, frame);
+
+      assert.deepEqual(mapped, {
+        id: newsletter.id,
+        uuid: newsletter.uuid,
+        name: newsletter.name,
+        description: newsletter.description,
+        slug: newsletter.slug,
+        sender_email: newsletter.sender_email,
+        subscribe_on_signup: newsletter.subscribe_on_signup,
+        visibility: newsletter.visibility,
+        sort_order: newsletter.sort_order,
+        created_at: newsletter.created_at,
+        updated_at: newsletter.updated_at,
+      });
     });
 
-    describe('Comment mapper', function () {
-        it('includes in_reply_to_snippet for published replies-to-replies', function () {
-            const frame = {};
+    it('returns all keys for admin API', function () {
+      const frame = {};
 
-            const model = {
-                id: 'comment3',
-                html: '<p>comment 3</p>',
-                member: {
-                    id: 'member1',
-                    can_comment: true,
-                    commenting: {disabled: false, disabled_reason: null, disabled_until: null}
-                },
-                parent: {
-                    id: 'comment1',
-                    html: '<p>comment 1</p>',
-                    member: {
-                        id: 'member1',
-                        can_comment: true,
-                        commenting: {disabled: false, disabled_reason: null, disabled_until: null}
-                    }
-                },
-                in_reply_to_id: 'comment2',
-                in_reply_to: {
-                    id: 'comment2',
-                    parent_id: 'comment1',
-                    html: '<p>comment 2</p>',
-                    status: 'published',
-                    member: {id: 'member2'}
-                }
-            };
+      const newsletter = createJsonModel(
+        testUtils.DataGenerator.forKnex.createNewsletter({
+          name: 'Full newsletter',
+          slug: 'full-newsletter',
+          sender_email: null,
+          sender_reply_to: 'newsletter',
+        }),
+      );
 
-            const mapped = mappers.comments(model, frame);
-
-            assert.deepEqual(mapped, {
-                id: 'comment3',
-                html: '<p>comment 3</p>',
-                member: {
-                    id: 'member1',
-                    can_comment: true,
-                    commenting: {
-                        disabled: false,
-                        disabled_reason: null,
-                        disabled_until: null
-                    }
-                },
-                parent: {
-                    id: 'comment1',
-                    html: '<p>comment 1</p>',
-                    member: {
-                        id: 'member1',
-                        can_comment: true,
-                        commenting: {
-                            disabled: false,
-                            disabled_reason: null,
-                            disabled_until: null
-                        }
-                    },
-                    in_reply_to_id: null,
-                    in_reply_to_snippet: null,
-                    pinned: false
-                },
-                in_reply_to_id: 'comment2',
-                in_reply_to_snippet: 'comment 2',
-                pinned: false
-            });
-        });
-
-        it('calls correct html-to-plaintext converter for in_reply_to_snippet', function () {
-            const converterSpy = sinon.spy(htmlToPlaintext, 'commentSnippet');
-
-            const frame = {};
-
-            const model = {
-                in_reply_to: {
-                    html: '<p>First paragraph <a href="https://example.com">with link</a>,<br> and new line.</p><p>Second paragraph</p>',
-                    status: 'published'
-                }
-            };
-
-            const mapped = mappers.comments(model, frame);
-
-            assert.equal(converterSpy.calledOnce, true, 'htmlToPlaintext.commentSnippet was not called');
-
-            assert.deepEqual(mapped, {
-                in_reply_to_snippet: 'First paragraph with link, and new line. Second paragraph',
-                member: null,
-                pinned: false
-            });
-        });
-
-        it('includes null in_reply_to attributes for top-level comments', function () {
-            const frame = {};
-
-            const model = {
-                id: 'comment1',
-                html: '<p>comment 1</p>',
-                in_reply_to: undefined
-            };
-
-            const mapped = mappers.comments(model, frame);
-
-            assert.deepEqual(mapped, {
-                id: 'comment1',
-                html: '<p>comment 1</p>',
-                member: null,
-                in_reply_to_id: null,
-                in_reply_to_snippet: null,
-                pinned: false
-            });
-        });
+      const mapped = mappers.newsletters(newsletter, frame);
+      assert.deepEqual(mapped, newsletter.toJSON());
     });
+  });
+
+  describe('Email Batch Mapper', function () {
+    it('returns only mapped keys', function () {
+      const frame = {};
+
+      const model = createJsonModel({
+        id: 'id1',
+        mailgun_message_id: 'provider_id1',
+        status: 'status1',
+        member_segment: 'member_segment1',
+        created_at: 'created_at1',
+        updated_at: 'updated_at1',
+        error_status_code: 'error_status_code1',
+        error_message: 'error_message1',
+        error_data: 'error_data1',
+        foo: 'bar',
+        count: {
+          recipients: 12,
+          foo: 1,
+        },
+      });
+
+      const mapped = mappers.emailBatches(model, frame);
+      assert.deepEqual(mapped, {
+        id: 'id1',
+        mailgun_message_id: 'provider_id1',
+        status: 'status1',
+        member_segment: 'member_segment1',
+        created_at: 'created_at1',
+        updated_at: 'updated_at1',
+        error_status_code: 'error_status_code1',
+        error_message: 'error_message1',
+        error_data: 'error_data1',
+        count: {
+          recipients: 12,
+        },
+      });
+    });
+  });
+
+  describe('Email Failure Mapper', function () {
+    it('returns only mapped keys', function () {
+      const frame = {};
+
+      const model = createJsonModel({
+        id: 'id1',
+        code: 'code1',
+        enhanced_code: 'enhanced_code1',
+        message: 'message1',
+        severity: 'severity1',
+        failed_at: 'failed_at1',
+        event_id: 'event_id1',
+        foo: 'bar',
+        member: {
+          id: 'id1',
+          uuid: 'uuid1',
+          name: 'name1',
+          email: 'email1',
+          avatar_image: 'avatar_image1',
+          foo: 'bar',
+        },
+        emailRecipient: {
+          id: 'id1',
+          batch_id: 'batch_id1',
+          processed_at: 'processed_at1',
+          delivered_at: 'delivered_at1',
+          opened_at: 'opened_at1',
+          failed_at: 'failed_at1',
+          member_uuid: 'member_uuid1',
+          member_email: 'member_email1',
+          member_name: 'member_name1',
+          foo: 'bar',
+        },
+      });
+
+      const mapped = mappers.emailFailures(model, frame);
+      assert.deepEqual(mapped, {
+        id: 'id1',
+        code: 'code1',
+        enhanced_code: 'enhanced_code1',
+        message: 'message1',
+        severity: 'severity1',
+        failed_at: 'failed_at1',
+        event_id: 'event_id1',
+        member: {
+          id: 'id1',
+          uuid: 'uuid1',
+          name: 'name1',
+          email: 'email1',
+          avatar_image: 'avatar_image1',
+        },
+        email_recipient: {
+          id: 'id1',
+          batch_id: 'batch_id1',
+          processed_at: 'processed_at1',
+          delivered_at: 'delivered_at1',
+          opened_at: 'opened_at1',
+          failed_at: 'failed_at1',
+          member_uuid: 'member_uuid1',
+          member_email: 'member_email1',
+          member_name: 'member_name1',
+        },
+      });
+    });
+
+    it('returns null for missing relations', function () {
+      const frame = {};
+
+      const model = createJsonModel({
+        id: 'id1',
+        code: 'code1',
+        enhanced_code: 'enhanced_code1',
+        message: 'message1',
+        severity: 'severity1',
+        failed_at: 'failed_at1',
+        event_id: 'event_id1',
+        foo: 'bar',
+      });
+
+      const mapped = mappers.emailFailures(model, frame);
+      assert.deepEqual(mapped, {
+        id: 'id1',
+        code: 'code1',
+        enhanced_code: 'enhanced_code1',
+        message: 'message1',
+        severity: 'severity1',
+        failed_at: 'failed_at1',
+        event_id: 'event_id1',
+        member: null,
+        email_recipient: null,
+      });
+    });
+  });
+
+  describe('Activity Feed Mapper', function () {
+    beforeEach(function () {
+      sinon.stub(urlUtil, 'forPost').callsFake((_, a) => {
+        a.url = 'https://generatedurl';
+      });
+    });
+
+    it('maps comment_event', function () {
+      const frame = {};
+
+      const model = {
+        foo: 'bar',
+        type: 'comment_event',
+        data: {
+          id: 'id1',
+          status: 'status1',
+          html: 'html1',
+          created_at: 'created_at1',
+          edited_at: 'edited_at1',
+          foo: 'bar',
+          member: {
+            id: 'id1',
+            uuid: 'uuid1',
+            name: 'name1',
+            expertise: 'expertise1',
+            avatar_image: 'avatar_image1',
+            can_comment: true,
+            commenting: { disabled: false, disabled_reason: null, disabled_until: null },
+            foo: 'bar',
+          },
+          post: {
+            id: 'id1',
+            uuid: 'uuid1',
+            title: 'title1',
+            url: 'url1',
+            foo: 'bar',
+          },
+          count: {
+            replies: 12,
+            direct_replies: 5,
+            likes: 13,
+            foo: 1,
+          },
+        },
+      };
+
+      const mapped = mappers.activityFeedEvents(model, frame);
+      assert.deepEqual(mapped, {
+        foo: 'bar',
+        type: 'comment_event',
+        data: {
+          // same except the remove foo keys
+          id: 'id1',
+          in_reply_to_id: null,
+          in_reply_to_snippet: null,
+          status: 'status1',
+          html: 'html1',
+          created_at: 'created_at1',
+          edited_at: 'edited_at1',
+          pinned: false,
+          member: {
+            id: 'id1',
+            uuid: 'uuid1',
+            name: 'name1',
+            expertise: 'expertise1',
+            avatar_image: 'avatar_image1',
+            can_comment: true,
+            commenting: {
+              disabled: false,
+              disabled_reason: null,
+              disabled_until: null,
+            },
+          },
+          post: {
+            id: 'id1',
+            uuid: 'uuid1',
+            title: 'title1',
+            url: 'https://generatedurl',
+          },
+          count: {
+            replies: 12,
+            direct_replies: 5,
+            likes: 13,
+          },
+        },
+      });
+    });
+
+    it('maps click_event', function () {
+      const frame = {};
+
+      const model = {
+        foo: 'bar',
+        type: 'click_event',
+        data: {
+          id: 'id1',
+          created_at: 'created_at1',
+          foo: 'bar',
+          link: {
+            from: 'from',
+            to: 'to',
+            foo: 'bar',
+            post: {
+              id: 'id1',
+              uuid: 'uuid1',
+              title: 'title1',
+              url: 'url1',
+              foo: 'bar',
+            },
+          },
+          member: {
+            id: 'id1',
+            uuid: 'uuid1',
+            name: 'name1',
+            avatar_image: 'avatar_image1',
+            foo: 'bar',
+          },
+        },
+      };
+
+      const mapped = mappers.activityFeedEvents(model, frame);
+      assert.deepEqual(mapped, {
+        foo: 'bar',
+        type: 'click_event',
+        data: {
+          // same except the remove foo keys
+          id: 'id1',
+          created_at: 'created_at1',
+          link: {
+            from: 'from',
+            to: 'to',
+          },
+          post: {
+            id: 'id1',
+            uuid: 'uuid1',
+            title: 'title1',
+            url: 'https://generatedurl',
+          },
+          member: {
+            id: 'id1',
+            uuid: 'uuid1',
+            name: 'name1',
+            avatar_image: 'avatar_image1',
+          },
+        },
+      });
+    });
+
+    it('maps aggregated_click_event', function () {
+      const frame = {};
+
+      const model = {
+        foo: 'bar',
+        type: 'aggregated_click_event',
+        data: {
+          id: 'id1',
+          created_at: 'created_at1',
+          foo: 'bar',
+          member: {
+            id: 'id1',
+            uuid: 'uuid1',
+            name: 'name1',
+            avatar_image: 'avatar_image1',
+            foo: 'bar',
+          },
+          count: {
+            clicks: 12,
+            foo: 1,
+          },
+        },
+      };
+
+      const mapped = mappers.activityFeedEvents(model, frame);
+      assert.deepEqual(mapped, {
+        foo: 'bar',
+        type: 'aggregated_click_event',
+        data: {
+          // same except the remove foo keys
+          id: 'id1',
+          created_at: 'created_at1',
+          member: {
+            id: 'id1',
+            uuid: 'uuid1',
+            name: 'name1',
+            avatar_image: 'avatar_image1',
+          },
+          count: {
+            clicks: 12,
+          },
+        },
+      });
+    });
+
+    it('maps feedback_event', function () {
+      const frame = {};
+
+      const model = {
+        foo: 'bar',
+        type: 'feedback_event',
+        data: {
+          id: 'id1',
+          score: 5,
+          created_at: 'created_at1',
+          foo: 'bar',
+          member: {
+            id: 'id1',
+            uuid: 'uuid1',
+            name: 'name1',
+            avatar_image: 'avatar_image1',
+            foo: 'bar',
+          },
+          post: {
+            id: 'id1',
+            uuid: 'uuid1',
+            title: 'title1',
+            url: 'url1',
+            foo: 'bar',
+          },
+        },
+      };
+
+      const mapped = mappers.activityFeedEvents(model, frame);
+      assert.deepEqual(mapped, {
+        foo: 'bar',
+        type: 'feedback_event',
+        data: {
+          // same except the remove foo keys
+          id: 'id1',
+          score: 5,
+          created_at: 'created_at1',
+          member: {
+            id: 'id1',
+            uuid: 'uuid1',
+            name: 'name1',
+            avatar_image: 'avatar_image1',
+          },
+          post: {
+            id: 'id1',
+            uuid: 'uuid1',
+            title: 'title1',
+            url: 'https://generatedurl',
+          },
+        },
+      });
+
+      const mapped2 = mappers.activityFeedEvents(
+        { ...model, data: { ...model.data, member: undefined, post: undefined } },
+        frame,
+      );
+      assert.deepEqual(mapped2, {
+        foo: 'bar',
+        type: 'feedback_event',
+        data: {
+          // same except the remove foo keys
+          id: 'id1',
+          score: 5,
+          created_at: 'created_at1',
+          member: null,
+          post: null,
+        },
+      });
+    });
+  });
+
+  describe('Comment mapper', function () {
+    it('includes in_reply_to_snippet for published replies-to-replies', function () {
+      const frame = {};
+
+      const model = {
+        id: 'comment3',
+        html: '<p>comment 3</p>',
+        member: {
+          id: 'member1',
+          can_comment: true,
+          commenting: { disabled: false, disabled_reason: null, disabled_until: null },
+        },
+        parent: {
+          id: 'comment1',
+          html: '<p>comment 1</p>',
+          member: {
+            id: 'member1',
+            can_comment: true,
+            commenting: { disabled: false, disabled_reason: null, disabled_until: null },
+          },
+        },
+        in_reply_to_id: 'comment2',
+        in_reply_to: {
+          id: 'comment2',
+          parent_id: 'comment1',
+          html: '<p>comment 2</p>',
+          status: 'published',
+          member: { id: 'member2' },
+        },
+      };
+
+      const mapped = mappers.comments(model, frame);
+
+      assert.deepEqual(mapped, {
+        id: 'comment3',
+        html: '<p>comment 3</p>',
+        member: {
+          id: 'member1',
+          can_comment: true,
+          commenting: {
+            disabled: false,
+            disabled_reason: null,
+            disabled_until: null,
+          },
+        },
+        parent: {
+          id: 'comment1',
+          html: '<p>comment 1</p>',
+          member: {
+            id: 'member1',
+            can_comment: true,
+            commenting: {
+              disabled: false,
+              disabled_reason: null,
+              disabled_until: null,
+            },
+          },
+          in_reply_to_id: null,
+          in_reply_to_snippet: null,
+          pinned: false,
+        },
+        in_reply_to_id: 'comment2',
+        in_reply_to_snippet: 'comment 2',
+        pinned: false,
+      });
+    });
+
+    it('calls correct html-to-plaintext converter for in_reply_to_snippet', function () {
+      const converterSpy = sinon.spy(htmlToPlaintext, 'commentSnippet');
+
+      const frame = {};
+
+      const model = {
+        in_reply_to: {
+          html: '<p>First paragraph <a href="https://example.com">with link</a>,<br> and new line.</p><p>Second paragraph</p>',
+          status: 'published',
+        },
+      };
+
+      const mapped = mappers.comments(model, frame);
+
+      assert.equal(converterSpy.calledOnce, true, 'htmlToPlaintext.commentSnippet was not called');
+
+      assert.deepEqual(mapped, {
+        in_reply_to_snippet: 'First paragraph with link, and new line. Second paragraph',
+        member: null,
+        pinned: false,
+      });
+    });
+
+    it('includes null in_reply_to attributes for top-level comments', function () {
+      const frame = {};
+
+      const model = {
+        id: 'comment1',
+        html: '<p>comment 1</p>',
+        in_reply_to: undefined,
+      };
+
+      const mapped = mappers.comments(model, frame);
+
+      assert.deepEqual(mapped, {
+        id: 'comment1',
+        html: '<p>comment 1</p>',
+        member: null,
+        in_reply_to_id: null,
+        in_reply_to_snippet: null,
+        pinned: false,
+      });
+    });
+  });
 });

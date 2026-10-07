@@ -1,4 +1,8 @@
-import type {AutomationAction, AutomationSendEmailAction, AutomationWaitAction} from '@tryghost/admin-x-framework/api/automations';
+import type {
+  AutomationAction,
+  AutomationSendEmailAction,
+  AutomationWaitAction,
+} from '@tryghost/admin-x-framework/api/automations';
 
 export type EmailModalMode = 'edit' | 'preview';
 export type MemberTier = 'free' | 'paid';
@@ -11,7 +15,10 @@ type BaseStepSidebarDetail<Type extends string, LabelText extends string> = {
   type: Type;
 };
 
-type ActionStepSidebarDetail<Action extends AutomationAction, LabelText extends string> = BaseStepSidebarDetail<Action['type'], LabelText> & {
+type ActionStepSidebarDetail<
+  Action extends AutomationAction,
+  LabelText extends string,
+> = BaseStepSidebarDetail<Action['type'], LabelText> & {
   action: Action;
   onDelete: () => void;
 };
@@ -24,10 +31,16 @@ type WaitStepSidebarDetail = ActionStepSidebarDetail<AutomationWaitAction, 'Wait
   onUpdate: (waitHours: number) => void;
 };
 
-type SendEmailStepSidebarDetail = ActionStepSidebarDetail<AutomationSendEmailAction, 'Send email'> & {
+type SendEmailStepSidebarDetail = ActionStepSidebarDetail<
+  AutomationSendEmailAction,
+  'Send email'
+> & {
   automationId: string;
   onUpdateSubject: (subject: string) => void;
   onEditEmail: () => void;
 };
 
-export type StepSidebarDetail = TriggerStepSidebarDetail | WaitStepSidebarDetail | SendEmailStepSidebarDetail;
+export type StepSidebarDetail =
+  | TriggerStepSidebarDetail
+  | WaitStepSidebarDetail
+  | SendEmailStepSidebarDetail;

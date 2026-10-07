@@ -1,5 +1,3 @@
-const {combineTransactionalMigrations, removeSetting} = require('../../utils');
+const { combineTransactionalMigrations, removeSetting } = require('../../utils');
 
-module.exports = combineTransactionalMigrations(
-    removeSetting('routes_hash')
-);
+module.exports = combineTransactionalMigrations(removeSetting('routes_hash'));

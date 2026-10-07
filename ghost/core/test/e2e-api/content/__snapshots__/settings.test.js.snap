@@ -58,6 +58,7 @@ Object {
     "og_title": null,
     "outbound_link_tagging": true,
     "paid_members_enabled": true,
+    "portal_account_gift_promotion": true,
     "portal_button": true,
     "portal_button_icon": null,
     "portal_button_signup_text": "Subscribe",
@@ -68,6 +69,7 @@ Object {
       "free",
     ],
     "portal_signup_checkbox_required": false,
+    "portal_signup_gift_promotion": true,
     "portal_signup_terms_html": null,
     "recommendations_enabled": false,
     "secondary_navigation": Array [

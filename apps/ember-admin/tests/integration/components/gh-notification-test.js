@@ -26,7 +26,7 @@ describe('Integration: Component: gh-notification', function () {
 
         expect(find('article.gh-notification')).to.exist;
 
-        let notification = find('.gh-notification');
+        const notification = find('.gh-notification');
         expect(notification).to.have.class('gh-notification-passive');
         expect(notification).to.contain.text('Test message');
     });
@@ -35,7 +35,7 @@ describe('Integration: Component: gh-notification', function () {
         this.set('message', new Message({message: 'Test message', type: 'success'}));
 
         await render(hbs`<GhNotification @message={{this.message}} />`);
-        let notification = find('.gh-notification');
+        const notification = find('.gh-notification');
 
         this.message.type = 'error';
         await settled();
@@ -49,10 +49,10 @@ describe('Integration: Component: gh-notification', function () {
     });
 
     it('closes notification through notifications service', async function () {
-        let message = new Message({message: 'Test close', type: 'success'});
+        const message = new Message({message: 'Test close', type: 'success'});
         this.set('message', message);
 
-        let notifications = this.owner.lookup('service:notifications');
+        const notifications = this.owner.lookup('service:notifications');
         notifications.closeNotification = sinon.stub();
 
         await render(hbs`<GhNotification @message={{this.message}} />`);

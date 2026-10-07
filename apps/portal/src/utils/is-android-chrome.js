@@ -8,17 +8,17 @@
  * @returns {boolean}
  */
 const isAndroid = (navigator) => {
-    if (typeof navigator.userAgentData?.platform === 'string') {
-        return navigator.userAgentData.platform === 'Android';
-    }
-    return /android/i.test(navigator.userAgent);
+  if (typeof navigator.userAgentData?.platform === 'string') {
+    return navigator.userAgentData.platform === 'Android';
+  }
+  return /android/i.test(navigator.userAgent);
 };
 
 /**
  * @param {Readonly<Pick<Navigator, 'userAgent'>} navigator
  * @returns {boolean}
  */
-const isChrome = navigator => /chrome/i.test(navigator.userAgent);
+const isChrome = (navigator) => /chrome/i.test(navigator.userAgent);
 
 /**
  * @param {Readonly<{
@@ -29,4 +29,4 @@ const isChrome = navigator => /chrome/i.test(navigator.userAgent);
  * }>} navigator
  * @returns {boolean}
  */
-export const isAndroidChrome = navigator => isAndroid(navigator) && isChrome(navigator);
+export const isAndroidChrome = (navigator) => isAndroid(navigator) && isChrome(navigator);

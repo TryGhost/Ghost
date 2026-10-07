@@ -1,12 +1,12 @@
-import type {Card} from '../types.js';
+import type { Card } from '../types.js';
 
 const hrCard: Card = {
-    name: 'hr',
-    type: 'dom',
+  name: 'hr',
+  type: 'dom',
 
-    render({env: {dom}}) {
-        return dom.createElement('hr');
-    }
+  render({ env: { dom } }) {
+    return dom.createElement('hr');
+  },
 };
 
 export default hrCard;

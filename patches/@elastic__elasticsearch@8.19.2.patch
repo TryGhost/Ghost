@@ -1,0 +1,67 @@
+diff --git a/lib/helpers.d.ts b/lib/helpers.d.ts
+index f21dc11510a89c5844c6d630397e69a34481a5e8..7d65004a87f96cd47f970c1e71844633d9a8b485 100644
+--- a/lib/helpers.d.ts
++++ b/lib/helpers.d.ts
+@@ -1,6 +1,6 @@
+ import { Readable } from 'node:stream';
+ import { TransportResult, TransportRequestOptions } from '@elastic/transport';
+-import { Table, TypeMap, AsyncRecordBatchStreamReader } from 'apache-arrow/Arrow.node';
++import type { Table, TypeMap, AsyncRecordBatchStreamReader } from 'apache-arrow/Arrow.node';
+ import Client from './client';
+ import * as T from './api/types';
+ import { Id } from './api/types';
+diff --git a/lib/helpers.js b/lib/helpers.js
+index 340ffc5ad6cbc11b3dd1a8d45d1a3dee5829ff32..7400bc10c8499a04a4cd7fa1c96454db67453aee 100644
+--- a/lib/helpers.js
++++ b/lib/helpers.js
+@@ -27,7 +27,19 @@ const node_assert_1 = tslib_1.__importDefault(require("node:assert"));
+ const timersPromises = tslib_1.__importStar(require("node:timers/promises"));
+ const node_stream_1 = require("node:stream");
+ const transport_1 = require("@elastic/transport");
+-const Arrow_node_1 = require("apache-arrow/Arrow.node");
++// Ghost patch: only the two ES|QL helpers below use apache-arrow, and nothing in
++// Ghost calls them - this eager require cost 145 modules / ~3.3MB RSS in every
++// process using the Elasticsearch log transport. 9.x defers it the same way.
++// .pnpmfile.mjs drops the dependency, so the require really can fail here.
++function loadArrow() {
++    try {
++        return require("apache-arrow/Arrow.node");
++    }
++    catch {
++        throw new Error('Package "apache-arrow" is required for Arrow functionality. ' +
++            'Install it with: npm install apache-arrow');
++    }
++}
+ const { ResponseError, ConfigurationError } = transport_1.errors;
+ const sleep = timersPromises.setTimeout;
+ const pImmediate = timersPromises.setImmediate;
+@@ -831,6 +843,7 @@ class Helpers {
+             },
+             async toArrowTable() {
+                 var _d;
++                const { tableFromIPC } = loadArrow();
+                 if (metaHeader !== null) {
+                     reqOptions.headers = (_d = reqOptions.headers) !== null && _d !== void 0 ? _d : {};
+                     reqOptions.headers['x-elastic-client-meta'] = `${metaHeader},h=qa`;
+@@ -838,10 +851,11 @@ class Helpers {
+                 params.format = 'arrow';
+                 // @ts-expect-error the return type will be ArrayBuffer when the format is set to 'arrow'
+                 const response = await client.esql.query(params, reqOptions);
+-                return (0, Arrow_node_1.tableFromIPC)(response);
++                return tableFromIPC(response);
+             },
+             async toArrowReader() {
+                 var _d;
++                const { AsyncRecordBatchStreamReader } = loadArrow();
+                 if (metaHeader !== null) {
+                     reqOptions.headers = (_d = reqOptions.headers) !== null && _d !== void 0 ? _d : {};
+                     reqOptions.headers['x-elastic-client-meta'] = `${metaHeader},h=qa`;
+@@ -850,7 +864,7 @@ class Helpers {
+                 params.format = 'arrow';
+                 // @ts-expect-error response is a Readable when asStream is true
+                 const response = await client.esql.query(params, reqOptions);
+-                return await Arrow_node_1.AsyncRecordBatchStreamReader.from(node_stream_1.Readable.from(response));
++                return await AsyncRecordBatchStreamReader.from(node_stream_1.Readable.from(response));
+             }
+         };
+         return helper;

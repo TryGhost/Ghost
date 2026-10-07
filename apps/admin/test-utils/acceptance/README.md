@@ -2,6 +2,15 @@
 
 Full-app tests: the **real admin app** (the same provider stack as `src/main.tsx`) booted in a **real Chromium** instance via Vitest Browser Mode, against a **fake Ghost Admin API** — a simplified working implementation served in-browser through MSW, the same test-double family as e2e's fake-stripe-server and fake-mailgun-server. The shell's boot chrome (settings/config/site/me, sidebar members count, active theme, the ghost.org changelog feed) is handled by default — specs never mention it.
 
+CI uploads `admin-acceptance-results-<shard>` artifacts containing Vitest's JSON
+report at `apps/admin/test-results/acceptance.json`, for both passing and failing
+runs. Each shard's GitHub Actions summary shows test counts, elapsed suite time,
+failed tests, and the slowest files and tests. Use the JSON report's suite
+start/end times and assertion durations to compare shard work, identify slow
+journeys, and investigate timeouts. A failure alone does not prove flakiness;
+compare repeated runs of the same commit. Console output stays minimal;
+failure screenshots remain separate artifacts.
+
 ## Anatomy of a spec
 
 Use [`src/tags/tags.acceptance.test.tsx`](../../src/tags/tags.acceptance.test.tsx) as the happy-path template, and [`src/whats-new/whats-new.acceptance.test.tsx`](../../src/whats-new/whats-new.acceptance.test.tsx) as the worked example for the escape hatches (boot override, external feed, non-browse admin endpoint).
@@ -10,12 +19,13 @@ Use [`src/tags/tags.acceptance.test.tsx`](../../src/tags/tags.acceptance.test.ts
 - **When** — `await renderAdminApp("/tags")`, then gesture through the screen helper (`tagsScreen.internalTab().click()`).
 - **Then** — three assertion idioms, plus one documented fallback:
 
-| Asserting | Idiom |
-| --- | --- |
-| Element state | `await expect.element(locator).toBeVisible() / toHaveTextContent() / toHaveAttribute()` |
-| Element counts | `await expect(locator).toHaveCount(n)` |
+| Asserting         | Idiom                                                                                                                                                                |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Element state     | `await expect.element(locator).toBeVisible() / toHaveTextContent() / toHaveAttribute()`                                                                              |
+| Element counts    | `await expect(locator).toHaveCount(n)`                                                                                                                               |
 | Captured requests | `await expect(membersApi).toHaveSentFilter("label:[VIP]")` / `toHaveSentSearch(...)` — string for an exact match against the decoded param, RegExp for a partial one |
-| Edited settings | `await expect(settingsApi).toHaveEditedSettings([{key: "title", value: "New title"}])` — exact settings in the latest `PUT /settings/` payload; order-independent |
+| Edited settings   | `await expect(settingsApi).toHaveEditedSettings([{key: "title", value: "New title"}])` — exact settings in the latest `PUT /settings/` payload; order-independent    |
+| Saved post fields | `await expect(saveApi).toHaveSavedFields({slug: "new-slug"})` — waits for the write and asserts the named fields of the latest post/page payload, deep-equal per key |
 
 The request matchers assert against the **latest** captured request; inspect `capture.requests` for history. For anything they don't cover — other captured fields (`url`, `order`, `page`, `limit`), payload bodies, the current URL — fall back to raw polling:
 
@@ -25,15 +35,21 @@ await expect.poll(currentRoute).toBe("/members");   // URL assertions
 await expect.poll(() => document.documentElement.classList.contains("dark")).toBe(true);   // DOM state no locator reaches
 ```
 
-**One render per test.** Each `renderAdminApp` gets a fresh QueryClient and the fake API resets between tests — there is no reload. State that would be persisted on a real server (user preferences, settings) is *represented* by boot overrides; a journey that genuinely needs persistence across reloads belongs in `e2e/`.
+**The URL leads the app.** `currentRoute` reads the address bar, which the browser updates before the router has re-rendered — so a route assertion says where the app is going, not what is on screen. That is fine for asserting the URL, and wrong as a cue to act: after `window.history.back()` or a dialog close, wait for the screen itself (`await expect(dialog).toHaveCount(0)`, `await expect.element(dialog).toBeVisible()`). A spec that reopens the same dialog, or dismisses a confirmation and triggers it again, will otherwise act on the instance that is on its way out — the click lands, the departing copy takes it, and nothing happens.
+
+**Unsaved-changes guards.** Typing into a dirty screen arms its navigation guard through a chain of passive effects, so a spec that navigates straight after a `fill` races the guard and an unguarded navigation just goes through. Wait for the guard itself, never for a frame count: `await expect.poll(unsavedChangesGuarded).toBe(true)` before the click or `window.history.back()`.
+
+**One render per test.** Each `renderAdminApp` gets a fresh QueryClient, which it resolves with for a wait nothing on screen can show, and the fake API resets between tests — there is no reload. State that would be persisted on a real server (user preferences, settings) is _represented_ by boot overrides; a journey that genuinely needs persistence across reloads belongs in `e2e/`.
 
 **Host page.** `renderAdminApp` mounts into a stand-in of the production host page (the `react-admin` body class + `#root` from index.html), so the shell's viewport-bounded grid applies and scroll-driven behaviors — virtualized lists, infinite paging — work like production.
 
-**What can't port.** UI fed by the Ember state-bridge (`window.EmberBridge` events) is unreachable by network fakes — there is no Ember app in this tier. Examples: nav active states from the routing bridge (`useEmberRouting`), the upgrade banner from `subscriptionChange`. Grep the component's hooks for `ember-bridge` before porting; those behaviors stay in `e2e/`.
+**What can't port.** UI fed by the Ember state-bridge (`window.EmberBridge` events) is unreachable by network fakes — there is no Ember app in this tier. Example: the upgrade banner from `subscriptionChange`. Grep the component's hooks for `ember-bridge` before porting; those behaviors stay in `e2e/`.
 
 ## The 418 loop
 
-Don't guess the app's network graph — run the test, the 418 names what's missing. Any request no fake handles is served a 418 (admin API paths *and* known external origins like ghost.org) and fails the test in `afterEach`, listing the request and the currently faked routes. Declare admin API requests with a resource fake or a `renderAdminApp` boot override, external URLs with `fakeEndpoint(method, url, response)`; `allowUnhandledRequests()` opts a single test out.
+Don't guess the app's network graph — run the test, the 418 names what's missing. Any request no fake handles is served a 418 (admin API paths _and_ known external origins like ghost.org) and fails the test in `afterEach`, listing the request and the currently faked routes. Declare admin API requests with a resource fake or a `renderAdminApp` boot override, external URLs with `fakeEndpoint(method, url, response)`; `allowUnhandledRequests()` opts a single test out.
+
+**Embedded apps.** MSW cannot see iframe navigations, so an external frame gets a 418 page (no network) unless the spec declares `fakeFrameOrigin(origin, html)`. The stand-in HTML can script an embedding protocol with `window.parent.postMessage`; see `src/migrate/migrate.acceptance.test.tsx`.
 
 **Cross-app navigation.** When a spec asserts only the shell's behavior and a navigation mounts another app (settings, ActivityPub), don't fake that app's boot graph: `allowUnhandledRequests()` with a one-line constraint comment ("the settings app owns its request graph") is the sanctioned pattern.
 
@@ -43,11 +59,21 @@ When your area calls a new external origin, add it to `EXTERNAL_URL_BLOCKLIST` i
 
 ## The boot table
 
-The shell requests handled by default (`boot.ts`): `browseSettings`, `browseConfig`, `browseSite`, `browseMe`, `browseMembersCount`, `browseActiveTheme`, `editUserPreferences`. A **boot override** replaces the response of one named entry for one test (the entry's method/path stay fixed):
+The shell requests handled by default (`boot.ts`): `browseSettings`, `browseConfig`, `browseSite`, `browseMe`, `browseMembersCount`, `browseMemberCustomFieldDefinitions`, `browseNotifications`, `browseActiveTheme`, `browseThemes`, `editUserPreferences`. A **boot override** replaces the response of one named entry for one test (the entry's method/path stay fixed):
 
 ```ts
-// Labs flags (sugar for lockstep settings + config overrides):
+// Labs flags (sugar for lockstep settings + config overrides; merges into
+// any browseSettings/browseConfig boot override, named flags winning):
 await renderAdminApp("/tags", {labs: {someFlag: true}});
+
+// The editor's autosave debounce, injected as a test-only `/config/` key, so a
+// save that lands proves it was sent without waiting (`withoutAutosave()`), or
+// autosave fires at once (`withFastAutosave()`):
+await renderAdminApp("/editor/post/abc123", withoutAutosave({labs: {editorReact: true}}));
+
+// Router state the screen would have been navigated to with, e.g. the editor
+// opened from an analytics screen:
+await renderAdminApp("/editor/post/abc123", {labs: {editorReact: true}, locationState: {editorReturn: "/analytics"}});
 
 // Persisted user state, e.g. what's-new preferences:
 const me = currentUserResponse();
@@ -62,9 +88,9 @@ Boot responses are STATELESS — a canned reply per request, nothing is stored �
 For a **browse endpoint** (`GET /<resource>/`), add a resource fake in `resources.ts` with `defineResource({resource, semantics})` and pick its semantics honestly:
 
 - `{kind: "passthrough"}` — serves exactly the declared entities, never interprets the query. Right for NQL-filtered lists; per-request responses are declared with a function of the parsed query.
-- `{kind: "declared-query", covers, select}` — implements *trivial declared* behaviors only (a field match, page/limit slicing); any filter component outside `covers` 418s instead of silently serving the full world.
+- `{kind: "declared-query", covers, select}` — implements _trivial declared_ behaviors only (a field match, page/limit slicing); any filter component outside `covers` 418s instead of silently serving the full world.
 
-For a **one-off endpoint** (stats subpaths, settings chrome, a mutation the spec asserts on), use `fakeAdminEndpoint(method, apiPath, response)` — it enters the route listing, returns a capture, and `response` may be a function of the captured request (`({body}) => body` is an honest echo).
+For a **one-off endpoint** (stats subpaths, settings chrome, a mutation the spec asserts on), use `fakeAdminEndpoint(method, apiPath, response)` — it enters the route listing, returns a capture, and `response` may be a function of the captured request (`({body}) => body` is an honest echo). A `Response`, given or returned by the function, is served as it is, so a status can depend on the request.
 
 ## Faking Tinybird (web analytics)
 
@@ -78,7 +104,7 @@ The pipe capture exposes each request's query params (`site_uuid`, `date_from`, 
 
 Per-area locator vocabulary lives in `src/<area>/<area>.screen.ts` (e.g. `membersScreen`): locator factories + multi-step gestures, **no assertions**. Selector strings come from the shared per-area registry modules — flat named constants imported via `@tryghost/test-data/selectors/<area>` (e.g. `import {repliesMetric} from "@tryghost/test-data/selectors/comments"`, or `import * as sel from ...` when a file uses many) — the same strings the e2e page objects use, so both tiers break together when the UI changes. Testid constants are the camelCase of the testid string itself (`"replies-metric"` → `repliesMetric`); accessible-name constants carry their element kind or a `Label` suffix (`newTagLink`, `searchLabel`); bare text fragments end in `Text`. The modules are deliberately not re-exported from the package root — flat names collide across surfaces.
 
-**Row scopes.** A helper that identifies a repeated row returns a *scope*: the row locator itself, augmented with factories for the row's parts — `commentsScreen.threadRow(id).repliedToLink()`. Never write a helper that takes another helper's locator as an argument; scopes keep call sites at one nesting level, reading left-to-right, and the scope is still a locator, so all three assertion idioms work on it unchanged (`await expect.element(commentsScreen.commentRow("…")).toBeVisible()`).
+**Row scopes.** A helper that identifies a repeated row returns a _scope_: the row locator itself, augmented with factories for the row's parts — `commentsScreen.threadRow(id).repliedToLink()`. Never write a helper that takes another helper's locator as an argument; scopes keep call sites at one nesting level, reading left-to-right, and the scope is still a locator, so all three assertion idioms work on it unchanged (`await expect.element(commentsScreen.commentRow("…")).toBeVisible()`).
 
 Adding a new screen:
 
@@ -89,6 +115,14 @@ Adding a new screen:
 
 > **Follow-up:** the registry is the interim single source. The end-state is app-owned selector modules — testids only; accessible names stay product copy, asserted as users see it — consumed by the components AND both test tiers, pending an import surface and an e2e dependency-cost check. Until then, component source remains the source of truth and the registry mirrors it.
 
+## Component tier
+
+`*.component.test.tsx` specs run in the same browser config, against the same fake API and the same provider stack minus the router — they just mount one component instead of the whole app. There is no route, so `useNavigate` and `useLocation` throw and `currentRoute()` has no meaning here. `renderInApp(subject)` mounts a subject under the app's providers; `InAppProviders` is that same stack as a `renderHook` wrapper. The boot table serves the shell lookups here exactly as it does for `renderAdminApp`.
+
+Reach for it when the behaviour under test is a component's own — a modal's steps, a hook's loading boundary — and going through the app would only add route setup. A component spec **must not boot the app or depend on a route**: no `renderAdminApp`, no URL assertions, no navigation between screens. Behaviour that needs the shell, a route, or a second screen is an acceptance spec.
+
+Specs never build their own QueryClient or framework props. The stack comes from the harness, so the caching and retry behaviour under test is the app's own. Boot overrides and labs flags have no seam in this tier; a component that needs one belongs in an acceptance spec.
+
 ## Running
 
 ```bash
@@ -98,8 +132,20 @@ pnpm test:acceptance:watch                         # watch mode
 pnpm test:acceptance:watch -- --browser.headless=false   # headed, watch the browser
 ```
 
+CI splits this suite across two runners using Vitest's `--shard` option. To
+reproduce either shard from the repository root, including dependency builds:
+
+```bash
+pnpm nx run @tryghost/admin:test:acceptance --shard=1/2
+pnpm nx run @tryghost/admin:test:acceptance --shard=2/2
+```
+
+Each shard uploads its own failure screenshots. Running without `--shard` still
+runs the full suite.
+
 ## Debugging
 
+- Runs print a final summary and failure details, including console output from failing tests, locally and in CI. To see all console output and individual test results, run `pnpm test:acceptance --silent=false --reporter=verbose` (optionally add a test file path). The same flags work with `test:acceptance:watch`.
 - **Failure screenshots** land in `__screenshots__/` (gitignored) — the fastest way to see what actually rendered.
 - **418 bodies** name the unhandled request and list what is faked.
 - There are **no Playwright traces** in this tier — a spec that needs trace-level debugging belongs in `e2e/`.
@@ -107,3 +153,4 @@ pnpm test:acceptance:watch -- --browser.headless=false   # headed, watch the bro
 ## Known limitations
 
 - **5xx boot overrides leave a retry ticking.** The framework's fetch layer retries `ServerUnreachableError`/`MaintenanceError` (503)/`TypeError` with 500/1000ms backoff whenever `MODE !== 'development'` — and vitest runs with `MODE === 'test'`, so retries are ACTIVE here. A spec that overrides a boot response with a 503 leaves a pending retry that outlives the teardown quiet window and can fire mid-next-test. Prefer non-retryable 4xx statuses for error-shape specs; proper 5xx-retry semantics need a retry-disable seam in admin-x-framework — tracked as [PLA-242](https://linear.app/ghost/issue/PLA-242).
+- **Signed-out boots share a file only with other signed-out boots.** The framework's session-expiry redirect arms once `/users/me/` has succeeded, and that state lives in the module for the whole spec file. A signed-in spec followed by a signed-out one in the same file triggers the redirect and takes the test page away; keep signed-in and signed-out specs in separate files (see `src/auth/`).

@@ -1,123 +1,177 @@
 import NavigationIconUpload from './navigation-icon-upload';
 import NavigationVisibilityDropdown from './navigation-visibility-dropdown';
-import React, {type ReactNode} from 'react';
+import React, { type ReactNode } from 'react';
 import clsx from 'clsx';
 import useUrlInput from '@/settings/hooks/use-url-input';
-import {type EditableItem, type NavigationItem, type NavigationItemErrors} from '@/settings/hooks/site/use-navigation-editor';
-import {Field, FieldError, FieldLabel, Input} from '@tryghost/shade/components';
-import {Inline} from '@tryghost/shade/primitives';
-import {formatUrl} from '@/settings/utils/format-url';
-import {navigationColumnClasses, navigationFieldOffsetClass, navigationRowClasses} from './navigation-layout';
+import {
+  type EditableItem,
+  type NavigationItem,
+  type NavigationItemErrors,
+} from '@/settings/hooks/site/use-navigation-editor';
+import { Field, FieldError, FieldLabel, Input } from '@tryghost/shade/components';
+import { Inline } from '@tryghost/shade/primitives';
+import { formatUrl } from '@/settings/utils/format-url';
+import {
+  navigationColumnClasses,
+  navigationFieldOffsetClass,
+  navigationRowClasses,
+} from './navigation-layout';
 
 export type NavigationItemEditorProps = React.HTMLAttributes<HTMLDivElement> & {
-    baseUrl: string;
-    idPrefix: string;
-    item: EditableItem;
-    clearError?: (key: keyof NavigationItemErrors) => void;
-    updateItem?: (item: Partial<NavigationItem>) => void;
-    uploadIcon?: (file: File) => Promise<string | undefined>;
-    labelPlaceholder?: string
-    unstyled?: boolean
-    textFieldClasses?: string
-    action?: ReactNode
-    addItem?: () => void
-    showIcon: boolean
-    showPaidVisibility: boolean
-    showVisibility: boolean
-}
+  baseUrl: string;
+  idPrefix: string;
+  item: EditableItem;
+  clearError?: (key: keyof NavigationItemErrors) => void;
+  updateItem?: (item: Partial<NavigationItem>) => void;
+  uploadIcon?: (file: File) => Promise<string | undefined>;
+  labelPlaceholder?: string;
+  unstyled?: boolean;
+  textFieldClasses?: string;
+  action?: ReactNode;
+  addItem?: () => void;
+  showIcon: boolean;
+  showPaidVisibility: boolean;
+  showVisibility: boolean;
+};
 
-const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, idPrefix, item, updateItem, uploadIcon, addItem, clearError, labelPlaceholder, unstyled, textFieldClasses, action, showIcon, showPaidVisibility, showVisibility, className, ...props}) => {
-    const urlInput = useUrlInput({
-        baseUrl,
-        nullable: true,
-        value: item.url,
-        onChange: value => updateItem?.({url: value || ''})
-    });
+const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({
+  baseUrl,
+  idPrefix,
+  item,
+  updateItem,
+  uploadIcon,
+  addItem,
+  clearError,
+  labelPlaceholder,
+  unstyled,
+  textFieldClasses,
+  action,
+  showIcon,
+  showPaidVisibility,
+  showVisibility,
+  className,
+  ...props
+}) => {
+  const urlInput = useUrlInput({
+    baseUrl,
+    nullable: true,
+    value: item.url,
+    onChange: (value) => updateItem?.({ url: value || '' }),
+  });
 
-    return (
-        <div className={clsx(navigationRowClasses, className)} data-testid='navigation-item-editor' {...props}>
-            {showIcon && (
-                <div className={clsx('flex flex-col', navigationColumnClasses.icon, navigationFieldOffsetClass)}>
-                    <NavigationIconUpload
-                        clearError={clearError}
-                        idPrefix={idPrefix}
-                        item={item}
-                        updateItem={updateItem}
-                        uploadIcon={uploadIcon}
-                    />
-                </div>
-            )}
-            <div className={clsx('flex', navigationColumnClasses.label, navigationFieldOffsetClass)}>
-                <Field className='grow' data-invalid={Boolean(item.errors.label) || undefined}>
-                    <FieldLabel className='sr-only' htmlFor={`navigation-label-${item.id}`}>Label</FieldLabel>
-                    <Input
-                        aria-invalid={Boolean(item.errors.label) || undefined}
-                        className={clsx(unstyled && 'border-0 bg-transparent shadow-none focus-visible:ring-0', textFieldClasses)}
-                        id={`navigation-label-${item.id}`}
-                        placeholder={labelPlaceholder}
-                        value={item.label}
-                        onChange={e => updateItem?.({label: e.target.value})}
-                        onKeyDown={(e) => {
-                            updateItem?.({label: (e.target as HTMLInputElement).value});
-                            if (e.key === 'Enter') {
-                                e.preventDefault();
-                                addItem?.();
-                            }
-                            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                            !!item.errors.label && clearError?.('label');
-                        }}
-                    />
-                    {item.errors.label && <FieldError>{item.errors.label}</FieldError>}
-                </Field>
-            </div>
-            <div className={clsx('flex', navigationColumnClasses.url, navigationFieldOffsetClass)}>
-                <Field className='grow' data-invalid={Boolean(item.errors.url) || undefined}>
-                    <FieldLabel className='sr-only' htmlFor={`navigation-url-${item.id}`}>URL</FieldLabel>
-                    <Input
-                        aria-invalid={Boolean(item.errors.url) || undefined}
-                        className={textFieldClasses}
-                        id={`navigation-url-${item.id}`}
-                        value={urlInput.displayValue}
-                        onBlur={urlInput.commitValue}
-                        onChange={event => urlInput.setDisplayValue(event.target.value)}
-                        onFocus={urlInput.handleFocus}
-                        onKeyDown={(e) => {
-                            urlInput.handleKeyDown(e);
-                            const urls = formatUrl((e.target as HTMLInputElement).value, baseUrl, true);
-                            updateItem?.({url: urls.save || ''});
-                        }}
-                        onKeyUp={(e) => {
-                            if (e.key === 'Enter') {
-                                e.preventDefault();
-                                const urls = formatUrl((e.target as HTMLInputElement).value, baseUrl, true);
-                                updateItem?.({url: urls.save || ''});
-                                addItem?.();
-                            }
-                            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                            !!item.errors.url && clearError?.('url');
-                        }}
-                    />
-                    {item.errors.url && <FieldError>{item.errors.url}</FieldError>}
-                </Field>
-            </div>
-            {showVisibility && (
-                <div className={clsx('flex flex-col', navigationColumnClasses.visibility, navigationFieldOffsetClass)}>
-                    <NavigationVisibilityDropdown
-                        clearError={clearError}
-                        idPrefix={idPrefix}
-                        item={item}
-                        showPaidVisibility={showPaidVisibility}
-                        updateItem={updateItem}
-                    />
-                </div>
-            )}
-            {action && (
-                <Inline align='center' className={clsx('h-[calc(var(--control-height)+0.25rem)] shrink-0 pt-1', navigationColumnClasses.action)}>
-                    {action}
-                </Inline>
-            )}
+  return (
+    <div
+      className={clsx(navigationRowClasses, className)}
+      data-testid="navigation-item-editor"
+      {...props}
+    >
+      {showIcon && (
+        <div
+          className={clsx(
+            'flex flex-col',
+            navigationColumnClasses.icon,
+            navigationFieldOffsetClass,
+          )}
+        >
+          <NavigationIconUpload
+            clearError={clearError}
+            idPrefix={idPrefix}
+            item={item}
+            updateItem={updateItem}
+            uploadIcon={uploadIcon}
+          />
         </div>
-    );
+      )}
+      <div className={clsx('flex', navigationColumnClasses.label, navigationFieldOffsetClass)}>
+        <Field className="grow" data-invalid={Boolean(item.errors.label) || undefined}>
+          <FieldLabel className="sr-only" htmlFor={`navigation-label-${item.id}`}>
+            Label
+          </FieldLabel>
+          <Input
+            aria-invalid={Boolean(item.errors.label) || undefined}
+            className={clsx(
+              unstyled && 'border-0 bg-transparent shadow-none focus-visible:ring-0',
+              textFieldClasses,
+            )}
+            id={`navigation-label-${item.id}`}
+            placeholder={labelPlaceholder}
+            value={item.label}
+            onChange={(e) => updateItem?.({ label: e.target.value })}
+            onKeyDown={(e) => {
+              updateItem?.({ label: (e.target as HTMLInputElement).value });
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                addItem?.();
+              }
+              // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+              !!item.errors.label && clearError?.('label');
+            }}
+          />
+          {item.errors.label && <FieldError>{item.errors.label}</FieldError>}
+        </Field>
+      </div>
+      <div className={clsx('flex', navigationColumnClasses.url, navigationFieldOffsetClass)}>
+        <Field className="grow" data-invalid={Boolean(item.errors.url) || undefined}>
+          <FieldLabel className="sr-only" htmlFor={`navigation-url-${item.id}`}>
+            URL
+          </FieldLabel>
+          <Input
+            aria-invalid={Boolean(item.errors.url) || undefined}
+            className={textFieldClasses}
+            id={`navigation-url-${item.id}`}
+            value={urlInput.displayValue}
+            onBlur={urlInput.commitValue}
+            onChange={(event) => urlInput.setDisplayValue(event.target.value)}
+            onFocus={urlInput.handleFocus}
+            onKeyDown={(e) => {
+              urlInput.handleKeyDown(e);
+              const urls = formatUrl((e.target as HTMLInputElement).value, baseUrl, true);
+              updateItem?.({ url: urls.save || '' });
+            }}
+            onKeyUp={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                const urls = formatUrl((e.target as HTMLInputElement).value, baseUrl, true);
+                updateItem?.({ url: urls.save || '' });
+                addItem?.();
+              }
+              // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+              !!item.errors.url && clearError?.('url');
+            }}
+          />
+          {item.errors.url && <FieldError>{item.errors.url}</FieldError>}
+        </Field>
+      </div>
+      {showVisibility && (
+        <div
+          className={clsx(
+            'flex flex-col',
+            navigationColumnClasses.visibility,
+            navigationFieldOffsetClass,
+          )}
+        >
+          <NavigationVisibilityDropdown
+            clearError={clearError}
+            idPrefix={idPrefix}
+            item={item}
+            showPaidVisibility={showPaidVisibility}
+            updateItem={updateItem}
+          />
+        </div>
+      )}
+      {action && (
+        <Inline
+          align="center"
+          className={clsx(
+            'h-[calc(var(--control-height)+0.25rem)] shrink-0 pt-1',
+            navigationColumnClasses.action,
+          )}
+        >
+          {action}
+        </Inline>
+      )}
+    </div>
+  );
 };
 
 export default NavigationItemEditor;

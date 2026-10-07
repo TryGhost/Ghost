@@ -16,13 +16,13 @@ const store = globalThis as Record<symbol, unknown>;
 // asked for it. Use only when a console.error/warn is genuinely unavoidable —
 // prefer spying on console and asserting instead.
 export function allowConsoleErrors(): void {
-    store[FLAG] = true;
+  store[FLAG] = true;
 }
 
 export function isConsoleAllowed(): boolean {
-    return store[FLAG] === true;
+  return store[FLAG] === true;
 }
 
 export function resetConsoleAllowed(): void {
-    store[FLAG] = false;
+  store[FLAG] = false;
 }

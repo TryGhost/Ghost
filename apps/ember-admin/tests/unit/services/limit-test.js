@@ -93,4 +93,36 @@ describe('Unit | Service | limit', function () {
             expect(await limitService.getEmailsCount(undefined, '2026-01-01T00:00:00.000Z')).to.equal(0);
         });
     });
+
+    // The billing view calls this when a plan changes, so that a publisher who has just paid
+    // for more is not still refused by the allowance they had a moment ago.
+    describe('reload', function () {
+        it('replaces the limits it is holding with the ones now configured', function () {
+            limitService.config.hostSettings = {
+                limits: {staff: {max: 1}}
+            };
+            limitService.loadLimits();
+            expect(limitService.limiter.isLimited('staff')).to.be.true;
+
+            limitService.config.hostSettings = {
+                limits: {customThemes: {allowlist: ['casper']}}
+            };
+            limitService.reload();
+
+            expect(limitService.limiter.isLimited('staff')).to.be.false;
+            expect(limitService.limiter.isLimited('customThemes')).to.be.true;
+        });
+
+        it('keeps the limits it has when the configuration is gone', function () {
+            limitService.config.hostSettings = {
+                limits: {staff: {max: 1}}
+            };
+            limitService.loadLimits();
+
+            limitService.config.hostSettings = {};
+            limitService.reload();
+
+            expect(limitService.limiter.isLimited('staff')).to.be.true;
+        });
+    });
 });

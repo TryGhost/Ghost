@@ -1,226 +1,299 @@
-import type {ReadonlyDeep} from 'type-fest';
-import type {Knex} from 'knex';
+import type { ReadonlyDeep } from 'type-fest';
+import type { Knex } from 'knex';
 
-export interface Pagination {
-    page: number;
-    pages: number;
-    limit: number | 'all';
-    total: number;
-    prev: number | null;
-    next: number | null;
-}
+export type Pagination = {
+  page: number;
+  pages: number;
+  limit: number | 'all';
+  total: number;
+  prev: number | null;
+  next: number | null;
+};
 
-export interface Page<T> {
-    data: T[];
-    meta: {
-        pagination: Pagination;
-    };
-}
+export type Page<T> = {
+  data: T[];
+  meta: {
+    pagination: Pagination;
+  };
+};
 
-export interface WaitAction {
-    id: string;
-    type: 'wait';
-    data: {
-        wait_hours: number;
-    };
-}
+export type WaitAction = {
+  id: string;
+  type: 'wait';
+  data: {
+    wait_hours: number;
+  };
+};
 
-export interface AutomationEmailStats {
-    email_clicked_count: number;
-    email_sent_count: number;
-    email_opened_count: number;
-    opened_rate: number | null;
-    clicked_rate: number | null;
-}
+export type AutomationEmailStats = {
+  email_clicked_count: number;
+  email_sent_count: number;
+  email_opened_count: number;
+  opened_rate: number | null;
+  clicked_rate: number | null;
+};
 
-export interface AutomationActionLink {
-    url: string;
-    clicked_count: number;
-}
+export type AutomationActionLink = {
+  url: string;
+  clicked_count: number;
+};
 
-export interface SendEmailAction {
-    id: string;
-    type: 'send_email';
-    data: {
-        email_subject: string;
-        email_lexical: string;
-        email_design_setting_id: string;
-    };
-    stats?: AutomationEmailStats;
-}
+export type SendEmailAction = {
+  id: string;
+  type: 'send_email';
+  data: {
+    email_subject: string;
+    email_lexical: string;
+    email_design_setting_id: string;
+  };
+  stats?: AutomationEmailStats;
+};
 
 export type AutomationAction = WaitAction | SendEmailAction;
 
-export interface AutomationEdge {
-    source_action_id: string;
-    target_action_id: string;
-}
+export type AutomationEdge = {
+  source_action_id: string;
+  target_action_id: string;
+};
 
-export interface AutomationSummary {
-    id: string;
-    slug: string;
-    name: string;
-    status: string;
-    created_at: string;
-    updated_at: string;
-}
+export type AutomationSummary = {
+  id: string;
+  slug: null | string;
+  name: string;
+  description: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+};
 
-export interface AutomationBrowseResult extends AutomationSummary {
-    stats: {
-        last_run_created_at: Date | null;
-        total_run_count: number;
-        in_progress_run_count: number;
-    };
-}
+export type AutomationBrowseResult = AutomationSummary & {
+  stats?: {
+    last_run_created_at: Date | null;
+    total_run_count: number;
+    in_progress_run_count: number;
+  };
+};
 
-export interface Automation extends AutomationSummary {
-    actions: AutomationAction[];
-    edges: AutomationEdge[];
-}
+export type Automation = AutomationSummary & {
+  actions: AutomationAction[];
+  edges: AutomationEdge[];
+};
 
-export interface EditAutomationData {
-    status: string;
-    actions: AutomationAction[];
-    edges: AutomationEdge[];
-}
+export type EditAutomationData = {
+  name?: string;
+  description?: string;
+  status: string;
+  actions: AutomationAction[];
+  edges: AutomationEdge[];
+};
 
 export type AutomatedEmailRecipientWithMailgunId = {
-    id: string;
-    mailgun_message_id: string;
-    automation_action_revision_id: string;
+  id: string;
+  mailgun_message_id: string;
+  automation_action_revision_id: string;
 };
 
 export type AutomatedEmailEvents = {
-    deliveredAt?: Date;
-    openedAt?: Date;
-    automationActionRevisionId: string;
+  deliveredAt?: Date;
+  openedAt?: Date;
+  automationActionRevisionId: string;
 };
 
 export type RecordEmailSentOptions = Readonly<{
-    automationActionRevisionId: string;
-    automationRunStepId: string;
-    mailgunMessageId?: string;
-    memberEmail: string;
-    memberId: string;
-    memberName: string | null;
-    memberUuid: string;
-    trackClicks: boolean;
-    trackOpens: boolean;
+  automationActionRevisionId: string;
+  automationRunStepId: string;
+  mailgunMessageId?: string;
+  memberEmail: string;
+  memberId: string;
+  memberName: string | null;
+  memberUuid: string;
+  trackClicks: boolean;
+  trackOpens: boolean;
 }>;
 
+export type AutomationTriggerTierScope = 'free' | 'all_paid' | 'selected_paid';
+
 type AutomationStepBase = {
-    id: string;
-    locked_by: string;
-    automation_run_id: string;
-    automation_id: string;
-    // NOTE: This property will be removed once we support additional automation triggers.
-    automation_slug: string;
-    automation_status: 'inactive' | 'active';
-    member_id: string | null;
-    member_email: string;
-    action_id: string;
-    automation_action_revision_id: string;
-    ready_at: Date;
-    step_attempts: number;
+  id: string;
+  locked_by: string;
+  automation_run_id: string;
+  automation_id: string;
+  automation_trigger_tier_scope: null | AutomationTriggerTierScope;
+  automation_status: 'inactive' | 'active';
+  member_id: string | null;
+  member_email: string;
+  action_id: string;
+  automation_action_revision_id: string;
+  ready_at: Date;
+  step_attempts: number;
 };
 
-export type AutomationStepToRun = ReadonlyDeep<AutomationStepBase & (
-    {
-        type: 'wait';
-        wait_hours: number;
-    } | {
-        type: 'send_email';
-        email_subject: string;
-        email_lexical: string;
-        email_design_setting_id: string | null;
-    }
-)>;
+export type AutomationStepToRun = ReadonlyDeep<
+  AutomationStepBase &
+    (
+      | {
+          type: 'wait';
+          wait_hours: number;
+        }
+      | {
+          type: 'send_email';
+          email_subject: string;
+          email_lexical: string;
+          email_design_setting_id: string | null;
+        }
+    )
+>;
 
-export type AutomationStepTerminalStatus =
-    | 'automation disabled'
-    | 'failed'
-    | 'finished'
-    | 'member changed status'
-    | 'member unsubscribed';
+export const AUTOMATION_STEP_TERMINAL_STATUSES = [
+  'automation disabled',
+  'failed',
+  'finished',
+  'member changed status',
+  'member unsubscribed',
+] as const;
 
-export interface AutomationsRepository {
-    browse(): Promise<Page<AutomationBrowseResult>>;
-    getById(id: string): Promise<Automation | null>;
-    getAutomationActionLinks(automationId: string, actionId: string): Promise<AutomationActionLink[] | null>;
-    edit(id: string, data: EditAutomationData): Promise<Automation | null>;
-    trigger(options: {
-        memberEmail: string;
-        memberId: string;
-        memberStatus: 'free' | 'paid';
-    }): Promise<void>;
-    /**
-     * Select the steps we want to run and return the next time any remaining
-     * pending step should be polled, if any.
-     *
-     * If we could guarantee this function would only be called once ever, it'd
-     * be pretty simple! However, we want to handle cases where this function is
-     * called multiple times simultaneously (maybe in different processes
-     * querying the same database). That's why we implement a row-level locking
-     * mechanism, hence the word "lock" in the name of this function.
-     */
-    fetchAndLockSteps(limit: number): Promise<{
-        steps: AutomationStepToRun[],
-        nextStepReadyAt: Date | null;
-    }>;
-    /**
-     * Atomically finish a locked step and create the next one so concurrent
-     * runners cannot enqueue duplicates.
-     *
-     * Returns the next step's ready time, or null if no next step was created.
-     */
-    finishStepAndEnqueueNext(
-        step: Pick<AutomationStepToRun, 'id' | 'locked_by' | 'action_id' | 'automation_run_id'>
-    ): Promise<Date | null>;
-    /**
-     * Stop a locked step without continuing the automation, preserving the
-     * reason it ended.
-     *
-     * Returns whether the step was updated.
-     */
-    markStepTerminal(
-        step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
-        status: AutomationStepTerminalStatus
-    ): Promise<boolean>;
-    /**
-     * Put a locked step back in the queue for another attempt.
-     *
-     * Returns whether the step was updated.
-     */
-    retryStep(
-        step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
-        retryAt: Readonly<Date>
-    ): Promise<boolean>;
-    /**
-     * Record a sent email and increment its action revision's sent count.
-     */
-    recordEmailSent(options: RecordEmailSentOptions): Promise<void>;
-    /**
-     * Fetch sent emails by their Mailgun IDs.
-     */
-    getAutomatedEmailRecipientsByMailgunIds(
-        mailgunMessageIds: ReadonlyArray<string>
-    ): Promise<AutomatedEmailRecipientWithMailgunId[]>;
-    /**
-     * Track delivery and open events.
-     */
-    trackEmailDeliveredAndOpened(
-        eventsByAutomatedEmailRecipientId: ReadonlyDeep<Map<string, AutomatedEmailEvents>>
-    ): Promise<void>;
-    /**
-     * Record the first click timestamp for the automated email recipient identified by a run step.
-     *
-     */
-    trackEmailClicked(options: {
-        automationActionRevisionId: string;
-        automationRunStepId: string;
-        memberId: string;
-        clickedAt: Readonly<Date>;
-    }, transactionOptions?: {
-        transacting?: Knex.Transaction;
-    }): Promise<void>;
-}
+export type AutomationStepTerminalStatus = (typeof AUTOMATION_STEP_TERMINAL_STATUSES)[number];
+export type AutomationStepStatus = 'pending' | AutomationStepTerminalStatus;
+
+export type AutomationRunHistoryAction =
+  | WaitAction
+  | (Pick<SendEmailAction, 'id' | 'type'> & {
+      data: Pick<SendEmailAction['data'], 'email_subject' | 'email_lexical'>;
+    });
+
+export type AutomationRunHistoryStep = {
+  id: string;
+  automation_action_revision_id: string;
+  created_at: string;
+  updated_at: string;
+  ready_at: string;
+  started_at: string | null;
+  finished_at: string | null;
+  email_sent_at: string | null;
+  email_delivered_at: string | null;
+  status: AutomationStepStatus;
+  action: AutomationRunHistoryAction;
+};
+
+export type AutomationRunHistory = {
+  id: string;
+  automation_id: string;
+  created_at: string;
+  member: AutomationRunMember | null;
+  status: 'in_progress' | 'completed' | 'exited_early';
+  failed: boolean;
+  steps: AutomationRunHistoryStep[];
+};
+
+export type AutomationRunMember = {
+  id: string;
+  name: string | null;
+  email: string;
+};
+
+export type BrowseOptions = Readonly<{
+  /**
+   * Should stats be included?
+   *
+   * In the future, we plan to remove this option and never return stats from the database repository.
+   */
+  includeStats: boolean;
+}>;
+
+export type AutomationsRepository = {
+  browse(options: BrowseOptions): Promise<Page<AutomationBrowseResult>>;
+  getNumberOfAutomations(): Promise<number>;
+  exists(id: string): Promise<boolean>;
+  getById(id: string): Promise<Automation | null>;
+  getRunHistory(automationId: string, runId: string): Promise<AutomationRunHistory | null>;
+  getRunMembers(
+    automationId: string,
+    runIds: string[],
+    search?: string,
+  ): Promise<Map<string, AutomationRunMember | null>>;
+  // Null requests candidate scanning; an empty array means no matches.
+  probeMemberSearch(automationId: string, query: string): Promise<string[] | null>;
+  getAutomationActionLinks(
+    automationId: string,
+    actionId: string,
+  ): Promise<AutomationActionLink[] | null>;
+  edit(id: string, data: EditAutomationData): Promise<Automation | null>;
+  trigger(options: {
+    memberEmail: string;
+    memberId: string;
+    memberStatus: 'free' | 'paid';
+  }): Promise<void>;
+  /**
+   * Select the steps we want to run and return the next time any remaining
+   * pending step should be polled, if any.
+   *
+   * If we could guarantee this function would only be called once ever, it'd
+   * be pretty simple! However, we want to handle cases where this function is
+   * called multiple times simultaneously (maybe in different processes
+   * querying the same database). That's why we implement a row-level locking
+   * mechanism, hence the word "lock" in the name of this function.
+   */
+  fetchAndLockSteps(limit: number): Promise<{
+    steps: AutomationStepToRun[];
+    nextStepReadyAt: Date | null;
+  }>;
+  /**
+   * Atomically finish a locked step and create the next one so concurrent
+   * runners cannot enqueue duplicates.
+   *
+   * Returns the next step's ready time, or null if no next step was created.
+   */
+  finishStepAndEnqueueNext(
+    step: Pick<AutomationStepToRun, 'id' | 'locked_by' | 'action_id' | 'automation_run_id'>,
+  ): Promise<Date | null>;
+  /**
+   * Stop a locked step without continuing the automation, preserving the
+   * reason it ended.
+   *
+   * Returns whether the step was updated.
+   */
+  markStepTerminal(
+    step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
+    status: AutomationStepTerminalStatus,
+  ): Promise<boolean>;
+  /**
+   * Put a locked step back in the queue for another attempt.
+   *
+   * Returns whether the step was updated.
+   */
+  retryStep(
+    step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
+    retryAt: Readonly<Date>,
+  ): Promise<boolean>;
+  /**
+   * Record a sent email and increment its action revision's sent count.
+   */
+  recordEmailSent(options: RecordEmailSentOptions): Promise<void>;
+  /**
+   * Fetch sent emails by their Mailgun IDs.
+   */
+  getAutomatedEmailRecipientsByMailgunIds(
+    mailgunMessageIds: ReadonlyArray<string>,
+  ): Promise<AutomatedEmailRecipientWithMailgunId[]>;
+  /**
+   * Track delivery and open events.
+   */
+  trackEmailDeliveredAndOpened(
+    eventsByAutomatedEmailRecipientId: ReadonlyDeep<Map<string, AutomatedEmailEvents>>,
+  ): Promise<void>;
+  /**
+   * Record the first click timestamp for the automated email recipient identified by a run step.
+   *
+   */
+  trackEmailClicked(
+    options: {
+      automationActionRevisionId: string;
+      automationRunStepId: string;
+      memberId: string;
+      clickedAt: Readonly<Date>;
+    },
+    transactionOptions?: {
+      transacting?: Knex.Transaction;
+    },
+  ): Promise<void>;
+};

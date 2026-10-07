@@ -1,43 +1,45 @@
-const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyContentVersion, anyEtag, anyISODateTime, anyObjectId} = matchers;
+const { agentProvider, fixtureManager, matchers } = require('../../utils/e2e-framework');
+const { anyContentVersion, anyEtag, anyISODateTime, anyObjectId } = matchers;
 
 const rolesObjectMatcher = {
-    id: anyObjectId,
-    created_at: anyISODateTime,
-    updated_at: anyISODateTime
+  id: anyObjectId,
+  created_at: anyISODateTime,
+  updated_at: anyISODateTime,
 };
 
 describe('Roles API', function () {
-    /** @type {import('../../utils/agents').AdminAPITestAgent} */
-    let agent;
+  /** @type {import('../../utils/agents').AdminAPITestAgent} */
+  let agent;
 
-    beforeAll(async function () {
-        agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init();
-        await agent.loginAsOwner();
-    });
+  beforeAll(async function () {
+    agent = await agentProvider.getAdminAPIAgent();
+    await fixtureManager.init();
+    await agent.loginAsOwner();
+  });
 
-    it('Can request all roles', async function () {
-        await agent.get('roles/')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                roles: Array(10).fill(rolesObjectMatcher)
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
+  it('Can request all roles', async function () {
+    await agent
+      .get('roles/')
+      .expectStatus(200)
+      .matchBodySnapshot({
+        roles: Array(10).fill(rolesObjectMatcher),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
 
-    it('Can request roles which i am able to assign to other users', async function () {
-        await agent.get('roles/?permissions=assign')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                roles: Array(5).fill(rolesObjectMatcher)
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
+  it('Can request roles which i am able to assign to other users', async function () {
+    await agent
+      .get('roles/?permissions=assign')
+      .expectStatus(200)
+      .matchBodySnapshot({
+        roles: Array(5).fill(rolesObjectMatcher),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
 });

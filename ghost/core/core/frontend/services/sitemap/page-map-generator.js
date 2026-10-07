@@ -2,13 +2,13 @@ const _ = require('lodash');
 const BaseMapGenerator = require('./base-site-map-generator');
 
 class PageMapGenerator extends BaseMapGenerator {
-    constructor(opts) {
-        super();
+  constructor(opts) {
+    super();
 
-        this.name = 'pages';
+    this.name = 'pages';
 
-        _.extend(this, opts);
-    }
+    _.extend(this, opts);
+  }
 }
 
 module.exports = PageMapGenerator;

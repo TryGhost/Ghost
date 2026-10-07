@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import { z } from 'zod';
 
 // Config arrives untyped: defaults.json ships a value, and any higher layer -- an
 // operator's config file, an environment variable, argv -- can replace it with anything.
@@ -10,9 +10,9 @@ import {z} from 'zod';
 // string is accepted because a value supplied through an environment variable
 // can arrive as one.
 const Threshold = z
-    .union([z.number(), z.string().trim().min(1)])
-    .transform(Number)
-    .pipe(z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER));
+  .union([z.number(), z.string().trim().min(1)])
+  .transform(Number)
+  .pipe(z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER));
 
 // defaults.json is the single source of the shipped threshold: it is the lowest
 // config layer and the file an operator actually reads and edits, so it is read
@@ -20,7 +20,7 @@ const Threshold = z
 // there is our bug rather than an operator's, and should fail loudly at boot
 // instead of quietly becoming the fallback for everything below.
 const shippedThreshold: number = Threshold.parse(
-    require('../../../../shared/config/defaults.json').members.importer.inlineThreshold
+  require('../../../../shared/config/defaults.json').members.importer.inlineThreshold,
 );
 
 // A higher layer can override the shipped value with anything. Something
@@ -30,5 +30,5 @@ const shippedThreshold: number = Threshold.parse(
 const InlineThreshold = Threshold.catch(shippedThreshold);
 
 export function resolveInlineThreshold(configured: unknown): number {
-    return InlineThreshold.parse(configured);
+  return InlineThreshold.parse(configured);
 }

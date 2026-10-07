@@ -1,19 +1,19 @@
-import type {ReadonlyDeep} from 'type-fest';
+import type { ReadonlyDeep } from 'type-fest';
 
 type LoadedPermissionsWithRoles = ReadonlyDeep<{
-    user?: {
-        roles?: Array<{name: string}>;
-    } | null;
+  user?: {
+    roles?: Array<{ name: string }>;
+  } | null;
 }>;
 
 type RoleFlags = {
-    isOwner: boolean;
-    isAdmin: boolean;
-    isEditor: boolean;
-    isAuthor: boolean;
-    isContributor: boolean;
-    isSuperEditor: boolean;
-    isEitherEditor: boolean;
+  isOwner: boolean;
+  isAdmin: boolean;
+  isEditor: boolean;
+  isAuthor: boolean;
+  isContributor: boolean;
+  isSuperEditor: boolean;
+  isEitherEditor: boolean;
 };
 
 // check if the user has an assigned role
@@ -21,36 +21,38 @@ type RoleFlags = {
 //_.some(loadedPermissions.user.roles, {name: 'Administrator'})
 
 export function checkUserPermissionsForRole(
-    loadedPermissions: LoadedPermissionsWithRoles | null | undefined,
-    roleName: string
+  loadedPermissions: LoadedPermissionsWithRoles | null | undefined,
+  roleName: string,
 ): boolean {
-    if (!loadedPermissions?.user?.roles) {
-        return false;
-    }
+  if (!loadedPermissions?.user?.roles) {
+    return false;
+  }
 
-    return loadedPermissions.user.roles.some(role => role.name === roleName);
+  return loadedPermissions.user.roles.some((role) => role.name === roleName);
 }
 
-export function setIsRoles(loadedPermissions: LoadedPermissionsWithRoles | null | undefined): RoleFlags {
-    // utility function to parse the permissions object and set up all the "is" variables.
-    const resultsObject: RoleFlags = {
-        isOwner: false,
-        isAdmin: false,
-        isEditor: false,
-        isAuthor: false,
-        isContributor: false,
-        isSuperEditor: false,
-        isEitherEditor: false
-    };
-    if (!loadedPermissions?.user?.roles) {
-        return resultsObject;
-    }
-    resultsObject.isOwner = checkUserPermissionsForRole(loadedPermissions, 'Owner');
-    resultsObject.isAdmin = checkUserPermissionsForRole(loadedPermissions, 'Administrator');
-    resultsObject.isEditor = checkUserPermissionsForRole(loadedPermissions, 'Editor');
-    resultsObject.isAuthor = checkUserPermissionsForRole(loadedPermissions, 'Author');
-    resultsObject.isContributor = checkUserPermissionsForRole(loadedPermissions, 'Contributor');
-    resultsObject.isSuperEditor = checkUserPermissionsForRole(loadedPermissions, 'Super Editor');
-    resultsObject.isEitherEditor = resultsObject.isEditor || resultsObject.isSuperEditor;
+export function setIsRoles(
+  loadedPermissions: LoadedPermissionsWithRoles | null | undefined,
+): RoleFlags {
+  // utility function to parse the permissions object and set up all the "is" variables.
+  const resultsObject: RoleFlags = {
+    isOwner: false,
+    isAdmin: false,
+    isEditor: false,
+    isAuthor: false,
+    isContributor: false,
+    isSuperEditor: false,
+    isEitherEditor: false,
+  };
+  if (!loadedPermissions?.user?.roles) {
     return resultsObject;
+  }
+  resultsObject.isOwner = checkUserPermissionsForRole(loadedPermissions, 'Owner');
+  resultsObject.isAdmin = checkUserPermissionsForRole(loadedPermissions, 'Administrator');
+  resultsObject.isEditor = checkUserPermissionsForRole(loadedPermissions, 'Editor');
+  resultsObject.isAuthor = checkUserPermissionsForRole(loadedPermissions, 'Author');
+  resultsObject.isContributor = checkUserPermissionsForRole(loadedPermissions, 'Contributor');
+  resultsObject.isSuperEditor = checkUserPermissionsForRole(loadedPermissions, 'Super Editor');
+  resultsObject.isEitherEditor = resultsObject.isEditor || resultsObject.isSuperEditor;
+  return resultsObject;
 }

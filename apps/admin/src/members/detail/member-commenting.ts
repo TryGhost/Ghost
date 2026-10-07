@@ -1,4 +1,4 @@
-import type {Member} from '@tryghost/admin-x-framework/api/members';
+import type { Member } from '@tryghost/admin-x-framework/api/members';
 
 /**
  * True when the member currently can't comment. Gated on `can_comment`
@@ -10,7 +10,7 @@ import type {Member} from '@tryghost/admin-x-framework/api/members';
  * Missing / undefined `can_comment` (legacy members) → treat as enabled.
  */
 export function isMemberCommentingDisabled(member: Pick<Member, 'can_comment'>): boolean {
-    return member.can_comment === false;
+  return member.can_comment === false;
 }
 
 /**
@@ -19,5 +19,5 @@ export function isMemberCommentingDisabled(member: Pick<Member, 'can_comment'>):
  * versa.
  */
 export function getMemberCommentingActionLabel(member: Pick<Member, 'can_comment'>): string {
-    return isMemberCommentingDisabled(member) ? 'Enable commenting' : 'Disable commenting';
+  return isMemberCommentingDisabled(member) ? 'Enable commenting' : 'Disable commenting';
 }

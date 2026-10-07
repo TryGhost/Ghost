@@ -1,5 +1,5 @@
 import LeftArrowIcon from '../../images/icons/arrow-left.svg?react';
-import {t} from '../../utils/i18n';
+import { t } from '../../utils/i18n';
 
 export const BackButtonStyles = `
     .gh-portal-btn-back,
@@ -50,20 +50,24 @@ export const BackButtonStyles = `
     }
 `;
 
-function ActionButton({brandColor, label = null, hidden = false, onClick}) {
-    if (hidden) {
-        return null;
-    }
+function ActionButton({ brandColor, label = null, hidden = false, onClick }) {
+  if (hidden) {
+    return null;
+  }
 
-    if (label === null) {
-        label = t('Back');
-    }
+  if (label === null) {
+    label = t('Back');
+  }
 
-    return (
-        <button className='gh-portal-btn gh-portal-btn-back' style={brandColor ? {color: brandColor} : undefined} onClick={e => onClick(e)}>
-            <LeftArrowIcon /> {label}
-        </button>
-    );
+  return (
+    <button
+      className="gh-portal-btn gh-portal-btn-back"
+      style={brandColor ? { color: brandColor } : undefined}
+      onClick={(e) => onClick(e)}
+    >
+      <LeftArrowIcon /> {label}
+    </button>
+  );
 }
 
 export default ActionButton;

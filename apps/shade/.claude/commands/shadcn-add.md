@@ -16,6 +16,7 @@ You are tasked with adding a new ShadCN/UI component to the Shade design system.
 ## Important Guidelines
 
 **ALWAYS read and follow the instructions in `AGENTS.md`** - this file contains critical information about:
+
 - Component structure and naming conventions
 - Build and test commands
 - Coding style requirements
@@ -35,26 +36,28 @@ First, check if the component already exists in Shade:
 Use Puppeteer to retrieve the component documentation (if Puppeteer is not available use Webfetch):
 
 1. Fetch
-`https://ui.shadcn.com/docs/components/{{component-name}}`
+   `https://ui.shadcn.com/docs/components/{{component-name}}`
 2. Extract:
-    - Component description and use case
-    - Installation command (npx shadcn@latest add ...)
-    - All code examples with full code blocks
-    - Component variants (default, outline, ghost, etc.)
-    - Size options (sm, md, lg, icon, etc.)
-    - Props and TypeScript types
-    - Usage patterns and best practices
+   - Component description and use case
+   - Installation command (npx shadcn@latest add ...)
+   - All code examples with full code blocks
+   - Component variants (default, outline, ghost, etc.)
+   - Size options (sm, md, lg, icon, etc.)
+   - Props and TypeScript types
+   - Usage patterns and best practices
 3. Use this information to create comprehensive Storybook
-stories
+   stories
 
 ## Step 3: Install the Component
 
 1. **Create a git branch first** (safety measure):
+
    ```bash
    git checkout -b shadcn-add-{{component-name}}
    ```
 
 2. Run the installation command from the ShadCN docs:
+
    ```bash
    npx shadcn@latest add {{component-name}}
    ```
@@ -64,14 +67,17 @@ stories
    - If conflicts occur, stop and inform the user
 
 4. After installation, run:
+
    ```bash
    pnpm && pnpm lint --fix
    ```
 
 5. **Fix linter errors in component file:**
+
    ```bash
    npx eslint --fix src/components/ui/{{component-name}}.tsx
    ```
+
    This ensures proper CSS classname order and prop ordering.
 
 6. Fix any remaining linter errors manually
@@ -122,6 +128,7 @@ For **each example** from the ShadCN documentation page:
 4. Keep stories minimal and focused on demonstrating the component's capabilities
 
 Example story with args:
+
 ```typescript
 export const Default: Story = {
     name: 'Default',
@@ -139,6 +146,7 @@ export const Default: Story = {
 ```
 
 Example story with render function (use when composition is needed):
+
 ```typescript
 export const WithLabel: Story = {
     render: () => (
@@ -168,6 +176,7 @@ export const WithLabel: Story = {
 ### Story Categories to Include
 
 Based on the ShadCN examples, create stories for:
+
 - **Default/Primary**: The main use case
 - **Variants**: All visual variants (outline, ghost, destructive, etc.)
 - **Sizes**: All size options (sm, lg, icon, etc.)
@@ -179,14 +188,17 @@ Based on the ShadCN examples, create stories for:
 After creating the stories:
 
 1. Run linting:
+
    ```bash
    pnpm lint --fix
    ```
 
 2. **Fix linter errors in story file:**
+
    ```bash
    npx eslint --fix src/components/ui/{{component-name}}.stories.tsx
    ```
+
    This ensures proper CSS classname order, prop ordering, and import organization.
 
 3. Fix any remaining errors manually:
@@ -226,10 +238,12 @@ Skip the test suite and proceed to visual verification. Note: Make sure to run t
 Use Puppeteer to verify the component renders correctly in Storybook:
 
 1. **Start Storybook in background:**
-    Check if Storybook is running already on port 6006 and if not run:
+   Check if Storybook is running already on port 6006 and if not run:
+
    ```bash
    pnpm storybook
    ```
+
    Wait for it to be ready (usually runs on http://localhost:6006)
 
 2. **Launch Puppeteer and test each story:**
@@ -256,6 +270,7 @@ Use Puppeteer to verify the component renders correctly in Storybook:
    - Stop the Storybook process
 
 ### What to verify:
+
 - ✅ Component renders without React errors
 - ✅ No console errors or warnings
 - ✅ All variants display correctly
@@ -265,6 +280,7 @@ Use Puppeteer to verify the component renders correctly in Storybook:
 ## Step 10: Summary Report
 
 Provide a summary to the user showing:
+
 - Success message
 - Files created/modified (component, stories, index.ts)
 - List of all story names created
@@ -277,6 +293,7 @@ Provide a summary to the user showing:
 ## Error Handling
 
 If any step fails:
+
 1. Provide clear error message
 2. Suggest solutions based on AGENTS.md
 3. Don't proceed to next steps until issue is resolved

@@ -1,8 +1,8 @@
 export interface MemberGeolocation {
-    country_code?: string;
-    country?: string;
-    region?: string;
-    city?: string;
+  country_code?: string;
+  country?: string;
+  region?: string;
+  city?: string;
 }
 
 /**
@@ -17,17 +17,17 @@ export interface MemberGeolocation {
  * A shared parser is a reasonable future cleanup.)
  */
 export function parseMemberGeolocation(raw: string | null | undefined): MemberGeolocation | null {
-    if (!raw) {
-        return null;
-    }
+  if (!raw) {
+    return null;
+  }
 
-    try {
-        const parsed: unknown = JSON.parse(raw);
-        // Reject non-objects and arrays (arrays are `typeof 'object'`) so the guard is honest.
-        return (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed : null;
-    } catch {
-        return null;
-    }
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    // Reject non-objects and arrays (arrays are `typeof 'object'`) so the guard is honest.
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -36,17 +36,17 @@ export function parseMemberGeolocation(raw: string | null | undefined): MemberGe
  * anything missing falls back to "Unknown location".
  */
 export function formatMemberLocation(rawGeolocation: string | null | undefined): string {
-    const geo = parseMemberGeolocation(rawGeolocation);
+  const geo = parseMemberGeolocation(rawGeolocation);
 
-    if (!geo) {
-        return 'Unknown location';
-    }
+  if (!geo) {
+    return 'Unknown location';
+  }
 
-    if (geo.country_code === 'US' && geo.region) {
-        return `${geo.region}, US`;
-    }
+  if (geo.country_code === 'US' && geo.region) {
+    return `${geo.region}, US`;
+  }
 
-    return geo.country || 'Unknown location';
+  return geo.country || 'Unknown location';
 }
 
 /**
@@ -54,12 +54,14 @@ export function formatMemberLocation(rawGeolocation: string | null | undefined):
  * admin carry the placeholder source "Created manually", which the Ember screen
  * hides — so we return null for it (and for any empty source).
  */
-export function getMemberReferrerSource(attribution: {referrer_source?: string | null} | null | undefined): string | null {
-    const source = attribution?.referrer_source;
+export function getMemberReferrerSource(
+  attribution: { referrer_source?: string | null } | null | undefined,
+): string | null {
+  const source = attribution?.referrer_source;
 
-    if (!source || source === 'Created manually') {
-        return null;
-    }
+  if (!source || source === 'Created manually') {
+    return null;
+  }
 
-    return source;
+  return source;
 }
