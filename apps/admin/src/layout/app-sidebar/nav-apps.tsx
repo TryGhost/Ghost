@@ -10,7 +10,13 @@ import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { AdminLink } from '@/shared/admin-link';
 import { toIconName } from '@/apps/lib/icons';
 import { useRefreshInstalledManifests } from '@/apps/lib/refresh';
-import { canManageApps, setAppPinned, useActiveInstallations, usePinnedApps } from '@/apps/api';
+import {
+  canManageApps,
+  needsApproval,
+  setAppPinned,
+  useActiveInstallations,
+  usePinnedApps,
+} from '@/apps/api';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useLocation } from '@tryghost/admin-x-framework';
@@ -41,11 +47,21 @@ interface NavAppItemProps {
   to: string;
   isActive: boolean;
   pinned: boolean;
+  /** An update is waiting on more access; the app opens its review instead. */
+  awaitingApproval: boolean;
   onTogglePin: () => void;
 }
 
 /** An app as a top-level nav item, with a pin button on hover like Posts' "+". */
-function NavAppItem({ name, icon, to, isActive, pinned, onTogglePin }: NavAppItemProps) {
+function NavAppItem({
+  name,
+  icon,
+  to,
+  isActive,
+  pinned,
+  awaitingApproval,
+  onTogglePin,
+}: NavAppItemProps) {
   const label = pinned ? `Unpin ${name} from the sidebar` : `Pin ${name} to the sidebar`;
 
   return (
@@ -53,6 +69,14 @@ function NavAppItem({ name, icon, to, isActive, pinned, onTogglePin }: NavAppIte
       <NavMenuItem.Link className="pr-8" isActive={isActive} title={name} to={to}>
         <NavAppIcon icon={icon} />
         <NavMenuItem.Label>{name}</NavMenuItem.Label>
+        {awaitingApproval && (
+          <span
+            aria-label="Needs approval"
+            className="ml-auto size-1.5 shrink-0 rounded-full bg-state-warning"
+            data-testid="nav-app-needs-approval"
+            role="img"
+          />
+        )}
       </NavMenuItem.Link>
       <button
         aria-label={label}
@@ -145,6 +169,7 @@ function NavApps({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
               return (
                 <React.Fragment key={installation.id}>
                   <NavAppItem
+                    awaitingApproval={needsApproval(installation)}
                     icon={installation.manifest.icon}
                     isActive={isOpen && !activeNavItem}
                     name={installation.manifest.name}

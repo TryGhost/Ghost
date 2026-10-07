@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Badge,
   Button,
   DropdownMenu,
   DropdownMenuContent,
@@ -18,11 +19,14 @@ import { AppIcon } from './app-icon';
 import { DevelopmentBadge } from './development-badge';
 import type { AppInstallation } from '@/apps/types';
 import { appDeveloper } from '@/apps/lib/manifest';
+import { needsApproval } from '@/apps/lib/installations';
 import { setAppPinned, usePinnedApps } from '@/apps/lib/pins';
 
 interface AppsListProps {
   installations: AppInstallation[];
   onUninstall: (installation: AppInstallation) => void;
+  /** Opens the review for an updated app that's waiting on more access. */
+  onReview: (installation: AppInstallation) => void;
 }
 
 const handleRowClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
@@ -35,11 +39,11 @@ const handleRowClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
   ) {
     return;
   }
-  event.currentTarget.querySelector<HTMLAnchorElement>('a[data-app-link]')?.click();
+  event.currentTarget.querySelector<HTMLElement>('[data-app-link]')?.click();
 };
 
 /** The site's apps as a list, like Automations and Tags. Clicking a row opens the app. */
-const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall }) => {
+const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall, onReview }) => {
   const pinnedIds = usePinnedApps();
 
   return (
@@ -48,6 +52,7 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall }) => {
         {installations.map((installation) => {
           const { manifest } = installation;
           const pinned = pinnedIds.includes(installation.id);
+          const awaitingApproval = needsApproval(installation);
 
           return (
             <TableRow
@@ -66,6 +71,11 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall }) => {
                     <Inline gap="xs">
                       <span className="text-md font-semibold">{manifest.name}</span>
                       {installation.source === 'link' && <DevelopmentBadge />}
+                      {awaitingApproval && (
+                        <Badge data-testid="app-needs-approval-badge" variant="warning">
+                          Needs approval
+                        </Badge>
+                      )}
                       <span className="text-sm text-muted-foreground">
                         {appDeveloper(manifest)}
                       </span>
@@ -80,11 +90,17 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall }) => {
               </TableHead>
               <TableCell className="p-4">
                 <Inline gap="xs" justify="end">
-                  <Button variant="outline" asChild>
-                    <Link to={`/apps/${installation.id}`} data-app-link>
-                      Open
-                    </Link>
-                  </Button>
+                  {awaitingApproval ? (
+                    <Button variant="outline" data-app-link onClick={() => onReview(installation)}>
+                      Review access
+                    </Button>
+                  ) : (
+                    <Button variant="outline" asChild>
+                      <Link to={`/apps/${installation.id}`} data-app-link>
+                        Open
+                      </Link>
+                    </Button>
+                  )}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button

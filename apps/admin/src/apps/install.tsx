@@ -1,14 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { AccessIndicator } from './components/access-indicator';
-import { STAFF_SESSION_ACCESS } from './lib/access';
-import { AppBanner, AppIcon } from './components/app-icon';
+import { AppIcon } from './components/app-icon';
+import { AppReview, AppReviewDialog } from './components/app-review';
+import { installRows } from './lib/app-permissions';
 import { AppsFlagGate } from './components/apps-flag-gate';
 import { AppsListing } from './apps';
 import { AskAdminDialog } from './components/ask-admin-dialog';
 import {
   Button,
-  Dialog,
-  DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
@@ -16,7 +14,7 @@ import {
   LoadingIndicator,
 } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { type FetchManifestResult, appDeveloper, fetchManifest } from './lib/manifest';
+import { type FetchManifestResult, fetchManifest } from './lib/manifest';
 import { findActiveInstallation, installApp } from './lib/installations';
 import { canManageApps } from './permissions';
 import { pinOnInstall } from './lib/pins';
@@ -107,35 +105,13 @@ const InstallDialog: React.FC<{ manifestUrl: string | null }> = ({ manifestUrl }
   } else if (state.result.ok) {
     const { manifest } = state.result;
     content = (
-      <>
-        {/* A band the icon sits into, like a profile picture. */}
-        <AppBanner className="-mx-6 -mt-6 h-28" color={manifest.color} />
-        {/* -mt-14 pulls the 64px icon up past the dialog's 24px gap, so half of it
-            overlaps the band; its ring matches the dialog to cut out the grey. */}
-        <DialogHeader className="-mt-14 items-start">
-          <AppIcon
-            className="ring-4 ring-surface-elevated-2"
-            color={manifest.color}
-            icon={manifest.icon}
-            size="xl"
-            tone="brand"
-          />
-          <DialogTitle className="mt-3">{manifest.name}</DialogTitle>
-          <Text data-testid="app-install-source" size="sm" tone="secondary">
-            {appDeveloper(manifest)}
-          </Text>
-          {manifest.description && (
-            <DialogDescription className="mt-2">{manifest.description}</DialogDescription>
-          )}
-        </DialogHeader>
-        <AccessIndicator items={[STAFF_SESSION_ACCESS]} />
-        <DialogFooter>
-          <Button variant="outline" onClick={close}>
-            Cancel
-          </Button>
-          <Button onClick={() => confirm(new URL(manifestUrl ?? '').href)}>Install</Button>
-        </DialogFooter>
-      </>
+      <AppReview
+        manifest={manifest}
+        mode="install"
+        rows={installRows(manifest)}
+        onCancel={close}
+        onConfirm={() => confirm(new URL(manifestUrl ?? '').href)}
+      />
     );
   } else if ('unreachable' in state.result) {
     content = (
@@ -184,7 +160,8 @@ const InstallDialog: React.FC<{ manifestUrl: string | null }> = ({ manifestUrl }
   }
 
   return (
-    <Dialog
+    <AppReviewDialog
+      data-testid="app-install-dialog"
       open
       onOpenChange={(open) => {
         if (!open) {
@@ -192,10 +169,8 @@ const InstallDialog: React.FC<{ manifestUrl: string | null }> = ({ manifestUrl }
         }
       }}
     >
-      <DialogContent className="max-w-md overflow-hidden" data-testid="app-install-dialog">
-        {content}
-      </DialogContent>
-    </Dialog>
+      {content}
+    </AppReviewDialog>
   );
 };
 

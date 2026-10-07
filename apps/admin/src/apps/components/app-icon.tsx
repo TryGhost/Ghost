@@ -1,6 +1,7 @@
 import React from 'react';
 import { DynamicIcon } from 'lucide-react/dynamic';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
+import { appBrandColor } from '@/apps/lib/brand-color';
 import { toIconName } from '@/apps/lib/icons';
 
 interface AppIconProps {
@@ -14,9 +15,6 @@ interface AppIconProps {
   className?: string;
 }
 
-// Apps that don't declare a colour share this one.
-const DEFAULT_BRAND_COLOR = '#548970';
-
 /**
  * The band an app's icon sits into on its card and install dialog: the tile's
  * own colour, with the tile's white ring keeping the two apart.
@@ -25,11 +23,7 @@ export const AppBanner: React.FC<{ className?: string; color?: string }> = ({
   className,
   color,
 }) => (
-  <div
-    aria-hidden="true"
-    className={className}
-    style={{ backgroundColor: color ?? DEFAULT_BRAND_COLOR }}
-  />
+  <div aria-hidden="true" className={className} style={{ backgroundColor: appBrandColor(color) }} />
 );
 
 const ICON_SIZES = { sm: 'size-3.5', md: 'size-[18px]', lg: 'size-6', xl: 'size-7' };
@@ -54,7 +48,7 @@ export const AppIcon: React.FC<AppIconProps> = ({
         { sm: 'size-6 rounded-sm', md: 'size-10', lg: 'size-12', xl: 'size-16 rounded-xl' }[size],
         className,
       )}
-      style={tone === 'brand' ? { backgroundColor: color ?? DEFAULT_BRAND_COLOR } : undefined}
+      style={tone === 'brand' ? { backgroundColor: appBrandColor(color) } : undefined}
     >
       {name ? (
         <DynamicIcon

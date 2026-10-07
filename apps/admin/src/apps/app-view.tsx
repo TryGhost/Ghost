@@ -15,7 +15,13 @@ import { Link, useLocation, useNavigate, useParams } from '@tryghost/admin-x-fra
 import { appRoute } from './lib/routes';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { getGhostPaths } from '@tryghost/admin-x-framework/helpers';
-import { getInstallation, isInstallationActive, useInstallations } from './lib/installations';
+import {
+  getInstallation,
+  isInstallationActive,
+  needsApproval,
+  useInstallations,
+} from './lib/installations';
+import { UpdateAppDialog } from './components/app-review';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useEmberOwnedRouteMatcher } from '@/routes';
@@ -260,6 +266,27 @@ const AppFrame: React.FC<{ installation: AppInstallation; route: string }> = ({
   );
 };
 
+/**
+ * An updated app waiting on more access doesn't load: the page explains why and
+ * offers the review, which opens straight away when the app is visited.
+ */
+const AwaitingApproval: React.FC<{ installation: AppInstallation }> = ({ installation }) => {
+  const [reviewing, setReviewing] = useState(true);
+
+  return (
+    <div className="flex size-full items-center justify-center" data-testid="app-needs-approval">
+      <EmptyIndicator
+        actions={<Button onClick={() => setReviewing(true)}>Review access</Button>}
+        description="It’s been updated and needs more access before it can open."
+        title={`${installation.manifest.name} needs your approval`}
+      >
+        <LucideIcon.ShieldAlert />
+      </EmptyIndicator>
+      <UpdateAppDialog installation={reviewing ? installation : null} onOpenChange={setReviewing} />
+    </div>
+  );
+};
+
 const AppView: React.FC = () => {
   const { installationId = '', '*': splat = '' } = useParams();
   const { search } = useLocation();
@@ -283,6 +310,10 @@ const AppView: React.FC = () => {
         </EmptyIndicator>
       </div>
     );
+  }
+
+  if (needsApproval(installation)) {
+    return <AwaitingApproval key={installation.id} installation={installation} />;
   }
 
   // Ghost keeps only the nav and the standard page margin; the rest is the app's.

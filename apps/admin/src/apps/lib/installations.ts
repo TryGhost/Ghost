@@ -1,5 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import type { AppInstallation, AppManifest } from '@/apps/types';
+import { mergePermissions, requestedPermissions } from '@/apps/lib/app-permissions';
+import { seedPrototypeUpdate } from '@/apps/lib/prototype-update';
 
 /**
  * Prototype storage for installations, kept in the browser until the
@@ -21,16 +23,25 @@ function read(): AppInstallation[] {
   } catch {
     cache = [];
   }
+  const seeded = seedPrototypeUpdate(cache);
+  if (seeded !== cache) {
+    cache = seeded;
+    persist(seeded);
+  }
   return cache;
 }
 
-function write(next: AppInstallation[]) {
-  cache = next;
+function persist(next: AppInstallation[]) {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   } catch {
     // Storage can be unavailable (private mode); keep the in-memory copy.
   }
+}
+
+function write(next: AppInstallation[]) {
+  cache = next;
+  persist(next);
   listeners.forEach((listener) => listener());
 }
 
@@ -82,6 +93,7 @@ export function installApp(
     status: 'active',
     installedAt: new Date().toISOString(),
     installedBy,
+    permissions: requestedPermissions(manifest),
   };
   write([...read(), installation]);
   return installation;
@@ -99,6 +111,29 @@ export function updateInstallationManifest(id: string, manifest: AppManifest) {
   write(
     read().map((installation) =>
       installation.id === id ? { ...installation, manifest } : installation,
+    ),
+  );
+}
+
+/** Whether an update is waiting on the publisher to approve more access. */
+export function needsApproval(installation: AppInstallation): boolean {
+  return Boolean(installation.pendingPermissions?.length);
+}
+
+/** Exploration: approves an update's extra access, so the app opens again. */
+export function approvePendingPermissions(id: string) {
+  write(
+    read().map((installation) =>
+      installation.id === id && installation.status === 'active'
+        ? {
+            ...installation,
+            permissions: mergePermissions(
+              installation.permissions ?? [],
+              installation.pendingPermissions ?? [],
+            ),
+            pendingPermissions: undefined,
+          }
+        : installation,
     ),
   );
 }

@@ -17,6 +17,7 @@ import { appsScreen } from './apps.screen';
 import { globalSearchScreen } from '@/global-search/global-search.screen';
 import { installApp, resetInstallationsCache } from './lib/installations';
 import { resetPinsCache, setAppPinned } from './lib/pins';
+import type { AppInstallation } from './types';
 
 const APP_ORIGIN = 'https://calendar.example';
 const MANIFEST_URL = `${APP_ORIGIN}/manifest.json`;
@@ -109,6 +110,22 @@ const installCalendar = () =>
     ],
   });
 
+// An installed app whose update asks for more access than was approved.
+const installUpdatedCalendar = () => {
+  const installation = installCalendar();
+  const updated = {
+    ...installation,
+    permissions: [{ resource: 'post', actions: ['browse', 'read'] }],
+    pendingPermissions: [
+      { resource: 'post', actions: ['edit'] },
+      { resource: 'member', actions: ['browse'] },
+    ],
+  };
+  localStorage.setItem('ghost-admin:apps:installations', JSON.stringify([updated]));
+  resetInstallationsCache();
+  return updated;
+};
+
 describe('Apps', () => {
   beforeEach(() => {
     localStorage.removeItem('ghost-admin:apps:installations');
@@ -156,8 +173,11 @@ describe('Apps', () => {
       .element(page.getByTestId('app-install-source'))
       .toHaveTextContent('calendar.example');
     await expect
-      .element(appsScreen.installDialog().getByTestId('access-indicator'))
-      .toHaveTextContent('Only install this app if you trust the developer');
+      .element(appsScreen.installDialog().getByTestId('app-surface'))
+      .toHaveTextContent('A dedicated page in Admin');
+    await expect
+      .element(appsScreen.installDialog().getByTestId('app-permissions'))
+      .toHaveTextContent('Posts and pages');
     await appsScreen.installButton().click();
 
     await expect.poll(currentRoute).toMatch(/^\/apps\/[\w-]+$/);
@@ -445,5 +465,48 @@ describe('Apps', () => {
     expect(iconBox(appLink.element())).toEqual(
       iconBox(sidebar.getByRole('link', { name: 'Tags' }).element()),
     );
+  });
+
+  it('asks to approve more access before an updated app opens from the list', async () => {
+    installUpdatedCalendar();
+
+    await renderAdminApp('/apps', { labs: { apps: true } });
+
+    await expect
+      .element(appsScreen.row('Content calendar').getByTestId('app-needs-approval-badge'))
+      .toBeVisible();
+    await appsScreen.reviewAccessButton().click();
+
+    const dialog = appsScreen.updateDialog();
+    await expect.element(dialog).toHaveTextContent('needs more access');
+    await expect
+      .element(dialog.getByTestId('app-permissions'))
+      .toHaveTextContent(
+        'View and edit all posts and pages, including drafts and scheduled ones · was view',
+      );
+    await expect
+      .element(dialog.getByTestId('app-permissions'))
+      .toHaveTextContent('View names, email addresses and subscription status');
+    await expect.element(dialog.getByTestId('app-permissions')).toHaveTextContent('Members');
+    await appsScreen.allowAccessButton().click();
+
+    await expect.element(dialog).not.toBeInTheDocument();
+    await expect
+      .element(appsScreen.row('Content calendar').getByRole('link', { name: 'Open' }))
+      .toBeVisible();
+    const [stored] = JSON.parse(
+      localStorage.getItem('ghost-admin:apps:installations') ?? '[]',
+    ) as AppInstallation[];
+    expect(stored.pendingPermissions).toBeUndefined();
+  });
+
+  it('shows the review instead of the app when an updated app is visited', async () => {
+    const installation = installUpdatedCalendar();
+
+    await renderAdminApp(`/apps/${installation.id}`, { labs: { apps: true } });
+
+    await expect.element(appsScreen.updateDialog()).toBeVisible();
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+    await expect.element(page.getByTestId('nav-app-needs-approval')).toBeInTheDocument();
   });
 });

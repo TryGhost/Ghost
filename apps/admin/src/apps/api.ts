@@ -3,7 +3,7 @@
  * (routes, sidebar and global search). Everything else in this domain is internal.
  */
 export { canManageApps } from './permissions';
-export { useActiveInstallations } from './lib/installations';
+export { needsApproval, useActiveInstallations } from './lib/installations';
 export { setAppPinned, usePinnedApps } from './lib/pins';
 export { appRoute } from './lib/routes';
 export { AppIcon } from './components/app-icon';

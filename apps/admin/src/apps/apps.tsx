@@ -8,15 +8,18 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { ListPage } from '@tryghost/shade/page-templates';
 import { PageHeader } from '@tryghost/shade/patterns';
 import { UninstallDialog } from './components/uninstall-dialog';
+import { UpdateAppDialog } from './components/app-review';
 import { toast } from 'sonner';
 import { setAppPinned } from './lib/pins';
-import { uninstallApp, useActiveInstallations } from './lib/installations';
+import { getInstallation, uninstallApp, useActiveInstallations } from './lib/installations';
 import type { AppInstallation } from './types';
 
 /** One list of the site's apps; each can be opened or uninstalled from here. */
 export const AppsListing: React.FC = () => {
   const installations = useActiveInstallations();
   const [uninstalling, setUninstalling] = useState<AppInstallation | null>(null);
+  const [reviewingId, setReviewingId] = useState<string | null>(null);
+  const reviewing = reviewingId ? getInstallation(reviewingId) : undefined;
 
   return (
     <Box className="size-full">
@@ -42,7 +45,11 @@ export const AppsListing: React.FC = () => {
           </ListPage.Header>
           <ListPage.Body className="flex flex-col">
             {installations.length ? (
-              <AppsList installations={installations} onUninstall={setUninstalling} />
+              <AppsList
+                installations={installations}
+                onReview={(installation) => setReviewingId(installation.id)}
+                onUninstall={setUninstalling}
+              />
             ) : (
               <div className="flex flex-1 items-center justify-center py-16">
                 <EmptyIndicator description="Apps you install show up here." title="No apps yet">
@@ -54,6 +61,15 @@ export const AppsListing: React.FC = () => {
           </ListPage.Body>
         </ListPage>
       </Container>
+      <UpdateAppDialog
+        installation={reviewing?.pendingPermissions?.length ? reviewing : null}
+        onApproved={() => setReviewingId(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setReviewingId(null);
+          }
+        }}
+      />
       <UninstallDialog
         installation={uninstalling}
         onConfirm={(installation) => {

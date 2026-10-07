@@ -1,3 +1,5 @@
+import type { AppPermission } from './lib/app-permissions';
+
 /**
  * The contract between an app and Ghost (manifest v0). The format stays fluid
  * while only internal apps exist; versioning comes before external developers.
@@ -42,4 +44,11 @@ export interface AppInstallation {
   installedAt: string;
   installedBy?: { id: string; name: string };
   uninstalledAt?: string;
+  /** Exploration: the access the publisher approved (see lib/app-permissions). */
+  permissions?: AppPermission[];
+  /**
+   * Exploration: more access an updated app asks for. Until it's approved, the
+   * app doesn't open; Admin asks the publisher to review it instead.
+   */
+  pendingPermissions?: AppPermission[];
 }
