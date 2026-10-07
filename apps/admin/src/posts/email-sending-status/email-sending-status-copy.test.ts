@@ -30,6 +30,19 @@ describe('getEmailSendingLine', () => {
     ).toBe('Preparing emails · 10% complete · 1,000 total');
   });
 
+  it('omits a zero percentage while the audience is selected', () => {
+    const sending = {
+      status: 'preparing' as const,
+      progress: { completed: 0, total: 498169, estimated_seconds_remaining: null },
+    };
+    expect(getEmailSendingLine(sending, { preparingProgress: 'percentage' })).toEqual({
+      phase: 'preparing',
+      fractionComplete: 0,
+      text: 'Preparing emails · 498,169 total',
+    });
+    expect(getEmailSendingLine(sending).text).toBe('Preparing emails · 0 of 498,169');
+  });
+
   it('counts sending progress, even when percentages are asked for', () => {
     expect(
       getEmailSendingLine(
