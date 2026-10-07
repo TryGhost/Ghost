@@ -23,6 +23,9 @@ vi.mock('./ember-bridge', () => ({
     }
     return stateBridge.isFeatureEnabled(flag) ?? null;
   },
+}));
+
+vi.mock('./billing/api', () => ({
   useForceUpgrade: () => false,
 }));
 

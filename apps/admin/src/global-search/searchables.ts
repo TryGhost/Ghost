@@ -1,19 +1,9 @@
 import { z } from 'zod';
+import type { SearchIndexItem } from '@/shared/search-index';
 
 export const BILLING_SEARCH_GROUP_KEY = 'billing';
 
 export type SearchableModel = 'user' | 'tag' | 'pro-page' | 'post' | 'page';
-
-const searchIndexItemSchema = z.object({
-  id: z.string(),
-  slug: z.string().optional(),
-  name: z.string().optional(),
-  title: z.string().optional(),
-  status: z.string().optional(),
-});
-
-/** An entry from a `search-index/*` endpoint. */
-export type SearchIndexItem = z.output<typeof searchIndexItemSchema>;
 
 /** A search-index entry, or a configured billing item. */
 export type SearchItem = SearchIndexItem & { path?: string; keywords?: string };
@@ -23,11 +13,6 @@ function parseEach<T>(schema: z.ZodType<T>, items: unknown[]): T[] {
     const parsed = schema.safeParse(item);
     return parsed.success ? [parsed.data] : [];
   });
-}
-
-/** Keeps the entries of a `search-index/*` response that match the expected shape. */
-export function parseSearchIndexItems(items: unknown): SearchIndexItem[] {
-  return Array.isArray(items) ? parseEach(searchIndexItemSchema, items) : [];
 }
 
 export interface Searchable {

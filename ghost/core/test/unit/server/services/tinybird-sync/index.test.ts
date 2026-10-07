@@ -17,7 +17,6 @@ describe('createTinybirdSyncService', () => {
     const dependencies = {
       config: { get: vi.fn((key: string) => values[key]) },
       settingsCache: { get: vi.fn(() => 'settings-site-uuid') },
-      labs: { isSet: vi.fn(() => true) },
       knex: {} as Knex,
       logging: { info: vi.fn(), error: vi.fn() },
       random: () => 0.5,
@@ -91,10 +90,7 @@ describe('createTinybirdSyncService', () => {
     assert.ok(job instanceof TinybirdSyncJob);
     assert.deepEqual(schedule, { cron: '30 2/5 * * * *' });
     assert.deepEqual(dependencies.logging.info.mock.calls, [
-      [
-        { system: { event: 'tinybird.sync.started' } },
-        '[Tinybird sync] Started: sync enabled by labs flag (but may change)',
-      ],
+      [{ system: { event: 'tinybird.sync.started' } }, '[Tinybird sync] Started'],
       ['[Background Job] tinybird-sync scheduled at 30 2/5 * * * *'],
     ]);
   });
@@ -122,19 +118,6 @@ describe('createTinybirdSyncService', () => {
     await service.scheduleJob(jobsService);
 
     assert.equal(jobsService.scheduleRecurring.mock.calls.length, 2);
-  });
-
-  it('logs that sync is disabled by labs flag when scheduling', async () => {
-    const jobsService = { scheduleRecurring: vi.fn(async () => {}) };
-    const { dependencies, service } = createService({ labs: { isSet: vi.fn(() => false) } });
-
-    await service.scheduleJob(jobsService);
-
-    assert.deepEqual(dependencies.logging.info.mock.calls[0], [
-      { system: { event: 'tinybird.sync.started' } },
-      '[Tinybird sync] Started: sync disabled by labs flag (but may change)',
-    ]);
-    assert.equal(jobsService.scheduleRecurring.mock.calls.length, 1);
   });
 
   it('does not schedule without complete analytics config', async () => {
@@ -199,21 +182,6 @@ describe('createTinybirdSyncService', () => {
       dependencies.logging.error.mock.calls[0][1],
       '[Tinybird sync] Failed to sync table',
     );
-  });
-
-  it('skips sync when labs flag is disabled', async () => {
-    const database = await createEmptyDatabase();
-    const fetch = vi.fn();
-    const { dependencies, service } = createService({
-      knex: database,
-      fetch,
-      labs: { isSet: vi.fn(() => false) },
-    });
-
-    await service.sync();
-
-    assert.equal(fetch.mock.calls.length, 0);
-    assert.equal(dependencies.logging.info.mock.calls.length, 0);
   });
 
   it('limits Traffic Analytics requests to 1000 messages', async () => {

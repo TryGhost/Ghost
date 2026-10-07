@@ -10,7 +10,10 @@ import {
   NON_EMPTY_EMAIL_LEXICAL,
 } from '../../../../utils/automations-fixtures';
 
-const { repositoryEdit } = vi.hoisted(() => ({ repositoryEdit: vi.fn() }));
+const { repositoryAdd, repositoryEdit } = vi.hoisted(() => ({
+  repositoryAdd: vi.fn(),
+  repositoryEdit: vi.fn(),
+}));
 
 vi.mock(
   '../../../../../core/server/services/automations/database-automations-repository',
@@ -23,6 +26,7 @@ vi.mock(
       ...actual,
       createDatabaseAutomationsRepository: vi.fn((options) => ({
         ...actual.createDatabaseAutomationsRepository(options),
+        add: repositoryAdd,
         edit: repositoryEdit,
         getNumberOfAutomations: vi.fn().mockResolvedValue(20),
       })),
@@ -55,6 +59,7 @@ const buildEdge = (source: Readonly<{ id: string }>, target: Readonly<{ id: stri
 describe('automations API', function () {
   afterEach(function () {
     sinon.restore();
+    repositoryAdd.mockReset();
     repositoryEdit.mockReset();
   });
 
@@ -63,6 +68,96 @@ describe('automations API', function () {
       assert.equal(await automationsApi.getNumberOfAutomations(), 20);
       const repository = vi.mocked(createDatabaseAutomationsRepository).mock.results[0].value;
       expect(repository.getNumberOfAutomations).toHaveBeenCalledOnce();
+    });
+  });
+
+  describe('add', function () {
+    const actions = [buildWaitAction(), buildSendEmailAction()];
+    const valid = {
+      name: 'New automation',
+      description: '',
+      trigger_tier_scope: 'free',
+      status: 'active',
+      actions,
+      edges: [buildEdge(actions[0], actions[1])],
+    };
+
+    it('adds automations', async function () {
+      const tierIds = [ObjectId().toHexString(), ObjectId().toHexString()];
+      const payload = {
+        ...valid,
+        description: 'Welcome selected paid members',
+        trigger_tier_scope: 'selected_paid',
+        trigger_tier_ids: [...tierIds, tierIds[0]],
+      };
+      const saved = { ...payload, id: ObjectId().toHexString(), trigger_tier_ids: tierIds };
+      repositoryAdd.mockResolvedValue(saved);
+
+      assert.strictEqual(await automationsApi.add(payload), saved);
+      expect(repositoryAdd).toHaveBeenCalledExactlyOnceWith({
+        ...payload,
+        trigger_tier_ids: tierIds,
+      });
+    });
+
+    it('rejects invalid inputs', async function () {
+      const invalidPayloads = [
+        undefined,
+        null,
+        [],
+        {},
+        { ...valid, name: '' },
+        { ...valid, name: '   ' },
+        { ...valid, name: 'x'.repeat(192) },
+        { ...valid, name: 42 },
+        { ...valid, description: null },
+        { ...valid, description: 'x'.repeat(2001) },
+        { ...valid, trigger_tier_scope: 'paid' },
+        { ...valid, trigger_tier_scope: 'selected_paid' },
+        { ...valid, trigger_tier_scope: 'selected_paid', trigger_tier_ids: [] },
+        { ...valid, trigger_tier_scope: 'selected_paid', trigger_tier_ids: ['invalid'] },
+        { ...valid, trigger_tier_ids: [ObjectId().toHexString()] },
+        { ...valid, trigger_tier_scope: 'all_paid', trigger_tier_ids: [ObjectId().toHexString()] },
+        ...['name', 'description', 'status', 'actions', 'edges'].map((field) => ({
+          ...valid,
+          [field]: undefined,
+        })),
+        { ...valid, status: 'invalid' },
+        { ...valid, actions: [actions[0], actions[0]] },
+        { ...valid, edges: [] },
+        { ...valid, edges: [buildEdge(actions[0], buildWaitAction())] },
+        { ...valid, actions: [buildSendEmailAction({ email_lexical: 'invalid' })], edges: [] },
+        { ...valid, actions: [buildSendEmailAction({ email_subject: '' })], edges: [] },
+        {
+          ...valid,
+          actions: [buildSendEmailAction({ email_lexical: EMPTY_EMAIL_LEXICAL })],
+          edges: [],
+        },
+        { ...valid, slug: 'member-welcome-email-free' },
+        { ...valid, actions: [] },
+        { ...valid, id: ObjectId().toHexString() },
+      ];
+      await Promise.all(
+        invalidPayloads.map(async (payload) => {
+          await assert.rejects(automationsApi.add(payload), {
+            errorType: 'ValidationError',
+            statusCode: 422,
+          });
+        }),
+      );
+      expect(repositoryAdd).not.toHaveBeenCalled();
+    });
+
+    it('allows empty email drafts when inactive', async function () {
+      const payload = {
+        ...valid,
+        status: 'inactive',
+        actions: [buildSendEmailAction({ email_subject: '', email_lexical: EMPTY_EMAIL_LEXICAL })],
+        edges: [],
+      };
+      await automationsApi.add(payload);
+      expect(repositoryAdd).toHaveBeenCalledExactlyOnceWith(payload);
+      expect(repositoryEdit).not.toHaveBeenCalled();
     });
   });
 
@@ -312,7 +407,7 @@ describe('automations API', function () {
     });
 
     it('rejects a wait action with invalid number of hours', async function () {
-      for (const waitHours of [undefined, '24', -24, 0, 24.5]) {
+      for (const waitHours of [undefined, '24', -24, 0, 24.5, 721]) {
         await assert.rejects(
           automationsApi.edit(automationId, {
             status: 'inactive',

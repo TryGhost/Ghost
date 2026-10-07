@@ -17,6 +17,7 @@ const { NotFoundError } = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const crypto = require('crypto');
 const { hasActiveOffer } = require('../utils/has-active-offer');
+const { afterCommit } = require('../../../../lib/after-commit');
 const {
   StartAutomationsPollEvent,
 } = require('../../../automations/events/start-automations-poll-event');
@@ -240,25 +241,6 @@ module.exports = class MemberRepository {
   }
 
   /**
-   * Runs `fn` once the work it follows has committed.
-   *
-   * Without a transaction each query commits as it runs, so `fn` runs now, and whatever it
-   * throws or returns is the caller's. Inside `options.transacting` it runs when that
-   * transaction commits, after the caller has moved on, and not at all if it rolls back;
-   * a rollback, or a failure in `fn`, goes to `onFailure`.
-   *
-   * @param {{transacting?: {executionPromise: Promise<unknown>}}} options
-   * @param {() => unknown} fn
-   * @param {(err: unknown) => void} onFailure
-   */
-  afterCommit(options, fn, onFailure) {
-    if (!options?.transacting) {
-      return fn();
-    }
-    options.transacting.executionPromise.then(() => fn()).catch(onFailure);
-  }
-
-  /**
    * @param {Parameters<typeof DomainEvents.dispatch>[0]} event
    * @param {object} options
    * @param {object} options.transacting
@@ -266,8 +248,8 @@ module.exports = class MemberRepository {
    * @returns {void}
    */
   dispatchEvent(event, options) {
-    this.afterCommit(
-      options,
+    afterCommit(
+      options?.transacting,
       () => DomainEvents.dispatch(event),
       (err) => {
         let memberMessageFragment = '';
@@ -1104,8 +1086,8 @@ module.exports = class MemberRepository {
 
     if (this._stripeAPIService.configured && member._changed.email) {
       // Stripe can't be rolled back, so it only hears about an address Ghost has saved.
-      await this.afterCommit(
-        options,
+      await afterCommit(
+        options?.transacting,
         () => this.updateStripeCustomerEmails(member),
         (err) => {
           logging.error(
@@ -1197,12 +1179,12 @@ module.exports = class MemberRepository {
         transacting,
       );
       // require: false so concurrent deletes don't throw "No Rows Deleted"
-      const deleted = await this._Member.destroy(
-        {
-          id: data.id,
-        },
-        { ...options, transacting, require: false },
-      );
+      const deleted = await this._Member.destroy({
+        ...options,
+        id: data.id,
+        transacting,
+        require: false,
+      });
       if (deleted && previousMetafields) {
         deleted._previousMetafields = previousMetafields;
       }

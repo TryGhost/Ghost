@@ -21,6 +21,7 @@ import {
 } from '@tryghost/test-data/selectors/editor';
 import type { PendingSave, SaveError, SaveEngineState } from '@/editor/engine/save-engine';
 import { EDITOR_CONFIRM_DIALOG_LAYER } from '@/editor/layering';
+import { writerMessage } from '@/editor/publish/completion-message';
 import { LimitMessage } from '@/editor/publish/components/limit-message';
 import { splitUpgradeMessage } from '@/editor/publish/publish-options';
 import { reportShownAlert } from '@/editor/report-error';
@@ -51,7 +52,7 @@ function saveErrorMessage(error: SaveError): string {
     case 'transport':
       return 'Couldn’t reach the server. Your changes are still here.';
     default:
-      return error.message;
+      return writerMessage(error);
   }
 }
 

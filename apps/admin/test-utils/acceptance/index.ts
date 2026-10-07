@@ -37,6 +37,7 @@ export {
   fakePosts,
   fakePostsListScreen,
   fakeRoles,
+  fakeSearchIndex,
   fakeSettingsScreens,
   fakeSnippets,
   fakeTags,
@@ -53,6 +54,8 @@ export type {
   ResourceOptions,
   ResourceSemantics,
   RespondWith,
+  SearchIndexEntry,
+  SearchIndexKind,
 } from './resources';
 export {
   allowUnhandledRequests,

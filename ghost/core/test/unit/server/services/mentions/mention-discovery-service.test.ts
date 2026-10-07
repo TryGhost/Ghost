@@ -2,6 +2,7 @@ import sinon from 'sinon';
 
 import assert from 'node:assert/strict';
 import nock from 'nock';
+import logging from '@tryghost/logging';
 
 // non-standard to use externalRequest here, but this is required for the overrides in the library, which we want to test for security reasons in combination with the package
 // @ts-expect-error This module lacks type definitions.
@@ -35,6 +36,18 @@ describe('MentionDiscoveryService', function () {
     assert.equal(endpoint, null);
   });
 
+  it('Logs a warning, not an error, when the page cannot be fetched', async function () {
+    const warnStub = sinon.stub(logging, 'warn');
+    const errorStub = sinon.stub(logging, 'error');
+    const url = new URL('http://www.notarealsite.com/');
+    nock(url.href).get('/').reply(404);
+
+    await service.getEndpoint(url);
+
+    sinon.assert.calledOnce(warnStub);
+    sinon.assert.notCalled(errorStub);
+  });
+
   it('Follows redirects', async function () {
     const url = new URL('http://redirector.io/');
     const nextUrl = new URL('http://testpage.com/');
@@ -56,6 +69,24 @@ describe('MentionDiscoveryService', function () {
     it('Returns null for a valid non-html site', async function () {
       const url = new URL('http://www.veryrealsite.com');
       nock(url.href).get('/').reply(200, {}, { 'content-type': 'application/json' });
+      const endpoint = await service.getEndpoint(url);
+
+      assert.equal(endpoint, null);
+    });
+
+    it('Returns null for a site without a content type', async function () {
+      const warnStub = sinon.stub(logging, 'warn');
+      const url = new URL('http://testpage.com/');
+      nock(url.href).get('/').reply(200, 'Some content');
+      const endpoint = await service.getEndpoint(url);
+
+      assert.equal(endpoint, null);
+      sinon.assert.notCalled(warnStub);
+    });
+
+    it('Returns null when the endpoint in the Link header is not a valid URL', async function () {
+      const url = new URL('http://testpage.com/');
+      nock(url.href).get('/').reply(200, {}, { Link: '<http://[invalid>; rel="webmention"' });
       const endpoint = await service.getEndpoint(url);
 
       assert.equal(endpoint, null);
@@ -96,6 +127,15 @@ describe('MentionDiscoveryService', function () {
       assert(endpoint instanceof URL);
       assert.equal(endpoint.href, 'http://webmentions.endpoint.io/');
     });
+
+    it('Resolves a relative endpoint in the Link header against the page URL', async function () {
+      const url = new URL('http://testpage.com/article/');
+      nock(url.origin).get(url.pathname).reply(200, {}, { Link: '<webmention>; rel="webmention"' });
+      const endpoint = await service.getEndpoint(url);
+
+      assert(endpoint instanceof URL);
+      assert.equal(endpoint.href, 'http://testpage.com/article/webmention');
+    });
   });
 
   describe('Can parse html', function () {
@@ -123,6 +163,21 @@ describe('MentionDiscoveryService', function () {
 
       assert(endpoint instanceof URL);
       assert.equal(endpoint.href, 'http://valid.site.org/');
+    });
+
+    it('Resolves a relative endpoint in the html against the page URL after redirects', async function () {
+      const url = new URL('http://redirector.io/');
+      const pageUrl = new URL('http://testpage.com/article/');
+      nock(url.href).get('/').reply(301, undefined, { location: pageUrl.href });
+      nock(pageUrl.origin)
+        .get(pageUrl.pathname)
+        .reply(200, '<link rel="webmention" href="webmention" />', {
+          'content-type': 'text/html',
+        });
+      const endpoint = await service.getEndpoint(url);
+
+      assert(endpoint instanceof URL);
+      assert.equal(endpoint.href, 'http://testpage.com/article/webmention');
     });
 
     it('Returns first endpoint for valid html site with multiple <a> tags in body', async function () {

@@ -19,13 +19,13 @@ export const TotalEntries: React.FC<{ chart?: AutomationEntriesChartData; isLoad
       role="region"
     >
       <Inline gap="xs">
-        <LucideIcon.User className="size-3.5 text-muted-foreground" />
+        <LucideIcon.Zap className="size-3.5 text-muted-foreground" />
         <Text as="h3" id={headingId} size="sm" tone="secondary">
-          Total entries
+          Total runs
         </Text>
       </Inline>
       <Text aria-atomic="true" className="sr-only" role="status">
-        {isLoading ? 'Loading total entries' : chart ? `Total entries loaded: ${chart.total}.` : ''}
+        {isLoading ? 'Loading total runs' : chart ? `Total runs loaded: ${chart.total}.` : ''}
       </Text>
       {isLoading && (
         <Stack aria-hidden="true" gap="xs">

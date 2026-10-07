@@ -784,10 +784,10 @@ export const getStripeAmount = (amount) => {
   return amount / 100;
 };
 
-export const getPriceString = (price = {}) => {
+export const getPriceString = (price = {}, locale) => {
   const symbol = getCurrencySymbol(price.currency);
   const amount = getStripeAmount(price.amount);
-  return `${symbol}${amount}/${price.interval}`;
+  return `${symbol}${formatPrice(amount, locale)}/${price.interval}`;
 };
 
 export const formatNumber = (amount) => {
@@ -811,7 +811,12 @@ export const formatPrice = (amount, locale) => {
     ? undefined
     : { minimumFractionDigits: 2, maximumFractionDigits: 2 };
 
-  return normalizedAmount.toLocaleString(locale, options);
+  try {
+    return normalizedAmount.toLocaleString(locale || undefined, options);
+  } catch {
+    // Stored publication locales may not be valid Intl language tags.
+    return normalizedAmount.toLocaleString(undefined, options);
+  }
 };
 
 export const createPopupNotification = ({

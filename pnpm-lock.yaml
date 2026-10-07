@@ -287,6 +287,9 @@ catalogs:
     '@secretlint/secretlint-rule-preset-recommend':
       specifier: 13.0.4
       version: 13.0.4
+    '@sentry/bundler-plugin-core':
+      specifier: 5.3.0
+      version: 5.3.0
     '@sentry/react':
       specifier: 7.120.4
       version: 7.120.4
@@ -570,8 +573,8 @@ catalogs:
       specifier: 4.18.1
       version: 4.18.1
     lru-cache:
-      specifier: 11.5.2
-      version: 11.5.2
+      specifier: 11.5.3
+      version: 11.5.3
     lucide-react:
       specifier: 1.23.0
       version: 1.23.0
@@ -772,7 +775,7 @@ overrides:
 
 packageExtensionsChecksum: sha256-gFsvptlcVXY90ntXWh9ANUP1/LYyeqXjWoDGw6BCfOY=
 
-pnpmfileChecksum: sha256-fUIu4zcFUYGAp3jCvRqZ8zssQmWG4cCy4lRG7lA7cvQ=
+pnpmfileChecksum: sha256-BvMZoVcg2jC8HCh9KmyiWCFJm8gTXYABhZCDUfOd9n4=
 
 patchedDependencies:
   '@elastic/elasticsearch@8.19.2': 725142a9606e50dff3ed4c17fb9256d5457c7c75ce262898b87ef0ffff14dcc2
@@ -2482,6 +2485,9 @@ importers:
       '@tryghost/api-framework':
         specifier: workspace:*
         version: link:../../packages/api-framework
+      '@tryghost/app-contracts':
+        specifier: workspace:*
+        version: link:../../packages/app-contracts
       '@tryghost/bookshelf-plugins':
         specifier: 2.3.17
         version: 2.3.17(supports-color@10.2.2)
@@ -2817,7 +2823,7 @@ importers:
         version: 4.18.1
       lru-cache:
         specifier: 'catalog:'
-        version: 11.5.2
+        version: 11.5.3
       luxon:
         specifier: 3.7.2
         version: 3.7.2
@@ -3044,9 +3050,6 @@ importers:
       eslint-plugin-ghost:
         specifier: 3.5.0
         version: 3.5.0(@babel/core@7.29.7(supports-color@10.2.2))(eslint@9.39.4(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
-      expect:
-        specifier: 29.7.0
-        version: 29.7.0
       globals:
         specifier: 17.7.0
         version: 17.7.0
@@ -3516,8 +3519,8 @@ importers:
         specifier: workspace:~
         version: link:../kg-utils
       markdown-it:
-        specifier: 14.3.1
-        version: 14.3.1
+        specifier: 14.3.2
+        version: 14.3.2
       markdown-it-footnote:
         specifier: 4.0.0
         version: 4.0.0
@@ -4307,6 +4310,40 @@ importers:
         specifier: 'catalog:'
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
 
+  packages/app-contracts:
+    dependencies:
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.5
+    devDependencies:
+      '@internal/cfg-eslint':
+        specifier: workspace:*
+        version: link:../../configs/eslint
+      '@internal/cfg-typescript':
+        specifier: workspace:*
+        version: link:../../configs/typescript
+      '@internal/cfg-vitest':
+        specifier: workspace:*
+        version: link:../../configs/vitest
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.1
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
+      '@vitest/coverage-v8':
+        specifier: 'catalog:'
+        version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.4(jiti@2.7.0)(supports-color@10.2.2)
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
+
   packages/checkout:
     dependencies:
       '@tryghost/metafield-types':
@@ -4654,6 +4691,9 @@ importers:
       '@pnpm/workspace.workspace-manifest-reader':
         specifier: 'catalog:'
         version: 1100.1.5
+      '@sentry/bundler-plugin-core':
+        specifier: 'catalog:'
+        version: 5.3.0(encoding@0.1.13)(supports-color@10.2.2)
       camelcase-keys:
         specifier: 10.0.3
         version: 10.0.3
@@ -4679,6 +4719,9 @@ importers:
       '@internal/cfg-typescript':
         specifier: workspace:*
         version: link:../configs/typescript
+      '@playwright/test':
+        specifier: 'catalog:'
+        version: 1.61.1
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.1
@@ -17136,8 +17179,8 @@ packages:
   lru-cache@10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
 
-  lru-cache@11.5.2:
-    resolution: {integrity: sha512-4pfM1Ff0x50o0tQwb5ucw/RzNyD0/YJME6IVcStalZuMWxdt3sR3huStTtxz4PUmvZfRguvDejasvQ2kifR11g==}
+  lru-cache@11.5.3:
+    resolution: {integrity: sha512-U4N8FgzmWxc8k1VH8Kr6lQg18U7Fjvby6wXHVRX/ZZ7IwWbRMgrRbP0Wrb5q5NVinryp4SQampHKdvtecItxUg==}
     engines: {node: 20 || >=22}
 
   lru-cache@5.1.1:
@@ -17253,8 +17296,8 @@ packages:
     resolution: {integrity: sha512-RCEsPjR+sr0x+AuYp601tKTkgFG4YEPLCzHST3cQ/fhlJkqAkz1L2/Qbp1j9qw5SBwQHFBoW8+hoN5xssOF0Tw==}
     hasBin: true
 
-  markdown-it@14.3.1:
-    resolution: {integrity: sha512-4Ej49aYTDFIQ+uBkfX8GBvJGccoARxxPep+7aWTs55ozbjQJpW9M26Fe53vnGgvLeVzva/amzjQQaQu9w0vMhA==}
+  markdown-it@14.3.2:
+    resolution: {integrity: sha512-sHHjZ5fJKlgrG4qns2YwVcdNep35h5fERrfkD2YNsb9UFk0UIHarbiTaHKVMlPuWAoiilyK8Fv/jAm11slsY7Q==}
     hasBin: true
 
   markdown-it@8.4.2:
@@ -22714,14 +22757,14 @@ snapshots:
       '@csstools/css-color-parser': 4.1.10(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-tokenizer': 4.0.0
-      lru-cache: 11.5.2
+      lru-cache: 11.5.3
 
   '@asamuzakjp/dom-selector@8.3.2':
     dependencies:
       bidi-js: 1.0.3
       css-tree: 3.2.1
       is-potential-custom-element-name: 1.0.1
-      lru-cache: 11.5.2
+      lru-cache: 11.5.3
 
   '@aws-sdk/checksums@3.1000.12':
     dependencies:
@@ -25303,6 +25346,7 @@ snapshots:
   '@jest/expect-utils@29.7.0':
     dependencies:
       jest-get-type: 29.6.3
+    optional: true
 
   '@jest/expect-utils@30.3.0':
     dependencies:
@@ -25396,6 +25440,7 @@ snapshots:
   '@jest/schemas@29.6.3':
     dependencies:
       '@sinclair/typebox': 0.27.10
+    optional: true
 
   '@jest/schemas@30.0.5':
     dependencies:
@@ -25512,6 +25557,7 @@ snapshots:
       '@types/node': 22.20.1
       '@types/yargs': 17.0.35
       chalk: 4.1.2
+    optional: true
 
   '@jest/types@30.3.0':
     dependencies:
@@ -27607,7 +27653,8 @@ snapshots:
 
   '@simple-dom/void-map@1.4.0': {}
 
-  '@sinclair/typebox@0.27.10': {}
+  '@sinclair/typebox@0.27.10':
+    optional: true
 
   '@sinclair/typebox@0.34.49': {}
 
@@ -28743,7 +28790,7 @@ snapshots:
     dependencies:
       cheerio: 1.2.0
       lodash: 4.18.1
-      lru-cache: 11.5.2
+      lru-cache: 11.5.3
       moment: 2.31.0
       moment-timezone: 0.6.4
       remark: 11.0.2
@@ -33563,7 +33610,8 @@ snapshots:
 
   didyoumean@1.2.2: {}
 
-  diff-sequences@29.6.3: {}
+  diff-sequences@29.6.3:
+    optional: true
 
   diff@3.5.1: {}
 
@@ -36112,6 +36160,7 @@ snapshots:
       jest-matcher-utils: 29.7.0
       jest-message-util: 29.7.0
       jest-util: 29.7.0
+    optional: true
 
   expect@30.3.0:
     dependencies:
@@ -37318,7 +37367,7 @@ snapshots:
 
   hosted-git-info@9.0.3:
     dependencies:
-      lru-cache: 11.5.2
+      lru-cache: 11.5.3
 
   hpagent@1.2.0: {}
 
@@ -38255,6 +38304,7 @@ snapshots:
       diff-sequences: 29.6.3
       jest-get-type: 29.6.3
       pretty-format: 29.7.0
+    optional: true
 
   jest-diff@30.3.0:
     dependencies:
@@ -38295,7 +38345,8 @@ snapshots:
       jest-util: 29.7.0
     optional: true
 
-  jest-get-type@29.6.3: {}
+  jest-get-type@29.6.3:
+    optional: true
 
   jest-haste-map@29.7.0:
     dependencies:
@@ -38357,6 +38408,7 @@ snapshots:
       jest-diff: 29.7.0
       jest-get-type: 29.6.3
       pretty-format: 29.7.0
+    optional: true
 
   jest-matcher-utils@30.3.0:
     dependencies:
@@ -38384,6 +38436,7 @@ snapshots:
       pretty-format: 29.7.0
       slash: 3.0.0
       stack-utils: 2.0.6
+    optional: true
 
   jest-message-util@30.3.0:
     dependencies:
@@ -38607,6 +38660,7 @@ snapshots:
       ci-info: 3.9.0
       graceful-fs: 4.2.11
       picomatch: 2.3.2
+    optional: true
 
   jest-util@30.3.0:
     dependencies:
@@ -38788,7 +38842,7 @@ snapshots:
       decimal.js: 10.6.0
       html-encoding-sniffer: 6.0.0(@noble/hashes@1.8.0)
       is-potential-custom-element-name: 1.0.1
-      lru-cache: 11.5.2
+      lru-cache: 11.5.3
       parse5: 8.0.1
       saxes: 6.0.0
       symbol-tree: 3.2.4
@@ -39473,7 +39527,7 @@ snapshots:
 
   lru-cache@10.4.3: {}
 
-  lru-cache@11.5.2: {}
+  lru-cache@11.5.3: {}
 
   lru-cache@5.1.1:
     dependencies:
@@ -39601,7 +39655,7 @@ snapshots:
       punycode.js: 2.3.1
       uc.micro: 2.1.0
 
-  markdown-it@14.3.1:
+  markdown-it@14.3.2:
     dependencies:
       argparse: 2.0.1
       entities: 4.5.0
@@ -41579,7 +41633,7 @@ snapshots:
 
   path-scurry@2.0.2:
     dependencies:
-      lru-cache: 11.5.2
+      lru-cache: 11.5.3
       minipass: 7.1.3
 
   path-to-regexp@0.1.13: {}
@@ -42413,6 +42467,7 @@ snapshots:
       '@jest/schemas': 29.6.3
       ansi-styles: 5.2.0
       react-is: 18.3.1
+    optional: true
 
   pretty-format@30.3.0:
     dependencies:
@@ -42577,7 +42632,7 @@ snapshots:
   prosemirror-markdown@1.13.4:
     dependencies:
       '@types/markdown-it': 14.1.2
-      markdown-it: 14.3.1
+      markdown-it: 14.3.2
       prosemirror-model: 1.25.9
 
   prosemirror-menu@1.3.2:

@@ -1,3 +1,5 @@
+import NewAutomation from './new-automation';
+import { TRIGGER_CANVAS_ID } from './components/canvas/nodes';
 import AutomationCanvas, { EMAIL_STEP_QUERY_PARAM } from './components/canvas/automation-canvas';
 import AutomationHeader, { type AutomationValidationAction } from './components/automation-header';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
@@ -16,7 +18,7 @@ import {
   LoadingIndicator,
 } from '@tryghost/shade/components';
 import { DirtyConfirmDialog } from '@tryghost/shade/patterns';
-import { useEditAutomation } from '@tryghost/admin-x-framework/api/automations';
+import { useAddAutomation, useEditAutomation } from '@tryghost/admin-x-framework/api/automations';
 import type {
   AutomationDetail,
   AutomationStatus,
@@ -24,7 +26,7 @@ import type {
 import { dequal } from 'dequal';
 import { isEmptyEmailLexical } from './utils';
 import { toast } from 'sonner';
-import { useParams } from '@tryghost/admin-x-framework';
+import { useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { AutomationEditState } from './types';
 
@@ -33,10 +35,19 @@ const BODY_REQUIRED_MESSAGE = 'Add an email body.';
 const SUBJECT_AND_BODY_REQUIRED_MESSAGE = 'Add a subject line and email body.';
 
 const editableSlice = (automation: AutomationDetail) => ({
+  name: automation.name,
+  description: automation.description,
   status: automation.status,
+  trigger_tier_scope: automation.trigger_tier_scope,
+  trigger_tier_ids: automation.trigger_tier_ids ? [...automation.trigger_tier_ids].sort() : null,
   actions: automation.actions,
   edges: automation.edges,
 });
+
+const getTriggerErrors = (automation: AutomationDetail): Record<string, string> =>
+  automation.trigger_tier_scope === 'selected_paid' && !automation.trigger_tier_ids.length
+    ? { [TRIGGER_CANVAS_ID]: 'Select at least one paid tier.' }
+    : {};
 
 const isFailedEditState = (editState: AutomationEditState): boolean => {
   return editState.phase === 'failed';
@@ -65,11 +76,20 @@ const getActionErrors = (automation: AutomationDetail): Record<string, string> =
   return errors;
 };
 
-const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automationId }) => {
+const AutomationEditorContent: React.FC<{
+  automationId: string | null;
+  creation?: {
+    initialAutomation: AutomationDetail;
+    onCreated: (id: string) => void;
+  };
+}> = ({ automationId, creation }) => {
+  const navigate = useNavigate();
+  const addMutation = useAddAutomation();
   const { automation, isError: isReadError } = useAutomationForEditing(automationId);
 
   const editMutation = useEditAutomation();
   const automationRunAnalyticsEnabled = useFeatureFlag('automationRunAnalytics');
+  const automationsPerTierEnabled = useFeatureFlag('automationsPerTier');
   const [validationFeedback, setValidationFeedback] =
     React.useState<AutomationValidationAction | null>(null);
   const showValidationFeedback = (action: AutomationValidationAction) => {
@@ -110,7 +130,9 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
   const [savedAutomation, setSavedAutomation] = React.useState<AutomationDetail | undefined>(
     undefined,
   );
-  const [draft, setDraft] = React.useState<AutomationDetail | undefined>(undefined);
+  const [draft, setDraft] = React.useState<AutomationDetail | undefined>(
+    creation?.initialAutomation,
+  );
   React.useEffect(() => {
     if (!automation) {
       return;
@@ -124,7 +146,9 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
 
   // Only compare the fields the user can edit; server-stamped fields like `updated_at` would
   // otherwise flip the dirty flag immediately after every successful publish.
+  const isNew = !!draft && !draft.id;
   const hasUnsavedChanges =
+    isNew ||
     invalidWaitIds.size > 0 ||
     (!!draft && !!savedAutomation && !dequal(editableSlice(draft), editableSlice(savedAutomation)));
 
@@ -142,7 +166,7 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
         return oldErrors;
       }
 
-      const nextErrors = getActionErrors(next);
+      const nextErrors = { ...getActionErrors(next), ...getTriggerErrors(next) };
       return Object.fromEntries(
         Object.entries(oldErrors).filter(([actionId]) => nextErrors[actionId]),
       );
@@ -156,7 +180,14 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
     action: AutomationValidationAction,
   ): boolean => {
     setValidationFeedback(null);
-    const nextActionErrors = action === 'publish' ? getActionErrors(automationToValidate) : {};
+    if (automationsPerTierEnabled && !automationToValidate.name.trim()) {
+      toast.error('Add an automation name.');
+      return false;
+    }
+    const nextActionErrors = {
+      ...(action === 'publish' ? getActionErrors(automationToValidate) : {}),
+      ...(automationRunAnalyticsEnabled ? getTriggerErrors(automationToValidate) : {}),
+    };
     if (Object.keys(nextActionErrors).length > 0 || invalidWaitIds.size > 0) {
       setActionErrors(nextActionErrors);
       setEditState(automationRunAnalyticsEnabled ? { phase: 'idle' } : errorState);
@@ -218,13 +249,9 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
 
     setEditState(requestState);
 
-    editMutation.mutate(
-      {
-        id: draft.id,
-        status: newStatus,
-        actions: draft.actions,
-        edges: draft.edges,
-      },
+    const mutation = isNew ? addMutation : editMutation;
+    mutation.mutate(
+      { ...draft, status: newStatus },
       {
         onSuccess: (response) => {
           const savedDraft = response.automations[0];
@@ -232,6 +259,11 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
           setDraft(savedDraft);
           setActionErrors({});
           setEditState({ phase: 'idle' });
+          if (isNew) {
+            creation?.onCreated(savedDraft.id);
+            bypassNextNavigation();
+            navigate(`/automations/${savedDraft.id}`, { replace: true });
+          }
         },
         onError: () => {
           setEditState(errorState);
@@ -422,7 +454,11 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
   // The dirty email modal claims navigations that change its `emailStep`
   // query param (closing the modal, back button, leaving the editor) so the
   // canvas can run its own discard flow instead of the page-level dialog.
-  const { dialogProps: discardDialogProps, interceptedNavigation } = useUnsavedChangesGuard({
+  const {
+    dialogProps: discardDialogProps,
+    interceptedNavigation,
+    bypassNextNavigation,
+  } = useUnsavedChangesGuard({
     when: hasUnsavedChanges || isEmailModalDirty,
     confirmUnloadWhen: isEditRequestActive || hasUnsavedChanges || isEmailModalDirty,
     interceptNavigation: ({ currentLocation, nextLocation }) => {
@@ -487,6 +523,7 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
         isEmailNavigationBlocked={isEmailNavigationBlocked}
         isError={isEditorError}
         isLoading={isEditorLoading}
+        savedTriggerTierIds={savedAutomation?.trigger_tier_ids ?? []}
         selectedRunId={selectedRunId}
         onChange={onDraftChange}
         onDiscardBlockedEmailNavigation={(closeEmailModal) => {
@@ -588,6 +625,35 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
 const AutomationEditor: React.FC = () => {
   const { id: automationId = '' } = useParams<{ id: string }>();
 
+  // Keep the creation session mounted when its first save replaces /new with the server ID.
+  const [session, setSession] = React.useState({
+    routeId: automationId,
+    createdId: null as string | null,
+    key: 0,
+  });
+  if (automationId !== session.routeId) {
+    const isFirstSave = session.routeId === 'new' && automationId === session.createdId;
+    setSession({
+      routeId: automationId,
+      createdId: isFirstSave ? session.createdId : null,
+      key: isFirstSave ? session.key : session.key + 1,
+    });
+  }
+  if (automationId === 'new' || automationId === session.createdId) {
+    return (
+      <NewAutomation key={session.key}>
+        {(initialAutomation) => (
+          <AutomationEditorContent
+            automationId={null}
+            creation={{
+              initialAutomation,
+              onCreated: (createdId) => setSession((current) => ({ ...current, createdId })),
+            }}
+          />
+        )}
+      </NewAutomation>
+    );
+  }
   return <AutomationEditorContent key={automationId} automationId={automationId} />;
 };
 

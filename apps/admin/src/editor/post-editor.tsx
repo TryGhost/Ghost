@@ -61,7 +61,6 @@ export interface PostEditorProps {
   onSecondaryChange?: (lexical: unknown) => void;
   onSecondaryError?: () => void;
   registerEditorApi?: (api: KoenigInstance | null) => void;
-  registerSecondaryApi?: (api: KoenigInstance | null) => void;
   onTkCountChange?: (count: number) => void;
   /** Rendered in the footer after the word count. */
   wordCountAccessory?: React.ReactNode;
@@ -180,7 +179,6 @@ export function PostEditor({
   onSecondaryChange,
   onSecondaryError,
   registerEditorApi,
-  registerSecondaryApi,
   onTkCountChange,
   wordCountAccessory,
   handleRef,
@@ -252,13 +250,6 @@ export function PostEditor({
       registerEditorApi?.(api);
     },
     [registerEditorApi],
-  );
-
-  const registerSecondary = useCallback(
-    (api: KoenigInstance | null) => {
-      registerSecondaryApi?.(api);
-    },
-    [registerSecondaryApi],
   );
 
   const moveIntoEditor = (key: string) => {
@@ -486,7 +477,6 @@ export function PostEditor({
             initialLexical={initialLexical}
             placeholder={`Begin writing your ${postType}...`}
             registerAPI={registerApi}
-            registerSecondaryAPI={registerSecondary}
             onChange={onLexicalChange}
             onSecondaryChange={onSecondaryChange}
             onSecondaryError={onSecondaryError}

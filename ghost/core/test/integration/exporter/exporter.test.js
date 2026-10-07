@@ -25,6 +25,8 @@ describe('Exporter', function () {
     const tables = [
       'actions',
       'api_keys',
+      'app_installation_manifests',
+      'app_installations',
       'automation_action_edges',
       'automation_action_revisions',
       'automation_actions',
@@ -100,8 +102,6 @@ describe('Exporter', function () {
       'posts_tags',
       'products',
       'products_benefits',
-      'products_checkout_config',
-      'products_checkout_fields',
       'recommendation_click_events',
       'recommendation_subscribe_events',
       'recommendations',

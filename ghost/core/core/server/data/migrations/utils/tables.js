@@ -1,3 +1,4 @@
+const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const DatabaseInfo = require('@tryghost/database-info');
 const config = require('../../../../shared/config');
@@ -107,12 +108,21 @@ function addTable(name, tableSpec, { replaceDevelopmentCopy = false } = {}) {
 }
 
 /**
- * Creates migration which will drop a table
+ * Creates migration which will drop tables
  *
- * @param {string[]} names  - names of the tables to drop
+ * Without `tableSpecs` the migration is irreversible: a dropped table's rows are gone, so
+ * rolling back would hand an earlier version an empty table it expects data in. Passing a
+ * spec for every table makes it reversible, recreating the tables empty and in reverse
+ * order. Only do that for tables whose rows can be lost, such as ones behind a private
+ * feature flag.
+ *
+ * @param {string[]} names - names of the tables to drop, each before any table it references
+ * @param {Object<string, Object>} [tableSpecs] - copy of each table's schema definition as defined in schema.js at the moment of writing the migration, keyed by table name
+ *
+ * @returns {Object} migration object returning config/up/down properties
  */
-function dropTables(names) {
-  return createIrreversibleMigration(async function up(connection) {
+function dropTables(names, tableSpecs) {
+  async function up(connection) {
     for (const name of names) {
       const exists = await connection.schema.hasTable(name);
 
@@ -121,6 +131,30 @@ function dropTables(names) {
       } else {
         logging.info(`Dropping table: ${name}`);
         await commands.deleteTable(name, connection);
+      }
+    }
+  }
+
+  if (!tableSpecs) {
+    return createIrreversibleMigration(up);
+  }
+
+  const missingSpecs = names.filter((name) => !Object.hasOwn(tableSpecs, name));
+  if (missingSpecs.length) {
+    throw new errors.IncorrectUsageError({
+      message: `Cannot recreate dropped tables without their specs: ${missingSpecs.join(', ')}`,
+    });
+  }
+
+  return createNonTransactionalMigration(up, async function down(connection) {
+    for (const name of names.slice().reverse()) {
+      const exists = await connection.schema.hasTable(name);
+
+      if (exists) {
+        logging.warn(`Skipping adding table: ${name} - table already exists`);
+      } else {
+        logging.info(`Adding table: ${name}`);
+        await commands.createTable(name, connection, tableSpecs[name]);
       }
     }
   });

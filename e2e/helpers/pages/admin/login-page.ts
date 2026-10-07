@@ -35,14 +35,4 @@ export class LoginPage extends AdminPage {
     await this.page.goto('/ghost/#/signout');
     await this.signInButton.waitFor({ state: 'visible' });
   }
-
-  async waitForLoginPageAfterUserCreated(): Promise<void> {
-    const response = await this.goto();
-    if (!response) {
-      throw new Error('Error going to signin page (no response)');
-    }
-    if (!response.ok) {
-      throw new Error(`Error going to signin page (${response.status})`);
-    }
-  }
 }

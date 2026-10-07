@@ -4,9 +4,10 @@ import * as automationsApi from '../../services/automations/automations-api';
 // @ts-expect-error This module lacks type definitions.
 import labs from '../../../shared/labs';
 
-const MAX_AUTOMATIONS = 20;
+const MAX_AUTOMATIONS = 50;
 
 type ReadFrame = Frame<{ data: { id: string } }>;
+type AddFrame = Frame<{ data: { automations?: unknown[] } }>;
 type EditFrame = Frame<{
   options: { id: string };
   data: { automations?: unknown[] };
@@ -67,15 +68,10 @@ export const controller = {
       cacheInvalidate: false,
     },
     permissions: true,
-    async query() {
+    async query(frame: AddFrame) {
       assertCanAddAutomations();
       await assertNotAddingTooManyAutomations();
-      // TODO(NY-1637) Implement this endpoint.
-      throw new errors.InternalServerError({
-        statusCode: 501,
-        code: 'NOT_IMPLEMENTED',
-        message: 'Adding automations is not implemented.',
-      });
+      return await automationsApi.add(frame.data.automations?.[0]);
     },
   },
 
@@ -106,7 +102,7 @@ export const controller = {
 } satisfies Controller<{
   browse: Frame;
   read: ReadFrame;
-  add: Frame;
+  add: AddFrame;
   edit: EditFrame;
   poll: Frame;
 }>;

@@ -1,5 +1,6 @@
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
+const logging = require('@tryghost/logging');
 
 const SendingService = require('../../../../../core/server/services/email-service/sending-service');
 
@@ -50,6 +51,92 @@ describe('Sending service', function () {
 
     afterEach(function () {
       sinon.restore();
+    });
+
+    it('accounts for invalid addresses when constructing a reusable batch message', async function () {
+      sinon.stub(logging, 'error');
+      const sentry = { captureException: sinon.stub() };
+      const sendingService = new SendingService({
+        emailRenderer,
+        emailProvider,
+        emailAddressService,
+        sentry,
+      });
+      const message = await sendingService.buildMessage(
+        {
+          post: {},
+          newsletter: {},
+          segment: null,
+          emailId: 'email',
+          members: [
+            { id: 'valid', email: 'a@example.com' },
+            { id: 'invalid', email: 'not-an-address' },
+          ],
+        },
+        { recipientAccounting: true },
+      );
+      const response = await sendingService.sendMessage(message);
+      assert.deepEqual(response, {
+        id: 'provider-123',
+        submittedCount: 1,
+        submissionExcludedCount: 1,
+      });
+      assert.equal(sendStub.firstCall.args[1].expectedRecipientCount, 1);
+      sinon.assert.calledOnce(sentry.captureException);
+      sinon.assert.calledOnceWithMatch(logging.error, {
+        event: { name: 'email.submission.excluded' },
+        email_id: 'email',
+        member_id: 'invalid',
+        reason: 'invalid_email_address',
+      });
+    });
+
+    it('completes an all-excluded accounted message without calling the provider', async function () {
+      sinon.stub(logging, 'error');
+      const sendingService = new SendingService({
+        emailRenderer,
+        emailProvider,
+        emailAddressService,
+      });
+      const response = await sendingService.send(
+        {
+          post: {},
+          newsletter: {},
+          segment: null,
+          emailId: 'email',
+          members: [{ id: 'invalid', email: 'not-an-address' }],
+        },
+        { recipientAccounting: true },
+      );
+      assert.deepEqual(response, { id: null, submittedCount: 0, submissionExcludedCount: 1 });
+      sinon.assert.notCalled(sendStub);
+    });
+
+    it('rejects an unexplained omission before treating a message as all excluded', async function () {
+      const sendingService = new SendingService({
+        emailRenderer,
+        emailProvider,
+        emailAddressService,
+      });
+      sinon.stub(sendingService, 'buildRecipients').returns({ recipients: [], excludedCount: 0 });
+      await assert.rejects(
+        sendingService.send(
+          {
+            post: {},
+            newsletter: {},
+            segment: null,
+            emailId: 'email',
+            members: [{ id: 'valid', email: 'a@example.com' }],
+          },
+          { recipientAccounting: true },
+        ),
+        (error) => {
+          assert.equal(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
+          assert.equal(JSON.parse(error.errorDetails).reason, 'message_recipient_counts');
+          return true;
+        },
+      );
+      sinon.assert.notCalled(sendStub);
     });
 
     it('calls mailgun client with correct data', async function () {

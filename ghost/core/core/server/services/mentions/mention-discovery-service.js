@@ -26,9 +26,9 @@ module.exports = class MentionDiscoveryService {
           limit: 3,
         },
       });
-      return this.getEndpointFromResponse(response);
+      return await this.getEndpointFromResponse(response);
     } catch (error) {
-      logging.error(`Error fetching ${url.href} to discover webmention endpoint`, error);
+      logging.warn(`Error fetching ${url.href} to discover webmention endpoint`, error);
       return null;
     }
   }
@@ -49,7 +49,7 @@ module.exports = class MentionDiscoveryService {
       linkHeader.split(',').forEach((p) => {
         if (p.includes('rel="webmention"')) {
           href = p.substring(p.indexOf('<') + 1, p.indexOf('>'));
-          endpoint = new URL(href);
+          endpoint = new URL(href, response.url);
           return;
         }
       });
@@ -59,7 +59,7 @@ module.exports = class MentionDiscoveryService {
     }
 
     // must be html to find links/tags
-    if (!response.headers['content-type'].includes('text/html')) {
+    if (!response.headers['content-type']?.includes('text/html')) {
       return null;
     }
 
@@ -69,7 +69,7 @@ module.exports = class MentionDiscoveryService {
     // must be first <link> OR <a> element with rel=webmention
     href = $('a[rel="webmention"],link[rel="webmention"]').first().attr('href');
 
-    endpoint = href ? new URL(href) : null;
+    endpoint = href ? new URL(href, response.url) : null;
     return endpoint;
   }
 };

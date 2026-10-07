@@ -12,7 +12,7 @@ type RunHistoryProps = {
   automationSlug: string | null | undefined;
   runId: string;
   memberName?: string;
-  isPerformanceOpen: boolean;
+  isAutomationSidebarOpen: boolean;
   onClose: () => void;
 };
 
@@ -47,7 +47,7 @@ const RunHistoryContent: React.FC<RunHistoryProps> = ({
   automationSlug,
   runId,
   memberName,
-  isPerformanceOpen,
+  isAutomationSidebarOpen,
   onClose,
 }) => {
   const { history, summary, isLoading, isError, notFound, retry, plan } = useAutomationRunHistory(
@@ -59,10 +59,10 @@ const RunHistoryContent: React.FC<RunHistoryProps> = ({
     closeButton.current?.focus({ preventScroll: true });
   }, []);
   useEffect(() => {
-    if (!isPerformanceOpen) {
+    if (!isAutomationSidebarOpen) {
       closeButton.current?.focus({ preventScroll: true });
     }
-  }, [isPerformanceOpen]);
+  }, [isAutomationSidebarOpen]);
 
   return (
     <Box className="absolute inset-0 bg-preview-canvas">
@@ -76,7 +76,7 @@ const RunHistoryContent: React.FC<RunHistoryProps> = ({
         <Inline
           className={cn(
             'pointer-events-none sticky top-0 z-10 shrink-0 px-6 py-4',
-            !isPerformanceOpen && 'pl-16',
+            !isAutomationSidebarOpen && 'pl-16',
           )}
           gap="sm"
         >

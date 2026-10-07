@@ -1,10 +1,16 @@
+import * as Sentry from '@sentry/ember';
 import EmberObject from '@ember/object';
 import Service from '@ember/service';
+import sentryTestKit from 'sentry-testkit/browser';
 import sinon from 'sinon';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
+import {getSentryTestConfig} from '../../helpers/sentry';
 import {run} from '@ember/runloop';
 import {setupTest} from 'ember-mocha';
+import {waitUntil} from '@ember/test-helpers';
+
+const {sentryTransport, testkit} = sentryTestKit();
 
 const buildMockModel = () => {
     return EmberObject.create({
@@ -63,6 +69,85 @@ describe('Unit: Service: state-bridge', function () {
             service.navigateToBillingSubRoute('/plans');
 
             expect(billing.navigateToSubRoute.calledOnceWithExactly('/plans')).to.be.true;
+        });
+    });
+
+    describe('#applyBillingSubscriptionUpdate', function () {
+        let configManager, limit;
+
+        beforeEach(function () {
+            configManager = this.owner.lookup('service:config-manager');
+            limit = this.owner.lookup('service:limit');
+            sinon.stub(limit, 'reload');
+        });
+
+        it('refetches config before reloading limits and notifying listeners', async function () {
+            sinon.stub(configManager, 'fetch').resolves();
+            const listener = sinon.spy();
+            service.on('subscriptionChange', listener);
+            const data = {subscription: {status: 'active'}};
+
+            await service.applyBillingSubscriptionUpdate(data);
+
+            expect(limit.reload.calledAfter(configManager.fetch)).to.be.true;
+            expect(listener.calledOnceWithExactly(data)).to.be.true;
+            expect(this.owner.lookup('service:billing').subscription).to.deep.equal(data.subscription);
+            service.off('subscriptionChange', listener);
+        });
+
+        it('still reloads limits when the config request fails', async function () {
+            sinon.stub(configManager, 'fetch').rejects(new Error('offline'));
+
+            await service.applyBillingSubscriptionUpdate({subscription: {status: 'active'}});
+
+            expect(limit.reload.calledOnce).to.be.true;
+        });
+
+        it('lifts force upgrade in memory only once the subscription is active', async function () {
+            sinon.stub(configManager, 'fetch').resolves();
+            config.hostSettings = {forceUpgrade: true};
+
+            await service.applyBillingSubscriptionUpdate({subscription: {status: 'past_due'}});
+            expect(config.hostSettings.forceUpgrade).to.be.true;
+
+            await service.applyBillingSubscriptionUpdate({subscription: {status: 'active'}});
+            expect(config.hostSettings.forceUpgrade).to.be.false;
+        });
+    });
+
+    describe('#captureBillingAppLoadFailure', function () {
+        const report = {
+            billingMonitor: {attempts: 2, document_visibility_state: 'visible'},
+            tags: {source: 'billing-app-load-monitor', billing_shell: 'react', route: 'pro.index'}
+        };
+
+        before(function () {
+            Sentry.init(getSentryTestConfig(sentryTransport));
+        });
+
+        beforeEach(function () {
+            testkit.reset();
+        });
+
+        it("reports in the billing service's event shape", async function () {
+            config.sentry_dsn = 'https://example.com/sentry';
+
+            service.captureBillingAppLoadFailure(report);
+
+            await waitUntil(() => testkit.reports().length > 0);
+            const [event] = testkit.reports();
+            expect(event.message).to.equal('Billing app failed to become ready');
+            expect(event.level).to.equal('warning');
+            expect(event.originalReport.fingerprint).to.deep.equal(['billing-app-load-failure', 'visible', '2']);
+            expect(event.tags).to.deep.include({source: 'billing-app-load-monitor', billing_shell: 'react', route: 'pro.index'});
+        });
+
+        it('does not report when Sentry is not configured', function () {
+            config.sentry_dsn = null;
+
+            service.captureBillingAppLoadFailure(report);
+
+            expect(testkit.reports()).to.have.length(0);
         });
     });
 

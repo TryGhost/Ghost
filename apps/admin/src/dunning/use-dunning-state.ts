@@ -5,8 +5,7 @@ import {
   DUNNING_PAYMENT_SETTLED_STORAGE_KEY,
   parseDunningConfig,
 } from '@tryghost/admin-x-framework/api/dunning';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
-import { useSubscriptionStatus } from '@/ember-bridge';
+import { useSubscriptionStatus } from '@/billing/api';
 import { readSharedNow, retainMinuteTicker, subscribeSharedNow } from './minute-ticker';
 
 export type DunningPhase = 'warning' | 'locked';
@@ -145,13 +144,7 @@ function readPaymentSettledFor(): string | null {
 export function useDunningState(): DunningState | null {
   const { data: config } = useBrowseConfig();
   const subscriptionStatus = useSubscriptionStatus();
-  // Labs-gated while in development: hosts can ship and test the config
-  // pipeline without end users seeing any dunning UI.
-  const dunningWarningsEnabled = useFeatureFlag('dunningWarnings');
-
-  const dunning = dunningWarningsEnabled
-    ? parseDunningConfig(config?.config.hostSettings?.billing?.dunning)
-    : null;
+  const dunning = parseDunningConfig(config?.config.hostSettings?.billing?.dunning);
   const dunningInEffect = Boolean(dunning);
 
   // Re-derive the phase and countdown periodically; transitions land on date

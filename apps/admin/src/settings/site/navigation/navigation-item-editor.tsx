@@ -1,6 +1,7 @@
 import NavigationIconUpload from './navigation-icon-upload';
 import NavigationVisibilityDropdown from './navigation-visibility-dropdown';
 import React, { type ReactNode } from 'react';
+import UrlSuggestionInput, { type SuggestionGroup } from './url-suggestion-input';
 import clsx from 'clsx';
 import useUrlInput from '@/settings/hooks/use-url-input';
 import {
@@ -10,7 +11,6 @@ import {
 } from '@/settings/hooks/site/use-navigation-editor';
 import { Field, FieldError, FieldLabel, Input } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
-import { formatUrl } from '@/settings/utils/format-url';
 import {
   navigationColumnClasses,
   navigationFieldOffsetClass,
@@ -21,6 +21,7 @@ export type NavigationItemEditorProps = React.HTMLAttributes<HTMLDivElement> & {
   baseUrl: string;
   idPrefix: string;
   item: EditableItem;
+  loadSuggestions: (term: string) => Promise<SuggestionGroup[]>;
   clearError?: (key: keyof NavigationItemErrors) => void;
   updateItem?: (item: Partial<NavigationItem>) => void;
   uploadIcon?: (file: File) => Promise<string | undefined>;
@@ -32,12 +33,56 @@ export type NavigationItemEditorProps = React.HTMLAttributes<HTMLDivElement> & {
   showIcon: boolean;
   showPaidVisibility: boolean;
   showVisibility: boolean;
+  suggestionsEnabled: boolean;
+};
+
+const PlainNavigationUrlInput: React.FC<{
+  baseUrl: string;
+  value: string;
+  className?: string;
+  id: string;
+  'aria-invalid'?: boolean | 'true' | 'false';
+  onChange: (url: string) => void;
+  onEdit?: () => void;
+  onSubmit?: () => void;
+}> = ({ baseUrl, value, className, id, onChange, onEdit, onSubmit, ...props }) => {
+  const urlInput = useUrlInput({
+    baseUrl,
+    nullable: true,
+    value,
+    onChange: (newValue) => onChange(newValue || ''),
+  });
+
+  return (
+    <Input
+      {...props}
+      className={className}
+      id={id}
+      value={urlInput.displayValue}
+      onBlur={urlInput.commitValue}
+      onChange={(event) => {
+        urlInput.setDraftValue(event.target.value);
+        onEdit?.();
+      }}
+      onFocus={urlInput.handleFocus}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          urlInput.commitValue();
+          onSubmit?.();
+          return;
+        }
+        urlInput.handleKeyDown(event);
+      }}
+    />
+  );
 };
 
 const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({
   baseUrl,
   idPrefix,
   item,
+  loadSuggestions,
   updateItem,
   uploadIcon,
   addItem,
@@ -49,16 +94,10 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({
   showIcon,
   showPaidVisibility,
   showVisibility,
+  suggestionsEnabled,
   className,
   ...props
 }) => {
-  const urlInput = useUrlInput({
-    baseUrl,
-    nullable: true,
-    value: item.url,
-    onChange: (value) => updateItem?.({ url: value || '' }),
-  });
-
   return (
     <div
       className={clsx(navigationRowClasses, className)}
@@ -115,30 +154,36 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({
           <FieldLabel className="sr-only" htmlFor={`navigation-url-${item.id}`}>
             URL
           </FieldLabel>
-          <Input
-            aria-invalid={Boolean(item.errors.url) || undefined}
-            className={textFieldClasses}
-            id={`navigation-url-${item.id}`}
-            value={urlInput.displayValue}
-            onBlur={urlInput.commitValue}
-            onChange={(event) => urlInput.setDisplayValue(event.target.value)}
-            onFocus={urlInput.handleFocus}
-            onKeyDown={(e) => {
-              urlInput.handleKeyDown(e);
-              const urls = formatUrl((e.target as HTMLInputElement).value, baseUrl, true);
-              updateItem?.({ url: urls.save || '' });
-            }}
-            onKeyUp={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                const urls = formatUrl((e.target as HTMLInputElement).value, baseUrl, true);
-                updateItem?.({ url: urls.save || '' });
-                addItem?.();
-              }
-              // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-              !!item.errors.url && clearError?.('url');
-            }}
-          />
+          {suggestionsEnabled ? (
+            <UrlSuggestionInput
+              aria-invalid={Boolean(item.errors.url) || undefined}
+              baseUrl={baseUrl}
+              className={textFieldClasses}
+              id={`navigation-url-${item.id}`}
+              loadSuggestions={loadSuggestions}
+              value={item.url}
+              onChange={(url) => updateItem?.({ url })}
+              onEdit={() => {
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                !!item.errors.url && clearError?.('url');
+              }}
+              onSubmit={addItem}
+            />
+          ) : (
+            <PlainNavigationUrlInput
+              aria-invalid={Boolean(item.errors.url) || undefined}
+              baseUrl={baseUrl}
+              className={textFieldClasses}
+              id={`navigation-url-${item.id}`}
+              value={item.url}
+              onChange={(url) => updateItem?.({ url })}
+              onEdit={() => {
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                !!item.errors.url && clearError?.('url');
+              }}
+              onSubmit={addItem}
+            />
+          )}
           {item.errors.url && <FieldError>{item.errors.url}</FieldError>}
         </Field>
       </div>

@@ -25,6 +25,15 @@ a package dependency: a filtered `@tryghost/admin...` install contains the React
 test dependencies, while development and production builds need the full
 workspace install to include Ember's toolchain.
 
+### Sidebar visibility
+
+React route handles own sidebar visibility on React screens. The
+`hideAdminSidebar` handle hides it for focused screens, including the editor
+with either implementation. On Ember-owned routes, the shell also respects
+Ember's fullscreen state. Ember state left behind after a navigation cannot
+hide the sidebar on a React screen. React continues publishing its fullscreen
+state to Ember for legacy shortcuts.
+
 ### CSS
 
 `src/index.css` is the single Tailwind CSS entry point for Admin. It imports
@@ -36,9 +45,23 @@ Embedded Admin apps must not import `@tryghost/shade/styles.css` themselves.
 Doing so generates duplicate utilities and creates cascade conflicts with
 Ember's legacy CSS.
 
+Admin also owns the shared `.koenig-react-editor` width and centering rule.
+Koenig loads its own editor stylesheet through `fetchKoenigLexical`; keep that
+stylesheet when removing Ember assets.
+
 Shade's Tailwind imports are unlayered because Ember's legacy CSS is also
 unlayered. This lets source order resolve overlapping utilities. Do not move
 Shade's imports into a CSS layer without accounting for the legacy cascade.
+
+### Appearance
+
+React's shared ThemeProvider owns the appearance preference and the Admin theme
+controller. The controller applies the root dark class, follows system appearance
+and suppresses transitions during a switch. Ember connects an adapter that loads
+and toggles its legacy dark stylesheet and updates its editor's resolved
+`nightShift` value. Ember uses the same controller before React connects and in
+standalone development/tests; connecting removes its system appearance listener.
+Removing Ember leaves the controller and preference persistence intact.
 
 ### Deploy compatibility
 
@@ -161,14 +184,20 @@ pnpm nx run @tryghost/admin:build
 
 The assembler reads the individual build outputs, so it can also be rerun with
 `pnpm nx run @tryghost/admin:assemble:assets` after those builds. It does not run
-compilers or upload sourcemaps.
+compilers or upload sourcemaps. The hybrid build remains the default. A fresh
+React build without `emberAssetsPlugin` can use
+`pnpm --filter @tryghost/admin assemble:assets --without-ember` to assemble the
+same embedded bundles without Ember output. See
+[Admin asset assembly](../../scripts/README.md#admin-asset-assembly) for the input
+requirements and cutover usage. This option does not change route ownership or
+Labs flags.
 
 This outputs to `apps/admin/dist/` and updates the assets in `ghost/core/core/built/admin/`.
 
 The build also writes hidden sourcemaps: `.map` files that no bundle references.
-With `IS_SHIPPING` set, as CI does for `main` and release tags, it uploads them
-to Sentry under the release Admin's Sentry client reports. Without
-`VITE_SENTRY_AUTH_TOKEN` the upload is skipped.
+With `IS_SHIPPING` set, as CI does for `main` and release tags, it injects Sentry
+debug IDs into the bundles. CI then uploads the maps with `sentry-cli` in a
+separate step, so a slow or unavailable Sentry can't block the build.
 
 ## Automation member search
 
