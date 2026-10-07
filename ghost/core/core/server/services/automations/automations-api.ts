@@ -56,8 +56,9 @@ const messages = {
   runNotFound: 'Automation run not found.',
   automationActionNotFound: 'Automation action not found.',
   invalidAutomationCreationPayload: 'Invalid automation payload.',
-  invalidAutomationEditPayload: 'Automation edit payload must include status, actions, and edges.',
+  invalidAutomationEditPayload: 'Invalid automation edit payload.',
   invalidAutomationStatus: 'Automation status must be one of: active, inactive.',
+  invalidStatusOnlyEdit: 'Status-only automation edits can only set status to inactive.',
   duplicateAutomationActionIdentity: 'Automation action identifiers must be unique.',
   invalidAutomationEdgeEndpoint: 'Automation edges must reference actions in the submitted graph.',
   duplicateAutomationEdge: 'Automation edges must be unique.',
@@ -139,6 +140,14 @@ const editAutomationDataSchema = z
       z.object(selectedPaidTriggerShape),
     ]),
   );
+
+const editAutomationStatusOnlySchema = z.strictObject({
+  // We disallow status-only activations because they could allow activations to
+  // happen with an invalid graph (e.g,. an email without a subject). If we
+  // change this, we should validate the graph on status-only activations as
+  // well.
+  status: z.literal('inactive'),
+});
 
 const repository = createDatabaseAutomationsRepository({
   knex,
@@ -388,11 +397,19 @@ export async function edit(automationId: string, data: unknown) {
 }
 
 async function validateEditData(data: unknown): Promise<EditAutomationData> {
-  const result = editAutomationDataSchema.safeParse(data);
+  // We use two separate schemas to preserve field-level errors, which Zod loses
+  // if we use its union types.
+  const hasGraphField =
+    typeof data === 'object' && data !== null && ('actions' in data || 'edges' in data);
+  const schema = hasGraphField ? editAutomationDataSchema : editAutomationStatusOnlySchema;
+  const result = schema.safeParse(data);
 
   if (!result.success) {
     if (result.error.issues.some((issue) => issue.path[0] === 'status')) {
-      throwValidationError(messages.invalidAutomationStatus, 'status');
+      throwValidationError(
+        hasGraphField ? messages.invalidAutomationStatus : messages.invalidStatusOnlyEdit,
+        'status',
+      );
     }
 
     throwValidationError(
@@ -403,8 +420,11 @@ async function validateEditData(data: unknown): Promise<EditAutomationData> {
     );
   }
 
-  await validateAutomationData(result.data);
-  return result.data;
+  const parsedData: EditAutomationData = result.data;
+  if (parsedData.actions !== undefined) {
+    await validateAutomationData(parsedData);
+  }
+  return parsedData;
 }
 
 async function validateAutomationData(data: Pick<Automation, 'status' | 'actions' | 'edges'>) {
