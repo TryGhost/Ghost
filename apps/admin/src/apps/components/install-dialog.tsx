@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
   LoadingIndicator,
+  Separator,
 } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { toast } from 'sonner';
@@ -23,6 +24,8 @@ import { AccessIndicator } from './access-indicator';
 import { AppBanner, AppIcon } from './app-icon';
 import { DevelopmentBadge } from './development-badge';
 import { ManifestChanges } from './manifest-changes';
+import { SectionEyebrow } from './section-eyebrow';
+import { SurfaceSummary } from './surface-icon';
 import { STAFF_SESSION_ACCESS } from '@/apps/lib/access';
 import { describeChanges } from '@/apps/lib/changes';
 import { type InstallFailure, apiErrorOf, installFailureOf } from '@/apps/lib/install-failure';
@@ -193,6 +196,34 @@ const AppIdentity: React.FC<{ preview: AppInstallationPreview }> = ({ preview })
   );
 };
 
+/**
+ * The top of a review, for installing and approving alike: the app's color as a band its
+ * icon sits into, like a profile picture, then who the app is and what's being asked.
+ */
+const ReviewHeader: React.FC<{
+  preview: AppInstallationPreview;
+  title: string;
+  description: string;
+}> = ({ preview, title, description }) => {
+  const { manifest } = preview;
+  return (
+    <>
+      <AppBanner className="-mx-6 -mt-6 h-28 shrink-0" color={manifest.accent_color} />
+      {/* -mt-14 pulls the 64px icon up past the dialog's 24px gap, so half of it
+          overlaps the band; its ring matches the dialog to cut out the band. */}
+      <DialogHeader className="-mt-14 items-start">
+        <AppIcon className="ring-4 ring-surface-elevated-2" manifest={manifest} size="xl" />
+        <DialogTitle className="mt-3">{title}</DialogTitle>
+        <AppIdentity preview={preview} />
+        <DialogDescription className="mt-2">{description}</DialogDescription>
+      </DialogHeader>
+    </>
+  );
+};
+
+/** Runs edge to edge, past the dialog's padding, to set the app apart from what it asks. */
+const ReviewSeparator: React.FC = () => <Separator className="-mx-6 w-auto" />;
+
 interface ReviewProps {
   preview: AppInstallationPreview;
   notice?: string;
@@ -235,24 +266,17 @@ const Review: React.FC<ReviewProps> = ({ preview, notice, isConfirming, onClose,
     const rows = describeChanges(installation, preview, installation.changes);
     const move = movedBetween(installation, preview);
     const name = installation.manifest.name;
+    let description = `${name} has changed. The changes take effect once you approve them.`;
+    if (installation.status === 'suspended') {
+      description = `${name} has been updated and needs more access. It won’t open until you approve the changes.`;
+    }
     return (
       <>
-        <DialogHeader>
-          <Inline gap="md">
-            <AppIcon manifest={manifest} size="lg" />
-            <Stack gap="none">
-              <DialogTitle>
-                {move ? `Move ${name} to ${move.to}?` : `Review changes to ${name}`}
-              </DialogTitle>
-              <AppIdentity preview={preview} />
-            </Stack>
-          </Inline>
-          <DialogDescription className="mt-2">
-            {installation.status === 'suspended'
-              ? 'The app is paused until an Administrator approves these changes.'
-              : 'These changes take effect once you approve them.'}
-          </DialogDescription>
-        </DialogHeader>
+        <ReviewHeader
+          description={description}
+          preview={preview}
+          title={move ? `Move ${name} to ${move.to}?` : `Review changes to ${name}`}
+        />
         {noticeBanner}
         {move && (
           // Anyone can make an install link with an installed app's ID, so a move is the
@@ -264,7 +288,14 @@ const Review: React.FC<ReviewProps> = ({ preview, notice, isConfirming, onClose,
             </Text>
           </Banner>
         )}
-        {rows.length > 0 && <ManifestChanges rows={rows} />}
+        <SurfaceSummary manifest={manifest} />
+        <ReviewSeparator />
+        {rows.length > 0 && (
+          <Stack gap="sm">
+            <SectionEyebrow>What changed</SectionEyebrow>
+            <ManifestChanges rows={rows} />
+          </Stack>
+        )}
         <AccessIndicator items={[STAFF_SESSION_ACCESS]} />
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
@@ -280,17 +311,10 @@ const Review: React.FC<ReviewProps> = ({ preview, notice, isConfirming, onClose,
 
   return (
     <>
-      {/* A band the icon sits into, like a profile picture. */}
-      <AppBanner className="-mx-6 -mt-6 h-28" color={manifest.accent_color} />
-      {/* -mt-14 pulls the 64px icon up past the dialog's 24px gap, so half of it
-          overlaps the band; its ring matches the dialog to cut out the band. */}
-      <DialogHeader className="-mt-14 items-start">
-        <AppIcon className="ring-4 ring-surface-elevated-2" manifest={manifest} size="xl" />
-        <DialogTitle className="mt-3">{manifest.name}</DialogTitle>
-        <AppIdentity preview={preview} />
-        <DialogDescription className="mt-2">{manifest.description}</DialogDescription>
-      </DialogHeader>
+      <ReviewHeader description={manifest.description} preview={preview} title={manifest.name} />
       {noticeBanner}
+      <SurfaceSummary manifest={manifest} />
+      <ReviewSeparator />
       <AccessIndicator items={[STAFF_SESSION_ACCESS]} />
       <DialogFooter>
         <Button variant="outline" onClick={onClose}>
@@ -434,7 +458,11 @@ export const InstallDialog: React.FC<{ manifestUrl: string | null }> = ({ manife
         }
       }}
     >
-      <DialogContent className="max-w-md overflow-hidden" data-testid="app-install-dialog">
+      {/* The review is long enough to need its own scroll on short screens. */}
+      <DialogContent
+        className="max-h-[calc(100dvh-2rem)] max-w-md overflow-x-hidden overflow-y-auto"
+        data-testid="app-install-dialog"
+      >
         {content}
       </DialogContent>
     </Dialog>

@@ -24,11 +24,14 @@ const Value: React.FC<{ value: string | null; missing: string; approved?: boolea
  * changes are marked as not needing it.
  */
 export const ManifestChanges: React.FC<{ rows: ChangeRow[] }> = ({ rows }) => (
-  <ul className="border-t" data-testid="app-manifest-changes">
+  <ul
+    className="m-0 list-none divide-y rounded-lg border border-border-default px-4 py-1"
+    data-testid="app-manifest-changes"
+  >
     {rows.map((row) => (
-      <li key={row.field} className="border-b py-3" data-testid="app-manifest-change">
+      <li key={row.field} className="py-3" data-testid="app-manifest-change">
         <Inline gap="xs">
-          <Text as="div" weight="semibold">
+          <Text as="div" size="sm" weight="semibold">
             {row.label}
           </Text>
           {!row.requiresApproval && (
