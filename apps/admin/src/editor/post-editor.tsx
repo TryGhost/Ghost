@@ -66,6 +66,8 @@ export interface PostEditorProps {
   wordCountAccessory?: React.ReactNode;
   /** Lets the screen take the writer to the title or the excerpt. */
   handleRef?: React.Ref<PostEditorHandle>;
+  /** From a settings panel toggle until everything moving with the panel has arrived. */
+  settingsMoving?: boolean;
 }
 
 export interface PostEditorHandle {
@@ -182,6 +184,7 @@ export function PostEditor({
   onTkCountChange,
   wordCountAccessory,
   handleRef,
+  settingsMoving = false,
 }: PostEditorProps) {
   const { darkMode, isAdmin7 } = useFocusContext();
   const isKeyboardOpen = useOnscreenKeyboard();
@@ -230,6 +233,44 @@ export function PostEditor({
       window.removeEventListener('resize', measure);
     };
   }, []);
+
+  // While the panel moves, that resting value is where the cards end up rather
+  // than where the writing area is. So on each frame the pane resizes, this sizes
+  // the cards from the layout itself, writing only on the cards so only their
+  // subtrees restyle. Resize observers run after layout and before paint, so each
+  // frame draws the cards at that frame's writing area; transitions of the cards'
+  // own geometry drift from the panel's in WebKit. Koenig sizes cards from a
+  // fallback it derives once at its root, so a card takes that property too.
+  useLayoutEffect(() => {
+    const pane = scrollPaneRef.current;
+    const area = writingAreaRef.current;
+    if (!settingsMoving || !pane || !area) {
+      return;
+    }
+    const fitted = new Set<HTMLElement>();
+    const fit = () => {
+      const adjustment = `${Math.max(0, window.innerWidth - area.getBoundingClientRect().width)}px`;
+      for (const card of area.querySelectorAll<HTMLElement>('[data-kg-card]')) {
+        fitted.add(card);
+        if (card.style.getPropertyValue('--kg-breakout-adjustment') !== adjustment) {
+          card.style.setProperty('--kg-breakout-adjustment', adjustment);
+          card.style.setProperty('--kg-breakout-adjustment-with-fallback', adjustment);
+        }
+      }
+    };
+    // The panel's resting value already applies, so this keeps the motion's first
+    // frame at the writing area's current width.
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(pane);
+    return () => {
+      observer.disconnect();
+      for (const card of fitted) {
+        card.style.removeProperty('--kg-breakout-adjustment');
+        card.style.removeProperty('--kg-breakout-adjustment-with-fallback');
+      }
+    };
+  }, [settingsMoving]);
 
   const hasFeatureImage = !!featureImage.featureImage;
   const titleHasTk = textHasTk(title);
@@ -369,8 +410,8 @@ export function PostEditor({
         className="h-full scroll-pt-(--editor-overlap) overflow-x-hidden overflow-y-auto"
       >
         {/* Beside the settings panel, the breakout adjustment adds the panel and the
-            margin before it at their resting values; the cards ease to it on the
-            panel's timing (see `[data-settings-moving]` in index.css). */}
+            margin before it at their resting values; while the panel moves, the
+            cards are sized from the layout instead (above). */}
         <Stack
           ref={writingAreaRef}
           className="min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24 editor-settings-motion-[margin-right] [--kg-breakout-adjustment:var(--editor-breakout-inset,0px)] lg:mr-[calc(var(--spacing)*3*var(--editor-settings-progress,0))] lg:[--kg-breakout-adjustment:calc(var(--editor-breakout-inset,0px)+(var(--editor-settings-width,0px)+var(--spacing)*3)*var(--editor-settings-progress,0))]"

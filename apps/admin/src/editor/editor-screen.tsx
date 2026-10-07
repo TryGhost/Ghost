@@ -228,9 +228,8 @@ function EditorContent({
   // Closed on every editor entry, as the menu it replaces was.
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsPresent, setSettingsPresent] = useState(false);
-  // From a toggle until everything moving with the panel has arrived. Koenig's
-  // breakout cards ease with the panel only meanwhile, so a window resize still
-  // resizes them at once.
+  // From a toggle until everything moving with the panel has arrived. Meanwhile
+  // the editor sizes Koenig's breakout cards from the moving layout.
   const [settingsMoving, setSettingsMoving] = useState(false);
   const shellRef = useRef<HTMLDivElement>(null);
   const settingsFrameRef = useRef<HTMLDivElement>(null);
@@ -377,7 +376,6 @@ function EditorContent({
       ref={shellRef}
       align="stretch"
       className="relative h-full min-h-0 [--editor-settings-width:350px] max-[500px]:[--editor-settings-width:100vw]"
-      data-settings-moving={settingsMoving || undefined}
       gap="none"
       style={
         {
@@ -454,6 +452,7 @@ function EditorContent({
               featureImage={featureImage}
               handleRef={postEditorRef}
               postType={postType}
+              settingsMoving={settingsMoving}
               showExcerpt={showExcerpt}
               titleAndFeatureImageHidden={
                 postType === 'page' && liveShowTitleAndFeatureImage === false
