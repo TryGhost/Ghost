@@ -20,16 +20,16 @@ import {
   useApproveAppInstallation,
   usePreviewAppInstallation,
 } from '@tryghost/admin-x-framework/api/app-installations';
-import { AccessIndicator } from './access-indicator';
+import { ACCOUNT_ACCESS_INTRO, AccessIndicator } from './access-indicator';
 import { AppBanner, AppIcon } from './app-icon';
 import { DevelopmentBadge } from './development-badge';
 import { ManifestChanges } from './manifest-changes';
 import { SectionEyebrow } from './section-eyebrow';
 import { SurfaceSummary } from './surface-icon';
-import { STAFF_SESSION_ACCESS } from '@/apps/lib/access';
+import { appAccess } from '@/apps/lib/access';
 import { describeChanges } from '@/apps/lib/changes';
 import { type InstallFailure, apiErrorOf, installFailureOf } from '@/apps/lib/install-failure';
-import { isDevelopmentApp, movedBetween, servedFrom } from '@/apps/lib/served-from';
+import { isDevelopmentApp, movedBetween } from '@/apps/lib/served-from';
 
 type InstallState =
   | { status: 'checking' }
@@ -170,17 +170,14 @@ const Failed: React.FC<FailedProps> = ({ failure, attempted, onClose, onRetry })
   );
 };
 
-/** Who the app is and where it runs: the same for installing and approving. */
+/**
+ * Who made the app: the same for installing and approving. Where it runs is listed with
+ * what it can access, as a place it sends data to.
+ */
 const AppIdentity: React.FC<{ preview: AppInstallationPreview }> = ({ preview }) => {
   const { manifest } = preview;
   return (
-    <Stack gap="none">
-      <Inline gap="xs">
-        <Text as="span" data-testid="app-install-served-from" size="sm" tone="secondary">
-          Runs on {servedFrom(manifest)}
-        </Text>
-        {isDevelopmentApp(manifest) && <DevelopmentBadge />}
-      </Inline>
+    <Inline gap="xs">
       <Text as="span" size="sm" tone="secondary">
         By{' '}
         <a
@@ -192,7 +189,8 @@ const AppIdentity: React.FC<{ preview: AppInstallationPreview }> = ({ preview })
           {manifest.author.name}
         </a>
       </Text>
-    </Stack>
+      {isDevelopmentApp(manifest) && <DevelopmentBadge />}
+    </Inline>
   );
 };
 
@@ -296,7 +294,7 @@ const Review: React.FC<ReviewProps> = ({ preview, notice, isConfirming, onClose,
             <ManifestChanges rows={rows} />
           </Stack>
         )}
-        <AccessIndicator items={[STAFF_SESSION_ACCESS]} />
+        <AccessIndicator intro={ACCOUNT_ACCESS_INTRO} items={appAccess(manifest)} />
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             Cancel
@@ -315,7 +313,7 @@ const Review: React.FC<ReviewProps> = ({ preview, notice, isConfirming, onClose,
       {noticeBanner}
       <SurfaceSummary manifest={manifest} />
       <ReviewSeparator />
-      <AccessIndicator items={[STAFF_SESSION_ACCESS]} />
+      <AccessIndicator intro={ACCOUNT_ACCESS_INTRO} items={appAccess(manifest)} />
       <DialogFooter>
         <Button variant="outline" onClick={onClose}>
           Cancel

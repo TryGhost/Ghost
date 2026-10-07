@@ -118,11 +118,17 @@ describe('Installing an app', () => {
     await expect.element(dialog).toHaveTextContent('Podcast');
     await expect.element(dialog).toHaveTextContent('Publish episodes and embed players.');
     await expect.element(dialog).toHaveTextContent('By Example Audio');
-    await expect.element(appsScreen.servedFrom()).toHaveTextContent('Runs on podcast.example.com');
     await expect.element(appsScreen.developmentBadge()).not.toBeInTheDocument();
     await expect
       .element(appsScreen.accessIndicator())
-      .toHaveTextContent('Only install this app if you trust the developer');
+      .toHaveTextContent('This app uses your account, so it can do everything you can.');
+    await expect
+      .element(appsScreen.accessItems().first())
+      .toHaveTextContent('View, create, edit, publish and delete all posts and pages');
+    // Where the app runs is where what it reads can go.
+    await expect
+      .element(appsScreen.accessItems().last())
+      .toHaveTextContent('Read and write data to podcast.example.com');
     expect(previewApi.requests.map(({ body }) => body)).toEqual([
       { app_installation_previews: [{ manifest_url: MANIFEST_URL }] },
     ]);
@@ -131,7 +137,7 @@ describe('Installing an app', () => {
 
     await expect.poll(currentRoute).toBe('/apps');
     await expect(appsScreen.rows()).toHaveCount(1);
-    await expect.element(appsScreen.row('Podcast')).toHaveTextContent('podcast.example.com');
+    await expect.element(appsScreen.row('Podcast')).toHaveTextContent('Example Audio');
     await expect.element(page.getByText('Podcast installed')).toBeVisible();
     expect(installApi.requests.map(({ body }) => body)).toEqual([
       { app_installations: [{ manifest_url: MANIFEST_URL, digest: 'digest-1' }] },
@@ -153,7 +159,9 @@ describe('Installing an app', () => {
 
     await renderAdminApp('/apps/install?manifest=http://localhost:5173/ghost-app.json', { labs });
 
-    await expect.element(appsScreen.servedFrom()).toHaveTextContent('Runs on localhost:5173');
+    await expect
+      .element(appsScreen.accessItems().last())
+      .toHaveTextContent('Read and write data to localhost:5173');
     await expect.element(appsScreen.developmentBadge()).toBeVisible();
   });
 
@@ -210,9 +218,9 @@ describe('Installing an app', () => {
     await expect.element(appsScreen.installDialog()).toHaveTextContent('Review changes to Podcast');
     await expect.element(appsScreen.moveWarning()).not.toBeInTheDocument();
     await expect(appsScreen.changes()).toHaveCount(2);
-    // What needs approval comes first; text changes are marked as not needing it.
+    // What needs approval comes first.
     await expect.element(appsScreen.changes().nth(0)).toHaveTextContent('NamePodcastPodcasts');
-    await expect.element(appsScreen.changes().nth(1)).toHaveTextContent('No approval needed');
+    await expect.element(appsScreen.changes().nth(1)).toHaveTextContent('Description');
 
     await appsScreen.approveChangesButton().click();
 

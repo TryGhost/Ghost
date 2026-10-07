@@ -11,10 +11,10 @@ export const appsScreen = {
 
   installDialog: () => page.getByTestId(sel.appInstallDialog),
   notAllowedDialog: () => page.getByTestId(sel.appInstallNotAllowedDialog),
-  servedFrom: () => page.getByTestId(sel.appInstallServedFrom),
   developmentBadge: () =>
     page.getByTestId(sel.appInstallDialog).getByTestId(sel.appDevelopmentBadge),
   accessIndicator: () => page.getByTestId(sel.accessIndicator),
+  accessItems: () => page.getByTestId(sel.accessItem),
   notice: () => page.getByTestId(sel.appInstallNotice),
   moveWarning: () => page.getByTestId(sel.appInstallMoveWarning),
   problems: () => page.getByTestId(sel.appInstallProblems),

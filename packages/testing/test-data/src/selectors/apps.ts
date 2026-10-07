@@ -9,7 +9,6 @@ export const appsList = 'apps-list';
 export const appsListRow = 'apps-list-row';
 export const appInstallDialog = 'app-install-dialog';
 export const appInstallNotAllowedDialog = 'app-install-not-allowed-dialog';
-export const appInstallServedFrom = 'app-install-served-from';
 export const appInstallNotice = 'app-install-notice';
 export const appInstallMoveWarning = 'app-install-move-warning';
 export const appInstallProblems = 'app-install-problems';
@@ -18,6 +17,7 @@ export const appManifestChange = 'app-manifest-change';
 export const appDevelopmentBadge = 'app-development-badge';
 export const appManager = 'app-manager';
 export const accessIndicator = 'access-indicator';
+export const accessItem = 'access-item';
 
 // accessible names
 export const installButton = 'Install';

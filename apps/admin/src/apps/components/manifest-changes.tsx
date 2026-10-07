@@ -1,5 +1,5 @@
 import React from 'react';
-import { Inline, Text } from '@tryghost/shade/primitives';
+import { Text } from '@tryghost/shade/primitives';
 import type { ChangeRow } from '@/apps/lib/changes';
 
 /** One side of a change. The approved side reads as replaced, struck through when it had a value. */
@@ -20,8 +20,7 @@ const Value: React.FC<{ value: string | null; missing: string; approved?: boolea
 
 /**
  * What changed since the app was approved, field by field: only what's new or different,
- * not the whole manifest again. Changes that need approval come first; text and color
- * changes are marked as not needing it.
+ * not the whole manifest again, with the changes that need approval first.
  */
 export const ManifestChanges: React.FC<{ rows: ChangeRow[] }> = ({ rows }) => (
   <ul
@@ -30,16 +29,9 @@ export const ManifestChanges: React.FC<{ rows: ChangeRow[] }> = ({ rows }) => (
   >
     {rows.map((row) => (
       <li key={row.field} className="py-3" data-testid="app-manifest-change">
-        <Inline gap="xs">
-          <Text as="div" size="sm" weight="semibold">
-            {row.label}
-          </Text>
-          {!row.requiresApproval && (
-            <Text as="span" data-testid="app-manifest-change-silent" size="sm" tone="secondary">
-              · No approval needed
-            </Text>
-          )}
-        </Inline>
+        <Text as="div" size="sm" weight="semibold">
+          {row.label}
+        </Text>
         <Value missing="Not there before" value={row.before} approved />
         <Value missing="Removed" value={row.after} />
       </li>

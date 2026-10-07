@@ -4,7 +4,7 @@ import { Inline } from '@tryghost/shade/primitives';
 import type { AppInstallation } from '@tryghost/admin-x-framework/api/app-installations';
 import { AppIcon } from './app-icon';
 import { DevelopmentBadge } from './development-badge';
-import { isDevelopmentApp, servedFrom } from '@/apps/lib/served-from';
+import { isDevelopmentApp } from '@/apps/lib/served-from';
 
 /** The site's installed apps, like Automations and Tags. Opening and managing them comes later. */
 const AppsList: React.FC<{ installations: AppInstallation[] }> = ({ installations }) => (
@@ -23,9 +23,7 @@ const AppsList: React.FC<{ installations: AppInstallation[] }> = ({ installation
                   <span className="text-md font-semibold">{manifest.name}</span>
                   {isDevelopmentApp(manifest) && <DevelopmentBadge />}
                   {status === 'suspended' && <Badge variant="secondary">Needs approval</Badge>}
-                  <span className="text-sm text-muted-foreground">
-                    {manifest.author.name} · {servedFrom(manifest)}
-                  </span>
+                  <span className="text-sm text-muted-foreground">{manifest.author.name}</span>
                 </Inline>
                 <span className="block max-w-2xl text-balance text-muted-foreground">
                   {manifest.description}
