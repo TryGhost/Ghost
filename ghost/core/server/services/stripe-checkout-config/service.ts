@@ -14,7 +14,9 @@ import {
 } from '@tryghost/metafield-types/identity';
 import { snakeKeys } from '../../lib/case-keys';
 import { toDatabaseDate } from '../../lib/db-types/date';
-import type { RecordCheckoutConfigAction, RequestContext } from './actions';
+import type { RequestContext } from '../../lib/actor';
+import type { ChangeEvents } from '../../lib/change-events';
+import type { CheckoutConfigEvent } from './events';
 import { configRow, type ConfigRowSchema, type TierScope } from './codec';
 import {
   COLLECTED_NOUNS,
@@ -254,26 +256,29 @@ type FieldReads = Pick<FieldSource, 'table' | 'locked'>;
 /** Reads and saves the site-wide Stripe Checkout config. */
 export class StripeCheckoutConfigService {
   private knex: Knex;
-  private recordAction: RecordCheckoutConfigAction;
+  /** Lets other services react to the changes this service makes. */
+  readonly events: Pick<ChangeEvents<CheckoutConfigEvent>, 'react'>;
+  private readonly raise: ChangeEvents<CheckoutConfigEvent>['raise'];
   private bindings: PortBinder;
   private fields: FieldReads;
   private configRow: ConfigRowSchema;
 
   constructor({
     knex,
-    recordAction,
+    events,
     bindings,
     fields,
     logging,
   }: {
     knex: Knex;
-    recordAction: RecordCheckoutConfigAction;
+    events: ChangeEvents<CheckoutConfigEvent>;
     bindings: PortBinder;
     fields: FieldReads;
     logging: GhostLogger;
   }) {
     this.knex = knex;
-    this.recordAction = recordAction;
+    this.events = events;
+    this.raise = events.raise;
     this.bindings = bindings;
     this.fields = fields;
     this.configRow = configRow(logging);
@@ -387,13 +392,15 @@ export class StripeCheckoutConfigService {
   }
 
   /**
-   * Saves the parts of the config that the request includes, and records the save in the staff
-   * history.
+   * Saves the parts of the config that the request includes, then raises `CheckoutConfigSaved`,
+   * and returns the config as saved.
    *
    * The tiers and fields the collected parts name are checked inside the same transaction as
    * the write, with their rows locked, so nothing can change between the check and the write.
+   * The config before and after is read in the same transaction, so a read that fails fails the
+   * save rather than a save that has already committed.
    */
-  async edit(context: RequestContext, input: unknown): Promise<void> {
+  async edit(context: RequestContext, input: unknown): Promise<StripeCheckoutConfig> {
     const { design, ...requested } = parseRequest(CheckoutConfigInput, input, 'checkout_config');
     // Only the parts in the request are written, so saving one part never overwrites another.
     const changes = changesOf(requested);
@@ -404,8 +411,9 @@ export class StripeCheckoutConfigService {
     const at = new Date();
     const now = toDatabaseDate(at);
 
-    await this.knex.transaction(async (trx) => {
+    const saved = await this.knex.transaction(async (trx) => {
       await assertTargets(trx, changes, this.fields);
+      const { config: previous } = await this.readSaved(trx);
 
       await trx(CONFIG_TABLE)
         .insert({
@@ -421,16 +429,20 @@ export class StripeCheckoutConfigService {
       for (const change of changes) {
         await this.writeTargets(trx, change, at);
       }
+
+      // An existing row keeps its id, so read the id back for the event.
+      const row = await trx(CONFIG_TABLE).where('slug', CONFIG_SLUG).first('id');
+      if (!row) {
+        throw new errors.InternalServerError({
+          message: 'The Stripe Checkout config was not found right after saving it.',
+        });
+      }
+      const { config: next } = await this.readSaved(trx);
+      return { previous, next, configId: row.id };
     });
 
-    // An existing row keeps its id, so read the id back for the history entry.
-    const saved = await this.knex(CONFIG_TABLE).where('slug', CONFIG_SLUG).first('id');
-    if (!saved) {
-      throw new errors.InternalServerError({
-        message: 'The Stripe Checkout config was not found right after saving it.',
-      });
-    }
-    await this.recordAction({ context, subject: saved.id });
+    await this.raise(context.actor, { type: 'CheckoutConfigSaved', change: 'edited', ...saved });
+    return saved.next;
   }
 
   /**

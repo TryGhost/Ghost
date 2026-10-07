@@ -1,7 +1,8 @@
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
-import type { RecordAppInstallationAction, RequestContext } from './actions';
+import type { RequestContext } from '../../lib/actor';
+import type { ChangeEvents } from '../../lib/change-events';
 import {
   alreadyInstalled,
   AppInstallationsRepository,
@@ -9,6 +10,7 @@ import {
   type WriteOutcome,
 } from './app-installations-repository';
 import type { AppInstallationHistoryEntry, Installation, InstallationWithHistory } from './codec';
+import type { AppInstallationEvent } from './events';
 import {
   approvalWrite,
   changesFrom,
@@ -137,7 +139,9 @@ function iconCopyKeptBy(
 
 export class AppInstallationsService {
   private repository: AppInstallationsRepository;
-  private recordAction: RecordAppInstallationAction;
+  /** Lets other services react to the changes this service makes. */
+  readonly events: Pick<ChangeEvents<AppInstallationEvent>, 'react'>;
+  private readonly raise: ChangeEvents<AppInstallationEvent>['raise'];
   private loadManifest: LoadManifest;
   private identity: IdentityChecker;
   private fetchIcon: FetchIcon;
@@ -146,19 +150,20 @@ export class AppInstallationsService {
 
   constructor({
     knex,
-    recordAction,
+    events,
     loadManifest,
     identity,
     fetchIcon,
   }: {
     knex: Knex;
-    recordAction: RecordAppInstallationAction;
+    events: ChangeEvents<AppInstallationEvent>;
     loadManifest: LoadManifest;
     identity: IdentityChecker;
     fetchIcon: FetchIcon;
   }) {
     this.repository = new AppInstallationsRepository(knex);
-    this.recordAction = recordAction;
+    this.events = events;
+    this.raise = events.raise;
     this.loadManifest = loadManifest;
     this.identity = identity;
     this.fetchIcon = fetchIcon;
@@ -210,12 +215,7 @@ export class AppInstallationsService {
         : error;
     });
     const installation = await this.repository.insert(loaded, iconDataUrl);
-    await this.recordAction({
-      context,
-      event: 'installed',
-      subject: installation.id,
-      details: { primary_name: loaded.manifest.name, app_id: loaded.manifest.id },
-    });
+    await this.raise(context.actor, { type: 'AppInstalled', change: 'added', next: installation });
     return installation;
   }
 
@@ -272,20 +272,18 @@ export class AppInstallationsService {
       throw await this.changedSinceReview(checked, id);
     }
     const approved = stored.value;
+    const updated = await this.read(id);
     if (approved) {
-      await this.recordAction({
-        context,
-        event: 'changes_approved',
-        subject: id,
-        details: {
-          primary_name: loaded.manifest.name,
-          app_id: loaded.manifest.id,
-          from_manifest_id: current.manifest_id,
-          to_manifest_id: approved,
-        },
+      await this.raise(context.actor, {
+        type: 'AppChangesApproved',
+        change: 'edited',
+        previous: current,
+        next: updated,
+        fromManifestId: current.manifest_id,
+        toManifestId: approved,
       });
     }
-    return this.read(id);
+    return updated;
   }
 
   /**
@@ -317,11 +315,10 @@ export class AppInstallationsService {
       return;
     }
 
-    await this.recordAction({
-      context,
-      event: 'uninstalled',
-      subject: id,
-      details: { primary_name: installation.manifest.name, app_id: installation.app_id },
+    await this.raise(context.actor, {
+      type: 'AppUninstalled',
+      change: 'deleted',
+      previous: installation,
     });
   }
 
@@ -540,8 +537,8 @@ export class AppInstallationsService {
   /**
    * Fetches the app's manifest again from its approved manifest URL and stores what
    * changed. Silent changes are applied. Changes that need approval become the pending
-   * manifest, which suspends the app. No person made these changes, so nothing goes into
-   * the staff history; the manifest rows record them.
+   * manifest, which suspends the app. No person made these changes, so they raise no change
+   * events; the manifest rows record them.
    *
    * If the manifest can't be loaded, fails the identity check, or is for a different app,
    * the app is broken or its URL now serves someone else. The session then fails instead of
