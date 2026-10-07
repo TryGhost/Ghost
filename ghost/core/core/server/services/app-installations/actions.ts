@@ -1,4 +1,5 @@
 import logging from '@tryghost/logging';
+import { readFrameIdentity } from '../../lib/frame-identity';
 
 export interface Actor {
   id: string;
@@ -10,15 +11,16 @@ export interface RequestContext {
 }
 
 /**
- * Who is acting, read off an API frame's context.
+ * Who is acting, narrowed from the shared reading of an API frame's context.
  *
  * Only a staff user counts, whether signed in or using their own staff token.
- * Integrations hold no permission to manage apps, so they never get this far.
+ * Integrations hold no permission to manage apps, so they never get this far, and a
+ * context that names one alongside a user is not trusted to be the user's doing.
  */
 export function actingContext(context: unknown): RequestContext {
-  const frame = (context ?? {}) as { user?: string; integration?: unknown };
-  if (frame.user && !frame.integration) {
-    return { actor: { id: frame.user, type: 'user' } };
+  const { userId, integrationId } = readFrameIdentity(context);
+  if (userId && !integrationId) {
+    return { actor: { id: userId, type: 'user' } };
   }
   return { actor: null };
 }

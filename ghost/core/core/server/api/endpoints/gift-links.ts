@@ -1,5 +1,5 @@
 import type { Controller, Frame } from '@tryghost/api-framework';
-import { service, type RequestContext } from '../../services/gift-links';
+import { actingContext, service } from '../../services/gift-links';
 
 const permissionsService = require('../../services/permissions');
 
@@ -15,17 +15,6 @@ async function assertCanEditAndGift(frame: GiftLinksFrame): Promise<void> {
   const { context, id } = frame.options;
   await permissionsService.canThis(context).manage.gift_link(id);
   await permissionsService.canThis(context).edit.post(id);
-}
-
-function requestContextFromFrame(frame: GiftLinksFrame): RequestContext {
-  const context = (frame.options.context ?? {}) as { user?: string; integration?: { id: string } };
-  if (context.integration) {
-    return { actor: { id: context.integration.id, type: 'integration' } };
-  }
-  if (context.user) {
-    return { actor: { id: context.user, type: 'user' } };
-  }
-  return { actor: null };
 }
 
 const noCacheInvalidation = { cacheInvalidate: false };
@@ -54,7 +43,7 @@ const controller = {
       return assertCanEditAndGift(frame);
     },
     query(frame: GiftLinksFrame) {
-      return service!.ensure(requestContextFromFrame(frame), frame.options.id);
+      return service!.ensure(actingContext(frame.options.context), frame.options.id);
     },
   },
 
@@ -67,7 +56,7 @@ const controller = {
       return assertCanEditAndGift(frame);
     },
     query(frame: GiftLinksFrame) {
-      return service!.create(requestContextFromFrame(frame), frame.options.id);
+      return service!.create(actingContext(frame.options.context), frame.options.id);
     },
   },
 
@@ -78,7 +67,7 @@ const controller = {
       return permissionsService.canThis(frame.options.context).removeAll.gift_link();
     },
     async query(frame: GiftLinksFrame) {
-      const count = await service!.removeAll(requestContextFromFrame(frame));
+      const count = await service!.removeAll(actingContext(frame.options.context));
       return { count };
     },
   },

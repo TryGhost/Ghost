@@ -2,6 +2,7 @@ import { GiftLinksService } from './service';
 import { recordGiftLinkAction, type RecordGiftLinkAction } from './actions';
 
 export type { RequestContext } from './actions';
+export { actingContext } from './actions';
 
 // Constructed by init() at boot, not at import: knex is only available once the DB has connected.
 export let service: GiftLinksService | undefined;
