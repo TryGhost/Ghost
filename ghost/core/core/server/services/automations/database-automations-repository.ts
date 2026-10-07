@@ -399,7 +399,7 @@ export function createDatabaseAutomationsRepository({
           slug: null,
           name: data.name,
           description: data.description,
-          status: 'inactive',
+          status: data.status,
           trigger_tier_scope: data.trigger_tier_scope ?? null,
           created_at: now,
           updated_at: now,
@@ -427,6 +427,8 @@ export function createDatabaseAutomationsRepository({
             tierIds.map((productId) => ({ automation_id: automation.id, product_id: productId })),
           );
         }
+
+        await replaceAutomationGraph(trx, automation.id, data.actions, data.edges);
 
         return await buildAutomation(trx, automation);
       });

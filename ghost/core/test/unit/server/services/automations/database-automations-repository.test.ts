@@ -714,7 +714,15 @@ describe('automations repository', function () {
 
   describe('add', function () {
     const tierIds = [ObjectId().toHexString(), ObjectId().toHexString()];
+    const actions = [1, 2].map((wait_hours) => ({
+      id: ObjectId().toHexString(),
+      type: 'wait' as const,
+      data: { wait_hours },
+    }));
     const data = {
+      status: 'active' as const,
+      actions,
+      edges: [{ source_action_id: actions[0].id, target_action_id: actions[1].id }],
       name: 'New automation',
       description: 'Test description',
       trigger_tier_scope: 'selected_paid' as const,
@@ -744,12 +752,12 @@ describe('automations repository', function () {
 
       assert.equal(automation.name, data.name);
       assert.equal(automation.description, data.description);
-      assert.equal(automation.status, 'inactive');
+      assert.equal(automation.status, data.status);
       assert.equal(automation.slug, null);
       assert.equal(automation.trigger_tier_scope, 'selected_paid');
       assert.deepEqual(automation.trigger_tier_ids.sort(), [...tierIds].sort());
-      assert.deepEqual(automation.actions, []);
-      assert.deepEqual(automation.edges, []);
+      assert.deepEqual(automation.actions, data.actions);
+      assert.deepEqual(automation.edges, data.edges);
       assert.deepEqual(await repo.getById(automation.id), automation);
       const row = await knex('automations').where({ id: automation.id }).first();
       assert.equal(row.trigger_tier_scope, 'selected_paid');
@@ -760,6 +768,22 @@ describe('automations repository', function () {
           .pluck('product_id'),
         tierIds,
       );
+    });
+
+    it('rejects actions that belong to another automation', async function () {
+      const existingId = await insertAutomation({ slug: null, triggerTierScope: 'free' });
+      const existing = await repo.getById(existingId);
+      assert(existing);
+      await assert.rejects(
+        repo.add({ ...data, actions: existing.actions, edges: existing.edges }),
+        {
+          errorType: 'ValidationError',
+          property: 'actions.id',
+        },
+      );
+      assert.equal(await knex('automations').where({ name: data.name }).first(), undefined);
+      assert.deepEqual(await knex('automation_trigger_tiers').whereIn('product_id', tierIds), []);
+      assert.deepEqual(await repo.getById(existingId), existing);
     });
 
     it('reads stored trigger settings and preserves them when editing actions', async function () {
