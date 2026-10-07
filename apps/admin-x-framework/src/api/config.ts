@@ -42,7 +42,7 @@ export type Config = {
     siteId?: string;
     forceUpgrade?: boolean;
     limits?: {
-      // Partially typed, see https://github.com/TryGhost/SDK/tree/main/packages/limit-service
+      // Partially typed API limits; see packages/limit-service/src/config.ts and src/types.ts for service definitions.
       customIntegrations?: {
         disabled: boolean;
       };
