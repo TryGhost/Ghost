@@ -286,7 +286,6 @@
     "esbuild": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-ghost": "3.5.0",
-    "expect": "29.7.0",
     "globals": "17.7.0",
     "html-validate": "11.5.5",
     "inquirer": "8.2.7",
