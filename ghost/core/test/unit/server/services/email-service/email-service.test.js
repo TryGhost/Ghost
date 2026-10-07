@@ -15,6 +15,7 @@ describe('Email Service', function () {
   let scheduleRecurringNewslettersJob;
   let domainWarmingService;
   let getMembersCount;
+  let sendingStatusService;
 
   beforeEach(function () {
     memberCount = 123;
@@ -81,7 +82,12 @@ describe('Email Service', function () {
     };
     getMembersCount = sinon.stub().callsFake(() => Promise.resolve(memberCount));
 
+    sendingStatusService = {
+      retryEligibilityFor: sinon.stub().resolves('retryable'),
+    };
+
     service = new EmailService({
+      sendingStatusService,
       emailSegmenter: {
         getMembersCount,
       },
@@ -553,6 +559,32 @@ describe('Email Service', function () {
   });
 
   describe('Retry email', function () {
+    it('rejects an unknown delivery outcome without changing the email or scheduling', async function () {
+      const email = createModel({
+        status: 'failed',
+        error: 'Original error',
+        post: createModel({ status: 'published' }),
+      });
+      sendingStatusService.retryEligibilityFor.resolves('unknown-outcome');
+
+      await assert.rejects(
+        service.retryEmail(email),
+        (err) => err.statusCode === 400 && /delivery outcome is unknown/.test(err.message),
+      );
+      assert.equal(email.get('status'), 'failed');
+      assert.equal(email.get('error'), 'Original error');
+      sinon.assert.notCalled(scheduleEmail);
+    });
+
+    it('rejects a stale failed email when the current send is already active', async function () {
+      const email = createModel({ status: 'failed', post: createModel({ status: 'sent' }) });
+      sendingStatusService.retryEligibilityFor.resolves('not-failed');
+
+      await assert.rejects(service.retryEmail(email), (err) => err.statusCode === 400);
+      assert.equal(email.get('status'), 'failed');
+      sinon.assert.notCalled(scheduleEmail);
+    });
+
     it('Schedules email again', async function () {
       const email = createModel({
         status: 'failed',
@@ -635,6 +667,7 @@ describe('Email Service', function () {
           status: 'published',
         }),
       });
+      sendingStatusService.retryEligibilityFor.resolves('not-failed');
 
       await assert.rejects(
         service.retryEmail(email),
