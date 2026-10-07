@@ -261,12 +261,14 @@ describe('Managing apps', () => {
     fakeReview();
 
     await renderAdminApp('/apps', { labs });
-    await expect.element(appsScreen.row('Podcast')).toHaveTextContent('Needs approval');
+    await expect
+      .element(appsScreen.row('Podcast').getByTestId('app-needs-approval-badge'))
+      .toHaveTextContent('Needs approval');
     await appsScreen.row('Podcast').getByText('Publish episodes and embed players.').click();
 
     await expect
       .element(appsScreen.needsApproval())
-      .toHaveTextContent('Podcast has been updated and needs additional permissions.');
+      .toHaveTextContent('Podcast has been updated and needs more access.');
     await expect
       .element(appsScreen.historyEntries().first())
       .toHaveTextContent('Updated, needs approval');
@@ -283,8 +285,7 @@ describe('Managing apps', () => {
     const reviewApi = fakeReview();
 
     await renderAdminApp('/apps', { labs });
-    await appsScreen.rowActions('Podcast').click();
-    await appsScreen.menuItem('Review changes').click();
+    await appsScreen.row('Podcast').getByRole('button', { name: 'Review changes' }).click();
 
     await expect
       .poll(currentRoute)
