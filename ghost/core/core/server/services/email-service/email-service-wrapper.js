@@ -34,22 +34,23 @@ class EmailServiceWrapper {
     const { Post, Newsletter, Email, EmailBatch, EmailRecipient, Member } = require('../../models');
     const urlService = require('../url');
     const getRequiredUrlRelations = () => urlService.getRequiredRelations();
-    const MailgunClient = require('../lib/mailgun-client');
+    const MailgunClient = require('../../lib/mailgun/mailgun-client');
     const configService = require('../../../shared/config');
+    const batchCreationConcurrency = configService.get('bulkEmail:batchCreationConcurrency');
     const settingsCache = require('../../../shared/settings-cache');
     const settingsHelpers = require('../settings-helpers');
     const membersService = require('../members');
     const db = require('../../data/db');
     const sentry = require('../../../shared/sentry');
     const membersRepository = membersService.api.members;
-    const limitService = require('../limits');
+    const { limitService } = require('../limits');
     const labs = require('../../../shared/labs');
     const emailAddressService = require('../email-address');
     const i18nLib = require('@tryghost/i18n').default;
     const lexicalLib = require('../../lib/lexical');
     const urlUtils = require('../../../shared/url-utils').default;
     const memberAttribution = require('../member-attribution');
-    const linkReplacer = require('../lib/link-replacer');
+    const linkReplacer = require('../../lib/link-replacer');
     const linkTracking = require('../link-tracking');
     const audienceFeedback = require('../audience-feedback');
     const storageUtils = require('../../adapters/storage/utils');
@@ -102,6 +103,7 @@ class EmailServiceWrapper {
       emailProvider: mailgunEmailProvider,
       emailRenderer,
       emailAddressService: emailAddressService.service,
+      sentry,
     });
 
     const emailSegmenter = new EmailSegmenter({
@@ -128,6 +130,7 @@ class EmailServiceWrapper {
       db,
       sentry,
       getRequiredUrlRelations,
+      batchCreationConcurrency,
     });
     const sendingStatusService = new SendingStatusService({ knex: db.knex });
 
@@ -148,6 +151,7 @@ class EmailServiceWrapper {
     this.renderer = emailRenderer;
 
     this.service = new EmailService({
+      sendingStatusService,
       batchSendingService,
       sendingService,
       models: {

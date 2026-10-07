@@ -1,6 +1,7 @@
 import {
   getFreeProduct,
   getProductData,
+  getPriceData,
   getSiteData,
 } from '../../../../src/utils/fixtures-generator';
 import { render, fireEvent, getByTestId, queryByTestId } from '../../../utils/test-utils';
@@ -45,6 +46,36 @@ const setup = (overrides) => {
 };
 
 describe('SignupPage', () => {
+  test.each([
+    { locale: 'de-CH', trialDays: null, amount: '6.90', alternate: 'CHF69.90/year' },
+    { locale: 'de-DE', trialDays: null, amount: '6,90', alternate: 'CHF69,90/year' },
+    { locale: 'de-CH', trialDays: 7, amount: '6.90', alternate: 'CHF69.90/year' },
+    { locale: 'de-DE', trialDays: 7, amount: '6,90', alternate: 'CHF69,90/year' },
+  ])(
+    'formats plan prices using $locale with trialDays=$trialDays',
+    ({ locale, trialDays, amount, alternate }) => {
+      const product = getProductData({
+        monthlyPrice: getPriceData({ amount: 690, currency: 'CHF', interval: 'month' }),
+        yearlyPrice: getPriceData({ amount: 6990, currency: 'CHF', interval: 'year' }),
+        trialDays,
+      });
+      const site = {
+        ...getSiteData({
+          products: [product],
+          portalPlans: ['monthly', 'yearly'],
+          portalDefaultPlan: 'monthly',
+        }),
+        locale,
+      };
+      const { container } = setup({ site });
+
+      expect(getByTestId(container, 'product-amount')).toHaveTextContent(amount);
+      expect(container.querySelector('.gh-portal-product-alternative-price')).toHaveTextContent(
+        alternate,
+      );
+    },
+  );
+
   test('renders', () => {
     const { nameInput, emailInput, queryAllByRole, signinButton } = setup();
     const chooseButton = queryAllByRole('button', { name: 'Continue' });

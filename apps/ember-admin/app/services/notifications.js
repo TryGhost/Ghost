@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/ember';
 import Service, {inject as service} from '@ember/service';
 import {TrackedArray} from 'tracked-built-ins';
 import {dasherize} from '@ember/string';
-import {htmlSafe} from '@ember/template';
+import {htmlSafe, isHTMLSafe} from '@ember/template';
 import {inject} from 'ghost-admin/decorators/inject';
 import {isArray} from '@ember/array';
 import {isBlank} from '@ember/utils';
@@ -41,6 +41,25 @@ const GENERIC_ERROR_NAMES = [
 
 export const GENERIC_ERROR_MESSAGE = 'An unexpected error occurred, please try again.';
 
+// React's notifications host takes plain text or `{html}` for trusted markup
+function serializeText(text) {
+    if (text === undefined || text === null) {
+        return undefined;
+    }
+    return isHTMLSafe(text) ? {html: text.toString()} : String(text);
+}
+
+function serializeNotification({status, type, key, message, description, actions}) {
+    return {
+        status,
+        type,
+        key,
+        message: serializeText(message),
+        description: serializeText(description),
+        actions: serializeText(actions)
+    };
+}
+
 export default class NotificationsService extends Service {
     @service upgradeStatus;
 
@@ -48,6 +67,24 @@ export default class NotificationsService extends Service {
 
     @tracked delayedNotifications = new TrackedArray([]);
     @tracked content = new TrackedArray([]);
+
+    // Set while the React admin renders notifications; `content` only renders without one
+    host = null;
+
+    connectHost(host) {
+        this.host = host;
+
+        // Toasts already showing here fade out on their own; alerts move over
+        const alerts = this.content.filter(n => n.status === 'alert');
+        this.content = new TrackedArray(this.content.filter(n => n.status !== 'alert'));
+        alerts.forEach(alert => host.show(serializeNotification(alert)));
+
+        return () => {
+            if (this.host === host) {
+                this.host = null;
+            }
+        };
+    }
 
     get alerts() {
         return this.content.filter(n => n.status === 'alert');
@@ -75,6 +112,16 @@ export default class NotificationsService extends Service {
 
         if (!message.status) {
             message.status = 'notification';
+        }
+
+        // the host applies the same duplicate rules when a message is shown
+        if (this.host) {
+            if (delayed) {
+                this.delayedNotifications.push(message);
+            } else {
+                this.host.show(serializeNotification(message));
+            }
+            return;
         }
 
         // close existing duplicate alerts/notifications to avoid stacking
@@ -219,7 +266,11 @@ export default class NotificationsService extends Service {
 
     displayDelayed() {
         this.delayedNotifications.forEach((message) => {
-            this.content.push(message);
+            if (this.host) {
+                this.host.show(serializeNotification(message));
+            } else {
+                this.content.push(message);
+            }
         });
         this.delayedNotifications = new TrackedArray([]);
     }
@@ -247,9 +298,12 @@ export default class NotificationsService extends Service {
 
     clearAll() {
         this.content = new TrackedArray([]);
+        this.host?.clearAll();
     }
 
     _removeItems(status, key) {
+        this.host?.remove(status, key);
+
         if (key) {
             const keyBase = this._getKeyBase(key);
             // TODO: keys should only have . special char but we should

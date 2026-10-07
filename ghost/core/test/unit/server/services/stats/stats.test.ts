@@ -9,16 +9,13 @@ describe('StatsService', function () {
   afterEach(() => sinon.restore());
 
   it.each([
-    { webAnalytics: false, sync: true, configured: true, initialized: true },
-    { webAnalytics: false, sync: false, configured: true, initialized: false },
-    { webAnalytics: false, sync: true, configured: false, initialized: false },
-    { webAnalytics: true, sync: false, configured: true, initialized: true },
+    { webAnalytics: false, configured: true, initialized: true },
+    { webAnalytics: false, configured: false, initialized: false },
+    { webAnalytics: true, configured: true, initialized: true },
   ])(
     'initializes Tinybird for the enabled analytics source: %j',
-    function ({ webAnalytics, sync, configured, initialized }) {
+    function ({ webAnalytics, configured, initialized }) {
       const init = sinon.stub(TinybirdServiceWrapper, 'init');
-      const isSet = sinon.stub();
-      isSet.withArgs('automationsTinybirdSync').returns(sync);
       const getSetting = sinon.stub();
       getSetting.withArgs('web_analytics_enabled').returns(webAnalytics);
       const getConfig = sinon.stub();
@@ -33,7 +30,6 @@ describe('StatsService', function () {
         }),
         settingsCache: { get: getSetting },
         config: { get: getConfig },
-        labs: { isSet },
       });
       assert.equal(init.calledOnce, initialized);
       assert.equal(Boolean(service.posts.tinybirdClient), webAnalytics);

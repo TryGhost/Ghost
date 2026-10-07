@@ -192,7 +192,10 @@ const controller = {
         components[key] = frame.data.components[key] === true;
       }
 
-      await exportRequestsService.requestArchive({ components });
+      await exportRequestsService.requestExport({
+        components,
+        requestedByUserId: frame.options.context.user,
+      });
     },
   },
 };

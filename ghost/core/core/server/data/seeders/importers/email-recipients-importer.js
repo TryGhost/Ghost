@@ -129,7 +129,10 @@ class EmailRecipientsImporter extends TableImporter {
         .push(fromDatabaseDate(memberSubscribeEvent.created_at).getTime());
     }
 
-    await this.importForEach(this.emailBatches, quantity ? quantity / emails.length : 1000);
+    await this.importForEach(
+      this.emailBatches,
+      quantity !== undefined ? quantity / emails.length : 1000,
+    );
   }
 
   setReferencedModel(model) {

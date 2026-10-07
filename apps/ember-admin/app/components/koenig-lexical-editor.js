@@ -54,8 +54,7 @@ export function filterLinkSearchResults(results, settings) {
     const filteredResults = [];
 
     results.forEach((group) => {
-        // only content with a public URL is linkable — this also drops
-        // admin-only groups like billing pages, which have a path but no url
+        // only content with a public URL is linkable
         let items = group.options.filter(i => i.url);
 
         if (group.groupName === 'Posts' || group.groupName === 'Pages') {
@@ -494,6 +493,7 @@ export default class KoenigLexicalEditor extends Component {
         const defaultCardConfig = {
             unsplash: this.settings.unsplash ? unsplashConfig.defaultHeaders : null,
             klipy: this.config.klipy?.apiKey ? this.config.klipy : null,
+            embedPreviewUrl: this.config.security?.embedPreviewUrl || undefined,
             fetchAutocompleteLinks,
             fetchEmbed,
             fetchLabels,

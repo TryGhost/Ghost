@@ -281,7 +281,7 @@ class FixtureManager {
         const result = {};
 
         for (const key in obj) {
-          if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          if (Object.hasOwn(obj, key)) {
             // Process the key itself for placeholders
             const newKey = processString(key, replacements);
 

@@ -6,6 +6,7 @@ import {
   type KoenigInstance,
   type KoenigLexicalModule,
   loadKoenig,
+  loadedKoenigVersion,
 } from './koenig-loader';
 import { useFocusContext } from '@tryghost/shade/app';
 
@@ -64,14 +65,9 @@ export const KoenigWrapper: React.FC<KoenigWrapperProps> = ({
 }) => {
   const onError = useCallback((error: unknown) => {
     try {
-      Sentry.captureException({
-        error,
+      Sentry.captureException(error, {
         tags: { lexical: true },
-        contexts: {
-          koenig: {
-            version: window['@tryghost/koenig-lexical']?.version,
-          },
-        },
+        contexts: { koenig: { version: loadedKoenigVersion() } },
       });
     } catch (e) {
       // if this fails, Sentry is probably not initialized
@@ -165,7 +161,11 @@ const KoenigEditorBase: React.FC<KoenigEditorBaseInternalProps> = ({
         <ErrorBoundary name="editor">
           <Suspense
             fallback={
-              loadingFallback || <p className="koenig-react-editor-loading">Loading editor...</p>
+              loadingFallback || (
+                <p className="font-serif text-[2rem] leading-[1.6em] font-normal tracking-[0.1px] text-gray-500">
+                  Loading editor...
+                </p>
+              )
             }
           >
             <KoenigWrapper

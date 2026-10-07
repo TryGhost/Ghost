@@ -9,6 +9,7 @@ import {
   memberCustomFieldsField,
   memberDetailEngagement,
   memberDetailTitle,
+  memberLabelsField,
   memberSigninUrl,
   memberSubscriptionToggle,
 } from '@tryghost/test-data/selectors/members';
@@ -97,8 +98,9 @@ export class MemberDetailsPage extends AdminPage {
     this.nameInput = page.getByRole('textbox', { name: 'Name' });
     this.emailInput = page.getByRole('textbox', { name: 'Email' });
     this.noteInput = page.getByRole('textbox', { name: 'Note' });
-    this.labelsInput = page.getByText('Labels').locator('+ div');
-    this.labels = this.labelsInput.getByRole('listitem');
+    this.labelsInput = page.getByTestId(memberLabelsField);
+    // Each label the member carries is a chip that removes it when pressed.
+    this.labels = this.labelsInput.getByRole('button', { name: /^Remove / });
     this.newsletterSubscriptionToggles = page
       .getByTestId(memberSubscriptionToggle)
       .filter({ visible: true });
@@ -230,23 +232,29 @@ export class MemberDetailsPage extends AdminPage {
     return await this.labels.allInnerTexts();
   }
 
-  async addLabel(label: string): Promise<void> {
+  getLabel(labelName: string): Locator {
+    return this.labelsInput.getByRole('button', { name: `Remove ${labelName}`, exact: true });
+  }
+
+  async addLabel(labelName: string): Promise<void> {
     await this.labelsInput.click();
-    await this.page.keyboard.type(label);
-    await this.page.keyboard.press('Tab');
+    await this.page.keyboard.type(labelName);
+    await this.page
+      .getByRole('option', { name: labelName, exact: true })
+      .or(this.page.getByRole('option', { name: `Create "${labelName}"`, exact: true }))
+      .click();
+    await this.getLabel(labelName).waitFor();
   }
 
   async removeLabel(labelName: string): Promise<void> {
-    await this.labelsInput.click();
-    await this.labels.filter({ hasText: labelName }).getByLabel('remove element').click();
+    await this.getLabel(labelName).click();
   }
 
   async removeLabels() {
-    await this.labelsInput.click();
     let labelsCount = await this.labels.count();
 
     while (labelsCount > 0) {
-      await this.labels.last().getByLabel('remove element').click();
+      await this.labels.last().click();
       labelsCount = await this.labels.count();
     }
   }

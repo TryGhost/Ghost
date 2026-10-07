@@ -191,12 +191,14 @@ class CommentsServiceEmails {
    * @param {*} reporter The member object who reported this comment
    */
   async notifyReport(comment, reporter) {
-    const post = await this.models.Post.findOne(
-      { id: comment.get('post_id') },
-      { withRelated: ['tags', 'authors'] },
-    );
-    const member = await this.models.Member.findOne({ id: comment.get('member_id') });
-    const owner = await this.models.User.getOwnerUser();
+    const [post, member, owner] = await Promise.all([
+      this.models.Post.findOne(
+        { id: comment.get('post_id') },
+        { withRelated: ['tags', 'authors'] },
+      ),
+      this.models.Member.findOne({ id: comment.get('member_id') }),
+      this.models.User.getOwnerUser(),
+    ]);
 
     // For now we only send the report to the owner
     const to = owner.get('email');

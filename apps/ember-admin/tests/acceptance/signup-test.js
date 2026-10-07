@@ -75,7 +75,7 @@ describe('Acceptance: Signup', function () {
         expect(
             find('[data-test-input="name"]').closest('.form-group').querySelector('.response').textContent,
             'name inline-error text'
-        ).to.have.string('Please enter a name');
+        ).to.have.string('Enter a name');
 
         // entering text in Name field clears error
         await fillIn('[data-test-input="name"]', 'Test User');

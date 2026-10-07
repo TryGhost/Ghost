@@ -71,7 +71,12 @@ function CaptionPlugin({parentEditor}) {
                         if (document.querySelector(`#typeahead-menu`)) {
                             return false;
                         }
-                        
+
+                        // Lexical dispatches Enter without an event when an IME composition ends in a newline
+                        if (!event) {
+                            return false;
+                        }
+
                         // allow shift+enter to create a line break
                         if (event.shiftKey) {
                             return false;

@@ -6,7 +6,7 @@ import { type Label } from '@tryghost/admin-x-framework/api/labels';
 import { getErrorMessage } from '@tryghost/admin-x-framework/errors';
 
 interface EditRowProps {
-  label: Label;
+  label: Pick<Label, 'id' | 'name'>;
   onSave: (id: string, name: string) => Promise<void>;
   onCancel: () => void;
   onDelete: (id: string) => Promise<void>;

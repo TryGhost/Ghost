@@ -110,7 +110,6 @@ class SiteMapManager {
         authors: types.authors,
         tags: types.tags,
       },
-      maxPerPage: options.maxPerPage,
     });
   }
 
@@ -208,7 +207,9 @@ class SiteMapManager {
       for (let i = 0; i < rows.length; i++) {
         this._applyResource(next, type, rows[i]);
         // Release each row once applied, so rows and records are not both
-        // fully resident.
+        // fully resident. The rows must be owned by this build:
+        // getRoutableResources queries afresh on every call, and a shared or
+        // cached array would reach the next build emptied.
         rows[i] = undefined;
 
         if (performance.now() - sliceStart >= this._buildSliceMs) {
@@ -219,6 +220,12 @@ class SiteMapManager {
           sliceStart = performance.now();
         }
       }
+    }
+
+    // Sealed as they are swapped in: from here they only serve pages, and
+    // each drops its records once every page of it has been rendered.
+    for (const generator of Object.values(next)) {
+      generator.seal();
     }
 
     this.posts = next.posts;

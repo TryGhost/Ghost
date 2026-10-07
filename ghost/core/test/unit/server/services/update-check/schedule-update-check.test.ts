@@ -4,9 +4,8 @@ import { describe, it, beforeEach, afterEach } from 'vitest';
 import logging from '@tryghost/logging';
 
 // require, not import: these must resolve to the same CommonJS module instances
-// that core/server/services/update-check/index.js loads - so a stray addJob()
-// call is visible here, and the scheduled job is instanceof the class below.
-const legacyJobsManager = require('../../../../../core/server/services/jobs');
+// that core/server/services/update-check/index.js loads, so the scheduled job is
+// instanceof the class below.
 const config = require('../../../../../core/shared/config');
 const updateCheck = require('../../../../../core/server/services/update-check');
 const UpdateCheckJob =
@@ -14,7 +13,6 @@ const UpdateCheckJob =
 
 describe('update-check scheduling', function () {
   let jobsService: { scheduleRecurring: sinon.SinonStub; dispatch: sinon.SinonStub };
-  let addJob: sinon.SinonStub;
   let loggingInfo: sinon.SinonStub;
 
   beforeEach(function () {
@@ -22,7 +20,6 @@ describe('update-check scheduling', function () {
       scheduleRecurring: sinon.stub().resolves(),
       dispatch: sinon.stub().resolves(),
     };
-    addJob = sinon.stub(legacyJobsManager, 'addJob');
     loggingInfo = sinon.stub(logging, 'info');
   });
 
@@ -49,7 +46,6 @@ describe('update-check scheduling', function () {
       jobsService.dispatch.notCalled,
       'no boot run is dispatched unless updateCheck:forceUpdate is set',
     );
-    assert.ok(addJob.notCalled, 'update-check is no longer registered with the legacy job manager');
   });
 
   it('also dispatches a one-off boot run when updateCheck:forceUpdate is set', async function () {
@@ -65,6 +61,5 @@ describe('update-check scheduling', function () {
       loggingInfo.calledWith('[Background Job] update-check boot run queued'),
       'the boot dispatch is logged',
     );
-    assert.ok(addJob.notCalled, 'the boot run is no longer registered with the legacy job manager');
   });
 });

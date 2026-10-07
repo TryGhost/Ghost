@@ -25,7 +25,7 @@ module.exports = function t(text, options = {}) {
   const bindings = {};
   let prop;
   for (prop in options.hash) {
-    if (Object.prototype.hasOwnProperty.call(options.hash, prop)) {
+    if (Object.hasOwn(options.hash, prop)) {
       bindings[prop] = options.hash[prop];
     }
   }

@@ -1,8 +1,10 @@
 import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
+import { GHOST_OWNER } from './constants';
 import { GhostInstance, MySQLManager } from './service-managers';
 import { GhostManager } from './service-managers/ghost-manager';
 import { randomUUID } from 'crypto';
+import { setupUser } from '@/helpers/utils/setup-user';
 import type { EgressMonitor } from './service-managers/egress-monitor';
 import type { GhostConfig } from '@/helpers/playwright/fixture';
 
@@ -66,7 +68,7 @@ export class EnvironmentManager {
    *
    * Creates the worker 0 containers (Ghost + Gateway) and waits for Ghost to
    * become healthy. Ghost automatically runs migrations on startup. Once healthy,
-   * we snapshot the database for test isolation.
+   * we set up the owner account and snapshot the database for test isolation.
    */
   async globalSetup(): Promise<void> {
     logging.info(`Starting ${this.mode} environment global setup...`);
@@ -80,6 +82,14 @@ export class EnvironmentManager {
     await this.ghost.setup('ghost_e2e_base');
     await this.ghost.waitForReady();
     this.initialized = true;
+
+    // Set up the owner once here rather than in every test database. The owner
+    // never logs in before the snapshot, so its first login still skips device
+    // verification.
+    await setupUser(`http://localhost:${this.ghost.getGatewayPort()}`, {
+      ...GHOST_OWNER,
+      email: 'owner@example.com',
+    });
 
     // Snapshot the migrated database for test isolation
     await this.mysql.createSnapshot('ghost_e2e_base');
@@ -122,9 +132,10 @@ export class EnvironmentManager {
 
     const siteUuid = randomUUID();
     const instanceId = `ghost_e2e_${siteUuid.replace(/-/g, '_')}`;
+    const ownerEmail = `test${siteUuid}@ghost.org`;
 
     // Setup database
-    await this.mysql.setupTestDatabase(instanceId, siteUuid, {
+    await this.mysql.setupTestDatabase(instanceId, siteUuid, ownerEmail, {
       stripe: options.stripe,
     });
 
@@ -141,6 +152,7 @@ export class EnvironmentManager {
       port,
       baseUrl: `http://localhost:${port}`,
       siteUuid,
+      ownerEmail,
     };
   }
 

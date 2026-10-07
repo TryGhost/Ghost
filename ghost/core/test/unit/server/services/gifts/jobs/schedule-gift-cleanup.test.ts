@@ -4,20 +4,17 @@ import { describe, it, beforeEach, afterEach } from 'vitest';
 import logging from '@tryghost/logging';
 
 // require, not import: these must resolve to the same CommonJS module instances
-// that core/server/services/gifts/jobs/index.js loads - so a stray addJob()
-// call is visible here, and the scheduled job is instanceof the class below.
-const legacyJobsManager = require('../../../../../../core/server/services/jobs');
+// that core/server/services/gifts/jobs/index.js loads, so the scheduled job is
+// instanceof the class below.
 const giftJobs = require('../../../../../../core/server/services/gifts/jobs');
 const CleanGiftsJob =
   require('../../../../../../core/server/services/gifts/jobs/clean-gifts-job').default;
 
 describe('gift jobs: cleanup scheduling', function () {
   let jobsService: { scheduleRecurring: sinon.SinonStub };
-  let addJob: sinon.SinonStub;
 
   beforeEach(function () {
     jobsService = { scheduleRecurring: sinon.stub().resolves() };
-    addJob = sinon.stub(legacyJobsManager, 'addJob');
   });
 
   afterEach(function () {
@@ -55,6 +52,5 @@ describe('gift jobs: cleanup scheduling', function () {
       /^\d{1,2} \d{1,2} [0-5] \* \* \*$/,
       'a random daily cron inside the 0-5am off-peak window',
     );
-    assert.ok(addJob.notCalled, 'clean-gifts is no longer registered with the legacy job manager');
   });
 });

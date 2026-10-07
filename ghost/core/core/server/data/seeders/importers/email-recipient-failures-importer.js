@@ -15,7 +15,7 @@ class EmailRecipientFailuresImporter extends TableImporter {
       .from('email_recipients')
       .whereNotNull('failed_at');
 
-    await this.importForEach(recipients, quantity ? quantity / recipients.length : 1);
+    await this.importForEach(recipients, quantity !== undefined ? quantity / recipients.length : 1);
   }
 
   generate() {

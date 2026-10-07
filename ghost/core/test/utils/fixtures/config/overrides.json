@@ -1,6 +1,14 @@
 {
     "paths": {
         "appRoot": ".",
-        "corePath": "core/"
+        "corePath": "core/",
+        "adminAssets": "core/built/admin",
+        "helperTemplates": "core/frontend/helpers/tpl/",
+        "defaultViews": "core/server/views/",
+        "defaultRouteSettings": "core/server/services/route-settings/",
+        "internalAppPath": "core/frontend/apps/",
+        "internalAdaptersPath": "core/server/adapters/",
+        "migrationPath": "core/server/data/migrations",
+        "publicFilePath": "core/frontend/public"
     }
 }

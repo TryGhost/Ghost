@@ -1,7 +1,6 @@
 const debug = require('@tryghost/debug')('web:admin:app');
 const path = require('path');
 const express = require('../../../shared/express');
-const serveStatic = express.static;
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils').default;
 const shared = require('../shared');
@@ -9,6 +8,8 @@ const errorHandler = require('@tryghost/mw-error-handler');
 const sentry = require('../../../shared/sentry');
 const redirectAdminUrls = require('./middleware/redirect-admin-urls');
 const bridge = require('../../../bridge');
+
+const serveStatic = express.serveStatic;
 
 /**
  *

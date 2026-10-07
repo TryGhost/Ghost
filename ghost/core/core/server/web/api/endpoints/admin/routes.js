@@ -1,3 +1,4 @@
+const errors = require('@tryghost/errors');
 const express = require('../../../../../shared/express');
 const api = require('../../../../api').endpoints;
 const { http } = require('@tryghost/api-framework');
@@ -6,6 +7,7 @@ const apiMw = require('../../middleware');
 const mw = require('./middleware');
 const labs = require('../../../../../shared/labs');
 const limits = require('../../../../services/limits');
+const appInstallations = require('../../../../services/app-installations');
 
 const shared = require('../../../shared');
 
@@ -147,25 +149,6 @@ module.exports = function apiRoutes() {
   // Tiers
   router.get('/tiers', mw.authAdminApi, http(api.tiers.browse));
   router.post('/tiers', mw.authAdminApi, http(api.tiers.add));
-  // What a tier's checkout asks for, read when a Stripe checkout session is built.
-  // Registered before /tiers/:id so the literal path isn't captured by :id.
-  //
-  // A sub-resource rather than a key on the tier, because the tier payload is a public
-  // projection: `tiers-public` shares this docName's serializer, so anything on a tier is
-  // rendered by themes. This is admin-only configuration that no client renders, since
-  // the questions are drawn by Stripe's own checkout page rather than by Portal.
-  //
-  // Named for the configuration rather than the checkout, so it cannot be mistaken for
-  // the session that `create-stripe-checkout-session` creates from it.
-  router.get('/tiers/checkout_config', mw.authAdminApi, http(api.tiersCheckoutConfig.browse));
-  router.get('/tiers/:id/checkout_config', mw.authAdminApi, http(api.tiersCheckoutConfig.read));
-  router.put(
-    '/tiers/:id/checkout_config',
-    mw.authAdminApi,
-    labs.enabledMiddleware('stripeCheckoutCollection'),
-    http(api.tiersCheckoutConfig.edit),
-  );
-
   router.get('/tiers/:id', mw.authAdminApi, http(api.tiers.read));
   router.put('/tiers/:id', mw.authAdminApi, http(api.tiers.edit));
 
@@ -206,10 +189,13 @@ module.exports = function apiRoutes() {
   // guarded by being there, which is the safer way round to forget.
   //
   // Mounted before /members/:id so the literal path is not captured as an id.
+  //
+  // Authenticated as a route here rather than inside the mount: mounting strips the path
+  // from req.url, and the check on integration keys names the resource from its first
+  // segment, so inside it would see "custom" instead of "members" and refuse them.
   const metafieldsRouter = express.Router('admin api members metafields');
+  router.all(['/members/metafields', '/members/metafields/*'], mw.authAdminApi);
   router.use('/members/metafields', metafieldsRouter);
-
-  metafieldsRouter.use(mw.authAdminApi);
 
   // Reading is deliberately open: Admin asks every site for its definitions to draw
   // screens it renders either way, and a site that has none simply answers with an empty
@@ -228,6 +214,27 @@ module.exports = function apiRoutes() {
   metafieldsRouter.put('/:namespace', http(api.membersMetafields.reorder));
   metafieldsRouter.put('/:namespace/:key', http(api.membersMetafields.edit));
   metafieldsRouter.delete('/:namespace/:key', http(api.membersMetafields.destroy));
+
+  // ## Apps
+  // Everything about apps sits behind the private `apps` flag, asked once here so a route
+  // added below is guarded by being there. The table is still in development, so it only
+  // exists in development and testing databases: anywhere else the routes answer as if
+  // the flag were off, whatever the flag says.
+  //
+  // Authenticated as a route here rather than inside the mount, for the same reason as
+  // the members metafields router above.
+  const appsRouter = express.Router('admin api apps');
+  router.all(['/apps', '/apps/*'], mw.authAdminApi);
+  router.use('/apps', appsRouter);
+  appsRouter.use(labs.enabledMiddleware('apps'));
+  // Answers as if apps did not exist wherever the table does not.
+  appsRouter.use((req, res, next) => {
+    next(appInstallations.isAvailable() ? undefined : new errors.NotFoundError());
+  });
+
+  appsRouter.get('/installations', http(api.appInstallations.browse));
+  appsRouter.get('/installations/:id', http(api.appInstallations.read));
+  appsRouter.delete('/installations/:id', http(api.appInstallations.destroy));
 
   router.get('/members/:id', mw.authAdminApi, http(api.members.read));
   router.put('/members/:id', mw.authAdminApi, http(api.members.edit));
@@ -298,6 +305,13 @@ module.exports = function apiRoutes() {
     http(api.automationActionLinks.browse),
   );
   router.get('/automations/:id', mw.authAdminApi, http(api.automations.read));
+  router.get(
+    '/automations/:id/performance-stats',
+    mw.authAdminApi,
+    http(api.automationPerformanceStats.read),
+  );
+  router.get('/automations/:id/runs', mw.authAdminApi, http(api.automationRuns.browse));
+  router.get('/automations/:id/runs/:run_id', mw.authAdminApi, http(api.automationRunHistory.read));
   router.post(
     '/automations/:id/email_preview',
     mw.authAdminApi,
@@ -310,6 +324,7 @@ module.exports = function apiRoutes() {
     http(api.automationEmailPreviews.sendTestEmail),
   );
   router.put('/automations/poll', mw.authAdminApiWithUrl, http(api.automations.poll));
+  router.post('/automations', mw.authAdminApi, http(api.automations.add));
   router.put('/automations/:id', mw.authAdminApi, http(api.automations.edit));
 
   // ## Automated Emails
@@ -385,18 +400,8 @@ module.exports = function apiRoutes() {
   router.post('/db/media/inline', mw.authAdminApi, http(api.db.inlineMedia));
 
   // ## Exports
-  router.get(
-    '/exports/download',
-    mw.authAdminApi,
-    labs.enabledMiddleware('selfServeArchives'),
-    http(api.exports.download),
-  );
-  router.post(
-    '/exports',
-    mw.authAdminApi,
-    labs.enabledMiddleware('selfServeArchives'),
-    http(api.exports.add),
-  );
+  router.get('/exports/download', mw.authAdminApi, http(api.exports.download));
+  router.post('/exports', mw.authAdminApi, http(api.exports.add));
 
   // ## Slack
   router.post('/slack/test', mw.authAdminApi, http(api.slack.sendTest));

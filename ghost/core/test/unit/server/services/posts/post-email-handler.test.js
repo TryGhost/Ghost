@@ -23,6 +23,7 @@ describe('PostEmailHandler', function () {
     mockEmailService = {
       checkCanSendEmail: sinon.stub().resolves({ emailCount: 42 }),
       createEmail: sinon.stub(),
+      scheduleEmail: sinon.stub().resolves(),
       retryEmail: sinon.stub(),
     };
 
@@ -98,7 +99,7 @@ describe('PostEmailHandler', function () {
     function createExistingPost({
       status = 'draft',
       newsletterId = null,
-      emailRecipientFilter = null,
+      emailRecipientFilter = 'all',
     } = {}) {
       const post = { get: sinon.stub() };
       post.get.withArgs('status').returns(status);
@@ -144,13 +145,17 @@ describe('PostEmailHandler', function () {
       sinon.assert.calledOnceWithExactly(
         mockModels.Post.findOne,
         { id: 'post-123', status: 'all' },
-        { columns: ['id', 'status', 'newsletter_id', 'email_recipient_filter'] },
+        {
+          columns: ['id', 'status', 'newsletter_id', 'email_recipient_filter'],
+          transacting: undefined,
+        },
       );
       sinon.assert.calledOnceWithExactly(mockEmailService.checkCanSendEmail, newsletter, 'all');
       assert.deepEqual(result, {
         newsletter,
         emailRecipientFilter: 'all',
         emailCount: 42,
+        csdEmailCount: undefined,
       });
     });
 
@@ -189,12 +194,12 @@ describe('PostEmailHandler', function () {
     });
 
     it('validates email recipient filter from frame options', async function () {
-      setupExistingPost({ newsletterId: 'newsletter-123' });
+      setupExistingPost();
       mockModels.Member.findPage.resolves({ data: [] });
       const newsletter = setupNewsletter();
 
       await postEmailHandler.validateBeforeSave(
-        createFrame('published', { email_segment: 'status:paid' }),
+        createFrame('published', { newsletter: 'weekly', email_segment: 'status:paid' }),
       );
 
       sinon.assert.calledOnceWithExactly(mockModels.Member.findPage, {
@@ -208,36 +213,43 @@ describe('PostEmailHandler', function () {
       );
     });
 
-    it('falls back to existing post email_recipient_filter', async function () {
+    it('keeps the filter of a post that already has a newsletter, as saving does', async function () {
       setupExistingPost({ newsletterId: 'newsletter-123', emailRecipientFilter: 'status:free' });
       mockModels.Member.findPage.resolves({ data: [] });
-      setupNewsletter();
+      const newsletter = setupNewsletter();
 
-      await postEmailHandler.validateBeforeSave(createFrame('published'));
+      await postEmailHandler.validateBeforeSave(
+        createFrame('published', { email_segment: 'status:paid' }),
+      );
 
       sinon.assert.calledOnceWithExactly(mockModels.Member.findPage, {
         filter: 'status:free',
         limit: 1,
       });
+      sinon.assert.calledOnceWithExactly(
+        mockEmailService.checkCanSendEmail,
+        newsletter,
+        'status:free',
+      );
     });
 
     it('defaults to "all" when no filter specified', async function () {
-      setupExistingPost({ newsletterId: 'newsletter-123' });
+      setupExistingPost();
       const newsletter = setupNewsletter();
 
-      await postEmailHandler.validateBeforeSave(createFrame('published'));
+      await postEmailHandler.validateBeforeSave(createFrame('published', { newsletter: 'weekly' }));
 
       sinon.assert.notCalled(mockModels.Member.findPage);
       sinon.assert.calledOnceWithExactly(mockEmailService.checkCanSendEmail, newsletter, 'all');
     });
 
     it('propagates filter validation errors', async function () {
-      setupExistingPost({ newsletterId: 'newsletter-123' });
+      setupExistingPost();
       mockModels.Member.findPage.rejects(new Error('Invalid filter'));
 
       await assert.rejects(
         postEmailHandler.validateBeforeSave(
-          createFrame('published', { email_segment: 'invalid:::filter' }),
+          createFrame('published', { newsletter: 'weekly', email_segment: 'invalid:::filter' }),
         ),
         (err) => err.name === 'BadRequestError',
       );
@@ -307,7 +319,11 @@ describe('PostEmailHandler', function () {
       const result = await postEmailHandler.getNewsletter(createFrame('weekly-digest'), null);
 
       assert.equal(result, newsletter);
-      sinon.assert.calledOnceWithExactly(mockModels.Newsletter.findOne, { slug: 'weekly-digest' });
+      sinon.assert.calledOnceWithExactly(
+        mockModels.Newsletter.findOne,
+        { slug: 'weekly-digest' },
+        { transacting: undefined },
+      );
     });
 
     it('returns newsletter by id from existing post when no slug in options', async function () {
@@ -320,7 +336,11 @@ describe('PostEmailHandler', function () {
       );
 
       assert.equal(result, newsletter);
-      sinon.assert.calledOnceWithExactly(mockModels.Newsletter.findOne, { id: 'newsletter-456' });
+      sinon.assert.calledOnceWithExactly(
+        mockModels.Newsletter.findOne,
+        { id: 'newsletter-456' },
+        { transacting: undefined },
+      );
     });
 
     it('returns null when no newsletter specified and existing post has no newsletter_id', async function () {
@@ -337,8 +357,8 @@ describe('PostEmailHandler', function () {
       sinon.assert.notCalled(mockModels.Newsletter.findOne);
     });
 
-    it('prioritizes frame options newsletter over existing post newsletter_id', async function () {
-      const newsletter = { id: 'newsletter-new', slug: 'new-newsletter' };
+    it('keeps the newsletter a post already has over the requested one, as saving does', async function () {
+      const newsletter = { id: 'newsletter-old' };
       mockModels.Newsletter.findOne.resolves(newsletter);
 
       const result = await postEmailHandler.getNewsletter(
@@ -347,7 +367,11 @@ describe('PostEmailHandler', function () {
       );
 
       assert.equal(result, newsletter);
-      sinon.assert.calledOnceWithExactly(mockModels.Newsletter.findOne, { slug: 'new-newsletter' });
+      sinon.assert.calledOnceWithExactly(
+        mockModels.Newsletter.findOne,
+        { id: 'newsletter-old' },
+        { transacting: undefined },
+      );
     });
   });
 
@@ -406,65 +430,121 @@ describe('PostEmailHandler', function () {
       sinon.assert.notCalled(mockEmailService.retryEmail);
     });
 
-    it('creates email when publishing fresh post', async function () {
-      const model = createMockModel();
-      const createdEmail = { id: 'email-123' };
-      const preflight = { emailCount: 42 };
-      mockEmailService.createEmail.resolves(createdEmail);
+    for (const currentStatus of ['published', 'sent']) {
+      it(`creates email in the transaction and schedules it when called back (status=${currentStatus})`, async function () {
+        const model = createMockModel({ currentStatus });
+        const createdEmail = { id: 'email-123' };
+        const preflight = { emailCount: 42 };
+        const transacting = {};
+        mockEmailService.createEmail.resolves(createdEmail);
 
-      await postEmailHandler.createOrRetryEmail(model, { preflight });
+        const sendEmail = await postEmailHandler.createOrRetryEmail(model, {
+          preflight,
+          transacting,
+        });
 
-      sinon.assert.calledOnceWithExactly(mockEmailService.createEmail, model, { preflight });
-      sinon.assert.notCalled(mockEmailService.retryEmail);
-      sinon.assert.calledOnceWithExactly(model.set, 'email', createdEmail);
-    });
+        sinon.assert.calledOnceWithExactly(mockEmailService.createEmail, model, {
+          preflight,
+          transacting,
+        });
+        sinon.assert.calledOnceWithExactly(model.set, 'email', createdEmail);
+        assert.equal(model.relations.email, createdEmail);
+        sinon.assert.notCalled(mockEmailService.scheduleEmail);
 
-    it('retries email when existing email has failed status', async function () {
+        await sendEmail();
+
+        sinon.assert.calledOnceWithExactly(mockEmailService.scheduleEmail, createdEmail);
+        sinon.assert.notCalled(mockEmailService.retryEmail);
+      });
+    }
+
+    it('retries a failed email only when called back', async function () {
       const failedEmail = createMockEmail('failed');
       const model = createMockModel({ email: failedEmail });
       const retriedEmail = { id: 'email-123', status: 'pending' };
       mockEmailService.retryEmail.resolves(retriedEmail);
 
-      await postEmailHandler.createOrRetryEmail(model);
+      const sendEmail = await postEmailHandler.createOrRetryEmail(model, { transacting: {} });
+
+      sinon.assert.notCalled(mockEmailService.retryEmail);
+      sinon.assert.notCalled(model.set);
+
+      await sendEmail();
 
       sinon.assert.notCalled(mockEmailService.createEmail);
       sinon.assert.calledOnceWithExactly(mockEmailService.retryEmail, failedEmail);
       sinon.assert.calledOnceWithExactly(model.set, 'email', retriedEmail);
+      assert.equal(model.relations.email, retriedEmail);
     });
 
-    it('does not set email on model when existing email is not failed', async function () {
-      const existingEmail = createMockEmail('submitted');
-      const model = createMockModel({ email: existingEmail });
+    for (const status of ['pending', 'submitting', 'submitted', 'failed']) {
+      it(`handles a lost retry claim with persisted status ${status}`, async function () {
+        const email = createMockEmail('failed');
+        email.refresh = sinon.stub().callsFake(async () => {
+          email.get.withArgs('status').returns(status);
+          return email;
+        });
+        const model = createMockModel({ email });
+        const error = Object.assign(new Error('Already claimed'), {
+          code: 'BULK_EMAIL_RETRY_NOT_FAILED',
+        });
+        mockEmailService.retryEmail.rejects(error);
+        const sendEmail = await postEmailHandler.createOrRetryEmail(model);
+        sinon.assert.notCalled(mockEmailService.retryEmail);
 
-      await postEmailHandler.createOrRetryEmail(model);
+        if (status === 'failed') {
+          await assert.rejects(sendEmail(), error);
+          sinon.assert.notCalled(model.set);
+        } else {
+          await sendEmail();
+          assert.equal(model.relations.email.get('status'), status);
+        }
+      });
+    }
 
-      sinon.assert.notCalled(mockEmailService.createEmail);
+    it('keeps the failed email when its delivery outcome is unknown after commit', async function () {
+      const email = createMockEmail('failed');
+      const model = createMockModel({ email });
+      model.id = 'post-123';
+      const warn = sinon.stub(require('@tryghost/logging'), 'warn');
+      mockEmailService.retryEmail.rejects(
+        Object.assign(new Error('Unknown delivery outcome'), {
+          code: 'EMAIL_RETRY_UNKNOWN_OUTCOME',
+        }),
+      );
+
+      const sendEmail = await postEmailHandler.createOrRetryEmail(model, { transacting: {} });
       sinon.assert.notCalled(mockEmailService.retryEmail);
+      await sendEmail();
+
+      assert.equal(model.relations.email, email);
+      assert.equal(email.get('status'), 'failed');
+      sinon.assert.notCalled(model.set);
+      sinon.assert.notCalled(mockEmailService.scheduleEmail);
+      sinon.assert.calledOnceWithExactly(
+        warn,
+        'Post post-123 was saved without retrying email email-123: delivery outcome is unknown',
+      );
+    });
+
+    it('propagates retry failures other than a lost claim', async function () {
+      const model = createMockModel({ email: createMockEmail('failed') });
+      const error = new Error('Database unavailable');
+      mockEmailService.retryEmail.rejects(error);
+      const sendEmail = await postEmailHandler.createOrRetryEmail(model);
+      sinon.assert.notCalled(mockEmailService.retryEmail);
+      await assert.rejects(sendEmail(), error);
       sinon.assert.notCalled(model.set);
     });
 
-    it('handles sent status transition', async function () {
-      const model = createMockModel({ currentStatus: 'sent' });
-      const createdEmail = { id: 'email-456' };
-      mockEmailService.createEmail.resolves(createdEmail);
+    it('does nothing when existing email is not failed', async function () {
+      const existingEmail = createMockEmail('submitted');
+      const model = createMockModel({ email: existingEmail });
 
-      await postEmailHandler.createOrRetryEmail(model);
+      assert.equal(await postEmailHandler.createOrRetryEmail(model), undefined);
 
-      sinon.assert.calledOnceWithExactly(mockEmailService.createEmail, model, {
-        preflight: undefined,
-      });
-      sinon.assert.calledOnceWithExactly(model.set, 'email', createdEmail);
-    });
-
-    it('does not set email when createEmail returns null', async function () {
-      const model = createMockModel();
-      mockEmailService.createEmail.resolves(null);
-
-      await postEmailHandler.createOrRetryEmail(model);
-
-      sinon.assert.calledOnceWithExactly(mockEmailService.createEmail, model, {
-        preflight: undefined,
-      });
+      sinon.assert.notCalled(mockEmailService.createEmail);
+      sinon.assert.notCalled(mockEmailService.retryEmail);
       sinon.assert.notCalled(model.set);
     });
   });

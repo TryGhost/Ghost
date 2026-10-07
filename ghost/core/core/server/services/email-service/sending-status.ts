@@ -17,7 +17,12 @@ export type SendingProgress = z.infer<typeof SendingProgress>;
 export const SendingStatus = z.discriminatedUnion('status', [
   z.object({ status: SendingPhase, progress: SendingProgress }),
   z.object({ status: z.literal('submitted'), progress: SendingProgress }),
-  z.object({ status: z.literal('failed'), progress: SendingProgress, failedDuring: SendingPhase }),
+  z.object({
+    status: z.literal('failed'),
+    progress: SendingProgress,
+    failedDuring: SendingPhase,
+    retryable: z.boolean(),
+  }),
 ]);
 export type SendingStatus = z.infer<typeof SendingStatus>;
 
@@ -36,9 +41,10 @@ export interface SendingEmail {
 
 export interface SendingBatch {
   status: StoredSendingStatus;
-  recipientCount: number;
+  recipientCount: number | null;
   createdAt: Date;
   updatedAt: Date;
+  accountedRecipientCount?: number;
 }
 
 type BatchSample = { recipientCount: number; timestamp: number };
@@ -65,22 +71,29 @@ export function buildSendingStatus(email: SendingEmail, batches: SendingBatch[])
   const preparedCount = sumRecipients(batches);
   const completedBatches =
     phase === 'preparing' ? batches : batches.filter((batch) => batch.status === 'submitted');
-  const completed = sumRecipients(completedBatches);
+  const completed = completedBatches.reduce(
+    (sum, batch) => sum + completedRecipients(batch, phase),
+    0,
+  );
+  const hasUnknownRecipients = batches.some((batch) => batch.recipientCount === null);
   const total =
-    phase === 'preparing' ? Math.max(email.recipientCount, preparedCount) : preparedCount;
+    phase === 'preparing' || hasUnknownRecipients
+      ? Math.max(email.recipientCount, preparedCount)
+      : preparedCount;
 
   if (email.status === 'failed') {
     return {
       status: 'failed',
       progress: { completed, total, estimatedSecondsRemaining: null },
       failedDuring: phase,
+      retryable: isRetryable(batches.map((batch) => batch.status)),
     };
   }
 
   const failedThisAttempt = batches.filter((batch) => failedDuringAttempt(batch, attemptStartedAt));
   const remaining = total - completed - sumRecipients(failedThisAttempt);
   const samples = completedBatches.map((batch) => ({
-    recipientCount: batch.recipientCount,
+    recipientCount: completedRecipients(batch, phase),
     timestamp: (phase === 'preparing' ? batch.createdAt : batch.updatedAt).getTime(),
   }));
 
@@ -98,8 +111,19 @@ export function buildSendingStatus(email: SendingEmail, batches: SendingBatch[])
   };
 }
 
+// A submitting batch may already have been accepted by the provider.
+export function isRetryable(batchStatuses: StoredSendingStatus[]): boolean {
+  return !batchStatuses.includes('submitting');
+}
+
 function sumRecipients(batches: SendingBatch[]): number {
-  return batches.reduce((sum, batch) => sum + batch.recipientCount, 0);
+  return batches.reduce((sum, batch) => sum + (batch.recipientCount ?? 0), 0);
+}
+
+function completedRecipients(batch: SendingBatch, phase: SendingPhase): number {
+  return phase === 'submitting'
+    ? (batch.accountedRecipientCount ?? batch.recipientCount ?? 0)
+    : (batch.recipientCount ?? 0);
 }
 
 // A batch that fails is only retried together with its email, so within an attempt it is finished work.

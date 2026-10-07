@@ -21,23 +21,19 @@ export const BUCKET_ORDER: readonly PostBucket[] = ['scheduled', 'draft', 'publi
 
 const ALL_STATUSES: readonly PostStatus[] = ['draft', 'scheduled', 'published', 'sent'];
 
-const TYPE_TO_STATUSES: Record<string, readonly PostStatus[]> = {
-  draft: ['draft'],
-  published: ['published'],
-  scheduled: ['scheduled'],
-  sent: ['sent'],
-};
-
 /** Rows per request. Matches Ember; also decides when a bucket "opens". */
 export const POSTS_PER_PAGE = 30;
 
 /**
- * The five URL params the screen is addressed by. This shape is the source of
- * truth: it is what the URL carries and what sidebar saved views persist, so
- * it must round-trip byte-identically between the Ember and React screens.
+ * The URL params the screen is addressed by. This shape is the source of
+ * truth: it is what the URL carries and what sidebar saved views persist.
+ *
+ * `type` is a comma-separated list of statuses, matched with OR. `featured` is
+ * `true` or `false` and ANDs with the rest.
  */
 export interface PostListParams {
   type?: string | null;
+  featured?: string | null;
   visibility?: string | null;
   author?: string | null;
   tag?: string | null;
@@ -52,12 +48,35 @@ export interface PostFilterContext {
   ownAuthorSlug?: string | null;
 }
 
+/** Legacy `type` value from before `featured` was its own param. */
+export const LEGACY_FEATURED_TYPE = 'featured';
+
+export function splitTypeParam(type?: string | null): string[] {
+  return (type ?? '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
 /**
- * `featured` is not a status - it means every status *and* `featured:true`.
- * An unrecognised type falls back to everything, matching Ember's `switch`.
+ * The statuses a `type` param selects. Values that aren't statuses (including
+ * the legacy `featured`) select nothing, and selecting nothing means every
+ * status.
  */
 export function getStatusesForType(type?: string | null): PostStatus[] {
-  return [...(TYPE_TO_STATUSES[type ?? ''] ?? ALL_STATUSES)];
+  const selected = splitTypeParam(type);
+  const statuses = ALL_STATUSES.filter((status) => selected.includes(status));
+
+  return statuses.length > 0 ? statuses : [...ALL_STATUSES];
+}
+
+/** `?type=featured` predates the `featured` param and still means featured. */
+export function getFeaturedValue(params: PostListParams): 'true' | 'false' | null {
+  if (params.featured === 'true' || params.featured === 'false') {
+    return params.featured;
+  }
+
+  return splitTypeParam(params.type).includes(LEGACY_FEATURED_TYPE) ? 'true' : null;
 }
 
 function statusClause(statuses: PostStatus[]): string {
@@ -97,7 +116,7 @@ function filterClauses(
     ['tag', params.tag],
     ['visibility', params.visibility],
     ['status', statusClause(statuses)],
-    ['featured', params.type === 'featured' ? 'true' : null],
+    ['featured', getFeaturedValue(params)],
     ['authors', ownAuthorSlug || params.author],
   ];
 }

@@ -1,8 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import TierCheckoutCollection, {
-  type TierCheckoutCollectionHandle,
-} from './tier-checkout-collection';
-import { useTierCheckoutCollection } from './use-tier-checkout-collection';
 import TierDetailPreview from './tier-detail-preview';
 import useCurrencyInput from '@/settings/hooks/use-currency-input';
 import useSettingGroup from '@/settings/hooks/use-setting-group';
@@ -24,6 +20,7 @@ import {
   Input,
   InputGroup,
   InputGroupAddon,
+  InputGroupButton,
   InputGroupInput,
   InputGroupText,
   MultiSelectCombobox,
@@ -32,7 +29,7 @@ import {
 } from '@tryghost/shade/components';
 import { type ErrorMessages, useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { Inline, Text } from '@tryghost/shade/primitives';
-import { LucideIcon, cn } from '@tryghost/shade/utils';
+import { LucideIcon } from '@tryghost/shade/utils';
 import { useParams } from '@tryghost/admin-x-framework';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { SettingsModal } from '@tryghost/shade/patterns';
@@ -50,19 +47,15 @@ import {
 import { getSettingValues, useEditSettings } from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
+import { useShade } from '@tryghost/shade/app';
 
 export type TierFormState = Partial<Omit<Tier, 'trial_days'>> & {
   trial_days: string;
 };
 
-const TierDetailModalContent: React.FC<{
-  tier?: Tier;
-  checkout: ReturnType<typeof useTierCheckoutCollection>;
-}> = ({ tier, checkout }) => {
+const TierDetailModalContent: React.FC<{ tier?: Tier }> = ({ tier }) => {
+  const { isAdmin7 } = useShade();
   const isFreeTier = tier?.type === 'free';
-  // Both flags are already gated on a paid tier (saved or being created) inside the hook.
-  const checkoutVisible = checkout.enabled;
-  const checkoutFailed = checkout.failed;
   const [currencyOpen, setCurrencyOpen] = React.useState(false);
 
   const { updateRoute } = useSettingsNavigation();
@@ -98,7 +91,7 @@ const TierDetailModalContent: React.FC<{
         : undefined,
   };
 
-  const { formState, saveState, updateForm, handleSave, validate, errors, clearError, okProps } =
+  const { formState, saveState, updateForm, handleSave, errors, clearError, okProps } =
     useForm<TierFormState>({
       initialState: {
         ...(tier || {}),
@@ -132,10 +125,7 @@ const TierDetailModalContent: React.FC<{
         if (tier?.id) {
           await updateTier({ ...tier, ...values });
         } else {
-          // The id the checkout save needs: a new tier has none until this create
-          // returns one, and onOk reads it from the ref right after.
-          const created = await createTier(values);
-          createdTierIdRef.current = created.tiers[0]?.id ?? null;
+          await createTier(values);
         }
         if (isFreeTier) {
           // If we changed the visibility, we also need to update Portal settings in some situations
@@ -187,18 +177,6 @@ const TierDetailModalContent: React.FC<{
     canAddNewItem: (item) => !!item,
   });
   const modalRef = useRef<HTMLElement>(null);
-  const checkoutCollectionRef = useRef<TierCheckoutCollectionHandle>(null);
-  const createdTierIdRef = useRef<string | null>(null);
-  // The checkout section keeps its own form state, so it reports its dirtiness up for
-  // the modal's close confirmation to count.
-  const [checkoutDirty, setCheckoutDirty] = React.useState(false);
-  // If the section leaves the modal mid-session (its read failed), its unsaved edits
-  // leave with it — the flag must not stay armed for a section that no longer exists.
-  useEffect(() => {
-    if (!checkoutVisible) {
-      setCheckoutDirty(false);
-    }
-  }, [checkoutVisible]);
   const newBenefitInputRef = useRef<HTMLInputElement>(null);
 
   const addBenefit = () => {
@@ -222,6 +200,30 @@ const TierDetailModalContent: React.FC<{
         top: input.getBoundingClientRect().top - previousInputTop,
       });
     });
+  };
+
+  const renderBenefitControl = (
+    inputProps: React.ComponentPropsWithRef<typeof Input>,
+    buttonProps: React.ComponentProps<typeof Button>,
+    wrapInput: (input: React.ReactNode) => React.ReactNode = (input) => input,
+  ) => {
+    if (isAdmin7) {
+      return wrapInput(
+        <InputGroup>
+          <InputGroupInput {...inputProps} />
+          <InputGroupAddon align="inline-end">
+            <InputGroupButton {...buttonProps} shape="rounded" size="icon-xs" />
+          </InputGroupAddon>
+        </InputGroup>,
+      );
+    }
+
+    return (
+      <>
+        {wrapInput(<Input {...inputProps} />)}
+        <Button {...buttonProps} />
+      </>
+    );
   };
 
   const toggleFreeTrial = (checked: boolean) => {
@@ -314,7 +316,7 @@ const TierDetailModalContent: React.FC<{
       ref={modalRef}
       buttonsDisabled={okProps.disabled}
       cancelLabel="Close"
-      dirty={saveState === 'unsaved' || checkoutDirty}
+      dirty={saveState === 'unsaved'}
       leftButton={leftButton}
       okLabel={okProps.label || 'Save'}
       okVariant={okProps.variant}
@@ -326,27 +328,7 @@ const TierDetailModalContent: React.FC<{
         updateRoute('tiers');
       }}
       onOk={async () => {
-        // Two resources, one Save. The checkout section validates first so both error
-        // sets paint on one click; the tier's validation lives inside handleSave, which
-        // also flips the button to its Retry state on failure, exactly as it did before
-        // this section existed.
-        const checkoutValid = checkoutCollectionRef.current?.validate() ?? true;
-        if (!checkoutValid) {
-          validate();
-          return;
-        }
-        // The tier is the primary resource, so it commits first: a tier failure leaves
-        // the checkout config untouched. A checkout failure — reported by its save
-        // returning false rather than throwing — leaves a saved tier and a Save that
-        // converges on retry, because the unchanged tier save is fake and the config
-        // save simply runs again.
-        if (!(await handleSave({ fakeWhenUnchanged: true }))) {
-          return;
-        }
-        const savedTierId = tier?.id ?? createdTierIdRef.current;
-        if (savedTierId) {
-          await checkoutCollectionRef.current?.save(savedTierId);
-        }
+        await handleSave({ fakeWhenUnchanged: true });
       }}
     >
       <div className="mt-8 -mb-8 flex items-start gap-8">
@@ -552,12 +534,7 @@ const TierDetailModalContent: React.FC<{
 
           <FieldSet>
             <FieldLegend>Benefits</FieldLegend>
-            <FieldGroup
-              className={cn(
-                'gap-0 rounded-sm border border-border-default p-4 md:p-7',
-                !checkoutVisible && !checkoutFailed && 'mb-10',
-              )}
-            >
+            <FieldGroup className="mb-10 gap-0 rounded-sm border border-border-default p-4 md:p-7">
               <SortableList
                 getDragHandleLabel={({ item }) => `Reorder benefit${item ? `: ${item}` : ''}`}
                 items={benefits.items}
@@ -571,71 +548,71 @@ const TierDetailModalContent: React.FC<{
                     >
                       <LucideIcon.Check className="size-4" />
                     </Inline>
-                    <Input
-                      aria-label="Benefit"
-                      className="grow"
-                      maxLength={191}
-                      value={item}
-                      onChange={(e) => benefits.updateItem(id, e.target.value)}
-                    />
-                    <Button
-                      aria-label="Delete benefit"
-                      className="absolute top-1/2 right-1 z-10 size-5! -translate-y-1/2 p-0! opacity-0 group-hover:opacity-100"
-                      size="icon"
-                      type="button"
-                      variant="secondary"
-                      onClick={() => benefits.removeItem(id)}
-                    >
-                      <LucideIcon.Trash2 />
-                    </Button>
+                    {renderBenefitControl(
+                      {
+                        'aria-label': 'Benefit',
+                        className: 'grow',
+                        maxLength: 191,
+                        value: item,
+                        onChange: (e) => benefits.updateItem(id, e.target.value),
+                      },
+                      {
+                        'aria-label': 'Delete benefit',
+                        className: isAdmin7
+                          ? 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'
+                          : 'absolute top-1/2 right-1 z-10 size-5! -translate-y-1/2 p-0! opacity-0 group-hover:opacity-100',
+                        size: 'icon',
+                        type: 'button',
+                        variant: 'secondary',
+                        onClick: () => benefits.removeItem(id),
+                        children: <LucideIcon.Trash2 />,
+                      },
+                    )}
                   </Inline>
                 )}
                 onMove={benefits.moveItem}
               />
               <Inline align="center" className="relative mt-1" gap="md">
                 <LucideIcon.Check className="size-4" />
-                <Field className="w-100">
-                  <FieldLabel className="sr-only" htmlFor="new-tier-benefit">
-                    New benefit
-                  </FieldLabel>
-                  <Input
-                    ref={newBenefitInputRef}
-                    className="grow"
-                    id="new-tier-benefit"
-                    maxLength={191}
-                    placeholder="Expert analysis"
-                    value={benefits.newItem}
-                    onChange={(e) => benefits.setNewItem(e.target.value)}
-                    onKeyDown={(e) => {
+                {renderBenefitControl(
+                  {
+                    ref: newBenefitInputRef,
+                    className: 'grow',
+                    id: 'new-tier-benefit',
+                    maxLength: 191,
+                    placeholder: 'Expert analysis',
+                    value: benefits.newItem,
+                    onChange: (e) => benefits.setNewItem(e.target.value),
+                    onKeyDown: (e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
                         addBenefit();
                       }
-                    }}
-                  />
-                </Field>
-                <Button
-                  aria-label="Add benefit"
-                  className="absolute top-1/2 right-1 z-10 size-[22px]! -translate-y-1/2 p-0!"
-                  size="icon"
-                  type="button"
-                  onClick={addBenefit}
-                >
-                  <LucideIcon.Plus />
-                </Button>
+                    },
+                  },
+                  {
+                    'aria-label': 'Add benefit',
+                    variant: 'default',
+                    className: isAdmin7
+                      ? undefined
+                      : 'absolute top-1/2 right-1 z-10 size-[22px]! -translate-y-1/2 p-0!',
+                    size: 'icon',
+                    type: 'button',
+                    onClick: addBenefit,
+                    children: <LucideIcon.Plus />,
+                  },
+                  (input) => (
+                    <Field className="w-100">
+                      <FieldLabel className="sr-only" htmlFor="new-tier-benefit">
+                        New benefit
+                      </FieldLabel>
+                      {input}
+                    </Field>
+                  ),
+                )}
               </Inline>
             </FieldGroup>
           </FieldSet>
-
-          {(checkoutVisible || checkoutFailed) && (
-            <TierCheckoutCollection
-              key={tier?.id ?? 'new'}
-              ref={checkoutCollectionRef}
-              config={checkout.config}
-              failed={checkoutFailed}
-              onDirtyChange={setCheckoutDirty}
-            />
-          )}
         </div>
         <div className="sticky top-[96px] hidden shrink-0 basis-[380px] min-[920px]:!visible min-[920px]:!block">
           <TierDetailPreview isFreeTier={isFreeTier} tier={formState} />
@@ -659,23 +636,13 @@ const TierDetailModal: React.FC = () => {
 
   if (tierId) {
     tier = tiers?.find(({ id }) => id === tierId);
+
+    if (!tier) {
+      return null;
+    }
   }
 
-  // Deferring the first paint until everything it shows is loaded is this modal's
-  // existing rule (the tier lookup above); the checkout configuration joins it so the
-  // Basic card never grows after it appears. Disabled (flag off, no Stripe, or a free
-  // tier) means nothing is fetched and nothing is waited on.
-  const checkout = useTierCheckoutCollection(tier, { creating: !tierId });
-
-  if (tierId && !tier) {
-    return null;
-  }
-
-  if (!checkout.isReady) {
-    return null;
-  }
-
-  return <TierDetailModalContent checkout={checkout} tier={tier} />;
+  return <TierDetailModalContent tier={tier} />;
 };
 
 export default TierDetailModal;

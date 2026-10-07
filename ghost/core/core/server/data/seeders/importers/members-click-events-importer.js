@@ -18,7 +18,7 @@ class MembersClickEventsImporter extends TableImporter {
       .whereNotNull('opened_at');
     const redirects = await this.transaction.select('id', 'post_id').from('redirects');
     const emails = await this.transaction.select('id', 'post_id').from('emails');
-    this.quantity = quantity ? quantity / emailRecipients.length : 2;
+    this.quantity = quantity !== undefined ? quantity / emailRecipients.length : 2;
 
     // Create maps for faster lookups (this does make a difference for large data generation)
     this.emails = new Map();

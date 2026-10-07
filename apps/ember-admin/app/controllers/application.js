@@ -8,7 +8,6 @@ export default class ApplicationController extends Controller {
     @service billing;
     @service router;
     @service session;
-    @service settings;
     @service ui;
     @service upgradeStatus;
     @service ghostPaths;
@@ -31,7 +30,8 @@ export default class ApplicationController extends Controller {
     }
 
     get showBilling() {
-        return this.config.hostSettings?.billing?.enabled;
+        // The React admin mounts its own billing app when billingReact is on
+        return this.config.hostSettings?.billing?.enabled && this.feature.billingReact !== true;
     }
 
     get showUpdateBanner() {
@@ -52,16 +52,6 @@ export default class ApplicationController extends Controller {
         }
 
         return null;
-    }
-
-    get showScriptExtension() {
-        const {session} = this;
-
-        if (!session.isAuthenticated || !session.user) {
-            return false;
-        }
-
-        return this.config.clientExtensions?.script;
     }
 
     @action

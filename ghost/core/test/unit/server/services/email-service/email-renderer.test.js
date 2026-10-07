@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const { assertExists } = require('../../../../utils/assertions');
 const cheerio = require('cheerio');
 const { createModel, createModelClass } = require('./utils');
-const linkReplacer = require('../../../../../core/server/services/lib/link-replacer');
+const linkReplacer = require('../../../../../core/server/lib/link-replacer');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const { HtmlValidate } = require('html-validate');
@@ -3009,7 +3009,7 @@ describe('Email renderer', function () {
       customSettings.locale = 'pt-PT';
       const post = createModel(
         Object.assign({}, basePost, {
-          published_at: new Date(2026, 2, 19),
+          published_at: new Date('2026-03-19T00:00:00.000Z'),
           authors: [createModel({ name: "Author/Name O'Brien & Co." })],
         }),
       );

@@ -215,6 +215,27 @@ describe('JobsService', function () {
       class Untyped extends Job {}
       await assert.rejects(() => service.dispatch(new Untyped()), /missing a static "type"/);
     });
+
+    it('propagates a payload serialization error without enqueueing', async function () {
+      const service = makeService();
+      await assert.rejects(
+        () => service.dispatch(new GreetJob({ name: 1n as unknown as string })),
+        TypeError,
+      );
+      assert.equal(backend.enqueued.length, 0);
+    });
+
+    it('propagates a backend enqueue error', async function () {
+      const service = makeService();
+      const rejected = new Error('backend refused the job');
+      backend.enqueue = () => {
+        throw rejected;
+      };
+      await assert.rejects(
+        () => service.dispatch(new GreetJob({ name: 'Ada' })),
+        (error: unknown) => error === rejected,
+      );
+    });
   });
 
   describe('queue routing', function () {
@@ -357,6 +378,30 @@ describe('JobsService', function () {
         /Invalid cron expression/,
       );
       assert.equal(backend.recurring.length, 0);
+    });
+
+    it('propagates a payload serialization error without scheduling', async function () {
+      const service = makeService();
+      await assert.rejects(
+        () =>
+          service.scheduleRecurring(new GreetJob({ name: 1n as unknown as string }), {
+            cron: '0 0 3 * * *',
+          }),
+        TypeError,
+      );
+      assert.equal(backend.recurring.length, 0);
+    });
+
+    it('propagates a backend scheduling error', async function () {
+      const service = makeService();
+      const rejected = new Error('backend refused the schedule');
+      backend.scheduleRecurring = () => {
+        throw rejected;
+      };
+      await assert.rejects(
+        () => service.scheduleRecurring(new GreetJob({ name: 'cron' }), { cron: '0 0 3 * * *' }),
+        (error: unknown) => error === rejected,
+      );
     });
   });
 

@@ -1,0 +1,317 @@
+- name: recorded_outcomes_and_latest_versions
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&current_time=2020-01-01T12:00:00Z
+  expected_result: |
+    {"date":"2020-01-01T00:00:00Z","in_progress_run_count":1,"completed_run_count":2,"exited_early_run_count":4,"invalid_run_count":2}
+    {"date":"2020-01-01T01:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T02:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T03:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T04:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T05:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T06:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T07:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T08:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T09:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T10:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T11:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T12:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+
+- name: other_automation
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=other-automation&current_time=2020-01-01T12:00:00Z
+  expected_result: |
+    {"date":"2020-01-01T00:00:00Z","in_progress_run_count":1,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T01:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T02:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T03:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T04:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T05:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T06:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T07:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T08:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T09:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T10:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T11:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T12:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+
+- name: other_site
+  parameters: site_uuid=15840000-0000-4000-8000-000000000001&automation_id=status-automation&current_time=2020-01-01T12:00:00Z
+  expected_result: |
+    {"date":"2020-01-01T00:00:00Z","in_progress_run_count":1,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T01:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T02:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T03:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T04:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T05:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T06:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T07:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T08:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T09:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T10:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T11:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T12:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+
+- name: empty_history
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=missing&current_time=2020-01-01T12:00:00Z
+  expected_result: |
+    {"date":"2020-01-01T00:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T01:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T02:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T03:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T04:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T05:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T06:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T07:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T08:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T09:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T10:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T11:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T12:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+
+- name: pending_unknown
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-pending_unknown&current_time=2020-01-01T12:00:00Z
+  expected_result: |
+    {"date":"2020-01-01T00:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":1}
+    {"date":"2020-01-01T01:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T02:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T03:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T04:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T05:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T06:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T07:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T08:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T09:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T10:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T11:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T12:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+
+- name: exit_without_finished
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-exit_without_finished&current_time=2020-01-01T12:00:00Z
+  expected_result: |
+    {"date":"2020-01-01T00:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":1,"invalid_run_count":0}
+    {"date":"2020-01-01T01:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T02:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T03:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T04:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T05:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T06:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T07:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T08:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T09:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T10:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T11:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T12:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+
+- name: unknown_exit
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-unknown_exit&current_time=2020-01-01T12:00:00Z
+  expected_result: |
+    {"date":"2020-01-01T00:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":1}
+    {"date":"2020-01-01T01:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T02:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T03:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T04:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T05:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T06:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T07:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T08:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T09:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T10:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T11:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T12:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+
+- name: finished_only
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-finished_only&current_time=2020-01-01T12:00:00Z
+  expected_result: |
+    {"date":"2020-01-01T00:00:00Z","in_progress_run_count":0,"completed_run_count":1,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T01:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T02:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T03:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T04:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T05:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T06:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T07:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T08:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T09:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T10:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T11:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T12:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+
+- name: missing_steps
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-missing_steps&current_time=2020-01-01T12:00:00Z
+  expected_result: |
+    {"date":"2020-01-01T00:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T01:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T02:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T03:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T04:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T05:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T06:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T07:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T08:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T09:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T10:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T11:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T12:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+
+- name: daily_chart_and_counts
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=summary-dates&current_time=2020-02-01T12:00:00Z
+  expected_result: |
+    {"date":"2020-01-01","in_progress_run_count":0,"completed_run_count":1,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-02","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-03","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-04","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-05","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-06","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-07","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-08","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-09","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-10","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-11","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-12","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-13","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-14","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-15","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-16","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-17","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-18","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-19","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-20","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-21","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-22","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-23","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-24","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-25","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-26","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-27","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-28","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-29","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-30","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-31","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-02-01","in_progress_run_count":1,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+
+- name: local_day_grouping
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&timezone=America/New_York&current_time=2020-01-01T12:00:00Z
+  expected_result: |
+    {"date":"2019-12-31","in_progress_run_count":1,"completed_run_count":2,"exited_early_run_count":4,"invalid_run_count":2}
+    {"date":"2020-01-01","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+
+- name: empty_history_local_today
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=missing&timezone=America/New_York&current_time=2024-03-11T01:00:00Z
+  expected_result: |
+    {"date":"2024-03-10T05:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T06:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T07:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T08:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T09:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T10:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T11:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T12:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T13:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T14:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T15:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T16:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T17:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T18:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T19:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T20:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T21:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T22:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T23:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-11T00:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-11T01:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+
+- name: future_entries_remain_visible
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-finished_only&current_time=2019-12-30T12:00:00Z
+  expected_result: |
+    {"date":"2020-01-01T00:00:00Z","in_progress_run_count":0,"completed_run_count":1,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T01:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T02:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T03:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T04:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T05:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T06:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T07:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T08:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T09:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T10:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T11:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T12:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T13:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T14:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T15:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T16:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T17:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T18:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T19:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T20:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T21:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T22:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01T23:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+
+- name: spring_dst_local_midnight_bounds
+  parameters: site_uuid=15890000-0000-4000-8000-000000000000&automation_id=date-boundaries&date_from=2024-03-10&date_to=2024-03-11&timezone=America%2FNew_York
+  expected_result: |
+    {"date":"2024-03-10T05:00:00Z","in_progress_run_count":1,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T06:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T07:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T08:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T09:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T10:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T11:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T12:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T13:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T14:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T15:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T16:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T17:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T18:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T19:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T20:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T21:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T22:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-10T23:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-11T00:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-11T01:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-11T02:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-11T03:00:00Z","in_progress_run_count":0,"completed_run_count":1,"exited_early_run_count":0,"invalid_run_count":0}
+
+- name: fall_dst_local_midnight_bounds
+  parameters: site_uuid=15890000-0000-4000-8000-000000000000&automation_id=date-boundaries&date_from=2024-11-03&date_to=2024-11-04&timezone=America%2FNew_York
+  expected_result: |
+    {"date":"2024-11-03T04:00:00Z","in_progress_run_count":1,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-11-03T05:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-11-03T06:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-11-03T07:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-11-03T08:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-11-03T09:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-11-03T10:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-11-03T11:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-11-03T12:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-11-03T13:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-11-03T14:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-11-03T15:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-11-03T16:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-11-03T17:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-11-03T18:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-11-03T19:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-11-03T20:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-11-03T21:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-11-03T22:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-11-03T23:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-11-04T00:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-11-04T01:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-11-04T02:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-11-04T03:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-11-04T04:00:00Z","in_progress_run_count":0,"completed_run_count":1,"exited_early_run_count":0,"invalid_run_count":0}
+
+- name: empty_selected_range_includes_all_days
+  parameters: site_uuid=15890000-0000-4000-8000-000000000000&automation_id=missing&date_from=2024-02-28&date_to=2024-03-02&timezone=America/New_York
+  expected_result: |
+    {"date":"2024-02-28","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-02-29","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2024-03-01","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+
+- name: selected_range_preserves_empty_edges
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-finished_only&date_from=2019-12-31&date_to=2020-01-03
+  expected_result: |
+    {"date":"2019-12-31","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-01","in_progress_run_count":0,"completed_run_count":1,"exited_early_run_count":0,"invalid_run_count":0}
+    {"date":"2020-01-02","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}

@@ -92,8 +92,21 @@ Package tests live in `test/unit/` and `test/e2e/`, with shared test helpers in
 - `pnpm test:slowmo` runs headed acceptance tests with a 100ms delay between
   instructions (some tests may fail or time out due to the added delays)
 
+Acceptance tests start their own Vite demo server on port 5185, separate from
+Admin's development server on 5174. They never reuse an existing server or move
+to another port if it is occupied. Set `KOENIG_TEST_PORT` when running tests from
+multiple worktrees, for example `KOENIG_TEST_PORT=5186 pnpm test:acceptance`.
+The port must be an integer between 1 and 65535.
+
+Use `pnpm dev:test` to run the test demo manually on the same configurable port.
+The acceptance runner requires that port to be free, so stop the manual server
+before running tests. For collaboration development, `pnpm dev:multiplayer`
+starts the demo and WebSocket server together; acceptance tests do not start the
+unused WebSocket server.
+
 The acceptance-test commands use these environment variables:
 
+- `KOENIG_TEST_PORT=5186` changes the demo server port.
 - `PLAYWRIGHT_HEADED=true` shows the browser UI.
 - `PLAYWRIGHT_HTML_REPORT=true` generates an HTML report.
 - `PLAYWRIGHT_SLOWMO=100` adds a delay in milliseconds between browser actions.

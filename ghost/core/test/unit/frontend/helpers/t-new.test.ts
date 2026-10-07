@@ -1,0 +1,96 @@
+import assert from 'node:assert/strict';
+import path from 'path';
+import sinon from 'sinon';
+
+// @ts-expect-error This module lacks type definitions.
+import t from '../../../../core/frontend/helpers/t';
+// @ts-expect-error This module lacks type definitions.
+import handlebarsService from '../../../../core/frontend/services/handlebars';
+// @ts-expect-error This module lacks type definitions.
+import proxy from '../../../../core/frontend/services/proxy';
+
+const { themeI18next } = handlebarsService;
+const { labs } = proxy;
+
+describe('NEW{{t}} helper', function () {
+  const ogBasePath = themeI18next.basePath;
+
+  beforeAll(function () {
+    sinon.stub(labs, 'isSet').withArgs('themeTranslation').returns(true);
+    themeI18next.basePath = path.join(__dirname, '../../../utils/fixtures/themes/');
+  });
+
+  afterAll(function () {
+    sinon.restore();
+    themeI18next.basePath = ogBasePath;
+  });
+
+  beforeEach(function () {
+    // Reset the i18n instance before each test
+    themeI18next._i18n = null;
+  });
+
+  it('theme translation is DE', function () {
+    themeI18next.init({ activeTheme: 'locale-theme', locale: 'de' });
+
+    const rendered = t.call({}, 'Top left Button', {
+      hash: {},
+    });
+
+    assert.equal(rendered, 'Oben Links.');
+  });
+
+  it('theme translation is EN', function () {
+    themeI18next.init({ activeTheme: 'locale-theme', locale: 'en' });
+
+    const rendered = t.call({}, 'Top left Button', {
+      hash: {},
+    });
+
+    assert.equal(rendered, 'Left Button on Top');
+  });
+
+  it('[fallback] no theme translation file found for FR', function () {
+    themeI18next.init({ activeTheme: 'locale-theme', locale: 'fr' });
+
+    const rendered = t.call({}, 'Top left Button', {
+      hash: {},
+    });
+
+    assert.equal(rendered, 'Left Button on Top');
+  });
+
+  it('[fallback] no theme files at all, use key as translation', function () {
+    themeI18next.init({ activeTheme: 'locale-theme-1.4', locale: 'de' });
+
+    const rendered = t.call({}, 'Top left Button', {
+      hash: {},
+    });
+
+    assert.equal(rendered, 'Top left Button');
+  });
+
+  it('returns an empty string if translation key is an empty string', function () {
+    const rendered = t.call({}, '', {
+      hash: {},
+    });
+
+    assert.equal(rendered, '');
+  });
+
+  it('returns an empty string if translation key is missing', function () {
+    const rendered = t.call({}, undefined, {
+      hash: {},
+    });
+
+    assert.equal(rendered, '');
+  });
+
+  it('returns a translated string even if no options are passed', function () {
+    themeI18next.init({ activeTheme: 'locale-theme', locale: 'en' });
+
+    const rendered = t.call({}, 'Top left Button');
+
+    assert.equal(rendered, 'Left Button on Top');
+  });
+});

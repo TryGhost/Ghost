@@ -16,8 +16,7 @@ import {
 } from '@test-utils/acceptance';
 import { postsListScreen } from './posts-list.screen';
 
-const FLAG_ON = { labs: { postsListReact: true } };
-const SENDING_FLAG_ON = { labs: { postsListReact: true, improveSendingUI: true } };
+const SENDING_FLAG_ON = { labs: { improveSendingUI: true } };
 const EMAIL_ID = '64d623b64676110001e897ab';
 
 const emailMetricsSettings = settingsResponse({
@@ -50,7 +49,7 @@ describe('Posts list rows', () => {
         primary_tag: tag({ name: 'Engineering' }),
       }),
     ]);
-    await renderAdminApp('/posts', FLAG_ON);
+    await renderAdminApp('/posts');
 
     const row = postsListScreen.listItems().first();
     await expect.element(row).toBeVisible();
@@ -67,7 +66,7 @@ describe('Posts list rows', () => {
       post({ title: 'Featured one', status: 'published', featured: true }),
       post({ title: 'Ordinary one', status: 'published', featured: false }),
     ]);
-    await renderAdminApp('/posts?type=published', FLAG_ON);
+    await renderAdminApp('/posts?type=published');
 
     await expect(postsListScreen.listItems()).toHaveCount(2);
     await expect(postsListScreen.featuredMarkers()).toHaveCount(1);
@@ -82,7 +81,7 @@ describe('Posts list rows', () => {
         email: { status: 'failed', email_count: 10, opened_count: 0 },
       }),
     ]);
-    await renderAdminApp('/posts', FLAG_ON);
+    await renderAdminApp('/posts');
 
     await expect
       .element(postsListScreen.listItems().first())
@@ -97,7 +96,7 @@ describe('Posts list rows', () => {
         email: { status: 'failed', email_count: 10, opened_count: 0 },
       }),
     ]);
-    await renderAdminApp('/posts?type=sent', FLAG_ON);
+    await renderAdminApp('/posts?type=sent');
 
     const row = postsListScreen.listItems().first();
     await expect.element(row).toHaveTextContent('Failed to send newsletter');
@@ -108,7 +107,7 @@ describe('Posts list rows', () => {
   it('links a row to the editor', async () => {
     const target = post({ title: 'Editable', status: 'draft' });
     fakePosts([target]);
-    await renderAdminApp('/posts', FLAG_ON);
+    await renderAdminApp('/posts');
 
     await expect
       .element(postsListScreen.rowLink().first())
@@ -120,7 +119,7 @@ describe('Posts list rows', () => {
       const me = currentUserResponse();
       me.users[0].roles = [staffRole({ name: 'Contributor' })];
       me.users[0].slug = 'contrib';
-      return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+      return { boot: { browseMe: { response: me } } };
     };
 
     it('links a published post out to the site instead of the editor', async () => {
@@ -163,7 +162,7 @@ describe('Posts list rows', () => {
   it('links a page row to the page editor', async () => {
     const target = post({ title: 'A page', status: 'draft' });
     fakePages([target]);
-    await renderAdminApp('/pages', FLAG_ON);
+    await renderAdminApp('/pages');
 
     await expect
       .element(postsListScreen.rowLink().first())
@@ -173,7 +172,6 @@ describe('Posts list rows', () => {
   it('renders page metrics without linking to post analytics', async () => {
     fakePages([post({ title: 'A tracked page', status: 'published' })]);
     await renderAdminApp('/pages?type=published', {
-      ...FLAG_ON,
       boot: {
         browseSettings: {
           response: settingsResponse({ settings: { web_analytics_enabled: true } }),
@@ -483,7 +481,7 @@ describe('Posts list email sending status', () => {
       }),
     ]);
 
-    await renderAdminApp('/posts?type=published', FLAG_ON);
+    await renderAdminApp('/posts?type=published');
 
     const row = postsListScreen.listItems().first();
     await expect.element(row).toHaveTextContent('Published and sent');
@@ -500,7 +498,7 @@ describe('Posts list empty states', () => {
 
   it('invites you to write when there is nothing at all', async () => {
     fakePosts([]);
-    await renderAdminApp('/posts', FLAG_ON);
+    await renderAdminApp('/posts');
 
     await expect.element(postsListScreen.emptyCold()).toBeVisible();
     await expect.element(postsListScreen.emptyCold()).toHaveTextContent('Start creating content');
@@ -508,7 +506,7 @@ describe('Posts list empty states', () => {
 
   it('uses the page wording on the pages screen', async () => {
     fakePages([]);
-    await renderAdminApp('/pages', FLAG_ON);
+    await renderAdminApp('/pages');
 
     await expect
       .element(postsListScreen.emptyCold())
@@ -517,7 +515,7 @@ describe('Posts list empty states', () => {
 
   it('offers a way back when a filter matched nothing', async () => {
     fakePosts([]);
-    await renderAdminApp('/posts?type=draft', FLAG_ON);
+    await renderAdminApp('/posts?type=draft');
 
     await expect.element(postsListScreen.emptyFiltered()).toBeVisible();
     await expect
@@ -529,7 +527,7 @@ describe('Posts list empty states', () => {
   // sort, so a chosen order survives.
   it('clears the filters but keeps the sort when taking that way back', async () => {
     fakePosts([]);
-    await renderAdminApp('/posts?type=draft&tag=news&order=published_at+asc', FLAG_ON);
+    await renderAdminApp('/posts?type=draft&tag=news&order=published_at+asc');
 
     await postsListScreen.showAllButton('posts').click();
 
@@ -540,7 +538,7 @@ describe('Posts list empty states', () => {
   // re-sorting an empty list still offers "write your first post".
   it('treats a sort-only URL as unfiltered', async () => {
     fakePosts([]);
-    await renderAdminApp('/posts?order=published_at+asc', FLAG_ON);
+    await renderAdminApp('/posts?order=published_at+asc');
 
     await expect.element(postsListScreen.emptyCold()).toBeVisible();
   });
@@ -575,7 +573,7 @@ describe('Posts list trailing action button', () => {
     const me = currentUserResponse();
     me.users[0].roles = [staffRole({ name })];
     me.users[0].slug = slug;
-    return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+    return { boot: { browseMe: { response: me } } };
   }
 
   it('goes to analytics for an admin on a post with newsletter engagement', async () => {
@@ -584,8 +582,12 @@ describe('Posts list trailing action button', () => {
     await renderAdminApp('/posts?type=published', asRole('Administrator', 'admin-user'));
 
     const action = postsListScreen.rowAction().first();
-    await expect.element(action).toHaveAccessibleName('Go to Analytics');
+    await expect.element(action).toHaveAccessibleName('Post analytics');
     await expect.element(action).toHaveAttribute('href', `#/posts/analytics/${emailedPost.id}`);
+    await expect.element(action).not.toHaveAttribute('title');
+    await action.hover();
+    expect(action.element()).toHaveAttribute('data-state', 'closed');
+    await expect.element(postsListScreen.actionTooltip('Post analytics')).toBeVisible();
   });
 
   // Same post, lesser role: Ember gates the analytics screen on isAdmin.
@@ -595,7 +597,7 @@ describe('Posts list trailing action button', () => {
     await renderAdminApp('/posts?type=published', asRole('Author', 'an-author'));
 
     const action = postsListScreen.rowAction().first();
-    await expect.element(action).toHaveAccessibleName('Go to Editor');
+    await expect.element(action).toHaveAccessibleName('Edit');
     await expect.element(action).toHaveAttribute('href', `#/editor/post/${emailedPost.id}`);
   });
 
@@ -620,8 +622,12 @@ describe('Posts list trailing action button', () => {
     await renderAdminApp('/pages?type=published', asRole('Administrator', 'admin-user'));
 
     const action = postsListScreen.rowAction().first();
-    await expect.element(action).toHaveAccessibleName('Go to Editor');
+    await expect.element(action).toHaveAccessibleName('Edit');
     await expect.element(action).toHaveAttribute('href', `#/editor/page/${page.id}`);
+    await expect.element(action).not.toHaveAttribute('title');
+    await action.hover();
+    expect(action.element()).toHaveAttribute('data-state', 'closed');
+    await expect.element(postsListScreen.actionTooltip('Edit')).toBeVisible();
   });
 });
 
@@ -650,7 +656,7 @@ describe('Posts list metric hover panels', () => {
         email: { opened_count: 60, email_count: 200, track_opens: true, track_clicks: false },
       }),
     ]);
-    await renderAdminApp('/posts?type=published', FLAG_ON);
+    await renderAdminApp('/posts?type=published');
 
     // The column shows the rate; the panel underneath shows raw counts.
     await expect.element(postsListScreen.metricCell('Opens')).toHaveTextContent('30%');

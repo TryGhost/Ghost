@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
+import { deferred } from '@/utils/deferred';
 import {
   configResponse,
   fakeAdminEndpoint,
@@ -102,6 +103,37 @@ async function openCustomIntegration() {
 }
 
 describe('Advanced integrations', () => {
+  it('prevents duplicate integration creates while adding', async () => {
+    fakeSettingsScreens();
+    fakeIntegrations([]);
+    const pendingCreate = deferred<{ integrations: Integration[] }>();
+    const createApi = fakeAdminEndpoint(
+      'POST',
+      /^\/integrations\/\?include=/,
+      () => pendingCreate.promise,
+    );
+    await renderAdminApp('/settings/integrations');
+
+    const section = settingsScreen.section('integrations');
+    await section.getByRole('button', { name: 'Add custom integration' }).click();
+    const createModal = settingsScreen.section('add-integration-modal');
+    await createModal.getByLabelText('Name').fill('My integration');
+    await userEvent.keyboard('{Enter}');
+
+    await expect.poll(() => createApi.requests.length).toBe(1);
+    const addButton = createModal.getByRole('button', { name: 'Add' });
+    await expect.element(addButton).toBeDisabled();
+
+    await createModal.getByLabelText('Name').click();
+    await userEvent.keyboard('{Enter}');
+    expect(createApi.requests).toHaveLength(1);
+
+    pendingCreate.resolve({
+      integrations: [integration({ name: 'My integration', type: 'custom' })],
+    });
+    await expect.element(createModal).not.toBeInTheDocument();
+  });
+
   it('creates, edits, and deletes a custom integration with dirty-state protection', async () => {
     fakeSettingsScreens();
     fakeIntegrations([]);
@@ -121,7 +153,7 @@ describe('Advanced integrations', () => {
     await createModal.getByRole('button', { name: 'Add' }).click();
     await expect.element(createModal).toHaveTextContent(/Name is required/);
     await createModal.getByLabelText('Name').fill('My integration');
-    await createModal.getByRole('button', { name: 'Add' }).click();
+    await userEvent.keyboard('{Enter}');
     await expect.poll(() => createApi.requests.length).toBe(1);
 
     const modal = settingsScreen.section('custom-integration-modal');

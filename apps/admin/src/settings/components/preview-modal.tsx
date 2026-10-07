@@ -12,6 +12,7 @@ import {
 import { Button, type ButtonProps, Separator } from '@tryghost/shade/components';
 import {
   DirtyConfirmDialog,
+  PageHeader,
   SettingsModal,
   type SettingsModalSize,
   useDirtyConfirmation,
@@ -263,14 +264,14 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                 </Text>
                 {sidebarButtons || (
                   <Inline gap="md">
-                    <Button
+                    <PageHeader.Action
                       disabled={buttonsDisabled}
+                      label={cancelLabel}
                       type="button"
-                      variant="outline"
                       onClick={handleCancel}
                     >
                       {cancelLabel}
-                    </Button>
+                    </PageHeader.Action>
                     <Button
                       disabled={buttonsDisabled}
                       type="button"

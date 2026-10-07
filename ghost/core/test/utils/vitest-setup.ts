@@ -13,6 +13,11 @@ import { isConsoleAllowed, resetConsoleAllowed } from './console-guard';
 // resolution. Must run before any Ghost source is required below.
 require('tsx/cjs');
 
+// Compile Ghost's own source as strict mode, so writes sloppy mode would drop
+// silently fail the test instead. Must also run before any Ghost source is
+// required. See ./strict-mode.ts.
+require('./strict-mode').enableStrictMode();
+
 process.env.NODE_ENV = process.env.NODE_ENV || 'testing';
 process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_SECRET';
 
@@ -22,9 +27,16 @@ process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_
 // snapshots — no per-worker session overrides needed.
 require('../../core/server/overrides');
 
-// @tryghost/express-test's snapshot bridge is pulled in lazily — requiring it
-// is ~170ms per worker and only the hooks below ever read it. The mock-manager
-// just below uses the same shape.
+// Tests swap url config at runtime, so url-utils must read it live.
+require('../../core/shared/url-utils').default.unfreeze();
+
+// Load the snapshot bridge and the mock manager here, as this setup file is
+// imported, rather than lazily inside the hooks below. Every unit test file
+// runs those hooks, so each worker loads both on its first file either way;
+// lazy loading only moved that cost into the first file's beforeAll. Hooks are
+// bounded by hookTimeout (10s by default) but setup-file imports are not, and
+// on a cold disk, such as a freshly started VM, this one-time load has run past
+// 10s, failing that file with "Hook timed out" and every test in it skipped.
 type SnapshotExports = {
   snapshotManager?: {
     setCurrentTest: (_info: { testPath?: string; testTitle: string }) => void;
@@ -35,24 +47,8 @@ type SnapshotExports = {
     afterAll?: () => Promise<void>;
   };
 };
-let snapshotExports: SnapshotExports | undefined;
-const getSnapshotExports = (): SnapshotExports => {
-  if (!snapshotExports) {
-    snapshotExports = require('@tryghost/express-test').snapshot;
-  }
-  return snapshotExports!;
-};
-
-// e2e-framework-mock-manager is pulled in lazily — it boots a fair
-// amount of Ghost-side machinery, which unit tests in the spike subtree
-// don't need. Only require it when a hook actually runs.
-let mockManager: { disableNetwork: () => void } | undefined;
-const getMockManager = () => {
-  if (!mockManager) {
-    mockManager = require('./e2e-framework-mock-manager');
-  }
-  return mockManager!;
-};
+const snapshotExports: SnapshotExports = require('@tryghost/express-test').snapshot;
+const mockManager: { disableNetwork: () => void } = require('./e2e-framework-mock-manager');
 
 // Console-output guard for the unit suite. The unit tier was cleaned to zero
 // un-captured console.error/console.warn output; this locks that in by failing
@@ -71,11 +67,11 @@ let recordedConsoleWarn: unknown[][] = [];
 // globals. The hooks are plain async functions so they translate
 // directly.
 beforeAll(async () => {
-  const { mochaHooks } = getSnapshotExports();
+  const { mochaHooks } = snapshotExports;
   if (mochaHooks?.beforeAll) {
     await mochaHooks.beforeAll();
   }
-  getMockManager().disableNetwork();
+  mockManager.disableNetwork();
 });
 
 // Bridge jest-snapshot's per-test config. The mocha hook reads
@@ -101,7 +97,7 @@ beforeEach((context: { task: { name: string; suite?: unknown; file?: { filepath?
   };
   /* eslint-enable no-console */
 
-  const { snapshotManager } = getSnapshotExports();
+  const { snapshotManager } = snapshotExports;
   if (!snapshotManager) {
     return;
   }
@@ -122,28 +118,24 @@ beforeEach((context: { task: { name: string; suite?: unknown; file?: { filepath?
 
 afterEach(async () => {
   const domainEvents = require('@tryghost/domain-events');
-  const mentionsJobsService = require('../../core/server/services/mentions-jobs');
-  const jobsService = require('../../core/server/services/jobs');
-
   const timeout = setTimeout(() => {
     // eslint-disable-next-line no-console
     console.error(
       chalk.yellow(
-        '\n[SLOW TEST] It takes longer than 2s to wait for all jobs ' +
-          'and events to settle in the afterEach hook\n',
+        '\n[SLOW TEST] It takes longer than 2s to wait for all events ' +
+          'to settle in the afterEach hook\n',
       ),
     );
   }, 2000);
 
   await domainEvents.allSettled();
-  await mentionsJobsService.allSettled();
-  await jobsService.allSettled();
+  // Once more for events emitted while the first round settled
   await domainEvents.allSettled();
 
   clearTimeout(timeout);
 
   try {
-    const { mochaHooks } = getSnapshotExports();
+    const { mochaHooks } = snapshotExports;
     if (mochaHooks?.afterEach) {
       await mochaHooks.afterEach();
     }
@@ -151,7 +143,7 @@ afterEach(async () => {
     // Individual test afterEach hooks often call sinon.restore() which
     // strips the DNS stubs set in beforeAll; reapply so subsequent
     // tests don't hit real DNS on nocked domains.
-    getMockManager().disableNetwork();
+    mockManager.disableNetwork();
   }
 });
 
@@ -187,7 +179,7 @@ afterEach(() => {
 });
 
 afterAll(async () => {
-  const { mochaHooks } = getSnapshotExports();
+  const { mochaHooks } = snapshotExports;
   if (mochaHooks?.afterAll) {
     await mochaHooks.afterAll();
   }

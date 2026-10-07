@@ -488,7 +488,9 @@ export const useImportMembers = createMutation<ImportMembersResponseType, Import
   retry: false,
   path: () => '/members/upload/',
   body: buildImportMembersFormData,
-  invalidateQueries: { dataType },
+  // An import can create labels as well as members. Refresh labels too, or the new
+  // ones stay hidden on the member's screen.
+  invalidateQueries: { dataType: [dataType, 'LabelsResponseType'] },
 });
 
 export const useMember = createQueryWithId<MembersResponseType>({

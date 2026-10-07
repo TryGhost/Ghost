@@ -2,6 +2,7 @@
 import { getCheckoutSessionDataFromPlanAttribute, getUrlHistory } from './utils/helpers';
 import { HumanReadableError, chooseBestErrorMessage } from './utils/errors';
 import { t } from './utils/i18n';
+import { fetchWithEdgeChallenge } from './utils/edge-challenge';
 
 function displayErrorIfElementExists(errorEl, message) {
   if (errorEl) {
@@ -87,19 +88,20 @@ export async function formSubmitHandler({
   }
 
   try {
-    const integrityTokenRes = await fetch(`${siteUrl}/members/api/integrity-token/`, {
-      method: 'GET',
-    });
+    const integrityTokenRes = await fetchWithEdgeChallenge(
+      `${siteUrl}/members/api/integrity-token/`,
+      {
+        method: 'GET',
+      },
+    );
     const integrityToken = await integrityTokenRes.text();
 
-    const magicLinkRes = await fetch(`${siteUrl}/members/api/send-magic-link/`, {
+    const magicLinkRes = await fetchWithEdgeChallenge(`${siteUrl}/members/api/send-magic-link/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...reqBody, integrityToken }),
     });
 
-    form.addEventListener('submit', submitHandler);
-    form.classList.remove('loading');
     if (magicLinkRes.ok) {
       form.classList.add('success');
 
@@ -133,6 +135,11 @@ export async function formSubmitHandler({
     }
   } catch (err) {
     handleError(err, form, errorEl);
+  } finally {
+    // Always let the visitor submit again, including after a network error or a blocked or
+    // failed bot challenge
+    form.addEventListener('submit', submitHandler);
+    form.classList.remove('loading');
   }
 }
 

@@ -2,7 +2,7 @@ const debug = require('@tryghost/debug')('importer:users');
 const _ = require('lodash');
 const BaseImporter = require('./base');
 const models = require('../../../../models');
-const limitService = require('../../../../services/limits');
+const { limitService } = require('../../../../services/limits');
 
 class UsersImporter extends BaseImporter {
   constructor(allDataFromFile) {
@@ -37,7 +37,7 @@ class UsersImporter extends BaseImporter {
 
     // NOTE: sort out duplicated roles based on incremental id
     _.each(this.requiredFromFile.roles_users, (attachedRole) => {
-      if (Object.prototype.hasOwnProperty.call(lookup, attachedRole.user_id)) {
+      if (Object.hasOwn(lookup, attachedRole.user_id)) {
         if (lookup[attachedRole.user_id].id < attachedRole.id) {
           lookup[attachedRole.user_id] = attachedRole;
         }
