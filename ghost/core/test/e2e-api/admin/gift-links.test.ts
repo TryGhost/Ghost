@@ -175,6 +175,18 @@ describe('Gift Links Admin API', function () {
       assert.equal(actionNameOf(reset), 'reset');
     });
 
+    // Admin's history view asks for each entry's resource.
+    it('lists its actions with the post they belong to', async function () {
+      await agent.put(`posts/${postId}/gift_links/`).expectStatus(200);
+      const { body: posts } = await agent.get(`posts/${postId}/`).expectStatus(200);
+
+      const { body } = await agent
+        .get('actions/?filter=resource_type:gift_link&include=actor,resource')
+        .expectStatus(200);
+
+      assert.equal(body.actions[0].resource.title, posts.posts[0].title);
+    });
+
     it('records a "deleted" action when gift links are revoked', async function () {
       await agent.put(`posts/${postId}/gift_links/`).expectStatus(200);
       await agent.put('gift_links/remove_all/').expectStatus(200);
