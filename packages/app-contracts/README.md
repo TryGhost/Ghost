@@ -16,10 +16,10 @@ validation only: nothing here fetches, stores or renders anything.
 
 Each contract is its own entry point, so a consumer only loads the one it uses.
 
-| Entry point                        | What it holds                                     |
-| ---------------------------------- | ------------------------------------------------- |
-| `@tryghost/app-contracts`          | Types, and rules that depend on nothing (app IDs) |
-| `@tryghost/app-contracts/manifest` | The app manifest and its validation               |
+| Entry point                        | What it holds                            |
+| ---------------------------------- | ---------------------------------------- |
+| `@tryghost/app-contracts`          | Types, and limits that depend on nothing |
+| `@tryghost/app-contracts/manifest` | The app manifest and its validation      |
 
 The root entry point must stay free of `zod`: some consumers ship to browsers
 that never validate anything. A lint rule enforces it.

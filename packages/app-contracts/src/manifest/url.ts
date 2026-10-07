@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const URL_MAX_LENGTH = 2000;
+import { URL_MAX_LENGTH } from './limits.ts';
 
 // `URL` has already normalised the host by the time these run: every spelling of an IPv4
 // address is dotted decimal, and an IPv4-mapped IPv6 address is two hex groups.

@@ -110,13 +110,25 @@ export class AppInstallationsService {
     const manifestId = new ObjectId().toHexString();
     const serialisedManifest = z.encode(StoredManifest, parsed.manifest);
     const now = toDatabaseDate(new Date());
+    // What the read query would return for this row, so the result is decoded from what
+    // was written rather than read back: the same codec reads every row, which proves the
+    // write readable without a second query.
+    const written: z.input<typeof AppInstallationRow> = {
+      id,
+      app_id: parsed.manifest.id,
+      status: 'active',
+      manifest_url: parsed.manifestUrl,
+      manifest: serialisedManifest,
+      created_at: now,
+      updated_at: now,
+    };
     try {
       await this.knex.transaction(async (trx) => {
         await trx(INSTALLATIONS).insert({
           id,
-          app_id: parsed.manifest.id,
-          current_app_id: parsed.manifest.id,
-          status: 'active',
+          app_id: written.app_id,
+          current_app_id: written.app_id,
+          status: written.status,
           manifest_id: manifestId,
           created_at: now,
           updated_at: now,
@@ -125,7 +137,7 @@ export class AppInstallationsService {
           id: manifestId,
           installation_id: id,
           // As checked, not as given: the contract keeps it within the column's width.
-          manifest_url: parsed.manifestUrl,
+          manifest_url: written.manifest_url,
           manifest: serialisedManifest,
           digest: digestOf(serialisedManifest),
           requires_approval: false,
@@ -147,7 +159,7 @@ export class AppInstallationsService {
       subject: id,
       details: { primary_name: parsed.manifest.name, app_id: parsed.manifest.id },
     });
-    return this.read(id);
+    return z.decode(AppInstallationRow, written);
   }
 
   /**
