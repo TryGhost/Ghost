@@ -159,7 +159,9 @@ describe('Managing apps', () => {
 
     const details = appsScreen.details();
     await expect.element(details).toHaveTextContent('Example Audio');
-    await expect.element(appsScreen.detailsServedFrom()).toHaveTextContent('podcast.example.net');
+    await expect
+      .element(appsScreen.accessItems().last())
+      .toHaveTextContent('Read and write data to podcast.example.net');
     await expect.element(details).toHaveTextContent('by Jamie Larson');
     await expect(appsScreen.historyEntries()).toHaveCount(3);
     await expect

@@ -27,7 +27,6 @@ export const appsScreen = {
   rowActions: (name: string) => page.getByRole('button', { name: `More actions for ${name}` }),
   menuItem: (name: string) => page.getByRole('menuitem', { name }),
   details: () => page.getByTestId(sel.appDetails),
-  detailsServedFrom: () => page.getByTestId(sel.appDetailsServedFrom),
   needsApproval: () => page.getByTestId(sel.appNeedsApproval),
   historyEntries: () => page.getByTestId(sel.appHistoryEntry),
   uninstallDialog: () => page.getByTestId(sel.appUninstallDialog),

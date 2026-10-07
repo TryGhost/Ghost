@@ -19,7 +19,6 @@ export const appDevelopmentBadge = 'app-development-badge';
 export const accessIndicator = 'access-indicator';
 export const accessItem = 'access-item';
 export const appDetails = 'app-details';
-export const appDetailsServedFrom = 'app-details-served-from';
 export const appNeedsApproval = 'app-needs-approval';
 export const appHistoryEntry = 'app-history-entry';
 export const appUninstallDialog = 'app-uninstall-dialog';

@@ -23,13 +23,15 @@ import {
 } from '@tryghost/admin-x-framework/api/app-installations';
 import { APIError, getErrorMessage } from '@tryghost/admin-x-framework/errors';
 import { NotFound } from '@/shared/not-found';
+import { AccessIndicator } from './components/access-indicator';
 import { AppIcon } from './components/app-icon';
 import { AppsGate } from './components/apps-gate';
 import { DevelopmentBadge } from './components/development-badge';
 import { UninstallDialog } from './components/uninstall-dialog';
+import { appAccess } from './lib/access';
 import { type AppHistoryEntry, appHistory, installedBy } from './lib/history';
 import { appReviewRoute } from './lib/routes';
-import { isDevelopmentApp, servedFrom } from './lib/served-from';
+import { isDevelopmentApp } from './lib/served-from';
 
 const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <div className="grid grid-cols-[8rem_1fr] gap-4 py-3">
@@ -123,9 +125,6 @@ const Details: React.FC<{ installation: AppInstallation }> = ({ installation }) 
             {manifest.author.name}
           </a>
         </Fact>
-        <Fact label="Runs on">
-          <span data-testid="app-details-served-from">{servedFrom(manifest)}</span>
-        </Fact>
         <Fact label="Installed">
           {formatDisplayDate(installation.created_at)}
           {installer && (
@@ -136,6 +135,13 @@ const Details: React.FC<{ installation: AppInstallation }> = ({ installation }) 
           )}
         </Fact>
       </dl>
+
+      {status !== 'uninstalled' && (
+        <AccessIndicator
+          intro="Apps use the account of whoever opens them, so this app can do everything they can."
+          items={appAccess(manifest)}
+        />
+      )}
 
       <Stack gap="sm">
         <Text as="h2" size="lg" weight="semibold">
