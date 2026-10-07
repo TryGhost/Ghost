@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import {
+  actingContext,
   recordGiftLinkAction,
   type RequestContext,
 } from '../../../../../core/server/services/gift-links/actions';
@@ -41,5 +42,38 @@ describe('Unit: recordGiftLinkAction', function () {
     });
 
     assert.equal(add.called, false, 'no action is written without an actor');
+  });
+});
+
+// Which actor a gift link's history records for each way into the Admin API. The reading
+// of the context itself is the shared `readFrameIdentity`; this pins only the narrowing.
+describe('Unit: gift-links actingContext', function () {
+  it('records a signed-in user', function () {
+    assert.deepEqual(actingContext({ user: 'user-id', integration: null, api_key: null }), {
+      actor: { id: 'user-id', type: 'user' },
+    });
+  });
+
+  it('records a staff token as its user', function () {
+    assert.deepEqual(
+      actingContext({ user: 'user-id', integration: null, api_key: { id: 'key-id' } }),
+      { actor: { id: 'user-id', type: 'user' } },
+    );
+  });
+
+  it('records an integration, before any user the context also names', function () {
+    assert.deepEqual(
+      actingContext({
+        user: 'user-id',
+        integration: { id: 'integration-id' },
+        api_key: { id: 'key-id' },
+      }),
+      { actor: { id: 'integration-id', type: 'integration' } },
+    );
+  });
+
+  it('records nobody for a request that is neither', function () {
+    assert.deepEqual(actingContext({ internal: true }), { actor: null });
+    assert.deepEqual(actingContext(undefined), { actor: null });
   });
 });

@@ -1042,8 +1042,8 @@ services:
     contracts:
       exports:
         summary: >-
-          Named TypeScript init and service exports; service is undefined until init
-          constructs it.
+          Named TypeScript init, service and actingContext exports; service is undefined
+          until init constructs it.
         sources:
           - core/server/services/gift-links/index.ts
         tests: []
