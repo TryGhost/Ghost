@@ -160,6 +160,15 @@ a half seconds once it lands and "Retry" after a failure; a contributor's Save r
 a draft from the update flow shows "Post reverted to a draft." ("Page" for a
 page).
 
+## Link suggestions
+
+The link toolbar loads content search indexes on first use and shares them with
+global search in the React Query cache. Staff edits update the saved name, slug
+and URL in both searches; deletion removes the staff entry. Preference-only
+saves reuse the loaded lists without another index request. Resource
+invalidations make the next link search wait for fresh data. The shared parser
+retains URLs, visibility and published dates for the toolbar's link decorations.
+
 ## Snippets
 
 `use-post-snippets.tsx` gives Koenig's card menu every snippet on the site,

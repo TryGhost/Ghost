@@ -2,53 +2,38 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useDebounce } from 'use-debounce';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
-import { useCurrentUser, usersDataType } from '@tryghost/admin-x-framework/api/current-user';
-import { pagesDataType } from '@tryghost/admin-x-framework/api/pages';
-import { postsDataType } from '@tryghost/admin-x-framework/api/posts';
+import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { isOwnerUser } from '@tryghost/admin-x-framework/api/users';
-import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { useFetchApi, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useForceUpgrade } from '@/billing/api';
 // pulls in FlexSearch, so import this hook only from a lazily loaded module
 import { createSearchProvider } from './search-providers';
-import {
-  type SearchIndexItem,
-  type SearchResultGroup,
-  getSearchables,
-  parseSearchIndexItems,
-} from './searchables';
+import { type SearchIndexKey, searchIndexQueryOptions } from '@/shared/search-index';
+import { type SearchResultGroup, getSearchables } from './searchables';
 
 const SEARCH_DEBOUNCE_MS = 200;
-
-type SearchIndexKey = 'posts' | 'pages' | 'tags' | 'users';
 
 /**
  * Loads one `search-index/*` list. It's keyed under the resource's data type, so
  * the invalidation that follows a save (in React or Ember) marks it stale too.
  */
-function useSearchIndex(key: SearchIndexKey, dataType: string, enabled: boolean) {
+function useSearchIndex(key: SearchIndexKey, enabled: boolean) {
   const fetchApi = useFetchApi();
   const handleError = useHandleError();
-  const url = apiUrl(`/search-index/${key}/`);
+  const options = searchIndexQueryOptions(key, fetchApi);
 
   const { data, isLoading, isFetching, isStale } = useQuery({
-    queryKey: [dataType, url],
-    // `{[key]: items}` matches the resource's response, which the framework's
-    // cache helpers (eg. after a staff edit) update in place
-    queryFn: async (): Promise<Partial<Record<SearchIndexKey, SearchIndexItem[]>>> => {
+    ...options,
+    queryFn: async () => {
       try {
-        const response = await fetchApi<Record<string, unknown>>(url);
-        return { [key]: parseSearchIndexItems(response[key]) };
+        return await options.queryFn();
       } catch (error) {
         handleError(error);
         throw error;
       }
     },
     enabled,
-    // up to 10k posts: refetched after invalidation, never on a timer
-    staleTime: Infinity,
-    gcTime: Infinity,
   });
 
   // a refetch after invalidation would otherwise serve removed or renamed content
@@ -66,10 +51,10 @@ export function useGlobalSearch(term: string): {
   const [debouncedTerm] = useDebounce(term, SEARCH_DEBOUNCE_MS);
   const enabled = term.trim() !== '';
 
-  const posts = useSearchIndex('posts', postsDataType, enabled);
-  const pages = useSearchIndex('pages', pagesDataType, enabled);
-  const tags = useSearchIndex('tags', 'TagsResponseType', enabled);
-  const users = useSearchIndex('users', usersDataType, enabled);
+  const posts = useSearchIndex('posts', enabled);
+  const pages = useSearchIndex('pages', enabled);
+  const tags = useSearchIndex('tags', enabled);
+  const users = useSearchIndex('users', enabled);
 
   const { data: config, isLoading: isConfigLoading } = useBrowseConfig();
   const { data: currentUser, isLoading: isUserLoading } = useCurrentUser();
