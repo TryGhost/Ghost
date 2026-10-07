@@ -1,16 +1,26 @@
-const EventEmitter = require('events').EventEmitter;
+import { EventEmitter } from 'node:events';
 
 /**
  * Raised by the four routers given a routerCreated callback: static routes,
  * collections, static pages and taxonomies.
- *
- * @typedef {Object} RouteRegistered
- * @property {string|null} path - route in domain notation, e.g. `/about/`.
- *   Null for routers with no route of their own: the static pages router,
- *   and taxonomies, which have no index route (`/tag/` does not exist).
- * @property {string} type - the kind of router, e.g. `CollectionRouter`
- * @property {string} id - the router's identifier
  */
+type RouteRegistered = {
+  /**
+   * Route in domain notation, e.g. `/about/`.
+   * Null for routers with no route of their own: the static pages router,
+   * and taxonomies, which have no index route (`/tag/` does not exist).
+   */
+  path: string | null;
+  /** The kind of router, e.g. `CollectionRouter`. */
+  type: string;
+  /** The router's identifier. */
+  id: string;
+};
+
+type RoutingEventMap = {
+  RouteRegistered: [route: RouteRegistered];
+  RoutesReset: [];
+};
 
 /**
  * Frontend-internal routing domain events.
@@ -24,4 +34,4 @@ const EventEmitter = require('events').EventEmitter;
  * The payloads are plain data, so a consumer never depends on the internals
  * of the Express-backed router that happened to raise the event.
  */
-module.exports = new EventEmitter();
+export const routingEvents = new EventEmitter<RoutingEventMap>();

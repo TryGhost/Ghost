@@ -4,7 +4,7 @@ const { setImmediate: yieldToEventLoop } = require('node:timers/promises');
 const { assertExists } = require('../../../../utils/assertions');
 
 // Stuff we are testing
-const routingEvents = require('../../../../../core/frontend/services/routing/events');
+const { routingEvents } = require('../../../../../core/frontend/services/routing/events');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
 
 const SiteMapManager = require('../../../../../core/frontend/services/sitemap/site-map-manager');
