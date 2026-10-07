@@ -1,3 +1,5 @@
+import assert from 'node:assert/strict';
+
 import { describe, expect, it } from 'vitest';
 
 import { parseManifest } from '../../src/manifest/index.ts';
@@ -45,6 +47,15 @@ describe('parseManifest', () => {
   });
 
   describe('the manifest URL', () => {
+    it('is handed back as it was checked, not as it was given', () => {
+      const result = parseManifest(manifest(), {
+        ...options,
+        manifestUrl: ' https://Podcast.Example.com/x\n/ghost-app.json\n',
+      });
+      assert(result.success);
+      expect(result.manifestUrl).toBe('https://podcast.example.com/x/ghost-app.json');
+    });
+
     it('must be a URL', () => {
       expect(errorsOf(manifest(), { ...options, manifestUrl: '/ghost-app.json' })).toEqual([
         { path: '', message: 'Expected the manifest at a URL' },
@@ -58,6 +69,14 @@ describe('parseManifest', () => {
       expect(
         errorsOf(manifest(), { ...options, manifestUrl: 'http://localhost:8787/app.json' }),
       ).toEqual([{ path: '', message: expect.stringContaining('development') }]);
+      expect(
+        errorsOf(manifest(), {
+          ...options,
+          manifestUrl: `https://podcast.example.com/${'a'.repeat(2000)}`,
+        }),
+      ).toEqual([
+        { path: '', message: 'Expected at most 2000 characters for the manifest itself' },
+      ]);
     });
   });
 

@@ -1,3 +1,4 @@
+const errors = require('@tryghost/errors');
 const express = require('../../../../../shared/express');
 const api = require('../../../../api').endpoints;
 const { http } = require('@tryghost/api-framework');
@@ -6,6 +7,7 @@ const apiMw = require('../../middleware');
 const mw = require('./middleware');
 const labs = require('../../../../../shared/labs');
 const limits = require('../../../../services/limits');
+const appInstallations = require('../../../../services/app-installations');
 
 const shared = require('../../../shared');
 
@@ -231,6 +233,27 @@ module.exports = function apiRoutes() {
   metafieldsRouter.put('/:namespace', http(api.membersMetafields.reorder));
   metafieldsRouter.put('/:namespace/:key', http(api.membersMetafields.edit));
   metafieldsRouter.delete('/:namespace/:key', http(api.membersMetafields.destroy));
+
+  // ## Apps
+  // Everything about apps sits behind the private `apps` flag, asked once here so a route
+  // added below is guarded by being there. The table is still in development, so it only
+  // exists in development and testing databases: anywhere else the routes answer as if
+  // the flag were off, whatever the flag says.
+  //
+  // Authenticated as a route here rather than inside the mount, for the same reason as
+  // the members metafields router above.
+  const appsRouter = express.Router('admin api apps');
+  router.all(['/apps', '/apps/*'], mw.authAdminApi);
+  router.use('/apps', appsRouter);
+  appsRouter.use(labs.enabledMiddleware('apps'));
+  // Answers as if apps did not exist wherever the table does not.
+  appsRouter.use((req, res, next) => {
+    next(appInstallations.isAvailable() ? undefined : new errors.NotFoundError());
+  });
+
+  appsRouter.get('/installations', http(api.appInstallations.browse));
+  appsRouter.get('/installations/:id', http(api.appInstallations.read));
+  appsRouter.delete('/installations/:id', http(api.appInstallations.destroy));
 
   router.get('/members/:id', mw.authAdminApi, http(api.members.read));
   router.put('/members/:id', mw.authAdminApi, http(api.members.edit));

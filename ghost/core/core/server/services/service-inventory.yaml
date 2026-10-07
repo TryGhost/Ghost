@@ -154,6 +154,50 @@ services:
       - >-
         Add same-instance settings-change and root export characterization before moving
         construction to boot.
+  app-installations:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - app-installations/index.ts
+    notes: >-
+      Composition-only service over a table that is still in development; preserve the
+      availability check that keeps it dormant wherever the table does not exist.
+    contracts:
+      exports:
+        summary: >-
+          Named exports are init, the mutable service binding, isAvailable and
+          actingContext. The service binding is undefined before init. The Express guard
+          that asks isAvailable lives with the Admin API routes in server/web.
+        sources:
+          - core/server/services/app-installations/index.ts
+        tests:
+          - test/e2e-api/admin/app-installations.test.ts
+      construction:
+        summary: >-
+          Boot calls synchronous init after database setup. It constructs one
+          AppInstallationsService from knex, the Action model and a manifest-rules getter;
+          repeated init returns once the binding exists.
+        sources:
+          - core/server/services/app-installations/index.ts
+          - core/boot.js
+        tests: []
+      configuration:
+        summary: >-
+          The site and Admin URLs and the development flag are read on every install, not
+          captured at construction. Availability is read per request from config.
+        sources:
+          - core/server/services/app-installations/index.ts
+          - core/server/data/schema/in-development.ts
+        tests:
+          - test/e2e-api/admin/app-installations.test.ts
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - resources
+      - failures
+    blockers: []
   audience-feedback:
     kind: directory
     disposition: retain
