@@ -25,7 +25,6 @@ const dunningConfigSchema = z
   })
   .refine(({ paymentFailedAt, suspendsAt }) => suspendsAt.getTime() > paymentFailedAt.getTime());
 
-/** The host's dunning block, or null when it is missing or malformed. */
 export function parseDunningConfig(value: unknown) {
   const result = dunningConfigSchema.safeParse(value);
   return result.success ? result.data : null;

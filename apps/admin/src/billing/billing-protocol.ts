@@ -147,10 +147,6 @@ export const EXCEEDED_ALERT_KEY = 'billing.exceeded';
 
 export const EXCEEDED_ALERT_HTML = `Your audience has grown! To continue publishing, the site owner must <a href="#${BILLING_ROUTE_ROOT}?action=checkout">confirm pricing for this number of members</a>.`;
 
-/**
- * Which billing alerts a subscription report calls for. Payment failures are
- * not among them: the dunning warnings, driven by the host's config, own those.
- */
 export function billingAlerts(message: { exceededLimits?: unknown; checkoutRoute?: unknown }): {
   exceeded: boolean;
 } {
