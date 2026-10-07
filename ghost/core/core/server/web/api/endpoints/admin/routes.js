@@ -1,3 +1,4 @@
+const errors = require('@tryghost/errors');
 const express = require('../../../../../shared/express');
 const api = require('../../../../api').endpoints;
 const { http } = require('@tryghost/api-framework');
@@ -245,7 +246,10 @@ module.exports = function apiRoutes() {
   router.all(['/apps', '/apps/*'], mw.authAdminApi);
   router.use('/apps', appsRouter);
   appsRouter.use(labs.enabledMiddleware('apps'));
-  appsRouter.use(appInstallations.availableMiddleware);
+  // Answers as if apps did not exist wherever the table does not.
+  appsRouter.use((req, res, next) => {
+    next(appInstallations.isAvailable() ? undefined : new errors.NotFoundError());
+  });
 
   appsRouter.get('/installations', http(api.appInstallations.browse));
   appsRouter.get('/installations/:id', http(api.appInstallations.read));

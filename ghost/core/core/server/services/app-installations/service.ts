@@ -2,54 +2,21 @@ import { createHash } from 'node:crypto';
 import errors from '@tryghost/errors';
 import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
-import { parseManifest, type AppManifest } from '@tryghost/app-contracts/manifest';
-import { fromDatabaseDate, toDatabaseDate, type DatabaseDate } from '../../lib/db-types/date';
+import { z } from 'zod';
+import { parseManifest, type ParseManifestOptions } from '@tryghost/app-contracts/manifest';
+import { toDatabaseDate } from '../../lib/db-types/date';
 import type { RecordAppInstallationAction, RequestContext } from './actions';
+import { AppInstallationRow, type AppInstallation } from './codec';
+import { StoredManifest } from './schema';
 
 const INSTALLATIONS = 'app_installations';
 const MANIFESTS = 'app_installation_manifests';
-// The width of the manifest_url column.
-const MANIFEST_URL_MAX_LENGTH = 2000;
 
-export type AppInstallationStatus = 'active' | 'suspended' | 'uninstalled';
-
-/** An installation, joined with the approved manifest it runs. */
-interface AppInstallationRow {
-  id: string;
-  app_id: string;
-  status: AppInstallationStatus;
-  manifest_url: string;
-  manifest: string;
-  created_at: DatabaseDate;
-  updated_at: DatabaseDate | null;
-}
-
-/** One site's approval of one app, as the Admin API returns it. */
-export interface AppInstallation {
-  id: string;
-  app_id: string;
-  status: AppInstallationStatus;
-  manifest_url: string;
-  manifest: AppManifest;
-  created_at: Date;
-  updated_at: Date | null;
-}
-
-function toInstallation(row: AppInstallationRow): AppInstallation {
-  return {
-    id: row.id,
-    app_id: row.app_id,
-    status: row.status,
-    manifest_url: row.manifest_url,
-    manifest: JSON.parse(row.manifest) as AppManifest,
-    created_at: fromDatabaseDate(row.created_at),
-    updated_at: row.updated_at === null ? null : fromDatabaseDate(row.updated_at),
-  };
-}
+export type { AppInstallation } from './codec';
 
 /**
  * What a publisher reviews and confirms. The same manifest always serialises the same way,
- * as parsing builds it in the schema's key order.
+ * as encoding builds it in the schema's key order.
  */
 function digestOf(serialisedManifest: string): string {
   return createHash('sha256').update(serialisedManifest).digest('hex');
@@ -63,10 +30,7 @@ function isUniqueViolation(err: unknown): boolean {
 }
 
 /** What the manifest is checked against: where Ghost is served from, and in which mode. */
-export interface ManifestRules {
-  ghostUrls: string[];
-  allowLocalhost: boolean;
-}
+export type ManifestRules = Omit<ParseManifestOptions, 'manifestUrl'>;
 
 export class AppInstallationsService {
   private knex: Knex;
@@ -91,7 +55,7 @@ export class AppInstallationsService {
   private withApprovedManifest() {
     return this.knex(`${INSTALLATIONS} as installation`)
       .join(`${MANIFESTS} as approved`, 'approved.id', 'installation.manifest_id')
-      .select<AppInstallationRow[]>(
+      .select<z.input<typeof AppInstallationRow>[]>(
         'installation.id',
         'installation.app_id',
         'installation.status',
@@ -108,7 +72,7 @@ export class AppInstallationsService {
       .whereNot('installation.status', 'uninstalled')
       .orderBy('installation.created_at', 'asc')
       .orderBy('installation.id', 'asc');
-    return rows.map(toInstallation);
+    return rows.map((row) => z.decode(AppInstallationRow, row));
   }
 
   /** One installation by ID, whether it has ended or not. */
@@ -117,7 +81,7 @@ export class AppInstallationsService {
     if (!row) {
       throw new errors.NotFoundError({ message: 'App installation not found.' });
     }
-    return toInstallation(row);
+    return z.decode(AppInstallationRow, row);
   }
 
   /**
@@ -132,9 +96,6 @@ export class AppInstallationsService {
     context: RequestContext,
     { manifestUrl, manifest }: { manifestUrl: string; manifest: unknown },
   ): Promise<AppInstallation> {
-    if (manifestUrl.length > MANIFEST_URL_MAX_LENGTH) {
-      throw new errors.ValidationError({ message: 'The app manifest URL is too long.' });
-    }
     const parsed = parseManifest(manifest, { manifestUrl, ...this.getManifestRules() });
     if (!parsed.success) {
       throw new errors.ValidationError({
@@ -147,7 +108,7 @@ export class AppInstallationsService {
 
     const id = new ObjectId().toHexString();
     const manifestId = new ObjectId().toHexString();
-    const serialisedManifest = JSON.stringify(parsed.manifest);
+    const serialisedManifest = z.encode(StoredManifest, parsed.manifest);
     const now = toDatabaseDate(new Date());
     try {
       await this.knex.transaction(async (trx) => {
@@ -163,7 +124,8 @@ export class AppInstallationsService {
         await trx(MANIFESTS).insert({
           id: manifestId,
           installation_id: id,
-          manifest_url: manifestUrl,
+          // As checked, not as given: the contract keeps it within the column's width.
+          manifest_url: parsed.manifestUrl,
           manifest: serialisedManifest,
           digest: digestOf(serialisedManifest),
           requires_approval: false,

@@ -2690,6 +2690,7 @@ module.exports = {
       nullable: false,
       references: 'app_installations.id',
     },
+    // As wide as the contract's URL limit, which is what refuses a longer one.
     manifest_url: { type: 'string', maxlength: 2000, nullable: false },
     // The validated manifest, with its URLs resolved, as JSON.
     manifest: { type: 'text', maxlength: 65535, nullable: false },

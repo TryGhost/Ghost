@@ -166,8 +166,9 @@ services:
     contracts:
       exports:
         summary: >-
-          Named exports are init, the mutable service binding, isAvailable,
-          availableMiddleware and actingContext. The service binding is undefined before init.
+          Named exports are init, the mutable service binding, isAvailable and
+          actingContext. The service binding is undefined before init. The Express guard
+          that asks isAvailable lives with the Admin API routes in server/web.
         sources:
           - core/server/services/app-installations/index.ts
         tests:

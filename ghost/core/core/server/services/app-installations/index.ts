@@ -1,5 +1,3 @@
-import errors from '@tryghost/errors';
-import type { NextFunction, Request, Response } from 'express';
 import config from '../../../shared/config';
 import urlUtils from '../../../shared/url-utils';
 import {
@@ -11,7 +9,7 @@ import { AppInstallationsService } from './service';
 
 export type { RequestContext } from './actions';
 export { actingContext } from './actions';
-export type { AppInstallation } from './service';
+export type { AppInstallation } from './codec';
 
 // Constructed by init() at boot, not at import: knex is only available once the DB has connected.
 export let service: AppInstallationsService | undefined;
@@ -47,9 +45,4 @@ export function init(): void {
  */
 export function isAvailable(): boolean {
   return !isInDevelopmentTable('app_installations') || shouldCreateInDevelopmentTables();
-}
-
-/** Answers as if apps did not exist wherever the table does not. */
-export function availableMiddleware(_req: Request, _res: Response, next: NextFunction): void {
-  next(isAvailable() ? undefined : new errors.NotFoundError());
 }

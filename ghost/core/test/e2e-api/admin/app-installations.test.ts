@@ -111,6 +111,17 @@ describe('App installations Admin API', function () {
       );
     });
 
+    it('stores the manifest URL as it was checked, not as it was given', async function () {
+      const installation = await service().install(owner, {
+        manifestUrl: ' https://Podcast.Example.com/ghost-app.json\n',
+        manifest: manifest(),
+      });
+
+      assert.equal(installation.manifest_url, MANIFEST_URL);
+      const [stored] = await manifestRows();
+      assert.equal(stored.manifest_url, MANIFEST_URL);
+    });
+
     it('refuses a manifest URL longer than it can store', async function () {
       const manifestUrl = `https://podcast.example.com/${'a'.repeat(2000)}`;
       await assert.rejects(service().install(owner, { manifestUrl, manifest: manifest() }), {
@@ -315,6 +326,13 @@ describe('App installations Admin API', function () {
       await agent.get(`apps/installations/${installation.id}/`).expectStatus(404);
       await agent.delete(`apps/installations/${installation.id}/`).expectStatus(404);
       assert.equal((await service().read(installation.id)).status, 'active');
+    });
+
+    it('refuses to read a stored manifest it cannot make sense of', async function () {
+      const installation = await install();
+      await models.Base.knex('app_installation_manifests').update({ manifest: '{"id":' });
+
+      await assert.rejects(service().read(installation.id), { name: 'ZodError' });
     });
 
     it('answers 404 where in-development tables are not created', async function () {
