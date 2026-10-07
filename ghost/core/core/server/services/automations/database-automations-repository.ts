@@ -493,6 +493,7 @@ export function createDatabaseAutomationsRepository({
           case 'active':
             break;
           case 'inactive':
+          case 'archived':
             await cancelCancelablePendingStepsForAutomation(trx, updatedAutomation.id, now);
             break;
           default: {
