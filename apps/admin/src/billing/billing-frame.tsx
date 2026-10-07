@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
-import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
+import { type ConfigResponseType, useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { parseDunningConfig } from '@tryghost/admin-x-framework/api/dunning';
 import { isOwnerUser, type UsersResponseType } from '@tryghost/admin-x-framework/api/users';
@@ -25,6 +25,7 @@ import {
   EXCEEDED_ALERT_HTML,
   EXCEEDED_ALERT_KEY,
   PREVIOUS_PAGE_DESTINATION,
+  activeDunning,
   adminDestinationRoute,
   billingAdminPath,
   billingAlerts,
@@ -34,6 +35,7 @@ import {
   isBillingPath,
   markDunningPaymentSettled,
   parseBillingSubscription,
+  readDunningPaymentSettledFor,
   takePayNowReturnRoute,
 } from './billing-protocol';
 import {
@@ -270,8 +272,16 @@ function BillingAppFrame({
 
     setBillingSubscriptionState({ subscription });
 
+    const freshConfig = queryClient.getQueriesData<ConfigResponseType>({
+      queryKey: ['ConfigResponseType'],
+    })[0]?.[1];
+    const dunning = activeDunning(freshConfig?.config.hostSettings?.billing?.dunning, {
+      subscriptionStatus: subscription.status,
+      paymentSettledFor: readDunningPaymentSettledFor(),
+    });
+
     const { exceeded } = billingAlerts(message);
-    if (exceeded) {
+    if (exceeded && !dunning) {
       showAlert(alerts, EXCEEDED_ALERT_KEY, 'warn', EXCEEDED_ALERT_HTML);
     } else {
       alerts.remove((alert) => alert.key === EXCEEDED_ALERT_KEY);

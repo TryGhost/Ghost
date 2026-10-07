@@ -4,6 +4,7 @@
  * domain is internal.
  */
 export { BillingFrame } from './billing-frame';
+export { activeDunning, readDunningPaymentSettledFor } from './billing-protocol';
 export { BillingRoute } from './billing-route';
 export { ForceUpgradeGuard } from './force-upgrade-guard';
 export { useCanAccessBilling, useForceUpgrade, useSubscriptionStatus } from './subscription-status';

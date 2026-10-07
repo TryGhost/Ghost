@@ -601,6 +601,53 @@ describe('Ghost(Pro) billing', () => {
     await expect(alertsScreen.alerts()).toHaveCount(0);
   });
 
+  it('holds the exceeded member alert until the dunning payment is made', async () => {
+    fakeTags([]);
+    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+    const messages = standInMessages();
+    await renderBilling('/tags', { hostSettings: { billing: { dunning: dunningWindow(2) } } });
+    const pastDue = { status: 'past_due', isActiveTrial: false, trial_end: null };
+
+    await postFromBillingApp(messages, { subscription: pastDue, exceededLimits: ['members'] });
+    await expect.element(page.getByTestId('dunning-banner')).toBeVisible();
+
+    // Pay now opens billing, whose limit refresh reports the exceeded limit again
+    await page.getByRole('link', { name: 'Pay now' }).click();
+    await expect.element(billingScreen.frame()).toBeVisible();
+    await postFromBillingApp(messages, { subscription: pastDue, exceededLimits: ['members'] });
+    await billingAppSettled(messages);
+    await expect(alertsScreen.alerts()).toHaveCount(0);
+
+    await postFromBillingApp(messages, {
+      subscription: { status: 'active', isActiveTrial: false, trial_end: null },
+      exceededLimits: ['members'],
+    });
+    await expect.element(alertsScreen.alert(/Your audience has grown/)).toBeVisible();
+  });
+
+  it('clears a shown exceeded member alert once dunning starts', async () => {
+    fakeTags([]);
+    let hostSettings: Record<string, unknown> = {};
+    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+    const messages = standInMessages();
+    await renderBilling('/tags', { hostSettings: () => hostSettings });
+
+    await postFromBillingApp(messages, {
+      subscription: { status: 'active', isActiveTrial: false, trial_end: null },
+      exceededLimits: ['members'],
+    });
+    await expect.element(alertsScreen.alert(/Your audience has grown/)).toBeVisible();
+
+    hostSettings = { billing: { dunning: dunningWindow(2) } };
+    await postFromBillingApp(messages, {
+      subscription: { status: 'past_due', isActiveTrial: false, trial_end: null },
+      exceededLimits: ['members'],
+    });
+
+    await expect.element(page.getByTestId('dunning-banner')).toBeVisible();
+    await expect.element(alertsScreen.alert(/Your audience has grown/)).not.toBeInTheDocument();
+  });
+
   it('loads a deep-linked billing route once, without its query', async () => {
     await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
     const messages = standInMessages();

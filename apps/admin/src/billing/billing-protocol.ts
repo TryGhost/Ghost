@@ -1,6 +1,7 @@
 import {
   DUNNING_PAYMENT_SETTLED_STORAGE_KEY,
   DUNNING_PAY_RETURN_ROUTE_STORAGE_KEY,
+  parseDunningConfig,
 } from '@tryghost/admin-x-framework/api/dunning';
 import { z } from 'zod';
 import type { SubscriptionState } from '@/ember-bridge';
@@ -136,6 +137,38 @@ export function markDunningPaymentSettled(paymentFailedAt: Date): void {
   } catch {
     // Without storage the warnings stand down when the refreshed subscription state arrives
   }
+}
+
+/** `paymentFailedAt` of the failure a completed payment settled this session. */
+export function readDunningPaymentSettledFor(): string | null {
+  try {
+    return window.sessionStorage.getItem(DUNNING_PAYMENT_SETTLED_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function activeDunning(
+  value: unknown,
+  {
+    subscriptionStatus,
+    paymentSettledFor,
+  }: {
+    subscriptionStatus: unknown;
+    paymentSettledFor: string | null;
+  },
+) {
+  const dunning = parseDunningConfig(value);
+
+  if (
+    !dunning ||
+    subscriptionStatus === 'active' ||
+    paymentSettledFor === dunning.paymentFailedAt.toISOString()
+  ) {
+    return null;
+  }
+
+  return dunning;
 }
 
 export const EXCEEDED_ALERT_KEY = 'billing.exceeded';
