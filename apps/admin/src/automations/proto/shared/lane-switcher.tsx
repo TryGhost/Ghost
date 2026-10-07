@@ -1,22 +1,28 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from '@tryghost/admin-x-framework';
 import { toast } from 'sonner';
 import {
+  Badge,
   Button,
+  Checkbox,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-  Switch,
+  Field,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  RadioGroup,
+  RadioGroupItem,
+  Separator,
 } from '@tryghost/shade/components';
+import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
-import { ProtoVariantsContext, resolveVariantId } from './proto-variants';
 import { useVersionLink } from './use-version-link';
 import { resetLabels } from './labels';
 import { resetSegments } from './segments';
@@ -27,7 +33,7 @@ import {
   useArchivedTierIds,
   useStripeConnected,
 } from './store';
-import { LANES, type LaneId, laneLabel, lanePath } from './lanes';
+import { LANES, type LaneId, type LaneStatus, laneLabel, lanePath } from './lanes';
 import {
   RECORDING_MODE_SHORTCUT,
   isRecordingModeShortcut,
@@ -38,6 +44,26 @@ import {
 // The lane switcher. Split from lanes.ts, which holds the registry and the
 // helpers, so this file only exports a component (react-refresh/only-export-
 // components) — the same split proto-variants / proto-variant-switcher makes.
+
+// A lane's status, as the badge beside its name: Shade's success badge for
+// done, its warning (amber) one for in progress.
+//
+// Both texts are darkened in light mode. The badges set mid-tone text on a tint
+// of the same hue (green-500, yellow-600), which is barely legible at this
+// size; the 700 step is the same kind of override the run-status badges take
+// (shared/member-runs). The palette doesn't flip, so dark mode keeps each
+// badge's own colour.
+const LANE_STATUS_BADGE: Record<
+  LaneStatus,
+  { label: string; variant: 'success' | 'warning'; className?: string }
+> = {
+  done: { label: 'Done', variant: 'success', className: 'text-green-700 dark:text-green' },
+  'in-progress': {
+    label: 'WIP',
+    variant: 'warning',
+    className: 'text-yellow-700 dark:text-yellow-600',
+  },
+};
 
 /**
  * The corner control: which lane you're in, and the way to the others.
@@ -51,10 +77,17 @@ import {
  * landing mid-flow in a different one reads as the screen having changed under
  * you — which is the confusion this whole structure exists to remove.
  *
- * Any variant slots a lane registers (see proto-variants) still render below, so
- * a lane can keep its own internal A/B without a second control.
+ * A settings panel, not a command list — so it's a Popover of Shade's own form
+ * controls (RadioGroup, Switch, Button) rather than a menu dressed up as one.
+ * As a dropdown menu the lanes were menu radio rows, which draw no ring, and
+ * the two site switches were decorative copies inside menu items.
  *
- * Resetting the prototype's data lives here too, and nowhere else. It was on the
+ * It used to list a lane's variant slots too (see proto-variants). Nothing
+ * mounts that provider any more, so the rows never rendered; they're gone from
+ * here and in the branch history if a lane wants an internal A/B again.
+ *
+ * Resetting the prototype's data lives here too (in the header's ⋯ menu), and
+ * nowhere else. It was on the
  * automations list's own ⋯ for a while, which put a control that exists only
  * because this is a prototype among controls that are the product — a reviewer
  * had no way to tell that one row of that menu wasn't a feature. Everything in
@@ -68,22 +101,19 @@ export const LaneSwitcher: React.FC<{ lane: LaneId; className?: string }> = ({
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const toVersioned = useVersionLink();
-  const ctx = useContext(ProtoVariantsContext);
-  const slots = ctx?.slots ?? [];
   const stripeConnected = useStripeConnected();
   const archivedTierIds = useArchivedTierIds();
   const bronzeArchived = archivedTierIds.includes('bronze');
 
-  // Recording mode hides this control — see shared/recording-mode. The
-  // shortcut is listened for here because this is on every prototype screen,
-  // so it works wherever you are in the prototype, and it has to keep
-  // listening while hidden to bring it back.
-  const hidden = useRecordingMode();
+  // Recording mode — see shared/recording-mode. It no longer hides this
+  // control (the beaker hides itself now, always — see the hot corner below);
+  // it only changes what else is on screen, today the sidebar. The shortcut is
+  // listened for here because this is on every prototype screen.
+  const recording = useRecordingMode();
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (isRecordingModeShortcut(event)) {
         event.preventDefault();
-        setOpen(false);
         toggleRecordingMode();
       }
     };
@@ -91,172 +121,136 @@ export const LaneSwitcher: React.FC<{ lane: LaneId; className?: string }> = ({
     return () => document.removeEventListener('keydown', onKeyDown);
   }, []);
 
-  if (hidden) {
-    return null;
-  }
+  const reset = () => {
+    resetProtoStore();
+    // Labels and segments are their own stores (see shared/labels,
+    // shared/segments) but the same prototype data — a reset that left a site's
+    // invented labels and segments behind would be a partial one.
+    resetLabels();
+    resetSegments();
+    setOpen(false);
+    toast.success('Prototype data reset');
+  };
 
   return (
-    <div className={cn('absolute right-4 bottom-4 z-30', className)}>
-      <DropdownMenu modal={false} open={open} onOpenChange={setOpen}>
-        <DropdownMenuTrigger asChild>
-          {/* Icon only. The pill carried the lane's name so nobody had to wonder
-                    which version they were looking at — but the labels grew concept
-                    names ("Ph 2: Per-tier") and the pill got louder than the product
-                    around it. The name is one click away on the checked row; the
-                    aria-label keeps it announced. */}
+    // The hot corner. The beaker is scaffolding, so it stays out of sight until
+    // it's wanted: this 64px square in the bottom-right corner is the hover
+    // target, and the button inside it fades in while the pointer is over the
+    // square, while it has keyboard focus, or while its panel is open. Kept
+    // small because it sits over the screen and takes the clicks that land on
+    // it.
+    <div
+      className={cn(
+        'group/proto absolute right-0 bottom-0 z-30 flex size-16 items-end justify-end p-4',
+        className,
+      )}
+    >
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          {/* Icon only. The lane's name is one click away on the checked row;
+              the aria-label keeps it announced. */}
           <Button
             aria-label={`Prototype lane: ${laneLabel(lane)}`}
-            className={cn('text-muted-foreground', open && 'bg-muted')}
+            className={cn(
+              'text-muted-foreground opacity-0 transition-opacity group-hover/proto:opacity-100 focus-visible:opacity-100 motion-reduce:transition-none',
+              open && 'bg-muted opacity-100',
+            )}
             size="icon"
+            type="button"
             variant="ghost"
           >
             <LucideIcon.FlaskConical strokeWidth={2} />
           </Button>
-        </DropdownMenuTrigger>
-        {/* p-2 over the component's own p-1 — this menu is a settings panel more
-                than a command list, and the roomier inset is what says so. The
-                separators take -mx-2 to match, so the rules still run edge to edge. */}
-        <DropdownMenuContent align="end" className="w-64 p-2" side="top">
-          {/* The one header this menu kept: it names the whole surface, where the
-                    removed ones (Lane, Site) partitioned it. */}
-          <DropdownMenuLabel>Prototype settings</DropdownMenuLabel>
-          {/* No section headers and no per-lane sub-copy — each row's own words
-                    carry what the headers and captions used to (see the LANES comment
-                    for how the labels absorbed the notes).
-
-                    Plain items with a trailing check rather than Shade's radio rows:
-                    the radio dot sits in a leading gutter, and with it every lane name
-                    started 24px in — the same trailing-check treatment the list's view
-                    dropdown uses, opacity-toggled so rows keep a stable width. */}
-          {LANES.map((entry) => (
-            <DropdownMenuItem
-              key={entry.id}
-              onSelect={() => {
-                if (entry.id === lane) {
-                  return;
+        </PopoverTrigger>
+        <PopoverContent align="end" className="w-80" side="top">
+          <Stack gap="lg">
+            {/* The title names the whole surface; the ⋯ beside it holds the two
+                things that act on the prototype as a whole rather than set
+                something in it. Reset clears every lane at once — they share
+                one store. Record mode dresses the screen for a recording; the
+                row says which way pressing it goes, with its shortcut. */}
+            <Inline align="center" justify="between">
+              <Text size="md" weight="semibold">
+                Prototype
+              </Text>
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <Button aria-label="Prototype actions" size="icon" type="button" variant="ghost">
+                    <LucideIcon.MoreHorizontal />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={reset}>
+                    <LucideIcon.RotateCcw /> Reset prototype
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={toggleRecordingMode}>
+                    <LucideIcon.Video />
+                    {recording ? 'Disable record mode' : 'Enable record mode'}
+                    <DropdownMenuShortcut>{RECORDING_MODE_SHORTCUT}</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </Inline>
+            {/* The lanes: one is always the one you're in. Each carries its
+                status as a badge (see LANE_STATUS_BADGE). Switching goes to the
+                lane's list. */}
+            <RadioGroup
+              aria-label="Prototype lane"
+              value={lane}
+              onValueChange={(next) => {
+                if (next !== lane) {
+                  navigate(toVersioned(lanePath(next as LaneId)));
                 }
-                navigate(toVersioned(lanePath(entry.id)));
               }}
             >
-              {entry.label}
-              <LucideIcon.Check
-                className={cn(
-                  'ms-auto text-primary',
-                  entry.id === lane ? 'opacity-100' : 'opacity-0',
-                )}
-              />
-            </DropdownMenuItem>
-          ))}
-          {/* A lane's variant slots, one SUBMENU row each rather than inline
-                    radio sections — the row names the slot and shows its current
-                    answer, the flyout holds the options, and a slot growing a
-                    fourth variant costs a row in the flyout instead of menu
-                    height here. Same trailing-check convention as the lanes. */}
-          {slots.map((slot) => {
-            const active = resolveVariantId(slot, ctx?.selections ?? {});
-            return (
-              <React.Fragment key={slot.id}>
-                <DropdownMenuSeparator className="-mx-2" />
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>
-                    {slot.label}
-                    <span className="ml-auto pl-4 text-muted-foreground">
-                      {slot.variants.find((variant) => variant.id === active)?.label}
-                    </span>
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent>
-                    {slot.variants.map((variant) => (
-                      <DropdownMenuItem
-                        key={variant.id}
-                        onSelect={() => ctx?.select(slot.id, variant.id)}
-                      >
-                        {variant.label}
-                        <LucideIcon.Check
-                          className={cn(
-                            'ms-auto text-primary',
-                            variant.id === active ? 'opacity-100' : 'opacity-0',
-                          )}
-                        />
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuSubContent>
-                </DropdownMenuSub>
-              </React.Fragment>
-            );
-          })}
-          <DropdownMenuSeparator className="-mx-2" />
-          {/* Site state, not lane state — but it belongs in the same menu for the
-                    same reason resetting does: it exists because this is a prototype.
-                    A reviewer on a preview URL can't disconnect Stripe to see what the
-                    automations screens do about it, so this stands in for the site
-                    setting.
-
-                    A switch rather than the menu's checkbox row: a check reads as
-                    picking an option, and this is a piece of site state at two
-                    settings. preventDefault keeps the menu open through the flip, so
-                    the list reshaping behind it (paid workflows leaving and
-                    returning) is watchable. The Switch is decorative — the row is
-                    the control, and a second focusable thing inside a menu item is
-                    one tab stop too many. */}
-          <DropdownMenuItem
-            onSelect={(event) => {
-              event.preventDefault();
-              setStripeConnected(!stripeConnected);
-            }}
-          >
-            Stripe connected
-            <Switch checked={stripeConnected} className="pointer-events-none ml-auto" aria-hidden />
-          </DropdownMenuItem>
-          {/* One tier's archive state, standing in for the tier settings screen —
-                    a single Bronze toggle reaches every display state the archived-tier
-                    design has (marked-in-selection, hidden-from-offer, mixed field).
-                    Same switch row and same stay-open behaviour as Stripe above, and
-                    for the same reason: the "(archived)" markings appearing on the
-                    canvas behind the menu are the thing being demoed. */}
-          <DropdownMenuItem
-            onSelect={(event) => {
-              event.preventDefault();
-              setTierArchived('bronze', !bronzeArchived);
-            }}
-          >
-            Bronze tier archived
-            <Switch checked={bronzeArchived} className="pointer-events-none ml-auto" aria-hidden />
-          </DropdownMenuItem>
-
-          <DropdownMenuSeparator className="-mx-2" />
-          {/* Recording mode, with its shortcut as the row's hint — the way back
-              out, once this menu is hidden, is only the shortcut, so the row is
-              where it gets learned. */}
-          <DropdownMenuItem
-            onClick={() => {
-              setOpen(false);
-              toggleRecordingMode();
-            }}
-          >
-            <LucideIcon.Video /> Recording mode
-            <DropdownMenuShortcut>{RECORDING_MODE_SHORTCUT}</DropdownMenuShortcut>
-          </DropdownMenuItem>
-
-          <DropdownMenuSeparator className="-mx-2" />
-          {/* Resets every lane at once — they share one store. Last, and on its
-                    own, because it's the only thing in here that destroys anything. */}
-          <DropdownMenuItem
-            className="text-destructive focus:text-destructive"
-            onClick={() => {
-              resetProtoStore();
-              // Labels and segments are their own stores (see shared/labels,
-              // shared/segments) but the same prototype data — a reset that left
-              // a site's invented labels and segments behind would be a partial
-              // one.
-              resetLabels();
-              resetSegments();
-              toast.success('Prototype data reset');
-            }}
-          >
-            <LucideIcon.RotateCcw /> Reset prototype
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+              {LANES.map((entry) => (
+                <Field key={entry.id} orientation="horizontal">
+                  <RadioGroupItem id={`proto-lane-${entry.id}`} value={entry.id} />
+                  <FieldLabel htmlFor={`proto-lane-${entry.id}`}>{entry.label}</FieldLabel>
+                  <Badge
+                    className={LANE_STATUS_BADGE[entry.status].className}
+                    variant={LANE_STATUS_BADGE[entry.status].variant}
+                  >
+                    {LANE_STATUS_BADGE[entry.status].label}
+                  </Badge>
+                </Field>
+              ))}
+            </RadioGroup>
+            <Separator />
+            {/* Site state, not lane state — here because, like reset, it exists
+                only because this is a prototype. A reviewer on a preview URL
+                can't disconnect Stripe to see what the automations screens do
+                about it, so this stands in for the site setting. The panel
+                stays open through a flip, so the screen reshaping behind it is
+                watchable. */}
+            {/* Shade's FieldSet + legend: the two are one group of conditions the
+                prototype can be put under, and the legend names it. Checkboxes
+                rather than switches — each is a condition that holds or doesn't. */}
+            <FieldSet className="gap-3">
+              <FieldLegend variant="label">Conditions</FieldLegend>
+              <Field orientation="horizontal">
+                <Checkbox
+                  checked={stripeConnected}
+                  id="proto-stripe-connected"
+                  onCheckedChange={(checked) => setStripeConnected(checked === true)}
+                />
+                <FieldLabel htmlFor="proto-stripe-connected">Stripe connected</FieldLabel>
+              </Field>
+              {/* One tier's archive state, standing in for the tier settings
+                  screen — a single Bronze toggle reaches every display state
+                  the archived-tier design has. */}
+              <Field orientation="horizontal">
+                <Checkbox
+                  checked={bronzeArchived}
+                  id="proto-bronze-archived"
+                  onCheckedChange={(checked) => setTierArchived('bronze', checked === true)}
+                />
+                <FieldLabel htmlFor="proto-bronze-archived">Bronze tier archived</FieldLabel>
+              </Field>
+            </FieldSet>
+          </Stack>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 };

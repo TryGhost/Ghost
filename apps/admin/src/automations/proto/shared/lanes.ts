@@ -26,26 +26,30 @@
 
 export type LaneId = 'phase-1' | 'phase-2' | 'exploration-2';
 
+// Where a lane stands: shipped and holding still, or still moving. Shown as a
+// badge beside the lane's name in the switcher.
+export type LaneStatus = 'done' | 'in-progress';
+
 export interface Lane {
   id: LaneId;
   label: string;
+  status: LaneStatus;
 }
 
-// The labels say what the lane is and where it stands — "(done)" is shipped and
-// holding still, "(in progress)" is still moving. The ids, and so the URLs and
-// folders, keep their original names: only the words in the switcher changed,
-// so nobody's link moved.
+// The labels say what the lane is; `status` says where it stands. The ids, and
+// so the URLs and folders, keep their original names: only the words in the
+// switcher changed, so nobody's link moved.
 //
 // Two lanes were retired in Oct '26 and are in the branch history if wanted:
 // "Sandbox: Full canvas" (exploration), the disappearing-chrome concept, and
 // "Future: Next & Later" (future), the roadmap lane — its triggers, its Update
 // member step and its publish checks all live in GA now.
 export const LANES: Lane[] = [
-  { id: 'phase-1', label: 'Run analytics (done)' },
-  { id: 'phase-2', label: 'Tier-based signup (in progress)' },
+  { id: 'phase-1', label: 'Run analytics', status: 'done' },
+  { id: 'phase-2', label: 'Tier-based signup', status: 'in-progress' },
   // Formerly "Sandbox: Right panel": the post editor's shape, a fixed header and
   // the pane on the canvas's right, carrying everything on the roadmap to GA.
-  { id: 'exploration-2', label: 'GA (in progress)' },
+  { id: 'exploration-2', label: 'GA', status: 'in-progress' },
 ];
 
 export const lanePath = (lane: LaneId): string => `/automations-proto/${lane}`;

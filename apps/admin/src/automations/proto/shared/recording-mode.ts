@@ -1,13 +1,17 @@
 import { useSyncExternalStore } from 'react';
 
-// Recording mode: the prototype with its scaffolding out of shot, for screen
-// recordings like a changelog screencast. On, the lane switcher's beaker hides,
-// and the sidebar shows the prototype as the product — one "Automations" item
-// with the shipping icon, where there are normally two (the real screens and
-// "Automations (Proto)").
+// Record mode: the prototype dressed for a screen recording, like a changelog
+// screencast. On, the sidebar shows the prototype as the product — one
+// "Automations" item with the shipping icon, where there are normally two (the
+// real screens and "Automations (Proto)"). Anything else a recording needs
+// changed belongs behind the same flag.
+//
+// It used to hide the lane switcher's beaker too. The beaker now hides itself
+// all the time and appears from the bottom-right corner (see lane-switcher), so
+// it's out of shot either way.
 //
 // ⌘⇧. (Ctrl+Shift+. elsewhere) toggles it on any prototype screen — the lane
-// switcher listens — and the switcher's menu has it as a row with that hint.
+// switcher listens — and the switcher's ⋯ menu has it as a row with that hint.
 // Chosen because browsers don't bind it (⌘⇧H and ⌘⇧B both are).
 //
 // Kept in this browser (localStorage) so it survives reloads and lane changes
