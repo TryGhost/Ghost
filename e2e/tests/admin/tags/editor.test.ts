@@ -1,6 +1,8 @@
 import { NewTagsPage, TagEditorPage, TagsPage } from '@/admin-pages';
+import { createTagFactory } from '@/data-factory';
 import { expect, test } from '@/helpers/playwright';
 
+// Tests share one Ghost environment, so each one owns its tags
 test.describe('Ghost Admin - Tags Editor', () => {
   test('can add tags', async ({ page }) => {
     const newTagsPage = new NewTagsPage(page);
@@ -33,32 +35,41 @@ test.describe('Ghost Admin - Tags Editor', () => {
     await expect(tagEditor.nameInput).toHaveValue('To be edited');
     await expect(tagEditor.slugInput).toHaveValue('to-be-edited');
 
-    await tagEditor.updateTag('New tag name', 'new-tag-slug');
+    await tagEditor.updateTag('Edited tag name', 'edited-tag-slug');
     await tagEditor.goBackToTagsList();
     await tagsPage.waitForPageToFullyLoad();
 
-    await expect(tagsPage.getTagLinkByName('New tag name')).toBeVisible();
-    await expect(tagsPage.getTagLinkByName('New tag name')).toContainText('new-tag-slug');
+    await expect(tagsPage.getTagLinkByName('Edited tag name')).toBeVisible();
+    await expect(tagsPage.getTagLinkByName('Edited tag name')).toContainText('edited-tag-slug');
   });
 
   test('does not create duplicates when editing a tag', async ({ page }) => {
     const tagsPage = new TagsPage(page);
     const tagEditor = new TagEditorPage(page);
+    const tag = await createTagFactory(page.request).create({
+      name: 'To be renamed',
+      feature_image: null,
+    });
     await tagsPage.goto();
 
-    await expect(tagsPage.tagListRow).toHaveCount(1);
+    await expect(tagsPage.getTagLinkByName(tag.name)).toBeVisible();
+    const rowCount = await tagsPage.tagListRow.count();
 
-    await tagsPage.getRowByTitle('News').click();
-    await tagEditor.fillTagName('Edited Tag Name');
+    await tagsPage.getRowByTitle(tag.name).click();
+    await tagEditor.fillTagName('Renamed Tag Name');
     await tagEditor.save();
     await tagEditor.goBackToTagsList();
     await tagsPage.waitForPageToFullyLoad();
 
-    await expect(tagsPage.tagListRow).toHaveCount(1);
-    await expect(tagsPage.getTagLinkByName('Edited Tag Name')).toBeVisible();
+    await expect(tagsPage.getTagLinkByName('Renamed Tag Name')).toBeVisible();
+    await expect(tagsPage.tagListRow).toHaveCount(rowCount);
   });
 
   test('can delete tag without posts', async ({ page }) => {
+    const keptTag = await createTagFactory(page.request).create({
+      name: 'To be kept',
+      feature_image: null,
+    });
     const newTagsPage = new NewTagsPage(page);
     await newTagsPage.goto();
 
@@ -77,7 +88,8 @@ test.describe('Ghost Admin - Tags Editor', () => {
 
     await expect(tagEditor.deleteModal).toBeHidden();
     await expect(page).toHaveURL(tagsPage.pageUrl);
-    await expect(tagsPage.tagListRow).toHaveCount(1);
+    await expect(tagsPage.getTagLinkByName(keptTag.name)).toBeVisible();
+    await expect(tagsPage.getTagLinkByName('To be deleted')).toBeHidden();
   });
 
   test('can delete tags with posts', async ({ page }) => {

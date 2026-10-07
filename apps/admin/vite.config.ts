@@ -1,4 +1,3 @@
-import { createRequire } from 'node:module';
 import { configDefaults, defineConfig } from 'vitest/config';
 import type { PluginOption } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -37,24 +36,15 @@ function getBase(command: 'build' | 'serve'): string {
   return `${getSubdir()}${DEV_BASE}`;
 }
 
-// Uploads the build's sourcemaps to Sentry; shipping builds only, as for Koenig
-function sentrySourcemapsPlugin(): PluginOption {
+// Injects Sentry debug IDs on shipping builds; CI uploads the maps afterwards
+function sentryDebugIdsPlugin(): PluginOption {
   if (!process.env.IS_SHIPPING) {
     return null;
   }
 
-  // Matches the release Admin's Sentry client reports once `/config/` has loaded
-  const require = createRequire(import.meta.url);
-  const { version } = require('../../ghost/core/package.json') as { version: string };
-
   return sentryVitePlugin({
-    org: 'ghost-foundation',
-    project: 'admin',
-    authToken: process.env.VITE_SENTRY_AUTH_TOKEN,
-    release: {
-      name: `ghost@${process.env.GHOST_BUILD_VERSION || version}`,
-      inject: false,
-    },
+    sourcemaps: { disable: 'disable-upload' },
+    release: { inject: false },
     telemetry: false,
   });
 }
@@ -74,7 +64,7 @@ export default defineConfig(({ command, mode }) => ({
           emberAssetsPlugin(),
           ghostBackendProxyPlugin(),
           // Sentry's plugin goes after all others
-          sentrySourcemapsPlugin(),
+          sentryDebugIdsPlugin(),
         ]),
   ],
   build: {

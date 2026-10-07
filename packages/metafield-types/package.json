@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/metafield-types",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Ghost member custom field types: which types exist, what each is made of, and how a value of each is validated",
   "license": "MIT",
   "author": "Ghost Foundation",

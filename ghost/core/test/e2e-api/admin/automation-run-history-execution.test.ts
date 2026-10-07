@@ -56,7 +56,6 @@ describe('Automation run history from the execution', function () {
     await setupAutomationsFixture();
     sinon.stub(logging, 'error');
     clock = sinon.useFakeTimers({ now: new Date('2026-09-14T12:00:00Z'), toFake: ['Date'] });
-    mockManager.mockLabsDisabled('automationsTinybirdSync');
     member = {
       id: ObjectId().toHexString(),
       name: 'Execution member',

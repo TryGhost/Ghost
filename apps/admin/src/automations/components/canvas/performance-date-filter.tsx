@@ -24,7 +24,7 @@ export const PerformanceDateFilter: React.FC<{
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end">
-      <DropdownMenuLabel>Entries</DropdownMenuLabel>
+      <DropdownMenuLabel>Runs</DropdownMenuLabel>
       {PERFORMANCE_RANGES.map((option) => (
         <DropdownMenuItem
           key={option.value}

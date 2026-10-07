@@ -24,7 +24,7 @@ const cards = [
   {
     key: 'exitedEarly',
     status: 'exited_early',
-    label: 'Exited early',
+    label: 'Stopped',
     Icon: ExitedGlyph,
     color: 'text-muted-foreground',
   },

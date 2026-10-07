@@ -64,8 +64,6 @@ describe('Automation run history API', function () {
       transient_id: newId(),
       created_at: date,
     });
-    // History is read from Core, independently of analytics/list availability.
-    mockManager.mockLabsDisabled('automationsTinybirdSync');
   });
 
   afterEach(async function () {
