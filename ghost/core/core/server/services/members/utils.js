@@ -11,6 +11,20 @@ function formatNewsletterResponse(newsletters) {
 }
 
 module.exports.formatNewsletterResponse = formatNewsletterResponse;
+
+/**
+ * A member's metafields as a response shows them, or undefined to leave the key off when
+ * the member has none. Most sites define no metafields, so their member responses read
+ * exactly as they did before metafields existed.
+ *
+ * @param {Record<string, Record<string, unknown>> | undefined} metafields
+ * @returns {Record<string, Record<string, unknown>> | undefined}
+ */
+function visibleMetafields(metafields) {
+  return metafields && Object.keys(metafields).length > 0 ? metafields : undefined;
+}
+
+module.exports.visibleMetafields = visibleMetafields;
 module.exports.formattedMemberResponse = function formattedMemberResponse(member) {
   if (!member) {
     return null;
@@ -41,13 +55,9 @@ module.exports.formattedMemberResponse = function formattedMemberResponse(member
     data.email_suppression = member.email_suppression;
   }
 
-  // Absent rather than empty on a site that has defined no extra fields, which is
-  // most of them, so those members' accounts read exactly as they did before this
-  // existed. Present but empty means the publisher has defined fields and this
-  // member has answered none, which a client renders as blank inputs rather than
-  // as nothing to fill in.
-  if (member.metafields) {
-    data.metafields = member.metafields;
+  const metafields = visibleMetafields(member.metafields);
+  if (metafields) {
+    data.metafields = metafields;
   }
 
   return data;

@@ -64,6 +64,7 @@ const EmailPreviewRow: React.FC<{
         <button
           className="flex w-full min-w-0 items-center gap-3 py-3 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
           data-testid={`${emailType}-welcome-email-preview`}
+          disabled={isInitialLoading}
           type="button"
           onClick={onEdit}
         >
@@ -99,6 +100,7 @@ const EmailPreviewRow: React.FC<{
           )}
           <Button
             className="h-auto p-0 font-bold text-green hover:text-green/90 hover:no-underline"
+            disabled={isInitialLoading}
             type="button"
             variant="link"
             onClick={onEdit}

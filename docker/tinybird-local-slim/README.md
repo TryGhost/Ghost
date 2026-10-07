@@ -5,6 +5,11 @@ A distilled build of `tinybirdco/tinybird-local` for CI. Published to
 [`publish-tinybird-local-slim.yml`](../../.github/workflows/publish-tinybird-local-slim.yml)
 and used by the analytics E2E jobs via `GHOST_E2E_TINYBIRD_SLIM=true`.
 
+When `docker/tinybird-local-slim/**` or `compose.dev.analytics.yaml` changes,
+analytics E2E jobs build the slim image from the checked-out commit and test
+that image instead of the published `latest`. This also applies to fork PRs;
+the image stays on the runner and is not published. Other fork PRs use upstream.
+
 ## Why
 
 The upstream image is ~2.1GB to pull and ~6.9GB once unpacked, which does not
@@ -64,8 +69,9 @@ GHOST_E2E_TINYBIRD_SLIM=true GHOST_E2E_TINYBIRD_SLIM_IMAGE=tinybird-local-slim:l
   need it access through package settings rather than making it public.
 
 An internal package is unreadable from a PR opened from a public fork, whose
-token is scoped to the fork. CI leaves `GHOST_E2E_TINYBIRD_SLIM` off for those
-runs so they use upstream directly, and `e2e/scripts/infra-up.sh` falls back to
+token is scoped to the fork. Unless the run builds the image locally as described
+above, CI leaves `GHOST_E2E_TINYBIRD_SLIM` off for those runs so they use upstream
+directly. `e2e/scripts/infra-up.sh` also falls back to
 upstream on any failed pull regardless — so a missing access grant, or the
 window before the package is first published, degrades to a slower, fatter run
 rather than a broken one.

@@ -36,6 +36,7 @@ function KeyCap({ token }: { token: ShortcutKey }) {
         token.tooltip && 'pointer-events-auto',
       )}
       role={token.tooltip ? 'img' : undefined}
+      variant="contrast"
     >
       {token.text}
     </Kbd>
@@ -58,13 +59,18 @@ function KeyCap({ token }: { token: ShortcutKey }) {
 
 function ShortcutRow({ shortcut }: { shortcut: Shortcut }) {
   return (
-    <Inline data-testid={settingsShortcutRow} gap="sm" justify="between">
-      <dt>
+    <Inline
+      className="-mx-2 rounded-md px-2 py-1 hover:bg-interactive-hover"
+      data-testid={settingsShortcutRow}
+      gap="sm"
+      justify="between"
+    >
+      <dt className="float-none clear-none m-0 w-auto min-w-0 flex-1 overflow-visible text-left font-normal wrap-anywhere whitespace-normal">
         <Text as="span" className={shortcut.style && LABEL_CLASSES[shortcut.style]} size="sm">
           {shortcut.label}
         </Text>
       </dt>
-      <dd>
+      <dd className="m-0 shrink-0">
         <KbdGroup>
           {shortcut.keys.map((token) => (
             <KeyCap key={token.text} token={token} />
@@ -88,11 +94,11 @@ export function KeyboardShortcutsSection() {
       title="Keyboard shortcuts"
     >
       {groups.map((group) => (
-        <Stack key={group.title} gap="sm">
-          <Text as="h3" size="sm" weight="medium">
+        <Stack key={group.title} className="mb-2" gap="sm">
+          <Text as="h3" className="border-b border-border-default pb-2" size="md" weight="semibold">
             {group.title}
           </Text>
-          <dl className="flex flex-col gap-2">
+          <dl className="m-0">
             {group.shortcuts.map((shortcut) => (
               <ShortcutRow key={shortcut.label} shortcut={shortcut} />
             ))}

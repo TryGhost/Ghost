@@ -133,10 +133,7 @@ export default class GhBillingIframe extends Component {
             response: {
                 forceUpgrade: this.config.hostSettings?.forceUpgrade,
                 isOwner: this.isOwner,
-                ownerUser,
-                // The flag accessor ships with the dunning return handler.
-                // Until then it is undefined, so Billing stays on its overview.
-                dunningReturnEnabled: this.feature.dunningWarnings === true
+                ownerUser
             }
         });
     }

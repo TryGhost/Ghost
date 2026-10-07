@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
-// @ts-expect-error facebook_url currently lacks type definitions.
-import facebookUrl from '../../../../core/frontend/helpers/facebook_url';
+import { facebook_url as facebookUrl } from '../../../../core/frontend/helpers/facebook_url';
 
 describe('{{facebook_url}} helper', function () {
   const options: { data: { site: { facebook?: string } } } = { data: { site: {} } };

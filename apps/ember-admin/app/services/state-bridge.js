@@ -1,9 +1,10 @@
+import * as Sentry from '@sentry/ember';
 import Evented from '@ember/object/evented';
 import Service, {inject as service} from '@ember/service';
 import {action} from '@ember/object';
-import {getOwner} from '@ember/application';
 import {inject} from 'ghost-admin/decorators/inject';
 import {run} from '@ember/runloop';
+import {tracked} from '@glimmer/tracking';
 
 const emberDataTypeMapping = {
     AutomatedEmailsResponseType: null, // automated emails only exist in React admin
@@ -29,9 +30,12 @@ const emberDataTypeMapping = {
 };
 
 export default class StateBridgeService extends Service.extend(Evented) {
-    @service customViews;
+    @service billing;
+    @service configManager;
     @service feature;
+    @service limit;
     @service membersUtils;
+    @service notifications;
     @service router;
     @service search;
     @service session;
@@ -41,6 +45,35 @@ export default class StateBridgeService extends Service.extend(Evented) {
     @service ui;
 
     @inject config;
+
+    @tracked postListQueryParams = {posts: {}, pages: {}};
+
+    // True while the React route hides the admin sidebar
+    @tracked isReactFullScreen = false;
+
+    // Pattern of the React route showing, e.g. `/editor/*`; null while an Ember route shows
+    reactRoutePattern = null;
+
+    @action
+    setPostListQueryParams(resource, params) {
+        this.postListQueryParams = {...this.postListQueryParams, [resource]: params};
+    }
+
+    @action
+    setReactFullScreen(isFullScreen) {
+        this.isReactFullScreen = isFullScreen;
+    }
+
+    @action
+    setReactRoutePattern(routePattern) {
+        this.reactRoutePattern = routePattern;
+        this.tagSentryRoute();
+    }
+
+    // Ember's router misses React's pushState navigations, so a showing React route wins
+    tagSentryRoute() {
+        Sentry.setTag('route', this.reactRoutePattern ?? this.router.currentRouteName);
+    }
 
     /**
      * Gives React the same synchronous Labs route-ownership decision Ember
@@ -56,6 +89,15 @@ export default class StateBridgeService extends Service.extend(Evented) {
         return this.feature[name] === true;
     }
 
+    /**
+     * React renders Ember's alerts and toasts while connected. Returns the
+     * disconnect, which only clears the connection if it is still current.
+     */
+    @action
+    connectNotificationsHost(host) {
+        return this.notifications.connectHost(host);
+    }
+
     @action
     triggerFeatureFlagsChange() {
         this.trigger('featureFlagsChange');
@@ -67,25 +109,6 @@ export default class StateBridgeService extends Service.extend(Evented) {
         // React route ownership subscribes to this event so it can re-read
         // Ember's invalidated value. It does not write overrides back.
         this.triggerFeatureFlagsChange();
-    }
-
-    constructor() {
-        super(...arguments);
-        this.router.on('routeDidChange', this, this.handleRouteDidChange);
-    }
-
-    willDestroy() {
-        super.willDestroy(...arguments);
-        this.router.off('routeDidChange', this, this.handleRouteDidChange);
-    }
-
-    @action
-    handleRouteDidChange() {
-        const currentRoute = this.router.currentRoute;
-        this.trigger('routeChange', {
-            routeName: this.router.currentRouteName,
-            queryParams: currentRoute?.queryParams || {}
-        });
     }
 
     /* React -> Ember -------------------------------------------------------
@@ -214,13 +237,8 @@ export default class StateBridgeService extends Service.extend(Evented) {
     }
 
     @action
-    preloadAdminThemeStylesheet() {
-        return this.feature._loadAdminThemeStylesheet();
-    }
-
-    @action
-    applyAdminThemePreference(mode) {
-        return this.feature._setAdminTheme(mode);
+    connectAdminTheme() {
+        return this.feature.connectAdminTheme();
     }
 
     /* Ember -> React -------------------------------------------------------
@@ -260,128 +278,57 @@ export default class StateBridgeService extends Service.extend(Evented) {
         });
     }
 
-    // The gift-link modal lives in React. Ember surfaces (the posts/pages
-    // context menu) ask React to open it for a given post/page rather than
-    // duplicating the modal — see subscribeOpenGiftLinkModal on the React side.
+    // React's billing app hands subscription reports to Ember so Ember's own
+    // state matches what its billing iframe would have produced: fresh config
+    // and plan limits for the publish flow, subscription listeners, and the
+    // in-memory force upgrade lift that holds until the server restarts
     @action
-    triggerOpenGiftLinkModal({id, resource}) {
-        this.trigger('openGiftLinkModal', {id, resource});
+    async applyBillingSubscriptionUpdate(data) {
+        try {
+            await this.configManager.fetch();
+        } catch (e) {
+            // re-evaluate limits against the config we have
+        }
+        this.limit.reload();
+        this.triggerSubscriptionChange(data);
+
+        this.billing.subscription = data.subscription;
+        this.billing.checkoutRoute = data.checkoutRoute ?? '/plans';
+
+        if (data.subscription?.status === 'active' && this.config.hostSettings?.forceUpgrade) {
+            this.config.hostSettings.forceUpgrade = false;
+        }
+    }
+
+    // React's billing app has no Sentry client; report through Ember's with
+    // the billing service's event shape so both shells land in one issue
+    @action
+    captureBillingAppLoadFailure({billingMonitor, tags}) {
+        if (!this.config.sentry_dsn) {
+            return;
+        }
+
+        Sentry.captureException('Billing app failed to become ready', {
+            level: 'warning',
+            fingerprint: [
+                'billing-app-load-failure',
+                billingMonitor.document_visibility_state,
+                String(billingMonitor.attempts)
+            ],
+            contexts: {ghost: {billing_monitor: billingMonitor}},
+            tags
+        });
+    }
+
+    // A billing search result for the billing route already showing is a no-op
+    // Ember transition, so React hands the sub-route to the billing app directly
+    @action
+    navigateToBillingSubRoute(subRoute) {
+        this.billing.navigateToSubRoute(subRoute);
     }
 
     get sidebarVisible() {
         // Sidebar is visible when NOT in fullscreen mode
         return !this.ui.isFullScreen;
-    }
-
-    /* Routing utilities for React admin shell */
-
-    @action
-    getRouteUrl(routeName, queryParamsOverride) {
-        if (!routeName) {
-            return '';
-        }
-
-        // Normalize route names to ignore loading states
-        const currentRouteName = this.router.currentRouteName?.replace(/_loading$/, '') || '';
-        const isOnSameRoute = currentRouteName === routeName || currentRouteName.startsWith(routeName + '.');
-        
-        // When generating the URL for the current route (or a parent thereof)
-        // we want to clear the default query param state. This allows the
-        // iOS-like "click one more time to go back home" behavior.
-        if (isOnSameRoute && !queryParamsOverride) {
-            return this.router.urlFor(routeName, {queryParams: {}});
-        }
-
-        // Use query params override if provided, otherwise get the current
-        // state from the controller. This is what enables "sticky filters". 
-        const params = queryParamsOverride || this._getControllerQueryParams(routeName);
-        
-        const cleanParams = Object.fromEntries(
-            Object.entries(params).filter(([, value]) => value !== null && value !== undefined && value !== '')
-        );
-        
-        // When the controller query params (i.e. sticky filters) match one of
-        // the custom views, we want to exclude them from the url for the base
-        // route. Otherwise, clicking on the "Posts" menu item would redirect
-        // you to the custom view you had open most recently. 
-        const hasCleanParams = Object.keys(cleanParams).length > 0;
-        if (!queryParamsOverride && hasCleanParams) {
-            if (this.customViews.findView(routeName, cleanParams)) {
-                return this.router.urlFor(routeName, {queryParams: {}});
-            }
-        }
-
-        return this.router.urlFor(routeName, {queryParams: cleanParams});
-    }
-
-    @action
-    isRouteActive(routeNames, queryParams) {
-        const currentRouteName = this.router.currentRouteName?.replace(/_loading$/, '') || '';
-        
-        // Normalize routeNames to an array
-        const routes = Array.isArray(routeNames) ? routeNames : routeNames.split(' ');
-        
-        // Check if current route matches any of the specified routes
-        const routeMatches = routes.some((route) => {
-            // Support both exact matches and subpath matches (e.g., "settings"
-            // matches "settings.history")
-            return currentRouteName === route || currentRouteName.startsWith(route + '.');
-        });
-        
-        if (!routeMatches) {
-            return false;
-        }
-
-        const isMainLink = !queryParams;
-        const activeView = this.customViews.activeView;
-
-        // If we're checking the main link and there is no active custom view,
-        // then we consider the main link to be active, regardless of if there
-        // are query params in the current url.
-        if (isMainLink) {
-            return !activeView;
-        }
-
-        // If we're not checking the main link, then this is a custom view. If
-        // there's no active view, this custom view link can't be active
-        if (!activeView) {
-            return false;
-        }
-
-        // If we've reached this far, we're currently on an active custom view
-        // and the route matches, so we need to compare the query params.
-        const cleanedFilter = this.customViews.cleanFilter(activeView.filter);
-        return this.customViews.isFilterEqual(cleanedFilter, queryParams);
-    }
-
-    _getControllerQueryParams(routeName) {
-        const owner = getOwner(this);
-        const controller = owner.lookup(`controller:${routeName}`);
-        
-        if (!controller || !controller.queryParams) {
-            return {};
-        }
-
-        const params = {};
-        for (const param of controller.queryParams) {
-            let controllerKey, urlKey;
-            
-            if (typeof param === 'string') {
-                // Simple param: key is the same in controller and URL
-                controllerKey = param;
-                urlKey = param;
-            } else {
-                // Mapped param: {controllerKey: 'urlKey'}
-                controllerKey = Object.keys(param)[0];
-                urlKey = param[controllerKey];
-            }
-            
-            const value = controller[controllerKey];
-            if (value !== null && value !== undefined) {
-                params[urlKey] = value;
-            }
-        }
-
-        return params;
     }
 }

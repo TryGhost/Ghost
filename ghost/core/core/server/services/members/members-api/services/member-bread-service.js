@@ -1,4 +1,5 @@
 const errors = require('@tryghost/errors');
+const _ = require('lodash');
 const { ADMIN, adminWriteOrigin } = require('../../../members-metafields');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
@@ -8,8 +9,6 @@ const messages = {
   stripeNotConnected: 'Missing Stripe connection.',
   memberAlreadyExists: 'Member already exists.',
   memberNotFound: 'Member not found.',
-  metafieldsOnAdd:
-    'Custom field values cannot be set while creating a member. Create the member, then set values with an edit.',
   metafieldsWithoutWriter:
     'Custom field values cannot be set by a request with no authenticated user or integration.',
 };
@@ -49,7 +48,8 @@ module.exports = class MemberBREADService {
    * @param {import('./next-payment-calculator')} deps.nextPaymentCalculator
    * @param {IGiftsModule} deps.giftService
    * @param {import('../../../members-metafields/values-service').MetafieldValuesService} deps.metafieldValues Required: boot builds it before the members service
-   * @param {import('../../../members-metafields/definitions-service').MetafieldDefinitionsService} deps.metafieldDefinitions Required: boot builds it before the members service
+   * @param {<T>(fn: (transacting: import('knex').Knex.Transaction) => Promise<T>) => Promise<T>} deps.transaction
+   *   Runs `fn` in a database transaction.
    */
   constructor({
     memberRepository,
@@ -63,7 +63,7 @@ module.exports = class MemberBREADService {
     commentsService,
     giftService,
     metafieldValues,
-    metafieldDefinitions,
+    transaction,
   }) {
     this.offersAPI = offersAPI;
     /** @private */
@@ -87,29 +87,32 @@ module.exports = class MemberBREADService {
     /** @private */
     this.metafieldValues = metafieldValues;
     /** @private */
-    this.metafieldDefinitions = metafieldDefinitions;
+    this.transaction = transaction;
   }
 
   /**
-   * Metafields are extra fields a publisher can define on member records, such as a shoe
-   * size or a delivery address. Their values live in their own table, so they are fetched
-   * here rather than loaded alongside the member.
+   * The member's metafields as this audience may see them, empty if they have none.
    *
-   * Returns null when this audience has no field to be told about, which tells the caller to
-   * leave the `metafields` key off the member payload rather than send an empty object: a key
-   * added to an API response cannot be withdrawn without breaking whoever started reading it,
-   * and most sites have never defined a field, so those sites keep the payload they had
-   * before this feature existed.
+   * @param {string} memberId
+   * @param {import('../../../members-metafields').Audience} audience
+   * @param {{transacting?: import('knex').Knex.Transaction}} [options] reads inside this transaction
+   * @returns {Promise<Record<string, Record<string, unknown>>>}
+   */
+  async readMetafieldsForMember(memberId, audience, { transacting } = {}) {
+    return (await this.metafieldValues.getValuesForMember(memberId, audience, transacting)) ?? {};
+  }
+
+  /**
+   * Each member's metafields as this audience may see them. A member with none has an
+   * empty object.
+   *
    * @param {string[]} memberIds
    * @param {import('../../../members-metafields').Audience} audience
-   * @returns {Promise<Map<string, Record<string, unknown>> | null>}
+   * @returns {Promise<Map<string, Record<string, Record<string, unknown>>>>}
    */
-  async fetchMetafieldValues(memberIds, audience) {
-    if (!(await this.metafieldDefinitions.hasAnyReadable(audience))) {
-      return null;
-    }
-
-    return this.metafieldValues.getValuesForMembers(memberIds, audience);
+  async readMetafieldsForMembers(memberIds, audience) {
+    const byMember = await this.metafieldValues.getValuesForMembers(memberIds, audience);
+    return new Map(memberIds.map((memberId) => [memberId, byMember.get(memberId) ?? {}]));
   }
 
   /**
@@ -458,24 +461,71 @@ module.exports = class MemberBREADService {
     member.unsubscribe_url = unsubscribeUrl;
 
     if (metafieldsFor) {
-      const metafields = await this.fetchMetafieldValues([member.id], metafieldsFor);
-      if (metafields) {
-        member.metafields = metafields.get(member.id) ?? {};
-      }
+      member.metafields = await this.readMetafieldsForMember(member.id, metafieldsFor);
     }
 
     return member;
   }
 
-  async add(data, options) {
-    if (this.metafieldValues.namesValues(this.metafieldValues.unwrapWire(data.metafields))) {
-      throw new errors.ValidationError({
-        message: tpl(messages.metafieldsOnAdd),
-        property: 'metafields',
+  /**
+   * Takes the metafields out of an Admin API member payload and plans their write. Throws on
+   * an invalid value, or when the request has no user or integration to name as the writer.
+   *
+   * @private
+   * @param {object} data the member payload, whose `metafields` key is removed
+   * @param {object} options
+   * @returns {Promise<import('../../../members-metafields/values-service').MetafieldPlan | null>}
+   *   null when there is nothing to write
+   */
+  async planStaffMetafields(data, options) {
+    const metafields = this.metafieldValues.unwrapWire(data.metafields);
+    delete data.metafields;
+    if (metafields === undefined) {
+      return null;
+    }
+
+    // Planned before the member is touched, so a bad value refuses the whole request.
+    const writes = await this.metafieldValues.planWrite(metafields, ADMIN);
+    if (writes.length === 0) {
+      return null;
+    }
+
+    // Every value reaching here was typed into the Admin API, so the writer is
+    // whoever made the request — the same pair the action log records, so the two
+    // agree about who did it rather than one saying only that it was "admin".
+    //
+    // The only route to this branch is the authenticated Admin API, so an anonymous
+    // request is a mistake somewhere upstream rather than a writer to invent a name
+    // for. Refusing keeps every stored writer resolvable.
+    const origin = adminWriteOrigin(options.context);
+    if (!origin) {
+      throw new errors.IncorrectUsageError({
+        message: tpl(messages.metafieldsWithoutWriter),
       });
     }
 
-    delete data.metafields;
+    return { writes, origin };
+  }
+
+  /**
+   * Creates a member and writes their metafields in one transaction. The `member.added`
+   * event fires when the transaction commits, so it sees the metafields.
+   *
+   * @private
+   * @param {object} data the member attributes
+   * @param {object} options
+   * @param {import('../../../members-metafields/values-service').MetafieldPlan} metafields
+   */
+  async createWithMetafields(data, options, { writes, origin }) {
+    return this.transaction(async (transacting) => {
+      const model = await this.memberRepository.create(data, { ...options, transacting });
+      await this.metafieldValues.applyWrite(model.id, writes, { ...origin, executor: transacting });
+      return model;
+    });
+  }
+
+  async add(data, options) {
+    const metafields = await this.planStaffMetafields(data, options);
 
     if (!this.stripeService.configured && (data.comped || data.stripe_customer_id)) {
       const property = data.comped ? 'comped' : 'stripe_customer_id';
@@ -503,7 +553,9 @@ module.exports = class MemberBREADService {
       if (attribution) {
         data.attribution = attribution;
       }
-      model = await this.memberRepository.create(data, options);
+      model = metafields
+        ? await this.createWithMetafields(data, options, metafields)
+        : await this.memberRepository.create(data, options);
     } catch (error) {
       if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
         throw new errors.ValidationError({
@@ -571,17 +623,7 @@ module.exports = class MemberBREADService {
   async edit(data, options) {
     delete data.last_seen_at;
 
-    const metafields = this.metafieldValues.unwrapWire(data.metafields);
-    const writeMetafields = metafields !== undefined;
-    delete data.metafields;
-
-    // Plan (which validates) before the member is touched, so a bad value 422s
-    // here rather than after the member edit has been applied — and keep the
-    // plan to apply once below, so the values aren't resolved and validated
-    // twice.
-    const plannedMetafields = writeMetafields
-      ? await this.metafieldValues.planWrite(metafields, ADMIN)
-      : null;
+    const metafields = await this.planStaffMetafields(data, options);
 
     let model;
 
@@ -593,7 +635,9 @@ module.exports = class MemberBREADService {
         data.email_disabled = !!isSuppressed;
       }
 
-      model = await this.memberRepository.update(data, options);
+      model = metafields
+        ? await this.updateWithMetafields(data, options, [metafields])
+        : await this.memberRepository.update(data, options);
     } catch (error) {
       if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
         throw new errors.ValidationError({
@@ -633,52 +677,61 @@ module.exports = class MemberBREADService {
       }
     }
 
-    if (plannedMetafields) {
-      // Every value reaching here was typed into the Admin API, so the writer is
-      // whoever made the request — the same pair the action log records, so the two
-      // agree about who did it rather than one saying only that it was "admin".
-      //
-      // The only route to this branch is the authenticated Admin API, so an anonymous
-      // request is a mistake somewhere upstream rather than a writer to invent a name
-      // for. Refusing keeps every stored writer resolvable.
-      const origin = adminWriteOrigin(options.context);
-      if (!origin) {
-        throw new errors.IncorrectUsageError({
-          message: tpl(messages.metafieldsWithoutWriter),
-        });
-      }
-      await this.metafieldValues.applyWrite(model.id, plannedMetafields, origin);
+    return this.read({ id: model.id }, { ...options, metafieldsFor: ADMIN });
+  }
 
-      // Metafields aren't a member column or relation, so an edit touching
-      // only them leaves `model._changed` empty and the save fires nothing.
-      // Declare the change into `_changed` — as bookshelf-relations does for a
-      // labels change — so the member's edited lifecycle fires its usual signals
-      // (audit action + the webhook event, no `updated_at` bump).
-      //
-      // Guarded to the row-unchanged case: a real member change already
-      // populated `_changed` and fired the edited event during update(), so
-      // re-firing would duplicate it (this also covers a full PUT that resends
-      // unchanged member fields — `_changed` stays empty there too). That
-      // combined event omits `metafields` from `_changed`, which nothing
-      // reads: metafields aren't in the webhook payload (they're injected
-      // into read/browse responses, not the model), and `_changed` only gates
-      // whether the event fires.
-      const memberUnchanged = !model._changed || Object.keys(model._changed).length === 0;
-      if (memberUnchanged && plannedMetafields.length > 0) {
-        model._changed = { metafields: true };
-        // A mixed edit keeps the generic label on purpose: relabelling the
-        // one action a member change already fired would bury that change
-        // behind this one.
-        const eventOptions = {
-          context: options.context,
-          transacting: options.transacting,
-          actionName: CUSTOM_FIELDS_EDITED_ACTION,
-        };
-        await model.triggerThen('updated', model, eventOptions);
-      }
+  /**
+   * Updates a member and writes their metafields in one transaction. The `member.edited`
+   * event fires once, when the transaction commits, so it always sees the new metafields.
+   * Without writes, updates the member as before.
+   *
+   * @param {object} data the member attributes to change
+   * @param {object} options must name the member by `id`
+   * @param {import('../../../members-metafields/values-service').MetafieldPlan[]} plans
+   *   applied in order, so where two write one field the last is what it holds
+   */
+  async updateWithMetafields(data, options, plans) {
+    if (plans.every((plan) => plan.writes.length === 0)) {
+      return this.memberRepository.update(data, options);
     }
 
-    return this.read({ id: model.id }, { ...options, metafieldsFor: ADMIN });
+    return this.transaction(async (transacting) => {
+      // Locked before anything else reads. On MySQL a transaction reads from a snapshot
+      // taken at its first plain read, so an edit that waited on another edit to this
+      // member would otherwise read the metafields from before that edit committed.
+      await this.memberRepository.get({ id: options.id }, { transacting, forUpdate: true });
+      const model = await this.memberRepository.update(data, { ...options, transacting });
+      const memberUnchanged = !model._changed || Object.keys(model._changed).length === 0;
+
+      const before = await this.readMetafieldsForMember(model.id, ADMIN, { transacting });
+      for (const { writes, origin } of plans) {
+        await this.metafieldValues.applyWrite(model.id, writes, {
+          ...origin,
+          executor: transacting,
+        });
+      }
+      const after = await this.readMetafieldsForMember(model.id, ADMIN, { transacting });
+      if (!_.isEqual(before, after)) {
+        // Metafields aren't member columns, so the model doesn't keep their old values.
+        model._previousMetafields = before;
+      }
+
+      if (memberUnchanged) {
+        // Metafields aren't a member column or relation, so an edit touching only them
+        // leaves `_changed` empty, and the event the save queued would not fire. Marking
+        // them as the change lets it fire at commit, as a labels change does.
+        model._changed = { metafields: true };
+        // The save skipped its audit action, because nothing had changed yet. A mixed
+        // edit keeps the generic label: relabelling it would hide the member change.
+        await model.addAction(model, 'edited', {
+          context: options.context,
+          transacting,
+          actionName: CUSTOM_FIELDS_EDITED_ACTION,
+        });
+      }
+
+      return model;
+    });
   }
 
   /**
@@ -792,10 +845,8 @@ module.exports = class MemberBREADService {
       page.data.map((member) => member.get('email')),
     );
 
-    // One query for the whole page, not one per member. `null` when the flag
-    // is off or the caller didn't ask — the same truthiness guard read uses.
     const metafieldsByMember = options.includeMetafields
-      ? await this.fetchMetafieldValues(
+      ? await this.readMetafieldsForMembers(
           page.data.map((model) => model.id),
           ADMIN,
         )
@@ -811,7 +862,7 @@ module.exports = class MemberBREADService {
         delete member.products;
       }
       if (metafieldsByMember) {
-        member.metafields = metafieldsByMember.get(model.id) ?? {};
+        member.metafields = metafieldsByMember.get(model.id);
       }
       member.email_suppression = {
         suppressed: bulkSuppressionData[index].suppressed || !!model.get('email_disabled'),

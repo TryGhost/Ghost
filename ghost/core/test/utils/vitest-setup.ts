@@ -13,6 +13,11 @@ import { isConsoleAllowed, resetConsoleAllowed } from './console-guard';
 // resolution. Must run before any Ghost source is required below.
 require('tsx/cjs');
 
+// Compile Ghost's own source as strict mode, so writes sloppy mode would drop
+// silently fail the test instead. Must also run before any Ghost source is
+// required. See ./strict-mode.ts.
+require('./strict-mode').enableStrictMode();
+
 process.env.NODE_ENV = process.env.NODE_ENV || 'testing';
 process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_SECRET';
 
@@ -21,6 +26,9 @@ process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_
 // port 2369 by default, which matches the canonical port committed in
 // snapshots — no per-worker session overrides needed.
 require('../../core/server/overrides');
+
+// Tests swap url config at runtime, so url-utils must read it live.
+require('../../core/shared/url-utils').default.unfreeze();
 
 // @tryghost/express-test's snapshot bridge is pulled in lazily — requiring it
 // is ~170ms per worker and only the hooks below ever read it. The mock-manager
@@ -122,22 +130,18 @@ beforeEach((context: { task: { name: string; suite?: unknown; file?: { filepath?
 
 afterEach(async () => {
   const domainEvents = require('@tryghost/domain-events');
-  const mentionsJobsService = require('../../core/server/services/mentions-jobs');
-  const jobsService = require('../../core/server/services/jobs');
-
   const timeout = setTimeout(() => {
     // eslint-disable-next-line no-console
     console.error(
       chalk.yellow(
-        '\n[SLOW TEST] It takes longer than 2s to wait for all jobs ' +
-          'and events to settle in the afterEach hook\n',
+        '\n[SLOW TEST] It takes longer than 2s to wait for all events ' +
+          'to settle in the afterEach hook\n',
       ),
     );
   }, 2000);
 
   await domainEvents.allSettled();
-  await mentionsJobsService.allSettled();
-  await jobsService.allSettled();
+  // Once more for events emitted while the first round settled
   await domainEvents.allSettled();
 
   clearTimeout(timeout);

@@ -3,7 +3,7 @@ import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Response} from 'miragejs';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {click, currentRouteName, currentURL, fillIn, find, findAll, triggerKeyEvent, waitFor, waitUntil} from '@ember/test-helpers';
+import {click, currentRouteName, currentURL, fillIn, find, findAll, settled, triggerKeyEvent, waitFor, waitUntil} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {run} from '@ember/runloop';
 import {setupApplicationTest} from 'ember-mocha';
@@ -70,7 +70,7 @@ describe('Acceptance: Authentication', function () {
             });
         });
         it('redirects to setup when setup isn\'t complete', async function () {
-            await visit('/pages');
+            await visit('/restore');
             expect(currentURL()).to.equal('/setup');
         });
     });
@@ -133,7 +133,7 @@ describe('Acceptance: Authentication', function () {
             }));
 
             await authenticateSession();
-            await visit('/pages');
+            await visit('/restore');
 
             expect(windowProxy.replaceLocation.calledOnce, 'replaceLocation called').to.be.true;
         });
@@ -146,24 +146,27 @@ describe('Acceptance: Authentication', function () {
             }));
 
             await authenticateSession();
-            await visit('/pages');
+            await visit('/restore');
 
             expect(windowProxy.replaceLocation.calledOnce, 'replaceLocation called').to.be.true;
         });
 
-        // NOTE: The navigation needs to use standard route hooks for loading, if it
-        // triggers fetches in a task or similar then it will error and fail the test
-        // because we can't catch it before it hits global.onerror despite behaving
-        // correctly in the app.
-        it('replaces location with root URL on 403 API response when navigating whilst "authenticated"', async function () {
-            this.server.get(`/pages/`, () => new Response(403, {}, {
+        // The editor is the only Ember route left that loads API data, and it
+        // handles authorization failures itself, so the request is made
+        // directly once the app has loaded. Its rejection is caught here so it
+        // doesn't reach global.onerror.
+        it('replaces location with root URL on 403 API response whilst "authenticated"', async function () {
+            this.server.get('/tags/', () => new Response(403, {}, {
                 errors: [
                     {message: 'Authorization failed', type: 'NoPermissionError'}
                 ]
             }));
 
             await authenticateSession();
-            await visit('/pages');
+            await visit('/restore');
+
+            await this.owner.lookup('service:store').query('tag', {limit: 1}).catch(() => {});
+            await settled();
 
             expect(windowProxy.replaceLocation.calledWith('/ghost/'), 'replaceLocation called with /ghost/').to.be.true;
         });

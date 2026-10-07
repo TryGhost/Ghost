@@ -1,8 +1,9 @@
+import type { Controller, Frame } from '@tryghost/api-framework';
 import membersService from '../../services/members';
 
 const INVALIDATE_MEMBERS_CACHE = { value: '/members/' };
 
-interface DisableFrame {
+type DisableFrame = Frame<{
   options: {
     id: string;
     context: unknown;
@@ -12,14 +13,14 @@ interface DisableFrame {
     expires_at: Date | null;
     hide_comments: boolean;
   };
-}
+}>;
 
-interface EnableFrame {
+type EnableFrame = Frame<{
   options: {
     id: string;
     context: unknown;
   };
-}
+}>;
 
 const controller = {
   docName: 'member_commenting',
@@ -77,7 +78,10 @@ const controller = {
       );
     },
   },
-};
+} satisfies Controller<{
+  disable: DisableFrame;
+  enable: EnableFrame;
+}>;
 
 // module.exports required - using `export` causes the module to fail to register
 // with the web framework as it's loaded via require()

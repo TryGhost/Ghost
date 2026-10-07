@@ -80,14 +80,18 @@ export class AutomationsService {
       try {
         const schedulerPollTime = getSchedulerPollTime(date, siteIdentifier);
         const key = await internalKeys.get('ghost-scheduler');
-        schedulerAdapter.schedule(
+        await schedulerAdapter.schedule(
           buildSignedJob({
             apiUrl,
             path: ['automations', 'poll'],
             time: schedulerPollTime.getTime(),
             key,
             getIdempotencyKey: (url) =>
-              getSchedulerIdempotencyKey({ namespace: 'automations', date, url }),
+              getSchedulerIdempotencyKey({
+                namespace: 'automations',
+                date: schedulerPollTime,
+                url,
+              }),
           }),
         );
       } catch (err) {

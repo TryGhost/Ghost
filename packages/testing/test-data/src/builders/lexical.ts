@@ -32,6 +32,29 @@ interface CardNode {
 }
 
 const CARD_DEFAULTS: Record<string, CardNode> = {
+  header: {
+    type: 'header',
+    version: 2,
+    size: 'small',
+    style: 'dark',
+    buttonEnabled: false,
+    buttonUrl: '',
+    buttonText: '',
+    header: '<span>Header card</span>',
+    subheader: '',
+    backgroundImageSrc: '',
+    accentColor: '#FF1A75',
+    alignment: 'center',
+    backgroundColor: '#000000',
+    backgroundImageWidth: null,
+    backgroundImageHeight: null,
+    backgroundSize: 'cover',
+    textColor: '#FFFFFF',
+    buttonColor: '#ffffff',
+    buttonTextColor: '#000000',
+    layout: 'full',
+    swapped: false,
+  },
   transistor: {
     type: 'transistor',
     version: 1,

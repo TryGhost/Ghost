@@ -76,3 +76,43 @@ describe('ChipPicker Escape', () => {
     expect(screen.queryByText('Pane closed')).not.toBeInTheDocument();
   });
 });
+
+function Chips({ onReorder }: { onReorder?: (next: Option[]) => void }) {
+  return (
+    <ChipPicker<Option, Option>
+      emptyMessage="No options found"
+      getKey={(option) => option.id}
+      getLabel={(option) => option.name}
+      inputLabel="Options"
+      options={[]}
+      placeholder="Select options..."
+      selected={[
+        { id: 'alpha', name: 'Alpha' },
+        { id: 'beta', name: 'Beta' },
+      ]}
+      onAdd={vi.fn()}
+      onRemove={vi.fn()}
+      onReorder={onReorder}
+    />
+  );
+}
+
+describe('ChipPicker reorder', () => {
+  it('leaves the chips plain buttons without a reorder handler', () => {
+    render(<Chips />);
+
+    const chip = screen.getByRole('button', { name: 'Remove Alpha' });
+    expect(chip).not.toHaveClass('touch-manipulation');
+    expect(document.querySelector('[id^="DndLiveRegion"]')).toBeNull();
+  });
+
+  it('keeps each chip a remove button while it can be dragged', () => {
+    render(<Chips onReorder={vi.fn()} />);
+
+    const chip = screen.getByRole('button', { name: 'Remove Alpha' });
+    expect(chip).not.toHaveAttribute('aria-roledescription');
+    expect(chip).not.toHaveAttribute('aria-describedby');
+    expect(chip).toHaveClass('touch-manipulation');
+    expect(document.querySelector('[id^="DndLiveRegion"]')).not.toBeNull();
+  });
+});

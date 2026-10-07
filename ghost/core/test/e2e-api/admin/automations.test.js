@@ -7,7 +7,8 @@ const configUtils = require('../../utils/config-utils');
 const domainEvents = require('@tryghost/domain-events');
 const ObjectId = require('bson-objectid').default;
 const models = require('../../../core/server/models');
-const mailService = require('../../../core/server/services/mail');
+const mailService = require('../../../core/server/lib/mail');
+const labs = require('../../../core/shared/labs');
 const { getSignedAdminToken } = require('../../../core/server/adapters/scheduling/utils');
 const {
   MEMBER_WELCOME_EMAIL_SLUGS,
@@ -137,6 +138,279 @@ describe('Automations API', function () {
   afterEach(async function () {
     sinon.restore();
     await cleanupAutomationsFixture();
+  });
+
+  describe('add', function () {
+    const payload = {
+      name: 'Created automation',
+      description: 'Welcome selected members',
+      trigger_tier_scope: 'free',
+    };
+    const tierIds = [ObjectId().toHexString(), ObjectId().toHexString()];
+
+    let labsStub;
+
+    beforeEach(async function () {
+      labsStub = sinon.stub(labs, 'isSet').callThrough();
+      labsStub.withArgs('automations').returns(true);
+      labsStub.withArgs('automationsPerTier').returns(true);
+      await models.Base.knex('products').insert(
+        tierIds.map((id) => ({
+          id,
+          name: id,
+          slug: id,
+          type: 'paid',
+          active: true,
+          created_at: new Date(),
+        })),
+      );
+    });
+
+    afterEach(async function () {
+      await agent.useStaffTokenForOwner();
+
+      const actionIds = await models.Base.knex('automation_actions')
+        .whereIn('automation_id', models.Base.knex('automations').whereNull('slug').select('id'))
+        .pluck('id');
+      await models.Base.knex('automation_action_revisions')
+        .whereIn('action_id', actionIds)
+        .delete();
+      await models.Base.knex('automation_actions').whereIn('id', actionIds).delete();
+      await models.Base.knex('automations').whereNull('slug').delete();
+      await models.Base.knex('products').whereIn('id', tierIds).delete();
+    });
+
+    for (const role of ['Owner', 'Admin']) {
+      it(`${role} can create automations`, async function () {
+        await agent[`useStaffTokenFor${role}`]();
+        const { body } = await agent
+          .post('automations')
+          .body({ automations: [payload] })
+          .expectStatus(201)
+          .expect(cacheInvalidateHeaderNotSet());
+
+        const created = body.automations[0];
+        assert.equal(created.name, payload.name);
+        assert.equal(created.description, payload.description);
+        assert.equal(created.status, 'inactive');
+        assert.equal(created.slug, null);
+        assert.equal(created.trigger_tier_scope, 'free');
+        assert.deepEqual(created.trigger_tier_ids, null);
+        assert.deepEqual(created.actions, []);
+        assert.deepEqual(created.edges, []);
+
+        const { body: read } = await agent.get(`automations/${created.id}`).expectStatus(200);
+        assert.deepEqual(read.automations[0], created);
+      });
+    }
+
+    it('Admin Integration can create an automation', async function () {
+      await agent.useZapierAdminAPIKey();
+      await agent
+        .post('automations')
+        .body({ automations: [payload] })
+        .expectStatus(201);
+    });
+
+    it('creates "all paid signups" automations without trigger pairs', async function () {
+      const { body } = await agent
+        .post('automations')
+        .body({ automations: [{ ...payload, trigger_tier_scope: 'all_paid' }] })
+        .expectStatus(201);
+      assert.equal(body.automations[0].trigger_tier_scope, 'all_paid');
+      assert.deepEqual(body.automations[0].trigger_tier_ids, null);
+    });
+
+    it('stores "selected paid tiers" automations', async function () {
+      const { body } = await agent
+        .post('automations')
+        .body({
+          automations: [
+            {
+              ...payload,
+              trigger_tier_scope: 'selected_paid',
+              trigger_tier_ids: [...tierIds, tierIds[0]],
+            },
+          ],
+        })
+        .expectStatus(201);
+
+      const created = body.automations[0];
+      assert.equal(created.name, payload.name);
+      assert.deepEqual([...created.trigger_tier_ids].sort(), [...tierIds].sort());
+      assert.deepEqual(
+        (
+          await models.Base.knex('automation_trigger_tiers')
+            .where({ automation_id: created.id })
+            .pluck('product_id')
+        ).sort(),
+        [...tierIds].sort(),
+      );
+    });
+
+    it('trims name and description before saving', async function () {
+      const { body } = await agent
+        .post('automations')
+        .body({
+          automations: [
+            {
+              ...payload,
+              name: ` \t${payload.name}\n `,
+              description: ` \t${payload.description}\n `,
+            },
+          ],
+        })
+        .expectStatus(201);
+
+      const created = body.automations[0];
+      assert.equal(created.name, payload.name);
+      assert.equal(created.description, payload.description);
+      const { body: read } = await agent.get(`automations/${created.id}`).expectStatus(200);
+      assert.deepEqual(read.automations[0], created);
+    });
+
+    it.each([
+      {},
+      { trigger_tier_scope: null, trigger_tier_ids: null },
+      { trigger_tier_scope: 'free', trigger_tier_ids: null },
+    ])('accepts omitted or null trigger data %j', async function (triggerData) {
+      const { body } = await agent
+        .post('automations')
+        .body({
+          automations: [{ name: payload.name, description: payload.description, ...triggerData }],
+        })
+        .expectStatus(201);
+      assert.equal(body.automations[0].trigger_tier_scope, triggerData.trigger_tier_scope ?? null);
+      assert.equal(body.automations[0].trigger_tier_ids, null);
+    });
+
+    it('rejects duplicate names', async function () {
+      await agent
+        .post('automations')
+        .body({ automations: [payload] })
+        .expectStatus(201);
+      await agent
+        .post('automations')
+        .body({ automations: [payload] })
+        .expectStatus(422);
+      assert.equal((await models.Base.knex('automations').where({ name: payload.name })).length, 1);
+    });
+
+    it('requires description', async function () {
+      await agent
+        .post('automations')
+        .body({ automations: [{ name: payload.name, trigger_tier_scope: 'free' }] })
+        .expectStatus(422);
+      assert.equal(
+        await models.Base.knex('automations').where({ name: payload.name }).first(),
+        undefined,
+      );
+    });
+
+    it('only adds the first automation from the request', async function () {
+      const { body } = await agent
+        .post('automations')
+        .body({ automations: [payload, { ...payload, name: 'Ignored automation' }] })
+        .expectStatus(201);
+      assert.equal(body.automations[0].name, payload.name);
+      assert.equal(
+        await models.Base.knex('automations').where({ name: 'Ignored automation' }).first(),
+        undefined,
+      );
+    });
+
+    it.each([
+      {},
+      { automations: [] },
+      { automations: [{ ...payload, name: '' }] },
+      { automations: [{ ...payload, trigger_tier_scope: 'selected_paid', trigger_tier_ids: [] }] },
+    ])('rejects malformed request %j', async function (data) {
+      await agent
+        .post('automations')
+        .body(data)
+        .expectStatus(!data.automations?.length ? 400 : 422);
+      assert.equal(
+        await models.Base.knex('automations').where({ name: payload.name }).first(),
+        undefined,
+      );
+    });
+
+    it('rejects missing tiers atomically', async function () {
+      await models.Base.knex('products').where({ id: tierIds[1] }).delete();
+      await agent
+        .post('automations')
+        .body({
+          automations: [
+            { ...payload, trigger_tier_scope: 'selected_paid', trigger_tier_ids: tierIds },
+          ],
+        })
+        .expectStatus(422);
+      assert.equal(
+        await models.Base.knex('automations').where({ name: payload.name }).first(),
+        undefined,
+      );
+    });
+
+    it('rejects free tiers atomically', async function () {
+      await models.Base.knex('products').where({ id: tierIds[1] }).update({ type: 'free' });
+      await agent
+        .post('automations')
+        .body({
+          automations: [
+            { ...payload, trigger_tier_scope: 'selected_paid', trigger_tier_ids: tierIds },
+          ],
+        })
+        .expectStatus(422);
+      assert.equal(
+        await models.Base.knex('automations').where({ name: payload.name }).first(),
+        undefined,
+      );
+    });
+
+    it('rejects archived tiers atomically', async function () {
+      await models.Base.knex('products').where({ id: tierIds[1] }).update({ active: false });
+      await agent
+        .post('automations')
+        .body({
+          automations: [
+            { ...payload, trigger_tier_scope: 'selected_paid', trigger_tier_ids: tierIds },
+          ],
+        })
+        .expectStatus(422);
+      assert.equal(
+        await models.Base.knex('automations').where({ name: payload.name }).first(),
+        undefined,
+      );
+    });
+
+    it.each(['automations', 'automationsPerTier'])(
+      'returns 404 when %s is disabled',
+      async function (flag) {
+        labsStub.withArgs(flag).returns(false);
+        await agent
+          .post('automations')
+          .body({ automations: [payload] })
+          .expectStatus(404);
+      },
+    );
+
+    it('denies unauthenticated requests', async function () {
+      agent.resetAuthentication();
+      await agent
+        .post('automations')
+        .body({ automations: [payload] })
+        .expectStatus(403);
+    });
+    for (const role of ['Editor', 'Author', 'Contributor']) {
+      it(`denies ${role} permission to add automations`, async function () {
+        await agent[`useStaffTokenFor${role}`]();
+        await agent
+          .post('automations')
+          .body({ automations: [payload] })
+          .expectStatus(403)
+          .expect(cacheInvalidateHeaderNotSet());
+      });
+    }
   });
 
   describe('browse', function () {
@@ -331,7 +605,6 @@ describe('Automations API', function () {
 
       beforeEach(function () {
         previousTinybirdInstance = TinybirdServiceWrapper.instance;
-        mockManager.mockLabsEnabled('automationsTinybirdSync');
         mockManager.mockLabsDisabled('automationRunAnalytics');
         mockManager.mockSetting('web_analytics_enabled', false);
         configUtils.set('tinybird', {
@@ -408,13 +681,11 @@ describe('Automations API', function () {
         });
       });
 
-      it('uses database stats when the flag is disabled', async function () {
-        mockManager.mockLabsDisabled('automationsTinybirdSync');
+      it('uses database stats when Tinybird configuration is missing', async function () {
+        configUtils.set('tinybird:stats', null);
         const [automation] = await models.Base.knex('automations').select('id');
         await createAutomationRun(automation.id, new Date('2026-01-01T00:00:00.000Z'));
-
         const { body } = await agent.get('automations').expectStatus(200);
-
         assert.equal(
           body.automations.find((item) => item.id === automation.id).stats.total_run_count,
           1,
@@ -484,6 +755,7 @@ describe('Automations API', function () {
       );
 
       it.each([
+        { reason: 'missing', status: 404, response: 'missing pipe' },
         { reason: 'unavailable', status: 500, response: 'nope' },
         { reason: 'malformed', status: 200, response: { data: [{ automation_id: 42 }] } },
       ])('uses database stats when Tinybird is $reason', async function ({ status, response }) {
@@ -882,10 +1154,19 @@ describe('Automations API', function () {
   });
 
   describe('edit', function () {
-    it('replaces automation actions and edges using frontend-generated ObjectIds', async function () {
+    it('replaces the graph and returns automation details', async function () {
       const { body: browseBody } = await agent.get('automations').expectStatus(200);
 
       const automationId = browseBody.automations[0].id;
+      const [tierId] = await models.Base.knex('products').pluck('id');
+      assert(tierId);
+      await models.Base.knex('automations').where({ id: automationId }).update({
+        trigger_tier_scope: 'selected_paid',
+      });
+      await models.Base.knex('automation_trigger_tiers').insert({
+        automation_id: automationId,
+        product_id: tierId,
+      });
       const waitActionId = ObjectId().toHexString();
       const emailActionId = ObjectId().toHexString();
       const { body: beforeBody } = await agent.get(`automations/${automationId}`).expectStatus(200);
@@ -939,6 +1220,8 @@ describe('Automations API', function () {
       const automation = editBody.automations[0];
       assert.equal(automation.name, beforeBody.automations[0].name);
       assert.equal(automation.status, 'inactive');
+      assert.equal(automation.trigger_tier_scope, 'selected_paid');
+      assert.deepEqual(automation.trigger_tier_ids, [tierId]);
       assert.equal(automation.actions.length, 2);
       assert.equal(automation.edges.length, 1);
       assert.equal(automation.actions[0].id, waitActionId);
@@ -953,6 +1236,35 @@ describe('Automations API', function () {
       const { body: readBody } = await agent.get(`automations/${automationId}`).expectStatus(200);
 
       assert.deepEqual(readBody.automations[0], automation);
+    });
+
+    it('preserves creation metadata when editing actions', async function () {
+      const { body } = await agent.get('automations').expectStatus(200);
+      const { id } = body.automations[0];
+      const [tierId] = await models.Base.knex('products').pluck('id');
+      assert(tierId);
+      const original = {
+        name: 'Created automation',
+        description: 'Welcome selected members',
+        trigger_tier_scope: 'selected_paid',
+      };
+      await models.Base.knex('automations').where({ id }).update(original);
+      await models.Base.knex('automation_trigger_tiers').insert({
+        automation_id: id,
+        product_id: tierId,
+      });
+
+      const { body: edited } = await agent
+        .put(`automations/${id}`)
+        .body({
+          automations: [{ status: 'inactive', actions: [buildWaitAction()], edges: [] }],
+        })
+        .expectStatus(200);
+
+      assert.equal(edited.automations[0].name, original.name);
+      assert.equal(edited.automations[0].description, original.description);
+      assert.equal(edited.automations[0].trigger_tier_scope, 'selected_paid');
+      assert.deepEqual(edited.automations[0].trigger_tier_ids, [tierId]);
     });
 
     it('allows an automation with a single action and no edges', async function () {
@@ -1001,11 +1313,11 @@ describe('Automations API', function () {
       assert.deepEqual(readBody.automations[0], automation);
     });
 
-    it('allows an automation with 20 actions', async function () {
+    it('allows an automation with 50 actions', async function () {
       const { body: browseBody } = await agent.get('automations').expectStatus(200);
 
       const automationId = browseBody.automations[0].id;
-      const actions = Array.from({ length: 20 }, buildWaitAction);
+      const actions = Array.from({ length: 50 }, buildWaitAction);
       const edges = buildLinearEdges(actions);
 
       const { body: editBody } = await agent
@@ -1024,20 +1336,20 @@ describe('Automations API', function () {
 
       const automation = editBody.automations[0];
       assert.equal(automation.status, 'inactive');
-      assert.equal(automation.actions.length, 20);
-      assert.equal(automation.edges.length, 19);
+      assert.equal(automation.actions.length, 50);
+      assert.equal(automation.edges.length, 49);
       assert.deepEqual(automation.actions, actions);
       assert.deepEqual(automation.edges, edges);
     });
 
-    it('rejects an automation with more than 20 actions', async function () {
+    it('rejects an automation with more than 50 actions', async function () {
       const { body: browseBody } = await agent.get('automations').expectStatus(200);
 
       const automationId = browseBody.automations[0].id;
 
       const { body: beforeBody } = await agent.get(`automations/${automationId}`).expectStatus(200);
 
-      const actions = Array.from({ length: 21 }, buildWaitAction);
+      const actions = Array.from({ length: 51 }, buildWaitAction);
 
       await agent
         .put(`automations/${automationId}`)

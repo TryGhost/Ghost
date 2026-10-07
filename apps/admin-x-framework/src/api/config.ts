@@ -58,6 +58,11 @@ export type Config = {
         max?: number;
         error?: string;
       };
+      emails?: {
+        maxPeriodic?: number;
+        disabled?: boolean;
+        error?: string;
+      };
       customThemes?: {
         allowlist?: string[];
         error?: string;
@@ -86,6 +91,9 @@ export type Config = {
         title?: string; // Banner heading
         upgradeUrl?: string; // Destination for the banner's upgrade button
       };
+    };
+    subscription?: {
+      start?: string; // ISO date that anchors monthly periodic limits
     };
     billing?: {
       enabled?: boolean;
@@ -127,14 +135,20 @@ export type Config = {
       enabled?: boolean;
       sendingDomain?: string;
     };
+    emailVerification?: {
+      // Shown in place of the default hold copy while the host reviews the account
+      emailSendingDisabledMessage?: string;
+    };
     export?: {
-      // Host archive webhook — when set, "Export data" delivers the
-      // archive by email instead of a synchronous download
+      // Host export webhook — when set, "Export data" delivers the
+      // export by email instead of a synchronous download
       webhookUrl?: string;
     };
   };
   security?: {
     staffDeviceVerification?: boolean;
+    // directory serving the Koenig embed renderer on a separate origin
+    embedPreviewUrl?: string;
   };
   featurebase?: {
     enabled?: boolean;
@@ -143,6 +157,12 @@ export type Config = {
   docsbot?: {
     enabled?: boolean;
     id?: string;
+  };
+  clientExtensions?: {
+    script?: {
+      container?: string;
+      src?: string;
+    };
   };
   // Config is relatively fluid, so we only type used properties above and still support arbitrary property access when needed
   [key: string]: JSONValue | undefined;

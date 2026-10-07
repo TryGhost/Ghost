@@ -27,7 +27,12 @@ export default class SignupRoute extends UnauthenticatedRoute {
 
     @inject config;
 
-    beforeModel() {
+    beforeModel(transition) {
+        if (this.feature.isAuthReact()) {
+            transition.abort();
+            return;
+        }
+
         if (this.session.isAuthenticated) {
             this.notifications.showAlert('You need to sign out to register as a new user.', {type: 'warn', delayed: true, key: 'signup.create.already-authenticated'});
         }

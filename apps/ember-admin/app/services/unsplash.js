@@ -112,7 +112,7 @@ export default Service.extend({
     _search: task(function* (term) {
         yield timeout(DEBOUNCE_MS);
 
-        const url = `${API_URL}/search/photos?query=${term}&per_page=30`;
+        const url = `${API_URL}/search/photos?query=${encodeURIComponent(term)}&per_page=30`;
         yield this._makeRequest(url, {searchTermAtRequest: term});
     }).restartable(),
 

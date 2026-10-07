@@ -10,10 +10,15 @@ const iconv = require('iconv-lite');
 const path = require('path');
 const crypto = require('crypto');
 const imageTransform = require('@tryghost/image-transform');
+const {
+  detectFileExtension,
+  isAllowedImageExtension,
+  isSvgExtension,
+} = require('../../lib/image/image-content');
 
 // Some sites block non-standard user agents so we need to mimic a typical browser
 // Note: the Ghost/5.0 string _may_ be in use by 3rd parties so use caution when updating across majors
-const USER_AGENT = 'Mozilla/5.0 (compatible; Ghost/5.0; +https://ghost.org/)';
+const { USER_AGENT } = require('./user-agent');
 const DEFAULT_BOOKMARK_ICON = 'https://static.ghost.org/v5.0.0/images/link-icon.svg';
 const DEFAULT_REQUEST_TIMEOUT = 5000;
 
@@ -50,7 +55,6 @@ const SVG_RASTER_TIMEOUT_SECONDS = 10;
 const MAX_SVG_BYTES = 32 * 1024;
 const GZIP_MAGIC = [0x1f, 0x8b];
 
-const SVG_EXTENSIONS = new Set(['.svg', '.svgz']);
 const SVG_SNIFF_BYTES = 1024;
 
 const toBuffer = (bytes) => {
@@ -59,24 +63,50 @@ const toBuffer = (bytes) => {
     : Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 };
 
-const shouldRasterize = (buffer, ext) => {
-  if (SVG_EXTENSIONS.has(ext.toLowerCase())) {
-    return true;
-  }
+const isGzip = (buffer) => {
+  return GZIP_MAGIC.every((byte, index) => buffer[index] === byte);
+};
 
-  const head = buffer.subarray(0, SVG_SNIFF_BYTES).toString('utf8').trimStart();
+const looksLikeSvg = (buffer, sniffBytes) => {
+  const head = buffer.subarray(0, sniffBytes).toString('utf8').trimStart();
 
   return head.startsWith('<') && /<svg[\s:>]/i.test(head);
 };
 
-let fileTypeFromBuffer;
-
-const detectFileType = async (buffer) => {
-  if (!fileTypeFromBuffer) {
-    ({ fileTypeFromBuffer } = await import('file-type'));
+// sharp picks its decoder from the contents rather than the file name, so an
+// SVG extension alone isn't enough to rasterize. Gzipped files still count so
+// they are rejected as unconvertible below instead of as an unknown type.
+const shouldRasterize = (buffer, ext) => {
+  if (isSvgExtension(ext)) {
+    return isGzip(buffer) || looksLikeSvg(buffer, MAX_SVG_BYTES);
   }
 
-  return fileTypeFromBuffer(buffer);
+  return looksLikeSvg(buffer, SVG_SNIFF_BYTES);
+};
+
+const YOUTUBE_MAXRES_THUMBNAIL_WIDTH = 1280;
+const YOUTUBE_MAXRES_THUMBNAIL_HEIGHT = 720;
+
+/**
+ * YouTube's oEmbed thumbnail is a letterboxed 4:3 `hqdefault.jpg`. Videos with
+ * an HD upload also have a 1280x720 `maxresdefault.jpg` without the borders.
+ *
+ * @param {string} thumbnailUrl
+ * @returns {string|undefined}
+ */
+const getYouTubeMaxResThumbnailUrl = (thumbnailUrl) => {
+  if (!URL.canParse(thumbnailUrl)) {
+    return;
+  }
+
+  const url = new URL(thumbnailUrl);
+  const isYouTubeImage = url.hostname === 'ytimg.com' || url.hostname.endsWith('.ytimg.com');
+  if (!isYouTubeImage || !url.pathname.endsWith('/hqdefault.jpg')) {
+    return;
+  }
+
+  url.pathname = url.pathname.replace(/hqdefault\.jpg$/, 'maxresdefault.jpg');
+  return url.href;
 };
 
 /**
@@ -121,6 +151,13 @@ const findUrlWithProvider = (url) => {
 
 /**
  * @typedef {import('got').GotRequestFunction} IExternalRequest
+ */
+
+/**
+ * @typedef {object} EmbedThumbnail
+ * @prop {string} url
+ * @prop {number|string|null} [width]
+ * @prop {number|string|null} [height]
  */
 
 /**
@@ -171,10 +208,13 @@ class OEmbedService {
    * @param {Object} [options]
    */
   async knownProvider(url, options = {}) {
-    const { extract } = require('@extractus/oembed-extractor');
+    const { extractOembed } = require('./extract-oembed');
 
     try {
-      return await extract(url, {}, options);
+      return await extractOembed(url, {
+        fetch: this.externalRequest.fetch,
+        signal: options.signal,
+      });
     } catch (err) {
       if (
         err.message === 'Request failed with error code 401' ||
@@ -224,10 +264,7 @@ class OEmbedService {
     const name = this.imageStore.getSanitizedFileName(baseName);
 
     if (shouldRasterize(imageBuffer, ext)) {
-      if (
-        imageBuffer.length > MAX_SVG_BYTES ||
-        GZIP_MAGIC.every((byte, index) => imageBuffer[index] === byte)
-      ) {
+      if (imageBuffer.length > MAX_SVG_BYTES || isGzip(imageBuffer)) {
         throw new errors.ValidationError({
           message: tpl(messages.unconvertibleSvg),
           context: imageUrl,
@@ -250,10 +287,9 @@ class OEmbedService {
       // Content-Type the stored file is later served with, so name the
       // file after its contents and hold it to the same allowlist as image
       // uploads. `file-type` never reports SVG, which is handled above.
-      const fileType = await detectFileType(imageBuffer);
-      ext = fileType ? `.${fileType.ext}` : '';
+      ext = (await detectFileExtension(imageBuffer)) ?? '';
 
-      if (!this.config.get('uploads').images.extensions.includes(ext)) {
+      if (!isAllowedImageExtension(ext, this.config.get('uploads').images.extensions)) {
         throw new errors.ValidationError({
           message: tpl(messages.unsupportedImage),
           context: imageUrl,
@@ -265,6 +301,39 @@ class OEmbedService {
     const targetPath = path.join(imageType, uniqueFileName);
 
     return this.imageStore.saveRaw(imageBuffer, targetPath);
+  }
+
+  /**
+   * Stores a provider's thumbnail, preferring YouTube's un-letterboxed max
+   * resolution image. Falls back to the provider's thumbnail if the image
+   * can't be stored.
+   *
+   * @param {EmbedThumbnail} thumbnail
+   * @returns {Promise<EmbedThumbnail>}
+   */
+  async storeThumbnail(thumbnail) {
+    const maxResUrl = getYouTubeMaxResThumbnailUrl(thumbnail.url);
+    if (maxResUrl) {
+      try {
+        return {
+          url: await this.processImageFromUrl(maxResUrl, 'thumbnail'),
+          width: YOUTUBE_MAXRES_THUMBNAIL_WIDTH,
+          height: YOUTUBE_MAXRES_THUMBNAIL_HEIGHT,
+        };
+      } catch {
+        // YouTube 404s for videos without a max resolution thumbnail
+      }
+    }
+
+    try {
+      return {
+        ...thumbnail,
+        url: await this.processImageFromUrl(thumbnail.url, 'thumbnail'),
+      };
+    } catch (err) {
+      logging.error(err);
+      return thumbnail;
+    }
   }
 
   /**
@@ -750,6 +819,37 @@ class OEmbedService {
    * @returns {Promise<Object>}
    */
   async fetchOembedDataFromUrl(url, type, options = {}) {
+    const data = await this.#fetchOembedDataFromUrl(url, type, options);
+
+    // Mentions aren't stored in content and can be triggered by third
+    // parties sending webmentions, so their images are never downloaded
+    if (type === 'mention' || !data?.thumbnail_url) {
+      return data;
+    }
+
+    const thumbnail = await this.storeThumbnail({
+      url: data.thumbnail_url,
+      width: data.thumbnail_width,
+      height: data.thumbnail_height,
+    });
+
+    return {
+      ...data,
+      thumbnail_url: thumbnail.url,
+      thumbnail_width: thumbnail.width,
+      thumbnail_height: thumbnail.height,
+      thumbnail_url_original: data.thumbnail_url,
+    };
+  }
+
+  /**
+   * @param {string} url
+   * @param {string} type
+   * @param {Object} options
+   *
+   * @returns {Promise<Object>}
+   */
+  async #fetchOembedDataFromUrl(url, type, options) {
     const { shouldRethrowFetchError, ...fetchOptions } = options;
 
     try {

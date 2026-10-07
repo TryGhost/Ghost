@@ -9,7 +9,7 @@ run on the host.
 Install:
 
 - [Git](https://git-scm.com/)
-- Node.js `22.23.1` (the version in [`.nvmrc`](../../.nvmrc) and
+- Node.js `22.23.3` (the version in [`.nvmrc`](../../.nvmrc) and
   [`.node-version`](../../.node-version))
 - [Docker](https://docs.docker.com/get-docker/) with Docker Compose v2
 - [Corepack](https://nodejs.org/api/corepack.html), included with supported
@@ -74,6 +74,14 @@ starts. The command starts:
 - a Caddy gateway in Docker on `http://localhost:2368`
 - Admin and Portal development watchers on the host
 
+Admin prepares Ember's development assets once at startup. Ember remains
+available for legacy routes and the shared bridge, while React and its shared
+libraries keep hot-reloading. Restart `pnpm dev` after editing Ember source, or
+use `pnpm dev:ember` for continuous Ember builds and live reload. These commands
+preserve the site's existing feature flags; see
+[Admin development](../../apps/admin/README.md#development) to preview React
+editor and auth screens with session overrides.
+
 Wait for Docker Compose to report healthy services, then open:
 
 - Site: [http://localhost:2368](http://localhost:2368)
@@ -118,6 +126,7 @@ environment and adds the listed tooling:
 | Command                    | Use it when working on                                                                                          |
 | -------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | `pnpm dev`                 | Ghost Core, Admin, or Portal                                                                                    |
+| `pnpm dev:ember`           | Ember Admin, including its browser test runner and live reload                                                  |
 | `pnpm dev:public`          | Comments UI, Signup Form, Search, Announcement Bar, or Admin Toolbar                                            |
 | `pnpm dev:lexical`         | Koenig's Lexical editor inside Ghost Admin                                                                      |
 | `pnpm dev:analytics`       | Tinybird-backed analytics with the latest published version of the Traffic Analytics service                    |

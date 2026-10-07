@@ -1,6 +1,7 @@
 import * as sidebarSel from '@tryghost/test-data/selectors/sidebar';
 import { AdminPage } from '@/admin-pages';
 import { Locator, Page } from '@playwright/test';
+import { searchSiteButton } from '@tryghost/test-data/selectors/global-search';
 import { whatsNewMenuItem } from '@tryghost/test-data/selectors/whats-new';
 
 export type UserRole = 'Administrator' | 'Editor' | 'Super Editor' | 'Author' | 'Contributor';
@@ -72,12 +73,10 @@ export const NAV_ITEMS: NavItem[] = [
  *
  * Accessibility features:
  * ✓ Active nav links have aria-current="page"
- * ✓ Posts toggle button has aria-expanded
  */
 export class SidebarPage extends AdminPage {
   public readonly sidebar: Locator;
   public readonly adminSidebar: Locator;
-  public readonly postsToggle: Locator;
   public readonly userDropdownTrigger: Locator;
   public readonly appearanceMenuItem: Locator;
   public readonly themeLightOption: Locator;
@@ -99,11 +98,10 @@ export class SidebarPage extends AdminPage {
     // the site search control, which only the sidebar contains.
     this.sidebar = page
       .getByRole('navigation')
-      .filter({ has: page.getByRole('button', { name: /Search site/ }) });
+      .filter({ has: page.getByRole('button', { name: searchSiteButton }) });
     // Container testid — for asserting the sidebar's absence (contributors
     // get a floating avatar menu instead of the sidebar).
     this.adminSidebar = page.getByTestId(sidebarSel.adminSidebar);
-    this.postsToggle = this.sidebar.getByRole('button', { name: sidebarSel.postsToggle });
     this.userDropdownTrigger = page.getByRole('button', { name: sidebarSel.userMenuTrigger });
     this.appearanceMenuItem = page.getByRole('menuitem', { name: sidebarSel.appearanceMenuItem });
     this.themeLightOption = page.getByRole('menuitem', { name: sidebarSel.lightAppearanceOption });
@@ -130,20 +128,6 @@ export class SidebarPage extends AdminPage {
 
   getCustomViewColorIndicator(viewName: string): Locator {
     return this.getNavLink(viewName).locator('[data-color]');
-  }
-
-  async expandPostsSubmenu(): Promise<void> {
-    const isExpanded = await this.postsToggle.getAttribute('aria-expanded');
-    if (isExpanded !== 'true') {
-      await this.postsToggle.click();
-    }
-  }
-
-  async collapsePostsSubmenu(): Promise<void> {
-    const isExpanded = await this.postsToggle.getAttribute('aria-expanded');
-    if (isExpanded === 'true') {
-      await this.postsToggle.click();
-    }
   }
 
   async waitForDarkMode(enabled: boolean): Promise<void> {

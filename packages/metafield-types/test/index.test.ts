@@ -17,27 +17,28 @@ import {
 // metafields HTTP API integration tests, which exercise this catalog together with
 // the backend storage and the wire format.
 describe('metafield-types catalog', function () {
-  it('offers the expected field types, and says which of them have parts', function () {
-    // Whether a value has parts is the only structural fact the backend reads off a
-    // type: it decides how many rows the value occupies and what they are keyed by.
-    const parts = Object.fromEntries(FIELD_TYPE_IDS.map((id) => [id, subFieldsOf(id)]));
-    assert.deepEqual(parts, {
+  // Integrations depend on a published version of this package and talk to sites on
+  // other Ghost versions, so a type that has shipped keeps its parts and their types
+  // for good: an integration with a newer package would otherwise send a part an older
+  // site refuses. New structure is a new type. Add a type here once it has shipped.
+  it('never changes a type once it has shipped', function () {
+    const shipped = {
       short_text: null,
       long_text: null,
-      address: ['line1', 'line2', 'city', 'state', 'postal_code', 'country'],
-    });
-  });
+      address: {
+        line1: 'short_text',
+        line2: 'short_text',
+        city: 'short_text',
+        state: 'short_text',
+        postal_code: 'postal_code',
+        country: 'country_code',
+      },
+    };
 
-  it("declares each part's own type", function () {
-    assert.deepEqual(partTypesOf('address'), {
-      line1: 'short_text',
-      line2: 'short_text',
-      city: 'short_text',
-      state: 'short_text',
-      postal_code: 'postal_code',
-      country: 'country_code',
-    });
-    assert.equal(partTypesOf('short_text'), null);
+    for (const [type, parts] of Object.entries(shipped)) {
+      assert.ok(FIELD_TYPE_IDS.includes(type as FieldType), `${type} still exists`);
+      assert.deepEqual(partTypesOf(type as FieldType), parts, `${type} keeps its parts`);
+    }
   });
 
   it('reads a type it has never heard of as having no parts', function () {

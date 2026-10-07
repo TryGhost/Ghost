@@ -9,13 +9,13 @@ import {
   type PartType,
   type PartsOf,
 } from '@tryghost/metafield-types';
-import { csvColumnsForField } from '@tryghost/metafield-types/csv';
+import { csvColumnsForField } from '@tryghost/metafield-csv';
 import { Meta, createMutation, createQuery } from '../utils/api/hooks';
 import { countryName } from '../utils/countries';
 
 // Re-exported so the import mapping can recognize a custom_fields.* column (same reason
 // as the re-exports below).
-export { isMetafieldColumn } from '@tryghost/metafield-types/csv';
+export { isMetafieldColumn } from '@tryghost/metafield-csv';
 export type { FieldIdentity, FieldIdentityString } from '@tryghost/metafield-types/identity';
 
 // Re-exported so admin apps can type address values and validate against the

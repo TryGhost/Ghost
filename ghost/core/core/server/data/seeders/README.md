@@ -22,6 +22,9 @@ rather than `Math.random()` so seeded values remain repeatable.
 - Extend `TableImporter` and register the importer in `importers/index.js`.
 - Set a modest `defaultQuantity`; callers can request larger datasets through
   `--tables` or `--quantities`.
+- An explicit quantity of 0 means zero rows. When overriding `import()`, check
+  `quantity !== undefined` rather than truthiness before falling back to a
+  per-model default.
 - Declare dependencies that the database schema cannot supply. The generator
   derives normal foreign-key dependencies itself.
 - Use `setReferencedModel()` and maps or indexes when records depend on another

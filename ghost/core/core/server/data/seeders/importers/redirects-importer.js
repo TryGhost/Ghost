@@ -17,7 +17,7 @@ class RedirectsImporter extends TableImporter {
       .where('type', 'post')
       .andWhere('status', 'published');
 
-    this.quantity = quantity ? quantity / posts.length : 10;
+    this.quantity = quantity !== undefined ? quantity / posts.length : 10;
     await this.importForEach(posts, this.quantity);
   }
 

@@ -17,15 +17,11 @@ Router.map(function () {
     this.route('signup', {path: '/signup/:token'});
     this.route('reset', {path: '/reset/:token'});
 
-    this.route('site');
-
     this.route('pro', function () {
         this.route('pro-sub', {path: '/*sub'});
     });
 
     this.route('posts');
-    this.route('posts.debug', {path: '/posts/analytics/:post_id/debug'});
-    this.route('restore-posts', {path: '/restore'});
 
     this.route('pages');
 
@@ -33,12 +29,6 @@ Router.map(function () {
         this.route('new', {path: ':type'});
         this.route('edit', {path: ':type/:post_id'});
     });
-
-    this.route('migrate', function () {
-        this.route('migrate', {path: '/*platform'});
-    });
-
-    this.route('members-activity');
 
     this.route('react-fallback', {path: '/*path'});
 });

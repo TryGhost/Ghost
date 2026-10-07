@@ -55,6 +55,13 @@ services do not all use the same construction, dependency injection, or export
 pattern. Follow the nearby service when extending an established area. For a
 new standalone service, follow the [services guide](../../ghost/core/core/server/services/README.md).
 
+A service root represents an application-owned instance, not every class or
+helper involved in a feature. Supporting libraries can be constructed by their
+callers, and service-private implementation stays with its owner. Some legacy
+support directories still live under `services/`; use the
+[service placement rules](../../ghost/core/core/server/services/README.md#what-belongs-here)
+rather than copying their location.
+
 Ghost's boot sequence owns service initialization. Services which listen for
 events, schedule work, or hold resources must be initialized during the
 appropriate boot phase rather than on their first request.

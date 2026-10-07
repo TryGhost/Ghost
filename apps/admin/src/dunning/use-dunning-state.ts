@@ -6,7 +6,7 @@ import {
   parseDunningConfig,
 } from '@tryghost/admin-x-framework/api/dunning';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
-import { useSubscriptionStatus } from '@/ember-bridge';
+import { useSubscriptionStatus } from '@/billing/api';
 import { readSharedNow, retainMinuteTicker, subscribeSharedNow } from './minute-ticker';
 
 export type DunningPhase = 'warning' | 'locked';

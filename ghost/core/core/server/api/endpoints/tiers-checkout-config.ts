@@ -1,13 +1,15 @@
+import type { Controller, Frame } from '@tryghost/api-framework';
 import { actingContext } from '../../services/members-metafields';
 import { emptyCheckoutConfig } from '../../services/tier-checkout-config';
 import type { TierCheckoutConfig } from '../../services/tier-checkout-config';
 
 const tiersService = require('../../services/tiers');
 
-interface Frame {
+type ReadFrame = Frame<{ options: { id: string } }>;
+type EditFrame = Frame<{
   data: { tiers_checkout_config?: unknown[] };
   options: { id: string; context: unknown; [key: string]: unknown };
-}
+}>;
 
 export type TierCheckoutResult = TierCheckoutConfig[];
 
@@ -51,7 +53,7 @@ const controller = {
     options: ['id'],
     validation: { options: { id: { required: true } } },
     permissions: { docName: 'products', method: 'read' },
-    async query(frame: Frame): Promise<TierCheckoutResult> {
+    async query(frame: ReadFrame): Promise<TierCheckoutResult> {
       return [await forTier(frame.options.id)];
     },
   },
@@ -61,7 +63,7 @@ const controller = {
     options: ['id'],
     validation: { options: { id: { required: true } } },
     permissions: { docName: 'products', method: 'edit' },
-    async query(frame: Frame): Promise<TierCheckoutResult> {
+    async query(frame: EditFrame): Promise<TierCheckoutResult> {
       await tiersService.checkout.edit(
         actingContext(frame.options.context),
         frame.options.id,
@@ -70,7 +72,11 @@ const controller = {
       return [await forTier(frame.options.id)];
     },
   },
-};
+} satisfies Controller<{
+  browse: Frame;
+  read: ReadFrame;
+  edit: EditFrame;
+}>;
 
 // module.exports (not export): the API framework loads controllers via require().
 module.exports = controller;

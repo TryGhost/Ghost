@@ -32,26 +32,14 @@ export default (function viteConfig({mode}) {
         })
     ];
 
-    // Keep sentryVitePlugin as the last plugin
-    // only include when we have the required details to keep local dev less noisy
+    // Keep sentryVitePlugin as the last plugin. Shipping builds only inject
+    // debug IDs; CI uploads the maps afterwards so Sentry can't block the build
     if (process.env.IS_SHIPPING) {
         plugins.push(
             sentryVitePlugin({
-                org: 'ghost-foundation',
-                project: 'admin',
-
-                // Auth tokens can be obtained from https://sentry.io/settings/account/api/auth-tokens/
-                // and need `project:releases` and `org:read` scopes
-                authToken: process.env.VITE_SENTRY_AUTH_TOKEN,
-
-                // We're not injecting release information into the build
-                // @see https://www.npmjs.com/package/@sentry/vite-plugin#option-release-inject
-                // Setting this option to true causes our build to fail: this plugin runs before the build is complete,
-                // and therefore our commonJS dependencies such as `kg-markdown-html-renderer` are not yet transpiled
-                release: {
-                    inject: false
-                },
-
+                sourcemaps: {disable: 'disable-upload'},
+                // Release injection breaks the build: CJS deps aren't transpiled yet when it runs
+                release: {inject: false},
                 telemetry: false
             })
         );

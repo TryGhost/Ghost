@@ -23,7 +23,7 @@ describe('staticTheme', function () {
       path: 'my/fake/path',
     });
 
-    expressStaticStub = sinon.stub(express, 'static').returns(function (_req, _res, _next) {
+    expressStaticStub = sinon.stub(express, 'serveStatic').returns((_req, _res, _next) => {
       _next();
     });
   });

@@ -1,17 +1,18 @@
 // # Local File Base Storage module
 // The (default) module for storing files using the local file system
 import fs from 'fs-extra';
+import { open } from 'node:fs/promises';
+import type { Readable } from 'node:stream';
 import os from 'os';
 import path from 'path';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
-import type express from 'express';
 import tpl from '@tryghost/tpl';
 import errors from '@tryghost/errors';
 import { StorageBase, type ReadOptions, type StorageFile } from 'ghost-storage-base';
 import urlUtils from '../../../shared/url-utils';
 import { errify } from '../../../shared/errify';
-
-const serveStatic: typeof express.static = require('../../../shared/express').static;
+// @ts-expect-error This module lacks type definitions.
+import { serveStatic } from '../../../shared/express';
 
 const messages = {
   notFound: 'File not found',
@@ -323,6 +324,16 @@ class LocalStorageBase extends StorageBase {
     return await fs.remove(filePath);
   }
 
+  async readStream(options: Partial<ReadOptions> = {}): Promise<Readable> {
+    const normalizedPath = this._normalizeStorageRelativePath(options.path);
+    try {
+      const file = await open(path.join(this.storagePath, normalizedPath), 'r');
+      return file.createReadStream();
+    } catch (error) {
+      throw this.readError(error, options.path);
+    }
+  }
+
   /**
    * Reads bytes from disk for a target file
    * - path of target file (without content path!)
@@ -336,29 +347,33 @@ class LocalStorageBase extends StorageBase {
     try {
       return await fs.readFile(targetPath);
     } catch (rawError) {
-      const err = errify(rawError);
-      const code = (rawError as NodeJS.ErrnoException).code;
+      throw this.readError(rawError, options.path);
+    }
+  }
 
-      if (code === 'ENOENT' || code === 'ENOTDIR') {
-        throw new errors.NotFoundError({
-          err: err,
-          message: tpl(this.errorMessages.notFoundWithRef, { file: options.path }),
-        });
-      }
+  private readError(rawError: unknown, filePath?: string): Error {
+    const err = errify(rawError);
+    const code = (rawError as NodeJS.ErrnoException).code;
 
-      if (code === 'ENAMETOOLONG') {
-        throw new errors.BadRequestError({ err: err });
-      }
-
-      if (code === 'EACCES') {
-        throw new errors.NoPermissionError({ err: err });
-      }
-
-      throw new errors.InternalServerError({
+    if (code === 'ENOENT' || code === 'ENOTDIR') {
+      return new errors.NotFoundError({
         err: err,
-        message: tpl(this.errorMessages.cannotRead, { file: options.path }),
+        message: tpl(this.errorMessages.notFoundWithRef, { file: filePath }),
       });
     }
+
+    if (code === 'ENAMETOOLONG') {
+      return new errors.BadRequestError({ err: err });
+    }
+
+    if (code === 'EACCES') {
+      return new errors.NoPermissionError({ err: err });
+    }
+
+    return new errors.InternalServerError({
+      err: err,
+      message: tpl(this.errorMessages.cannotRead, { file: filePath }),
+    });
   }
 }
 

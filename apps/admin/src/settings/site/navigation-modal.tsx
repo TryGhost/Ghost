@@ -2,6 +2,7 @@ import NavigationEditForm from './navigation/navigation-edit-form';
 import useNavigationEditor, {
   type NavigationItem,
 } from '@/settings/hooks/site/use-navigation-editor';
+import useNavigationLinkSuggestions from '@/settings/hooks/site/use-navigation-link-suggestions';
 import useSettingGroup from '@/settings/hooks/use-setting-group';
 import { SettingsModal } from '@tryghost/shade/patterns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@tryghost/shade/components';
@@ -50,14 +51,22 @@ function NavigationModal() {
     [updateSetting],
   );
 
+  // One for both tabs, so each search index is only downloaded once
+  const { enabled: suggestionsEnabled, loadSuggestions } = useNavigationLinkSuggestions();
+
+  // Empty rather than the site root, so a new item starts with the suggestions
+  const blankUrl = suggestionsEnabled ? '' : '/';
+
   const navigation = useNavigationEditor({
     items: navigationItems,
     setItems: setNavigationItems,
+    blankUrl,
   });
 
   const secondaryNavigation = useNavigationEditor({
     items: secondaryNavigationItems,
     setItems: setSecondaryNavigationItems,
+    blankUrl,
   });
 
   const [selectedTab, setSelectedTab] = useState('primary-nav');
@@ -105,10 +114,12 @@ function NavigationModal() {
             <NavigationEditForm
               baseUrl={siteData!.url}
               idPrefix="primary-navigation"
+              loadSuggestions={loadSuggestions}
               navigation={navigation}
               showIcon={showIcon}
               showPaidVisibility={showPaidVisibility}
               showVisibility={showVisibility}
+              suggestionsEnabled={suggestionsEnabled}
               uploadIcon={uploadIcon}
             />
           </TabsContent>
@@ -116,10 +127,12 @@ function NavigationModal() {
             <NavigationEditForm
               baseUrl={siteData!.url}
               idPrefix="secondary-navigation"
+              loadSuggestions={loadSuggestions}
               navigation={secondaryNavigation}
               showIcon={showIcon}
               showPaidVisibility={showPaidVisibility}
               showVisibility={showVisibility}
+              suggestionsEnabled={suggestionsEnabled}
               uploadIcon={uploadIcon}
             />
           </TabsContent>

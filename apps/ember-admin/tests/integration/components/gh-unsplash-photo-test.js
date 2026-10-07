@@ -61,7 +61,7 @@ describe('Integration: Component: gh-unsplash-photo', function () {
             links: {
                 self: 'https://api.unsplash.com/photos/OYFHT4X5isg',
                 html: 'https://unsplash.com/photos/OYFHT4X5isg',
-                download: 'https://unsplash.com/photos/OYFHT4X5isg/download',
+                download: 'https://unsplash.com/photos/OYFHT4X5isg/download?ixid=M3wxMTc3M3wwfDF8YWxsfHx8fHx8fHx8MTcwMjAwMDAwMHw',
                 download_location: 'https://api.unsplash.com/photos/OYFHT4X5isg/download'
             },
             ratio: 0.6666666666666666
@@ -104,6 +104,14 @@ describe('Integration: Component: gh-unsplash-photo', function () {
         expect(
             find('[data-test-unsplash-photo-image]').attributes.height.value
         ).to.equal('800');
+    });
+
+    it('adds the referral to the download link', async function () {
+        await render(hbs`<GhUnsplashPhoto @photo={{this.photo}} />`);
+
+        expect(
+            find('.gh-unsplash-button-download').attributes.href.value
+        ).to.equal('https://unsplash.com/photos/OYFHT4X5isg/download?ixid=M3wxMTc3M3wwfDF8YWxsfHx8fHx8fHx8MTcwMjAwMDAwMHw&utm_source=ghost&utm_medium=referral&utm_campaign=api-credit&force=true');
     });
 
     it('triggers insert action');
