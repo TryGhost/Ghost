@@ -38,7 +38,7 @@ describe('Email design color fields', function () {
   it('renders accent-backed button colors using the resolved accent color', function () {
     renderField(<ButtonColorField />, { ...DEFAULT_EMAIL_DESIGN, button_color: 'accent' });
 
-    const trigger = screen.getByRole('button', { name: 'Pick color' });
+    const trigger = screen.getByRole('button', { name: 'Button color' });
     const swatch = trigger.querySelector(String.raw`.inset-\[3px\]`);
 
     assert.ok(swatch);
@@ -48,7 +48,7 @@ describe('Email design color fields', function () {
   it('renders accent-backed link colors using the resolved accent color', function () {
     renderField(<LinkColorField />, { ...DEFAULT_EMAIL_DESIGN, link_color: 'accent' }, '#00aaee');
 
-    const trigger = screen.getByRole('button', { name: 'Pick color' });
+    const trigger = screen.getByRole('button', { name: 'Link color' });
     const swatch = trigger.querySelector(String.raw`.inset-\[3px\]`);
 
     assert.ok(swatch);
@@ -64,7 +64,7 @@ describe('Email design color fields', function () {
     const header = renderField(<HeaderBackgroundField />);
     openPicker('Header background color');
     const transparentSwatch = screen.getByRole('button', { name: 'Transparent' });
-    const pickerTrigger = screen.getByRole('button', { name: 'Pick color' });
+    const pickerTrigger = screen.getByRole('button', { name: 'Header background color' });
     assert.ok(transparentSwatch);
     assert.ok(transparentSwatch.querySelector('[data-testid="transparent-indicator"]'));
     assert.equal(pickerTrigger.querySelector('[data-testid="transparent-indicator"]'), null);
