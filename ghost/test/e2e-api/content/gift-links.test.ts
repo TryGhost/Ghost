@@ -5,6 +5,9 @@ import moment from 'moment';
 import { beforeAll } from 'vitest';
 
 const testUtils = require('../../utils');
+
+// Who the setup makes gift links as. Through the Admin API, this is the signed-in staff user.
+const asStaff = { actor: { type: 'user', id: testUtils.DataGenerator.Content.users[0].id } };
 const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
 
 // Handling ?gift is intentionally a site-frontend concern only: the token
@@ -34,8 +37,7 @@ describe('Gift links Content API', function () {
     // require, not import: an ESM import resolves to a separate module
     // instance from the one the booted Ghost initialized the singleton on.
     const giftLinksService = require('../../../core/server/services/gift-links');
-    token = (await giftLinksService.service.ensure({ actor: null }, paidPost.id)).giftLinks[0]
-      .token;
+    token = (await giftLinksService.service.ensure(asStaff, paidPost.id)).giftLinks[0].token;
   });
 
   it('ignores a valid ?gift token: the post stays gated and cacheable', async function () {

@@ -27,7 +27,9 @@ import {
 } from './queries';
 import { mintableKey } from './key';
 import { parseRequest } from '../../lib/parse-request';
-import { type RecordMetafieldAction, type RequestContext } from './actions';
+import type { RequestContext } from '../../lib/actor';
+import type { ChangeEvents } from '../../lib/change-events';
+import type { MetafieldDefinitionEvent } from './events';
 
 const TABLE = 'members_metafields';
 
@@ -113,20 +115,23 @@ const EditFieldInput = z.object({
 
 export class MetafieldDefinitionsService {
   private knex: Knex;
-  private recordAction: RecordMetafieldAction;
+  /** Lets other services react to the changes this service makes. */
+  readonly events: Pick<ChangeEvents<MetafieldDefinitionEvent>, 'react'>;
+  private readonly raise: ChangeEvents<MetafieldDefinitionEvent>['raise'];
   private getMaxDefinitions: () => number;
 
   constructor({
     knex,
-    recordAction,
+    events,
     getMaxDefinitions,
   }: {
     knex: Knex;
-    recordAction: RecordMetafieldAction;
+    events: ChangeEvents<MetafieldDefinitionEvent>;
     getMaxDefinitions: () => number;
   }) {
     this.knex = knex;
-    this.recordAction = recordAction;
+    this.events = events;
+    this.raise = events.raise;
     // A getter, not a value: the ceiling can be raised or lowered at any time,
     // and a Ghost container holds no state across requests, so the limit that
     // applies is whatever it resolves to when the request lands. Asking on
@@ -252,10 +257,8 @@ export class MetafieldDefinitionsService {
       throw err;
     }
 
-    // Logged after the commit: the action log is a separate Bookshelf write
-    // outside this transaction, so recording inside it would leave orphaned
-    // "added" entries for fields a rollback never created.
-    await this.recordCreated(context, created);
+    // Raised after the commit, so nothing reacts to fields a rollback never created.
+    await this.raiseAdded(context, created);
     return created;
   }
 
@@ -349,14 +352,16 @@ export class MetafieldDefinitionsService {
     return row ? z.decode(metafieldCodec, row) : null;
   }
 
-  /** The same entry `add` writes. Only the caller knows its transaction committed. */
-  async recordCreated(context: RequestContext, fields: Metafield[]): Promise<void> {
+  /**
+   * Raises `MetafieldAdded` for each field. `add` raises its own; a caller that adds fields
+   * inside its own transaction calls this once that transaction has committed.
+   */
+  async raiseAdded(context: RequestContext, fields: Metafield[]): Promise<void> {
     for (const field of fields) {
-      await this.recordAction({
-        context,
-        verb: 'create',
-        subject: field.id,
-        details: { primary_name: field.name, key: field.key },
+      await this.raise(context.actor, {
+        type: 'MetafieldAdded',
+        change: 'added',
+        next: field,
       });
     }
   }
@@ -445,11 +450,10 @@ export class MetafieldDefinitionsService {
       return this.list(definitions(trx, { audience: ADMIN, status: ANY_STATUS, namespace }));
     });
 
-    await this.recordAction({
-      context,
-      verb: 'reorder',
-      subject: null,
-      details: { action_name: 'reordered', count: ordered.length },
+    await this.raise(context.actor, {
+      type: 'MetafieldsReordered',
+      change: 'edited',
+      count: ordered.length,
     });
     return ordered;
   }
@@ -595,14 +599,18 @@ export class MetafieldDefinitionsService {
       });
     }
 
+    // Each change below raises its own event, from the field as the previous one left it.
+    let current = existing;
+
     // Only write (and log a rename) when the name actually changes, so
     // re-saving an unchanged field is a no-op rather than a spurious edit.
     if (patch.name !== undefined && patch.name !== existing.name) {
       await this.assertNameAvailable(this.knex, namespace, patch.name, key);
+      const next = { ...current, name: patch.name, updatedAt: new Date() };
       try {
         await this.knex(TABLE)
           .where({ namespace, key })
-          .update({ name: patch.name, updated_at: new Date() });
+          .update({ name: next.name, updated_at: next.updatedAt });
       } catch (err) {
         if (isUniqueConstraintViolation(err)) {
           throw new errors.ConflictError({
@@ -611,43 +619,45 @@ export class MetafieldDefinitionsService {
         }
         throw err;
       }
-      await this.recordAction({
-        context,
-        verb: 'rename',
-        subject: existing.id,
-        details: { primary_name: patch.name, key, previous_name: existing.name },
+      await this.raise(context.actor, {
+        type: 'MetafieldRenamed',
+        change: 'edited',
+        previous: current,
+        next,
       });
+      current = next;
     }
 
     if (patch.access !== undefined && patch.access.member !== existing.access.member) {
+      const next = {
+        ...current,
+        access: { ...current.access, member: patch.access.member },
+        updatedAt: new Date(),
+      };
       await this.knex(TABLE)
         .where({ namespace, key })
-        .update({ member_access: patch.access.member, updated_at: new Date() });
-      await this.recordAction({
-        context,
-        verb: 'changeAccess',
-        subject: existing.id,
-        details: {
-          primary_name: patch.name ?? existing.name,
-          key,
-          member_access: patch.access.member,
-          previous_member_access: existing.access.member,
-        },
+        .update({ member_access: next.access.member, updated_at: next.updatedAt });
+      await this.raise(context.actor, {
+        type: 'MetafieldAccessChanged',
+        change: 'edited',
+        previous: current,
+        next,
       });
+      current = next;
     }
 
     // A status change is the archive/restore transition. Only write (and log)
     // when it actually flips, so re-sending the current status is a no-op.
     if (patch.status !== undefined && patch.status !== existing.status) {
+      const next = { ...current, status: patch.status, updatedAt: new Date() };
       await this.knex(TABLE)
         .where({ namespace, key })
-        .update({ status: patch.status, updated_at: new Date() });
-      const verb = patch.status === FIELD_STATUS.archived ? 'archive' : 'restore';
-      await this.recordAction({
-        context,
-        verb,
-        subject: existing.id,
-        details: { primary_name: patch.name ?? existing.name, key },
+        .update({ status: next.status, updated_at: next.updatedAt });
+      await this.raise(context.actor, {
+        type: next.status === FIELD_STATUS.archived ? 'MetafieldArchived' : 'MetafieldRestored',
+        change: 'edited',
+        previous: current,
+        next,
       });
     }
 
@@ -662,7 +672,7 @@ export class MetafieldDefinitionsService {
    * reversible soft state (see `edit` with a status change).
    */
   async destroy(context: RequestContext, namespace: Namespace, key: Key): Promise<void> {
-    const field = await this.knex(TABLE).where({ namespace, key }).first();
+    const field = await this.find({ namespace, key });
     if (!field) {
       throw new errors.NotFoundError({ message: 'Custom field not found.' });
     }
@@ -672,11 +682,10 @@ export class MetafieldDefinitionsService {
       });
     }
     await this.knex(TABLE).where({ namespace, key }).del();
-    await this.recordAction({
-      context,
-      verb: 'delete',
-      subject: field.id,
-      details: { primary_name: field.name, key },
+    await this.raise(context.actor, {
+      type: 'MetafieldDeleted',
+      change: 'deleted',
+      previous: field,
     });
   }
 }

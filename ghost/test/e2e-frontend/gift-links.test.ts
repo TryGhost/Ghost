@@ -7,6 +7,9 @@ import moment from 'moment';
 import { afterAll, beforeAll } from 'vitest';
 
 const testUtils = require('../utils');
+
+// Who the setup makes gift links as. Through the Admin API, this is the signed-in staff user.
+const asStaff = { actor: { type: 'user', id: testUtils.DataGenerator.Content.users[0].id } };
 const configUtils = require('../utils/config-utils');
 const settingsCache = require('../../core/shared/settings-cache');
 
@@ -141,16 +144,14 @@ describe('Front-end gift links', function () {
 
     // Mint a live gift link for the paid post, the paid page and the members post.
     const giftLinksService = require('../../core/server/services/gift-links');
-    token = (await giftLinksService.service.ensure({ actor: null }, paidPost.id)).giftLinks[0]
+    token = (await giftLinksService.service.ensure(asStaff, paidPost.id)).giftLinks[0].token;
+    pageToken = (await giftLinksService.service.ensure(asStaff, paidPage.id)).giftLinks[0].token;
+    membersToken = (await giftLinksService.service.ensure(asStaff, membersPost.id)).giftLinks[0]
       .token;
-    pageToken = (await giftLinksService.service.ensure({ actor: null }, paidPage.id)).giftLinks[0]
-      .token;
-    membersToken = (await giftLinksService.service.ensure({ actor: null }, membersPost.id))
-      .giftLinks[0].token;
-    gatedBlocksToken = (await giftLinksService.service.ensure({ actor: null }, gatedBlocksPost.id))
+    gatedBlocksToken = (await giftLinksService.service.ensure(asStaff, gatedBlocksPost.id))
       .giftLinks[0].token;
     publicGatedBlocksToken = (
-      await giftLinksService.service.ensure({ actor: null }, publicGatedBlocksPost.id)
+      await giftLinksService.service.ensure(asStaff, publicGatedBlocksPost.id)
     ).giftLinks[0].token;
 
     request = supertest.agent(configUtils.config.get('url'));
