@@ -19,6 +19,17 @@ describe('Integration: prometheus-client', function () {
     }
   });
 
+  afterAll(async function () {
+    // Files share this process: don't leave the enabled flag, the default
+    // metrics or a test-built client in the require cache for later files.
+    if (prometheusClient) {
+      prometheusClient.stop();
+      prometheusClient.client.register.clear();
+    }
+    clearModuleCache();
+    await configUtils.restore();
+  });
+
   it('should export an instance of the prometheus client if it is enabled', async function () {
     configUtils.set('prometheus:enabled', true);
     prometheusClient = getFreshPrometheusClient();
