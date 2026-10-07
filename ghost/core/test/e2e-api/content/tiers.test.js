@@ -62,10 +62,10 @@ describe('Tiers Content API', function () {
   });
 });
 
-// What a tier asks a member for, carried by the tier itself. A themed pricing or
+// What a tier collects at checkout, carried by the tier itself. A themed pricing or
 // plan-change page reads tiers through this API and cannot reach a members-only one, so
 // this is the only place the answer can reach one.
-describe('Tier requirements Content API', function () {
+describe('Tier checkout config Content API', function () {
   let contentAgent;
   let adminAgent;
   let paidTier;
@@ -130,24 +130,29 @@ describe('Tier requirements Content API', function () {
     mockManager.restore();
   });
 
-  it('says what a tier asks for, on the tier', async function () {
-    await collectShipping(paidTier.id, ['GB', 'IE']);
+  it('says what a tier collects, on the tier', async function () {
+    const address = await collectShipping(paidTier.id, ['GB', 'IE']);
 
     const tiers = await readTiers();
 
-    assert.deepEqual(find(tiers, paidTier.id).requirements, {
-      shipping: { collect: true, allowed_countries: ['GB', 'IE'] },
+    assert.deepEqual(find(tiers, paidTier.id).checkout_config, {
+      shipping: {
+        collect: true,
+        allowed_countries: ['GB', 'IE'],
+        name: { custom_field_key: 'shipping_name' },
+        address: { custom_field_key: address },
+      },
     });
   });
 
-  it('says a tier asks for nothing rather than staying silent', async function () {
+  it('says a tier collects nothing rather than staying silent', async function () {
     await collectShipping(paidTier.id, ['GB']);
 
     const tiers = await readTiers();
 
-    // Empty rather than absent, so a client tells "this tier wants nothing" apart from
+    // Empty rather than absent, so a client tells "this tier collects nothing" apart from
     // "this Ghost cannot tell you" without looking at anything but the key.
-    assert.deepEqual(find(tiers, otherTier.id).requirements, {});
+    assert.deepEqual(find(tiers, otherTier.id).checkout_config, {});
   });
 
   it('leaves the countries out when a tier ships anywhere', async function () {
@@ -157,18 +162,21 @@ describe('Tier requirements Content API', function () {
 
     // Ghost stores "everywhere" as no countries at all, and the tier still says it
     // collects, so an absent list cannot be read as shipping nowhere.
-    assert.deepEqual(find(tiers, paidTier.id).requirements.shipping, { collect: true });
+    const { shipping } = find(tiers, paidTier.id).checkout_config;
+    assert.equal(shipping.collect, true);
+    assert.equal(Object.hasOwn(shipping, 'allowed_countries'), false);
   });
 
-  it('never names the field a value is kept in', async function () {
+  it('names the field each collected value is kept in', async function () {
     const address = await collectShipping(paidTier.id, ['GB']);
 
-    const answer = JSON.stringify(await readTiers());
+    const { shipping } = find(await readTiers(), paidTier.id).checkout_config;
 
-    // A member supplies a delivery address, not a value for a field. Where it lands is
-    // the publisher's business, and naming it would invite a client to write there.
-    assert.ok(!answer.includes(address), 'the destination field is not named');
-    assert.ok(!answer.includes('shipping_name'), 'nor the one the recipient name goes into');
+    // The destination is the point rather than a leak. A client that knows where a value
+    // lands can see the member already holds an address and carry it through, instead of
+    // asking them to type it a second time.
+    assert.equal(shipping.address.custom_field_key, address);
+    assert.equal(shipping.name.custom_field_key, 'shipping_name');
   });
 
   it('says nothing at all on a site without the feature', async function () {
@@ -178,7 +186,21 @@ describe('Tier requirements Content API', function () {
     const tiers = await readTiers();
 
     // Absent rather than empty: a Ghost that does not do this should not imply every
-    // tier asks for nothing, which is a different claim.
-    assert.equal(Object.hasOwn(find(tiers, paidTier.id), 'requirements'), false);
+    // tier collects nothing, which is a different claim.
+    assert.equal(Object.hasOwn(find(tiers, paidTier.id), 'checkout_config'), false);
+  });
+
+  it('leaves out what a client cannot act on', async function () {
+    await adminAgent
+      .put(`tiers/${paidTier.id}/checkout_config/`)
+      .body({ tiers_checkout_config: [{ tax_number: { collect: true } }] })
+      .expectStatus(200);
+
+    const { checkout_config: sliced } = find(await readTiers(), paidTier.id);
+
+    // A slice of the publisher's settings, not all of them. The processor keeps a tax
+    // number against the customer it invoices and Ghost stores none, so a client that
+    // saw this key could only misread it as something to ask for.
+    assert.deepEqual(sliced, {});
   });
 });
