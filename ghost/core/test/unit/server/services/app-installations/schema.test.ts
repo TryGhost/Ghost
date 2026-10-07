@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { URL_MAX_LENGTH } from '@tryghost/app-contracts';
+// @ts-expect-error This module lacks type definitions.
 import schema from '../../../../../core/server/data/schema/schema';
 
 describe('app installation tables', function () {
