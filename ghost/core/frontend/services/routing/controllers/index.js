@@ -28,7 +28,7 @@ module.exports = {
   },
 
   get routeMarkdown() {
-    return require('./entry/markdown').serveRouteMdRequest;
+    return require('./entry').routeMarkdownController;
   },
 
   get unsubscribe() {

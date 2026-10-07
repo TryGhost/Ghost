@@ -1,12 +1,9 @@
-import type { NextFunction, Request, Response } from 'express';
-import type { ApiCallSpec } from '../../api-adapter';
+import type { Request, Response } from 'express';
 import type { Entry, EntryResponse } from '../entry';
 import buildCanonicalUrl from './canonical-url';
 
 const urlUtils = require('../../../../../shared/url-utils').default;
 const { getGatedNotice, getMarkdownPath, renderEntryMarkdown } = require('../../../llms/markdown');
-const { resolveRouteData } = require('../../api-adapter');
-const renderer = require('../../../rendering');
 
 const MEMBERS_ONLY_MARKDOWN =
   '# Members-only content\n\nThis post requires a subscription and is not available for public access.\n';
@@ -57,9 +54,7 @@ function isPublic(entry: Entry): boolean {
 }
 
 function getContentLocation(res: EntryResponse, entry: Entry): string {
-  const canonicalPath = res.routerOptions.canonicalPath;
-  const pathname = typeof canonicalPath === 'string' ? canonicalPath : new URL(entry.url).pathname;
-  return getMarkdownPath(pathname);
+  return res.routerOptions.markdownPath ?? getMarkdownPath(new URL(entry.url).pathname);
 }
 
 function serveMarkdown(res: EntryResponse, entry: Entry) {
@@ -178,11 +173,7 @@ export function isMdRequest(res: EntryResponse): boolean {
  */
 export async function serveMdRequest(req: Request, res: EntryResponse, entry: Entry) {
   if (!llmsEnabled(req)) {
-    const canonicalPath = res.routerOptions.canonicalPath;
-    return res.redirect(
-      302,
-      buildCanonicalUrl(req, entry, typeof canonicalPath === 'string' ? canonicalPath : undefined),
-    );
+    return res.redirect(302, buildCanonicalUrl(req, entry, res.routerOptions.canonicalPath));
   }
 
   if (!isPublic(entry)) {
@@ -205,35 +196,4 @@ export async function serveMdRequest(req: Request, res: EntryResponse, entry: En
   }
 
   return serveMarkdown(res, entry);
-}
-
-export async function serveRouteMdRequest(req: Request, res: EntryResponse, next: NextFunction) {
-  try {
-    const queries = Object.values(resolveRouteData(res.routerOptions.data)) as ApiCallSpec[];
-    const query = queries.find(
-      ({ type, resource }) => type === 'read' && (resource === 'pages' || resource === 'posts'),
-    );
-
-    if (!query) {
-      return next();
-    }
-
-    const api = require('../../../proxy').api;
-    const options = {
-      ...query.options,
-      include: 'authors,tags,tiers',
-      context: { member: res.locals.member },
-    };
-    const result = await api[query.controller][query.type](options);
-    const entry = result[query.resource][0];
-
-    if (!entry) {
-      return next();
-    }
-
-    res.routerOptions.resourceType = query.resource;
-    return await serveMdRequest(req, res, entry);
-  } catch (err) {
-    return renderer.handleError(next)(err);
-  }
 }
