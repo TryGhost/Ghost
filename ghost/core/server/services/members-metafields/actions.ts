@@ -1,4 +1,5 @@
 import logging from '@tryghost/logging';
+import { readFrameIdentity } from '../../lib/frame-identity';
 import type { MemberAccess } from './access';
 import type { WriteOrigin } from './schema';
 
@@ -14,25 +15,19 @@ export interface RequestContext {
 }
 
 /**
- * Who is acting, read off an API frame's context.
+ * Who is acting, narrowed from the shared reading of an API frame's context.
  *
- * Here rather than in each endpoint, because two resources now record metafield history
- * and a second reading of the same shape is a second chance to disagree about it. An
- * integration and a user are both actors; a request that is neither — a webhook, a job —
- * has none, and the history says so rather than guessing.
+ * An integration and a user are both actors, and an integration's key names the
+ * integration before any user. A request that is neither — a webhook, a job — has none,
+ * and the history says so rather than guessing.
  */
 export function actingContext(context: unknown): RequestContext {
-  const frame = (context ?? {}) as {
-    user?: string;
-    integration?: { id: string };
-    api_key?: unknown;
-  };
-  const viaApiKey = Boolean(frame.api_key);
-  if (frame.integration) {
-    return { actor: { id: frame.integration.id, type: 'integration', viaApiKey } };
+  const { userId, integrationId, viaApiKey } = readFrameIdentity(context);
+  if (integrationId) {
+    return { actor: { id: integrationId, type: 'integration', viaApiKey } };
   }
-  if (frame.user) {
-    return { actor: { id: frame.user, type: 'user', viaApiKey } };
+  if (userId) {
+    return { actor: { id: userId, type: 'user', viaApiKey } };
   }
   return { actor: null };
 }

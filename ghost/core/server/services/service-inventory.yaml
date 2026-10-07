@@ -3616,7 +3616,7 @@ services:
     contracts:
       exports:
         summary: >-
-          Named TypeScript init and live service exports; RequestContext is type-only. service
+          Named TypeScript init, live service and actingContext exports; RequestContext is type-only. service
           is undefined before synchronous receiver-independent init, which returns undefined.
           The deep class requires its receiver: getPost/ensure/create return a post id plus
           giftLinks, getPostByToken returns that shape or null, and removeAll returns a number.
