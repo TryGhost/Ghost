@@ -1,3 +1,4 @@
+import type { SearchIndexItem } from '@/shared/search-index';
 import { describe, expect, it } from 'vitest';
 import {
   type SearchContent,
@@ -5,7 +6,7 @@ import {
   createFlexSearchProvider,
   createSearchProvider,
 } from './search-providers';
-import { type SearchIndexItem, type SearchResultGroup, getSearchables } from './searchables';
+import { type SearchResultGroup, getSearchables } from './searchables';
 
 const content: SearchContent = {
   user: [{ id: 'u1', slug: 'first-user', name: 'First user' }],
