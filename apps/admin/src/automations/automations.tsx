@@ -1,6 +1,7 @@
 import AutomationsHelpCards from './components/automations-help-cards';
 import AutomationsList from './components/automations-list';
 import React from 'react';
+import { useNavigate } from '@tryghost/admin-x-framework';
 import { Badge } from '@tryghost/shade/components';
 import { Box, Container } from '@tryghost/shade/primitives';
 import { ListPage } from '@tryghost/shade/page-templates';
@@ -13,6 +14,7 @@ import { useVisibleAutomations } from './hooks/use-visible-automations';
 const MAX_AUTOMATIONS = 50;
 
 const Automations: React.FC = () => {
+  const navigate = useNavigate();
   const { automations, automationCount, error, isError, isLoading } = useVisibleAutomations();
   const automationsPerTierEnabled = useFeatureFlag('automationsPerTier');
   const { data: currentUser } = useCurrentUser();
@@ -53,6 +55,7 @@ const Automations: React.FC = () => {
                         disabled={!canCreateNewAutomations}
                         label="New automation"
                         type="button"
+                        onClick={() => navigate('/automations/new')}
                       >
                         New automation
                       </PageHeader.Action>
