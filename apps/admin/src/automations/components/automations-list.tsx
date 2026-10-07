@@ -98,10 +98,8 @@ const AutomationsListSkeleton: React.FC = () => {
 const AutomationsList: React.FC<AutomationsListProps> = ({
   automations = [],
   isLoading = false,
+  canManage,
 }) => {
-  // TODO(NY-1689) Soon, we'll add support for "Archive" actions, which will let us show this. We'll delete this line and start reading from the `canManage` prop.
-  const canManage = false;
-
   if (isLoading) {
     return <AutomationsListSkeleton />;
   }
