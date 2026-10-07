@@ -84,6 +84,17 @@ describe('actions api helpers', () => {
       expect(title('uninstalled')).toBe('App uninstalled');
     });
 
+    it('formats a save of the Stripe Checkout settings', () => {
+      expect(
+        getActionTitle(
+          baseAction({
+            resource_type: 'stripe_checkout_config',
+            context: { primary_name: 'Stripe Checkout' },
+          }),
+        ),
+      ).toBe('Checkout settings edited');
+    });
+
     it('formats a member custom field value change', () => {
       expect(
         getActionTitle(

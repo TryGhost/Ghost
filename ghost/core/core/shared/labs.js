@@ -63,6 +63,7 @@ const PRIVATE_FEATURES = [
   'getHelperDeduplication',
   'membersCustomFields',
   'stripeCheckoutCollection',
+  'stripeCheckoutDesign',
   'paywallImprovements',
   'machinePayments',
   'editorReact',

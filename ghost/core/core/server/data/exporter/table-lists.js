@@ -79,6 +79,7 @@ const BACKUP_TABLES = [
   'welcome_email_automation_runs',
   'welcome_email_automated_emails',
   'tinybird_syncs',
+  'stripe_checkout_config',
 ];
 
 // NOTE: exposing only tables which are going to be included in a "default" export file

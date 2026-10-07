@@ -206,6 +206,8 @@ export const getActionTitle = (action: Action) => {
     resourceType = 'custom field';
   } else if (resourceType === 'app_installation') {
     resourceType = 'app';
+  } else if (resourceType === 'stripe_checkout_config') {
+    resourceType = 'checkout settings';
   }
 
   // Because a `page` and `post` both use the same model, we store the

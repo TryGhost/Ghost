@@ -152,6 +152,20 @@ module.exports = function apiRoutes() {
   router.get('/tiers/:id', mw.authAdminApi, http(api.tiers.read));
   router.put('/tiers/:id', mw.authAdminApi, http(api.tiers.edit));
 
+  // ## Stripe Checkout
+  router.get(
+    '/stripe/checkout/config',
+    mw.authAdminApi,
+    labs.enabledMiddleware('stripeCheckoutDesign'),
+    http(api.stripeCheckoutConfig.read),
+  );
+  router.put(
+    '/stripe/checkout/config',
+    mw.authAdminApi,
+    labs.enabledMiddleware('stripeCheckoutDesign'),
+    http(api.stripeCheckoutConfig.edit),
+  );
+
   // ## Members
   router.get('/members', mw.authAdminApi, http(api.members.browse));
   router.post('/members', mw.authAdminApi, http(api.members.add));
