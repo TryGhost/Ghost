@@ -934,7 +934,9 @@ jobs:
           # cached native builds by the devEngines Node major, so a build from
           # another leg can be reused against the wrong ABI; disable the
           # side-effects cache so native modules build for the running Node.
-          install-args: --no-runtime --config.side-effects-cache=false
+          # Scoped to ghost's subgraph plus the root (for nx); the tests load
+          # workspace deps from source, so nothing else is needed.
+          install-args: --no-runtime --config.side-effects-cache=false --filter ghost... --filter ghost-monorepo
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
@@ -1047,7 +1049,9 @@ jobs:
           # cached native builds by the devEngines Node major, so a build from
           # another leg can be reused against the wrong ABI; disable the
           # side-effects cache so native modules build for the running Node.
-          install-args: --no-runtime --config.side-effects-cache=false
+          # Scoped to ghost's subgraph plus the root (for nx); the tests load
+          # workspace deps from source, so nothing else is needed.
+          install-args: --no-runtime --config.side-effects-cache=false --filter ghost... --filter ghost-monorepo
 
       - name: Set env vars (MySQL)
         run: |
