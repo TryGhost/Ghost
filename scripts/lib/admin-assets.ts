@@ -1,92 +1,13 @@
 import {
   chmodSync,
-  copyFileSync,
   cpSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
-  readFileSync,
   readdirSync,
   rmSync,
-  symlinkSync,
-  writeFileSync,
 } from 'node:fs';
-import { dirname, join, relative, resolve } from 'node:path';
-
-export interface LegacyAdminAssetsOptions {
-  emberDist: string;
-  destination: string;
-  activitypubDist: string;
-  koenigDist: string;
-  environment: string;
-  editorUrl?: string;
-}
-
-function files(directory: string): string[] {
-  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-    const path = join(directory, entry.name);
-    return entry.isDirectory() ? files(path) : [path];
-  });
-}
-
-/** Compatibility preparation for Ember's standalone build and live-reload server. */
-export function prepareLegacyAdminAssets(options: LegacyAdminAssetsOptions): void {
-  const { emberDist, destination } = options;
-  const assets = join(emberDist, 'assets');
-  // Keep Ember's sourcemap paths consistent with its standalone development server.
-  for (const path of files(assets)) {
-    if (relative(assets, path).split(/[\\/]/)[0] === 'icons' || !path.endsWith('.map')) {
-      continue;
-    }
-    const map = JSON.parse(readFileSync(path, 'utf8')) as { sources: string[] };
-    map.sources = map.sources.map((source) => source.replace('assets/', ''));
-    writeFileSync(path, JSON.stringify(map));
-  }
-
-  rmSync(destination, { recursive: true, force: true });
-  mkdirSync(destination, { recursive: true });
-  copyFileSync(join(emberDist, 'index.html'), join(destination, 'index.html'));
-  cpSync(assets, join(destination, 'assets'), {
-    recursive: true,
-    dereference: true,
-    filter: (source) => relative(assets, source).split(/[\\/]/)[0] !== 'icons',
-  });
-
-  prepareEmbeddedAdminAssets(options);
-}
-
-/** Embedded bundles for Ember's standalone output. */
-function prepareEmbeddedAdminAssets(options: LegacyAdminAssetsOptions): void {
-  const { destination, activitypubDist, koenigDist, environment, editorUrl } = options;
-  const activitypubDestination = join(destination, 'assets/activitypub');
-  if (existsSync(activitypubDist)) {
-    if (environment === 'production') {
-      cpSync(activitypubDist, activitypubDestination, { recursive: true, dereference: true });
-    } else {
-      mkdirSync(dirname(activitypubDestination), { recursive: true });
-      symlinkSync(
-        relative(dirname(activitypubDestination), resolve(activitypubDist)),
-        activitypubDestination,
-        'dir',
-      );
-    }
-  } else if (environment === 'production') {
-    console.log('activitypub folder not found');
-  }
-
-  if (!editorUrl) {
-    if (existsSync(koenigDist)) {
-      const renderer = resolve(koenigDist, 'embed-renderer');
-      cpSync(koenigDist, join(destination, 'assets/koenig-lexical'), {
-        recursive: true,
-        dereference: true,
-        filter: (source) => resolve(source) !== renderer,
-      });
-    } else {
-      console.log('Koenig-Lexical folder not found');
-    }
-  }
-}
+import { join } from 'node:path';
 
 function normalizePermissions(directory: string): void {
   chmodSync(directory, 0o755);

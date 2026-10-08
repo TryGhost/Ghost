@@ -163,11 +163,7 @@ describe('Admin task inputs', () => {
         'inputs',
         `@internal/scripts:${target}`,
       ]);
-      for (const file of [
-        'apps/admin/package.json',
-        'apps/ember-admin/package.json',
-        '.github/workflows/ci.yml',
-      ]) {
+      for (const file of ['apps/admin/package.json', '.github/workflows/ci.yml']) {
         assert.ok(files.includes(file), `${target}: ${file}`);
         const affected = await nxJson<string[]>([
           'show',

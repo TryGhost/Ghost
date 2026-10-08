@@ -44,8 +44,8 @@ reviews:
         mode: 'error'
         instructions: |
           Fail if the PR adds a new .js/.jsx/.cjs/.mjs source file, unless it is: a DB
-          migration (ghost/core/core/server/data/migrations/), under apps/ember-admin/,
-          a tool/config file, under scripts/ or docker/, or generated/vendored code.
+          migration (ghost/core/core/server/data/migrations/), a tool/config file,
+          under scripts/ or docker/, or generated/vendored code.
           Modifying pre-existing JS files never fails this check.
   path_instructions:
     - path: '**/*'
@@ -79,8 +79,8 @@ reviews:
     - path: '**/*.{js,jsx,cjs,mjs}'
       instructions: |
         New source files must be TypeScript: flag new JS files as a required change
-        unless exempt (DB migrations, apps/ember-admin/, tool/config files, scripts/,
-        docker/, generated code).
+        unless exempt (DB migrations, tool/config files, scripts/, docker/,
+        generated code).
         Never request conversion of pre-existing JS files. If the PR substantially
         reworks one (rewritten logic or significant new functions — not renames or
         small fixes), you may leave ONE optional, non-blocking note for the whole PR
@@ -165,8 +165,6 @@ reviews:
     oxc:
       enabled: true
     stylelint:
-      enabled: true
-    emberTemplateLint:
       enabled: true
     actionlint:
       enabled: true

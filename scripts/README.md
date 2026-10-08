@@ -26,8 +26,8 @@ package is _not_ part of the root Vitest watcher (`pnpm test:watch`), which only
 covers Vitest-based projects.
 
 Tests that inspect Admin's Nx configuration and CI path filters read files
-outside this workspace. The `adminTestContracts` input includes the Admin and
-Ember manifests and CI workflow in both `test` and `test:unit`. Changes to these
+outside this workspace. The `adminTestContracts` input includes the Admin
+manifest and CI workflow in both `test` and `test:unit`. Changes to these
 files invalidate the tests' caches and select this workspace as affected,
 without introducing an Admin build prerequisite.
 
@@ -37,13 +37,7 @@ without introducing an Admin build prerequisite.
 renderer next to it. Admin’s build invokes it after Vite; its separate
 `assemble:assets` task can rerun assembly from existing build outputs. Assembly
 keeps the embed renderer outside Admin’s assets and normalizes Admin output
-permissions for Nx caches. The helper in `lib/admin-assets.ts` also prepares
-legacy assets for Ember’s standalone builds and live-reload server.
-
-Both modes keep preview and Core Admin assets identical, ship the embed renderer
-separately and honor `EDITOR_URL`. React-only assembly rejects HTML containing
-Ember's environment metadata; rebuild Vite's output before switching modes so
-previously merged legacy assets are not reused.
+permissions for Nx caches.
 
 ## The `.cjs` files
 

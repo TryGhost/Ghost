@@ -30,10 +30,9 @@ allowBuilds:
   '@sentry/cli': false
   '@swc/core@1.15.43': true
   'better-sqlite3@12.11.1': true
-  'core-js@2.6.12': true
   cpu-features: false
   'esbuild@0.25.12 || 0.28.2': true
-  'fsevents@1.2.13 || 2.3.2 || 2.3.3': true
+  'fsevents@2.3.2 || 2.3.3': true
   'msw@2.14.6': true
   'nx@23.2.0': true
   'protobufjs@7.6.6': true
@@ -268,13 +267,8 @@ overrides:
   jackspeak: 4.2.3
   moment: 'catalog:'
   moment-timezone: 'catalog:'
-  nwsapi: 2.2.24
-  broccoli-persistent-filter: ^2.3.1
-  ember-basic-dropdown: 6.0.2
-  ember-in-viewport: 4.1.0
   'eslint-plugin-ghost>@typescript-eslint/eslint-plugin': 8.71.0
   'eslint-plugin-ghost>@typescript-eslint/utils': 8.71.0
-  'ember-svg-jar>cheerio': 'catalog:'
   # juice 11 pins cheerio 1.0.0 exactly. Point it at the catalog's 1.2.0 so juice
   # and ghost/core share one copy instead of keeping two parsers resident - both
   # only ever call `load`. See patchedDependencies for the matching slim import.
@@ -327,9 +321,6 @@ overrides:
   'shell-quote@>=1.8.4 <1.11.0': ^1.11.0
   'source-map-js@<1.2.2': ^1.2.2
   'tinypool@<2.1.2': ^2.1.2
-  # liquid-wormhole 3.0.1 pins this to a personal-fork git URL; redirect to the
-  # upstream-maintained npm release so blockExoticSubdeps doesn't trip on it.
-  perf-primitives: ^0.0.6
   # routing-related dependencies
   body-parser: 'catalog:'
   express: 'catalog:'
@@ -355,9 +346,8 @@ versioning:
   ignore:
     # ignore root ghost-monorepo package
     - ghost-monorepo
-    # ignore ghost/ghost-admin since they're manually versioned by release scripts
+    # ignore ghost since it's manually versioned by release scripts
     - ghost
-    - ghost-admin
     # ignore public apps since they're deployed outside pnpm's changelog versioning
     - '@tryghost/announcement-bar'
     - '@tryghost/admin-toolbar'

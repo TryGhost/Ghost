@@ -191,7 +191,6 @@ test('counts maintained fixture modules and classifies test support without hidi
     ['apps/admin/src/editor/engine/__fixtures__/after-load.test.tsx', 'tests'],
     ['apps/admin/src/editor/engine/__fixtures__/index.ts', 'tests'],
     ['apps/admin/test-utils/fixtures/query-client.tsx', 'tests'],
-    ['apps/ember-admin/mirage/fixtures/configs.js', 'tests'],
     ['ghost/core/core/server/data/schema/fixtures/fixture-manager.js', 'backend'],
     ['ghost/core/core/server/data/schema/fixtures/index.js', 'backend'],
     ['ghost/core/test/unit/server/data/schema/fixtures/fixture-manager.test.js', 'tests'],
@@ -205,7 +204,6 @@ test('counts maintained fixture modules and classifies test support without hidi
     'ghost/core/test/utils/fixtures/sloppy-config-writer.js',
     'ghost/core/test/utils/fixtures/themes/casper/assets/built/casper.js',
     'ghost/core/test/utils/fixtures/themes/source/assets/built/source.js',
-    'apps/ember-admin/vendor/keymaster/keymaster.js',
     'ghost/core/core/frontend/public/admin-auth/admin-auth.min.js',
     'koenig/kg-simplemde/debug/simplemde.debug.js',
     'koenig/kg-simplemde/dist/simplemde.min.js',
@@ -235,7 +233,7 @@ test('counts maintained fixture modules and classifies test support without hidi
   const report = inventory(root);
   assert.equal(report.measurementVersion, 2);
   assert.equal(report.files.length, included.length);
-  assert.equal(report.summary.javascript, 5);
+  assert.equal(report.summary.javascript, 4);
   assert.equal(report.summary.typescript, 6);
   assert.deepEqual(report.excluded.sort(), excluded.sort());
   for (const [file, expected] of included) {
@@ -253,24 +251,14 @@ test('separates developer tooling from runtime configuration', () => {
     '.lintstagedrc.cjs',
     '.lintstagedrc.cts',
     'lint-staged.config.ts',
-    'apps/ember-admin/lib/asset-delivery/index.js',
-    'apps/ember-admin/lib/check-node-version.js',
-    'apps/ember-admin/lib/ember-power-calendar-moment/index.js',
-    'apps/ember-admin/lib/ember-power-calendar-utils/index.js',
     '.pnpmfile.mjs',
     '.dependency-cruiser.cjs',
     'configs/eslint/index.mjs',
     'configs/eslint-react/index.mjs',
     'configs/vitest/index.mjs',
     'configs/vite-public-app/index.mjs',
-    'apps/ember-admin/.template-lintrc.js',
-    'apps/ember-admin/.lint-todorc.js',
-    'apps/ember-admin/ember-cli-build.js',
-    'apps/ember-admin/testem.js',
-    'apps/ember-admin/config/environment.js',
     'apps/admin/vite.shared.ts',
     'apps/admin/vite-backend-proxy.ts',
-    'apps/admin/vite-ember-assets.ts',
     'apps/comments-ui/vite-plugin-strip-fingerprinting.ts',
     'koenig/vitest.shared.ts',
     'packages/i18n/generate-context.js',
@@ -285,11 +273,9 @@ test('separates developer tooling from runtime configuration', () => {
     assert.equal(category(file), 'tooling', file);
   }
   for (const file of [
-    'apps/ember-admin/lib/ember-power-calendar-utils/addon/index.js',
     'apps/admin/src/editor/card-config.ts',
     'apps/admin/src/sentry/sentry-config.ts',
     'apps/admin-toolbar/src/config.js',
-    'apps/ember-admin/app/services/config-manager.js',
     'apps/admin-x-framework/src/api/config.ts',
   ]) {
     assert.equal(category(file), 'frontend', file);

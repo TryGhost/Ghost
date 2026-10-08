@@ -1,11 +1,10 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "ignoreWorkspaces": ["apps/ember-admin"],
   "ignore": [
     "ghost/core/test/utils/fixtures/themes/**/assets/built/**",
     ".github/scripts/i18n-review/**"
   ],
-  "ignoreBinaries": ["ember", "tb"],
+  "ignoreBinaries": ["tb"],
   "workspaces": {
     ".": {
       "vitest": {
