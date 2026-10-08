@@ -20,6 +20,10 @@ response. Without a DSN nothing initialises and nothing is sent.
 - `beforeSend` tags `shown_to_user` (default `false`) and `grammarly`, drops
   events already shown to the user and events about analytics requests, and
   replaces post/page ids in messages so they group together.
+- Minified Lexical errors are tagged `lexical: true` with the loaded Koenig
+  version, including ones the global error handlers catch. The post editor's
+  reports also carry `koenig_instance`: `primary` for the visible instance,
+  `secondary` for the hidden one.
 - Handled errors are tagged `source: useHandleError`; API errors count as shown
   to the user, so only unexpected ones are sent.
 - Outside `testing`, replays are buffered and sent with half of the errors.
