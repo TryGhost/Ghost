@@ -33,14 +33,24 @@ import { isDevelopmentApp, movedBetween } from '@/apps/lib/served-from';
 
 type InstallState =
   | { status: 'checking' }
-  /** `preview` is set when confirming it failed, so trying again confirms it again. */
-  | { status: 'failed'; failure: InstallFailure; preview?: AppInstallationPreview }
+  /**
+   * `preview` and `notice` are set when confirming a review failed, so trying again
+   * confirms the same review, shown as it was.
+   */
+  | {
+      status: 'failed';
+      failure: InstallFailure;
+      preview?: AppInstallationPreview;
+      notice?: string;
+    }
   | { status: 'reviewing'; preview: AppInstallationPreview; notice?: string };
 
 const CHANGED_WHILE_REVIEWING =
   'This app changed while you were reviewing it. Check it again before you continue.';
 const INSTALLATION_CHANGED =
   'Someone else installed or changed this app in the meantime. Here’s where it stands now.';
+const UNINSTALLED_WHILE_REVIEWING =
+  'This app was uninstalled in the meantime. Review it again to install it.';
 
 /** What the review is for: a new install, changes to approve, or nothing to do. */
 function reviewKind(preview: AppInstallationPreview) {
@@ -86,13 +96,22 @@ const FAILED_TITLES = {
   approve: 'Couldn’t approve the changes',
 };
 
-/** Failures that trying again can't fix, as their title and what to do instead. */
-const FINAL_FAILURES = {
-  problems: {
+/** What the developer has to fix, as the title and what to do, by what the publisher was doing. */
+const PROBLEM_FAILURES = {
+  check: {
     title: 'Can’t install this app',
     description:
       'The app’s setup has problems, so nothing was installed. Send these details to the app’s developer.',
   },
+  approve: {
+    title: 'Can’t approve these changes',
+    description:
+      'The app’s new setup has problems, so nothing changed. Send these details to the app’s developer.',
+  },
+};
+
+/** Failures that trying again can't fix, as their title and what to do instead. */
+const FINAL_FAILURES = {
   'incomplete-link': {
     title: 'This install link is incomplete',
     description: 'It doesn’t say which app to install. Ask whoever sent it for the full link.',
@@ -109,7 +128,10 @@ const Failed: React.FC<FailedProps> = ({ failure, attempted, onClose, onRetry })
     failure.kind === 'incomplete-link' ||
     failure.kind === 'unsupported'
   ) {
-    const { title, description } = FINAL_FAILURES[failure.kind];
+    const { title, description } =
+      failure.kind === 'problems'
+        ? PROBLEM_FAILURES[attempted === 'approve' ? 'approve' : 'check']
+        : FINAL_FAILURES[failure.kind];
     return (
       <>
         <DialogHeader>
@@ -379,7 +401,7 @@ export const InstallDialog: React.FC<{ manifestUrl: string | null }> = ({ manife
 
   const close = () => navigate('/apps', { replace: true });
 
-  const confirm = async (preview: AppInstallationPreview) => {
+  const confirm = async (preview: AppInstallationPreview, notice?: string) => {
     const reviewed = { manifest_url: preview.manifest_url, digest: preview.digest };
     try {
       if (preview.installation) {
@@ -413,12 +435,13 @@ export const InstallDialog: React.FC<{ manifestUrl: string | null }> = ({ manife
         setState({ status: 'reviewing', preview: apiError.details, notice: INSTALLATION_CHANGED });
       } else if (
         apiError?.code === 'APP_ALREADY_INSTALLED' ||
-        apiError?.code === 'APP_INSTALLATION_CHANGED' ||
-        apiError?.code === 'APP_INSTALLATION_UNINSTALLED'
+        apiError?.code === 'APP_INSTALLATION_CHANGED'
       ) {
         await check(INSTALLATION_CHANGED);
+      } else if (apiError?.code === 'APP_INSTALLATION_UNINSTALLED') {
+        await check(UNINSTALLED_WHILE_REVIEWING);
       } else {
-        setState({ status: 'failed', failure: installFailureOf(error), preview });
+        setState({ status: 'failed', failure: installFailureOf(error), preview, notice });
       }
     }
   };
@@ -427,7 +450,7 @@ export const InstallDialog: React.FC<{ manifestUrl: string | null }> = ({ manife
   if (state.status === 'checking') {
     content = <Checking />;
   } else if (state.status === 'failed') {
-    const failedPreview = state.preview;
+    const { preview: failedPreview, notice } = state;
     content = (
       <Failed
         attempted={failedPreview ? (failedPreview.installation ? 'approve' : 'install') : 'check'}
@@ -436,8 +459,8 @@ export const InstallDialog: React.FC<{ manifestUrl: string | null }> = ({ manife
         onRetry={() => {
           if (failedPreview) {
             // Back to the review while it confirms again, as the first attempt did.
-            setState({ status: 'reviewing', preview: failedPreview });
-            void confirm(failedPreview);
+            setState({ status: 'reviewing', preview: failedPreview, notice });
+            void confirm(failedPreview, notice);
           } else {
             void check();
           }
@@ -451,7 +474,7 @@ export const InstallDialog: React.FC<{ manifestUrl: string | null }> = ({ manife
         notice={state.notice}
         preview={state.preview}
         onClose={close}
-        onConfirm={() => void confirm(state.preview)}
+        onConfirm={() => void confirm(state.preview, state.notice)}
       />
     );
   }

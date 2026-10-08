@@ -14,7 +14,7 @@ import {
   staffRole,
   staffUser,
 } from '@test-utils/acceptance';
-import { ADMINISTRATOR_FILTER, OWNER_FILTER } from './lib/app-managers';
+import { MANAGER_FILTER } from './lib/app-managers';
 import { appsScreen } from './apps.screen';
 
 const MANIFEST_URL = 'https://podcast.example.com/ghost-app.json';
@@ -319,6 +319,170 @@ describe('Installing an app', () => {
     expect(previews).toBe(2);
   });
 
+  it('reviews where the installation stands when someone else changed it in the meantime', async () => {
+    fakeInstallations([installation()]);
+    const previewApi = fakePreview(
+      previewResponse(
+        preview({
+          manifest: manifest({ name: 'Podcasts' }),
+          digest: 'digest-2',
+          installation: existing([{ path: 'name', requires_approval: true }]),
+        }),
+      ),
+    );
+    // Someone else approved a move first, so the review now starts from that.
+    const moved = preview({
+      manifest: manifest({ name: 'Podcasts' }),
+      digest: 'digest-2',
+      installation: {
+        ...existing([{ path: 'manifest_url', requires_approval: true }]),
+        revision: 1,
+        manifest_url: 'https://new.example.com/ghost-app.json',
+      },
+    });
+    const approveApi = fakeAdminEndpoint('PUT', '/apps/installations/installation-1/', () =>
+      apiError(409, { type: 'ConflictError', code: 'APP_INSTALLATION_CHANGED', details: moved }),
+    );
+
+    await renderAdminApp(INSTALL_ROUTE, { labs });
+    await appsScreen.approveChangesButton().click();
+
+    await expect
+      .element(appsScreen.notice())
+      .toHaveTextContent('Someone else installed or changed');
+    await expect.element(appsScreen.changes()).toHaveTextContent('new.example.com');
+    expect(previewApi.requests).toHaveLength(1);
+    expect(approveApi.requests).toHaveLength(1);
+  });
+
+  it('checks again when the installation changed and Ghost sent no review', async () => {
+    fakeInstallations([installation()]);
+    let previews = 0;
+    fakePreview(() => {
+      previews += 1;
+      return previewResponse(
+        preview({
+          manifest: manifest({ name: 'Podcasts' }),
+          digest: 'digest-2',
+          installation: existing([{ path: 'name', requires_approval: true }]),
+        }),
+      );
+    });
+    fakeAdminEndpoint('PUT', '/apps/installations/installation-1/', () =>
+      apiError(409, { type: 'ConflictError', code: 'APP_INSTALLATION_CHANGED' }),
+    );
+
+    await renderAdminApp(INSTALL_ROUTE, { labs });
+    await appsScreen.approveChangesButton().click();
+
+    await expect
+      .element(appsScreen.notice())
+      .toHaveTextContent('Someone else installed or changed');
+    expect(previews).toBe(2);
+  });
+
+  it('offers a fresh install when the app was uninstalled in the meantime', async () => {
+    fakeInstallations();
+    let previews = 0;
+    fakePreview(() => {
+      previews += 1;
+      return previewResponse(
+        previews === 1
+          ? preview({ installation: existing([{ path: 'name', requires_approval: true }]) })
+          : preview(),
+      );
+    });
+    fakeAdminEndpoint('PUT', '/apps/installations/installation-1/', () =>
+      apiError(409, { type: 'ConflictError', code: 'APP_INSTALLATION_UNINSTALLED' }),
+    );
+
+    await renderAdminApp(INSTALL_ROUTE, { labs });
+    await appsScreen.approveChangesButton().click();
+
+    await expect.element(appsScreen.notice()).toHaveTextContent('uninstalled in the meantime');
+    await expect.element(appsScreen.notice()).not.toHaveTextContent('Someone else');
+    await expect.element(appsScreen.installButton()).toBeVisible();
+  });
+
+  it('says it couldn’t approve the changes when the app is no longer valid', async () => {
+    fakeInstallations([installation()]);
+    fakePreview(
+      previewResponse(
+        preview({
+          manifest: manifest({ name: 'Podcasts' }),
+          digest: 'digest-2',
+          installation: existing([{ path: 'name', requires_approval: true }]),
+        }),
+      ),
+    );
+    fakeAdminEndpoint('PUT', '/apps/installations/installation-1/', () =>
+      apiError(422, {
+        type: 'ValidationError',
+        code: 'APP_MANIFEST_INVALID',
+        details: [{ path: 'surfaces[0].url', message: 'Expected an https URL' }],
+      }),
+    );
+
+    await renderAdminApp(INSTALL_ROUTE, { labs });
+    await appsScreen.approveChangesButton().click();
+
+    await expect
+      .element(appsScreen.installDialog())
+      .toHaveTextContent('Can’t approve these changes');
+    await expect.element(appsScreen.installDialog()).toHaveTextContent('nothing changed');
+    await expect.element(appsScreen.installDialog()).not.toHaveTextContent('nothing was installed');
+    await expect.element(appsScreen.problems()).toHaveTextContent('Expected an https URL');
+  });
+
+  it('keeps the notice on the review when trying again after confirming fails', async () => {
+    fakeInstallations();
+    const changed = preview({ manifest: manifest({ name: 'Podcasts' }), digest: 'digest-2' });
+    fakePreview(previewResponse(preview()));
+    let attempts = 0;
+    fakeAdminEndpoint('POST', '/apps/installations/', () => {
+      attempts += 1;
+      if (attempts === 1) {
+        return apiError(409, {
+          type: 'ConflictError',
+          code: 'APP_MANIFEST_CHANGED',
+          details: changed,
+        });
+      }
+      return apiError(500, { type: 'InternalServerError', code: 'UNEXPECTED_ERROR' });
+    });
+
+    await renderAdminApp(INSTALL_ROUTE, { labs });
+    await appsScreen.installButton().click();
+    await expect.element(appsScreen.notice()).toHaveTextContent('changed while you were reviewing');
+    await appsScreen.installButton().click();
+    await expect.element(appsScreen.installDialog()).toHaveTextContent('Couldn’t install this app');
+
+    await appsScreen.tryAgainButton().click();
+
+    await expect.element(appsScreen.notice()).toHaveTextContent('changed while you were reviewing');
+    await expect.poll(() => attempts).toBe(3);
+  });
+
+  it('says a suspended app won’t open until its changes are approved', async () => {
+    fakeInstallations([installation({ status: 'suspended' })]);
+    fakePreview(
+      previewResponse(
+        preview({
+          manifest: manifest({ name: 'Podcasts' }),
+          digest: 'digest-2',
+          installation: existing([{ path: 'name', requires_approval: true }], 'suspended'),
+        }),
+      ),
+    );
+
+    await renderAdminApp(INSTALL_ROUTE, { labs });
+
+    await expect
+      .element(appsScreen.installDialog())
+      .toHaveTextContent('It won’t open until you approve the changes.');
+    await expect.element(appsScreen.approveChangesButton()).toBeVisible();
+  });
+
   it('retries the install, not the check, when installing fails', async () => {
     const installations = fakeInstallations();
     const previewApi = fakePreview(previewResponse(preview()));
@@ -444,7 +608,7 @@ describe('Installing an app', () => {
       email: 'admin@example.com',
       roles: [staffRole({ name: 'Administrator' })],
     });
-    const usersApi = fakeUsers(({ filter }) => (filter === OWNER_FILTER ? [owner] : [admin]));
+    const usersApi = fakeUsers([owner, admin]);
     const me = currentUserResponse();
     me.users[0].roles = [staffRole({ name: 'Editor' })];
 
@@ -453,10 +617,9 @@ describe('Installing an app', () => {
 
     await expect.element(appsScreen.notAllowedDialog()).toBeVisible();
     await expect(appsScreen.managers()).toHaveCount(2);
-    await expect.element(appsScreen.managers().first()).toHaveTextContent('Site Owner');
-    expect(usersApi.requests.map(({ filter }) => filter)).toEqual(
-      expect.arrayContaining([OWNER_FILTER, ADMINISTRATOR_FILTER]),
-    );
+    await expect.element(appsScreen.managers().first()).toHaveTextContent('Site OwnerOwner');
+    await expect.element(appsScreen.managers().last()).toHaveTextContent('Site AdminAdministrator');
+    expect(usersApi.requests.map(({ filter }) => filter)).toEqual([MANAGER_FILTER]);
     await expect.element(appsScreen.installDialog()).not.toBeInTheDocument();
   });
 });
