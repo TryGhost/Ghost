@@ -1,7 +1,6 @@
 const WebhookManager = require('./webhook-manager');
 const { BillingPortalManager } = require('./billing-portal-manager');
 const StripeAPI = require('./stripe-api');
-const StripeMigrations = require('./stripe-migrations');
 const WebhookController = require('./webhook-controller');
 const DomainEvents = require('@tryghost/domain-events');
 const { StripeLiveEnabledEvent, StripeLiveDisabledEvent } = require('./events');
@@ -47,7 +46,6 @@ module.exports = class StripeService {
    * @param {object} deps.models
    * @param {object} deps.models.Product
    * @param {object} deps.models.StripePrice
-   * @param {object} deps.models.StripeCustomerSubscription
    * @param {object} deps.models.StripeProduct
    * @param {object} deps.models.MemberStripeCustomer
    * @param {object} deps.models.Offer
@@ -69,10 +67,6 @@ module.exports = class StripeService {
       // creates the service. Checkouts only start once boot has finished, so the service
       // exists by the time the API reads it.
       stripeCheckoutConfig,
-    });
-    const migrations = new StripeMigrations({
-      models,
-      api,
     });
 
     const webhookManager = new WebhookManager({
@@ -160,7 +154,6 @@ module.exports = class StripeService {
     this.models = models;
     this.api = api;
     this.webhookManager = webhookManager;
-    this.migrations = migrations;
     this.webhookController = webhookController;
     this.billingPortalManager = billingPortalManager;
     /** @private */
