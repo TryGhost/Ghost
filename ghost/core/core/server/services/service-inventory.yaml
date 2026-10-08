@@ -110,7 +110,7 @@ services:
     kind: directory
     disposition: retain
     status: audited
-    auditedAt: 115d62e1c2f6793d434500072d74b705bdce6b0c
+    auditedAt: 7d311731a562faf8184ef92b93455ac590761c1d
     entryPoints:
       - announcement-bar-service/index.js
     notes: >-
