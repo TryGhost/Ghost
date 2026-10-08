@@ -1,6 +1,7 @@
 import { describe, expect, it, onTestFinished } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
+import { tkIndicatorExcerpt } from '@tryghost/test-data/selectors/editor';
 
 import type { Snippet } from '@tryghost/admin-x-framework/api/snippets';
 
@@ -29,6 +30,7 @@ import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
 const FLAG_ON = { labs: { editorReact: true } };
+const EXCERPT_ON = { labs: { editorReact: true, editorExcerpt: true } };
 const CURRENT_USER_ID = '1';
 
 const OVER_EMAIL_LIMIT = 150 * 1024;
@@ -282,6 +284,72 @@ describe('Post editor', () => {
     });
 
     await expect.element(editorScreen.excerptInput()).toHaveValue('A short summary');
+  });
+
+  it('sets the excerpt across the writing column and fits it to its lines under the Ember host constraints', async () => {
+    // The acceptance host omits Ember's global form CSS, which still surrounds
+    // the React editor in production.
+    const hostStyles = document.createElement('style');
+    hostStyles.textContent =
+      'textarea { min-height: 10rem; min-width: 250px; max-width: 500px; line-height: 1.5em; }';
+    document.head.appendChild(hostStyles);
+    onTestFinished(() => hostStyles.remove());
+    onTestFinished(() => page.viewport(1280, 800));
+
+    fakeEditorPost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(EXCERPT_ON));
+
+    const excerpt = editorScreen.excerptInput();
+    await expect.element(excerpt).toHaveValue('A short summary');
+    const element = excerpt.element();
+    const style = getComputedStyle(element);
+    // Ember's .gh-editor-excerpt: 2rem at Admin's 10px rem, on a 1.5em line
+    expect(style.fontSize).toBe('20px');
+    expect(style.fontWeight).toBe('440');
+    const lineHeight = parseFloat(style.lineHeight);
+    expect(lineHeight).toBe(30);
+
+    const width = () => element.getBoundingClientRect().width;
+    const columnWidth = () => editorScreen.titleInput().element().getBoundingClientRect().width;
+    const height = () => element.getBoundingClientRect().height;
+    const lines = () => height() / lineHeight;
+    expect(width()).toBe(740);
+    expect(width()).toBe(columnWidth());
+    await expect.poll(lines).toBe(1);
+    const divider = element.parentElement!.querySelector('hr')!;
+    expect(
+      divider.getBoundingClientRect().top - element.getBoundingClientRect().bottom,
+    ).toBeLessThan(lineHeight);
+
+    await excerpt.fill(
+      'An excerpt long enough to wrap onto a second line of the writing column, and one that keeps going until it reaches a third',
+    );
+    await expect.poll(lines).toBeGreaterThanOrEqual(2);
+    expect(lines()).toBeLessThanOrEqual(3);
+    expect(Number.isInteger(lines())).toBe(true);
+    const wideLines = lines();
+
+    // A narrower window rewraps the excerpt onto more lines, and back.
+    await page.viewport(480, 800);
+    await expect.poll(lines).toBeGreaterThan(wideLines);
+    expect(Number.isInteger(lines())).toBe(true);
+    expect(width()).toBe(columnWidth());
+    await page.viewport(1280, 800);
+    await expect.poll(lines).toBe(wideLines);
+
+    await excerpt.fill('A short summary');
+    await expect.poll(lines).toBe(1);
+  });
+
+  it('marks a TK in the excerpt to the right of the excerpt', async () => {
+    fakeEditorPost({ custom_excerpt: 'A summary TK' });
+    await renderAdminApp(`/editor/post/${POST_ID}`, EXCERPT_ON);
+
+    const marker = page.getByTestId(tkIndicatorExcerpt);
+    await expect.element(marker).toBeVisible();
+    await expect
+      .poll(() => sitsRightOf(marker.element(), editorScreen.excerptInput().element()))
+      .toBe(true);
   });
 
   it('hides the excerpt without the flag', async () => {
