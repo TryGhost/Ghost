@@ -186,6 +186,8 @@ Confirming runs `onBeforePublish` (the editor's pre-save cleanup), dispatches th
 | `failed` (`validation`) | The validation message, in place                                   |
 | `dropped`/`superseded`  | The post is no longer publishable from here                        |
 
+Before any of that, confirming checks a schedule against the clock, since the chosen time can pass while the flow sits open. A scheduled time that has fallen below `minScheduledAt` is refused in place, with nothing saved, and the user goes back to choose another. Scheduling stays on: switching it off would turn the confirmed schedule into an immediate publish.
+
 No completion closes the modal or navigates. Successful completion writes the celebration handoff (`ghost-last-published-post` or `ghost-last-scheduled-post`), and calls `onCompleted` so the caller can navigate; where the user lands is the caller's decision, not this component's. The editor sets `showCompletion={false}` to keep the current step pending until navigation unmounts it, avoiding a flash of the fallback completion screen while the destination loads. Other callers show the completion screen by default.
 
 ## Email confirmation

@@ -91,6 +91,8 @@ const UNKNOWN_EMAIL_ERROR = 'Unknown error';
 const UNKNOWN_RETRY_ERROR = 'Unknown Error occurred when attempting to resend';
 export const EMAIL_UNCONFIRMED =
   'We couldn’t confirm the newsletter was sent. Check the post’s email status from the posts list.';
+export const SCHEDULE_PASSED =
+  'The scheduled time has passed. Go back and choose a future date and time.';
 
 /** The error the flow opens on: set only for a published or sent post whose email failed. */
 export function initialEmailError(post: PublishFlowPost): string | null {
@@ -408,6 +410,19 @@ export function usePublishFlow({
 
   const confirmPublish = useCallback(async () => {
     if (publishRunningRef.current) {
+      return;
+    }
+
+    // The chosen time can pass while the flow sits open, so it is checked against
+    // the clock at the click, before anything is saved. Scheduling is not switched
+    // off here: that would turn the confirmed schedule into an immediate publish.
+    const current = machine.getState();
+    if (
+      current.isScheduled &&
+      Date.parse(current.scheduledAt) < Date.parse(current.minScheduledAt)
+    ) {
+      setFailure({ message: SCHEDULE_PASSED });
+      setConfirmStatus('failure');
       return;
     }
 
