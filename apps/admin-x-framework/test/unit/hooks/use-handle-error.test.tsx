@@ -48,9 +48,6 @@ const createWrapper = (): React.FC<{ children: ReactNode }> => {
         'App-Pragma': '',
         'X-Unsplash-Cache': true,
       }}
-      onDelete={() => {}}
-      onInvalidate={() => {}}
-      onUpdate={() => {}}
     >
       {children}
     </FrameworkProvider>

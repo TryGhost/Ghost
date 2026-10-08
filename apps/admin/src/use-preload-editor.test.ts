@@ -2,13 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, renderHook } from '@testing-library/react';
 import { usePreloadEditor } from './use-preload-editor';
 
-const { preloadEditor, routeOwner } = vi.hoisted(() => ({
+const { preloadEditor } = vi.hoisted(() => ({
   preloadEditor: vi.fn(),
-  routeOwner: vi.fn<() => 'react' | 'ember' | 'pending'>(),
 }));
 
 vi.mock('./editor/api', () => ({ preloadEditor }));
-vi.mock('./use-flag-gated-route-owner', () => ({ useFlagGatedRouteOwner: routeOwner }));
 
 describe('usePreloadEditor', () => {
   let idle: Array<() => void>;
@@ -16,7 +14,6 @@ describe('usePreloadEditor', () => {
 
   beforeEach(() => {
     preloadEditor.mockReset();
-    routeOwner.mockReturnValue('react');
     idle = [];
     vi.stubGlobal(
       'requestIdleCallback',
@@ -39,18 +36,6 @@ describe('usePreloadEditor', () => {
     runIdleCallbacks();
     expect(preloadEditor).toHaveBeenCalledTimes(1);
   });
-
-  it.each(['ember', 'pending'] as const)(
-    'does not preload while the editor owner is %s',
-    (owner) => {
-      routeOwner.mockReturnValue(owner);
-
-      renderHook(() => usePreloadEditor(true));
-      runIdleCallbacks();
-
-      expect(preloadEditor).not.toHaveBeenCalled();
-    },
-  );
 
   it('waits for sign-in before preloading', () => {
     const { rerender } = renderHook(({ signedIn }) => usePreloadEditor(signedIn), {

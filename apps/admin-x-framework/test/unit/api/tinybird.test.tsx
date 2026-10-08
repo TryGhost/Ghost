@@ -35,9 +35,6 @@ const wrapper: React.FC<{ children: ReactNode }> = ({ children }) => (
       'App-Pragma': '',
       'X-Unsplash-Cache': true,
     }}
-    onDelete={() => {}}
-    onInvalidate={() => {}}
-    onUpdate={() => {}}
   >
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   </FrameworkProvider>

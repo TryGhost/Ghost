@@ -32,13 +32,13 @@ const CREATED_AT = '2026-01-01T00:00:05.000Z';
 const FLAG_ON: RenderAdminAppOptions = { labs: { editorReact: true } };
 
 /**
- * A raw `#/…` anchor into an Ember-owned route. The router only sees it as a
- * POP it cannot block, so the hash-link guard has to intercept the click.
+ * A raw `#/…` anchor. The router only sees it as a POP it cannot block, so the
+ * hash-link guard has to intercept the click.
  */
 function nativeHashAnchor(): HTMLAnchorElement {
   const anchor = document.createElement('a');
-  anchor.setAttribute('href', '#/pro');
-  anchor.textContent = 'Billing';
+  anchor.setAttribute('href', '#/posts');
+  anchor.textContent = 'All posts';
   document.body.append(anchor);
   nativeAnchors.push(anchor);
   return anchor;
@@ -360,7 +360,7 @@ describe('Post editor leave guard', () => {
     {
       name: 'native hash link',
       options: FLAG_ON,
-      destination: '/pro',
+      destination: '/posts',
       leave: () => Promise.resolve(nativeHashAnchor().click()),
     },
   ])(

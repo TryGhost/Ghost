@@ -216,8 +216,7 @@
           "^default"
         ],
         "outputs": [
-          "{projectRoot}/dist",
-          "{workspaceRoot}/ghost/core/built/admin"
+          "{projectRoot}/dist"
         ],
         "dependsOn": [
           "build",
