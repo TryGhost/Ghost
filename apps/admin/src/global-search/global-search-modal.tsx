@@ -15,8 +15,6 @@ import {
 import { cn, useGlobalDirtyState } from '@tryghost/shade/utils';
 import { DirtyConfirmDialog, useDirtyConfirmation } from '@tryghost/shade/patterns';
 import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
-import { navigateEmberBillingSubRoute } from '@/ember-bridge';
-import { useEmberOwnedRouteMatcher } from '@/routes';
 import { getSearchDestination } from './search-destination';
 import type { SearchResult } from './searchables';
 import { useGlobalSearch } from './use-global-search';
@@ -84,7 +82,6 @@ function GlobalSearchPanel({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const settingsReturnToState = useSettingsReturnToState();
-  const isEmberOwned = useEmberOwnedRouteMatcher();
   const { isDirty } = useGlobalDirtyState();
   const { confirm, dialogProps } = useDirtyConfirmation();
   const isSettings = /^\/settings(?:\/|$)/.test(pathname);
@@ -96,23 +93,12 @@ function GlobalSearchPanel({ onClose }: { onClose: () => void }) {
       return;
     }
 
-    const crossApp = isEmberOwned(destination.path);
     const opensSettings = /^\/settings(?:[/?#]|$)/.test(destination.path);
     // Search exits bypass Settings' own controls and its history-only blocker.
     // Keep the search mounted while confirming so Stay preserves the query.
     confirm(isSettings && isDirty && !opensSettings, () => {
       onClose();
-      if (
-        destination.billingSubRoute &&
-        pathname === destination.path &&
-        crossApp &&
-        navigateEmberBillingSubRoute(destination.billingSubRoute)
-      ) {
-        return;
-      }
-
       navigate(destination.path, {
-        crossApp,
         state: opensSettings ? settingsReturnToState : undefined,
       });
     });

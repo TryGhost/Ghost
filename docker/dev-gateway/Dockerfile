@@ -13,7 +13,6 @@ COPY --from=builder /usr/bin/caddy /usr/bin/caddy
 # dev server — they have no *_DEV_SERVER entry here.
 ENV GHOST_BACKEND=ghost-dev:2368 \
     ADMIN_DEV_SERVER=host.docker.internal:5174 \
-    ADMIN_LIVE_RELOAD_SERVER=host.docker.internal:4200 \
     LEXICAL_DEV_SERVER=host.docker.internal:4173 \
     ANALYTICS_PROXY_TARGET=analytics:3000 \
     ACTIVITYPUB_PROXY_TARGET=host.docker.internal:8080

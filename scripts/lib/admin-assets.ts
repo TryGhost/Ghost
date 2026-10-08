@@ -1,13 +1,13 @@
 import {
-  cpSync,
+  chmodSync,
   copyFileSync,
+  cpSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
   readdirSync,
   rmSync,
-  chmodSync,
   symlinkSync,
   writeFileSync,
 } from 'node:fs';
@@ -55,13 +55,8 @@ export function prepareLegacyAdminAssets(options: LegacyAdminAssetsOptions): voi
   prepareEmbeddedAdminAssets(options);
 }
 
-type EmbeddedAdminAssetsOptions = Pick<
-  LegacyAdminAssetsOptions,
-  'destination' | 'activitypubDist' | 'koenigDist' | 'environment' | 'editorUrl'
->;
-
-/** Embedded bundles are shared by both Admin hosts. */
-function prepareEmbeddedAdminAssets(options: EmbeddedAdminAssetsOptions): void {
+/** Embedded bundles for Ember's standalone output. */
+function prepareEmbeddedAdminAssets(options: LegacyAdminAssetsOptions): void {
   const { destination, activitypubDist, koenigDist, environment, editorUrl } = options;
   const activitypubDestination = join(destination, 'assets/activitypub');
   if (existsSync(activitypubDist)) {
@@ -105,40 +100,23 @@ function normalizePermissions(directory: string): void {
   }
 }
 
-export interface AdminAssetsOptions {
-  editorUrl?: string;
-  /** Keep the hybrid build until all Ember routes have been retired. */
-  includeEmber?: boolean;
-}
-
 /** Assemble Admin and its isolated embed renderer from their build outputs. */
-export function assembleAdminAssets(root: string, options: AdminAssetsOptions = {}): void {
-  const includeEmber = options.includeEmber ?? true;
-  const emberDist = join(root, 'apps/ember-admin/dist');
+export function assembleAdminAssets(root: string): void {
   const reactDist = join(root, 'apps/admin/dist');
-  const activitypubDist = join(root, 'apps/activitypub/dist');
-  const koenigDist = join(root, 'koenig/koenig-lexical/dist');
-  const renderer = join(koenigDist, 'embed-renderer');
+  const renderer = join(root, 'koenig/koenig-lexical/dist/embed-renderer');
   const built = join(root, 'ghost/core/core/built');
   const destination = join(built, 'admin');
 
-  for (const path of [
-    ...(includeEmber ? [join(emberDist, 'index.html')] : []),
-    join(reactDist, 'index.html'),
-    activitypubDist,
-    renderer,
-  ]) {
+  for (const path of [join(reactDist, 'index.html'), renderer]) {
     if (!existsSync(path)) {
       throw new Error(`Admin asset input is missing: ${path}. Run the Admin build first.`);
     }
   }
 
-  if (
-    !includeEmber &&
-    readFileSync(join(reactDist, 'index.html'), 'utf8').includes('ghost-admin/config/environment')
-  ) {
+  const leakedRenderer = join(reactDist, 'assets/koenig-lexical/embed-renderer');
+  if (existsSync(leakedRenderer)) {
     throw new Error(
-      'React-only assembly requires a fresh React build without the Ember assets plugin.',
+      `Koenig's embed renderer must not be served with Admin assets from ${leakedRenderer}.`,
     );
   }
 
@@ -146,34 +124,7 @@ export function assembleAdminAssets(root: string, options: AdminAssetsOptions = 
   const staging = mkdtempSync(join(built, '.admin-assets-'));
   try {
     const stagedAdmin = join(staging, 'admin');
-    const embeddedOptions = {
-      destination: stagedAdmin,
-      activitypubDist,
-      koenigDist,
-      environment: 'production',
-      editorUrl: options.editorUrl,
-    };
-    if (includeEmber) {
-      prepareLegacyAdminAssets({ ...embeddedOptions, emberDist });
-    } else {
-      mkdirSync(stagedAdmin, { recursive: true });
-      prepareEmbeddedAdminAssets(embeddedOptions);
-    }
-
-    // Preserve the preview bundle and Core's output with the same merged assets.
-    // Shared bundles come from their own builds, never previous Core output.
-    const reactAssets = join(reactDist, 'assets');
-    cpSync(join(stagedAdmin, 'assets'), reactAssets, { recursive: true, dereference: true });
-    cpSync(reactAssets, join(stagedAdmin, 'assets'), { recursive: true, dereference: true });
-    cpSync(join(reactDist, 'index.html'), join(stagedAdmin, 'index.html'));
-
-    const leakedRenderer = join(stagedAdmin, 'assets/koenig-lexical/embed-renderer');
-    if (existsSync(leakedRenderer)) {
-      throw new Error(
-        `Koenig's embed renderer must not be served with Admin assets from ${leakedRenderer}.`,
-      );
-    }
-
+    cpSync(reactDist, stagedAdmin, { recursive: true, dereference: true });
     const stagedRenderer = join(staging, 'embed-renderer');
     cpSync(renderer, stagedRenderer, { recursive: true });
     normalizePermissions(reactDist);

@@ -28,7 +28,6 @@ import {
   type StaffRoleName,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
-import type { EmberDataChangeEvent } from '@/ember-bridge';
 import { deferred } from '@/utils/deferred';
 import { previewScreen } from '@/editor/preview/preview.screen';
 import { CONFLICT_MESSAGE, UNEXPECTED_MESSAGE } from '@/editor/publish/completion-message';
@@ -214,31 +213,6 @@ function fakeSavablePost(
   return saveApi;
 }
 
-/**
- * The Ember half of the state bridge, which the app reads to invalidate the
- * React Query cache when Ember saves a model (src/ember-bridge/ember-bridge.tsx).
- * Returns a function that reports one such save.
- */
-function installEmberBridge(): (modelName: string) => void {
-  const handlers = new Set<(event: EmberDataChangeEvent) => void>();
-  const state = {
-    on: (event: string, callback: (event: EmberDataChangeEvent) => void) => {
-      if (event === 'emberDataChange') {
-        handlers.add(callback);
-      }
-    },
-    off: (_event: string, callback: (event: EmberDataChangeEvent) => void) => {
-      handlers.delete(callback);
-    },
-    sidebarVisible: true,
-  };
-  window.EmberBridge = { state } as unknown as typeof window.EmberBridge;
-
-  return (modelName: string) => {
-    handlers.forEach((handler) => handler({ operation: 'update', modelName, id: '1', data: null }));
-  };
-}
-
 /** The current user with one role, for the role matrix the header renders. */
 function asRole(name: StaffRoleName) {
   const me = currentUserResponse();
@@ -293,7 +267,6 @@ async function expectEditorOutOfReach(dialog: Locator, blankSpot: Locator) {
 afterEach(() => {
   localStorage.removeItem('ghost-last-published-post');
   localStorage.removeItem('ghost-last-scheduled-post');
-  delete window.EmberBridge;
 });
 
 /**
@@ -1368,15 +1341,14 @@ describe('Editor header actions', () => {
       );
     });
     const saveApi = fakeSavablePost();
-    const emberSaved = installEmberBridge();
-    await renderAdminApp(`/editor/post/${POST_ID}`, MAILGUN_ON);
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, MAILGUN_ON);
 
     await editorScreen.publishButton().click();
     await publishScreen.setting('publish-type').click();
     await page.getByLabelText('Publish only').click();
 
-    // Ember saving a newsletter invalidates the input the flow was built from.
-    emberSaved('newsletter');
+    // Another screen saving a newsletter invalidates the input the flow was built from.
+    void queryClient.invalidateQueries({ queryKey: ['NewslettersResponseType'] });
     await expect.poll(() => newsletterReads).toBe(2);
     await expect.element(publishScreen.options()).toBeVisible();
 

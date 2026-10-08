@@ -31,7 +31,6 @@ import {
   useWebAnalyticsEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
-import { useIsEmberOwnedRoute } from '@/routes';
 
 // Import the interface from the hook
 import { type LatestPostWithStats } from '@/analytics/hooks/use-latest-post-stats';
@@ -92,16 +91,10 @@ const LatestPost: React.FC<LatestPostProps> = ({ latestPostStats, isLoading }) =
     analytics: { webAnalytics, membersTrackSources },
   });
   const shouldGoToEditor = postDestination.startsWith('/editor/');
-  // Editor destinations need a hash navigation while Ember serves them
-  // (the `editorReact` flag decides which side does).
-  const destinationIsEmberOwned = useIsEmberOwnedRoute(postDestination);
   const openPostDestination = () =>
-    navigate(
-      postDestination,
-      destinationIsEmberOwned
-        ? { crossApp: true }
-        : { state: shouldGoToEditor ? editorReturnState(location) : undefined },
-    );
+    navigate(postDestination, {
+      state: shouldGoToEditor ? editorReturnState(location) : undefined,
+    });
 
   return (
     <Card className="group/card" data-testid="latest-post">

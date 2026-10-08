@@ -59,7 +59,6 @@ export const useEditStripeCheckoutConfig = createMutation<
   path: () => '/stripe/checkout/config/',
   body: (config) => ({ checkout_config: [config] }),
   updateQueries: {
-    emberUpdateType: 'skip',
     dataType,
     update: (newData) => newData,
   },

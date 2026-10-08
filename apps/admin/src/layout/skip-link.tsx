@@ -1,21 +1,11 @@
 import type { RefObject } from 'react';
-import { useLocation } from '@tryghost/admin-x-framework';
 import { Button } from '@tryghost/shade/components';
-import { useIsEmberOwnedRoute } from '@/routes';
 
 /**
  * The shell's first tab stop: hidden until focused, it moves focus to the
- * main content. Ember's screens have their own. A button, as a fragment link
- * would change the admin's hash route.
+ * main content. A button, as a fragment link would change the admin's hash route.
  */
 export function SkipLink({ target }: { target: RefObject<HTMLElement | null> }) {
-  const { pathname } = useLocation();
-  const isEmberOwned = useIsEmberOwnedRoute(pathname);
-
-  if (isEmberOwned) {
-    return null;
-  }
-
   const skip = () => {
     const main = target.current;
     if (!main) {

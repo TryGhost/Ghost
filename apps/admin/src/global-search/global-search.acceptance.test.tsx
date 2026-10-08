@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import {
@@ -14,7 +14,6 @@ import {
   unsavedChangesGuarded,
 } from '@test-utils/acceptance';
 
-import type { EmberDataChangeEvent } from '@/ember-bridge';
 import { sidebarScreen } from '@/layout/sidebar.screen';
 import { tagDetailScreen } from '@/tags/detail/tag-detail.screen';
 import { settingsScreen } from '@/settings/settings.screen';
@@ -27,6 +26,10 @@ const handoff = () =>
 describe('Settings search exits', () => {
   it.each(['tag', 'post'])('confirms before a %s result leaves dirty Settings', async (model) => {
     delete document.body.dataset.externalNavigate;
+    if (model === 'post') {
+      // the editor owns its request graph
+      allowUnhandledRequests();
+    }
     fakeSettingsScreens();
     fakeSearchIndex();
     fakeAdminEndpoint('GET', /^\/tags\/slug\/first-tag\//, {
@@ -51,7 +54,8 @@ describe('Settings search exits', () => {
     await globalSearchScreen.option(new RegExp(`First ${model}`)).click();
     await settingsScreen.confirmationAction('Leave').click();
     if (model === 'post') {
-      await expect.poll(() => handoff()?.route).toBe('/editor/post/p1');
+      await expect.poll(currentRoute).toBe('/editor/post/p1');
+      expect(handoff()).toBeNull();
     } else {
       await expect.poll(currentRoute).toBe('/tags/first-tag');
       await expect(settingsScreen.titleAndDescription()).toHaveCount(0);
@@ -90,34 +94,6 @@ function withBilling(): RenderAdminAppOptions {
   return { boot: { browseConfig: { response: config } } };
 }
 
-/** The Ember half of the state bridge: the billing handoff, and saves Ember reports. */
-function installEmberBridge() {
-  const navigateToBillingSubRoute = vi.fn();
-  const dataChangeHandlers = new Set<(event: EmberDataChangeEvent) => void>();
-  const state = {
-    on: (event: string, callback: (event: EmberDataChangeEvent) => void) => {
-      if (event === 'emberDataChange') {
-        dataChangeHandlers.add(callback);
-      }
-    },
-    off: (_event: string, callback: (event: EmberDataChangeEvent) => void) => {
-      dataChangeHandlers.delete(callback);
-    },
-    sidebarVisible: true,
-    navigateToBillingSubRoute,
-  };
-  window.EmberBridge = { state } as unknown as typeof window.EmberBridge;
-
-  return {
-    navigateToBillingSubRoute,
-    reportSave: (modelName: string) => {
-      dataChangeHandlers.forEach((handler) =>
-        handler({ operation: 'update', modelName, id: 'p1', data: null }),
-      );
-    },
-  };
-}
-
 /** The listbox the input's `aria-controls` names, or null when it isn't in the DOM. */
 function controlledListbox() {
   const id = globalSearchScreen.input().element().getAttribute('aria-controls');
@@ -148,10 +124,6 @@ describe('Cmd-K search', () => {
     delete document.body.dataset.externalNavigate;
     fakeTags([]);
     index = fakeSearchIndex();
-  });
-
-  afterEach(() => {
-    delete window.EmberBridge;
   });
 
   it('opens from the sidebar button and lists grouped results', async () => {
@@ -192,13 +164,12 @@ describe('Cmd-K search', () => {
   });
 
   it('leaves the index alone while closed, then reloads what changed on the next search', async () => {
-    const ember = installEmberBridge();
-    await renderAdminApp('/tags');
+    const { queryClient } = await renderAdminApp('/tags');
     await openAndSearch('first');
     await expect.element(globalSearchScreen.option(/First post/)).toBeVisible();
     await closeWithEscape();
 
-    ember.reportSave('post');
+    void queryClient.invalidateQueries({ queryKey: ['PostsResponseType'] });
     // no request can follow a save while search is closed; allow time for one to start
     await new Promise((resolve) => {
       setTimeout(resolve, 300);
@@ -271,16 +242,6 @@ describe('Cmd-K search', () => {
     await expect.poll(currentRoute).toBe('/tags');
   });
 
-  it('hands a post to the Ember editor', async () => {
-    await renderAdminApp('/tags');
-    await openAndSearch('first post');
-    await expect.element(globalSearchScreen.option(/First post/)).toBeVisible();
-
-    await userEvent.keyboard('{Enter}');
-
-    await expect.poll(() => handoff()?.route).toBe('/editor/post/p1');
-  });
-
   it('opens a post in the React editor when React serves it', async () => {
     // the editor owns its request graph
     allowUnhandledRequests();
@@ -293,24 +254,13 @@ describe('Cmd-K search', () => {
     expect(handoff()).toBeNull();
   });
 
-  it('hands a billing result to the billing app route', async () => {
+  it('opens a billing result at its billing route', async () => {
     await renderAdminApp('/tags', withBilling());
     await openAndSearch('plan');
 
     await globalSearchScreen.option(/Change plan/).click();
 
-    await expect.poll(() => handoff()?.route).toBe('/pro/plans');
-  });
-
-  it('sends a billing result for the billing route on screen straight to the billing app', async () => {
-    const { navigateToBillingSubRoute } = installEmberBridge();
-    await renderAdminApp('/pro/plans', withBilling());
-    await openAndSearch('plan');
-
-    await globalSearchScreen.option(/Change plan/).click();
-
-    await expect.poll(() => navigateToBillingSubRoute.mock.calls).toEqual([['/plans']]);
-    expect(handoff()).toBeNull();
+    await expect.poll(currentRoute).toBe('/pro/plans');
   });
 
   it('leaves the shortcut alone while another dialog is open', async () => {
@@ -330,6 +280,8 @@ describe('Cmd-K search', () => {
   });
 
   it('closes and ignores the shortcut once the sidebar is hidden', async () => {
+    // the editor owns its request graph
+    allowUnhandledRequests();
     await renderAdminApp('/tags');
     await openWithShortcut();
 

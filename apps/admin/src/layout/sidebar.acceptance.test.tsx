@@ -20,7 +20,6 @@ import {
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import { sidebarScreen } from './sidebar.screen';
-import type { StateBridge } from '@/ember-bridge';
 import { postsListScreen } from '@/posts/list/posts-list.screen';
 import { clearStickyPostFilters } from '@/posts/list/posts-sticky-filters';
 
@@ -40,7 +39,7 @@ function fakeUnreadNotifications(count: number): void {
   fakeEndpoint('GET', UNREAD_COUNT_URL, { count });
 }
 
-/** The Ghost(Pro) item links to Ember's billing route; it shows for the owner of a hosted site. */
+/** The Ghost(Pro) item links to the billing route; it shows for the owner of a hosted site. */
 function ghostProSite(): RenderAdminAppOptions {
   const config = configResponse();
   config.config.hostSettings = { billing: { enabled: true, url: 'https://billing.example.com' } };
@@ -117,26 +116,6 @@ describe('Sidebar navigation', () => {
     expect(document.querySelector('[aria-label="Hide sidebar"]')).toBeNull();
   });
 
-  it('keeps the boot loader visible until React commits its mount marker', async () => {
-    await renderAdminApp('/site');
-    // `/site` is a lazy route, so the shell commits after its chunk loads.
-    await expect.element(sidebarScreen.shellNav()).toBeVisible();
-
-    const marker = document.querySelector<HTMLElement>('[data-react-admin-mounted]')!;
-    const emberApp = document.getElementById('ember-app')!;
-    const bridgeHost = emberApp.parentElement!;
-
-    try {
-      document.body.appendChild(emberApp);
-      expect(getComputedStyle(emberApp).visibility).toBe('hidden');
-      marker.removeAttribute('data-react-admin-mounted');
-      expect(getComputedStyle(emberApp).visibility).toBe('visible');
-    } finally {
-      marker.setAttribute('data-react-admin-mounted', '');
-      bridgeHost.appendChild(emberApp);
-    }
-  });
-
   it('renders the navigation for the current user', async () => {
     await renderAdminApp('/site');
 
@@ -168,14 +147,13 @@ describe('Sidebar navigation', () => {
     await expect.element(sidebarScreen.navLink('Tags')).not.toHaveAttribute('aria-current');
   });
 
-  it('uses router navigation for React-owned routes and hash anchors for Ember-owned ones', async () => {
+  it('uses router navigation for every route', async () => {
     fakeSidebarLists();
     await renderAdminApp('/site', ghostProSite());
     const historyKey = () => (window.history.state as { key?: unknown } | null)?.key;
 
     // Router links carry the router's history state (the unsaved-changes
-    // blockers rely on it); Ember's router only follows hashchange, so its
-    // links must stay native anchors.
+    // blockers rely on it).
     await sidebarScreen.navLink('Tags').click();
     await expect.poll(currentRoute).toBe('/tags');
     expect(typeof historyKey()).toBe('string');
@@ -186,7 +164,7 @@ describe('Sidebar navigation', () => {
 
     await sidebarScreen.ghostProLink().click();
     await expect.poll(currentRoute).toBe('/pro');
-    expect(historyKey()).toBeUndefined();
+    expect(typeof historyKey()).toBe('string');
   });
 
   it('clicking Posts and Pages navigates to the lists and marks them active', async () => {
@@ -419,56 +397,7 @@ describe('Sidebar user menu', () => {
       .toHaveTextContent("Couldn't sign out. Please try again.");
   });
 
-  it('applies appearance through the connected Ember stylesheet and editor adapter', async () => {
-    const stylesheet = document.createElement('link');
-    stylesheet.title = 'dark';
-    stylesheet.disabled = true;
-    document.head.appendChild(stylesheet);
-    let editorDarkMode = false;
-    let activeConnections = 0;
-    window.EmberBridge = {
-      state: {
-        onUpdate: () => {},
-        onInvalidate: () => {},
-        onDelete: () => {},
-        on: () => {},
-        off: () => {},
-        sidebarVisible: true,
-        isFeatureEnabled: () => false,
-        connectAdminTheme: () => {
-          activeConnections += 1;
-          return {
-            preload: async () => {},
-            apply: (theme) => {
-              stylesheet.disabled = theme !== 'dark';
-              editorDarkMode = theme === 'dark';
-            },
-            disconnect: () => {
-              activeConnections -= 1;
-            },
-          };
-        },
-      } satisfies StateBridge,
-    };
-    try {
-      await renderAdminApp('/site');
-      await expect.poll(() => activeConnections).toBe(1);
-      await sidebarScreen.selectAppearance('dark');
-      await expect.poll(() => document.documentElement.classList.contains('dark')).toBe(true);
-      expect(stylesheet.disabled).toBe(false);
-      expect(editorDarkMode).toBe(true);
-      await sidebarScreen.selectAppearance('light');
-      await expect.poll(() => document.documentElement.classList.contains('dark')).toBe(false);
-      expect(stylesheet.disabled).toBe(true);
-      expect(editorDarkMode).toBe(false);
-    } finally {
-      delete window.EmberBridge;
-      stylesheet.remove();
-    }
-  });
-
   it('switches the appearance and shows the current choice', async () => {
-    // Without the Ember bridge the app itself toggles the root dark class.
     const isDarkMode = () => document.documentElement.classList.contains('dark');
     await renderAdminApp('/site');
 

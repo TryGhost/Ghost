@@ -9,7 +9,7 @@ import {
 } from '@tryghost/admin-x-framework';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { hasActiveUnsavedChangesGuard } from '@/hooks/active-unsaved-changes-guards';
-import { matchAdminRoutes, useEmberOwnedRouteMatcher } from '@/routes';
+import { matchAdminRoutes } from '@/routes';
 import { shouldRunScreenTransition } from './screen-transition';
 
 // The parts of the page that fade out before entering a surface (index.css)
@@ -52,7 +52,6 @@ function exitTransitionsFinished(): Promise<void> {
 export function ScreenTransitionProvider({ children }: { children: ReactNode }) {
   const settingsSidebarEnabled = useFeatureFlag('admin7settings');
   const matches = useMatches();
-  const isEmberOwned = useEmberOwnedRouteMatcher();
   const location = useLocation();
   // True from the router starting a view transition to or from this screen until it finishes
   const viewTransitionRunning = useViewTransitionState(location.pathname);
@@ -60,8 +59,8 @@ export function ScreenTransitionProvider({ children }: { children: ReactNode }) 
   viewTransitionRunningRef.current = viewTransitionRunning;
 
   // Updated during render so links rendered below already see the new matches.
-  const latest = useRef({ settingsSidebarEnabled, matches, isEmberOwned });
-  latest.current = { settingsSidebarEnabled, matches, isEmberOwned };
+  const latest = useRef({ settingsSidebarEnabled, matches });
+  latest.current = { settingsSidebarEnabled, matches };
   const exitingRef = useRef(false);
   // Where the current transition's navigation started, to tell one a blocker held from one that landed
   const fromHashRef = useRef<string | null>(null);
@@ -79,13 +78,11 @@ export function ScreenTransitionProvider({ children }: { children: ReactNode }) 
       shouldTransition(pathname) {
         const current = latest.current;
         const target = matchAdminRoutes(pathname) ?? [];
-        return (
-          shouldRunScreenTransition({
-            from: current.matches.map((match) => match.handle),
-            to: target.map((match): unknown => match.route.handle),
-            settingsSidebarEnabled: current.settingsSidebarEnabled,
-          }) && !current.isEmberOwned(pathname)
-        );
+        return shouldRunScreenTransition({
+          from: current.matches.map((match) => match.handle),
+          to: target.map((match): unknown => match.route.handle),
+          settingsSidebarEnabled: current.settingsSidebarEnabled,
+        });
       },
       beforeTransition(pathname) {
         if (exitingRef.current) {

@@ -1200,9 +1200,6 @@ importers:
       msw:
         specifier: 'catalog:'
         version: 2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2)
-      sirv:
-        specifier: 3.0.2
-        version: 3.0.2
       tailwindcss:
         specifier: 'catalog:'
         version: 4.3.3

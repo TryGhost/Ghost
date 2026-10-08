@@ -19,28 +19,8 @@ import { postsListScreen } from '@/posts/list/posts-list.screen';
 import { clearStickyPostFilters } from '@/posts/list/posts-sticky-filters';
 
 const FLAG_ON = { labs: { editorReact: true } };
-const FLAG_OFF = { labs: { editorReact: false } };
 
-/**
- * `EmberRoot` reparents the `#ember-app` stand-in out of `body` into its own
- * wrapper and leaves that wrapper `hidden` until a route registers an Ember
- * fallback, so both conditions have to hold — the stand-in is still parented to
- * `body` on a React route.
- */
-function emberShellShown(): boolean {
-  const app = document.getElementById('ember-app');
-  const emberRoot = app?.parentElement;
-  if (!app || !emberRoot || emberRoot === document.body) {
-    return false;
-  }
-  return !emberRoot.hidden && app.checkVisibility();
-}
-
-/**
- * The editor route mounts only when its feature flag is enabled. Disabled and
- * missing flags leave it unmounted.
- */
-describe('Editor flag', () => {
+describe('Editor route', () => {
   function fakeEditorWorld() {
     fakeEditorChrome();
     fakeAdminEndpoint('GET', /^\/posts\/abc123\/\?/, { posts: [post({ id: 'abc123' })] });
@@ -69,38 +49,14 @@ describe('Editor flag', () => {
     await expect.element(editorScreen.root()).toBeVisible();
     await expect.element(editorScreen.backLink('page')).toHaveAttribute('href', '#/pages');
   });
-
-  it('leaves the editor route to Ember when the flag is off', async () => {
-    fakeEditorChrome();
-    await renderAdminApp('/editor/post/abc123', FLAG_OFF);
-
-    await expect.poll(emberShellShown).toBe(true);
-    await expect(editorScreen.root()).toHaveCount(0);
-  });
-
-  it('leaves the editor route to Ember when the flag is absent', async () => {
-    fakeEditorChrome();
-    await renderAdminApp('/editor/post/abc123');
-
-    await expect.poll(emberShellShown).toBe(true);
-    await expect(editorScreen.root()).toHaveCount(0);
-  });
 });
 
-/**
- * A force upgrade sends the React editor to billing, as it does every other
- * React screen. Ember enforces it on its own editor.
- */
+/** A force upgrade sends the editor to billing, as it does every other screen. */
 describe('Editor force upgrade', () => {
   function duringForceUpgrade({ labs }: { labs: Record<string, boolean> }) {
     const config = configResponse();
     config.config.hostSettings = { forceUpgrade: true };
     return { labs, boot: { browseConfig: { response: config } } };
-  }
-
-  // Until the current user loads, the shell shows Ember outside the layout's `main`.
-  function emberRouteShown(): boolean {
-    return emberShellShown() && Boolean(document.getElementById('ember-app')?.closest('main'));
   }
 
   it('sends the React editor to billing', async () => {
@@ -112,13 +68,6 @@ describe('Editor force upgrade', () => {
 
     await expect.poll(currentRoute).toBe('/pro');
     expect(postRead.requests).toHaveLength(0);
-  });
-
-  it('leaves the redirect to Ember while Ember serves the editor', async () => {
-    await renderAdminApp('/editor/post/abc123', duringForceUpgrade(FLAG_OFF));
-
-    await expect.poll(emberRouteShown).toBe(true);
-    expect(currentRoute()).toBe('/editor/post/abc123');
   });
 });
 

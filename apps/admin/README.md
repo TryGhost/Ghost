@@ -1,41 +1,19 @@
 # Ghost Admin (React)
 
-New React-based Ghost admin interface, gradually replacing the existing Ember admin.
+The React Ghost admin interface.
 
 ## Architecture
 
-Uses an **Ember Bridge** system for smooth migration:
-
-- Routes ported to React render React components
-- Unported routes fall back to the existing Ember admin
-- Both share the same UI space seamlessly
-
-A Labs flag that moves the editor between Ember and React applies on the next
-editor visit: the bridge keeps an open editor with whichever app is showing it.
-
-The React application uses `admin-x-framework` for API hooks, routing, and the
-bridge to Ember. Shade provides its application wrapper and design system.
-Embedded React applications are built before Ember Admin. After Vite builds Admin,
-`pnpm assemble:assets` runs the standalone assembler in `scripts/` to merge React,
-Ember, ActivityPub and Koenig outputs into `dist/` and
-`ghost/core/core/built/admin/`. It ships Koenig’s embed renderer separately in
-`ghost/core/core/built/embed-renderer/`. Ember’s asset-delivery hook delegates
-legacy preparation to the same helper for its standalone builds and dev server.
-
-Ember is an Nx implicit dependency of this app so Ember source changes still
-invalidate the combined production build and mark Admin as affected. It is not
-a package dependency: a filtered `@tryghost/admin...` install contains the React
-test dependencies, while development and production builds need the full
-workspace install to include Ember's toolchain.
+The application uses `admin-x-framework` for API hooks and routing. Shade
+provides its application wrapper and design system. After Vite builds Admin,
+`pnpm assemble:assets` runs the standalone assembler in `scripts/` to copy
+`dist/` into `ghost/core/core/built/admin/`. It ships Koenig’s embed renderer
+separately in `ghost/core/core/built/embed-renderer/`.
 
 ### Sidebar visibility
 
-React route handles own sidebar visibility on React screens. The
-`hideAdminSidebar` handle hides it for focused screens, including the editor
-with either implementation. On Ember-owned routes, the shell also respects
-Ember's fullscreen state. Ember state left behind after a navigation cannot
-hide the sidebar on a React screen. React continues publishing its fullscreen
-state to Ember for legacy shortcuts.
+Route handles own sidebar visibility. The `hideAdminSidebar` handle hides it
+for focused screens such as the editor.
 
 ### CSS
 
@@ -45,26 +23,20 @@ Admin Framework, and the embedded Koenig selector. Only this app loads the
 `@tailwindcss/vite` plugin for the embedded Admin CSS lane.
 
 Embedded Admin apps must not import `@tryghost/shade/styles.css` themselves.
-Doing so generates duplicate utilities and creates cascade conflicts with
-Ember's legacy CSS.
+Doing so generates duplicate utilities and creates cascade conflicts.
 
 Admin also owns the shared `.koenig-react-editor` width and centering rule.
-Koenig loads its own editor stylesheet through `fetchKoenigLexical`; keep that
-stylesheet when removing Ember assets.
+Koenig loads its own editor stylesheet through `fetchKoenigLexical`.
 
-Shade's Tailwind imports are unlayered because Ember's legacy CSS is also
-unlayered. This lets source order resolve overlapping utilities. Do not move
-Shade's imports into a CSS layer without accounting for the legacy cascade.
+Shade's Tailwind imports are unlayered, so source order resolves overlapping
+utilities. Do not move Shade's imports into a CSS layer without accounting for
+the cascade.
 
 ### Appearance
 
-React's shared ThemeProvider owns the appearance preference and the Admin theme
+The shared ThemeProvider owns the appearance preference and the Admin theme
 controller. The controller applies the root dark class, follows system appearance
-and suppresses transitions during a switch. Ember connects an adapter that loads
-and toggles its legacy dark stylesheet and updates its editor's resolved
-`nightShift` value. Ember uses the same controller before React connects and in
-standalone development/tests; connecting removes its system appearance listener.
-Removing Ember leaves the controller and preference persistence intact.
+and suppresses transitions during a switch.
 
 ### Deploy compatibility
 
@@ -112,15 +84,10 @@ acceptance tests cover selection, drafts, retries, responsive layouts, and cards
 pnpm dev
 ```
 
-This builds Ember's development assets once before starting Vite. React,
-Admin Framework, Shade and Portal continue watching for changes. Ember still
-boots in the browser for the bridge, the flag-off editor and `/pro/*`;
-its source edits take effect after restarting the command. Use `pnpm dev:ember`
-when you need Ember's live-reload server and continuous rebuilds.
+React, Admin Framework, Shade and Portal watch for changes.
 
-Development commands do not change Labs settings. To preview the React editor
-in one browser tab, open
-`http://localhost:2368/ghost/#/editor/post?labs=editorReact`. These
+Development commands do not change Labs settings. To preview a flagged feature
+in one browser tab, open `http://localhost:2368/ghost/#/?labs=<flag>`. These
 [session overrides](../../docs/practices/feature-flags.md#admin-session-overrides)
 survive navigation and reloads in that tab; use `?labs=` to clear them.
 
@@ -129,16 +96,14 @@ access and Shade for UI rather than adding new `admin-x-design-system`
 components. Product copy belongs in the `ghost` namespace; follow the
 [internationalization guide](../../docs/practices/internationalization.md).
 
-`pnpm nx run @tryghost/admin:build:dev` prepares library outputs and Ember's
-development assets. Its prerequisites select `ghost-admin:build:dev` once;
-they do not also compile Ember's production bundle. The normal `pnpm dev`
-command uses this preparation before starting the React watchers.
+`pnpm nx run @tryghost/admin:build:dev` prepares library outputs. The normal
+`pnpm dev` command uses this preparation before starting the React watchers.
 
 Vite resolves Admin Framework and Shade through their `source` exports in
 development, production and tests. It tracks each package’s source and path aliases
 directly, and transforms Shade’s SVG icons with SVGR. The shared CSS lane stays
-in this app. Compiled library builds and watchers remain available for Ember and
-other consumers, and typechecks still use the library declarations.
+in this app. Compiled library builds and watchers remain available for other
+consumers, and typechecks still use the library declarations.
 
 The post editor is the largest area with documentation of its own — start at
 [src/editor/README.md](src/editor/README.md) before changing anything under
@@ -154,16 +119,13 @@ The post editor is the largest area with documentation of its own — start at
 From the monorepo root, use `pnpm nx run @tryghost/admin:test:unit` or
 `pnpm nx run @tryghost/admin:test:acceptance`, or
 `pnpm nx run @tryghost/admin:test:types` to build the required React
-libraries first. These targets do not compile Ember or boot Ghost. Their
-`dependsOn` lists, and the React library prerequisites of `build:dev`, explicitly
-name the React dependencies with a `build` target; update all four when adding
-one. Using `^build` here would also select the implicit Ember dependency.
+libraries first. These targets do not boot Ghost. Their `dependsOn` lists, and
+the React library prerequisites of `build:dev`, explicitly name the React
+dependencies with a `build` target; update all four when adding one.
 
 Nx caches unit, acceptance and typecheck results. The global
 `reactAdminDependency` input retains every transitive dependency's default
-inputs; Ember overrides it with an empty input because these targets do not
-execute Ember. The production build still uses `^default`, including Ember.
-Test inputs also include Core's aliased card assets, the lockfile and runtime
+inputs. Test inputs also include Core's aliased card assets, the lockfile and runtime
 settings such as Node version, platform, timezone and CI mode. A digest of
 local `.env` and `.env.*` files covers Vite's mode-specific configuration without
 printing their values. Shard and other
@@ -187,13 +149,9 @@ pnpm nx run @tryghost/admin:build
 
 The assembler reads the individual build outputs, so it can also be rerun with
 `pnpm nx run @tryghost/admin:assemble:assets` after those builds. It does not run
-compilers or upload sourcemaps. The hybrid build remains the default. A fresh
-React build without `emberAssetsPlugin` can use
-`pnpm --filter @tryghost/admin assemble:assets --without-ember` to assemble the
-same embedded bundles without Ember output. See
+compilers or upload sourcemaps. See
 [Admin asset assembly](../../scripts/README.md#admin-asset-assembly) for the input
-requirements and cutover usage. This option does not change route ownership or
-Labs flags.
+requirements.
 
 This outputs to `apps/admin/dist/` and updates the assets in `ghost/core/core/built/admin/`.
 
