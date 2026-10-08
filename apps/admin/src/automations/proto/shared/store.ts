@@ -8,8 +8,8 @@ import {
 import { AUTOMATION_DESCRIPTIONS, mockAutomations } from './mock';
 import {
   type TriggerConfig,
+  hasMultipleTiers,
   needsStripe,
-  changeUnanswered,
   labelUnanswered,
   segmentUnanswered,
   tiersUnanswered,
@@ -111,6 +111,17 @@ interface StoreState {
    * no reconciliation and nothing can go stale.
    */
   archivedTierIds: string[];
+  /**
+   * The site has only one paid tier — site state again, flipped from the lane
+   * switcher. It decides one thing: with nothing to upgrade to, the upgraded
+   * trigger isn't offered (see availableTriggerOptions). It does NOT thin the
+   * tier lists themselves; that would rewrite what every saved automation shows
+   * for the sake of a menu demo.
+   *
+   * Optional so stored state from before it existed reads as false, rather
+   * than costing a version bump and a reseed.
+   */
+  singleTier?: boolean;
 }
 
 // Bumping the version discards whatever is in localStorage rather than trying to
@@ -134,7 +145,10 @@ interface StoreState {
 // fourth fixture — the winback — joined the seed.
 // 24: TriggerConfig grew `segmentId`, and a fifth fixture — the engaged-reader
 // upsell — joined the seed.
-const VERSION = 24;
+// 25: the "Paid subscription changed" trigger and its `change` setting became
+// two triggers, upgraded and ended. A stored config of the old type has no
+// trigger to render as.
+const VERSION = 25;
 const STORAGE_KEY = 'ghost-automations-proto-store';
 
 /**
@@ -162,7 +176,7 @@ const seedTrigger = (slug: string | undefined | null): TriggerConfig => {
     return { ...triggerConfigFor('label_added'), labelId: 'seo-guide' };
   }
   if (slug === 'winback-subscription-ended') {
-    return { ...triggerConfigFor('paid_subscription_changed'), change: 'ended' };
+    return triggerConfigFor('paid_subscription_ended');
   }
   if (slug === 'segment-engaged-upsell') {
     return { ...triggerConfigFor('segment_entered'), segmentId: 'engaged-free' };
@@ -254,6 +268,26 @@ export const useArchivedTierIds = (): string[] =>
     () => snapshot().archivedTierIds,
     () => snapshot().archivedTierIds,
   );
+
+/**
+ * Whether a member has a tier to upgrade to — more than one tier that isn't
+ * archived, on a site that hasn't been put in the single-tier condition.
+ */
+export const useMultipleTiers = (): boolean =>
+  useSyncExternalStore(
+    subscribe,
+    () => !snapshot().singleTier && hasMultipleTiers(snapshot().archivedTierIds),
+    () => !snapshot().singleTier && hasMultipleTiers(snapshot().archivedTierIds),
+  );
+
+export const useSingleTier = (): boolean =>
+  useSyncExternalStore(
+    subscribe,
+    () => snapshot().singleTier === true,
+    () => snapshot().singleTier === true,
+  );
+
+export const setSingleTier = (singleTier: boolean): void => commit({ ...snapshot(), singleTier });
 
 export const setTierArchived = (tierId: string, archived: boolean): void => {
   const current = snapshot().archivedTierIds;
@@ -574,7 +608,7 @@ export const updateAutomationDetails = (id: string, name: string, description: s
  *
  * The same four checks as the detail screen's canGoLive, minus the draft: no
  * trigger, missing Stripe, an unanswered trigger field (tiers, label,
- * subscription change or segment), or an email with no subject or no written
+ * or segment), or an email with no subject or no written
  * body all mean an automation that cannot run. The detail screen keeps
  * its own copy because it validates the DRAFT (unsaved edits included), which a
  * record-level check can't see — if the checks change, change both.
@@ -590,12 +624,7 @@ export const canPublishAutomation = (
   if (!stripeConnected && needsStripe(trigger)) {
     return false;
   }
-  if (
-    tiersUnanswered(trigger) ||
-    labelUnanswered(trigger) ||
-    changeUnanswered(trigger) ||
-    segmentUnanswered(trigger)
-  ) {
+  if (tiersUnanswered(trigger) || labelUnanswered(trigger) || segmentUnanswered(trigger)) {
     return false;
   }
   return !entry.automation.actions.some((action) => {

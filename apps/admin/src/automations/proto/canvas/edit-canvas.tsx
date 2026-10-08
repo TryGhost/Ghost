@@ -68,7 +68,6 @@ import {
   type TriggerConfig,
   type TriggerType,
   availableTriggerOptions,
-  changeUnanswered,
   triggerHasField,
   labelUnanswered,
   segmentUnanswered,
@@ -81,7 +80,7 @@ import {
 } from '@/automations/proto/shared/trigger-config';
 import { laneOffersStep, laneTriggerOptions } from '@/automations/proto/shared/capabilities';
 import type { LaneId } from '@/automations/proto/shared/lanes';
-import { useStripeConnected } from '@/automations/proto/shared/store';
+import { useMultipleTiers, useStripeConnected } from '@/automations/proto/shared/store';
 import {
   CANVAS_HUD_INSET,
   HIDDEN_HANDLE_STYLE,
@@ -135,10 +134,6 @@ const UNANSWERED_FIELD_WARNINGS: {
   {
     unanswered: labelUnanswered,
     message: 'Choose a label before this automation can be published.',
-  },
-  {
-    unanswered: changeUnanswered,
-    message: 'Choose a subscription change before this automation can be published.',
   },
   {
     unanswered: segmentUnanswered,
@@ -467,6 +462,7 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
   // Site-level, read here for the Change-trigger picker's Stripe filter — see
   // availableTriggerOptions.
   const stripeConnected = useStripeConnected();
+  const multipleTiers = useMultipleTiers();
   const wait = splitWait(d.waitHours ?? 24);
   const changeWait = (amount: number, unit: 'days' | 'hours') => {
     const hours = waitToHours(amount, unit);
@@ -581,7 +577,7 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
         // Same Stripe filter as the empty-state picker — the two lists offer the
         // same choices or they aren't the same control. A paid trigger already
         // ON the card still shows as the value; it just can't be re-chosen.
-        options={availableTriggerOptions(d.triggerOptions ?? [], stripeConnected)}
+        options={availableTriggerOptions(d.triggerOptions ?? [], stripeConnected, multipleTiers)}
         value={triggerConfig.type}
         externalAnchor
         onOpenChange={setChangeTriggerOpen}

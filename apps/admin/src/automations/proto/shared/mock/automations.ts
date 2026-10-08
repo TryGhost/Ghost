@@ -261,12 +261,12 @@ export const leadMagnetDelivery: AutomationDetail = {
   ],
 };
 
-// Winback — the FUTURE lane's lifecycle fixture.
+// Winback — the lifecycle fixture, on the "Paid subscription ended" trigger.
 //
 // Fires on a subscription ENDING, which is deliberately more than cancelling:
 // a card that stops working and a membership that lapses at period end both
-// land here, and they're most of who a winback is actually for (see
-// SubscriptionChange).
+// land here, and they're most of who a winback is actually for (see the
+// lifecycle block in shared/trigger-config).
 //
 // A slow flow on purpose. The welcome flows wait 3 and 5 days because someone
 // who just arrived is still paying attention; a lapsed member is not, and

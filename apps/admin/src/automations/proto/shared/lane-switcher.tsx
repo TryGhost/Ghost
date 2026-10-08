@@ -29,8 +29,10 @@ import { resetSegments } from './segments';
 import {
   resetProtoStore,
   setStripeConnected,
+  setSingleTier,
   setTierArchived,
   useArchivedTierIds,
+  useSingleTier,
   useStripeConnected,
 } from './store';
 import { LANES, type LaneId, type LaneStatus, laneLabel, lanePath } from './lanes';
@@ -104,6 +106,7 @@ export const LaneSwitcher: React.FC<{ lane: LaneId; className?: string }> = ({
   const stripeConnected = useStripeConnected();
   const archivedTierIds = useArchivedTierIds();
   const bronzeArchived = archivedTierIds.includes('bronze');
+  const singleTier = useSingleTier();
 
   // Recording mode — see shared/recording-mode. It no longer hides this
   // control (the beaker hides itself now, always — see the hot corner below);
@@ -246,6 +249,16 @@ export const LaneSwitcher: React.FC<{ lane: LaneId; className?: string }> = ({
                   onCheckedChange={(checked) => setTierArchived('bronze', checked === true)}
                 />
                 <FieldLabel htmlFor="proto-bronze-archived">Bronze tier archived</FieldLabel>
+              </Field>
+              {/* A site with one paid tier has nothing to upgrade to, so the
+                  "Paid subscription upgraded" trigger leaves the menus. */}
+              <Field orientation="horizontal">
+                <Checkbox
+                  checked={singleTier}
+                  id="proto-single-tier"
+                  onCheckedChange={(checked) => setSingleTier(checked === true)}
+                />
+                <FieldLabel htmlFor="proto-single-tier">Single paid tier</FieldLabel>
               </Field>
             </FieldSet>
           </Stack>

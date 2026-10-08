@@ -45,7 +45,6 @@ import { HEADER_ACTION, HEADER_ICON_BUTTON, floatingControl } from './header-con
 import { LeftPanel } from './left-panel';
 import {
   type TriggerConfig,
-  changeUnanswered,
   labelUnanswered,
   needsStripe,
   segmentUnanswered,
@@ -427,13 +426,12 @@ const AutomationFloat: React.FC = () => {
   const incompleteUpdates = draftFlow.actions.some(
     (action) => isUpdateMemberAction(action) && updateMemberIncomplete(action),
   );
-  // The trigger's own question left open: tiers, a label, a subscription change
+  // The trigger's own question left open: tiers, a label
   // or a segment that nobody has named, so nobody could ever enter.
   const triggerFieldOpen =
     triggerConfig !== null &&
     (tiersUnanswered(triggerConfig) ||
       labelUnanswered(triggerConfig) ||
-      changeUnanswered(triggerConfig) ||
       segmentUnanswered(triggerConfig));
   const canGoLive =
     triggerConfig !== null &&

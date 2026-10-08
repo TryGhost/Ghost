@@ -72,7 +72,6 @@ import {
   type TriggerConfig,
   type TriggerType,
   availableTriggerOptions,
-  changeUnanswered,
   triggerHasField,
   labelUnanswered,
   segmentUnanswered,
@@ -87,7 +86,7 @@ import {
 } from '@/automations/proto/shared/trigger-config';
 import { laneOffersStep, laneTriggerOptions } from '@/automations/proto/shared/capabilities';
 import type { LaneId } from '@/automations/proto/shared/lanes';
-import { useStripeConnected } from '@/automations/proto/shared/store';
+import { useMultipleTiers, useStripeConnected } from '@/automations/proto/shared/store';
 import {
   CANVAS_HUD_INSET,
   HIDDEN_HANDLE_STYLE,
@@ -156,10 +155,6 @@ const UNANSWERED_FIELD_WARNINGS: {
   {
     unanswered: labelUnanswered,
     message: 'Choose a label before this automation can be published.',
-  },
-  {
-    unanswered: changeUnanswered,
-    message: 'Choose a subscription change before this automation can be published.',
   },
   {
     unanswered: segmentUnanswered,
@@ -597,6 +592,7 @@ const WaitFields: React.FC<{ waitHours: number; onWaitChange?: (hours: number) =
 // off the ⋯ itself.
 const ChangeTriggerAction: React.FC<{ d: StepNodeData }> = ({ d }) => {
   const stripeConnected = useStripeConnected();
+  const multipleTiers = useMultipleTiers();
   const [open, setOpen] = useState(false);
   const openPickerOnClose = useRef(false);
   const triggerConfig = d.triggerConfig ?? DEFAULT_TRIGGER_CONFIG;
@@ -604,7 +600,7 @@ const ChangeTriggerAction: React.FC<{ d: StepNodeData }> = ({ d }) => {
     <OptionPicker
       align="end"
       open={open}
-      options={availableTriggerOptions(d.triggerOptions ?? [], stripeConnected)}
+      options={availableTriggerOptions(d.triggerOptions ?? [], stripeConnected, multipleTiers)}
       value={triggerConfig.type}
       externalAnchor
       onOpenChange={setOpen}
@@ -1006,14 +1002,21 @@ const triggerTitle = (
       const label = labels.find((entry) => entry.id === config.labelId)?.name;
       return label ? `When ${label} label is added` : 'When a label is added';
     }
-    case 'paid_subscription_changed':
-      return config.change === 'upgraded'
-        ? 'When a subscription is upgraded'
-        : config.change === 'downgraded'
-          ? 'When a subscription is downgraded'
-          : config.change === 'ended'
-            ? 'When a subscription ends'
-            : 'When a paid subscription changes';
+    case 'paid_subscription_upgraded': {
+      const tiers = tierNames(config.tierIds);
+      if (tiers.length === 1) {
+        return `When a paid member upgrades to ${tiers[0]}`;
+      }
+      if (tiers.length === 2) {
+        return `When a paid member upgrades to ${tiers[0]} or ${tiers[1]}`;
+      }
+      if (tiers.length > 2) {
+        return `When a paid member upgrades to ${tiers.length} tiers`;
+      }
+      return 'When a paid subscription is upgraded';
+    }
+    case 'paid_subscription_ended':
+      return 'When a paid subscription ends';
     case 'segment_entered': {
       const segment = segments.find((entry) => entry.id === config.segmentId)?.name;
       return segment ? `When a member enters ${segment}` : 'When a member enters a segment';

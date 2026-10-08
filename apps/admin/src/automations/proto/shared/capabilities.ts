@@ -57,18 +57,22 @@ const MEMBERSHIP_TRIGGERS: TriggerType[] = ['member_subscribes', 'paid_subscript
 export const LANE_CAPABILITIES: Record<LaneId, LaneCapabilities> = {
   'phase-1': { triggers: MEMBERSHIP_TRIGGERS, extraSteps: [] },
   'phase-2': { triggers: MEMBERSHIP_TRIGGERS, extraSteps: [] },
-  // Starts where phase 2 stands. Its own entry, so the triggers it's named for
-  // can be added here without touching phase 2's set.
-  'phase-3': { triggers: MEMBERSHIP_TRIGGERS, extraSteps: [] },
+  // Phase 2's set plus the two the lane is named for: an upgrade (the "thanks
+  // for upgrading" flow) and a subscription ending (the winback).
+  'phase-3': {
+    triggers: [...MEMBERSHIP_TRIGGERS, 'paid_subscription_upgraded', 'paid_subscription_ended'],
+    extraSteps: [],
+  },
   // GA (formerly the right-panel sandbox) carries the whole roadmap: the label
-  // trigger (lead magnets), the subscription-changed one (lifecycle), the
+  // trigger (lead magnets), the upgraded and ended ones (lifecycle), the
   // segment one, and Update member — the first step that changes a member rather
   // than sending to one. Every card after them that adds a trigger adds it here.
   'exploration-2': {
     triggers: [
       ...MEMBERSHIP_TRIGGERS,
+      'paid_subscription_upgraded',
+      'paid_subscription_ended',
       'label_added',
-      'paid_subscription_changed',
       'segment_entered',
     ],
     extraSteps: ['update_member'],
