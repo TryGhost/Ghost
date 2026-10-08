@@ -13,6 +13,19 @@ interface AuthFrameReply {
 
 type ReplyHandler = (error: AuthFrameReply['error'], result: AuthFrameReply['result']) => void;
 
+function isAuthFrameReply(data: unknown): data is AuthFrameReply {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'uid' in data &&
+    typeof data.uid === 'number' &&
+    'error' in data &&
+    (data.error === null || typeof data.error === 'string') &&
+    'result' in data &&
+    typeof data.result === 'object'
+  );
+}
+
 export function createAuthFrame(adminUrl: string) {
   const frame = document.createElement('iframe');
   frame.dataset.frame = 'admin-auth';
@@ -30,14 +43,18 @@ export function createAdminApi(adminUrl: string, frame: HTMLIFrameElement) {
   const adminOrigin = new URL(adminUrl).origin;
 
   window.addEventListener('message', function (event) {
-    if (event.origin !== adminOrigin) {
+    if (event.origin !== adminOrigin || !event.source || event.source !== frame.contentWindow) {
       return;
     }
 
-    let data: AuthFrameReply;
+    let data: unknown;
     try {
       data = JSON.parse(event.data);
     } catch {
+      return;
+    }
+
+    if (!isAuthFrameReply(data)) {
       return;
     }
 
