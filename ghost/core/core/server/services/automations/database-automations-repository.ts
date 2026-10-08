@@ -485,7 +485,9 @@ export function createDatabaseAutomationsRepository({
           }
         }
 
-        await replaceAutomationGraph(trx, updatedAutomation.id, data.actions, data.edges);
+        if (data.actions !== undefined) {
+          await replaceAutomationGraph(trx, updatedAutomation.id, data.actions, data.edges);
+        }
 
         switch (updatedAutomation.status) {
           case 'active':

@@ -1843,6 +1843,24 @@ describe('automations repository', function () {
   });
 
   describe('edit', function () {
+    it('disables without changing graph storage or metadata', async function () {
+      const initial = await getAutomationBySlug('member-welcome-email-free');
+      const actions = await knex('automation_actions').orderBy('id');
+      const revisions = await knex('automation_action_revisions').orderBy('id');
+      const edges = await knex('automation_action_edges').orderBy([
+        'source_action_id',
+        'target_action_id',
+      ]);
+      const edited = await repo.edit(initial.id, { status: 'inactive' });
+      assert.deepEqual(edited, { ...initial, status: 'inactive', updated_at: edited?.updated_at });
+      assert.deepEqual(await knex('automation_actions').orderBy('id'), actions);
+      assert.deepEqual(await knex('automation_action_revisions').orderBy('id'), revisions);
+      assert.deepEqual(
+        await knex('automation_action_edges').orderBy(['source_action_id', 'target_action_id']),
+        edges,
+      );
+    });
+
     const assertValidationError = async (
       fn: () => Promise<unknown>,
       property: string,
@@ -1984,7 +2002,6 @@ describe('automations repository', function () {
 
       const beforeEdit = Date.now();
       await repo.edit(automation.id, {
-        ...automation,
         status: 'inactive',
       });
       const afterEdit = Date.now();
