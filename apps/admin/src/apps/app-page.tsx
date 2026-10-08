@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
-import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { Link, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import {
@@ -10,15 +10,9 @@ import {
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { APIError, getErrorMessage } from '@tryghost/admin-x-framework/errors';
 import { AppsGate } from './components/apps-gate';
-import {
-  APP_FRAME_ALLOW,
-  APP_FRAME_SANDBOX,
-  appFrameTimeouts,
-  appPageUrl,
-  isGhostOrigin,
-} from './lib/frame';
+import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, appFrameTimeouts, isGhostOrigin } from './lib/frame';
 import { appReviewRoute } from './lib/routes';
-import { servedFrom } from './lib/served-from';
+import { appPageUrl, servedFrom } from './lib/served-from';
 
 type FrameStatus = 'loading' | 'ready' | 'failed';
 
@@ -37,30 +31,25 @@ const NotResponding: React.FC<{
   onRetry: () => void;
 }> = ({ installation, startedAt, onRetry }) => (
   <Centered testId="app-not-responding">
-    <Stack align="center" className="w-full max-w-md text-center" gap="lg">
-      <span className="flex size-12 items-center justify-center rounded-full bg-muted">
-        <LucideIcon.CloudOff className="size-5" strokeWidth={1.5} />
-      </span>
-      <Stack gap="xs">
-        <Text as="h1" size="xl" weight="semibold">
-          {installation.manifest.name} isn’t responding
-        </Text>
-        <Text tone="secondary">
-          Ghost couldn’t reach the app. It might be down, or having a temporary problem. Your site
-          isn’t affected.
-        </Text>
-      </Stack>
-      <Inline gap="sm" justify="center">
-        <Button variant="outline" asChild>
-          <Link to="/apps">Back to Apps</Link>
-        </Button>
-        <Button onClick={onRetry}>Try again</Button>
-      </Inline>
+    <Stack align="center" className="w-full max-w-md" gap="lg">
+      <EmptyIndicator
+        actions={
+          <>
+            <Button variant="outline" asChild>
+              <Link to="/apps">Back to Apps</Link>
+            </Button>
+            <Button onClick={onRetry}>Try again</Button>
+          </>
+        }
+        description="Ghost couldn’t reach the app. It might be down, or having a temporary problem. Your site isn’t affected."
+        title={`${installation.manifest.name} isn’t responding`}
+      >
+        <LucideIcon.CloudOff />
+      </EmptyIndicator>
       <details className="w-full border-t pt-3 text-left text-sm text-muted-foreground">
         <summary className="cursor-pointer font-medium">Details</summary>
         <div className="mt-2 rounded-md bg-muted px-3 py-2 font-mono text-xs leading-relaxed">
-          No response from {servedFrom(installation.manifest)} after{' '}
-          {Math.round(appFrameTimeouts.ready / 1000)}s
+          No response from {servedFrom(installation.manifest)}
           <br />
           Started {startedAt.toLocaleTimeString()}
         </div>
@@ -72,25 +61,56 @@ const NotResponding: React.FC<{
 /**
  * The app's page, loaded from its own URL in a sandboxed frame. Ready means the frame has
  * loaded; knowing the app itself is up comes with the bridge (BER-3983), which also
- * replaces this with a handshake. A frame that doesn't load in time gets the timeout
- * state, and the rest of Admin stays usable either way.
+ * replaces this with a handshake. A page that can't be reached, or doesn't load in time,
+ * gets the not-responding state, and the rest of Admin stays usable either way.
  */
 const AppFrame: React.FC<{ installation: AppInstallation }> = ({ installation }) => {
   const [attempt, setAttempt] = useState(0);
   const [status, setStatus] = useState<FrameStatus>('loading');
+  const [loaded, setLoaded] = useState(false);
+  const [reached, setReached] = useState(false);
   const [startedAt, setStartedAt] = useState(() => new Date());
   const url = appPageUrl(installation.manifest);
 
   useEffect(() => {
-    if (status !== 'loading') {
-      return;
+    const giveUp = () => setStatus((current) => (current === 'loading' ? 'failed' : current));
+    const timer = window.setTimeout(giveUp, appFrameTimeouts.ready);
+    // The frame's load event fires for the browser's own error page too, so it can't say
+    // whether the app answered. This plain request can: a server that can't be reached
+    // rejects it, while any answer at all, which the frame then shows, resolves it opaque.
+    const probe = new AbortController();
+    // eslint-disable-next-line no-restricted-syntax -- the app's own page, not Ghost's API
+    fetch(url, {
+      mode: 'no-cors',
+      credentials: 'omit',
+      cache: 'no-store',
+      referrerPolicy: 'strict-origin-when-cross-origin',
+      signal: probe.signal,
+    }).then(
+      () => setReached(true),
+      () => {
+        if (!probe.signal.aborted) {
+          giveUp();
+        }
+      },
+    );
+    return () => {
+      window.clearTimeout(timer);
+      probe.abort();
+    };
+  }, [attempt, url]);
+
+  // Ready once the frame has loaded and the app is known to have answered.
+  useEffect(() => {
+    if (loaded && reached) {
+      setStatus((current) => (current === 'loading' ? 'ready' : current));
     }
-    const timer = window.setTimeout(() => setStatus('failed'), appFrameTimeouts.ready);
-    return () => window.clearTimeout(timer);
-  }, [status, attempt]);
+  }, [loaded, reached]);
 
   const retry = () => {
     setStatus('loading');
+    setLoaded(false);
+    setReached(false);
     setStartedAt(new Date());
     setAttempt((value) => value + 1);
   };
@@ -109,13 +129,15 @@ const AppFrame: React.FC<{ installation: AppInstallation }> = ({ installation })
       <iframe
         key={attempt}
         allow={APP_FRAME_ALLOW}
-        className={status === 'ready' ? 'size-full' : 'size-full opacity-0'}
+        aria-hidden={status !== 'ready'}
+        // Hidden, not transparent: a frame that's still loading mustn't take focus or clicks.
+        className={status === 'ready' ? 'size-full' : 'invisible size-full'}
         data-testid="app-frame"
         referrerPolicy="strict-origin-when-cross-origin"
         sandbox={APP_FRAME_SANDBOX}
         src={url}
         title={installation.manifest.name}
-        onLoad={() => setStatus('ready')}
+        onLoad={() => setLoaded(true)}
       />
     </div>
   );
@@ -143,10 +165,18 @@ const NotFramed: React.FC<{ installation: AppInstallation }> = ({ installation }
 
 /**
  * An active app loads in its frame, once its page is known to be somewhere other than
- * Ghost: Admin's own address, or the site's, which Admin may be served from too.
+ * Ghost: Admin's own address, or the site's, which Admin may be served from too. Nothing
+ * is framed until the site's address is known, so the check can't be skipped by timing.
  */
 const ActiveApp: React.FC<{ installation: AppInstallation }> = ({ installation }) => {
-  const { data: site } = useBrowseSite();
+  const { data: site, isLoading } = useBrowseSite();
+  if (isLoading) {
+    return (
+      <Centered>
+        <LoadingIndicator size="md" />
+      </Centered>
+    );
+  }
   const ghostUrls = [window.location.href, ...(site ? [site.site.url] : [])];
   if (isGhostOrigin(appPageUrl(installation.manifest), ghostUrls)) {
     return <NotFramed installation={installation} />;
