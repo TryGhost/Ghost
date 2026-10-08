@@ -52,6 +52,11 @@ export class CheckoutSettingsModal {
     return this.cornersGroup.getByRole('radio', { name });
   }
 
+  /** The business name the sketch shows at the top of the checkout. */
+  previewBusinessName(name: string): Locator {
+    return this.preview.getByText(name, { exact: true });
+  }
+
   async open(): Promise<void> {
     await this.openButton.click();
     await this.modal.waitFor({ state: 'visible' });

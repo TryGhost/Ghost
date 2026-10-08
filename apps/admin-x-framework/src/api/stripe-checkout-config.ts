@@ -44,6 +44,25 @@ export const useEditStripeCheckoutConfig = createMutation<
   },
 });
 
+/**
+ * How Stripe Checkout looks without a design from Ghost, as set in the Stripe dashboard. The
+ * business name shows with a design from Ghost too.
+ */
+export type StripeCheckoutBranding = {
+  display_name: string;
+  /** Null when Stripe reports a design Ghost can't show, such as a font it doesn't know. */
+  design: StripeCheckoutDesign | null;
+};
+
+export interface StripeCheckoutBrandingResponseType {
+  checkout_branding: StripeCheckoutBranding[];
+}
+
+export const useReadStripeCheckoutBranding = createQuery<StripeCheckoutBrandingResponseType>({
+  dataType: 'StripeCheckoutBrandingResponseType',
+  path: '/stripe/checkout/branding/',
+});
+
 /** A preview of the design on a real Stripe Checkout page for one paid tier. */
 export type StripeCheckoutPreviewRequest = {
   tier_id: string;

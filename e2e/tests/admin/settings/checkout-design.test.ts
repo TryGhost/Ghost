@@ -46,6 +46,11 @@ async function saveDesign(page: Page, design: Design): Promise<void> {
   await checkout.close();
 }
 
+async function siteTitle(page: Page): Promise<string> {
+  const { settings } = await new SettingsService(page.request).getSettings();
+  return String(settings.find((setting) => setting.key === 'title')?.value);
+}
+
 async function paidTier(page: Page, stripe: StripeTestService): Promise<string> {
   const tier = await createPaidPortalTier(
     page.request,
@@ -227,6 +232,49 @@ test.describe('Ghost Admin - Checkout design', () => {
     await checkout.setCustomDesign(false);
     await expect(checkout.previewPayButton).toHaveCSS('background-color', 'rgb(0, 116, 212)');
   });
+
+  test('Stripe dashboard branding - the sketch shows the business name and design members get', async ({
+    page,
+    stripe,
+  }) => {
+    stripe!.setCheckoutBranding({
+      display_name: 'The Daily Example',
+      background_color: '#f4f1ea',
+      button_color: '#7c3aed',
+      border_style: 'pill',
+      font_family: 'lora',
+    });
+
+    const checkout = await openCheckoutSettings(page);
+
+    await expect(checkout.previewBusinessName('The Daily Example')).toBeVisible();
+    await expect(checkout.previewPayButton).toHaveCSS('background-color', 'rgb(124, 58, 237)');
+    await expect(checkout.previewPayButton).toHaveCSS('border-radius', '999px');
+
+    // Customizing starts from the dashboard design, so the sketch stays put until it changes.
+    await checkout.setCustomDesign(true);
+    await expect(checkout.corners('Pill')).toBeChecked();
+    await expect(checkout.fontSelect).toHaveText('Lora');
+    await expect(checkout.previewPayButton).toHaveCSS('background-color', 'rgb(124, 58, 237)');
+
+    await checkout.setAccentColor(DESIGN.accent);
+    await expect(checkout.previewPayButton).toHaveCSS('background-color', 'rgb(194, 65, 12)');
+    await expect(checkout.previewBusinessName('The Daily Example')).toBeVisible();
+  });
+
+  test('Stripe branding unreadable - the sketch falls back to the site title and Stripe defaults', async ({
+    page,
+    stripe,
+  }) => {
+    stripe!.hideCheckoutBranding();
+
+    const checkout = await openCheckoutSettings(page);
+
+    await expect(checkout.previewBusinessName(await siteTitle(page))).toBeVisible();
+    await expect(checkout.previewPayButton).toHaveCSS('background-color', 'rgb(0, 116, 212)');
+    await checkout.setCustomDesign(true);
+    await checkout.save();
+  });
 });
 
 test.describe('Ghost Admin - Checkout design preview in Stripe', () => {
@@ -282,7 +330,10 @@ test.describe('Ghost Admin - Checkout design preview in Stripe', () => {
     await checkout.previewTierOption(tierName).click();
 
     await expect(page.getByText('Your browser blocked the preview')).toBeVisible();
-    expect(stripe!.getCheckoutSessions()).toHaveLength(0);
+    const subscriptions = stripe!
+      .getCheckoutSessions()
+      .filter((session) => session.response.mode === 'subscription');
+    expect(subscriptions).toHaveLength(0);
   });
 
   test('preview menu - offers each paid tier, and not the free one', async ({ page, stripe }) => {
@@ -347,12 +398,15 @@ test.describe('Ghost Admin - Checkout design without Stripe', () => {
     await expect(new CheckoutSettingsModal(page).openButton).toHaveCount(0);
   });
 
-  test('Stripe not connected - the settings offer no preview in Stripe', async ({ page }) => {
+  test('Stripe not connected - the settings offer no preview in Stripe, and sketch the site', async ({
+    page,
+  }) => {
     await page.goto('/ghost/#/settings/tiers/checkout');
     const checkout = new CheckoutSettingsModal(page);
     await checkout.modal.waitFor({ state: 'visible' });
 
     await expect(checkout.customizeDesignSwitch).toBeVisible();
     await expect(checkout.previewInStripeButton).toHaveCount(0);
+    await expect(checkout.previewBusinessName(await siteTitle(page))).toBeVisible();
   });
 });
