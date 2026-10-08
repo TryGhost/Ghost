@@ -12,7 +12,7 @@ import {
 } from '../utils/api/hooks';
 import type { ReadonlyDeep } from 'type-fest';
 
-export type AutomationStatus = 'active' | 'inactive';
+export type AutomationStatus = 'active' | 'inactive' | 'archived';
 export const MAX_AUTOMATION_ACTIONS = 50;
 
 export type Automation = {

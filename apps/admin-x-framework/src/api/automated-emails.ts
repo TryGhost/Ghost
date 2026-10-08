@@ -1,9 +1,10 @@
 import { Meta, createMutation, createQuery } from '../utils/api/hooks';
 import { insertToQueryCache, updateQueryCache } from '../utils/api/update-queries';
+import type { AutomationStatus } from './automations';
 
 export type AutomatedEmail = {
   id: string;
-  status: 'active' | 'inactive';
+  status: AutomationStatus;
   name: string;
   slug: string;
   subject: string;

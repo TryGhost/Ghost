@@ -30,6 +30,7 @@ import { toast } from 'sonner';
 import { useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { AutomationEditState } from './types';
+import { isAutomationStatusActive } from './utils/is-automation-status-active';
 
 const SUBJECT_REQUIRED_MESSAGE = 'Add a subject line.';
 const BODY_REQUIRED_MESSAGE = 'Add an email body.';
@@ -210,24 +211,24 @@ const AutomationEditorContent: React.FC<{
 
     const oldStatus = draft.status;
     const newStatus = statusToSave ?? oldStatus;
-    const statusTransition: `${AutomationStatus} -> ${AutomationStatus}` = `${oldStatus} -> ${newStatus}`;
+    const statusTransition: `${boolean} -> ${boolean}` = `${isAutomationStatusActive(oldStatus)} -> ${isAutomationStatusActive(newStatus)}`;
     switch (statusTransition) {
-      case 'active -> active':
+      case 'true -> true':
         validationAction = 'publish';
         requestState = { phase: 'submitting', action: 'republish' };
         errorState = { phase: 'failed', action: 'republish' };
         break;
-      case 'inactive -> inactive':
+      case 'false -> false':
         validationAction = 'save';
         requestState = { phase: 'submitting', action: 'save' };
         errorState = { phase: 'failed', action: 'save' };
         break;
-      case 'inactive -> active':
+      case 'false -> true':
         validationAction = 'publish';
         requestState = { phase: 'submitting', action: 'publish' };
         errorState = { phase: 'failed', action: 'publish' };
         break;
-      case 'active -> inactive':
+      case 'true -> false':
         validationAction = 'unpublish';
         requestState = { phase: 'submitting', action: 'unpublish' };
         errorState = { phase: 'failed', action: 'unpublish' };
@@ -279,11 +280,16 @@ const AutomationEditorContent: React.FC<{
   const isConfirmRepublishAlertOpen = editState.action === 'republish';
   const isEditRequestActive = editState.phase === 'submitting';
   let isSaveButtonEnabled =
-    !!draft && draft.actions.length > 0 && draft.status === 'inactive' && hasUnsavedChanges;
+    !!draft &&
+    draft.actions.length > 0 &&
+    !isAutomationStatusActive(draft.status) &&
+    hasUnsavedChanges;
   let saveButtonVariant: ButtonProps['variant'] = 'outline';
   let saveButtonChildren: React.ReactNode = 'Save';
   let isPublishButtonEnabled =
-    !!draft && draft.actions.length > 0 && (draft.status === 'inactive' || hasUnsavedChanges);
+    !!draft &&
+    draft.actions.length > 0 &&
+    (!isAutomationStatusActive(draft.status) || hasUnsavedChanges);
   const publishButtonVariant: ButtonProps['variant'] = 'default';
   const publishButtonChildren: React.ReactNode =
     draft?.status === 'active' ? (hasUnsavedChanges ? 'Publish changes' : 'Published') : 'Publish';
@@ -423,6 +429,7 @@ const AutomationEditorContent: React.FC<{
         setEditState({ phase: 'confirming', action: 'republish' });
         break;
       case 'inactive':
+      case 'archived':
         setEditState({ phase: 'confirming', action: 'publish' });
         break;
       default: {

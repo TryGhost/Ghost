@@ -48,6 +48,14 @@ const AutomationStatusDialog = ({
           buttonLabel: 'Turn off',
           pendingLabel: 'Turning off...',
         };
+      case 'archived':
+        return {
+          title: 'Archive automation?',
+          description:
+            'Your automation will no longer run, and any members currently in progress will be removed.',
+          buttonLabel: 'Archive',
+          pendingLabel: 'Archiving...',
+        };
       default: {
         const _exhaustive: never = status;
         throw new Error(`Unknown automation status: ${String(_exhaustive)}`);
