@@ -51,7 +51,9 @@ const icons = {
   ],
 };
 
-export function Icon({ name }) {
+export type IconName = keyof typeof icons;
+
+export function Icon({ name }: { name: IconName }) {
   return h(
     'svg',
     {

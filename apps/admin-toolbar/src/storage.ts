@@ -1,6 +1,6 @@
-import { DISPLAY_EXPANDED, DISPLAY_MINIMIZED, STORAGE_KEY } from './constants';
+import { DISPLAY_EXPANDED, DISPLAY_MINIMIZED, STORAGE_KEY, type DisplayState } from './constants';
 
-export function getStoredDisplayState() {
+export function getStoredDisplayState(): DisplayState {
   try {
     return window.localStorage?.getItem(STORAGE_KEY) === DISPLAY_MINIMIZED
       ? DISPLAY_MINIMIZED
@@ -10,7 +10,7 @@ export function getStoredDisplayState() {
   }
 }
 
-export function setStoredDisplayState(value) {
+export function setStoredDisplayState(value: DisplayState) {
   try {
     window.localStorage?.setItem(STORAGE_KEY, value);
   } catch {
