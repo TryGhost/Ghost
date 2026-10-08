@@ -15,11 +15,27 @@ import {
 import { LucideIcon } from '@tryghost/shade/utils';
 import type { PostType } from '@/editor/card-config';
 import { normalizeManualSlug } from '@/editor/engine/slug-machine';
+import { postPreviewUrl } from '@/editor/preview/preview-url';
 import type { EditorSettingsPort } from './editor-settings-port';
 import { SettingsSection } from './settings-section';
 import { formatUrlPreview } from './url-preview';
 
 const EDIT_FAILED = 'Couldn’t update the URL. Try again.';
+
+/** A saved post's public URL, or a scheduled post's preview; nothing for a draft. */
+function viewLink(
+  record: EditorSettingsPort['loadedRecord'],
+  postType: PostType,
+  siteUrl: string,
+): { href: string; label: string } | null {
+  if ((record?.status === 'published' || record?.status === 'sent') && record.url) {
+    return { href: record.url, label: `View ${postType}` };
+  }
+  if (record?.status === 'scheduled' && record.uuid) {
+    return { href: postPreviewUrl(siteUrl, record.uuid), label: 'Preview' };
+  }
+  return null;
+}
 
 /**
  * The post's URL: a slug input over a preview of where the post will live. The
@@ -40,8 +56,9 @@ export function UrlSection({
   const [pending, setPending] = useState(false);
   const [failed, setFailed] = useState(false);
 
-  const { slug, editSlug } = session;
+  const { slug, editSlug, loadedRecord } = session;
   const value = draft ?? slug;
+  const link = viewLink(loadedRecord, postType, siteUrl);
 
   const commit = useCallback(() => {
     setFailed(false);
@@ -70,14 +87,14 @@ export function UrlSection({
     <SettingsSection>
       <Inline gap="sm" justify="between">
         <Label htmlFor={inputId}>{postType === 'page' ? 'Page' : 'Post'} URL</Label>
-        {session.loadedRecord?.status === 'published' && session.loadedRecord.url ? (
+        {link ? (
           <a
             className="inline-flex items-center gap-1 text-sm text-text-secondary hover:text-foreground"
-            href={session.loadedRecord.url}
+            href={link.href}
             rel="noopener noreferrer"
             target="_blank"
           >
-            View {postType}
+            {link.label}
             <LucideIcon.ArrowUpRight className="size-3.5" />
           </a>
         ) : null}
@@ -104,7 +121,9 @@ export function UrlSection({
         </FieldError>
       ) : null}
       <Text data-testid={settingsUrlPreview} size="sm" tone="secondary">
-        {formatUrlPreview(siteUrl, value)}
+        {loadedRecord?.status === 'sent'
+          ? formatUrlPreview(siteUrl, loadedRecord?.uuid ?? '', 'email')
+          : formatUrlPreview(siteUrl, value)}
       </Text>
     </SettingsSection>
   );

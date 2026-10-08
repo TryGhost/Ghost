@@ -5,12 +5,8 @@ import type { PostResource } from '@/posts/list/post-resource';
  * Remember the last list's filters for editor breadcrumbs and the Pages
  * sidebar link. The Posts sidebar link always opens the full list.
  *
- * Ported from `state-bridge.js` `getRouteUrl`, which reads Ember's live
- * controller query params. React has no equivalent long-lived controller, so
- * the list screen reports its params here as they change.
- *
- * Module scope, deliberately not `sessionStorage`: Ember's is in-memory and
- * per-tab, so persisting it would be a behaviour change rather than a port.
+ * The list screen reports its params here as they change. Module scope keeps
+ * them in memory and per tab.
  */
 
 type ViewFilter = Record<string, string | null>;
@@ -39,7 +35,7 @@ export function getPostListReturnUrl(resource: PostResource): string {
   return `/${resource}${search ? `?${search}` : ''}`;
 }
 
-/** Only the five params a view is made of; anything else isn't sticky. */
+/** Only the params a view is made of; anything else isn't sticky. */
 function toViewParams(search: string): Record<string, string> {
   const source = new URLSearchParams(search);
   const params: Record<string, string> = {};

@@ -1,13 +1,12 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const ObjectId = require('bson-objectid').default;
-const testUtils = require('../../utils');
-const { mockManager } = require('../../utils/e2e-framework');
+const { mockManager, startGhost } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
 const config = require('../../../core/shared/config');
-const MailgunClient = require('../../../core/server/services/lib/mailgun-client');
-const mailService = require('../../../core/server/services/mail');
+const MailgunClient = require('../../../core/server/lib/mailgun/mailgun-client');
+const mailService = require('../../../core/server/lib/mail');
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
 const {
   MEMBER_WELCOME_EMAIL_SLUGS,
@@ -33,9 +32,10 @@ describe('Member Welcome Emails Integration', function () {
   let defaultEmailDesignSettingId;
 
   beforeAll(async function () {
-    await testUtils.setup('default')();
+    // Boot rather than init the members service alone: the members API is
+    // built once per process and keeps whatever services exist at that point.
+    await startGhost();
     membersService = require('../../../core/server/services/members');
-    await membersService.init();
     defaultEmailDesignSettingId = await db
       .knex('email_design_settings')
       .where('slug', 'default-automated-email')

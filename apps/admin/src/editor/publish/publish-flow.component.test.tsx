@@ -2,7 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
-import { InAppProviders, fakeAdminEndpoint, fakeLabels, fakeTiers } from '@test-utils/acceptance';
+import {
+  InAppProviders,
+  fakeAdminEndpoint,
+  fakeEmailPreview,
+  fakeLabels,
+  fakeTiers,
+} from '@test-utils/acceptance';
 import {
   publishRecipientFree,
   publishRecipientSegments,
@@ -152,6 +158,19 @@ describe('Publish flow', () => {
     fakeMemberCounts(20);
     fakePublishedCount(41);
     fakeEmailPolling({ status: 'submitted' });
+    fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
+      email_statuses: [
+        {
+          id: EMAIL_ID,
+          sending: {
+            status: 'failed',
+            retryable: true,
+            failed_during: 'submitting',
+            progress: { completed: 0, total: 20, estimated_seconds_remaining: null },
+          },
+        },
+      ],
+    });
     fakeTiers([]);
     fakeLabels([]);
   });
@@ -321,6 +340,32 @@ describe('Publish flow', () => {
     expect(dispatch).toHaveBeenCalledWith({ kind: 'publish', options: {} });
   });
 
+  it('warns that an email over 100kB may be clipped while the flow will send it', async () => {
+    fakeEmailPreview(150 * 1024);
+    await renderPublishFlow({ post: draft({ updatedAt: '2026-09-02T09:00:00.000Z' }) });
+
+    await expect.element(publishScreen.emailSizeWarning()).toHaveTextContent('This email is 150kB');
+    await expect
+      .element(publishScreen.emailSizeWarning())
+      .toHaveTextContent(
+        'Email newsletters may get clipped in the inbox behind a “View entire message” link when they’re over 100kB.',
+      );
+
+    await publishScreen.setting('publish-type').click();
+    await page.getByLabelText('Publish only').click();
+
+    await expect(publishScreen.emailSizeWarning()).toHaveCount(0);
+  });
+
+  it('does not warn about an email that fits', async () => {
+    const previewApi = fakeEmailPreview(99 * 1024);
+    await renderPublishFlow({ post: draft({ updatedAt: '2026-09-02T09:00:00.000Z' }) });
+
+    await expect.poll(() => previewApi.requests.length).toBe(1);
+    await expect.element(publishScreen.options()).toBeInTheDocument();
+    await expect(publishScreen.emailSizeWarning()).toHaveCount(0);
+  });
+
   it('schedules a draft and hands over the scheduled celebration key', async () => {
     const { dispatch } = await renderPublishFlow();
 
@@ -436,6 +481,97 @@ describe('Publish flow', () => {
       await expect.element(publishScreen.scheduleDate()).toHaveValue(date);
     },
   );
+
+  it('opens the schedule calendar from its button and picks a day from the keyboard', async () => {
+    await renderPublishFlow({ now: () => new Date('2026-09-03T20:00:00.000Z') });
+
+    await publishScreen.setting('publish-at').click();
+    await page.getByRole('radio', { name: 'Schedule for later' }).click();
+    await userEvent.tab();
+    await expect.element(publishScreen.scheduleCalendarButton()).toHaveFocus();
+
+    await userEvent.keyboard('{Enter}');
+    await expect
+      .element(page.getByRole('gridcell', { selected: true }).getByRole('button'))
+      .toHaveFocus();
+    await userEvent.keyboard('{ArrowRight}{Enter}');
+
+    await expect(page.getByRole('grid')).toHaveCount(0);
+    await expect.element(publishScreen.scheduleCalendarButton()).toHaveFocus();
+    await expect.element(publishScreen.scheduleDate()).toHaveValue('2026-09-04');
+  });
+
+  it('schedules a typed date, however far off', async () => {
+    const { dispatch } = await renderPublishFlow({
+      now: () => new Date('2026-09-03T20:00:00.000Z'),
+    });
+
+    await publishScreen.setting('publish-at').click();
+    await page.getByLabelText('Schedule for later').click();
+    await publishScreen.scheduleDate().fill('2031-06-15');
+    await userEvent.tab();
+
+    await expect.element(publishScreen.scheduleDate()).toHaveValue('2031-06-15');
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    // The day changes; the default time of day stays.
+    expect(dispatch.mock.calls[0][0]).toMatchObject({
+      kind: 'schedule',
+      options: { publishedAt: '2031-06-15T20:10:00.000Z' },
+    });
+  });
+
+  it('moves a typed past date up to the earliest time a post can be scheduled', async () => {
+    await renderPublishFlow({ now: () => new Date('2026-09-03T20:00:00.000Z') });
+
+    await publishScreen.setting('publish-at').click();
+    await page.getByLabelText('Schedule for later').click();
+    await publishScreen.scheduleDate().fill('2020-01-01');
+    await userEvent.tab();
+
+    await expect.element(publishScreen.scheduleDate()).toHaveValue('2026-09-03');
+    await expect.element(publishScreen.scheduleTime()).toHaveValue('20:00');
+  });
+
+  it('keeps the scheduled date while a typed one is refused', async () => {
+    const { dispatch } = await renderPublishFlow({
+      now: () => new Date('2026-09-03T20:00:00.000Z'),
+    });
+
+    await publishScreen.setting('publish-at').click();
+    await page.getByLabelText('Schedule for later').click();
+    await expect.element(publishScreen.scheduleDate()).toBeVisible();
+
+    const fields = () =>
+      publishScreen
+        .scheduleDate()
+        .element()
+        .closest('[data-slot="input-group"]')!
+        .getBoundingClientRect();
+    const radio = () =>
+      page.getByRole('radio', { name: 'Schedule for later' }).element().getBoundingClientRect();
+    const level = fields().top - radio().top;
+
+    await publishScreen.scheduleDate().fill('2031-02-30');
+    await userEvent.tab();
+
+    await expect.element(publishScreen.scheduleDate()).toHaveAccessibleDescription('Invalid date');
+    // The message takes a row of its own under the fields, which stay level with their radio.
+    const message = page.getByText('Invalid date', { exact: true }).element();
+    expect(fields().top - radio().top).toBe(level);
+    expect(message.getBoundingClientRect().left).toBe(fields().left);
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch.mock.calls[0][0]).toMatchObject({
+      kind: 'schedule',
+      options: { publishedAt: '2026-09-03T20:10:00.000Z' },
+    });
+  });
 
   it('sends without publishing when the email-only type is chosen', async () => {
     fakeEmailPolling({ status: 'submitted' });
@@ -1032,6 +1168,51 @@ describe('Publish flow', () => {
       .toHaveTextContent('can no longer be published from here');
   });
 
+  it.each([false, undefined])(
+    'hides retry for API eligibility %s after publishing',
+    async (retryable) => {
+      fakeEmailPolling({ status: 'failed', error: 'Sending failed' });
+      const statusApi = fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
+        email_statuses: [
+          {
+            id: EMAIL_ID,
+            sending: {
+              status: 'failed',
+              failed_during: 'submitting',
+              progress: { completed: 0, total: 20, estimated_seconds_remaining: null },
+              ...(retryable === undefined ? {} : { retryable }),
+            },
+          },
+        ],
+      });
+      await renderPublishFlow();
+      await publishScreen.continueButton().click();
+      await publishScreen.confirmButton().click();
+      await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
+      await expect.poll(() => statusApi.requests.length).toBe(1);
+      await expect.element(publishScreen.retryEmailButton()).not.toBeInTheDocument();
+    },
+  );
+
+  it('hides retry when an existing failed email status cannot be read', async () => {
+    const statusApi = fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {}, { status: 404 });
+    await renderPublishFlow({
+      post: draft({
+        status: 'published',
+        email: {
+          id: EMAIL_ID,
+          status: 'failed',
+          error: 'Sending failed',
+          email_count: 0,
+          opened_count: 0,
+        },
+      }),
+    });
+    await expect.poll(() => statusApi.requests.length).toBe(1);
+    await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
+    await expect.element(publishScreen.retryEmailButton()).not.toBeInTheDocument();
+  });
+
   it('offers a retry when the email fails after a successful publish', async () => {
     fakeEmailPolling({ status: 'failed', error: 'Sending failed' }, { status: 'submitted' });
     const retryApi = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, { emails: [] });
@@ -1045,6 +1226,42 @@ describe('Publish flow', () => {
 
     await expect.element(publishScreen.complete()).toBeInTheDocument();
     expect(retryApi.requests).toHaveLength(1);
+  });
+
+  it('refreshes retry eligibility when Core rejects the retry', async () => {
+    fakeEmailPolling({ status: 'failed', error: 'Sending failed' });
+    let retryable = true;
+    fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, () => ({
+      email_statuses: [
+        {
+          id: EMAIL_ID,
+          sending: {
+            status: 'failed',
+            retryable,
+            failed_during: 'submitting',
+            progress: { completed: 0, total: 20, estimated_seconds_remaining: null },
+          },
+        },
+      ],
+    }));
+    const retryApi = fakeAdminEndpoint(
+      'PUT',
+      `/emails/${EMAIL_ID}/retry/`,
+      { errors: [{ type: 'BadRequestError', message: 'Delivery outcome is unknown' }] },
+      { status: 400 },
+    );
+    await renderPublishFlow();
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+    await expect.element(publishScreen.retryEmailButton()).toBeInTheDocument();
+
+    // Eligibility changed after it was read, so Core rejects the stale retry.
+    retryable = false;
+    await publishScreen.retryEmailButton().click();
+
+    await expect.poll(() => retryApi.requests.length).toBe(1);
+    await expect.element(publishScreen.retryEmailButton()).not.toBeInTheDocument();
   });
 
   it('keeps the email retry pending during navigation without showing completion', async () => {
@@ -1149,7 +1366,7 @@ describe('Publish flow', () => {
     await expect(page.getByText('Specific people')).toHaveCount(0);
   });
 
-  it('reports a retry failure when the failed email has no id', async () => {
+  it('hides retry when the failed email has no id', async () => {
     await renderPublishFlow({
       post: draft({
         status: 'published',
@@ -1157,11 +1374,7 @@ describe('Publish flow', () => {
       }),
     });
 
-    await publishScreen.retryEmailButton().click();
-
-    await expect
-      .element(publishScreen.emailError().getByRole('alert'))
-      .toHaveTextContent('Unknown Error occurred when attempting to resend');
+    await expect.element(publishScreen.retryEmailButton()).not.toBeInTheDocument();
   });
 
   it('describes an at-open failed email-only post as created, not published', async () => {
@@ -1270,6 +1483,31 @@ describe('Update flow', () => {
       .toHaveTextContent('published and sent to subscribers');
     await expect.element(publishScreen.updateFlow()).not.toHaveTextContent('0 subscribers');
     expect(window.location.pathname).toBe(pathname);
+  });
+
+  it.each([
+    ['sent', 'Sent'],
+    ['published', 'Unpublish'],
+    ['scheduled', 'Unschedule'],
+  ] as const)('heads a %s post’s update flow “%s”', async (status, heading) => {
+    await render(
+      <InAppProviders>
+        <UpdateFlowModal
+          dispatch={completesWith(saved('draft'))}
+          post={draft({ status, publishedAt: '2026-09-10T09:00:00.000Z' })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={() => {}}
+        />
+      </InAppProviders>,
+    );
+
+    await expect.element(publishScreen.updateFlow()).toHaveAccessibleName(heading);
+    // The on-screen heading is aria-hidden, so a role query would find only the dialog's title.
+    expect(
+      publishScreen.updateFlow().element().querySelector('h2[aria-hidden="true"]'),
+    ).toHaveTextContent(heading);
   });
 
   it('reverts a published post to a draft', async () => {

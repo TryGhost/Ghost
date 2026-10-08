@@ -5,7 +5,9 @@ import fs from 'fs-extra';
 import sinon from 'sinon';
 
 const ImportArchive = require('../../../core/server/data/importer/import-archive').default;
-const importManager = require('../../../core/server/data/importer/import-manager');
+const importManager = require('../../../core/server/data/importer').init({
+  jobsService: { dispatch: sinon.stub() },
+});
 
 describe('ImportArchive', function () {
   let directory: string;

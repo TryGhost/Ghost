@@ -35,7 +35,6 @@ const wrapper: React.FC<{ children: ReactNode }> = ({ children }) => (
   <FrameworkProvider
     externalNavigate={() => {}}
     ghostVersion="5.x"
-    sentryDSN=""
     unsplashConfig={{
       Authorization: '',
       'Accept-Version': '',

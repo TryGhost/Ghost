@@ -3,14 +3,62 @@
 @source "../../admin-x-framework/src/**/*.{ts,tsx}";
 @source "../node_modules/@tryghost/kg-unsplash-selector/dist/**/*.js";
 
+@import './element-styles.css';
 @import '@tryghost/shade/styles.css';
 @import './assets/fonts/inter-admin/fonts.css';
+@import './assets/fonts/inter/fonts.css';
+@import './pintura.css';
 
-/* One progress value keeps the settings panel and its vacated header slot in sync. */
-@property --editor-settings-progress {
-  syntax: '<number>';
+/* Document root. Shade's spacing and type tokens assume a 10px rem. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  font-size: 62.5%;
+  line-height: 1.65;
+  letter-spacing: 0.01em;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+}
+
+/* The editor settings panel's motion. `--editor-settings-progress` on the editor
+   shell is only ever 0 or 1; each element that moves with the panel transitions
+   its own property, named in brackets (`editor-settings-motion-[width]`), on this
+   one timing. Animating the inherited progress value itself would restyle the
+   whole document on every frame of the motion. */
+@utility editor-settings-motion-* {
+  transition-property: --value([*]);
+  transition-duration: 450ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+
+  @media (prefers-reduced-motion: reduce) {
+    transition-property: none;
+  }
+}
+
+/* Koenig's wide and full cards are sized in viewport units less this width
+   beside the writing area. The writing area declares it at the settings panel's
+   resting state; while the panel moves, the editor writes it onto each card
+   every frame instead, so only the cards restyle. Registered as a length so the
+   writing area's formula still computes to the pixels Koenig's card settings
+   panel parses; Ember sets pixels. */
+@property --kg-breakout-adjustment {
+  syntax: '<length>';
   inherits: true;
-  initial-value: 0;
+  initial-value: 0px;
 }
 
 /* Shimmer for an active send's status line. The gradient is 300% wide so
@@ -54,7 +102,7 @@
     #ember-basic-dropdown-wormhole,
     #ember-modal-wormhole,
     #ember-liquid-wormhole,
-    #ember-alerts-wormhole,
+    #admin-alerts,
     #ember-notifications-wormhole
   ) {
   --font-sans:
@@ -79,7 +127,7 @@
         #ember-basic-dropdown-wormhole,
         #ember-modal-wormhole,
         #ember-liquid-wormhole,
-        #ember-alerts-wormhole,
+        #admin-alerts,
         #ember-notifications-wormhole
       )
   )
@@ -97,7 +145,7 @@
         #ember-basic-dropdown-wormhole,
         #ember-modal-wormhole,
         #ember-liquid-wormhole,
-        #ember-alerts-wormhole,
+        #admin-alerts,
         #ember-notifications-wormhole
       )
   )
@@ -117,7 +165,7 @@
         #ember-basic-dropdown-wormhole,
         #ember-modal-wormhole,
         #ember-liquid-wormhole,
-        #ember-alerts-wormhole,
+        #admin-alerts,
         #ember-notifications-wormhole
       )
   )
@@ -150,6 +198,12 @@
   --font-space-mono: Space Mono;
   --font-fira-mono: Fira Mono;
   --font-jetbrains-mono: JetBrains Mono;
+}
+
+/* Shared Koenig wrappers must retain their layout without Ember styles. */
+.koenig-react-editor {
+  max-width: 740px;
+  margin: 0 auto;
 }
 
 /* Koenig mounts floating toolbars to document.body. Radix modal dialogs disable
@@ -269,7 +323,7 @@ body.react-admin {
 }
 
 /* Alerts show at the top and push content down */
-body.react-admin #ember-alerts-wormhole {
+body.react-admin #admin-alerts {
   grid-row: 1;
   grid-column: 1;
   z-index: 0; /* Hide alerts when settings app modal is open */

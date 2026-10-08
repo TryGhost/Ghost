@@ -124,10 +124,10 @@ function isProductionOrDevelopment(this: ConfigLike): boolean {
   return ['development', 'production'].includes(this.get('env'));
 }
 
-export function bindAll(
-  nconf: Provider & BoundHelpers,
-): asserts nconf is Provider & BoundHelpers & ConfigHelpers {
-  const target = nconf as Provider & BoundHelpers & ConfigHelpers;
+export function bindAll<T extends ConfigWithUrlHelpers>(
+  nconf: T,
+): asserts nconf is T & ConfigHelpers {
+  const target = nconf as T & ConfigHelpers;
   target.isPrivacyDisabled = isPrivacyDisabled.bind(nconf);
   target.getContentPath = getContentPath.bind(nconf);
   target.getBackendMountPath = getBackendMountPath.bind(nconf);

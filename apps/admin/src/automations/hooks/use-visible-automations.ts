@@ -10,8 +10,16 @@ export const useVisibleAutomations = () => {
     refetchOnMount: 'always',
     staleTime: 0,
   });
-  const { data: settingsData, isLoading: isSettingsLoading } = useBrowseSettings();
-  const { data: configData, isLoading: isConfigLoading } = useBrowseConfig();
+  const {
+    data: settingsData,
+    isLoading: isSettingsLoading,
+    isFetching: isSettingsFetching,
+  } = useBrowseSettings();
+  const {
+    data: configData,
+    isLoading: isConfigLoading,
+    isFetching: isConfigFetching,
+  } = useBrowseConfig();
 
   const stripeEnabled = checkStripeEnabled(
     settingsData?.settings || [],
@@ -23,6 +31,10 @@ export const useVisibleAutomations = () => {
 
   return {
     automations,
+    allAutomations: data?.automations,
+    stripeEnabled,
+    isStripeReady: !!settingsData && !!configData && !isSettingsFetching && !isConfigFetching,
+    automationCount: data?.automations?.length,
     error,
     isError,
     isLoading: isLoading || isSettingsLoading || isConfigLoading,

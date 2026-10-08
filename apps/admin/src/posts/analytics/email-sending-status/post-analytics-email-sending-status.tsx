@@ -18,10 +18,11 @@ const failureDetail = (
   error?: string | null,
 ) => {
   const { completed, total } = sending.progress;
-  const sent = sending.failed_during === 'submitting' ? completed : 0;
+  // Submission progress includes exclusions, so it cannot be presented as emails sent.
+  const processed = sending.failed_during === 'submitting' ? completed : 0;
   const progress =
-    sent > 0
-      ? `${formatNumber(sent)} of ${formatNumber(total)} emails were sent.`
+    processed > 0
+      ? `${formatNumber(processed)} of ${formatNumber(total)} recipients processed.`
       : total > 0
         ? `None of the ${formatNumber(total)} emails were sent.`
         : 'No emails were sent.';
@@ -31,14 +32,8 @@ const failureDetail = (
 
 const PostAnalyticsEmailSendingStatus = () => {
   const { post } = usePostAnalytics();
-  const {
-    status,
-    isStatusLoading,
-    isNewsletterDataHidden,
-    hasUnknownDeliveryOutcome,
-    isRetrying,
-    retrySending,
-  } = useEmailSendingStatusContext();
+  const { status, isStatusLoading, isNewsletterDataHidden, isRetrying, retrySending } =
+    useEmailSendingStatusContext();
   const sending = status?.sending;
   const estimate = useSendingEta(status);
   const isFailed = sending?.status === 'failed';
@@ -47,13 +42,10 @@ const PostAnalyticsEmailSendingStatus = () => {
   const swapCount = useChangeCount(isFailed, !isStatusLoading);
 
   if (isFailed) {
-    const hasSentEmails =
-      !hasUnknownDeliveryOutcome &&
-      sending.failed_during === 'submitting' &&
-      sending.progress.completed > 0;
-    const detail = hasUnknownDeliveryOutcome
-      ? post?.email?.error || 'Something went wrong while sending this email.'
-      : failureDetail(sending, post?.email?.error);
+    const canRetry = sending.retryable === true;
+    const detail = canRetry
+      ? failureDetail(sending, post?.email?.error)
+      : post?.email?.error || 'Something went wrong while sending this email.';
 
     return (
       <Inline
@@ -66,23 +58,17 @@ const PostAnalyticsEmailSendingStatus = () => {
         role="alert"
         wrap
       >
-        <span className="font-medium text-state-danger">
-          {hasSentEmails ? 'Some emails failed to send' : 'Emails failed to send'}
-        </span>
+        <span className="font-medium text-state-danger">Emails failed to send</span>
         <span aria-hidden="true">·</span>
         <span>{detail}</span>
-        {!hasUnknownDeliveryOutcome && (
+        {canRetry && (
           <Button
             className="h-auto p-0 text-[length:inherit] leading-[inherit]"
             disabled={isRetrying}
             variant="link"
             onClick={() => void retrySending()}
           >
-            {isRetrying
-              ? 'Sending…'
-              : hasSentEmails
-                ? 'Send remaining emails'
-                : 'Retry sending email'}
+            {isRetrying ? 'Sending…' : 'Retry sending email'}
           </Button>
         )}
       </Inline>

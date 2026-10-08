@@ -6,6 +6,8 @@ const ObjectId = require('bson-objectid').default;
 const pick = require('lodash/pick');
 const DomainEvents = require('@tryghost/domain-events');
 const PostEmailHandler = require('./post-email-handler');
+const { afterCommit } = require('../../lib/after-commit');
+const logging = require('@tryghost/logging');
 const {
   validateAdminApiBulkFilterTransformer,
 } = require('../../api/endpoints/utils/api-filter-utils');
@@ -75,9 +77,32 @@ class PostsService {
   async editPost(frame, options) {
     const preflight = await this.postEmailHandler.validateBeforeSave(frame);
 
-    const model = await this.models.Post.edit(frame.data.posts[0], frame.options);
+    const save = async (transacting) => {
+      const model = await this.models.Post.edit(frame.data.posts[0], {
+        ...frame.options,
+        transacting,
+      });
+      const sendEmail = await this.postEmailHandler.createOrRetryEmail(model, {
+        preflight,
+        transacting,
+      });
+      return { model, sendEmail };
+    };
 
-    await this.postEmailHandler.createOrRetryEmail(model, { preflight });
+    const { model, sendEmail } = frame.options.transacting
+      ? await save(frame.options.transacting)
+      : await this.models.Post.transaction(save);
+
+    if (sendEmail && frame.options.transacting) {
+      // The caller commits later. Rolling back leaves nothing to send.
+      afterCommit(
+        frame.options.transacting,
+        () => sendEmail().catch((err) => logging.error(err)),
+        () => {},
+      );
+    } else {
+      await sendEmail?.();
+    }
 
     const dto = model.toJSON(frame.options);
 

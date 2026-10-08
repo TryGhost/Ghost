@@ -23,7 +23,7 @@ const DomainEvents = require('@tryghost/domain-events');
 const automationsApi = require('../../automations/automations-api');
 
 module.exports = function MembersAPI({
-  tokenConfig: { issuer, privateKey, publicKey },
+  tokenConfig: { issuer, signingKeys },
   auth: { allowSelfSignup = () => true, getSigninURL, tokenProvider },
   mail: { transporter, getText, getHTML, getSubject },
   models: {
@@ -42,6 +42,7 @@ module.exports = function MembersAPI({
     MemberProductEvent,
     MemberEmailChangeEvent,
     MemberCreatedEvent,
+    SubscriptionCreatedEvent,
     MemberLinkClickEvent,
     EmailSpamComplaintEvent,
     Offer,
@@ -72,11 +73,9 @@ module.exports = function MembersAPI({
   emailAddressService,
   giftService,
   metafieldValues,
-  metafieldDefinitions,
 }) {
   const tokenService = new TokenService({
-    privateKey,
-    publicKey,
+    signingKeys,
     issuer,
   });
 
@@ -104,10 +103,13 @@ module.exports = function MembersAPI({
     MemberEmailChangeEvent,
     MemberStatusEvent,
     MemberProductEvent,
+    MemberCreatedEvent,
+    SubscriptionCreatedEvent,
     OfferRedemption,
     StripeCustomer,
     StripeCustomerSubscription,
     offersAPI,
+    metafieldValues,
   });
 
   const eventRepository = new EventRepository({
@@ -156,7 +158,7 @@ module.exports = function MembersAPI({
     commentsService,
     giftService,
     metafieldValues,
-    metafieldDefinitions,
+    transaction: (fn) => Member.transaction(fn),
   });
 
   const geolocationService = new GeolocationService();
@@ -180,11 +182,6 @@ module.exports = function MembersAPI({
     offersAPI,
     stripeAPIService,
     settingsCache,
-    // The service wrapper, not the checkout config it builds: tiers and members are
-    // initialised in the same Promise.all, so reading the property here would capture
-    // whatever it was before tiers finished — usually undefined.
-    tiersService,
-    labsService,
   });
 
   const memberController = new MemberController({
@@ -495,7 +492,7 @@ module.exports = function MembersAPI({
 
   const getPublicConfig = function () {
     return Promise.resolve({
-      publicKey,
+      getVerificationKey: (kid) => signingKeys.getVerificationKey(kid),
       issuer,
     });
   };

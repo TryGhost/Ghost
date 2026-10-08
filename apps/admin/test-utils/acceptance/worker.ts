@@ -36,6 +36,13 @@ const EXTERNAL_URL_BLOCKLIST: Array<{ pattern: string; isMatch: (url: string) =>
   },
   // Tinybird pipes (analytics); declare per test with fakeTinybirdPipe (tinybird.ts)
   { pattern: `${TINYBIRD_ORIGIN}/*`, isMatch: (url) => url.startsWith(`${TINYBIRD_ORIGIN}/`) },
+  // Private-site login on any site origin (src/hooks/use-private-site-login.ts)
+  { pattern: '*/private/', isMatch: (url) => new URL(url).pathname.endsWith('/private/') },
+  // Sentry ingest (src/sentry), reached only when a spec serves a DSN on /site/
+  {
+    pattern: 'https://*.sentry.io/*',
+    isMatch: (url) => new URL(url).hostname.endsWith('.sentry.io'),
+  },
 ];
 
 // Per-test preview URLs are arbitrary site origins, so they cannot live in
@@ -236,7 +243,12 @@ function sleep(ms: number): Promise<void> {
   });
 }
 
-/** Resolves once no tracked request has been in flight for `quietMs` continuously. */
+/**
+ * Resolves once no tracked request has been in flight for `quietMs` continuously.
+ * Teardown drains with it. A spec waits on it for every section on screen to have
+ * its data, before a gesture that the page reflowing mid-way would knock off target,
+ * such as a drag.
+ */
 export async function settleRequests({
   quietMs = 50,
   timeoutMs = 2000,
@@ -262,7 +274,7 @@ export async function settleRequests({
 
   throw new Error(
     [
-      `Request(s) still in flight ${timeoutMs}ms after the test finished:`,
+      `Request(s) still in flight after ${timeoutMs}ms:`,
       // The page and MSW can both hold the same request.
       ...[...new Set(inFlightRequests.values())].map((description) => `  - ${description}`),
     ].join('\n'),
@@ -315,8 +327,9 @@ export interface FakeEndpointOptions {
  * JSON where the request is JSON. Multipart bodies are read as an object too, keyed by field
  * name, with files reduced to their name and type — otherwise a file upload's body is invisible
  * to tests and the only assertable thing about it is that it happened. Repeated fields (labels,
- * `mapping[column]`) collect into arrays. Anything else stays undefined, including a request
- * with no body at all.
+ * `mapping[column]`) collect into arrays. A plain-text body that is not JSON (e.g. Sentry's
+ * NDJSON envelopes) is its text. Anything else stays undefined, including a request with no
+ * body at all.
  */
 async function parseRequestBody(request: Request): Promise<unknown> {
   const contentType = request.headers.get('content-type') ?? '';
@@ -328,7 +341,10 @@ async function parseRequestBody(request: Request): Promise<unknown> {
     try {
       return await request.clone().json();
     } catch {
-      return undefined;
+      if (!contentType.startsWith('text/plain')) {
+        return undefined;
+      }
+      return (await request.clone().text()) || undefined;
     }
   }
 
@@ -381,7 +397,7 @@ export function fakeEndpoint(
 
 export interface CapturedEndpointRequest {
   url: string;
-  /** Parsed JSON request body, or undefined when there is none. */
+  /** Parsed JSON, multipart fields, or plain text; undefined when there is no body. */
   body: unknown;
 }
 
@@ -443,8 +459,9 @@ export type FakeAdminEndpointResponse =
  * Fake one admin API endpoint that has no resource fake. `apiPath` is
  * relative to /ghost/api/admin (string = exact including the query, RegExp =
  * test). `response` may be a synchronous or async function of the captured request —
- * `({body}) => body` echoes. Returns a capture of every matched request.
- * Prefer `defineResource` for browse endpoints.
+ * `({body}) => body` echoes. A `Response`, given or returned, is served as it is, so a
+ * function can answer with a status that depends on the request. Returns a capture of
+ * every matched request. Prefer `defineResource` for browse endpoints.
  */
 export function fakeAdminEndpoint(
   method: string,
@@ -470,6 +487,11 @@ export function fakeAdminEndpoint(
 
     const responseBody: unknown =
       typeof response === 'function' ? await response(captured) : response;
+
+    if (responseBody instanceof Response) {
+      // A body can be read only once, so every request is served its own copy.
+      return responseBody.clone();
+    }
 
     if (responseBody instanceof ArrayBuffer) {
       return new HttpResponse(responseBody, {

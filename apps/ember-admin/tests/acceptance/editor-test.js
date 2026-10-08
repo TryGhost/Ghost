@@ -2,7 +2,7 @@ import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import moment from 'moment-timezone';
 import sinon from 'sinon';
 import {Response} from 'miragejs';
-import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
+import {authenticateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent, typeIn, waitFor} from '@ember/test-helpers';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
@@ -23,16 +23,6 @@ describe('Acceptance: Editor', function () {
 
     beforeEach(async function () {
         this.server.loadFixtures('configs');
-    });
-
-    it('redirects to signin when not authenticated', async function () {
-        const author = this.server.create('user'); // necessary for post-author association
-        this.server.create('post', {authors: [author]});
-
-        await invalidateSession();
-        await visit('/editor/post/1');
-
-        expect(currentURL(), 'currentURL').to.equal('/signin');
     });
 
     it('does not redirect to staff page when authenticated as contributor', async function () {
@@ -118,10 +108,12 @@ describe('Acceptance: Editor', function () {
             'tags input'
         ).to.not.exist;
 
-        // post id 2 is published, we should be redirected to index
+        // post id 2 is published, we should be redirected to the posts list
+        const navigate = sinon.stub(this.owner.lookup('route:posts'), '_navigateToReactRoute');
         await visit('/editor/post/2');
 
-        expect(currentURL(), 'currentURL').to.equal('/posts');
+        expect(navigate.calledOnceWith('/posts'), 'navigated to the React posts list').to.be.true;
+        expect(currentRouteName(), 'currentRouteName').to.equal('react-fallback');
     });
 
     describe('when logged in', function () {
@@ -596,7 +588,6 @@ describe('Acceptance: Editor', function () {
 
         for (const resource of ['posts', 'pages']) {
             it(`returns the breadcrumb to the React ${resource} filters`, async function () {
-                enableLabsFlag(this.server, 'postsListReact');
                 const postType = resource === 'pages' ? 'page' : 'post';
                 const post = this.server.create(postType, {authors: [author]});
                 const bridge = this.owner.lookup('service:state-bridge');

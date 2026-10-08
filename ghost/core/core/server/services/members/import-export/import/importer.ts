@@ -1,7 +1,7 @@
 import moment from 'moment-timezone';
 import buildImportEmail, { type EmailLinks } from './completion-email';
 import { stripFormulaGuard } from '../csv';
-import { fieldValuesFromCsvRow, type CsvField } from '@tryghost/metafield-types/csv';
+import { fieldValuesFromCsvRow, type CsvField } from '@tryghost/metafield-csv';
 import type { Knex } from 'knex';
 import type { MemberImportRow, ImportErrorRow, ImportLabel, Label } from './row';
 import type { RowSpool } from './spool';

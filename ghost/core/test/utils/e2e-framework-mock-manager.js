@@ -21,8 +21,8 @@ let mocks = {};
 let emailCount = 0;
 
 // Mockable services
-const MailgunClient = require('../../core/server/services/lib/mailgun-client');
-const mailService = require('../../core/server/services/mail/index');
+const MailgunClient = require('../../core/server/lib/mailgun/mailgun-client');
+const mailService = require('../../core/server/lib/mail/index');
 const originalMailServiceSendMail = mailService.GhostMailer.prototype.sendMail;
 const labs = require('../../core/shared/labs');
 const events = require('../../core/server/lib/common/events');
@@ -132,7 +132,7 @@ const disableNetwork = () => {
  * Publishing that content triggers real webmention discovery
  * (mention-sending-service.js), which fetches every external link —
  * nock-blocked here, so the real fetch throws and mention-discovery-service.js
- * error-logs it on every publish. Reply with a plain page (no rel="webmention"
+ * logs it on every publish. Reply with a plain page (no rel="webmention"
  * link/header) instead of blocking the connection: same "no endpoint found"
  * outcome discovery would reach for a real site that doesn't support
  * webmentions, without eating a real connection error. Tests that exercise

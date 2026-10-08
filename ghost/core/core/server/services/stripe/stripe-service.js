@@ -10,7 +10,7 @@ const InvoiceEventService = require('./services/webhook/invoice-event-service');
 const CheckoutSessionEventService = require('./services/webhook/checkout-session-event-service');
 const ChargeRefundedEventService = require('./services/webhook/charge-refunded-event-service');
 const memberWelcomeEmailService = require('../member-welcome-emails/service');
-const metafields = require('../members-metafields');
+const stripeCheckoutConfig = require('../stripe-checkout-config');
 
 /**
  * @typedef {object} IStripeServiceConfig
@@ -63,7 +63,13 @@ module.exports = class StripeService {
     settingsCache,
     models,
   }) {
-    const api = new StripeAPI({ labs });
+    const api = new StripeAPI({
+      labs,
+      // The module rather than its service: this runs when the module loads, before boot
+      // creates the service. Checkouts only start once boot has finished, so the service
+      // exists by the time the API reads it.
+      stripeCheckoutConfig,
+    });
     const migrations = new StripeMigrations({
       models,
       api,
@@ -134,11 +140,6 @@ module.exports = class StripeService {
       async isPaidWelcomeEmailActive() {
         memberWelcomeEmailService.init();
         return memberWelcomeEmailService.api.isMemberWelcomeEmailActive('paid');
-      },
-      // A getter because the metafields services are built during boot: reading the
-      // binding at construction would capture the empty value it had beforehand.
-      get metafieldBindings() {
-        return metafields.bindings;
       },
     });
 

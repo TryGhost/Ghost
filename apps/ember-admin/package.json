@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "6.67.1-rc.0",
+  "version": "6.69.1-rc.0",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -44,8 +44,6 @@
     "@html-next/vertical-collection": "3.0.0",
     "@internal/cfg-eslint": "workspace:*",
     "@sentry/ember": "7.120.3",
-    "@sentry/integrations": "7.114.0",
-    "@sentry/replay": "7.116.0",
     "@tryghost/admin-x-framework": "workspace:*",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "catalog:",
@@ -95,7 +93,6 @@
     "ember-composable-helpers": "5.0.0",
     "ember-concurrency": "2.3.7",
     "ember-could-get-used-to-this": "1.0.1",
-    "ember-css-transitions": "4.4.1",
     "ember-data": "3.24.0",
     "ember-decorators": "6.1.1",
     "ember-drag-drop": "0.4.8",
@@ -103,7 +100,6 @@
     "ember-export-application-global": "2.0.1",
     "ember-fetch": "8.1.2",
     "ember-in-viewport": "4.1.0",
-    "ember-infinity": "2.3.0",
     "ember-keyboard": "8.2.1",
     "ember-load": "0.0.17",
     "ember-load-initializers": "2.1.2",
@@ -135,7 +131,7 @@
     "loader.js": "4.7.0",
     "microdiff": "1.5.0",
     "miragejs": "0.1.48",
-    "moment-timezone": "0.5.45",
+    "moment-timezone": "catalog:",
     "normalize.css": "3.0.3",
     "postcss-color-mod-function": "3.0.3",
     "postcss-custom-media": "7.0.8",
@@ -176,8 +172,12 @@
     "webpack": "5.105.4"
   },
   "nx": {
+    "namedInputs": {
+      "reactAdminDependency": []
+    },
     "implicitDependencies": [
-      "!ghost"
+      "!ghost",
+      "@internal/scripts"
     ],
     "targets": {
       "dev": {

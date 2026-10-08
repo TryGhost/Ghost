@@ -1,6 +1,5 @@
 import Service, {inject as service} from '@ember/service';
 import {action, get} from '@ember/object';
-import {inject} from 'ghost-admin/decorators/inject';
 import {tracked} from '@glimmer/tracking';
 
 function collectMetadataClasses(transition, prop) {
@@ -38,8 +37,6 @@ export default class UiService extends Service {
     @service router;
     @service('state-bridge') stateBridge;
 
-    @inject config;
-
     @tracked _isFullScreen = false;
     @tracked mainClass = '';
     get isFullScreen() {
@@ -58,8 +55,6 @@ export default class UiService extends Service {
         this.router.on('routeDidChange', (transition) => {
             updateBodyClasses(transition);
 
-            this.updateDocumentTitle();
-
             const {newClasses: mainClasses} = collectMetadataClasses(transition, 'mainClasses');
             this.mainClass = mainClasses.join(' ');
         });
@@ -73,30 +68,6 @@ export default class UiService extends Service {
     @action
     setMainClass(mainClass) {
         this.mainClass = mainClass;
-    }
-
-    @action
-    updateDocumentTitle() {
-        let {currentRoute} = this.router;
-        const tokens = [];
-
-        while (currentRoute) {
-            let titleToken = get(currentRoute, 'metadata.titleToken');
-
-            if (typeof titleToken === 'function') {
-                titleToken = titleToken();
-            }
-
-            if (titleToken) {
-                tokens.unshift(titleToken);
-            }
-
-            currentRoute = currentRoute.parent;
-        }
-
-        const blogTitle = this.config.blogTitle;
-
-        window.document.title = `Ghost Admin - ${blogTitle}`;
     }
 
     @action

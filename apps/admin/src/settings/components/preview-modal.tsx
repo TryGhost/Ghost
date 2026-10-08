@@ -225,6 +225,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     <SettingsModal
       afterClose={afterClose}
       animate={false}
+      aria-label={title}
       backDropClick={backDropClick}
       dirty={dirty}
       footer={false}

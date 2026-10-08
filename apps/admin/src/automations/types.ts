@@ -5,3 +5,5 @@ export type AutomationEditState =
   | { phase: 'idle'; action?: undefined }
   | { phase: 'submitting' | 'failed'; action: AutomationEditAction }
   | { phase: 'confirming'; action: ConfirmableAutomationEditAction };
+
+export type RunSortDirection = 'asc' | 'desc';

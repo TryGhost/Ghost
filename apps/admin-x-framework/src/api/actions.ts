@@ -204,6 +204,10 @@ export const getActionTitle = (action: Action) => {
     resourceType = 'security action';
   } else if (resourceType === 'member_custom_field') {
     resourceType = 'custom field';
+  } else if (resourceType === 'app_installation') {
+    resourceType = 'app';
+  } else if (resourceType === 'stripe_checkout_config') {
+    resourceType = 'checkout settings';
   }
 
   // Because a `page` and `post` both use the same model, we store the
@@ -226,6 +230,8 @@ export const getActionTitle = (action: Action) => {
     actionName = 'reset authentication';
   } else if (actionName === 'custom_fields_edited') {
     actionName = 'custom fields edited';
+  } else if (actionName === 'changes_approved') {
+    actionName = 'changes approved';
   }
 
   if (action.context?.count && (action.context?.count as number) > 1) {

@@ -1,6 +1,7 @@
 import { page } from 'vitest/browser';
 import {
   listPage,
+  managePostView,
   postFeaturedMarker,
   postListItemAction,
   postListItemLink,
@@ -118,9 +119,57 @@ export const postsListScreen = {
   showAllButton: (plural: string) => page.getByRole('button', { name: `Show all ${plural}` }),
   filterBar: () => page.getByTestId(postsFilters),
   addFilterButton: () => page.getByTestId(postsFilters).getByRole('button', { name: 'Filter' }),
+  /** An applied chip's value, which opens its picker. */
+  filterValueButton: (label: string) =>
+    page.getByTestId(postsFilters).getByRole('button', { name: label, exact: true }),
+  /** An entry in a chip's operator menu, which renders into a portal. */
+  filterOperatorOption: (label: string) => page.getByRole('menuitem', { name: label, exact: true }),
+  /** An option in a chip's value picker, which renders into a portal. */
+  filterValueOption: (label: string) => page.getByRole('option', { name: label, exact: true }),
   /** A field in the add-filter popover, which renders into a portal. */
   filterFieldOption: (label: string) => page.getByRole('option', { name: label, exact: true }),
   sortButton: () => page.getByTestId(postsSort),
   /** Select options, so the active sort is announced and visibly checked. */
   sortOption: (label: string) => page.getByRole('option', { name: label, exact: true }),
+  /** Reads "Save view", or "Edit view" while a saved view is active. */
+  manageViewButton: () => page.getByTestId(managePostView),
+  /** The save/edit-view popover, which Radix portals out of the list. */
+  viewPopover: () => page.getByRole('dialog'),
+  viewNameInput: () => postsListScreen.viewPopover().getByLabelText('View name'),
+  viewColorOption: (color: string) =>
+    postsListScreen.viewPopover().getByRole('radio', { name: color, exact: true }),
+  viewPopoverButton: (label: string) =>
+    postsListScreen.viewPopover().getByRole('button', { name: label, exact: true }),
+  viewError: () => postsListScreen.viewPopover().getByRole('alert'),
+
+  /** Add a filter chip through the Filter button: pick the field, then its value. */
+  async addFilter(field: string, value: string): Promise<void> {
+    await postsListScreen.addFilterButton().click();
+    await postsListScreen.filterFieldOption(field).click();
+    await page.getByRole('option', { name: value, exact: true }).click();
+  },
+
+  /**
+   * Save the current filters as a view — or, on a saved view, save its edits —
+   * under `name`, in `color` when given.
+   */
+  async saveView(name: string, color?: string): Promise<void> {
+    await postsListScreen.manageViewButton().click();
+    await postsListScreen.viewNameInput().fill(name);
+    if (color) {
+      await postsListScreen.viewColorOption(color).click();
+    }
+    // "Save view" for a new view, "Save" for an edit.
+    await postsListScreen
+      .viewPopover()
+      .getByRole('button', { name: /^Save( view)?$/ })
+      .click();
+  },
+
+  /** Delete the saved view the list is on, through its edit popover. */
+  async deleteView(): Promise<void> {
+    await postsListScreen.manageViewButton().click();
+    await postsListScreen.viewPopoverButton('Delete').click();
+    await postsListScreen.viewPopoverButton('Delete').click();
+  },
 };

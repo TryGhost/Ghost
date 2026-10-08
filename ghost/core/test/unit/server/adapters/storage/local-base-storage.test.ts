@@ -1,4 +1,6 @@
 import assert from 'assert/strict';
+import { pipeline } from 'node:stream/promises';
+import { createHash } from 'node:crypto';
 import path from 'path';
 import os from 'os';
 import http from 'http';
@@ -291,5 +293,59 @@ describe('Local Storage Base', function () {
         message: 'The path "file.txt" is not valid for this storage.',
       });
     });
+  });
+});
+
+describe('Local Storage Base streaming reads', function () {
+  let root: string;
+  let storage: LocalStorageBase;
+  beforeEach(async function () {
+    root = await fs.mkdtemp(path.join(os.tmpdir(), 'storage-stream-'));
+    storage = new LocalStorageBase({ storagePath: path.join(root, 'objects') });
+  });
+  afterEach(async function () {
+    await fs.remove(root);
+  });
+  for (const size of [0, 1024 * 1024 + 1]) {
+    it(`streams ${size} bytes from a saved file without buffered reads`, async function () {
+      const source = path.join(root, 'source');
+      const bytes = Buffer.alloc(size, 0x89);
+      await fs.writeFile(source, bytes);
+      const key = storage.urlToPath(
+        await storage.save({ name: 'opaque', path: source }, storage.storagePath),
+      );
+      const buffered = sinon.spy(storage, 'read');
+      const stream = await storage.readStream({ path: key });
+      const target = path.join(root, 'target');
+      await pipeline(stream, fs.createWriteStream(target));
+      assert.equal((await fs.stat(target)).size, size);
+      assert.equal(
+        createHash('sha256')
+          .update(await fs.readFile(target))
+          .digest('hex'),
+        createHash('sha256').update(bytes).digest('hex'),
+      );
+      assert.equal(stream.destroyed, true);
+      sinon.assert.notCalled(buffered);
+    });
+  }
+  it('rejects missing files with the buffered read error convention', async function () {
+    await assert.rejects(storage.readStream({ path: 'missing' }), { errorType: 'NotFoundError' });
+  });
+  for (const invalid of ['', '../outside', '..\\outside']) {
+    it(`rejects invalid path ${JSON.stringify(invalid)}`, async function () {
+      await assert.rejects(storage.readStream({ path: invalid }), {
+        errorType: 'IncorrectUsageError',
+      });
+    });
+  }
+  it('closes the source when the destination fails', async function () {
+    await fs.outputFile(path.join(storage.storagePath, 'source'), 'data');
+    const stream = await storage.readStream({ path: 'source' });
+    await assert.rejects(
+      pipeline(stream, fs.createWriteStream(path.join(root, 'absent', 'target'))),
+      { code: 'ENOENT' },
+    );
+    assert.equal(stream.destroyed, true);
   });
 });

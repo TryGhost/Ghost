@@ -6,6 +6,26 @@
 const { SafeString } = require('../services/handlebars');
 const moment = require('moment-timezone');
 const _ = require('lodash');
+const { memoize } = require('../../shared/memoize');
+
+// Locales are a small, fixed set per site - memoize the maximized candidate
+// list per locale string instead of recomputing it on every helper call.
+const getLocaleCandidates = memoize(
+  (locale) => {
+    const candidates = [locale];
+    try {
+      const maximized = new Intl.Locale(locale).maximize();
+      if (maximized.region) {
+        candidates.push(`${maximized.language}-${maximized.region}`, maximized.language);
+      }
+    } catch (e) {
+      // Invalid locale tag - moment will fall back to the default locale
+    }
+    return Object.freeze(candidates);
+  },
+  (locale) => locale,
+  { max: 100 },
+);
 
 module.exports = function (...attrs) {
   // Options is the last argument
@@ -32,14 +52,20 @@ module.exports = function (...attrs) {
     locale = options.data.site.locale,
   } = options.hash;
 
-  const timeNow = moment().tz(timezone);
+  // timeNow is only needed as the `.from()` reference for timeago output -
+  // only construct it when timeago is actually requested.
+  let timeNow;
+  if (timeago) {
+    timeNow = moment().tz(timezone);
+  }
+
   // Our date might be user input
   const testDateInput = Date.parse(date);
   let dateMoment;
   if (isNaN(testDateInput) === false) {
     dateMoment = moment.parseZone(date);
   } else {
-    dateMoment = timeNow;
+    dateMoment = timeNow || moment().tz(timezone);
   }
 
   // i18n: Making dates, including month names, translatable to any language.
@@ -50,16 +76,7 @@ module.exports = function (...attrs) {
     // languages where Ghost's i18n uses a bare or script-tagged code (zh, zh-Hant, pa).
     // Maximize the locale to find the most likely regional variant, and let moment
     // pick the first candidate it has a locale for.
-    const candidates = [locale];
-    try {
-      const maximized = new Intl.Locale(locale).maximize();
-      if (maximized.region) {
-        candidates.push(`${maximized.language}-${maximized.region}`, maximized.language);
-      }
-    } catch (e) {
-      // Invalid locale tag - moment will fall back to the default locale
-    }
-    dateMoment.locale(candidates);
+    dateMoment.locale(getLocaleCandidates(locale));
   }
 
   if (timeago) {

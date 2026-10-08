@@ -27,8 +27,14 @@ const messages = {
 };
 
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
-// Keep the pill milestone enabled for older Admin builds during independent deployments.
-const GA_FEATURES = ['automationAnalytics', 'admin7Pill'];
+// Admin no longer reads admin7Pill or selfServeArchives; they stay enabled for
+// older Admin builds during independent deployments.
+const GA_FEATURES = [
+  'automationAnalytics',
+  'automationRunAnalytics',
+  'admin7Pill',
+  'selfServeArchives',
+];
 
 // These features are considered publicly available and can be enabled/disabled by users
 const PUBLIC_BETA_FEATURES = [
@@ -42,32 +48,25 @@ const PUBLIC_BETA_FEATURES = [
 // Which is only visible if the developer experiments flag is enabled
 const PRIVATE_FEATURES = [
   'automations',
+  'automationsArchive',
   'automationsPerTier',
-  'automationRunAnalytics',
-  'automationsTinybirdSync',
   'stripeAutomaticTax',
   'importMemberTier',
   'csvContentImporter',
-  'adminUIRefresh',
-  'tagsX',
   'emailUniqueid',
   'improveSendingUI',
   'themeTranslation',
   'pictureImageFormats',
   'getHelperDeduplication',
   'membersCustomFields',
-  'memberLocationMap',
   'stripeCheckoutCollection',
-  'membersImportRedesign',
+  'stripeCheckoutDesign',
   'paywallImprovements',
-  'selfServeArchives',
   'machinePayments',
-  'postsListReact',
-  'membersActivityReact',
   'editorReact',
-  'authReact',
-  'globalSearchReact',
-  'dunningWarnings',
+  'navigationUrlSuggestions',
+  'billingReact',
+  'apps',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

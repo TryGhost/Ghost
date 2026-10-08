@@ -20,6 +20,11 @@ const features: Feature[] = [
     flag: 'automations',
   },
   {
+    title: 'Archive automations',
+    description: 'Let members archive and restore automations.',
+    flag: 'automationsArchive',
+  },
+  {
     title: 'Automations per tier',
     description: 'Allow automations to be configured for individual tiers.',
     flag: 'automationsPerTier',
@@ -28,11 +33,6 @@ const features: Feature[] = [
     title: 'Automation run analytics',
     description: 'Track run-level analytics for automations.',
     flag: 'automationRunAnalytics',
-  },
-  {
-    title: 'Automations Tinybird sync',
-    description: 'Sync automations data to Tinybird.',
-    flag: 'automationsTinybirdSync',
   },
   {
     title: 'Stripe Automatic Tax (private beta)',
@@ -48,16 +48,6 @@ const features: Feature[] = [
     title: 'CSV Content Importer',
     description: 'Enables importing posts from CSV files in the Universal Importer',
     flag: 'csvContentImporter',
-  },
-  {
-    title: 'Admin UI Refresh',
-    description: 'Enable Admin UI refresh (exploration)',
-    flag: 'adminUIRefresh',
-  },
-  {
-    title: 'Tags X',
-    description: 'Enables the new Tags UI',
-    flag: 'tagsX',
   },
   {
     title: 'Email Unique ID',
@@ -88,12 +78,6 @@ const features: Feature[] = [
     flag: 'getHelperDeduplication',
   },
   {
-    title: 'Member location maps',
-    description:
-      'Show a location map and profile header on member pages, with state pins for US members.',
-    flag: 'memberLocationMap',
-  },
-  {
     title: 'Member custom fields',
     description:
       'Let admins create and manage custom field definitions for members, and choose which field each Stripe checkout answer is stored in',
@@ -106,21 +90,15 @@ const features: Feature[] = [
     flag: 'stripeCheckoutCollection',
   },
   {
-    title: 'Members import redesign',
+    title: 'Stripe checkout design',
     description:
-      'Serves the redesigned members CSV import dialog, which shows every column in the file and lets each one be mapped to a member field',
-    flag: 'membersImportRedesign',
+      'Let admins style the Stripe checkout page with their own button color, background color, corners and font',
+    flag: 'stripeCheckoutDesign',
   },
   {
     title: 'Paywall improvements',
     description: 'Enables paywall usability, discoverability and email customization improvements',
     flag: 'paywallImprovements',
-  },
-  {
-    title: 'React posts & pages lists',
-    description:
-      'Renders the posts (/posts) and pages (/pages) list screens from the React app instead of the Ember screens. Gates the migration behind a runtime toggle so we can compare both implementations.',
-    flag: 'postsListReact',
   },
   {
     title: 'React editor',
@@ -129,39 +107,28 @@ const features: Feature[] = [
     flag: 'editorReact',
   },
   {
-    title: 'React global search',
-    description:
-      'Serves the Cmd/Ctrl+K search modal from the React app instead of the Ember modal. Gates the migration behind a runtime toggle so we can compare both implementations.',
-    flag: 'globalSearchReact',
-  },
-  {
-    title: 'React member activity',
-    description: 'Preview the new member activity screen.',
-    flag: 'membersActivityReact',
-  },
-  {
-    title: 'React sign-in screens',
-    description:
-      'Serves sign in, 2FA verification, password reset, staff invite signup, setup and sign out from the React app instead of the Ember screens. Takes effect on the next page load.',
-    flag: 'authReact',
-  },
-  {
-    title: 'Self-serve archives',
-    description:
-      'Replaces the individual export buttons with a single "Export data" flow for downloading a full site archive',
-    flag: 'selfServeArchives',
-  },
-  {
     title: 'Machine payments',
     description:
       'Let AI agents pay for access to paid-members markdown (.md) URLs via Stripe Machine Payments Protocol',
     flag: 'machinePayments',
   },
   {
-    title: 'Dunning warnings',
+    title: 'Navigation URL suggestions',
     description:
-      'Show payment-failure warnings in Admin, driven by the hosting provider via hostSettings.billing.dunning',
-    flag: 'dunningWarnings',
+      'Suggest pages, posts, offers and Portal links when editing navigation URLs in settings',
+    flag: 'navigationUrlSuggestions',
+  },
+  {
+    title: 'React Ghost(Pro) billing',
+    description:
+      'Serves the Ghost(Pro) billing screen (/pro) and its background billing app connection from the React app instead of Ember.',
+    flag: 'billingReact',
+  },
+  {
+    title: 'Apps',
+    description:
+      'Install and manage third-party apps that run on their own servers. Early and incomplete.',
+    flag: 'apps',
   },
 ];
 

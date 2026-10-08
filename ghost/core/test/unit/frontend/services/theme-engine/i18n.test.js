@@ -58,7 +58,10 @@ describe('I18n Class behavior', function () {
 
   describe('translation key dot notation (default behavior)', function () {
     const fakeStrings = {
-      test: { string: { path: 'I am correct' } },
+      test: {
+        string: { path: 'I am correct' },
+        paragraphs: ['Hello {name},', 'Welcome to {site}.'],
+      },
     };
     let i18n;
 
@@ -68,12 +71,25 @@ describe('I18n Class behavior', function () {
       i18n.init();
     });
 
+    afterEach(function () {
+      sinon.restore();
+    });
+
     it('correctly loads strings', function () {
       assert.equal(i18n._strings, fakeStrings);
     });
 
     it('correctly uses dot notation', function () {
       assert.equal(i18n.t('test.string.path'), 'I am correct');
+    });
+
+    it('treats a key that resolves to an array as missing', function () {
+      const loggingStub = sinon.stub(logging, 'error');
+      assert.equal(
+        i18n.t('test.paragraphs', { name: 'Jamie', site: 'Ghost' }),
+        'An error occurred',
+      );
+      sinon.assert.calledOnce(loggingStub);
     });
 
     it('uses key fallback correctly', function () {

@@ -29,7 +29,7 @@ module.exports = async ({
     }
   }
 
-  const mailService = require('../mail');
+  const mailService = require('../../lib/mail');
   const ghostMailer = new mailService.GhostMailer();
 
   const notificationEmailService = new NotificationEmailService({

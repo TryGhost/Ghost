@@ -4,18 +4,12 @@ Sign in, sign-in verification, password reset, staff invite signup, first-run
 setup and sign out, served at `/signin`, `/signin/verify`, `/reset/:token`,
 `/signup/:token`, `/setup` and `/signout`.
 
-## Who serves them
+## Signed-out shell
 
-The screens render before anyone is signed in, so the authenticated `/config/`
-Labs payload is unavailable. `useAuthScreensOwner` decides from inputs that are
-public: the `authReact` field of `GET /site/`, or an `authReact` Labs URL
-override (`/ghost/#/signin?labs=authReact`). A server without the field serves
-the Ember screens. The answer is held for the page's lifetime.
-
-When React owns them, a signed-out visitor gets `SignedOutApp` in place of the
-admin shell: auth routes render, any other route is remembered and replaced by
-`/signin`, and a site that has not been set up sends every auth screen except
-sign out to `/setup`. A signed-in visitor on an auth route goes home (with a
+A signed-out visitor gets `SignedOutApp` in place of the admin shell: auth
+routes render, any other route is remembered and replaced by `/signin`, and a
+site that has not been set up sends every auth screen except sign out to
+`/setup`. A signed-in visitor on an auth route goes home (with a
 warning on reset and signup), except `/signout`.
 
 ## The client contract
@@ -39,9 +33,17 @@ authentication endpoints (through the framework hooks, which never retry these
 single-use writes). Replacing the implementation means exporting a different
 `useAuthClient` from `client/auth-client.ts`. Two server behaviours the screens
 rely on and a replacement must keep: the first verification code is emailed
-during sign in (the verify screen only calls `sendOtp` from Resend), and a
-password reset may or may not sign the user in (the screen reloads either way,
-landing on the admin or on sign in).
+during sign in (`sendOtp` is called only from Resend), and a password reset may
+or may not sign the user in (the screen reloads either way, landing on the admin
+or on sign in).
+
+## Resend
+
+`ResendCodeButton` emails a fresh code from the verification code's input group.
+It reads Sending while the request runs, then Sent, and stays disabled for
+fifteen seconds after each code that goes out. A failure is handed to the caller
+as the text to show, and the button is offered again. It is exported through
+`api.ts` for sign-in prompts outside these screens.
 
 ## Session changes reload the page
 
@@ -56,7 +58,7 @@ in `sessionStorage` for the reloaded admin to show.
 
 ## Tests
 
-Acceptance specs boot signed out with `renderAdminApp(route, signedOut({authReact: true}))`
+Acceptance specs boot signed out with `renderAdminApp(route, signedOut())`
 and fake `/authentication/setup/` with `fakeSetupStatus()`; `reloadAdmin` is
 mocked. Signed-in specs live in their own file: once a page load has seen the
 session work, a later 403 would trigger the session-expiry redirect.

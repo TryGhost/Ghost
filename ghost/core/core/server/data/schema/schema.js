@@ -1140,47 +1140,6 @@ module.exports = {
     ],
     '@@INDEXES@@': [['metafield_key']],
   },
-  // How a tier's checkout question is asked. Where the answer lands is the binding it
-  // hangs off.
-  products_checkout_fields: {
-    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
-    binding_id: {
-      type: 'string',
-      maxlength: 24,
-      nullable: false,
-      unique: true,
-      references: 'members_metafield_bindings.id',
-      cascadeDelete: true,
-    },
-    sort_order: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
-    // Processors cap a label far shorter than a field name may be. Null asks under the
-    // field's own name.
-    label: { type: 'string', maxlength: 191, nullable: true },
-    optional: { type: 'boolean', nullable: false, defaultTo: true },
-    created_at: { type: 'dateTime', nullable: false },
-    updated_at: { type: 'dateTime', nullable: true },
-  },
-  // The options a tier's collection needs, and the one thing it collects without keeping.
-  // Whether it collects anything it *does* keep is the binding above.
-  products_checkout_config: {
-    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
-    product_id: {
-      type: 'string',
-      maxlength: 24,
-      nullable: false,
-      unique: true,
-      references: 'products.id',
-      cascadeDelete: true,
-    },
-    // ISO 3166-1 alpha-2, comma-joined. A processor will not render an address form
-    // without them, and a wrong code fails the session create.
-    shipping_allowed_countries: { type: 'string', maxlength: 2000, nullable: true },
-    // Stripe keeps a tax number against the customer it invoices, so there is no
-    // destination to bind and nothing to record but whether to ask.
-    tax_number_collect: { type: 'boolean', nullable: false, defaultTo: false },
-    created_at: { type: 'dateTime', nullable: false },
-    updated_at: { type: 'dateTime', nullable: true },
-  },
   members_metafield_values: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     // The field's stable key, not its id: a value is addressed by key everywhere it
@@ -1601,6 +1560,16 @@ module.exports = {
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
+  // The site-wide Stripe Checkout config. It is a single row found by its slug, so the first
+  // save inserts it and later saves update it. Each part of the config has its own JSON
+  // column, which is null until that part is set.
+  stripe_checkout_config: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    slug: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    design: { type: 'text', maxlength: 65535, nullable: true },
+    created_at: { type: 'dateTime', nullable: false },
+    updated_at: { type: 'dateTime', nullable: true },
+  },
   actions: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     resource_id: { type: 'string', maxlength: 24, nullable: true },
@@ -1634,6 +1603,10 @@ module.exports = {
     error_data: { type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true },
     email_count: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
     csd_email_count: { type: 'integer', nullable: true, unsigned: true },
+    preflight_email_count: { type: 'integer', nullable: true, unsigned: true },
+    candidate_count: { type: 'integer', nullable: true, unsigned: true },
+    preparation_excluded_count: { type: 'integer', nullable: true, unsigned: true },
+    prepared_at: { type: 'dateTime', nullable: true },
     delivered_count: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
     opened_count: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
     failed_count: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
@@ -1671,6 +1644,9 @@ module.exports = {
       validations: { isIn: [['pending', 'submitting', 'submitted', 'failed']] },
     },
     member_segment: { type: 'text', maxlength: 2000, nullable: true },
+    recipient_count: { type: 'integer', nullable: true, unsigned: true },
+    submission_excluded_count: { type: 'integer', nullable: true, unsigned: true },
+    submitted_count: { type: 'integer', nullable: true, unsigned: true },
     error_status_code: { type: 'integer', nullable: true, unsigned: true },
     error_message: { type: 'string', maxlength: 2000, nullable: true },
     error_data: { type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true },
@@ -2171,7 +2147,7 @@ module.exports = {
     },
     name: { type: 'string', maxlength: 191, nullable: false, unique: true },
     description: { type: 'string', maxlength: 2000, nullable: false, defaultTo: '' },
-    slug: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    slug: { type: 'string', maxlength: 191, nullable: true, unique: true },
     trigger_tier_scope: {
       type: 'string',
       maxlength: 50,
@@ -2639,5 +2615,58 @@ module.exports = {
     last_synced_id: { type: 'string', maxlength: 24, nullable: false },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
+  },
+  // One site's approval of one app. Still in development: see ./in-development.ts.
+  //
+  // A row is never deleted and never revived. Uninstalling ends it, and installing the same
+  // app again adds a new row, so every past install stays on record. Who installed or
+  // uninstalled an app, and when, is in `actions`.
+  app_installations: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    // The ID from the app's manifest. Kept on every row, installed or not.
+    app_id: { type: 'string', maxlength: 191, nullable: false, index: true },
+    // The same ID until the installation is uninstalled, suspended included, then null.
+    // Being unique, it is what lets a site have only one installation per app however two
+    // installs race, while any number of ended ones share the null.
+    current_app_id: { type: 'string', maxlength: 191, nullable: true, unique: true },
+    status: {
+      type: 'string',
+      maxlength: 50,
+      nullable: false,
+      validations: { isIn: [['active', 'suspended', 'uninstalled']] },
+    },
+    // The approved manifest, which is what runs, and a newer one waiting for approval.
+    // Both point into app_installation_manifests. They are plain columns rather than
+    // foreign keys, as those rows point back here, and are set in the same transaction.
+    manifest_id: { type: 'string', maxlength: 24, nullable: false },
+    pending_manifest_id: { type: 'string', maxlength: 24, nullable: true },
+    // Goes up on every change to the installation. Open app sessions are pinned to it, so
+    // any change ends them.
+    revision: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
+    created_at: { type: 'dateTime', nullable: false },
+    updated_at: { type: 'dateTime', nullable: true },
+  },
+  // Every manifest an installation has run or been asked to approve. Still in development:
+  // see ./in-development.ts.
+  //
+  // Append-only: a row is added when a manifest becomes an installation's approved or
+  // pending one, and never changed, so the site can always tell exactly what was approved.
+  app_installation_manifests: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    installation_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      references: 'app_installations.id',
+    },
+    // As wide as the contract's URL limit, which is what refuses a longer one.
+    manifest_url: { type: 'string', maxlength: 2000, nullable: false },
+    // The validated manifest, with its URLs resolved, as JSON.
+    manifest: { type: 'text', maxlength: 65535, nullable: false },
+    // SHA-256 of `manifest`, in hex, so two manifests compare without parsing.
+    digest: { type: 'string', maxlength: 64, nullable: false },
+    // Whether this manifest had changes that needed approval when it was added.
+    requires_approval: { type: 'boolean', nullable: false, defaultTo: false },
+    created_at: { type: 'dateTime', nullable: false },
   },
 };

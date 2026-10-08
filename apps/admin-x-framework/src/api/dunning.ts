@@ -25,7 +25,6 @@ const dunningConfigSchema = z
   })
   .refine(({ paymentFailedAt, suspendsAt }) => suspendsAt.getTime() > paymentFailedAt.getTime());
 
-/** Shared by React warnings and the legacy alert so invalid config never hides both. */
 export function parseDunningConfig(value: unknown) {
   const result = dunningConfigSchema.safeParse(value);
   return result.success ? result.data : null;

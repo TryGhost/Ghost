@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
+import { useSyncExternalStore } from 'react';
 import { dispatchedIntents } from '@/editor/session/__test-utils__/save-engine-spy';
 import {
   record as sessionRecord,
@@ -11,6 +12,7 @@ import {
   normalizeCaptionHtml,
   useFeatureImageBinding,
   withCaptionParagraph,
+  type FeatureImagePatch,
 } from './feature-image-binding';
 
 type SaveEngineModule = typeof import('@/editor/engine/save-engine');
@@ -24,8 +26,22 @@ beforeEach(() => {
   dispatchedIntents.length = 0;
 });
 
-function port() {
-  return { patchFeatureImage: vi.fn(), commitSettings: vi.fn() };
+/** Holds the alt text and caption it is patched with, as the session does. */
+function port(held: { alt?: string | null; caption?: string | null } = {}) {
+  const session = {
+    featureImageAlt: held.alt ?? null,
+    featureImageCaption: held.caption ?? null,
+    patchFeatureImage: vi.fn((patch: FeatureImagePatch) => {
+      if ('feature_image_alt' in patch) {
+        session.featureImageAlt = patch.feature_image_alt ?? null;
+      }
+      if ('feature_image_caption' in patch) {
+        session.featureImageCaption = patch.feature_image_caption ?? null;
+      }
+    }),
+    commitField: vi.fn(),
+  };
+  return session;
 }
 
 function record(overrides: Partial<EditorRecord> = {}): EditorRecord {
@@ -91,7 +107,7 @@ describe('useFeatureImageBinding', () => {
   it('starts from the loaded post', () => {
     const { result } = renderHook(() =>
       useFeatureImageBinding(
-        port(),
+        port({ alt: 'A', caption: 'A caption' }),
         record({
           feature_image: 'https://example.com/a.png',
           feature_image_alt: 'A',
@@ -114,12 +130,12 @@ describe('useFeatureImageBinding', () => {
     expect(session.patchFeatureImage).toHaveBeenCalledWith({
       feature_image: 'https://example.com/a.png',
     });
-    expect(session.commitSettings).toHaveBeenCalledTimes(1);
+    expect(session.commitField).toHaveBeenCalledTimes(1);
     expect(result.current.featureImage).toBe('https://example.com/a.png');
   });
 
   it('clears the alt text and caption along with the image', () => {
-    const session = port();
+    const session = port({ alt: 'A', caption: 'A caption' });
     const { result } = renderHook(() =>
       useFeatureImageBinding(
         session,
@@ -138,7 +154,7 @@ describe('useFeatureImageBinding', () => {
       feature_image_alt: null,
       feature_image_caption: null,
     });
-    expect(session.commitSettings).toHaveBeenCalledTimes(1);
+    expect(session.commitField).toHaveBeenCalledTimes(1);
     expect(result.current.featureImageCaption).toBeNull();
   });
 
@@ -151,7 +167,7 @@ describe('useFeatureImageBinding', () => {
     expect(session.patchFeatureImage).toHaveBeenCalledWith({
       feature_image_alt: 'A field of grass',
     });
-    expect(session.commitSettings).toHaveBeenCalledTimes(1);
+    expect(session.commitField).toHaveBeenCalledTimes(1);
   });
 
   it('holds the caption until it loses focus', () => {
@@ -161,15 +177,15 @@ describe('useFeatureImageBinding', () => {
     act(() => result.current.onFeatureImageCaptionChange('<p>A caption</p>'));
 
     expect(session.patchFeatureImage).toHaveBeenCalledWith({ feature_image_caption: 'A caption' });
-    expect(session.commitSettings).not.toHaveBeenCalled();
+    expect(session.commitField).not.toHaveBeenCalled();
 
     act(() => result.current.onFeatureImageCaptionBlur());
 
-    expect(session.commitSettings).toHaveBeenCalledTimes(1);
+    expect(session.commitField).toHaveBeenCalledTimes(1);
   });
 
   it('ignores a caption the editor only re-serialized', () => {
-    const session = port();
+    const session = port({ caption: 'A caption' });
     const { result } = renderHook(() =>
       useFeatureImageBinding(session, record({ feature_image_caption: 'A caption' })),
     );
@@ -184,8 +200,8 @@ describe('useFeatureImageBinding', () => {
   });
 
   it('loads a caption with markup clean', () => {
-    const session = port();
     const stored = 'Photo by <a href="/j">Jane</a>';
+    const session = port({ caption: stored });
     const { result } = renderHook(() =>
       useFeatureImageBinding(session, record({ feature_image_caption: stored })),
     );
@@ -196,7 +212,7 @@ describe('useFeatureImageBinding', () => {
   });
 
   it('still sees an edit that changes only the text after a link', () => {
-    const session = port();
+    const session = port({ caption: '<a href="/j">Jane</a> took this' });
     const { result } = renderHook(() =>
       useFeatureImageBinding(
         session,
@@ -209,6 +225,64 @@ describe('useFeatureImageBinding', () => {
     expect(session.patchFeatureImage).toHaveBeenCalledWith({
       feature_image_caption: '<a href="/j">Jane</a> shot this',
     });
+  });
+
+  it('shows the alt text and caption the session took from another writer', () => {
+    const session = port({ alt: 'My alt', caption: 'My caption' });
+    const { result, rerender } = renderHook(() =>
+      useFeatureImageBinding(
+        session,
+        record({ feature_image_alt: 'My alt', feature_image_caption: 'My caption' }),
+      ),
+    );
+    const loadedKey = result.current.featureImageCaptionKey;
+
+    session.featureImageAlt = 'Their alt';
+    session.featureImageCaption = 'Their caption';
+    rerender();
+
+    expect(result.current.featureImageAlt).toBe('Their alt');
+    expect(result.current.featureImageCaption).toBe('<p>Their caption</p>');
+    expect(result.current.featureImageCaptionKey).not.toBe(loadedKey);
+  });
+
+  it('loads an adopted caption only once the caption the writer is in blurs', () => {
+    const session = port({ caption: 'My caption' });
+    const { result, rerender } = renderHook(() =>
+      useFeatureImageBinding(session, record({ feature_image_caption: 'My caption' })),
+    );
+    const loadedKey = result.current.featureImageCaptionKey;
+
+    act(() => result.current.onFeatureImageCaptionFocus());
+    session.featureImageCaption = 'Their caption';
+    rerender();
+    // The editor still shows the caption it loaded, which is no edit of the writer's.
+    act(() => result.current.onFeatureImageCaptionChange('<p>My caption</p>'));
+
+    expect(result.current.featureImageCaption).toBe('<p>My caption</p>');
+    expect(result.current.featureImageCaptionKey).toBe(loadedKey);
+    expect(session.patchFeatureImage).not.toHaveBeenCalled();
+
+    act(() => result.current.onFeatureImageCaptionBlur());
+
+    expect(result.current.featureImageCaption).toBe('<p>Their caption</p>');
+    expect(result.current.featureImageCaptionKey).not.toBe(loadedKey);
+  });
+
+  it('leaves the caption editor alone for the writer’s own typing', () => {
+    const session = port({ caption: 'My caption' });
+    const { result } = renderHook(() =>
+      useFeatureImageBinding(session, record({ feature_image_caption: 'My caption' })),
+    );
+    const loadedKey = result.current.featureImageCaptionKey;
+
+    act(() => result.current.onFeatureImageCaptionFocus());
+    act(() => result.current.onFeatureImageCaptionChange('<p>My caption, edited</p>'));
+    act(() => result.current.onFeatureImageCaptionBlur());
+
+    expect(session.featureImageCaption).toBe('My caption, edited');
+    expect(result.current.featureImageCaption).toBe('<p>My caption, edited</p>');
+    expect(result.current.featureImageCaptionKey).toBe(loadedKey);
   });
 });
 
@@ -228,12 +302,18 @@ describe('useFeatureImageBinding through the session', () => {
   function bound(loaded: EditorRecord) {
     const harness = sessionHarness({ record: loaded });
     const { session } = harness;
-    const { result } = renderHook(() =>
-      useFeatureImageBinding(
-        { patchFeatureImage: session.patchFeatureImage, commitSettings: session.commitField },
+    const { result } = renderHook(() => {
+      const view = useSyncExternalStore(session.subscribe, session.getView);
+      return useFeatureImageBinding(
+        {
+          featureImageAlt: view.featureImageAlt,
+          featureImageCaption: view.featureImageCaption,
+          patchFeatureImage: session.patchFeatureImage,
+          commitField: session.commitField,
+        },
         loaded,
-      ),
-    );
+      );
+    });
     return { ...harness, result };
   }
 

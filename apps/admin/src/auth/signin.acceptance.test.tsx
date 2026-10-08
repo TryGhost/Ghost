@@ -24,35 +24,28 @@ beforeEach(() => {
   window.sessionStorage.clear();
 });
 
-it('serves sign in from React when the site hands the auth screens over', async () => {
+it('serves sign in from React', async () => {
   fakeSetupStatus();
-  await renderAdminApp('/signin', signedOut({ authReact: true }));
+  await renderAdminApp('/signin', signedOut());
 
   await expect.element(authScreen.emailInput()).toBeVisible();
   await expect.element(authScreen.signInButton()).toBeVisible();
   expect(emberFrameHidden()).toBe(true);
 });
 
-it.each([
-  ['a server that predates the flag', undefined],
-  ['the flag off', false],
-])('leaves sign in to Ember on %s', async (_case, authReact) => {
-  await renderAdminApp('/signin', signedOut({ authReact }));
-
-  await expect.poll(emberFrameHidden).toBe(false);
-  await expect(authScreen.signInButton()).toHaveCount(0);
-});
-
-it('serves sign in from React with the Labs URL override', async () => {
+it('paints the sign in button with the site accent colour', async () => {
   fakeSetupStatus();
-  await renderAdminApp('/signin?labs=authReact', signedOut());
+  await renderAdminApp('/signin', signedOut());
 
-  await expect.element(authScreen.signInButton()).toBeVisible();
+  // The site fixture's #FF1A75, not Shade's #ff0095 fallback.
+  await expect.element(authScreen.signInButton()).toHaveStyle({
+    backgroundColor: 'rgb(255, 26, 117)',
+  });
 });
 
 it('sends a signed-out visitor to sign in and remembers where they were going', async () => {
   fakeSetupStatus();
-  await renderAdminApp('/settings/newsletters?verifyEmail=abc', signedOut({ authReact: true }));
+  await renderAdminApp('/settings/newsletters?verifyEmail=abc', signedOut());
 
   await expect.poll(currentRoute).toBe('/signin');
   expect(window.sessionStorage.getItem(SIGNIN_REDIRECT_KEY)).toBe(
@@ -63,7 +56,7 @@ it('sends a signed-out visitor to sign in and remembers where they were going', 
 it('remembers the latest route a signed-out visitor asked for', async () => {
   fakeSetupStatus();
   window.sessionStorage.setItem(SIGNIN_REDIRECT_KEY, '/tags');
-  await renderAdminApp('/members', signedOut({ authReact: true }));
+  await renderAdminApp('/members', signedOut());
 
   await expect.poll(currentRoute).toBe('/signin');
   expect(window.sessionStorage.getItem(SIGNIN_REDIRECT_KEY)).toBe('/members');
@@ -71,7 +64,7 @@ it('remembers the latest route a signed-out visitor asked for', async () => {
 
 it('sends every auth screen to setup on a site that is not set up', async () => {
   fakeSetupStatus({ status: false });
-  await renderAdminApp('/signin', signedOut({ authReact: true }));
+  await renderAdminApp('/signin', signedOut());
 
   await expect.poll(currentRoute).toBe('/setup');
 });
@@ -83,7 +76,7 @@ it('signs in and reloads onto the route the visitor was going to', async () => {
     status: 201,
     contentType: 'text/plain; charset=utf-8',
   });
-  await renderAdminApp('/signin', signedOut({ authReact: true }));
+  await renderAdminApp('/signin', signedOut());
 
   await authScreen.signIn('owner@example.com', 'correct horse battery');
 
@@ -97,7 +90,7 @@ it('signs in and reloads onto the route the visitor was going to', async () => {
 
 it('asks for the whole form before signing in', async () => {
   fakeSetupStatus();
-  await renderAdminApp('/signin', signedOut({ authReact: true }));
+  await renderAdminApp('/signin', signedOut());
 
   await authScreen.signInButton().click();
 
@@ -119,7 +112,7 @@ it('marks the password when Core rejects it', async () => {
       context: 'Your password is incorrect.',
     }),
   );
-  await renderAdminApp('/signin', signedOut({ authReact: true }));
+  await renderAdminApp('/signin', signedOut());
 
   await authScreen.signIn('owner@example.com', 'wrong password here');
 
@@ -141,7 +134,7 @@ it('shows the full rate-limit message', async () => {
       context: 'Too many login attempts.',
     }),
   );
-  await renderAdminApp('/signin', signedOut({ authReact: true }));
+  await renderAdminApp('/signin', signedOut());
 
   await authScreen.signIn('owner@example.com', 'correct horse battery');
 
@@ -152,6 +145,30 @@ it('shows the full rate-limit message', async () => {
       ),
     )
     .toBeVisible();
+});
+
+it('asks for a refresh when Ghost has been upgraded', async () => {
+  fakeSetupStatus();
+  fakeAdminEndpoint(
+    'POST',
+    '/session/',
+    ...ghostError(400, {
+      type: 'VersionMismatchError',
+      message: 'Client request for v5 does not match server v6',
+    }),
+  );
+  await renderAdminApp('/signin', signedOut());
+
+  await authScreen.signIn('owner@example.com', 'correct horse battery');
+
+  await expect
+    .element(
+      authScreen.text(
+        'Ghost has been upgraded, please copy any unsaved data and refresh the page to continue.',
+      ),
+    )
+    .toBeVisible();
+  expect(reloadAdmin).not.toHaveBeenCalled();
 });
 
 it.each([
@@ -170,7 +187,7 @@ it.each([
         'A 6-digit sign-in verification code has been sent to your email to keep your account safe.',
     }),
   );
-  await renderAdminApp('/signin', signedOut({ authReact: true }));
+  await renderAdminApp('/signin', signedOut());
 
   await authScreen.signIn('owner@example.com', 'correct horse battery');
 
@@ -190,7 +207,7 @@ it('explains that a locked account has been sent a reset email', async () => {
         'For security, you need to create a new password. An email has been sent to you with instructions!',
     }),
   );
-  await renderAdminApp('/signin', signedOut({ authReact: true }));
+  await renderAdminApp('/signin', signedOut());
 
   await authScreen.signIn('owner@example.com', 'correct horse battery');
 
@@ -200,7 +217,7 @@ it('explains that a locked account has been sent a reset email', async () => {
 
 it('needs a valid email before sending a password reset', async () => {
   fakeSetupStatus();
-  await renderAdminApp('/signin', signedOut({ authReact: true }));
+  await renderAdminApp('/signin', signedOut());
 
   await authScreen.forgotButton().click();
 
@@ -215,7 +232,7 @@ it('sends a password reset email for the entered address', async () => {
   const resetApi = fakeAdminEndpoint('POST', '/authentication/password_reset/', {
     password_reset: [{ message: 'Check your email for further instructions.' }],
   });
-  await renderAdminApp('/signin', signedOut({ authReact: true }));
+  await renderAdminApp('/signin', signedOut());
 
   await authScreen.emailInput().fill('owner@example.com');
   await authScreen.forgotButton().click();
@@ -233,7 +250,7 @@ it('marks the email when no staff user has it', async () => {
     '/authentication/password_reset/',
     ...ghostError(404, { type: 'NotFoundError', message: 'User not found.' }),
   );
-  await renderAdminApp('/signin', signedOut({ authReact: true }));
+  await renderAdminApp('/signin', signedOut());
 
   await authScreen.emailInput().fill('nobody@example.com');
   await authScreen.forgotButton().click();
@@ -248,7 +265,7 @@ it('reports a failure without an answer from Ghost as a server problem', async (
     status: 502,
     contentType: 'text/html',
   });
-  await renderAdminApp('/signin', signedOut({ authReact: true }));
+  await renderAdminApp('/signin', signedOut());
 
   await authScreen.signIn('owner@example.com', 'correct horse battery');
 

@@ -3,7 +3,9 @@ const debug = require('@tryghost/debug')('stripe');
 const ghostConfig = require('../../../shared/config');
 const stripe = require('stripe');
 const i18n = require('../i18n');
-const { stripeCheckoutCollectionOptions } = require('./services/checkout/session-options');
+const logging = require('@tryghost/logging');
+const { snakeKeys } = require('../../lib/case-keys');
+const { z } = require('zod');
 
 /* Stripe has the following rate limits:
  *  - For most APIs, 100 read requests per second in live mode, 25 read requests per second in test mode
@@ -61,6 +63,12 @@ const MANAGED_PAYMENTS_DISABLED = { enabled: false };
  * @prop {boolean} testEnv  - indicates if the module is run in test environment (note, NOT the test mode)
  */
 
+/** The error Stripe throws when it rejects a session because of a `branding_settings` value. */
+const DesignRefusal = z.object({
+  type: z.literal('StripeInvalidRequestError'),
+  param: z.string().startsWith('branding_settings'),
+});
+
 module.exports = class StripeAPI {
   static API_VERSION = STRIPE_API_VERSION;
 
@@ -69,12 +77,73 @@ module.exports = class StripeAPI {
    * @param {object} deps
    * @param {object} deps.labs
    * @param {(key: string) => boolean} deps.labs.isSet
+   * @param {typeof import('../stripe-checkout-config')} deps.stripeCheckoutConfig
+   *   Its service's config is read for every Checkout session.
    */
   constructor(deps) {
     /** @type {Stripe} */
     this._stripe = null;
     this._configured = false;
     this.labs = deps.labs;
+    this._stripeCheckoutConfig = deps.stripeCheckoutConfig;
+  }
+
+  /**
+   * Reads the site's Stripe Checkout config.
+   *
+   * If reading it fails, this logs the error and returns null. A checkout without the config
+   * still takes payment, while a failed checkout doesn't.
+   *
+   * @private
+   * @returns {Promise<import('../stripe-checkout-config').StripeCheckoutConfig | null>}
+   */
+  async _readCheckoutConfig() {
+    try {
+      return await this._stripeCheckoutConfig.service.read();
+    } catch (err) {
+      logging.error(
+        { event: { name: 'stripe_checkout.config.read_failed' }, err },
+        'Failed to read the Stripe Checkout config',
+      );
+      return null;
+    }
+  }
+
+  /**
+   * Creates a Checkout session with the saved design as its `branding_settings`. Every
+   * Checkout session Ghost creates goes through here.
+   *
+   * If Stripe rejects the design, the session is created again without it. The retry reuses
+   * the idempotency key, which is safe because Stripe doesn't store a result for a request it
+   * rejects as invalid.
+   *
+   * @private
+   * @param {object} params
+   * @param {object} [requestOptions]
+   */
+  async _createCheckoutSession(params, requestOptions) {
+    const config = this.labs.isSet('stripeCheckoutDesign')
+      ? await this._readCheckoutConfig()
+      : null;
+    const design = config?.design;
+    if (!design) {
+      return this._stripe.checkout.sessions.create(params, requestOptions);
+    }
+    try {
+      return await this._stripe.checkout.sessions.create(
+        { branding_settings: snakeKeys(design), ...params },
+        requestOptions,
+      );
+    } catch (err) {
+      if (!DesignRefusal.safeParse(err).success) {
+        throw err;
+      }
+      logging.error(
+        { event: { name: 'stripe_checkout.design.refused' }, err },
+        'Stripe refused the Stripe Checkout design',
+      );
+      return this._stripe.checkout.sessions.create(params, requestOptions);
+    }
   }
 
   /**
@@ -559,8 +628,6 @@ module.exports = class StripeAPI {
    * @param {string} options.customerEmail
    * @param {number} options.trialDays
    * @param {string} [options.coupon]
-   * @param {import('../tier-checkout-config').ResolvedCheckout} [options.checkout] What
-   *   the tier's checkout asks for beyond the payment. Absent, or empty, adds nothing.
    *
    * @returns {Promise<ICheckoutSession>}
    */
@@ -641,33 +708,7 @@ module.exports = class StripeAPI {
       hasCustomer: Boolean(customerId),
     });
 
-    // Applied after automatic tax so the two agree about `tax_id_collection`: both ask
-    // for the same thing, and a site with either reason to collect gets it. Nothing is
-    // added for a tier that has configured nothing, so an unconfigured site's request
-    // is unchanged.
-    Object.assign(stripeSessionOptions, stripeCheckoutCollectionOptions(options.checkout));
-
-    // Stripe refuses to collect a tax id for a customer it may not rename:
-    //
-    //   Tax ID collection requires updating business name on the customer. To enable tax
-    //   ID collection for an existing customer, please set `customer_update[name]`.
-    //
-    // Measured against the live API rather than read — `pnpm --filter @tryghost/e2e
-    // stripe:probe` — because the same probe shows shipping and phone collection need no
-    // such thing. Every signed-in checkout carries a customer, so without this a tier
-    // that collects a tax number cannot be bought by an existing member.
-    //
-    // Merged rather than assigned: automatic tax sets this too, and whichever ran first
-    // must not lose its keys. Still never set without a customer, which is the shape
-    // that took the tax beta down.
-    if (stripeSessionOptions.tax_id_collection && customerId) {
-      stripeSessionOptions.customer_update = {
-        ...stripeSessionOptions.customer_update,
-        name: 'auto',
-      };
-    }
-
-    const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
+    const session = await this._createCheckoutSession(stripeSessionOptions);
 
     return session;
   }
@@ -746,7 +787,7 @@ module.exports = class StripeAPI {
 
     this._applyAutomaticTaxSessionOptions(stripeSessionOptions, { hasCustomer: Boolean(customer) });
 
-    const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
+    const session = await this._createCheckoutSession(stripeSessionOptions);
     return session;
   }
 
@@ -819,7 +860,7 @@ module.exports = class StripeAPI {
 
     this._applyAutomaticTaxSessionOptions(stripeSessionOptions, { hasCustomer: Boolean(customer) });
 
-    const session = await this._stripe.checkout.sessions.create(stripeSessionOptions, {
+    const session = await this._createCheckoutSession(stripeSessionOptions, {
       idempotencyKey,
     });
 
@@ -838,7 +879,7 @@ module.exports = class StripeAPI {
    */
   async createCheckoutSetupSession(customer, options) {
     await this._rateLimitBucket.throttle();
-    const session = await this._stripe.checkout.sessions.create({
+    const session = await this._createCheckoutSession({
       mode: 'setup',
       managed_payments: MANAGED_PAYMENTS_DISABLED,
       payment_method_types: this.PAYMENT_METHOD_TYPES,

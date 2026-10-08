@@ -1,6 +1,8 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const { Session } = require('../../../../core/server/models/session');
+// The index, not ./session: `user` resolves 'User' from bookshelf's registry,
+// which only knows the models that have been loaded.
+const { Session } = require('../../../../core/server/models');
 const Base = require('../../../../core/server/models/base');
 
 describe('Unit: models/session', function () {

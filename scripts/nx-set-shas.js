@@ -5,8 +5,9 @@
 // GitHub API (two calls per candidate, up to 60 a run) and swallowed every
 // error, so a transient API failure was indistinguishable from a rewritten
 // branch and hard-failed the run. Ancestry is answerable locally — job_setup
-// checks out with fetch-depth 0 — so the API is only asked which runs passed:
-// one request, with the retry/throttling plugins handling rate limits.
+// checks out with fetch-depth 0 — so the API is only asked which runs passed.
+// Retry/throttling plugins handle rate limits. Older runs are searched only
+// when the recent window has no base.
 
 import { appendFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
@@ -24,6 +25,11 @@ const ON_MISSING_MODES = new Set(['error', 'previous-commit']);
 // the job's timeout, so past this we fail with the real status instead.
 const MAX_THROTTLE_WAIT_SECONDS = 60;
 const MAX_THROTTLE_RETRIES = 2;
+const RECENT_RUN_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+const RUNS_PER_PAGE = 100;
+// GitHub limits a filtered workflow-run search to 1,000 results. Continue
+// from the oldest returned creation time instead of silently dropping history.
+const MAX_RUN_PAGES = 10;
 
 function git(args) {
   const { status, stdout } = spawnSync('git', args, { encoding: 'utf8' });
@@ -53,7 +59,10 @@ export function createOctokit({ token, baseUrl = process.env.GITHUB_API_URL } = 
 }
 
 /**
- * The head SHAs of the workflow's successful runs on a branch, newest first.
+ * Pages of the workflow's successful runs on a branch, newest first. Search
+ * the past week first: unbounded queries have returned stale runs even when
+ * date-filtered requests included more recent successes. Keep searching older
+ * history for quiet branches and reruns of old commits.
  *
  * @param {object} options
  * @param {object} options.octokit
@@ -61,25 +70,88 @@ export function createOctokit({ token, baseUrl = process.env.GITHUB_API_URL } = 
  * @param {string} options.workflow - workflow file name, e.g. ci.yml
  * @param {string} options.branch
  * @param {string} [options.event] - the trigger to match, defaults to push
- * @returns {Promise<string[]>}
+ * @param {Date} [options.now] - injectable for tests
+ * @yields {object[]} successful workflow runs
  */
-export async function fetchSuccessfulRunShas({ octokit, repo, workflow, branch, event = 'push' }) {
+export async function* fetchSuccessfulRuns({
+  octokit,
+  repo,
+  workflow,
+  branch,
+  event = 'push',
+  now = new Date(),
+}) {
   const [owner, name] = repo.split('/');
-  const { data } = await octokit.request(
-    'GET /repos/{owner}/{repo}/actions/workflows/{workflow_id}/runs',
-    {
-      owner,
-      repo: name,
-      workflow_id: workflow,
-      branch,
-      event,
-      status: 'success',
-      per_page: 100,
-      exclude_pull_requests: true,
-    },
-  );
+  const end = Math.floor(now.getTime() / 1000) * 1000;
+  const recentStart = end - RECENT_RUN_WINDOW_MS;
+  const dateTime = (timestamp) => new Date(timestamp).toISOString().replace('.000Z', 'Z');
 
-  return data.workflow_runs.map((run) => run.head_sha);
+  for (const start of [recentStart, null]) {
+    let until = start === null ? recentStart - 1000 : end;
+
+    while (true) {
+      const created =
+        start === null ? `<=${dateTime(until)}` : `${dateTime(start)}..${dateTime(until)}`;
+      let oldest = until;
+      let fullSearch = true;
+
+      for (let page = 1; page <= MAX_RUN_PAGES; page += 1) {
+        const { data } = await octokit.request(
+          'GET /repos/{owner}/{repo}/actions/workflows/{workflow_id}/runs',
+          {
+            owner,
+            repo: name,
+            workflow_id: workflow,
+            branch,
+            event,
+            status: 'success',
+            per_page: RUNS_PER_PAGE,
+            page,
+            created,
+            exclude_pull_requests: true,
+          },
+        );
+        const runs = data.workflow_runs;
+
+        for (const run of runs) {
+          const timestamp = Date.parse(run.created_at);
+
+          if (
+            !Number.isFinite(timestamp) ||
+            timestamp > until ||
+            (start !== null && timestamp < start)
+          ) {
+            throw new Error(
+              `GitHub returned a ${workflow} run outside the requested creation range ${created}`,
+            );
+          }
+
+          oldest = Math.min(oldest, timestamp);
+        }
+
+        console.log(
+          `Found ${runs.length} successful ${workflow} runs on ${branch} (${created}, page ${page})`,
+        );
+        yield runs;
+
+        if (runs.length < RUNS_PER_PAGE) {
+          fullSearch = false;
+          break;
+        }
+      }
+
+      if (!fullSearch) {
+        break;
+      }
+
+      if (oldest >= until) {
+        throw new Error(`Cannot safely search past GitHub's 1,000-run limit at ${dateTime(until)}`);
+      }
+
+      // Include the boundary second so runs sharing its timestamp aren't lost.
+      until = oldest;
+    }
+  }
 }
 
 /**
@@ -135,6 +207,7 @@ function exportShas(base, head) {
  * @param {string} options.repo
  * @param {string} options.onMissing - error | previous-commit
  * @param {Function} [options.ancestorCheck] - injectable for tests
+ * @param {Date} [options.now] - injectable for tests
  * @returns {Promise<string>}
  */
 export async function resolveBase({
@@ -146,6 +219,7 @@ export async function resolveBase({
   repo,
   onMissing,
   ancestorCheck,
+  now,
 }) {
   if (PULL_REQUEST_EVENTS.has(event)) {
     const mergeBase = git(['merge-base', `origin/${branch}`, headSha]);
@@ -157,19 +231,35 @@ export async function resolveBase({
     return mergeBase.stdout;
   }
 
-  const shas = await fetchSuccessfulRunShas({ octokit, repo, workflow, branch });
-  const base = selectBaseSha(shas, { headSha, ancestorCheck });
+  const shas = new Set();
 
-  if (base) {
-    console.log(`Last successful ${workflow} run on ${branch}: ${base}`);
-    return base;
+  for await (const runs of fetchSuccessfulRuns({ octokit, repo, workflow, branch, now })) {
+    const candidates = [];
+    for (const run of runs) {
+      if (!shas.has(run.head_sha)) {
+        shas.add(run.head_sha);
+        candidates.push(run);
+      }
+    }
+    const base = selectBaseSha(
+      candidates.map((run) => run.head_sha),
+      { headSha, ancestorCheck },
+    );
+
+    if (base) {
+      const run = candidates.find((candidate) => candidate.head_sha === base);
+      console.log(
+        `Last successful ${workflow} run on ${branch}: ${base} (created ${run.created_at}; ${shas.size} candidate commits)`,
+      );
+      return base;
+    }
   }
 
   if (onMissing === 'error') {
     throw new Error(
-      shas.length === 0
+      shas.size === 0
         ? `No successful ${workflow} run found on ${branch}`
-        : `None of the ${shas.length} successful ${workflow} runs on ${branch} point at a commit in this ` +
+        : `None of the ${shas.size} successful ${workflow} run commits on ${branch} point at a commit in this ` +
             `branch's history — was ${branch} rebased?`,
     );
   }

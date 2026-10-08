@@ -14,6 +14,7 @@ import {
   post,
   renderAdminApp,
   staffRole,
+  settleTransitions,
   submittedPost,
   unsavedChangesGuarded,
   withoutAutosave,
@@ -23,6 +24,7 @@ import { editorScreen } from '@/editor/editor.screen';
 import { previewScreen } from '@/editor/preview/preview.screen';
 
 const POST_ID = 'abc123';
+const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const CURRENT_USER_ID = '1';
 const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
@@ -62,6 +64,7 @@ function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
 async function openMetaData() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  await settleTransitions();
   await editorScreen.settingsSubviewRow(settingsMetaDataRow).click();
   await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
 }
@@ -76,40 +79,87 @@ function countdownIsOver(): boolean {
  * given instead of the post's own, and the result they produce.
  */
 describe('Post settings meta data', () => {
-  it('saves and clears the canonical URL and uses it in the search preview', async () => {
+  it('saves a canonical URL on the blur that ends the edit and previews it', async () => {
     const saveApi = fakeSavablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openMetaData();
-    const canonical = page.getByRole('textbox', { name: 'Canonical URL' });
-    await canonical.fill('https://original.example.com/story/');
+
+    await editorScreen.settingsCanonicalUrl().fill('https://original.example.com/story/');
     await userEvent.tab();
+
     await expect(saveApi).toHaveSavedFields({
       canonical_url: 'https://original.example.com/story/',
     });
     await expect
       .element(editorScreen.settingsSerpPreview())
       .toHaveTextContent('original.example.com › story');
-    await canonical.fill('');
-    await userEvent.tab();
-    await expect(saveApi).toHaveSavedFields({ canonical_url: null });
   });
 
-  it.each(['not a url', 'https://'])(
-    'keeps invalid canonical URL %s unsaved until corrected',
+  it('changes the canonical URL a post already carries', async () => {
+    const saveApi = fakeSavablePost({ canonical_url: 'https://original.example.com/story/' });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openMetaData();
+
+    await expect
+      .element(editorScreen.settingsCanonicalUrl())
+      .toHaveValue('https://original.example.com/story/');
+    await expect
+      .element(editorScreen.settingsSerpPreview())
+      .toHaveTextContent('original.example.com › story');
+
+    await editorScreen.settingsCanonicalUrl().fill('https://syndicated.example.com/feature/');
+    await userEvent.tab();
+
+    await expect(saveApi).toHaveSavedFields({
+      canonical_url: 'https://syndicated.example.com/feature/',
+    });
+    await expect
+      .element(editorScreen.settingsSerpPreview())
+      .toHaveTextContent('syndicated.example.com › feature');
+  });
+
+  it('clears the canonical URL, and the preview returns to the post’s own address', async () => {
+    const saveApi = fakeSavablePost({ canonical_url: 'https://original.example.com/story/' });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openMetaData();
+
+    await editorScreen.settingsCanonicalUrl().fill('');
+    await userEvent.tab();
+
+    await expect(saveApi).toHaveSavedFields({ canonical_url: null });
+    const preview = editorScreen.settingsSerpPreview();
+    await expect.element(preview).toHaveTextContent('hello-from-react');
+    await expect.element(preview).not.toHaveTextContent('original.example.com');
+  });
+
+  it.each(['example.com/story/', 'https://example.com/my story/'])(
+    'refuses the canonical URL %s and saves nothing until it is corrected',
     async (invalidUrl) => {
       const saveApi = fakeSavablePost();
       await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
       await openMetaData();
-      const canonical = page.getByRole('textbox', { name: 'Canonical URL' });
-      await canonical.fill(invalidUrl);
+
+      await editorScreen.settingsCanonicalUrl().fill(invalidUrl);
       await userEvent.tab();
-      await expect.element(canonical).toHaveAttribute('aria-invalid', 'true');
+
       await expect
-        .element(page.getByText('Please enter a valid URL', { exact: true }))
-        .toBeVisible();
+        .element(editorScreen.settingsSubviewPane().getByRole('alert'))
+        .toHaveTextContent('Please enter a valid URL');
+      await expect
+        .element(editorScreen.settingsCanonicalUrl())
+        .toHaveAttribute('aria-invalid', 'true');
       expect(saveApi.requests).toHaveLength(0);
-      await canonical.fill('https://original.example.com/story/');
+
+      await userEvent.keyboard('{Meta>}s{/Meta}');
+
+      await expect
+        .element(editorScreen.saveErrorBanner())
+        .toHaveTextContent('Please enter a valid URL');
+      expect(saveApi.requests).toHaveLength(0);
+
+      await editorScreen.settingsCanonicalUrl().fill('https://original.example.com/story/');
       await userEvent.tab();
+
       await expect(saveApi).toHaveSavedFields({
         canonical_url: 'https://original.example.com/story/',
       });
@@ -250,7 +300,7 @@ describe('Post settings meta data', () => {
     });
   });
 
-  it('stages a published post’s meta title until Update', async () => {
+  it('saves a published post’s meta title on its own', async () => {
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openMetaData();
@@ -258,16 +308,11 @@ describe('Post settings meta data', () => {
     await editorScreen.settingsMetaTitle().fill('A better title for search');
     await editorScreen.settingsMetaDescription().click();
 
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
-    await expect.poll(unsavedChangesGuarded).toBe(true);
-    expect(saveApi.requests).toHaveLength(0);
-
-    await userEvent.keyboard('{Meta>}s{/Meta}');
-
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
       meta_title: 'A better title for search',
-      status: 'published',
     });
   });
 

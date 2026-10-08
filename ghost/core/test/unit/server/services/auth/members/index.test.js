@@ -37,7 +37,7 @@ describe('Auth Service - Members', function () {
     sinon.stub(membersService, 'api').get(() => ({
       getPublicConfig: async () => ({
         issuer: 'http://127.0.0.1:2369/members/api',
-        publicKey: PUBLIC_KEY,
+        getVerificationKey: async () => PUBLIC_KEY,
       }),
     }));
   });

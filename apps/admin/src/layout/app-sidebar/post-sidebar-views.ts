@@ -1,13 +1,8 @@
 import { POST_VIEW_PARAMS, type PostResource } from '@/posts/api';
 
 /**
- * Sidebar saved views for posts and pages.
- *
- * Resolved from React's own location rather than the Ember routing bridge:
- * once the `postsListReact` flag hands `/posts` to React, the Ember route
- * aborts and its `currentRouteName` is never `posts`, so every bridge-derived
- * active state silently goes dead. Modelled on `member-sidebar-views.ts`,
- * which solved the same problem for members.
+ * Sidebar saved views for posts and pages, resolved from the router location
+ * like `member-sidebar-views.ts`.
  */
 
 export type PostViewFilter = Record<string, string | null>;
@@ -17,10 +12,7 @@ export interface PostDefaultView {
   filter: PostViewFilter;
 }
 
-/**
- * Hardcoded in Ember too (`services/custom-views.js`), and always `route:
- * 'posts'` — there are no default views for pages.
- */
+/** Posts only — there are no default views for pages. */
 export const POST_DEFAULT_VIEWS: PostDefaultView[] = [
   { name: 'Drafts', filter: { type: 'draft' } },
   { name: 'Scheduled', filter: { type: 'scheduled' } },
@@ -55,12 +47,12 @@ export interface ViewLocation {
 }
 
 /**
- * A view is active only when *every* one of the five params agrees, matching
+ * A view is active only when *every* view param agrees, matching
  * Ember's `activeView` (which compares the whole cleaned filter). So a view of
  * `{type: 'draft'}` is not active on `?type=draft&tag=news` — that is a
  * different view, or none.
  *
- * Params outside the five are ignored; they aren't part of a view's identity.
+ * Other params are ignored; they aren't part of a view's identity.
  */
 export function isPostViewActive(
   location: ViewLocation,

@@ -1,13 +1,11 @@
 import { describe, it, assert } from 'vitest';
 import {
-  CHECKOUT_ELIGIBLE_FIELD_TYPES,
-  MAX_CHECKOUT_CUSTOM_FIELDS,
-  MAX_CHECKOUT_LABEL_LENGTH,
   PORT_FIELD,
   STRIPE_ALLOWED_COUNTRIES,
+  STRIPE_CHECKOUT_BORDER_STYLES,
+  STRIPE_CHECKOUT_FONTS,
   STRIPE_PORT,
   STRIPE_PORTS,
-  isCheckoutEligible,
   isStripeAllowedCountry,
   isStripePort,
 } from '../src/index.ts';
@@ -53,19 +51,9 @@ describe('ports', function () {
   });
 });
 
-describe('checkout questions', function () {
-  it('can be asked in a type Stripe renders', function () {
-    for (const type of CHECKOUT_ELIGIBLE_FIELD_TYPES) {
-      assert.ok(isCheckoutEligible(type));
-    }
-    // No Stripe equivalent: an address is collected through its own parameter.
-    assert.equal(isCheckoutEligible('address'), false);
-    // Stripe's text input caps shorter than this type allows.
-    assert.equal(isCheckoutEligible('long_text'), false);
-  });
-
-  it('states the caps Stripe enforces', function () {
-    assert.equal(MAX_CHECKOUT_CUSTOM_FIELDS, 3);
-    assert.equal(MAX_CHECKOUT_LABEL_LENGTH, 50);
+describe('branding', function () {
+  it('carries no duplicates', function () {
+    assert.equal(new Set(STRIPE_CHECKOUT_FONTS).size, STRIPE_CHECKOUT_FONTS.length);
+    assert.equal(new Set(STRIPE_CHECKOUT_BORDER_STYLES).size, STRIPE_CHECKOUT_BORDER_STYLES.length);
   });
 });

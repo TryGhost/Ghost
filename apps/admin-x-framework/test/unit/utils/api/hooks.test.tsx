@@ -31,7 +31,6 @@ const wrapper: React.FC<{ children: ReactNode }> = ({ children }) => (
   <FrameworkProvider
     externalNavigate={() => {}}
     ghostVersion="5.x"
-    sentryDSN=""
     unsplashConfig={{
       Authorization: '',
       'Accept-Version': '',
@@ -606,7 +605,6 @@ describe('API hooks', () => {
             <FrameworkProvider
               externalNavigate={() => {}}
               ghostVersion="5.x"
-              sentryDSN=""
               unsplashConfig={{
                 Authorization: '',
                 'Accept-Version': '',
@@ -639,6 +637,57 @@ describe('API hooks', () => {
           expect(onInvalidate).toHaveBeenCalledTimes(2);
           expect(onInvalidate).toHaveBeenNthCalledWith(1, 'FirstDataType');
           expect(onInvalidate).toHaveBeenNthCalledWith(2, 'SecondDataType');
+        },
+      );
+    });
+
+    it('can leave queries out of a dataType invalidation', async () => {
+      await withMockFetch(
+        {
+          json: { test: 1 },
+        },
+        async () => {
+          queryClient.setQueryData(['NarrowedDataType', 'list'], { test: 1 });
+          queryClient.setQueryData(['NarrowedDataType', 'index'], { test: 2 });
+
+          const onInvalidate = vi.fn();
+          const spyWrapper: React.FC<{ children: ReactNode }> = ({ children }) => (
+            <FrameworkProvider
+              externalNavigate={() => {}}
+              ghostVersion="5.x"
+              unsplashConfig={{
+                Authorization: '',
+                'Accept-Version': '',
+                'Content-Type': '',
+                'App-Pragma': '',
+                'X-Unsplash-Cache': true,
+              }}
+              onDelete={() => {}}
+              onInvalidate={onInvalidate}
+              onUpdate={() => {}}
+            >
+              <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+            </FrameworkProvider>
+          );
+
+          const useTestMutation = createMutation({
+            path: () => '/test/',
+            method: 'PUT',
+            invalidateQueries: {
+              dataType: 'NarrowedDataType',
+              predicate: (query) => query.queryKey[1] !== 'index',
+            },
+          });
+
+          const { result } = renderHook(() => useTestMutation(), { wrapper: spyWrapper });
+
+          await result.current.mutateAsync({});
+
+          expect(queryClient.getQueryState(['NarrowedDataType', 'list'])?.isInvalidated).toBe(true);
+          expect(queryClient.getQueryState(['NarrowedDataType', 'index'])?.isInvalidated).toBe(
+            false,
+          );
+          expect(onInvalidate).toHaveBeenCalledExactlyOnceWith('NarrowedDataType');
         },
       );
     });

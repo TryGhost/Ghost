@@ -8,13 +8,16 @@ import {
   fakeAnalyticsOverview,
   fakeNewsletters,
   fakePosts,
+  fakeSnippets,
   fakeTinybirdPipe,
   fakeTinybirdToken,
   newsletter,
   post,
   renderAdminApp,
+  settingsResponse,
   webAnalyticsBootOverrides,
 } from '@test-utils/acceptance';
+import { editorScreen } from '@/editor/editor.screen';
 import { deferred } from '@/utils/deferred';
 import { analyticsScreen } from './analytics.screen';
 
@@ -209,6 +212,39 @@ describe('Analytics overview', () => {
     await expect.element(membersStatistics).toHaveTextContent('New members');
     await expect.element(membersStatistics).toHaveTextContent('Free');
     await expect.element(membersStatistics).toHaveTextContent('0');
+  });
+
+  it('opens the latest post in the editor with a way back to the overview', async () => {
+    const latest = post({
+      id: LATEST_POST_ID,
+      title: 'Attack of the Clones',
+      status: 'published',
+      published_at: `${daysAgo(3)}T10:00:00.000Z`,
+      url: 'https://example.com/attack-of-the-clones/',
+    });
+    fakeAdminStats.memberCount();
+    fakeAdminStats.mrr();
+    fakeAdminStats.subscriptions();
+    fakeAdminStats.topPostViews();
+    fakePosts([latest]);
+    fakeAdminStats.post(LATEST_POST_ID);
+    fakeSnippets([]);
+    fakeNewsletters([]);
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${LATEST_POST_ID}/\\?`), { posts: [latest] });
+    // Without web analytics or member source tracking, the latest post opens the editor.
+    await renderAdminApp('/analytics', {
+      labs: { editorReact: true },
+      boot: {
+        browseSettings: {
+          response: settingsResponse({ settings: { members_track_sources: false } }),
+        },
+      },
+    });
+
+    await analyticsScreen.latestPost().getByText('Attack of the Clones').click();
+
+    await expect.poll(currentRoute).toBe(`/editor/post/${LATEST_POST_ID}`);
+    await expect.element(editorScreen.analyticsBackLink()).toHaveAttribute('href', '#/analytics');
   });
 
   it('navigates to the web traffic view from the visitors KPI', async () => {

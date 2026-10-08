@@ -1,6 +1,11 @@
 import * as Sentry from '@sentry/react';
 import type { ErrorInfo } from 'react';
-import { APIError, ServerUnreachableError } from '@tryghost/admin-x-framework/errors';
+import {
+  APIError,
+  ServerUnreachableError,
+  getErrorMessage,
+} from '@tryghost/admin-x-framework/errors';
+import { loadedKoenigVersion } from '@/settings/components/koenig-loader';
 import type { PostType } from '@/editor/card-config';
 import type { SaveError } from '@/editor/engine/save-engine';
 import type { EditorLeaveConfirmation, EditorSaveFailure } from '@/editor/session/editor-session';
@@ -27,11 +32,16 @@ export function reportEditorError(error: unknown, context?: EditorErrorContext):
   Sentry.captureException(error, context);
 }
 
+/** Reports a recovery the editor made on its own, as a message rather than a fault. */
+export function reportEditorNotice(message: string, context?: EditorErrorContext): void {
+  Sentry.captureMessage(message, context);
+}
+
 /** Reports a Lexical failure from any of the editor's Koenig instances. */
 export function reportKoenigError(error: unknown): void {
   reportEditorError(error, {
     tags: { lexical: true },
-    contexts: { koenig: { version: window['@tryghost/koenig-lexical']?.version } },
+    contexts: { koenig: { version: loadedKoenigVersion() } },
   });
 }
 
@@ -40,7 +50,7 @@ export function reportKoenigRenderError(error: unknown, info: ErrorInfo): void {
   reportEditorError(error, {
     tags: { lexical: true },
     contexts: {
-      koenig: { version: window['@tryghost/koenig-lexical']?.version },
+      koenig: { version: loadedKoenigVersion() },
       react: { componentStack: info.componentStack },
     },
   });
@@ -62,10 +72,19 @@ function responseTags(error: SaveError): Record<string, TagValue | undefined> {
   };
 }
 
+/** Sentry titles and groups a failure by this error's name; the transport error is its cause. */
+function saveFailureError(error: SaveError): Error {
+  const kind = error.kind.replace(/(?:^|-)(\w)/g, (_, letter: string) => letter.toUpperCase());
+  const reported = new Error(getErrorMessage(error.cause, error.message), { cause: error.cause });
+  reported.name = `Save${kind}Error`;
+  return reported;
+}
+
 /**
- * Reports a request that settled as failed. Validation, host limits and an
- * unreachable server are the writer's or the host's to act on and are not
- * reported; every other failure is, once, with what the request was.
+ * Reports a request that settled as failed. Validation, host limits, a writer
+ * who lost access to the post and an unreachable server are not faults in the
+ * editor and are not reported; every other failure is, once, with what the
+ * request was.
  */
 export function reportSaveFailure(failure: EditorSaveFailure, postType: PostType): void {
   const { command, error, persisted, durationMs, postId, status } = failure;
@@ -94,6 +113,7 @@ export function reportSaveFailure(failure: EditorSaveFailure, postType: PostType
   if (
     error.kind === 'validation' ||
     error.kind === 'host-limit' ||
+    error.kind === 'forbidden' ||
     error.cause instanceof ServerUnreachableError
   ) {
     return;
@@ -107,7 +127,7 @@ export function reportSaveFailure(failure: EditorSaveFailure, postType: PostType
     return;
   }
 
-  reportEditorError(error.cause ?? new Error(error.message), {
+  reportEditorError(saveFailureError(error), {
     tags,
     extra: { post_id: postId, duration_ms: durationMs },
   });
@@ -135,6 +155,11 @@ export function reportLeaveConfirmation(leave: EditorLeaveConfirmation, postType
       engine_state: leave.engineState,
       leave_reasons: leave.reasons.join(','),
     },
-    extra: { post_id: leave.postId, reasons: leave.reasons },
+    extra: {
+      post_id: leave.postId,
+      reasons: leave.reasons,
+      dirty_fields: leave.dirtyFields,
+      body_diff: leave.bodyDiff,
+    },
   });
 }

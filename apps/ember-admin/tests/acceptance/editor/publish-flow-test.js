@@ -1,6 +1,8 @@
 import loginAsRole from '../../helpers/login-as-role';
 import moment from 'moment-timezone';
-import {blur, click, currentURL, fillIn, find, findAll, triggerEvent, waitFor, waitUntil} from '@ember/test-helpers';
+import sinon from 'sinon';
+import {Response} from 'miragejs';
+import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent, waitFor, waitUntil} from '@ember/test-helpers';
 import {clickTrigger, removeMultipleOption, selectChoose} from 'ember-power-select/test-support/helpers';
 import {disableMailgun, enableMailgun} from '../../helpers/mailgun';
 import {disableMembers, enableMembers} from '../../helpers/members';
@@ -33,11 +35,17 @@ function lexicalWithPublicPreview({before = 'Public preview content', after = 'F
 }
 
 describe('Acceptance: Publish flow', function () {
+    let nowStub;
     const hooks = setupApplicationTest();
     setupMirage(hooks);
 
     beforeEach(function () {
         this.server.loadFixtures();
+    });
+
+    afterEach(function () {
+        nowStub?.restore();
+        nowStub = undefined;
     });
 
     it('has minimal features for contributors', async function () {
@@ -224,25 +232,22 @@ describe('Acceptance: Publish flow', function () {
         expect(find('[data-test-button="confirm-publish"]'), 'publish button text')
             .to.have.rendered.trimmed.text('Publish post, right now');
 
+        const navigate = sinon.stub(this.owner.lookup('route:posts'), '_navigateToReactRoute');
+
         await click('[data-test-button="confirm-publish"]');
 
         expect(post.status, 'post status after publish').to.equal('published');
 
-        expect(find('[data-test-publish-flow="complete"]'), 'complete step').to.exist;
-        expect(find('[data-test-complete-title]'), 'complete title').to.have.rendered.trimmed.text('Boom! It\'s out there.\nThat\'s 1 post published.');
-        expect(find('[data-test-complete-bookmark]'), 'bookmark card').to.exist;
+        // publishing hands over to the React posts list
+        expect(navigate.calledOnceWith('/posts'), 'navigated to the React posts list').to.be.true;
+        expect(currentRouteName(), 'route after publishing').to.equal('react-fallback');
 
         await visit(`/editor/post/${post.id}`);
 
         // "revert to draft" only shown for scheduled posts
         expect(find('[data-test-button="revert-to-draft"]'), 'revert-to-draft button').to.not.exist;
 
-        // publish/preview buttons are hidden on complete step
-        expect(find('[data-test-button="publish-flow-preview"]'), 'preview button on complete step').to.not.exist;
-        expect(find('[data-test-button="publish-flow-publish"]'), 'publish button on complete step').to.not.exist;
-
-        await click('[data-test-button="close-publish-flow"]');
-
+        expect(find('[data-test-modal="publish-flow"]'), 'publish flow modal after publishing').to.not.exist;
         expect(find('[data-test-button="publish-flow"]'), 'publish button after publishing').to.not.exist;
         expect(find('[data-test-button="update-flow"]'), 'update button after publishing').to.exist;
 
@@ -376,11 +381,12 @@ describe('Acceptance: Publish flow', function () {
             expect(find('[data-test-button="confirm-publish"]')).to.have.rendered.trimmed
                 .text('Publish & send, right now');
 
+            const navigate = sinon.stub(this.owner.lookup('route:posts'), '_navigateToReactRoute');
+
             await click('[data-test-button="confirm-publish"]');
 
-            // complete text has right count
-            expect(find('[data-test-complete-title]')).to.contain.rendered
-                .text('Boom! It\'s out there.\nThat\'s 1 post published.');
+            expect(post.status, 'post status after publish').to.equal('published');
+            expect(navigate.calledOnceWith('/posts'), 'navigated to the React posts list').to.be.true;
         });
 
         it('can publish+send with multiple newsletters', async function () {
@@ -439,6 +445,9 @@ describe('Acceptance: Publish flow', function () {
         });
 
         it('can schedule publish+send', async function () {
+            // Keep the expected and rendered default time on the same minute.
+            nowStub = sinon.stub(moment, 'now').returns(Date.now());
+
             await loginAsRole('Administrator', this.server);
             const post = this.server.create('post', {status: 'draft'});
             await visit(`/editor/post/${post.id}`);
@@ -453,7 +462,7 @@ describe('Acceptance: Publish flow', function () {
             await click('[data-test-setting="publish-at"] [data-test-setting-title]');
             await click('[data-test-radio="schedule"]');
 
-            // date + time inputs are shown, defaults to now+5 mins
+            // date + time inputs are shown, defaults to now+10 mins
             await waitFor('[data-test-setting="publish-at"] [data-test-date-time-picker-datepicker]');
             expect(find('[data-test-setting="publish-at"] [data-test-date-time-picker-datepicker]'), 'datepicker').to.exist;
             expect(find('[data-test-setting="publish-at"] [data-test-date-time-picker-date-input]'), 'initial datepicker value')
@@ -807,6 +816,129 @@ describe('Acceptance: Publish flow', function () {
             expect(find('[data-test-modal="publish-flow"]'), 'publish flow closed after save').not.to.exist;
             expect(email.status, 'legacy poll did not reload the failed email').to.equal('pending');
         });
+
+        for (const retryable of [true, false, undefined]) {
+            it(`uses API retry eligibility ${retryable} in the legacy failure flow`, async function () {
+                await loginAsRole('Administrator', this.server);
+                const post = this.server.create('post', {status: 'draft'});
+                const email = this.server.create('email', {status: 'pending'});
+                this.server.put('/posts/:id/', function ({posts}, {params}) {
+                    return posts.find(params.id).update({status: 'published', email});
+                });
+                this.server.get('/posts/:id/', function ({posts}, {params}) {
+                    const savedPost = posts.find(params.id);
+                    if (savedPost.status === 'published') {
+                        email.update({status: 'failed', error: 'Mailgun rejected the batch.'});
+                    }
+                    return savedPost;
+                });
+                let statusReads = 0;
+                this.server.get('/emails/:id/status/', () => {
+                    statusReads += 1;
+                    return {email_statuses: [{id: email.id, sending: {
+                        status: 'failed', failed_during: 'submitting',
+                        progress: {completed: 0, total: 7, estimated_seconds_remaining: null},
+                        ...(retryable === undefined ? {} : {retryable})
+                    }}]};
+                });
+
+                await visit(`/editor/post/${post.id}`);
+                await click('[data-test-button="publish-flow"]');
+                await click('[data-test-button="continue"]');
+                await click('[data-test-button="confirm-publish"]');
+                await waitFor('.gh-publish-title .red');
+                await waitUntil(() => statusReads > 0);
+                if (retryable === true) {
+                    await waitFor('.gh-publish-cta button');
+                    expect(find('.gh-publish-cta button')).to.exist;
+                } else {
+                    expect(find('.gh-publish-cta button')).not.to.exist;
+                }
+            });
+        }
+
+        it('lets a failed retry eligibility read be checked again without reopening', async function () {
+            await loginAsRole('Administrator', this.server);
+            const post = this.server.create('post', {status: 'draft'});
+            const email = this.server.create('email', {status: 'pending'});
+            this.server.put('/posts/:id/', function ({posts}, {params}) {
+                return posts.find(params.id).update({status: 'published', email});
+            });
+            this.server.get('/posts/:id/', function ({posts}, {params}) {
+                const savedPost = posts.find(params.id);
+                if (savedPost.status === 'published') {
+                    email.update({status: 'failed', error: 'Mailgun rejected the batch.'});
+                }
+                return savedPost;
+            });
+            let statusReads = 0;
+            this.server.get('/emails/:id/status/', () => {
+                statusReads += 1;
+                if (statusReads === 1) {
+                    return new Response(503, {}, {errors: [{message: 'Temporarily unavailable'}]});
+                }
+                return {email_statuses: [{id: email.id, sending: {
+                    status: 'failed', failed_during: 'submitting', retryable: true,
+                    progress: {completed: 0, total: 7, estimated_seconds_remaining: null}
+                }}]};
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+            await click('[data-test-button="continue"]');
+            await click('[data-test-button="confirm-publish"]');
+            await waitFor('[data-test-retry-eligibility-error]');
+            expect(find('.gh-publish-cta button')).not.to.exist;
+            await click('[data-test-check-retry-eligibility]');
+            await waitFor('.gh-publish-cta button');
+            expect(find('[data-test-retry-eligibility-error]')).not.to.exist;
+            expect(statusReads).to.equal(2);
+        });
+
+        for (const retryableAfterRejection of [false, true]) {
+            it(`refreshes API retry eligibility to ${retryableAfterRejection} when the retry is rejected`, async function () {
+                await loginAsRole('Administrator', this.server);
+                const post = this.server.create('post', {status: 'draft'});
+                const email = this.server.create('email', {status: 'pending'});
+                this.server.put('/posts/:id/', function ({posts}, {params}) {
+                    return posts.find(params.id).update({status: 'published', email});
+                });
+                this.server.get('/posts/:id/', function ({posts}, {params}) {
+                    const savedPost = posts.find(params.id);
+                    if (savedPost.status === 'published') {
+                        email.update({status: 'failed', error: 'Mailgun rejected the batch.'});
+                    }
+                    return savedPost;
+                });
+                let retryable = true;
+                this.server.get('/emails/:id/status/', () => {
+                    return {email_statuses: [{id: email.id, sending: {
+                        status: 'failed', failed_during: 'submitting', retryable,
+                        progress: {completed: 0, total: 7, estimated_seconds_remaining: null}
+                    }}]};
+                });
+                this.server.put('/emails/:id/retry/', () => {
+                    retryable = retryableAfterRejection;
+                    return new Response(400, {}, {errors: [{type: 'BadRequestError', message: 'Retry was rejected'}]});
+                });
+
+                await visit(`/editor/post/${post.id}`);
+                await click('[data-test-button="publish-flow"]');
+                await click('[data-test-button="continue"]');
+                await click('[data-test-button="confirm-publish"]');
+                await waitFor('.gh-publish-cta button');
+                await click('.gh-publish-cta button');
+
+                await waitFor('.gh-box-error');
+                if (retryableAfterRejection) {
+                    await waitFor('.gh-publish-cta button');
+                    expect(find('.gh-publish-cta button')).to.exist;
+                } else {
+                    await waitUntil(() => !find('.gh-publish-cta button'));
+                    expect(find('.gh-publish-cta button')).not.to.exist;
+                }
+            });
+        }
 
         it('preserves the legacy email failure flow when improved sending UI is disabled', async function () {
             await loginAsRole('Administrator', this.server);

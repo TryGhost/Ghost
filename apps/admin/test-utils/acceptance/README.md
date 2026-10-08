@@ -2,6 +2,20 @@
 
 Full-app tests: the **real admin app** (the same provider stack as `src/main.tsx`) booted in a **real Chromium** instance via Vitest Browser Mode, against a **fake Ghost Admin API** — a simplified working implementation served in-browser through MSW, the same test-double family as e2e's fake-stripe-server and fake-mailgun-server. The shell's boot chrome (settings/config/site/me, sidebar members count, active theme, the ghost.org changelog feed) is handled by default — specs never mention it.
 
+CI uploads `admin-acceptance-results-<shard>` artifacts containing Vitest's JSON
+report at `apps/admin/test-results/acceptance.json`, for both passing and failing
+runs. Each shard's GitHub Actions summary shows test counts, elapsed suite time,
+failed tests, and the slowest files and tests. Use the JSON report's suite
+start/end times and assertion durations to compare shard work, identify slow
+journeys, and investigate timeouts. A failure alone does not prove flakiness;
+compare repeated runs of the same commit. Console output stays minimal;
+failure screenshots remain separate artifacts.
+
+Local runs also write the JSON report. A successful Nx cache hit restores
+`test-results/acceptance.json` for the requested shard, so CI summaries and
+artifacts remain available when the browser suite is reused. Report timings
+describe the original execution; use `--skip-nx-cache` when measuring a new run.
+
 ## Anatomy of a spec
 
 Use [`src/tags/tags.acceptance.test.tsx`](../../src/tags/tags.acceptance.test.tsx) as the happy-path template, and [`src/whats-new/whats-new.acceptance.test.tsx`](../../src/whats-new/whats-new.acceptance.test.tsx) as the worked example for the escape hatches (boot override, external feed, non-browse admin endpoint).
@@ -30,11 +44,11 @@ await expect.poll(() => document.documentElement.classList.contains("dark")).toB
 
 **Unsaved-changes guards.** Typing into a dirty screen arms its navigation guard through a chain of passive effects, so a spec that navigates straight after a `fill` races the guard and an unguarded navigation just goes through. Wait for the guard itself, never for a frame count: `await expect.poll(unsavedChangesGuarded).toBe(true)` before the click or `window.history.back()`.
 
-**One render per test.** Each `renderAdminApp` gets a fresh QueryClient and the fake API resets between tests — there is no reload. State that would be persisted on a real server (user preferences, settings) is _represented_ by boot overrides; a journey that genuinely needs persistence across reloads belongs in `e2e/`.
+**One render per test.** Each `renderAdminApp` gets a fresh QueryClient, which it resolves with for a wait nothing on screen can show, and the fake API resets between tests — there is no reload. State that would be persisted on a real server (user preferences, settings) is _represented_ by boot overrides; a journey that genuinely needs persistence across reloads belongs in `e2e/`.
 
 **Host page.** `renderAdminApp` mounts into a stand-in of the production host page (the `react-admin` body class + `#root` from index.html), so the shell's viewport-bounded grid applies and scroll-driven behaviors — virtualized lists, infinite paging — work like production.
 
-**What can't port.** UI fed by the Ember state-bridge (`window.EmberBridge` events) is unreachable by network fakes — there is no Ember app in this tier. Examples: nav active states from the routing bridge (`useEmberRouting`), the upgrade banner from `subscriptionChange`. Grep the component's hooks for `ember-bridge` before porting; those behaviors stay in `e2e/`.
+**What can't port.** UI fed by the Ember state-bridge (`window.EmberBridge` events) is unreachable by network fakes — there is no Ember app in this tier. Example: the upgrade banner from `subscriptionChange`. Grep the component's hooks for `ember-bridge` before porting; those behaviors stay in `e2e/`.
 
 ## The 418 loop
 
@@ -50,7 +64,7 @@ When your area calls a new external origin, add it to `EXTERNAL_URL_BLOCKLIST` i
 
 ## The boot table
 
-The shell requests handled by default (`boot.ts`): `browseSettings`, `browseConfig`, `browseSite`, `browseMe`, `browseMembersCount`, `browseActiveTheme`, `editUserPreferences`. A **boot override** replaces the response of one named entry for one test (the entry's method/path stay fixed):
+The shell requests handled by default (`boot.ts`): `browseSettings`, `browseConfig`, `browseSite`, `browseMe`, `browseMembersCount`, `browseMemberCustomFieldDefinitions`, `browseNotifications`, `browseActiveTheme`, `browseThemes`, `editUserPreferences`. A **boot override** replaces the response of one named entry for one test (the entry's method/path stay fixed):
 
 ```ts
 // Labs flags (sugar for lockstep settings + config overrides; merges into
@@ -61,6 +75,10 @@ await renderAdminApp("/tags", {labs: {someFlag: true}});
 // save that lands proves it was sent without waiting (`withoutAutosave()`), or
 // autosave fires at once (`withFastAutosave()`):
 await renderAdminApp("/editor/post/abc123", withoutAutosave({labs: {editorReact: true}}));
+
+// Router state the screen would have been navigated to with, e.g. the editor
+// opened from an analytics screen:
+await renderAdminApp("/editor/post/abc123", {labs: {editorReact: true}, locationState: {editorReturn: "/analytics"}});
 
 // Persisted user state, e.g. what's-new preferences:
 const me = currentUserResponse();
@@ -77,7 +95,7 @@ For a **browse endpoint** (`GET /<resource>/`), add a resource fake in `resource
 - `{kind: "passthrough"}` — serves exactly the declared entities, never interprets the query. Right for NQL-filtered lists; per-request responses are declared with a function of the parsed query.
 - `{kind: "declared-query", covers, select}` — implements _trivial declared_ behaviors only (a field match, page/limit slicing); any filter component outside `covers` 418s instead of silently serving the full world.
 
-For a **one-off endpoint** (stats subpaths, settings chrome, a mutation the spec asserts on), use `fakeAdminEndpoint(method, apiPath, response)` — it enters the route listing, returns a capture, and `response` may be a function of the captured request (`({body}) => body` is an honest echo).
+For a **one-off endpoint** (stats subpaths, settings chrome, a mutation the spec asserts on), use `fakeAdminEndpoint(method, apiPath, response)` — it enters the route listing, returns a capture, and `response` may be a function of the captured request (`({body}) => body` is an honest echo). A `Response`, given or returned by the function, is served as it is, so a status can depend on the request.
 
 ## Faking Tinybird (web analytics)
 

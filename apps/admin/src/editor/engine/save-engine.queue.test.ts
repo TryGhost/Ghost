@@ -12,6 +12,7 @@ import {
 import {
   BASE,
   flush,
+  forbidden,
   FUTURE,
   hostLimit,
   idleSlug,
@@ -280,18 +281,21 @@ describe('createSaveEngine', () => {
       expect(h.execute).toHaveBeenCalledTimes(2);
     });
 
-    it('halts permanently on a 404 for a known post id', async () => {
+    it.each([
+      ['a 404 for a known post id', notFound],
+      ['a refusal of a writer who lost access', forbidden],
+    ])('halts permanently on %s', async (_label, error) => {
       const h = setup();
       const failing = h.engine.dispatch('explicit');
       await flush();
       h.edit();
       const autosave = h.engine.dispatch('autosave');
 
-      await h.fail(notFound);
-      expect(h.engine.getState()).toEqual({ kind: 'halted' });
+      await h.fail(error);
+      expect(h.engine.getState()).toEqual({ kind: 'halted', error });
       await expect(failing).resolves.toEqual({
         kind: 'failed',
-        error: notFound,
+        error,
         executedAs: 'explicit',
       });
       await expect(autosave).resolves.toEqual({ kind: 'dropped', reason: 'halted' });
@@ -319,6 +323,14 @@ describe('createSaveEngine', () => {
         kind: 'dropped',
         reason: 'halted',
       });
+    });
+
+    it('halts rather than crashes when a create is refused for lost access', async () => {
+      const h = setup({ id: null, updatedAt: null });
+      void h.engine.dispatch('explicit');
+
+      await h.fail(forbidden);
+      expect(h.engine.getState()).toEqual({ kind: 'halted', error: forbidden });
     });
 
     // Either port can report the error, so both are held to the same suppression.
