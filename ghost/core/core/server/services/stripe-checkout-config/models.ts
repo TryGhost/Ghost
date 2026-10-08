@@ -33,3 +33,14 @@ export const StripeCheckoutConfig = z.object({
   design: StripeCheckoutDesign.nullable(),
 });
 export type StripeCheckoutConfig = z.infer<typeof StripeCheckoutConfig>;
+
+/**
+ * How Stripe Checkout looks without a design from Ghost, as set in the Stripe dashboard. The
+ * business name shows with a design from Ghost too, as Ghost never sends one.
+ */
+export const StripeCheckoutBranding = z.object({
+  displayName: z.string(),
+  /** Null when Stripe reports a design Ghost can't show, such as a font it doesn't know. */
+  design: StripeCheckoutDesign.nullable(),
+});
+export type StripeCheckoutBranding = z.infer<typeof StripeCheckoutBranding>;

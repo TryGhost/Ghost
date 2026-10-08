@@ -136,6 +136,10 @@ module.exports = {
     return apiFramework.pipeline(require('./stripe-checkout-preview'), localUtils);
   },
 
+  get stripeCheckoutBranding() {
+    return apiFramework.pipeline(require('./stripe-checkout-branding'), localUtils);
+  },
+
   get memberCommenting() {
     return apiFramework.pipeline(require('./member-commenting'), localUtils);
   },

@@ -932,6 +932,45 @@ module.exports = class StripeAPI {
   }
 
   /**
+   * The Checkout branding set in the Stripe dashboard: the business name and images Checkout
+   * shows, and its colors, corners and font.
+   *
+   * Stripe's Account API doesn't return Checkout's design, but a session created without
+   * `branding_settings` reports the branding it resolved. So this creates a setup session, which
+   * needs no price and takes no payment, and expires it straight away. Nobody opens it, so
+   * Stripe doesn't count it as a checkout visit.
+   *
+   * @returns {Promise<unknown>} Stripe's `branding_settings`
+   */
+  async getCheckoutBranding() {
+    await this._rateLimitBucket.throttle();
+    const session = await this._createCheckoutSession(
+      {
+        mode: 'setup',
+        managed_payments: MANAGED_PAYMENTS_DISABLED,
+        payment_method_types: ['card'],
+        success_url: this._config.checkoutSetupSessionSuccessUrl,
+        metadata: { ghost_checkout_preview: true },
+      },
+      undefined,
+      { design: null },
+    );
+
+    try {
+      await this._rateLimitBucket.throttle();
+      await this._stripe.checkout.sessions.expire(session.id);
+    } catch (err) {
+      // Not worth failing the read for: nobody has the session's page, and it lapses in a day.
+      logging.warn(
+        { event: { name: 'stripe_checkout.branding.expire_failed' }, err, session_id: session.id },
+        'Failed to expire the session used to read the Stripe Checkout branding',
+      );
+    }
+
+    return session.branding_settings;
+  }
+
+  /**
    * Create a new Stripe Billing Portal Session.
    *
    * @param {ICustomer} customer

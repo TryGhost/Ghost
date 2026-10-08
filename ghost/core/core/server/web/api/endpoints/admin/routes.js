@@ -171,6 +171,12 @@ module.exports = function apiRoutes() {
     labs.enabledMiddleware('stripeCheckoutDesign'),
     http(api.stripeCheckoutPreview.add),
   );
+  router.get(
+    '/stripe/checkout/branding',
+    mw.authAdminApi,
+    labs.enabledMiddleware('stripeCheckoutDesign'),
+    http(api.stripeCheckoutBranding.read),
+  );
 
   // ## Members
   router.get('/members', mw.authAdminApi, http(api.members.browse));
