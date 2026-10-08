@@ -21,6 +21,12 @@ export interface ManifestComparison {
   requiresApproval: boolean;
 }
 
+/** A parsed manifest and the address it is read from, as stored or as just checked. */
+export interface ManifestVersion {
+  manifestUrl: string;
+  manifest: AppManifest;
+}
+
 function entriesOf(value: unknown, path: string): Array<[string, unknown]> {
   if (Array.isArray(value)) {
     return value.map((item, index) => [`${path}[${index}]`, item]);
@@ -57,15 +63,25 @@ function leavesOf(manifest: AppManifest): Map<string, string> {
  * Both must be parsed manifests, so their URLs are already resolved: an app served from
  * somewhere new changes every URL, and that needs approval like any other URL change.
  * A field that appears or disappears counts as changed.
+ *
+ * Where the manifest is read from is compared too, as `manifest_url`, listed first. It
+ * decides what future updates say, so a move needs approval even when every URL inside
+ * the manifest stays the same, as they do when all of them are absolute.
  */
-export function compareManifests(approved: AppManifest, next: AppManifest): ManifestComparison {
-  const before = leavesOf(approved);
-  const after = leavesOf(next);
+export function compareManifests(
+  approved: ManifestVersion,
+  next: ManifestVersion,
+): ManifestComparison {
+  const before = leavesOf(approved.manifest);
+  const after = leavesOf(next.manifest);
   const paths = [...new Set([...before.keys(), ...after.keys()])].sort();
 
   const changes = paths
     .filter((path) => before.get(path) !== after.get(path))
     .map((path) => ({ path, requiresApproval: !SILENT_PATHS.has(path) }));
+  if (approved.manifestUrl !== next.manifestUrl) {
+    changes.unshift({ path: 'manifest_url', requiresApproval: true });
+  }
 
   return { changes, requiresApproval: changes.some((change) => change.requiresApproval) };
 }

@@ -7,8 +7,17 @@ import { manifest, manifestOf, options } from './helpers.ts';
 
 const approved = manifestOf(manifest());
 
+/** A manifest as the site holds it, read from the test options' address. */
+const version = (parsed: typeof approved, manifestUrl = options.manifestUrl) => ({
+  manifestUrl,
+  manifest: parsed,
+});
+
 function compareWith(overrides: Record<string, unknown>, parseOptions = options) {
-  return compareManifests(approved, manifestOf(manifest(overrides), parseOptions));
+  return compareManifests(
+    version(approved),
+    version(manifestOf(manifest(overrides), parseOptions), parseOptions.manifestUrl),
+  );
 }
 
 describe('compareManifests', function () {
@@ -30,7 +39,7 @@ describe('compareManifests', function () {
     const before = manifestOf(manifest({ icon: { name: 'mic' } }));
     const after = manifestOf(manifest({ icon: { name: 'radio' } }));
 
-    assert.equal(compareManifests(before, after).requiresApproval, false);
+    assert.equal(compareManifests(version(before), version(after)).requiresApproval, false);
   });
 
   it('needs approval for a new name or author', function () {
@@ -56,24 +65,50 @@ describe('compareManifests', function () {
     const moved = compareWith({}, { ...options, manifestUrl: 'https://new.example.com/app.json' });
 
     assert.deepEqual(moved.changes, [
+      { path: 'manifest_url', requiresApproval: true },
       { path: 'icon.url', requiresApproval: true },
       { path: 'surfaces[0].url', requiresApproval: true },
     ]);
+  });
+
+  it('needs approval for a move even when nothing inside the manifest changes', function () {
+    const absolute = manifestOf(
+      manifest({
+        icon: { url: 'https://cdn.example.net/icon.svg' },
+        surfaces: [{ type: 'admin_page', url: 'https://app.example.net/ghost' }],
+      }),
+    );
+
+    const moved = compareManifests(
+      version(absolute),
+      version(absolute, 'https://new.example.com/app.json'),
+    );
+
+    assert.deepEqual(moved, {
+      changes: [{ path: 'manifest_url', requiresApproval: true }],
+      requiresApproval: true,
+    });
   });
 
   it('needs approval when a surface is added or removed', function () {
     // Every v0 manifest has exactly one surface, so build the other side by hand.
     const withoutSurfaces = { ...approved, surfaces: [] };
 
-    assert.equal(compareManifests(withoutSurfaces, approved).requiresApproval, true);
-    assert.equal(compareManifests(approved, withoutSurfaces).requiresApproval, true);
+    assert.equal(
+      compareManifests(version(withoutSurfaces), version(approved)).requiresApproval,
+      true,
+    );
+    assert.equal(
+      compareManifests(version(approved), version(withoutSurfaces)).requiresApproval,
+      true,
+    );
   });
 
   it('counts an empty list appearing as a change', function () {
     // A field added later starts out empty more often than not.
     const withCards = { ...approved, cards: [] } as unknown as typeof approved;
 
-    assert.deepEqual(compareManifests(approved, withCards).changes, [
+    assert.deepEqual(compareManifests(version(approved), version(withCards)).changes, [
       { path: 'cards', requiresApproval: true },
     ]);
   });
@@ -81,7 +116,7 @@ describe('compareManifests', function () {
   it('needs approval when a built-in icon is swapped for one the app serves', function () {
     const before = manifestOf(manifest({ icon: { name: 'mic' } }));
 
-    assert.deepEqual(compareManifests(before, approved).changes, [
+    assert.deepEqual(compareManifests(version(before), version(approved)).changes, [
       { path: 'icon.name', requiresApproval: false },
       { path: 'icon.url', requiresApproval: true },
     ]);

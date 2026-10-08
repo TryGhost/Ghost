@@ -110,14 +110,19 @@ manifest is read from, so it can run before anything is fetched.
 ### Comparing manifests
 
 `compareManifests(approved, next)` lists every field that differs between two
-parsed manifests, and whether each change needs the publisher to approve it
-again. Only `description`, `accent_color` and `icon.name` change silently.
-Everything else says who the app is or is a URL Ghost loads or links to, so it
-needs approval, and so does any field added to the manifest later until it is
-listed as silent.
+versions of a manifest, each a parsed manifest with the address it was read
+from, and whether each change needs the publisher to approve it again. Only
+`description`, `accent_color` and `icon.name` change silently. Everything else
+says who the app is or is a URL Ghost loads or links to, so it needs approval,
+and so does any field added to the manifest later until it is listed as silent.
+A change of address is listed first, as `manifest_url`, and always needs
+approval: it decides what future updates say.
 
 ```ts
-compareManifests(approved, next);
+compareManifests(
+  { manifestUrl: 'https://podcast.example.com/ghost-app.json', manifest: approved },
+  { manifestUrl: 'https://podcast.example.com/ghost-app.json', manifest: next },
+);
 // {
 //   changes: [{ path: 'surfaces[0].url', requiresApproval: true }],
 //   requiresApproval: true,
