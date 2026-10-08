@@ -374,7 +374,8 @@ on reconnect once it is stale. Opening a post always sends a read of its own,
 even while a copy from an earlier visit is cached: the session saves against the
 version it opens on, so a cached copy would collide with whatever another writer
 saved since. A read still in flight from that visit is replaced rather than
-joined, since the server may have answered it before their save. A deleted post
+joined, since the server may have answered it before their save, and the post
+opens on the read it sent, even if that older read lands first. A deleted post
 replaces the screen with a missing post and an expired session with sign in,
 whether or not a copy is cached. Any other failure shows the load error when
 nothing is cached, and otherwise opens the cached copy, leaving the next save to

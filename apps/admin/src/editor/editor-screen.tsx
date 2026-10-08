@@ -622,19 +622,20 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   // with whatever another writer has saved since. A read still in flight from that
   // visit may have been answered before their save, so it is replaced, not joined.
   // With nothing cached, mounting loads the post anyway.
+  const [cachedAtOpen] = useState(() => query.data !== undefined);
+  const [openingReadSettled, setOpeningReadSettled] = useState(false);
   const openingReadStarted = useRef(false);
   useEffect(() => {
-    if (!openedId || openingReadStarted.current) {
+    if (!cachedAtOpen || openingReadStarted.current) {
       return;
     }
     openingReadStarted.current = true;
-    if (query.data !== undefined) {
-      void query.refetch({ cancelRefetch: true });
-    }
+    void query.refetch({ cancelRefetch: true }).then(() => setOpeningReadSettled(true));
   });
-  // Settled once the read this mount started has succeeded or failed; a later
+  // Settled once the read this mount started has succeeded or failed. The earlier
+  // visit's read landing before that one starts does not count, and a later
   // refetch, such as the one a conversion's save starts, does not hold it back.
-  const opened = query.isFetchedAfterMount;
+  const opened = cachedAtOpen ? openingReadSettled : query.isFetchedAfterMount;
 
   // Only the opening read's own failure counts, never one a cached copy still
   // carries. A deleted post or an expired session decides the screen even with a
