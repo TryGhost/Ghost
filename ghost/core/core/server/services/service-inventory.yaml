@@ -669,7 +669,7 @@ services:
     kind: directory
     disposition: retain
     status: audited
-    auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
+    auditedAt: a61399adbaa649bc03625a0260d075515a59bb40
     entryPoints:
       - donations/index.js
     notes: >-
@@ -683,13 +683,16 @@ services:
           the wrapper constructor, DonationBookshelfRepository and DonationPaymentEvent classes.
           Repository save is async, requires its receiver, and resolves without returning the
           model. The data object is mutable; create uses a supplied timestamp or the current time.
-          Consumer tests construct events indirectly, with no direct root/repository shape test.
+          Root tests assert the initially absent repository, repeated-init identity and the real
+          repository's undefined save result through Stripe. Event mutability and timestamp
+          selection remain source-only.
         sources:
           - core/server/services/donations/index.js
           - core/server/services/donations/donation-service-wrapper.js
           - core/server/services/donations/donation-bookshelf-repository.ts
           - core/server/services/donations/donation-payment-event.ts
         tests:
+          - test/unit/server/services/donations/index.test.ts
           - test/unit/server/services/stripe/services/webhooks/checkout-session-event-service.test.js
       construction:
         summary: >-
@@ -697,15 +700,17 @@ services:
           model. First init constructs a repository with that reference; its truthy repository
           guard makes later calls no-ops. Construction only stores a private model reference and
           performs no write. Boot is the only runtime init caller found; Stripe imports the eager
-          wrapper before initialization. No focused assertions pin import timing, model identity,
-          guarded construction or recovery after construction failure.
+          wrapper before initialization. Root tests assert no writes on import or repeated init,
+          reuse the same repository and exercise the shared model through an earlier Stripe
+          consumer. Exact model-capture timing and construction failure remain source-only.
         sources:
           - core/server/services/donations/index.js
           - core/server/services/donations/donation-service-wrapper.js
           - core/server/services/donations/donation-bookshelf-repository.ts
           - core/server/services/stripe/service.js
           - core/boot.js
-        tests: []
+        tests:
+          - test/unit/server/services/donations/index.test.ts
       consumers:
         summary: >-
           Stripe retains the wrapper but supplies checkout handling with a getter that reads its
@@ -714,8 +719,9 @@ services:
           Members event browsing reads the same model independently, without using this repository;
           optional full database backup also includes the table. Real donation checkout/webhook HTTP tests prove
           anonymous/member fields, attribution/UTM persistence and staff-mail subjects through
-          mocked Stripe/mail transports. Handler units inject the repository, and browsing units
-          pin requested relations rather than real saved-event projection.
+          mocked Stripe/mail transports. Root tests construct the real StripeService before init,
+          then deliver through its retained handler and real repository. Separate handler units
+          inject the repository; browsing units pin relations rather than saved-event projection.
         sources:
           - core/server/services/stripe/service.js
           - core/server/services/stripe/stripe-service.js
@@ -725,6 +731,7 @@ services:
           - core/server/services/members/members-api/repositories/event-repository.js
           - core/server/data/exporter/table-lists.js
         tests:
+          - test/unit/server/services/donations/index.test.ts
           - test/e2e-api/members/donation-checkout-session.test.js
           - test/unit/server/services/stripe/services/webhooks/checkout-session-event-service.test.js
           - test/unit/server/services/members/members-api/repositories/event-repository.test.js
@@ -734,8 +741,9 @@ services:
           group; the getter defers repository access until after publication. Synchronous init
           finishes before app readiness, even when frontend is disabled. The root has no readiness
           guard for consumers beyond an absent repository. Completed-boot HTTP tests exercise real
-          Stripe-to-repository wiring, not early webhook delivery, retained lookup after replacing
-          repository, backend-only initialization or a focused dependency-order contract.
+          Stripe-to-repository wiring. Root tests reproduce construction before init and delivery
+          afterwards. Boot phase/backend-only ordering remains source-only; early webhook delivery
+          and retained lookup after repository replacement are not characterized.
         sources:
           - core/boot.js
           - core/server/services/donations/donation-service-wrapper.js
@@ -743,16 +751,18 @@ services:
           - core/server/services/stripe/stripe-service.js
           - core/server/services/stripe/services/webhook/checkout-session-event-service.js
         tests:
+          - test/unit/server/services/donations/index.test.ts
           - test/e2e-api/members/donation-checkout-session.test.js
       lifetime:
         summary: >-
-          The wrapper/repository retain identity through repeated init and have no reset/cache.
+          Root tests assert wrapper/repository identity through repeated init; no reset/cache exists.
           Stripe's getter would observe replacement of the public repository, while the repository
           keeps its original model object. Saves issue independent model adds with no serialization,
           transaction argument, idempotency key or compensation. Donation rows have a generated
           primary key but no checkout/event identifier or unique donation constraint; the webhook
           controller does not deduplicate incoming event IDs. Existing HTTP tests exercise single
-          deliveries and cannot establish duplicate or concurrent delivery behavior.
+          deliveries and cannot establish duplicate or concurrent delivery behavior. Root tests
+          hold the model write and assert the retained handler stays pending without notification.
         sources:
           - core/server/services/donations/donation-service-wrapper.js
           - core/server/services/donations/donation-bookshelf-repository.ts
@@ -760,6 +770,7 @@ services:
           - core/server/services/stripe/webhook-controller.js
           - core/server/data/schema/schema.js
         tests:
+          - test/unit/server/services/donations/index.test.ts
           - test/e2e-api/members/donation-checkout-session.test.js
       configuration:
         summary: >-
@@ -771,9 +782,9 @@ services:
           pin real stored fields and reserved gift metadata separation. Handler units pin completed
           payment-mode donation routing for true/string-true metadata, ignoring sessions with conflicting
           donation/gift markers and async-payment-success events; donation routing does not check payment_status.
-          Handler fakes can accept
-          empty email or attribution types that the real model would reject. No timestamp mapping
-          or complete invalid-input repository test exists.
+          A root-to-model test pins representative field mapping with null optional values. Handler
+          fakes can accept empty email or attribution types the real model would reject. Timestamp
+          mapping and complete invalid-input persistence behavior remain untested.
         sources:
           - core/server/services/donations/donation-bookshelf-repository.ts
           - core/server/services/donations/donation-payment-event.ts
@@ -787,6 +798,7 @@ services:
           - core/server/services/stripe/services/webhook/checkout-session-event-service.js
           - core/server/services/staff/staff-service-emails.js
         tests:
+          - test/unit/server/services/donations/index.test.ts
           - test/e2e-api/members/donation-checkout-session.test.js
           - test/unit/server/services/stripe/services/webhooks/checkout-session-event-service.test.js
       resources:
@@ -795,8 +807,9 @@ services:
           is created here. Shared models own database work, Stripe owns webhook handling and staff
           owns mail delivery. Save does not expose a transaction or pending-operation registry, and
           no root shutdown/drain exists. Staff notification runs after the durable add; no event-bus
-          delivery is required for it. Real HTTP tests inspect persisted rows and mocked mail, not
-          pending-write shutdown, provider completion or atomicity between storage and notification.
+          delivery is required for it. Root tests hold Model.add and assert the handler and
+          notification wait; HTTP tests inspect real rows and mocked mail. Pending-write shutdown,
+          provider completion and storage/notification atomicity remain untested.
         sources:
           - core/server/services/donations/donation-service-wrapper.js
           - core/server/services/donations/donation-bookshelf-repository.ts
@@ -804,6 +817,7 @@ services:
           - core/server/services/staff/staff-service-emails.js
           - core/server/ghost-server.ts
         tests:
+          - test/unit/server/services/donations/index.test.ts
           - test/e2e-api/members/donation-checkout-session.test.js
       failures:
         summary: >-
@@ -813,8 +827,10 @@ services:
           like user/template/formatting failures; that collector does not catch it. Webhook controller
           logs handler errors and responds
           with their status or 500, permitting another delivery without local deduplication. Model
-          edit/destroy methods reject, but persistence has no workflow rollback. Existing positive
-          HTTP tests and handler units do not establish these real failure/retry boundaries.
+          edit/destroy methods reject, but persistence has no workflow rollback. A root test injects
+          a model-add failure and asserts the identical error reaches the retained Stripe handler
+          without notification. Real schema failures, notification rejection and webhook retry
+          boundaries remain untested.
         sources:
           - core/server/services/donations/donation-bookshelf-repository.ts
           - core/server/models/donation-payment-event.js
@@ -822,20 +838,21 @@ services:
           - core/server/services/stripe/webhook-controller.js
           - core/server/services/staff/staff-service-emails.js
         tests:
+          - test/unit/server/services/donations/index.test.ts
           - test/e2e-api/members/donation-checkout-session.test.js
           - test/unit/server/services/stripe/services/webhooks/checkout-session-event-service.test.js
     unverified: []
     blockers:
       - >-
-        Pin root identity, synchronous guarded init, model capture and Stripe's getter across
-        early composition, repeated boot and repository replacement. Capturing repository while
-        composing Stripe would observe undefined before current boot initializes donations.
+        Add the new lifecycle's boot-scope, availability and retained-consumer contracts during
+        conversion. Root reuse and Stripe composition before init are covered; fresh boots,
+        repository replacement and managed shutdown are not.
       - >-
-        Add direct real-repository contracts for complete mapping, timestamp/created_at behavior,
-        return/error identity and schema-invalid input. Handler fakes permit empty email and an
-        attribution type outside the real schema, so their success is not persistence evidence.
+        Complete mapping, timestamp/created_at behavior and schema-invalid input remain only
+        partly covered. Root tests cover representative model arguments and return/error identity;
+        injected-model success is not schema-validation evidence.
       - >-
-        Characterize duplicate/concurrent webhook delivery, database rejection and failure after
+        Characterize duplicate/concurrent webhook delivery, real schema rejection and failure after
         persistence but before notification completes. Decide whether idempotency/atomicity should
         change separately; the current path has no checkout/event key or shared transaction.
       - >-
