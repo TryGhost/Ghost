@@ -360,4 +360,22 @@ describe('Opening a post after the session expired', () => {
       .toEqual([[`/editor/post/${POST_ID}`]]);
     await expect(editorScreen.loadError()).toHaveCount(0);
   });
+
+  it('reloads onto the post when the read that reopens it is refused, though a copy is cached', async () => {
+    fakeEditorChrome();
+    fakeAdminEndpoint('GET', POST_ROUTE, { posts: [loadedPost()] });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
+    await editorScreen.backLink('post').click();
+    await expect.poll(currentRoute).toBe('/posts');
+    await expect(editorScreen.titleInput()).toHaveCount(0);
+
+    fakeAdminEndpoint('GET', POST_ROUTE, SESSION_GONE, { status: 401 });
+    window.location.hash = `#/editor/post/${POST_ID}`;
+
+    await expect
+      .poll(() => vi.mocked(reloadAdmin).mock.calls)
+      .toEqual([[`/editor/post/${POST_ID}`]]);
+    await expect(editorScreen.titleInput()).toHaveCount(0);
+  });
 });

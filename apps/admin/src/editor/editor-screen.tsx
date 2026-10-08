@@ -598,19 +598,17 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
   const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
-  // Opening reads the post again even when a copy is cached: the session saves
-  // against the version it opens on, so a copy from an earlier visit would collide
-  // with whatever another writer has saved since.
+  // The loader starts the opening read itself, below, so mounting starts none.
   const postQuery = useEditorPost(openedId ?? '', {
     enabled: postType === 'post' && !!openedId,
     defaultErrorHandler: false,
-    refetchOnMount: 'always',
+    refetchOnMount: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const pageQuery = useEditorPage(openedId ?? '', {
     enabled: postType === 'page' && !!openedId,
     defaultErrorHandler: false,
-    refetchOnMount: 'always',
+    refetchOnMount: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const query = postType === 'page' ? pageQuery : postQuery;
@@ -618,8 +616,35 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
     postType === 'page' ? pageQuery.data?.pages[0] : postQuery.data?.posts[0];
   const { state: conversion, convert } = useLexicalConversion(postType);
   const listPath = postType === 'page' ? '/pages' : '/posts';
-  // A failed refetch keeps the last post read; unmounting the editor would dispose its session.
-  const loadError = openedWith || loaded ? null : query.error;
+
+  // Opening reads the post again even when a copy is cached: the session saves
+  // against the version it opens on, so a copy from an earlier visit would collide
+  // with whatever another writer has saved since. A read still in flight from that
+  // visit may have been answered before their save, so it is replaced, not joined.
+  // With nothing cached, mounting loads the post anyway.
+  const [cachedAtOpen] = useState(() => query.data !== undefined);
+  const [openingReadSettled, setOpeningReadSettled] = useState(false);
+  const openingReadStarted = useRef(false);
+  useEffect(() => {
+    if (!cachedAtOpen || openingReadStarted.current) {
+      return;
+    }
+    openingReadStarted.current = true;
+    void query.refetch({ cancelRefetch: true }).then(() => setOpeningReadSettled(true));
+  });
+  // Settled once the read this mount started has succeeded or failed. The earlier
+  // visit's read landing before that one starts does not count, and a later
+  // refetch, such as the one a conversion's save starts, does not hold it back.
+  const opened = cachedAtOpen ? openingReadSettled : query.isFetchedAfterMount;
+
+  // Only the opening read's own failure counts, never one a cached copy still
+  // carries. A deleted post or an expired session decides the screen even with a
+  // copy cached; any other failure opens that copy, and the next save reports the rest.
+  const readError = opened ? query.error : null;
+  const definitive =
+    readError instanceof SessionExpiredError ||
+    (readError instanceof APIError && readError.response?.status === 404);
+  const loadError = openedWith || (loaded && !definitive) ? null : readError;
   // Reloading is safe only while nothing is unsaved: the signed-out admin
   // remembers this route and returns to it after sign in.
   const sessionExpired = loadError instanceof SessionExpiredError;
@@ -629,8 +654,8 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
     }
   }, [sessionExpired, pathname, search]);
 
-  // A cached copy is not judged while the opening read is still in flight.
-  const opening = openedWith || query.isFetching ? undefined : loaded;
+  // Nothing is judged on a cached copy before the opening read settles.
+  const opening = openedWith || !opened ? undefined : loaded;
   const returnToList = !!currentUser && !!opening && shouldReturnToList(currentUser, opening);
   useEffect(() => {
     if (returnToList) {
@@ -672,7 +697,7 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
     );
   }
 
-  if (query.isPending || query.isFetching || !currentUser || returnToList) {
+  if (!opened || query.isPending || !currentUser || returnToList) {
     return <EditorLoading />;
   }
 
@@ -701,7 +726,7 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   }
 
   // Latched while rendering, now the opening read has settled. A cached copy only
-  // gets this far when that read failed.
+  // gets this far when that read failed for a reason other than the two above.
   setOpenedWith(record);
   return <EditorSurface postType={postType} record={record} />;
 }

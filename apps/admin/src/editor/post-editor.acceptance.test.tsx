@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, onTestFinished } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
@@ -326,6 +326,43 @@ describe('Post editor', () => {
       expect(body[resource]).toEqual([{ id: POST_ID, updated_at: legacy.updated_at }]);
     },
   );
+
+  it('opens a converted post without waiting for the read its conversion sets off', async () => {
+    const route = new RegExp(`^/posts/${POST_ID}/\\?`);
+    const legacy = post({
+      id: POST_ID,
+      title: 'Legacy post',
+      mobiledoc: MOBILEDOC,
+      lexical: null,
+      updated_at: '2024-05-06T07:08:09.000Z',
+    });
+    fakeEditorChrome();
+    // Every read after the opening one waits until the test is over.
+    const laterReads = deferred<void>();
+    onTestFinished(() => laterReads.resolve());
+    const readApi = fakeAdminEndpoint('GET', route, async () => {
+      if (readApi.requests.length > 1) {
+        await laterReads.promise;
+      }
+      return { posts: [legacy] };
+    });
+    fakeAdminEndpoint('PUT', route, {
+      posts: [
+        post({
+          ...legacy,
+          mobiledoc: null,
+          lexical: buildLexicalParagraph('Converted from mobiledoc'),
+        }),
+      ],
+    });
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.poll(() => readApi.requests.length).toBe(2);
+    await expect.element(editorScreen.body()).toHaveTextContent('Converted from mobiledoc');
+
+    laterReads.resolve();
+    await expect.poll(() => queryClient.isFetching()).toBe(0);
+  });
 
   it('shows an error when the conversion response carries no post', async () => {
     fakeEditorPost({ title: 'Legacy post', mobiledoc: MOBILEDOC, lexical: null });

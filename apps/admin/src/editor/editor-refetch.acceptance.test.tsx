@@ -10,6 +10,7 @@ import {
   editorReadLanded,
   fakeAdminEndpoint,
   fakeEditorChrome,
+  fakePages,
   fakePostsListScreen,
   post,
   renderAdminApp,
@@ -71,11 +72,17 @@ function mayEdit(role: Role, stored: Post): boolean {
 /**
  * A post two writers share: reads serve the stored copy and a save on a stale token is refused.
  * Core is laxer: it refuses one only when a posts-row column or its tags, authors or tiers change.
+ * `type: 'page'` serves the same record as a page.
  */
 function fakeSharedPost(
   overrides: Partial<Post> = {},
-  { canSave = () => true }: { canSave?: (stored: Post) => boolean } = {},
+  {
+    canSave = () => true,
+    type = 'post',
+  }: { canSave?: (stored: Post) => boolean; type?: 'post' | 'page' } = {},
 ) {
+  const resource = `${type}s`;
+  const route = new RegExp(`^/${resource}/${POST_ID}/\\?`);
   fakeEditorChrome();
   fakeAdminEndpoint('GET', /^\/slugs\/post\//, ({ url }) => ({
     slugs: [{ slug: decodeURIComponent(url.split('/slugs/post/')[1].split('/')[0]) }],
@@ -101,12 +108,12 @@ function fakeSharedPost(
   };
 
   let readsHeld = Promise.resolve();
-  const readApi = fakeAdminEndpoint('GET', READ_ROUTE, async () => {
+  const readApi = fakeAdminEndpoint('GET', route, async () => {
     await readsHeld;
-    return { posts: [stored] };
+    return { [resource]: [stored] };
   });
-  const saveApi = fakeAdminEndpoint('PUT', READ_ROUTE, ({ body }) => {
-    const submitted = (body as { posts: Partial<Post>[] }).posts[0];
+  const saveApi = fakeAdminEndpoint('PUT', route, ({ body }) => {
+    const submitted = (body as Record<string, Partial<Post>[]>)[resource][0];
     if (!canSave(stored)) {
       return Response.json(NO_PERMISSION, { status: 403 });
     }
@@ -114,12 +121,15 @@ function fakeSharedPost(
       return Response.json(UPDATE_COLLISION, { status: 409 });
     }
     store(submitted);
-    return { posts: [stored] };
+    return { [resource]: [stored] };
   });
 
   return {
     readApi,
     saveApi,
+    /** The record the latest save sent, whichever resource it was sent as. */
+    lastSaved: () =>
+      (saveApi.lastRequest?.body as Record<string, Partial<Post>[]> | undefined)?.[resource][0],
     stored: () => stored,
     /** Another writer's save, stored under a token this tab has never been sent. */
     theySave: (changes: Partial<Post>) => store(changes),
@@ -260,34 +270,39 @@ describe('Post editor refetch', () => {
     expect(shared.stored().lexical).toContain('Hello from React and more');
   });
 
-  it('opens on the version another writer saved since the post was last opened', async () => {
-    const shared = fakeSharedPost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
-    await editorScreen.backLink('post').click();
-    await expect.poll(currentRoute).toBe('/posts');
-    await expect(editorScreen.titleInput()).toHaveCount(0);
+  it.each(['post', 'page'] as const)(
+    'opens a %s on the version another writer saved since it was last opened',
+    async (type) => {
+      const shared = fakeSharedPost({}, { type });
+      // The list the back link leads to; fakeEditorChrome serves the posts list only.
+      fakePages([]);
+      await renderAdminApp(`/editor/${type}/${POST_ID}`, FLAG_ON);
+      await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
+      await editorScreen.backLink(type).click();
+      await expect.poll(currentRoute).toBe(`/${type}s`);
+      await expect(editorScreen.titleInput()).toHaveCount(0);
 
-    // The copy read on the first visit is still fresh in the cache.
-    shared.theySave({ title: 'Their title', lexical: buildLexicalParagraph('Their words') });
-    const theirs = shared.stored();
-    window.location.hash = `#/editor/post/${POST_ID}`;
+      // The copy read on the first visit is still fresh in the cache.
+      shared.theySave({ title: 'Their title', lexical: buildLexicalParagraph('Their words') });
+      const theirs = shared.stored();
+      window.location.hash = `#/editor/${type}/${POST_ID}`;
 
-    await expect.element(editorScreen.titleInput()).toHaveValue('Their title');
-    await expect.element(editorScreen.body()).toHaveTextContent('Their words');
-    expect(shared.readApi.requests).toHaveLength(2);
+      await expect.element(editorScreen.titleInput()).toHaveValue('Their title');
+      await expect.element(editorScreen.body()).toHaveTextContent('Their words');
+      expect(shared.readApi.requests).toHaveLength(2);
 
-    await appendToBody(' and mine');
-    await saveShortcut();
+      await appendToBody(' and mine');
+      await saveShortcut();
 
-    await expect.poll(() => shared.saveApi.requests.length).toBe(1);
-    expect(submittedPost(shared.saveApi)).toMatchObject({ updated_at: theirs.updated_at });
-    await expect.poll(unsavedChangesGuarded).toBe(false);
-    await expect(editorScreen.conflictBanner()).toHaveCount(0);
-    expect(shared.stored().lexical).toContain('Their words and mine');
-  });
+      await expect.poll(() => shared.saveApi.requests.length).toBe(1);
+      expect(shared.lastSaved()).toMatchObject({ updated_at: theirs.updated_at });
+      await expect.poll(unsavedChangesGuarded).toBe(false);
+      await expect(editorScreen.conflictBanner()).toHaveCount(0);
+      expect(shared.stored().lexical).toContain('Their words and mine');
+    },
+  );
 
-  it('opens on the read after its own save when reopened before that read lands', async () => {
+  it('sends a read of its own when reopened before the read after its save lands', async () => {
     const shared = fakeSharedPost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
@@ -303,11 +318,12 @@ describe('Post editor refetch', () => {
     await editorScreen.backLink('post').click();
     await expect.poll(currentRoute).toBe('/posts');
     await expect(editorScreen.titleInput()).toHaveCount(0);
-    // Their save lands before the read that follows this tab's save is answered,
-    // so the copy that save left in the cache is already behind.
+    // Their save lands while the read that follows this tab's save is still out.
+    // The server may have answered that read before their save, so the reopen
+    // must not wait on it: it sends a third read rather than joining the second.
     shared.theySave({ title: 'Their title', lexical: buildLexicalParagraph('Their words') });
     window.location.hash = `#/editor/post/${POST_ID}`;
-    await expect.poll(currentRoute).toBe(`/editor/post/${POST_ID}`);
+    await expect.poll(() => shared.readApi.requests.length).toBe(3);
     releaseReads();
 
     await expect.element(editorScreen.titleInput()).toHaveValue('Their title');
@@ -336,16 +352,17 @@ describe('Post editor refetch', () => {
     await editorScreen.backLink('post').click();
     await expect.poll(currentRoute).toBe('/posts');
     await expect(editorScreen.titleInput()).toHaveCount(0);
-    const failedReads = fakeAdminEndpoint('GET', READ_ROUTE, () =>
-      Response.json(
-        { errors: [{ type: 'InternalServerError', message: 'Internal server error' }] },
-        { status: 500 },
-      ),
+    const failedReads = fakeAdminEndpoint(
+      'GET',
+      READ_ROUTE,
+      { errors: [{ type: 'InternalServerError', message: 'Internal server error' }] },
+      { status: 500 },
     );
     window.location.hash = `#/editor/post/${POST_ID}`;
 
     await expect.element(editorScreen.titleInput()).toHaveValue('My title');
-    expect(failedReads.requests.length).toBeGreaterThan(0);
+    // The session's own read of the post does not repeat the read that failed.
+    expect(failedReads.requests).toHaveLength(1);
     await appendToBody(' and more');
     await saveShortcut();
 
@@ -354,6 +371,26 @@ describe('Post editor refetch', () => {
     await expect.poll(unsavedChangesGuarded).toBe(false);
     await expect(editorScreen.conflictBanner()).toHaveCount(0);
     expect(shared.stored().lexical).toContain('Hello from React and more');
+  });
+
+  it('shows a missing post rather than the cached copy when the post was deleted since', async () => {
+    fakeSharedPost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
+    await editorScreen.backLink('post').click();
+    await expect.poll(currentRoute).toBe('/posts');
+    await expect(editorScreen.titleInput()).toHaveCount(0);
+
+    fakeAdminEndpoint(
+      'GET',
+      READ_ROUTE,
+      { errors: [{ type: 'NotFoundError', message: 'Post not found.' }] },
+      { status: 404 },
+    );
+    window.location.hash = `#/editor/post/${POST_ID}`;
+
+    await expect.element(editorScreen.notFound()).toBeVisible();
+    await expect(editorScreen.titleInput()).toHaveCount(0);
   });
 
   it.each<[string, Role, Partial<Post>]>([

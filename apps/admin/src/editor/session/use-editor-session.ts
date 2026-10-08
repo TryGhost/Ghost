@@ -55,8 +55,12 @@ import type { EditorSettingsFields, EditorSettingsPatch } from './settings-field
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { searchIndexQueryKey, searchIndexesBehind } from '@/shared/search-index';
 
-/** What a reload found: the server's copy, a post that is no longer there, or a read that failed. */
-export type ReloadOutcome = 'reloaded' | 'gone' | 'failed';
+/**
+ * What a reload found: the server's copy, a post that is no longer there, or a
+ * read that failed. `abandoned` means the writer left the editor before the read
+ * came back, so there was nothing left to replace.
+ */
+export type ReloadOutcome = 'reloaded' | 'gone' | 'failed' | 'abandoned';
 
 interface EditorReadResponse {
   posts?: EditorRecord[];
@@ -232,8 +236,8 @@ export function useEditorSession({
       saveFailureMessage: `Couldn’t save this ${postType}.`,
       autosaveDebounceMs: () => autosaveDebounceMs.current,
       onIdAcquired: setPersistedId,
-      // The loader opens the post again from this entry, possibly before the read
-      // that follows the save has landed; a later version a read put there stays.
+      // The loader opens the post again from this entry when the read that reopens
+      // it fails; a later version a read put there stays.
       onSaveAcknowledged: (saved) => {
         // An edit leaves the search index alone, so only a save that changed
         // what it lists sends global search and editor links back for it.
@@ -375,15 +379,19 @@ export function useEditorSession({
   );
 
   // The saved record: the same query key the screen loaded with, so an existing
-  // post shares one cache entry and a created one starts observing its own.
+  // post shares one cache entry and a created one starts observing its own. The
+  // loader has just read it, so mounting here starts no read of its own: after a
+  // failed opening read it would only repeat the request that failed.
   const postQuery = useEditorPost(persistedId ?? '', {
     enabled: postType === 'post' && !!persistedId,
     defaultErrorHandler: false,
+    refetchOnMount: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const pageQuery = useEditorPage(persistedId ?? '', {
     enabled: postType === 'page' && !!persistedId,
     defaultErrorHandler: false,
+    refetchOnMount: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const saved = postType === 'page' ? pageQuery.data?.pages[0] : postQuery.data?.posts[0];
@@ -407,12 +415,22 @@ export function useEditorSession({
       return 'failed';
     }
 
+    // The writer may leave while the read is out. Whatever it finds no longer
+    // concerns them, and the query belongs to whatever editor opens the post next:
+    // cancelling its opening read would revert it to the copy cached before that read.
+    const left = () => session.getState().kind === 'disposed';
     const { url, queryKey } = editorRead(postType, persistedId);
     let data: EditorReadResponse;
     try {
       data = await fetchApi<EditorReadResponse>(url, EDITOR_REQUEST_OPTIONS);
     } catch (error) {
+      if (left()) {
+        return 'abandoned';
+      }
       return error instanceof APIError && error.response?.status === 404 ? 'gone' : 'failed';
+    }
+    if (left()) {
+      return 'abandoned';
     }
 
     let fresh = recordIn(postType, data);
