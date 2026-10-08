@@ -723,6 +723,22 @@ describe('retry eligibility that cannot be read', () => {
     );
   });
 
+  it('reports a failure that stays on screen once, however often the read fails again', () => {
+    eligibility.isError = true;
+    eligibility.hasData = false;
+    const inputs = options();
+    inputs.post = { ...inputs.post, status: 'published', email: FAILED_EMAIL };
+    // Each render's failed read is a new error object, as each failed refetch is.
+    const { rerender } = renderHook(() => usePublishFlow(inputs), { wrapper });
+    rerender();
+    rerender();
+
+    const eligibilityReports = vi
+      .mocked(reportPublishFailure)
+      .mock.calls.filter(([source]) => source === 'retry-eligibility');
+    expect(eligibilityReports).toHaveLength(1);
+  });
+
   it('reloads the post for an email id it does not have', async () => {
     transport.fetchApi.mockResolvedValue({
       posts: [{ id: 'post-1', status: 'published', email: { ...FAILED_EMAIL, id: 'email-9' } }],
