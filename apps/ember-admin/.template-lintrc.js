@@ -3,7 +3,7 @@ module.exports = {
 
     rules: {
         'no-forbidden-elements': ['meta', 'html', 'script'],
-        'no-implicit-this': {allow: ['noop', 'now', 'site-icon-style']},
+        'no-implicit-this': {allow: ['noop', 'now']},
         'no-inline-styles': false,
         'no-duplicate-landmark-elements': false,
         'no-pointer-down-event-binding': false,

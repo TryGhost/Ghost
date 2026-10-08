@@ -7,6 +7,7 @@ const {
   matchers,
 } = require('../../utils/e2e-framework');
 const nock = require('nock');
+const { stripeMocker } = require('../../utils/e2e-framework-mock-manager');
 const models = require('../../../core/server/models');
 const membersService = require('../../../core/server/services/members');
 const urlServiceUtils = require('../../utils/url-service-utils');
@@ -761,6 +762,87 @@ describe('Create Stripe Checkout Session', function () {
         .matchHeaderSnapshot();
 
       assert.equal(scope.isDone(), true);
+    });
+  });
+
+  describe('The publisher design', function () {
+    const design = {
+      button_color: '#ff5a1f',
+      background_color: '#ffffff',
+      border_style: 'pill',
+      font_family: 'roboto_slab',
+    };
+
+    beforeEach(function () {
+      mockManager.mockStripe();
+      mockManager.mockLabsEnabled('stripeCheckoutDesign');
+    });
+
+    afterEach(async function () {
+      await models.Base.knex('stripe_checkout_config').del();
+    });
+
+    async function setDesign(value) {
+      await adminAgent
+        .put('/stripe/checkout/config/')
+        .body({ checkout_config: [{ design: value }] })
+        .expectStatus(200);
+    }
+
+    // Starts a paid tier checkout and returns the session Ghost sent to Stripe.
+    async function startCheckout() {
+      const {
+        body: { tiers },
+      } = await adminAgent.get('/tiers/');
+      const paidTier = tiers.find((tier) => tier.type === 'paid');
+
+      await membersAgent
+        .post('/api/create-stripe-checkout-session/')
+        .body({ tierId: paidTier.id, cadence: 'month' })
+        .expectStatus(200);
+
+      return stripeMocker.checkoutSessions.at(-1);
+    }
+
+    it('styles the checkout with the publisher design, and only once there is one', async function () {
+      assert.equal((await startCheckout()).branding_settings, undefined);
+
+      await setDesign({ customize: true, ...design });
+      assert.deepEqual((await startCheckout()).branding_settings, design);
+
+      await setDesign({ customize: false });
+      assert.equal((await startCheckout()).branding_settings, undefined);
+    });
+
+    it('styles a card update with the publisher design', async function () {
+      await setDesign({ customize: true, ...design });
+      const member = await models.Member.findOne({ email: 'member1@test.com' }, { require: true });
+      const identity = await membersService.api.getMemberIdentityToken(member.get('transient_id'));
+
+      await membersAgent
+        .post('/api/create-stripe-update-session/')
+        .body({ identity })
+        .expectStatus(200);
+
+      const session = stripeMocker.checkoutSessions.at(-1);
+      assert.equal(session.mode, 'setup');
+      assert.deepEqual(session.branding_settings, design);
+    });
+
+    it('sends no design while its flag is off, even when one is saved', async function () {
+      await setDesign({ customize: true, ...design });
+      mockManager.mockLabsDisabled('stripeCheckoutDesign');
+
+      assert.equal((await startCheckout()).branding_settings, undefined);
+    });
+
+    it('goes ahead unstyled when the saved design can no longer be read', async function () {
+      await setDesign({ customize: true, ...design });
+      await models.Base.knex('stripe_checkout_config').update({
+        design: JSON.stringify({ ...design, font_family: 'a_font_stripe_dropped' }),
+      });
+
+      assert.equal((await startCheckout()).branding_settings, undefined);
     });
   });
 });

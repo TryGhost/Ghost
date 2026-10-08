@@ -2,7 +2,7 @@ import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
-import { useRetryEmail } from '@tryghost/admin-x-framework/api/emails';
+import { useEmailSendingStatus, useRetryEmail } from '@tryghost/admin-x-framework/api/emails';
 import { pagesDataType } from '@tryghost/admin-x-framework/api/pages';
 import { postsDataType } from '@tryghost/admin-x-framework/api/posts';
 import {
@@ -17,6 +17,7 @@ import {
   type CompletionFailure,
 } from './completion-message';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { useMinimumDuration } from '@/hooks/use-minimum-duration';
 import { writePublishCelebration } from './celebration-handoff';
 import type { EmailConfirmationOutcome } from './email-confirmation';
 import type { PublishFlowPost } from './flow-post';
@@ -33,6 +34,12 @@ import type { SaveCompletion } from '@/editor/engine/save-engine';
 export type PublishStep = 'options' | 'confirm' | 'complete' | 'email-error';
 export type ConfirmStatus = 'idle' | 'running' | 'success' | 'failure';
 
+/**
+ * With `improveSendingUI` on, the least time a send shows its running state
+ * before handing off to post analytics, so the hand-off is not instant.
+ */
+export const MIN_EMAIL_HANDOFF_LENGTH = 1500;
+
 export interface PublishFlowOptions {
   post: PublishFlowPost;
   site: PublishSiteInput;
@@ -42,7 +49,7 @@ export interface PublishFlowOptions {
   now?: () => Date;
   dispatch: PublishDispatcher;
   showCompletion?: boolean;
-  /** The `improveSendingUI` lab: a publish that emails completes without confirming the send. */
+  /** The `improveSendingUI` lab: a publish that emails completes without confirming the send, after `MIN_EMAIL_HANDOFF_LENGTH`. */
   improveSendingUI?: boolean;
   onBeforePublish?: () => Promise<void>;
   onCompleted?: (info: { postId: string; isScheduled: boolean; hasEmail: boolean }) => void;
@@ -83,6 +90,7 @@ export interface PublishFlow extends PublishOptionActions {
   retryEmail: () => Promise<void>;
   retryStatus: ConfirmStatus;
   retryFailure: string | null;
+  canRetryEmail: boolean;
   /** Abandons any asynchronous continuation before the caller closes the modal. */
   cancel: () => void;
 }
@@ -91,6 +99,8 @@ const UNKNOWN_EMAIL_ERROR = 'Unknown error';
 const UNKNOWN_RETRY_ERROR = 'Unknown Error occurred when attempting to resend';
 export const EMAIL_UNCONFIRMED =
   'We couldn’t confirm the newsletter was sent. Check the post’s email status from the posts list.';
+export const SCHEDULE_PASSED =
+  'The scheduled time has passed. Go back and choose a future date and time.';
 
 /** The error the flow opens on: set only for a published or sent post whose email failed. */
 export function initialEmailError(post: PublishFlowPost): string | null {
@@ -164,7 +174,8 @@ export function usePublishFlow({
   );
 
   // The email is created by the save, so its id is only knowable from a reload.
-  const emailIdRef = useRef<string | null>(post.email?.id ?? null);
+  const [emailId, setEmailId] = useState(post.email?.id ?? null);
+  const activeRef = useRef(true);
 
   const confirmation = useMemo(
     () =>
@@ -182,11 +193,13 @@ export function usePublishFlow({
             throw new Error('The published post was missing from its reload response.');
           }
 
-          emailIdRef.current = reloaded.email?.id ?? emailIdRef.current;
+          if (reloaded.email?.id && activeRef.current) {
+            setEmailId(reloaded.email.id);
+          }
           return { status: reloaded.status, email: reloaded.email ?? null };
         },
-        retry: async (emailId) => {
-          await retryEmailRequest({ id: emailId, sessionExpiryRedirect: false });
+        retry: async (id) => {
+          await retryEmailRequest({ id, sessionExpiryRedirect: false });
         },
       }),
     [fetchApi, retryEmailRequest],
@@ -219,6 +232,24 @@ export function usePublishFlow({
   const [emailNote, setEmailNote] = useState<string | null>(null);
   const [retryStatus, setRetryStatus] = useState<ConfirmStatus>('idle');
   const [retryFailure, setRetryFailure] = useState<string | null>(null);
+  const retryEligibility = useEmailSendingStatus(emailId ?? '', {
+    // Paused while a retry runs so the send in progress cannot hide its own button;
+    // re-enabling refetches, so every way a retry ends refreshes eligibility.
+    enabled: step === 'email-error' && Boolean(emailId) && retryStatus !== 'running',
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    retry: false,
+    defaultErrorHandler: false,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
+  const sending = retryEligibility.data?.email_statuses[0]?.sending;
+  // A background read error keeps the last successful decision. Core still
+  // validates fresh state before accepting a retry.
+  const canRetryEmail =
+    retryEligibility.isFetchedAfterMount &&
+    sending?.status === 'failed' &&
+    sending.retryable === true;
+
   const [captured, setCaptured] = useState(() => {
     if (initialEmailError(post)) {
       return {
@@ -237,10 +268,10 @@ export function usePublishFlow({
       isScheduled: initialState.isScheduled,
     };
   });
-  const activeRef = useRef(true);
   const completedRef = useRef(false);
   const publishRunningRef = useRef(false);
   const retryRunningRef = useRef(false);
+  const handoffMinimum = useMinimumDuration(MIN_EMAIL_HANDOFF_LENGTH);
   const limitCheckGenerationRef = useRef(0);
   const limitCheckRef = useRef<{
     machine: PublishOptionsMachine;
@@ -411,7 +442,25 @@ export function usePublishFlow({
       return;
     }
 
+    // The chosen time can pass while the flow sits open, or while the pre-save
+    // cleanup waits on a sign-in, so it is checked against the clock at the click
+    // and again before the publish is sent. Scheduling is not switched off here:
+    // that would turn the confirmed schedule into an immediate publish.
+    const schedulePassed = () => {
+      const current = machine.getState();
+      return (
+        current.isScheduled && Date.parse(current.scheduledAt) < Date.parse(current.minScheduledAt)
+      );
+    };
+
+    if (schedulePassed()) {
+      setFailure({ message: SCHEDULE_PASSED });
+      setConfirmStatus('failure');
+      return;
+    }
+
     publishRunningRef.current = true;
+    handoffMinimum.start();
     setFailure(null);
     setConfirmStatus('running');
 
@@ -438,6 +487,13 @@ export function usePublishFlow({
     }
 
     if (!activeRef.current) {
+      return;
+    }
+
+    if (schedulePassed()) {
+      publishRunningRef.current = false;
+      setFailure({ message: SCHEDULE_PASSED });
+      setConfirmStatus('failure');
       return;
     }
 
@@ -493,12 +549,17 @@ export function usePublishFlow({
       return;
     }
 
+    if (willEmailImmediately) {
+      await handoffMinimum.elapsed();
+    }
+
     complete(isScheduled, willEmail);
   }, [
     applyEmailOutcome,
     complete,
     confirmation,
     dispatch,
+    handoffMinimum,
     improveSendingUI,
     machine,
     onBeforePublish,
@@ -508,15 +569,7 @@ export function usePublishFlow({
   ]);
 
   const retryEmail = useCallback(async () => {
-    const emailId = emailIdRef.current;
-
-    if (retryRunningRef.current) {
-      return;
-    }
-
-    if (!emailId) {
-      setRetryFailure(UNKNOWN_RETRY_ERROR);
-      setRetryStatus('failure');
+    if (retryRunningRef.current || !canRetryEmail || !emailId) {
       return;
     }
 
@@ -555,7 +608,7 @@ export function usePublishFlow({
         setRetryStatus('failure');
       }
     }
-  }, [complete, confirmation, post.id, refreshPostReads, showCompletion]);
+  }, [canRetryEmail, complete, confirmation, emailId, post.id, refreshPostReads, showCompletion]);
 
   return {
     ...optionActions,
@@ -577,6 +630,7 @@ export function usePublishFlow({
     retryEmail,
     retryStatus,
     retryFailure,
+    canRetryEmail,
     cancel,
   };
 }

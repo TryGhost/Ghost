@@ -1,4 +1,4 @@
-import { Comment, OpenCommentForm, useAppContext } from '../../../app-context';
+import { type Comment, type OpenCommentForm, useAppContext } from '../../../app-context';
 import { Form, FormWrapper } from './form';
 import { isMobile, scrollToElement } from '../../../utils/helpers';
 import { useCallback, useMemo } from 'react';

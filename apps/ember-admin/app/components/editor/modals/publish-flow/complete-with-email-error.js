@@ -4,6 +4,7 @@ import {CONFIRM_EMAIL_MAX_POLL_LENGTH, CONFIRM_EMAIL_POLL_LENGTH} from '../../pu
 import {htmlSafe} from '@ember/template';
 import {inject} from 'ghost-admin/decorators/inject';
 import {isServerUnreachableError} from 'ghost-admin/services/ajax';
+import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
@@ -12,9 +13,33 @@ function isString(str) {
 }
 
 export default class PublishFlowCompleteWithEmailError extends Component {
+    @tracked canRetry = false;
     @tracked newEmailErrorMessage;
     @tracked retryErrorMessage;
+    @tracked retryEligibilityErrorMessage;
     @inject config;
+    @service store;
+
+    constructor() {
+        super(...arguments);
+        this.fetchRetryEligibilityTask.perform();
+    }
+
+    @task({restartable: true})
+    *fetchRetryEligibilityTask() {
+        this.retryEligibilityErrorMessage = null;
+        const email = this.args.publishOptions.post.email;
+        if (!email?.id) {
+            this.canRetry = false;
+            return;
+        }
+        try {
+            const sending = yield this.store.adapterFor('email').sendingStatus(email);
+            this.canRetry = sending?.status === 'failed' && sending.retryable === true;
+        } catch {
+            this.retryEligibilityErrorMessage = 'Could not check whether this email can be retried. Please try checking again.';
+        }
+    }
 
     get emailErrorMessage() {
         return this.newEmailErrorMessage || this.args.emailErrorMessage;
@@ -28,6 +53,9 @@ export default class PublishFlowCompleteWithEmailError extends Component {
 
     @task({drop: true})
     *retryEmailTask() {
+        if (!this.canRetry) {
+            return;
+        }
         this.retryErrorMessage = null;
 
         try {
@@ -57,6 +85,7 @@ export default class PublishFlowCompleteWithEmailError extends Component {
             // update "failed" state if email fails again
             if (e && e.name === 'EmailFailedError') {
                 this.newEmailErrorMessage = e.message;
+                yield this.fetchRetryEligibilityTask.perform();
                 return false;
             }
 
@@ -74,6 +103,8 @@ export default class PublishFlowCompleteWithEmailError extends Component {
                 }
 
                 this.retryErrorMessage = htmlSafe(errorMessage);
+                // A rejected retry means the eligibility on screen is stale.
+                yield this.fetchRetryEligibilityTask.perform();
                 return false;
             }
         }

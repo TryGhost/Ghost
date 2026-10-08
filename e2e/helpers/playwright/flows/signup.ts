@@ -21,15 +21,17 @@ export async function signupViaPortal(page: Page): Promise<{ emailAddress: strin
   return { emailAddress, name };
 }
 
-export async function completePaidSignupViaPortal(
+interface PaidSignupOptions {
+  cadence?: 'monthly' | 'yearly';
+  emailAddress?: string;
+  name?: string;
+  tierName?: string;
+}
+
+/** Signs up for a paid tier in Portal and stops on the Stripe checkout page. */
+export async function startPaidSignupViaPortal(
   page: Page,
-  stripe: StripeTestService,
-  opts?: {
-    cadence?: 'monthly' | 'yearly';
-    emailAddress?: string;
-    name?: string;
-    tierName?: string;
-  },
+  opts?: PaidSignupOptions,
 ): Promise<{ emailAddress: string; name: string }> {
   const homePage = new HomePage(page);
   await homePage.goto();
@@ -49,6 +51,16 @@ export async function completePaidSignupViaPortal(
 
   const fakeCheckoutPage = new FakeStripeCheckoutPage(page);
   await fakeCheckoutPage.waitUntilLoaded();
+
+  return { emailAddress, name };
+}
+
+export async function completePaidSignupViaPortal(
+  page: Page,
+  stripe: StripeTestService,
+  opts?: PaidSignupOptions,
+): Promise<{ emailAddress: string; name: string }> {
+  const { emailAddress, name } = await startPaidSignupViaPortal(page, opts);
   await stripe.completeLatestSubscriptionCheckout({ name });
 
   const latestCheckoutSession = stripe.getCheckoutSessions().at(-1);

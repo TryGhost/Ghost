@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import * as Sentry from '@sentry/react';
-import { initSentry } from './init-sentry';
+import { getAdminBuild, initSentry } from './init-sentry';
 
 const input = {
   dsn: 'https://public@o0.ingest.sentry.io/1',
@@ -36,5 +36,19 @@ describe('initSentry', () => {
     initSentry(input);
     expect(Sentry.getClient()).toBeDefined();
     expect(Sentry.getClient()).not.toBe(closedClient);
+  });
+});
+
+describe('getAdminBuild', () => {
+  it('reads the build from a Ghost(Pro) asset URL', () => {
+    expect(
+      getAdminBuild(
+        'https://assets.ghost.io/admin/043a3af489870c88fc1fd8bd9874e68d88258af9/assets/index-B1a2c3.js',
+      ),
+    ).toBe('043a3af489870c88fc1fd8bd9874e68d88258af9');
+  });
+
+  it('is absent for assets served by Ghost', () => {
+    expect(getAdminBuild('https://example.com/ghost/assets/index-B1a2c3.js')).toBeUndefined();
   });
 });

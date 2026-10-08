@@ -25,6 +25,7 @@ import { lazyRestoreScreen } from './editor/api';
 import { useFlagGatedRouteOwner } from './use-flag-gated-route-owner';
 import { type AccessRouteHandle } from './route-access';
 import { RouteAccessGuard } from './route-access-guard';
+import { canManageApps, lazyAppInstallScreen, lazyAppsScreen } from './apps/api';
 import { lazyAutomationEditorScreen, lazyAutomationsScreen } from './automations/api';
 import { lazyCommentsScreen } from './comments/api';
 import { lazyMigrateScreen } from './migrate/api';
@@ -48,7 +49,7 @@ import {
 } from '@tryghost/admin-x-framework/api/users';
 
 import { NotFound } from './shared/not-found';
-import { type AuthRouteHandle, authRoutes, useAuthScreensOwner } from './auth/api';
+import { authRoutes } from './auth/api';
 
 const appRoutes: RouteObject[] = [
   {
@@ -77,6 +78,17 @@ const appRoutes: RouteObject[] = [
     path: '/automations',
     handle: { requiresAccess: canManageAutomations } satisfies AccessRouteHandle,
     lazy: lazyComponent(lazyAutomationsScreen),
+  },
+  {
+    path: '/apps',
+    handle: { requiresAccess: canManageApps } satisfies AccessRouteHandle,
+    lazy: lazyComponent(lazyAppsScreen),
+  },
+  {
+    // The install link: `#/apps/install?manifest=<url>` opens the install flow.
+    // Open to all staff, so those who can't install are told who can, not redirected.
+    path: '/apps/install',
+    lazy: lazyComponent(lazyAppInstallScreen),
   },
   {
     // The automation editor hides the admin sidebar for a focused,
@@ -235,7 +247,6 @@ export const routes: RouteObject[] = [
 export function useEmberOwnedRouteMatcher(): (pathname: string) => boolean {
   const editorOwner = useFlagGatedRouteOwner('editorReact');
   const billingOwner = useFlagGatedRouteOwner('billingReact');
-  const authScreensOwner = useAuthScreensOwner();
 
   return useCallback(
     (pathname: string) => {
@@ -249,12 +260,9 @@ export function useEmberOwnedRouteMatcher(): (pathname: string) => boolean {
       if (leaf.Component === BillingRoute) {
         return billingOwner !== 'react';
       }
-      if ((leaf.handle as AuthRouteHandle | undefined)?.authScreen) {
-        return authScreensOwner !== 'react';
-      }
       return false;
     },
-    [editorOwner, billingOwner, authScreensOwner],
+    [editorOwner, billingOwner],
   );
 }
 

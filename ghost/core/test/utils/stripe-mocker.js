@@ -27,7 +27,27 @@ class StripeMocker {
   products = [];
   checkoutSessions = [];
 
+  /**
+   * The branding set in the Stripe dashboard. A new checkout session reports it, under any
+   * `branding_settings` it was created with.
+   */
+  checkoutBranding = StripeMocker.defaultCheckoutBranding();
+  /** Makes Stripe refuse to expire checkout sessions. */
+  failCheckoutExpiry = false;
+
   nockInterceptors = [];
+
+  static defaultCheckoutBranding() {
+    return {
+      display_name: 'Stripe Test Account',
+      background_color: '#ffffff',
+      button_color: '#0074d4',
+      border_style: 'rounded',
+      font_family: 'default',
+      icon: null,
+      logo: null,
+    };
+  }
 
   constructor(data = {}) {
     this.customers = data.customers ?? [];
@@ -48,6 +68,8 @@ class StripeMocker {
     this.prices = [];
     this.products = [];
     this.checkoutSessions = [];
+    this.checkoutBranding = StripeMocker.defaultCheckoutBranding();
+    this.failCheckoutExpiry = false;
 
     // Fix for now, because of importing order breaking some things when they are not initialized
     members = require('../../core/server/services/members');
@@ -359,6 +381,16 @@ class StripeMocker {
       // create
       decoded.id = `${resource.substr(0, 4)}_${this.#generateRandomId()}`;
       arr.push(decoded);
+      if (resource === 'checkout') {
+        // Kept as created, so tests see what Ghost sent, and returned as Stripe resolves it.
+        return [
+          200,
+          {
+            ...decoded,
+            branding_settings: { ...this.checkoutBranding, ...decoded.branding_settings },
+          },
+        ];
+      }
       return [200, decoded];
     }
 
@@ -467,6 +499,13 @@ class StripeMocker {
 
       if (resource === 'checkout' && id === 'sessions') {
         return this.#postData(this.checkoutSessions, null, body, resource);
+      }
+
+      if (resource === 'checkout' && uri.endsWith('/expire')) {
+        if (this.failCheckoutExpiry) {
+          return [500, { error: { type: 'api_error', message: 'Stripe is down' } }];
+        }
+        return this.#postData(this.checkoutSessions, id, 'status=expired', resource);
       }
 
       return [500];

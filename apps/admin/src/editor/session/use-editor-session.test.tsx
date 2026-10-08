@@ -9,6 +9,7 @@ import { dispatchedIntents } from './__test-utils__/save-engine-spy';
 import { record } from './__test-utils__/session-harness';
 import { reportLeaveConfirmation, reportSaveFailure } from '@/editor/report-error';
 import type { SaveCompletion } from '@/editor/engine/save-engine';
+import { searchIndexQueryKey } from '@/shared/search-index';
 import { deferred } from '@/utils/deferred';
 import type { EditorRecord } from './projection';
 import { useEditorSession } from './use-editor-session';
@@ -54,6 +55,7 @@ beforeEach(() => {
 
 vi.mock('@/editor/report-error', () => ({
   reportEditorError: vi.fn(),
+  reportEditorNotice: vi.fn(),
   reportLeaveConfirmation: vi.fn(),
   reportSaveFailure: vi.fn(),
 }));
@@ -372,5 +374,88 @@ describe('useEditorSession reload', () => {
     expect(outcome).toBe('failed');
     expect(result.current.loadedRecord).toBe(loaded);
     expect(result.current.bind.title).toBe('Typed while reloading');
+  });
+
+  it('leaves the screen’s read alone when the writer left before the reload’s read came back', async () => {
+    const newer = record({ title: 'Their title', updated_at: '2026-01-02T00:00:00.000Z' });
+    const read = deferred<{ posts: EditorRecord[] }>();
+    stable.fetchApi.mockReturnValueOnce(read.promise);
+    const cancelQueries = vi.spyOn(queryClient, 'cancelQueries');
+    const setQueryData = vi.spyOn(queryClient, 'setQueryData');
+    const { result, unmount } = setup();
+
+    let reloading!: Promise<string>;
+    act(() => {
+      reloading = result.current.reload();
+    });
+    unmount();
+    // Disposal follows the unmount by a tick.
+    await new Promise((resolve) => {
+      setTimeout(resolve);
+    });
+    read.resolve({ posts: [newer] });
+
+    expect(await reloading).toBe('abandoned');
+    expect(cancelQueries).not.toHaveBeenCalled();
+    expect(setQueryData).not.toHaveBeenCalled();
+  });
+
+  type Read = ReturnType<typeof deferred<{ posts: EditorRecord[] }>>;
+  it.each([
+    ['fails', (read: Read) => read.reject(new Error('offline'))],
+    ['finds no post', (read: Read) => read.resolve({ posts: [] })],
+  ])('reports nothing when the reload’s read %s after the writer left', async (_, settle) => {
+    const read = deferred<{ posts: EditorRecord[] }>();
+    stable.fetchApi.mockReturnValueOnce(read.promise);
+    const { result, unmount } = setup();
+
+    let reloading!: Promise<string>;
+    act(() => {
+      reloading = result.current.reload();
+    });
+    unmount();
+    // Disposal follows the unmount by a tick.
+    await new Promise((resolve) => {
+      setTimeout(resolve);
+    });
+    settle(read);
+
+    expect(await reloading).toBe('abandoned');
+  });
+});
+
+describe('useEditorSession search index', () => {
+  const postsList = searchIndexQueryKey('posts');
+
+  beforeEach(() => queryClient.clear());
+
+  it('writes a save that lands after the writer left into the posts list', async () => {
+    const loaded = record();
+    queryClient.setQueryData(postsList, {
+      posts: [{ id: loaded.id, title: loaded.title, slug: loaded.slug }],
+    });
+    const answer = deferred<{ posts: EditorRecord[] }>();
+    postApi.edit.mockReturnValueOnce(answer.promise);
+    const { result, unmount } = setup(loaded);
+
+    act(() => result.current.bind.onTitleChange('Saved after leaving'));
+    let saving!: Promise<SaveCompletion>;
+    act(() => {
+      saving = result.current.saveExplicit();
+    });
+    await waitFor(() => expect(postApi.edit).toHaveBeenCalledTimes(1));
+    unmount();
+    // Disposal follows the unmount by a tick, so the answer reaches a disposed session.
+    await new Promise((resolve) => {
+      setTimeout(resolve);
+    });
+    answer.resolve({
+      posts: [record({ title: 'Saved after leaving', updated_at: '2026-01-01T00:00:01.000Z' })],
+    });
+    await saving;
+
+    expect(queryClient.getQueryData(postsList)).toMatchObject({
+      posts: [{ id: loaded.id, title: 'Saved after leaving' }],
+    });
   });
 });

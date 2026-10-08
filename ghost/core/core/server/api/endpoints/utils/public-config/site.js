@@ -2,7 +2,6 @@ const ghostVersion = require('@tryghost/version');
 const settingsCache = require('../../../../../shared/settings-cache');
 const config = require('../../../../../shared/config');
 const urlUtils = require('../../../../../shared/url-utils').default;
-const labs = require('../../../../../shared/labs');
 
 module.exports = function getSiteProperties() {
   const siteProperties = {
@@ -23,8 +22,6 @@ module.exports = function getSiteProperties() {
         settingsCache.get('portal_signup_terms_html')
       ),
     site_uuid: settingsCache.get('site_uuid'),
-    // Admin's auth screens render before a session exists, so they can't read /config/ labs
-    authReact: labs.isSet('authReact'),
   };
 
   if (config.get('client_sentry') && !config.get('client_sentry').disabled) {

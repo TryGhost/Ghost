@@ -90,6 +90,12 @@ const features: Feature[] = [
     flag: 'stripeCheckoutCollection',
   },
   {
+    title: 'Stripe checkout design',
+    description:
+      'Let admins style the Stripe checkout page with their own button color, background color, corners and font',
+    flag: 'stripeCheckoutDesign',
+  },
+  {
     title: 'Paywall improvements',
     description: 'Enables paywall usability, discoverability and email customization improvements',
     flag: 'paywallImprovements',
@@ -99,12 +105,6 @@ const features: Feature[] = [
     description:
       'Serves the editor (/editor) from the React app instead of the Ember editor. Gates the migration behind a runtime toggle; the React side is an early placeholder.',
     flag: 'editorReact',
-  },
-  {
-    title: 'React sign-in screens',
-    description:
-      'Serves sign in, 2FA verification, password reset, staff invite signup, setup and sign out from the React app instead of the Ember screens. Takes effect on the next page load.',
-    flag: 'authReact',
   },
   {
     title: 'Machine payments',

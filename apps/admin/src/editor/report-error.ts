@@ -1,6 +1,10 @@
 import * as Sentry from '@sentry/react';
 import type { ErrorInfo } from 'react';
-import { APIError, ServerUnreachableError } from '@tryghost/admin-x-framework/errors';
+import {
+  APIError,
+  ServerUnreachableError,
+  getErrorMessage,
+} from '@tryghost/admin-x-framework/errors';
 import { loadedKoenigVersion } from '@/settings/components/koenig-loader';
 import type { PostType } from '@/editor/card-config';
 import type { SaveError } from '@/editor/engine/save-engine';
@@ -28,24 +32,43 @@ export function reportEditorError(error: unknown, context?: EditorErrorContext):
   Sentry.captureException(error, context);
 }
 
-/** Reports a Lexical failure from any of the editor's Koenig instances. */
-export function reportKoenigError(error: unknown): void {
-  reportEditorError(error, {
-    tags: { lexical: true },
-    contexts: { koenig: { version: loadedKoenigVersion() } },
-  });
+/** Reports a recovery the editor made on its own, as a message rather than a fault. */
+export function reportEditorNotice(message: string, context?: EditorErrorContext): void {
+  Sentry.captureMessage(message, context);
 }
 
-/** Reports a Koenig instance that crashed its error boundary, with where in the tree. */
-export function reportKoenigRenderError(error: unknown, info: ErrorInfo): void {
-  reportEditorError(error, {
-    tags: { lexical: true },
-    contexts: {
-      koenig: { version: loadedKoenigVersion() },
-      react: { componentStack: info.componentStack },
-    },
-  });
+/** The post editor's visible Koenig instance, or the hidden one its change baseline comes from. */
+export type KoenigInstanceRole = 'primary' | 'secondary';
+
+export interface KoenigErrorReporters {
+  onError: (error: unknown) => void;
+  onRenderError: (error: unknown, info: ErrorInfo) => void;
 }
+
+/**
+ * Reports Lexical failures from a Koenig instance, tagged with its role when it has one.
+ * The role is bound here because Lexical passes its editor as onError's second argument.
+ */
+export function koenigErrorReporters(instance?: KoenigInstanceRole): KoenigErrorReporters {
+  const context = (contexts?: EditorErrorContext['contexts']): EditorErrorContext => ({
+    tags: definedTags({ lexical: true, koenig_instance: instance }),
+    contexts: { koenig: { version: loadedKoenigVersion() }, ...contexts },
+  });
+
+  return {
+    onError: (error) => reportEditorError(error, context()),
+    onRenderError: (error, info) =>
+      reportEditorError(error, context({ react: { componentStack: info.componentStack } })),
+  };
+}
+
+const anyKoenigInstance = koenigErrorReporters();
+
+/** Reports a Lexical failure from any of the editor's Koenig instances. */
+export const reportKoenigError = anyKoenigInstance.onError;
+
+/** Reports a Koenig instance that crashed its error boundary, with where in the tree. */
+export const reportKoenigRenderError = anyKoenigInstance.onRenderError;
 
 function definedTags(tags: Record<string, TagValue | undefined>): Record<string, TagValue> {
   return Object.fromEntries(
@@ -61,6 +84,14 @@ function responseTags(error: SaveError): Record<string, TagValue | undefined> {
     // Sentry drops a tag value longer than 200 characters.
     api_url: response?.url ? response.url.slice(0, 200) : undefined,
   };
+}
+
+/** Sentry titles and groups a failure by this error's name; the transport error is its cause. */
+function saveFailureError(error: SaveError): Error {
+  const kind = error.kind.replace(/(?:^|-)(\w)/g, (_, letter: string) => letter.toUpperCase());
+  const reported = new Error(getErrorMessage(error.cause, error.message), { cause: error.cause });
+  reported.name = `Save${kind}Error`;
+  return reported;
 }
 
 /**
@@ -110,7 +141,7 @@ export function reportSaveFailure(failure: EditorSaveFailure, postType: PostType
     return;
   }
 
-  reportEditorError(error.cause ?? new Error(error.message), {
+  reportEditorError(saveFailureError(error), {
     tags,
     extra: { post_id: postId, duration_ms: durationMs },
   });

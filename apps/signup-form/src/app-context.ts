@@ -1,7 +1,8 @@
 // Ref: https://reactjs.org/docs/context.html
-import React, { ComponentProps, useContext } from 'react';
-import pages, { Page, PageName } from './pages';
-import { GhostApi } from './utils/api';
+import React, { type ComponentProps, useContext } from 'react';
+import type pages from './pages';
+import type { GhostApi } from './utils/api';
+import type { Page, PageName } from './pages';
 
 export type SignupFormOptions = {
   title?: string;

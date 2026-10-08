@@ -1,9 +1,10 @@
 import { Banner, Button } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { getRecipientType } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { PublishPhaseIcon } from '@/posts/api';
 import { LimitMessage } from './limit-message';
 import {
   publishBackToSettings,
@@ -34,6 +35,10 @@ export interface ConfirmStepProps {
   onConfirm: () => void;
   onBack: () => void;
 }
+
+// Eases the running state in as the button greys out. Use `fade-in-0`, not
+// `fade-in`: Ember's ghost.css has its own `.fade-in` that leaves content at opacity 0.
+const ENTER = 'animate-in fade-in-0 zoom-in-90 duration-200 ease-out motion-reduce:animate-none';
 
 function FailureMessage({ failure }: { failure: CompletionFailure }) {
   if (!failure.parts) {
@@ -146,7 +151,16 @@ export function ConfirmStep({
           size="lg"
           onClick={onConfirm}
         >
-          {status === 'running' ? buttonText.running : buttonText.idle}
+          {status === 'running' ? (
+            <>
+              {/* The analytics "preparing" spinner, in the button's own text colour.
+                  size-4 matches the size Button gives its icons at this text size. */}
+              <PublishPhaseIcon className={cn('size-4 text-current', ENTER)} phase="preparing" />
+              <span className={ENTER}>{buttonText.running}</span>
+            </>
+          ) : (
+            buttonText.idle
+          )}
         </Button>
       </Inline>
     </Stack>

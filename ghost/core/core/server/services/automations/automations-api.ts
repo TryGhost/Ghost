@@ -1,39 +1,45 @@
-import {
-  normalizeMemberSearch,
-  searchCursorScope,
-  browseMemberSearch,
-} from './automation-member-search';
-import { decodeRunCursor, encodeRunCursor, type RunCursorScope } from './automation-run-cursor';
+// @ts-expect-error This module lacks type definitions.
+import domainEvents from '@tryghost/domain-events';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
 import ObjectId from 'bson-objectid';
 import { z } from 'zod';
-import { createDatabaseAutomationsRepository } from './database-automations-repository';
-import { parseFakeWaitHoursMultiplier } from './fake-wait-hours-multiplier';
+import config from '../../../shared/config';
+// @ts-expect-error This module lacks type definitions.
+import labs from '../../../shared/labs';
+// @ts-expect-error This module lacks type definitions.
+import settingsCache from '../../../shared/settings-cache';
+import { knex } from '../../data/db';
+// @ts-expect-error This module lacks type definitions.
+import lexicalLib from '../../lib/lexical';
+// @ts-expect-error This module lacks type definitions.
+import requestExternal from '../../lib/request-external';
+// @ts-expect-error This module lacks type definitions.
+import { create as createTinybirdClient } from '../stats/utils/tinybird';
+// @ts-expect-error This module lacks type definitions.
+import TinybirdServiceWrapper from '../tinybird';
+import { entryDate, getEntryStatsWindow, parseEntryStatsOptions } from './automation-entry-stats';
+import {
+  browseMemberSearch,
+  normalizeMemberSearch,
+  searchCursorScope,
+} from './automation-member-search';
+import { decodeRunCursor, encodeRunCursor, type RunCursorScope } from './automation-run-cursor';
 import type {
   Automation,
   AutomationsRepository,
   EditAutomationData,
 } from './automations-repository';
+import { createDatabaseAutomationsRepository } from './database-automations-repository';
+import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
+import { parseFakeWaitHoursMultiplier } from './fake-wait-hours-multiplier';
 import {
   EMPTY_AUTOMATION_STATS,
-  fetchAutomationStats,
   fetchAutomationPerformanceStats,
   fetchAutomationRuns,
+  fetchAutomationStats,
 } from './tinybird-automation-stats';
-import { entryDate, getEntryStatsWindow, parseEntryStatsOptions } from './automation-entry-stats';
-import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
-
-const { knex } = require('../../data/db');
-const domainEvents = require('@tryghost/domain-events');
-const labs = require('../../../shared/labs');
-const config = require('../../../shared/config');
-const settingsCache = require('../../../shared/settings-cache');
-const requestExternal = require('../../lib/request-external');
-const TinybirdServiceWrapper = require('../tinybird');
-const { create: createTinybirdClient } = require('../stats/utils/tinybird');
-const lexicalLib = require('../../lib/lexical');
 
 const MAX_AUTOMATION_ACTIONS = 50;
 const RUN_PAGE_SIZE = 50;

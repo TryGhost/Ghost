@@ -45,6 +45,7 @@ export type LocalRevisionDraft = Omit<LocalRevision, 'id' | 'type' | 'revisionTi
 };
 
 type ErrorReporter = (error: unknown, context?: EditorErrorContext) => void;
+type NoticeReporter = (message: string, context?: EditorErrorContext) => void;
 
 function revisionKey(id: string, timestamp: number): string {
   return `${LOCAL_REVISION_PREFIX}-${id}-${timestamp}`;
@@ -120,13 +121,14 @@ function keepNewest(storage: Storage, id: string, written: string): void {
 }
 
 /**
- * Stores one revision and keeps the newest five per post; unsaved drafts are
- * never trimmed. A full store gives up its oldest entries until the write fits.
+ * Stores one revision and keeps the newest five per post; unsaved drafts are never
+ * trimmed. A full store gives up its oldest entries; one with nothing left is an error.
  */
 export function writeLocalRevision(
   storage: Storage,
   revision: LocalRevision,
   onError: ErrorReporter,
+  onNotice: NoticeReporter,
 ): string | undefined {
   const key = revisionKey(revision.id, revision.revisionTimestamp);
   const value = JSON.stringify(revision);
@@ -146,7 +148,7 @@ export function writeLocalRevision(
       if (evictable === null) {
         evictable = byAge(revisionKeys(storage));
         if (evictable.length > 0) {
-          onError(new Error('LocalStorage quota exceeded. Removing old revisions.'), {
+          onNotice('LocalStorage quota exceeded. Removing old revisions.', {
             tags: { localRevisions: 'quotaExceeded' },
           });
         }
@@ -179,6 +181,7 @@ export interface LocalRevisionWriterOptions {
   /** Read on every write: reading `localStorage` can throw where storage is blocked. */
   storage: () => Storage;
   onError: ErrorReporter;
+  onNotice: NoticeReporter;
   now?: () => number;
   minWriteIntervalMs?: number;
 }
@@ -191,6 +194,7 @@ export function createLocalRevisionWriter({
   type,
   storage,
   onError,
+  onNotice,
   now = Date.now,
   minWriteIntervalMs = MIN_WRITE_INTERVAL_MS,
 }: LocalRevisionWriterOptions): LocalRevisionWriter {
@@ -232,6 +236,7 @@ export function createLocalRevisionWriter({
       store,
       { ...draft, id: draft.id ?? UNSAVED_POST_ID, type, revisionTimestamp: timestamp },
       onError,
+      onNotice,
     );
     if (key) {
       lastWritten = content;

@@ -1,4 +1,4 @@
-import App from './app.tsx';
+import App from './app';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { ROOT_DIV_CLASS } from './utils/constants';

@@ -11,15 +11,12 @@ import { useFeatureFlag, useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import type { AlertsStore } from '@/alerts';
-import {
-  type SubscriptionState,
-  applyEmberBillingSubscriptionUpdate,
-  reportEmberBillingLoadFailure,
-} from '@/ember-bridge';
+import { type SubscriptionState, applyEmberBillingSubscriptionUpdate } from '@/ember-bridge';
 import { useThemeContext } from '@/providers/theme-context';
 import { useFlagGatedRouteOwner } from '@/use-flag-gated-route-owner';
 import { BillingAppConnection } from './billing-app-connection';
 import { useBillingScreenOpen } from './billing-screen';
+import { reportBillingLoadFailure } from './report-load-failure';
 import {
   type BillingAppMessage,
   EXCEEDED_ALERT_HTML,
@@ -110,7 +107,7 @@ function BillingAppFrame({
           isForceUpgrade: forceUpgradeRef.current === true,
           routeName: billingSubRoute(locationRef.current.pathname) ? 'pro.pro-sub' : 'pro.index',
         }),
-        onLoadFailure: reportEmberBillingLoadFailure,
+        onLoadFailure: reportBillingLoadFailure,
       }),
   );
   const { loaded, failed } = useSyncExternalStore(connection.subscribe, connection.getSnapshot);

@@ -10,6 +10,7 @@ import {
   useState,
 } from 'react';
 import { flushSync } from 'react-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { AdminLink } from '@/shared/admin-link';
 import { getPostListReturnUrl } from '@/posts/api';
 import { reloadAdmin } from '@/auth/api';
@@ -69,7 +70,7 @@ import {
   EditorSessionKeyProvider,
   useEditorScreenSessionKey,
 } from './session/session-key';
-import { useEditorSession } from './session/use-editor-session';
+import { editorRead, useEditorSession } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
 import type { EditorRecord } from './session/projection';
@@ -110,7 +111,7 @@ function EditorHeader({
   return (
     <Grid
       align="center"
-      className="grid-cols-[auto_minmax(0,1fr)] pt-[calc(var(--spacing)*5+1px)] pr-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] pb-3 pl-4 sm:grid-cols-[auto_minmax(0,1fr)_auto] [&_a]:pointer-events-auto [&_button]:pointer-events-auto"
+      className="grid-cols-[auto_minmax(0,1fr)] pt-[calc(var(--spacing)*5+1px)] pr-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] pb-3 pl-4 editor-settings-motion-[padding-right] sm:grid-cols-[auto_minmax(0,1fr)_auto] [&_a]:pointer-events-auto [&_button]:pointer-events-auto"
       gap="sm"
     >
       <PageHeader.Action
@@ -228,7 +229,11 @@ function EditorContent({
   // Closed on every editor entry, as the menu it replaces was.
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsPresent, setSettingsPresent] = useState(false);
+  // From a toggle until everything moving with the panel has arrived. Meanwhile
+  // the editor sizes Koenig's breakout cards from the moving layout.
+  const [settingsMoving, setSettingsMoving] = useState(false);
   const shellRef = useRef<HTMLDivElement>(null);
+  const settingsFrameRef = useRef<HTMLDivElement>(null);
   const settingsToggleRef = useRef<HTMLButtonElement>(null);
   const [settingsToggleWidth, setSettingsToggleWidth] = useState(0);
   useLayoutEffect(() => {
@@ -242,8 +247,9 @@ function EditorContent({
     observer.observe(toggle);
     return () => observer.disconnect();
   }, []);
-  // Keep the panel's fields and subview mounted until the closing transition ends.
-  // Reading animations also handles reduced motion (no animation) and reversals.
+  // Keep the panel's fields and subview mounted until its closing transition ends.
+  // Reading the panel's own transitions also handles reduced motion (none) and
+  // reversals (a reopen cancels this wait).
   useLayoutEffect(() => {
     if (settingsOpen || !settingsPresent) {
       return;
@@ -251,7 +257,10 @@ function EditorContent({
     const finishClosing = () => {
       setSettingsPresent(false);
     };
-    const animations = shellRef.current?.getAnimations() ?? [];
+    const animations =
+      settingsFrameRef.current
+        ?.getAnimations()
+        .filter((animation) => animation instanceof CSSTransition) ?? [];
     if (!animations.length) {
       finishClosing();
       return;
@@ -266,6 +275,26 @@ function EditorContent({
       cancelled = true;
     };
   }, [settingsOpen, settingsPresent]);
+  // Reading the shell's transitions also flushes the style that starts them; a
+  // reversal replaces them and cancels this wait.
+  useLayoutEffect(() => {
+    if (!settingsMoving) {
+      return;
+    }
+    const transitions =
+      shellRef.current
+        ?.getAnimations({ subtree: true })
+        .filter((animation) => animation instanceof CSSTransition) ?? [];
+    let cancelled = false;
+    void Promise.allSettled(transitions.map((transition) => transition.finished)).then(() => {
+      if (!cancelled) {
+        setSettingsMoving(false);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [settingsOpen, settingsMoving]);
   const headerRef = useRef<HTMLDivElement>(null);
   const [headerHeight, setHeaderHeight] = useState(0);
   useLayoutEffect(() => {
@@ -281,6 +310,7 @@ function EditorContent({
   }, []);
   const toggleSettings = useCallback(() => {
     settingsToggleRef.current?.focus();
+    setSettingsMoving(true);
     setSettingsPresent(true);
     setSettingsOpen((open) => !open);
   }, []);
@@ -298,6 +328,7 @@ function EditorContent({
     } else if (field && field !== 'email_subject') {
       // Rendered at once, so the excerpt is there to take focus.
       flushSync(() => {
+        setSettingsMoving(true);
         setSettingsPresent(true);
         setSettingsOpen(true);
       });
@@ -345,14 +376,19 @@ function EditorContent({
     <Inline
       ref={shellRef}
       align="stretch"
-      className="relative h-full min-h-0 transition-[--editor-settings-progress] duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+      className="relative h-full min-h-0 [--editor-settings-width:350px] max-[500px]:[--editor-settings-width:100vw]"
       gap="none"
       style={
         {
           '--editor-header-height': `${headerHeight}px`,
           '--editor-overlap': '0px',
+          // Never animated: what moves with the panel transitions its own property.
           '--editor-settings-progress': settingsOpen ? 1 : 0,
-          '--editor-settings-toggle-width': `${settingsToggleWidth}px`,
+          // Unset until measured: the toggle's slot then starts at auto width, which
+          // nothing eases from, rather than easing out from an unmeasured toggle.
+          '--editor-settings-toggle-width': settingsToggleWidth
+            ? `${settingsToggleWidth}px`
+            : undefined,
         } as CSSProperties
       }
     >
@@ -368,7 +404,7 @@ function EditorContent({
                 onOpenUpdateFlow={canPublish ? openUpdateFlow : undefined}
               />
             ) : null}
-            <PageHeader.ActionGroup className="ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] max-sm:col-start-2 max-sm:row-start-1 sm:col-start-3">
+            <PageHeader.ActionGroup className="ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap] max-sm:col-start-2 max-sm:row-start-1 sm:col-start-3">
               <EditorHeaderActions
                 currentUser={currentUser}
                 offersEmailRetry={offersEmailRetry}
@@ -383,7 +419,7 @@ function EditorContent({
               />
               <Box
                 aria-hidden="true"
-                className="w-[calc((var(--editor-settings-toggle-width)+var(--spacing)*2+1px)*(1-var(--editor-settings-progress)))] shrink-0"
+                className="w-[calc((var(--editor-settings-toggle-width)+var(--spacing)*2+1px)*(1-var(--editor-settings-progress)))] shrink-0 editor-settings-motion-[width]"
               />
             </PageHeader.ActionGroup>
           </EditorHeader>
@@ -417,6 +453,7 @@ function EditorContent({
               featureImage={featureImage}
               handleRef={postEditorRef}
               postType={postType}
+              settingsMoving={settingsMoving}
               showExcerpt={showExcerpt}
               titleAndFeatureImageHidden={
                 postType === 'page' && liveShowTitleAndFeatureImage === false
@@ -438,6 +475,7 @@ function EditorContent({
           currentUser={currentUser}
           excerptRef={settingsExcerptRef}
           featureImage={featureImage.featureImage}
+          frameRef={settingsFrameRef}
           hasInlineExcerpt={showExcerpt}
           postType={postType}
           session={session}
@@ -555,20 +593,24 @@ function useLexicalConversion(postType: PostType) {
 function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   // A create replaces the URL with the id it acquired; the load must not restart.
   const [openedId] = useState(id);
-  // Access and conversion are judged until the opening read settles. Later
+  // Access and conversion are judged on the read the post opens with. Later
   // reads belong to the session; unmounting the editor would dispose it.
   const [openedWith, setOpenedWith] = useState<EditorRecord>();
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
+  const queryClient = useQueryClient();
   const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  // Mounting never refetches a cached copy: the loader sends that read itself, below.
   const postQuery = useEditorPost(openedId ?? '', {
     enabled: postType === 'post' && !!openedId,
     defaultErrorHandler: false,
+    refetchOnMount: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const pageQuery = useEditorPage(openedId ?? '', {
     enabled: postType === 'page' && !!openedId,
     defaultErrorHandler: false,
+    refetchOnMount: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const query = postType === 'page' ? pageQuery : postQuery;
@@ -576,8 +618,55 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
     postType === 'page' ? pageQuery.data?.pages[0] : postQuery.data?.posts[0];
   const { state: conversion, convert } = useLexicalConversion(postType);
   const listPath = postType === 'page' ? '/pages' : '/posts';
-  // A failed refetch keeps the last post read; unmounting the editor would dispose its session.
-  const loadError = openedWith || loaded ? null : query.error;
+
+  // Opening reads the post again even when a copy is cached: the session saves
+  // against the version it opens on, so a copy from an earlier visit would collide
+  // with whatever another writer has saved since. A read still in flight from that
+  // visit may have been answered before their save, so it is replaced, not joined,
+  // even when it is that visit's first. With neither, mounting loads the post.
+  const [earlierVisit] = useState<'cached' | 'reading' | null>(() => {
+    if (query.data !== undefined) {
+      return 'cached';
+    }
+    const inFlight =
+      !!openedId &&
+      queryClient.getQueryState(editorRead(postType, openedId).queryKey)?.fetchStatus ===
+        'fetching';
+    return inFlight ? 'reading' : null;
+  });
+  const [openingReadSettled, setOpeningReadSettled] = useState(false);
+  const openingReadStarted = useRef(false);
+  useEffect(() => {
+    if (!earlierVisit || !openedId || openingReadStarted.current) {
+      return;
+    }
+    openingReadStarted.current = true;
+    const read = async () => {
+      // With nothing cached, a refetch would join the read in flight.
+      if (earlierVisit === 'reading') {
+        await queryClient.cancelQueries({
+          queryKey: editorRead(postType, openedId).queryKey,
+          exact: true,
+        });
+      }
+      await query.refetch({ cancelRefetch: true });
+      setOpeningReadSettled(true);
+    };
+    void read();
+  });
+  // Settled once the read this mount sent has succeeded or failed. An earlier
+  // visit's read landing before that one starts does not count, and a later
+  // refetch, such as the one a conversion's save starts, does not hold it back.
+  const opened = earlierVisit ? openingReadSettled : query.isFetchedAfterMount;
+
+  // Only the opening read's own failure counts, never one a cached copy still
+  // carries. A deleted post or an expired session decides the screen even with a
+  // copy cached; any other failure opens that copy, and the next save reports the rest.
+  const readError = opened ? query.error : null;
+  const definitive =
+    readError instanceof SessionExpiredError ||
+    (readError instanceof APIError && readError.response?.status === 404);
+  const loadError = openedWith || (loaded && !definitive) ? null : readError;
   // Reloading is safe only while nothing is unsaved: the signed-out admin
   // remembers this route and returns to it after sign in.
   const sessionExpired = loadError instanceof SessionExpiredError;
@@ -587,7 +676,9 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
     }
   }, [sessionExpired, pathname, search]);
 
-  const opening = openedWith ? undefined : loaded;
+  // Nothing is judged on a cached copy before the opening read settles, nor on one
+  // that read has ruled out.
+  const opening = openedWith || !opened || definitive ? undefined : loaded;
   const returnToList = !!currentUser && !!opening && shouldReturnToList(currentUser, opening);
   useEffect(() => {
     if (returnToList) {
@@ -629,7 +720,7 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
     );
   }
 
-  if (query.isPending || !currentUser || returnToList) {
+  if (!opened || query.isPending || !currentUser || returnToList) {
     return <EditorLoading />;
   }
 
@@ -657,11 +748,9 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
     record = converted.record;
   }
 
-  // Latched while rendering once the read settles: a reopened post's cached
-  // copy may be stale, so the refetch in flight still decides.
-  if (!query.isFetching) {
-    setOpenedWith(record);
-  }
+  // Latched while rendering, now the opening read has settled. A cached copy only
+  // gets this far when that read failed for a reason other than the two above.
+  setOpenedWith(record);
   return <EditorSurface postType={postType} record={record} />;
 }
 

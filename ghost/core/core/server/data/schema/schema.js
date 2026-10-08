@@ -1560,6 +1560,16 @@ module.exports = {
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
+  // The site-wide Stripe Checkout config. It is a single row found by its slug, so the first
+  // save inserts it and later saves update it. Each part of the config has its own JSON
+  // column, which is null until that part is set.
+  stripe_checkout_config: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    slug: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    design: { type: 'text', maxlength: 65535, nullable: true },
+    created_at: { type: 'dateTime', nullable: false },
+    updated_at: { type: 'dateTime', nullable: true },
+  },
   actions: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     resource_id: { type: 'string', maxlength: 24, nullable: true },
@@ -2653,7 +2663,7 @@ module.exports = {
     manifest_url: { type: 'string', maxlength: 2000, nullable: false },
     // The validated manifest, with its URLs resolved, as JSON.
     manifest: { type: 'text', maxlength: 65535, nullable: false },
-    // SHA-256 of `manifest`, in hex: what a publisher reviews and confirms.
+    // SHA-256 of `manifest`, in hex, so two manifests compare without parsing.
     digest: { type: 'string', maxlength: 64, nullable: false },
     // Whether this manifest had changes that needed approval when it was added.
     requires_approval: { type: 'boolean', nullable: false, defaultTo: false },

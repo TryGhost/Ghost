@@ -213,10 +213,9 @@ describe('Post editor saving', () => {
 
     await userEvent.keyboard(' edited');
 
-    await expect.poll(() => saveApi.requests.length).toBeGreaterThan(0);
-    const saved = submittedBody(saveApi);
-    expect(saved).toContain(' edited');
-    expect(saved).not.toContain('#123456');
+    // Fast autosave can send a partial edit before the keyboard sequence finishes.
+    await expect.poll(() => submittedBody(saveApi)).toContain(' edited');
+    expect(submittedBody(saveApi)).not.toContain('#123456');
   });
 
   it('creates a new post on the first edit and swaps the URL without remounting', async () => {
@@ -246,9 +245,12 @@ describe('Post editor saving', () => {
     await renderAdminApp('/editor/post', FLAG_ON);
     await expect.element(editorScreen.body()).toBeVisible();
     const mountedBody = bodyElement();
+    // A post that has never been saved has no status to report.
+    await expect(editorScreen.status()).toHaveCount(0);
 
     await appendToBody('First words');
 
+    await expect.element(editorScreen.status()).toHaveTextContent('Saving');
     await expect.poll(() => createApi.requests.length).toBe(1);
     expect(submittedPost(createApi)).toMatchObject({ title: '(Untitled)', slug: 'untitled' });
     expect(submittedPost(createApi).id).toBeUndefined();
@@ -256,6 +258,7 @@ describe('Post editor saving', () => {
     await expect.poll(currentRoute).toBe(`/editor/post/${NEW_POST_ID}`);
     expect(bodyElement()).toBe(mountedBody);
     await expect.element(editorScreen.body()).toHaveTextContent('First words');
+    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
   });
 
   // Core refuses an Author's or Contributor's create unless the payload names
@@ -313,6 +316,8 @@ describe('Post editor saving', () => {
     await expect.poll(() => createApi.requests.length).toBe(1);
 
     try {
+      // The save that creates the post is the first thing the status line reports.
+      await expect.element(editorScreen.status()).toHaveTextContent('Saving…');
       await appendToBody(' and then some');
       expect(submittedBody(createApi)).not.toContain('and then some');
     } finally {

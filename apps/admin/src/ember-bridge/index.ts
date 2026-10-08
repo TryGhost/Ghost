@@ -13,7 +13,6 @@ export {
   connectEmberAdminTheme,
   navigateEmberBillingSubRoute,
   applyEmberBillingSubscriptionUpdate,
-  reportEmberBillingLoadFailure,
   syncEmberPostListQueryParams,
   syncEmberFullScreen,
   syncEmberRoutePattern,

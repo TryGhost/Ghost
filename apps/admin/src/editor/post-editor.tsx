@@ -66,6 +66,8 @@ export interface PostEditorProps {
   wordCountAccessory?: React.ReactNode;
   /** Lets the screen take the writer to the title or the excerpt. */
   handleRef?: React.Ref<PostEditorHandle>;
+  /** From a settings panel toggle until everything moving with the panel has arrived. */
+  settingsMoving?: boolean;
 }
 
 export interface PostEditorHandle {
@@ -75,8 +77,11 @@ export interface PostEditorHandle {
 
 const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 
+// Ember's global stylesheet, still loaded around the React editor, gives every
+// textarea a 100px min-height and a 250–500px width; the fields opt out of both
+// so they span the writing column and grow from a single line.
 const fieldClassName =
-  'block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none';
+  'block w-full max-w-none min-w-0 min-h-0 resize-none overflow-hidden border-0 bg-transparent p-0 outline-none';
 
 function useAutosize(ref: React.RefObject<HTMLTextAreaElement | null>, value: string) {
   const measure = useCallback(() => {
@@ -97,14 +102,18 @@ function useAutosize(ref: React.RefObject<HTMLTextAreaElement | null>, value: st
     }
     // measuring inside the observer callback would resize the observed element mid-loop
     let frame = 0;
-    const observer = new ResizeObserver(() => {
+    const schedule = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(measure);
-    });
+    };
+    const observer = new ResizeObserver(schedule);
     observer.observe(element);
+    // A web font arriving rewraps the text without resizing the field
+    document.fonts?.addEventListener('loadingdone', schedule);
     return () => {
       cancelAnimationFrame(frame);
       observer.disconnect();
+      document.fonts?.removeEventListener('loadingdone', schedule);
     };
   }, [ref, measure]);
 }
@@ -182,9 +191,11 @@ export function PostEditor({
   onTkCountChange,
   wordCountAccessory,
   handleRef,
+  settingsMoving = false,
 }: PostEditorProps) {
   const { darkMode, isAdmin7 } = useFocusContext();
   const isKeyboardOpen = useOnscreenKeyboard();
+  const scrollPaneRef = useRef<HTMLDivElement>(null);
   const writingAreaRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const excerptRef = useRef<HTMLTextAreaElement>(null);
@@ -199,28 +210,74 @@ export function PostEditor({
   useAutosize(titleRef, title);
   useAutosize(excerptRef, excerpt);
 
+  // Koenig's breakout cards are sized in viewport units less
+  // `--kg-breakout-adjustment`, the width beside the writing area. The settings
+  // panel's share of it is CSS on the writing area, from the shell's static
+  // progress; this measures the rest: the pane's offset and its scrollbar. The
+  // panel's motion leaves both unchanged, so nothing is written while it runs —
+  // rewriting an inherited property every frame would restyle the whole document.
   useLayoutEffect(() => {
-    const container = writingAreaRef.current;
-    if (!container) {
+    const pane = scrollPaneRef.current;
+    const area = writingAreaRef.current;
+    if (!pane || !area) {
       return;
     }
-    // Koenig's breakout cards use viewport units; subtract the space outside
-    // the writing area, including its inset and the animated sidebar.
+    let written = '';
     const measure = () => {
-      container.style.setProperty(
-        '--kg-breakout-adjustment',
-        `${Math.max(0, window.innerWidth - container.clientWidth)}px`,
-      );
+      const scrollbar = pane.offsetWidth - pane.clientWidth;
+      const inset = `${Math.max(0, pane.getBoundingClientRect().left + scrollbar)}px`;
+      if (inset !== written) {
+        written = inset;
+        area.style.setProperty('--editor-breakout-inset', inset);
+      }
     };
     measure();
     const observer = new ResizeObserver(measure);
-    observer.observe(container);
+    observer.observe(pane);
     window.addEventListener('resize', measure);
     return () => {
       observer.disconnect();
       window.removeEventListener('resize', measure);
     };
   }, []);
+
+  // While the panel moves, that resting value is where the cards end up rather
+  // than where the writing area is. So on each frame the pane resizes, this sizes
+  // the cards from the layout itself, writing only on the cards so only their
+  // subtrees restyle. Resize observers run after layout and before paint, so each
+  // frame draws the cards at that frame's writing area; transitions of the cards'
+  // own geometry drift from the panel's in WebKit. Koenig sizes cards from a
+  // fallback it derives once at its root, so a card takes that property too.
+  useLayoutEffect(() => {
+    const pane = scrollPaneRef.current;
+    const area = writingAreaRef.current;
+    if (!settingsMoving || !pane || !area) {
+      return;
+    }
+    const fitted = new Set<HTMLElement>();
+    const fit = () => {
+      const adjustment = `${Math.max(0, window.innerWidth - area.getBoundingClientRect().width)}px`;
+      for (const card of area.querySelectorAll<HTMLElement>('[data-kg-card]')) {
+        fitted.add(card);
+        if (card.style.getPropertyValue('--kg-breakout-adjustment') !== adjustment) {
+          card.style.setProperty('--kg-breakout-adjustment', adjustment);
+          card.style.setProperty('--kg-breakout-adjustment-with-fallback', adjustment);
+        }
+      }
+    };
+    // The panel's resting value already applies, so this keeps the motion's first
+    // frame at the writing area's current width.
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(pane);
+    return () => {
+      observer.disconnect();
+      for (const card of fitted) {
+        card.style.removeProperty('--kg-breakout-adjustment');
+        card.style.removeProperty('--kg-breakout-adjustment-with-fallback');
+      }
+    };
+  }, [settingsMoving]);
 
   const hasFeatureImage = !!featureImage.featureImage;
   const titleHasTk = textHasTk(title);
@@ -355,10 +412,16 @@ export function PostEditor({
 
   return (
     <div className="relative h-full min-h-0" data-testid={postEditor}>
-      <div className="h-full scroll-pt-(--editor-overlap) overflow-x-hidden overflow-y-auto">
+      <div
+        ref={scrollPaneRef}
+        className="h-full scroll-pt-(--editor-overlap) overflow-x-hidden overflow-y-auto"
+      >
+        {/* Beside the settings panel, the breakout adjustment adds the panel and the
+            margin before it at their resting values; while the panel moves, the
+            cards are sized from the layout instead (above). */}
         <Stack
           ref={writingAreaRef}
-          className="min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24 lg:mr-[calc(var(--spacing)*3*var(--editor-settings-progress,0))]"
+          className="min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24 editor-settings-motion-[margin-right] [--kg-breakout-adjustment:var(--editor-breakout-inset,0px)] lg:mr-[calc(var(--spacing)*3*var(--editor-settings-progress,0))] lg:[--kg-breakout-adjustment:calc(var(--editor-breakout-inset,0px)+(var(--editor-settings-width,0px)+var(--spacing)*3)*var(--editor-settings-progress,0))]"
           gap="none"
           onDragOver={(event) => event.preventDefault()}
           onDrop={onPaneDrop}
@@ -412,7 +475,7 @@ export function PostEditor({
                 autoFocus={autofocusTitle}
                 className={cn(
                   fieldClassName,
-                  'heading-font-features mb-4 min-h-0 max-w-none min-w-0 pb-1 text-[4.8rem] leading-[1.1] font-bold tracking-[-0.017em] text-foreground placeholder:font-bold placeholder:text-muted-foreground max-[769px]:text-[3.6rem] max-[501px]:text-[2.8rem]',
+                  'heading-font-features mb-4 pb-1 text-[4.8rem] leading-[1.1] font-bold tracking-[-0.017em] text-foreground placeholder:font-bold placeholder:text-editor-placeholder max-[769px]:text-[3.6rem] max-[501px]:text-[2.8rem]',
                   titleAndFeatureImageHidden && 'opacity-50 focus:opacity-100',
                 )}
                 data-testid={editorTitleInput}
@@ -434,7 +497,7 @@ export function PostEditor({
               <div className="relative">
                 {excerptHasTk && (
                   <TkIndicator
-                    className="top-1 -left-12"
+                    className="top-1 -right-14"
                     testId={tkIndicatorExcerpt}
                     onClick={focusExcerpt}
                   />
@@ -446,7 +509,7 @@ export function PostEditor({
                   aria-label="Excerpt"
                   className={cn(
                     fieldClassName,
-                    'text-xl leading-normal tracking-tight text-text-secondary placeholder:text-muted-foreground',
+                    'text-[2rem] leading-[1.5] font-[440] tracking-[-0.018em] text-foreground/90 placeholder:font-normal placeholder:text-editor-placeholder',
                   )}
                   data-testid={editorExcerptInput}
                   placeholder="Add an excerpt"
@@ -459,11 +522,11 @@ export function PostEditor({
                 <hr
                   className={cn(
                     'mt-4',
-                    excerptError ? 'mb-2 border-destructive' : 'mb-6 border-border',
+                    excerptError ? 'mb-0 border-destructive' : 'mb-12 border-border-default',
                   )}
                 />
                 {excerptError ? (
-                  <FieldError className="mb-6" id={excerptErrorId}>
+                  <FieldError className="mt-2 mb-12" id={excerptErrorId}>
                     {excerptError}
                   </FieldError>
                 ) : null}
@@ -486,7 +549,7 @@ export function PostEditor({
         </Stack>
       </div>
       <Inline
-        className="absolute right-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] bottom-3 z-20"
+        className="absolute right-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] bottom-3 z-20 editor-settings-motion-[right]"
         gap="sm"
       >
         {!isKeyboardOpen && (

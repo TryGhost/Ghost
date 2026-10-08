@@ -27,7 +27,15 @@ export interface ActionRecorder {
   add(data: Record<string, unknown>, options: { autoRefresh: boolean }): Promise<unknown>;
 }
 
-export type AppInstallationEvent = 'installed' | 'uninstalled';
+export type AppInstallationEvent = 'installed' | 'uninstalled' | 'changes_approved';
+
+export interface AppInstallationActionDetails {
+  primary_name: string;
+  app_id: string;
+  /** For an approval: the manifest that was approved before, and the one approved now. */
+  from_manifest_id?: string;
+  to_manifest_id?: string;
+}
 
 // `subject` is the installation's id. The app's name and ID ride along in the action's
 // context, so the history still reads as "Podcast" long after the manifest has changed.
@@ -35,7 +43,7 @@ export type RecordAppInstallationAction = (input: {
   context: RequestContext;
   event: AppInstallationEvent;
   subject: string;
-  details: { primary_name: string; app_id: string };
+  details: AppInstallationActionDetails;
 }) => Promise<void>;
 
 /**
@@ -54,7 +62,7 @@ export async function recordAppInstallationAction({
   context: RequestContext;
   event: AppInstallationEvent;
   subject: string;
-  details: { primary_name: string; app_id: string };
+  details: AppInstallationActionDetails;
 }): Promise<void> {
   if (!context.actor) {
     return;
