@@ -21,7 +21,7 @@ import {
 // disagree. This walks every trigger the proto knows, so the next one added is
 // covered without anyone remembering to add a case.
 const FIELD_LABELS: Partial<Record<TriggerType, string>> = {
-  paid_subscription_starts: 'Triggered when someone signs up or upgrades to:',
+  paid_subscription_starts: 'Triggered when a new or free member starts:',
   label_added: 'Triggered when someone signs up with:',
   paid_subscription_changed: "Triggered when a member's subscription:",
   segment_entered: 'Triggered when a member enters:',

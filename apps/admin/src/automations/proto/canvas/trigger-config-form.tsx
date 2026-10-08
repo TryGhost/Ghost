@@ -18,6 +18,7 @@ import {
   LABEL_FIELD_LABEL,
   SEGMENT_FIELD_LABEL,
   PAID_TIERS_FIELD_LABEL,
+  SIMPLE_PAID_TIERS_FIELD_LABEL,
   TIER_OPTIONS,
   type SubscriptionChange,
   type TriggerConfig,
@@ -149,6 +150,9 @@ interface TriggerConfigFormProps {
   // and went when locked cards stopped rendering this form at all (the canvas
   // draws them header-only; see triggerBodyEmpty there).
   showExits?: boolean;
+  // Phase 1's plainer trigger wording — see SIMPLE_TRIGGER_LABELS. Keeps that
+  // lane's paid field label as it was while the other lanes' copy moves.
+  simpleNames?: boolean;
   // The SAVED config's tiers. An archived tier is offered while it's in the
   // current selection OR here — so unticking one stays reversible for exactly
   // as long as the removal is unsaved, the same undo horizon as every other
@@ -165,6 +169,7 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
   config,
   onChange,
   showExits = true,
+  simpleNames = false,
   error,
   savedTierIds = [],
 }) => {
@@ -239,7 +244,7 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
                     caption by default, and this is a sentence that wraps and
                     matches the span labels the other trigger fields use. */}
           <Label className="leading-normal font-normal" htmlFor={tierModeId}>
-            {PAID_TIERS_FIELD_LABEL}
+            {simpleNames ? SIMPLE_PAID_TIERS_FIELD_LABEL : PAID_TIERS_FIELD_LABEL}
           </Label>
           <Select
             value={config.tierMode}

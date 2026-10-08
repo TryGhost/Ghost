@@ -24,7 +24,7 @@
 // flow mechanics. Mechanics are common; screens diverge.
 // ---------------------------------------------------------------------------
 
-export type LaneId = 'phase-1' | 'phase-2' | 'exploration-2';
+export type LaneId = 'phase-1' | 'phase-2' | 'phase-3' | 'exploration-2';
 
 // Where a lane stands: shipped and holding still, or still moving. Shown as a
 // badge beside the lane's name in the switcher.
@@ -45,11 +45,14 @@ export interface Lane {
 // "Future: Next & Later" (future), the roadmap lane — its triggers, its Update
 // member step and its publish checks all live in GA now.
 export const LANES: Lane[] = [
-  { id: 'phase-1', label: 'Run analytics', status: 'done' },
-  { id: 'phase-2', label: 'Tier-based signup', status: 'in-progress' },
+  { id: 'phase-1', label: 'Automation analytics', status: 'done' },
+  { id: 'phase-2', label: 'Tier-based welcome sequences', status: 'in-progress' },
+  // Forked from phase-2 as an exact copy, so phase 2 can be locked while this
+  // one keeps moving.
+  { id: 'phase-3', label: 'Lifecycle triggers', status: 'in-progress' },
   // Formerly "Sandbox: Right panel": the post editor's shape, a fixed header and
   // the pane on the canvas's right, carrying everything on the roadmap to GA.
-  { id: 'exploration-2', label: 'GA', status: 'in-progress' },
+  { id: 'exploration-2', label: 'Automations 1.0 (GA)', status: 'in-progress' },
 ];
 
 export const lanePath = (lane: LaneId): string => `/automations-proto/${lane}`;

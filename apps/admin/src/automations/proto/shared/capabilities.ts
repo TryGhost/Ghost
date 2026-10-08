@@ -57,6 +57,9 @@ const MEMBERSHIP_TRIGGERS: TriggerType[] = ['member_subscribes', 'paid_subscript
 export const LANE_CAPABILITIES: Record<LaneId, LaneCapabilities> = {
   'phase-1': { triggers: MEMBERSHIP_TRIGGERS, extraSteps: [] },
   'phase-2': { triggers: MEMBERSHIP_TRIGGERS, extraSteps: [] },
+  // Starts where phase 2 stands. Its own entry, so the triggers it's named for
+  // can be added here without touching phase 2's set.
+  'phase-3': { triggers: MEMBERSHIP_TRIGGERS, extraSteps: [] },
   // GA (formerly the right-panel sandbox) carries the whole roadmap: the label
   // trigger (lead magnets), the subscription-changed one (lifecycle), the
   // segment one, and Update member — the first step that changes a member rather

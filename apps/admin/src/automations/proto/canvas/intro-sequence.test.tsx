@@ -56,7 +56,7 @@ describe('new automation intro sequence', () => {
       </StrictMode>,
     );
     act(() => {
-      screen.getByText('Member signs up').closest('button')?.click();
+      screen.getByText('Free member signed up').closest('button')?.click();
     });
 
     // Leaving: the options are still on screen, fading. Nothing has been built

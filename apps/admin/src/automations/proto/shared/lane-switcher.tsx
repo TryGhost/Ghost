@@ -162,7 +162,7 @@ export const LaneSwitcher: React.FC<{ lane: LaneId; className?: string }> = ({
             <LucideIcon.FlaskConical strokeWidth={2} />
           </Button>
         </PopoverTrigger>
-        <PopoverContent align="end" className="w-80" side="top">
+        <PopoverContent align="end" className="w-96" side="top">
           <Stack gap="lg">
             {/* The title names the whole surface; the ⋯ beside it holds the two
                 things that act on the prototype as a whole rather than set

@@ -795,6 +795,7 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
                       // explored. Phase 1 shows what ships, and production has no
                       // exit configuration to speak of.
                       showExits={!d.simpleTriggerNames && !d.exitsElsewhere}
+                      simpleNames={d.simpleTriggerNames}
                       onChange={d.onTriggerConfigChange}
                     />
                   ) : (
@@ -1163,8 +1164,8 @@ interface EditCanvasProps {
   // now but kept, since it's the last thing a reviewer saw there.
   analyticsSurface?: 'sheet' | 'modal' | 'inline';
   // Whether the trigger card states the exit sentence under its fields ("Members
-  // exit early if they…"). On by default; phase 2 turns it off because the
-  // sentence moved to its Settings tab, under Exit conditions.
+  // stop early if they…"). On by default; phase 2 turns it off because the
+  // sentence moved to its Settings tab, under Stop conditions.
   exitsOnTriggerCard?: boolean;
   // How a card says it can't run. 'alert' (the default, every lane so far): a
   // gold outline and an alert button in the header opening a popover with the

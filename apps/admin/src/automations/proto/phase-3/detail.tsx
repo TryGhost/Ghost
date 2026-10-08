@@ -1,3 +1,9 @@
+// LIFECYCLE TRIGGERS — forked from phase-2 (Tier-based welcome sequences) in
+// Oct '26 as an exact copy. Phase 2 is about to be locked; this lane is where
+// the work carries on. Everything under shared/ and canvas/ is still common to
+// both, so a change this lane needs there gets forked into this folder first
+// (the way exploration-2 keeps its own canvas/) unless it's meant for every lane.
+
 import React, { useEffect, useRef, useState } from 'react';
 import {
   AlertDialog,
@@ -69,7 +75,7 @@ import { LaneSwitcher } from '@/automations/proto/shared/lane-switcher';
 // and is where per-tier triggers and explicit exit conditions land. Phase 1's
 // copy is not to be edited for any of that — the whole reason these are separate
 // files is that its engineer needs it to hold still.
-const LANE = 'phase-2' as const;
+const LANE = 'phase-3' as const;
 
 type LiveStatus = 'active' | 'inactive';
 

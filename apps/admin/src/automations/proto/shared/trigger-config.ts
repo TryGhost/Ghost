@@ -166,15 +166,13 @@ export interface TriggerConfig {
 // "Triggered" because its rows are answers to a question the card is already
 // asking; the configured card keeps it because it stands alone.
 //
-// "someone", not "a member", in both: the free stem is about a person who
-// ISN'T a member yet, and one subject across the pair keeps them parallel.
-// The stems are deliberately MIRRORED — "signs up as a free member" / "signs
-// up as a paid member or upgrades" — so the two options read as one sentence
-// with one word swapped, plus the road only paid has. "free"/"paid" is the
-// load-bearing pair: the titles alone don't say which arrivals each means.
+// "someone" in the free stem: it's about a person who ISN'T a member yet. The
+// paid stem names its two roads by who takes them — "a new or free member" —
+// so a brand-new paid signup and an upgrade from free are both visibly covered
+// without a second verb.
 const TRIGGER_SENTENCE_STEMS: Record<TriggerType, string> = {
   member_subscribes: 'someone signs up as a free member',
-  paid_subscription_starts: 'someone signs up as a paid member or upgrades',
+  paid_subscription_starts: 'a new or free member starts a paid subscription',
   // The label trigger keeps the family's "someone signs up" opening on purpose.
   //
   // Its TITLE is "Label added", which is the event as engineering would name it
@@ -240,14 +238,14 @@ export const TRIGGER_OPTIONS: {
 }[] = [
   {
     value: 'member_subscribes',
-    label: 'Member signs up',
-    description: `When ${TRIGGER_SENTENCE_STEMS.member_subscribes}`,
+    label: 'Free member signed up',
+    description: `When ${TRIGGER_SENTENCE_STEMS.member_subscribes}.`,
     icon: LucideIcon.UserPlus,
   },
   {
     value: 'paid_subscription_starts',
-    label: 'Paid subscription starts',
-    description: `When ${TRIGGER_SENTENCE_STEMS.paid_subscription_starts}`,
+    label: 'Paid subscription started',
+    description: `When ${TRIGGER_SENTENCE_STEMS.paid_subscription_starts}.`,
     icon: LucideIcon.CreditCard,
   },
   // Last, under the two membership triggers: those are about what someone became,
@@ -256,7 +254,7 @@ export const TRIGGER_OPTIONS: {
   {
     value: 'label_added',
     label: 'Label added to member',
-    description: `When ${TRIGGER_SENTENCE_STEMS.label_added}`,
+    description: `When ${TRIGGER_SENTENCE_STEMS.label_added}.`,
     icon: LucideIcon.Tag,
   },
   // Beside the other paid trigger: one is about a subscription starting, this is
@@ -264,13 +262,13 @@ export const TRIGGER_OPTIONS: {
   {
     value: 'paid_subscription_changed',
     label: 'Paid subscription changed',
-    description: `When ${TRIGGER_SENTENCE_STEMS.paid_subscription_changed}`,
+    description: `When ${TRIGGER_SENTENCE_STEMS.paid_subscription_changed}.`,
     icon: LucideIcon.RefreshCw,
   },
   {
     value: 'segment_entered',
     label: 'Member enters segment',
-    description: `When ${TRIGGER_SENTENCE_STEMS.segment_entered}`,
+    description: `When ${TRIGGER_SENTENCE_STEMS.segment_entered}.`,
     icon: LucideIcon.Filter,
   },
 ];
@@ -524,8 +522,9 @@ const orList = (items: string[]): string =>
  * sentence gets more specific as it goes and the reader can stop as soon as it stops
  * being about them.
  *
- * "exit early" rather than "exit": every run ends eventually, and the thing worth
- * warning about is the ones that end before the flow is finished. "if" rather than
+ * "stop early" rather than "stop": every run ends eventually, and the thing worth
+ * warning about is the ones that end before the flow is finished. ("stop", not
+ * "exit": the Settings heading it sits under is "Stop conditions".) "if" rather than
  * "when", for the same reason — these are possibilities, not a schedule.
  *
  * DELETION ISN'T NAMED. It used to be ("unsubscribe or are deleted"), stated
@@ -544,15 +543,13 @@ const orList = (items: string[]): string =>
  * field naming them is directly above this line, and a sentence that restated it
  * would have to be re-read every time the field changed.
  *
- * And the tier clause is there for EVERY paid selection, including "Any paid tier",
- * where it's arguably redundant: watching all the tiers means leaving one of them for
- * another is still inside the selection, so the only way out is cancelling — which
- * the clause before it already named. It stays because the alternative is a sentence
- * that grows and shrinks as you edit the field above it, and a reader who has to work
- * out which version they're looking at. One sentence for the paid trigger, one for
- * signup, both true, neither of them moving.
+ * The paid sentence follows the tier mode: "leave any paid tier" under "Any paid
+ * tier", "leave the selected tier(s)" under "Selected tier(s)". Cancelling isn't a
+ * clause of its own any more — it is leaving the tier, so the tier clause covers it.
  */
-export const exitSentence = (config: Pick<TriggerConfig, 'type' | 'change'>): string => {
+export const exitSentence = (
+  config: Pick<TriggerConfig, 'type' | 'change' | 'tierMode'>,
+): string => {
   // The label trigger takes the signup sentence, not a third one. Losing the
   // label looks like the tier clause's counterpart — but entry here happens at
   // SIGNUP, so the label is how someone arrived rather than a state they hold,
@@ -576,7 +573,7 @@ export const exitSentence = (config: Pick<TriggerConfig, 'type' | 'change'>): st
       config.change === 'ended'
         ? ['unsubscribe', 'start paying again']
         : ['unsubscribe', 'stop paying'];
-    return `Members exit early if they ${orList(parts)}.`;
+    return `Members stop early if they ${orList(parts)}.`;
   }
   if (hasSegment(config)) {
     // Leaving is the segment's own exit, and the only derived one in the set
@@ -584,12 +581,15 @@ export const exitSentence = (config: Pick<TriggerConfig, 'type' | 'change'>): st
     // of because a date moved, or because the publisher edited the segment. It's
     // still right: an automation for people in a segment shouldn't keep running
     // on people who aren't.
-    return 'Members exit early if they unsubscribe or leave the segment.';
+    return 'Members stop early if they unsubscribe or leave the segment.';
   }
   const parts = isPaidTrigger(config)
-    ? ['unsubscribe', 'cancel their subscription', 'leave the selected tier(s)']
+    ? [
+        'unsubscribe',
+        config.tierMode === 'selected' ? 'leave the selected tier(s)' : 'leave any paid tier',
+      ]
     : ['unsubscribe'];
-  return `Members exit early if they ${orList(parts)}.`;
+  return `Members stop early if they ${orList(parts)}.`;
 };
 
 /**
@@ -666,15 +666,20 @@ export const triggerExplanation = (config: Pick<TriggerConfig, 'type' | 'change'
 };
 
 /**
- * The paid EDIT card's label, run into the tiers field: "…signs up or upgrades
- * to:" completed by "Any paid tier" or the named tiers. The stem's shape with
- * "as a paid member" handed to the field — its value says "paid tiers", so the
- * sentence doesn't have to, and both verbs take the same "to" ("signs up to
- * Bronze", "upgrades to Bronze"), which the full stem's ordering can't. Lives
- * here beside the stems so a copy change touches one file; keep the tail
- * readable against every field state, the "Choose tiers" placeholder included.
+ * The paid EDIT card's label, run into the tiers field: "…a new or free member
+ * starts:" completed by "Any paid tier" or the named tiers. The stem's shape
+ * with "a paid subscription" handed to the field — its value says which, so
+ * the sentence doesn't have to. Lives here beside the stems so a copy change
+ * touches one file; keep the tail readable against every field state.
  */
-export const PAID_TIERS_FIELD_LABEL = 'Triggered when someone signs up or upgrades to:';
+export const PAID_TIERS_FIELD_LABEL = 'Triggered when a new or free member starts:';
+
+/**
+ * PHASE 1 ONLY — the label that lane's paid card has always worn. Its triggers
+ * keep their own names (SIMPLE_TRIGGER_LABELS), so its field keeps its own
+ * sentence rather than following the other lanes' copy.
+ */
+export const SIMPLE_PAID_TIERS_FIELD_LABEL = 'Triggered when someone signs up or upgrades to:';
 
 /**
  * The label trigger's field label, built the same way: the stem's shape with its
