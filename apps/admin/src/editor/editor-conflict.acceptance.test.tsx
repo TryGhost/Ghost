@@ -294,21 +294,22 @@ describe('Post editor update collision', () => {
   });
 
   it('keeps the accepted server copy in the editor query cache', async () => {
-    const { readApi, saveApi } = fakeCollidingPost();
+    const { saveApi } = fakeCollidingPost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await collide(saveApi);
 
     await editorScreen.reloadAfterConflict().click();
     await editorScreen.confirmConflictReload().click();
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from someone else');
-    const readsAfterReload = readApi.requests.length;
 
     window.location.hash = LEAVE_EDITOR_HASH;
     await expect(editorScreen.titleInput()).toHaveCount(0);
+    // Reopening reads the post again, so only a failed read opens the cached copy.
+    const failedRead = readFails(500);
     window.location.hash = `#/editor/post/${POST_ID}`;
 
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from someone else');
-    expect(readApi.requests.length).toBe(readsAfterReload);
+    expect(failedRead.requests.length).toBeGreaterThan(0);
   });
 
   it('keeps an older in-flight read from replacing the accepted cache', async () => {
@@ -370,6 +371,8 @@ describe('Post editor update collision', () => {
 
     window.location.hash = LEAVE_EDITOR_HASH;
     await expect(editorScreen.titleInput()).toHaveCount(0);
+    // A failed read reopens the cached copy, which must be the accepted one.
+    readFails(500);
     window.location.hash = `#/editor/post/${POST_ID}`;
 
     await expect.element(editorScreen.titleInput()).toHaveValue('Latest server copy');
@@ -437,6 +440,8 @@ describe('Post editor update collision', () => {
 
     window.location.hash = LEAVE_EDITOR_HASH;
     await expect(editorScreen.titleInput()).toHaveCount(0);
+    // A failed read reopens the cached copy, which must be the newest one.
+    readFails(500);
     window.location.hash = `#/editor/post/${POST_ID}`;
 
     await expect.element(editorScreen.titleInput()).toHaveValue('Newest detail response');
