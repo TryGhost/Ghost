@@ -652,6 +652,8 @@ module.exports = class StripeAPI {
    * @param {string} [options.coupon]
    * @param {import('../stripe-checkout-config').StripeCheckoutDesign | null} [options.design]
    *   Replaces the saved design, for a preview of an unsaved one. Null sends no design.
+   * @param {number} [options.expiresInSeconds] How long the checkout takes payment for, counted
+   *   from when it's created, instead of Stripe's default of a day.
    *
    * @returns {Promise<ICheckoutSession>}
    */
@@ -708,6 +710,9 @@ module.exports = class StripeAPI {
       },
       metadata,
       discounts,
+      expires_at: options.expiresInSeconds
+        ? Math.floor(Date.now() / 1000) + options.expiresInSeconds
+        : undefined,
       /*
             line_items: [{
                 price: priceId

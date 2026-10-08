@@ -72,6 +72,16 @@ describe('Stripe Checkout Preview Admin API', function () {
     assert.deepEqual(await readDesign(), { customize: false });
   });
 
+  it('marks the checkout as a preview, and has it expire as soon as Stripe allows', async function () {
+    const opened = Date.now() / 1000;
+    await preview({ tier_id: paidTierId, design: { customize: false } });
+
+    const session = stripeMocker.checkoutSessions.at(-1);
+    assert.equal(session.metadata.ghost_checkout_preview, true);
+    const lifetime = Number(session.expires_at) - opened;
+    assert.ok(lifetime >= 30 * 60 && lifetime < 35 * 60, `expires ${lifetime}s after opening`);
+  });
+
   it('shows the Stripe dashboard design when not customized, even with a design saved', async function () {
     await agent
       .put('stripe/checkout/config/')

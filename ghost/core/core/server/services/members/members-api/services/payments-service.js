@@ -68,6 +68,8 @@ class PaymentsService {
    * @param {string} [params.email]
    * @param {import('../../../stripe-checkout-config').StripeCheckoutDesign | null} [params.design]
    *   Replaces the saved design, for a preview of one not saved yet. Null sends none.
+   * @param {number} [params.expiresInSeconds] How long the checkout takes payment for, counted
+   *   from when it's created, instead of a day.
    *
    * @returns {Promise<URL>}
    */
@@ -82,6 +84,7 @@ class PaymentsService {
     cancelUrl,
     email,
     design,
+    expiresInSeconds,
   }) {
     let coupon = null;
     let trialDays = null;
@@ -123,6 +126,7 @@ class PaymentsService {
       trialDays: trialDays ?? tier.trialDays,
       coupon: coupon?.id,
       design,
+      expiresInSeconds,
     };
 
     // If we already have a coupon, we don't want to give trial days over it
