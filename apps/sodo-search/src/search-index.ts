@@ -220,9 +220,11 @@ export default class SearchIndex {
   }
 
   async init() {
-    await this.#populatePostIndex();
-    await this.#populateAuthorsIndex();
-    await this.#populateTagsIndex();
+    await Promise.all([
+      this.#populatePostIndex(),
+      this.#populateAuthorsIndex(),
+      this.#populateTagsIndex(),
+    ]);
   }
 
   #normalizeSearchResult<D extends DocumentData>(result: EnrichedDocumentSearchResults<D>) {

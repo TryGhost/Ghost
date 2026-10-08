@@ -32,6 +32,23 @@ describe('search index', function () {
     expect(searchResults.tags.length).toEqual(0);
   });
 
+  test('requests posts, authors and tags in parallel', () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(() => new Promise(() => {}));
+    const searchIndex = new SearchIndex({ adminUrl: 'http://localhost:3000', apiKey: 'key' });
+
+    try {
+      void searchIndex.init();
+
+      expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
+        'http://localhost:3000/ghost/api/content/search-index/posts/?key=key',
+        'http://localhost:3000/ghost/api/content/search-index/authors/?key=key',
+        'http://localhost:3000/ghost/api/content/search-index/tags/?key=key',
+      ]);
+    } finally {
+      fetchMock.mockRestore();
+    }
+  });
+
   test('allows to search for indexed posts and authors', async () => {
     const adminUrl = 'http://localhost:3000';
     const apiKey = '69010382388f9de5869ad6e558';
