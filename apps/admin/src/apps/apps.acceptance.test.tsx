@@ -7,6 +7,7 @@ import type {
 import {
   currentRoute,
   currentUserResponse,
+  failFrameOrigin,
   fakeAdminEndpoint,
   fakeFrameOrigin,
   fakeTags,
@@ -160,6 +161,19 @@ describe('Managing apps', () => {
     } finally {
       appFrameTimeouts.ready = previous;
     }
+  });
+
+  it('calls an app unresponsive straight away when its server can’t be reached', async () => {
+    fakeAdminEndpoint('GET', readPath('installation-1'), () => ({
+      app_installations: [installation()],
+    }));
+    await failFrameOrigin(APP_PAGE_URL);
+
+    // Well within the time Admin would otherwise wait for the frame.
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect.element(appsScreen.notResponding()).toHaveTextContent('Podcast isn’t responding');
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
   });
 
   it('refuses to frame an app whose page is on Admin’s own address', async () => {

@@ -80,7 +80,7 @@ export {
 } from './tinybird';
 export type { TinybirdPipeCapture, TinybirdPipeQuery } from './tinybird';
 export { fakeAdminStats } from './stats';
-export { fakeFrameOrigin } from './frames';
+export { failFrameOrigin, fakeFrameOrigin } from './frames';
 export { unsavedChangesGuarded } from './unsaved-changes-guard';
 export { dragByPointer, settleTransitions, settleAnimations } from './pointer';
 

@@ -395,6 +395,22 @@ export function fakeEndpoint(
   };
 }
 
+/**
+ * Answers the page's own requests to an external origin, as opposed to a frame's
+ * navigation there, which the service worker leaves to the browser and the Playwright
+ * fakes in frames.ts take: the app page's reachability probe, in particular. `down` fails
+ * every such request as a refused connection does.
+ */
+export function fakeOriginRequests(
+  origin: string,
+  { html = '', down = false }: { html?: string; down?: boolean } = {},
+): void {
+  const base = new URL(origin).origin;
+  runningWorker().use(
+    http.all(`${base}/*`, () => (down ? HttpResponse.error() : HttpResponse.html(html))),
+  );
+}
+
 export interface CapturedEndpointRequest {
   url: string;
   /** Parsed JSON, multipart fields, or plain text; undefined when there is no body. */
