@@ -1,4 +1,5 @@
 import { createContext } from 'preact';
+import { useContext } from 'preact/hooks';
 import type SearchIndex from './search-index';
 import type { RefObject } from 'preact';
 
@@ -16,6 +17,14 @@ export type AppContextType = {
   dir: 'ltr' | 'rtl';
 };
 
-const AppContext = createContext<AppContextType>({} as AppContextType);
+const AppContext = createContext<AppContextType | null>(null);
+
+export function useAppContext() {
+  const context = useContext(AppContext);
+  if (!context) {
+    throw new Error('useAppContext must be used inside AppContext.Provider');
+  }
+  return context;
+}
 
 export default AppContext;

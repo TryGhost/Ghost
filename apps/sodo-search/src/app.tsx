@@ -2,7 +2,7 @@ import AppContext from './app-context';
 import PopupModal from './components/popup-modal';
 import SearchIndex from './search-index';
 import i18nLib from '@tryghost/i18n/registry/search';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useLayoutEffect, useRef, useState } from 'preact/hooks';
 
 type AppProps = {
   adminUrl: string;
@@ -51,7 +51,8 @@ export default function App({ adminUrl, apiKey, stylesUrl, locale }: AppProps) {
   const scrollbarWidth = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
+  // Layout effect so triggers, Cmd+K and #/search work from mount, not after the next frame
+  useLayoutEffect(() => {
     scrollbarWidth.current = getScrollbarWidth();
 
     const handleSearchUrl = () => {
@@ -108,7 +109,8 @@ export default function App({ adminUrl, apiKey, stylesUrl, locale }: AppProps) {
     };
   }, []);
 
-  useEffect(() => {
+  // Layout effect so the page locks and unlocks in the same commit the popup mounts and unmounts
+  useLayoutEffect(() => {
     if (!showPopup) {
       return;
     }

@@ -1,8 +1,8 @@
-import AppContext from '../app-context';
 import Frame from './frame';
 import { CircleAnimatedIcon, ClearIcon, SearchIcon } from './icons';
 import { Fragment } from 'preact';
-import { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { useAppContext } from '../app-context';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
 import type { JSX } from 'preact';
 import type { SearchAuthor, SearchPost, SearchTag } from '../search-index';
 
@@ -46,7 +46,7 @@ type SelectionProps = {
 };
 
 function SearchBox() {
-  const { searchValue, setSearchValue, closePopup, inputRef, t } = useContext(AppContext);
+  const { searchValue, setSearchValue, closePopup, inputRef, t } = useAppContext();
   const containerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     setTimeout(() => {
@@ -97,7 +97,7 @@ function SearchBox() {
 }
 
 function SearchClearIcon() {
-  const { searchValue = '', setSearchValue } = useContext(AppContext);
+  const { searchValue = '', setSearchValue } = useAppContext();
   if (!searchValue) {
     return <SearchIcon className="text-neutral-900" />;
   }
@@ -115,7 +115,7 @@ function SearchClearIcon() {
 }
 
 function Loading() {
-  const { indexComplete, searchValue } = useContext(AppContext);
+  const { indexComplete, searchValue } = useAppContext();
   if (!indexComplete && searchValue) {
     return <CircleAnimatedIcon className="shrink-0" />;
   }
@@ -123,7 +123,7 @@ function Loading() {
 }
 
 function CancelButton() {
-  const { closePopup, t } = useContext(AppContext);
+  const { closePopup, t } = useAppContext();
 
   return (
     <button
@@ -171,7 +171,7 @@ function TagResults({
   selectedResult,
   setSelectedResult,
 }: { tags: SearchTag[] } & SelectionProps) {
-  const { t } = useContext(AppContext);
+  const { t } = useAppContext();
 
   if (!tags?.length) {
     return null;
@@ -195,7 +195,7 @@ function PostListItem({
   selectedResult,
   setSelectedResult,
 }: { post: SearchPost } & SelectionProps) {
-  const { searchValue } = useContext(AppContext);
+  const { searchValue } = useAppContext();
   const { title, excerpt, url, id } = post;
   let className = 'py-3 -mx-4 sm:-mx-7 px-4 sm:px-7 cursor-pointer';
   if (id === selectedResult) {
@@ -339,7 +339,7 @@ function ShowMoreButton({
   maxPosts: number;
   setMaxPosts: (maxPosts: number) => void;
 }) {
-  const { t } = useContext(AppContext);
+  const { t } = useAppContext();
 
   if (!posts?.length || maxPosts >= posts?.length) {
     return null;
@@ -363,18 +363,12 @@ function PostResults({
   selectedResult,
   setSelectedResult,
 }: { posts: SearchPost[] } & SelectionProps) {
-  const { t } = useContext(AppContext);
+  const { t } = useAppContext();
   const [maxPosts, setMaxPosts] = useState(DEFAULT_MAX_POSTS);
-  const [paginatedPosts, setPaginatedPosts] = useState<SearchPost[]>([]);
-  useEffect(() => {
-    setMaxPosts(DEFAULT_MAX_POSTS);
-  }, [posts]);
-  useEffect(() => {
-    setPaginatedPosts(posts?.slice(0, maxPosts + 1));
-  }, [maxPosts, posts]);
   if (!posts?.length) {
     return null;
   }
+  const paginatedPosts = posts.slice(0, maxPosts + 1);
   return (
     <div className="border-t border-neutral-200 py-3 px-4 sm:px-7">
       <h1 className="uppercase text-xs text-neutral-400 font-semibold mb-1 tracking-wide">
@@ -440,7 +434,7 @@ function AuthorResults({
   selectedResult,
   setSelectedResult,
 }: { authors: SearchAuthor[] } & SelectionProps) {
-  const { t } = useContext(AppContext);
+  const { t } = useAppContext();
 
   if (!authors?.length) {
     return null;
@@ -461,32 +455,34 @@ function AuthorResults({
 }
 
 function SearchResultBox() {
-  const { searchValue = '', searchIndex, indexComplete } = useContext(AppContext);
-  let filteredTags: SearchTag[] = [];
-  let filteredPosts: SearchPost[] = [];
-  let filteredAuthors: SearchAuthor[] = [];
+  const { searchValue = '', searchIndex, indexComplete } = useAppContext();
 
-  if (indexComplete && searchValue) {
-    const searchResults = searchIndex?.search(searchValue);
-    filteredPosts = searchResults?.posts || [];
-    filteredAuthors = searchResults?.authors || [];
-    filteredTags = searchResults?.tags || [];
-  }
-
-  filteredAuthors = filteredAuthors.filter((author) => {
+  const { filteredPosts, filteredAuthors, filteredTags } = useMemo(() => {
     const invalidUrlRegex = /\/404\/$/;
-    return !(author?.url && invalidUrlRegex.test(author?.url));
-  });
-
-  filteredTags = filteredTags.filter((tag) => {
-    const invalidUrlRegex = /\/404\/$/;
-    return !(tag?.url && invalidUrlRegex.test(tag?.url));
-  });
+    const searchResults = indexComplete && searchValue ? searchIndex?.search(searchValue) : null;
+    return {
+      filteredPosts: searchResults?.posts || [],
+      filteredAuthors: (searchResults?.authors || []).filter((author) => {
+        return !(author?.url && invalidUrlRegex.test(author?.url));
+      }),
+      filteredTags: (searchResults?.tags || []).filter((tag) => {
+        return !(tag?.url && invalidUrlRegex.test(tag?.url));
+      }),
+    };
+  }, [searchIndex, searchValue, indexComplete]);
 
   const hasResults = filteredPosts?.length || filteredAuthors?.length || filteredTags?.length;
 
   if (hasResults) {
-    return <Results authors={filteredAuthors} posts={filteredPosts} tags={filteredTags} />;
+    // Keyed by query so selection and pagination start fresh within the same render
+    return (
+      <Results
+        key={searchValue}
+        authors={filteredAuthors}
+        posts={filteredPosts}
+        tags={filteredTags}
+      />
+    );
   } else if (searchValue) {
     return <NoResultsBox />;
   }
@@ -503,7 +499,7 @@ export function Results({
   authors: SearchAuthor[];
   tags: SearchTag[];
 }) {
-  const { searchValue } = useContext(AppContext);
+  const { searchValue } = useAppContext();
 
   const allResults = useMemo(() => {
     return [...authors, ...tags, ...posts];
@@ -512,10 +508,6 @@ export function Results({
   const defaultId = allResults?.[0]?.id || null;
   const [selectedResult, setSelectedResult] = useState<string | null>(defaultId);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setSelectedResult(allResults?.[0]?.id || null);
-  }, [allResults]);
 
   // Preact runs useEffect after the next frame; rapid keypresses would hit a stale handler
   useLayoutEffect(() => {
@@ -583,7 +575,7 @@ export function Results({
 }
 
 function NoResultsBox() {
-  const { t } = useContext(AppContext);
+  const { t } = useAppContext();
   return (
     <div className="py-4 px-7">
       <p className="text-[1.65rem] text-neutral-400 leading-normal">{t('No matches found')}</p>
@@ -592,7 +584,7 @@ function NoResultsBox() {
 }
 
 function Search() {
-  const { closePopup } = useContext(AppContext);
+  const { closePopup } = useAppContext();
   return (
     <>
       <div
@@ -624,28 +616,26 @@ function FrameHead({ stylesUrl }: { stylesUrl?: string }) {
 }
 
 export default function PopupModal() {
-  const context = useContext(AppContext);
+  const { closePopup, dir, stylesUrl } = useAppContext();
 
   return (
     <div className="gh-root-frame" style={MODAL_CONTAINER_STYLE}>
       <Frame
-        dir={context.dir}
-        head={<FrameHead stylesUrl={context.stylesUrl} />}
+        dir={dir}
+        head={<FrameHead stylesUrl={stylesUrl} />}
         style={FRAME_STYLE}
         title="portal-popup"
       >
-        <AppContext.Provider value={context}>
-          <div
-            className="absolute top-0 bottom-0 left-0 right-0 block backdrop-blur-[2px] animate-fadein z-0 bg-gradient-to-br from-[rgba(0,0,0,0.2)] to-[rgba(0,0,0,0.1)]"
-            onClick={(e) => {
-              e.preventDefault();
-              if (e.target === e.currentTarget) {
-                context.closePopup();
-              }
-            }}
-          />
-          <Search />
-        </AppContext.Provider>
+        <div
+          className="absolute top-0 bottom-0 left-0 right-0 block backdrop-blur-[2px] animate-fadein z-0 bg-gradient-to-br from-[rgba(0,0,0,0.2)] to-[rgba(0,0,0,0.1)]"
+          onClick={(e) => {
+            e.preventDefault();
+            if (e.target === e.currentTarget) {
+              closePopup();
+            }
+          }}
+        />
+        <Search />
       </Frame>
     </div>
   );
