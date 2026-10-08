@@ -1761,7 +1761,7 @@ services:
           - core/server/services/indexnow-ping/index.ts
           - core/server/services/indexnow-ping/indexnow-ping-service.ts
         tests:
-          - test/unit/server/services/indexnow-ping/index.test.js
+          - test/unit/server/services/indexnow-ping/index.test.ts
       consumers:
         summary: >-
           Boot is the only runtime root importer. Post model events invoke the listener for
@@ -1783,7 +1783,7 @@ services:
           - core/frontend/web/middleware/serve-indexnow-key.js
         tests:
           - test/unit/server/services/indexnow-ping/indexnow-ping-service.test.js
-          - test/unit/server/services/indexnow-ping/index.test.js
+          - test/unit/server/services/indexnow-ping/index.test.ts
           - test/e2e-server/indexnow-publishing.isolated.test.ts
       startup:
         summary: >-
@@ -1823,7 +1823,7 @@ services:
           - core/boot.js
           - core/server/ghost-server.ts
         tests:
-          - test/unit/server/services/indexnow-ping/index.test.js
+          - test/unit/server/services/indexnow-ping/index.test.ts
           - test/e2e-server/indexnow-publishing.isolated.test.ts
       configuration:
         summary: >-
@@ -1845,7 +1845,7 @@ services:
           - core/server/models/settings.js
         tests:
           - test/unit/server/services/indexnow-ping/indexnow-ping-service.test.js
-          - test/unit/server/services/indexnow-ping/index.test.js
+          - test/unit/server/services/indexnow-ping/index.test.ts
           - test/e2e-server/indexnow-publishing.isolated.test.ts
       resources:
         summary: >-
@@ -1885,7 +1885,7 @@ services:
           - vitest.config.ts
         tests:
           - test/unit/server/services/indexnow-ping/indexnow-ping-service.test.js
-          - test/unit/server/services/indexnow-ping/index.test.js
+          - test/unit/server/services/indexnow-ping/index.test.ts
           - test/e2e-server/indexnow-publishing.isolated.test.ts
     unverified: []
     blockers:
