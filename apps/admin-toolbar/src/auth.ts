@@ -43,7 +43,7 @@ export function createAdminApi(adminUrl: string, frame: HTMLIFrameElement) {
   const adminOrigin = new URL(adminUrl).origin;
 
   window.addEventListener('message', function (event) {
-    if (event.origin !== adminOrigin || event.source !== frame.contentWindow) {
+    if (event.origin !== adminOrigin || !event.source || event.source !== frame.contentWindow) {
       return;
     }
 

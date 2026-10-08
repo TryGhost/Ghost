@@ -183,7 +183,16 @@ describe('admin-toolbar', function () {
     });
 
     const { root } = await runToolbar(dom, (message, authWindow) => {
-      for (const data of ['null', '"text"', '42', JSON.stringify({ uid: String(message.uid) })]) {
+      for (const data of [
+        'null',
+        '"text"',
+        '42',
+        JSON.stringify({
+          uid: String(message.uid),
+          error: null,
+          result: { users: [{ name: 'Other', roles: [{ name: 'Author' }] }] },
+        }),
+      ]) {
         dispatchAuthReply(dom, data, authWindow);
       }
       return { result: { users: [editorUser()] } };
