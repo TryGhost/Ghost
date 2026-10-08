@@ -1,22 +1,25 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-
 import './index.css';
 import App from './app';
+import { render } from 'preact';
 
 const ROOT_DIV_ID = 'sodo-search-root';
+
+type SiteData = {
+  adminUrl?: string;
+  apiKey?: string;
+  stylesUrl?: string;
+  locale?: string;
+};
 
 function addRootDiv() {
   const elem = document.createElement('div');
   elem.id = ROOT_DIV_ID;
   document.body.appendChild(elem);
+  return elem;
 }
 
-function getSiteData() {
-  /**
-   * @type {HTMLElement}
-   */
-  const scriptTag = document.querySelector('script[data-sodo-search]');
+function getSiteData(): SiteData {
+  const scriptTag = document.querySelector<HTMLElement>('script[data-sodo-search]');
   if (scriptTag) {
     const adminUrl = scriptTag.dataset.sodoSearch;
     // secretlint-disable-next-line @secretlint/secretlint-rule-pattern
@@ -28,19 +31,12 @@ function getSiteData() {
   return {};
 }
 
-function setup() {
-  addRootDiv();
-}
-
 function init() {
   const { adminUrl, apiKey, stylesUrl, locale } = getSiteData();
-  const adminBaseUrl = (adminUrl || window.location.origin)?.replace(/\/+$/, '');
-  setup();
-  ReactDOM.render(
-    <React.StrictMode>
-      <App adminUrl={adminBaseUrl} apiKey={apiKey} stylesUrl={stylesUrl} locale={locale} />
-    </React.StrictMode>,
-    document.getElementById(ROOT_DIV_ID),
+  const adminBaseUrl = (adminUrl || window.location.origin).replace(/\/+$/, '');
+  render(
+    <App adminUrl={adminBaseUrl} apiKey={apiKey} locale={locale} stylesUrl={stylesUrl} />,
+    addRootDiv(),
   );
 }
 

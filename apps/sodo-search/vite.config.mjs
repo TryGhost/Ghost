@@ -5,12 +5,23 @@ import { publicAppViteConfig } from '@internal/cfg-vite-public-app';
 export default publicAppViteConfig({
   packageRoot: import.meta.dirname,
   packageName: pkg.name,
-  entry: 'src/index.jsx',
+  entry: 'src/index.tsx',
+  framework: 'preact',
+  svgr: false,
+  // UMD would register as an anonymous AMD module (and never run) on pages with RequireJS
+  libFormat: 'iife',
+  libName: 'GhostSodoSearch',
   sourcemap: false,
   cssCodeSplit: false,
   overrides: {
     resolve: {
-      dedupe: ['@tryghost/debug'],
+      alias: [
+        // Ships Document/Encoder/Charset without the worker and persistence code
+        {
+          find: /^flexsearch$/,
+          replacement: `${import.meta.dirname}/node_modules/flexsearch/dist/flexsearch.compact.module.min.js`,
+        },
+      ],
     },
     build: {
       rollupOptions: {
@@ -28,7 +39,14 @@ export default publicAppViteConfig({
       },
     },
     test: {
-      setupFiles: './test/setup-tests.js',
+      include: ['test/unit/**/*.test.{ts,tsx}'],
+      setupFiles: './test/setup-tests.ts',
+      // Inlined so it shares the app's Vite-resolved preact instance
+      server: {
+        deps: {
+          inline: ['@testing-library/preact'],
+        },
+      },
     },
   },
 });
