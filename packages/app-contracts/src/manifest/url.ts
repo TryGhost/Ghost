@@ -15,7 +15,7 @@ const LOOPBACK_HOSTS = [
 ];
 
 /** Whether a host is the machine itself: `localhost`, or a loopback or unspecified address. */
-function isLocalhost(hostname: string): boolean {
+export function isLocalhost(hostname: string): boolean {
   const host = hostname.replace(/\.$/, '');
   return LOOPBACK_HOSTS.some((pattern) => pattern.test(host));
 }

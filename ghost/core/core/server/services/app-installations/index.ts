@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import config from '../../../shared/config';
 import urlUtils from '../../../shared/url-utils';
 import {
@@ -5,14 +6,30 @@ import {
   shouldCreateInDevelopmentTables,
 } from '../../data/schema/in-development';
 import { recordAppInstallationAction, type RecordAppInstallationAction } from './actions';
+import { createManifestFetcher } from './fetch-manifest';
 import { AppInstallationsService } from './service';
 
 export type { RequestContext } from './actions';
 export { actingContext } from './actions';
 export type { AppInstallation } from './codec';
+export type { AppInstallationPreview } from './service';
 
 // Constructed by init() at boot, not at import: knex is only available once the DB has connected.
 export let service: AppInstallationsService | undefined;
+
+/**
+ * The apps slice of config, parsed here as the config guide asks of a feature's keys.
+ * `localhostAlias` is set when Ghost runs in a container in development, where `localhost`
+ * is the container rather than the developer's machine. Ignored anywhere else.
+ */
+const AppsConfig = z.object({ localhostAlias: z.string().min(1).nullable().default(null) });
+
+function localhostAlias(): string | null {
+  if (config.get('env') !== 'development') {
+    return null;
+  }
+  return AppsConfig.parse(config.get('apps') ?? {}).localhostAlias;
+}
 
 export function init(): void {
   if (service) {
@@ -21,6 +38,7 @@ export function init(): void {
 
   const { knex } = require('../../data/db');
   const models = require('../../models');
+  const externalRequest = require('../../lib/request-external');
 
   const recordAction: RecordAppInstallationAction = (input) =>
     recordAppInstallationAction({ Action: models.Action, ...input });
@@ -32,6 +50,10 @@ export function init(): void {
     getManifestRules: () => ({
       ghostUrls: [urlUtils.urlFor('home', true), urlUtils.urlFor('admin', true)],
       allowLocalhost: config.get('env') === 'development',
+    }),
+    fetchManifest: createManifestFetcher({
+      request: externalRequest,
+      getLocalhostAlias: localhostAlias,
     }),
   });
 }

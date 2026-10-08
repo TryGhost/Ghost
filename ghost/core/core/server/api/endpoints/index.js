@@ -336,6 +336,10 @@ module.exports = {
     return apiFramework.pipeline(require('./app-installations'), localUtils);
   },
 
+  get appInstallationPreviews() {
+    return apiFramework.pipeline(require('./app-installation-previews'), localUtils);
+  },
+
   get giftLinks() {
     return apiFramework.pipeline(require('./gift-links'), localUtils);
   },
