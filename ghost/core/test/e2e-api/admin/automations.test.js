@@ -634,7 +634,6 @@ describe('Automations API', function () {
 
       beforeEach(function () {
         previousTinybirdInstance = TinybirdServiceWrapper.instance;
-        mockManager.mockLabsDisabled('automationRunAnalytics');
         mockManager.mockSetting('web_analytics_enabled', false);
         configUtils.set('tinybird', {
           workspaceId: 'test-workspace-id',

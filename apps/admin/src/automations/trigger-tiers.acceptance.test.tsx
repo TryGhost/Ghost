@@ -7,7 +7,7 @@ import type {
 } from '@tryghost/admin-x-framework/api/automations';
 import { detail, setup } from './run-history.test-utils';
 
-const flags = { labs: { automations: true, automationRunAnalytics: true } };
+const flags = { labs: { automations: true } };
 const picker = () => page.getByRole('button', { name: 'Choose tiers', exact: true });
 const serve = (
   overrides: Partial<Omit<AutomationDetail, keyof AutomationTrigger>> &
@@ -283,26 +283,5 @@ describe('Automation trigger tiers', () => {
       .element(page.getByText('Triggered when someone signs up as a free member.'))
       .toBeVisible();
     await expect.element(picker()).not.toBeInTheDocument();
-  });
-
-  it('keeps the old trigger UI and sends unchanged trigger fields when the flag is off', async () => {
-    const save = serve({ trigger_tier_scope: 'selected_paid', trigger_tier_ids: ['bronze'] });
-    await renderAdminApp('/automations/first', { labs: { automations: true } });
-    await expect
-      .element(page.getByRole('button', { name: 'Trigger: Member signs up' }))
-      .toBeVisible();
-    await expect.element(picker()).not.toBeInTheDocument();
-    await page.getByRole('button', { name: 'Publish', exact: true }).click();
-    await page
-      .getByRole('alertdialog')
-      .getByRole('button', { name: 'Publish', exact: true })
-      .click();
-    await expect.poll(() => save.requests.length).toBe(1);
-    expect(
-      (save.requests[0].body as { automations: AutomationDetail[] }).automations[0],
-    ).toMatchObject({
-      trigger_tier_scope: 'selected_paid',
-      trigger_tier_ids: ['bronze'],
-    });
   });
 });
