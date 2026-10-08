@@ -13,14 +13,14 @@ const messages = {
   noPermissionToAction: 'You do not have permission to perform this action',
   noActionsMapFoundError:
     'No actions map found, ensure you have loaded permissions into database and then call permissions.init() before use.',
-  parityMismatch: 'Permission check would decide differently with in-memory role permissions',
+  parityMismatch: 'Permission grants differ with in-memory role permissions',
   parityCheckFailed: 'Permissions parity check could not run',
 };
 
-// Every check is also decided from the in-memory role permissions, and the
-// two outcomes are compared, so we know the switch away from the database
-// would not change any decision. Each distinct difference is logged once per
-// process. This is temporary and goes with the switch.
+// Compare grants from both permission sources. Model rules may override the
+// grants and perform database reads, so they run only once using the database
+// permissions. Each distinct grant difference is logged once per process.
+// This is temporary and goes with the switch.
 
 const roleNamesOf = (actor) => (actor?.roles ?? []).map((role) => role.name);
 
@@ -36,48 +36,93 @@ function withInMemoryPermissions(loaded) {
 }
 
 /**
- * @param {Promise<unknown>} decision
- * @returns {Promise<'allowed'|'denied'|'error'>}
+ * Calculates grants without performing I/O or running model-specific rules.
  */
-async function outcomeOf(decision) {
-  try {
-    await decision;
-    return 'allowed';
-  } catch (err) {
-    return err?.errorType === 'NoPermissionError' ? 'denied' : 'error';
+function getGrantFlags(loadedPermissions, actType, objType) {
+  // Iterate through the user permissions looking for an affirmation
+  const userPermissions = loadedPermissions.user ? loadedPermissions.user.permissions : null;
+  const apiKeyPermissions = loadedPermissions.apiKey ? loadedPermissions.apiKey.permissions : null;
+
+  let hasUserPermission;
+  let hasApiKeyPermission;
+
+  const checkPermission = function (perm) {
+    // Look for a matching action type and object type first
+    if (perm.action_type !== actType || perm.object_type !== objType) {
+      return false;
+    }
+
+    return true;
+  };
+  const { isOwner } = setIsRoles(loadedPermissions);
+  if (isOwner) {
+    hasUserPermission = true;
+  } else if (!_.isEmpty(userPermissions)) {
+    hasUserPermission = _.some(userPermissions, checkPermission);
   }
+
+  // Check api key permissions if they were passed
+  hasApiKeyPermission = true;
+  if (!_.isNull(apiKeyPermissions)) {
+    if (loadedPermissions.user) {
+      // Staff API key scenario: both user and API key present
+      // Use USER permissions and ignore API key permissions
+      hasApiKeyPermission = true; // Allow API key check to pass
+    } else {
+      // Traditional API key scenario: API key only, no user
+      // Use API key permissions as before
+      hasUserPermission = true;
+      hasApiKeyPermission = _.some(apiKeyPermissions, checkPermission);
+    }
+  }
+
+  return { hasUserPermission, hasApiKeyPermission };
 }
 
 const reportedParityMismatches = new Set();
 
 /**
- * Compares a decision with the same decision made from the in-memory role
- * permissions, and logs when they differ. Never changes or delays the real
- * decision, and never throws.
+ * Compares grants from the database with grants from the in-memory role map.
+ * Uses the same loaded actors, does no additional reads, and never runs model
+ * rules. The caller does not wait for this diagnostic comparison.
  *
- * @param {Promise<unknown>} decision the real decision, from database permissions
- * @param {() => unknown} decideInMemory makes the same decision from the in-memory permissions
- * @param {{actType: string, objType: string, context: object, permissionsLoad: Promise<object>}} check
+ * @param {{hasUserPermission: boolean|undefined, hasApiKeyPermission: boolean}} databaseGrants
+ * @param {object} loaded the actors loaded from the database
+ * @param {{actType: string, objType: string, context: object}} check
  * @returns {Promise<void>}
  */
-function compareWithInMemoryPermissions(decision, decideInMemory, check) {
+function compareWithInMemoryGrants(databaseGrants, loaded, check) {
   return Promise.resolve()
-    .then(async () => {
-      const [database, inMemory] = await Promise.all([
-        outcomeOf(decision),
-        outcomeOf(Promise.resolve().then(decideInMemory)),
-      ]);
+    .then(() => {
+      const inMemoryGrants = getGrantFlags(
+        withInMemoryPermissions(loaded),
+        check.actType,
+        check.objType,
+      );
 
-      if (database === inMemory) {
+      // Preserve the original flags passed to model rules, but treat an absent
+      // grant (undefined) and an explicit false as equivalent for comparison.
+      const normalize = (grants) => ({
+        hasUserPermission: Boolean(grants.hasUserPermission),
+        hasApiKeyPermission: Boolean(grants.hasApiKeyPermission),
+      });
+      const database = normalize(databaseGrants);
+      const inMemory = normalize(inMemoryGrants);
+
+      if (_.isEqual(database, inMemory)) {
         return;
       }
 
-      const loaded = await check.permissionsLoad;
       const userRoles = roleNamesOf(loaded.user);
       const apiKeyRoles = roleNamesOf(loaded.apiKey);
-      const key = [check.actType, check.objType, userRoles, apiKeyRoles, database, inMemory].join(
-        '|',
-      );
+      const key = JSON.stringify([
+        check.actType,
+        check.objType,
+        userRoles,
+        apiKeyRoles,
+        database,
+        inMemory,
+      ]);
 
       if (reportedParityMismatches.has(key)) {
         return;
@@ -94,7 +139,7 @@ function compareWithInMemoryPermissions(decision, decideInMemory, check) {
             object: check.objType,
             user: loaded.user ? { id: check.context.user, roles: userRoles } : null,
             apiKey: loaded.apiKey ? { id: check.context.api_key?.id, roles: apiKeyRoles } : null,
-            outcome: { database, inMemory },
+            grants: { database, inMemory },
           },
         }),
       );
@@ -144,46 +189,10 @@ class CanThisResult {
           }
           // Wait for the user loading to finish
           return permissionLoad.then(function (loadedPermissions) {
-            // Iterate through the user permissions looking for an affirmation
-            const userPermissions = loadedPermissions.user
-              ? loadedPermissions.user.permissions
-              : null;
-            const apiKeyPermissions = loadedPermissions.apiKey
-              ? loadedPermissions.apiKey.permissions
-              : null;
+            const grants = getGrantFlags(loadedPermissions, actType, objType);
+            const { hasUserPermission, hasApiKeyPermission } = grants;
 
-            let hasUserPermission;
-            let hasApiKeyPermission;
-
-            const checkPermission = function (perm) {
-              // Look for a matching action type and object type first
-              if (perm.action_type !== actType || perm.object_type !== objType) {
-                return false;
-              }
-
-              return true;
-            };
-            const { isOwner } = setIsRoles(loadedPermissions);
-            if (isOwner) {
-              hasUserPermission = true;
-            } else if (!_.isEmpty(userPermissions)) {
-              hasUserPermission = _.some(userPermissions, checkPermission);
-            }
-
-            // Check api key permissions if they were passed
-            hasApiKeyPermission = true;
-            if (!_.isNull(apiKeyPermissions)) {
-              if (loadedPermissions.user) {
-                // Staff API key scenario: both user and API key present
-                // Use USER permissions and ignore API key permissions
-                hasApiKeyPermission = true; // Allow API key check to pass
-              } else {
-                // Traditional API key scenario: API key only, no user
-                // Use API key permissions as before
-                hasUserPermission = true;
-                hasApiKeyPermission = _.some(apiKeyPermissions, checkPermission);
-              }
-            }
+            compareWithInMemoryGrants(grants, loadedPermissions, { actType, objType, context });
 
             // Ensure permission decisions are based on the user's role if present, not their staff-token.
             const permissionsForModel = loadedPermissions.user
@@ -257,38 +266,16 @@ class CanThisResult {
       },
     );
 
-    const inMemoryPermissionsLoad = permissionsLoad.then(withInMemoryPermissions);
-
     // Iterate through the actions and their related object types
     _.each(actionsMap.getAll(), function (objTypes, actType) {
       // Build up the object type handlers;
       // the '.post()' parts in canThis(user).edit.post()
-      const databaseHandlers = self.buildObjectTypeHandlers(
+      const objTypeHandlers = self.buildObjectTypeHandlers(
         objTypes,
         actType,
         context,
         permissionsLoad,
       );
-      const inMemoryHandlers = self.buildObjectTypeHandlers(
-        objTypes,
-        actType,
-        context,
-        inMemoryPermissionsLoad,
-      );
-
-      const objTypeHandlers = _.mapValues(databaseHandlers, function (handler, objType) {
-        return function (modelOrId, unsafeAttrs) {
-          const decision = handler(modelOrId, unsafeAttrs);
-
-          compareWithInMemoryPermissions(
-            decision,
-            () => inMemoryHandlers[objType](modelOrId, unsafeAttrs),
-            { actType, objType, context, permissionsLoad },
-          );
-
-          return decision;
-        };
-      });
 
       // Define a property for the action on the result;
       // the '.edit' in canThis(user).edit.post()
