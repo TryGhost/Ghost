@@ -66,7 +66,7 @@ function fakeCustomFields(fields: CustomField[] = [companyField]) {
  * after a create serves it from state that grows when the POST lands; the
  * created entity is declared by the spec, the fake invents nothing.
  * Post-mutation outcomes of edits and deletes are server behavior, owned by
- * the API suite (ghost/core e2e-api member-custom-fields) — those specs
+ * the API suite (ghost e2e-api member-custom-fields) — those specs
  * assert the outgoing request and the refetch instead.
  */
 function fakeCustomFieldsWithCreate(initial: CustomField[], created: CustomField) {

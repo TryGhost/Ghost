@@ -49,17 +49,17 @@ authentication and permissions, execute an endpoint, and serialize its
 response.
 
 Endpoint code delegates domain and integration logic to the services under
-`ghost/core/core/server/services/`. Models and data access remain under
-`ghost/core/core/server/`. The codebase is evolving incrementally, so existing
+`ghost/core/server/services/`. Models and data access remain under
+`ghost/core/server/`. The codebase is evolving incrementally, so existing
 services do not all use the same construction, dependency injection, or export
 pattern. Follow the nearby service when extending an established area. For a
-new standalone service, follow the [services guide](../../ghost/core/core/server/services/README.md).
+new standalone service, follow the [services guide](../../ghost/core/server/services/README.md).
 
 A service root represents an application-owned instance, not every class or
 helper involved in a feature. Supporting libraries can be constructed by their
 callers, and service-private implementation stays with its owner. Some legacy
 support directories still live under `services/`; use the
-[service placement rules](../../ghost/core/core/server/services/README.md#what-belongs-here)
+[service placement rules](../../ghost/core/server/services/README.md#what-belongs-here)
 rather than copying their location.
 
 Ghost's boot sequence owns service initialization. Services which listen for
@@ -79,7 +79,7 @@ HTTP request to the Content API.
 
 `routes.yaml`, the active theme, and site settings affect how public URLs are
 resolved and rendered. Routing can be reloaded while Ghost is running. The
-bridge in `ghost/core/core/bridge.js` contains the remaining explicit
+bridge in `ghost/core/bridge.js` contains the remaining explicit
 communication between server and frontend code, including theme and routing
 updates.
 

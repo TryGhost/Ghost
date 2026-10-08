@@ -10,10 +10,10 @@ import { ROOT_DIR } from './lib/constants.js';
 import { resolveBaseTag } from './lib/resolve-base-tag.js';
 import { readJsonSync, writeJsonSync } from './lib/utils.js';
 
-const GHOST_CORE_PKG = join(ROOT_DIR, 'ghost/core/package.json');
+const GHOST_CORE_PKG = join(ROOT_DIR, 'ghost/package.json');
 const GHOST_ADMIN_PKG = join(ROOT_DIR, 'apps/ember-admin/package.json');
-const CASPER_DIR = join(ROOT_DIR, 'ghost/core/content/themes/casper');
-const SOURCE_DIR = join(ROOT_DIR, 'ghost/core/content/themes/source');
+const CASPER_DIR = join(ROOT_DIR, 'ghost/content/themes/casper');
+const SOURCE_DIR = join(ROOT_DIR, 'ghost/content/themes/source');
 
 // Generous enough to cover a full CI cycle (~15m) plus a retarget onto a newer
 // commit after the first run gets cancelled by a merge.
@@ -120,7 +120,7 @@ function applyChangesetVersions() {
 
 function detectBumpType(baseTag, bumpType) {
   // Check for new migration files
-  const migrationsPath = 'ghost/core/core/server/data/migrations/versions/';
+  const migrationsPath = 'ghost/core/server/data/migrations/versions/';
   try {
     // No pathspec: a moved migrations directory only reads as renames when the
     // old paths are in the diff. A rename still counts as new unless it keeps its
@@ -509,7 +509,7 @@ async function main() {
 
   // 7. Advance to next RC
   // Default to the next patch RC. If a migration lands during the cycle,
-  // ghost/core/bin/create-migration.js promotes this to the next minor RC.
+  // ghost/bin/create-migration.js promotes this to the next minor RC.
   // detectBumpType resolves the actual bump (patch vs minor) at the next release.
   logStep('Advancing to next RC');
   const nextPatch = semver.inc(newVersion, 'patch');

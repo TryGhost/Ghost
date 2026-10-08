@@ -30,14 +30,14 @@
     "create-package": "node ./scripts/create-package.js",
     "knex-migrator": "pnpm --filter ghost run knex-migrator",
     "bootstrap": "pnpm install && git submodule update --init --recursive && git config --local blame.ignoreRevsFile .git-blame-ignore-revs",
-    "migrate:db": "docker exec --workdir /home/ghost/ghost/core ghost-dev pnpm knex-migrator migrate",
-    "rollback:db": "docker exec --workdir /home/ghost/ghost/core ghost-dev pnpm knex-migrator rollback",
-    "reset:db": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && pnpm knex-migrator reset && pnpm knex-migrator init'",
+    "migrate:db": "docker exec --workdir /home/ghost/ghost ghost-dev pnpm knex-migrator migrate",
+    "rollback:db": "docker exec --workdir /home/ghost/ghost ghost-dev pnpm knex-migrator rollback",
+    "reset:db": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost && pnpm knex-migrator reset && pnpm knex-migrator init'",
     "reset:db:volume": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down && docker volume rm ghost-dev_mysql-data",
-    "reset:data": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node --conditions=source --import=tsx index.js generate-data --clear-database --quantities members:1000,posts:100 --seed 123'",
-    "reset:data:empty": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node --conditions=source --import=tsx index.js generate-data --clear-database --quantities members:0,posts:0 --seed 123'",
-    "reset:data:xxl": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node --conditions=source --import=tsx index.js generate-data --clear-database --quantities members:2000000,posts:0,emails:0,members_stripe_customers:0,members_login_events:0,members_status_events:0 --seed 123'",
-    "seed:multi-sub-scenarios": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node --conditions=source --import=tsx scripts/seed-multi-sub-scenarios.js'",
+    "reset:data": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost && node --conditions=source --import=tsx index.js generate-data --clear-database --quantities members:1000,posts:100 --seed 123'",
+    "reset:data:empty": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost && node --conditions=source --import=tsx index.js generate-data --clear-database --quantities members:0,posts:0 --seed 123'",
+    "reset:data:xxl": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost && node --conditions=source --import=tsx index.js generate-data --clear-database --quantities members:2000000,posts:0,emails:0,members_stripe_customers:0,members_login_events:0,members_status_events:0 --seed 123'",
+    "seed:multi-sub-scenarios": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost && node --conditions=source --import=tsx scripts/seed-multi-sub-scenarios.js'",
     "docker:build": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} build",
     "docker:build:verbose": "docker compose --progress=plain -f compose.dev.yaml ${DEV_COMPOSE_FILES} build",
     "docker:clean": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile all down -v --remove-orphans --rmi local",
@@ -50,7 +50,7 @@
     "lint:agent-skills": "node scripts/check-agent-skill-links.js",
     "lint:doc-links": "git ls-files -z '*.md' ':(exclude,glob).changeset/**' ':(exclude,glob)**/fixture/**' ':(exclude,glob)**/fixtures/**' | xargs -0 remark --use remark-validate-links --frail --quiet",
     "lint:markdown": "git ls-files -z '*.md' ':(exclude,glob).changeset/**' ':(exclude,glob)**/fixture/**' ':(exclude,glob)**/fixtures/**' | xargs -0 markdownlint-cli2 --config .markdownlint-cli2.jsonc",
-    "lint:boundaries": "depcruise ghost/core/core apps --config .dependency-cruiser.cjs",
+    "lint:boundaries": "depcruise ghost/core apps --config .dependency-cruiser.cjs",
     "lint:packages": "node scripts/check-internal-packages.js",
     "lint:versioning": "node scripts/check-versioning-ignore.js",
     "lint:docs": "pnpm lint:agent-skills && pnpm lint:agent-guidance && pnpm lint:markdown && pnpm lint:doc-links",
@@ -73,8 +73,8 @@
     "query-parameter-policy:export": "pnpm --filter ghost query-parameter-policy:export",
     "tb": "docker compose -f compose.dev.yaml -f compose.dev.analytics.yaml run --rm --no-deps --entrypoint tb tb-cli --local",
     "tb:test": "pnpm tb test run",
-    "data:analytics:generate": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js generate",
-    "data:analytics:clear": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js clear",
+    "data:analytics:generate": "node ghost/core/server/data/tinybird/scripts/docker-analytics-manager.js generate",
+    "data:analytics:clear": "node ghost/core/server/data/tinybird/scripts/docker-analytics-manager.js clear",
     "release": "node scripts/release.js",
     "inventory:typescript": "node scripts/typescript-inventory.ts"
   },
@@ -126,13 +126,13 @@
         "cache": true,
         "inputs": [
           "{workspaceRoot}/.dependency-cruiser.cjs",
-          "{workspaceRoot}/ghost/core/core/**/*",
+          "{workspaceRoot}/ghost/core/**/*",
           "{workspaceRoot}/apps/**/*",
           "sharedGlobals"
         ],
         "outputs": [],
         "options": {
-          "command": "depcruise ghost/core/core apps --config .dependency-cruiser.cjs"
+          "command": "depcruise ghost/core apps --config .dependency-cruiser.cjs"
         }
       },
       "docker:up": {

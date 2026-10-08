@@ -63,7 +63,7 @@ services:
       - TB_HOST=http://tinybird-local:7181
       - TB_LOCAL_HOST=tinybird-local
     volumes:
-      - ./ghost/core/core/server/data/tinybird:/home/tinybird
+      - ./ghost/core/server/data/tinybird:/home/tinybird
       - shared-config:/mnt/shared-config
     depends_on:
       tinybird-local:
@@ -77,7 +77,7 @@ services:
     entrypoint: ['tb', '--local', 'dev']
     environment: *tb-cli-environment
     volumes:
-      - ./ghost/core/core/server/data/tinybird:/home/tinybird
+      - ./ghost/core/server/data/tinybird:/home/tinybird
     depends_on:
       tb-cli:
         condition: service_completed_successfully

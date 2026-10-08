@@ -68,14 +68,14 @@ services:
       context: ./
       dockerfile: docker/ghost-dev/Dockerfile
     container_name: ghost-dev
-    working_dir: /home/ghost/ghost/core
+    working_dir: /home/ghost/ghost
     command: ['pnpm', 'dev']
     # The entrypoint drains Ghost before exiting; give that longer than Docker's 10s
     stop_grace_period: 45s
     volumes:
       # Mount the backend source as whole-directory mounts instead of
       # enumerating each server-graph workspace package. `pnpm dev` runs in
-      # ghost/core, and pnpm's verify-deps-before-run only checks ghost/core's
+      # ghost, and pnpm's verify-deps-before-run only checks ghost's
       # own dependency closure — which is fully installed in the root
       # /home/ghost/node_modules baked into the image and never mounted over —
       # so the non-server packages these dirs also expose (e.g. koenig-lexical)
@@ -90,11 +90,11 @@ services:
       - ./configs:/home/ghost/configs
       - ./packages:/home/ghost/packages
       # Mount specific content subdirectories to preserve themes/adapters from source
-      - ghost-dev-data:/home/ghost/ghost/core/content/data
-      - ghost-dev-images:/home/ghost/ghost/core/content/images
-      - ghost-dev-media:/home/ghost/ghost/core/content/media
-      - ghost-dev-files:/home/ghost/ghost/core/content/files
-      - ghost-dev-logs:/home/ghost/ghost/core/content/logs
+      - ghost-dev-data:/home/ghost/ghost/content/data
+      - ghost-dev-images:/home/ghost/ghost/content/images
+      - ghost-dev-media:/home/ghost/ghost/content/media
+      - ghost-dev-files:/home/ghost/ghost/content/files
+      - ghost-dev-logs:/home/ghost/ghost/content/logs
       - shared-config:/mnt/shared-config:ro
     environment:
       NODE_ENV: development

@@ -26,11 +26,11 @@ Put tests as close as possible to the code and behavior under test:
 - **Unit tests** cover a function, component, or package in isolation. Most
   workspaces use Vitest and expose a `test` or `test:unit` target.
 - **Ghost Core integration tests** cover interactions between server modules
-  and live against a test database. They live in `ghost/core/test/integration/`.
+  and live against a test database. They live in `ghost/test/integration/`.
 - **Ghost Core server E2E tests** exercise the server, frontend rendering,
   webhooks, and APIs against a running Ghost instance and test database. They
-  live under `ghost/core/test/e2e-*/`. These are Vitest suites, not browser
-  tests. See the [Ghost Core E2E guide](../../ghost/core/test/README.md) for the
+  live under `ghost/test/e2e-*/`. These are Vitest suites, not browser
+  tests. See the [Ghost Core E2E guide](../../ghost/test/README.md) for the
   request agents, fixtures, mocks, and snapshot helpers.
 - **App acceptance tests** exercise an individual app through its UI. The
   framework and command vary by app, so use that workspace's
@@ -83,11 +83,11 @@ a prompt to inspect what is missing.
 To inspect Ghost Core unit coverage locally, run:
 
 ```bash
-cd ghost/core
+cd ghost
 pnpm test:unit --coverage
 ```
 
-The HTML report is written to `ghost/core/coverage/index.html`.
+The HTML report is written to `ghost/coverage/index.html`.
 
 For physical-device testing and URL configurations such as HTTPS,
 subdirectories, or a separate Admin origin, see
@@ -118,10 +118,10 @@ which targets it provides:
 pnpm nx show project <project-name>
 ```
 
-For Ghost Core, run its suites from `ghost/core/`:
+For Ghost Core, run its suites from `ghost/`:
 
 ```bash
-cd ghost/core
+cd ghost
 
 pnpm test:unit
 pnpm test:integration
@@ -147,7 +147,7 @@ To watch a single database-backed Ghost Core file, point Vitest at the database
 configuration explicitly:
 
 ```bash
-cd ghost/core
+cd ghost
 pnpm exec vitest -c vitest.config.db.ts test/integration/path/to/test.test.js
 ```
 

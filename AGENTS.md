@@ -52,7 +52,7 @@ migration, private feature flag, Shade component, or internal package.
   [shipping guide](docs/contributing/shipping.md). Their release and CSS lanes
   differ from Admin.
 - **Ghost Core:** use the [server map](docs/codebase/monorepo-structure.md#ghost-core)
-  and read the [services guide](ghost/core/core/server/services/README.md) before
+  and read the [services guide](ghost/core/server/services/README.md) before
   adding or relocating a service root; apply its placement rules rather than
   inferring ownership from existing directory names. New standalone services
   use TypeScript; keep CommonJS only
@@ -62,7 +62,7 @@ migration, private feature flag, Shade component, or internal package.
   [ESLint configuration README](configs/eslint/README.md). A hand-written config
   must declare every plugin it imports locally.
 - **Analytics:** start with `pnpm dev:analytics` and follow the nearby Tinybird
-  READMEs under `ghost/core/core/server/data/tinybird/`.
+  READMEs under `ghost/core/server/data/tinybird/`.
 
 Keep shared facts in human documentation. This file should contain only routing,
 agent execution constraints, and high-value warnings that prevent recurring

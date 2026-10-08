@@ -24,15 +24,15 @@ const excludedPattern =
 // These files are inputs whose JavaScript representation is part of the test,
 // or bundled theme assets, rather than modules to migrate.
 const preservedTestInputs = [
-  'ghost/core/test/unit/frontend/services/assets-minification/fixtures/',
-  'ghost/core/test/utils/fixtures/themes/casper/assets/built/',
-  'ghost/core/test/utils/fixtures/themes/source/assets/built/',
+  'ghost/test/unit/frontend/services/assets-minification/fixtures/',
+  'ghost/test/utils/fixtures/themes/casper/assets/built/',
+  'ghost/test/utils/fixtures/themes/source/assets/built/',
 ];
 export function excludedSource(file: string): boolean {
   return (
     excludedPattern.test(file) ||
     preservedTestInputs.some((prefix) => file.startsWith(prefix)) ||
-    file === 'ghost/core/test/utils/fixtures/sloppy-config-writer.js'
+    file === 'ghost/test/utils/fixtures/sloppy-config-writer.js'
   );
 }
 
@@ -93,7 +93,7 @@ export function category(file: string): Category {
   if (
     file.startsWith('apps/') ||
     /^koenig\/(koenig-lexical|kg-simplemde|kg-unsplash-selector)\//.test(file) ||
-    file.startsWith('ghost/core/core/frontend/public/')
+    file.startsWith('ghost/core/frontend/public/')
   ) {
     return 'frontend';
   }
@@ -529,7 +529,7 @@ if (import.meta.main) {
     });
     if (values.help) {
       console.log(
-        'Usage: pnpm inventory:typescript [--root /path/to/Ghost] [--revision SHA] [--scope ghost/core] [--output /tmp/ghost-typescript]\nWrites a .json report when --output is supplied. Counts tracked working-tree files, excluding preserved test inputs, vendored code and build output; submodules are not included.',
+        'Usage: pnpm inventory:typescript [--root /path/to/Ghost] [--revision SHA] [--scope ghost] [--output /tmp/ghost-typescript]\nWrites a .json report when --output is supplied. Counts tracked working-tree files, excluding preserved test inputs, vendored code and build output; submodules are not included.',
       );
     } else {
       const root = values.root

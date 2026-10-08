@@ -1,5 +1,5 @@
 packages:
-  - 'ghost/*'
+  - 'ghost'
   - 'apps/*'
   - 'e2e'
   - 'koenig/*'
@@ -276,11 +276,11 @@ overrides:
   'eslint-plugin-ghost>@typescript-eslint/utils': 8.71.0
   'ember-svg-jar>cheerio': 'catalog:'
   # juice 11 pins cheerio 1.0.0 exactly. Point it at the catalog's 1.2.0 so juice
-  # and ghost/core share one copy instead of keeping two parsers resident - both
+  # and ghost share one copy instead of keeping two parsers resident - both
   # only ever call `load`. See patchedDependencies for the matching slim import.
   'juice>cheerio': 'catalog:'
   # mg-utils depends on the npm release of kg-default-cards, so the published
-  # copy was installed alongside the workspace one that ghost/core links — and
+  # copy was installed alongside the workspace one that ghost links — and
   # it dragged its own published kg-utils, kg-markdown-html-renderer and
   # url-utils in with it. Point that edge at the workspace package instead, so
   # content import renders cards with the same code Ghost itself renders them

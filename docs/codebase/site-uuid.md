@@ -26,6 +26,6 @@ settingsCache.get('site_uuid')
 ```
 
 Generation is implemented in
-[`settings-utils.js`](../../ghost/core/core/server/services/settings/settings-utils.js),
+[`settings-utils.js`](../../ghost/core/server/services/settings/settings-utils.js),
 and the boot-time check is in
-[`settings-service.js`](../../ghost/core/core/server/services/settings/settings-service.js).
+[`settings-service.js`](../../ghost/core/server/services/settings/settings-service.js).
