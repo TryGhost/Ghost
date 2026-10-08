@@ -1,3 +1,4 @@
+import { NEWSLETTER_FONT_OPTIONS } from './newsletter-fonts';
 import ColorPickerField from '@/settings/components/color-picker-field';
 import HeaderImageField from '@/settings/email-design/header-image-field';
 import HtmlField from '@/settings/components/html-field';
@@ -152,10 +153,9 @@ const Sidebar: React.FC<{
     setNewsletters(apiNewsletters || []);
   }, [apiNewsletters]);
 
-  const fontOptions: FontOption[] = [
-    { value: 'serif', label: 'Elegant serif', className: 'font-serif' },
-    { value: 'sans_serif', label: 'Clean sans-serif' },
-  ];
+  const fontOptions = NEWSLETTER_FONT_OPTIONS.filter((font) =>
+    (config.newsletterFonts || ['serif', 'sans_serif']).includes(font.value),
+  );
 
   const fontWeightOptions: Record<string, { options: FontOption[]; map?: Record<string, string> }> =
     {
@@ -178,6 +178,9 @@ const Sidebar: React.FC<{
         },
       },
     };
+
+  fontWeightOptions.verdana = fontWeightOptions.serif;
+  fontWeightOptions.times_new_roman = fontWeightOptions.serif;
 
   const backgroundColorIsDark = () => {
     if (newsletter.background_color === 'light') {
@@ -290,14 +293,16 @@ const Sidebar: React.FC<{
     // We're not showing the field since it's not editable
   };
 
-  const headingFontWeightOptions =
-    fontWeightOptions[newsletter.title_font_category || 'sans_serif'].options;
+  const headingFontWeightOptions = (
+    fontWeightOptions[newsletter.title_font_category || 'sans_serif'] ||
+    fontWeightOptions.sans_serif
+  ).options;
 
   // not all weights will be available for all fonts, if it doesn't exist find the closest match
   const getSelectedFontWeightOption = () => {
     const category = newsletter.title_font_category || 'sans_serif';
     const fontWeight = newsletter.title_font_weight;
-    const weightMap = fontWeightOptions[category].map;
+    const weightMap = (fontWeightOptions[category] || fontWeightOptions.sans_serif).map;
     const mappedWeight = weightMap ? weightMap[fontWeight] || fontWeight : fontWeight;
     const option = headingFontWeightOptions.find((o) => o.value === mappedWeight);
     return option || headingFontWeightOptions[0];
@@ -626,7 +631,7 @@ const Sidebar: React.FC<{
                     <SelectContent>
                       {fontOptions.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
-                          <span className={option.className}>{option.label}</span>
+                          <span style={{ fontFamily: option.family }}>{option.label}</span>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -668,7 +673,7 @@ const Sidebar: React.FC<{
                     <SelectContent>
                       {fontOptions.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
-                          <span className={option.className}>{option.label}</span>
+                          <span style={{ fontFamily: option.family }}>{option.label}</span>
                         </SelectItem>
                       ))}
                     </SelectContent>

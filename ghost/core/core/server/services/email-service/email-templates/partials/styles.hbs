@@ -1189,6 +1189,20 @@ a[data-flickr-embed] img {
     }
 {{/if}}
 
+{{#if newsletterTitleFontFamily}}
+.container h1, .container h2, .container h3,
+.container h4, .container h5, .container h6,
+.post-title, .post-title td, .post-excerpt {
+    font-family: {{{newsletterTitleFontFamily}}};
+}
+{{/if}}
+{{#if newsletterBodyFontFamily}}
+.post-content, .post-content td,
+.post-content-sans-serif, .post-content-sans-serif td {
+    font-family: {{{newsletterBodyFontFamily}}};
+}
+{{/if}}
+
 </style>
 <!--[if mso]>
 <style type="text/css">

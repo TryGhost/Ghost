@@ -20,12 +20,12 @@ export interface Newsletter {
   header_image: string | null;
   show_header_icon: boolean;
   show_header_title: boolean;
-  title_font_category: 'serif' | 'sans_serif';
+  title_font_category: 'serif' | 'sans_serif' | 'verdana' | 'times_new_roman';
   title_font_weight: 'normal' | 'medium' | 'semibold' | 'bold';
   title_alignment: 'left' | 'center';
   show_excerpt: boolean;
   show_feature_image: boolean;
-  body_font_category: 'serif' | 'sans_serif';
+  body_font_category: 'serif' | 'sans_serif' | 'verdana' | 'times_new_roman';
   footer_content: string | null;
   show_badge: boolean;
   show_header_name: boolean;

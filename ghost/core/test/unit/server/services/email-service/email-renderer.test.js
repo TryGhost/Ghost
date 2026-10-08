@@ -1672,6 +1672,62 @@ describe('Email renderer', function () {
       assert.ok(response.html.includes(`Malformed CSS case: ${name}`));
     });
 
+    it.each([
+      ['verdana', 'Verdana, Geneva, sans-serif'],
+      ['times_new_roman', "'Times New Roman', Times, serif"],
+    ])(
+      'inlines %s in newsletter headings, excerpts and body tables',
+      async function (font, family) {
+        renderedPost =
+          '<h2>Section heading</h2><p>Body copy</p><table><tr><td>Card copy</td></tr></table>';
+        const post = createModel({ ...basePost, custom_excerpt: 'Post excerpt' });
+        const newsletter = createModel({
+          ...baseNewsletter,
+          title_font_category: font,
+          body_font_category: font,
+          show_excerpt: true,
+        });
+        const response = await emailRenderer.renderBody(post, newsletter, null, {});
+        const $ = cheerio.load(response.html);
+        for (const selector of [
+          '.post-title h1',
+          '.post-excerpt',
+          '.post-content-row h2',
+          '.post-content-row > td',
+          '.post-content-row table td',
+        ]) {
+          assert.ok($(selector).length, `Missing ${selector}`);
+          assert.ok(
+            $(selector).attr('style').includes(`font-family: ${family}`),
+            `${selector}: ${$(selector).attr('style')}`,
+          );
+        }
+        assert.ok(!response.html.includes('@font-face'));
+      },
+    );
+
+    it('allows heading and body fonts to differ', async function () {
+      const response = await emailRenderer.renderBody(
+        createModel(basePost),
+        createModel({
+          ...baseNewsletter,
+          title_font_category: 'times_new_roman',
+          body_font_category: 'verdana',
+        }),
+        null,
+        {},
+      );
+      const $ = cheerio.load(response.html);
+      assert.match(
+        $('.post-title h1').attr('style'),
+        /font-family: 'Times New Roman', Times, serif/,
+      );
+      assert.match(
+        $('.post-content-row > td').attr('style'),
+        /font-family: Verdana, Geneva, sans-serif/,
+      );
+    });
+
     it('renders the post title as the top-level heading', async function () {
       const post = createModel(basePost);
       const newsletter = createModel(baseNewsletter);

@@ -15,6 +15,12 @@ Object {
     "labs": Any<Object>,
     "mail": "",
     "mailgunIsConfigured": false,
+    "newsletterFonts": Array [
+      "sans_serif",
+      "serif",
+      "verdana",
+      "times_new_roman",
+    ],
     "security": Object {
       "allowWebhookInternalIPs": true,
       "embedPreviewUrl": "https://public.ghostembeds.com/",

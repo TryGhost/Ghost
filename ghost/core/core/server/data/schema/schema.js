@@ -1,3 +1,5 @@
+const { NEWSLETTER_FONTS } = require('../../lib/email-rendering/newsletter-fonts');
+
 /* String Column Sizes Information
  * (From: https://github.com/TryGhost/Ghost/pull/7932)
  * New/Updated column maxlengths should meet these guidlines
@@ -49,7 +51,7 @@ module.exports = {
       maxlength: 191,
       nullable: false,
       defaultTo: 'sans_serif',
-      validations: { isIn: [['serif', 'sans_serif']] },
+      validations: { isIn: [Object.keys(NEWSLETTER_FONTS)] },
     },
     title_alignment: {
       type: 'string',
@@ -64,7 +66,7 @@ module.exports = {
       maxlength: 191,
       nullable: false,
       defaultTo: 'sans_serif',
-      validations: { isIn: [['serif', 'sans_serif']] },
+      validations: { isIn: [Object.keys(NEWSLETTER_FONTS)] },
     },
     footer_content: { type: 'text', maxlength: 1000000000, nullable: true },
     show_badge: { type: 'boolean', nullable: false, defaultTo: true },

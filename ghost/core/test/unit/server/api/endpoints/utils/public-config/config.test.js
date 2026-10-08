@@ -24,6 +24,7 @@ const allowedKeys = [
   'klipy',
   'pintura',
   'signupForm',
+  'newsletterFonts',
   'security',
 ];
 
@@ -38,6 +39,15 @@ describe('Public-config response builders', function () {
     afterEach(async function () {
       await configUtils.restore();
       sinon.restore();
+    });
+
+    it('advertises the fonts the newsletter renderer supports', function () {
+      assert.deepEqual(getConfigProperties().newsletterFonts, [
+        'sans_serif',
+        'serif',
+        'verdana',
+        'times_new_roman',
+      ]);
     });
 
     it('should return the correct default config properties', function () {

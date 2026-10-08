@@ -50,6 +50,12 @@ describe('Config API', function () {
           },
         })
         .expect(({ body }) => {
+          assert.deepEqual(body.config.newsletterFonts, [
+            'sans_serif',
+            'serif',
+            'verdana',
+            'times_new_roman',
+          ]);
           const { labs } = body.config;
           assert.ok(
             labs && typeof labs === 'object' && !Array.isArray(labs),

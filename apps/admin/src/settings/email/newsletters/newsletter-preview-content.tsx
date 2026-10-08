@@ -1,3 +1,4 @@
+import { getNewsletterFont } from './newsletter-fonts';
 import CoverImage from '@/settings/assets/images/user-cover.jpg';
 import LatestPosts1 from '@/settings/assets/images/latest-posts-1.jpg';
 import LatestPosts2 from '@/settings/assets/images/latest-posts-2.jpg';
@@ -145,13 +146,16 @@ const NewsletterPreviewContent: React.FC<{
     );
   }
 
+  const titleFont = getNewsletterFont(titleFontCategory);
+  const bodyFont = getNewsletterFont(bodyFontCategory);
+
   let excerptClasses = 'mb-5 text-pretty leading-[1.7] text-black';
 
-  if (titleFontCategory === 'serif' && bodyFontCategory === 'serif') {
+  if (titleFont.category === 'serif' && bodyFont.category === 'serif') {
     excerptClasses = clsx(excerptClasses, 'mb-8 font-serif text-[2.0rem] leading-tight');
-  } else if (titleFontCategory !== 'serif' && bodyFontCategory === 'serif') {
+  } else if (titleFont.category !== 'serif' && bodyFont.category === 'serif') {
     excerptClasses = clsx(excerptClasses, 'mb-8 text-[1.7rem] leading-tight tracking-tight');
-  } else if (titleFontCategory === 'serif' && bodyFontCategory !== 'serif') {
+  } else if (titleFont.category === 'serif' && bodyFont.category !== 'serif') {
     excerptClasses = clsx(excerptClasses, 'mb-8 font-serif text-[2.0rem] leading-tight');
   } else {
     excerptClasses = clsx(excerptClasses, 'mb-8 text-[1.9rem] leading-tight tracking-tight');
@@ -216,7 +220,7 @@ const NewsletterPreviewContent: React.FC<{
                   <h2
                     className={clsx(
                       'text-4xl leading-supertight font-bold text-black',
-                      titleFontCategory === 'serif' && 'font-serif',
+                      titleFont.category === 'serif' && 'font-serif',
                       titleFontWeight === 'normal' && 'font-normal',
                       titleFontWeight === 'medium' && 'font-medium',
                       titleFontWeight === 'semibold' && 'font-semibold',
@@ -224,12 +228,15 @@ const NewsletterPreviewContent: React.FC<{
                       titleAlignment === 'center' ? 'text-center' : 'text-left',
                       showExcerpt ? 'mb-2' : 'mb-8',
                     )}
-                    style={{ color: postTitleColor }}
+                    style={{ color: postTitleColor, fontFamily: titleFont.family }}
                   >
                     Your email newsletter
                   </h2>
                   {showExcerpt && (
-                    <p className={excerptClasses} style={{ color: headerTextColor }}>
+                    <p
+                      className={excerptClasses}
+                      style={{ color: headerTextColor, fontFamily: titleFont.family }}
+                    >
                       A subtitle to highlight key points and engage your readers.
                     </p>
                   )}
@@ -290,12 +297,12 @@ const NewsletterPreviewContent: React.FC<{
                   'max-w-[600px] border-b border-gray-200 pb-[52px] leading-[27.2px] text-black',
                   dividerStyle === 'dashed' && 'border-dashed',
                   dividerStyle === 'dotted' && 'border-b-2 border-dotted',
-                  bodyFontCategory === 'serif'
+                  bodyFont.category === 'serif'
                     ? 'font-serif text-[1.8rem]'
                     : 'text-[1.7rem] tracking-tight',
                   showFeatureImage || showPostTitleSection ? '' : 'pt-8',
                 )}
-                style={{ borderColor: dividerColor }}
+                style={{ borderColor: dividerColor, fontFamily: bodyFont.family }}
               >
                 <p className="mb-6" style={{ color: textColor }}>
                   This is what your content will look like when you send one of your posts as an
@@ -323,14 +330,14 @@ const NewsletterPreviewContent: React.FC<{
                 <h3
                   className={clsx(
                     'mb-[13px] text-[2.6rem] leading-supertight',
-                    titleFontCategory === 'serif' && 'font-serif',
-                    titleFontCategory === 'sans_serif' && 'font-sans',
+                    titleFont.category === 'serif' && 'font-serif',
+                    titleFont.category === 'sans_serif' && 'font-sans',
                     titleFontWeight === 'normal' && 'font-normal',
                     titleFontWeight === 'medium' && 'font-medium',
                     titleFontWeight === 'semibold' && 'font-semibold',
                     titleFontWeight === 'bold' && 'font-bold',
                   )}
-                  style={{ color: sectionTitleColor }}
+                  style={{ color: sectionTitleColor, fontFamily: titleFont.family }}
                 >
                   Need inspiration?
                 </h3>
@@ -479,13 +486,13 @@ const NewsletterPreviewContent: React.FC<{
                       <h4
                         className={clsx(
                           'mt-0.5 text-[1.9rem] text-black',
-                          titleFontCategory === 'serif' && 'font-serif',
+                          titleFont.category === 'serif' && 'font-serif',
                           titleFontWeight === 'normal' && 'font-normal',
                           titleFontWeight === 'medium' && 'font-medium',
                           titleFontWeight === 'semibold' && 'font-semibold',
                           titleFontWeight === 'bold' && 'font-bold',
                         )}
-                        style={{ color: sectionTitleColor }}
+                        style={{ color: sectionTitleColor, fontFamily: titleFont.family }}
                       >
                         The three latest posts published on your site
                       </h4>
@@ -512,13 +519,13 @@ const NewsletterPreviewContent: React.FC<{
                       <h4
                         className={clsx(
                           'mt-0.5 text-[1.9rem] text-black',
-                          titleFontCategory === 'serif' && 'font-serif',
+                          titleFont.category === 'serif' && 'font-serif',
                           titleFontWeight === 'normal' && 'font-normal',
                           titleFontWeight === 'medium' && 'font-medium',
                           titleFontWeight === 'semibold' && 'font-semibold',
                           titleFontWeight === 'bold' && 'font-bold',
                         )}
-                        style={{ color: sectionTitleColor }}
+                        style={{ color: sectionTitleColor, fontFamily: titleFont.family }}
                       >
                         Displayed at the bottom of each newsletter
                       </h4>
@@ -545,13 +552,13 @@ const NewsletterPreviewContent: React.FC<{
                       <h4
                         className={clsx(
                           'mt-0.5 text-[1.9rem] text-black',
-                          titleFontCategory === 'serif' && 'font-serif',
+                          titleFont.category === 'serif' && 'font-serif',
                           titleFontWeight === 'normal' && 'font-normal',
                           titleFontWeight === 'medium' && 'font-medium',
                           titleFontWeight === 'semibold' && 'font-semibold',
                           titleFontWeight === 'bold' && 'font-bold',
                         )}
-                        style={{ color: sectionTitleColor }}
+                        style={{ color: sectionTitleColor, fontFamily: titleFont.family }}
                       >
                         To keep your work front and center
                       </h4>

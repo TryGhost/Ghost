@@ -8,6 +8,23 @@ import models from '../../../../../core/server/models';
 import { validateSchema } from '../../../../../core/server/data/schema/validator';
 
 describe('Validate Schema', function () {
+  describe('newsletter fonts', function () {
+    it.each(['serif', 'sans_serif', 'verdana', 'times_new_roman'])(
+      'accepts %s in both font fields',
+      function (font) {
+        const newsletter = models.Newsletter.forge();
+        newsletter.set({ title_font_category: font, body_font_category: font });
+        assert.doesNotThrow(() => validateSchema('newsletters', newsletter, { method: 'update' }));
+      },
+    );
+
+    it('rejects arbitrary font CSS', function () {
+      const newsletter = models.Newsletter.forge();
+      newsletter.set({ body_font_category: 'Verdana; color: red' });
+      assert.throws(() => validateSchema('newsletters', newsletter, { method: 'update' }));
+    });
+  });
+
   describe('models.add', function () {
     it('blank model', function () {
       // NOTE: Fields with `defaultTo` are getting ignored. This is handled on the DB level.

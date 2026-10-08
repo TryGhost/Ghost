@@ -127,6 +127,62 @@ describe('Newsletter settings', () => {
     });
   });
 
+  it.each([
+    ['verdana', 'Verdana'],
+    ['times_new_roman', 'Times New Roman'],
+  ] as const)('previews and saves %s for headings and body', async (fontId, label) => {
+    fakeNewsletterWorld([
+      { ...activeNewsletter, title_font_weight: 'semibold' },
+      archivedNewsletter,
+    ]);
+    const config = configResponse();
+    config.config.newsletterFonts = ['serif', 'sans_serif', 'verdana', 'times_new_roman'];
+    const editApi = fakeNewsletterEdit({
+      ...activeNewsletter,
+      title_font_category: fontId,
+      body_font_category: fontId,
+      title_font_weight: 'bold',
+    });
+    await renderAdminApp('/settings/newsletters', { boot: { browseConfig: { response: config } } });
+    const modal = await openNewsletter(activeNewsletter.name);
+    await modal.getByRole('tab', { name: 'Design' }).click();
+    await modal.getByRole('combobox', { name: 'Heading font', exact: true }).click();
+    await settingsScreen.selectOption(label).click();
+    await modal.getByTestId('body-font-select').click();
+    await settingsScreen.selectOption(label).click();
+    await expect
+      .element(modal.getByRole('heading', { name: 'Your email newsletter' }))
+      .toHaveStyle({
+        fontFamily:
+          fontId === 'verdana' ? 'Verdana, Geneva, sans-serif' : '"Times New Roman", Times, serif',
+      });
+    await expect
+      .element(modal.getByRole('combobox', { name: 'Heading weight', exact: true }))
+      .toHaveTextContent('Bold');
+    await modal.getByRole('combobox', { name: 'Heading weight', exact: true }).click();
+    await expect.element(settingsScreen.selectOption('Medium')).not.toBeInTheDocument();
+    await settingsScreen.selectOption('Bold').click();
+    await modal.getByRole('button', { name: 'Save' }).click();
+    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
+    expect(editApi.lastRequest?.body).toMatchObject({
+      newsletters: [
+        { title_font_category: fontId, body_font_category: fontId, title_font_weight: 'bold' },
+      ],
+    });
+  });
+
+  it('offers only the original fonts on an older backend', async () => {
+    fakeNewsletterWorld();
+    await renderAdminApp('/settings/newsletters');
+    const modal = await openNewsletter(activeNewsletter.name);
+    await modal.getByRole('tab', { name: 'Design' }).click();
+    await modal.getByTestId('body-font-select').click();
+    await expect.element(settingsScreen.selectOption('Elegant serif')).toBeVisible();
+    await expect.element(settingsScreen.selectOption('Clean sans-serif')).toBeVisible();
+    await expect.element(settingsScreen.selectOption('Verdana')).not.toBeInTheDocument();
+    await expect.element(settingsScreen.selectOption('Times New Roman')).not.toBeInTheDocument();
+  });
+
   describe('email addresses', () => {
     it('validates and requests verification for a self-hosted sender address', async () => {
       const updated = { ...activeNewsletter, sender_email: 'test@test.com' };

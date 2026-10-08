@@ -9,6 +9,7 @@ export interface JSONObject {
 interface JSONArray extends Array<string | number | boolean | Date | JSONObject | JSONValue> {}
 
 export type Config = {
+  newsletterFonts?: string[];
   version: string;
   environment: string;
   editor: {

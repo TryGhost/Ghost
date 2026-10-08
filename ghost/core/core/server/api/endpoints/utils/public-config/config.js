@@ -4,6 +4,7 @@ const settingsCache = require('../../../../../shared/settings-cache');
 const labs = require('../../../../../shared/labs');
 const databaseInfo = require('../../../../data/db/info');
 const ghostVersion = require('@tryghost/version');
+const { NEWSLETTER_FONTS } = require('../../../../lib/email-rendering/newsletter-fonts');
 
 const tinybirdStatsPayloadProperties = ['endpoint', 'endpointBrowser', 'version', 'datasource'];
 
@@ -65,6 +66,7 @@ module.exports = function getConfigProperties() {
     klipy: config.get('klipy'),
     pintura: config.get('pintura'),
     signupForm: config.get('signupForm'),
+    newsletterFonts: Object.keys(NEWSLETTER_FONTS),
     security: config.get('security'),
   };
 

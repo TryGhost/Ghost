@@ -15,6 +15,7 @@ const { DateTime } = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const emailAddressParser = require('../email-address/email-address-parser');
 const { getEmailDesign } = require('../../lib/email-rendering/email-design');
+const { getNewsletterFont } = require('../../lib/email-rendering/newsletter-fonts');
 const { registerHelpers } = require('./helpers/register-helpers');
 const crypto = require('crypto');
 const { checkSegmentPostAccess, getPostAccessFilter } = require('../members/content-gating');
@@ -1411,8 +1412,10 @@ class EmailRenderer {
       }
     }
 
-    const bodyFont = newsletter.get('body_font_category');
-    const titleFont = newsletter.get('title_font_category');
+    const bodyFontId = newsletter.get('body_font_category');
+    const titleFontId = newsletter.get('title_font_category');
+    const bodyFont = getNewsletterFont(bodyFontId);
+    const titleFont = getNewsletterFont(titleFontId);
     const titleAlignment = newsletter.get('title_alignment');
     const showFeatureImage = newsletter.get('show_feature_image') && !!postFeatureImage;
 
@@ -1476,6 +1479,11 @@ class EmailRenderer {
 
       //CSS
       ...emailDesign,
+      // Keep the original CSS output for the two legacy choices.
+      newsletterTitleFontFamily:
+        titleFont.family !== getNewsletterFont(titleFont.category).family ? titleFont.family : null,
+      newsletterBodyFontFamily:
+        bodyFont.family !== getNewsletterFont(bodyFont.category).family ? bodyFont.family : null,
       showBadge: newsletter.get('show_badge'),
       headerImage,
       headerImageWidth,
@@ -1492,12 +1500,12 @@ class EmailRenderer {
 
       classes: {
         container: clsx('container', {
-          'title-serif': titleFont === 'serif',
+          'title-serif': titleFont.category === 'serif',
         }),
         title: clsx('post-title', {
           'post-title-with-excerpt': post.get('custom_excerpt'),
           'post-title-no-excerpt': !post.get('custom_excerpt'),
-          'post-title-serif': titleFont === 'serif',
+          'post-title-serif': titleFont.category === 'serif',
           'post-title-left': titleAlignment === 'left',
         }),
         titleLink: clsx('post-title-link', {
@@ -1506,8 +1514,10 @@ class EmailRenderer {
         excerpt: clsx('post-excerpt', {
           'post-excerpt-with-feature-image': showFeatureImage,
           'post-excerpt-no-feature-image': !showFeatureImage,
-          'post-excerpt-serif-serif': titleFont === 'serif' && bodyFont === 'serif',
-          'post-excerpt-serif-sans': titleFont === 'serif' && bodyFont !== 'serif',
+          'post-excerpt-serif-serif':
+            titleFont.category === 'serif' && bodyFont.category === 'serif',
+          'post-excerpt-serif-sans':
+            titleFont.category === 'serif' && bodyFont.category !== 'serif',
           'post-excerpt-left': titleAlignment === 'left',
         }),
         meta: clsx('post-meta', {
@@ -1515,8 +1525,8 @@ class EmailRenderer {
           'post-meta-center': titleAlignment !== 'left',
         }),
         body: clsx({
-          'post-content-sans-serif': bodyFont === 'sans_serif',
-          'post-content': bodyFont !== 'sans_serif',
+          'post-content-sans-serif': bodyFont.category === 'sans_serif',
+          'post-content': bodyFont.category !== 'sans_serif',
         }),
       },
 

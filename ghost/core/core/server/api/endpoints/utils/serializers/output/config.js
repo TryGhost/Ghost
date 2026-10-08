@@ -21,6 +21,7 @@ module.exports = {
       'klipy',
       'pintura',
       'signupForm',
+      'newsletterFonts',
       'stats',
       'security',
       'exploreTestimonialsUrl',
