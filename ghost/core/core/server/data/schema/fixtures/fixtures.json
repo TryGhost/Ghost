@@ -796,6 +796,11 @@
           "object_type": "automation"
         },
         {
+          "name": "Add automations",
+          "action_type": "add",
+          "object_type": "automation"
+        },
+        {
           "name": "Edit automations",
           "action_type": "edit",
           "object_type": "automation"
@@ -824,6 +829,26 @@
           "name": "Remove all gift links",
           "action_type": "removeAll",
           "object_type": "gift_link"
+        },
+        {
+          "name": "Browse app installations",
+          "action_type": "browse",
+          "object_type": "app_installation"
+        },
+        {
+          "name": "Read app installations",
+          "action_type": "read",
+          "object_type": "app_installation"
+        },
+        {
+          "name": "Add app installations",
+          "action_type": "add",
+          "object_type": "app_installation"
+        },
+        {
+          "name": "Delete app installations",
+          "action_type": "destroy",
+          "object_type": "app_installation"
         }
       ]
     },
@@ -987,7 +1012,8 @@
           "collection": "all",
           "recommendation": "all",
           "gift_link": "all",
-          "automation": ["browse", "read", "edit"],
+          "app_installation": "all",
+          "automation": ["browse", "read", "edit", "add"],
           "identity": "read"
         },
         "DB Backup Integration": {
@@ -1036,7 +1062,7 @@
           "mention": "browse",
           "collection": "all",
           "recommendation": "all",
-          "automation": ["browse", "read", "edit"],
+          "automation": ["browse", "read", "edit", "add"],
           "member_signin_url": "read",
           "gift_link": "manage"
         },

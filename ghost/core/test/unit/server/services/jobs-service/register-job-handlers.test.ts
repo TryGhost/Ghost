@@ -5,6 +5,7 @@ import { JobsService } from '../../../../../core/server/services/jobs-service/jo
 import ExternalMediaInliner from '../../../../../core/server/services/media-inliner/external-media-inliner';
 import ExternalMediaInlinerJob from '../../../../../core/server/services/media-inliner/external-media-inliner-job';
 import ContentCSVImportJob from '../../../../../core/server/services/content-import/jobs/content-csv-import-job';
+import ContentImportJob from '../../../../../core/server/data/importer/jobs/content-import-job';
 import MembersImportJob from '../../../../../core/server/services/members/jobs/members-import-job';
 import UpdateCheckJob from '../../../../../core/server/services/update-check/jobs/update-check-job';
 import ProcessWebmentionJob from '../../../../../core/server/services/mentions/process-webmention-job';
@@ -22,7 +23,9 @@ describe('register-job-handlers', function () {
   let mentionsController: { processWebmention: sinon.SinonStub };
   let mentionsSendingService: { sendWebmentions: sinon.SinonStub };
   let membersService: { handleImportJob: sinon.SinonStub };
+  let siteImporter: { executeImport: sinon.SinonStub };
   let emailService: { handleSendEmailJob: sinon.SinonStub };
+  let tinybirdSync: { sync: sinon.SinonStub };
 
   // Handlers are looked up by their job type rather than registration order,
   // so adding a handler does not silently shift which one a test exercises.
@@ -49,9 +52,14 @@ describe('register-job-handlers', function () {
     mentionsController = { processWebmention: sinon.stub().resolves() };
     mentionsSendingService = { sendWebmentions: sinon.stub().resolves() };
     membersService = { handleImportJob: sinon.stub().resolves() };
+    siteImporter = { executeImport: sinon.stub().resolves() };
     emailService = { handleSendEmailJob: sinon.stub().resolves() };
+    tinybirdSync = { sync: sinon.stub().resolves() };
 
     registerJobHandlers({
+      gifts: { startFetch: sinon.stub().resolves() },
+      automations: { startFetch: sinon.stub().resolves() },
+      newsletters: { startFetch: sinon.stub().resolves() },
       jobsService,
       memberJobs,
       giftService,
@@ -60,11 +68,49 @@ describe('register-job-handlers', function () {
       mentionsSendingService,
       membersService,
       emailService,
+      siteImporter,
+      tinybirdSync,
     });
   });
 
   afterEach(function () {
     sinon.restore();
+  });
+
+  it('registers site content imports once in the default lane and awaits the injected executor', async function () {
+    const calls = jobsService.handle
+      .getCalls()
+      .filter((c) => c.args[0].type === 'site-content-import');
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].args.length, 2);
+    const job = new ContentImportJob({
+      uploadKey: 'de370ef5-45f5-453c-8d6e-7c1a73e30ee9',
+      fileName: 'export.zip',
+      emailRecipient: 'owner@example.com',
+    });
+    const revived = new ContentImportJob(JSON.parse(JSON.stringify(job)));
+    let complete!: () => void;
+    siteImporter.executeImport.callsFake(
+      () =>
+        new Promise<void>((resolve) => {
+          complete = resolve;
+        }),
+    );
+    let settled = false;
+    const delivery = handlerFor(ContentImportJob.type)(revived).then(() => {
+      settled = true;
+    });
+    await Promise.resolve();
+    assert.equal(settled, false);
+    sinon.assert.calledOnceWithExactly(siteImporter.executeImport, revived);
+    complete();
+    await delivery;
+  });
+
+  it('propagates site import completion-email failures', async function () {
+    const error = new Error('email failed');
+    siteImporter.executeImport.rejects(error);
+    await assert.rejects(handlerFor(ContentImportJob.type)({}), error);
   });
 
   it('runs clean-gifts with the injected gift service', async function () {
@@ -245,5 +291,17 @@ describe('register-job-handlers', function () {
       () => handlerFor('send-email')(new SendEmailJob({ emailId: 'email-id' })),
       error,
     );
+  });
+
+  it('runs tinybird-sync with the injected Tinybird sync service', async function () {
+    await handlerFor('tinybird-sync')({});
+
+    sinon.assert.calledOnceWithExactly(tinybirdSync.sync);
+  });
+
+  it('registers tinybird-sync on its own queue, one pass at a time', function () {
+    const registration = registrationFor('tinybird-sync');
+
+    assert.deepEqual(registration.args[2], { queue: 'tinybird-sync', concurrency: 1 });
   });
 });

@@ -95,7 +95,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileSidebarOpen }) => {
             </SidebarMenuLink>
             {showExternalExplore ? (
               <Button
-                className="inline-flex w-full items-center gap-2 rounded-sm px-3 py-2.5 text-left font-medium text-gray-800 transition-colors hover:bg-gray-100 dark:text-gray-500 dark:hover:bg-gray-950/70"
+                className="inline-flex w-full items-center gap-2 px-3 py-2.5 text-left font-medium text-gray-800 transition-colors hover:bg-gray-100 dark:text-gray-500 dark:hover:bg-gray-950/70"
+                shape="rounded"
                 variant="ghost"
                 asChild
               >

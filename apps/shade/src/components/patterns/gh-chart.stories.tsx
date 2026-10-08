@@ -115,3 +115,30 @@ export const HourlyData: Story = {
     showHours: true,
   },
 };
+
+export const SingleDay: Story = {
+  args: {
+    data: [{ date: '2026-09-28', value: 7, formattedValue: '7', label: 'Entries' }],
+    range: 1,
+    id: 'single-day-chart',
+    className: 'h-[180px]',
+    showYAxisValues: false,
+    yAxisRange: [0, 7],
+  },
+  parameters: {
+    docs: { description: { story: 'A first-day chart shows one centered date label.' } },
+  },
+};
+
+export const SingleDayEmpty: Story = {
+  ...SingleDay,
+  args: {
+    ...SingleDay.args,
+    data: [{ date: '2026-09-28', value: 0, formattedValue: '0', label: 'Entries' }],
+    id: 'single-day-empty-chart',
+    yAxisRange: [0, 1],
+  },
+  parameters: {
+    docs: { description: { story: 'An empty first day keeps the same single date label.' } },
+  },
+};

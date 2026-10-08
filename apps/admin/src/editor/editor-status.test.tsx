@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { RecipientCount } from './editor-status';
+import { EditorStatus, RecipientCount } from './editor-status';
+
+vi.mock('./use-editor-settings', () => ({ useSiteTimezone: () => 'Etc/UTC' }));
 
 const mocks = vi.hoisted(() => ({
   useMembersCount: vi.fn(() => ({ count: null })),
@@ -17,6 +19,48 @@ vi.mock('@tryghost/admin-x-framework/api/members', async (importOriginal) => {
 // The status line shares its count key with the publish flow, so the refetches
 // it initiates have to opt out of the session-expiry redirect too.
 const OPTED_OUT = { requestOptions: { sessionExpiryRedirect: false } };
+
+describe('EditorStatus', () => {
+  it('starts the saving indicator only after preparation succeeds', () => {
+    const { rerender } = render(
+      <EditorStatus state={{ kind: 'preparing', intent: 'autosave' }} isDirty />,
+    );
+    expect(screen.queryByText('Saving…')).not.toBeInTheDocument();
+
+    rerender(<EditorStatus state={{ kind: 'idle' }} isDirty />);
+    expect(screen.queryByText('Saving…')).not.toBeInTheDocument();
+
+    rerender(<EditorStatus state={{ kind: 'saving', intent: 'autosave' }} isDirty />);
+    expect(screen.getByText('Saving…')).toBeInTheDocument();
+  });
+
+  it('shows nothing for a post that has never been saved', () => {
+    const { container, rerender } = render(<EditorStatus state={{ kind: 'idle' }} isDirty />);
+    expect(container).toBeEmptyDOMElement();
+
+    rerender(<EditorStatus isDirty={false} state={{ kind: 'idle' }} />);
+    expect(container).toBeEmptyDOMElement();
+
+    rerender(
+      <EditorStatus isDirty={false} record={{ status: 'draft' }} state={{ kind: 'idle' }} />,
+    );
+    expect(screen.getByText('Draft - Saved')).toBeInTheDocument();
+  });
+
+  it('reports a first save that failed', () => {
+    render(
+      <EditorStatus
+        state={{
+          kind: 'error',
+          intent: 'autosave',
+          error: { kind: 'validation', message: 'Title is too long.' },
+        }}
+        isDirty
+      />,
+    );
+    expect(screen.getByText('Title is too long.')).toBeInTheDocument();
+  });
+});
 
 describe('RecipientCount', () => {
   it('keeps descriptive copy when the member count is unavailable', () => {

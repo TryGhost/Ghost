@@ -41,9 +41,16 @@ vi.mock('@tryghost/admin-x-framework/api/users', async () => {
   return { ...actual, useBrowseUsers: mockUseBrowseUsers };
 });
 
-vi.mock('@/ember-bridge', () => ({
-  useSubscriptionStatus: mockUseSubscriptionStatus,
-}));
+vi.mock('@/billing/api', async () => {
+  const { activeDunning, readDunningPaymentSettledFor } = await vi.importActual<
+    typeof import('@/billing/billing-protocol')
+  >('@/billing/billing-protocol');
+  return {
+    activeDunning,
+    readDunningPaymentSettledFor,
+    useSubscriptionStatus: mockUseSubscriptionStatus,
+  };
+});
 
 const NOW = new Date('2026-09-10T12:00:00Z');
 

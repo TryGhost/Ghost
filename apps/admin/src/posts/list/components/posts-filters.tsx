@@ -31,9 +31,9 @@ interface PostsFiltersProps {
 /**
  * The filter chips, using the same Shade `Filters` pattern as the Members list.
  *
- * `allowMultiple` is off: each field maps to one URL param, which can only hold
- * one value, so a second chip on the same field would be unrepresentable — and
- * saved views compare those params verbatim across both implementations.
+ * `allowMultiple` is off: each field maps to one URL param, so a second chip on
+ * the same field would be unrepresentable. Type takes several values within
+ * its one chip instead.
  */
 export function PostsFilters({
   resource,
@@ -77,8 +77,8 @@ export function PostsFilters({
     >
       <Filters
         addButton={<Filters.Trigger collapseLabel={iconOnly} />}
-        // Each field maps to one URL param holding one value; a second
-        // chip per field would sit there without being in the URL.
+        // Each field maps to one URL param; a second chip per field
+        // would sit there without being in the URL.
         allowMultiple={false}
         // `order-last` keeps the trailing buttons after the chips;
         // `pr-40` reserves the lane the pinned actions occupy.

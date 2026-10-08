@@ -7,6 +7,7 @@ const { createModel, createModelClass } = require('./utils');
 describe('Email Service', function () {
   let memberCount, limited, verificicationRequired, service;
   let scheduleEmail;
+  let retryStatusLock;
   let settings, settingsCache;
   let membersRepository;
   let emailRenderer;
@@ -14,6 +15,8 @@ describe('Email Service', function () {
   let scheduleRecurringNewslettersJob;
   let domainWarmingService;
   let getMembersCount;
+  let sendingStatusService;
+  let Email;
 
   beforeEach(function () {
     memberCount = 123;
@@ -23,6 +26,7 @@ describe('Email Service', function () {
     };
     verificicationRequired = false;
     scheduleEmail = sinon.stub().resolves();
+    retryStatusLock = sinon.stub().resolves(null);
     scheduleRecurringNewslettersJob = sinon.stub().resolves();
     settings = {};
     settingsCache = {
@@ -78,8 +82,14 @@ describe('Email Service', function () {
       getWarmupLimit: sinon.stub(),
     };
     getMembersCount = sinon.stub().callsFake(() => Promise.resolve(memberCount));
+    Email = createModelClass();
+
+    sendingStatusService = {
+      retryEligibilityFor: sinon.stub().resolves('retryable'),
+    };
 
     service = new EmailService({
+      sendingStatusService,
       emailSegmenter: {
         getMembersCount,
       },
@@ -104,10 +114,11 @@ describe('Email Service', function () {
         },
       },
       models: {
-        Email: createModelClass(),
+        Email,
       },
       batchSendingService: {
         scheduleEmail,
+        updateStatusLock: retryStatusLock,
       },
       settingsCache,
       emailRenderer,
@@ -252,288 +263,171 @@ describe('Email Service', function () {
       await assert.doesNotReject(service.checkCanSendEmail(newsletter, 'all'));
     });
 
-    it('Revalidates limits without recounting when an email count is supplied', async function () {
-      limited.emails = true;
-      const newsletter = createModel({
-        status: 'active',
-      });
+    it('Leaves the warming domain count out when domain warming is disabled', async function () {
+      const newsletter = createModel({ status: 'active' });
 
-      await assert.rejects(
-        service.checkCanSendEmail(newsletter, 'all', { emailCount: 42 }),
-        /Would go over limit/,
-      );
+      const result = await service.checkCanSendEmail(newsletter, 'all');
 
-      sinon.assert.notCalled(getMembersCount);
+      assert.deepEqual(result, { emailCount: memberCount, csdEmailCount: undefined });
+      sinon.assert.notCalled(domainWarmingService.getWarmupLimit);
+    });
+
+    it('Counts the recipients to send from the warming domain when domain warming is enabled', async function () {
+      domainWarmingService.isEnabled.returns(true);
+      domainWarmingService.getWarmupLimit.resolves(500);
+      const newsletter = createModel({ status: 'active' });
+
+      const result = await service.checkCanSendEmail(newsletter, 'all');
+
+      assert.deepEqual(result, { emailCount: memberCount, csdEmailCount: 500 });
+      sinon.assert.calledOnceWithExactly(domainWarmingService.getWarmupLimit, memberCount);
     });
   });
 
   describe('createEmail', function () {
-    it('Throws if post does not have a newsletter', async function () {
-      const post = createModel({
-        newsletter: null,
-      });
-
-      await assert.rejects(
-        service.createEmail(post),
-        /The post does not have a newsletter relation/,
-      );
-    });
-
-    it('Throws if post does not have an active newsletter', async function () {
-      const post = createModel({
-        id: '123',
-        newsletter: createModel({
-          status: 'archived',
-        }),
-      });
-
-      await assert.rejects(service.createEmail(post), /Cannot send email to archived newsletters/);
-    });
-
-    it('Creates and schedules an email', async function () {
-      const post = createModel({
-        id: '123',
-        newsletter: createModel({
-          status: 'active',
-          feedback_enabled: true,
-        }),
-        mobiledoc: 'Mobiledoc',
-      });
-
-      const email = await service.createEmail(post);
-      sinon.assert.calledOnce(scheduleEmail);
-      assert.equal(email.get('feedback_enabled'), true);
-      assert.equal(email.get('newsletter_id'), post.get('newsletter').id);
-      assert.equal(email.get('post_id'), post.id);
-      assert.equal(email.get('status'), 'pending');
-      assert.equal(email.get('source'), post.get('mobiledoc'));
-      assert.equal(email.get('source_type'), 'mobiledoc');
-      sinon.assert.calledOnce(scheduleRecurringNewslettersJob);
-    });
-
-    it('Reuses the recipient count when preflight data matches the saved post', async function () {
-      const newsletter = createModel({
-        id: 'newsletter-123',
-        status: 'active',
-        feedback_enabled: true,
-      });
-      const post = createModel({
+    function createPost(properties = {}) {
+      return createModel({
         id: 'post-123',
-        newsletter,
+        newsletter_id: 'newsletter-123',
         email_recipient_filter: 'status:paid',
         mobiledoc: 'Mobiledoc',
+        ...properties,
+      });
+    }
+
+    function createPreflight() {
+      return {
+        newsletter: createModel({ id: 'newsletter-123', status: 'active', feedback_enabled: true }),
+        emailRecipientFilter: 'status:paid',
+        emailCount: 42,
+        csdEmailCount: 10,
+      };
+    }
+
+    it('records the original preflight count, including zero, to identify new sends', async function () {
+      for (const emailCount of [42, 0]) {
+        const email = await service.createEmail(createPost(), {
+          preflight: { ...createPreflight(), emailCount },
+        });
+        assert.equal(email.get('preflight_email_count'), emailCount);
+        assert.equal(email.get('email_count'), emailCount);
+      }
+    });
+
+    it('Creates a pending email from the pre-save checks without checking again or scheduling', async function () {
+      limited.emails = true;
+      const transacting = {};
+      const add = sinon.spy(Email, 'add');
+
+      const email = await service.createEmail(createPost(), {
+        preflight: createPreflight(),
+        transacting,
       });
 
-      const email = await service.createEmail(post, {
-        preflight: {
-          newsletter,
-          emailRecipientFilter: 'status:paid',
-          emailCount: 42,
-        },
-      });
-
+      sinon.assert.calledOnceWithMatch(add, sinon.match.object, { transacting });
       sinon.assert.notCalled(getMembersCount);
+      sinon.assert.notCalled(scheduleEmail);
+      assert.equal(email.get('post_id'), 'post-123');
+      assert.equal(email.get('newsletter_id'), 'newsletter-123');
+      assert.equal(email.get('recipient_filter'), 'status:paid');
       assert.equal(email.get('email_count'), 42);
-    });
-
-    it('Recounts recipients when preflight data does not match the saved post', async function () {
-      const newsletter = createModel({
-        id: 'newsletter-123',
-        status: 'active',
-        feedback_enabled: true,
-      });
-      const post = createModel({
-        id: 'post-123',
-        newsletter,
-        email_recipient_filter: 'status:paid',
-        mobiledoc: 'Mobiledoc',
-      });
-
-      const email = await service.createEmail(post, {
-        preflight: {
-          newsletter,
-          emailRecipientFilter: 'status:free',
-          emailCount: 42,
-        },
-      });
-
-      sinon.assert.calledOnceWithExactly(getMembersCount, newsletter, 'status:paid');
-      assert.equal(email.get('email_count'), memberCount);
-    });
-
-    it('Revalidates newsletter status without recounting when preflight data matches', async function () {
-      const newsletter = createModel({
-        id: 'newsletter-123',
-        status: 'archived',
-      });
-      const post = createModel({
-        id: 'post-123',
-        newsletter,
-        email_recipient_filter: 'all',
-      });
-
-      await assert.rejects(
-        service.createEmail(post, {
-          preflight: {
-            newsletter,
-            emailRecipientFilter: 'all',
-            emailCount: 42,
-          },
-        }),
-        /Cannot send email to archived newsletters/,
-      );
-
-      sinon.assert.notCalled(getMembersCount);
-    });
-
-    describe('Domain warming', function () {
-      it('Creates email without csd_email_count when domain warming is disabled', async function () {
-        domainWarmingService.isEnabled.returns(false);
-
-        const post = createModel({
-          id: '123',
-          newsletter: createModel({
-            status: 'active',
-            feedback_enabled: true,
-          }),
-          mobiledoc: 'Mobiledoc',
-        });
-
-        const email = await service.createEmail(post);
-        sinon.assert.calledOnce(domainWarmingService.isEnabled);
-        sinon.assert.notCalled(domainWarmingService.getWarmupLimit);
-        assert.equal(email.get('csd_email_count'), undefined);
-      });
-
-      it('Creates email with csd_email_count when domain warming is enabled', async function () {
-        domainWarmingService.isEnabled.returns(true);
-        domainWarmingService.getWarmupLimit.resolves(500);
-
-        const post = createModel({
-          id: '123',
-          newsletter: createModel({
-            status: 'active',
-            feedback_enabled: true,
-          }),
-          mobiledoc: 'Mobiledoc',
-        });
-
-        const email = await service.createEmail(post);
-        sinon.assert.calledOnce(domainWarmingService.isEnabled);
-        sinon.assert.calledOnce(domainWarmingService.getWarmupLimit);
-        sinon.assert.calledWith(domainWarmingService.getWarmupLimit, memberCount);
-        assert.equal(email.get('csd_email_count'), 500);
-      });
-
-      it('Creates email with correct email_count passed to getWarmupLimit', async function () {
-        memberCount = 2500;
-        domainWarmingService.isEnabled.returns(true);
-        domainWarmingService.getWarmupLimit.resolves(1000);
-
-        const post = createModel({
-          id: '123',
-          newsletter: createModel({
-            status: 'active',
-            feedback_enabled: true,
-          }),
-          mobiledoc: 'Mobiledoc',
-        });
-
-        const email = await service.createEmail(post);
-        sinon.assert.calledOnce(domainWarmingService.getWarmupLimit);
-        sinon.assert.calledWith(domainWarmingService.getWarmupLimit, 2500);
-        assert.equal(email.get('email_count'), 2500);
-        assert.equal(email.get('csd_email_count'), 1000);
-      });
-    });
-
-    it('Ignores analytics job scheduling errors', async function () {
-      const post = createModel({
-        id: '123',
-        newsletter: createModel({
-          status: 'active',
-          feedback_enabled: true,
-        }),
-        mobiledoc: 'Mobiledoc',
-      });
-
-      scheduleRecurringNewslettersJob.rejects(new Error('Test error'));
-      await service.createEmail(post);
-      sinon.assert.calledOnce(scheduleRecurringNewslettersJob);
-    });
-
-    it('Creates and schedules an email with lexical', async function () {
-      const post = createModel({
-        id: '123',
-        newsletter: createModel({
-          status: 'active',
-          feedback_enabled: true,
-        }),
-        lexical: 'Lexical',
-      });
-
-      const email = await service.createEmail(post);
-      sinon.assert.calledOnce(scheduleEmail);
+      assert.equal(email.get('csd_email_count'), 10);
       assert.equal(email.get('feedback_enabled'), true);
-      assert.equal(email.get('newsletter_id'), post.get('newsletter').id);
-      assert.equal(email.get('post_id'), post.id);
       assert.equal(email.get('status'), 'pending');
-      assert.equal(email.get('source'), post.get('lexical'));
+      assert.equal(email.get('source'), 'Mobiledoc');
+      assert.equal(email.get('source_type'), 'mobiledoc');
+    });
+
+    it('Creates an email with lexical', async function () {
+      const email = await service.createEmail(createPost({ mobiledoc: null, lexical: 'Lexical' }), {
+        preflight: createPreflight(),
+      });
+
+      assert.equal(email.get('source'), 'Lexical');
       assert.equal(email.get('source_type'), 'lexical');
     });
 
+    it('Rejects a post saved with a newsletter or audience other than the one checked', async function () {
+      const add = sinon.spy(Email, 'add');
+
+      for (const [post, preflight] of [
+        [createPost({ newsletter_id: 'newsletter-456' }), createPreflight()],
+        [createPost({ email_recipient_filter: 'status:free' }), createPreflight()],
+        [createPost(), null],
+      ]) {
+        await assert.rejects(service.createEmail(post, { preflight }), {
+          errorType: 'UpdateCollisionError',
+        });
+      }
+      sinon.assert.notCalled(add);
+    });
+  });
+
+  describe('scheduleEmail', function () {
+    it('Schedules the email and the analytics job', async function () {
+      const email = createModel({ status: 'pending' });
+
+      assert.equal(await service.scheduleEmail(email), email);
+      sinon.assert.calledOnceWithExactly(scheduleEmail, email);
+      sinon.assert.calledOnceWithExactly(scheduleRecurringNewslettersJob, true);
+    });
+
+    it('Ignores analytics job scheduling errors', async function () {
+      scheduleRecurringNewslettersJob.rejects(new Error('Test error'));
+      sinon.stub(logging, 'error');
+
+      await service.scheduleEmail(createModel({ status: 'pending' }));
+      sinon.assert.calledOnce(scheduleRecurringNewslettersJob);
+    });
+
     it('Stores the error in the email model if scheduling fails', async function () {
-      const post = createModel({
-        id: '123',
-        newsletter: createModel({
-          status: 'active',
-          feedback_enabled: true,
-        }),
-      });
-
       scheduleEmail.rejects(new Error('Test error'));
+      const email = createModel({ status: 'pending' });
 
-      const email = await service.createEmail(post);
-      sinon.assert.calledOnce(scheduleEmail);
+      await service.scheduleEmail(email);
 
       assert.equal(email.get('error'), 'Test error');
       assert.equal(email.get('status'), 'failed');
     });
 
     it('Stores a default error in the email model if scheduling fails', async function () {
-      const post = createModel({
-        id: '123',
-        newsletter: createModel({
-          status: 'active',
-          feedback_enabled: true,
-        }),
-      });
-
       scheduleEmail.rejects(new Error());
+      const email = createModel({ status: 'pending' });
 
-      const email = await service.createEmail(post);
-      sinon.assert.calledOnce(scheduleEmail);
+      await service.scheduleEmail(email);
 
       assert.equal(email.get('error'), 'Something went wrong while scheduling the email');
       assert.equal(email.get('status'), 'failed');
     });
-
-    it('Checks limits before scheduling', async function () {
-      const post = createModel({
-        id: '123',
-        newsletter: createModel({
-          status: 'active',
-          feedback_enabled: true,
-        }),
-      });
-      limited.emails = true;
-
-      await assert.rejects(service.createEmail(post));
-      sinon.assert.notCalled(scheduleEmail);
-    });
   });
 
   describe('Retry email', function () {
+    it('rejects an unknown delivery outcome without changing the email or scheduling', async function () {
+      const email = createModel({
+        status: 'failed',
+        error: 'Original error',
+        post: createModel({ status: 'published' }),
+      });
+      sendingStatusService.retryEligibilityFor.resolves('unknown-outcome');
+
+      await assert.rejects(
+        service.retryEmail(email),
+        (err) => err.statusCode === 400 && /delivery outcome is unknown/.test(err.message),
+      );
+      assert.equal(email.get('status'), 'failed');
+      assert.equal(email.get('error'), 'Original error');
+      sinon.assert.notCalled(scheduleEmail);
+    });
+
+    it('rejects a stale failed email when the current send is already active', async function () {
+      const email = createModel({ status: 'failed', post: createModel({ status: 'sent' }) });
+      sendingStatusService.retryEligibilityFor.resolves('not-failed');
+
+      await assert.rejects(service.retryEmail(email), (err) => err.statusCode === 400);
+      assert.equal(email.get('status'), 'failed');
+      sinon.assert.notCalled(scheduleEmail);
+    });
+
     it('Schedules email again', async function () {
       const email = createModel({
         status: 'failed',
@@ -543,8 +437,30 @@ describe('Email Service', function () {
         }),
       });
 
-      await service.retryEmail(email);
-      sinon.assert.calledOnce(scheduleEmail);
+      const lockedEmail = createModel({ id: email.id, status: 'pending' });
+      retryStatusLock.resolves(lockedEmail);
+
+      assert.equal(await service.retryEmail(email), lockedEmail);
+      sinon.assert.calledOnceWithExactly(
+        retryStatusLock,
+        sinon.match.any,
+        email.id,
+        'pending',
+        ['failed'],
+        { autoRefresh: true },
+      );
+      sinon.assert.calledOnceWithExactly(scheduleEmail, lockedEmail);
+    });
+
+    it('Rejects a stale failed model once another retry has claimed the email', async function () {
+      const email = createModel({
+        status: 'failed',
+        post: createModel({ status: 'published' }),
+      });
+      retryStatusLock.resolves(null);
+
+      await assert.rejects(service.retryEmail(email), (err) => err.statusCode === 400);
+      sinon.assert.notCalled(scheduleEmail);
     });
 
     it('Restores failed status and preserves the error if scheduling fails', async function () {
@@ -554,6 +470,7 @@ describe('Email Service', function () {
         error: 'Original send error',
         post: createModel({ status: 'published' }),
       });
+      retryStatusLock.resolves(email);
       scheduleEmail.rejects(schedulingError);
 
       await assert.rejects(() => service.retryEmail(email), schedulingError);
@@ -593,6 +510,7 @@ describe('Email Service', function () {
           status: 'published',
         }),
       });
+      sendingStatusService.retryEligibilityFor.resolves('not-failed');
 
       await assert.rejects(
         service.retryEmail(email),

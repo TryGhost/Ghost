@@ -8,6 +8,7 @@ import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {EmbedCard} from '../components/ui/cards/EmbedCard';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem} from '../components/ui/ToolbarMenu.jsx';
+import {getEmbedRendererUrl} from '../utils/embed-renderer';
 import {useCallback} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -20,6 +21,14 @@ export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedTyp
     const [loading, setLoading] = React.useState(false);
     const [urlError, setUrlError] = React.useState(false);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
+
+    // undefined keeps the in-editor preview; null means the configured renderer can't be used
+    const rendererUrl = React.useMemo(() => {
+        if (!cardConfig.embedPreviewUrl) {
+            return undefined;
+        }
+        return getEmbedRendererUrl(cardConfig.embedPreviewUrl, window.location.origin)?.href ?? null;
+    }, [cardConfig.embedPreviewUrl]);
 
     const handleUrlChange = (event) => {
         setUrlInputValue(event.target.value);
@@ -139,6 +148,7 @@ export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedTyp
                 isLoading={loading}
                 isSelected={isSelected}
                 metadata={metadata}
+                rendererUrl={rendererUrl}
                 url={url}
                 urlError={urlError}
                 urlInputValue={urlInputValue}

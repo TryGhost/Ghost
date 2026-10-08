@@ -110,7 +110,7 @@ module.exports = function (Bookshelf) {
         _.each(data, (value, property) => {
           if (
             value !== null &&
-            Object.prototype.hasOwnProperty.call(schema.tables[tableName], property) &&
+            Object.hasOwn(schema.tables[tableName], property) &&
             schema.tables[tableName][property].type === 'dateTime' &&
             typeof value === 'string'
           ) {
@@ -141,7 +141,7 @@ module.exports = function (Bookshelf) {
               _.each(relation, (relationValue, relationProperty) => {
                 if (
                   relationValue !== null &&
-                  Object.prototype.hasOwnProperty.call(
+                  Object.hasOwn(
                     schema.tables[this.prototype.relationshipBelongsTo[property]],
                     relationProperty,
                   ) &&
@@ -179,7 +179,7 @@ module.exports = function (Bookshelf) {
         unfilteredOptions = unfilteredOptions || {};
         filterConfig = filterConfig || {};
 
-        if (Object.prototype.hasOwnProperty.call(unfilteredOptions, 'include')) {
+        if (Object.hasOwn(unfilteredOptions, 'include')) {
           throw new errors.IncorrectUsageError({
             message: 'The model layer expects using `withRelated`.',
           });

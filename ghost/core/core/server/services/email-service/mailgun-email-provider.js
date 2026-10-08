@@ -2,6 +2,11 @@ const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('email-service:mailgun-provider-service');
 const { escapeExpression } = require('handlebars');
+const {
+  RECIPIENT_VERIFICATION_CODE,
+  recipientVerificationError,
+  countsDiffer,
+} = require('./recipient-accounting');
 
 /**
  * @typedef {object} Config
@@ -26,6 +31,8 @@ const { escapeExpression } = require('handlebars');
  * @prop {boolean} clickTrackingEnabled
  * @prop {boolean} openTrackingEnabled
  * @prop {Date} deliveryTime
+ * @prop {number} [expectedRecipientCount]
+ * @prop {string} [batchId]
  */
 
 /**
@@ -39,7 +46,7 @@ class MailgunEmailProvider {
 
   /**
    * @param {object} dependencies
-   * @param {import('../lib/mailgun-client')} dependencies.mailgunClient - mailgun client to send emails
+   * @param {import('../../lib/mailgun/mailgun-client')} dependencies.mailgunClient - mailgun client to send emails
    * @param {Config} dependencies.config
    */
   constructor({ mailgunClient, config }) {
@@ -147,6 +154,24 @@ class MailgunEmailProvider {
         acc[recipient.email] = this.#createRecipientData(recipient.replacements, htmlEscapedIds);
         return acc;
       }, {});
+      if (
+        options.expectedRecipientCount !== undefined &&
+        Object.keys(recipientData).length !== options.expectedRecipientCount
+      ) {
+        const actual = Object.keys(recipientData).length;
+        throw recipientVerificationError(
+          emailId,
+          'provider_payload_count',
+          {
+            batch_id: options.batchId,
+            expected: options.expectedRecipientCount,
+            actual,
+          },
+          {
+            countMismatch: countsDiffer(options.expectedRecipientCount, actual),
+          },
+        );
+      }
 
       // update content to use Mailgun variable syntax for all replacements
       ['html', 'plaintext'].forEach((key) => {
@@ -171,6 +196,9 @@ class MailgunEmailProvider {
         id: response.id === null ? null : response.id.trim().replace(/^<|>$/g, ''),
       };
     } catch (e) {
+      if (e.code === RECIPIENT_VERIFICATION_CODE) {
+        throw e;
+      }
       let ghostError;
       if (e.error && e.messageData) {
         const { error, messageData } = e;

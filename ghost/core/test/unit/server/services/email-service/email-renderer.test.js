@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const { assertExists } = require('../../../../utils/assertions');
 const cheerio = require('cheerio');
 const { createModel, createModelClass } = require('./utils');
-const linkReplacer = require('../../../../../core/server/services/lib/link-replacer');
+const linkReplacer = require('../../../../../core/server/lib/link-replacer');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const { HtmlValidate } = require('html-validate');
@@ -3009,7 +3009,7 @@ describe('Email renderer', function () {
       customSettings.locale = 'pt-PT';
       const post = createModel(
         Object.assign({}, basePost, {
-          published_at: new Date(2026, 2, 19),
+          published_at: new Date('2026-03-19T00:00:00.000Z'),
           authors: [createModel({ name: "Author/Name O'Brien & Co." })],
         }),
       );
@@ -4094,6 +4094,10 @@ describe('Email renderer', function () {
       assert.equal(
         emailRenderer.truncateHtml('This is a', 10, 5),
         'This<span class="desktop-only"> is a</span><span class="hide-desktop">…</span>',
+      );
+      assert.equal(
+        emailRenderer.truncateHtml('This is ab', 10, 5),
+        'This<span class="desktop-only"> is ab</span><span class="hide-desktop">…</span>',
       );
       assert.equal(emailRenderer.truncateHtml('This', 10, 5), 'This');
       assert.equal(emailRenderer.truncateHtml('This is a long text', 5, 5), 'This…');

@@ -91,6 +91,13 @@ export const BASE_GHOST_ENV = [
   // 2FA settings UI / sign-in flow render regardless of the dev default.
   'security__staffDeviceVerification=true',
 
+  // Serve the React post editor, as production will. config.labs outranks the
+  // stored Labs setting, so a spec's `labs` option cannot switch it off.
+  'labs__editorReact=true',
+
+  // Skip gscan rule checks on the active theme at boot, as production does.
+  'optimization__themes__skipBootChecks=true',
+
   // Disable IndexNow pings (tests run with real network access)
   'privacy__useIndexNow=false',
 
@@ -100,6 +107,15 @@ export const BASE_GHOST_ENV = [
   // Disable browser-side Sentry reporting during tests
   'client_sentry__disabled=true',
 ] as const;
+
+/**
+ * Owner account set up once in the base database before it is snapshotted.
+ * Each test database gets its own owner email (see MySQLManager.setupTestDatabase).
+ */
+export const GHOST_OWNER = {
+  name: 'Test User',
+  password: 'test@123@test',
+} as const;
 
 export const TEST_ENVIRONMENT = {
   projectNamespace: 'ghost-dev-e2e',

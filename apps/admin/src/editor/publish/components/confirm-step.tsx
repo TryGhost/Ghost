@@ -1,8 +1,10 @@
 import { Banner, Button } from '@tryghost/shade/components';
-import { Stack, Text } from '@tryghost/shade/primitives';
+import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { getRecipientType } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { PublishPhaseIcon } from '@/posts/api';
 import { LimitMessage } from './limit-message';
 import {
   publishBackToSettings,
@@ -33,6 +35,10 @@ export interface ConfirmStepProps {
   onConfirm: () => void;
   onBack: () => void;
 }
+
+// Eases the running state in as the button greys out. Use `fade-in-0`, not
+// `fade-in`: Ember's ghost.css has its own `.fade-in` that leaves content at opacity 0.
+const ENTER = 'animate-in fade-in-0 zoom-in-90 duration-200 ease-out motion-reduce:animate-none';
 
 function FailureMessage({ failure }: { failure: CompletionFailure }) {
   if (!failure.parts) {
@@ -76,15 +82,19 @@ export function ConfirmStep({
   return (
     <Stack data-testid={publishFlowConfirm} gap="xl">
       <Stack gap="none">
-        <Text as="h2" className="text-state-success" size="3xl" weight="bold">
+        <Text
+          as="h2"
+          className="text-5xl leading-tighter tracking-tight text-state-success"
+          weight="bold"
+        >
           Ready, set, publish.
         </Text>
-        <Text size="3xl" weight="bold">
+        <Text as="h2" className="text-5xl leading-tighter tracking-tight" weight="bold">
           Share it with the world.
         </Text>
       </Stack>
 
-      <Text>
+      <Text className="text-pretty" size="lg">
         {state.isScheduled ? (
           <>
             On <strong>{formatSiteDateTime(state.scheduledAt, timezone)}</strong> your
@@ -123,25 +133,36 @@ export function ConfirmStep({
         </Banner>
       ) : null}
 
-      <Stack align="start" gap="sm">
+      <Inline gap="sm" justify="between" wrap>
         <Button
+          data-testid={publishBackToSettings}
+          disabled={status === 'running'}
+          size="lg"
+          variant="outline"
+          onClick={onBack}
+        >
+          <LucideIcon.ArrowLeft />
+          Back to settings
+        </Button>
+        <Button
+          className="ml-auto h-auto min-h-11 max-w-full bg-state-success py-2 whitespace-normal text-white hover:bg-state-success/90"
           data-testid={publishConfirm}
           disabled={status === 'running'}
           size="lg"
           onClick={onConfirm}
         >
-          {status === 'running' ? buttonText.running : buttonText.idle}
+          {status === 'running' ? (
+            <>
+              {/* The analytics "preparing" spinner, in the button's own text colour.
+                  size-4 matches the size Button gives its icons at this text size. */}
+              <PublishPhaseIcon className={cn('size-4 text-current', ENTER)} phase="preparing" />
+              <span className={ENTER}>{buttonText.running}</span>
+            </>
+          ) : (
+            buttonText.idle
+          )}
         </Button>
-        <Button
-          data-testid={publishBackToSettings}
-          disabled={status === 'running'}
-          size="lg"
-          variant="link"
-          onClick={onBack}
-        >
-          Back to settings
-        </Button>
-      </Stack>
+      </Inline>
     </Stack>
   );
 }

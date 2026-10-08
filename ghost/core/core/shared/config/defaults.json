@@ -27,7 +27,8 @@
   "privacy": false,
   "security": {
     "allowWebhookInternalIPs": false,
-    "staffDeviceVerification": true
+    "staffDeviceVerification": true,
+    "embedPreviewUrl": "https://public.ghostembeds.com/"
   },
   "useMinFiles": true,
   "verifyRequestIntegrity": true,
@@ -323,7 +324,7 @@
   "sodoSearch": {
     "url": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/sodo-search.min.js",
     "styles": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/main.css",
-    "version": "1.8"
+    "version": "1.9"
   },
   "announcementBar": {
     "url": "https://cdn.jsdelivr.net/ghost/announcement-bar@~{version}/umd/announcement-bar.min.js",
@@ -367,10 +368,12 @@
   },
   "bulkEmail": {
     "batchSize": 1000,
+    "batchCreationConcurrency": 2,
     "captureLinkClickBadMemberUuid": false,
     "perRecipientMessageId": false
   },
   "disableJSBackups": false,
   "disableMigrationBackups": false,
+  "createInDevelopmentTables": false,
   "usingLoopbackReverseProxy": false
 }

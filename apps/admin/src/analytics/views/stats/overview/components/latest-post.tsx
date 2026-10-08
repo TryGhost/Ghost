@@ -1,3 +1,4 @@
+import { useShade } from '@tryghost/shade/app';
 import PostShareModal from '@/shared/analytics/post-share-modal';
 import React, { useEffect, useState } from 'react';
 import {
@@ -21,7 +22,8 @@ import {
 import { type Post, getPostMetricsToDisplay } from '@tryghost/admin-x-framework';
 import { getPostDestination } from '@/analytics/utils/url-helpers';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
-import { trackEvent, useNavigate } from '@tryghost/admin-x-framework';
+import { trackEvent, useLocation, useNavigate } from '@tryghost/admin-x-framework';
+import { editorReturnState } from '@/editor/api';
 import {
   useEmailTrackClicks,
   useEmailTrackOpens,
@@ -51,6 +53,8 @@ const getPostStatusText = (latestPostStats: LatestPostWithStats) => {
 
 const LatestPost: React.FC<LatestPostProps> = ({ latestPostStats, isLoading }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { isAdmin7 } = useShade();
   const [isShareOpen, setIsShareOpen] = useState(false);
   const { site, settings } = useAnalyticsData();
   const emailTrackClicksEnabled = useEmailTrackClicks();
@@ -91,6 +95,13 @@ const LatestPost: React.FC<LatestPostProps> = ({ latestPostStats, isLoading }) =
   // Editor destinations need a hash navigation while Ember serves them
   // (the `editorReact` flag decides which side does).
   const destinationIsEmberOwned = useIsEmberOwnedRoute(postDestination);
+  const openPostDestination = () =>
+    navigate(
+      postDestination,
+      destinationIsEmberOwned
+        ? { crossApp: true }
+        : { state: shouldGoToEditor ? editorReturnState(location) : undefined },
+    );
 
   return (
     <Card className="group/card" data-testid="latest-post">
@@ -150,7 +161,7 @@ const LatestPost: React.FC<LatestPostProps> = ({ latestPostStats, isLoading }) =
                   className="text-md leading-tighter font-semibold tracking-tight wrap-anywhere hover:cursor-pointer hover:opacity-75"
                   onClick={() => {
                     if (!isLoading && latestPostStats) {
-                      navigate(postDestination, { crossApp: destinationIsEmberOwned });
+                      openPostDestination();
                     }
                   }}
                 >
@@ -189,9 +200,9 @@ const LatestPost: React.FC<LatestPostProps> = ({ latestPostStats, isLoading }) =
                   )}
                   <Button
                     className={latestPostStats.email_only ? 'w-full' : ''}
-                    variant={shouldGoToEditor ? 'outline' : 'subtle'}
+                    variant={isAdmin7 || shouldGoToEditor ? 'outline' : 'subtle'}
                     onClick={() => {
-                      navigate(postDestination, { crossApp: destinationIsEmberOwned });
+                      openPostDestination();
                     }}
                   >
                     {shouldGoToEditor ? (

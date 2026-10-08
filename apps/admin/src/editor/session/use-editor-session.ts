@@ -1,6 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { useLocation } from '@tryghost/admin-x-framework';
 import { APIError } from '@tryghost/admin-x-framework/errors';
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
@@ -34,7 +33,13 @@ import {
 import type { RestoredRevision } from '@/editor/engine/change-tracker';
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
 import type { PostType } from '@/editor/card-config';
-import { reportEditorError } from '@/editor/report-error';
+import { createLocalRevisionWriter } from '@/editor/local-revisions';
+import {
+  reportEditorError,
+  reportEditorNotice,
+  reportLeaveConfirmation,
+  reportSaveFailure,
+} from '@/editor/report-error';
 import { contentToText } from './content-text';
 import {
   createEditorSession,
@@ -48,27 +53,18 @@ import type { PublishDispatcher } from '@/editor/publish/publish-options';
 import type { EditorRecord } from './projection';
 import type { EditorSettingsFields, EditorSettingsPatch } from './settings-fields';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { syncSearchIndexes } from '@/shared/search-index';
 
-/** What a reload found: the server's copy, a post that is no longer there, or a read that failed. */
-export type ReloadOutcome = 'reloaded' | 'gone' | 'failed';
+/**
+ * What a reload found: the server's copy, a post that is no longer there, or a
+ * read that failed. `abandoned` means the writer left the editor before the read
+ * came back, so there was nothing left to replace.
+ */
+export type ReloadOutcome = 'reloaded' | 'gone' | 'failed' | 'abandoned';
 
 interface EditorReadResponse {
   posts?: EditorRecord[];
   pages?: EditorRecord[];
-}
-
-interface EditorSessionLocationState {
-  editorSession?: string;
-}
-
-/**
- * Identifies the editing session behind the current URL. A create replaces the
- * URL and carries the key forward, so the same session survives the swap.
- */
-export function useEditorSessionKey(): string {
-  const location = useLocation();
-  const state = location.state as EditorSessionLocationState | null;
-  return state?.editorSession ?? location.key;
 }
 
 export interface EditorSessionBinding {
@@ -80,12 +76,13 @@ export interface EditorSessionBinding {
   onExcerptChange: (excerpt: string) => void;
   onLexicalChange: (lexical: unknown) => void;
   onSecondaryChange: (lexical: unknown) => void;
-  onSecondaryError: (error: unknown) => void;
+  onSecondaryError: () => void;
 }
 
 export interface EditorSessionHandle {
   bind: EditorSessionBinding;
   state: SaveEngineState;
+  pendingSave: EditorSessionView['pendingSave'];
   /** The server ID the post holds, once a create has acknowledged one. */
   persistedId: string | null;
   /** The server ID acquired by this session's first create, if it began new. */
@@ -101,20 +98,24 @@ export interface EditorSessionHandle {
   contentText: () => string;
   /** Replaces the document with the server's copy, or says why it could not. */
   reload: () => Promise<ReloadOutcome>;
+  /** A later version was saved elsewhere, and a reload onto it would lose nothing. */
+  newerVersionAvailable: boolean;
   /** Puts a revision's content back into the editor and saves it; true once persisted. */
   restoreRevision: (restored: RestoredRevision) => Promise<boolean>;
   patchFeatureImage: EditorSession['patchFeatureImage'];
+  /** The feature image's alt text and caption the session holds, another writer's once adopted. */
+  featureImageAlt: string | null;
+  featureImageCaption: string | null;
   /** The live settings fields, re-read on every sidebar edit. */
   settings: EditorSettingsFields;
-  /** Stages a settings field, then applies the sidebar's save policy. */
+  /** Stages a settings field, then asks the engine to save it. */
   editSettings: (patch: EditorSettingsPatch) => void;
   /** Stages a settings field the writer is still typing into, committing nothing. */
   stageSettings: (patch: EditorSettingsPatch) => void;
-  /**
-   * Applies the sidebar's save policy to what is staged, on the blur that ends
-   * an edit. The excerpt is a settings field wherever it is rendered.
-   */
+  /** Requests a settings save on the gesture that ends a settings-panel edit. */
   commitSettings: () => void;
+  /** Requests a field save on the gesture that ends a canvas edit: the excerpt under the title or the feature image. */
+  commitField: () => void;
   /** The title the engine holds, which is the default title while the input is blank. */
   title: string;
   /** The slug the machine holds, which the URL section's input reads. */
@@ -129,8 +130,8 @@ export interface EditorSessionHandle {
   getSaveSnapshot: EditorSession['getSaveSnapshot'];
   /** The body the writer is looking at, which a save has not necessarily seen yet. */
   getLiveLexical: EditorSession['getLiveLexical'];
-  dispatchField: () => void;
-  dispatchExplicit: () => void;
+  /** Retries the save the error banner reports. */
+  retrySave: () => void;
   /** An explicit save whose completion the caller acts on, such as before a publish or preview. */
   saveExplicit: () => Promise<SaveCompletion>;
   /** Runs the publish flow's commands through the engine, the only writer. */
@@ -159,6 +160,35 @@ function pageStatus(status: PostStatus | undefined): PageStatus | undefined {
 /** Anything but a finite positive millisecond count leaves the engine's own debounce standing. */
 function bootedDebounceMs(value: unknown): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined;
+}
+
+/** The screen's read of the post: its URL, and the cache entry the loader and the session share. */
+export function editorRead(postType: PostType, id: string) {
+  const path = postType === 'page' ? `/pages/${id}/` : `/posts/${id}/`;
+  const url = apiUrl(path, buildPostEditorReadParams());
+  return { url, queryKey: [postType === 'page' ? pagesDataType : postsDataType, url] as const };
+}
+
+/** The post a read of the screen's query holds. */
+function recordIn(
+  postType: PostType,
+  data: EditorReadResponse | undefined,
+): EditorRecord | undefined {
+  return postType === 'page' ? data?.pages?.[0] : data?.posts?.[0];
+}
+
+/** Whether `cached` is a later version of the same post as `record`. */
+function isLaterVersion(
+  cached: EditorRecord | undefined,
+  record: EditorRecord,
+): cached is EditorRecord {
+  return (
+    !!cached &&
+    cached.id === record.id &&
+    isCollisionToken(cached.updated_at) &&
+    isCollisionToken(record.updated_at) &&
+    Date.parse(cached.updated_at) > Date.parse(record.updated_at)
+  );
 }
 
 export function useEditorSession({
@@ -196,6 +226,20 @@ export function useEditorSession({
     autosaveDebounceMs.current = bootedDebounceMs(configData?.config.editorAutosaveDebounceMs);
   });
 
+  // Post and page edits leave the search-index lists alone, so the record each
+  // write is answered with is written into them on its way to the session.
+  const listed = <Saved extends EditorRecord | undefined>(
+    key: 'posts' | 'pages',
+    saved: Saved,
+  ): Saved => {
+    if (saved) {
+      syncSearchIndexes(queryClient, key, saved);
+    }
+    return saved;
+  };
+
+  // Construction must start no timer, request or outside subscription:
+  // StrictMode may call this twice and discard the first session undisposed.
   const [session] = useState<EditorSession>(() =>
     createEditorSession({
       record,
@@ -204,7 +248,31 @@ export function useEditorSession({
       saveFailureMessage: `Couldn’t save this ${postType}.`,
       autosaveDebounceMs: () => autosaveDebounceMs.current,
       onIdAcquired: setPersistedId,
+      // The loader opens the post again from this entry when the read that reopens
+      // it fails; a later version a read put there stays.
+      onSaveAcknowledged: (saved) => {
+        queryClient.setQueryData<EditorReadResponse>(
+          editorRead(postType, saved.id).queryKey,
+          (cached) => {
+            if (isLaterVersion(recordIn(postType, cached), saved)) {
+              return undefined;
+            }
+            return postType === 'page' ? { pages: [saved] } : { posts: [saved] };
+          },
+        );
+      },
       onError: reportEditorError,
+      onSaveFailed: (failure) => reportSaveFailure(failure, postType),
+      onLeaveConfirmed: (leave) => reportLeaveConfirmation(leave, postType),
+      localRevisions: createLocalRevisionWriter({
+        type: postType,
+        storage: () => window.localStorage,
+        onError: reportEditorError,
+        onNotice: reportEditorNotice,
+      }),
+      // Each write reaches the search-index lists as soon as it is answered, here
+      // rather than in the session's acknowledgement, which a session the writer
+      // has left by then never reaches.
       transport: {
         create: async (payload: EditorCreatePayload) => {
           const current = transport.current;
@@ -213,13 +281,13 @@ export function useEditorSession({
               page: { ...payload, status: pageStatus(payload.status) },
               sessionExpiryRedirect: false,
             });
-            return pages[0];
+            return listed('pages', pages[0]);
           }
           const { posts } = await current.addPost({
             post: payload,
             sessionExpiryRedirect: false,
           });
-          return posts[0];
+          return listed('posts', posts[0]);
         },
         update: async (payload: EditorEditPayload, options: PostWriteOptions) => {
           const current = transport.current;
@@ -229,14 +297,14 @@ export function useEditorSession({
               options,
               sessionExpiryRedirect: false,
             });
-            return pages[0];
+            return listed('pages', pages[0]);
           }
           const { posts } = await current.editPost({
             post: payload,
             options,
             sessionExpiryRedirect: false,
           });
-          return posts[0];
+          return listed('posts', posts[0]);
         },
         generateSlug: (text, postId) =>
           transport.current.generateSlug({
@@ -259,10 +327,36 @@ export function useEditorSession({
     };
   }, [session]);
 
-  const view = useSyncExternalStore(session.subscribe, session.getView);
-  const { state, title: engineTitle, slug, settings, publishTime } = view;
+  // A closing or backgrounded tab never unmounts the editor, and a discarded one never fires `pagehide`.
+  useEffect(() => {
+    const flush = () => session.flushLocalRevision();
+    const flushWhenHidden = () => {
+      if (document.visibilityState === 'hidden') {
+        flush();
+      }
+    };
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', flushWhenHidden);
+    return () => {
+      window.removeEventListener('pagehide', flush);
+      document.removeEventListener('visibilitychange', flushWhenHidden);
+    };
+  }, [session]);
 
-  // The view keeps its identity until one of the six values it publishes
+  const view = useSyncExternalStore(session.subscribe, session.getView);
+  const {
+    state,
+    pendingSave,
+    title: engineTitle,
+    slug,
+    settings,
+    publishTime,
+    featureImageAlt,
+    featureImageCaption,
+    newerVersionAvailable,
+  } = view;
+
+  // The view keeps its identity until one of the values it publishes
   // changes, so it stands in for all of them as a dependency.
   const isDirtyNow = useCallback(() => view.isDirty, [view]);
 
@@ -277,79 +371,91 @@ export function useEditorSession({
       if (before === after) {
         return;
       }
-      session.commitField();
+      session.commitSettings();
     },
     [session],
   );
 
-  const commitSettings = useCallback(() => session.commitField(), [session]);
+  const commitSettings = useCallback(() => session.commitSettings(), [session]);
+  const commitField = useCallback(() => session.commitField(), [session]);
 
   const editSettings = useCallback(
     (patch: EditorSettingsPatch) => {
       stageSettings(patch);
-      session.commitField();
+      session.commitSettings();
     },
     [session, stageSettings],
   );
 
   // The saved record: the same query key the screen loaded with, so an existing
-  // post shares one cache entry and a created one starts observing its own.
+  // post shares one cache entry and a created one starts observing its own. The
+  // loader has just read it, so mounting here starts no read of its own: after a
+  // failed opening read it would only repeat the request that failed.
   const postQuery = useEditorPost(persistedId ?? '', {
     enabled: postType === 'post' && !!persistedId,
     defaultErrorHandler: false,
+    refetchOnMount: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const pageQuery = useEditorPage(persistedId ?? '', {
     enabled: postType === 'page' && !!persistedId,
     defaultErrorHandler: false,
+    refetchOnMount: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const saved = postType === 'page' ? pageQuery.data?.pages[0] : postQuery.data?.posts[0];
 
+  // Only the version the session holds may replace what the screen describes. A
+  // refused read is offered again as the engine moves on: a landing save may claim it.
+  const acceptedRead = useRef<EditorRecord | undefined>(undefined);
   useEffect(() => {
-    if (!saved) {
+    if (!saved || saved === acceptedRead.current) {
       return;
     }
-    // The screen's query and a reload both answer with the post; only a valid,
-    // non-older collision token may replace what the screen describes.
     if (session.recordRefetched(saved)) {
+      acceptedRead.current = saved;
       setLoadedRecord(saved);
     }
-  }, [saved, session]);
+  }, [saved, session, state]);
 
-  // Its own request: a failed refetch of the screen's query replaces the editor.
+  // Its own request: a query refetch would land before the session could refuse the copy.
   const reload = useCallback(async (): Promise<ReloadOutcome> => {
     if (!persistedId) {
       return 'failed';
     }
 
-    const path = postType === 'page' ? `/pages/${persistedId}/` : `/posts/${persistedId}/`;
-    const url = apiUrl(path, buildPostEditorReadParams());
-    const queryKey = [postType === 'page' ? pagesDataType : postsDataType, url] as const;
+    // The writer may leave while the read is out. Whatever it finds no longer
+    // concerns them, and the query belongs to whatever editor opens the post next:
+    // cancelling its opening read would revert it to the copy cached before that read.
+    const left = () => session.getState().kind === 'disposed';
+    const { url, queryKey } = editorRead(postType, persistedId);
     let data: EditorReadResponse;
     try {
       data = await fetchApi<EditorReadResponse>(url, EDITOR_REQUEST_OPTIONS);
     } catch (error) {
+      if (left()) {
+        return 'abandoned';
+      }
       return error instanceof APIError && error.response?.status === 404 ? 'gone' : 'failed';
     }
+    if (left()) {
+      return 'abandoned';
+    }
 
-    let fresh = postType === 'page' ? data.pages?.[0] : data.posts?.[0];
+    let fresh = recordIn(postType, data);
     if (!fresh) {
       return 'gone';
     }
 
+    // Before adopting: an older refetch must not land after the seed below, and an
+    // edit made while this waits must reach the session's own refusal.
+    await queryClient.cancelQueries({ queryKey, exact: true });
+
     // A normal detail refetch may have completed while this isolated reload was
     // in flight. Never replace a version we already know is newer.
     const cachedData = queryClient.getQueryData<EditorReadResponse>(queryKey);
-    const cached = postType === 'page' ? cachedData?.pages?.[0] : cachedData?.posts?.[0];
-    if (
-      cachedData &&
-      cached &&
-      cached.id === fresh.id &&
-      isCollisionToken(cached.updated_at) &&
-      isCollisionToken(fresh.updated_at) &&
-      Date.parse(cached.updated_at) > Date.parse(fresh.updated_at)
-    ) {
+    const cached = recordIn(postType, cachedData);
+    if (cachedData && isLaterVersion(cached, fresh)) {
       data = cachedData;
       fresh = cached;
     }
@@ -359,8 +465,6 @@ export function useEditorSession({
     }
     // The loader owns the same query. Seed it with the accepted document so a
     // quick close and reopen cannot resurrect the stale version it first read.
-    // Cancel first so an older refetch cannot land after this write.
-    await queryClient.cancelQueries({ queryKey, exact: true });
     queryClient.setQueryData(queryKey, data);
     setTitle(fresh.title === DEFAULT_TITLE ? '' : fresh.title);
     setInitialLexical(fresh.lexical ?? null);
@@ -405,16 +509,11 @@ export function useEditorSession({
     [session],
   );
 
-  const onExcerptChange = useCallback(
-    (next: string) => {
-      stageSettings({ custom_excerpt: next || null });
-    },
-    [stageSettings],
-  );
+  const onExcerptChange = useCallback((next: string) => session.patchExcerpt(next), [session]);
 
   const onTitleBlur = useCallback(() => {
     session.commitTitle(title);
-    session.dispatchField();
+    session.commitField();
   }, [session, title]);
 
   const onLexicalChange = useCallback(
@@ -430,10 +529,7 @@ export function useEditorSession({
     [session],
   );
 
-  const onSecondaryError = useCallback(
-    (error: unknown) => session.baselineFailed(error),
-    [session],
-  );
+  const onSecondaryError = useCallback(() => session.baselineFailed(), [session]);
 
   const dispatchPublish = useMemo(
     () =>
@@ -445,7 +541,7 @@ export function useEditorSession({
     [session],
   );
 
-  const dispatchExplicit = useCallback(() => void session.dispatchExplicit(), [session]);
+  const retrySave = useCallback(() => void session.retrySave(), [session]);
 
   const excerpt = settings.custom_excerpt ?? '';
   const bind = useMemo<EditorSessionBinding>(
@@ -479,6 +575,7 @@ export function useEditorSession({
     () => ({
       bind,
       state,
+      pendingSave,
       persistedId,
       createdId: isNew ? persistedId : null,
       isDirty: isDirtyNow,
@@ -487,12 +584,16 @@ export function useEditorSession({
       hasUnsavedContent: session.hasUnsavedContent,
       contentText,
       reload,
+      newerVersionAvailable,
       restoreRevision,
       patchFeatureImage: session.patchFeatureImage,
+      featureImageAlt,
+      featureImageCaption,
       settings,
       editSettings,
       stageSettings,
       commitSettings,
+      commitField,
       title: engineTitle,
       slug,
       editSlug: session.editSlug,
@@ -500,8 +601,7 @@ export function useEditorSession({
       editPublishedAt,
       getSaveSnapshot: session.getSaveSnapshot,
       getLiveLexical: session.getLiveLexical,
-      dispatchField: session.dispatchField,
-      dispatchExplicit,
+      retrySave,
       saveExplicit: session.dispatchExplicit,
       dispatchPublish,
       reauthSucceeded: session.reauthSucceeded,
@@ -511,26 +611,31 @@ export function useEditorSession({
     }),
     [
       bind,
+      commitField,
       commitSettings,
       contentKey,
       contentText,
-      dispatchExplicit,
       dispatchPublish,
       editPublishedAt,
       editSettings,
       engineTitle,
+      featureImageAlt,
+      featureImageCaption,
       isDirtyNow,
       isNew,
       loadedRecord,
+      newerVersionAvailable,
       persistedId,
       publishTime,
       reload,
       restoreRevision,
+      retrySave,
       session,
       settings,
       slug,
       stageSettings,
       state,
+      pendingSave,
     ],
   );
 }

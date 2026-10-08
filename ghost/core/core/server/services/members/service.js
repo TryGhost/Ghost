@@ -12,7 +12,7 @@ const urlUtils = require('../../../shared/url-utils').default;
 const settingsCache = require('../../../shared/settings-cache');
 const config = require('../../../shared/config');
 const models = require('../../models');
-const { GhostMailer } = require('../mail');
+const { GhostMailer } = require('../../lib/mail');
 const jobsService = require('../jobs-service');
 const tiersService = require('../tiers');
 const giftService = require('../gifts');
@@ -97,6 +97,31 @@ const buildImporterDeps = ({ stripeAPIService }) => {
   };
 };
 
+const countRecentEmailRecipients = async (since) => {
+  const result = await db
+    .knex('emails')
+    .sum('email_count', { as: 'count' })
+    .where('created_at', '>', since)
+    .first();
+
+  return Number(result?.count) || 0;
+};
+
+// Matched on address, not member id, so changing a member's email counts as removing them.
+// The limit lets a clear case stop early rather than scanning every recipient
+const countRemovedEmailRecipients = async (since, limit) => {
+  const rows = await db
+    .knex('email_recipients as er')
+    .distinct('er.member_email')
+    .join('emails as e', 'e.id', 'er.email_id')
+    .leftJoin('members as m', 'm.email', 'er.member_email')
+    .where('e.created_at', '>', since)
+    .whereNull('m.id')
+    .limit(limit);
+
+  return rows.length;
+};
+
 const initVerificationTrigger = () => {
   return new VerificationTrigger({
     getApiTriggerThreshold: () =>
@@ -105,6 +130,8 @@ const initVerificationTrigger = () => {
       _.get(config.get('hostSettings'), 'emailVerification.adminThreshold'),
     getImportTriggerThreshold: () =>
       _.get(config.get('hostSettings'), 'emailVerification.importThreshold'),
+    getRemovedRecipientsThreshold: () =>
+      _.get(config.get('hostSettings'), 'emailVerification.removedRecipientsThreshold'),
     isVerified: () => config.get('hostSettings:emailVerification:verified') === true,
     isVerificationRequired: () => settingsCache.get('email_verification_required') === true,
     setVerificationRequired: (value) => settingsCache.set('email_verification_required', { value }),
@@ -114,68 +141,10 @@ const initVerificationTrigger = () => {
     membersStats,
     Settings: models.Settings,
     eventRepository: membersApi.events,
+    countRecentEmailRecipients,
+    countRemovedEmailRecipients,
   });
 };
-
-const membersMigrationJobName = 'members-migrations';
-
-/**
- * Runs the historical Stripe backfills once per site, retried only after a
- * failed run.
- *
- * The `jobs` row named `members-migrations` is the only guard: any status other
- * than `failed` means the run was already attempted and is skipped forever. The
- * row is written after the run, so a boot that dies mid-way retries next time.
- * The row is written even when Stripe is not configured, matching the job-based
- * version: a site that connects Stripe later never runs these 2021-era backfills.
- * Two processes booting a site with no row will both run the backfills, where the
- * job-based version claimed the row first. Accepted: every site that has booted
- * since Ghost 5.6 has the row, and the backfills do nothing without Stripe.
- *
- * @TODO: Delete the backfills, this runner and the `jobs` rows in the next major
- *
- * @param {import('../stripe')} stripeService
- */
-async function runStripeMigrations(stripeService) {
-  const existingJob = await models.Job.findOne({ name: membersMigrationJobName });
-
-  if (existingJob && existingJob.get('status') !== 'failed') {
-    logging.info(`Stripe ${membersMigrationJobName} skipped because it has already run`);
-    return;
-  }
-
-  const startedAt = Date.now();
-  logging.info(`Stripe ${membersMigrationJobName} started`);
-
-  let status = 'finished';
-  try {
-    await stripeService.migrations.execute();
-    logging.info(`Stripe ${membersMigrationJobName} completed in ${Date.now() - startedAt}ms`);
-  } catch (err) {
-    status = 'failed';
-    logging.error(
-      err,
-      `Stripe ${membersMigrationJobName} failed after ${Date.now() - startedAt}ms`,
-    );
-  }
-
-  const attrs = { status, started_at: new Date(startedAt), finished_at: new Date() };
-  if (existingJob) {
-    await models.Job.edit(attrs, { id: existingJob.id });
-    return;
-  }
-
-  try {
-    await models.Job.add({ name: membersMigrationJobName, ...attrs });
-  } catch (err) {
-    // Two processes booting a site with no row yet both get here, and the unique
-    // index on jobs.name rejects the second insert. The row exists, so move on.
-    if (!(await models.Job.findOne({ name: membersMigrationJobName }))) {
-      throw err;
-    }
-    logging.warn(`Stripe ${membersMigrationJobName} row was already written by another process`);
-  }
-}
 
 module.exports = {
   async init() {
@@ -245,8 +214,6 @@ module.exports = {
       definitions: metafields.definitions,
       values: metafields.values,
     });
-
-    await runStripeMigrations(stripeService);
   },
   contentGating: require('./content-gating'),
 

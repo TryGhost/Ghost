@@ -3,7 +3,7 @@ const sinon = require('sinon');
 
 const RouterManager = require('../../../../../core/frontend/services/routing/router-manager');
 const registry = require('../../../../../core/frontend/services/routing/registry');
-const routingEvents = require('../../../../../core/frontend/services/routing/events');
+const { routingEvents } = require('../../../../../core/frontend/services/routing/events');
 
 // The routers RouterManager mounts unconditionally (previews, unsubscribe,
 // static pages, apps); only the settings-driven ones are asserted on here.

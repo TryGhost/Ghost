@@ -23,6 +23,27 @@ describe('Unit: Service: unsplash', function () {
 
     describe('search', function () {
         it('sends search request');
+
+        it('encodes the search term', async function () {
+            let query;
+            server.get('https://api.unsplash.com/photos', function () {
+                return [200, {'Content-Type': 'application/json'}, JSON.stringify([])];
+            });
+            server.get('https://api.unsplash.com/search/photos', function (request) {
+                query = request.queryParams.query;
+                return [200, {'Content-Type': 'application/json'}, JSON.stringify({results: []})];
+            });
+
+            const service = this.owner.lookup('service:unsplash');
+            await settled();
+
+            run(() => {
+                service.updateSearch('black & white #film');
+            });
+            await settled();
+
+            expect(query).to.equal('black & white #film');
+        });
         it('debounces query updates');
         it('can load next page of search results');
         it('clears photos when starting new search');

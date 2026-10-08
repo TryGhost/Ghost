@@ -1,7 +1,10 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
-const limits = require('../../../../core/server/services/limits');
+const {
+  limitService: limits,
+  init: initLimits,
+} = require('../../../../core/server/services/limits');
 const configUtils = require('../../../utils/config-utils');
 const logging = require('@tryghost/logging');
 
@@ -29,26 +32,26 @@ describe('Limit Service Init', function () {
 
   it('initiates and loads limits - minimal setup', async function () {
     limitServiceStub.returns(Promise.resolve());
-    await limits.init();
+    await initLimits();
 
     sinon.assert.notCalled(loggerStub.warn);
   });
   it('handles limit-service incorrect usage errors gracefully with a warning', async function () {
-    limitServiceStub.throws(new errors.IncorrectUsageError('Incorrect limits'));
+    const thrownError = new errors.IncorrectUsageError('Incorrect limits');
+    limitServiceStub.throws(thrownError);
 
-    await limits.init();
+    await initLimits();
 
-    sinon.assert.called(loggerStub.warn);
+    sinon.assert.calledOnceWithExactly(loggerStub.warn, thrownError);
   });
-  it('handles limit-service other errors with exit', async function () {
+  it('propagates other limit-service errors without warning', function () {
     const thrownError = new errors.InternalServerError('Something went wrong');
     limitServiceStub.throws(thrownError);
 
-    try {
-      await limits.init();
-    } catch (error) {
-      sinon.assert.notCalled(loggerStub.warn);
-      assert.deepEqual(error, thrownError);
-    }
+    assert.throws(
+      () => initLimits(),
+      (error) => error === thrownError,
+    );
+    sinon.assert.notCalled(loggerStub.warn);
   });
 });

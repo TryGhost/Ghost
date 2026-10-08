@@ -60,7 +60,7 @@ class NewsletterEmailAnalyticsBatchProcessor {
       }
 
       // Flush all batched updates to the database
-      await this.#emailEventProcessor.flushBatchedUpdates();
+      result.merge(await this.#emailEventProcessor.flushBatchedUpdates());
     } else {
       // Sequential mode: process events one by one (original behavior)
       for (const event of events) {
@@ -130,6 +130,7 @@ class NewsletterEmailAnalyticsBatchProcessor {
       if (recipient) {
         return new EventProcessingResult({
           delivered: 1,
+          storedDelivered: recipient.storedCount,
           emailIds: [recipient.emailId],
           memberIds: [recipient.memberId],
         });
@@ -148,6 +149,7 @@ class NewsletterEmailAnalyticsBatchProcessor {
       if (recipient) {
         return new EventProcessingResult({
           opened: 1,
+          storedOpened: recipient.storedCount,
           emailIds: [recipient.emailId],
           memberIds: [recipient.memberId],
         });
@@ -167,6 +169,7 @@ class NewsletterEmailAnalyticsBatchProcessor {
         if (recipient) {
           return new EventProcessingResult({
             permanentFailed: 1,
+            storedPermanentFailed: recipient.storedCount,
             emailIds: [recipient.emailId],
             memberIds: [recipient.memberId],
           });

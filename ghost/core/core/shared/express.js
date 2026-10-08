@@ -53,7 +53,7 @@ module.exports.Router = (name, options) => {
   return router;
 };
 
-module.exports.static = express.static;
+module.exports.serveStatic = express.static;
 
 // Export the OG module for testing based on the internals
 module.exports._express = express;

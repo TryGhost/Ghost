@@ -26,7 +26,7 @@ Factory consumers use `error` or `off`, not `warn`. Parameters prefixed with
 `legacy`, including `legacyTailwindV3ConfigPath` and `legacyJsTsSplit`, mark
 temporary migration exceptions rather than defaults for new work.
 
-Ghost Core, Ember Admin, and Admin Toolbar keep standalone configurations
+Ghost Core and Ember Admin keep standalone configurations
 because their rule sets do not fit a shared factory. Read those files directly.
 They can still import shared atoms such as `correctnessRules`, `nodeLibRules`,
 `localFilenamesPlugin`, and `strictLinterOptions` from `@internal/cfg-eslint`.

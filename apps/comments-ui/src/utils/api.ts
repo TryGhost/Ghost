@@ -1,4 +1,4 @@
-import { AddComment, Comment, LabsContextType } from '../app-context';
+import type { AddComment, Comment, LabsContextType } from '../app-context';
 
 function setupGhostApi({
   siteUrl = window.location.origin,

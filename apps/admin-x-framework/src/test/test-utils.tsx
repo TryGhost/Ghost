@@ -31,7 +31,6 @@ export const defaultFrameworkProps: TopLevelFrameworkProps = {
   onDelete: () => {},
   onInvalidate: () => {},
   onUpdate: () => {},
-  sentryDSN: null,
   unsplashConfig: {
     Authorization: '',
     'Accept-Version': '',

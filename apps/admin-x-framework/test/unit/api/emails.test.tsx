@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTestQueryClient, renderHookWithProviders } from '../../../src/test/test-utils';
 import { SessionExpiredError } from '../../../src/utils/errors';
 import {
-  useBrowseEmailBatches,
+  EmailStatusesResponseSchema,
   useEmailSendingStatus,
   useRetryEmail,
 } from '../../../src/api/emails';
@@ -18,54 +18,26 @@ const unauthorized = {
 };
 
 describe('emails api', () => {
-  it('reads filtered email batches via the batches endpoint', async () => {
-    await withMockFetch(
-      {
-        json: { batches: [{ id: 'batch-1', status: 'submitting' }] },
-        headers: { 'content-type': 'application/json' },
-      },
-      async (mock) => {
-        const { result } = renderHookWithProviders(() =>
-          useBrowseEmailBatches('email-1', {
-            searchParams: { filter: 'status:submitting', fields: 'id,status', limit: '1' },
-          }),
-        );
-
-        await waitFor(() => expect(result.current.isSuccess).toBe(true));
-
-        const batchRequest = (mock.calls as Array<Parameters<typeof globalThis.fetch>>).find(
-          ([url]) => String(url).includes('/emails/email-1/batches/'),
-        );
-        expect(batchRequest).toBeDefined();
-        const [url, options] = batchRequest!;
-        const requestUrl = new URL(url as string);
-        expect(requestUrl.pathname).toBe('/ghost/api/admin/emails/email-1/batches/');
-        expect(requestUrl.searchParams.get('filter')).toBe('status:submitting');
-        expect(requestUrl.searchParams.get('fields')).toBe('id,status');
-        expect(requestUrl.searchParams.get('limit')).toBe('1');
-        expect(options?.method).toBe('GET');
-        expect(result.current.data?.batches).toEqual([{ id: 'batch-1', status: 'submitting' }]);
-      },
-    );
-  });
-
-  it('rejects malformed email batch responses', async () => {
-    await withMockFetch(
-      {
-        json: { batches: [{ id: 'batch-1', status: 'unknown' }] },
-        headers: { 'content-type': 'application/json' },
-      },
-      async () => {
-        const { result } = renderHookWithProviders(() =>
-          useBrowseEmailBatches('email-1', { defaultErrorHandler: false }),
-        );
-
-        await waitFor(() => expect(result.current.isError).toBe(true));
-
-        expect(result.current.data).toBeUndefined();
-      },
-    );
-  });
+  it.each([true, false, undefined])(
+    'preserves retry eligibility %s and accepts older Core responses',
+    (retryable) => {
+      const response = EmailStatusesResponseSchema.parse({
+        email_statuses: [
+          {
+            id: 'email-1',
+            sending: {
+              status: 'failed',
+              failed_during: 'submitting',
+              progress: { completed: 0, total: 10, estimated_seconds_remaining: null },
+              ...(retryable === undefined ? {} : { retryable }),
+            },
+          },
+        ],
+      });
+      expect(response.email_statuses[0].sending).toMatchObject({ status: 'failed' });
+      expect(Reflect.get(response.email_statuses[0].sending, 'retryable')).toBe(retryable);
+    },
+  );
 
   it('reads an email sending status via the status endpoint', async () => {
     await withMockFetch(

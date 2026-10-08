@@ -1,9 +1,8 @@
 import Nconf from 'nconf';
 import path from 'node:path';
-import { bindAll as bindUrlHelpers, type BoundHelpers } from '@tryghost/config-url-helpers';
 import * as localUtils from './utils';
 import { loadSecretsFromEnv, isSecretFileRef } from './secrets';
-import { bindAll as bindHelpers, type ConfigHelpers } from './helpers';
+import { createConfig, type GhostConfig } from './validated';
 
 const _debug = require('@tryghost/debug')._base;
 const debug = _debug('ghost:config');
@@ -13,7 +12,7 @@ interface LoadNconfOptions {
   customConfigPath?: string;
 }
 
-export type ConfigInstance = Nconf.Provider & BoundHelpers & ConfigHelpers;
+export type ConfigInstance = GhostConfig;
 
 function loadNconf(options?: LoadNconfOptions): ConfigInstance {
   debug('config start');
@@ -59,12 +58,6 @@ function loadNconf(options?: LoadNconfOptions): ConfigInstance {
   // Finally, we load defaults, if nothing else has a value this will
   nconf.file('defaults', path.join(baseConfigPath, 'defaults.json'));
 
-  // ## Config Methods
-
-  // Expose dynamic utility methods
-  bindUrlHelpers(nconf);
-  bindHelpers(nconf);
-
   // ## Sanitization
 
   // transform all relative paths to absolute paths
@@ -91,7 +84,13 @@ function loadNconf(options?: LoadNconfOptions): ConfigInstance {
   }
 
   debug('config end');
-  return nconf;
+
+  // ## Hand over
+
+  // nconf's job ends here: it layered the sources, and the validated, frozen
+  // tree createConfig returns is the only representation anything reads from
+  // now on. See ./schema.ts.
+  return createConfig(nconf.get() as Record<string, unknown>);
 }
 
 export { loadNconf };

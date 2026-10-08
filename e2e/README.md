@@ -260,8 +260,14 @@ Tests run automatically in GitHub Actions on every PR and commit to `main`.
 2. **Build Assets**: Build server/admin assets and public app UMD bundles
 3. **Build E2E Image**: `pnpm --filter @tryghost/e2e build:docker` (layers public apps into Ghost's built admin assets, served from `/ghost/assets`)
 4. **Prepare E2E Runtime**: Pull Playwright/gateway images in parallel, start infra, and sync Tinybird state (`pnpm --filter @tryghost/e2e preflight:build`)
-5. **Test Execution**: Run Playwright E2E tests inside the official Playwright container
-6. **Artifacts**: Upload Playwright traces and reports on failure
+5. **Shard Planning**: Split the `main` project's files across shards by recorded duration (`scripts/e2e-shards.ts`)
+6. **Test Execution**: Run Playwright E2E tests inside the official Playwright container
+7. **Artifacts**: Upload Playwright traces and reports on failure
+
+`main` shards balance on per-file durations that each `main` branch run records
+into the Actions cache. A file without a recorded time is estimated from its test
+count, so new tests need no setup. The `analytics` project still uses
+Playwright's `--shard`.
 
 ## Available Scripts
 
@@ -376,3 +382,15 @@ register its own pinned endpoint, so it receives the payloads production receive
 2. **Traces**: Available in `test-results/` directory
 3. **Debug Mode**: Run with `pnpm test --debug` or `pnpm test --ui` to see browser
 4. **Verbose Logging**: Check CI logs for detailed error information
+
+### Sign-in page never renders on Linux
+
+If tests time out waiting for the admin sign-in form and the trace shows
+requests failing with `net::ERR_NETWORK_CHANGED`, Chrome is reacting to Docker
+giving a new Ghost container's host-side network interface an IPv6 link-local
+address, about 1.5s after the container starts. CI avoids this by disabling IPv6
+on new interfaces before the tests run; do the same locally:
+
+```bash
+sudo sysctl -w net.ipv6.conf.default.disable_ipv6=1
+```

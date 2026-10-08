@@ -14,7 +14,7 @@ function isUnsplashImage(url) {
 const { DateTime } = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const emailAddressParser = require('../email-address/email-address-parser');
-const { getEmailDesign } = require('../email-rendering/email-design');
+const { getEmailDesign } = require('../../lib/email-rendering/email-design');
 const { registerHelpers } = require('./helpers/register-helpers');
 const crypto = require('crypto');
 const { checkSegmentPostAccess, getPostAccessFilter } = require('../members/content-gating');
@@ -1134,7 +1134,7 @@ class EmailRenderer {
 
     registerHelpers(handlebars, labs, this.#t);
 
-    const emailPartials = path.join(__dirname, '..', 'email-rendering', 'partials');
+    const emailPartials = path.join(__dirname, '..', '..', 'lib', 'email-rendering', 'partials');
     const emailTemplates = path.join(__dirname, 'email-templates');
 
     const [
@@ -1257,17 +1257,19 @@ class EmailRenderer {
     }
     if (text && text.length > maxLengthMobile) {
       let ellipsis = '';
+      let desktopEnd = text.length;
 
       if (text.length > maxLengthMobile && text.length <= maxLength) {
         ellipsis = '<span class="hide-desktop">…</span>';
       } else if (text.length > maxLength) {
         ellipsis = '…';
+        desktopEnd = maxLength - 1;
       }
 
       return (
         escapeHtml(text.substring(0, maxLengthMobile - 1)) +
         '<span class="desktop-only">' +
-        escapeHtml(text.substring(maxLengthMobile - 1, maxLength - 1)) +
+        escapeHtml(text.substring(maxLengthMobile - 1, desktopEnd)) +
         '</span>' +
         ellipsis
       );

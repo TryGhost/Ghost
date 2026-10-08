@@ -43,7 +43,6 @@ module.exports = new StripeService({
   models: _.pick(models, [
     'Product',
     'StripePrice',
-    'StripeCustomerSubscription',
     'StripeProduct',
     'MemberStripeCustomer',
     'Offer',

@@ -17,6 +17,10 @@ class EmailServiceWrapper {
 
   init({ ghostServer, jobsService } = {}) {
     if (this.service) {
+      // An in-process restart (test harness) keeps this service but boots a
+      // new server, whose stop must drain it and whose start re-arms it.
+      this.batchSendingService.onStart();
+      this.registerShutdownTasks(ghostServer);
       return;
     }
     assert(jobsService, 'Email service requires the jobs service');
@@ -34,22 +38,23 @@ class EmailServiceWrapper {
     const { Post, Newsletter, Email, EmailBatch, EmailRecipient, Member } = require('../../models');
     const urlService = require('../url');
     const getRequiredUrlRelations = () => urlService.getRequiredRelations();
-    const MailgunClient = require('../lib/mailgun-client');
+    const MailgunClient = require('../../lib/mailgun/mailgun-client');
     const configService = require('../../../shared/config');
+    const batchCreationConcurrency = configService.get('bulkEmail:batchCreationConcurrency');
     const settingsCache = require('../../../shared/settings-cache');
     const settingsHelpers = require('../settings-helpers');
     const membersService = require('../members');
     const db = require('../../data/db');
     const sentry = require('../../../shared/sentry');
     const membersRepository = membersService.api.members;
-    const limitService = require('../limits');
+    const { limitService } = require('../limits');
     const labs = require('../../../shared/labs');
     const emailAddressService = require('../email-address');
     const i18nLib = require('@tryghost/i18n').default;
     const lexicalLib = require('../../lib/lexical');
     const urlUtils = require('../../../shared/url-utils').default;
     const memberAttribution = require('../member-attribution');
-    const linkReplacer = require('../lib/link-replacer');
+    const linkReplacer = require('../../lib/link-replacer');
     const linkTracking = require('../link-tracking');
     const audienceFeedback = require('../audience-feedback');
     const storageUtils = require('../../adapters/storage/utils');
@@ -102,6 +107,7 @@ class EmailServiceWrapper {
       emailProvider: mailgunEmailProvider,
       emailRenderer,
       emailAddressService: emailAddressService.service,
+      sentry,
     });
 
     const emailSegmenter = new EmailSegmenter({
@@ -128,26 +134,17 @@ class EmailServiceWrapper {
       db,
       sentry,
       getRequiredUrlRelations,
+      batchCreationConcurrency,
     });
     const sendingStatusService = new SendingStatusService({ knex: db.knex });
 
-    if (ghostServer) {
-      // Two phases: stop claiming batches immediately, drain in-flight ones later.
-      // Draining alone would leave workers claiming new batches for the whole HTTP
-      // server drain, each a fresh orphan candidate.
-      ghostServer.registerPreStopTask(
-        () => batchSendingService.onPreStop(),
-        'Email batch sending (stop claiming)',
-      );
-      ghostServer.registerCleanupTask(
-        () => batchSendingService.onShutdown(),
-        'Email batch sending',
-      );
-    }
+    this.batchSendingService = batchSendingService;
+    this.registerShutdownTasks(ghostServer);
 
     this.renderer = emailRenderer;
 
     this.service = new EmailService({
+      sendingStatusService,
       batchSendingService,
       sendingService,
       models: {
@@ -174,6 +171,23 @@ class EmailServiceWrapper {
       getRequiredUrlRelations,
       sendingStatusService,
     });
+  }
+
+  registerShutdownTasks(ghostServer) {
+    if (!ghostServer) {
+      return;
+    }
+    // Two phases: stop claiming batches immediately, drain in-flight ones later.
+    // Draining alone would leave workers claiming new batches for the whole HTTP
+    // server drain, each a fresh orphan candidate.
+    ghostServer.registerPreStopTask(
+      () => this.batchSendingService.onPreStop(),
+      'Email batch sending (stop claiming)',
+    );
+    ghostServer.registerCleanupTask(
+      () => this.batchSendingService.onShutdown(),
+      'Email batch sending',
+    );
   }
 }
 

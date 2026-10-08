@@ -14,6 +14,8 @@ import {
   buildPostWriteParams,
   serializePostPayload,
 } from './post-contract';
+import { isSearchIndexQuery } from './search-index';
+import { tagsDataType } from './tags';
 import type {
   CreateContentData,
   EditContentData,
@@ -132,22 +134,29 @@ export interface EditPostPayload {
   sessionExpiryRedirect?: boolean;
 }
 
+// A tag sent without an id is created by the save itself, so tag lists go stale too.
 export const useAddPost = createMutation<PostResponseType, AddPostPayload>({
   method: 'POST',
   path: () => '/posts/',
   searchParams: ({ options }) => buildPostWriteParams(options),
   body: ({ post }) => ({ posts: [serializePostPayload(post)] }),
   requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
-  invalidateQueries: { dataType },
+  invalidateQueries: { dataType: [dataType, tagsDataType] },
 });
 
+// The search-index lists are left out: most edits are autosaves that change
+// nothing they hold, and each refetch reads every post or tag on the site. The
+// caller writes the post it saved into them instead.
 export const useEditPost = createMutation<PostResponseType, EditPostPayload>({
   method: 'PUT',
   path: ({ post }) => `/posts/${post.id}/`,
   searchParams: ({ options }) => buildPostWriteParams(options),
   body: ({ post }) => ({ posts: [serializePostPayload(post)] }),
   requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
-  invalidateQueries: { dataType },
+  invalidateQueries: {
+    dataType: [dataType, tagsDataType],
+    predicate: (query) => !isSearchIndexQuery(query),
+  },
 });
 
 export interface DeletePostPayload {

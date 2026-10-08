@@ -1,5 +1,6 @@
 {
   "url": "http://localhost:2368",
+  "createInDevelopmentTables": true,
   "mail": {
     "from": "test@example.com",
     "transport": "SMTP",
@@ -32,6 +33,7 @@
     }
   },
   "security": {
-    "staffDeviceVerification": false
+    "staffDeviceVerification": false,
+    "embedPreviewUrl": ""
   }
 }

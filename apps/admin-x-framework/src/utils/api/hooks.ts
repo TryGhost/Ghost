@@ -101,8 +101,9 @@ export const createQuery =
 
 type InfiniteQueryOptions<ResponseData, PageData = ResponseData> = Omit<
   QueryOptions<PageData>,
-  'returnData'
+  'returnData' | 'parseResponse'
 > & {
+  parseResponse?: (data: unknown, params: Record<string, string>) => PageData;
   returnData: (originalData: unknown) => ResponseData;
   defaultNextPageParams?: (
     data: PageData,
@@ -163,13 +164,14 @@ export const createInfiniteQuery =
         apiUrl(options.path, searchParams || options.defaultSearchParams),
       ],
       queryFn: async ({ pageParam }) => {
-        const url = apiUrl(options.path, pageParam || searchParams || options.defaultSearchParams);
+        const params = pageParam || searchParams || options.defaultSearchParams || {};
+        const url = apiUrl(options.path, params);
         if (options.parseResponse) {
           const data = await fetchApi<unknown>(url, {
             headers: options.headers,
             ...requestOptions,
           });
-          return options.parseResponse(data);
+          return options.parseResponse(data, params);
         }
         return fetchApi<PageData>(url, { headers: options.headers, ...requestOptions });
       },
@@ -210,7 +212,11 @@ interface MutationOptions<ResponseData, Payload>
   /** Per-payload transport options, merged over the ones declared on the hook. */
   requestOptions?: (payload: Payload) => Omit<RequestOptions, 'body'>;
   invalidateQueries?:
-    | { dataType: string | string[] }
+    | {
+        dataType: string | string[];
+        /** Leaves out the queries under those data types it answers false for. */
+        predicate?: InvalidateQueryFilters['predicate'];
+      }
     | {
         filters?: InvalidateQueryFilters;
         options?: InvalidateOptions;
@@ -274,7 +280,10 @@ export const createMutation =
             ? invalidateQueries.dataType
             : [invalidateQueries.dataType];
           for (const dataType of dataTypes) {
-            queryClient.invalidateQueries({ queryKey: [dataType] });
+            queryClient.invalidateQueries({
+              queryKey: [dataType],
+              predicate: invalidateQueries.predicate,
+            });
             onInvalidate(dataType);
           }
         } else if (invalidateQueries) {

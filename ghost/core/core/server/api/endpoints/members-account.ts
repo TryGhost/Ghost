@@ -1,3 +1,5 @@
+import type { Controller, Frame } from '@tryghost/api-framework';
+
 const membersService = require('../../services/members');
 
 /**
@@ -12,14 +14,14 @@ const membersService = require('../../services/members');
  * that name. Sharing it would mean sharing the shape.
  */
 
-interface Frame {
+type AccountFrame = Frame<{
   data: Record<string, unknown>;
   options: {
     context?: { member?: { id: string; email: string } | null };
   };
-}
+}>;
 
-const memberOf = (frame: Frame) => frame.options?.context?.member ?? null;
+const memberOf = (frame: AccountFrame) => frame.options?.context?.member ?? null;
 
 const controller = {
   docName: 'members_account',
@@ -27,7 +29,7 @@ const controller = {
   read: {
     headers: { cacheInvalidate: false },
     permissions: false,
-    query(frame: Frame) {
+    query(frame: AccountFrame) {
       return membersService.api.account.read(memberOf(frame)!.id);
     },
   },
@@ -43,7 +45,7 @@ const controller = {
     statusCode: 204,
     headers: { cacheInvalidate: false },
     permissions: false,
-    query(frame: Frame) {
+    query(frame: AccountFrame) {
       const member = memberOf(frame)!;
       return membersService.api.account.allowEmail(member.id, member.email);
     },
@@ -55,11 +57,15 @@ const controller = {
   update: {
     headers: { cacheInvalidate: false },
     permissions: false,
-    query(frame: Frame) {
+    query(frame: AccountFrame) {
       return membersService.api.account.edit(frame.data, memberOf(frame)!.id);
     },
   },
-};
+} satisfies Controller<{
+  read: AccountFrame;
+  destroySuppression: AccountFrame;
+  update: AccountFrame;
+}>;
 
 export default controller;
 module.exports = controller;

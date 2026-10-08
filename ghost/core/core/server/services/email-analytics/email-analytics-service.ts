@@ -506,6 +506,9 @@ export class EmailAnalyticsService {
       const processingStart = Date.now();
       // Capture the state before processing to calculate delta
       const beforeCounts = {
+        storedDelivered: processingResult.storedDelivered,
+        storedOpened: processingResult.storedOpened,
+        storedPermanentFailed: processingResult.storedPermanentFailed,
         opened: processingResult.opened,
         delivered: processingResult.delivered,
         temporaryFailed: processingResult.temporaryFailed,
@@ -515,15 +518,16 @@ export class EmailAnalyticsService {
         unhandled: processingResult.unhandled,
         unprocessable: processingResult.unprocessable,
       };
-      const beforeEmailIds = new Set(processingResult.emailIds);
-      const beforeMemberIds = new Set(processingResult.memberIds);
-
       await eventProcessor.processBatch(events, processingResult, fetchData);
       processingTimeMs += Date.now() - processingStart;
       eventCount += events.length;
 
       // Calculate delta (only new counts from this batch) and accumulate for final reporting
-      const batchDelta = new EventProcessingResult({
+      cumulativeResult.merge({
+        storedDelivered: processingResult.storedDelivered - beforeCounts.storedDelivered,
+        storedOpened: processingResult.storedOpened - beforeCounts.storedOpened,
+        storedPermanentFailed:
+          processingResult.storedPermanentFailed - beforeCounts.storedPermanentFailed,
         opened: processingResult.opened - beforeCounts.opened,
         delivered: processingResult.delivered - beforeCounts.delivered,
         temporaryFailed: processingResult.temporaryFailed - beforeCounts.temporaryFailed,
@@ -532,10 +536,7 @@ export class EmailAnalyticsService {
         complained: processingResult.complained - beforeCounts.complained,
         unhandled: processingResult.unhandled - beforeCounts.unhandled,
         unprocessable: processingResult.unprocessable - beforeCounts.unprocessable,
-        emailIds: processingResult.emailIds.filter((id) => !beforeEmailIds.has(id)),
-        memberIds: processingResult.memberIds.filter((id) => !beforeMemberIds.has(id)),
       });
-      cumulativeResult.merge(batchDelta);
 
       // Offer the event processor a chance to aggregate mid-fetch.
       try {

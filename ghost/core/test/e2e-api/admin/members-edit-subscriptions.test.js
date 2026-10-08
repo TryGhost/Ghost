@@ -22,6 +22,7 @@ const models = require('../../../core/server/models');
 const { stripeMocker } = require('../../utils/e2e-framework-mock-manager');
 const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
+const stripeService = require('../../../core/server/services/stripe');
 const sinon = require('sinon');
 
 const subscriptionSnapshot = {
@@ -1017,5 +1018,49 @@ describe('Members API: edit subscriptions', function () {
         .sort(),
       ['gold', 'silver'],
     );
+  });
+
+  it('Cancels the complimentary subscription when a member is uncomped', async function () {
+    const email = 'uncomp-stripe-comp@example.com';
+    const customer = stripeMocker.createCustomer({ email });
+    const tierPrice = await stripeMocker.getPriceForTier('default-product', 'year');
+    const compPrice = {
+      ...tierPrice,
+      id: 'price_uncomp_comp',
+      nickname: 'Complimentary',
+      unit_amount: 0,
+    };
+    stripeMocker.prices.push(compPrice);
+    const subscription = await stripeMocker.createSubscription(
+      { customer, price: compPrice, plan: compPrice },
+      { sendWebhook: false },
+    );
+
+    const {
+      body: {
+        members: [comped],
+      },
+    } = await agent
+      .post('/members/')
+      .body({ members: [{ email, stripe_customer_id: customer.id }] })
+      .expectStatus(201);
+
+    assert.equal(comped.status, 'comped');
+    assert.equal(comped.subscriptions.length, 1);
+
+    const cancelSubscription = sinon.spy(stripeService.api, 'cancelSubscription');
+
+    const {
+      body: {
+        members: [uncomped],
+      },
+    } = await agent
+      .put(`/members/${comped.id}/`)
+      .body({ members: [{ comped: false }] })
+      .expectStatus(200);
+
+    sinon.assert.calledOnceWithExactly(cancelSubscription, subscription.id);
+    assert.equal(uncomped.status, 'free');
+    assert.equal(uncomped.subscriptions[0].status, 'canceled');
   });
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it, onTestFinished, vi } from 'vitest';
-import { userEvent, type Locator } from 'vitest/browser';
+import { page, userEvent, type Locator } from 'vitest/browser';
 
 import {
   configResponse,
@@ -430,6 +430,27 @@ describe('Member welcome emails', () => {
     expect(cardLocator).not.toBeNull();
     await expect.element(cardLocator!).toBeVisible();
   });
+
+  it.each([false, true])(
+    'shows Unsplash in the slash menu only when Unsplash enabled is %s',
+    async (enabled) => {
+      const modal = await openWelcomeEmailModal([freeWelcomeEmail], {
+        boot: {
+          browseSettings: { response: settingsResponse({ settings: { unsplash: enabled } }) },
+        },
+      });
+      await clearEditor(modal);
+      await userEvent.keyboard('/');
+      await expect.element(settingsScreen.slashMenuItem('Image')).toBeVisible();
+
+      const unsplash = page.getByRole('menuitem', { name: 'Unsplash' });
+      if (enabled) {
+        await expect.element(unsplash).toBeVisible();
+      } else {
+        await expect(unsplash).toHaveCount(0);
+      }
+    },
+  );
 
   it.each([
     [false, undefined],

@@ -1,14 +1,11 @@
-import * as Sentry from '@sentry/ember';
 import * as jsxRuntime from 'react/jsx-runtime';
 import AuthConfiguration from 'ember-simple-auth/configuration';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Route from '@ember/routing/route';
-import SearchModal from '../components/modals/search';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
-import {getSentryConfig} from '../utils/sentry';
 import {inject} from 'ghost-admin/decorators/inject';
 import {
     isAjaxError,
@@ -27,83 +24,10 @@ function K() {
     return this;
 }
 
-const AUTOMATIONS_REPLAY_SAMPLE_RATE = 1;
-const AUTOMATIONS_REPLAY_MASK_ATTRIBUTE = 'data-sentry-automations-mask';
-
-function isAutomationsUrl(url) {
-    const path = new URL(url).hash.replace(/^#/, '').split('?')[0].replace(/\/+$/, '');
-    return path === '/automations' || path.startsWith('/automations/');
-}
-
-function setupAutomationsSessionReplay(replay, shouldStartRecording) {
-    let removeNavigationListener;
-    let recordingStarted = false;
-
-    const teardown = () => {
-        clearTimeout(initialRouteCheck);
-        removeNavigationListener?.();
-        document.body.removeAttribute(AUTOMATIONS_REPLAY_MASK_ATTRIBUTE);
-    };
-
-    const updateAutomationsMask = (url) => {
-        const isAutomations = isAutomationsUrl(url);
-
-        if (isAutomations) {
-            document.body.setAttribute(AUTOMATIONS_REPLAY_MASK_ATTRIBUTE, 'true');
-        } else {
-            document.body.removeAttribute(AUTOMATIONS_REPLAY_MASK_ATTRIBUTE);
-        }
-
-        return isAutomations;
-    };
-
-    const maybeStartRecording = (url) => {
-        const isAutomations = updateAutomationsMask(url);
-
-        if (!shouldStartRecording || !isAutomations || recordingStarted) {
-            return;
-        }
-
-        recordingStarted = true;
-        clearTimeout(initialRouteCheck);
-
-        replay.stop().then(() => {
-            replay.start();
-            Sentry.setTag('replay_area', 'automations');
-        }).catch((error) => {
-            try {
-                replay.startBuffering();
-            } catch (e) {
-                // Replay is still running, nothing to restore
-            }
-            console.error('Error starting Sentry Replay recording:', error); // eslint-disable-line no-console
-        });
-    };
-
-    // Keep listening after recording starts so portalled Automations content is
-    // masked only while an Automations route is active. React-owned admin
-    // routes navigate via pushState, which doesn't fire `hashchange`.
-    if (window.navigation) {
-        const onNavigate = event => maybeStartRecording(event.destination.url);
-        window.navigation.addEventListener('navigate', onNavigate);
-        removeNavigationListener = () => window.navigation.removeEventListener('navigate', onNavigate);
-    }
-
-    // Mask direct Automations loads before Replay creates its initial buffer.
-    updateAutomationsMask(window.location.href);
-
-    // Replay defers its sampling initialization during Sentry.init(). Queue the
-    // initial route check behind it to avoid starting a second rrweb recorder.
-    const initialRouteCheck = setTimeout(() => maybeStartRecording(window.location.href));
-
-    return teardown;
-}
-
 const shortcuts = {};
 
 shortcuts.esc = {action: 'closeMenus', scope: 'default'};
 shortcuts[`${ctrlOrCmd}+s`] = {action: 'save', scope: 'all'};
-shortcuts[`${ctrlOrCmd}+k`] = {action: 'openSearchModal'};
 shortcuts[`${ctrlOrCmd}+,`] = {action: 'openSettings'};
 
 // make globals available for any pulled in UMD components
@@ -125,7 +49,6 @@ export default Route.extend(ShortcutsRoute, {
     stateBridge: service(),
     ui: service(),
     billing: service(),
-    modals: service(),
 
     shortcuts,
 
@@ -178,7 +101,7 @@ export default Route.extend(ShortcutsRoute, {
 
             // Need a tiny delay here to allow the router to update to the current route
             later(() => {
-                Sentry.setTag('route', this.router.currentRouteName);
+                this.stateBridge.tagSentryRoute();
             }, 2);
         },
 
@@ -242,20 +165,10 @@ export default Route.extend(ShortcutsRoute, {
             return true;
         },
 
-        openSearchModal() {
-            // Don't open the search modal if the sidebar is hidden
-            // e.g. in the editor or settings screens
-            if (this.ui.isFullScreen) {
-                return;
-            }
-
-            return this.modals.open(SearchModal);
-        },
-
         openSettings() {
             // Don't open the settings screen if the sidebar is hidden
             // e.g. in the editor or settings screens
-            if (this.ui.isFullScreen) {
+            if (this.ui.isFullScreen || this.stateBridge.isReactFullScreen) {
                 return;
             }
 
@@ -263,29 +176,17 @@ export default Route.extend(ShortcutsRoute, {
         }
     },
 
+    // React handles the app-wide shortcuts on the screens it shows
+    shouldHandleShortcuts() {
+        return this.stateBridge.reactRoutePattern === null;
+    },
+
     willDestroy() {
-        this._cleanupAutomationsSessionReplay?.();
         this.ui.cleanupBodyDragHandlers();
     },
 
     async prepareApp() {
         await this.configManager.fetchUnauthenticated();
-
-        // init Sentry here rather than app.js so that we can use API-supplied
-        // sentry_dsn and sentry_env rather than building it into release assets
-        if (this.config.sentry_dsn) {
-            const sentryConfig = getSentryConfig(this.config.sentry_dsn, this.config.sentry_env, this.config.version);
-            Sentry.init(sentryConfig);
-
-            // Keep error-triggered replay buffering everywhere and mask all
-            // Automations portals. Once a sampled app load enters Automations,
-            // record a full session replay for the rest of that load.
-            const replay = Sentry.getClient()?.getIntegrationByName('Replay');
-            if (replay) {
-                const shouldStartRecording = Math.random() < AUTOMATIONS_REPLAY_SAMPLE_RATE;
-                this._cleanupAutomationsSessionReplay = setupAutomationsSessionReplay(replay, shouldStartRecording);
-            }
-        }
 
         if (this.session.isAuthenticated) {
             try {
@@ -297,7 +198,8 @@ export default Route.extend(ShortcutsRoute, {
             await this.session.postAuthPreparation();
         }
 
-        if (this.config.hostSettings?.forceUpgrade) {
+        // React's ForceUpgradeGuard owns the redirect when billingReact is on
+        if (this.config.hostSettings?.forceUpgrade && this.feature.billingReact !== true) {
             // enforce opening the billing app in a force upgrade state
             this.billing.openBillingWindow(this.router.currentURL, this.billing.getBillingRouteFromHash());
         }

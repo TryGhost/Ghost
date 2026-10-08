@@ -14,6 +14,8 @@ import {
   buildPostReadParams,
   serializePostPayload,
 } from './post-contract';
+import { isSearchIndexQuery } from './search-index';
+import { tagsDataType } from './tags';
 import type {
   CreateContentData,
   EditContentData,
@@ -115,22 +117,28 @@ export interface EditPagePayload {
   sessionExpiryRedirect?: boolean;
 }
 
+// A tag sent without an id is created by the save itself, so tag lists go stale too.
 export const useAddPage = createMutation<PageResponseType, AddPagePayload>({
   method: 'POST',
   path: () => '/pages/',
   searchParams: ({ options }) => buildPageWriteParams(options),
   body: ({ page }) => ({ pages: [serializePostPayload(page, 'page')] }),
   requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
-  invalidateQueries: { dataType },
+  invalidateQueries: { dataType: [dataType, tagsDataType] },
 });
 
+// The search-index lists are left out, as for posts: the caller writes the
+// page it saved into them.
 export const useEditPage = createMutation<PageResponseType, EditPagePayload>({
   method: 'PUT',
   path: ({ page }) => `/pages/${page.id}/`,
   searchParams: ({ options }) => buildPageWriteParams(options),
   body: ({ page }) => ({ pages: [serializePostPayload(page, 'page')] }),
   requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
-  invalidateQueries: { dataType },
+  invalidateQueries: {
+    dataType: [dataType, tagsDataType],
+    predicate: (query) => !isSearchIndexQuery(query),
+  },
 });
 
 export interface DeletePagePayload {

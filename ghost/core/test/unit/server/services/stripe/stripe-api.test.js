@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const { assertExists } = require('../../../../utils/assertions');
 const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const stripe = require('stripe');
 const i18n = require('../../../../../core/server/services/i18n');
 const StripeAPI = require('../../../../../core/server/services/stripe/stripe-api');
@@ -310,6 +311,118 @@ describe('StripeAPI', function () {
       await api.createCheckoutSetupSession('priceId', { currency: 'usd' });
 
       assert.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.currency, 'usd');
+    });
+  });
+
+  describe('checkout design', function () {
+    const design = {
+      buttonColor: '#ff5a1f',
+      backgroundColor: '#ffffff',
+      borderStyle: 'pill',
+      fontFamily: 'roboto',
+    };
+
+    function configured(read) {
+      const designed = new StripeAPI({
+        labs: { isSet: (flag) => flag === 'stripeCheckoutDesign' },
+        stripeCheckoutConfig: { service: { read } },
+      });
+      designed.configure({
+        checkoutSessionSuccessUrl: '/success',
+        checkoutSessionCancelUrl: '/cancel',
+        checkoutSetupSessionSuccessUrl: '/setup-success',
+        checkoutSetupSessionCancelUrl: '/setup-cancel',
+        secretKey: '',
+      });
+      return designed;
+    }
+
+    beforeEach(function () {
+      mockStripe = {
+        checkout: {
+          sessions: {
+            create: sinon.stub().resolves(),
+          },
+        },
+      };
+      sinon.stub(stripe, 'Stripe').returns(mockStripe);
+    });
+
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    it('creates the session unstyled when the config cannot be read', async function () {
+      const logged = sinon.stub(logging, 'error');
+
+      await configured(async () => {
+        throw new Error('database unavailable');
+      }).createCheckoutSetupSession('priceId', {});
+
+      sinon.assert.calledOnce(mockStripe.checkout.sessions.create);
+      assert.equal(
+        mockStripe.checkout.sessions.create.firstCall.firstArg.branding_settings,
+        undefined,
+      );
+      sinon.assert.calledOnce(logged);
+    });
+
+    it('creates the session again without the design when Stripe refuses it', async function () {
+      const logged = sinon.stub(logging, 'error');
+      const refusal = Object.assign(new Error('Invalid font_family'), {
+        type: 'StripeInvalidRequestError',
+        param: 'branding_settings[font_family]',
+      });
+      mockStripe.checkout.sessions.create.onFirstCall().rejects(refusal);
+      mockStripe.checkout.sessions.create.onSecondCall().resolves({ id: 'cs_unstyled' });
+
+      const session = await configured(async () => ({ design })).createCheckoutSetupSession(
+        'priceId',
+        {},
+      );
+
+      assert.equal(session.id, 'cs_unstyled');
+      const [styled, unstyled] = mockStripe.checkout.sessions.create.getCalls();
+      assert.deepEqual(styled.firstArg.branding_settings, {
+        button_color: '#ff5a1f',
+        background_color: '#ffffff',
+        border_style: 'pill',
+        font_family: 'roboto',
+      });
+      assert.equal(unstyled.firstArg.branding_settings, undefined);
+      sinon.assert.calledOnce(logged);
+    });
+
+    it('reports Stripe refusing a previewed design, rather than hiding it', async function () {
+      const refusal = Object.assign(new Error('Invalid font_family'), {
+        type: 'StripeInvalidRequestError',
+        param: 'branding_settings[font_family]',
+      });
+      mockStripe.checkout.sessions.create.rejects(refusal);
+
+      await assert.rejects(
+        configured(async () => ({ design: null })).createCheckoutSession('priceId', null, {
+          successUrl: '/success',
+          cancelUrl: '/cancel',
+          design,
+        }),
+        { errorType: 'ValidationError', property: 'design' },
+      );
+      sinon.assert.calledOnce(mockStripe.checkout.sessions.create);
+    });
+
+    it('does not retry a refusal that is not about the design', async function () {
+      const refusal = Object.assign(new Error('No such customer'), {
+        type: 'StripeInvalidRequestError',
+        param: 'customer',
+      });
+      mockStripe.checkout.sessions.create.rejects(refusal);
+
+      await assert.rejects(
+        configured(async () => ({ design })).createCheckoutSetupSession('priceId', {}),
+        refusal,
+      );
+      sinon.assert.calledOnce(mockStripe.checkout.sessions.create);
     });
   });
 

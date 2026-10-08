@@ -1,6 +1,10 @@
 import { Label, RadioGroup, RadioGroupItem } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
+import { hasAdminAccess } from '@tryghost/admin-x-framework/api/users';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { publishTypeError as publishTypeErrorTestId } from '@tryghost/test-data/selectors/editor';
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import type { PublishOptionsState, PublishType } from '@/editor/publish/publish-options';
 
 const MAILGUN_DOCS = 'https://docs.ghost.org/newsletters/#bulk-email-configuration';
@@ -8,6 +12,29 @@ const MAILGUN_DOCS = 'https://docs.ghost.org/newsletters/#bulk-email-configurati
 export interface PublishTypeOptionsProps {
   state: PublishOptionsState;
   onChange: (publishType: PublishType) => void;
+}
+
+function NoNewsletterNote() {
+  const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const automations = useFeatureFlag('automations', {
+    defaultErrorHandler: false,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
+  // Editors can open Settings, but only admins see its newsletters.
+  const newsletters =
+    currentUser && hasAdminAccess(currentUser) ? (
+      <a className="underline" href={automations ? '#/settings/emails' : '#/settings/newsletters'}>
+        newsletters
+      </a>
+    ) : (
+      'newsletters'
+    );
+
+  return (
+    <Text data-testid={publishTypeErrorTestId} size="sm">
+      Email is unavailable because there are no active {newsletters}.
+    </Text>
+  );
 }
 
 function EmailUnavailableNote({ state }: { state: PublishOptionsState }) {
@@ -42,6 +69,10 @@ function EmailUnavailableNote({ state }: { state: PublishOptionsState }) {
         to start sending newsletters!
       </Text>
     );
+  }
+
+  if (reason === 'no-newsletter') {
+    return <NoNewsletterNote />;
   }
 
   return null;

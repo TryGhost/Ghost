@@ -9,7 +9,7 @@ import { defaultUnsplashConfig, type TopLevelFrameworkProps } from '@tryghost/ad
  */
 export function createFrameworkProps(
   overrides: Partial<TopLevelFrameworkProps> = {},
-): TopLevelFrameworkProps {
+): TopLevelFrameworkProps & { queryClient: QueryClient } {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -28,11 +28,10 @@ export function createFrameworkProps(
     externalNavigate: () => {},
     // Production shape, but without the real API key so tests never hit Unsplash
     unsplashConfig: { ...defaultUnsplashConfig, Authorization: '' },
-    sentryDSN: null,
     onUpdate: () => {},
     onInvalidate: () => {},
     onDelete: () => {},
-    queryClient,
     ...overrides,
+    queryClient: overrides.queryClient ?? queryClient,
   };
 }

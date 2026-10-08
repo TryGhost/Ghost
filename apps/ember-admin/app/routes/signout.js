@@ -1,17 +1,8 @@
-import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-import {inject as service} from '@ember/service';
+import Route from '@ember/routing/route';
 
-export default class SignoutRoute extends AuthenticatedRoute {
-    @service notifications;
-
-    afterModel/*model, transition*/() {
-        this.notifications.clearAll();
-        this.session.invalidate();
-    }
-
-    buildRouteInfoMetadata() {
-        return {
-            titleToken: 'Sign Out'
-        };
+// React signs out; a second DELETE here would race its reload.
+export default class SignoutRoute extends Route {
+    beforeModel(transition) {
+        transition.abort();
     }
 }

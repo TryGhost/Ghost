@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { assertExists } from '../../../utils/assertions';
-// @ts-expect-error color_to_rgba currently lacks type definitions.
-import colorToRgba from '../../../../core/frontend/helpers/color_to_rgba';
+import { color_to_rgba as colorToRgba } from '../../../../core/frontend/helpers/color_to_rgba';
 
 describe('{{color_to_rgba}} helper', function () {
   it('has color_to_rgba helper', function () {

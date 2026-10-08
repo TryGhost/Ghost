@@ -16,13 +16,15 @@ const {
   fixtureManager: { init(...fixtures: string[]): Promise<void> };
   hostLimits: HostLimits;
 } = require('../../utils/e2e-framework');
-const mailService = require('../../../core/server/services/mail') as {
+const mailService = require('../../../core/server/lib/mail') as {
   GhostMailer: { prototype: { send(...args: unknown[]): Promise<unknown> } };
 };
 const membersService = require('../../../core/server/services/members') as {
   stripeConnect: StripeConnect;
 };
-const limits = require('../../../core/server/services/limits') as LimitService;
+const {
+  limitService: limits,
+}: typeof import('../../../core/server/services/limits') = require('../../../core/server/services/limits');
 
 /** What an Admin API request answers with, narrowed to the parts these tests read. */
 interface ApiResponse {
@@ -59,12 +61,6 @@ interface AdminAgent {
 interface HostLimits {
   setHostLimits(limits: Record<string, HostLimitConfig>, rest?: HostSettings): Promise<void>;
   restoreHostLimits(): Promise<void>;
-}
-
-interface LimitService {
-  isLimited(name: string): boolean;
-  isDisabled(name: string): boolean | undefined;
-  problems: Array<{ limit: string; reason: string }>;
 }
 
 interface StripeConnect {

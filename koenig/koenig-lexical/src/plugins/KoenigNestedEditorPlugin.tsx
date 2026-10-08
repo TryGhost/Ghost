@@ -74,6 +74,11 @@ function KoenigNestedEditorPlugin({
                         return false;
                     }
 
+                    // Lexical dispatches Enter without an event when an IME composition ends in a newline
+                    if (!event) {
+                        return false;
+                    }
+
                     // let the parent editor handle the edit mode product
                     if (event.metaKey || event.ctrlKey) {
                         event._fromNested = true;

@@ -3,6 +3,7 @@ import { tier } from '@tryghost/test-data';
 import type { Tier } from '@tryghost/admin-x-framework/api/tiers';
 import {
   VISIBILITY_OPTIONS,
+  defaultTierIds,
   postTiers,
   selectedTierIds,
   selectedVisibility,
@@ -94,6 +95,19 @@ describe('access options', () => {
         { id: 'a' },
         { id: 'unlisted' },
       ]);
+    });
+  });
+
+  describe('defaultTierIds', () => {
+    it('reads the IDs the setting holds as a JSON array', () => {
+      expect(defaultTierIds('["gold","silver"]')).toEqual(['gold', 'silver']);
+    });
+
+    it('reads none from a missing or malformed setting', () => {
+      expect(defaultTierIds(null)).toEqual([]);
+      expect(defaultTierIds('not json')).toEqual([]);
+      expect(defaultTierIds('{"id":"gold"}')).toEqual([]);
+      expect(defaultTierIds('["gold",7]')).toEqual(['gold']);
     });
   });
 });

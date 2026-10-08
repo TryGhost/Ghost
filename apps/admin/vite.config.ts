@@ -1,6 +1,9 @@
+import fs from 'node:fs';
 import { configDefaults, defineConfig } from 'vitest/config';
 import type { PluginOption } from 'vite';
 import react from '@vitejs/plugin-react';
+import svgr from 'vite-plugin-svgr';
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 
 import { emberAssetsPlugin } from './vite-ember-assets';
@@ -34,10 +37,56 @@ function getBase(command: 'build' | 'serve'): string {
   return `${getSubdir()}${DEV_BASE}`;
 }
 
+// Injects Sentry debug IDs on shipping builds; CI uploads the maps afterwards
+function sentryDebugIdsPlugin(): PluginOption {
+  if (!process.env.IS_SHIPPING) {
+    return null;
+  }
+
+  return sentryVitePlugin({
+    sourcemaps: { disable: 'disable-upload' },
+    release: { inject: false },
+    telemetry: false,
+  });
+}
+
+// Rolldown ignores a dependency's `//# sourceMappingURL`, so without this the
+// chunk map's only source for Koenig frames is its already-minified dist
+function koenigSourcemapPlugin(): PluginOption {
+  return {
+    name: 'koenig-sourcemap',
+    apply: 'build',
+    load(id) {
+      if (!/\/koenig-lexical\/dist\/koenig-lexical\.js$/.test(id)) {
+        return null;
+      }
+      return { code: fs.readFileSync(id, 'utf-8'), map: fs.readFileSync(`${id}.map`, 'utf-8') };
+    },
+  };
+}
+
 // https://vite.dev/config/
-export default defineConfig(({ command }) => ({
+export default defineConfig(({ command, mode }) => ({
   base: getBase(command),
-  plugins: [tailwindcss() as PluginOption, react(), emberAssetsPlugin(), ghostBackendProxyPlugin()],
+  plugins: [
+    tailwindcss() as PluginOption,
+    svgr(),
+    react(),
+    koenigSourcemapPlugin(),
+    // Unit tests have no Ghost backend or Ember assets. Keep filesystem and
+    // shipping side effects out of this lane, including Sentry uploads.
+    ...(command === 'serve' && mode === 'test'
+      ? []
+      : [
+          emberAssetsPlugin(),
+          ghostBackendProxyPlugin(),
+          // Sentry's plugin goes after all others
+          sentryDebugIdsPlugin(),
+        ]),
+  ],
+  build: {
+    sourcemap: 'hidden',
+  },
   define: sharedDefine,
   server: {
     host: '0.0.0.0',
@@ -56,7 +105,7 @@ export default defineConfig(({ command }) => ({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./test-utils/setup.ts'],
-    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+    include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'test-utils/**/*.test.ts'],
     // Acceptance and component tests run in a real browser via
     // vitest.acceptance.config.ts
     exclude: [

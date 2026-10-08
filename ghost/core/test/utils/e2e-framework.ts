@@ -15,7 +15,6 @@
 import debugFactory from '@tryghost/debug';
 // @ts-expect-error This module lacks type definitions.
 import * as expressTest from '@tryghost/express-test';
-import { AsymmetricMatcher } from 'expect';
 import * as fs from 'fs-extra';
 import * as path from 'node:path';
 import * as os from 'node:os';
@@ -30,10 +29,6 @@ import configUtils from './config-utils';
 import * as urlServiceUtils from './url-service-utils';
 // @ts-expect-error This module lacks type definitions.
 import mockManager from './e2e-framework-mock-manager';
-// @ts-expect-error This module lacks type definitions.
-import mentionsJobsService from '../../core/server/services/mentions-jobs';
-// @ts-expect-error This module lacks type definitions.
-import jobsService from '../../core/server/services/jobs';
 // @ts-expect-error This module lacks type definitions.
 import boot from '../../core/boot';
 import {
@@ -72,8 +67,7 @@ let totalBoots = 0;
  * @returns {Promise<Express.Application>} ghost
  */
 const startGhost = async (options = {}) => {
-  await mentionsJobsService.allSettled();
-  await jobsService.allSettled();
+  await require('../../core/server/services/jobs-service').shutdown();
   await DomainEvents.allSettled();
 
   /**
@@ -202,11 +196,9 @@ const getFixture = (type: string, index = 0) => {
 /**
  * Reset rate limit instances (not the brute table)
  */
-const resetRateLimits = async () => {
+const resetRateLimits = () => {
   // Reset rate limiting instances
-  // @ts-expect-error This module lacks type definitions.
-  const { default: apiMiddleware } = await import('../../core/server/web/shared/middleware/api');
-  const { spamPrevention } = apiMiddleware;
+  const { spamPrevention } = require('../../core/server/web/shared/middleware/api');
   spamPrevention.reset();
 };
 
@@ -218,9 +210,8 @@ const resetRateLimits = async () => {
  * committed snapshot expects the un-resized URL (a fresh probe of the 1x1 fixture
  * yields no dimensions). Clear it between boots so each file probes fresh.
  */
-const resetImageSizeCache = async () => {
-  // @ts-expect-error This module lacks type definitions.
-  const { default: image } = await import('../../core/server/lib/image');
+const resetImageSizeCache = () => {
+  const image = require('../../core/server/lib/image');
   image.cachedImageSizeFromUrl.cache.reset();
 };
 
@@ -238,9 +229,9 @@ const resetData = async () => {
   await db.reset({ truncate: true });
 
   // Reset rate limiting instances (resetting the table is not enough!)
-  await resetRateLimits();
+  resetRateLimits();
 
-  await resetImageSizeCache();
+  resetImageSizeCache();
 };
 
 /**
@@ -509,9 +500,15 @@ type MatcherSample = {
   toAsymmetricMatcher?(): string;
 };
 
-class Nullable extends AsymmetricMatcher<MatcherSample> {
+// Snapshot matching treats any object with asymmetricMatch() as a matcher,
+// and pretty-format prints it through toAsymmetricMatcher() when it carries
+// this $$typeof, so Nullable needs no base class from jest's `expect`.
+class Nullable {
+  readonly $$typeof = Symbol.for('jest.asymmetricMatcher');
+  readonly sample: MatcherSample;
+
   constructor(sample: MatcherSample) {
-    super(sample);
+    this.sample = sample;
   }
 
   asymmetricMatch(other: unknown) {

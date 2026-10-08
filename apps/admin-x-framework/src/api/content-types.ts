@@ -7,10 +7,15 @@ type Override<Base, Changes> = Omit<Base, keyof Changes> & Changes;
 export type Email = {
   id?: string;
   created_at?: string | null;
+  submitted_at?: string | null;
   opened_count: number;
   email_count: number;
   status?: 'pending' | 'submitting' | 'submitted' | 'failed';
   error?: string | null;
+  recipient_filter?: string | null;
+  delivered_count?: number;
+  failed_count?: number;
+  feedback_enabled?: boolean;
   track_opens?: boolean;
   track_clicks?: boolean;
 };
@@ -67,6 +72,7 @@ export type PostRevision = {
   post_status?: string | null;
   reason?: string | null;
   created_at?: string;
+  created_at_ts?: number;
   author?: PostAuthor | null;
 };
 

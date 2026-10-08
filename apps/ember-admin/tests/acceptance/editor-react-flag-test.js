@@ -11,9 +11,9 @@ import {titleSelector} from '../helpers/editor';
 // The `editorReact` flag hands /editor/* to the React app. Ember's side of
 // that handshake is the lexical-editor route's beforeModel: it aborts so the
 // Ember editor stays unrendered, and drives window.location.hash so
-// navigations Ember itself starts (post list title links, Cmd-K search, the
-// post-success modal) still land somewhere — an aborted transition never
-// reaches updateURL, and the two apps share the hash.
+// navigations Ember itself starts (such as Cmd-K search) still land
+// somewhere — an aborted transition never reaches updateURL, and the two
+// apps share the hash.
 
 // `visit()` rejects with TransitionAborted whenever the route aborts, which is
 // the whole point of the flag being on. Swallow only that rejection so the
@@ -54,11 +54,45 @@ describe('Acceptance: editor React flag', function () {
 
             expect(find(titleSelector), 'Ember editor title input').to.exist;
         });
+
+        it('keeps an open Ember editor when the flag turns on', async function () {
+            const stateBridge = this.owner.lookup('service:state-bridge');
+            const feature = this.owner.lookup('service:feature');
+
+            await visit('/editor/post/1');
+            sinon.stub(feature, 'editorReact').get(() => true);
+
+            expect(stateBridge.isFeatureEnabled('editorReact'), 'while the editor is open').to.be.false;
+
+            await visitExpectingAbort('/tags');
+
+            expect(stateBridge.isFeatureEnabled('editorReact'), 'after leaving the editor').to.be.true;
+        });
     });
 
     describe('when the flag is on', function () {
         beforeEach(function () {
             enableLabsFlag(this.server, 'editorReact');
+        });
+
+        it('keeps a showing React editor when the flag turns off', async function () {
+            const stateBridge = this.owner.lookup('service:state-bridge');
+            const feature = this.owner.lookup('service:feature');
+            this.server.create('post');
+
+            await visitExpectingAbort('/editor/post/1');
+            stateBridge.setReactRoutePattern('/editor/*');
+            sinon.stub(feature, 'editorReact').get(() => false);
+
+            // Back/forward between editor entries reaches Ember as a URL change
+            await visitExpectingAbort('/editor/post/2');
+
+            expect(find(titleSelector), 'Ember editor while React shows its editor').to.not.exist;
+
+            stateBridge.setReactRoutePattern('/posts');
+            await visit('/editor/post/1');
+
+            expect(find(titleSelector), 'Ember editor after React left its editor').to.exist;
         });
 
         it('does not render the Ember editor', async function () {
@@ -73,10 +107,9 @@ describe('Acceptance: editor React flag', function () {
             expect(find(titleSelector), 'Ember editor title input').to.not.exist;
         });
 
-        // The regression this guards: post list title links, Cmd-K search
-        // results, and the post-success modal's revert-to-draft all
-        // transition by route name. Without supplying a URL they are silent
-        // no-ops and the user is stranded on the previous screen.
+        // The regression this guards: Ember surfaces such as Cmd-K search
+        // results transition by route name. Without supplying a URL they are
+        // silent no-ops and the user is stranded on the previous screen.
         it('navigates React when Ember initiates an edit transition', async function () {
             const route = this.owner.lookup('route:lexical-editor');
             const navigate = sinon.stub(route, '_navigateToReactRoute');
@@ -124,6 +157,35 @@ describe('Acceptance: editor React flag', function () {
 
             expect(router.currentRouteName, 'currentRouteName after aborting').to.equal('react-fallback');
             expect(router.currentRoute?.params?.path, 'fallback path after aborting').to.equal('editor/post/1');
+        });
+
+        it('preserves a React billing redirect while parking the editor', async function () {
+            const router = this.owner.lookup('service:router');
+            await visitExpectingAbort('/tags');
+
+            const originalUrl = window.location.href;
+            const originalState = window.history.state;
+            const billingState = {usr: {from: 'editor'}, key: 'billing', idx: 2};
+            const redirectToBilling = (transition) => {
+                if (transition.to?.name === 'react-fallback' && transition.to.params?.path === 'editor/post/1') {
+                    // React's force-upgrade guard can redirect before Ember finishes parking.
+                    window.history.replaceState(billingState, '', '#/pro');
+                }
+            };
+
+            window.history.replaceState({key: 'editor', idx: 1}, '', '#/editor/post/1');
+            router.on('routeWillChange', redirectToBilling);
+
+            try {
+                await visitExpectingAbort('/editor/post/1');
+
+                expect(router.currentRouteName, 'Ember parked on the fallback').to.equal('react-fallback');
+                expect(window.location.hash, 'React billing URL preserved').to.equal('#/pro');
+                expect(window.history.state, 'React Router history state preserved').to.deep.equal(billingState);
+            } finally {
+                router.off('routeWillChange', redirectToBilling);
+                window.history.replaceState(originalState, '', originalUrl);
+            }
         });
     });
 });
