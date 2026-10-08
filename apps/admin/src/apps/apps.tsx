@@ -10,6 +10,11 @@ import { useBrowseAppInstallations } from '@tryghost/admin-x-framework/api/app-i
 import { getErrorMessage } from '@tryghost/admin-x-framework/errors';
 import { isUnsupported } from './lib/install-failure';
 
+/** Fills the page with what it's given in the middle: a state the list can't show yet. */
+const Centered: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div className="flex flex-1 items-center justify-center py-16">{children}</div>
+);
+
 /** The site's apps, and where the install flow lands. */
 export const AppsListing: React.FC = () => {
   // Failures are shown in place: an older Ghost without apps answers 404, which isn't an error.
@@ -18,35 +23,36 @@ export const AppsListing: React.FC = () => {
 
   let body: React.ReactNode;
   if (error) {
+    const unsupported = isUnsupported(error);
     body = (
-      <div className="flex flex-1 items-center justify-center py-16">
+      <Centered>
         <EmptyIndicator
           description={
-            isUnsupported(error)
+            unsupported
               ? 'Apps need a newer version of Ghost.'
               : getErrorMessage(error, 'Something went wrong. Please try again.')
           }
-          title={isUnsupported(error) ? 'This site can’t install apps yet' : 'Couldn’t load apps'}
+          title={unsupported ? 'This site can’t install apps yet' : 'Couldn’t load apps'}
         >
           <LucideIcon.LayoutGrid />
         </EmptyIndicator>
-      </div>
+      </Centered>
     );
   } else if (isLoading) {
     body = (
-      <div className="flex flex-1 items-center justify-center py-16">
+      <Centered>
         <LoadingIndicator size="md" />
-      </div>
+      </Centered>
     );
   } else if (installations.length) {
     body = <AppsList installations={installations} />;
   } else {
     body = (
-      <div className="flex flex-1 items-center justify-center py-16">
+      <Centered>
         <EmptyIndicator description="Apps you install show up here." title="No apps yet">
           <LucideIcon.LayoutGrid />
         </EmptyIndicator>
-      </div>
+      </Centered>
     );
   }
 

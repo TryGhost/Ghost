@@ -1,33 +1,15 @@
-import { type User, isOwnerUser, useBrowseUsers } from '@tryghost/admin-x-framework/api/users';
+import { type User, useBrowseUsers } from '@tryghost/admin-x-framework/api/users';
 
-/** How many Administrators to list alongside the Owner. */
-export const ADMINISTRATOR_LIMIT = 4;
+/** How many of the site's managers to list. */
+export const MANAGER_LIMIT = 5;
 
-export const OWNER_FILTER = "roles.name:'Owner'";
-export const ADMINISTRATOR_FILTER = "roles.name:'Administrator'+status:-inactive";
+/** The staff who can install apps: the Owner and active Administrators. */
+export const MANAGER_FILTER = 'roles.name:[Owner,Administrator]+status:-inactive';
 
-/**
- * The people a staff user can ask to install an app: the Owner, then the first
- * few active Administrators. The Owner is queried on its own so it's always
- * listed, however many Administrators come before it in the staff list.
- */
+/** The people a staff user can ask to install an app, as the staff list orders them. */
 export function useAppManagers(): { managers: User[]; isLoading: boolean } {
-  const owner = useBrowseUsers({
-    searchParams: { filter: OWNER_FILTER, limit: '1', include: 'roles' },
+  const { data, isLoading } = useBrowseUsers({
+    searchParams: { filter: MANAGER_FILTER, limit: String(MANAGER_LIMIT), include: 'roles' },
   });
-  const administrators = useBrowseUsers({
-    searchParams: {
-      filter: ADMINISTRATOR_FILTER,
-      limit: String(ADMINISTRATOR_LIMIT),
-      include: 'roles',
-    },
-  });
-
-  return {
-    managers: [
-      ...(owner.data?.users.filter(isOwnerUser) ?? []),
-      ...(administrators.data?.users.slice(0, ADMINISTRATOR_LIMIT) ?? []),
-    ],
-    isLoading: owner.isLoading || administrators.isLoading,
-  };
+  return { managers: data?.users ?? [], isLoading };
 }
