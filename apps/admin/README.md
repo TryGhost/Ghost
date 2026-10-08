@@ -10,6 +10,9 @@ Uses an **Ember Bridge** system for smooth migration:
 - Unported routes fall back to the existing Ember admin
 - Both share the same UI space seamlessly
 
+A Labs flag that moves the editor between Ember and React applies on the next
+editor visit: the bridge keeps an open editor with whichever app is showing it.
+
 The React application uses `admin-x-framework` for API hooks, routing, and the
 bridge to Ember. Shade provides its application wrapper and design system.
 Embedded React applications are built before Ember Admin. After Vite builds Admin,

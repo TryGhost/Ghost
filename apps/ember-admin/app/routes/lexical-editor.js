@@ -62,7 +62,6 @@ function buildAnalyticsSourcePath(transition, model) {
 }
 
 export default AuthenticatedRoute.extend({
-    feature: service(),
     notifications: service(),
     router: service(),
     stateBridge: service(),
@@ -76,9 +75,9 @@ export default AuthenticatedRoute.extend({
     beforeModel(transition) {
         this._super(...arguments);
 
-        // Strictly boolean: a non-boolean labs value must not hand the route
-        // to React.
-        if (this.feature.editorReact !== true) {
+        // The answer React reads, so both routers agree while an open editor
+        // holds its owner.
+        if (this.stateBridge.isFeatureEnabled('editorReact') !== true) {
             return;
         }
 

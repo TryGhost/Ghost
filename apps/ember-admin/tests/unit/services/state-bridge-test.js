@@ -184,6 +184,27 @@ describe('Unit: Service: state-bridge', function () {
             expect(service.isFeatureEnabled('editorReact')).to.be.true;
             expect(featureFlagsChange.calledTwice).to.be.true;
         });
+
+        it('keeps the editor with React while the React editor is showing', function () {
+            settings.settingsModel = {};
+            sinon.stub(feature, 'editorReact').get(() => false);
+            const featureFlagsChange = sinon.spy();
+            service.on('featureFlagsChange', featureFlagsChange);
+
+            service.setReactRoutePattern('/editor/*');
+
+            expect(service.isFeatureEnabled('editorReact')).to.be.true;
+            expect(featureFlagsChange.calledOnce).to.be.true;
+
+            service.setReactRoutePattern('/posts');
+
+            expect(service.isFeatureEnabled('editorReact')).to.be.false;
+            expect(featureFlagsChange.calledTwice).to.be.true;
+
+            service.setReactRoutePattern('/tags');
+
+            expect(featureFlagsChange.calledTwice, 'no change outside the editor').to.be.true;
+        });
     });
 
     describe('#refreshFeatureFlagOverrides', function () {
