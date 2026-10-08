@@ -11,10 +11,11 @@ import { limitService } from '../limits';
  */
 export async function lockAutomationLimit(
   trx: Knex.Transaction,
-  status: AutomationStatus,
+  status: AutomationStatus | 'legacy',
 ): Promise<void> {
   switch (status) {
     case 'active':
+    case 'legacy':
       break;
     case 'inactive':
       return;
