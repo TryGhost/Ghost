@@ -27,3 +27,37 @@
   description: Exact-match filter for a token with no reads returns no rows
   parameters: site_uuid=mock_site_uuid&gift_link=gift_zzz
   expected_result: ''
+
+- name: gift_link_by_token_and_post
+  description: Matching post and token filters preserve the link's visits and views
+  parameters: site_uuid=mock_site_uuid&post_uuid=6b8635fb-292f-4422-9fe4-d76cfab2ba31&gift_link=gift_aaa
+  expected_result: |
+    {"gift_link":"gift_aaa","visits":2,"views":3,"last_seen":"2100-01-06 01:28:38"}
+
+- name: gift_link_by_token_on_different_post
+  description: A known token on a different post returns no rows because both filters must match
+  parameters: site_uuid=mock_site_uuid&post_uuid=06b1b0c9-fb53-4a15-a060-3db3fde7b1dd&gift_link=gift_aaa
+  expected_result: ''
+
+- name: gift_link_on_different_site
+  description: A known token does not return reads belonging to another site
+  parameters: site_uuid=other_site_uuid&gift_link=gift_aaa
+  expected_result: ''
+
+- name: gift_links_from_date
+  description: The lower date bound alone excludes earlier reads and leaves later dates unbounded
+  parameters: site_uuid=mock_site_uuid&gift_link=gift_aaa&date_from=2100-01-06
+  expected_result: |
+    {"gift_link":"gift_aaa","visits":1,"views":1,"last_seen":"2100-01-06 01:28:38"}
+
+- name: gift_links_through_date
+  description: The upper date bound alone includes reads throughout that UTC day and excludes later dates
+  parameters: site_uuid=mock_site_uuid&gift_link=gift_aaa&date_to=2100-01-05
+  expected_result: |
+    {"gift_link":"gift_aaa","visits":1,"views":2,"last_seen":"2100-01-05 00:38:12"}
+
+- name: gift_links_for_local_day
+  description: Both date bounds use the requested timezone; only the January 6 UTC read falls on January 5 in New York
+  parameters: site_uuid=mock_site_uuid&gift_link=gift_aaa&date_from=2100-01-05&date_to=2100-01-05&timezone=America/New_York
+  expected_result: |
+    {"gift_link":"gift_aaa","visits":1,"views":1,"last_seen":"2100-01-06 01:28:38"}
