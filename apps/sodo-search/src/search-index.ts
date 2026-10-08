@@ -1,8 +1,40 @@
 import Flexsearch, { Charset } from 'flexsearch';
+import type {
+  Document,
+  DocumentData,
+  EncoderOptions,
+  EnrichedDocumentSearchResults,
+} from 'flexsearch';
 
-const cjkEncoderPresetCodepoint = {
+export type SearchPost = {
+  id: string;
+  title: string;
+  excerpt: string;
+  url: string;
+};
+
+export type SearchAuthor = {
+  id: string;
+  name: string;
+  url: string;
+  profile_image: string | null;
+};
+
+export type SearchTag = {
+  id: string;
+  name: string;
+  url: string;
+};
+
+export type SearchResults = {
+  posts: SearchPost[];
+  authors: SearchAuthor[];
+  tags: SearchTag[];
+};
+
+const cjkEncoderPresetCodepoint: EncoderOptions = {
   finalize: (terms) => {
-    const results = [];
+    const results: string[] = [];
 
     for (const term of terms) {
       results.push(...tokenizeCjkByCodePoint(term));
@@ -11,7 +43,7 @@ const cjkEncoderPresetCodepoint = {
   },
 };
 
-function isCJK(codePoint) {
+function isCJK(codePoint: number) {
   return (
     (codePoint >= 0x4e00 && codePoint <= 0x9fff) || // CJK Unified Ideographs
     (codePoint >= 0x3040 && codePoint <= 0x30ff) || // Hiragana & Katakana (contiguous blocks)
@@ -26,13 +58,13 @@ function isCJK(codePoint) {
   );
 }
 
-export function tokenizeCjkByCodePoint(text) {
-  const result = [];
+export function tokenizeCjkByCodePoint(text: string) {
+  const result: string[] = [];
   let buffer = '';
 
   for (const char of text) {
     // loops over unicode characters
-    const codePoint = char.codePointAt(0);
+    const codePoint = char.codePointAt(0)!;
 
     if (isCJK(codePoint)) {
       if (buffer) {
@@ -52,10 +84,16 @@ export function tokenizeCjkByCodePoint(text) {
   return result;
 }
 
-const encoderSet = new Flexsearch.Encoder(Charset.Default, cjkEncoderPresetCodepoint);
+const encoderSet = new Flexsearch.Encoder(Charset.Default).assign(cjkEncoderPresetCodepoint);
 
 export default class SearchIndex {
-  constructor({ adminUrl, apiKey, dir }) {
+  apiUrl: string;
+  apiKey: string | undefined;
+  postsIndex: Document<SearchPost>;
+  authorsIndex: Document<SearchAuthor>;
+  tagsIndex: Document<SearchTag>;
+
+  constructor({ adminUrl, apiKey, dir }: { adminUrl: string; apiKey?: string; dir: string }) {
     // flexsearch's own `rtl` option matches nothing at all in 0.8.x, even for
     // ASCII, so right-to-left support comes from reverse tokenisation alone.
     const tokenize = dir === 'rtl' ? 'reverse' : 'forward';
@@ -105,7 +143,7 @@ export default class SearchIndex {
     }
   }
 
-  async #fetchPosts() {
+  async #fetchPosts(): Promise<SearchPost[]> {
     try {
       const url = `${this.apiUrl}/ghost/api/content/search-index/posts/?key=${this.apiKey}`;
       const response = await fetch(url);
@@ -119,7 +157,7 @@ export default class SearchIndex {
     }
   }
 
-  #updatePostIndex(posts) {
+  #updatePostIndex(posts: SearchPost[]) {
     posts.forEach((post) => {
       this.postsIndex.add(post);
     });
@@ -133,7 +171,7 @@ export default class SearchIndex {
     }
   }
 
-  async #fetchAuthors() {
+  async #fetchAuthors(): Promise<SearchAuthor[]> {
     try {
       const url = `${this.apiUrl}/ghost/api/content/search-index/authors/?key=${this.apiKey}`;
       const response = await fetch(url);
@@ -147,7 +185,7 @@ export default class SearchIndex {
     }
   }
 
-  #updateAuthorsIndex(authors) {
+  #updateAuthorsIndex(authors: SearchAuthor[]) {
     authors.forEach((author) => {
       this.authorsIndex.add(author);
     });
@@ -161,7 +199,7 @@ export default class SearchIndex {
     }
   }
 
-  async #fetchTags() {
+  async #fetchTags(): Promise<SearchTag[]> {
     try {
       const url = `${this.apiUrl}/ghost/api/content/search-index/tags/?key=${this.apiKey}`;
       const response = await fetch(url);
@@ -175,7 +213,7 @@ export default class SearchIndex {
     }
   }
 
-  #updateTagsIndex(tags) {
+  #updateTagsIndex(tags: SearchTag[]) {
     tags.forEach((tag) => {
       this.tagsIndex.add(tag);
     });
@@ -187,14 +225,14 @@ export default class SearchIndex {
     await this.#populateTagsIndex();
   }
 
-  #normalizeSearchResult(result) {
-    const normalized = [];
-    const usedIds = {};
+  #normalizeSearchResult<D extends DocumentData>(result: EnrichedDocumentSearchResults<D>) {
+    const normalized: D[] = [];
+    const usedIds: Record<string, boolean> = {};
 
     result.forEach((resultItem) => {
       resultItem.result.forEach((doc) => {
         if (!usedIds[doc.id]) {
-          normalized.push(doc.doc);
+          normalized.push(doc.doc!);
           usedIds[doc.id] = true;
         }
       });
@@ -203,7 +241,7 @@ export default class SearchIndex {
     return normalized;
   }
 
-  search(value) {
+  search(value: string): SearchResults {
     const posts = this.postsIndex.search(value, {
       enrich: true,
     });

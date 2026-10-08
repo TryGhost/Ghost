@@ -1,11 +1,11 @@
 import '@testing-library/jest-dom/vitest';
 import { afterEach } from 'vitest';
-import { cleanup } from '@testing-library/react';
+import { cleanup } from '@testing-library/preact';
 
 // TODO: remove this once we're switched `jest` to `vi` in code
 globalThis.jest = vi;
 
-// Add the cleanup function for React testing library
+// Add the cleanup function for Preact testing library
 afterEach(cleanup);
 
 // jest-dom (imported above as /vitest) registers custom matchers for asserting

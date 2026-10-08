@@ -1,84 +1,61 @@
 import AppContext from '../app-context';
-import CircleAnimated from '../icons/circle-anim.svg?react';
-import ClearIcon from '../icons/clear.svg?react';
 import Frame from './frame';
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
-import SearchIcon from '../icons/search.svg?react';
+import { CircleAnimatedIcon, ClearIcon, SearchIcon } from './icons';
+import { Fragment } from 'preact';
+import { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
+import type { JSX } from 'preact';
+import type { SearchAuthor, SearchPost, SearchTag } from '../search-index';
 
 const DEFAULT_MAX_POSTS = 10;
 const STEP_MAX_POSTS = 10;
 
-const StylesWrapper = () => {
-  return {
-    modalContainer: {
-      zIndex: '3999999',
-      position: 'fixed',
-      left: '0',
-      top: '0',
-      width: '100%',
-      height: '100%',
-      overflow: 'hidden',
-    },
-    frame: {
-      common: {
-        margin: 'auto',
-        position: 'relative',
-        padding: '0',
-        outline: '0',
-        width: '100%',
-        opacity: '1',
-        overflow: 'hidden',
-        height: '100%',
-      },
-    },
-    page: {
-      links: {
-        width: '600px',
-      },
-    },
-  };
+const MODAL_CONTAINER_STYLE: JSX.CSSProperties = {
+  zIndex: '3999999',
+  position: 'fixed',
+  left: '0',
+  top: '0',
+  width: '100%',
+  height: '100%',
+  overflow: 'hidden',
 };
 
-class PopupContent extends React.Component {
-  static contextType = AppContext;
+const FRAME_STYLE: JSX.CSSProperties = {
+  margin: 'auto',
+  position: 'relative',
+  padding: '0',
+  outline: '0',
+  width: '100%',
+  opacity: '1',
+  overflow: 'hidden',
+  height: '100%',
+};
 
-  componentDidMount() {
-    this.sendContainerHeightChangeEvent();
-  }
-
-  sendContainerHeightChangeEvent() {}
-
-  componentDidUpdate() {
-    this.sendContainerHeightChangeEvent();
-  }
-
-  handlePopupClose(e) {
-    e.preventDefault();
-    if (e.target === e.currentTarget) {
-      this.context.dispatch('update', {
-        showPopup: false,
-      });
+const FRAME_STYLES = `
+    :root {
+        --brandcolor:
     }
-  }
 
-  render() {
-    return <Search />;
-  }
-}
+    .ghost-display {
+        display: none;
+    }
+`;
+
+type SelectionProps = {
+  selectedResult: string | null;
+  setSelectedResult: (id: string | null) => void;
+};
 
 function SearchBox() {
-  const { searchValue, dispatch, inputRef, t } = useContext(AppContext);
-  const containerRef = useRef(null);
+  const { searchValue, setSearchValue, closePopup, inputRef, t } = useContext(AppContext);
+  const containerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     setTimeout(() => {
       inputRef?.current?.focus();
     }, 150);
 
-    const keyUphandler = (event) => {
+    const keyUphandler = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        dispatch('update', {
-          showPopup: false,
-        });
+        closePopup();
       }
     };
     const containeRefNode = containerRef?.current;
@@ -87,7 +64,7 @@ function SearchBox() {
     return () => {
       containeRefNode?.ownerDocument.removeEventListener('keyup', keyUphandler);
     };
-  }, [dispatch, inputRef]);
+  }, [closePopup, inputRef]);
 
   let className = 'z-10 relative flex items-center py-5 px-4 sm:px-7 bg-white rounded-t-lg shadow';
   if (!searchValue) {
@@ -95,25 +72,23 @@ function SearchBox() {
   }
 
   return (
-    <div className={className} ref={containerRef}>
+    <div ref={containerRef} className={className}>
       <div className="flex items-center justify-center w-4 h-4 me-3">
         <SearchClearIcon />
       </div>
       <input
         ref={inputRef}
+        className="grow -my-5 py-5 -ms-3 ps-3 text-[1.65rem] focus-visible:outline-none placeholder:text-gray-400 outline-none truncate"
+        placeholder={t('Search posts, tags and authors')}
         value={searchValue || ''}
-        onChange={(e) => {
-          dispatch('update', {
-            searchValue: e.target.value,
-          });
+        onInput={(e) => {
+          setSearchValue(e.currentTarget.value);
         }}
         onKeyDown={(e) => {
           if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
             e.preventDefault();
           }
         }}
-        className="grow -my-5 py-5 -ms-3 ps-3 text-[1.65rem] focus-visible:outline-none placeholder:text-gray-400 outline-none truncate"
-        placeholder={t('Search posts, tags and authors')}
       />
       <Loading />
       <CancelButton />
@@ -122,18 +97,16 @@ function SearchBox() {
 }
 
 function SearchClearIcon() {
-  const { searchValue = '', dispatch } = useContext(AppContext);
+  const { searchValue = '', setSearchValue } = useContext(AppContext);
   if (!searchValue) {
-    return <SearchIcon className="text-neutral-900" alt="Search" />;
+    return <SearchIcon className="text-neutral-900" />;
   }
   return (
     <button
-      alt="Clear"
       className="-mb-[1px]"
+      type="button"
       onClick={() => {
-        dispatch('update', {
-          searchValue: '',
-        });
+        setSearchValue('');
       }}
     >
       <ClearIcon className="text-neutral-900 hover:text-neutral-500 h-[1.1rem] w-[1.1rem]" />
@@ -144,22 +117,20 @@ function SearchClearIcon() {
 function Loading() {
   const { indexComplete, searchValue } = useContext(AppContext);
   if (!indexComplete && searchValue) {
-    return <CircleAnimated className="shrink-0" />;
+    return <CircleAnimatedIcon className="shrink-0" />;
   }
   return null;
 }
 
 function CancelButton() {
-  const { dispatch, t } = useContext(AppContext);
+  const { closePopup, t } = useContext(AppContext);
 
   return (
     <button
       className="ms-3 text-sm text-neutral-500 sm:hidden"
-      alt="Cancel"
+      type="button"
       onClick={() => {
-        dispatch('update', {
-          showPopup: false,
-        });
+        closePopup();
       }}
     >
       {t('Cancel')}
@@ -167,7 +138,11 @@ function CancelButton() {
   );
 }
 
-function TagListItem({ tag, selectedResult, setSelectedResult }) {
+function TagListItem({
+  tag,
+  selectedResult,
+  setSelectedResult,
+}: { tag: SearchTag } & SelectionProps) {
   const { name, url, id } = tag;
   let className = 'flex items-center py-3 -mx-4 sm:-mx-7 px-4 sm:px-7 cursor-pointer';
   if (id === selectedResult) {
@@ -191,7 +166,11 @@ function TagListItem({ tag, selectedResult, setSelectedResult }) {
   );
 }
 
-function TagResults({ tags, selectedResult, setSelectedResult }) {
+function TagResults({
+  tags,
+  selectedResult,
+  setSelectedResult,
+}: { tags: SearchTag[] } & SelectionProps) {
   const { t } = useContext(AppContext);
 
   if (!tags?.length) {
@@ -211,7 +190,11 @@ function TagResults({ tags, selectedResult, setSelectedResult }) {
   );
 }
 
-function PostListItem({ post, selectedResult, setSelectedResult }) {
+function PostListItem({
+  post,
+  selectedResult,
+  setSelectedResult,
+}: { post: SearchPost } & SelectionProps) {
   const { searchValue } = useContext(AppContext);
   const { title, excerpt, url, id } = post;
   let className = 'py-3 -mx-4 sm:-mx-7 px-4 sm:px-7 cursor-pointer';
@@ -231,16 +214,19 @@ function PostListItem({ post, selectedResult, setSelectedResult }) {
       }}
     >
       <h2 className="text-[1.65rem] font-medium leading-tight text-neutral-800">
-        <HighlightedSection text={title} highlight={searchValue} isExcerpt={false} />
+        <HighlightedSection highlight={searchValue} isExcerpt={false} text={title} />
       </h2>
       <p className="text-neutral-400 leading-normal text-sm mt-0 mb-0 truncate">
-        <HighlightedSection text={excerpt} highlight={searchValue} isExcerpt={true} />
+        <HighlightedSection highlight={searchValue} isExcerpt={true} text={excerpt} />
       </p>
     </div>
   );
 }
 
-function getMatchIndexes({ text, highlight }) {
+type HighlightIndex = { startIdx: number; endIdx: number };
+type HighlightPart = { text: string; type: 'highlight' | 'normal' };
+
+function getMatchIndexes({ text, highlight }: { text: string; highlight: string }) {
   let highlightRegexText = '';
   highlight?.split(' ').forEach((d, idx) => {
     // escape regex syntax in search queries
@@ -253,7 +239,7 @@ function getMatchIndexes({ text, highlight }) {
   });
   const matchRegex = new RegExp(`${highlightRegexText}`, 'ig');
   const matches = text?.matchAll(matchRegex);
-  const indexes = [];
+  const indexes: HighlightIndex[] = [];
   for (const match of matches) {
     indexes.push({
       startIdx: match?.index,
@@ -263,9 +249,9 @@ function getMatchIndexes({ text, highlight }) {
   return indexes;
 }
 
-function getHighlightParts({ text, highlight }) {
+function getHighlightParts({ text, highlight }: { text: string; highlight: string }) {
   const highlightIndexes = getMatchIndexes({ text, highlight });
-  const parts = [];
+  const parts: HighlightPart[] = [];
   let lastIdx = 0;
 
   highlightIndexes.forEach((highlightIdx) => {
@@ -299,7 +285,15 @@ function getHighlightParts({ text, highlight }) {
   };
 }
 
-function HighlightedSection({ text = '', highlight = '', isExcerpt }) {
+function HighlightedSection({
+  text = '',
+  highlight = '',
+  isExcerpt,
+}: {
+  text?: string;
+  highlight?: string;
+  isExcerpt: boolean;
+}) {
   text = text || '';
   highlight = highlight || '';
   let { parts, highlightIndexes } = getHighlightParts({ text, highlight });
@@ -312,21 +306,16 @@ function HighlightedSection({ text = '', highlight = '', isExcerpt }) {
     }
   }
 
-  const wordMap = parts.map((d, idx) => {
-    if (d?.type === 'highlight') {
-      return (
-        <React.Fragment key={idx}>
-          <HighlightWord word={d.text} isExcerpt={isExcerpt} />
-        </React.Fragment>
-      );
-    } else {
-      return <React.Fragment key={idx}>{d.text}</React.Fragment>;
-    }
-  });
+  const wordMap = parts.map((d, idx) => (
+    // eslint-disable-next-line react/no-array-index-key -- parts are positional slices of one string
+    <Fragment key={idx}>
+      {d?.type === 'highlight' ? <HighlightWord isExcerpt={isExcerpt} word={d.text} /> : d.text}
+    </Fragment>
+  ));
   return <>{wordMap}</>;
 }
 
-function HighlightWord({ word, isExcerpt }) {
+function HighlightWord({ word, isExcerpt }: { word: string; isExcerpt: boolean }) {
   if (isExcerpt) {
     return (
       <>
@@ -341,7 +330,15 @@ function HighlightWord({ word, isExcerpt }) {
   );
 }
 
-function ShowMoreButton({ posts, maxPosts, setMaxPosts }) {
+function ShowMoreButton({
+  posts,
+  maxPosts,
+  setMaxPosts,
+}: {
+  posts: SearchPost[];
+  maxPosts: number;
+  setMaxPosts: (maxPosts: number) => void;
+}) {
   const { t } = useContext(AppContext);
 
   if (!posts?.length || maxPosts >= posts?.length) {
@@ -350,6 +347,7 @@ function ShowMoreButton({ posts, maxPosts, setMaxPosts }) {
   return (
     <button
       className="w-full my-3 p-[1rem] border border-neutral-200 hover:border-neutral-300 text-neutral-800 hover:text-black font-semibold rounded transition duration-150 ease hover:ease"
+      type="button"
       onClick={() => {
         const updatedMaxPosts = maxPosts + STEP_MAX_POSTS;
         setMaxPosts(updatedMaxPosts);
@@ -360,10 +358,14 @@ function ShowMoreButton({ posts, maxPosts, setMaxPosts }) {
   );
 }
 
-function PostResults({ posts, selectedResult, setSelectedResult }) {
+function PostResults({
+  posts,
+  selectedResult,
+  setSelectedResult,
+}: { posts: SearchPost[] } & SelectionProps) {
   const { t } = useContext(AppContext);
   const [maxPosts, setMaxPosts] = useState(DEFAULT_MAX_POSTS);
-  const [paginatedPosts, setPaginatedPosts] = useState([]);
+  const [paginatedPosts, setPaginatedPosts] = useState<SearchPost[]>([]);
   useEffect(() => {
     setMaxPosts(DEFAULT_MAX_POSTS);
   }, [posts]);
@@ -373,23 +375,24 @@ function PostResults({ posts, selectedResult, setSelectedResult }) {
   if (!posts?.length) {
     return null;
   }
-  function PostItems() {
-    return paginatedPosts.map((d) => (
-      <PostListItem key={d.title} post={d} {...{ selectedResult, setSelectedResult }} />
-    ));
-  }
   return (
     <div className="border-t border-neutral-200 py-3 px-4 sm:px-7">
       <h1 className="uppercase text-xs text-neutral-400 font-semibold mb-1 tracking-wide">
         {t('Posts')}
       </h1>
-      <PostItems />
-      <ShowMoreButton setMaxPosts={setMaxPosts} maxPosts={maxPosts} posts={posts} />
+      {paginatedPosts.map((d) => (
+        <PostListItem key={d.title} post={d} {...{ selectedResult, setSelectedResult }} />
+      ))}
+      <ShowMoreButton maxPosts={maxPosts} posts={posts} setMaxPosts={setMaxPosts} />
     </div>
   );
 }
 
-function AuthorListItem({ author, selectedResult, setSelectedResult }) {
+function AuthorListItem({
+  author,
+  selectedResult,
+  setSelectedResult,
+}: { author: SearchAuthor } & SelectionProps) {
   const { name, profile_image: profileImage, url, id } = author;
   let className = 'py-[1rem] -mx-4 sm:-mx-7 px-4 sm:px-7 cursor-pointer flex items-center';
   if (id === selectedResult) {
@@ -407,21 +410,21 @@ function AuthorListItem({ author, selectedResult, setSelectedResult }) {
         setSelectedResult(id);
       }}
     >
-      <AuthorAvatar name={name} avatar={profileImage} />
+      <AuthorAvatar avatar={profileImage} name={name} />
       <h2 className="text-[1.65rem] font-medium leading-tight text-neutral-900 truncate">{name}</h2>
     </div>
   );
 }
 
-function AuthorAvatar({ name, avatar }) {
+function AuthorAvatar({ name, avatar }: { name: string; avatar: string | null }) {
   const Avatar = avatar?.length;
   const Character = name.charAt(0);
   if (Avatar) {
     return (
       <img
+        alt={name}
         className="rounded-full bg-neutral-300 w-7 h-7 me-2 object-cover"
         src={avatar}
-        alt={name}
       />
     );
   }
@@ -432,7 +435,11 @@ function AuthorAvatar({ name, avatar }) {
   );
 }
 
-function AuthorResults({ authors, selectedResult, setSelectedResult }) {
+function AuthorResults({
+  authors,
+  selectedResult,
+  setSelectedResult,
+}: { authors: SearchAuthor[] } & SelectionProps) {
   const { t } = useContext(AppContext);
 
   if (!authors?.length) {
@@ -455,13 +462,12 @@ function AuthorResults({ authors, selectedResult, setSelectedResult }) {
 
 function SearchResultBox() {
   const { searchValue = '', searchIndex, indexComplete } = useContext(AppContext);
-  let searchResults = null;
-  let filteredTags = [];
-  let filteredPosts = [];
-  let filteredAuthors = [];
+  let filteredTags: SearchTag[] = [];
+  let filteredPosts: SearchPost[] = [];
+  let filteredAuthors: SearchAuthor[] = [];
 
   if (indexComplete && searchValue) {
-    searchResults = searchIndex?.search(searchValue);
+    const searchResults = searchIndex?.search(searchValue);
     filteredPosts = searchResults?.posts || [];
     filteredAuthors = searchResults?.authors || [];
     filteredTags = searchResults?.tags || [];
@@ -480,7 +486,7 @@ function SearchResultBox() {
   const hasResults = filteredPosts?.length || filteredAuthors?.length || filteredTags?.length;
 
   if (hasResults) {
-    return <Results posts={filteredPosts} authors={filteredAuthors} tags={filteredTags} />;
+    return <Results authors={filteredAuthors} posts={filteredPosts} tags={filteredTags} />;
   } else if (searchValue) {
     return <NoResultsBox />;
   }
@@ -488,7 +494,15 @@ function SearchResultBox() {
   return null;
 }
 
-export function Results({ posts, authors, tags }) {
+export function Results({
+  posts,
+  authors,
+  tags,
+}: {
+  posts: SearchPost[];
+  authors: SearchAuthor[];
+  tags: SearchTag[];
+}) {
   const { searchValue } = useContext(AppContext);
 
   const allResults = useMemo(() => {
@@ -496,15 +510,16 @@ export function Results({ posts, authors, tags }) {
   }, [authors, tags, posts]);
 
   const defaultId = allResults?.[0]?.id || null;
-  const [selectedResult, setSelectedResult] = useState(defaultId);
-  const containerRef = useRef(null);
+  const [selectedResult, setSelectedResult] = useState<string | null>(defaultId);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setSelectedResult(allResults?.[0]?.id || null);
   }, [allResults]);
 
-  useEffect(() => {
-    const keyDownHandler = (event) => {
+  // Preact runs useEffect after the next frame; rapid keypresses would hit a stale handler
+  useLayoutEffect(() => {
+    const keyDownHandler = (event: KeyboardEvent) => {
       // keyCode 229 is the IME composition key for legacy browsers
       if (event.isComposing || event.keyCode === 229) {
         return;
@@ -524,7 +539,9 @@ export function Results({ posts, authors, tags }) {
         const selectedResultData = allResults.find((d) => {
           return d.id === selectedResult;
         });
-        window.location.href = selectedResultData?.url;
+        if (selectedResultData) {
+          window.location.href = selectedResultData.url;
+        }
       }
     };
 
@@ -543,8 +560,8 @@ export function Results({ posts, authors, tags }) {
   }
   return (
     <div
-      className="overflow-y-auto max-h-[calc(100vh-172px)] sm:max-h-[70vh] -mt-[1px]"
       ref={containerRef}
+      className="overflow-y-auto max-h-[calc(100vh-172px)] sm:max-h-[70vh] -mt-[1px]"
     >
       <AuthorResults
         authors={authors}
@@ -552,9 +569,9 @@ export function Results({ posts, authors, tags }) {
         setSelectedResult={setSelectedResult}
       />
       <TagResults
-        tags={tags}
         selectedResult={selectedResult}
         setSelectedResult={setSelectedResult}
+        tags={tags}
       />
       <PostResults
         posts={posts}
@@ -575,7 +592,7 @@ function NoResultsBox() {
 }
 
 function Search() {
-  const { dispatch } = useContext(AppContext);
+  const { closePopup } = useContext(AppContext);
   return (
     <>
       <div
@@ -583,9 +600,7 @@ function Search() {
         onClick={(e) => {
           e.preventDefault();
           if (e.target === e.currentTarget) {
-            dispatch('update', {
-              showPopup: false,
-            });
+            closePopup();
           }
         }}
       >
@@ -598,88 +613,40 @@ function Search() {
   );
 }
 
-export default class PopupModal extends React.Component {
-  static contextType = AppContext;
+function FrameHead({ stylesUrl }: { stylesUrl?: string }) {
+  return (
+    <>
+      {stylesUrl && <link href={stylesUrl} rel="stylesheet" />}
+      <style dangerouslySetInnerHTML={{ __html: FRAME_STYLES }} />
+      <meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport" />
+    </>
+  );
+}
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      height: null,
-    };
-  }
+export default function PopupModal() {
+  const context = useContext(AppContext);
 
-  onHeightChange(height) {
-    this.setState({ height });
-  }
-
-  handlePopupClose(e) {
-    e.preventDefault();
-    if (e.target === e.currentTarget) {
-      this.context.dispatch('update', {
-        showPopup: false,
-      });
-    }
-  }
-
-  renderFrameStyles() {
-    const styles = `
-            :root {
-                --brandcolor: ${this.context.brandColor || ''}
-            }
-
-            .ghost-display {
-                display: none;
-            }
-        `;
-
-    const stylesUrl = this.context.stylesUrl;
-    if (stylesUrl) {
-      return (
-        <>
-          <link rel="stylesheet" href={stylesUrl} />
-          <style dangerouslySetInnerHTML={{ __html: styles }} />
-          <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-        </>
-      );
-    }
-    return (
-      <>
-        <style dangerouslySetInnerHTML={{ __html: styles }} />
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-      </>
-    );
-  }
-
-  renderFrameContainer() {
-    const Styles = StylesWrapper();
-
-    const frameStyle = {
-      ...Styles.frame.common,
-    };
-
-    return (
-      <div style={Styles.modalContainer} className="gh-root-frame">
-        <Frame
-          style={frameStyle}
-          title="portal-popup"
-          head={this.renderFrameStyles()}
-          searchdir={this.context.dir}
-        >
+  return (
+    <div className="gh-root-frame" style={MODAL_CONTAINER_STYLE}>
+      <Frame
+        dir={context.dir}
+        head={<FrameHead stylesUrl={context.stylesUrl} />}
+        style={FRAME_STYLE}
+        title="portal-popup"
+      >
+        <AppContext.Provider value={context}>
           <div
-            onClick={(e) => this.handlePopupClose(e)}
             className="absolute top-0 bottom-0 left-0 right-0 block backdrop-blur-[2px] animate-fadein z-0 bg-gradient-to-br from-[rgba(0,0,0,0.2)] to-[rgba(0,0,0,0.1)]"
+            onClick={(e) => {
+              e.preventDefault();
+              if (e.target === e.currentTarget) {
+                context.closePopup();
+              }
+            }}
           />
-          <PopupContent />
-        </Frame>
-      </div>
-    );
-  }
-
-  render() {
-    const { showPopup } = this.context;
-    if (showPopup) {
-      return this.renderFrameContainer();
-    }
-    return null;
-  }
+          <Search />
+        </AppContext.Provider>
+      </Frame>
+    </div>
+  );
 }

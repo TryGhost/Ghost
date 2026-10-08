@@ -320,6 +320,9 @@ catalogs:
     '@testing-library/jest-dom':
       specifier: 6.9.1
       version: 6.9.1
+    '@testing-library/preact':
+      specifier: 3.2.4
+      version: 3.2.4
     '@testing-library/react':
       specifier: 14.3.1
       version: 14.3.1
@@ -2245,12 +2248,9 @@ importers:
       flexsearch:
         specifier: 0.8.212
         version: 0.8.212
-      react:
-        specifier: catalog:react17
-        version: 17.0.2
-      react-dom:
-        specifier: catalog:react17
-        version: 17.0.2(react@17.0.2)
+      preact:
+        specifier: 'catalog:'
+        version: 10.29.8
     devDependencies:
       '@internal/cfg-eslint-react':
         specifier: workspace:*
@@ -2261,9 +2261,12 @@ importers:
       '@testing-library/jest-dom':
         specifier: 'catalog:'
         version: 6.9.1
-      '@testing-library/react':
-        specifier: catalog:react17
-        version: 12.1.5(@types/react@17.0.93)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      '@testing-library/preact':
+        specifier: 'catalog:'
+        version: 3.2.4(preact@10.29.8)
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
@@ -2288,6 +2291,9 @@ importers:
       tailwindcss:
         specifier: catalog:tailwind3
         version: 3.4.19(tsx@4.23.12)(yaml@2.9.0)
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
       vite:
         specifier: 'catalog:'
         version: 8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0)
@@ -9529,6 +9535,12 @@ packages:
   '@testing-library/jest-dom@6.9.1':
     resolution: {integrity: sha512-zIcONa+hVtVSSep9UT3jZ5rizo2BsxgyDYU7WFD5eICBE7no3881HGeb/QkGfsJs6JTkY1aQhT7rIPC7e+0nnA==}
     engines: {node: '>=14', npm: '>=6', yarn: '>=1'}
+
+  '@testing-library/preact@3.2.4':
+    resolution: {integrity: sha512-F+kJ243LP6VmEK1M809unzTE/ijg+bsMNuiRN0JEDIJBELKKDNhdgC/WrUSZ7klwJvtlO3wQZ9ix+jhObG07Fg==}
+    engines: {node: '>= 12'}
+    peerDependencies:
+      preact: '>=10 || ^10.0.0-alpha.0 || ^10.0.0-beta.0'
 
   '@testing-library/react@12.1.5':
     resolution: {integrity: sha512-OfTXCJUFgjd/digLUuPxa0+/3ZxsQmE7ub9kcbW/wi96Bh3o/p5vrETcBGfP17NWPGqeYYl5LTRpwyGoMC4ysg==}
@@ -28321,6 +28333,11 @@ snapshots:
       dom-accessibility-api: 0.6.3
       picocolors: 1.1.1
       redent: 3.0.0
+
+  '@testing-library/preact@3.2.4(preact@10.29.8)':
+    dependencies:
+      '@testing-library/dom': 8.20.1
+      preact: 10.29.8
 
   '@testing-library/react@12.1.5(@types/react@17.0.93)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)':
     dependencies:

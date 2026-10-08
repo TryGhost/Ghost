@@ -1,7 +1,7 @@
 import AppContext from '../../src/app-context';
-import React from 'react';
 import { Results } from '../../src/components/popup-modal';
-import { fireEvent, render } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/preact';
+import type { AppContextType } from '../../src/app-context';
 
 describe('Results keyboard navigation', () => {
   const posts = [
@@ -21,8 +21,10 @@ describe('Results keyboard navigation', () => {
 
   const renderResults = () => {
     return render(
-      <AppContext.Provider value={{ searchValue: 'post', t: (str) => str }}>
-        <Results posts={posts} authors={[]} tags={[]} />
+      <AppContext.Provider
+        value={{ searchValue: 'post', t: (str: string) => str } as AppContextType}
+      >
+        <Results authors={[]} posts={posts} tags={[]} />
       </AppContext.Provider>,
     );
   };

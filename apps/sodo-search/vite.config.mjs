@@ -5,7 +5,9 @@ import { publicAppViteConfig } from '@internal/cfg-vite-public-app';
 export default publicAppViteConfig({
   packageRoot: import.meta.dirname,
   packageName: pkg.name,
-  entry: 'src/index.jsx',
+  entry: 'src/index.tsx',
+  framework: 'preact',
+  svgr: false,
   sourcemap: false,
   cssCodeSplit: false,
   overrides: {
@@ -29,6 +31,12 @@ export default publicAppViteConfig({
     },
     test: {
       setupFiles: './test/setup-tests.js',
+      // Inlined so it shares the app's Vite-resolved preact instance
+      server: {
+        deps: {
+          inline: ['@testing-library/preact'],
+        },
+      },
     },
   },
 });
