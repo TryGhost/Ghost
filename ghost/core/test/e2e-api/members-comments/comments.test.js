@@ -2640,7 +2640,7 @@ describe('Comments API', function () {
     let existingComment;
 
     beforeAll(async function () {
-      adminAgent = await agentProvider.getAdminAPIAgent();
+      ({ adminAgent, membersAgent } = await agentProvider.getAgentsForMembers());
       await fixtureManager.init('posts', 'members');
       await adminAgent.loginAsOwner();
 

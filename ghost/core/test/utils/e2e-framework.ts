@@ -43,14 +43,16 @@ import db from './db-utils';
 // @ts-expect-error This module lacks type definitions.
 import settingsService from '../../core/server/services/settings/settings-service';
 import supertest from 'supertest';
-// @ts-expect-error This module lacks type definitions.
-import { stopGhost, rememberGhost } from './e2e-utils';
 import adapterManager from '../../core/server/services/adapter-manager';
 // @ts-expect-error This module lacks type definitions.
 import DomainEvents from '@tryghost/domain-events';
 import * as hostLimits from './host-limits-utils';
 // @ts-expect-error This module lacks type definitions.
 import urlUtils from './url-utils';
+
+// Imported and required framework consumers must share the same boot owner.
+// Vitest's ESM graph can otherwise create a second copy of this CommonJS module.
+const { stopGhost, rememberGhost } = require('./e2e-utils');
 
 const debug = debugFactory('test');
 const { any, stringMatching } = expressTest.snapshot;

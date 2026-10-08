@@ -24,8 +24,8 @@ describe('Session invalidation on password change', function () {
 
   beforeAll(async function () {
     agentA = await agentProvider.getAdminAPIAgent();
-    agentB = await agentProvider.getAdminAPIAgent();
-    ownerAgent = await agentProvider.getAdminAPIAgent();
+    agentB = agentA.duplicate();
+    ownerAgent = agentA.duplicate();
     await fixtureManager.init('users');
     ownerId = fixtureManager.get('users', 0).id;
     adminId = fixtureManager.get('users', 1).id;

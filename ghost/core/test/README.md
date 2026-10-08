@@ -24,6 +24,11 @@ The framework provides agents for the Admin, Content, and Members APIs. Agents
 boot Ghost with suitable defaults, reset the database, configure the API base
 path, and provide authentication helpers.
 
+Each provider call starts a fresh boot and stops the previous app. For multiple
+users on one boot, use `agent.duplicate()` to get an independent Admin or Members
+agent without copying authentication. Use `getAgentsForMembers()` when a test
+needs both Admin and Members agents on the same boot.
+
 Requests use async/await. Assert the response status, body, and relevant headers.
 Use the snapshot matchers for generated IDs, dates, ETags, and locations, and
 add focused assertions for important behavior such as ordering and side effects.

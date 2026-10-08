@@ -8,7 +8,7 @@ describe('Post delete permissions', function () {
 
   beforeAll(async function () {
     ownerAgent = await agentProvider.getAdminAPIAgent();
-    authorAgent = await agentProvider.getAdminAPIAgent();
+    authorAgent = ownerAgent.duplicate();
     await fixtureManager.init('users');
     await ownerAgent.loginAsOwner();
     await authorAgent.loginAsAuthor();
