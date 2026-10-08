@@ -132,6 +132,10 @@ module.exports = {
     return apiFramework.pipeline(require('./stripe-checkout-config'), localUtils);
   },
 
+  get stripeCheckoutPreview() {
+    return apiFramework.pipeline(require('./stripe-checkout-preview'), localUtils);
+  },
+
   get memberCommenting() {
     return apiFramework.pipeline(require('./member-commenting'), localUtils);
   },

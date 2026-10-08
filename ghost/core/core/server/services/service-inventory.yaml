@@ -4189,19 +4189,22 @@ services:
       - stripe-checkout-config/index.ts
     notes: >-
       Site-wide Stripe Checkout config, read live by the Stripe API for every checkout it
-      creates.
+      creates, and previews of a design on a real Stripe Checkout page.
     contracts:
       exports:
         summary: >-
-          Named exports include init, the mutable service binding, StripeCheckoutConfigService,
-          the wire serializer and actingContext. The service binding is undefined before init.
+          Named exports include init, the mutable service and previewService bindings,
+          StripeCheckoutConfigService, CheckoutPreviewService, the wire serializers and
+          actingContext. Both bindings are undefined before init.
         sources:
           - core/server/services/stripe-checkout-config/index.ts
         tests: []
       construction:
         summary: >-
           Boot calls synchronous init in initCore, which builds the service with knex and its
-          history recorder. An existing service makes later calls return.
+          history recorder, and the preview service with lookups of Stripe, tiers and the
+          members payments service made per preview, as those start later in boot. An
+          existing service makes later calls return.
         sources:
           - core/server/services/stripe-checkout-config/index.ts
           - core/boot.js

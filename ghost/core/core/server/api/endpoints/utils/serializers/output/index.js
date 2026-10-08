@@ -92,6 +92,10 @@ module.exports = {
     return require('./stripe-checkout-config');
   },
 
+  get checkout_preview() {
+    return require('./stripe-checkout-preview');
+  },
+
   get images() {
     return require('./images');
   },

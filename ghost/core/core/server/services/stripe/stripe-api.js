@@ -1,4 +1,4 @@
-const { VersionMismatchError } = require('@tryghost/errors');
+const { ValidationError, VersionMismatchError } = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('stripe');
 const ghostConfig = require('../../../shared/config');
 const stripe = require('stripe');
@@ -89,6 +89,20 @@ module.exports = class StripeAPI {
   }
 
   /**
+   * The saved design, or null while the `stripeCheckoutDesign` flag is off.
+   *
+   * @private
+   * @returns {Promise<import('../stripe-checkout-config').StripeCheckoutDesign | null>}
+   */
+  async _savedDesign() {
+    if (!this.labs.isSet('stripeCheckoutDesign')) {
+      return null;
+    }
+    const config = await this._readCheckoutConfig();
+    return config?.design ?? null;
+  }
+
+  /**
    * Reads the site's Stripe Checkout config.
    *
    * If reading it fails, this logs the error and returns null. A checkout without the config
@@ -113,19 +127,20 @@ module.exports = class StripeAPI {
    * Creates a Checkout session with the saved design as its `branding_settings`. Every
    * Checkout session Ghost creates goes through here.
    *
-   * If Stripe rejects the design, the session is created again without it. The retry reuses
-   * the idempotency key, which is safe because Stripe doesn't store a result for a request it
-   * rejects as invalid.
+   * If Stripe rejects the saved design, the session is created again without it. The retry
+   * reuses the idempotency key, which is safe because Stripe doesn't store a result for a
+   * request it rejects as invalid. A design given in its place is a preview of one not saved
+   * yet, so Stripe rejecting that is reported instead of hidden.
    *
    * @private
    * @param {object} params
    * @param {object} [requestOptions]
+   * @param {{design?: import('../stripe-checkout-config').StripeCheckoutDesign | null}} [overrides]
+   *   A design to use instead of the saved one, such as an unsaved design being previewed.
+   *   Null sends no design; undefined uses the saved one.
    */
-  async _createCheckoutSession(params, requestOptions) {
-    const config = this.labs.isSet('stripeCheckoutDesign')
-      ? await this._readCheckoutConfig()
-      : null;
-    const design = config?.design;
+  async _createCheckoutSession(params, requestOptions, { design: previewed } = {}) {
+    const design = previewed !== undefined ? previewed : await this._savedDesign();
     if (!design) {
       return this._stripe.checkout.sessions.create(params, requestOptions);
     }
@@ -137,6 +152,13 @@ module.exports = class StripeAPI {
     } catch (err) {
       if (!DesignRefusal.safeParse(err).success) {
         throw err;
+      }
+      if (previewed !== undefined) {
+        throw new ValidationError({
+          message: 'Stripe refused this checkout design.',
+          context: err instanceof Error ? err.message : undefined,
+          property: 'design',
+        });
       }
       logging.error(
         { event: { name: 'stripe_checkout.design.refused' }, err },
@@ -628,6 +650,8 @@ module.exports = class StripeAPI {
    * @param {string} options.customerEmail
    * @param {number} options.trialDays
    * @param {string} [options.coupon]
+   * @param {import('../stripe-checkout-config').StripeCheckoutDesign | null} [options.design]
+   *   Replaces the saved design, for a preview of an unsaved one. Null sends no design.
    *
    * @returns {Promise<ICheckoutSession>}
    */
@@ -708,7 +732,9 @@ module.exports = class StripeAPI {
       hasCustomer: Boolean(customerId),
     });
 
-    const session = await this._createCheckoutSession(stripeSessionOptions);
+    const session = await this._createCheckoutSession(stripeSessionOptions, undefined, {
+      design: options.design,
+    });
 
     return session;
   }

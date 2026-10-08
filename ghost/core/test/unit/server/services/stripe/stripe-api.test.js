@@ -393,6 +393,24 @@ describe('StripeAPI', function () {
       sinon.assert.calledOnce(logged);
     });
 
+    it('reports Stripe refusing a previewed design, rather than hiding it', async function () {
+      const refusal = Object.assign(new Error('Invalid font_family'), {
+        type: 'StripeInvalidRequestError',
+        param: 'branding_settings[font_family]',
+      });
+      mockStripe.checkout.sessions.create.rejects(refusal);
+
+      await assert.rejects(
+        configured(async () => ({ design: null })).createCheckoutSession('priceId', null, {
+          successUrl: '/success',
+          cancelUrl: '/cancel',
+          design,
+        }),
+        { errorType: 'ValidationError', property: 'design' },
+      );
+      sinon.assert.calledOnce(mockStripe.checkout.sessions.create);
+    });
+
     it('does not retry a refusal that is not about the design', async function () {
       const refusal = Object.assign(new Error('No such customer'), {
         type: 'StripeInvalidRequestError',
