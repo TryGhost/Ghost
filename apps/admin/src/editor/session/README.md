@@ -365,17 +365,20 @@ read is its own request, never a refetch of the query the screen rendered from,
 so nothing is replaced until the session has accepted the copy. A reload that
 fails leaves the halt, the content and the banner exactly as they were. A reload
 that succeeds seeds the screen's query with the accepted document, so a quick
-close and reopen cannot resurrect the version it first read.
+close and reopen whose own read fails cannot resurrect the version it first read.
+A reload whose read comes back after the writer has left the editor changes
+nothing, since the query by then belongs to whichever editor opens the post next.
 
 The screen's query also refetches on its own, after every save that lands and
-on reconnect once it is stale. Opening a post always reads it again, even while
-a copy from an earlier visit is cached: the session saves against the version
-it opens on, so a cached copy would collide with whatever another writer saved
-since. Only a read that never produced the post replaces the screen: with sign
-in when the session has expired, and otherwise with the load error or a missing
-post. Reopening a post whose copy is still cached therefore shows that copy when
-the read that reopens it fails.
-Once the post is on screen, a refetch that fails leaves the editor, the session
+on reconnect once it is stale. Opening a post always sends a read of its own,
+even while a copy from an earlier visit is cached: the session saves against the
+version it opens on, so a cached copy would collide with whatever another writer
+saved since. A read still in flight from that visit is replaced rather than
+joined, since the server may have answered it before their save. A deleted post
+replaces the screen with a missing post and an expired session with sign in,
+whether or not a copy is cached. Any other failure shows the load error when
+nothing is cached, and otherwise opens the cached copy, leaving the next save to
+report what has changed. Once the post is on screen, a refetch that fails leaves the editor, the session
 and the unsaved content where they are, and the next save reports a deleted
 post, an expired session or a collision itself.
 
@@ -383,8 +386,9 @@ The read that opens the post also decides whether the writer may edit it, and
 whether a post stored only as mobiledoc must be converted first. An Author or
 Contributor who is not among its authors, or a Contributor on a post that is no
 longer a draft, is returned to the list. A post reopened while a copy is cached
-waits for that read too, and nothing is decided on the cached copy. Once that
-read has settled, later reads decide neither: a refetch that takes away the writer's
+waits for that read too; the cached copy is judged only when that read failed
+and the copy opens in its place. Once that read has settled, later reads decide
+neither, including the read that follows a conversion's save: a refetch that takes away the writer's
 access, or that brings a version stored only as mobiledoc, leaves the editor and
 the unsaved content where they are, and the next save shows the server's refusal
 or the collision. A save refused because the writer may no longer edit the post

@@ -374,4 +374,28 @@ describe('useEditorSession reload', () => {
     expect(result.current.loadedRecord).toBe(loaded);
     expect(result.current.bind.title).toBe('Typed while reloading');
   });
+
+  it('leaves the screen’s read alone when the writer left before the reload’s read came back', async () => {
+    const newer = record({ title: 'Their title', updated_at: '2026-01-02T00:00:00.000Z' });
+    const read = deferred<{ posts: EditorRecord[] }>();
+    stable.fetchApi.mockReturnValueOnce(read.promise);
+    const cancelQueries = vi.spyOn(queryClient, 'cancelQueries');
+    const setQueryData = vi.spyOn(queryClient, 'setQueryData');
+    const { result, unmount } = setup();
+
+    let reloading!: Promise<string>;
+    act(() => {
+      reloading = result.current.reload();
+    });
+    unmount();
+    // Disposal follows the unmount by a tick.
+    await new Promise((resolve) => {
+      setTimeout(resolve);
+    });
+    read.resolve({ posts: [newer] });
+
+    expect(await reloading).toBe('abandoned');
+    expect(cancelQueries).not.toHaveBeenCalled();
+    expect(setQueryData).not.toHaveBeenCalled();
+  });
 });

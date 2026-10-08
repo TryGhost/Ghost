@@ -180,7 +180,7 @@ function NewerVersionNotice({ onReload }: Pick<SessionBannersProps, 'onReload'>)
     setReloading(true);
     const outcome = await onReload();
     setReloading(false);
-    if (outcome !== 'reloaded') {
+    if (outcome === 'gone' || outcome === 'failed') {
       toast.error(RELOAD_FAILED);
     }
   };
