@@ -42,6 +42,11 @@
       "types": "./build/registry/signup-form.d.ts",
       "default": "./build/registry/signup-form.js"
     },
+    "./light/search": {
+      "source": "./src/light/search.ts",
+      "types": "./build/light/search.d.ts",
+      "default": "./build/light/search.js"
+    },
     "./locale-data.json": {
       "source": "./src/locale-data.json",
       "types": "./src/locale-data.json",

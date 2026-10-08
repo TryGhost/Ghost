@@ -26,6 +26,17 @@ export interface I18nOptions {
   [key: string]: unknown;
 }
 
+/** Values substituted into `{name}` placeholders. */
+export type InterpolationValues = Record<string, unknown>;
+
+/** The i18next subset served by the light browser factory. */
+export interface LightI18n {
+  t: (key: string, values?: InterpolationValues) => string;
+  dir: () => 'ltr' | 'rtl';
+}
+
+export type LightI18nFactory = (locale?: string) => LightI18n;
+
 export interface I18nFactory {
   (locale?: string, ns?: Namespace | string, options?: I18nOptions): I18nextInstance;
   LOCALE_DATA: LocaleDataEntry[];

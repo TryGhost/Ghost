@@ -11,6 +11,7 @@
  * The namespace is fixed at build time by which per-namespace registry module is
  * imported, so bundlers include ONLY that namespace's locale files.
  */
+import { registryFromGlob } from './glob-registry.ts';
 import {
   createGenerateResources,
   createI18n,
@@ -32,14 +33,7 @@ export function i18nFromGlob(
   globModules: Record<string, TranslationResource>,
   namespace: string,
 ): I18nFactory {
-  const registry: Record<string, TranslationResource> = {};
-  for (const [filePath, resource] of Object.entries(globModules)) {
-    const locale = /\/locales\/([^/]+)\//.exec(filePath)?.[1];
-    if (locale) {
-      registry[locale] = resource;
-    }
-  }
-  return createNamespacedI18n(registry, namespace);
+  return createNamespacedI18n(registryFromGlob(globModules), namespace);
 }
 
 export function createNamespacedI18n(
